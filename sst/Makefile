@@ -1,5 +1,5 @@
 
-TINYXML_DIR=$(HOME)/src/tinyxml
+TINYXML_DIR=./tinyxml
 MPI_DIR=$(HOME)/local/openmpi/1.3.2
 ZOLTAN_DIR=$(HOME)/local/zoltan/3.1
 PARMETIS_DIR=$(HOME)/local/parmetis/3.1
