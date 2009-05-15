@@ -40,8 +40,9 @@ sst_SOURCES = main.cc
 
 sst_OBJS = $(sst_SOURCES:.cc=.o)
 
-sim: $(sst_OBJS) $(LIB_SST) $(sst_OBJS) 
-	$(CXX) -o $@ $^ -L$(BOOST_LIB_DIR) $(BOOST_LIBS) -ldl \
+sim: $(sst_OBJS) $(LIB_SST)
+	$(CXX) -o $@ $(sst_OBJS) -L$(BOOST_LIB_DIR) $(BOOST_LIBS) -ldl \
+        -Llib -lsst \
         -L$(TINYXML_DIR) -ltinyxml \
 		-L$(ZOLTAN_DIR)/lib -lzoltan \
 		-L$(PARMETIS_DIR)/lib -lparmetis -lmetis
