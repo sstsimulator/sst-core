@@ -1,11 +1,16 @@
 
 TINYXML_DIR=./tinyxml
+LIB_TINYXML=$(TINYXML_DIR)/libtinyxml.so
+MPI_DIR=/usr
 MPI_DIR=$(HOME)/local/openmpi/1.3.2
+ZOLTAN_DIR=/usr/local/zoltan/3.1
 ZOLTAN_DIR=$(HOME)/local/zoltan/3.1
+PARMETIS_DIR=/usr/local
 PARMETIS_DIR=$(HOME)/local/parmetis/3.1
 
 BOOST_CC=gcc42
 BOOST_VER=1_38
+BOOST_DIR  = /usr/local/boost
 BOOST_DIR  = $(HOME)/local/boost/openmpi-1.3.2/1.38.0
 
 CXX=mpic++ 
@@ -40,7 +45,7 @@ sst_SOURCES = main.cc
 
 sst_OBJS = $(sst_SOURCES:.cc=.o)
 
-sim: $(sst_OBJS) $(LIB_SST)
+sim: $(sst_OBJS) $(LIB_SST) $(LIB_TINYXML)
 	$(CXX) -o $@ $(sst_OBJS) -L$(BOOST_LIB_DIR) $(BOOST_LIBS) -ldl \
         -Llib -lsst \
         -L$(TINYXML_DIR) -ltinyxml \
@@ -50,5 +55,9 @@ sim: $(sst_OBJS) $(LIB_SST)
 $(LIB_SST): $(libsst_OBJS)
 	mpic++ -shared -o $@ $^ -L$(BOOST_LIB_DIR) $(BOOST_LIBS) -ldl
 
+$(LIB_TINYXML):
+	$(MAKE) -C $(TINYXML_DIR)
+
 clean:
 	rm -f sim $(LIB_SST) $(libsst_OBJS) $(sst_OBJS)
+	$(MAKE) -C $(TINYXML_DIR) clean
