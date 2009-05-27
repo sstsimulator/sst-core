@@ -1,17 +1,17 @@
 
 TINYXML_DIR=./tinyxml
 LIB_TINYXML=$(TINYXML_DIR)/libtinyxml.so
-MPI_DIR=/usr
 MPI_DIR=$(HOME)/local/openmpi/1.3.2
-ZOLTAN_DIR=/usr/local/zoltan/3.1
+# MPI_DIR=/usr
 ZOLTAN_DIR=$(HOME)/local/zoltan/3.1
-PARMETIS_DIR=/usr/local
+# ZOLTAN_DIR=/usr/local/zoltan/3.1
 PARMETIS_DIR=$(HOME)/local/parmetis/3.1
+# PARMETIS_DIR=/usr/local
 
 BOOST_CC=gcc42
 BOOST_VER=1_38
-BOOST_DIR  = /usr/local/boost
 BOOST_DIR  = $(HOME)/local/boost/openmpi-1.3.2/1.38.0
+# BOOST_DIR  = /usr/local/boost
 
 CXX=mpic++ 
 
@@ -22,6 +22,7 @@ BOOST_LIBS += -lboost_serialization-$(BOOST_CC)-mt
 BOOST_LIBS += -lboost_mpi-$(BOOST_CC)-mt 
 
 CPPFLAGS  = -Wall
+# CPPFLAGS += -pedantic
 CPPFLAGS += -Iinclude -I.
 CPPFLAGS += -I$(BOOST_INC_DIR)
 CPPFLAGS += -I$(TINYXML_DIR)
@@ -35,7 +36,7 @@ VPATH = src
 
 libsst_SOURCES = linkMap.cc sync.cc export.cc clock.cc simulation.cc config.cc\
 	factory.cc debug.cc event.cc component.cc clockEvent.cc xml.cc \
-	configGraph.cc zolt.cc memEvent.cc
+	configGraph.cc zolt.cc memEvent.cc nicEvent.cc
 
 LIB_SST=lib/libsst.so
     
