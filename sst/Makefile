@@ -6,7 +6,7 @@ MPI_DIR=/usr
 # MPI_DIR=/home/rolf/OpenMPI-1.3.2
 ZOLTAN_DIR=$(HOME)/Desktop/simDocs/test2/Zoltan/
 ZOLTAN_LIB_DIR=$(HOME)/Desktop/simDocs/test2/Zoltan/Obj_mac
-ZOLTAN_DIR=/usr/local/zoltan/3.1
+#ZOLTAN_DIR=/usr/local/zoltan/3.1
 # ZOLTAN_DIR=/home/rolf/Zoltan-3.1
 PARMETIS_DIR=$(HOME)/local/parmetis/3.1
 PARMETIS_LIB_DIR=$(HOME)/Desktop/simDocs/test2/ParMETIS3_1/
@@ -19,7 +19,7 @@ BOOST_CC=xgcc40
 BOOST_VER=1_38
 #BOOST_DIR  = $(HOME)/local/boost/openmpi-1.3.2/1.38.0
 BOOST_DIR  = $(HOME)/Desktop/boost_1_38_0/
-BOOST_DIR  = /usr/local/boost
+#BOOST_DIR  = /usr/local/boost
 # BOOST_DIR  = /home/rolf/Boost-1.38
 
 CXX=mpic++ 
@@ -67,8 +67,7 @@ sim: $(sst_OBJS) $(LIB_SST) $(LIB_TINYXML)
         -L$(TINYXML_DIR) -ltinyxml \
         -Llib -lsst \
 	-L$(ZOLTAN_LIB_DIR) -lzoltan \
-	-L$(PARMETIS_LIB_DIR) -lparmetis -lmetis \
-	-L../components/ -lgenericProc
+	-L$(PARMETIS_LIB_DIR) -lparmetis -lmetis 
 
 #sim: $(sst_OBJS) $(libsst_OBJS) $(LIB_TINYXML)
 #	$(CXX) -o $@ $(sst_OBJS) $(libsst_OBJS) \
@@ -110,12 +109,12 @@ genericProc_OBJS = $(genericProc_SOURCES:.cc=.o) ../components/genericProc/FE/pp
 # for some reason, had to compile the genericProc objects into the sst
 #library, or it doesn't register classes properly. - at least on
 #MacOS. And no, even a static library doesn't seem to work.
-$(LIB_SST): $(libsst_OBJS)  $(genericProc_OBJS)
-	mpic++ $(SHARED_LIB_FLAGS) -o $@ $^  -L$(BOOST_LIB_DIR) $(BOOST_LIBS) \
+$(LIB_SST): $(libsst_OBJS)  ../components/libgenericProc.a
+	mpic++ $(SHARED_LIB_FLAGS) -o $@ $(libsst_OBJS)  $(genericProc_OBJS) \
+	-L$(BOOST_LIB_DIR) $(BOOST_LIBS) \
 	-ldl -L$(ZOLTAN_LIB_DIR) -lzoltan -L$(PARMETIS_LIB_DIR) \
 	-lparmetis -lmetis \
-	-L$(TINYXML_DIR) -ltinyxml \
-	-L../components/ -lgenericProc
+	-L$(TINYXML_DIR) -ltinyxml 
 
 $(LIB_TINYXML):
 	$(MAKE) SHARED_LIB_FLAGS="$(SHARED_LIB_FLAGS)" -C $(TINYXML_DIR)
