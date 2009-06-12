@@ -11,6 +11,7 @@
 #
 SITE = rolf_midnight
 SITE = rolf_agrigentum
+SITE = rolf_tbird
 SITE = mike
 
 ifeq ($(SITE), rolf_midnight)
@@ -29,6 +30,15 @@ ifeq ($(SITE), rolf_agrigentum)
     BOOST_VER=1_38
     BOOST_CC=gcc43
     BOOST_DIR=/home/rolf/Boost-1.38
+endif
+
+ifeq ($(SITE), rolf_tbird)
+    MPI_DIR=/apps/x86_64/mpi/openmpi/intel-10.1-f015-c015/openmpi-1.2.7_ofed
+    ZOLTAN_DIR=$(HOME)/SST
+    PARMETIS_DIR=$(HOME)/SST
+    BOOST_VER=1_38
+    BOOST_CC=gcc34
+    BOOST_DIR=$(HOME)/SST/boost
 endif
 
 ifeq ($(SITE), mike)
