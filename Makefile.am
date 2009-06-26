@@ -2,6 +2,6 @@
 #
 #
 
-ACLOCAL_AMFLAGS = -I config --install
+ACLOCAL_AMFLAGS = -I config
 
 SUBDIRS = sst components
