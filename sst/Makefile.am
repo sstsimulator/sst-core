@@ -25,6 +25,7 @@ libsst_la_LIBADD = \
 
 sstdir = $(includedir)/sst
 dist_sst_HEADERS =
+nodist_sst_HEADERS =
 nodist_include_HEADERS =
 
 bin_PROGRAMS = sst.x
