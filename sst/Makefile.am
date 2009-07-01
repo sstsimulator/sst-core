@@ -24,12 +24,14 @@ libsst_la_LIBADD = \
 	$(MPILIBS)
 
 sstdir = $(includedir)/sst
-nobase_sst_HEADERS =
+dist_sst_HEADERS =
+nodist_include_HEADERS =
 
 bin_PROGRAMS = sst.x
 sst_x_SOURCES =
 sst_x_LDADD = libsst.la
 
+include include/Makefile.inc
 include include/sst/Makefile.inc
 include tinyxml/Makefile.inc
 include src/Makefile.inc
