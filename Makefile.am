@@ -4,4 +4,4 @@
 
 ACLOCAL_AMFLAGS = -I config
 
-SUBDIRS = sst components
+SUBDIRS = components sst
