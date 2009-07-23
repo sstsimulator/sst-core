@@ -5,17 +5,15 @@
 AM_CPPFLAGS =  \
 	-DTIXML_USE_STL \
 	$(BOOST_CPPFLAGS) \
-	$(ZOLTAN_CPPFLAGS) \
-	$(LTDLINCL)
+	$(ZOLTAN_CPPFLAGS)
 
-SUBDIRS = libltdl .
+# SUBDIRS = libltdl .
 
 EXTRA_DIST =
 
 lib_LTLIBRARIES = libsst.la
 libsst_la_SOURCES =
 libsst_la_LIBADD = \
-	$(LIBLTDL) \
 	$(BOOST_SERIALIZATION_LIB) \
 	$(BOOST_MPI_LIB) \
 	$(BOOST_PROGRAM_OPTIONS_LIB) \
@@ -36,7 +34,8 @@ nodist_include_HEADERS =
 bin_PROGRAMS = sst.x
 sst_x_SOURCES =
 sst_x_LDADD = libsst.la
-sst_x_LDFLAGS = -export-dynamic $(SST_LTLIBS_COMPONENTS)
+#sst_x_LDFLAGS = -export-dynamic $(SST_LTLIBS_COMPONENTS)
+sst_x_LDFLAGS = -export-dynamic
 
 include include/Makefile.inc
 include include/sst/Makefile.inc

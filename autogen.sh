@@ -56,16 +56,17 @@ echo "Generating configure files ..."
 if test $major_version -lt 2 ; then
   echo " - Using Libtool pre-2.0"
 
-  rm -rf libltdl sst/libltdl
-  libtoolize --automake --copy --ltdl
-  if test -d libltdl; then
-    echo " - Moving libltdl to sst/"
-    mv libltdl sst
-  fi
-  if test ! -d sst/libltdl ; then
-    echo "libltdl doesn't exist.  Aborting."
-    exit 1
-  fi
+#  rm -rf libltdl sst/libltdl
+#  libtoolize --automake --copy --ltdl
+  libtoolize --automake --copy
+#  if test -d libltdl; then
+#    echo " - Moving libltdl to sst/"
+#    mv libltdl sst
+#  fi
+#  if test ! -d sst/libltdl ; then
+#    echo "libltdl doesn't exist.  Aborting."
+#    exit 1
+#  fi
   aclocal -I config
   autoheader
   autoconf
