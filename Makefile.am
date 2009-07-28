@@ -6,6 +6,8 @@ ACLOCAL_AMFLAGS = -I config
 
 SUBDIRS = components sst
 
+EXTRA_DIST = autogen.sh user_includes user_libs user_tests
+
 dist-hook:
 	@ if test $(SST_DISTABLE_LIBTOOL) -eq 0 ; then \
 	  echo "*** WARNING: Your version of Libtool is too old for 'make dist'" ; \
