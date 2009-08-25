@@ -3,8 +3,15 @@
 echo "Finding Autotools versions ..."
 version=`libtool --version 2>&1`
 if test "$?" != 0 ; then
-  echo "Could not find libtool version number.  Aborting."
-  exit 1
+  version=`glibtool --version 2>&1`
+  if test "$?" != 0 ; then 
+    echo "Could not find libtool version number.  Aborting."
+    exit 1
+  else
+    libtool=glibtool
+  fi
+else
+  libtool=libtool
 fi
 version=`echo $version | cut -f2 -d')'`
 version=`echo $version | cut -f1 -d' ' | sed -e 's/[A-Za-z]//g'`
@@ -57,7 +64,7 @@ if test $major_version -lt 2 ; then
   echo " - Using Libtool pre-2.0"
 
   rm -rf libltdl sst/libltdl
-  libtoolize --automake --copy --ltdl
+  ${libtool}ize --automake --copy --ltdl
   if test -d libltdl; then
     echo " - Moving libltdl to sst/"
     mv libltdl sst
