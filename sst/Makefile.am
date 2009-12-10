@@ -11,7 +11,7 @@ AM_CPPFLAGS =  \
 DIST_SUBDIRS = libltdl .
 SUBDIRS = $(LIBLTDL_DIR) .
 
-EXTRA_DIST =
+EXTRA_DIST = mainpage.dox
 
 lib_LTLIBRARIES = libsst.la
 libsst_la_SOURCES =
