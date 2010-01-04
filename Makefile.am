@@ -4,7 +4,7 @@
 
 ACLOCAL_AMFLAGS = -I config
 
-SUBDIRS = components sst
+SUBDIRS = components sst doc
 
 EXTRA_DIST = autogen.sh user_includes user_libs user_tests
 

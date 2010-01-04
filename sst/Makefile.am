@@ -8,10 +8,12 @@ AM_CPPFLAGS =  \
 	$(ZOLTAN_CPPFLAGS) \
 	$(LTDLINCL)
 
-DIST_SUBDIRS = libltdl .
+
+#DIST_SUBDIRS = libltdl .
 SUBDIRS = $(LIBLTDL_DIR) .
 
-EXTRA_DIST = mainpage.dox
+#EXTRA_DIST = mainpage.dox 
+EXTRA_DIST = mainpage.dox libltdl
 
 lib_LTLIBRARIES = libsst.la
 libsst_la_SOURCES =
