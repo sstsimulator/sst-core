@@ -9,7 +9,10 @@ html-local: doxygen-html
 dist-hook: doxygen-dist
 
 maintainer-clean-local:
-	@ rm -rf html
+	@ $(RM) html
+
+distclean-local:
+	@ $(RM) html tagfile
 
 if HAVE_DOXYGEN
 doxygen-html:
