@@ -28,8 +28,8 @@ for component_dir in components/* ; do
     if test -f "$component_dir/.ignore" -a ! -f "$component_dir/.unignore" ; then
       echo " - ignoring component $component"
     elif test -f "$component_dir/.ignore" && \
-         test -s .unignore && \
-         test -z "`grep $USER .unignore`" ; then
+         test -s $component_dir/.unignore && \
+         test -z "`grep $USER $component_dir/.unignore`" ; then
       echo " - ignoring component $component"
     else
       if test -z "$component_list" ; then
