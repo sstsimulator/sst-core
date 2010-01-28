@@ -16,7 +16,7 @@ distclean-local:
 
 if HAVE_DOXYGEN
 doxygen-html:
-	@ cd .. ; @DOXYGEN@ doc/Doxyfile
+	@ pushd $(top_srcdir) ; @DOXYGEN@ $(abs_builddir)/Doxyfile ; popd
 
 doxygen-dist: doxygen-html
 

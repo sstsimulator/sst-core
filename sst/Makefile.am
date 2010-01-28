@@ -8,8 +8,6 @@ AM_CPPFLAGS =  \
 	$(ZOLTAN_CPPFLAGS) \
 	$(LTDLINCL)
 
-# KBW: libltdl MUST be in DIST_SUBDIRS and MUST NOT be in EXTRA_DIST
-# (if you disagree, please talk to me)
 DIST_SUBDIRS = libltdl .
 SUBDIRS = $(LIBLTDL_DIR) .
 
@@ -39,7 +37,7 @@ nodist_include_HEADERS =
 bin_PROGRAMS = sst.x
 sst_x_SOURCES =
 sst_x_LDADD = libsst.la
-sst_x_LDFLAGS = -export-dynamic #$(SST_LTLIBS_COMPONENTS)
+sst_x_LDFLAGS = -export-dynamic $(SST_LTLIBS_COMPONENTS)
 
 include include/Makefile.inc
 include include/sst/Makefile.inc

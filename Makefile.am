@@ -4,9 +4,15 @@
 
 ACLOCAL_AMFLAGS = -I config
 
-SUBDIRS = components sst doc
+EXTRA_DIST = autogen.sh
 
-EXTRA_DIST = autogen.sh user_includes user_libs user_tests
+SUBDIRS = \
+	components \
+	sst \
+	doc \
+	user_includes \
+	user_libs \
+	user_tests
 
 dist-hook:
 	@ if test $(SST_DISTABLE_LIBTOOL) -eq 0 ; then \
