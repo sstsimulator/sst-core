@@ -2,6 +2,9 @@
 #
 #
 
+CC = $(MPICC)
+CXX = $(MPICXX)
+
 AM_CPPFLAGS =  \
 	-DTIXML_USE_STL \
 	$(BOOST_CPPFLAGS) \
