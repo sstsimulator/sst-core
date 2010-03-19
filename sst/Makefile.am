@@ -36,7 +36,8 @@ sst_x_LDFLAGS = \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	-export-dynamic \
-	$(SST_LTLIBS_COMPONENTS)
+	$(SST_LTLIBS_COMPONENTS) \
+	$(SST_LTLIBS_INTROSPECTORS)
 
 include include/Makefile.inc
 include include/sst/Makefile.inc

@@ -12,7 +12,8 @@ SUBDIRS = \
 	doc \
 	user_includes \
 	user_libs \
-	user_tests
+	user_tests \
+	introspectors
 
 dist-hook:
 	@ if test $(SST_DISTABLE_LIBTOOL) -eq 0 ; then \
