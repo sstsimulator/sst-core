@@ -8,12 +8,12 @@ EXTRA_DIST = autogen.sh
 
 SUBDIRS = \
 	components \
+	introspectors \
 	sst \
 	doc \
 	user_includes \
 	user_libs \
-	user_tests \
-	introspectors
+	user_tests 
 
 dist-hook:
 	@ if test $(SST_DISTABLE_LIBTOOL) -eq 0 ; then \
