@@ -40,7 +40,7 @@ bool Introspector_cpu::pullData( Cycle_t current )
 
 
 extern "C" {
-Introspector_cpu* introspector_cpuAllocIntrospector( SST::ComponentId_t id,
+Introspector_cpu* introspector_cpuAllocComponent( SST::ComponentId_t id,
                                     SST::Component::Params_t& params )
 {
     return new Introspector_cpu( id, params );
