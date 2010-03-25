@@ -40,7 +40,7 @@ bool Introspector_cpuTemperature::pullData( Cycle_t current )
 
 
 extern "C" {
-Introspector_cpuTemperature* introspector_cpuTemperatureAllocIntrospector( SST::ComponentId_t id,
+Introspector_cpuTemperature* introspector_cpuTemperatureAllocComponent( SST::ComponentId_t id,
                                     SST::Component::Params_t& params )
 {
     return new Introspector_cpuTemperature( id, params );
