@@ -52,14 +52,23 @@ class Introspector_cpu : public Introspector {
                 ++it;
             } 
             
-           
+            intData = 0;
             handler = new EventHandler< Introspector_cpu, bool, Cycle_t >
                                                 ( this, &Introspector_cpu::pullData );
             _INTROSPECTOR_CPU_DBG("-->frequency=%s\n",frequency.c_str());
             TimeConverter* tc = registerClock( frequency, handler );
+
+	     mpihandler = new EventHandler< Introspector_cpu, bool, Cycle_t >
+	                                        ( this, &Introspector_cpu::mpiCollectInt );
+	     registerClock( frequency, mpihandler );
+
+	     mpionetimehandler = new EventHandler< Introspector_cpu, bool, Event* >
+	                                        ( this, &Introspector_cpu::mpiOneTimeCollect );
+
 	    printf("INTROSPECTOR_CPU period: %ld\n",tc->getFactor());
             _INTROSPECTOR_CPU_DBG("Done registering clock\n");
 
+	    //oneTimeCollect(90000, mpionetimehandler);
             
         }
         int Setup() {
@@ -97,6 +106,7 @@ class Introspector_cpu : public Introspector {
 
 
 	     }
+	    oneTimeCollect(90000, mpionetimehandler);
             _INTROSPECTOR_CPU_DBG("\n");
             return 0;
         }
@@ -113,12 +123,15 @@ class Introspector_cpu : public Introspector {
 	Introspector_cpu() {}
 
         bool pullData( Cycle_t );
-	
+	bool mpiCollectInt( Cycle_t );
+	bool mpiOneTimeCollect(Event* e);
 
-        ClockHandler_t* handler;
+        ClockHandler_t *handler, *mpihandler;
+	EventHandler< Introspector_cpu, bool, Event* > *mpionetimehandler;
         Component::Params_t    params;        
 	std::string frequency;
 	std::string model;
+	uint64_t intData;
 
 #if WANT_CHECKPOINT_SUPPORT2	
         BOOST_SERIALIZE {
