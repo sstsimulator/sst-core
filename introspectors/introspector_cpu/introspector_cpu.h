@@ -67,8 +67,6 @@ class Introspector_cpu : public Introspector {
 
 	    printf("INTROSPECTOR_CPU period: %ld\n",tc->getFactor());
             _INTROSPECTOR_CPU_DBG("Done registering clock\n");
-
-	    //oneTimeCollect(90000, mpionetimehandler);
             
         }
         int Setup() {
@@ -91,17 +89,17 @@ class Introspector_cpu : public Introspector {
 		    //pint = (*i)->ifMonitorIntData("RAS_read");
 		    //pint = (*i)->ifMonitorIntData("RAS_write");
 		    pint = (*i)->ifMonitorIntData("il1_read");
-		    //pdouble = (*i)->getMonitorDoubleData("CPUarea");
+		    //pdouble = (*i)->ifMonitorDoubleData("CPUarea");
 
 		    if(pint.first){
-			//new version: store pointer to component and the dataID of the data of interest
+			//store pointer to component and the dataID of the data of interest
 			//std::cout << "introspector_cpu is calling addToIntDatabase." << std::endl;
 			addToIntDatabase(*i, pint.second);
 			//std::cout << " introspector_cpu now has intdatabase size = " << DatabaseInt.size() << std::endl;
 		    }
 		    //if(pdouble.first){
-		        //if it does, add its double generator to a database to ask later
-			//addToDoubleDatabase((*i)->Id(), pdouble.second);
+		        //store pointer to component and the dataID of the data of interest
+			//addToDoubleDatabase(*i, pdouble.second);
 		    //}
 
 
