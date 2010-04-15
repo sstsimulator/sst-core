@@ -86,14 +86,14 @@ class Introspector_cpuTemperature : public Introspector {
 		    //pdouble = (*i)->getMonitorDoubleData("CPUarea");
 
 		    if(pint.first){
-			//new version: store pointer to component and the dataID of the data of interest
+			//store pointer to component and the dataID of the data of interest
 			//std::cout << "introspector_cpuTemperature is calling addToIntDatabase." << std::endl;
 			addToIntDatabase(*i, pint.second);
 			//std::cout << " introspector_cpuTemperature now has intdatabase size = " << DatabaseInt.size() << std::endl;
 		    }
 		    //if(pdouble.first){
-		        //if it does, add its double generator to a database to ask later
-			//addToDoubleDatabase((*i)->Id(), pdouble.second);
+		        //store pointer to component and the dataID of the data of interest
+			//addToDoubleDatabase(*i, pdouble.second);
 		    //}
 
 

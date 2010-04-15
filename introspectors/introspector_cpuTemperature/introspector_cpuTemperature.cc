@@ -20,18 +20,18 @@ bool Introspector_cpuTemperature::pullData( Cycle_t current )
 	Component *c;
 
         printf("introspector_cpuTemperature pulls data @ cycle %ld\n", current ); //current here specifies it's the #th call
-	for( DatabaseInt_t::iterator iter = DatabaseInt.begin();
+	for( Database_t::iterator iter = DatabaseInt.begin();
                             iter != DatabaseInt.end(); ++iter )
     	{
 	    c = iter->first;
             std::cout << "Pull data of component ID " << c->Id() << " with dataID = " << iter->second << " and data value = " << c->getIntData(iter->second) << std::endl;
 	    
 	}
-	for( DatabaseDouble_t::iterator iter = DatabaseDouble.begin();
+	for( Database_t::iterator iter = DatabaseDouble.begin();
                             iter != DatabaseDouble.end(); ++iter )
     	{
-            printf("Pull data of ID %lu with value = %lf\n", iter->first, *(iter->second));
-	    
+            c = iter->first;
+            std::cout << "Pull data of component ID " << c->Id() << " with dataID = " << iter->second << " and data value = " << c->getDoubleData(iter->second) << std::endl;	    
 	}
 
 	return false;
