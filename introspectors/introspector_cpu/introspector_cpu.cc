@@ -20,7 +20,7 @@ bool Introspector_cpu::pullData( Cycle_t current )
     //_INTROSPECTOR_DBG("id=%lu currentCycle=%lu \n", Id(), current );
 	Component *c;
 
-        printf("introspector_cpu pulls data @ cycle %ld\n", current ); //current here specifies it's the #th call
+        printf("introspector_cpu pulls data @ cycle %ld\n", (long int)current ); //current here specifies it's the #th call
 	for( Database_t::iterator iter = DatabaseInt.begin();
                             iter != DatabaseInt.end(); ++iter )
     	{
@@ -48,9 +48,9 @@ bool Introspector_cpu::mpiCollectInt( Cycle_t current )
 	collectInt(REDUCE, intData, MINIMUM);
 	collectInt(REDUCE, intData, MAXIMUM);
 	//collectInt(ALLREDUCE, intData, SUM);
-        collectInt(BROADCAST, intData, NA, 1); // rank 1 will broadcast the value 
-	collectInt(GATHER, intData, NA);
-	//collectInt(ALLGATHER, intData, NA);
+        collectInt(BROADCAST, intData, NOT_APPLICABLE, 1); // rank 1 will broadcast the value 
+	collectInt(GATHER, intData, NOT_APPLICABLE);
+	//collectInt(ALLGATHER, intData, NOT_APPLICABLE);
 
 	if (world.rank() == 0){
 	    std::cout << " The minimum value of data is " << minvalue << std::endl;

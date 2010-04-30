@@ -65,7 +65,7 @@ class Introspector_cpu : public Introspector {
 	     mpionetimehandler = new EventHandler< Introspector_cpu, bool, Event* >
 	                                        ( this, &Introspector_cpu::mpiOneTimeCollect );
 
-	    printf("INTROSPECTOR_CPU period: %ld\n",tc->getFactor());
+	    printf("INTROSPECTOR_CPU period: %ld\n",(long int)tc->getFactor());
             _INTROSPECTOR_CPU_DBG("Done registering clock\n");
             
         }
