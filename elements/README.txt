@@ -22,9 +22,6 @@ trig_nic:     Scott Hemmert <kshemme@sandia.gov>
 
 To Be Deleted
 -------------
-event_ping_pong
-nic_test_cpu
-trig_cpu
 
 Unclaimed
 ---------
