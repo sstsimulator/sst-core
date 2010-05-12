@@ -8,7 +8,6 @@ EXTRA_DIST = autogen.sh
 
 SUBDIRS = \
 	components \
-	introspectors \
 	sst \
 	doc \
 	user_includes \

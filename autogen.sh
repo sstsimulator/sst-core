@@ -44,32 +44,6 @@ for component_dir in components/* ; do
   fi
 done
 
-echo "Finding introspectors ..."
-introspector_list=
-introspector_m4_list=
-for introspector_dir in introspectors/* ; do
-  if test -d "$introspector_dir" ; then
-    introspector=`basename "$introspector_dir"`
-    if test -f "$introspector_dir/.ignore" -a ! -f "$introspector_dir/.unignore" ; then
-      echo " - ignoring introspector $introspector"
-    elif test -f "$introspector_dir/.ignore" && \
-         test -s $introspector_dir/.unignore && \
-         test -z "`grep $USER $introspector_dir/.unignore`" ; then
-      echo " - ignoring introspector $introspector"
-    else
-      if test -z "$introspector_list" ; then
-        introspector_list="$introspector"
-      else
-        introspector_list="$introspector_list, $introspector"
-      fi
-      if test -f "$introspector_dir/configure.m4" ; then
-        introspector_m4_list="$introspector_m4_list $introspector_dir/configure.m4"
-      fi
-    fi
-  fi
-done
-
-
 cat > "config/sst_m4_config_include.m4" <<EOF
 dnl -*- Autoconf -*-
 
@@ -83,12 +57,6 @@ echo "m4_define([sst_component_list], [$component_list])" >> config/sst_m4_confi
 for component in $component_m4_list ; do
   echo "m4_include($component)" >> config/sst_m4_config_include.m4
 done
-
-echo "m4_define([sst_introspector_list], [$introspector_list])" >> config/sst_m4_config_include.m4
-for introspector in $introspector_m4_list ; do
-  echo "m4_include($introspector)" >> config/sst_m4_config_include.m4
-done
-
 
 echo "Generating configure files ..."
 if test $major_version -lt 2 ; then
