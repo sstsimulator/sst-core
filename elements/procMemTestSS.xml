@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+
+<config>
+    stopAtCycle=1000000000
+    run-mode=both
+</config>
+
+
+<sst>
+	<component id="genericProc" >	
+		<genericProc>
+			<params>
+			  <clock>2.0 GHz</clock>
+			  <execFile>sst/trunk/components/genericProc/programs/fooPrint</execFile>
+			  <execFile>sst/trunk/components/genericProc/programs/gups_distro/gups_serial</execFile>
+			  <execFile>sst/trunk/components/genericProc/programs/pthreadTest</execFile>
+			  <externalMem>1</externalMem>
+			  <maxMMOut>32</maxMMOut>
+			  <verbose>5</verbose>
+			  <ssBackEnd>1</ssBackEnd>
+			  <cores>2</cores>
+			  <ssConfig>sst/trunk/components/rs-opteron.conf</ssConfig>
+			 </params>
+			<links>
+				<link id="cpu2mem">
+					<params>
+						<name>mem0</name>
+						<lat>1 ns</lat>
+					</params>
+				</link>
+			</links>
+		</genericProc>
+	</component>
+
+ 	<component id="mem0">
+ 		<DRAMSimC>
+ 			<params>
+			  <clock>2000000000.0</clock>
+			  <systemini>system.ini</systemini>
+			  <deviceini>ini/DDR3_micron_32M_8B_x8_sg15.ini</deviceini>
+			  <pwd>DRAMSim</pwd>
+			  <printstats>no</printstats>
+ 			</params>
+ 			<links>
+ 				<link id="cpu2mem">
+ 					<params>
+ 						<name>bus</name>
+ 						<lat>1 ns</lat>
+ 					</params>
+ 				</link>
+ 			</links>
+ 		</DRAMSimC>
+ 	</component>
+
+</sst>

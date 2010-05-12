@@ -18,27 +18,27 @@ version=`echo $version | cut -f1 -d' ' | sed -e 's/[A-Za-z]//g'`
 major_version=`echo $version | cut -f1 -d.`
 
 
-# do component magic
-echo "Finding components ..."
-component_list=
-component_m4_list=
-for component_dir in components/* ; do
-  if test -d "$component_dir" ; then
-    component=`basename "$component_dir"`
-    if test -f "$component_dir/.ignore" -a ! -f "$component_dir/.unignore" ; then
-      echo " - ignoring component $component"
-    elif test -f "$component_dir/.ignore" && \
-         test -s $component_dir/.unignore && \
-         test -z "`grep $USER $component_dir/.unignore`" ; then
-      echo " - ignoring component $component"
+# do elemlib magic
+echo "Finding element libraries ..."
+elemlib_list=
+elemlib_m4_list=
+for elemlib_dir in elements/* ; do
+  if test -d "$elemlib_dir" ; then
+    elemlib=`basename "$elemlib_dir"`
+    if test -f "$elemlib_dir/.ignore" -a ! -f "$elemlib_dir/.unignore" ; then
+      echo " - ignoring element library $elemlib"
+    elif test -f "$elemlib_dir/.ignore" && \
+         test -s $elemlib_dir/.unignore && \
+         test -z "`grep $USER $elemlib_dir/.unignore`" ; then
+      echo " - ignoring element library $elemlib"
     else
-      if test -z "$component_list" ; then
-        component_list="$component"
+      if test -z "$elemlib_list" ; then
+        elemlib_list="$elemlib"
       else
-        component_list="$component_list, $component"
+        elemlib_list="$elemlib_list, $elemlib"
       fi
-      if test -f "$component_dir/configure.m4" ; then
-        component_m4_list="$component_m4_list $component_dir/configure.m4"
+      if test -f "$elemlib_dir/configure.m4" ; then
+        elemlib_m4_list="$elemlib_m4_list $elemlib_dir/configure.m4"
       fi
     fi
   fi
@@ -52,10 +52,10 @@ dnl be edited by hand!!
 
 EOF
 
-echo "m4_define([sst_component_list], [$component_list])" >> config/sst_m4_config_include.m4
+echo "m4_define([sst_elemlib_list], [$elemlib_list])" >> config/sst_m4_config_include.m4
 
-for component in $component_m4_list ; do
-  echo "m4_include($component)" >> config/sst_m4_config_include.m4
+for elemlib in $elemlib_m4_list ; do
+  echo "m4_include($elemlib)" >> config/sst_m4_config_include.m4
 done
 
 echo "Generating configure files ..."
