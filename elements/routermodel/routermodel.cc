@@ -47,6 +47,7 @@ uint8_t out_port;
 
     _ROUTER_MODEL_DBG(3, "Sending message out on port %d\n", out_port);
     port[out_port].link->Send(delay, e);
+    _ROUTER_MODEL_DBG(3, "Returning from handle_port_events\n");
 
 
 #ifdef rrr

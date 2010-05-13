@@ -95,6 +95,15 @@ class Routermodel : public Component {
 		    port.push_back(new_port);
 		    _ROUTER_MODEL_DBG(2, "Added handler for port %d, link \"%s\", on router %s\n",
 			i, new_port.link_name, component_name.c_str());
+		} else   {
+		    /* Push a dummy port, so port numbering and order in list match */
+		    strcpy(new_port.link_name, "Unused_port");
+		    new_port.link= NULL;
+		    new_port.cnt_in= 0;
+		    new_port.cnt_out= 0;
+		    port.push_back(new_port);
+		    _ROUTER_MODEL_DBG(2, "Recorded unused port %d, link \"%s\", on router %s\n",
+			i, new_port.link_name, component_name.c_str());
 		}
 	    }
 
