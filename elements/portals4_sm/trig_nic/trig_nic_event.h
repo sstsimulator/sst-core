@@ -3,7 +3,7 @@
 #define _TRIG_NIC_EVENT_H
 
 #include <sst/compEvent.h>
-#include "../trig_cpu_ev/portals_types.h"
+#include "../trig_cpu/portals_types.h"
 
 namespace SST {
     

@@ -13,7 +13,7 @@
 
 #include <sst/element.h>
 
-#include "trig_cpu_ev/trig_cpu.h"
+#include "trig_cpu/trig_cpu.h"
 #include "trig_nic/trig_nic.h"
 
 static Component* 
@@ -31,7 +31,7 @@ create_trig_nic(SST::ComponentId_t id,
 }
 
 static const ElementInfoComponent components[] = {
-    { "trig_cpu_ev",
+    { "trig_cpu",
       "Triggered CPU for Portals 4 research",
       NULL,
       create_trig_cpu,

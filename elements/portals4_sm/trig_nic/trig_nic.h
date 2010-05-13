@@ -17,7 +17,7 @@
 #include <map>
 
 #include "../../SS_router/RtrIF.h"
-#include "../trig_cpu_ev/portals_types.h"
+#include "../trig_cpu/portals_types.h"
 #include "trig_nic_event.h"
 
 using namespace SST;
