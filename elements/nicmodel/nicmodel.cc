@@ -107,15 +107,11 @@ int *route;
 		Id(), params.msgSize, params.dest);
 
 	    // Attach the source route
-printf("    %d: Getting route to destination %d\n", my_rank, params.dest);
-printf("    %d: Route is ", my_rank);
 	    route= get_route(params.dest, vrinfo);
 	    while (route && (*route >= 0))   {
-printf("%d, ", *route);
 		e->route.push_back(*route);
 		route++;
 	    }
-printf("\n");
 
 	    // Do the message send over the network
 	    hton_params(&params);  // Convert back to network order
