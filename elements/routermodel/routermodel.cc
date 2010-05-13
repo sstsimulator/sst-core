@@ -29,26 +29,23 @@ uint8_t out_port;
 
 
     current_time= getCurrentSimTime();
-    _ROUTER_MODEL_DBG(2, "Router %s got an event from port %d at time %lld\n", component_name.c_str(),
+    _ROUTER_MODEL_DBG(3, "Router %s got an event from port %d at time %lld\n", component_name.c_str(),
 	in_port, (long long int)current_time);
     CPUNicEvent *e= static_cast<CPUNicEvent *>(event);
     port[in_port].cnt_in++;
 
     /* Diagnostic: print the route this event is taking */
-    _ROUTER_MODEL_DBG(3, "Event route (currently at %d): ", e->hops)
+    printf("Event route (currently at %d): ", e->hops);
     for(itNum = e->route.begin(); itNum < e->route.end(); itNum++)   {
-	_ROUTER_MODEL_DBG(3, "%d, ", *itNum)
+	printf("%d, ", *itNum);
     }
-    _ROUTER_MODEL_DBG(3, " destination\n")
+    printf(" destination\n");
 
     out_port= e->route[e->hops];
-    if (out_port >= e->route.size())   {
-	fprintf(stderr, "%s: Illegal output port!\n", __func__);
-	return true;
-    }
-
     e->hops++;
     delay= hop_delay;
+
+    _ROUTER_MODEL_DBG(3, "Sending message out on port %d\n", out_port);
     port[out_port].link->Send(delay, e);
 
 
@@ -79,7 +76,7 @@ uint8_t out_port;
 
 
 Link *
-Routermodel::initPort(int port, char *port_name)
+Routermodel::initPort(int port, char *link_name)
 {
 
 Event::Handler_t *tmpHandler;
@@ -91,7 +88,7 @@ Event::Handler_t *tmpHandler;
         _abort(Routermodel,"Couldn't create eventHandler\n");
     }
 
-    return LinkAdd(port_name, tmpHandler);
+    return LinkAdd(link_name, tmpHandler);
 
 }  /* end of initPort() */
 

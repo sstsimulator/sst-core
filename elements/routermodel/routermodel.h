@@ -32,7 +32,7 @@ using namespace SST;
 
 extern int router_model_debug;
 
-#define MAX_PORT_NAME		(16)
+#define MAX_LINK_NAME		(16)
 
 
 class Routermodel : public Component {
@@ -87,13 +87,15 @@ class Routermodel : public Component {
 		    it++;
 		}
 
-		strcpy(new_port.port_name, it->second.c_str());
-		new_port.link= Routermodel::initPort(i, new_port.port_name);
-		new_port.cnt_in= 0;
-		new_port.cnt_out= 0;
-		port.push_back(new_port);
-		_ROUTER_MODEL_DBG(2, "Added handler for port %d, link \"%s\", on router %s\n",
-		    i, new_port.port_name, component_name.c_str());
+		if (it != params.end())   {
+		    strcpy(new_port.link_name, it->second.c_str());
+		    new_port.link= Routermodel::initPort(i, new_port.link_name);
+		    new_port.cnt_in= 0;
+		    new_port.cnt_out= 0;
+		    port.push_back(new_port);
+		    _ROUTER_MODEL_DBG(2, "Added handler for port %d, link \"%s\", on router %s\n",
+			i, new_port.link_name, component_name.c_str());
+		}
 	    }
 
 	    _ROUTER_MODEL_DBG(1, "Router model component \"%s\" is on rank %d\n",
@@ -107,7 +109,7 @@ class Routermodel : public Component {
 
         Routermodel(const Routermodel &c);
 	bool handle_port_events(Event *, int in_port);
-	Link *initPort(int port, char *port_name);
+	Link *initPort(int port, char *link_name);
 	Event::Handler_t *RouterPortHandler;
 
         Params_t params;
@@ -116,10 +118,10 @@ class Routermodel : public Component {
 	SimTime_t hop_delay;
 	std::string component_name;
 
-	char link_name[MAX_PORT_NAME];
+	char link_name[MAX_LINK_NAME];
 
 	typedef struct port_t   {
-	    char port_name[MAX_PORT_NAME];
+	    char link_name[MAX_LINK_NAME];
 	    Link *link;
 	    long long int cnt_in;
 	    long long int cnt_out;
