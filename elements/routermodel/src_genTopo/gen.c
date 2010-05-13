@@ -1,5 +1,5 @@
 /*
-** $Id: gen.c,v 1.6 2010/04/27 19:48:31 rolf Exp $
+** $Id: gen.c,v 1.7 2010/05/13 19:27:22 rolf Exp $
 **
 ** Rolf Riesen, April 2010, Sandia National Laboratories
 **
@@ -249,7 +249,7 @@ router_t *r;
 ** Traverse the list of ports connected to other routers
 */
 int
-next_router_link(int router, int *link_id)
+next_router_link(int router, int *link_id, int *port)
 {
 
 router_t *r;
@@ -269,6 +269,17 @@ link_t *l;
     l= r->links[r->next_link];
     if (l == NULL)   {
 	return 0;
+    }
+
+    if (router == l->left_router)   {
+	/* router is connected to the left side */
+	*port= l->left_router_port;
+    } else if (router == l->right_router)   {
+	*port= l->right_router_port;
+    } else   {
+	/* Something is wrong */
+	fprintf(stderr, "Cannot find router %d on either end of this link!\n", router);
+	exit(8);
     }
 
     *link_id= l->id;

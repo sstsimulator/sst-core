@@ -1,5 +1,5 @@
 /*
-** $Id: sst_gen.c,v 1.12 2010/05/04 18:25:02 rolf Exp $
+** $Id: sst_gen.c,v 1.13 2010/05/13 19:27:23 rolf Exp $
 **
 ** Rolf Riesen, March 2010, Sandia National Laboratories
 **
@@ -411,7 +411,6 @@ int l, r, p;
 char net_link_id[MAX_ID_LEN];
 char router_id[MAX_ID_LEN];
 char cname[MAX_ID_LEN];
-int port_cnt;
 
 
     if (sstfile == NULL)   {
@@ -427,24 +426,21 @@ int port_cnt;
 	** We have to list the links in order in the params section, so the router
 	** componentn can get the names and create the appropriate links.
 	*/
-	port_cnt= 0;
 
 	/* Link to local NIC(s) */
 	reset_router_nics(r);
 	while (next_router_nic(r, &p))   {
 	    snprintf(net_link_id, MAX_ID_LEN, "Router%dPort%d", r, p);
-	    snprintf(cname, MAX_ID_LEN, "Link%dname", port_cnt);
+	    snprintf(cname, MAX_ID_LEN, "Link%dname", p);
 	    fprintf(sstfile, "                <%s> %s </%s>\n", cname, net_link_id, cname);
-	    port_cnt++;
 	}
 
 	/* Links to other routers */
 	reset_router_links(r);
-	while (next_router_link(r, &l))   {
+	while (next_router_link(r, &l, &p))   {
 	    snprintf(net_link_id, MAX_ID_LEN, "L%d", l);
-	    snprintf(cname, MAX_ID_LEN, "Link%dname", port_cnt);
+	    snprintf(cname, MAX_ID_LEN, "Link%dname", p);
 	    fprintf(sstfile, "                <%s> %s </%s>\n", cname, net_link_id, cname);
-	    port_cnt++;
 	}
 	fprintf(sstfile, "            </params>\n");
 	fprintf(sstfile, "            <links>\n");
@@ -462,7 +458,7 @@ int port_cnt;
 
 	/* Links to other routers */
 	reset_router_links(r);
-	while (next_router_link(r, &l))   {
+	while (next_router_link(r, &l, &p))   {
 	    snprintf(net_link_id, MAX_ID_LEN, "L%d", l);
 	    sst_router_component_link(net_link_id, "1ns", net_link_id, sstfile);
 	}
