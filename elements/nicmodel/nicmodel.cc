@@ -5,6 +5,7 @@
 #include <sst/cpunicEvent.h>
 #include "nicmodel.h"
 #include "netsim_model.h"
+#include "routing.h"
 
 #include "../../user_includes/netsim/netsim_internal.h"
 
@@ -50,6 +51,7 @@ Nicmodel::handle_cpu_events(Event *event)
 {
 
 int rc;
+int *route;
 
 
     _NIC_MODEL_DBG(2, "NIC %lu got an event from the local CPU at time %lld\n",
@@ -89,7 +91,6 @@ int rc;
 
 	case NETSIM_TX_START:
 	    // Set up routing
-	    // FIXME: fill in route array!
 	    e->router_delay= 0.0; // No delay so far
 	    e->hops= 0; // No hops so far
 
@@ -105,13 +106,21 @@ int rc;
 	    _NIC_MODEL_DBG(2, "NIC %lu is going to send %d bytes to rank %d\n",
 		Id(), params.msgSize, params.dest);
 
+	    // Attach the source route
+printf("    %d: Getting route to destination %d\n", my_rank, params.dest);
+printf("    %d: Route is ", my_rank);
+	    route= get_route(params.dest, vrinfo);
+	    while (route && (*route >= 0))   {
+printf("%d, ", *route);
+		e->route.push_back(*route);
+		route++;
+	    }
+printf("\n");
+
 	    // Do the message send over the network
 	    hton_params(&params);  // Convert back to network order
 	    e->AttachParams(&params, static_cast<int>(sizeof(params)));
 
-	    // Generate the source route
-	    // There is always a NIC on port 0, so this should be a working, if invalid, route
-	    e->route.push_back(0);
 	    net->Send(e);
 
 	    break;

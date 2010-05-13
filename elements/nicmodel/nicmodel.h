@@ -84,7 +84,7 @@ class Nicmodel : public Component {
 
 
 	    // Create and populate the NIC/Router/Port table
-	    init_NIC_table(num_NICs);
+	    vrinfo= init_routing(num_routers, num_NICs);
 	    for (int rank= 0; rank < num_NICs; rank++)   {
 		// Find the router
 		sprintf(search_str, "NIC%drouter", rank);
@@ -92,7 +92,7 @@ class Nicmodel : public Component {
 		while (it != params.end())   {
 		    if (!it->first.compare(search_str))   {
 			sscanf(it->second.c_str(), "%d", &num_item);
-			NIC_table_insert_router(rank, num_item);
+			NIC_table_insert_router(rank, num_item, vrinfo);
 			if (rank == my_rank)   {
 			    /* This is the router I'm attached to! */
 			    my_router= num_item;
@@ -114,22 +114,21 @@ class Nicmodel : public Component {
 			    _ABORT(Nicmodel, "Port number %d for NIC %d, larger than num_ports %d\n",
 				num_item, rank, num_ports);
 			}
-			NIC_table_insert_port(rank, num_item);
+			NIC_table_insert_port(rank, num_item, vrinfo);
 			break;
 		    }
 		    it++;
 		}
 	    }
 
-	    if (check_NIC_table())   {
+	    if (check_NIC_table(vrinfo))   {
 		_ABORT(Nicmodel, "Each of the %d NICs must list its rank and the router and "
 		    "port it is attached to in the common <nic_params> section!\n", num_NICs);
 	    }
 
 
 
-	    // Create and populate the router adjacency matrix
-	    init_Adj_Matrix(num_routers);
+	    // Populate the router adjacency matrix
 	    for (int link= 0; link < num_links; link++)   {
 		int left_router, left_port;
 		int right_router, right_port;
@@ -178,12 +177,12 @@ class Nicmodel : public Component {
 		    it++;
 		}
 
-		Adj_Matrix_insert(link, left_router, left_port, right_router, right_port);
+		Adj_Matrix_insert(link, left_router, left_port, right_router, right_port, vrinfo);
 
 	    }
 
 	    if (my_rank == 0 && nic_model_debug > 1)   {
-		Adj_Matrix_print();
+		Adj_Matrix_print(vrinfo);
 	    }
 
 
@@ -230,7 +229,7 @@ class Nicmodel : public Component {
 
 
 	    // Generate the routing table
-	    gen_routes(my_rank, my_router, nic_model_debug);
+	    gen_routes(my_rank, my_router, nic_model_debug, vrinfo);
         }
 
         ~Nicmodel()   {
@@ -285,6 +284,7 @@ class Nicmodel : public Component {
 	double rcv_router_delays;
 	long long rcv_msgs;
 	long long rcv_total_hops;
+	void *vrinfo;
 
 	TimeConverter *tc;
 
@@ -315,6 +315,7 @@ class Nicmodel : public Component {
 	    ar & BOOST_SERIALIZATION_NVP(rcv_router_delays);
 	    ar & BOOST_SERIALIZATION_NVP(rcv_msgs);
 	    ar & BOOST_SERIALIZATION_NVP(rcv_total_hops);
+	    ar & BOOST_SERIALIZATION_NVP(vrinfo);
 	    ar & BOOST_SERIALIZATION_NVP(tc);
             _AR_DBG(Nicmodel,"done\n");
         }
