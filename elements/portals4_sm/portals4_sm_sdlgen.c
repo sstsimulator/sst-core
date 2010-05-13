@@ -242,7 +242,7 @@ main(int argc, char **argv)
 	x = i % x_count;
 
 	fprintf(output, "    <component id=\"%d.cpu\" >\n",i);
-	fprintf(output, "        <trig_cpu_ev>\n");
+	fprintf(output, "        <portals4_sm.trig_cpu_ev>\n");
 	fprintf(output, "            <params include1=cpu_params>\n");
 	fprintf(output, "                <id> %d </id>\n",i);
 	fprintf(output, "            </params>\n");
@@ -253,11 +253,11 @@ main(int argc, char **argv)
 	fprintf(output, "                    </params>\n");
 	fprintf(output, "                </link>\n");
 	fprintf(output, "            </links>\n");
-	fprintf(output, "        </trig_cpu_ev>\n");
+	fprintf(output, "        </portals4_sm.trig_cpu_ev>\n");
 	fprintf(output, "    </component>\n");
 	fprintf(output, "\n");
 	fprintf(output, "    <component id=\"%d.nic\" >\n",i);
-	fprintf(output, "        <trig_nic>\n");
+	fprintf(output, "        <portals4_sm.trig_nic>\n");
 	fprintf(output, "            <params include1=nic_params1 include2=nic_params2>\n");
 	fprintf(output, "                <id> %d </id>\n",i);
 	fprintf(output, "            </params>\n");
@@ -273,7 +273,7 @@ main(int argc, char **argv)
 	fprintf(output, "                    </params>\n");
 	fprintf(output, "                </link>\n");
 	fprintf(output, "            </links>\n");
-	fprintf(output, "        </trig_nic>\n");
+	fprintf(output, "        </portals4_sm.trig_nic>\n");
 	fprintf(output, "    </component>\n");
 	fprintf(output, "\n");
 	fprintf(output, "    <component id=\"%d.rtr\">\n",i);

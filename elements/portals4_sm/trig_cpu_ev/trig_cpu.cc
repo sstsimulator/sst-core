@@ -12,6 +12,8 @@
 
 #include <sst_config.h>
 
+#include <sst/element.h>
+
 #include "trig_cpu.h"
 #include "../trig_nic/trig_nic_event.h"
 
@@ -858,6 +860,8 @@ trig_cpu::recv(int src, uint64_t* buf, int& handle)
   
 }
 
+void foobar(void);
+
 bool
 trig_cpu::irecv(int src, void* buf, int& handle)
 {
@@ -866,7 +870,7 @@ trig_cpu::irecv(int src, void* buf, int& handle)
     // If we found something in the pending messages that match, we need
     // to return false to let the sim go busy.
     if (!ret) return ret;
-  
+
     // See if the message is in the unexpected queue
     // Search the posted receives queue for a match
     std::list<unex_msg*>::iterator iter;
@@ -914,13 +918,4 @@ trig_cpu::waitall()
 //     printf("Waiting...\n");
     waiting = true;
     return false;
-}
-
-extern "C" {
-    trig_cpu* 
-    trig_cpu_evAllocComponent(SST::ComponentId_t id, 
-                              SST::Component::Params_t& params)
-    {
-        return new trig_cpu( id, params );
-    }
 }
