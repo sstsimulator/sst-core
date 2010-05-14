@@ -16,8 +16,8 @@
 #include <queue>
 #include <map>
 
-#include "../../SS_router/RtrIF.h"
-#include "../trig_cpu/portals_types.h"
+#include "elements/SS_router/SS_router/RtrIF.h"
+#include "elements/portals4_sm/trig_cpu/portals_types.h"
 #include "trig_nic_event.h"
 
 using namespace SST;

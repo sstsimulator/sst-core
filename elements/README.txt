@@ -1,11 +1,10 @@
 -*- text -*-
 
-Components
-----------
+Element Libraries
+-----------------
 
 DRAMSimC      Paul Rosenfeld <prosenfeld@gmail.com>
 DRAMSimTrace: Paul Rosenfeld <prosenfeld@gmail.com>
-SS_nic_dummy: Scott Hemmert <kshemme@sandia.gov>
 SS_router:    Scott Hemmert <kshemme@sandia.gov>
 cpu_data:     Genie Hsieh <myhsieh@sandia.gov>
 cpu_power:    Genie Hsieh <myhsieh@sandia.gov>
@@ -16,12 +15,8 @@ genericProc:  Arun Rodrigues <afrodri@sandia.gov>
 nicmodel:     Rolf Riesen <rolf@sandia.gov>
 power:        Genie Hsieh <myhsieh@sandia.gov>
 routermodel:  Rolf Riesen <rolf@sandia.gov>
-trig_cpu_ev:  Scott Hemmert <kshemme@sandia.gov>
-trig_nic:     Scott Hemmert <kshemme@sandia.gov>
+portals4_sm:  Scott Hemmert <kshemme@sandia.gov>
 
-
-To Be Deleted
--------------
 
 Unclaimed
 ---------
@@ -35,4 +30,3 @@ psst
 xbar
 xbarShell
 xbarV2
-

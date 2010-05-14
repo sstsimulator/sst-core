@@ -277,7 +277,7 @@ main(int argc, char **argv)
 	fprintf(output, "    </component>\n");
 	fprintf(output, "\n");
 	fprintf(output, "    <component id=\"%d.rtr\">\n",i);
-	fprintf(output, "        <SS_router>\n");
+	fprintf(output, "        <SS_router.SS_router>\n");
 	fprintf(output, "            <params include=rtr_params>\n");
 	fprintf(output, "                <id> %d </id>\n",i);
 	fprintf(output, "            </params>\n");
@@ -331,7 +331,7 @@ main(int argc, char **argv)
 	}
 	
 	fprintf(output, "            </links>\n");
-	fprintf(output, "        </SS_router>\n");
+	fprintf(output, "        </SS_router.SS_router>\n");
 	fprintf(output, "    </component>\n");
 
 	fprintf(output, "\n");

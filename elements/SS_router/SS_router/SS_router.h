@@ -36,7 +36,8 @@
 #include <sst/component.h>
 #include <sst/log.h>
 #include <sst/link.h>
-#include <SS_network.h>
+
+#include "SS_network.h"
 
 using namespace SST;
 

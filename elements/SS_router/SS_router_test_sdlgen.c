@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-
 int main(int argc, char **argv) {
     int x, y, z;
 
@@ -71,7 +70,7 @@ int main(int argc, char **argv) {
 	x = i % xs;
 
 	printf("    <component id=\"%d.nic\" >\n",i);
-	printf("        <SS_nic_dummy>\n");
+	printf("        <SS_router.test_driver>\n");
 	printf("            <params include1=nic_params1 include2=nic_params2>\n");
 	printf("                <id> %d </id>\n",i);
 	printf("            </params>\n");
@@ -82,11 +81,11 @@ int main(int argc, char **argv) {
 	printf("                    </params>\n");
 	printf("                </link>\n");
 	printf("            </links>\n");
-	printf("        </SS_nic_dummy>\n");
+	printf("        </SS_router.test_driver>\n");
 	printf("    </component>\n");
 	printf("\n");
 	printf("    <component id=\"%d.rtr\">\n",i);
-	printf("        <SS_router>\n");
+	printf("        <SS_router.SS_router>\n");
 	printf("            <params include=rtr_params>\n");
 	printf("                <id> %d </id>\n",i);
 	printf("            </params>\n");
@@ -140,7 +139,7 @@ int main(int argc, char **argv) {
 	}
 	
 	printf("            </links>\n");
-	printf("        </SS_router>\n");
+	printf("        </SS_router.SS_router>\n");
 	printf("    </component>\n");
 
 	printf("\n");
