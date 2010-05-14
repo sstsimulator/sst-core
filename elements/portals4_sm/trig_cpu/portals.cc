@@ -13,7 +13,7 @@
 #include "portals.h"
 #include "trig_cpu.h"
 
-#include "../trig_nic/trig_nic_event.h"
+#include "elements/portals4_sm/trig_nic/trig_nic_event.h"
 
 using namespace SST;
 using namespace std;

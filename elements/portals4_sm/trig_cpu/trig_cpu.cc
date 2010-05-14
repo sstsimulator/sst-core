@@ -15,7 +15,7 @@
 #include <sst/element.h>
 
 #include "trig_cpu.h"
-#include "../trig_nic/trig_nic_event.h"
+#include "elements/portals4_sm/trig_nic/trig_nic_event.h"
 
 #include "allreduce_narytree.h"
 #include "allreduce_narytree_trig.h"

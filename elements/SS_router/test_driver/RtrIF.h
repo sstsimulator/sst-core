@@ -19,7 +19,7 @@
 #include <sst/link.h>
 #include <sst/log.h>
 #include <paramUtil.h>
-#include "../SS_router/SS_network.h"
+#include "elements/SS_router/SS_router/SS_network.h"
 
 #define RTRIF_DBG 1 
 #ifndef RTRIF_DBG

@@ -27,7 +27,7 @@
 #include <sst/link.h>
 #include <sst/timeConverter.h>
 
-#include "../trig_nic/trig_nic_event.h"
+#include "elements/portals4_sm/trig_nic/trig_nic_event.h"
 #include "portals.h"
 
 using namespace SST;
