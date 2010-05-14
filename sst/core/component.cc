@@ -13,13 +13,13 @@
 #include <sst_config.h>
 
 #include <boost/foreach.hpp>
-
 #include <string.h>
-#include <sst/component.h>
-#include <sst/simulation.h>
-#include <sst/exit.h>
-#include <sst/link.h>
-#include <sst/timeLord.h>
+
+#include "sst/core/component.h"
+#include "sst/core/simulation.h"
+#include "sst/core/exit.h"
+#include "sst/core/link.h"
+#include "sst/core/timeLord.h"
 
 namespace SST {
 

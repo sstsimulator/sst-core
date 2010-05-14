@@ -13,7 +13,7 @@
 #define SST_INTROSPECTOR_H
 
 
-#include <sst/component.h>
+#include <sst/core/component.h>
 
 
 

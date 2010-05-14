@@ -15,10 +15,10 @@
 
 #include <boost/foreach.hpp>
 
-#include <sst/sst.h>
-#include <sst/component.h>
-#include <sst/introspector.h>
-#include <sst/element.h>
+#include <sst/core/sst.h>
+#include <sst/core/component.h>
+#include <sst/core/introspector.h>
+#include <sst/core/element.h>
 
 namespace SST {
 

@@ -14,8 +14,8 @@
 #define SST_EXIT_H
 
 #include <set>
-#include <sst/sst.h>
-#include <sst/exitEvent.h>
+#include <sst/core/sst.h>
+#include <sst/core/exitEvent.h>
 
 namespace SST{
 

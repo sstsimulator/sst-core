@@ -14,9 +14,9 @@
 #ifndef _SST_LINK_H
 #define _SST_LINK_H
 
-#include <sst/sst.h>
-#include <sst/compEvent.h>
-#include <sst/eventQueue.h>
+#include <sst/core/sst.h>
+#include <sst/core/compEvent.h>
+#include <sst/core/eventQueue.h>
 
 namespace SST { 
 

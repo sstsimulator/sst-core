@@ -12,7 +12,7 @@
 
 #include<sst_config.h>
 
-#include <sst/memEvent.h>
+#include <sst/core/memEvent.h>
 #include <boost/mpi.hpp>
 
 BOOST_CLASS_EXPORT( SST::MemEvent )

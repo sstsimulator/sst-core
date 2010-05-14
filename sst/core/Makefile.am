@@ -13,16 +13,71 @@ AM_CPPFLAGS =  \
 
 DIST_SUBDIRS = libltdl .
 SUBDIRS = $(LIBLTDL_DIR) .
+EXTRA_DIST =
 
-EXTRA_DIST = mainpage.dox 
-
-sstdir = $(includedir)/sst
-dist_sst_HEADERS =
-nodist_sst_HEADERS =
-nodist_include_HEADERS =
+sstdir = $(includedir)/sst/core
+dist_sst_HEADERS = \
+	archive.h \
+	boost.h \
+	cache.h \
+	clockEvent.h \
+	clockHandler.h \
+	compEvent.h \
+	component.h \
+	config.h \
+	configGraph.h \
+	cpunicEvent.h \
+	debug.h \
+	element.h \
+	event.h \
+	eventFunctor.h \
+	eventHandler1Arg.h \
+	eventQueue.h \
+	exit.h \
+	exitEvent.h \
+	factory.h \
+	graph.h \
+	introspector.h \
+	link.h \
+	linkMap.h \
+	log.h \
+	memEvent.h \
+	pool.h \
+	queue.h \
+	sdl.h \
+	simulation.h \
+	sst.h \
+	stopEvent.h \
+	sync.h \
+	syncEvent.h \
+	timeConverter.h \
+	timeLord.h \
+	zolt.h
+nodist_sst_HEADERS = \
+	build_info.h
 
 bin_PROGRAMS = sst.x
-sst_x_SOURCES =
+sst_x_SOURCES = \
+	clockEvent.cc \
+	component.cc \
+	config.cc \
+	configGraph.cc \
+	cpunicEvent.cc \
+	debug.cc \
+	event.cc \
+	exit.cc \
+	export.cc \
+	factory.cc \
+	introspector.cc \
+	link.cc \
+	linkMap.cc \
+	main.cc \
+	memEvent.cc \
+	simulation.cc \
+	sync.cc \
+	timeLord.cc \
+	xml.cc \
+	zolt.cc
 sst_x_LDADD = \
 	$(LIBLTDL) \
 	$(BOOST_SERIALIZATION_LIB) \
@@ -39,7 +94,4 @@ sst_x_LDFLAGS = \
 	$(SST_LTLIBS_COMPONENTS) \
 	$(SST_LTLIBS_INTROSPECTORS)
 
-include include/Makefile.inc
-include include/sst/Makefile.inc
 include tinyxml/Makefile.inc
-include src/Makefile.inc

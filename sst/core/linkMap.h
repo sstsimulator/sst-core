@@ -15,9 +15,9 @@
 
 #include <vector>
 
-#include <sst/sst.h>
-#include <sst/event.h>
-#include <sst/eventQueue.h>
+#include <sst/core/sst.h>
+#include <sst/core/event.h>
+#include <sst/core/eventQueue.h>
 
 namespace SST { 
 

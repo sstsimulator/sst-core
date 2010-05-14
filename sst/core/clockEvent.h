@@ -13,8 +13,8 @@
 #ifndef SST_CLOCKEVENT_H
 #define SST_CLOCKEVENT_H
 
-#include <sst/event.h>
-#include <sst/clockHandler.h>
+#include <sst/core/event.h>
+#include <sst/core/clockHandler.h>
 
 #define _CLE_DBG( fmt, args...)__DBG( DBG_CLOCKEVENT, ClockEvent, fmt, ## args )
 

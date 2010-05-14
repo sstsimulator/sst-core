@@ -13,7 +13,7 @@
 #ifndef _SST_EVENTHANDLER1ARG_H
 #define _SST_EVENTHANDLER1ARG_H
 
-#include <sst/eventFunctor.h>
+#include <sst/core/eventFunctor.h>
 
 namespace SST {
 

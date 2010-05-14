@@ -28,11 +28,11 @@
 #endif
 #include <boost/io/ios_state.hpp>
 
-#include <sst/boost.h>
-#include <sst/sst.h>
-#include <sst/linkMap.h>
-#include <sst/clockHandler.h>
-#include <sst/timeConverter.h>
+#include <sst/core/boost.h>
+#include <sst/core/sst.h>
+#include <sst/core/linkMap.h>
+#include <sst/core/clockHandler.h>
+#include <sst/core/timeConverter.h>
 
 namespace io_interval {  // from boost interval io example (io_wide)
 template<class T, class Policies, class CharType, class CharTraits>

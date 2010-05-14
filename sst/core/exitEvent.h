@@ -13,7 +13,7 @@
 #ifndef SST_EXITEVENT_H
 #define SST_EXITEVENT_H
 
-#include <sst/event.h>
+#include <sst/core/event.h>
 
 namespace SST {
 

@@ -17,8 +17,8 @@
 
 #include <fstream>
 #include <iostream>
-#include <sst/boost.h>
-#include <sst/simulation.h>
+#include <sst/core/boost.h>
+#include <sst/core/simulation.h>
 
 #include <boost/archive/xml_oarchive.hpp>
 #include <boost/archive/xml_iarchive.hpp>

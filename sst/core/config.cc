@@ -10,15 +10,16 @@
 // distribution.
 
 
-#include<sst_config.h>
+#include <sst_config.h>
 
-#include <sst/config.h>
 #include <errno.h>
 #include <iostream>
 #include <boost/program_options.hpp>
-#include <sst/debug.h>
-#include <sst/sdl.h>
-#include "sst/build_info.h"
+
+#include "sst/core/config.h"
+#include "sst/core/debug.h"
+#include "sst/core/sdl.h"
+#include "sst/core/build_info.h"
 
 namespace po = boost::program_options;
 

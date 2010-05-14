@@ -15,9 +15,9 @@
 
 #include <deque>
 #include <map>
-#include <sst/boost.h>
-#include <sst/cache.h>
-#include <sst/pool.h>
+#include <sst/core/boost.h>
+#include <sst/core/cache.h>
+#include <sst/core/pool.h>
 
 namespace SST {
 

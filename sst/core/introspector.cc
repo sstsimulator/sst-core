@@ -9,14 +9,16 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
-#include <sst/simulation.h>
-#include <sst/introspector.h>
-#include <sst/exit.h>
+#include "sst_config.h"
+
 #include <boost/foreach.hpp>
-#include <sst/timeLord.h>
 #include <boost/mpi.hpp>
-#include <sst/syncEvent.h>
+
+#include "sst/core/simulation.h"
+#include "sst/core/introspector.h"
+#include "sst/core/exit.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/syncEvent.h"
 
 
 namespace SST {

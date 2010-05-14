@@ -13,8 +13,8 @@
 #ifndef SST_CACHE_H
 #define SST_CACHE_H
 
-#include <sst/debug.h>
-#include <sst/boost.h>
+#include <sst/core/debug.h>
+#include <sst/core/boost.h>
 
 namespace SST {
 

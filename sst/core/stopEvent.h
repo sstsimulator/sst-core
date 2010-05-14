@@ -13,7 +13,7 @@
 #ifndef _SST_STOPEVENT_H
 #define _SST_STOPEVENT_H
 
-#include <sst/event.h>
+#include <sst/core/event.h>
 
 namespace SST {
 

@@ -13,8 +13,8 @@
 #ifndef SST_COMPEVENT_H
 #define SST_COMPEVENT_H
 
-#include <sst/boost.h>
-#include <sst/event.h>
+#include <sst/core/boost.h>
+#include <sst/core/event.h>
 
 namespace SST {
 

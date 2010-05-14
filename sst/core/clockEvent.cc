@@ -12,11 +12,12 @@
 
 #include <sst_config.h>
 
-#include <sst/clockEvent.h>
-#include <sst/timeConverter.h>
 #include <boost/foreach.hpp>
-#include <sst/compEvent.h>
-#include <sst/simulation.h>
+
+#include "sst/core/clockEvent.h"
+#include "sst/core/timeConverter.h"
+#include "sst/core/compEvent.h"
+#include "sst/core/simulation.h"
 
 #if WANT_CHECKPOINT_SUPPORT
 BOOST_CLASS_EXPORT_TEMPLATE3( SST::EventHandler,

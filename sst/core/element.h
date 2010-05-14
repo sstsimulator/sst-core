@@ -12,7 +12,7 @@
 #ifndef SST_ELEMENT_H
 #define SST_ELEMENT_H
 
-#include <sst/component.h>
+#include <sst/core/component.h>
 
 namespace SST {
     typedef Component* (*componentAllocate)(ComponentId_t, Component::Params_t&);

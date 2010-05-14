@@ -23,7 +23,8 @@
 
 #include <cstring>
 #include <boost/serialization/array.hpp>
-#include <sst/compEvent.h>
+
+#include "sst/core/compEvent.h"
 
 namespace SST {
 

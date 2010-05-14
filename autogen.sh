@@ -22,7 +22,7 @@ major_version=`echo $version | cut -f1 -d.`
 echo "Finding element libraries ..."
 elemlib_list=
 elemlib_m4_list=
-for elemlib_dir in elements/* ; do
+for elemlib_dir in sst/elements/* ; do
   if test -d "$elemlib_dir" ; then
     elemlib=`basename "$elemlib_dir"`
     if test -f "$elemlib_dir/.ignore" -a ! -f "$elemlib_dir/.unignore" ; then
@@ -62,13 +62,13 @@ echo "Generating configure files ..."
 if test $major_version -lt 2 ; then
   echo " - Using Libtool pre-2.0"
 
-  rm -rf libltdl sst/libltdl
+  rm -rf libltdl sst/core/libltdl
   ${libtool}ize --automake --copy --ltdl
   if test -d libltdl; then
-    echo " - Moving libltdl to sst/"
-    mv libltdl sst
+    echo " - Moving libltdl to sst/core/"
+    mv libltdl sst/core
   fi
-  if test ! -d sst/libltdl ; then
+  if test ! -d sst/core/libltdl ; then
     echo "libltdl doesn't exist.  Aborting."
     exit 1
   fi

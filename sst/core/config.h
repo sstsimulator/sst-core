@@ -13,9 +13,9 @@
 #ifndef SST_CONFIG_H
 #define SST_CONFIG_H
 
-#include <sst/archive.h>
+#include <sst/core/archive.h>
 #include <string>
-#include <sst/sst.h>
+#include <sst/core/sst.h>
 
 namespace SST {
 class Config {

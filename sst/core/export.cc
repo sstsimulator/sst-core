@@ -10,14 +10,15 @@
 // distribution.
 
 
-#include<sst_config.h>
+#include "sst_config.h"
 
-#include <sst/clockEvent.h>
-#include <sst/stopEvent.h>
-#include <sst/syncEvent.h>
-#include <sst/compEvent.h>
-#include <sst/exitEvent.h>
 #include <boost/mpi.hpp>
+
+#include "sst/core/clockEvent.h"
+#include "sst/core/stopEvent.h"
+#include "sst/core/syncEvent.h"
+#include "sst/core/compEvent.h"
+#include "sst/core/exitEvent.h"
 
 #if WANT_CHECKPOINT_SUPPORT
 //BOOST_CLASS_EXPORT( SST::ClockEvent )

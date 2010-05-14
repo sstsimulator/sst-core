@@ -12,9 +12,6 @@
 
 #include "sst_config.h"
 
-#include <sst/factory.h>
-#include <sst/element.h>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/tuple/tuple.hpp>
 
@@ -36,6 +33,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+
+#include "sst/core/factory.h"
+#include "sst/core/element.h"
 
 namespace SST {
 

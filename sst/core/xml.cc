@@ -12,10 +12,10 @@
 
 #include <sst_config.h>
 
-#include <sst/sdl.h>
-#include <tinyxml.h>
+#include <sst/core/sdl.h>
+#include <tinyxml/tinyxml.h>
 
-#include <sst/debug.h>
+#include <sst/core/debug.h>
 
 namespace SST {
 

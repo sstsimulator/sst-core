@@ -13,8 +13,8 @@
 #ifndef _SST_TIMECONVERTER_H
 #define _SST_TIMECONVERTER_H
 
-#include <sst/sst.h>
-#include <sst/boost.h>
+#include <sst/core/sst.h>
+#include <sst/core/boost.h>
 
 namespace SST {
 

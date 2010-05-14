@@ -13,8 +13,8 @@
 #ifndef SST_CLOCKHANDLER_H
 #define SST_CLOCKHANDLER_H
 
-#include <sst/sst.h>
-#include <sst/eventFunctor.h>
+#include <sst/core/sst.h>
+#include <sst/core/eventFunctor.h>
 
 namespace SST {
 

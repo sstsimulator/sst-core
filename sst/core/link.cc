@@ -14,8 +14,8 @@
 
 #include <utility>
 
-#include <sst/link.h>
-#include <sst/simulation.h>
+#include <sst/core/link.h>
+#include <sst/core/simulation.h>
 
 namespace SST { 
 

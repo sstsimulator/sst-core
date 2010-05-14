@@ -13,8 +13,8 @@
 #ifndef SST_CONFIGGRAPH_H
 #define SST_CONFIGGRAPH_H
 
-#include <sst/graph.h>
-#include <sst/sdl.h> 
+#include "sst/core/graph.h"
+#include "sst/core/sdl.h"
 
 namespace SST {
 

@@ -14,15 +14,15 @@
 #ifndef _SST_SIMULATION_H
 #define _SST_SIMULATION_H
 
-#include <sst/sst.h>
-#include <sst/sdl.h>
+#include <sst/core/sst.h>
+#include <sst/core/sdl.h>
 
-#include <sst/event.h>
-#include <sst/eventQueue.h>
-#include <sst/component.h>
-#include <sst/factory.h>
-#include <sst/clockEvent.h>
-#include <sst/introspector.h>
+#include <sst/core/event.h>
+#include <sst/core/eventQueue.h>
+#include <sst/core/component.h>
+#include <sst/core/factory.h>
+#include <sst/core/clockEvent.h>
+#include <sst/core/introspector.h>
 
 #include <iostream>
 

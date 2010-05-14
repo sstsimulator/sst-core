@@ -17,17 +17,17 @@
 #include <boost/foreach.hpp>
 #include <boost/mpi.hpp>
 
-#include <sst/simulation.h>
-#include <sst/sync.h>
-#include <sst/factory.h>
-#include <sst/stopEvent.h>
-#include <sst/exit.h>
-#include <sst/compEvent.h>
-#include <sst/config.h>
-#include <sst/graph.h>
-#include <sst/timeLord.h>
+#include <sst/core/simulation.h>
+#include <sst/core/sync.h>
+#include <sst/core/factory.h>
+#include <sst/core/stopEvent.h>
+#include <sst/core/exit.h>
+#include <sst/core/compEvent.h>
+#include <sst/core/config.h>
+#include <sst/core/graph.h>
+#include <sst/core/timeLord.h>
 
-#include <sst/archive.h>
+#include <sst/core/archive.h>
 
 namespace SST { 
 

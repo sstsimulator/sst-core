@@ -10,10 +10,11 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
 
-#include <sst/cpunicEvent.h>
 #include <boost/mpi.hpp>
+
+#include "sst/core/cpunicEvent.h"
 
 BOOST_CLASS_EXPORT(SST::CPUNicEvent)
 

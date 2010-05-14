@@ -12,10 +12,10 @@
 
 #include<sst_config.h>
 
-#include <sst/link.h>
-#include <sst/component.h>
-#include <sst/linkMap.h>
-#include <sst/simulation.h>
+#include <sst/core/link.h>
+#include <sst/core/component.h>
+#include <sst/core/linkMap.h>
+#include <sst/core/simulation.h>
 
 namespace SST {
 

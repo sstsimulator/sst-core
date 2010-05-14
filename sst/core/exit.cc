@@ -10,12 +10,13 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
 
 #include <boost/mpi.hpp>
-#include <sst/exit.h>
-#include <sst/exitEvent.h>
-#include <sst/simulation.h>
+
+#include "sst/core/exit.h"
+#include "sst/core/exitEvent.h"
+#include "sst/core/simulation.h"
 
 #if WANT_CHECKPOINT_SUPPORT
 BOOST_CLASS_EXPORT_TEMPLATE3( SST::EventHandler,

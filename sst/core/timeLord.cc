@@ -12,9 +12,9 @@
 
 #include "sst_config.h"
 
-#include <sst/sst.h>
-#include <sst/debug.h>
-#include <sst/timeLord.h>
+#include <sst/core/sst.h>
+#include <sst/core/debug.h>
+#include <sst/core/timeLord.h>
 #include <cstdio>
 #include <cstring>
 

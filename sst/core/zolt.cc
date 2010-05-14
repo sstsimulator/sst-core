@@ -15,9 +15,9 @@
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 #include <boost/serialization/map.hpp>
-#include <sst/zolt.h>
-#include <sst/sdl.h>
-#include <sst/debug.h>
+#include <sst/core/zolt.h>
+#include <sst/core/sdl.h>
+#include <sst/core/debug.h>
 #include <zoltan.h>
 
 namespace mpi = boost::mpi;

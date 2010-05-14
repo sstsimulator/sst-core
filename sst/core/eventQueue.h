@@ -15,9 +15,9 @@
 
 #include <utility>
 
-#include <sst/queue.h>
-#include <sst/sst.h>
-#include <sst/eventFunctor.h>
+#include <sst/core/queue.h>
+#include <sst/core/sst.h>
+#include <sst/core/eventFunctor.h>
 
 namespace SST {
 

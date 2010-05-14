@@ -14,9 +14,9 @@
 #ifndef _SST_EVENTFUNCTOR_H
 #define _SST_EVENTFUNCTOR_H
 
-#include <sst/boost.h>
-#include <sst/debug.h>
-#include <sst/sst.h>
+#include <sst/core/boost.h>
+#include <sst/core/debug.h>
+#include <sst/core/sst.h>
 
 namespace SST {
 

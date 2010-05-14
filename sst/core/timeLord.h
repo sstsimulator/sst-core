@@ -16,9 +16,9 @@
 #include <string>
 #include <map>
 
-#include <sst/sst.h>
-#include <sst/boost.h>
-#include <sst/simulation.h>
+#include <sst/core/sst.h>
+#include <sst/core/boost.h>
+#include <sst/core/simulation.h>
 
 namespace SST {
 

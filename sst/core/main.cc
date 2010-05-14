@@ -16,11 +16,11 @@
 
 #include <signal.h>
 
-#include <sst/archive.h>
-#include <sst/config.h>
-#include <sst/configGraph.h>
-#include <sst/zolt.h>
-#include <sst/simulation.h>
+#include <sst/core/archive.h>
+#include <sst/core/config.h>
+#include <sst/core/configGraph.h>
+#include <sst/core/zolt.h>
+#include <sst/core/simulation.h>
 
 using namespace std;
 using namespace SST;

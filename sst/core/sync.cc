@@ -12,10 +12,10 @@
 
 #include <sst_config.h>
 
-#include <sst/sync.h>
-#include <sst/syncEvent.h>
-#include <sst/link.h>
-#include <sst/simulation.h>
+#include <sst/core/sync.h>
+#include <sst/core/syncEvent.h>
+#include <sst/core/link.h>
+#include <sst/core/simulation.h>
 
 #if WANT_CHECKPOINT_SUPPORT
 BOOST_CLASS_EXPORT_TEMPLATE3( SST::EventHandler,

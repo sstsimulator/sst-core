@@ -13,11 +13,11 @@
 #ifndef SST_SYNC_H
 #define SST_SYNC_H
 
-#include <sst/sst.h>
-#include <sst/component.h>
-#include <sst/syncEvent.h>
+#include <sst/core/sst.h>
+#include <sst/core/component.h>
+#include <sst/core/syncEvent.h>
 #include <boost/mpi.hpp>
-#include <sst/compEvent.h>
+#include <sst/core/compEvent.h>
 
 namespace SST {
 

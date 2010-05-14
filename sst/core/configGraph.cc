@@ -15,10 +15,10 @@
 #include <boost/mpi.hpp>
 #include <boost/format.hpp>
 
-#include <sst/simulation.h>
-#include <sst/configGraph.h>
-#include <sst/debug.h>
-#include <sst/timeLord.h>
+#include <sst/core/simulation.h>
+#include <sst/core/configGraph.h>
+#include <sst/core/debug.h>
+#include <sst/core/timeLord.h>
 
 namespace mpi = boost::mpi;
 

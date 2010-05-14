@@ -10,9 +10,9 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
 
-#include <sst/debug.h>
+#include "sst/core/debug.h"
 
 namespace SST {
 
