@@ -1,0 +1,92 @@
+// Copyright 2009-2010 Sandia Corporation. Under the terms
+// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// Government retains certain rights in this software.
+// 
+// Copyright (c) 2009-2010, Sandia Corporation
+// All rights reserved.
+// 
+// This file is part of the SST software package. For license
+// information, see the LICENSE file in the top level directory of the
+// distribution.
+
+
+#include <sst_config.h>
+
+#include <boost/mpi.hpp>
+
+#include <signal.h>
+
+#include <sst/archive.h>
+#include <sst/config.h>
+#include <sst/configGraph.h>
+#include <sst/zolt.h>
+#include <sst/simulation.h>
+
+using namespace std;
+using namespace SST;
+
+static void
+sigHandlerPrintStatus(int signal)
+{
+    Simulation::printStatus();
+}
+
+
+int 
+main(int argc, char *argv[])
+{
+    boost::mpi::environment* mpiEnv = new boost::mpi::environment(argc,argv);
+    boost::mpi::communicator world;
+
+    Config cfg;
+    SST::Simulation*  sim;
+
+    if ( cfg.Init( argc, argv, world.rank() ) ) {
+        delete mpiEnv;
+        return -1;
+    }
+
+    printf("main() My rank is %d, on %d nodes\n", world.rank(), world.size());
+    DebugInit( world.rank(), world.size() );
+
+    if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) { 
+        sim = Simulation::createSimulation(&cfg);
+
+        signal(SIGUSR1, sigHandlerPrintStatus);
+
+        SDL_CompMap_t sdlMap;
+        xml_parse( cfg.sdlfile, sdlMap );
+        Graph graph(0);
+
+        makeGraph(sim, sdlMap, graph);
+        partitionGraph( graph, argc, argv );
+        int minPart = findMinPart( graph );
+        sim->WireUp( graph, sdlMap, minPart, world.rank() );
+
+#if WANT_CHECKPOINT_SUPPORT
+        if ( cfg.archive ) {
+            SST::Archive::Save< SST::Simulation* >( sim, cfg.atype, 
+                                                        cfg.archiveFile );
+            delete sim;
+	    printf("Finished writing serialization file\n");
+        }
+#endif
+    }
+
+    if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) { 
+#if WANT_CHECKPOINT_SUPPORT
+        if ( cfg.archive ) {
+            SST::Archive::Load< SST::Simulation* >( sim, cfg.atype, 
+                                                        cfg.archiveFile );
+	    printf("Finished reading serialization file\n");
+        }
+#endif
+	
+        sim->Run();
+        delete sim;
+    }
+
+    delete mpiEnv;
+    return 0;
+}
+

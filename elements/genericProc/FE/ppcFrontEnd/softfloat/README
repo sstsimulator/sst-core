@@ -1,2 +1,0 @@
-Pulled softfloat files/libraries from the softfloat/bits64/ 
-directory tree into the root level to make Automake happy.
