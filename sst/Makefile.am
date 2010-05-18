@@ -2,7 +2,7 @@ SUBDIRS = \
 	elements \
 	core 
 
-sstdir = $(includedir)/sst/core
+sstdir = $(includedir)/sst
 nodist_sst_HEADERS = \
 	sst_config.h \
 	sst_stdint.h
