@@ -14,8 +14,35 @@
 #define SST_EVENT_H
 
 #include <sst/core/eventFunctor.h>
+#include <sst/core/activity.h>
 
 namespace SST {
+
+class Link;
+    
+// #include <sst/core/sst.h>
+
+
+typedef union {
+    Link* ptr;
+    LinkID_t id;
+} LinkUnion;
+
+    
+class NewEvent : public Activity {
+
+public:
+    NewEvent() : Activity() {}
+    ~NewEvent() {}
+
+    void execute(void);
+    
+private:
+    LinkUnion link;
+    
+};
+
+
 
 class Event {
 public:

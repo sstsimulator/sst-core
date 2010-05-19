@@ -19,15 +19,10 @@
 namespace SST {
 
 typedef unsigned long   ComponentId_t;
+ typedef unsigned long   LinkID_t;
 typedef uint64_t  Cycle_t;
-typedef long  SimTime_t;
+typedef uint64_t  SimTime_t;
 typedef double          Time_t;
-/* typedef double          RawTime_t; */
-/* typedef double          Frequency_t; */
-/* struct FloatTime { */
-/*     uint64_t mantissa; */
-/*     int64_t  exp_base10; */
-/* }; */
  
 typedef double watts;
 typedef double joules;

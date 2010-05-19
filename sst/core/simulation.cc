@@ -28,6 +28,8 @@
 #include <sst/core/graph.h>
 #include <sst/core/timeLord.h>
 
+#include <sst/core/timeVortex.h>
+
 #include <sst/core/archive.h>
 
 namespace SST { 
