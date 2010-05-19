@@ -17,7 +17,6 @@
 #include <map>
 
 #include <sst/core/sst.h>
-#include <sst/core/boost.h>
 #include <sst/core/simulation.h>
 
 namespace SST {

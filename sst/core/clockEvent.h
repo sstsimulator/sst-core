@@ -13,6 +13,8 @@
 #ifndef SST_CLOCKEVENT_H
 #define SST_CLOCKEVENT_H
 
+#include <deque>
+
 #include <sst/core/event.h>
 #include <sst/core/clockHandler.h>
 

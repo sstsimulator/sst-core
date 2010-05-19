@@ -10,11 +10,9 @@
 // distribution.
 
 
+#ifndef SST_EVENTFUNCTOR_H
+#define SST_EVENTFUNCTOR_H
 
-#ifndef _SST_EVENTFUNCTOR_H
-#define _SST_EVENTFUNCTOR_H
-
-#include <sst/core/boost.h>
 #include <sst/core/debug.h>
 #include <sst/core/sst.h>
 

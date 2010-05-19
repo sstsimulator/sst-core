@@ -11,8 +11,8 @@
 
 
 #include "sst_config.h"
-
-#include <boost/mpi.hpp>
+#include "sst/core/serialization/core.h"
+#include "sst/core/serialization/types.h"
 
 #include "sst/core/exit.h"
 #include "sst/core/exitEvent.h"

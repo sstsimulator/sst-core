@@ -10,12 +10,13 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/serialization/core.h"
+#include "sst/core/serialization/types.h"
 
 #include <utility>
 
 #include <boost/foreach.hpp>
-#include <boost/mpi.hpp>
 
 #include <sst/core/simulation.h>
 #include <sst/core/sync.h>
@@ -39,7 +40,7 @@ SimulationBase::SimulationBase(Config *config)
 
 SimulationBase::~SimulationBase()
 {
-    delete factory;
+    //    delete factory;
     delete timeLord;
 }
 

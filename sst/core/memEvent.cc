@@ -10,10 +10,15 @@
 // distribution.
 
 
-#include<sst_config.h>
+#include "sst_config.h"
+#include "sst/core/serialization/core.h"
+#include "sst/core/serialization/types.h"
 
 #include <sst/core/memEvent.h>
-#include <boost/mpi.hpp>
+
+#if WANT_CHECKPOINT_SUPPORT
 
 BOOST_CLASS_EXPORT( SST::MemEvent )
 BOOST_IS_MPI_DATATYPE( SST::MemEvent )
+
+#endif

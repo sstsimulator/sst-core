@@ -10,7 +10,9 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/serialization/core.h"
+#include "sst/core/serialization/types.h"
 
 #include <sst/core/sync.h>
 #include <sst/core/syncEvent.h>
@@ -51,8 +53,6 @@ struct recvEntry {
     boost::mpi::request req;
     functorMsg          msg;
 };
-
-BOOST_IS_MPI_DATATYPE( functorMsg )
 
 namespace SST {
 

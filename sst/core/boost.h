@@ -13,6 +13,10 @@
 #ifndef SST_BOOST_H
 #define SST_BOOST_H
 
+#warning "File boost.h is deprecated.  Do not include."
+
+#if 0
+
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/serialization/serialization.hpp>
@@ -26,8 +30,6 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/split_member.hpp>
-
-#if 0
 
 #define BOOST_SERIALIZE \
             friend class boost::serialization::access;\

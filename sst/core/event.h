@@ -13,7 +13,6 @@
 #ifndef SST_EVENT_H
 #define SST_EVENT_H
 
-#include <sst/core/boost.h>
 #include <sst/core/eventFunctor.h>
 
 namespace SST {

@@ -14,7 +14,6 @@
 #define SST_CACHE_H
 
 #include <sst/core/debug.h>
-#include <sst/core/boost.h>
 
 namespace SST {
 

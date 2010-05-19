@@ -13,7 +13,8 @@
 #ifndef SST_COMPEVENT_H
 #define SST_COMPEVENT_H
 
-#include <sst/core/boost.h>
+#include <deque>
+
 #include <sst/core/event.h>
 
 namespace SST {
@@ -44,16 +45,9 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
-        boost::serialization::
-            void_cast_register(static_cast<CompEvent*>(NULL), 
-                               static_cast<Event*>(NULL));
-        _AR_DBG(CompEvent,"Did BOOST_VOID_CAST_REGISTER\n");
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Event );
-        _AR_DBG(CompEvent,"Did BOOST_SERIALIZATION_BASE_OBJECT_NVP\n");
-        ar & BOOST_SERIALIZATION_NVP( linkPtr );
-        _AR_DBG(CompEvent,"Did linkPtr\n");
+        boost::serialization::base_object<Event>(*this);
         ar & BOOST_SERIALIZATION_NVP( cycle );
-        _AR_DBG(CompEvent,"Did cyle\n");
+        ar & BOOST_SERIALIZATION_NVP( linkPtr );
     }
 };
 

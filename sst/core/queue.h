@@ -10,12 +10,11 @@
 // distribution.
 
 
-#ifndef _SST_QUEUE_H
-#define _SST_QUEUE_H
+#ifndef SST_QUEUE_H
+#define SST_QUEUE_H
 
 #include <deque>
 #include <map>
-#include <sst/core/boost.h>
 #include <sst/core/cache.h>
 #include <sst/core/pool.h>
 

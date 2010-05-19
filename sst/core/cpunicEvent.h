@@ -22,7 +22,6 @@
 #define SST_CPUNICEVENT_H
 
 #include <cstring>
-#include <boost/serialization/array.hpp>
 
 #include "sst/core/compEvent.h"
 
@@ -127,7 +126,7 @@ class CPUNicEvent : public CompEvent {
 	bool payload_present;
 	int payload_len;
 
-
+#if WANT_CHECKPOINT_SUPPORT
         friend class boost::serialization::access;
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version )
@@ -151,6 +150,7 @@ class CPUNicEvent : public CompEvent {
 	    ar & BOOST_SERIALIZATION_NVP(payload_present);
             _AR_DBG(CPUNicEvent, "\n");
         }
+#endif
 };
 } //namespace SST
 

@@ -16,7 +16,7 @@ SUBDIRS = $(LIBLTDL_DIR) .
 EXTRA_DIST =
 
 sstdir = $(includedir)/sst/core
-dist_sst_HEADERS = \
+nobase_dist_sst_HEADERS = \
 	archive.h \
 	boost.h \
 	cache.h \
@@ -52,8 +52,11 @@ dist_sst_HEADERS = \
 	syncEvent.h \
 	timeConverter.h \
 	timeLord.h \
-	zolt.h
-nodist_sst_HEADERS = \
+	zolt.h \
+	serialization/archive.h \
+	serialization/core.h \
+	serialization/element.h
+nobase_nodist_sst_HEADERS = \
 	build_info.h
 
 bin_PROGRAMS = sst.x

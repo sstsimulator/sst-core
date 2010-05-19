@@ -28,7 +28,6 @@
 #endif
 #include <boost/io/ios_state.hpp>
 
-#include <sst/core/boost.h>
 #include <sst/core/sst.h>
 #include <sst/core/linkMap.h>
 #include <sst/core/clockHandler.h>

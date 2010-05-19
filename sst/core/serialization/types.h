@@ -10,17 +10,16 @@
 // distribution.
 
 
-#include "sst_config.h"
-#include "sst/core/serialization/core.h"
-#include "sst/core/serialization/types.h"
+#ifndef SST_SERIALIZATION_TYPES_H
+#define SST_SERIALIZATION_TYPES_H
 
-#include "sst/core/cpunicEvent.h"
-
-#if WANT_CHECKPOINT_SUPPORT
-
-BOOST_CLASS_EXPORT(SST::CPUNicEvent)
+#include <boost/serialization/string.hpp>
+#include <boost/serialization/map.hpp>
+#include <boost/serialization/deque.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/array.hpp>
+#include <boost/serialization/export.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/split_member.hpp>
 
 #endif
-// This is an optimization for fixed-size types to avoid mem copies.
-// It must NOT be used for variable-size types like vectors!
-// BOOST_IS_MPI_DATATYPE(SST::CPUNicEvent)
