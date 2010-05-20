@@ -179,16 +179,16 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     if ( minPart < 99999 ) {
         // if minPart is zero we need to sync at the sim frequency
 //         Frequency_t tmp = frequency;
-        Time_t tmp = frequency;
+//         Time_t tmp = frequency;
 
-        if ( minPart ) {
-            tmp = 1.0 / ( (float) minPart / 1000000000.0 );
-            // if minPart results in a frequency less than the sim frequency
-            // set it to the sim frequency
-            tmp = tmp > frequency ? frequency : tmp;
-        }
-	// FIXME
-	//         syncMap[0] = new Sync( compMap, clock, tmp );
+//         if ( minPart ) {
+//             tmp = 1.0 / ( (float) minPart / 1000000000.0 );
+//             // if minPart results in a frequency less than the sim frequency
+//             // set it to the sim frequency
+//             tmp = tmp > frequency ? frequency : tmp;
+//         }
+// 	// FIXME
+// 	//         syncMap[0] = new Sync( compMap, clock, tmp );
         syncMap[0] = new Sync( timeLord->getTimeConverter(minPart) );
     }
 
@@ -366,7 +366,7 @@ std::string Simulation::EventName( Event *e )
 
 TimeConverter* Simulation::registerClock( std::string freq, ClockHandler_t* handler )
 {
-    _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
+//     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
     
     TimeConverter* tcFreq = timeLord->getTimeConverter(freq);
 
@@ -387,7 +387,7 @@ TimeConverter* Simulation::registerClock( std::string freq, ClockHandler_t* hand
 }
 
 void Simulation::unregisterClock(TimeConverter *tc, ClockHandler_t* handler) {
-    _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
+//     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
     
     if ( clockMap.find( tc->getFactor() ) != clockMap.end() ) {
 	_SIM_DBG( "\n" );

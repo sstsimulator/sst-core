@@ -134,7 +134,6 @@ private:
     SimTime_t        currentSimCycle;
     Exit*            m_exit;
 
-    static const Time_t frequency = 1000000000000.0;
     static Simulation *instance;
 };
 
