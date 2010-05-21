@@ -46,6 +46,8 @@ main(int argc, char *argv[])
         return -1;
     }
 
+    Archive archive(cfg.archiveType, cfg.archiveFile);
+
     printf("main() My rank is %d, on %d nodes\n", world.rank(), world.size());
     DebugInit( world.rank(), world.size() );
 
@@ -63,24 +65,18 @@ main(int argc, char *argv[])
         int minPart = findMinPart( graph );
         sim->WireUp( graph, sdlMap, minPart, world.rank() );
 
-#if WANT_CHECKPOINT_SUPPORT
-        if ( cfg.archive ) {
-            SST::Archive::Save< SST::Simulation* >( sim, cfg.atype, 
-                                                        cfg.archiveFile );
+        if (cfg.archive) {
+            archive.SaveSimulation(sim);
             delete sim;
 	    printf("Finished writing serialization file\n");
         }
-#endif
     }
 
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) { 
-#if WANT_CHECKPOINT_SUPPORT
         if ( cfg.archive ) {
-            SST::Archive::Load< SST::Simulation* >( sim, cfg.atype, 
-                                                        cfg.archiveFile );
+            sim = archive.LoadSimulation();
 	    printf("Finished reading serialization file\n");
         }
-#endif
 	
         sim->Run();
         delete sim;

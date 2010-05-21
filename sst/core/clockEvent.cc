@@ -18,11 +18,6 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/compEvent.h"
 #include "sst/core/simulation.h"
-
-#if WANT_CHECKPOINT_SUPPORT
-BOOST_CLASS_EXPORT_TEMPLATE3( SST::EventHandler,
-                             SST::ClockEvent, bool, SST::Event* )
-#endif
     
 namespace SST {
 
@@ -67,7 +62,7 @@ bool ClockEvent::HandlerUnregister( Which_t which, ClockHandler_t* handler,
 bool ClockEvent::handler( Event* event ) {
     Simulation *sim = Simulation::getSimulation();
     
-    _CLE_DBG("time=FIXME cycle=%lu epoch=FIXME\n", currentCycle );
+    _CLE_DBG("time=FIXME cycle=%lu epoch=FIXME\n", (unsigned long) currentCycle );
 
     if ( handlerMap[PRE].empty() &&
             handlerMap[DEFAULT].empty() &&
@@ -93,7 +88,7 @@ bool ClockEvent::handler( Event* event ) {
 
 
     SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
-    _CLE_DBG( "all called next %lu\n", next );
+    _CLE_DBG( "all called next %lu\n", (unsigned long) next );
     sim->insertEvent( next, event, functor );
     
     return false;

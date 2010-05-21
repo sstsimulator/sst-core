@@ -19,11 +19,6 @@
 #include <sst/core/link.h>
 #include <sst/core/simulation.h>
 
-#if WANT_CHECKPOINT_SUPPORT
-BOOST_CLASS_EXPORT_TEMPLATE3( SST::EventHandler,
-                                SST::Sync, bool, SST::Event* )
-#endif
-
 enum { SyncMsgTag = 0x1, SyncExchangeMsgTag }; 
 
 typedef struct {
@@ -60,7 +55,7 @@ Sync::Sync( TimeConverter* period ) :
     m_functor( new EventHandler<Sync,bool,Event*> (this,&Sync::handler)),
     m_period( period )
 {
-    _SYNC_DBG( "epoch %lu sim cyles \n", period->getFactor() );
+    _SYNC_DBG( "epoch %lu sim cyles \n", (unsigned long) period->getFactor() );
     m_event = new SyncEvent( m_functor );
     Simulation::getSimulation()->insertEvent( m_period->getFactor(), m_event, m_functor );
 }
@@ -164,7 +159,7 @@ bool Sync::handler( Event *e )
     Simulation *sim = Simulation::getSimulation();
     SimTime_t next = sim->getCurrentSimCycle() + m_period->getFactor();
 
-    _SYNC_DBG( "next cycle %lu\n", next );
+    _SYNC_DBG( "next cycle %lu\n", (unsigned long) next );
     sim->insertEvent( next, m_event, m_functor );
 
     boost::mpi::communicator world;
@@ -200,7 +195,7 @@ bool Sync::handler( Event *e )
             CompEvent* event = info.recvQ->front();
 
             _SYNC_DBG("destLink=%p cycle=%lu\n", event->LinkPtr(),
-                                            event->Cycle() );
+                      (unsigned long) event->Cycle() );
 
             event->LinkPtr()->SyncInsert( event->Cycle(), 
                                     static_cast< CompEvent* >( event ) );

@@ -59,12 +59,11 @@ Simulation::createSimulation(Config *config)
 Simulation::Simulation( Config* cfg ) :
     SimulationBase(cfg), currentSimCycle(0)
 {
-//     _SIM_DBG("freq=%f Ghz epoch=%.12f ns\n",
-//                         (frequency)/1000000000.0,epoch*1000000000);
     eQueue = new EventQueue_t;
     compMap = new CompMap_t;
     introMap = new IntroMap_t;
-    printf("Inserting stop event at cycle %ld\n",cfg->stopAtCycle);
+    printf("Inserting stop event at cycle %ld\n",
+           (long int)cfg->stopAtCycle);
 
     if ( cfg->stopAtCycle ) {
         StopEvent* se = new StopEvent();
@@ -76,6 +75,11 @@ Simulation::Simulation( Config* cfg ) :
     }
 
     m_exit = new Exit( this, timeLord->getTimeConverter("10ns") );
+}
+
+Simulation::Simulation()
+{
+    // serialization only, so everything will be restored.  I think.
 }
 
 SimTime_t Simulation::getCurrentSimCycle() {

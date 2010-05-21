@@ -126,16 +126,11 @@ class CPUNicEvent : public CompEvent {
 	bool payload_present;
 	int payload_len;
 
-#if WANT_CHECKPOINT_SUPPORT
         friend class boost::serialization::access;
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version )
         {
-            _AR_DBG(CPUNicEvent,"\n");
-            boost::serialization::
-                void_cast_register(static_cast<CPUNicEvent*>(NULL), 
-                                   static_cast<CompEvent*>(NULL));
-            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(CompEvent);
+            boost::serialization::base_object<CompEvent>(*this);
 	    ar & BOOST_SERIALIZATION_NVP(route);
 	    ar & BOOST_SERIALIZATION_NVP(router_delay);
 	    ar & BOOST_SERIALIZATION_NVP(hops);
@@ -148,9 +143,7 @@ class CPUNicEvent : public CompEvent {
 	    ar & BOOST_SERIALIZATION_NVP(payload_len);
 	    ar & BOOST_SERIALIZATION_NVP(msg_payload);
 	    ar & BOOST_SERIALIZATION_NVP(payload_present);
-            _AR_DBG(CPUNicEvent, "\n");
         }
-#endif
 };
 } //namespace SST
 

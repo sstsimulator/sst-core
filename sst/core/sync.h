@@ -81,52 +81,29 @@ private:
     template<class Archive> 
     void serialize(Archive & ar, const unsigned int )
     {
-#if WANT_CHECKPOINT_SUPPORT    
-        _AR_DBG(Sync,"start\n");
         ar & BOOST_SERIALIZATION_NVP( m_functor );
-        _AR_DBG(Sync,"\n");
         ar & BOOST_SERIALIZATION_NVP( m_period );
-        _AR_DBG(Sync,"\n");
         ar & BOOST_SERIALIZATION_NVP( m_event );
-        _AR_DBG(Sync,"\n");
-        ar & BOOST_SERIALIZATION_NVP( m_linkMap );
-        _AR_DBG(Sync,"\n");
-        ar & BOOST_SERIALIZATION_NVP( m_rankMap );
-        _AR_DBG(Sync,"done\n");
-#endif
+        // BWB: FIXME: should this be serialized?
+        // ar & BOOST_SERIALIZATION_NVP( m_linkMap );
+        // ar & BOOST_SERIALIZATION_NVP( m_rankMap );
     }
 
     template<class Archive>
     void save_construct_data
     (Archive & ar, const Sync * t, const unsigned int )
     {
-#if WANT_CHECKPOINT_SUPPORT
-        _AR_DBG(Sync,"\n");
-        CompMap_t*     compMap   = t->compMap;
-        TimeConverter* period    = t->period;
-    
-        ar << BOOST_SERIALIZATION_NVP( compMap );
+        TimeConverter* period    = t->m_period;
         ar << BOOST_SERIALIZATION_NVP( period );
-#endif
     }
 
     template<class Archive>
     void load_construct_data
     (Archive & ar, Sync * t, const unsigned int )
     {
-#if WANT_CHECKPOINT_SUPPORT
-        _AR_DBG(Sync,"\n");
-	    
-        CompMap_t*     compMap;
         TimeConverter* period;
-	    
-        ar >> BOOST_SERIALIZATION_NVP( compMap );
         ar >> BOOST_SERIALIZATION_NVP( period );
-	    
-        ::new(t)Sync( compMap, sim, period );
-	    
-        _AR_DBG(Sync,"\n");
-#endif
+        ::new(t)Sync(period);
     }
 };    
 

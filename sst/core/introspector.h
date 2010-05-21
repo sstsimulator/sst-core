@@ -132,18 +132,6 @@ class Introspector: public Component {
     
     private:
 	CompMap_t* simCompMap;
-	
-
- 
-/* TODO do we want checkpoint on introspector?
-#if WANT_CHECKPOINT_SUPPORT
-	friend class boost::serialization::access;
-	template<class Archive>
-        void serialize(Archive& ar, const unsigned int version) {
-	    ar & BOOST_SERIALIZATION_NVP( _id );
-	}
-#endif
-*/
 };
 
 typedef std::map< ComponentId_t, Introspector* > IntroMap_t;

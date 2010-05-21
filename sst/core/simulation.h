@@ -56,15 +56,23 @@ public:
 
 protected:
     SimulationBase(Config* config);
+    SimulationBase() { } // Don't call - here for serialization
     virtual ~SimulationBase();
 
     Factory *factory;
     TimeLord *timeLord;
 
 private:
-    SimulationBase();                      // Don't Implement
     SimulationBase(SimulationBase const&); // Don't Implement
     void operator=(SimulationBase const&); // Don't implement
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_NVP(factory);
+        ar & BOOST_SERIALIZATION_NVP(timeLord);
+    }
 };
 
 class Simulation : public SimulationBase {
@@ -111,12 +119,14 @@ public:
 	       printf("Simulation::getIntrospector couldn't find introspector with id = %lu\n",id); exit(1); 
 	    }
     }
+
+protected:
 	
 private:
     friend class Link;
 
+    Simulation(); // Don't call.  Only rational way to serialize
     Simulation(Config* config);
-    Simulation();                      // Don't Implement
     Simulation(Simulation const&);     // Don't Implement
     void operator=(Simulation const&); // Don't implement
 	
@@ -135,6 +145,37 @@ private:
     Exit*            m_exit;
 
     static Simulation *instance;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_NVP(eQueue);
+        ar & BOOST_SERIALIZATION_NVP(syncMap);
+        ar & BOOST_SERIALIZATION_NVP(compMap);
+        ar & BOOST_SERIALIZATION_NVP(introMap);
+        ar & BOOST_SERIALIZATION_NVP(clockMap);
+        ar & BOOST_SERIALIZATION_NVP(test);
+        ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
+        ar & BOOST_SERIALIZATION_NVP(m_exit);
+        ar & BOOST_SERIALIZATION_NVP(syncMap);
+    }
+
+    template<class Archive>
+    friend void save_construct_data(Archive & ar, 
+                                    const Simulation * t, 
+                                    const unsigned int file_version)
+    {
+    }
+
+    template<class Archive>
+    friend void load_construct_data(Archive & ar, 
+                                    Simulation * t,
+                                    const unsigned int file_version)
+    {
+        ::new(t)Simulation();
+        Simulation::instance = t;
+    }
 };
 
 } // namespace SST

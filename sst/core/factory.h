@@ -58,33 +58,30 @@ private:
 
     std::pair<std::string, std::string> parseLoadName(std::string wholename);
 
-#if WANT_CHECKPOINT_SUPPORT
-
     friend class boost::serialization::access;
-
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
-        std::vector<std::string> loaded_components;
-        loaded_components.resize(allocMap.size());
-
-        for (allocMap_t::const_iterator i = allocMap.begin() ;
-             i != allocMap.end() ;
+        std::vector<std::string> loaded_elis;
+        loaded_elis.resize(loaded_libraries.size());
+        for (eli_map_t::const_iterator i = loaded_libraries.begin() ;
+             i != loaded_libraries.end() ;
              ++i) {
-            loaded_components.push_back(i->first);
+            loaded_elis.push_back(i->first);
         }
     }
 
     template<class Archive>
     void load(Archive & ar, const unsigned int version)
     {
-        std::vector<std::string> loaded_components;
-
-        ar >> BOOST_SERIALIZATION_NVP( loaded_components ); 
-
-        BOOST_FOREACH( std::string type, loaded_components ) {
-            if ( allocMap.find( type ) == allocMap.end() ) { 
-                allocMap[ type ] = libFind( type );
+        std::vector<std::string> loaded_elis;
+        ar >> BOOST_SERIALIZATION_NVP( loaded_elis ); 
+        BOOST_FOREACH( std::string type, loaded_elis ) {
+            if (NULL == findLibrary(type)) {
+                fprintf(stderr, 
+                        "factory::load failed to load %s\n", 
+                        type.c_str());
+                abort();
             }
         }
     }
@@ -95,7 +92,6 @@ private:
                                     const unsigned int file_version)
     {
         std::string search_path = t->searchPaths;
-
         ar << BOOST_SERIALIZATION_NVP(search_path);
     }
 
@@ -110,9 +106,6 @@ private:
     }
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
-
-#endif
-	
 };    
 
 } // namespace SST

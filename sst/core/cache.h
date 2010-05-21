@@ -37,7 +37,7 @@ class Cache {
         }
 
         void Inject( KeyT key, DataT _data ) {
-            _CACHE_DBG( "key=%ld data=%#lx\n", key, (unsigned long) data ); 
+            _CACHE_DBG( "key=%ld data=%#lx\n", (long int) key, (unsigned long) data ); 
             data[ key&mask ]  = _data;
             valid[ key&mask ] = true;
             keys[ key&mask ]  = key;
@@ -45,18 +45,16 @@ class Cache {
         }
 
         void Invalidate( KeyT key ) {
-            _CACHE_DBG( "key=%ld\n", key ); 
+            _CACHE_DBG( "key=%ld\n", (long int) key ); 
             valid[ key&mask ] = false;
         }
 
         bool Read( KeyT key, DataT* _data )  {
-            _CACHE_DBG( "key=%ld\n", key ); 
+            _CACHE_DBG( "key=%ld\n", (long int) key ); 
             *_data = data[ key&mask ]; 
             return valid[ key&mask ] && keys[ key&mask ] == key;
         }
     private:
-
-#if WANT_CHECKPOINT_SUPPORT
 
 	friend class boost::serialization::access;
 	template<class Archive>
@@ -76,10 +74,6 @@ class Cache {
 	    ar & BOOST_SERIALIZATION_NVP( valid );
 	    _AR_DBG(Cache," Done\n");
 	}
-
-#endif // WANT_CHECKPOINT_SUPPORT
-	
-
 
         KeyT  keys[ num_sets * set_size ];
         DataT data[ num_sets * set_size ];

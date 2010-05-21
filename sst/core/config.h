@@ -13,7 +13,6 @@
 #ifndef SST_CONFIG_H
 #define SST_CONFIG_H
 
-#include <sst/core/archive.h>
 #include <string>
 #include <sst/core/sst.h>
 
@@ -27,10 +26,8 @@ public:
     void Print();
 
     bool            archive;
-#if WANT_CHECKPOINT_SUPPORT
-    Archive::Type_t atype;
+    std::string     archiveType;
     std::string     archiveFile;
-#endif
     Mode_t          runMode;
     std::string     libpath;
     std::string     sdlfile;

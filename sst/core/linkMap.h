@@ -76,20 +76,14 @@ class LinkMap {
 
         LinkMap( const LinkMap& l );
 
-#if WANT_CHECKPOINT_SUPPORT
-
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version )
 	{
-	    _AR_DBG( LinkMap, "%p\n", this );
 	    ar & BOOST_SERIALIZATION_NVP( myId );
 	    ar & BOOST_SERIALIZATION_NVP( linkMap );
 	    ar & BOOST_SERIALIZATION_NVP( linkVec );
-	    _AR_DBG( LinkMap, "\n" );
 	}
-#endif
-	
 };
 
 } // namespace SST

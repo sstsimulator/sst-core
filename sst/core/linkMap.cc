@@ -93,7 +93,7 @@ Link* LinkMap::LinkGet( unsigned int num )
 
 int LinkMap::LinkConnect( std::string name, Link* dest, Cycle_t lat )
 {
-    _LM_DBG( "link=%s dest=%p lat=%lu\n", name.c_str(), dest, lat );
+    _LM_DBG( "link=%s dest=%p lat=%lu\n", name.c_str(), dest, (unsigned long) lat );
     Link *src = LinkGet( name );
 
     if ( ! src  ) {

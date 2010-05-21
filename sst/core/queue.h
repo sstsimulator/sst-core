@@ -30,7 +30,7 @@ class Queue {
     public:
         void insert( KeyT key, DataT data ) {
 	    
-            _EQ_DBG("this=%p start key=%lu\n",this,key);
+            _EQ_DBG("this=%p start key=%lu\n",this,(unsigned long)key);
             queue_t *q_ptr;
             if ( ! cache.Read( key, &q_ptr ) ) {
                 if ( map.find( key ) == map.end()  ) {
@@ -68,19 +68,13 @@ class Queue {
         // don't serialize
         Pool<queue_t>           q_pool;
 
-#if WANT_CHECKPOINT_SUPPORT
-	
-	BOOST_SERIALIZE {
-            _AR_DBG(Queue,"start\n");
-	    printf("Serializing: map\n");
-            ar & BOOST_SERIALIZATION_NVP(map);
-	    printf("Serializing: cache\n");
-            ar & BOOST_SERIALIZATION_NVP(cache);
-            _AR_DBG(Queue,"done\n");
-        }
-
-#endif
-
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_NVP(map);
+        ar & BOOST_SERIALIZATION_NVP(cache);
+    }
 };
 
 } // namespace SST

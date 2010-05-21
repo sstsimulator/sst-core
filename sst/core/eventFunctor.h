@@ -189,8 +189,6 @@ class EventHandler: public EventHandlerBase<ReturnT,Param1T>
         ConsumerT* const object;
         const PtrMember  member;
 
-	//#if WANT_CHECKPOINT_SUPPORT
-
         friend class boost::serialization::access;
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version )
@@ -260,9 +258,6 @@ class EventHandler: public EventHandlerBase<ReturnT,Param1T>
             ::new(t)EventHandler<ConsumerT,ReturnT,Param1T>
 													(object,*tmp_ptr );
         }
-
-	//#endif
-	
 };
 } // namespace SST
 

@@ -67,7 +67,7 @@ void Link::Connect( CompEventQueue_t* queue, Cycle_t lat ) {
     
 void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
     _LINK_DBG("delay=%lu sendQueue=%p event=%p sFunctor=%p\n",
-                    delay,sendQueue,event,sFunctor);
+              (unsigned long) delay,sendQueue,event,sFunctor);
     
     if ( tc == NULL ) {
 	_abort(Link,"Cannot send an event on Link with NULL TimeConverter\n");
@@ -76,7 +76,7 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
     Cycle_t cycle = Simulation::getSimulation()->getCurrentSimCycle() +
                     tc->convertToCoreTime(delay) + latency;
 
-    _LINK_DBG( "cycle=%lu\n", cycle );
+    _LINK_DBG( "cycle=%lu\n", (unsigned long)cycle );
 
     if ( m_syncQueue ) {
         _LINK_DBG("Sync %p\n", m_syncLink);
@@ -93,7 +93,7 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
     
 void Link::SyncInsert( Cycle_t cycle, CompEvent* event )
 { 
-    _LINK_DBG("%p cycle=%lu\n",this,cycle);
+    _LINK_DBG("%p cycle=%lu\n",this,(unsigned long)cycle);
     _LINK_DBG("sFunctor=%p\n",sFunctor);
     _LINK_DBG("recvQ=%p\n",recvQueue);
     
@@ -110,8 +110,8 @@ CompEvent* Link::Recv()
     Simulation *simulation = Simulation::getSimulation();
 
     if ( !recvQueue->empty() ) {
-	_LINK_DBG("key=%lu current=%lu\n",recvQueue->key(),
-		  simulation->getCurrentSimCycle());
+	_LINK_DBG("key=%lu current=%lu\n",(unsigned long)recvQueue->key(),
+		  (unsigned long)simulation->getCurrentSimCycle());
 	if ( recvQueue->key() <=  simulation->getCurrentSimCycle() ) {
 	    event = recvQueue->top().second;
 	    recvQueue->pop();

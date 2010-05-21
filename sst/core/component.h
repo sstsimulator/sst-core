@@ -291,17 +291,12 @@ public:
     bool unregisterExit();
 	
 private:
-    
-
-#if WANT_CHECKPOINT_SUPPORT
-	friend class boost::serialization::access;
-	template<class Archive>
-        void serialize(Archive& ar, const unsigned int version) {
-	    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( LinkMap );
-	    ar & BOOST_SERIALIZATION_NVP( _id );
-	}
-#endif
-	
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version) {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( LinkMap );
+        ar & BOOST_SERIALIZATION_NVP( _id );
+    }
 }; 
 
 typedef std::map< ComponentId_t, Component* > CompMap_t;

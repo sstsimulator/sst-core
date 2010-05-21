@@ -30,10 +30,8 @@ namespace SST {
 Config::Config( )
 {
     archive     = false;
-#if WANT_CHECKPOINT_SUPPORT
-    atype       = Archive::BIN;
-    archiveFile = "CheckPoint";
-#endif
+    archiveType = "bin";
+    archiveFile = "sst_checkpoint";
     runMode     = BOTH;
     libpath     = SST_ELEMLIB_DIR;
     sdlfile     = "sdl.xml";
@@ -45,10 +43,8 @@ Config::Config( )
 void Config::Print( )
 {
     printf("archive %d\n",archive);
-#if WANT_CHECKPOINT_SUPPORT
-    printf("atype %d\n",atype);
+    printf("atype %s\n", archiveType.c_str());
     printf("archiveFile %s\n",archiveFile.c_str());
-#endif
     printf("runMode %d\n",runMode);
     printf("libpath %s\n",libpath.c_str());
     printf("sdlfile %s\n",sdlfile.c_str());
@@ -75,12 +71,10 @@ int Config::Init( int argc, char *argv[], int rank )
 
     po::options_description desc( "Allowed options" );
     desc.add_options()
-#if WANT_CHECKPOINT_SUPPORT
         ("archive-type", po::value< string >(), 
                                 "archive type [ xml | text | bin ]")
         ("archive-file", po::value< string >( &archiveFile ), 
                                 "archive file name")
-#endif
         ("lib-path", po::value< string >( &libpath ), 
                                 "component library path")
         ("run-mode", po::value< string >(), 
@@ -133,23 +127,14 @@ int Config::Init( int argc, char *argv[], int rank )
         po::store( po::parse_config_file( ifs, desc), vm);
         po::notify( vm );
 
-#if WANT_CHECKPOINT_SUPPORT
         if ( vm.count( "archive-type" ) ) {
-            atype = Archive::Str2Type( vm[ "archive-type" ].as< string >() ); 
+            archiveType = vm[ "archive-type" ].as< string >(); 
             archive = true;
-            if ( atype == Archive::UNKNOWN ) {
-                // this need to be improved 
-                printf("ERROR: Unknown archive type %s\n", 
-                            vm[ "archive-type" ].as< string >().c_str());
-                cout << desc;
-                cout << sdlFileDesc << "\n";
-                return -1;
-            }
         }
         if ( vm.count( "archive-file" ) ) {
             archive = true;
         }
-#endif
+
         if ( vm.count("run-mode") ) {
             runMode = Config::RunMode( vm[ "run-mode" ].as< string >() ); 
             if ( runMode == Config::UNKNOWN ) {
@@ -185,11 +170,9 @@ int Config::Init( int argc, char *argv[], int rank )
 
     cwd.append("/");
 
-#if WANT_CHECKPOINT_SUPPORT
     // create a unique archive file name for each rank
     sprintf(buf,".%d",rank);
     archiveFile.append( buf );
-#endif
     
     // get the absolute path to the sdl file 
     if ( sdlfile.compare(0,1,"/" ) ) {

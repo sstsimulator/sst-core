@@ -27,14 +27,6 @@ class StopEvent : public Event
 	  functor = new EventHandler< StopEvent, bool, Event* >( this, &StopEvent::handler );
         }
 
-/*         StopEvent( const StopEvent& e ) : */
-/*             Event(), */
-/*             functor(  new EventHandler< StopEvent, bool, Event* > */
-/*                                         ( this, &StopEvent::handler ) ) */
-/*         { */
-/*             SetHandler( functor ); */
-/*         } */
-
 	EventHandler< StopEvent, bool, Event* >* getFunctor() {
 	  return functor;
 	}
@@ -47,15 +39,13 @@ class StopEvent : public Event
             return true;
         }
 
-#if WANT_CHECKPOINT_SUPPORT
-
-        BOOST_SERIALIZE {
-            BOOST_VOID_CAST_REGISTER( StopEvent*, Event* );
-            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Event );
-        }
-
-#endif
-
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+        boost::serialization::base_object<Event>(*this);
+    }
 };
 
 } // namespace SST

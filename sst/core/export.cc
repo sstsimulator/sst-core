@@ -14,23 +14,18 @@
 #include "sst/core/serialization/core.h"
 #include "sst/core/serialization/types.h"
 
+#include "sst/core/event.h"
 #include "sst/core/compEvent.h"
 #include "sst/core/exitEvent.h"
-
-#if WANT_CHECKPOINT_SUPPORT
 #include "sst/core/clockEvent.h"
 #include "sst/core/stopEvent.h"
 #include "sst/core/syncEvent.h"
 
-//BOOST_CLASS_EXPORT( SST::ClockEvent )
+#include "timeConverter.h"
+
+BOOST_CLASS_EXPORT( SST::Event )
+BOOST_CLASS_EXPORT( SST::CompEvent )
+BOOST_CLASS_EXPORT( SST::ExitEvent )
+BOOST_CLASS_EXPORT( SST::ClockEvent )
 BOOST_CLASS_EXPORT( SST::StopEvent )
 BOOST_CLASS_EXPORT( SST::SyncEvent )
-BOOST_CLASS_EXPORT( SST::ExitEvent )
-
-BOOST_CLASS_EXPORT_TEMPLATE3( SST::EventHandler,
-                                SST::StopEvent, bool, SST::Event* )
-
-#endif
-    
-BOOST_CLASS_EXPORT( SST::CompEvent )
-BOOST_CLASS_EXPORT( SST::Event )

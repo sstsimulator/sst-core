@@ -18,11 +18,6 @@
 #include "sst/core/exitEvent.h"
 #include "sst/core/simulation.h"
 
-#if WANT_CHECKPOINT_SUPPORT
-BOOST_CLASS_EXPORT_TEMPLATE3( SST::EventHandler,
-                                SST::Exit, bool, SST::Event* )
-#endif
-
 namespace SST {
 
 Exit::Exit( Simulation* sim, TimeConverter* period ) :
@@ -78,7 +73,7 @@ bool Exit::handler( Event* e )
 {
     Simulation *sim = Simulation::getSimulation();
 
-    _EXIT_DBG("%lu\n", sim->getCurrentSimCycle());
+    _EXIT_DBG("%lu\n", (unsigned long) sim->getCurrentSimCycle());
     boost::mpi::communicator world; 
 
     int value = ( m_refCount > 0 );

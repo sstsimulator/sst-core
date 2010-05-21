@@ -51,47 +51,37 @@ class ClockEvent : public Event
 
         bool handler( Event* e );
 
-#if WANT_CHECKPOINT_SUPPORT
-	
-        BOOST_SERIALIZE {
-            _AR_DBG( ClockEvent, "Starting\n" );
-            BOOST_VOID_CAST_REGISTER( ClockEvent*, Event* );
-            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Event );
-            _AR_DBG( ClockEvent, "\n" );
-            ar & BOOST_SERIALIZATION_NVP( currentCycle );
-            _AR_DBG( ClockEvent, "\n" );
-            ar & BOOST_SERIALIZATION_NVP( period );
-            _AR_DBG( ClockEvent, "\n" );
-            ar & BOOST_SERIALIZATION_NVP( handlerMap );
-            _AR_DBG( ClockEvent, "\n" );
-            ar & BOOST_SERIALIZATION_NVP( functor );
-            _AR_DBG( ClockEvent, "\n" );
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version )
+    {
+        boost::serialization::base_object<Event>(*this);
+        ar & BOOST_SERIALIZATION_NVP( currentCycle );
+        ar & BOOST_SERIALIZATION_NVP( period );
+        ar & BOOST_SERIALIZATION_NVP( handlerMap );
+        ar & BOOST_SERIALIZATION_NVP( functor );
+    }
 
-            _AR_DBG( ClockEvent, "Done\n" );
-        }
+    template<class Archive>
+    friend void 
+    save_construct_data(Archive & ar, 
+                        const ClockEvent * t,
+                        const unsigned int file_version)
+    {
+        TimeConverter*  period = t->period; 
+        ar << BOOST_SERIALIZATION_NVP( period );
+    }
 
-        SAVE_CONSTRUCT_DATA( ClockEvent )
-        {
-            _AR_DBG( ClockEvent, "Save construct data\n" );
-
-            TimeConverter*  period = t->period; 
-
-            ar << BOOST_SERIALIZATION_NVP( period );
-        }
-
-        LOAD_CONSTRUCT_DATA( ClockEvent )
-        {
-            _AR_DBG( ClockEvent, "Load construct data\n" );
-
-            TimeConverter*  period;
-
-            ar >> BOOST_SERIALIZATION_NVP( period );
-
-            ::new(t)ClockEvent( period );
-        }
-
-#endif
-	
+    template<class Archive>
+    friend void 
+    load_construct_data(Archive & ar, 
+                        ClockEvent * t, 
+                        const unsigned int file_version)
+    {
+        TimeConverter*  period;
+        ar >> BOOST_SERIALIZATION_NVP( period );
+        ::new(t)ClockEvent( period );
+    }
 };
 
 } // namespace SST

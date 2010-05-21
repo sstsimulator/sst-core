@@ -121,32 +121,15 @@ class Link {
 
         Type_t type;
 
-
-#if WANT_CHECKPOINT_SUPPORT
-
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version )
 	{
-	    _AR_DBG(Link,"\n");
 	    ar & BOOST_SERIALIZATION_NVP( sendQueue );
-/* 	    ar & BOOST_SERIALIZATION_NVP( recvQueue ); */
-	    ar & BOOST_SERIALIZATION_NVP( myId );
-	    ar & BOOST_SERIALIZATION_NVP( myLinkNum );
-	    ar & BOOST_SERIALIZATION_NVP( destId );
-/* 	    ar & BOOST_SERIALIZATION_NVP( sFunctor ); */
-/* 	    ar & BOOST_SERIALIZATION_NVP( rFunctor ); */
-/* 	    ar & BOOST_SERIALIZATION_NVP( m_syncQueue ); */
-/* 	    ar & BOOST_SERIALIZATION_NVP( m_syncLink ); */
 	    ar & BOOST_SERIALIZATION_NVP( defaultTimeBase );
 	    ar & BOOST_SERIALIZATION_NVP( latency );
 	    ar & BOOST_SERIALIZATION_NVP( type );
-	    _AR_DBG(Link,"\n");
 	}
-	
-#endif
-	
-	
 };
 
 } // namespace SST

@@ -16,9 +16,4 @@
 
 #include <sst/core/memEvent.h>
 
-#if WANT_CHECKPOINT_SUPPORT
-
 BOOST_CLASS_EXPORT( SST::MemEvent )
-BOOST_IS_MPI_DATATYPE( SST::MemEvent )
-
-#endif

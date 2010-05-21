@@ -25,46 +25,42 @@ public:
        functor = handler;
      }
 
-     SyncEvent() {}
- SyncEvent( const SyncEvent& e ) :
-            Event( e ) 
-        {}
+    SyncEvent() {}
+    SyncEvent( const SyncEvent& e ) :
+        Event( e ) 
+    {}
 
 private:
-	    Handler_t* functor;
-	    
+    Handler_t* functor;
 
-#if WANT_CHECKPOINT_SUPPORT
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+        boost::serialization::base_object<Event>(*this);
+    }
 
-	BOOST_SERIALIZE {
-            _AR_DBG( SyncEvent, "\n" );
-            BOOST_VOID_CAST_REGISTER( SyncEvent*, Event* );
-            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP( Event );
-            _AR_DBG( SyncEvent, "\n" );
-        }
-
-        SAVE_CONSTRUCT_DATA( SyncEvent )
-        {
-            _AR_DBG( SyncEvent, "\n" );
-
+    template<class Archive>
+    friend void
+    save_construct_data(Archive & ar, 
+                        const SyncEvent * t, 
+                        const unsigned int file_version)
+    {
             Handler_t* handler = t->functor;
             ar << BOOST_SERIALIZATION_NVP( handler );
-        }
+    }
 
-        LOAD_CONSTRUCT_DATA( SyncEvent )
-        {
-            _AR_DBG( SyncEvent, "\n" );
-
-            Handler_t* handler;
-            _AR_DBG( SyncEvent, "\n" );
-            ar >> BOOST_SERIALIZATION_NVP( handler );
-            _AR_DBG( SyncEvent, "\n" );
-
-            ::new(t)SyncEvent( handler );
-        }
-
-#endif
-
+    template<class Archive>
+    friend void
+    load_construct_data(Archive & ar, 
+                        SyncEvent * t, 
+                        const unsigned int file_version)
+    {
+        Handler_t* handler;
+        ar >> BOOST_SERIALIZATION_NVP( handler );
+        ::new(t)SyncEvent( handler );
+    }
 };
 
 } // namespace SST

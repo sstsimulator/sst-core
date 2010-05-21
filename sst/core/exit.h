@@ -37,7 +37,7 @@ public:
     bool refDec( ComponentId_t );
 
 private:
-    Exit();                      // Don't implement
+    Exit() { } // for serialization only
     Exit(const Exit&);           // Don't implement
     void operator=(Exit const&); // Don't implement
 
@@ -47,6 +47,16 @@ private:
     unsigned int    m_refCount;
     TimeConverter*  m_period;
     std::set<ComponentId_t> m_idSet;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_NVP(m_functor);
+        ar & BOOST_SERIALIZATION_NVP(m_refCount);
+        ar & BOOST_SERIALIZATION_NVP(m_period);
+        ar & BOOST_SERIALIZATION_NVP(m_idSet);
+    }
 };
 
 } // namespace SST

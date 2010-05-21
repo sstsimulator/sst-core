@@ -16,11 +16,4 @@
 
 #include "sst/core/cpunicEvent.h"
 
-#if WANT_CHECKPOINT_SUPPORT
-
 BOOST_CLASS_EXPORT(SST::CPUNicEvent)
-
-#endif
-// This is an optimization for fixed-size types to avoid mem copies.
-// It must NOT be used for variable-size types like vectors!
-// BOOST_IS_MPI_DATATYPE(SST::CPUNicEvent)

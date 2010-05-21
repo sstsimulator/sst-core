@@ -61,6 +61,7 @@ nobase_nodist_sst_HEADERS = \
 
 bin_PROGRAMS = sst.x
 sst_x_SOURCES = \
+	archive.cc \
 	clockEvent.cc \
 	component.cc \
 	config.cc \

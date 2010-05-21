@@ -18,8 +18,11 @@
 
 #include <boost/archive/polymorphic_iarchive.hpp>
 #include <boost/archive/polymorphic_oarchive.hpp>
+
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>
+#include <boost/serialization/nvp.hpp>
+#include <boost/serialization/split_member.hpp>
 #include <boost/mpi.hpp>
 
 #endif // #ifndef SST_CORE_SERIALIZATION_CORE_H

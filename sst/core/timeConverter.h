@@ -66,17 +66,11 @@ class TimeConverter {
     // Boost serialization from here down
     TimeConverter() {}   // Only needed to simplify serialization
 
-#if WANT_CHECKPOINT_SUPPORT
-
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version ) {
-	printf("TimeConverter::serialize()\n");
 	ar & BOOST_SERIALIZATION_NVP(factor);
     }
-    
-#endif
-    
 };    
 
 } // namespace SST
