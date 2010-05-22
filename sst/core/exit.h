@@ -15,7 +15,7 @@
 
 #include <set>
 #include <sst/core/sst.h>
-#include <sst/core/exitEvent.h>
+#include <sst/core/event.h>
 
 namespace SST{
 

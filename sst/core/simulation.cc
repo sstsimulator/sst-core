@@ -265,8 +265,6 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
             }
         }
     }
-    // For debug purposes only:
-    test = compMap->begin()->second;
     
     if ( ! syncMap.empty() ) {
         syncMap[0]->exchangeFunctors();

@@ -216,7 +216,7 @@ protected:
         function */
     TimeConverter* defaultTimeBase;
 
-    Component();
+    Component() { }
 
     /** Manually set the default detaulTimeBase */ 
     void setDefaultTimeBase(TimeConverter *tc) {

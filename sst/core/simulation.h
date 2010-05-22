@@ -140,7 +140,6 @@ private:
     CompMap_t*       compMap;
     IntroMap_t*      introMap;
     clockMap_t       clockMap;
-    Component*       test;
     SimTime_t        currentSimCycle;
     Exit*            m_exit;
 
@@ -150,12 +149,12 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
+        boost::serialization::base_object<SimulationBase>(*this);
         ar & BOOST_SERIALIZATION_NVP(eQueue);
         ar & BOOST_SERIALIZATION_NVP(syncMap);
         ar & BOOST_SERIALIZATION_NVP(compMap);
         ar & BOOST_SERIALIZATION_NVP(introMap);
         ar & BOOST_SERIALIZATION_NVP(clockMap);
-        ar & BOOST_SERIALIZATION_NVP(test);
         ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
         ar & BOOST_SERIALIZATION_NVP(m_exit);
         ar & BOOST_SERIALIZATION_NVP(syncMap);
