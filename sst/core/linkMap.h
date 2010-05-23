@@ -70,8 +70,6 @@ class LinkMap {
         linkMap_t       linkMap;
         linkVec_t       linkVec;
 
-	LinkMap() {}
-
     private:
 
         LinkMap( const LinkMap& l );
