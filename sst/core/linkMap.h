@@ -29,7 +29,6 @@ class Link;
 class LinkMap {
     protected:
         typedef std::map< std::string, Link* >  linkMap_t;
-        typedef std::vector< Link* >            linkVec_t;
 
     public:
         LinkMap( ComponentId_t id = -1 );
@@ -59,7 +58,7 @@ class LinkMap {
    @params name name of the link to be returned */
         Link* LinkGet( std::string name );
   /** Return the nth link to this component */
-        Link* LinkGet( unsigned int num );
+//         Link* LinkGet( unsigned int num );
 
         int LinkConnect( std::string str_name, Link* link, Cycle_t lat ); 
 	
@@ -68,7 +67,6 @@ class LinkMap {
         ComponentId_t   myId;
 
         linkMap_t       linkMap;
-        linkVec_t       linkVec;
 
     private:
 
@@ -80,7 +78,6 @@ class LinkMap {
 	{
 	    ar & BOOST_SERIALIZATION_NVP( myId );
 	    ar & BOOST_SERIALIZATION_NVP( linkMap );
-	    ar & BOOST_SERIALIZATION_NVP( linkVec );
 	}
 };
 

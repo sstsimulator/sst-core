@@ -20,9 +20,9 @@
 namespace SST { 
 
 Link::Link( Event::Handler_t* functor ) :
-    sendQueue( NULL),
+//     sendQueue( NULL),
     rFunctor( functor ),
-    sFunctor( NULL ),
+//     sFunctor( NULL ),
     m_syncQueue( NULL ),
     defaultTimeBase( NULL ),
     latency(1)
@@ -57,21 +57,21 @@ void Link::Connect( Link *link, Cycle_t lat ) {
     pair_link = link;
     link->pair_link = this;
     
-    sendQueue = const_cast<EventQueue_t*>(link->recvQueue);
-    sFunctor = const_cast<Event::Handler_t*>(link->rFunctor);
+//     sendQueue = const_cast<EventQueue_t*>(link->recvQueue);
+//     sFunctor = const_cast<Event::Handler_t*>(link->rFunctor);
     latency = lat;
-    _LINK_DBG("this=%p sendQueue=%p\n", this, sendQueue);
+//     _LINK_DBG("this=%p sendQueue=%p\n", this, sendQueue);
 }
 
 void Link::Connect( CompEventQueue_t* queue, Cycle_t lat ) {
-    _LINK_DBG("this=%p sendQueue=%p \n", this, queue );
+//     _LINK_DBG("this=%p sendQueue=%p \n", this, queue );
     m_syncQueue = queue;
     latency = lat;
 }
     
 void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
-    _LINK_DBG("delay=%lu sendQueue=%p event=%p sFunctor=%p\n",
-              (unsigned long) delay,sendQueue,event,sFunctor);
+//     _LINK_DBG("delay=%lu sendQueue=%p event=%p sFunctor=%p\n",
+//               (unsigned long) delay,sendQueue,event,sFunctor);
     
     if ( tc == NULL ) {
 	_abort(Link,"Cannot send an event on Link with NULL TimeConverter\n");
@@ -89,16 +89,18 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
         m_syncQueue->push_back( event ); 
     } else {
         std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
-        envelope.first = sFunctor;
+//         envelope.first = sFunctor;
+        envelope.first = pair_link->rFunctor;
         envelope.second = event;
-        sendQueue->insert( cycle, envelope );
+//         sendQueue->insert( cycle, envelope );
+        pair_link->recvQueue->insert( cycle, envelope );
     }
 }
     
 void Link::SyncInsert( Cycle_t cycle, CompEvent* event )
 { 
     _LINK_DBG("%p cycle=%lu\n",this,(unsigned long)cycle);
-    _LINK_DBG("sFunctor=%p\n",sFunctor);
+//     _LINK_DBG("sFunctor=%p\n",sFunctor);
     _LINK_DBG("recvQ=%p\n",recvQueue);
     
     std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;

@@ -19,7 +19,10 @@ namespace SST {
 
 class LinkPair {
 public:
-    LinkPair() {
+    LinkPair(LinkId_t id) {
+
+	my_id = id;
+	
 	// Just create the two links and hook them together
 	left = new Link();
 	right = new Link();
@@ -29,10 +32,16 @@ public:
     }
     virtual LinkPair() {}
 
+    LinkId_t getId() {
+	return my_id;
+    }
+    
 private:
     
     Link *left;
     Link *right;
+
+    LinkId_t my_id;
     
     friend class boost::serialization::access;
     template<class Archive>

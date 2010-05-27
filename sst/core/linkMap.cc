@@ -52,11 +52,9 @@ Link* LinkMap::LinkAdd( std::string name, Link* link )
         return NULL;
     }
 
-    linkVec.push_back( link );
+    linkMap[ name ] = link; 
 
-    linkMap[ name ] = linkVec.back(); 
-
-    return linkVec.back();
+    return link;
 }
 
 Link* LinkMap::selfLink( std::string name, Event::Handler_t* handler )
@@ -78,17 +76,6 @@ Link* LinkMap::LinkGet( std::string name )
     }
 
     return linkMap[ name ];
-}
-
-Link* LinkMap::LinkGet( unsigned int num )
-{
-    _LM_DBG( "num=%d\n", (int) num );
-    
-    if ( ! ( num < linkVec.size() ) ) {
-        return NULL;
-    }
-
-    return linkVec[ num ];
 }
 
 int LinkMap::LinkConnect( std::string name, Link* dest, Cycle_t lat )
