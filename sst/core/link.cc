@@ -53,6 +53,10 @@ void Link::Connect( Link *link, Cycle_t lat ) {
     if ( ! link ) {
         _abort(Link,"NULL link\n");
     }
+
+    pair_link = link;
+    link->pair_link = this;
+    
     sendQueue = const_cast<EventQueue_t*>(link->recvQueue);
     sFunctor = const_cast<Event::Handler_t*>(link->rFunctor);
     latency = lat;

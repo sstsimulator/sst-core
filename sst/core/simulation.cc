@@ -273,7 +273,88 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     _SIM_DBG( "config done\n\n" );
     return 0;
 }
+    /*
+int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
+            int minPart, int myRank )
+{
+    // For now only works with a single rank (though some of the
+    // multi-rank code is there)
 
+    // We will go through all the links and create LinkPairs for each
+    // link.  We will also create a LinkMap for each component and put
+    // them into a map with ComponentID as the key.
+
+    for( EdgeList_t::iterator iter = graph.elist.begin();
+                            iter != graph.elist.end(); ++iter )
+    {
+        Edge *e = (*iter).second;
+        int rank[2];
+        rank[0] = atoi(graph.vlist[e->v(0)]->prop_list.get(GRAPH_RANK).c_str());
+        rank[1] = atoi(graph.vlist[e->v(1)]->prop_list.get(GRAPH_RANK).c_str());
+
+        if ( rank[0] != myRank && rank[1] != myRank ) { 
+            continue;
+        }
+
+        std::string compName[2];
+        std::string linkName[2];
+        ComponentId_t cId[2];
+	uint64_t latency[2];
+	
+        std::string edge_name = e->prop_list.get(GRAPH_LINK_NAME);
+
+        SDL_Link*       sdlLink;
+        SDL_Component*  sdlComp;
+        Vertex*         vertex;
+
+        vertex      = graph.vlist[e->v(0)];
+        sdlComp     = sdlMap[ vertex->prop_list.get(GRAPH_COMP_NAME).c_str() ];
+        sdlLink     = sdlComp->links[edge_name];
+        compName[0] = vertex->prop_list.get(GRAPH_COMP_NAME); 
+        cId[0]      = atoi(vertex->prop_list.get(GRAPH_ID).c_str()); 
+        linkName[0] = sdlLink->params["name"];
+	latency[0]  = timeLord->getSimCycles(sdlLink->params["lat"], edge_name);
+
+        vertex      = graph.vlist[e->v(1)];
+        sdlComp     = sdlMap[ vertex->prop_list.get(GRAPH_COMP_NAME).c_str() ];
+        sdlLink     = sdlComp->links[edge_name];
+        compName[1] = vertex->prop_list.get(GRAPH_COMP_NAME); 
+        cId[1]      = atoi(vertex->prop_list.get(GRAPH_ID).c_str()); 
+        linkName[1] = sdlLink->params["name"];
+	latency[1]  = timeLord->getSimCycles(sdlLink->params["lat"], edge_name);
+
+        _SIM_DBG("Connecting component \"%s\" with link \"%s\" to component \"%s\" on link \"%s\"\n",
+			    compName[0].c_str(),
+                            linkName[0].c_str(),
+                            compName[1].c_str(),
+                            linkName[1].c_str());
+
+        if ( rank[0] == rank[1] ) { 
+
+	        _SIM_DBG("Both components are on the same rank\n");
+	        if ( Connect( (*compMap)[ cId[0] ], linkName[0], latency[0], 
+		                    (*compMap)[ cId[1] ], linkName[1], latency[1] ) )
+            {
+                _abort(Simulation,"Connect failed %s <-> %s\n",
+                                  linkName[0].c_str(), linkName[1].c_str() );
+            }
+        } else {
+            if ( myRank == rank[0] ) {
+		        _SIM_DBG("This component is on one rank\n");
+                syncMap[0]->registerLink( edge_name, 
+                           (*compMap)[ cId[0] ]->LinkGet( linkName[0] ),
+                            rank[1], latency[0] );
+            } else {
+		        _SIM_DBG("This component is on the other rank\n");
+                syncMap[0]->registerLink( edge_name, 
+                           (*compMap)[ cId[1] ]->LinkGet( linkName[1] ),
+                           rank[0], latency[1] );
+            }
+        }
+    }
+    return 0;
+}
+    */
 void Simulation::Run() {
     _SIM_DBG( "RUN\n" );
 

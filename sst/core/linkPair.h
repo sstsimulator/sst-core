@@ -10,48 +10,30 @@
 // distribution.
 
 
-#ifndef SST_EVENT_H
-#define SST_EVENT_H
+#ifndef SST_LINKPAIR_H
+#define SST_LINKPAIR_H
 
-#include <sst/core/eventFunctor.h>
-#include <sst/core/activity.h>
+#include <sst/core/sst.h>
 
 namespace SST {
 
-class Link;
-    
-// #include <sst/core/sst.h>
-
-
-typedef union {
-    Link* ptr;
-    LinkId_t id;
-} LinkUnion;
-
-    
-class NewEvent : public Activity {
-
+class LinkPair {
 public:
-    NewEvent() : Activity() {}
-    ~NewEvent() {}
+    LinkPair() {
+	// Just create the two links and hook them together
+	left = new Link();
+	right = new Link();
 
-    void execute(void);
-    
-private:
-    LinkUnion link;
-    
-};
-
-
-
-class Event {
-public:
-    typedef EventHandlerBase<bool,Event*> Handler_t;
-
-    Event() {}
-    virtual ~Event() = 0;
+	left->pair_link = right;
+	right->pair_link = left;
+    }
+    virtual LinkPair() {}
 
 private:
+    
+    Link *left;
+    Link *right;
+    
     friend class boost::serialization::access;
     template<class Archive>
     void
@@ -62,4 +44,4 @@ private:
 
 }
 
-#endif // SST_EVENT_H
+#endif // SST_LINKPAIR_H

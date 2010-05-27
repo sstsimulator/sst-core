@@ -28,7 +28,9 @@ class TimeConverter;
 class Link {
         typedef enum { DIRECT, HANDLER, QUEUE } Type_t;
     public:
-  
+
+// 	friend class LinkPair;
+	
         Link( Event::Handler_t* functor );
 
 	Link() {}
@@ -121,6 +123,10 @@ class Link {
 
         Type_t type;
 
+	Link* pair_link;
+	LinkId_t id;
+// 	ActivityQueue* send_queue;
+	
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version )
