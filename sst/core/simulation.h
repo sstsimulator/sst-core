@@ -86,6 +86,8 @@ public:
 
     int WireUp(Graph& graph, SDL_CompMap_t& sdlMap,
                int minPart, int myRank);
+    int performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
+		       int minPart, int myRank );
     void Run();
     SimTime_t getCurrentSimCycle();
     TimeConverter* registerClock(std::string freq, ClockHandler_t* handler);

@@ -23,13 +23,14 @@ namespace SST {
 #define _LINK_DBG( fmt, args...) __DBG( DBG_LINK, Link, fmt, ## args )
 
 class TimeConverter;
-    
+ class LinkPair;
+ 
   /** Link between two components. Carries events */
 class Link {
         typedef enum { DIRECT, HANDLER, QUEUE } Type_t;
 public:
 
-// 	friend class LinkPair;
+    friend class LinkPair;
 	
     Link( Event::Handler_t* functor );
 

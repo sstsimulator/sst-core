@@ -14,32 +14,39 @@
 #define SST_LINKPAIR_H
 
 #include <sst/core/sst.h>
+#include <sst/core/link.h>
 
 namespace SST {
 
 class LinkPair {
 public:
-    LinkPair(LinkId_t id) {
+    LinkPair(LinkId_t id) :
+	left(new Link()),
+	right(new Link())
+    {
 
 	my_id = id;
 	
 	// Just create the two links and hook them together
-	left = new Link();
-	right = new Link();
+// 	left = new Link();
+// 	right = new Link();
 
 	left->pair_link = right;
 	right->pair_link = left;
     }
-    virtual LinkPair() {}
+    virtual ~LinkPair() {}
 
     LinkId_t getId() {
 	return my_id;
     }
+
+    inline Link* getLeft() {return left;}
+    inline Link* getRight() {return right;}
     
 private:
     
-    Link *left;
-    Link *right;
+    Link* left;
+    Link* right;
 
     LinkId_t my_id;
     
