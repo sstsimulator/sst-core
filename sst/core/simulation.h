@@ -145,6 +145,8 @@ private:
     SimTime_t        currentSimCycle;
     Exit*            m_exit;
 
+    std::map<ComponentId_t,NewLinkMap*> component_links;
+    
     static Simulation *instance;
 
     friend class boost::serialization::access;

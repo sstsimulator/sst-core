@@ -331,7 +331,28 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
         if ( rank[0] == rank[1] ) { 
 	    lp->getLeft()->setLatency(latency[0]);
 	    lp->getRight()->setLatency(latency[1]);
-        }
+
+	    // Add this link to the appropriate LinkMap
+	    std::map<ComponentId_t,NewLinkMap*>::iterator it;
+	    it = component_links.find(cId[0]);
+	    if ( it == component_links.end() ) {
+		NewLinkMap* lm = new NewLinkMap();
+		std::pair<std::map<ComponentId_t,NewLinkMap*>::iterator,bool> ret_val;
+		ret_val = component_links.insert(std::pair<ComponentId_t,NewLinkMap*>(cId[0],lm));
+ 		it = ret_val.first;
+	    }
+ 	    it->second->insertLink(linkName[0],lp->getLeft());
+
+	    it = component_links.find(cId[1]);
+	    if ( it == component_links.end() ) {
+		NewLinkMap* lm = new NewLinkMap();
+		std::pair<std::map<ComponentId_t,NewLinkMap*>::iterator,bool> ret_val;
+		ret_val = component_links.insert(std::pair<ComponentId_t,NewLinkMap*>(cId[1],lm));
+ 		it = ret_val.first;
+	    }
+ 	    it->second->insertLink(linkName[1],lp->getRight());
+
+	}
 	else {
         }
     }

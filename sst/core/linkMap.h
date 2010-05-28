@@ -14,6 +14,8 @@
 #define SST_LINKMAP_H
 
 #include <vector>
+#include <string>
+#include <map>
 
 #include <sst/core/sst.h>
 #include <sst/core/event.h>
@@ -81,6 +83,28 @@ class LinkMap {
 	}
 };
 
+
+class NewLinkMap {
+
+private:
+    std::map<std::string,Link*> linkMap;
+
+public:
+    NewLinkMap() {}
+    ~NewLinkMap() {}
+    
+    void insertLink(std::string name, Link* link) {
+	linkMap.insert(std::pair<std::string,Link*>(name,link));
+    }
+
+    Link* getLink(std::string name) {
+	std::map<std::string,Link*>::iterator it = linkMap.find(name);
+	if ( it == linkMap.end() ) return NULL;
+	else return it->second;
+    }
+    
+};
+    
 } // namespace SST
 
 #endif // SST_LINKMAP_H
