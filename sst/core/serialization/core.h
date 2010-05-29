@@ -16,8 +16,13 @@
 #error "Include only one serialization/ header file"
 #endif
 
+#if SST_WANT_POLYMORPHIC_ARCHIVE
 #include <boost/archive/polymorphic_iarchive.hpp>
 #include <boost/archive/polymorphic_oarchive.hpp>
+#else
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#endif
 
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/export.hpp>

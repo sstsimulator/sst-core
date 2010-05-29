@@ -33,6 +33,7 @@ using namespace SST;
 Archive::Archive(std::string ttype, std::string filename) :
     filename(filename)
 {
+#if SST_WANT_POLYMORPHIC_ARCHIVE
     if (ttype.compare("xml") &&
         ttype.compare("text") &&
         ttype.compare("bin")) {
@@ -42,6 +43,13 @@ Archive::Archive(std::string ttype, std::string filename) :
     } else {
         type = ttype;
     }
+#else
+    if (ttype.compare("bin")) {
+        fprintf(stderr, "Serialization type %s unknown.  Defaulting to bin\n",
+                ttype.c_str());
+    }
+    type = "bin";
+#endif
 }
 
 
@@ -56,6 +64,7 @@ Archive::SaveSimulation(Simulation* simulation)
     std::string savename = filename + "." + type;
     std::ofstream ofs(savename.c_str());
 
+#if SST_WANT_POLYMORPHIC_ARCHIVE
     if (type == "xml") {
         boost::archive::polymorphic_xml_oarchive oa(ofs);
         oa << BOOST_SERIALIZATION_NVP(simulation);
@@ -68,6 +77,14 @@ Archive::SaveSimulation(Simulation* simulation)
     } else {
         abort();
     }
+#else
+    if (type == "bin") {
+        boost::archive::binary_oarchive oa(ofs);
+        oa << BOOST_SERIALIZATION_NVP(simulation);
+    } else {
+        abort();
+    }
+#endif
 }
 
 
@@ -78,6 +95,7 @@ Archive::LoadSimulation(void)
     std::ifstream ifs(loadname.c_str());
     Simulation* simulation;
 
+#if SST_WANT_POLYMORPHIC_ARCHIVE
     if (type == "xml") {
         boost::archive::polymorphic_xml_iarchive ia(ifs);
         ia >> BOOST_SERIALIZATION_NVP(simulation);
@@ -90,6 +108,14 @@ Archive::LoadSimulation(void)
     } else {
         abort();
     }
+#else
+    if (type == "bin") {
+        boost::archive::binary_iarchive ia(ifs);
+        ia >> BOOST_SERIALIZATION_NVP(simulation);
+    } else {
+        abort();
+    }
+#endif
 
     return simulation;
 }
