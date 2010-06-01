@@ -248,7 +248,9 @@ TimeConverter* Component::registerClock( std::string freq, ClockHandler_t* handl
 // 	    lnk->setDefaultTimeBase(tc);
 // 	}
 	std::pair<std::string,Link*> p;
-	BOOST_FOREACH( p, linkMap ) {
+// 	BOOST_FOREACH( p, linkMap ) {
+	// FIXME
+	BOOST_FOREACH( p, myLinks->getLinkMap() ) {
 	    p.second->setDefaultTimeBase(tc);
 	}
 	defaultTimeBase = tc;
@@ -266,7 +268,9 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
 // 	    lnk->setDefaultTimeBase(tc);
 // 	}
 	std::pair<std::string,Link*> p;
-	BOOST_FOREACH( p, linkMap ) {
+// 	BOOST_FOREACH( p, linkMap ) {
+	// FIXME
+	BOOST_FOREACH( p, myLinks->getLinkMap() ) {
 	    p.second->setDefaultTimeBase(tc);
 	}
 	defaultTimeBase = tc;

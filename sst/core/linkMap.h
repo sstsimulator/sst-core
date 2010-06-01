@@ -25,6 +25,33 @@ namespace SST {
 
 #define _LM_DBG( fmt, args...) __DBG( DBG_LINKMAP, LinkMap, fmt, ## args )
 
+class NewLinkMap {
+
+private:
+    std::map<std::string,Link*> linkMap;
+
+public:
+    NewLinkMap() {}
+    ~NewLinkMap() {}
+    
+    void insertLink(std::string name, Link* link) {
+	linkMap.insert(std::pair<std::string,Link*>(name,link));
+    }
+
+    Link* getLink(std::string name) {
+	std::map<std::string,Link*>::iterator it = linkMap.find(name);
+	if ( it == linkMap.end() ) return NULL;
+	else return it->second;
+    }
+
+    // FIXME: Cludge for now
+    std::map<std::string,Link*>& getLinkMap() {
+	return linkMap;
+    }
+    
+};
+
+
 class Link;
  
   /** Structure for tracking and connecting Links */
@@ -69,11 +96,13 @@ class LinkMap {
         ComponentId_t   myId;
 
         linkMap_t       linkMap;
+    NewLinkMap* myLinks;
 
     private:
 
         LinkMap( const LinkMap& l );
 
+    
 	friend class boost::serialization::access;
 	template<class Archive>
 	void serialize(Archive & ar, const unsigned int version )
@@ -84,26 +113,6 @@ class LinkMap {
 };
 
 
-class NewLinkMap {
-
-private:
-    std::map<std::string,Link*> linkMap;
-
-public:
-    NewLinkMap() {}
-    ~NewLinkMap() {}
-    
-    void insertLink(std::string name, Link* link) {
-	linkMap.insert(std::pair<std::string,Link*>(name,link));
-    }
-
-    Link* getLink(std::string name) {
-	std::map<std::string,Link*>::iterator it = linkMap.find(name);
-	if ( it == linkMap.end() ) return NULL;
-	else return it->second;
-    }
-    
-};
     
 } // namespace SST
 

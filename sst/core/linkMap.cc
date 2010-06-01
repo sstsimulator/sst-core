@@ -22,9 +22,24 @@ namespace SST {
 LinkMap::LinkMap( ComponentId_t myId ) :
     myId( myId )
 {
+    myLinks = Simulation::getSimulation()->getComponentLinkMap(myId);
     _LM_DBG( "\n" );
 }
 
+Link* LinkMap::LinkAdd( std::string name, Event::Handler_t* functor )
+{
+    // Need to add error checking at some point...
+    Link* tmp = myLinks->getLink(name);
+    tmp->setFunctor(functor);
+    // If no functor, this is a polling link
+    if ( functor == NULL ) {
+	tmp->setPolling();
+    }
+    if ( tmp == NULL ) printf("Returning NULL from LinkAdd\n");
+    return tmp;
+}
+
+/*
 Link* LinkMap::LinkAdd( std::string name, Event::Handler_t* functor )
 {
     _LM_DBG( "name=%s functor=%p\n", name.c_str(), functor );
@@ -42,7 +57,8 @@ Link* LinkMap::LinkAdd( std::string name, Event::Handler_t* functor )
 
     return LinkAdd( name, link );
 }
-    
+*/
+
 Link* LinkMap::LinkAdd( std::string name, Link* link )
 {
     _LM_DBG( "name=%s link=%p\n", name.c_str(), link );
@@ -59,13 +75,21 @@ Link* LinkMap::LinkAdd( std::string name, Link* link )
 
 Link* LinkMap::selfLink( std::string name, Event::Handler_t* handler )
 {
+    Link* link = new Link(handler);
+    link->Connect(link,0);
+    return link;
+}
+
+    /*    
+Link* LinkMap::selfLink( std::string name, Event::Handler_t* handler )
+{
     Link *lnk = LinkAdd(name, handler);
     // Don't know if this will work, but simply try connecting the
     // link to itself
     lnk->Connect(lnk,0);
     return lnk;
 }
-
+    */
 Link* LinkMap::LinkGet( std::string name )
 {
     _LM_DBG( "name=%s\n", name.c_str() );

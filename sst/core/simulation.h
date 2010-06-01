@@ -100,6 +100,10 @@ public:
 	    return compMap;
 	}
 
+    NewLinkMap* getComponentLinkMap(ComponentId_t id) {
+	return component_links[id];
+    }
+    
     Component* getComponent(const char* type){
 	    ComponentId_t id = atoi(type);
 	    std::map<ComponentId_t, Component*>::iterator it;

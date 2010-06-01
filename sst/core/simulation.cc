@@ -98,6 +98,7 @@ Simulation::createComponent( ComponentId_t id, std::string name,
 int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
             int minPart, int myRank )
 {
+    printf("starting WireUp\n");
     _SIM_DBG("minPart=%d myRank=%d\n", minPart, myRank );
 
     for( VertexList_t::iterator iter = graph.vlist.begin();
@@ -196,7 +197,7 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 // 	//         syncMap[0] = new Sync( compMap, clock, tmp );
         syncMap[0] = new Sync( timeLord->getTimeConverter(minPart) );
     }
-
+    /*
     for( EdgeList_t::iterator iter = graph.elist.begin();
                             iter != graph.elist.end(); ++iter )
     {
@@ -266,10 +267,11 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
             }
         }
     }
-    
+    */
     if ( ! syncMap.empty() ) {
         syncMap[0]->exchangeFunctors();
     }
+    printf("done with WireUp\n");
 
     _SIM_DBG( "config done\n\n" );
     return 0;
@@ -356,6 +358,9 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 	else {
         }
     }
+
+    // Now, build all the components
+    
     printf("done with performWireUp()\n");
     return 0;
 }
@@ -379,7 +384,7 @@ void Simulation::Run() {
         }
     }
 
-
+    printf("Starting main event loop\n");
     while( LIKELY( ! eQueue->empty() ) ) {
  	currentSimCycle = eQueue->key();
 

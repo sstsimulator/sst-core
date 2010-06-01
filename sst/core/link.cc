@@ -32,18 +32,32 @@ Link::Link( Event::Handler_t* functor ) :
 	type = HANDLER;
     } else {
 	recvQueue = new EventQueue_t;
-	type = DIRECT;
+	type = POLL;
     }
 
     _LINK_DBG("this=%p functor=%p recvQueue=%p type=%d\n", 
                         this, functor, recvQueue, type );
 } 
 
+Link::Link() :
+    m_syncQueue( NULL ),
+    defaultTimeBase( NULL ),
+    latency(1)
+{
+    recvQueue = Simulation::getSimulation()->getEventQueue();
+}
+
 Link::~Link() {
-    if ( type == DIRECT ) {
+    if ( type == POLL ) {
 	delete recvQueue;
     }
 }
+
+void Link::setPolling() {
+    type = POLL;
+    recvQueue = new EventQueue_t;
+}
+
     
 void Link::setLatency(Cycle_t lat) {
     latency = lat;
@@ -72,7 +86,6 @@ void Link::Connect( CompEventQueue_t* queue, Cycle_t lat ) {
 void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
 //     _LINK_DBG("delay=%lu sendQueue=%p event=%p sFunctor=%p\n",
 //               (unsigned long) delay,sendQueue,event,sFunctor);
-    
     if ( tc == NULL ) {
 	_abort(Link,"Cannot send an event on Link with NULL TimeConverter\n");
     }
@@ -83,16 +96,16 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
     _LINK_DBG( "cycle=%lu\n", (unsigned long)cycle );
 
     if ( m_syncQueue ) {
-        _LINK_DBG("Sync %p\n", m_syncLink);
-        event->SetLinkPtr( m_syncLink );
-        event->SetCycle( cycle );
-        m_syncQueue->push_back( event ); 
+         _LINK_DBG("Sync %p\n", m_syncLink);
+         event->SetLinkPtr( m_syncLink );
+         event->SetCycle( cycle );
+         m_syncQueue->push_back( event ); 
     } else {
         std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
-//         envelope.first = sFunctor;
+	//         envelope.first = sFunctor;
         envelope.first = pair_link->rFunctor;
         envelope.second = event;
-//         sendQueue->insert( cycle, envelope );
+	//         sendQueue->insert( cycle, envelope );
         pair_link->recvQueue->insert( cycle, envelope );
     }
 }

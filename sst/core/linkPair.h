@@ -33,6 +33,7 @@ public:
 
 	left->pair_link = right;
 	right->pair_link = left;
+
     }
     virtual ~LinkPair() {}
 

@@ -27,19 +27,25 @@ class TimeConverter;
  
   /** Link between two components. Carries events */
 class Link {
-        typedef enum { DIRECT, HANDLER, QUEUE } Type_t;
+        typedef enum { POLL, HANDLER, QUEUE } Type_t;
 public:
 
     friend class LinkPair;
 	
     Link( Event::Handler_t* functor );
 
-    Link() {}
+    Link();
     
     ~Link();
     
     /** set minimum link latency */
     void setLatency(Cycle_t lat);
+
+    void setFunctor(Event::Handler_t* functor) {
+	rFunctor = functor;
+    }
+
+    void setPolling();
     
     void Connect( Link *link, Cycle_t lat );
     
