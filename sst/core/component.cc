@@ -280,8 +280,9 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
 
 Link* Component::LinkAdd( std::string name, Event::Handler_t* functor )
 {
-    // Need to add error checking at some point...
     Link* tmp = myLinks->getLink(name);
+    if ( tmp == NULL ) return NULL;
+    
     tmp->setFunctor(functor);
     // If no functor, this is a polling link
     if ( functor == NULL ) {
