@@ -85,7 +85,7 @@ typedef std::map<ComponentId_t, Pdissipation_t> PowerDatabase;
  * Main component object for the simulation. 
  *  All models inherit from this. 
  */
-class Component : public LinkMap {
+class Component {
 public:
     typedef  std::map<std::string,std::string> Params_t;
     
@@ -232,7 +232,11 @@ protected:
 	Component::getMonitorDoubleData() */	
     Monitors monitorDOUBLE;
 
+    Link* selfLink( std::string name, Event::Handler_t* handler = NULL );
+
+    
 public:
+    Link* LinkAdd( std::string name, Event::Handler_t* handler = NULL );
     /** Registers a clock for this component.
         @param freq Frequency for the clock in SI units
         @param handler Pointer to ClockHandler_t which is to be invoked
@@ -291,6 +295,9 @@ public:
     bool unregisterExit();
 	
 private:
+
+    LinkMap* myLinks;
+    
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version) {
@@ -302,6 +309,7 @@ private:
 typedef std::map< ComponentId_t, Component* > CompMap_t;
 typedef std::deque< Component* > CompQueue_t;
 
+/*
 inline int
 Connect(Component* c1, std::string c1_name, Cycle_t lat1,
         Component* c2, std::string c2_name, Cycle_t lat2 )
@@ -325,7 +333,7 @@ Connect(Component* c1, std::string c1_name,
 {
   return Connect(c1,c1_name,1,c2,c2_name,1);
 }
-
+*/
 }
 
 #endif

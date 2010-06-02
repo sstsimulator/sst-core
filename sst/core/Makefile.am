@@ -74,7 +74,6 @@ sst_x_SOURCES = \
 	factory.cc \
 	introspector.cc \
 	link.cc \
-	linkMap.cc \
 	main.cc \
 	memEvent.cc \
 	simulation.cc \

@@ -25,14 +25,16 @@ namespace SST {
 
 #define _LM_DBG( fmt, args...) __DBG( DBG_LINKMAP, LinkMap, fmt, ## args )
 
-class NewLinkMap {
+class Link;
+
+class LinkMap {
 
 private:
     std::map<std::string,Link*> linkMap;
 
 public:
-    NewLinkMap() {}
-    ~NewLinkMap() {}
+    LinkMap() {}
+    ~LinkMap() {}
     
     void insertLink(std::string name, Link* link) {
 	linkMap.insert(std::pair<std::string,Link*>(name,link));
@@ -52,65 +54,64 @@ public:
 };
 
 
-class Link;
  
-  /** Structure for tracking and connecting Links */
-class LinkMap {
-    protected:
-        typedef std::map< std::string, Link* >  linkMap_t;
+//   /** Structure for tracking and connecting Links */
+// class LinkMap {
+//     protected:
+//         typedef std::map< std::string, Link* >  linkMap_t;
 
-    public:
-        LinkMap( ComponentId_t id = -1 );
+//     public:
+//         LinkMap( ComponentId_t id = -1 );
 
-  /** Create a Link object, assigning a name and event handler.
-      Returns the link object, or NULL if a link by that name already
-      exists.
+//   /** Create a Link object, assigning a name and event handler.
+//       Returns the link object, or NULL if a link by that name already
+//       exists.
       
-      @param name Name of the link. This name should match the <name>
-      of the link for that component in the XML file.
+//       @param name Name of the link. This name should match the <name>
+//       of the link for that component in the XML file.
 
-      @param handler The event handler to handle events from this
-      link. If NULL, the link must be polled for incoming events. 
-   */
-        Link* LinkAdd( std::string name, Event::Handler_t* handler = NULL );
-        Link* LinkAdd( std::string, Link* );
+//       @param handler The event handler to handle events from this
+//       link. If NULL, the link must be polled for incoming events. 
+//    */
+//         Link* LinkAdd( std::string name, Event::Handler_t* handler = NULL );
+//         Link* LinkAdd( std::string, Link* );
 
-  /** Create a link to yourself.
+//   /** Create a link to yourself.
       
-      @param name Name for the Link
-      @param handler The event handler to handle events from this
-      link. If NULL, the link must be polled for incoming events.
-   */
-	Link* selfLink( std::string name, Event::Handler_t* handler = NULL );
+//       @param name Name for the Link
+//       @param handler The event handler to handle events from this
+//       link. If NULL, the link must be polled for incoming events.
+//    */
+// 	Link* selfLink( std::string name, Event::Handler_t* handler = NULL );
 	
-  /** Return the Link by name.
-   @params name name of the link to be returned */
-        Link* LinkGet( std::string name );
-  /** Return the nth link to this component */
-//         Link* LinkGet( unsigned int num );
+//   /** Return the Link by name.
+//    @params name name of the link to be returned */
+//         Link* LinkGet( std::string name );
+//   /** Return the nth link to this component */
+// //         Link* LinkGet( unsigned int num );
 
-        int LinkConnect( std::string str_name, Link* link, Cycle_t lat ); 
+//         int LinkConnect( std::string str_name, Link* link, Cycle_t lat ); 
 	
-    protected:
-  /** Unique component ID */
-        ComponentId_t   myId;
+//     protected:
+//   /** Unique component ID */
+//         ComponentId_t   myId;
 
-        linkMap_t       linkMap;
-    NewLinkMap* myLinks;
+//         linkMap_t       linkMap;
+//     NewLinkMap* myLinks;
 
-    private:
+//     private:
 
-        LinkMap( const LinkMap& l );
+//         LinkMap( const LinkMap& l );
 
     
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive & ar, const unsigned int version )
-	{
-	    ar & BOOST_SERIALIZATION_NVP( myId );
-	    ar & BOOST_SERIALIZATION_NVP( linkMap );
-	}
-};
+// 	friend class boost::serialization::access;
+// 	template<class Archive>
+// 	void serialize(Archive & ar, const unsigned int version )
+// 	{
+// 	    ar & BOOST_SERIALIZATION_NVP( myId );
+// 	    ar & BOOST_SERIALIZATION_NVP( linkMap );
+// 	}
+// };
 
 
     

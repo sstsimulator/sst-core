@@ -29,9 +29,9 @@ PowerDatabase Component::PDB;
 Component::~Component() {}
 
 Component::Component(ComponentId_t id) :
-    LinkMap( id ),
     _id( id )
 {
+    myLinks = Simulation::getSimulation()->getComponentLinkMap(_id);
     _COMP_DBG( "new\n" );
 }
 
@@ -278,6 +278,33 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
     return tc;
 }
 
+Link* Component::LinkAdd( std::string name, Event::Handler_t* functor )
+{
+    // Need to add error checking at some point...
+    Link* tmp = myLinks->getLink(name);
+    tmp->setFunctor(functor);
+    // If no functor, this is a polling link
+    if ( functor == NULL ) {
+	tmp->setPolling();
+    }
+    return tmp;
+}
+
+Link* Component::selfLink( std::string name, Event::Handler_t* handler )
+{
+//     Link* link = new Link(handler);
+//     link->Connect(link,0);
+//     return link;
+    Link* link = new SelfLink();
+    link->setLatency(0);
+    link->setFunctor(handler);
+    if ( handler == NULL ) {
+	link->setPolling();
+    }
+    return link;
+}
+    
+    
 SimTime_t Component::getCurrentSimTime(TimeConverter *tc) {
     return tc->convertFromCoreTime(Simulation::getSimulation()->getCurrentSimCycle());
 }

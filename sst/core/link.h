@@ -23,7 +23,7 @@ namespace SST {
 #define _LINK_DBG( fmt, args...) __DBG( DBG_LINK, Link, fmt, ## args )
 
 class TimeConverter;
- class LinkPair;
+class LinkPair;
  
   /** Link between two components. Carries events */
 class Link {
@@ -47,7 +47,7 @@ public:
 
     void setPolling();
     
-    void Connect( Link *link, Cycle_t lat );
+//     void Connect( Link *link, Cycle_t lat );
     
     void Connect( CompEventQueue_t* queue, Cycle_t lat );
     
@@ -124,13 +124,15 @@ protected:
 	weight. This latency is added to the delay put on the event by
 	the component. */
     SimTime_t            latency;
-    
+
+protected:
+    Link* pair_link;
+
 private:
     Link( const Link& l );
     
     Type_t type;
     
-    Link* pair_link;
     LinkId_t id;
     // 	ActivityQueue* send_queue;
     
@@ -144,7 +146,19 @@ private:
 	ar & BOOST_SERIALIZATION_NVP( type );
     }
 };
-    
+
+class SelfLink : public Link {
+
+public:
+    SelfLink() :
+	Link()
+    {
+	pair_link = this;
+    }
+
+};    
+
+
 } // namespace SST
 
 #endif
