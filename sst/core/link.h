@@ -32,8 +32,6 @@ public:
 
     friend class LinkPair;
 	
-    Link( Event::Handler_t* functor );
-
     Link();
     
     ~Link();
@@ -46,10 +44,6 @@ public:
     }
 
     void setPolling();
-    
-//     void Connect( Link *link, Cycle_t lat );
-    
-    void Connect( CompEventQueue_t* queue, Cycle_t lat );
     
     /** Send an event over the link with additional delay. Sends an event
 	over a link with an additional delay specified with a
@@ -77,7 +71,6 @@ public:
 	Send( 0, event );
     }
     
-    void SyncInsert( Cycle_t cycle, CompEvent* event );
     
     /** Retrieve a pending event from the Link. For links which do not
 	have a set event handler, they can be polled with this function.
@@ -85,34 +78,17 @@ public:
     */
     CompEvent* Recv();
     
-    void setSyncLink( Link* link, Event::Handler_t* functor ) {
-        _LINK_DBG("Sync this=%p link=%p\n",this,link);
-        m_syncLink = link;
-	//         sFunctor = functor;
-    }
-    Event::Handler_t* RFunctor() {
-        return rFunctor;
-    }
     
     /** Manually set the default detaulTimeBase 
 	@param tc TimeConverter object for the timebase */ 
     void setDefaultTimeBase(TimeConverter* tc);
     
 protected:
-    //     EventQueue_t*      sendQueue;
     EventQueue_t*      recvQueue;
     
     /** Recieve functor. This functor is set when the link is connected.
 	Determines what the receiver wants to be called */ 
     Event::Handler_t*  rFunctor; 
-    
-    /** Send Functor. This get set during a connect on the send end of
-	the link */ 
-    //     Event::Handler_t*  sFunctor; 
-    
-    /** link to be used on far end of sync */
-    Link*          m_syncLink;
-    CompEventQueue_t*   m_syncQueue;
     
     /** Timebase used if no other timebase is specified. Used to specify
 	the untits for added delays when sending, such as in
@@ -140,7 +116,6 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
-	// 	    ar & BOOST_SERIALIZATION_NVP( sendQueue );
 	ar & BOOST_SERIALIZATION_NVP( defaultTimeBase );
 	ar & BOOST_SERIALIZATION_NVP( latency );
 	ar & BOOST_SERIALIZATION_NVP( type );

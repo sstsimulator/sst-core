@@ -9,7 +9,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
+#if 0
 #include "sst_config.h"
 #include "sst/core/serialization/core.h"
 #include "sst/core/serialization/types.h"
@@ -225,3 +225,4 @@ bool Sync::handler( Event *e )
 
 } // namespace  SST
 
+#endif

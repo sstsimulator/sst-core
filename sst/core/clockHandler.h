@@ -20,6 +20,14 @@ namespace SST {
 
 typedef EventHandlerBase< bool, Cycle_t > ClockHandler_t;
 
+// class ClockHandler {
+//  private:
+//     Component* component;
+    
+
+// }
+
+ 
 } // namespace SST
 
 #endif // SST_CLOCKHANDLER_H

@@ -19,7 +19,7 @@
 #include <boost/foreach.hpp>
 
 #include <sst/core/simulation.h>
-#include <sst/core/sync.h>
+//#include <sst/core/sync.h>
 #include <sst/core/factory.h>
 #include <sst/core/stopEvent.h>
 #include <sst/core/exit.h>
@@ -183,19 +183,7 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     // if minPart is 99999 we are running within 1 rank
     // we need to use something other than 99999 to indicate this
     if ( minPart < 99999 ) {
-        // if minPart is zero we need to sync at the sim frequency
-//         Frequency_t tmp = frequency;
-//         Time_t tmp = frequency;
-
-//         if ( minPart ) {
-//             tmp = 1.0 / ( (float) minPart / 1000000000.0 );
-//             // if minPart results in a frequency less than the sim frequency
-//             // set it to the sim frequency
-//             tmp = tmp > frequency ? frequency : tmp;
-//         }
-// 	// FIXME
-// 	//         syncMap[0] = new Sync( compMap, clock, tmp );
-        syncMap[0] = new Sync( timeLord->getTimeConverter(minPart) );
+//         syncMap[0] = new Sync( timeLord->getTimeConverter(minPart) );
     }
     /*
     for( EdgeList_t::iterator iter = graph.elist.begin();
@@ -268,9 +256,9 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
         }
     }
     */
-    if ( ! syncMap.empty() ) {
-        syncMap[0]->exchangeFunctors();
-    }
+//     if ( ! syncMap.empty() ) {
+//         syncMap[0]->exchangeFunctors();
+//     }
     printf("done with WireUp\n");
 
     _SIM_DBG( "config done\n\n" );
@@ -448,9 +436,9 @@ std::string Simulation::EventName( Event *e )
     if ( dynamic_cast< ClockEvent* >( e ) ) {
         eventType = "ClockEvent";
     }
-    if ( dynamic_cast< SyncEvent* >( e ) ) {
-        eventType = "SyncEvent";
-    }
+//     if ( dynamic_cast< SyncEvent* >( e ) ) {
+//         eventType = "SyncEvent";
+//     }
     if ( dynamic_cast< CompEvent* >( e ) ) {
         eventType = "CompEvent";
     }
