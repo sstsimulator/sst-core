@@ -15,8 +15,9 @@
 #define _SST_LINK_H
 
 #include <sst/core/sst.h>
-#include <sst/core/compEvent.h>
+// #include <sst/core/compEvent.h>
 #include <sst/core/eventQueue.h>
+#include <sst/core/eventFunctor.h>
 
 namespace SST { 
 
@@ -24,7 +25,7 @@ namespace SST {
 
 class TimeConverter;
 class LinkPair;
- class CompEvent;
+class Event;
  
   /** Link between two components. Carries events */
 class Link {
@@ -54,7 +55,7 @@ public:
 	@param tc The time converter to specify units for the additional delay
 	@param the Event to send
     */
-    void Send( SimTime_t delay, TimeConverter* tc, CompEvent* event );
+    void Send( SimTime_t delay, TimeConverter* tc, Event* event );
     
     /** Send an event with additional delay. Sends an event over a link
 	with additional delay specified by the Link's default
@@ -62,13 +63,13 @@ public:
 	@param delay The additional delay, in units of the default Link timebase
 	@param event The event to send
     */
-    inline void Send( SimTime_t delay, CompEvent* event ) {
+    inline void Send( SimTime_t delay, Event* event ) {
 	Send(delay,defaultTimeBase,event);
     }
     
     /** Send an event with the Link's default delay
 	@param event The event to send */
-    inline void Send( CompEvent* event ) {
+    inline void Send( Event* event ) {
 	Send( 0, event );
     }
     
@@ -77,7 +78,7 @@ public:
 	have a set event handler, they can be polled with this function.
 	Returns NULL if there is no pending event.
     */
-    CompEvent* Recv();
+    Event* Recv();
     
     
     /** Manually set the default detaulTimeBase 

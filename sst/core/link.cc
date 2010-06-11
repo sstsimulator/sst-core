@@ -16,6 +16,7 @@
 
 #include <sst/core/link.h>
 #include <sst/core/simulation.h>
+#include <sst/core/event.h>
 
 namespace SST { 
 
@@ -44,7 +45,7 @@ void Link::setLatency(Cycle_t lat) {
 }
     
     
-void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
+void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {
 //     _LINK_DBG("delay=%lu sendQueue=%p event=%p sFunctor=%p\n",
 //               (unsigned long) delay,sendQueue,event,sFunctor);
     if ( tc == NULL ) {
@@ -63,7 +64,7 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
 }
     
 
-CompEvent* Link::Recv()
+Event* Link::Recv()
 {
     Event* event = NULL;
     Simulation *simulation = Simulation::getSimulation();
@@ -76,7 +77,7 @@ CompEvent* Link::Recv()
 	    recvQueue->pop();
 	}
     }
-    return static_cast<CompEvent*>(event);
+    return static_cast<Event*>(event);
 } 
     
 void Link::setDefaultTimeBase(TimeConverter* tc) {

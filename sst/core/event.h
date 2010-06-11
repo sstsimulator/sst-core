@@ -15,7 +15,7 @@
 
 #include <sst/core/eventFunctor.h>
 #include <sst/core/activity.h>
-// #include <sst/core/link.h>
+#include <sst/core/link.h>
 
 
 namespace SST {
@@ -48,13 +48,14 @@ private:
 
 class Event : public Activity {
 public:
-/*     typedef EventHandlerBase<bool,Event*> Handler_t; */
 
-    Event() : Activity() {}
+    Event() : Activity() {
+	setPriority(50);
+    }
     virtual ~Event() = 0;
 
-    void execute(void) {
-// 	delivery_link->deliverEvent(this);
+    inline void execute(void) {
+ 	delivery_link->deliverEvent(this);
     }
     
 private:
