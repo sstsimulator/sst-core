@@ -15,6 +15,8 @@
 
 #include <sst/core/eventFunctor.h>
 #include <sst/core/activity.h>
+// #include <sst/core/link.h>
+
 
 namespace SST {
 
@@ -44,14 +46,22 @@ private:
 
 
 
-class Event {
+class Event : public Activity {
 public:
 /*     typedef EventHandlerBase<bool,Event*> Handler_t; */
 
-    Event() {}
+    Event() : Activity() {}
     virtual ~Event() = 0;
 
+    void execute(void) {
+// 	delivery_link->deliverEvent(this);
+    }
+    
 private:
+
+    Link* delivery_link;
+    LinkId_t link_id;
+
     friend class boost::serialization::access;
     template<class Archive>
     void

@@ -376,18 +376,11 @@ void Simulation::Run() {
     while( LIKELY( ! eQueue->empty() ) ) {
  	currentSimCycle = eQueue->key();
 
-	// KSH FIXME
-//         _SIM_DBG( "cycle=%lu time=%.12f %s\n", clock->CurrentCycle(),
-//             clock->CurrentTime(), EventName( eQueue->top() ).c_str() ); 
-
 	std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope = eQueue->top();
 
-//         Event *ptr = eQueue->top();
 	Event *ptr = envelope.second;
         eQueue->pop();
-//         if ( UNLIKELY( ( *ptr->Handler() )( ptr) ) ) {
         if ( UNLIKELY( (*envelope.first)( ptr) ) )  {
-//         if ( (*envelope.first)(ptr) )  {
             break;
         }
     }

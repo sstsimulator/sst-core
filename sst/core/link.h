@@ -24,6 +24,7 @@ namespace SST {
 
 class TimeConverter;
 class LinkPair;
+ class CompEvent;
  
   /** Link between two components. Carries events */
 class Link {
@@ -82,6 +83,10 @@ public:
     /** Manually set the default detaulTimeBase 
 	@param tc TimeConverter object for the timebase */ 
     void setDefaultTimeBase(TimeConverter* tc);
+
+    inline void deliverEvent(Event* event) {
+	(*rFunctor)(event);
+    }
     
 protected:
     EventQueue_t*      recvQueue;

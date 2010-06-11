@@ -53,7 +53,7 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, CompEvent* event ) {
 
     Cycle_t cycle = Simulation::getSimulation()->getCurrentSimCycle() +
                     tc->convertToCoreTime(delay) + latency;
-
+    
     _LINK_DBG( "cycle=%lu\n", (unsigned long)cycle );
 
     std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
