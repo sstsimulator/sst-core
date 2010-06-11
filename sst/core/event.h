@@ -46,7 +46,7 @@ private:
 
 class Event {
 public:
-    typedef EventHandlerBase<bool,Event*> Handler_t;
+/*     typedef EventHandlerBase<bool,Event*> Handler_t; */
 
     Event() {}
     virtual ~Event() = 0;

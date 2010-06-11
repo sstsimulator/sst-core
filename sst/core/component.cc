@@ -278,7 +278,7 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
     return tc;
 }
 
-Link* Component::LinkAdd( std::string name, Event::Handler_t* functor )
+Link* Component::LinkAdd( std::string name, EventHandler_t* functor )
 {
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
@@ -291,7 +291,7 @@ Link* Component::LinkAdd( std::string name, Event::Handler_t* functor )
     return tmp;
 }
 
-Link* Component::selfLink( std::string name, Event::Handler_t* handler )
+Link* Component::selfLink( std::string name, EventHandler_t* handler )
 {
 //     Link* link = new Link(handler);
 //     link->Connect(link,0);

@@ -20,7 +20,7 @@ namespace SST {
 class SyncEvent : public Event
 {
 public:
-     SyncEvent( Handler_t* handler )
+     SyncEvent( EventHandler_t* handler )
      {
        functor = handler;
      }
@@ -31,7 +31,7 @@ public:
     {}
 
 private:
-    Handler_t* functor;
+    EventHandler_t* functor;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -47,7 +47,7 @@ private:
                         const SyncEvent * t, 
                         const unsigned int file_version)
     {
-            Handler_t* handler = t->functor;
+            EventHandler_t* handler = t->functor;
             ar << BOOST_SERIALIZATION_NVP( handler );
     }
 
@@ -57,7 +57,7 @@ private:
                         SyncEvent * t, 
                         const unsigned int file_version)
     {
-        Handler_t* handler;
+        EventHandler_t* handler;
         ar >> BOOST_SERIALIZATION_NVP( handler );
         ::new(t)SyncEvent( handler );
     }

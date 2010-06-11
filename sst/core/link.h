@@ -39,7 +39,7 @@ public:
     /** set minimum link latency */
     void setLatency(Cycle_t lat);
 
-    void setFunctor(Event::Handler_t* functor) {
+    void setFunctor(EventHandler_t* functor) {
 	rFunctor = functor;
     }
 
@@ -88,7 +88,7 @@ protected:
     
     /** Recieve functor. This functor is set when the link is connected.
 	Determines what the receiver wants to be called */ 
-    Event::Handler_t*  rFunctor; 
+    EventHandler_t*  rFunctor; 
     
     /** Timebase used if no other timebase is specified. Used to specify
 	the untits for added delays when sending, such as in

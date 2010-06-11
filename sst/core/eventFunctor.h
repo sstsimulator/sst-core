@@ -18,110 +18,9 @@
 
 namespace SST {
 
-    // This is the old version for 2 parameters.  Keep it around, just in case.
-#if 0
-template <typename ReturnT, typename Param1T, typename Param2T>
-class EventHandlerBase
-{
-    public:
-        BOOST_SERIALIZE {
-            _AR_DBG(EventHandlerBase,"\n");
-        }
-        virtual ReturnT operator()(Param1T, Param2T) = 0;
-        virtual ~EventHandlerBase() {
-	}
-};
-
-template <typename ConsumerT, typename ReturnT, 
-                        typename Param1T, typename Param2T >
-class EventHandler: public EventHandlerBase<ReturnT,Param1T,Param2T>
-{
-    private:
-        typedef ReturnT (ConsumerT::*PtrMember)(Param1T,Param2T);
-
-    public:
-        EventHandler( ConsumerT* const object, PtrMember member) :
-                object(object), member(member) {
-        }
-
-        EventHandler( const EventHandler<ConsumerT,ReturnT,Param1T,Param2T>& e ) :
-                object(e.object), member(e.member) {
-        }
-
-        ReturnT operator()(Param1T param1, Param2T param2) {
-            return (const_cast<ConsumerT*>(object)->*member)(param1,param2);
-        }
-
-    private:
-
-        // CONSTRUCT Data
-        ConsumerT* const object;
-        const PtrMember  member;
-
-        BOOST_SERIALIZE {
-            _AR_DBG(EventHandler,"start\n");
-            typedef EventHandler<ConsumerT,ReturnT,Param1T,Param2T> tmp1;
-            typedef EventHandlerBase<ReturnT,Param1T,Param2T> tmp2;
-            BOOST_VOID_CAST_REGISTER(tmp1*,tmp2*);
-            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(tmp2);
-            _AR_DBG(EventHandler,"done\n");
-        }
-
-        typedef struct {
-		    uint64_t data[2];
-	    } member_t;
-
-        template<class Archive> 
-        friend void save_construct_data 
-            (Archive & ar, const EventHandler<ConsumerT,ReturnT,Param1T,Param2T> * t,
-                    const unsigned int file_version) 
-        {
-            ConsumerT* object = t->object;
-            PtrMember tmp        = t->member;
-
-            member_t *member_ptr = reinterpret_cast<member_t*>(&tmp);
-            uint64_t member0  = member_ptr->data[0];
-            uint64_t member1  = member_ptr->data[1];
-
-            _AR_DBG(EventHandler,"object=%p member=%#lx %#lx\n",
-											object,member1,member0);
-
-            ar << BOOST_SERIALIZATION_NVP( object );
-            ar << BOOST_SERIALIZATION_NVP( member0 );
-            ar << BOOST_SERIALIZATION_NVP( member1 );
-        }
-
-        template<class Archive> 
-        friend void load_construct_data 
-            (Archive & ar, EventHandler<ConsumerT,ReturnT,Param1T,Param2T> * t, 
-                    const unsigned int file_version)
-        {
-            _AR_DBG(EventHandler,"\n");
-            ConsumerT* object;
-            member_t   member;
-            uint64_t   member0; 
-            uint64_t   member1;
-
-            ar >> BOOST_SERIALIZATION_NVP( object );
-            ar >> BOOST_SERIALIZATION_NVP( member0 );
-            ar >> BOOST_SERIALIZATION_NVP( member1 );
-
-            member.data[0] = member0;
-            member.data[1] = member1;
-
-            _AR_DBG(EventHandler,"object=%p member=%#lx %#lx\n",
-											object,member1,member0);
-
-            PtrMember* tmp_ptr;
-            tmp_ptr = reinterpret_cast<PtrMember*>(&member);
-
-            ::new(t)EventHandler<ConsumerT,ReturnT,Param1T,Param2T>
-													(object,*tmp_ptr );
-        }
-};
-#endif
-
-  /** Pure virtual base class for event handlers */
+class Event;
+    
+/** Pure virtual base class for event handlers */
 template <typename ReturnT, typename Param1T>
 class EventHandlerBase
 {
@@ -259,6 +158,10 @@ class EventHandler: public EventHandlerBase<ReturnT,Param1T>
 													(object,*tmp_ptr );
         }
 };
+
+typedef EventHandlerBase<bool,Event*> EventHandler_t;
+ 
+ 
 } // namespace SST
 
 #endif
