@@ -17,6 +17,8 @@ EXTRA_DIST =
 
 sstdir = $(includedir)/sst/core
 nobase_dist_sst_HEADERS = \
+	action.h \
+	activity.h \
 	archive.h \
 	boost.h \
 	cache.h \

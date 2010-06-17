@@ -130,6 +130,7 @@ protected:
 	
 private:
     friend class Link;
+    friend class Action;
 
     Simulation(); // Don't call.  Only rational way to serialize
     Simulation(Config* config);
@@ -149,6 +150,12 @@ private:
     SimTime_t        currentSimCycle;
     Exit*            m_exit;
 
+    bool endSim;
+
+    void endSimulation(void) {
+	endSim = true;
+    }
+    
     std::map<ComponentId_t,LinkMap*> component_links;
     
     static Simulation *instance;
@@ -166,6 +173,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
         ar & BOOST_SERIALIZATION_NVP(m_exit);
         ar & BOOST_SERIALIZATION_NVP(syncMap);
+        ar & BOOST_SERIALIZATION_NVP(endSim);
     }
 
     template<class Archive>

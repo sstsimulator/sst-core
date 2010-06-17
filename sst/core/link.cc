@@ -57,6 +57,8 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {
     
     _LINK_DBG( "cycle=%lu\n", (unsigned long)cycle );
 
+    if ( event != NULL ) event->setDeliveryTime(cycle);
+    
     std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
     envelope.first = pair_link->rFunctor;
     envelope.second = event;
@@ -73,7 +75,7 @@ Event* Link::Recv()
 	_LINK_DBG("key=%lu current=%lu\n",(unsigned long)recvQueue->key(),
 		  (unsigned long)simulation->getCurrentSimCycle());
 	if ( recvQueue->key() <=  simulation->getCurrentSimCycle() ) {
-	    event = recvQueue->top().second;
+	    event = static_cast<Event*>(recvQueue->top().second);
 	    recvQueue->pop();
 	}
     }

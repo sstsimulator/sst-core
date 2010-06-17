@@ -58,7 +58,7 @@ Simulation::createSimulation(Config *config)
 
 
 Simulation::Simulation( Config* cfg ) :
-    SimulationBase(cfg), currentSimCycle(0)
+    SimulationBase(cfg), currentSimCycle(0), endSim(false)
 {
     eQueue = new EventQueue_t;
     compMap = new CompMap_t;
@@ -373,16 +373,19 @@ void Simulation::Run() {
     }
 
     printf("Starting main event loop\n");
-    while( LIKELY( ! eQueue->empty() ) ) {
+//      while( LIKELY( ! eQueue->empty() ) ) {
+    while( LIKELY( ! endSim ) ) {
  	currentSimCycle = eQueue->key();
 
-	std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope = eQueue->top();
+	std::pair<EventHandlerBase<bool,Event*>*,Activity*> envelope = eQueue->top();
 
-	Event *ptr = envelope.second;
+	Activity *ptr = envelope.second;
         eQueue->pop();
-        if ( UNLIKELY( (*envelope.first)( ptr) ) )  {
-            break;
-        }
+  	endSim = (*envelope.first)(static_cast<Event*>(ptr));
+//  	ptr->execute();
+//         if ( UNLIKELY( (*envelope.first)( ptr) ) )  {
+//             break;
+//         }
     }
 
     for( CompMap_t::iterator iter = compMap->begin();

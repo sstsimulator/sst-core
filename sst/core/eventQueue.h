@@ -22,8 +22,9 @@
 namespace SST {
 
 class Event;
-
-typedef Queue< SimTime_t, std::pair< EventHandlerBase<bool,Event*>*, Event*> > EventQueue_t;
+ class Activity;
+ 
+typedef Queue< SimTime_t, std::pair< EventHandlerBase<bool,Event*>*, Activity*> > EventQueue_t;
  
 } // namespace SST
 
