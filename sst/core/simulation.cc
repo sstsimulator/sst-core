@@ -138,6 +138,15 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
                 _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
+		// Check to make sure there is a LinkMap for this component
+		std::map<ComponentId_t,LinkMap*>::iterator it;
+		it = component_links.find(id);
+		if ( it == component_links.end() ) {
+		    printf("WARNING: Building component \"%s\" with no links assigned.\n",name.c_str());
+		    LinkMap* lm = new LinkMap();
+		    component_links[id] = lm;
+		}
+		
                 tmp = createComponent( id, sdl_c->type().c_str(),
                                                         sdl_c->params );
                 (*compMap)[ tmp->Id() ] = tmp;
