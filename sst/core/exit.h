@@ -15,14 +15,14 @@
 
 #include <set>
 #include <sst/core/sst.h>
-#include <sst/core/event.h>
+#include <sst/core/action.h>
 
 namespace SST{
 
 class Simulation;
 class TimeConverter;
 
-class Exit {
+class Exit : public Action {
 public:
     // Exit needs to register a handler during constructor time, which
     // requires a simulation object.  But the simulation class creates
@@ -41,9 +41,10 @@ private:
     Exit(const Exit&);           // Don't implement
     void operator=(Exit const&); // Don't implement
 
-    bool handler( Event* );
-
-    EventHandler< Exit, bool, Event* >* m_functor;
+//     bool handler( Event* );
+    void execute(void);
+    
+//     EventHandler< Exit, bool, Event* >* m_functor;
     unsigned int    m_refCount;
     TimeConverter*  m_period;
     std::set<ComponentId_t> m_idSet;
@@ -52,7 +53,6 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
-        ar & BOOST_SERIALIZATION_NVP(m_functor);
         ar & BOOST_SERIALIZATION_NVP(m_refCount);
         ar & BOOST_SERIALIZATION_NVP(m_period);
         ar & BOOST_SERIALIZATION_NVP(m_idSet);

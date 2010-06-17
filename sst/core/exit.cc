@@ -21,14 +21,15 @@
 namespace SST {
 
 Exit::Exit( Simulation* sim, TimeConverter* period ) :
-    m_functor( new EventHandler<Exit,bool,Event*> (this,&Exit::handler ) ),
+    Action(),
+//     m_functor( new EventHandler<Exit,bool,Event*> (this,&Exit::handler ) ),
     m_refCount( 0 ),
     m_period( period ) 
 {
     _EXIT_DBG("\n");
     ExitEvent* event = new ExitEvent();
 
-    sim->insertEvent( period->getFactor(), event, m_functor );
+    sim->insertEvent( period->getFactor(), this );
 }
 
 bool Exit::refInc( ComponentId_t id )
@@ -69,7 +70,8 @@ bool Exit::refDec( ComponentId_t id )
     return false;
 }
 
-bool Exit::handler( Event* e )
+// bool Exit::handler( Event* e )
+void Exit::execute( void )
 {
     Simulation *sim = Simulation::getSimulation();
 
@@ -86,9 +88,12 @@ bool Exit::handler( Event* e )
     if ( out ) {
         SimTime_t next = sim->getCurrentSimCycle() + 
             m_period->getFactor();
-        sim->insertEvent( next, e, m_functor );
+        sim->insertEvent( next, this );
     }
-    return ( out == 0 ); 
+    else {
+	endSimulation();
+    }
+//     return ( out == 0 ); 
 }
 
 } // namespace SST

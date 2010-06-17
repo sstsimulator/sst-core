@@ -14,28 +14,28 @@
 #define SST_ACTION_H
 
 #include <sst/core/sst.h>
+#include <sst/core/activity.h>
 
 namespace SST {
 
-    class Action : public Activity {
+class Action : public Activity {
 public:
     Action() {}
     ~Action() {}
 
 protected:
 
-    void endSimulation() {
-	Simulation::getSimulation()->endSimulation();
-    }
+    void endSimulation();
     
 private:
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-    }
+//     friend class boost::serialization::access;
+//     template<class Archive>
+//     void
+//     serialize(Archive & ar, const unsigned int version )
+//     {
+//         boost::serialization::base_object<Activity>(*this);
+//     }
 };
 
 }

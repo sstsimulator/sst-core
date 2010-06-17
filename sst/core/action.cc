@@ -10,23 +10,15 @@
 // distribution.
 
 
-#ifndef SST_EVENTQUEUE_H
-#define SST_EVENTQUEUE_H
+#include "sst_config.h"
 
-#include <utility>
-
-#include <sst/core/queue.h>
-#include <sst/core/sst.h>
-#include <sst/core/eventFunctor.h>
+#include "sst/core/action.h"
+#include "sst/core/simulation.h"
 
 namespace SST {
 
-class Event;
-class Activity;
- 
-/* typedef Queue< SimTime_t, std::pair< EventHandlerBase<bool,Activity*>*, Activity*> > EventQueue_t; */
-typedef Queue< SimTime_t, Activity* > EventQueue_t;
- 
-} // namespace SST
+void Action::endSimulation() {
+    Simulation::getSimulation()->endSimulation();
+}
 
-#endif // SST_EVENTQUEUE_H
+} // namespace SS

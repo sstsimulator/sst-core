@@ -66,14 +66,15 @@ Simulation::Simulation( Config* cfg ) :
     printf("Inserting stop event at cycle %ld\n",
            (long int)cfg->stopAtCycle);
 
-    if ( cfg->stopAtCycle ) {
-        StopEvent* se = new StopEvent();
-        std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
-        envelope.first = se->getFunctor();
-        envelope.second = se;
+    // KSH FIXME:  need to add this back one once things stabilize
+//     if ( cfg->stopAtCycle ) {
+//         StopEvent* se = new StopEvent();
+//         std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
+//         envelope.first = se->getFunctor();
+//         envelope.second = se;
     
-        eQueue->insert( cfg->stopAtCycle, envelope ); 
-    }
+//         eQueue->insert( cfg->stopAtCycle, envelope ); 
+//     }
 
     m_exit = new Exit( this, timeLord->getTimeConverter("10ns") );
 }
@@ -386,12 +387,13 @@ void Simulation::Run() {
     while( LIKELY( ! endSim ) ) {
  	currentSimCycle = eQueue->key();
 
-	std::pair<EventHandlerBase<bool,Event*>*,Activity*> envelope = eQueue->top();
+// 	std::pair<EventHandlerBase<bool,Event*>*,Activity*> envelope = eQueue->top();
 
-	Activity *ptr = envelope.second;
+// 	Activity *ptr = envelope.second;
+ 	Activity *ptr = eQueue->top();
         eQueue->pop();
-  	endSim = (*envelope.first)(static_cast<Event*>(ptr));
-//  	ptr->execute();
+//   	endSim = (*envelope.first)(static_cast<Event*>(ptr));
+  	ptr->execute();
 //         if ( UNLIKELY( (*envelope.first)( ptr) ) )  {
 //             break;
 //         }
@@ -461,11 +463,13 @@ TimeConverter* Simulation::registerClock( std::string freq, ClockHandler_t* hand
 	ClockEvent* ce = new ClockEvent( tcFreq );
 	clockMap[ tcFreq->getFactor() ] = ce; 
 
-	std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
-	envelope.first = ce->getFunctor();
-	envelope.second = ce;
+// 	std::pair<EventHandlerBase<bool,Activity*>*,Activity*> envelope;
+// // 	envelope.first = ce->getFunctor();
+// 	envelope.first = NULL;
+// 	envelope.second = ce;
 
-	eQueue->insert( currentSimCycle + tcFreq->getFactor(), envelope );
+// 	eQueue->insert( currentSimCycle + tcFreq->getFactor(), envelope );
+	eQueue->insert( currentSimCycle + tcFreq->getFactor(), ce );
     }
     clockMap[ tcFreq->getFactor() ]->HandlerRegister( ClockEvent::DEFAULT, handler );
     return tcFreq;
@@ -487,12 +491,14 @@ void Simulation::unregisterClock(TimeConverter *tc, ClockHandler_t* handler) {
     }
 }
 
-void Simulation::insertEvent(SimTime_t time, Event* ev, EventHandlerBase<bool,Event*>* functor) {
-    std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
-    envelope.first = functor;
-    envelope.second = ev;
+// void Simulation::insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Activity*>* functor) {
+void Simulation::insertEvent(SimTime_t time, Activity* ev) {
+//     std::pair<EventHandlerBase<bool,Activity*>*,Activity*> envelope;
+//     envelope.first = NULL;
+//     envelope.second = ev;
 
-    eQueue->insert(time,envelope);
+//     eQueue->insert(time,envelope);
+    eQueue->insert(time,ev);
 }
 
 } // namespace SST

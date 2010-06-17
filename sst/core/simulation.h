@@ -92,7 +92,9 @@ public:
     SimTime_t getCurrentSimCycle();
     TimeConverter* registerClock(std::string freq, ClockHandler_t* handler);
     void unregisterClock(TimeConverter *tc, ClockHandler_t* handler);
-    void insertEvent(SimTime_t time, Event* ev, EventHandlerBase<bool,Event*>* functor);
+    void insertEvent(SimTime_t time, Activity* ev);
+//     void insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Activity*>* functor);
+//     void insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Event*>* functor);
     Exit* getExit() { return m_exit; }
 
     /* for introspection*/

@@ -146,7 +146,8 @@ void Introspector::oneTimeCollect(SimTime_t time, EventHandlerBase<bool,Event*>*
     Simulation *sim = Simulation::getSimulation();
     SyncEvent* event = new SyncEvent();
 
-    sim->insertEvent( time, event, functor );
+    // KSH:  SyncEvent isn't working need to update later
+//     sim->insertEvent( time, event, functor );
 
 }
 

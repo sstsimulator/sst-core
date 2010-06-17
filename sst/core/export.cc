@@ -23,6 +23,8 @@
 
 #include "timeConverter.h"
 
+BOOST_CLASS_EXPORT( SST::Activity )
+BOOST_CLASS_EXPORT( SST::Action )
 BOOST_CLASS_EXPORT( SST::Event )
 BOOST_CLASS_EXPORT( SST::CompEvent )
 BOOST_CLASS_EXPORT( SST::ExitEvent )

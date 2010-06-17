@@ -22,13 +22,13 @@
 namespace SST {
 
 ClockEvent::ClockEvent( TimeConverter* period ) :
-    Event(),
+    Action(),
 //     functor( new EventHandler< ClockEvent, bool, Time_t, Event* >
 //                                         ( this, &ClockEvent::handler ) ),
     currentCycle(0),
     period( period )
 {
-  functor = new EventHandler< ClockEvent, bool, Event* >( this, &ClockEvent::handler );
+//   functor = new EventHandler< ClockEvent, bool, Event* >( this, &ClockEvent::handler );
 } 
 
 
@@ -59,7 +59,8 @@ bool ClockEvent::HandlerUnregister( Which_t which, ClockHandler_t* handler,
     return 0;
 }
 
-bool ClockEvent::handler( Event* event ) {
+// bool ClockEvent::handler( Event* event ) {
+void ClockEvent::execute( void ) {
     Simulation *sim = Simulation::getSimulation();
     
     _CLE_DBG("time=FIXME cycle=%lu epoch=FIXME\n", (unsigned long) currentCycle );
@@ -68,9 +69,9 @@ bool ClockEvent::handler( Event* event ) {
             handlerMap[DEFAULT].empty() &&
             handlerMap[POST].empty() ) 
     {
-        _CLE_DBG( "empty\n" );
-        delete event;
-        return false;
+//         _CLE_DBG( "empty\n" );
+//         delete event;
+        return;
     } 
 
     // Derive the current cycle from the core time
@@ -89,9 +90,9 @@ bool ClockEvent::handler( Event* event ) {
 
     SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
     _CLE_DBG( "all called next %lu\n", (unsigned long) next );
-    sim->insertEvent( next, event, functor );
+    sim->insertEvent( next, this );
     
-    return false;
+    return;
 }
 
 } // namespace SST

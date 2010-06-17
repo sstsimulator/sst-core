@@ -15,7 +15,7 @@
 
 #include <deque>
 
-#include <sst/core/event.h>
+#include <sst/core/action.h>
 #include <sst/core/clockHandler.h>
 
 #define _CLE_DBG( fmt, args...)__DBG( DBG_CLOCKEVENT, ClockEvent, fmt, ## args )
@@ -24,7 +24,7 @@ namespace SST {
 
 class TimeConverter;
 
-class ClockEvent : public Event
+class ClockEvent : public Action
 {
     public:
 
@@ -35,31 +35,32 @@ class ClockEvent : public Event
         bool HandlerUnregister( Which_t which, ClockHandler_t* handler, 
                                                             bool& empty ); 
 
-	EventHandler< ClockEvent, bool, Event* >* getFunctor() {
-	  return functor;
-	}
+// 	EventHandler< ClockEvent, bool, Event* >* getFunctor() {
+// 	  return functor;
+// 	}
 	
     private:
 
         typedef std::deque<ClockHandler_t*> HandlerMap_t;
 
-        EventHandler< ClockEvent, bool, Event* >* functor;
+//         EventHandler< ClockEvent, bool, Event* >* functor;
 
         Cycle_t         currentCycle;
 	TimeConverter*  period;
         HandlerMap_t    handlerMap[3];
 
-        bool handler( Event* e );
+//         bool handler( Event* e );
+        void execute( void );
 
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
-        boost::serialization::base_object<Event>(*this);
+        boost::serialization::base_object<Action>(*this);
         ar & BOOST_SERIALIZATION_NVP( currentCycle );
         ar & BOOST_SERIALIZATION_NVP( period );
         ar & BOOST_SERIALIZATION_NVP( handlerMap );
-        ar & BOOST_SERIALIZATION_NVP( functor );
+//         ar & BOOST_SERIALIZATION_NVP( functor );
     }
 
     template<class Archive>

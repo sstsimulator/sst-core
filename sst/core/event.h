@@ -31,20 +31,6 @@ typedef union {
 } LinkUnion;
 
     
-class NewEvent : public Activity {
-
-public:
-    NewEvent() : Activity() {}
-    ~NewEvent() {}
-
-    void execute(void);
-    
-private:
-    LinkUnion link;
-    
-};
-
-
 
 class Event : public Activity {
 public:
@@ -57,10 +43,16 @@ public:
     inline void execute(void) {
  	delivery_link->deliverEvent(this);
     }
+
+    void setDeliveryLink(Link * link) {
+	delivery_link = link;
+    }
+
+protected:
+    Link* delivery_link;
     
 private:
 
-    Link* delivery_link;
     LinkId_t link_id;
 
     friend class boost::serialization::access;
@@ -71,6 +63,17 @@ private:
     }
 };
 
+class NullEvent : public Event {
+
+public:
+    NullEvent() : Event() {}
+    ~NullEvent() {}
+
+    inline void execute(void) {
+	delivery_link->deliverEvent(NULL);
+	delete this;
+    }
+};
 }
 
 #endif // SST_EVENT_H
