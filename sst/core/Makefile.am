@@ -17,6 +17,7 @@ EXTRA_DIST =
 
 sstdir = $(includedir)/sst/core
 nobase_dist_sst_HEADERS = \
+	activityQueue.h \
 	action.h \
 	activity.h \
 	archive.h \
@@ -42,6 +43,7 @@ nobase_dist_sst_HEADERS = \
 	introspector.h \
 	link.h \
 	linkMap.h \
+	linkPair.h \
 	log.h \
 	memEvent.h \
 	pool.h \
@@ -54,9 +56,11 @@ nobase_dist_sst_HEADERS = \
 	syncEvent.h \
 	timeConverter.h \
 	timeLord.h \
+	timeVortex.h \
 	zolt.h \
 	serialization/archive.h \
 	serialization/core.h \
+	serialization/types.h \
 	serialization/element.h
 nobase_nodist_sst_HEADERS = \
 	build_info.h
