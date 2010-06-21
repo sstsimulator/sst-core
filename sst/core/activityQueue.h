@@ -20,12 +20,13 @@ namespace SST {
 class ActivityQueue {
 public:
     ActivityQueue() {}
-    virtual ~ActivityQueue() = 0;
+    virtual ~ActivityQueue() {}
 
     virtual bool empty() = 0;
     virtual int size() = 0;
     virtual Activity* pop() = 0;
     virtual void insert(Activity* activity) = 0;
+    virtual Activity* front() = 0;
     
 private:
     

@@ -46,6 +46,7 @@ nobase_dist_sst_HEADERS = \
 	linkPair.h \
 	log.h \
 	memEvent.h \
+	pollingLinkQueue.h \
 	pool.h \
 	queue.h \
 	sdl.h \
@@ -83,9 +84,11 @@ sst_x_SOURCES = \
 	link.cc \
 	main.cc \
 	memEvent.cc \
+	pollingLinkQueue.cc \
 	simulation.cc \
 	sync.cc \
 	timeLord.cc \
+	timeVortex.cc \
 	xml.cc \
 	zolt.cc
 sst_x_LDADD = \

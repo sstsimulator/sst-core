@@ -18,11 +18,12 @@
 #include <sst/core/sdl.h>
 
 #include <sst/core/event.h>
-#include <sst/core/eventQueue.h>
+//#include <sst/core/eventQueue.h>
 #include <sst/core/component.h>
 #include <sst/core/factory.h>
 #include <sst/core/clockEvent.h>
 #include <sst/core/introspector.h>
+#include <sst/core/timeVortex.h>
 
 #include <iostream>
 
@@ -142,9 +143,13 @@ private:
     std::string EventName(Event *);
     Component* createComponent(ComponentId_t id, std::string name, 
                                Component::Params_t params);
-    EventQueue_t* getEventQueue() { return eQueue; }
+//     EventQueue_t* getEventQueue() { return eQueue; }
 
-    EventQueue_t*    eQueue;
+//     EventQueue_t*    eQueue;
+
+    ActivityQueue* getTimeVortex() { return timeVortex; }
+
+    TimeVortex*      timeVortex;
     SyncMap_t        syncMap;
     CompMap_t*       compMap;
     IntroMap_t*      introMap;
@@ -167,7 +172,7 @@ private:
     void serialize(Archive & ar, const unsigned int version )
     {
         boost::serialization::base_object<SimulationBase>(*this);
-        ar & BOOST_SERIALIZATION_NVP(eQueue);
+//         ar & BOOST_SERIALIZATION_NVP(timeVortex);
         ar & BOOST_SERIALIZATION_NVP(syncMap);
         ar & BOOST_SERIALIZATION_NVP(compMap);
         ar & BOOST_SERIALIZATION_NVP(introMap);

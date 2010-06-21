@@ -60,7 +60,8 @@ Simulation::createSimulation(Config *config)
 Simulation::Simulation( Config* cfg ) :
     SimulationBase(cfg), currentSimCycle(0), endSim(false)
 {
-    eQueue = new EventQueue_t;
+//     eQueue = new EventQueue_t;
+    timeVortex = new TimeVortex;
     compMap = new CompMap_t;
     introMap = new IntroMap_t;
     printf("Inserting stop event at cycle %ld\n",
@@ -383,20 +384,11 @@ void Simulation::Run() {
     }
 
     printf("Starting main event loop\n");
-//      while( LIKELY( ! eQueue->empty() ) ) {
     while( LIKELY( ! endSim ) ) {
- 	currentSimCycle = eQueue->key();
+ 	currentSimCycle = timeVortex->front()->getDeliveryTime();
 
-// 	std::pair<EventHandlerBase<bool,Event*>*,Activity*> envelope = eQueue->top();
-
-// 	Activity *ptr = envelope.second;
- 	Activity *ptr = eQueue->top();
-        eQueue->pop();
-//   	endSim = (*envelope.first)(static_cast<Event*>(ptr));
+ 	Activity *ptr = timeVortex->pop();
   	ptr->execute();
-//         if ( UNLIKELY( (*envelope.first)( ptr) ) )  {
-//             break;
-//         }
     }
 
     for( CompMap_t::iterator iter = compMap->begin();
@@ -463,13 +455,8 @@ TimeConverter* Simulation::registerClock( std::string freq, ClockHandler_t* hand
 	ClockEvent* ce = new ClockEvent( tcFreq );
 	clockMap[ tcFreq->getFactor() ] = ce; 
 
-// 	std::pair<EventHandlerBase<bool,Activity*>*,Activity*> envelope;
-// // 	envelope.first = ce->getFunctor();
-// 	envelope.first = NULL;
-// 	envelope.second = ce;
-
-// 	eQueue->insert( currentSimCycle + tcFreq->getFactor(), envelope );
-	eQueue->insert( currentSimCycle + tcFreq->getFactor(), ce );
+	ce->setDeliveryTime( currentSimCycle + tcFreq->getFactor() );
+	timeVortex->insert( ce );
     }
     clockMap[ tcFreq->getFactor() ]->HandlerRegister( ClockEvent::DEFAULT, handler );
     return tcFreq;
@@ -498,7 +485,8 @@ void Simulation::insertEvent(SimTime_t time, Activity* ev) {
 //     envelope.second = ev;
 
 //     eQueue->insert(time,envelope);
-    eQueue->insert(time,ev);
+    ev->setDeliveryTime(time);
+    timeVortex->insert(ev);
 }
 
 } // namespace SST

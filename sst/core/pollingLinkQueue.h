@@ -10,8 +10,8 @@
 // distribution.
 
 
-#ifndef SST_DIRECTLINKQUEUE_H
-#define SST_DIRECTLINKQUEUE_H
+#ifndef SST_POLLINGLINKQUEUE_H
+#define SST_POLLINGLINKQUEUE_H
 
 #include <set>
 
@@ -19,21 +19,17 @@
 
 namespace SST {
 
-    class DirectLinkQueue : public ActivityQueue {
+    class PollingLinkQueue : public ActivityQueue {
 public:
-	DirectLinkQueue() : ActivityQueue() {}
-    virtual ~DirectLinkQueue();
+    PollingLinkQueue();
+    ~PollingLinkQueue();
 
-    bool empty() {return data.empty();}
-    int size() {return data.size();}
-    void insert(Activity* activity) {data.insert(activity);}
-    Activity* pop() {
-	if ( data.size() == 0 ) return NULL;
-	std::multiset<Activity*,Activity::less_time>::iterator it = data.begin();
-	Activity* ret_val = (*it);
-	data.erase(it);
-	return ret_val;
-    }
+    bool empty();
+    int size();
+    void insert(Activity* activity);
+    Activity* pop();
+    Activity* front();
+    
     
 private:
 
@@ -49,4 +45,4 @@ private:
 
 }
 
-#endif // SST_DIRECTLINKQUEUE_H
+#endif // SST_POLLINGLINKQUEUE_H

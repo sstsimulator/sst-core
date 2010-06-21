@@ -17,6 +17,7 @@
 #include <sst/core/link.h>
 #include <sst/core/simulation.h>
 #include <sst/core/event.h>
+#include <sst/core/pollingLinkQueue.h>
 
 namespace SST { 
 
@@ -25,7 +26,8 @@ Link::Link() :
     defaultTimeBase( NULL ),
     latency(1)
 {
-    recvQueue = Simulation::getSimulation()->getEventQueue();
+//     recvQueue = Simulation::getSimulation()->getEventQueue();
+    recvQueue = Simulation::getSimulation()->getTimeVortex();
 }
 
 Link::~Link() {
@@ -36,7 +38,8 @@ Link::~Link() {
 
 void Link::setPolling() {
     type = POLL;
-    recvQueue = new EventQueue_t;
+//     recvQueue = new EventQueue_t;
+    recvQueue = new PollingLinkQueue();
 }
 
     
@@ -63,30 +66,41 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {
     event->setDeliveryTime(cycle);
     event->setDeliveryLink(pair_link);
     
-//     std::pair<EventHandlerBase<bool,Activity*>*,Activity*> envelope;
-//     envelope.first = pair_link->rFunctor;
-//     envelope.second = event;
-//     pair_link->recvQueue->insert( cycle, envelope );
-//     printf("Link::Send(): Inserting event: %p\n",event);
-    pair_link->recvQueue->insert( cycle, event );
+//     pair_link->recvQueue->insert( cycle, event );
+    pair_link->recvQueue->insert( event );
 }
     
 
+// Event* Link::Recv()
+// {
+//     Event* event = NULL;
+//     Simulation *simulation = Simulation::getSimulation();
+
+//     if ( !recvQueue->empty() ) {
+// 	_LINK_DBG("key=%lu current=%lu\n",(unsigned long)recvQueue->key(),
+// 		  (unsigned long)simulation->getCurrentSimCycle());
+// 	if ( recvQueue->key() <=  simulation->getCurrentSimCycle() ) {
+// // 	    event = static_cast<Event*>(recvQueue->top().second);
+// 	    event = static_cast<Event*>(recvQueue->top());
+// 	    recvQueue->pop();
+// 	}
+//     }
+//     return static_cast<Event*>(event);
+// } 
+    
 Event* Link::Recv()
 {
     Event* event = NULL;
     Simulation *simulation = Simulation::getSimulation();
 
     if ( !recvQueue->empty() ) {
-	_LINK_DBG("key=%lu current=%lu\n",(unsigned long)recvQueue->key(),
-		  (unsigned long)simulation->getCurrentSimCycle());
-	if ( recvQueue->key() <=  simulation->getCurrentSimCycle() ) {
-// 	    event = static_cast<Event*>(recvQueue->top().second);
-	    event = static_cast<Event*>(recvQueue->top());
+	Activity* activity = recvQueue->front();
+	if ( activity->getDeliveryTime() <=  simulation->getCurrentSimCycle() ) {
+	    event = static_cast<Event*>(activity);
 	    recvQueue->pop();
 	}
     }
-    return static_cast<Event*>(event);
+    return event;
 } 
     
 void Link::setDefaultTimeBase(TimeConverter* tc) {

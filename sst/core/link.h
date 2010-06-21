@@ -16,8 +16,9 @@
 
 #include <sst/core/sst.h>
 // #include <sst/core/compEvent.h>
-#include <sst/core/eventQueue.h>
+//#include <sst/core/eventQueue.h>
 #include <sst/core/eventFunctor.h>
+#include <sst/core/pollingLinkQueue.h>
 
 namespace SST { 
 
@@ -90,7 +91,8 @@ public:
     }
     
 protected:
-    EventQueue_t*      recvQueue;
+//     EventQueue_t*      recvQueue;
+    ActivityQueue* recvQueue;
     
     /** Recieve functor. This functor is set when the link is connected.
 	Determines what the receiver wants to be called */ 
