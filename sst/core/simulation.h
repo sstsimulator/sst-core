@@ -21,7 +21,6 @@
 //#include <sst/core/eventQueue.h>
 #include <sst/core/component.h>
 #include <sst/core/factory.h>
-#include <sst/core/clockEvent.h>
 #include <sst/core/introspector.h>
 #include <sst/core/timeVortex.h>
 

@@ -24,18 +24,19 @@ public:
     ~Action() {}
 
 protected:
-
     void endSimulation();
     
 private:
+    int tmp;
     
-//     friend class boost::serialization::access;
-//     template<class Archive>
-//     void
-//     serialize(Archive & ar, const unsigned int version )
-//     {
-//         boost::serialization::base_object<Activity>(*this);
-//     }
+     friend class boost::serialization::access;
+     template<class Archive>
+     void
+     serialize(Archive & ar, const unsigned int version )
+     {
+         boost::serialization::base_object<Activity>(*this);
+         ar & BOOST_SERIALIZATION_NVP(tmp);
+     }
 };
 
 }

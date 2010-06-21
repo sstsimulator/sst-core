@@ -10,7 +10,9 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/serialization/core.h"
+#include "sst/core/serialization/types.h"
 
 #include <boost/foreach.hpp>
 
@@ -96,3 +98,6 @@ void ClockEvent::execute( void ) {
 }
 
 } // namespace SST
+
+BOOST_CLASS_EXPORT(SST::ClockEvent);
+

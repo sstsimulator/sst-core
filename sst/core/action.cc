@@ -11,6 +11,8 @@
 
 
 #include "sst_config.h"
+#include "sst/core/serialization/core.h"
+#include "sst/core/serialization/types.h"
 
 #include "sst/core/action.h"
 #include "sst/core/simulation.h"
@@ -22,3 +24,6 @@ void Action::endSimulation() {
 }
 
 } // namespace SS
+
+BOOST_CLASS_EXPORT(SST::Action);
+BOOST_CLASS_EXPORT(SST::Activity);

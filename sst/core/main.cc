@@ -21,6 +21,9 @@
 #include <sst/core/configGraph.h>
 #include <sst/core/zolt.h>
 #include <sst/core/simulation.h>
+#include <sst/core/action.h>
+#include <sst/core/activity.h>
+#include <sst/core/clockEvent.h>
 
 using namespace std;
 using namespace SST;
@@ -30,7 +33,6 @@ sigHandlerPrintStatus(int signal)
 {
     Simulation::printStatus();
 }
-
 
 int 
 main(int argc, char *argv[])

@@ -28,6 +28,7 @@
 #include <sst/core/graph.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/linkPair.h>
+#include <sst/core/clockEvent.h>
 
 #include <sst/core/timeVortex.h>
 
@@ -137,7 +138,7 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 	    //create component
 	    else
 	    {
-                _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
+                printf("creating component: name=\"%s\" type=\"%s\" id=%d\n",
 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
 		// Check to make sure there is a LinkMap for this component
