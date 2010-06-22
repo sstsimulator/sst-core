@@ -50,7 +50,13 @@ public:
     std::map<std::string,Link*>& getLinkMap() {
 	return linkMap;
     }
-    
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_NVP(linkMap);
+    }
 };
 
 

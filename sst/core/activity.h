@@ -68,18 +68,17 @@ protected:
     }
 
 private:
-    
     SimTime_t delivery_time;
     int       priority;
 
-     friend class boost::serialization::access;
-     template<class Archive>
-     void
-     serialize(Archive & ar, const unsigned int version )
-     {
-         ar & BOOST_SERIALIZATION_NVP(delivery_time);
-         ar & BOOST_SERIALIZATION_NVP(priority);
-     }
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_NVP(delivery_time);
+        ar & BOOST_SERIALIZATION_NVP(priority);
+    }
 };
 
 }

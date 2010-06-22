@@ -150,6 +150,10 @@ private:
 
     ActivityQueue* getTimeVortex() { return timeVortex; }
 
+    void endSimulation(void) {
+	endSim = true;
+    }
+
     TimeVortex*      timeVortex;
     Sync*            sync;
     CompMap_t*       compMap;
@@ -159,11 +163,6 @@ private:
     Exit*            m_exit;
 
     bool endSim;
-
-    void endSimulation(void) {
-	endSim = true;
-    }
-    
     std::map<ComponentId_t,LinkMap*> component_links;
     
     static Simulation *instance;
@@ -173,14 +172,12 @@ private:
     void serialize(Archive & ar, const unsigned int version )
     {
         boost::serialization::base_object<SimulationBase>(*this);
-//         ar & BOOST_SERIALIZATION_NVP(timeVortex);
-//         ar & BOOST_SERIALIZATION_NVP(syncMap);
+        ar & BOOST_SERIALIZATION_NVP(timeVortex);
         ar & BOOST_SERIALIZATION_NVP(compMap);
         ar & BOOST_SERIALIZATION_NVP(introMap);
         ar & BOOST_SERIALIZATION_NVP(clockMap);
         ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
         ar & BOOST_SERIALIZATION_NVP(m_exit);
-//         ar & BOOST_SERIALIZATION_NVP(syncMap);
         ar & BOOST_SERIALIZATION_NVP(endSim);
     }
 

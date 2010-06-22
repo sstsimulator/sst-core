@@ -13,7 +13,6 @@
 #ifndef SST_ACTION_H
 #define SST_ACTION_H
 
-#include <sst/core/sst.h>
 #include <sst/core/activity.h>
 
 namespace SST {
@@ -27,15 +26,12 @@ protected:
     void endSimulation();
     
 private:
-    int tmp;
-    
      friend class boost::serialization::access;
      template<class Archive>
      void
      serialize(Archive & ar, const unsigned int version )
      {
          boost::serialization::base_object<Activity>(*this);
-         ar & BOOST_SERIALIZATION_NVP(tmp);
      }
 };
 
