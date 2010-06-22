@@ -18,6 +18,8 @@
 #include "sst/core/exitEvent.h"
 #include "sst/core/simulation.h"
 
+BOOST_CLASS_EXPORT(SST::Exit);
+
 namespace SST {
 
 Exit::Exit( Simulation* sim, TimeConverter* period ) :
@@ -27,7 +29,6 @@ Exit::Exit( Simulation* sim, TimeConverter* period ) :
     m_period( period ) 
 {
     _EXIT_DBG("\n");
-    ExitEvent* event = new ExitEvent();
 
     sim->insertActivity( period->getFactor(), this );
 }
@@ -97,3 +98,4 @@ void Exit::execute( void )
 }
 
 } // namespace SST
+

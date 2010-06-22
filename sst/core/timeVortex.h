@@ -19,7 +19,7 @@
 
 namespace SST {
 
-    class TimeVortex : public ActivityQueue {
+class TimeVortex : public ActivityQueue {
 public:
 	TimeVortex();
     ~TimeVortex();
@@ -34,13 +34,14 @@ private:
 
     std::multiset<Activity*,Activity::less_time_priority> data;
     
-     friend class boost::serialization::access;
-     template<class Archive>
-     void
-     serialize(Archive & ar, const unsigned int version )
-     {
-         ar & BOOST_SERIALIZATION_NVP(data);
-     }
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+        boost::serialization::base_object<ActivityQueue>(*this);
+        //         ar & BOOST_SERIALIZATION_NVP(data);
+    }
 };
 
 }
