@@ -138,7 +138,7 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 	    //create component
 	    else
 	    {
-                printf("creating component: name=\"%s\" type=\"%s\" id=%d\n",
+                _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
 		// Check to make sure there is a LinkMap for this component
