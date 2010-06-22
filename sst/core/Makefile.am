@@ -55,6 +55,7 @@ nobase_dist_sst_HEADERS = \
 	stopEvent.h \
 	sync.h \
 	syncEvent.h \
+	syncQueue.h \
 	timeConverter.h \
 	timeLord.h \
 	timeVortex.h \
@@ -87,6 +88,7 @@ sst_x_SOURCES = \
 	pollingLinkQueue.cc \
 	simulation.cc \
 	sync.cc \
+	syncQueue.cc \
 	timeLord.cc \
 	timeVortex.cc \
 	xml.cc \

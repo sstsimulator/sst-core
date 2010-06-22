@@ -29,7 +29,7 @@ Exit::Exit( Simulation* sim, TimeConverter* period ) :
     _EXIT_DBG("\n");
     ExitEvent* event = new ExitEvent();
 
-    sim->insertEvent( period->getFactor(), this );
+    sim->insertActivity( period->getFactor(), this );
 }
 
 bool Exit::refInc( ComponentId_t id )
@@ -88,7 +88,7 @@ void Exit::execute( void )
     if ( out ) {
         SimTime_t next = sim->getCurrentSimCycle() + 
             m_period->getFactor();
-        sim->insertEvent( next, this );
+        sim->insertActivity( next, this );
     }
     else {
 	endSimulation();

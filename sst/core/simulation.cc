@@ -28,6 +28,8 @@
 #include <sst/core/graph.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/linkPair.h>
+#include <sst/core/sync.h>
+#include <sst/core/syncQueue.h>
 #include <sst/core/clockEvent.h>
 
 #include <sst/core/timeVortex.h>
@@ -47,6 +49,11 @@ SimulationBase::~SimulationBase()
     //    delete factory;
     delete timeLord;
 }
+
+TimeConverter* SimulationBase::minPartToTC(SimTime_t cycles) {
+    return timeLord->getTimeConverter(cycles);
+}
+
 
 Simulation* Simulation::instance = NULL;
 
@@ -287,6 +294,11 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
 
+//     if ( minPart < 99999 ) {
+	sync = new Sync( minPartToTC(minPart) );
+//     }
+
+    
     printf("About to iterate over the links\n");
     for( EdgeList_t::iterator iter = graph.elist.begin();
                             iter != graph.elist.end(); ++iter )
@@ -327,10 +339,14 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 	linkName[1] = sdlLink->params["name"];
 	latency[1]  = timeLord->getSimCycles(sdlLink->params["lat"], edge_name);
 
-	// Create a LinkPair to represent this link
- 	LinkPair* lp = new LinkPair(id);
-	
-        if ( rank[0] == rank[1] ) { 
+
+	if ( rank[0] != myRank && rank[1] != myRank ) {
+	    // Nothing to be done
+	}	
+        else if ( rank[0] == rank[1] ) { 
+	    // Create a LinkPair to represent this link
+	    LinkPair* lp = new LinkPair(id);
+
 	    lp->getLeft()->setLatency(latency[0]);
 	    lp->getRight()->setLatency(latency[1]);
 
@@ -356,6 +372,36 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 
 	}
 	else {
+	    int local, remote;
+	    if ( rank[0] == myRank ) {
+		local = 0;
+		remote = 1;
+	    }
+	    else {
+		local = 1;
+		remote = 0;
+	    }
+
+	    // Create a LinkPair to represent this link
+	    LinkPair* lp = new LinkPair(id);
+	    
+	    lp->getLeft()->setLatency(latency[local]);
+	    lp->getRight()->setLatency(0);
+
+	    // Add this link to the appropriate LinkMap for the local component
+	    std::map<ComponentId_t,LinkMap*>::iterator it;
+	    it = component_links.find(cId[local]);
+	    if ( it == component_links.end() ) {
+		LinkMap* lm = new LinkMap();
+		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(cId[local],lm));
+ 		it = ret_val.first;
+	    }
+ 	    it->second->insertLink(linkName[local],lp->getLeft());
+
+	    // For the remote side, register with sync object
+	    SyncQueue* sync_q = sync->registerLink(rank[remote],id,lp->getRight());
+	    lp->getRight()->recvQueue = sync_q;
         }
     }
 
@@ -480,7 +526,7 @@ void Simulation::unregisterClock(TimeConverter *tc, ClockHandler_t* handler) {
 }
 
 // void Simulation::insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Activity*>* functor) {
-void Simulation::insertEvent(SimTime_t time, Activity* ev) {
+void Simulation::insertActivity(SimTime_t time, Activity* ev) {
 //     std::pair<EventHandlerBase<bool,Activity*>*,Activity*> envelope;
 //     envelope.first = NULL;
 //     envelope.second = ev;

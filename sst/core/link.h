@@ -27,6 +27,7 @@ namespace SST {
 class TimeConverter;
 class LinkPair;
 class Event;
+class Siimulation;
  
   /** Link between two components. Carries events */
 class Link {
@@ -34,6 +35,7 @@ class Link {
 public:
 
     friend class LinkPair;
+    friend class Simulation;
 	
     Link();
     
@@ -116,7 +118,6 @@ private:
     Link( const Link& l );
     
     Type_t type;
-    
     LinkId_t id;
     // 	ActivityQueue* send_queue;
     

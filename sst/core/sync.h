@@ -14,15 +14,45 @@
 #define SST_SYNC_H
 
 #include <sst/core/sst.h>
-#include <sst/core/component.h>
-#include <sst/core/syncEvent.h>
-#include <boost/mpi.hpp>
-#include <sst/core/compEvent.h>
+// #include <sst/core/component.h>
+// #include <sst/core/syncEvent.h>
+// #include <boost/mpi.hpp>
+// #include <sst/core/compEvent.h>
+
+#include <map>
+#include "sst/core/action.h"
+#include "sst/core/timeConverter.h"
 
 namespace SST {
 
 #define _SYNC_DBG( fmt, args...) __DBG( DBG_SYNC, Sync, fmt, ## args )
 
+class SyncQueue;
+class Link;
+class TimeConverter;
+
+class Sync : public Action {
+public:
+
+    Sync(TimeConverter* period);
+    ~Sync();
+
+    SyncQueue* registerLink(int rank, LinkId_t link_id, Link* link);
+
+    void execute() { printf("Calling Sync object with period %llu\n",period->getFactor());}
+    
+private:
+
+    TimeConverter* period;
+    
+    std::map<int,SyncQueue*> queue_map;
+    std::map<LinkId_t, Link*> link_map;
+
+};
+
+
+
+#if 0
 class Sync {
 private:
 
@@ -106,7 +136,7 @@ private:
         ::new(t)Sync(period);
     }
 };    
-
+#endif
 
 } // namespace SST
 

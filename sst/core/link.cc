@@ -64,7 +64,7 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {
 	event = new NullEvent();
     }
     event->setDeliveryTime(cycle);
-    event->setDeliveryLink(pair_link);
+    event->setDeliveryLink(id,pair_link);
     
 //     pair_link->recvQueue->insert( cycle, event );
     pair_link->recvQueue->insert( event );

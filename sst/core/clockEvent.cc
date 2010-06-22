@@ -92,7 +92,7 @@ void ClockEvent::execute( void ) {
 
     SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
     _CLE_DBG( "all called next %lu\n", (unsigned long) next );
-    sim->insertEvent( next, this );
+    sim->insertActivity( next, this );
     
     return;
 }

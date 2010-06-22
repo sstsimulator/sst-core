@@ -9,11 +9,42 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#if 0
 #include "sst_config.h"
 #include "sst/core/serialization/core.h"
 #include "sst/core/serialization/types.h"
 
+#include "sst/core/sync.h"
+#include "sst/core/syncQueue.h"
+#include "sst/core/simulation.h"
+
+namespace SST {
+
+    Sync::Sync(TimeConverter* period) : Action()
+    {
+	this->period = period;
+	Simulation *sim = Simulation::getSimulation();
+	SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
+	sim->insertActivity( next, this );
+    }
+    
+    Sync::~Sync() {}
+    
+    SyncQueue* Sync::registerLink(int rank, LinkId_t link_id, Link* link)
+    {
+	SyncQueue* queue;
+	if ( queue_map.count(rank) == 0 ) queue = queue_map[rank] = new SyncQueue();
+	else queue = queue_map[rank];
+	
+	link_map[link_id] = link;
+	return queue;
+    }
+    
+
+} // namespace SST
+
+
+
+#if 0
 #include <sst/core/sync.h>
 #include <sst/core/syncEvent.h>
 #include <sst/core/link.h>

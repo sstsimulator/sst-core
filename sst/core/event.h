@@ -25,13 +25,6 @@ class Link;
 // #include <sst/core/sst.h>
 
 
-typedef union {
-    Link* ptr;
-    LinkId_t id;
-} LinkUnion;
-
-    
-
 class Event : public Activity {
 public:
 
@@ -44,8 +37,13 @@ public:
  	delivery_link->deliverEvent(this);
     }
 
-    void setDeliveryLink(Link * link) {
+    void setDeliveryLink(LinkId_t id, Link * link) {
+	link_id = id;
 	delivery_link = link;
+    }
+
+    void setRemoteEvent() {
+	delivery_link = NULL;
     }
 
 protected:

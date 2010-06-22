@@ -21,20 +21,17 @@ namespace SST {
 
     class SyncQueue : public ActivityQueue {
 public:
-	SyncQueue() : ActivityQueue() {}
-    virtual ~SyncQueue();
+    SyncQueue();
+    ~SyncQueue();
 
-    bool empty() {return data.empty();}
-    int size() {return data.size();}
-    void insert(Activity* activity) {data.push_back(activity);}
-    Activity* pop() { // Not a good idea for this particular class
-	if ( data.size() == 0 ) return NULL;
-	std::multiset<Activity*,Activity::less_time_priority>::iterator it = data.begin();
-	Activity* ret_val = (*it);
-	data.erase(it);
-	return ret_val;
-    }
-    void erase() {data.erase();}
+    bool empty();
+    int size();
+    void insert(Activity* activity);
+    Activity* pop(); // Not a good idea for this particular class
+    Activity* front();
+
+    // Not part of the ActivityQueue interface
+    void clear();
     
 private:
 

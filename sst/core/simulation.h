@@ -62,6 +62,8 @@ protected:
     Factory *factory;
     TimeLord *timeLord;
 
+    TimeConverter* minPartToTC(SimTime_t cycles);
+    
 private:
     SimulationBase(SimulationBase const&); // Don't Implement
     void operator=(SimulationBase const&); // Don't implement
@@ -92,7 +94,7 @@ public:
     SimTime_t getCurrentSimCycle();
     TimeConverter* registerClock(std::string freq, ClockHandler_t* handler);
     void unregisterClock(TimeConverter *tc, ClockHandler_t* handler);
-    void insertEvent(SimTime_t time, Activity* ev);
+    void insertActivity(SimTime_t time, Activity* ev);
 //     void insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Activity*>* functor);
 //     void insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Event*>* functor);
     Exit* getExit() { return m_exit; }
@@ -149,7 +151,7 @@ private:
     ActivityQueue* getTimeVortex() { return timeVortex; }
 
     TimeVortex*      timeVortex;
-    SyncMap_t        syncMap;
+    Sync*            sync;
     CompMap_t*       compMap;
     IntroMap_t*      introMap;
     clockMap_t       clockMap;
@@ -172,13 +174,13 @@ private:
     {
         boost::serialization::base_object<SimulationBase>(*this);
 //         ar & BOOST_SERIALIZATION_NVP(timeVortex);
-        ar & BOOST_SERIALIZATION_NVP(syncMap);
+//         ar & BOOST_SERIALIZATION_NVP(syncMap);
         ar & BOOST_SERIALIZATION_NVP(compMap);
         ar & BOOST_SERIALIZATION_NVP(introMap);
         ar & BOOST_SERIALIZATION_NVP(clockMap);
         ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
         ar & BOOST_SERIALIZATION_NVP(m_exit);
-        ar & BOOST_SERIALIZATION_NVP(syncMap);
+//         ar & BOOST_SERIALIZATION_NVP(syncMap);
         ar & BOOST_SERIALIZATION_NVP(endSim);
     }
 
