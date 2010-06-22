@@ -51,7 +51,7 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
-        boost::serialization::base_object<Action>(*this);
+        ar & boost::serialization::base_object<Action>(*this);
         ar & BOOST_SERIALIZATION_NVP( currentCycle );
         ar & BOOST_SERIALIZATION_NVP( period );
         ar & BOOST_SERIALIZATION_NVP( handlerMap );

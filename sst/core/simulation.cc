@@ -108,7 +108,6 @@ Simulation::createComponent( ComponentId_t id, std::string name,
 int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
             int minPart, int myRank )
 {
-    printf("starting WireUp\n");
     _SIM_DBG("minPart=%d myRank=%d\n", minPart, myRank );
 
     for( VertexList_t::iterator iter = graph.vlist.begin();
@@ -278,7 +277,6 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 //     if ( ! syncMap.empty() ) {
 //         syncMap[0]->exchangeFunctors();
 //     }
-    printf("done with WireUp\n");
 
     _SIM_DBG( "config done\n\n" );
     return 0;
@@ -299,7 +297,6 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 //     }
 
     
-    printf("About to iterate over the links\n");
     for( EdgeList_t::iterator iter = graph.elist.begin();
                             iter != graph.elist.end(); ++iter )
     {
@@ -387,6 +384,8 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 	    
 	    lp->getLeft()->setLatency(latency[local]);
 	    lp->getRight()->setLatency(0);
+	    lp->getRight()->setDefaultTimeBase(minPartToTC(1));
+            
 
 	    // Add this link to the appropriate LinkMap for the local component
 	    std::map<ComponentId_t,LinkMap*>::iterator it;
@@ -407,7 +406,6 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 
     // Now, build all the components
     
-    printf("done with performWireUp()\n");
     return 0;
 }
 

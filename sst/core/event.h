@@ -46,6 +46,8 @@ public:
 	delivery_link = NULL;
     }
 
+    LinkId_t getLinkId(void) const { return link_id; }
+
 protected:
     Link* delivery_link;
     
@@ -58,6 +60,9 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
+        ar & boost::serialization::base_object<Activity>(*this);
+        ar & BOOST_SERIALIZATION_NVP(delivery_link);
+        ar & BOOST_SERIALIZATION_NVP(link_id);
     }
 };
 

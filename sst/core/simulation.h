@@ -171,7 +171,7 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
-        boost::serialization::base_object<SimulationBase>(*this);
+        ar & boost::serialization::base_object<SimulationBase>(*this);
         ar & BOOST_SERIALIZATION_NVP(timeVortex);
         ar & BOOST_SERIALIZATION_NVP(compMap);
         ar & BOOST_SERIALIZATION_NVP(introMap);

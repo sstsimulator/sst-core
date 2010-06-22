@@ -21,15 +21,10 @@ namespace SST {
 class LinkPair {
 public:
     LinkPair(LinkId_t id) :
-	left(new Link()),
-	right(new Link())
+	left(new Link(id)),
+	right(new Link(id))
     {
-
 	my_id = id;
-	
-	// Just create the two links and hook them together
-// 	left = new Link();
-// 	right = new Link();
 
 	left->pair_link = right;
 	right->pair_link = left;

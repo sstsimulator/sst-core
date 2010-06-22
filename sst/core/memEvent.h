@@ -35,7 +35,7 @@ class MemEvent : public CompEvent {
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version )
         {
-            boost::serialization::base_object<CompEvent>(*this);
+            ar & boost::serialization::base_object<CompEvent>(*this);
             ar & BOOST_SERIALIZATION_NVP( address );
             ar & BOOST_SERIALIZATION_NVP( type );
             ar & BOOST_SERIALIZATION_NVP( tag );

@@ -45,7 +45,7 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
-        boost::serialization::base_object<Event>(*this);
+        ar & boost::serialization::base_object<Event>(*this);
         ar & BOOST_SERIALIZATION_NVP( cycle );
         ar & BOOST_SERIALIZATION_NVP( linkPtr );
     }

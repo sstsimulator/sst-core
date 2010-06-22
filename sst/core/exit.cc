@@ -30,6 +30,7 @@ Exit::Exit( Simulation* sim, TimeConverter* period ) :
 {
     _EXIT_DBG("\n");
 
+    setPriority(99);
     sim->insertActivity( period->getFactor(), this );
 }
 

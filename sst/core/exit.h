@@ -53,7 +53,7 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
-        boost::serialization::base_object<Action>(*this);
+        ar & boost::serialization::base_object<Action>(*this);
         ar & BOOST_SERIALIZATION_NVP(m_refCount);
         ar & BOOST_SERIALIZATION_NVP(m_period);
         ar & BOOST_SERIALIZATION_NVP(m_idSet);

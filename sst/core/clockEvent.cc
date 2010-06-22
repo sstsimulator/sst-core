@@ -31,6 +31,7 @@ ClockEvent::ClockEvent( TimeConverter* period ) :
     period( period )
 {
 //   functor = new EventHandler< ClockEvent, bool, Event* >( this, &ClockEvent::handler );
+    setPriority(40);
 } 
 
 

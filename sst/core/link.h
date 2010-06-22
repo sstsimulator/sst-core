@@ -15,10 +15,9 @@
 #define _SST_LINK_H
 
 #include <sst/core/sst.h>
-// #include <sst/core/compEvent.h>
-//#include <sst/core/eventQueue.h>
 #include <sst/core/eventFunctor.h>
 #include <sst/core/pollingLinkQueue.h>
+#include <sst/core/timeConverter.h>
 
 namespace SST { 
 
@@ -36,8 +35,8 @@ public:
 
     friend class LinkPair;
     friend class Simulation;
-	
-    Link();
+
+    Link(LinkId_t id);
     
     ~Link();
     
@@ -93,6 +92,8 @@ public:
     }
     
 protected:
+    Link();
+
 //     EventQueue_t*      recvQueue;
     ActivityQueue* recvQueue;
     
@@ -111,7 +112,6 @@ protected:
 	the component. */
     SimTime_t            latency;
 
-protected:
     Link* pair_link;
 
 private:
@@ -125,6 +125,7 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
+        ar & BOOST_SERIALIZATION_NVP( recvQueue );
 	ar & BOOST_SERIALIZATION_NVP( defaultTimeBase );
 	ar & BOOST_SERIALIZATION_NVP( latency );
 	ar & BOOST_SERIALIZATION_NVP( type );
