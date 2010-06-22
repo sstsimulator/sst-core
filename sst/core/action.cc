@@ -26,4 +26,3 @@ void Action::endSimulation() {
 } // namespace SS
 
 BOOST_CLASS_EXPORT(SST::Action);
-BOOST_CLASS_EXPORT(SST::Activity);
