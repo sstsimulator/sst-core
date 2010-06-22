@@ -280,6 +280,7 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
 
 Link* Component::LinkAdd( std::string name, EventHandler_t* functor )
 {
+    assert(myLinks);
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
     
