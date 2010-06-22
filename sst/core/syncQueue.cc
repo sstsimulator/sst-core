@@ -58,4 +58,9 @@ namespace SST {
 	data.clear();
     }
 
+    std::vector<Activity*>* SyncQueue::getVector()
+    {
+	return &data;
+    }
+
 } // namespace SST

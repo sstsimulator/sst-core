@@ -32,6 +32,7 @@ public:
 
     // Not part of the ActivityQueue interface
     void clear();
+    std::vector<Activity*>* getVector();
     
 private:
 
