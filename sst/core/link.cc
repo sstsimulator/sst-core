@@ -22,19 +22,19 @@
 namespace SST { 
 
 Link::Link(LinkId_t id) :
-    id(id),
     rFunctor( NULL ),
     defaultTimeBase( NULL ),
-    latency(1)
+    latency(1),
+    id(id)
 {
     recvQueue = Simulation::getSimulation()->getTimeVortex();
 }
 
 Link::Link() :
-    id(-1),
     rFunctor( NULL ),
     defaultTimeBase( NULL ),
-    latency(1)
+    latency(1),
+    id(-1)
 {
     recvQueue = Simulation::getSimulation()->getTimeVortex();
 }
