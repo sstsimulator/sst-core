@@ -19,7 +19,7 @@
 #include <sst/core/simulation.h>
 #include <sst/core/event.h>
 #include <sst/core/pollingLinkQueue.h>
-#include <sst/core/TimeVortex.h>
+#include <sst/core/timeVortex.h>
 
 namespace SST { 
 
