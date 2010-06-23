@@ -32,4 +32,26 @@
 
 #include "sst/core/serialization/types.h"
 
+#if SST_WANT_POLYMORPHIC_ARCHIVE
+#define SST_BOOST_SERIALIZATION_INSTANTIATE(func)                       \
+    template void                                                       \
+    func<boost::archive::polymorphic_iarchive>(                         \
+                                    boost::archive::polymorphic_iarchive & ar, \
+                                    const unsigned int file_version);   \
+    template void                                                       \
+    func<boost::archive::polymorphic_oarchive>(                         \
+                                    boost::archive::polymorphic_oarchive & ar, \
+                                    const unsigned int file_version);
+#else
+#define SST_BOOST_SERIALIZATION_INSTANTIATE(func)                       \
+    template void                                                       \
+    func<boost::archive::binary_iarchive>(                              \
+                                    boost::archive::binary_iarchive & ar, \
+                                    const unsigned int file_version);   \
+    template void                                                       \
+    func<boost::archive::binary_oarchive>(                              \
+                                    boost::archive::binary_oarchive & ar, \
+                                    const unsigned int file_version);
+#endif
+
 #endif // #ifndef SST_CORE_SERIALIZATION_CORE_H

@@ -10,14 +10,11 @@
 // distribution.
 
 
-
-#ifndef _SST_LINK_H
-#define _SST_LINK_H
+#ifndef SST_CORE_LINK_H
+#define SST_CORE_LINK_H
 
 #include <sst/core/sst.h>
 #include <sst/core/eventFunctor.h>
-#include <sst/core/pollingLinkQueue.h>
-#include <sst/core/timeConverter.h>
 
 namespace SST { 
 
@@ -26,7 +23,8 @@ namespace SST {
 class TimeConverter;
 class LinkPair;
 class Event;
-class Siimulation;
+class Simulation;
+class ActivityQueue;
  
   /** Link between two components. Carries events */
 class Link {
@@ -123,17 +121,10 @@ private:
     
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP( recvQueue );
-	ar & BOOST_SERIALIZATION_NVP( defaultTimeBase );
-	ar & BOOST_SERIALIZATION_NVP( latency );
-	ar & BOOST_SERIALIZATION_NVP( type );
-    }
+    void serialize(Archive & ar, const unsigned int version );
 };
 
 class SelfLink : public Link {
-
 public:
     SelfLink() :
 	Link()
@@ -141,6 +132,9 @@ public:
 	pair_link = this;
     }
 
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version );
 };    
 
 

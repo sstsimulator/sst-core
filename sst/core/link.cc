@@ -10,7 +10,8 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/serialization/core.h"
 
 #include <utility>
 
@@ -18,6 +19,7 @@
 #include <sst/core/simulation.h>
 #include <sst/core/event.h>
 #include <sst/core/pollingLinkQueue.h>
+#include <sst/core/TimeVortex.h>
 
 namespace SST { 
 
@@ -115,6 +117,30 @@ Event* Link::Recv()
 void Link::setDefaultTimeBase(TimeConverter* tc) {
   defaultTimeBase = tc;
 }
+
+
+template<class Archive>
+void
+Link::serialize(Archive & ar, const unsigned int version)
+{
+    ar & BOOST_SERIALIZATION_NVP( recvQueue );
+    ar & BOOST_SERIALIZATION_NVP( defaultTimeBase );
+    ar & BOOST_SERIALIZATION_NVP( latency );
+    ar & BOOST_SERIALIZATION_NVP( type );
+}
+
+
+template<class Archive>
+void
+SelfLink::serialize(Archive & ar, const unsigned int version)
+{
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Link);
+}
+
     
 } // namespace SST
 
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Link::serialize)
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SelfLink::serialize)
+
+BOOST_CLASS_EXPORT(SST::SelfLink)

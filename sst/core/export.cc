@@ -20,7 +20,6 @@
 
 #include "timeConverter.h"
 
-BOOST_CLASS_EXPORT( SST::Event )
 BOOST_CLASS_EXPORT( SST::CompEvent )
 BOOST_CLASS_EXPORT( SST::StopEvent )
 //BOOST_CLASS_EXPORT( SST::Sync )

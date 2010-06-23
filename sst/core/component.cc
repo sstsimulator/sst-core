@@ -20,6 +20,7 @@
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
 #include "sst/core/timeLord.h"
+#include "sst/core/introspector.h"
 
 namespace SST {
 

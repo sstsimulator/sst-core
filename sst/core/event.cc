@@ -11,11 +11,36 @@
 
 
 #include "sst_config.h"
+#include "sst/core/serialization/core.h"
 
 #include "sst/core/event.h"
+#include "sst/core/link.h"
 
 namespace SST {
 
 Event::~Event() {}
 
-} // namespace SS
+template<class Archive>
+void
+Event::serialize(Archive & ar, const unsigned int version)
+{
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
+    ar & BOOST_SERIALIZATION_NVP(delivery_link);
+    ar & BOOST_SERIALIZATION_NVP(link_id);
+}
+
+template<class Archive>
+void
+NullEvent::serialize(Archive & ar, const unsigned int version)
+{
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
+}
+
+} // namespace SST
+
+
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Event::serialize)
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::NullEvent::serialize)
+
+BOOST_CLASS_EXPORT(SST::Event)
+BOOST_CLASS_EXPORT(SST::NullEvent)

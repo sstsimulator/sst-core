@@ -10,14 +10,13 @@
 // distribution.
 
 
-#ifndef SST_SYNC_H
-#define SST_SYNC_H
+#ifndef SST_CORE_SYNC_H
+#define SST_CORE_SYNC_H
+
 #include <map>
 
 #include "sst/core/sst.h"
 #include "sst/core/action.h"
-#include "sst/core/timeConverter.h"
-#include "sst/core/syncQueue.h"
 
 namespace SST {
 
@@ -26,6 +25,7 @@ namespace SST {
 class SyncQueue;
 class Link;
 class TimeConverter;
+class Activity;
 
 class Sync : public Action {
 public:
@@ -48,16 +48,7 @@ private:
 
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        printf("begin Sync::serialize\n");
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
-        ar & BOOST_SERIALIZATION_NVP(period);
-        ar & BOOST_SERIALIZATION_NVP(comm_map);
-        ar & BOOST_SERIALIZATION_NVP(link_map);
-        // don't serialize comm - let it be silently rebuilt at restart
-        printf("end Sync::serialize\n");
-    }
+    void serialize(Archive & ar, const unsigned int version);
 };
 
 } // namespace SST

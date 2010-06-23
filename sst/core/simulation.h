@@ -10,36 +10,37 @@
 // distribution.
 
 
-
-#ifndef _SST_SIMULATION_H
-#define _SST_SIMULATION_H
-
-#include <sst/core/sst.h>
-#include <sst/core/sdl.h>
-
-#include <sst/core/event.h>
-//#include <sst/core/eventQueue.h>
-#include <sst/core/component.h>
-#include <sst/core/factory.h>
-#include <sst/core/introspector.h>
-#include <sst/core/timeVortex.h>
+#ifndef SST_CORE_SIMULATION_H
+#define SST_CORE_SIMULATION_H
 
 #include <iostream>
+
+#include "sst/core/sst.h"
+#include "sst/core/sdl.h"
+#include "sst/core/clockHandler.h"
+#include "sst/core/component.h"
 
 namespace SST {
 
 #define _SIM_DBG( fmt, args...) __DBG( DBG_SIM, Sim, fmt, ## args )
 
-
-class Config;
-class Graph;
-class Sync;
-class Factory;
+class Activity;
 class Clock;
-class TimeLord;
 class ClockEvent;
+class Config;
 class Exit;
+class Factory;
+class Graph;
+class Introspector;
+class LinkMap;
 class SDL_CompMap;
+class Sync;
+class TimeConverter;
+class TimeLord;
+class TimeVortex;
+
+typedef std::map< ComponentId_t, Introspector* > IntroMap_t;
+typedef std::map< ComponentId_t, Component* > CompMap_t;
 
 // The Factory and TimeLord objects both should only be associated
 // with a simulation object and never created on their own.  To
@@ -59,10 +60,10 @@ protected:
     SimulationBase() { } // Don't call - here for serialization
     virtual ~SimulationBase();
 
+    TimeConverter* minPartToTC(SimTime_t cycles);
+
     Factory *factory;
     TimeLord *timeLord;
-
-    TimeConverter* minPartToTC(SimTime_t cycles);
     
 private:
     SimulationBase(SimulationBase const&); // Don't Implement
@@ -70,13 +71,7 @@ private:
 
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version )
-    {
-        printf("begin SimulationBase::serialize\n");
-        ar & BOOST_SERIALIZATION_NVP(factory);
-        ar & BOOST_SERIALIZATION_NVP(timeLord);
-        printf("end SimulationBase::serialize\n");
-    }
+    void serialize(Archive & ar, const unsigned int version);
 };
 
 class Simulation : public SimulationBase {
@@ -150,7 +145,7 @@ private:
 
 //     EventQueue_t*    eQueue;
 
-    ActivityQueue* getTimeVortex() { return timeVortex; }
+    TimeVortex* getTimeVortex() { return timeVortex; }
 
     void endSimulation(void) {
 	endSim = true;
@@ -170,30 +165,7 @@ private:
 
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version )
-    {
-        printf("begin Simulation::serialize\n");
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SimulationBase);
-        printf("Simulation::serialize about to serialize timeVortex\n");
-        ar & BOOST_SERIALIZATION_NVP(timeVortex);
-        printf("Simulation::serialize about to serialize sync\n");
-        ar & BOOST_SERIALIZATION_NVP(sync);
-        printf("Simulation::serialize about to serialize compMap\n");
-        ar & BOOST_SERIALIZATION_NVP(compMap);
-        printf("Simulation::serialize about to serialize introMap\n");
-        ar & BOOST_SERIALIZATION_NVP(introMap);
-        printf("Simulation::serialize about to serialize clockMap\n");
-        ar & BOOST_SERIALIZATION_NVP(clockMap);
-        printf("Simulation::serialize about to serialize currentSimCycle\n");
-        ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
-        printf("Simulation::serialize about to serialize m_exit\n");
-        ar & BOOST_SERIALIZATION_NVP(m_exit);
-        printf("Simulation::serialize about to serialize endSim\n");
-        ar & BOOST_SERIALIZATION_NVP(endSim);
-        printf("Simulation::serialize about to serialize component_links\n");
-        ar & BOOST_SERIALIZATION_NVP(component_links);
-        printf("end Simulation::serialize\n");
-    }
+    void serialize(Archive & ar, const unsigned int version);
 
     template<class Archive>
     friend void save_construct_data(Archive & ar, 

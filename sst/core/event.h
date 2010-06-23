@@ -10,24 +10,19 @@
 // distribution.
 
 
-#ifndef SST_EVENT_H
-#define SST_EVENT_H
+#ifndef SST_CORE_EVENT_H
+#define SST_CORE_EVENT_H
 
 #include <sst/core/eventFunctor.h>
 #include <sst/core/activity.h>
 #include <sst/core/link.h>
 
-
 namespace SST {
 
 class Link;
-    
-// #include <sst/core/sst.h>
-
 
 class Event : public Activity {
 public:
-
     Event() : Activity() {
 	setPriority(50);
     }
@@ -52,22 +47,16 @@ protected:
     Link* delivery_link;
     
 private:
-
     LinkId_t link_id;
 
     friend class boost::serialization::access;
     template<class Archive>
     void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
-        ar & BOOST_SERIALIZATION_NVP(delivery_link);
-        ar & BOOST_SERIALIZATION_NVP(link_id);
-    }
+    serialize(Archive & ar, const unsigned int version );
 };
 
-class NullEvent : public Event {
 
+class NullEvent : public Event {
 public:
     NullEvent() : Event() {}
     ~NullEvent() {}
@@ -76,6 +65,12 @@ public:
 	delivery_link->deliverEvent(NULL);
 	delete this;
     }
+
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version );
 };
 }
 

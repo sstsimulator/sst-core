@@ -10,12 +10,13 @@
 // distribution.
 
 
-#ifndef SST_EXIT_H
-#define SST_EXIT_H
+#ifndef SST_CORE_EXIT_H
+#define SST_CORE_EXIT_H
 
 #include <set>
-#include <sst/core/sst.h>
-#include <sst/core/action.h>
+
+#include "sst/core/sst.h"
+#include "sst/core/action.h"
 
 namespace SST{
 
@@ -53,15 +54,7 @@ private:
 
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version )
-    {
-        printf("begin Exit::serialize\n");
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
-        ar & BOOST_SERIALIZATION_NVP(m_refCount);
-        ar & BOOST_SERIALIZATION_NVP(m_period);
-        ar & BOOST_SERIALIZATION_NVP(m_idSet);
-        printf("begin Exit::serialize\n");
-    }
+    void serialize(Archive & ar, const unsigned int version);
 };
 
 } // namespace SST

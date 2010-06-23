@@ -9,18 +9,14 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_INTROSPECTOR_H
-#define SST_INTROSPECTOR_H
 
+#ifndef SST_CORE_INTROSPECTOR_H
+#define SST_CORE_INTROSPECTOR_H
 
-#include <sst/core/component.h>
-
-
+#include "sst/core/component.h"
+#include "sst/core/simulation.h"
 
 namespace SST {
-
-//TODO
-//#define _COMP_DBG( fmt, args...) __DBG( DBG_COMP, Component, fmt, ## args )
 
 #if DBG_INTROSPECTOR
 #define _INTROSPECTOR_DBG( fmt, args...)\
@@ -134,7 +130,6 @@ class Introspector: public Component {
 	CompMap_t* simCompMap;
 };
 
-typedef std::map< ComponentId_t, Introspector* > IntroMap_t;
 
 } //end namespace
 #endif

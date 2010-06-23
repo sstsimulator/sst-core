@@ -14,10 +14,7 @@
 #include "sst/core/serialization/core.h"
 
 #include "sst/core/exit.h"
-// #include "sst/core/exitEvent.h"
 #include "sst/core/simulation.h"
-
-BOOST_CLASS_EXPORT(SST::Exit);
 
 namespace SST {
 
@@ -97,5 +94,21 @@ void Exit::execute( void )
 //     return ( out == 0 ); 
 }
 
+
+template<class Archive>
+void
+Exit::serialize(Archive & ar, const unsigned int version)
+{
+    printf("begin Exit::serialize\n");
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
+    ar & BOOST_SERIALIZATION_NVP(m_refCount);
+    ar & BOOST_SERIALIZATION_NVP(m_period);
+    ar & BOOST_SERIALIZATION_NVP(m_idSet);
+    printf("begin Exit::serialize\n");
+}
+
 } // namespace SST
 
+
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Exit::serialize)
+BOOST_CLASS_EXPORT(SST::Exit);

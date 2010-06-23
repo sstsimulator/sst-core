@@ -15,6 +15,7 @@
 #include "sst/core/sync.h"
 #include "sst/core/syncQueue.h"
 #include "sst/core/simulation.h"
+#include "sst/core/event.h"
 
 namespace SST {
 
@@ -87,6 +88,23 @@ namespace SST {
 	SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
 	sim->insertActivity( next, this );
     }
+
+    template<class Archive>
+    void
+    Sync::serialize(Archive & ar, const unsigned int version)
+    {
+        printf("begin Sync::serialize\n");
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
+        ar & BOOST_SERIALIZATION_NVP(period);
+        ar & BOOST_SERIALIZATION_NVP(comm_map);
+        ar & BOOST_SERIALIZATION_NVP(link_map);
+        // don't serialize comm - let it be silently rebuilt at restart
+        printf("end Sync::serialize\n");
+    }
+
 } // namespace SST
+
+
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Sync::serialize)
 
 BOOST_CLASS_EXPORT(SST::Sync)

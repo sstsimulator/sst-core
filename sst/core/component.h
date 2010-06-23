@@ -308,8 +308,6 @@ private:
     }
 }; 
 
-typedef std::map< ComponentId_t, Component* > CompMap_t;
-typedef std::deque< Component* > CompQueue_t;
 
 /*
 inline int
