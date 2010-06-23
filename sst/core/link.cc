@@ -127,6 +127,7 @@ Link::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP( defaultTimeBase );
     ar & BOOST_SERIALIZATION_NVP( latency );
     ar & BOOST_SERIALIZATION_NVP( type );
+    ar & BOOST_SERIALIZATION_NVP(pair_link);
 }
 
 
