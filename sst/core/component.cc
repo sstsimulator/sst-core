@@ -11,6 +11,7 @@
 
 
 #include <sst_config.h>
+#include "sst/core/serialization/core.h"
 
 #include <boost/foreach.hpp>
 #include <string.h>
@@ -338,7 +339,21 @@ bool Component::unregisterExit()
 {
     return Simulation::getSimulation()->getExit()->refDec( Id() ); 
 }
-    
+
+template<class Archive>
+void
+Component::serialize(Archive& ar, const unsigned int version) {
+    ar & BOOST_SERIALIZATION_NVP(type);
+    ar & BOOST_SERIALIZATION_NVP(MyIntroList);
+    ar & BOOST_SERIALIZATION_NVP(_id);
+    ar & BOOST_SERIALIZATION_NVP(defaultTimeBase);
+    ar & BOOST_SERIALIZATION_NVP(monitorINT);
+    ar & BOOST_SERIALIZATION_NVP(monitorDOUBLE);
+    ar & BOOST_SERIALIZATION_NVP(myLinks);
+}
     
 } // namespace SST
+
+
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Component::serialize)
 

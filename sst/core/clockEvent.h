@@ -27,7 +27,6 @@ class TimeConverter;
 class ClockEvent : public Action
 {
 public:
-
     typedef enum { DEFAULT, PRE, POST } Which_t;
 
     ClockEvent( TimeConverter* period );
@@ -36,7 +35,6 @@ public:
     bool HandlerUnregister( Which_t which, ClockHandler_t* handler, 
                                                             bool& empty ); 
 private:
-
     typedef std::deque<ClockHandler_t*> HandlerMap_t;
 
     ClockEvent() { }
@@ -54,7 +52,6 @@ private:
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
         ar & BOOST_SERIALIZATION_NVP(currentCycle);
         ar & BOOST_SERIALIZATION_NVP(period);
-        ar & BOOST_SERIALIZATION_NVP(handlerMap);
     }
 };
 

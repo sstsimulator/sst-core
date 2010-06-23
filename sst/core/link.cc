@@ -143,4 +143,5 @@ SelfLink::serialize(Archive & ar, const unsigned int version)
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Link::serialize)
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SelfLink::serialize)
 
+BOOST_CLASS_EXPORT(SST::Link)
 BOOST_CLASS_EXPORT(SST::SelfLink)

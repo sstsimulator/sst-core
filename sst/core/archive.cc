@@ -19,16 +19,6 @@
 #include "sst/core/archive.h"
 #include "sst/core/simulation.h"
 
-#include <sst/core/sync.h>
-#include <sst/core/factory.h>
-#include <sst/core/stopEvent.h>
-#include <sst/core/exit.h>
-#include <sst/core/compEvent.h>
-#include <sst/core/config.h>
-#include <sst/core/graph.h>
-#include <sst/core/timeLord.h>
-#include <sst/core/clockEvent.h>
-
 using namespace SST;
 
 Archive::Archive(std::string ttype, std::string filename) :

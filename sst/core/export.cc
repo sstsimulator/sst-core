@@ -16,10 +16,8 @@
 #include "sst/core/event.h"
 #include "sst/core/compEvent.h"
 #include "sst/core/stopEvent.h"
-//#include "sst/core/sync.h"
 
 #include "timeConverter.h"
 
 BOOST_CLASS_EXPORT( SST::CompEvent )
 BOOST_CLASS_EXPORT( SST::StopEvent )
-//BOOST_CLASS_EXPORT( SST::Sync )

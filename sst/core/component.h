@@ -298,42 +298,13 @@ public:
     bool unregisterExit();
 	
 private:
-
     LinkMap* myLinks;
     
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive& ar, const unsigned int version) {
-        ar & BOOST_SERIALIZATION_NVP( _id );
-    }
+    void serialize(Archive& ar, const unsigned int version);
 }; 
 
-
-/*
-inline int
-Connect(Component* c1, std::string c1_name, Cycle_t lat1,
-        Component* c2, std::string c2_name, Cycle_t lat2 )
-{
-    _COMP_DBG( "(forward) Connecting link \"%s\" with link \"%s\"\n", c1_name.c_str(), c2_name.c_str() );
-    Link *l2= c2->LinkGet( c2_name );
-    if ( l2 == NULL ) return 1;
-    c1->LinkConnect( c1_name, l2, lat1 );
-
-    _COMP_DBG( "(reverse) Connecting link \"%s\" with link \"%s\"\n", c2_name.c_str(), c1_name.c_str() );
-    Link *l1= c1->LinkGet( c1_name );
-    if ( l1 == NULL ) return 1;
-    c2->LinkConnect( c2_name, l1, lat2 );
-
-    return 0;
-}
-
-inline int
-Connect(Component* c1, std::string c1_name,
-        Component* c2, std::string c2_name )
-{
-  return Connect(c1,c1_name,1,c2,c2_name,1);
-}
-*/
 }
 
 #endif

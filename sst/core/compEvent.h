@@ -20,8 +20,6 @@
 
 namespace SST {
 
-#define _CE_DBG( fmt, args...) __DBG( DBG_COMPEVENT, CompEvent, fmt, ## args )
-
 class CompEvent : public Event
 {
 private:

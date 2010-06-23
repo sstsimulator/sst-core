@@ -21,7 +21,6 @@ nobase_dist_sst_HEADERS = \
 	action.h \
 	activity.h \
 	archive.h \
-	boost.h \
 	clockEvent.h \
 	clockHandler.h \
 	compEvent.h \
