@@ -36,7 +36,7 @@ public:
 
     Link(LinkId_t id);
     
-    ~Link();
+    virtual ~Link();
     
     /** set minimum link latency */
     void setLatency(Cycle_t lat);

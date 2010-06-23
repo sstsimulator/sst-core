@@ -19,7 +19,7 @@
 
 namespace SST {
 
-    class SyncQueue : public ActivityQueue {
+class SyncQueue : public ActivityQueue {
 public:
     SyncQueue();
     ~SyncQueue();
@@ -35,15 +35,16 @@ public:
     std::vector<Activity*>* getVector();
     
 private:
-
     std::vector<Activity*> data;
     
-//     friend class boost::serialization::access;
-//     template<class Archive>
-//     void
-//     serialize(Archive & ar, const unsigned int version )
-//     {
-//     }
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
+        ar & BOOST_SERIALIZATION_NVP(data);
+    }
 };
 
 }
