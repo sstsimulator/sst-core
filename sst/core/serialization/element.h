@@ -30,4 +30,6 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/mpi.hpp>
 
+#include "sst/core/serialization/types.h"
+
 #endif // #ifndef SST_CORE_SERIALIZATION_ELEMENT_H

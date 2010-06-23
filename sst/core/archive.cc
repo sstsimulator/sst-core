@@ -11,7 +11,6 @@
 
 #include "sst_config.h"
 #include "sst/core/serialization/archive.h"
-#include "sst/core/serialization/types.h"
 
 #include <iostream>
 #include <string>

@@ -12,7 +12,6 @@
 
 #include "sst_config.h"
 #include "sst/core/serialization/core.h"
-#include "sst/core/serialization/types.h"
 
 #include "sst/core/event.h"
 #include "sst/core/compEvent.h"
