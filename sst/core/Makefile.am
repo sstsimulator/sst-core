@@ -34,7 +34,6 @@ nobase_dist_sst_HEADERS = \
 	event.h \
 	eventFunctor.h \
 	eventHandler1Arg.h \
-	eventQueue.h \
 	exit.h \
 	factory.h \
 	graph.h \
