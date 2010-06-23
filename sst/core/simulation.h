@@ -72,8 +72,10 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
+        printf("begin SimulationBase::serialize\n");
         ar & BOOST_SERIALIZATION_NVP(factory);
         ar & BOOST_SERIALIZATION_NVP(timeLord);
+        printf("end SimulationBase::serialize\n");
     }
 };
 
@@ -161,7 +163,6 @@ private:
     clockMap_t       clockMap;
     SimTime_t        currentSimCycle;
     Exit*            m_exit;
-
     bool endSim;
     std::map<ComponentId_t,LinkMap*> component_links;
     
@@ -171,14 +172,27 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object<SimulationBase>(*this);
+        printf("begin Simulation::serialize\n");
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SimulationBase);
+        printf("Simulation::serialize about to serialize timeVortex\n");
         ar & BOOST_SERIALIZATION_NVP(timeVortex);
+        printf("Simulation::serialize about to serialize sync\n");
+        ar & BOOST_SERIALIZATION_NVP(sync);
+        printf("Simulation::serialize about to serialize compMap\n");
         ar & BOOST_SERIALIZATION_NVP(compMap);
+        printf("Simulation::serialize about to serialize introMap\n");
         ar & BOOST_SERIALIZATION_NVP(introMap);
+        printf("Simulation::serialize about to serialize clockMap\n");
         ar & BOOST_SERIALIZATION_NVP(clockMap);
+        printf("Simulation::serialize about to serialize currentSimCycle\n");
         ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
+        printf("Simulation::serialize about to serialize m_exit\n");
         ar & BOOST_SERIALIZATION_NVP(m_exit);
+        printf("Simulation::serialize about to serialize endSim\n");
         ar & BOOST_SERIALIZATION_NVP(endSim);
+        printf("Simulation::serialize about to serialize component_links\n");
+        ar & BOOST_SERIALIZATION_NVP(component_links);
+        printf("end Simulation::serialize\n");
     }
 
     template<class Archive>

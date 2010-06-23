@@ -12,16 +12,12 @@
 
 #ifndef SST_SYNC_H
 #define SST_SYNC_H
-
-#include <sst/core/sst.h>
-// #include <sst/core/component.h>
-// #include <sst/core/syncEvent.h>
-// #include <boost/mpi.hpp>
-// #include <sst/core/compEvent.h>
-
 #include <map>
+
+#include "sst/core/sst.h"
 #include "sst/core/action.h"
 #include "sst/core/timeConverter.h"
+#include "sst/core/syncQueue.h"
 
 namespace SST {
 
@@ -43,10 +39,25 @@ private:
     typedef std::map<int, std::pair<SyncQueue*, std::vector<Activity*>* > > comm_map_t;
     typedef std::map<LinkId_t, Link*> link_map_t;
 
+    Sync();
+
     TimeConverter* period;
     comm_map_t comm_map;
     link_map_t link_map;
     boost::mpi::communicator comm;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version)
+    {
+        printf("begin Sync::serialize\n");
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
+        ar & BOOST_SERIALIZATION_NVP(period);
+        ar & BOOST_SERIALIZATION_NVP(comm_map);
+        ar & BOOST_SERIALIZATION_NVP(link_map);
+        // don't serialize comm - let it be silently rebuilt at restart
+        printf("end Sync::serialize\n");
+    }
 };
 
 } // namespace SST

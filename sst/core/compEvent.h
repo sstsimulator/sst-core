@@ -9,11 +9,12 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+// This is a backward compatibility class and should not be used.
+// Just make whatever you were thinking of making inherit from
+// CompEvent inherit from Event instead.
 
 #ifndef SST_COMPEVENT_H
 #define SST_COMPEVENT_H
-
-#include <deque>
 
 #include <sst/core/event.h>
 
@@ -21,37 +22,17 @@ namespace SST {
 
 #define _CE_DBG( fmt, args...) __DBG( DBG_COMPEVENT, CompEvent, fmt, ## args )
 
-class Link;
-
 class CompEvent : public Event
 {
-public:
-    CompEvent() {}
-
-//     void SetCycle( Cycle_t _cycle ) { cycle = _cycle; }
-//     void SetLinkPtr( Link* link ) { linkPtr = (unsigned long) link; }
-//     SimTime_t Cycle() { return cycle; }
-//     Link* LinkPtr() { return (Link*) linkPtr; }
-
 private:
-    CompEvent( const CompEvent& e );
-
-//     SimTime_t       cycle; 
-//     // used by Sync object cast to Link* by receiving Sync object
-//     unsigned long   linkPtr;
-
     friend class boost::serialization::access;
     template<class Archive>
     void
     serialize(Archive & ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object<Event>(*this);
-//         ar & BOOST_SERIALIZATION_NVP( cycle );
-//         ar & BOOST_SERIALIZATION_NVP( linkPtr );
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
     }
 };
-
-// typedef std::deque<CompEvent*>      CompEventQueue_t;
 
 } // namespace SST
 

@@ -51,10 +51,10 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object<Action>(*this);
-        ar & BOOST_SERIALIZATION_NVP( currentCycle );
-        ar & BOOST_SERIALIZATION_NVP( period );
-        ar & BOOST_SERIALIZATION_NVP( handlerMap );
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
+        ar & BOOST_SERIALIZATION_NVP(currentCycle);
+        ar & BOOST_SERIALIZATION_NVP(period);
+        ar & BOOST_SERIALIZATION_NVP(handlerMap);
     }
 };
 

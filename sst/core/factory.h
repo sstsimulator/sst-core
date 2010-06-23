@@ -62,28 +62,33 @@ private:
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
-        std::vector<std::string> loaded_elis;
-        loaded_elis.resize(loaded_libraries.size());
+        printf("begin Factory::save\n");
+        std::vector<std::string> loaded_element_libraries;
+        loaded_element_libraries.reserve(loaded_libraries.size());
         for (eli_map_t::const_iterator i = loaded_libraries.begin() ;
              i != loaded_libraries.end() ;
              ++i) {
-            loaded_elis.push_back(i->first);
+            loaded_element_libraries.push_back(i->first);
         }
+        printf("end Factory::save (%d)\n", (int) loaded_element_libraries.size());
+        ar & BOOST_SERIALIZATION_NVP(loaded_element_libraries);
     }
 
     template<class Archive>
     void load(Archive & ar, const unsigned int version)
     {
-        std::vector<std::string> loaded_elis;
-        ar >> BOOST_SERIALIZATION_NVP( loaded_elis ); 
-        BOOST_FOREACH( std::string type, loaded_elis ) {
+        printf("begin Factory::load\n");
+        std::vector<std::string> loaded_element_libraries;
+        ar & BOOST_SERIALIZATION_NVP(loaded_element_libraries); 
+        BOOST_FOREACH(std::string type, loaded_element_libraries) {
             if (NULL == findLibrary(type)) {
                 fprintf(stderr, 
-                        "factory::load failed to load %s\n", 
+                        "factory::load() failed to load %s\n", 
                         type.c_str());
                 abort();
             }
         }
+        printf("end Factory::load (%d)\n", (int) loaded_element_libraries.size());
     }
 
     template<class Archive>
@@ -91,8 +96,10 @@ private:
                                     const Factory * t, 
                                     const unsigned int file_version)
     {
+        printf("begin Factory::save_construct_data\n");
         std::string search_path = t->searchPaths;
         ar << BOOST_SERIALIZATION_NVP(search_path);
+        printf("end Factory::save_construct_data\n");
     }
 
     template<class Archive>
@@ -100,9 +107,11 @@ private:
                                     Factory * t,
                                     const unsigned int file_version)
     {
+        printf("begin Factory::load_construct_data\n");
         std::string search_path;
         ar >> BOOST_SERIALIZATION_NVP(search_path);
         ::new(t)Factory(search_path);
+        printf("end Factory::load_construct_data\n");
     }
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()

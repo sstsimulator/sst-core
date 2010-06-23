@@ -130,7 +130,7 @@ class CPUNicEvent : public CompEvent {
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version )
         {
-            ar & boost::serialization::base_object<CompEvent>(*this);
+            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(CompEvent);
 	    ar & BOOST_SERIALIZATION_NVP(route);
 	    ar & BOOST_SERIALIZATION_NVP(router_delay);
 	    ar & BOOST_SERIALIZATION_NVP(hops);

@@ -55,10 +55,12 @@ private:
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object<Action>(*this);
+        printf("begin Exit::serialize\n");
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
         ar & BOOST_SERIALIZATION_NVP(m_refCount);
         ar & BOOST_SERIALIZATION_NVP(m_period);
         ar & BOOST_SERIALIZATION_NVP(m_idSet);
+        printf("begin Exit::serialize\n");
     }
 };
 

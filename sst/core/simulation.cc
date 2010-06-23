@@ -18,7 +18,6 @@
 #include <boost/foreach.hpp>
 
 #include <sst/core/simulation.h>
-//#include <sst/core/sync.h>
 #include <sst/core/factory.h>
 #include <sst/core/stopEvent.h>
 #include <sst/core/exit.h>
@@ -30,10 +29,9 @@
 #include <sst/core/sync.h>
 #include <sst/core/syncQueue.h>
 #include <sst/core/clockEvent.h>
-
 #include <sst/core/timeVortex.h>
-
 #include <sst/core/archive.h>
+
 
 namespace SST { 
 

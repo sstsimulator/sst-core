@@ -53,3 +53,5 @@ namespace SST {
 
 
 } // namespace SST
+
+BOOST_CLASS_EXPORT(SST::TimeVortex)

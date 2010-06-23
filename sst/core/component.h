@@ -212,19 +212,19 @@ public:
 	int getDataID(std::string dataName);
 
 protected:
-    /** Unique ID */
-    ComponentId_t   _id;
-    /** Timebase used if no other timebase is specified for calls like
-        Component::getCurrentSimTime(). Often set by Component::registerClock()
-        function */
-    TimeConverter* defaultTimeBase;
-
     Component() { }
 
     /** Manually set the default detaulTimeBase */ 
     void setDefaultTimeBase(TimeConverter *tc) {
         defaultTimeBase = tc;
     }
+
+    /** Unique ID */
+    ComponentId_t   _id;
+    /** Timebase used if no other timebase is specified for calls like
+        Component::getCurrentSimTime(). Often set by Component::registerClock()
+        function */
+    TimeConverter* defaultTimeBase;
 
     /** Database of integer monitors (arbitrary integer data that a
 	compopent wishes to be monitored) available through

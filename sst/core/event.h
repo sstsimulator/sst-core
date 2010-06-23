@@ -60,7 +60,7 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object<Activity>(*this);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
         ar & BOOST_SERIALIZATION_NVP(delivery_link);
         ar & BOOST_SERIALIZATION_NVP(link_id);
     }

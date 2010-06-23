@@ -44,7 +44,7 @@ class StopEvent : public Event
     void
     serialize(Archive & ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object<Event>(*this);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
     }
 };
 

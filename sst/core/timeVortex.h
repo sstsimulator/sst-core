@@ -31,7 +31,6 @@ public:
     Activity* front();
     
 private:
-
     std::multiset<Activity*,Activity::less_time_priority> data;
     
     friend class boost::serialization::access;
@@ -39,8 +38,8 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
-        ar & boost::serialization::base_object<ActivityQueue>(*this);
-        //         ar & BOOST_SERIALIZATION_NVP(data);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
+        ar & BOOST_SERIALIZATION_NVP(data);
     }
 };
 

@@ -27,6 +27,11 @@ namespace SST {
 	sim->insertActivity( next, this );
     }
     
+    Sync::Sync()
+    {
+        // For serialization
+    }
+
     Sync::~Sync()
     {
         for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
@@ -82,5 +87,6 @@ namespace SST {
 	SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
 	sim->insertActivity( next, this );
     }
-
 } // namespace SST
+
+BOOST_CLASS_EXPORT(SST::Sync)
