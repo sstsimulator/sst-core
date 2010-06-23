@@ -28,17 +28,17 @@ class CompEvent : public Event
 public:
     CompEvent() {}
 
-    void SetCycle( Cycle_t _cycle ) { cycle = _cycle; }
-    void SetLinkPtr( Link* link ) { linkPtr = (unsigned long) link; }
-    SimTime_t Cycle() { return cycle; }
-    Link* LinkPtr() { return (Link*) linkPtr; }
+//     void SetCycle( Cycle_t _cycle ) { cycle = _cycle; }
+//     void SetLinkPtr( Link* link ) { linkPtr = (unsigned long) link; }
+//     SimTime_t Cycle() { return cycle; }
+//     Link* LinkPtr() { return (Link*) linkPtr; }
 
 private:
     CompEvent( const CompEvent& e );
 
-    SimTime_t       cycle; 
-    // used by Sync object cast to Link* by receiving Sync object
-    unsigned long   linkPtr;
+//     SimTime_t       cycle; 
+//     // used by Sync object cast to Link* by receiving Sync object
+//     unsigned long   linkPtr;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -46,12 +46,12 @@ private:
     serialize(Archive & ar, const unsigned int version )
     {
         ar & boost::serialization::base_object<Event>(*this);
-        ar & BOOST_SERIALIZATION_NVP( cycle );
-        ar & BOOST_SERIALIZATION_NVP( linkPtr );
+//         ar & BOOST_SERIALIZATION_NVP( cycle );
+//         ar & BOOST_SERIALIZATION_NVP( linkPtr );
     }
 };
 
-typedef std::deque<CompEvent*>      CompEventQueue_t;
+// typedef std::deque<CompEvent*>      CompEventQueue_t;
 
 } // namespace SST
 

@@ -22,7 +22,6 @@ nobase_dist_sst_HEADERS = \
 	activity.h \
 	archive.h \
 	boost.h \
-	cache.h \
 	clockEvent.h \
 	clockHandler.h \
 	compEvent.h \
@@ -37,7 +36,6 @@ nobase_dist_sst_HEADERS = \
 	eventHandler1Arg.h \
 	eventQueue.h \
 	exit.h \
-	exitEvent.h \
 	factory.h \
 	graph.h \
 	introspector.h \
@@ -47,14 +45,11 @@ nobase_dist_sst_HEADERS = \
 	log.h \
 	memEvent.h \
 	pollingLinkQueue.h \
-	pool.h \
-	queue.h \
 	sdl.h \
 	simulation.h \
 	sst.h \
 	stopEvent.h \
 	sync.h \
-	syncEvent.h \
 	syncQueue.h \
 	timeConverter.h \
 	timeLord.h \

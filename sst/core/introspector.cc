@@ -18,7 +18,7 @@
 #include "sst/core/introspector.h"
 #include "sst/core/exit.h"
 #include "sst/core/timeLord.h"
-#include "sst/core/syncEvent.h"
+//#include "sst/core/syncEvent.h"
 
 
 namespace SST {
@@ -142,11 +142,11 @@ void Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operatio
     }
 }
 
+// KSH:  SyncEvent is gone.  Introspector should create an action to do what syncevent was doing
 void Introspector::oneTimeCollect(SimTime_t time, EventHandlerBase<bool,Event*>* functor){
-    Simulation *sim = Simulation::getSimulation();
-    SyncEvent* event = new SyncEvent();
+//     Simulation *sim = Simulation::getSimulation();
+//     SyncEvent* event = new SyncEvent();
 
-    // KSH:  SyncEvent isn't working need to update later
 //     sim->insertEvent( time, event, functor );
 
 }

@@ -15,7 +15,7 @@
 
 #include <utility>
 
-#include <sst/core/queue.h>
+/* #include <sst/core/queue.h> */
 #include <sst/core/sst.h>
 #include <sst/core/eventFunctor.h>
 
@@ -25,7 +25,7 @@ class Event;
 class Activity;
  
 /* typedef Queue< SimTime_t, std::pair< EventHandlerBase<bool,Activity*>*, Activity*> > EventQueue_t; */
-typedef Queue< SimTime_t, Activity* > EventQueue_t;
+/* typedef Queue< SimTime_t, Activity* > EventQueue_t; */
  
 } // namespace SST
 

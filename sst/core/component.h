@@ -16,6 +16,9 @@
 #include <cmath>
 #include <iostream>
 #include <list>
+#include <deque>
+#include <map>
+
 
 #if defined(__x86_64__) && defined(__APPLE__) && !defined(__USE_ISOC99)
 // Boost interval sometimes doesn't detect the correct method for

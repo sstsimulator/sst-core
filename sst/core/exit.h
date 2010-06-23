@@ -19,6 +19,8 @@
 
 namespace SST{
 
+#define _EXIT_DBG( fmt, args...) __DBG( DBG_EXIT, Exit, fmt, ## args )
+
 class Simulation;
 class TimeConverter;
 

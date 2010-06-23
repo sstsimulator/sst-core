@@ -14,7 +14,7 @@
 #include "sst/core/serialization/core.h"
 
 #include "sst/core/exit.h"
-#include "sst/core/exitEvent.h"
+// #include "sst/core/exitEvent.h"
 #include "sst/core/simulation.h"
 
 BOOST_CLASS_EXPORT(SST::Exit);
