@@ -13,7 +13,7 @@
 #ifndef SST_ACTIVITY_H
 #define SST_ACTIVITY_H
 
-#include <sst/core/sst.h>
+#include <sst/core/sst_types.h>
 
 namespace SST {
 

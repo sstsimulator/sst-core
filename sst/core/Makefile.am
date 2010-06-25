@@ -45,7 +45,7 @@ nobase_dist_sst_HEADERS = \
 	pollingLinkQueue.h \
 	sdl.h \
 	simulation.h \
-	sst.h \
+	sst_types.h \
 	stopEvent.h \
 	sync.h \
 	syncQueue.h \

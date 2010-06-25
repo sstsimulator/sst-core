@@ -15,7 +15,7 @@
 
 #include <boost/foreach.hpp>
 
-#include <sst/core/sst.h>
+#include <sst/core/sst_types.h>
 #include <sst/core/component.h>
 #include <sst/core/introspector.h>
 #include <sst/core/element.h>

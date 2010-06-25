@@ -14,7 +14,7 @@
 #define SST_EVENTFUNCTOR_H
 
 #include <sst/core/debug.h>
-#include <sst/core/sst.h>
+#include <sst/core/sst_types.h>
 
 namespace SST {
 

@@ -13,7 +13,7 @@
 #ifndef SST_LINKPAIR_H
 #define SST_LINKPAIR_H
 
-#include <sst/core/sst.h>
+#include <sst/core/sst_types.h>
 #include <sst/core/link.h>
 
 namespace SST {

@@ -13,7 +13,7 @@
 #ifndef SST_TIMECONVERTER_H
 #define SST_TIMECONVERTER_H
 
-#include <sst/core/sst.h>
+#include <sst/core/sst_types.h>
 
 namespace SST {
 

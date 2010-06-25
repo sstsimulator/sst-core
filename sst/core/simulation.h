@@ -15,7 +15,7 @@
 
 #include <iostream>
 
-#include "sst/core/sst.h"
+#include "sst/core/sst_types.h"
 #include "sst/core/sdl.h"
 #include "sst/core/clockHandler.h"
 #include "sst/core/component.h"

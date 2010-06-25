@@ -15,7 +15,7 @@
 
 #include <set>
 
-#include "sst/core/sst.h"
+#include "sst/core/sst_types.h"
 #include "sst/core/action.h"
 
 namespace SST{

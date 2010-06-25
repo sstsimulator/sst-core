@@ -14,7 +14,7 @@
 #define SST_CONFIG_H
 
 #include <string>
-#include <sst/core/sst.h>
+#include <sst/core/sst_types.h>
 
 namespace SST {
 class Config {
