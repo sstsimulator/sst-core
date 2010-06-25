@@ -37,6 +37,10 @@ Component::Component(ComponentId_t id) :
     _COMP_DBG( "new\n" );
 }
 
+Component::Component() 
+{
+}
+
 /*****************************************************
 * regPowerStats                                      *
 * Register/update power statistics of this component * 

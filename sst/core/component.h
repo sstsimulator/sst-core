@@ -212,8 +212,6 @@ public:
 	int getDataID(std::string dataName);
 
 protected:
-    Component() { }
-
     /** Manually set the default detaulTimeBase */ 
     void setDefaultTimeBase(TimeConverter *tc) {
         defaultTimeBase = tc;
@@ -298,6 +296,8 @@ public:
     bool unregisterExit();
 	
 private:
+    Component(); // For serialization only
+
     LinkMap* myLinks;
     
     friend class boost::serialization::access;
