@@ -15,6 +15,7 @@
 
 #include <sst/core/sst_types.h>
 #include <sst/core/eventFunctor.h>
+#include <sst/core/event.h>
 
 namespace SST { 
 
@@ -22,7 +23,6 @@ namespace SST {
 
 class TimeConverter;
 class LinkPair;
-class Event;
 class Simulation;
 class ActivityQueue;
  

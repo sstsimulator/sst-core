@@ -20,6 +20,14 @@ namespace SST {
 
 Event::~Event() {}
 
+    
+void    
+Event:: execute(void)
+{
+    delivery_link->deliverEvent(this);
+}
+
+    
 template<class Archive>
 void
 Event::serialize(Archive & ar, const unsigned int version)
@@ -29,6 +37,14 @@ Event::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(link_id);
 }
 
+void
+NullEvent::execute(void)
+{
+    delivery_link->deliverEvent(NULL);
+    delete this;
+}
+
+    
 template<class Archive>
 void
 NullEvent::serialize(Archive & ar, const unsigned int version)

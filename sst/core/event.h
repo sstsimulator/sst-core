@@ -15,7 +15,6 @@
 
 #include <sst/core/eventFunctor.h>
 #include <sst/core/activity.h>
-#include <sst/core/link.h>
 
 namespace SST {
 
@@ -28,20 +27,18 @@ public:
     }
     virtual ~Event() = 0;
 
-    inline void execute(void) {
- 	delivery_link->deliverEvent(this);
-    }
+    void execute(void);
 
-    void setDeliveryLink(LinkId_t id, Link * link) {
+    inline void setDeliveryLink(LinkId_t id, Link *link) {
 	link_id = id;
 	delivery_link = link;
     }
 
-    void setRemoteEvent() {
+    inline void setRemoteEvent() {
 	delivery_link = NULL;
     }
 
-    LinkId_t getLinkId(void) const { return link_id; }
+    inline LinkId_t getLinkId(void) const { return link_id; }
 
 protected:
     Link* delivery_link;
@@ -61,10 +58,7 @@ public:
     NullEvent() : Event() {}
     ~NullEvent() {}
 
-    inline void execute(void) {
-	delivery_link->deliverEvent(NULL);
-	delete this;
-    }
+    void execute(void);
 
 private:
     friend class boost::serialization::access;
