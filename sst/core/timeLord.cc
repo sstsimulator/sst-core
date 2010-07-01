@@ -192,7 +192,7 @@ SimTime_t TimeLord::getSimCycles(std::string timeString, std::string where) {
 	    _abort(TimeLord,"getTimeConverter(): Format error (unrecognized SI unit): \"%s\"\n",ts);
       }
     }
-    else {
+    else if ( ret != 2 ){
 	_abort(TimeLord,"getTimeConverter(): Format error: \"%s\" in %s\n",
 	       ts, where.c_str());
     }
