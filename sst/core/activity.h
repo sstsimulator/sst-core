@@ -19,7 +19,7 @@ namespace SST {
 
 class Activity {
 public:
-    Activity() {}
+  Activity() {}
     virtual ~Activity() {}
 
     virtual void execute(void) = 0;
@@ -50,7 +50,7 @@ public:
 	}
     };
     
-    void setDeliveryTime(int time) {
+    void setDeliveryTime(SimTime_t time) {
 	delivery_time = time;
     }
 
