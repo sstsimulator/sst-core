@@ -48,6 +48,8 @@ class TimeLord {
     TimeConverter* getNano() {return nano;}
     TimeConverter* getMicro() {return micro;}
     TimeConverter* getMilli() {return milli;}
+    /* Used by power API to calculate time period in sec since last power query*/
+    Time_t getSecFactor(){ return (Time_t)sec_factor;}
     
  private:
     friend class SST::SimulationBase;

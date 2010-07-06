@@ -67,6 +67,14 @@ namespace SST {
 
 typedef boost::numeric::interval<double> I;
 
+typedef struct {
+    I il1, il2, dl1, dl2, itlb, dtlb;
+    I clock, bpred, rf, io, logic;
+    I alu, fpu, mult, ib, issueQ, decoder, bypass, exeu;
+    I pipeline, lsq, rat, rob, btb, L2, mc;
+    I router, loadQ, renameU, schedulerU, L3, L1dir, L2dir;
+} itemized_t;
+
 typedef struct 
 {
 	//I internalPower;
@@ -78,8 +86,16 @@ typedef struct
 	I currentPower; //=leakage + rumtimeDynamic
 	I averagePower;
 	I totalEnergy;
-	int currentCycle;
+	itemized_t itemizedRuntimeDynamicPower;
+	itemized_t itemizedLeakagePower;
+	itemized_t itemizedCurrentPower;
+	itemized_t itemizedTDP;
+	itemized_t itemizedPeak;
+	itemized_t itemizedTotalPower; //total energy
+	Time_t currentSimTime;
 }Pdissipation_t;
+
+
 
 typedef std::map<ComponentId_t, Pdissipation_t> PowerDatabase;
 
@@ -159,7 +175,8 @@ public:
     /** Read power dissipation data of this component from database 
         @param c Pointer to the component that one whats to query power
                  from the central power database */
-    Pdissipation_t readPowerStats(Component* c);
+     std::pair<bool, Pdissipation_t> readPowerStats(Component* c);
+
 
     //Introspector
 	/** Get the period set by defaultTimeBase, which is usually set by Component::registerClock().

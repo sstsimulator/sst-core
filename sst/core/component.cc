@@ -53,13 +53,15 @@ void Component::regPowerStats(Pdissipation_t pusage) {
             // key already exists for the component; update power statistics instead
             //(res.first)->second.internalPower = pusage.internalPower;
             //(res.first)->second.switchingPower = pusage.switchingPower;
-	    (res.first)->second.TDP = pusage.TDP;
+
+	    /*(res.first)->second.TDP = pusage.TDP;
 	    (res.first)->second.runtimeDynamicPower = pusage.runtimeDynamicPower;
             (res.first)->second.leakagePower = pusage.leakagePower;
             (res.first)->second.peak = pusage.peak;
             (res.first)->second.currentPower = pusage.currentPower;
             (res.first)->second.totalEnergy = pusage.totalEnergy;
-            (res.first)->second.currentCycle = pusage.currentCycle;
+            (res.first)->second.currentSimTime = pusage.currentSimTime;*/
+	    (res.first)->second = pusage;
 	}
 	/* _COMP_DBG: for debugging purpose
 	std::map<ComponentId_t, Pdissipation_t>::size_type i;
@@ -72,7 +74,7 @@ void Component::regPowerStats(Pdissipation_t pusage) {
 * readPowerStas                                         *
 * read power statistics of this component from database *
 *********************************************************/
-Pdissipation_t Component::readPowerStats(Component* c) {
+std::pair<bool, Pdissipation_t> Component::readPowerStats(Component* c) {
 
 	std::map<ComponentId_t, Pdissipation_t>::iterator it;
 	Pdissipation_t pusage;
@@ -92,14 +94,16 @@ Pdissipation_t Component::readPowerStats(Component* c) {
 
 	it = PDB.find(c->Id());
         if (it != PDB.end() )   // found key
-            return it->second;
+            return std::make_pair(true, it->second);
 	
 	else {
-	    std::cout << "Component::readPowerStats--ID: " << c->Id() << "can't find key" << std::endl;
-	    return pusage;
+	    //std::cout << "Component::readPowerStats--ID: " << c->Id() << "can't find key" << std::endl;
+	    return std::make_pair(false, pusage);
 	}
 
 }
+
+
 
 
 /*************************************************************

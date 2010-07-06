@@ -96,6 +96,7 @@ public:
 //     void insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Event*>* functor);
     Exit* getExit() { return m_exit; }
 
+
     /* for introspection*/
     CompMap_t* getCompMap(){
 	    return compMap;
