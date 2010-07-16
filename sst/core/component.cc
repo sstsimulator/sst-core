@@ -22,6 +22,7 @@
 #include "sst/core/link.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/introspector.h"
+#include "sst/core/event.h"
 
 namespace SST {
 
@@ -254,14 +255,11 @@ TimeConverter* Component::registerClock( std::string freq, ClockHandler_t* handl
     // if regAll is true set tc as the default for the component and
     // for all the links
     if ( regAll ) {
-// 	BOOST_FOREACH( Link * lnk, linkVec ) {
-// 	    lnk->setDefaultTimeBase(tc);
-// 	}
 	std::pair<std::string,Link*> p;
-// 	BOOST_FOREACH( p, linkMap ) {
-	// FIXME
 	BOOST_FOREACH( p, myLinks->getLinkMap() ) {
-	    p.second->setDefaultTimeBase(tc);
+	    if ( NULL == p.second->getDefaultTimeBase() ) {
+		p.second->setDefaultTimeBase(tc);
+	    }
 	}
 	defaultTimeBase = tc;
     }
@@ -274,35 +272,106 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
     // if regAll is true set tc as the default for the component and
     // for all the links
     if ( regAll ) {
-// 	BOOST_FOREACH( Link * lnk, linkMap ) {
-// 	    lnk->setDefaultTimeBase(tc);
-// 	}
 	std::pair<std::string,Link*> p;
-// 	BOOST_FOREACH( p, linkMap ) {
-	// FIXME
 	BOOST_FOREACH( p, myLinks->getLinkMap() ) {
-	    p.second->setDefaultTimeBase(tc);
+	    if ( NULL == p.second->getDefaultTimeBase() ) {
+		p.second->setDefaultTimeBase(tc);
+	    }
 	}
 	defaultTimeBase = tc;
     }
     return tc;
 }
 
-Link* Component::LinkAdd( std::string name, EventHandler_t* functor )
+Link*
+Component::configureLink(std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
-    assert(myLinks);
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
     
-    tmp->setFunctor(functor);
+    tmp->setFunctor(handler);
     // If no functor, this is a polling link
-    if ( functor == NULL ) {
+    if ( handler == NULL ) {
 	tmp->setPolling();
     }
-    return tmp;
+    tmp->setDefaultTimeBase(time_base);
+    return tmp;    
 }
 
-Link* Component::selfLink( std::string name, EventHandler_t* handler )
+Link*
+Component::configureLink(std::string name, std::string time_base, Event::HandlerBase* handler)
+{
+    return configureLink(name,Simulation::getSimulation()->getTimeLord()->getTimeConverter(time_base),handler);
+}
+
+Link*
+Component::configureLink(std::string name, Event::HandlerBase* handler)
+{
+    Link* tmp = myLinks->getLink(name);
+    if ( tmp == NULL ) return NULL;
+    
+    tmp->setFunctor(handler);
+    // If no functor, this is a polling link
+    if ( handler == NULL ) {
+	tmp->setPolling();
+    }
+    return tmp;    
+}
+
+void
+Component::addSelfLink(std::string name)
+{
+    if ( myLinks->getLink(name) != NULL ) {
+        printf("Attempting to add self link with duplicate name: %s\n",name.c_str());
+	abort();
+    }
+
+    Link* link = new SelfLink();
+    // Set default time base to the component time base
+    link->setDefaultTimeBase(defaultTimeBase);
+    myLinks->insertLink(name,link);
+    
+}
+
+Link*
+Component::configureSelfLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
+{
+    addSelfLink(name);
+    return configureLink(name,time_base,handler);
+}
+
+Link*
+Component::configureSelfLink( std::string name, std::string time_base, Event::HandlerBase* handler)
+{
+    addSelfLink(name);
+    return configureLink(name,time_base,handler);
+}
+
+Link*
+Component::configureSelfLink( std::string name, Event::HandlerBase* handler)
+{
+    addSelfLink(name);
+    return configureLink(name,handler);
+}
+
+
+// // Link* Component::LinkAdd( std::string name, EventHandler_t* functor )
+// Link* Component::LinkAdd( std::string name, Event::HandlerBase* functor )
+// {
+//     assert(myLinks);
+//     Link* tmp = myLinks->getLink(name);
+//     if ( tmp == NULL ) return NULL;
+    
+//     tmp->setFunctor(functor);
+//     // If no functor, this is a polling link
+//     if ( functor == NULL ) {
+// 	tmp->setPolling();
+//     }
+//     return tmp;
+// }
+
+// Link* Component::selfLink( std::string name, EventHandler_t* handler )
+Link* Component::selfLink( std::string name, Event::HandlerBase* handler )
 {
 //     Link* link = new Link(handler);
 //     link->Connect(link,0);

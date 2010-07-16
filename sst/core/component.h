@@ -250,11 +250,23 @@ protected:
 	Component::getMonitorDoubleData() */	
     Monitors monitorDOUBLE;
 
-    Link* selfLink( std::string name, EventHandler_t* handler = NULL );
+//     Link* selfLink( std::string name, EventHandler_t* handler = NULL );
+    Link* selfLink( std::string name, Event::HandlerBase* handler = NULL );
 
     
 public:
-    Link* LinkAdd( std::string name, EventHandler_t* handler = NULL );
+    Link* configureLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
+    Link* configureLink( std::string name, std::string time_base, Event::HandlerBase* handler = NULL);
+    Link* configureLink( std::string name, Event::HandlerBase* handler = NULL);
+
+    Link* configureSelfLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
+    Link* configureSelfLink( std::string name, std::string time_base, Event::HandlerBase* handler = NULL);
+    Link* configureSelfLink( std::string name, Event::HandlerBase* handler = NULL);
+
+
+
+//     //     Link* LinkAdd( std::string name, EventHandler_t* handler = NULL );
+//     Link* LinkAdd( std::string name, Event::HandlerBase* handler = NULL );
     /** Registers a clock for this component.
         @param freq Frequency for the clock in SI units
         @param handler Pointer to ClockHandler_t which is to be invoked
@@ -315,6 +327,8 @@ public:
 private:
     Component(); // For serialization only
 
+    void addSelfLink(std::string name);
+    
     LinkMap* myLinks;
     
     friend class boost::serialization::access;

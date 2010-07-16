@@ -82,23 +82,6 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {
 }
     
 
-// Event* Link::Recv()
-// {
-//     Event* event = NULL;
-//     Simulation *simulation = Simulation::getSimulation();
-
-//     if ( !recvQueue->empty() ) {
-// 	_LINK_DBG("key=%lu current=%lu\n",(unsigned long)recvQueue->key(),
-// 		  (unsigned long)simulation->getCurrentSimCycle());
-// 	if ( recvQueue->key() <=  simulation->getCurrentSimCycle() ) {
-// // 	    event = static_cast<Event*>(recvQueue->top().second);
-// 	    event = static_cast<Event*>(recvQueue->top());
-// 	    recvQueue->pop();
-// 	}
-//     }
-//     return static_cast<Event*>(event);
-// } 
-    
 Event* Link::Recv()
 {
     Event* event = NULL;
@@ -115,7 +98,11 @@ Event* Link::Recv()
 } 
     
 void Link::setDefaultTimeBase(TimeConverter* tc) {
-  defaultTimeBase = tc;
+    defaultTimeBase = tc;
+}
+
+TimeConverter* Link::getDefaultTimeBase() {
+    return defaultTimeBase;
 }
 
 

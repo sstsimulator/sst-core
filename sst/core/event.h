@@ -40,6 +40,55 @@ public:
 
     inline LinkId_t getLinkId(void) const { return link_id; }
 
+
+    // Functor classes for Event handling
+    class HandlerBase {
+    public:
+	virtual void operator()(Event*) = 0;
+	virtual ~HandlerBase() {}
+    };
+
+    
+    template <typename classT>
+    class Handler : public HandlerBase {
+    private:
+	typedef void (classT::*PtrMember)(Event*);
+	const PtrMember member;
+	classT* object;
+	
+    public:
+	Handler( classT* const object, PtrMember member ) :
+	    object(object),
+	    member(member)
+	{}
+
+	    void operator()(Event* event) {
+		(object->*member)(event);
+	    }
+    };
+    
+
+    template <typename classT, typename argT>
+    class Handler1 : public HandlerBase {
+    private:
+	typedef void (classT::*PtrMember)(Event*, argT);
+	const PtrMember member;
+	classT* object;
+	argT data;
+	
+    public:
+	Handler1( classT* const object, PtrMember member, argT data ) :
+	    object(object),
+	    member(member),
+	    data(data)
+	{}
+
+	    void operator()(Event* event) {
+		(object->*member)(event,data);
+	    }
+    };
+    
+    
 protected:
     Link* delivery_link;
     

@@ -14,7 +14,7 @@
 #define SST_CORE_LINK_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/eventFunctor.h>
+// #include <sst/core/eventFunctor.h>
 #include <sst/core/event.h>
 
 namespace SST { 
@@ -41,7 +41,8 @@ public:
     /** set minimum link latency */
     void setLatency(Cycle_t lat);
 
-    void setFunctor(EventHandler_t* functor) {
+//     void setFunctor(EventHandler_t* functor) {
+    void setFunctor(Event::HandlerBase* functor) {
 	rFunctor = functor;
     }
 
@@ -84,7 +85,8 @@ public:
     /** Manually set the default detaulTimeBase 
 	@param tc TimeConverter object for the timebase */ 
     void setDefaultTimeBase(TimeConverter* tc);
-
+    TimeConverter* getDefaultTimeBase();
+    
     inline void deliverEvent(Event* event) {
 	(*rFunctor)(event);
     }
@@ -97,7 +99,8 @@ protected:
     
     /** Recieve functor. This functor is set when the link is connected.
 	Determines what the receiver wants to be called */ 
-    EventHandler_t*  rFunctor; 
+//     EventHandler_t*  rFunctor; 
+    Event::HandlerBase*  rFunctor;
     
     /** Timebase used if no other timebase is specified. Used to specify
 	the untits for added delays when sending, such as in
@@ -130,6 +133,7 @@ public:
 	Link()
     {
 	pair_link = this;
+	latency = 0;
     }
 
     friend class boost::serialization::access;
