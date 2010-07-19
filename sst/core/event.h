@@ -47,10 +47,30 @@ public:
 	virtual void operator()(Event*) = 0;
 	virtual ~HandlerBase() {}
     };
+    
 
+    template <typename classT, typename argT = void>
+    class Handler : public HandlerBase {
+    private:
+	typedef void (classT::*PtrMember)(Event*, argT);
+	const PtrMember member;
+	classT* object;
+	argT data;
+	
+    public:
+	Handler( classT* const object, PtrMember member, argT data ) :
+	    object(object),
+	    member(member),
+	    data(data)
+	{}
+
+	    void operator()(Event* event) {
+		(object->*member)(event,data);
+	    }
+    };
     
     template <typename classT>
-    class Handler : public HandlerBase {
+    class Handler<classT, void> : public HandlerBase {
     private:
 	typedef void (classT::*PtrMember)(Event*);
 	const PtrMember member;
@@ -66,28 +86,6 @@ public:
 		(object->*member)(event);
 	    }
     };
-    
-
-    template <typename classT, typename argT>
-    class Handler1 : public HandlerBase {
-    private:
-	typedef void (classT::*PtrMember)(Event*, argT);
-	const PtrMember member;
-	classT* object;
-	argT data;
-	
-    public:
-	Handler1( classT* const object, PtrMember member, argT data ) :
-	    object(object),
-	    member(member),
-	    data(data)
-	{}
-
-	    void operator()(Event* event) {
-		(object->*member)(event,data);
-	    }
-    };
-    
     
 protected:
     Link* delivery_link;
