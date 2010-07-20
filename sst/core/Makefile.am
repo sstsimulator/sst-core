@@ -37,6 +37,7 @@ nobase_dist_sst_HEADERS = \
 	factory.h \
 	graph.h \
 	introspector.h \
+	introspectedComponent.h \
 	link.h \
 	linkMap.h \
 	linkPair.h \
@@ -75,6 +76,7 @@ sst_x_SOURCES = \
 	export.cc \
 	factory.cc \
 	introspector.cc \
+	introspectedComponent.cc \
 	link.cc \
 	main.cc \
 	memEvent.cc \

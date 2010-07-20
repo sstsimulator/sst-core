@@ -13,7 +13,7 @@
 #ifndef SST_CORE_INTROSPECTOR_H
 #define SST_CORE_INTROSPECTOR_H
 
-#include "sst/core/component.h"
+#include "sst/core/introspectedComponent.h"
 #include "sst/core/simulation.h"
 
 namespace SST {
@@ -32,10 +32,10 @@ namespace SST {
  *  All models inherit from this. 
  * Introspection interface is a unified way to gather statistics and arbitrary data from components.
  */
-class Introspector: public Component {
+class Introspector: public IntrospectedComponent {
        
     public:
-	typedef std::map<Component*, int> Database_t;	
+	typedef std::map<IntrospectedComponent*, int> Database_t;	
 
 	/** Types of boost MPI collective operations that introspector can perform.*/ 
 	enum collect_type { GATHER, ALLGATHER, BROADCAST, REDUCE, ALLREDUCE};
@@ -53,32 +53,26 @@ class Introspector: public Component {
         Introspector( ComponentId_t id );
         virtual ~Introspector() = 0;
         
-   
-
-	// main functions for introspection
-	/** Get the map, compMap, that stores ID and pointers to the components on the rank from Simulation.
-	    This function is usually called in Introspector::getModels(). */
-	void getCompMap();
 	/** Get component of a certain type indicated by CompType on this rank.
             If CompType is blank, a list of all local components is returned.
 	    This function is usually used in Introspector::Setup().
 	    @param CompType Component's type*/
-	std::list<Component*> getModels(const std::string CompType);
+	std::list<IntrospectedComponent*> getModels(const std::string CompType);
 	/** Declare that this introspector will be monitoring a given component. 
 	    The information of the introspector is also stored in the component's MyIntroList.
 	    This function is usually used in Introspector::Setup().
 	    @param c Pointer to the component that will be monitored*/
-	void monitorComponent(Component* c);
+	void monitorComponent(IntrospectedComponent* c);
 	/** Store pointer to the component and the data ID of the integer data of interest in a local map.
 	    This function is usually used in Introspector::Setup().
 	    @param c Pointer to the component that is monitored by this introspector
 	    @param dataID ID of the integer data */
-	void addToIntDatabase(Component* c, int dataID); 
+	void addToIntDatabase(IntrospectedComponent* c, int dataID); 
 	/** Store pointer to the component and the data ID of the double data of interest in a local map.
 	    This function is usually used in Introspector::Setup().
 	    @param c Pointer to the component that is monitored by this introspector
 	    @param dataID ID of the double data */
-	void addToDoubleDatabase(Component* c, int dataID);
+	void addToDoubleDatabase(IntrospectedComponent* c, int dataID);
 	/** Query the components it is moniroting at regular intervals to retrieve components' statistics & data. 
 	    Introspector-writers will implement their own pullData function. This function calls Component::getIntData()
 	    or Component::getDoubleData() to retrieve components' data, and is a good place to manipulate the data 
@@ -108,7 +102,7 @@ class Introspector: public Component {
 
 
 	/** List of components that this introspector is monitoring.*/
-	std::list<Component*> MyCompList;
+	std::list<IntrospectedComponent*> MyCompList;
 	/** Database of the integer data monitored by this introspector available through Introspector::pullData().*/
 	Database_t DatabaseInt;
 	/** Database of the double data monitored by this introspector available through Introspector::pullData().*/
@@ -125,9 +119,6 @@ class Introspector: public Component {
 
     protected:
         Introspector();
-    
-    private:
-	CompMap_t* simCompMap;
 };
 
 

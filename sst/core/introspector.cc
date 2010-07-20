@@ -24,48 +24,40 @@
 namespace SST {
 
 
-Introspector::~Introspector() {}
-
-Introspector::Introspector(ComponentId_t id) : Component( id )
+Introspector::Introspector(ComponentId_t id) : IntrospectedComponent( id )
 {
 //     _id = id;
     _INTROSPECTOR_DBG( "new\n" );
 }
 
-
-
-void Introspector::getCompMap()
-{  
-    simCompMap = Simulation::getSimulation()->getCompMap(); 
-}
-
-std::list<Component*> Introspector::getModels(const std::string CompType)
+std::list<IntrospectedComponent*> Introspector::getModels(const std::string CompType)
 {
-    getCompMap();
-    for( CompMap_t::iterator iter = simCompMap->begin();
-    	                    iter != simCompMap->end(); ++iter )
+    CompMap_t *CompMap = Simulation::getSimulation()->getCompMap();
+
+    for( CompMap_t::iterator iter = CompMap->begin();
+    	                    iter != CompMap->end(); ++iter )
     {
 	//printf("CompMap has %s with id = %lu\n", (*iter).second->type.c_str(), (*iter).second->Id());
         if (CompType.empty() == true)
-	    MyCompList.push_back((*iter).second);   
+	    MyCompList.push_back(dynamic_cast<IntrospectedComponent*>((*iter).second));   
 	else if ( (*iter).second->type.compare(CompType) == 0){
 	    //printf("Introspector will monitor ID %lu\n", (*iter).second->Id());
-	    MyCompList.push_back((*iter).second);
+	    MyCompList.push_back(dynamic_cast<IntrospectedComponent*>((*iter).second));
 	}
     }
     return MyCompList;
 }
 
-void Introspector::monitorComponent(Component* c){
-    
+void Introspector::monitorComponent(IntrospectedComponent* c)
+{
     c->addToIntroList(this->getId());
 }
 
-void Introspector::addToIntDatabase(Component* c, int dataID){
+void Introspector::addToIntDatabase(IntrospectedComponent* c, int dataID){
     //std::cout << "Introspector::addToIntDatabase added component " << c->Id() << "'s data with dataID = " << dataID << std::endl;
     DatabaseInt.insert(std::make_pair(c, dataID)); 
 }
-void Introspector::addToDoubleDatabase(Component* c, int dataID){ 
+void Introspector::addToDoubleDatabase(IntrospectedComponent* c, int dataID){ 
     DatabaseDouble.insert(std::make_pair(c, dataID)); 
 }
 
