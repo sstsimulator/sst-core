@@ -142,8 +142,8 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		itmp = dynamic_cast<Introspector *> (tmp); 
 		assert(itmp);
 
-                (*introMap)[ itmp->Id() ] = itmp;
-		if (itmp->Id() != id) {
+                (*introMap)[ itmp->getId() ] = itmp;
+		if (itmp->getId() != id) {
 	           _ABORT(Simulation, 
 		     "introspector id does not match assigned id (%d)\n", (int)id);
 	        }
@@ -165,8 +165,8 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		
                 tmp = createComponent( id, sdl_c->type().c_str(),
                                                         sdl_c->params );
-                (*compMap)[ tmp->Id() ] = tmp;
-		if (tmp->Id() != id) {
+                (*compMap)[ tmp->getId() ] = tmp;
+		if (tmp->getId() != id) {
 	            _ABORT(Simulation, 
 		     "component id does not match assigned id (%d)\n", (int)id);
 	        }
@@ -192,8 +192,8 @@ int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		itmp = dynamic_cast<Introspector *> (tmp); //safe downcast
 		assert(itmp);
 
-                (*introMap)[ itmp->Id() ] = itmp;
-		if (itmp->Id() != id) {
+                (*introMap)[ itmp->getId() ] = itmp;
+		if (itmp->getId() != id) {
 	           _ABORT(Simulation, 
 		     "introspector id does not match assigned id (%d)\n", (int)id);
 	        }

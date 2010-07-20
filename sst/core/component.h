@@ -144,7 +144,7 @@ public:
     Component( ComponentId_t id );
     virtual ~Component() = 0;
     /** Returns unique component ID */
-    inline ComponentId_t Id() { return _id; }
+    inline ComponentId_t getId() const { return id; }
     /** Component's type, set by the factory when the object is created.
         It is identical to the configuration string used to create the
         component. I.e. the XML "<component id="aFoo"><foo>..." would
@@ -234,8 +234,6 @@ protected:
         defaultTimeBase = tc;
     }
 
-    /** Unique ID */
-    ComponentId_t   _id;
     /** Timebase used if no other timebase is specified for calls like
         Component::getCurrentSimTime(). Often set by Component::registerClock()
         function */
@@ -329,6 +327,8 @@ private:
 
     void addSelfLink(std::string name);
     
+    /** Unique ID */
+    ComponentId_t   id;
     LinkMap* myLinks;
     
     friend class boost::serialization::access;

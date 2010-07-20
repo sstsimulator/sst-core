@@ -28,7 +28,7 @@ Introspector::~Introspector() {}
 
 Introspector::Introspector(ComponentId_t id) : Component( id )
 {
-    _id = id;
+//     _id = id;
     _INTROSPECTOR_DBG( "new\n" );
 }
 
@@ -58,7 +58,7 @@ std::list<Component*> Introspector::getModels(const std::string CompType)
 
 void Introspector::monitorComponent(Component* c){
     
-    c->addToIntroList(this->Id());
+    c->addToIntroList(this->getId());
 }
 
 void Introspector::addToIntDatabase(Component* c, int dataID){

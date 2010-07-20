@@ -32,9 +32,9 @@ PowerDatabase Component::PDB;
 Component::~Component() {}
 
 Component::Component(ComponentId_t id) :
-    _id( id )
+    id( id )
 {
-    myLinks = Simulation::getSimulation()->getComponentLinkMap(_id);
+    myLinks = Simulation::getSimulation()->getComponentLinkMap(id);
     _COMP_DBG( "new\n" );
 }
 
@@ -49,7 +49,7 @@ Component::Component()
 ******************************************************/
 void Component::regPowerStats(Pdissipation_t pusage) {	
 	
-	std::pair<PowerDatabase::iterator, bool> res = PDB.insert(std::make_pair( Id(), pusage));
+    std::pair<PowerDatabase::iterator, bool> res = PDB.insert(std::make_pair( getId(), pusage));
 	if ( ! res.second ) {
             // key already exists for the component; update power statistics instead
             //(res.first)->second.internalPower = pusage.internalPower;
@@ -93,7 +93,7 @@ std::pair<bool, Pdissipation_t> Component::readPowerStats(Component* c) {
         std::cout << "The PDB map length is " << i << std::endl;
 	*/
 
-	it = PDB.find(c->Id());
+	it = PDB.find(c->getId());
         if (it != PDB.end() )   // found key
             return std::make_pair(true, it->second);
 	
@@ -409,12 +409,12 @@ SimTime_t Component::getCurrentSimTimeMilli() {
 
 bool Component::registerExit()
 {
-    return Simulation::getSimulation()->getExit()->refInc( Id() ); 
+    return Simulation::getSimulation()->getExit()->refInc( getId() ); 
 }
 
 bool Component::unregisterExit()
 {
-    return Simulation::getSimulation()->getExit()->refDec( Id() ); 
+    return Simulation::getSimulation()->getExit()->refDec( getId() ); 
 }
 
 template<class Archive>
@@ -422,7 +422,7 @@ void
 Component::serialize(Archive& ar, const unsigned int version) {
     ar & BOOST_SERIALIZATION_NVP(type);
     ar & BOOST_SERIALIZATION_NVP(MyIntroList);
-    ar & BOOST_SERIALIZATION_NVP(_id);
+    ar & BOOST_SERIALIZATION_NVP(id);
     ar & BOOST_SERIALIZATION_NVP(defaultTimeBase);
     ar & BOOST_SERIALIZATION_NVP(monitorINT);
     ar & BOOST_SERIALIZATION_NVP(monitorDOUBLE);
