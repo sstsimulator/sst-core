@@ -17,7 +17,7 @@
 
 #include <sst/core/sst_types.h>
 #include <sst/core/linkMap.h>
-#include <sst/core/clockHandler.h>
+#include <sst/core/clock.h>
 #include <sst/core/timeConverter.h>
 
 namespace SST {
@@ -67,14 +67,14 @@ public:
 
     /** Registers a clock for this component.
         @param freq Frequency for the clock in SI units
-        @param handler Pointer to ClockHandler_t which is to be invoked
+        @param handler Pointer to Clock::HandlerBase which is to be invoked
         at the specified interval
         @param regAll Should this clock perioud be used as the default
         time base for all of the links connected to this component
     */
-    TimeConverter* registerClock( std::string freq, ClockHandler_t* handler, 
+    TimeConverter* registerClock( std::string freq, Clock::HandlerBase* handler, 
                                   bool regAll = true);
-    void unregisterClock(TimeConverter *tc, ClockHandler_t* handler);
+    void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
 
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for

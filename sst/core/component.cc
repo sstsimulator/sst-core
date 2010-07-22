@@ -36,7 +36,7 @@ Component::Component()
 {
 }
 
-TimeConverter* Component::registerClock( std::string freq, ClockHandler_t* handler, bool regAll) {
+TimeConverter* Component::registerClock( std::string freq, Clock::HandlerBase* handler, bool regAll) {
     TimeConverter* tc = Simulation::getSimulation()->registerClock(freq,handler);
     
     // if regAll is true set tc as the default for the component and

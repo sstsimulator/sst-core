@@ -21,7 +21,7 @@ nobase_dist_sst_HEADERS = \
 	action.h \
 	activity.h \
 	archive.h \
-	clockEvent.h \
+	clock.h \
 	clockHandler.h \
 	component.h \
 	config.h \
@@ -64,7 +64,7 @@ bin_PROGRAMS = sst.x
 sst_x_SOURCES = \
 	action.cc \
 	archive.cc \
-	clockEvent.cc \
+	clock.cc \
 	component.cc \
 	config.cc \
 	configGraph.cc \

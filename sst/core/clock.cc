@@ -15,7 +15,7 @@
 
 #include <boost/foreach.hpp>
 
-#include "sst/core/clockEvent.h"
+#include "sst/core/clock.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/event.h"
 #include "sst/core/simulation.h"
@@ -34,15 +34,14 @@ Clock::Clock( TimeConverter* period ) :
 } 
 
 
-bool Clock::HandlerRegister( Which_t which, ClockHandler_t* handler )
+bool Clock::HandlerRegister( Which_t which, Clock::HandlerBase* handler )
 {
     _CLE_DBG("handler %p\n",handler);
     handlerMap[which].push_back( handler );
     return 0;
 }
 
-bool Clock::HandlerUnregister( Which_t which, ClockHandler_t* handler, 
-                                                            bool& empty )
+    bool Clock::HandlerUnregister( Which_t which, Clock::HandlerBase* handler, bool& empty )
 {
     _CLE_DBG("handler %p\n",handler);
 
@@ -79,15 +78,15 @@ void Clock::execute( void ) {
     // Derive the current cycle from the core time
     currentCycle = period->convertFromCoreTime(sim->getCurrentSimCycle());
     
-    BOOST_FOREACH( ClockHandler_t* c, handlerMap[PRE] ) {
+//     BOOST_FOREACH( ClockHandler_t* c, handlerMap[PRE] ) {
+//         ( *c )( currentCycle );
+//     }
+    BOOST_FOREACH( Clock::HandlerBase* c, handlerMap[DEFAULT] ) {
         ( *c )( currentCycle );
     }
-    BOOST_FOREACH( ClockHandler_t* c, handlerMap[DEFAULT] ) {
-        ( *c )( currentCycle );
-    }
-    BOOST_FOREACH( ClockHandler_t* c, handlerMap[POST] ) {
-        ( *c )( currentCycle );
-    }
+//     BOOST_FOREACH( ClockHandler_t* c, handlerMap[POST] ) {
+//         ( *c )( currentCycle );
+//     }
 
 
     SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();

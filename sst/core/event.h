@@ -53,8 +53,8 @@ public:
     class Handler : public HandlerBase {
     private:
 	typedef void (classT::*PtrMember)(Event*, argT);
-	const PtrMember member;
 	classT* object;
+	const PtrMember member;
 	argT data;
 	
     public:
@@ -73,8 +73,8 @@ public:
     class Handler<classT, void> : public HandlerBase {
     private:
 	typedef void (classT::*PtrMember)(Event*);
-	const PtrMember member;
 	classT* object;
+	const PtrMember member;
 	
     public:
 	Handler( classT* const object, PtrMember member ) :

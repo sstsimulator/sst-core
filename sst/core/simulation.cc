@@ -28,7 +28,7 @@
 #include <sst/core/linkPair.h>
 #include <sst/core/sync.h>
 #include <sst/core/syncQueue.h>
-#include <sst/core/clockEvent.h>
+#include <sst/core/clock.h>
 #include <sst/core/timeVortex.h>
 #include <sst/core/archive.h>
 
@@ -496,7 +496,7 @@ Simulation::printStatus(void)
 //     return eventType;
 // }
 
-TimeConverter* Simulation::registerClock( std::string freq, ClockHandler_t* handler )
+TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* handler )
 {
 //     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
     
@@ -515,7 +515,7 @@ TimeConverter* Simulation::registerClock( std::string freq, ClockHandler_t* hand
     
 }
 
-void Simulation::unregisterClock(TimeConverter *tc, ClockHandler_t* handler) {
+void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
 //     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
     
     if ( clockMap.find( tc->getFactor() ) != clockMap.end() ) {

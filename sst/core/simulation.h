@@ -17,15 +17,14 @@
 
 #include "sst/core/sst_types.h"
 #include "sst/core/sdl.h"
-#include "sst/core/clockHandler.h"
 #include "sst/core/component.h"
+#include "sst/core/clock.h"
 
 namespace SST {
 
 #define _SIM_DBG( fmt, args...) __DBG( DBG_SIM, Sim, fmt, ## args )
 
 class Activity;
-class Clock;
 class Config;
 class Exit;
 class Factory;
@@ -88,11 +87,9 @@ public:
 		       int minPart, int myRank );
     void Run();
     SimTime_t getCurrentSimCycle();
-    TimeConverter* registerClock(std::string freq, ClockHandler_t* handler);
-    void unregisterClock(TimeConverter *tc, ClockHandler_t* handler);
+    TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);
+    void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
     void insertActivity(SimTime_t time, Activity* ev);
-//     void insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Activity*>* functor);
-//     void insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Event*>* functor);
     Exit* getExit() { return m_exit; }
 
 
