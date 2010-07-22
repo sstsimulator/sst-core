@@ -26,7 +26,6 @@ namespace SST {
 
 class Activity;
 class Clock;
-class ClockEvent;
 class Config;
 class Exit;
 class Factory;
@@ -76,7 +75,7 @@ private:
 
 class Simulation : public SimulationBase {
 public:
-    typedef std::map<SimTime_t, ClockEvent*> clockMap_t; 
+    typedef std::map<SimTime_t, Clock*> clockMap_t; 
     typedef std::map< unsigned int, Sync* > SyncMap_t;
 
     static Simulation *createSimulation(Config *config);
@@ -139,7 +138,7 @@ private:
     Simulation(Simulation const&);     // Don't Implement
     void operator=(Simulation const&); // Don't implement
 	
-    std::string EventName(Event *);
+//     std::string EventName(Event *);
     Component* createComponent(ComponentId_t id, std::string name, 
                                Component::Params_t params);
 //     EventQueue_t* getEventQueue() { return eQueue; }

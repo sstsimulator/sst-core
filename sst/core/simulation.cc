@@ -478,23 +478,23 @@ Simulation::printStatus(void)
     if (quit)  _ABORT(Simulation, "Status()\n");
 }
 
-std::string Simulation::EventName( Event *e )
-{
-    std::string eventType = "Unknown"; 
-    if ( dynamic_cast< StopEvent* >( e ) ) {
-        eventType = "StopEvent";
-    }
-    if ( dynamic_cast< ClockEvent* >( e ) ) {
-        eventType = "ClockEvent";
-    }
-//     if ( dynamic_cast< SyncEvent* >( e ) ) {
-//         eventType = "SyncEvent";
+// std::string Simulation::EventName( Event *e )
+// {
+//     std::string eventType = "Unknown"; 
+//     if ( dynamic_cast< StopEvent* >( e ) ) {
+//         eventType = "StopEvent";
 //     }
-    if ( dynamic_cast< Event* >( e ) ) {
-        eventType = "Event";
-    }
-    return eventType;
-}
+//     if ( dynamic_cast< ClockEvent* >( e ) ) {
+//         eventType = "ClockEvent";
+//     }
+// //     if ( dynamic_cast< SyncEvent* >( e ) ) {
+// //         eventType = "SyncEvent";
+// //     }
+//     if ( dynamic_cast< Event* >( e ) ) {
+//         eventType = "Event";
+//     }
+//     return eventType;
+// }
 
 TimeConverter* Simulation::registerClock( std::string freq, ClockHandler_t* handler )
 {
@@ -504,13 +504,13 @@ TimeConverter* Simulation::registerClock( std::string freq, ClockHandler_t* hand
 
     if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
 	_SIM_DBG( "\n" );
-	ClockEvent* ce = new ClockEvent( tcFreq );
+	Clock* ce = new Clock( tcFreq );
 	clockMap[ tcFreq->getFactor() ] = ce; 
 
 	ce->setDeliveryTime( currentSimCycle + tcFreq->getFactor() );
 	timeVortex->insert( ce );
     }
-    clockMap[ tcFreq->getFactor() ]->HandlerRegister( ClockEvent::DEFAULT, handler );
+    clockMap[ tcFreq->getFactor() ]->HandlerRegister( Clock::DEFAULT, handler );
     return tcFreq;
     
 }
@@ -522,7 +522,7 @@ void Simulation::unregisterClock(TimeConverter *tc, ClockHandler_t* handler) {
 	_SIM_DBG( "\n" );
 	bool empty;
 	clockMap[ tc->getFactor() ]->HandlerUnregister( 
-						       ClockEvent::DEFAULT , handler, empty );
+						       Clock::DEFAULT , handler, empty );
 	
 	if ( empty == 0 ) {
 	    clockMap.erase( tc->getFactor() );

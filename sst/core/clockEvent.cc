@@ -22,26 +22,26 @@
     
 namespace SST {
 
-ClockEvent::ClockEvent( TimeConverter* period ) :
+Clock::Clock( TimeConverter* period ) :
     Action(),
-//     functor( new EventHandler< ClockEvent, bool, Time_t, Event* >
-//                                         ( this, &ClockEvent::handler ) ),
+//     functor( new EventHandler< Clock, bool, Time_t, Event* >
+//                                         ( this, &Clock::handler ) ),
     currentCycle(0),
     period( period )
 {
-//   functor = new EventHandler< ClockEvent, bool, Event* >( this, &ClockEvent::handler );
+//   functor = new EventHandler< Clock, bool, Event* >( this, &Clock::handler );
     setPriority(40);
 } 
 
 
-bool ClockEvent::HandlerRegister( Which_t which, ClockHandler_t* handler )
+bool Clock::HandlerRegister( Which_t which, ClockHandler_t* handler )
 {
     _CLE_DBG("handler %p\n",handler);
     handlerMap[which].push_back( handler );
     return 0;
 }
 
-bool ClockEvent::HandlerUnregister( Which_t which, ClockHandler_t* handler, 
+bool Clock::HandlerUnregister( Which_t which, ClockHandler_t* handler, 
                                                             bool& empty )
 {
     _CLE_DBG("handler %p\n",handler);
@@ -61,8 +61,8 @@ bool ClockEvent::HandlerUnregister( Which_t which, ClockHandler_t* handler,
     return 0;
 }
 
-// bool ClockEvent::handler( Event* event ) {
-void ClockEvent::execute( void ) {
+// bool Clock::handler( Event* event ) {
+void Clock::execute( void ) {
     Simulation *sim = Simulation::getSimulation();
     
     _CLE_DBG("time=FIXME cycle=%lu epoch=FIXME\n", (unsigned long) currentCycle );
@@ -99,5 +99,5 @@ void ClockEvent::execute( void ) {
 
 } // namespace SST
 
-BOOST_CLASS_EXPORT(SST::ClockEvent);
+BOOST_CLASS_EXPORT(SST::Clock);
 

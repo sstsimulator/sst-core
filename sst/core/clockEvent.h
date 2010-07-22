@@ -10,26 +10,26 @@
 // distribution.
 
 
-#ifndef SST_CLOCKEVENT_H
-#define SST_CLOCKEVENT_H
+#ifndef SST_CLOCK_H
+#define SST_CLOCK_H
 
 #include <deque>
 
 #include <sst/core/action.h>
 #include <sst/core/clockHandler.h>
 
-#define _CLE_DBG( fmt, args...)__DBG( DBG_CLOCKEVENT, ClockEvent, fmt, ## args )
+#define _CLE_DBG( fmt, args...)__DBG( DBG_CLOCK, Clock, fmt, ## args )
 
 namespace SST {
 
 class TimeConverter;
 
-class ClockEvent : public Action
+class Clock : public Action
 {
 public:
     typedef enum { DEFAULT, PRE, POST } Which_t;
 
-    ClockEvent( TimeConverter* period );
+    Clock( TimeConverter* period );
 
     bool HandlerRegister( Which_t which, ClockHandler_t* handler ); 
     bool HandlerUnregister( Which_t which, ClockHandler_t* handler, 
@@ -37,7 +37,7 @@ public:
 private:
     typedef std::deque<ClockHandler_t*> HandlerMap_t;
 
-    ClockEvent() { }
+    Clock() { }
 
     void execute( void );
 
@@ -57,4 +57,4 @@ private:
 
 } // namespace SST
 
-#endif // SST_CLOCKEVENT_H
+#endif // SST_CLOCK_H
