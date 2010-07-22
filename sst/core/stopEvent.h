@@ -13,39 +13,43 @@
 #ifndef _SST_STOPEVENT_H
 #define _SST_STOPEVENT_H
 
-#include <sst/core/event.h>
+#include <sst/core/action.h>
 
 namespace SST {
 
 #define _STOP_DBG( fmt, args...) __DBG( DBG_STOP, StopEvent, fmt, ## args )
 
-class StopEvent : public Event
+class StopEvent : public Action
 {
-    public:
-        StopEvent()
-        {
-	  functor = new EventHandler< StopEvent, bool, Event* >( this, &StopEvent::handler );
-        }
+ public:
+//     StopEvent(
 
-	EventHandler< StopEvent, bool, Event* >* getFunctor() {
-	  return functor;
-	}
+    
+//     public:
+//         StopEvent()
+//         {
+// 	    functor = new EventHandler< StopEvent, bool, Event* >( this, &StopEvent::handler );
+//         }
+
+// 	EventHandler< StopEvent, bool, Event* >* getFunctor() {
+// 	  return functor;
+// 	}
 	
-    private:
-        EventHandler< StopEvent, bool, Event* >* functor;
+//     private:
+//         EventHandler< StopEvent, bool, Event* >* functor;
 
-        bool handler( Event* e ) {
-             _STOP_DBG("\n");
-            return true;
-        }
+//         bool handler( Event* e ) {
+//              _STOP_DBG("\n");
+//             return true;
+//         }
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
-    }
+//     friend class boost::serialization::access;
+//     template<class Archive>
+//     void
+//     serialize(Archive & ar, const unsigned int version )
+//     {
+//         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
+//     }
 };
 
 } // namespace SST

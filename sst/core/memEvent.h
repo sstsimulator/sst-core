@@ -14,15 +14,15 @@
 #ifndef _MEMEVENT_H
 #define _MEMEVENT_H
 
-#include <sst/core/compEvent.h>
+#include <sst/core/event.h>
 
 namespace SST {
 
-class MemEvent : public CompEvent {
+class MemEvent : public Event {
     public:
         typedef enum { MEM_LOAD, MEM_LOAD_RESP, 
                 MEM_STORE, MEM_STORE_RESP } Type_t;
-        MemEvent() : CompEvent() { }
+        MemEvent() : Event() { }
 
         unsigned long   address;
         // this should be Type_t but SERIALIZATION barfs on it
@@ -35,7 +35,7 @@ class MemEvent : public CompEvent {
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version )
         {
-            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(CompEvent);
+            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
             ar & BOOST_SERIALIZATION_NVP( address );
             ar & BOOST_SERIALIZATION_NVP( type );
             ar & BOOST_SERIALIZATION_NVP( tag );

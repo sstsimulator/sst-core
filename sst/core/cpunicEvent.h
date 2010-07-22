@@ -23,16 +23,16 @@
 
 #include <cstring>
 
-#include "sst/core/compEvent.h"
+#include "sst/core/event.h"
 
 namespace SST {
 
 // We hardcode this here so we don't have to include netsim_internal.h
 #define CPUNICEVNET_MAX_PARAMS		(64)
 
-class CPUNicEvent : public CompEvent {
+class CPUNicEvent : public Event {
     public:
-        CPUNicEvent() : CompEvent()   {
+        CPUNicEvent() : Event()   {
 	    params_present= false;
 	    params_len= 0;
 	    routine= -1;
@@ -130,7 +130,7 @@ class CPUNicEvent : public CompEvent {
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version )
         {
-            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(CompEvent);
+            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
 	    ar & BOOST_SERIALIZATION_NVP(route);
 	    ar & BOOST_SERIALIZATION_NVP(router_delay);
 	    ar & BOOST_SERIALIZATION_NVP(hops);

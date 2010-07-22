@@ -21,7 +21,7 @@
 #include <sst/core/factory.h>
 #include <sst/core/stopEvent.h>
 #include <sst/core/exit.h>
-#include <sst/core/compEvent.h>
+#include <sst/core/event.h>
 #include <sst/core/config.h>
 #include <sst/core/graph.h>
 #include <sst/core/timeLord.h>
@@ -490,8 +490,8 @@ std::string Simulation::EventName( Event *e )
 //     if ( dynamic_cast< SyncEvent* >( e ) ) {
 //         eventType = "SyncEvent";
 //     }
-    if ( dynamic_cast< CompEvent* >( e ) ) {
-        eventType = "CompEvent";
+    if ( dynamic_cast< Event* >( e ) ) {
+        eventType = "Event";
     }
     return eventType;
 }

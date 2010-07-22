@@ -23,7 +23,6 @@ nobase_dist_sst_HEADERS = \
 	archive.h \
 	clockEvent.h \
 	clockHandler.h \
-	compEvent.h \
 	component.h \
 	config.h \
 	configGraph.h \

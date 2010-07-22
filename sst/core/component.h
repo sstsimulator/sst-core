@@ -36,7 +36,7 @@ public:
         @param id Unique component ID
     */
     Component( ComponentId_t id );
-    virtual ~Component() = 0;
+    virtual ~Component() {}
 
     /** Returns unique component ID */
     inline ComponentId_t getId() const { return id; }

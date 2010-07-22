@@ -17,7 +17,7 @@
 
 #include "sst/core/clockEvent.h"
 #include "sst/core/timeConverter.h"
-#include "sst/core/compEvent.h"
+#include "sst/core/event.h"
 #include "sst/core/simulation.h"
     
 namespace SST {
