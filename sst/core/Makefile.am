@@ -22,7 +22,6 @@ nobase_dist_sst_HEADERS = \
 	activity.h \
 	archive.h \
 	clock.h \
-	clockHandler.h \
 	component.h \
 	config.h \
 	configGraph.h \
@@ -31,7 +30,6 @@ nobase_dist_sst_HEADERS = \
 	element.h \
 	event.h \
 	eventFunctor.h \
-	eventHandler1Arg.h \
 	exit.h \
 	factory.h \
 	graph.h \

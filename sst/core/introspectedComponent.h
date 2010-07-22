@@ -33,7 +33,6 @@
 #include <sst/core/component.h>
 #include <sst/core/sst_types.h>
 #include <sst/core/linkMap.h>
-#include <sst/core/clockHandler.h>
 #include <sst/core/timeConverter.h>
 
 namespace io_interval {  // from boost interval io example (io_wide)
