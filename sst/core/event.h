@@ -79,8 +79,8 @@ public:
 	
     public:
 	Handler( classT* const object, PtrMember member ) :
-	    object(object),
-	    member(member)
+  	  member(member),
+	  object(object)
 	{}
 
 	    void operator()(Event* event) {
