@@ -74,8 +74,8 @@ public:
     class Handler<classT, void> : public HandlerBase {
     private:
 	typedef void (classT::*PtrMember)(Event*);
-	classT* object;
 	const PtrMember member;
+	classT* object;
 	
     public:
 	Handler( classT* const object, PtrMember member ) :
