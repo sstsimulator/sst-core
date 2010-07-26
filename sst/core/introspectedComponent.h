@@ -137,7 +137,7 @@ public:
         @param id Unique component ID
         @param sim Pointer to the global simulation object */
     IntrospectedComponent( ComponentId_t id );
-    virtual ~IntrospectedComponent() = 0;
+    virtual ~IntrospectedComponent() {} 
 
     /** List of id of introspectors that monitor this component. */
     std::list<ComponentId_t> MyIntroList;
