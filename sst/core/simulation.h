@@ -50,15 +50,15 @@ typedef std::map<std::string, Component* > CompMap_t;
 // simulation object.
 class SimulationBase {
 public:
-    Factory* getFactory(void) { return factory; }
-    TimeLord* getTimeLord(void) { return timeLord; }
+    Factory* getFactory(void) const { return factory; }
+    TimeLord* getTimeLord(void) const { return timeLord; }
 
 protected:
     SimulationBase(Config* config);
     SimulationBase() { } // Don't call - here for serialization
     virtual ~SimulationBase();
 
-    TimeConverter* minPartToTC(SimTime_t cycles);
+    TimeConverter* minPartToTC(SimTime_t cycles) const;
 
     Factory *factory;
     TimeLord *timeLord;
@@ -86,22 +86,27 @@ public:
     int performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		       int minPart, int myRank );
     void Run();
-    SimTime_t getCurrentSimCycle();
+    SimTime_t getCurrentSimCycle() const { return currentSimCycle; }
     TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
     void insertActivity(SimTime_t time, Activity* ev);
-    Exit* getExit() { return m_exit; }
+    Exit* getExit() const { return m_exit; }
 
-    LinkMap* getComponentLinkMap(ComponentId_t id) {
-	return component_links[id];
+    LinkMap* getComponentLinkMap(ComponentId_t id) const {
+        std::map<ComponentId_t,LinkMap*>::const_iterator i = component_links.find(id);
+        if (i == component_links.end()) {
+            return NULL;
+        } else {
+            return i->second;
+        }
     }
 
     const CompMap_t& getComponentMap(void) const { return compMap; }
     
     Component*
-    getComponent(const std::string &name) 
+    getComponent(const std::string &name) const
     {
-        CompMap_t::iterator i = compMap.find(name);
+        CompMap_t::const_iterator i = compMap.find(name);
         if (i != compMap.end()) {
             return i->second;
         } else {
@@ -112,9 +117,9 @@ public:
     }
 
     Introspector*
-    getIntrospector(const std::string &name)
+    getIntrospector(const std::string &name) const
     {
-        IntroMap_t::iterator i = introMap.find(name);
+        IntroMap_t::const_iterator i = introMap.find(name);
         if (i != introMap.end()) {
             return i->second;
         } else {
@@ -123,8 +128,6 @@ public:
             exit(1); 
         }
     }
-
-protected:
 	
 private:
     friend class Link;
@@ -140,11 +143,9 @@ private:
     Introspector* createIntrospector(std::string name, 
                                      Component::Params_t params );
 
-    TimeVortex* getTimeVortex() { return timeVortex; }
+    TimeVortex* getTimeVortex() const { return timeVortex; }
 
-    void endSimulation(void) {
-	endSim = true;
-    }
+    void endSimulation(void) { endSim = true; }
 
     TimeVortex*      timeVortex;
     Sync*            sync;

@@ -47,7 +47,7 @@ SimulationBase::~SimulationBase()
     delete timeLord;
 }
 
-TimeConverter* SimulationBase::minPartToTC(SimTime_t cycles) {
+TimeConverter* SimulationBase::minPartToTC(SimTime_t cycles) const {
     return timeLord->getTimeConverter(cycles);
 }
 
@@ -96,10 +96,6 @@ Simulation::Simulation( Config* cfg ) :
 Simulation::Simulation()
 {
     // serialization only, so everything will be restored.  I think.
-}
-
-SimTime_t Simulation::getCurrentSimCycle() {
-    return currentSimCycle;
 }
 
 Component*
