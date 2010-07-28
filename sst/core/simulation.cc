@@ -77,8 +77,6 @@ Simulation::Simulation( Config* cfg ) :
 {
 //     eQueue = new EventQueue_t;
     timeVortex = new TimeVortex;
-    compMap = new CompMap_t;
-    introMap = new IntroMap_t;
     printf("Inserting stop event at cycle %ld\n",
            (long int)cfg->stopAtCycle);
 
@@ -112,93 +110,56 @@ Simulation::createComponent( ComponentId_t id, std::string name,
 }
 
 
-int Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
-            int minPart, int myRank )
+int
+Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
+                    int minPart, int myRank )
 {
     _SIM_DBG("minPart=%d myRank=%d\n", minPart, myRank );
 
-    for( VertexList_t::iterator iter = graph.vlist.begin();
-                        iter != graph.vlist.end(); ++iter )
+    for (VertexList_t::iterator iter = graph.vlist.begin() ;
+         iter != graph.vlist.end() ; ++iter )
     {
-        Vertex *v        = (*iter).second;
-        int     vertRank = atoi( v->prop_list.get(GRAPH_RANK).c_str() );
+        Vertex*        v = (*iter).second;
+        int            vertRank = atoi( v->prop_list.get(GRAPH_RANK).c_str() );
+        std::string    name  = v->prop_list.get(GRAPH_COMP_NAME).c_str();
+        ComponentId_t  id  = atoi(v->prop_list.get(GRAPH_ID).c_str() );
+        SDL_Component* sdl_c = sdlMap[name.c_str()];
+        Component*     tmp;
 
-        if ( vertRank == myRank)
-        {
-            std::string    name  = v->prop_list.get(GRAPH_COMP_NAME).c_str();
-            ComponentId_t  id  = atoi(v->prop_list.get(GRAPH_ID).c_str() );
-            SDL_Component* sdl_c = sdlMap[ name.c_str() ];
-            Component*     tmp;
+        if (sdl_c->isIntrospector()) {
 	    Introspector* itmp;
 
-	    //create introspector on vertRank
-	    if(sdl_c->isIntrospector() == true)
-	    {
-		_SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
+            _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
+		     name.c_str(), sdl_c->type().c_str(), (int)id );
+            
+            tmp = createComponent( id, sdl_c->type().c_str(),
+                                   sdl_c->params );
+            itmp = dynamic_cast<Introspector *> (tmp); 
+            assert(itmp);
+
+            introMap[name] = itmp;
+
+        } else if (vertRank == myRank) {
+            _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
-		tmp = createComponent( id, sdl_c->type().c_str(),
-                                                        sdl_c->params );
-		itmp = dynamic_cast<Introspector *> (tmp); 
-		assert(itmp);
-
-                (*introMap)[ itmp->getId() ] = itmp;
-		if (itmp->getId() != id) {
-	           _ABORT(Simulation, 
-		     "introspector id does not match assigned id (%d)\n", (int)id);
-	        }
-	    }
-	    //create component
-	    else
-	    {
-                _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
-		     name.c_str(), sdl_c->type().c_str(), (int)id );
-
-		// Check to make sure there is a LinkMap for this component
-		std::map<ComponentId_t,LinkMap*>::iterator it;
-		it = component_links.find(id);
-		if ( it == component_links.end() ) {
-		    printf("WARNING: Building component \"%s\" with no links assigned.\n",name.c_str());
-		    LinkMap* lm = new LinkMap();
-		    component_links[id] = lm;
-		}
+            // Check to make sure there is a LinkMap for this component
+            std::map<ComponentId_t,LinkMap*>::iterator it;
+            it = component_links.find(id);
+            if ( it == component_links.end() ) {
+                printf("WARNING: Building component \"%s\" with no links assigned.\n",name.c_str());
+                LinkMap* lm = new LinkMap();
+                component_links[id] = lm;
+            }
 		
-                tmp = createComponent( id, sdl_c->type().c_str(),
-                                                        sdl_c->params );
-                (*compMap)[ tmp->getId() ] = tmp;
-		if (tmp->getId() != id) {
-	            _ABORT(Simulation, 
-		     "component id does not match assigned id (%d)\n", (int)id);
-	        }
-	    } 
-        }
-	//create same type of introspector on other ranks
-	else
-	{   
-	    std::string    name  = v->prop_list.get(GRAPH_COMP_NAME).c_str();
-	    SDL_Component* sdl_c = sdlMap[ name.c_str() ];
-	    Component*     tmp;
-	    ComponentId_t  id  = atoi(v->prop_list.get(GRAPH_ID).c_str() );
-
-	    if(sdl_c->isIntrospector() == true)
-	    {
-	        Introspector* itmp;
-
-		_SIM_DBG("creating introspector in parallel: name=\"%s\" type=\"%s\" id=%d\n",
-		     name.c_str(), sdl_c->type().c_str(), (int)id );
-
-		tmp = createComponent( id, sdl_c->type().c_str(),
-                                                        sdl_c->params );
-		itmp = dynamic_cast<Introspector *> (tmp); //safe downcast
-		assert(itmp);
-
-                (*introMap)[ itmp->getId() ] = itmp;
-		if (itmp->getId() != id) {
-	           _ABORT(Simulation, 
-		     "introspector id does not match assigned id (%d)\n", (int)id);
-	        }
-	    }
-	}
+            tmp = createComponent( id, sdl_c->type().c_str(),
+                                   sdl_c->params );
+            compMap[name] = tmp;
+            if (tmp->getId() != id) {
+                _ABORT(Simulation, 
+                       "component id does not match assigned id (%d)\n", (int)id);
+            }
+        } 
     } // end for all vertex
 
     // this is a mess
@@ -419,16 +380,16 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 void Simulation::Run() {
     _SIM_DBG( "RUN\n" );
 
-    for( CompMap_t::iterator iter = compMap->begin();
-                            iter != compMap->end(); ++iter )
+    for( CompMap_t::iterator iter = compMap.begin();
+                            iter != compMap.end(); ++iter )
     {
         if ( (*iter).second->Setup() ) {
             _ABORT(Simulation,"Setup()\n");
         }
     }
     //for introspector
-    for( IntroMap_t::iterator iter = introMap->begin();
-                            iter != introMap->end(); ++iter )
+    for( IntroMap_t::iterator iter = introMap.begin();
+                            iter != introMap.end(); ++iter )
     {
         if ( (*iter).second->Setup() ) {
             _ABORT(Simulation,"Setup()\n");
@@ -443,16 +404,16 @@ void Simulation::Run() {
   	ptr->execute();
     }
 
-    for( CompMap_t::iterator iter = compMap->begin();
-                            iter != compMap->end(); ++iter )
+    for( CompMap_t::iterator iter = compMap.begin();
+                            iter != compMap.end(); ++iter )
     {
         if ( (*iter).second->Finish() ) {
             _ABORT(Simulation,"Finish()\n");
         }
     }
     //for introspector
-    for( IntroMap_t::iterator iter = introMap->begin();
-                            iter != introMap->end(); ++iter )
+    for( IntroMap_t::iterator iter = introMap.begin();
+                            iter != introMap.end(); ++iter )
     {
         if ( (*iter).second->Finish() ) {
             _ABORT(Simulation,"Finish()\n");
@@ -469,8 +430,8 @@ Simulation::printStatus(void)
     printf("Simulation: instance: 0x%lx\n", (long) Simulation::instance);
 
     if (Simulation::instance != NULL) {
-        for (CompMap_t::iterator iter = instance->compMap->begin() ;
-             iter != instance->compMap->end() ; ++iter ) {
+        for (CompMap_t::iterator iter = instance->compMap.begin() ;
+             iter != instance->compMap.end() ; ++iter ) {
             if (iter->second->Status()) quit = true;
         }
     }

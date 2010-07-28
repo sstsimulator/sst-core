@@ -37,8 +37,8 @@ class TimeConverter;
 class TimeLord;
 class TimeVortex;
 
-typedef std::map< ComponentId_t, Introspector* > IntroMap_t;
-typedef std::map< ComponentId_t, Component* > CompMap_t;
+typedef std::map<std::string, Introspector* > IntroMap_t;
+typedef std::map<std::string, Component* > CompMap_t;
 
 // The Factory and TimeLord objects both should only be associated
 // with a simulation object and never created on their own.  To
@@ -92,36 +92,36 @@ public:
     void insertActivity(SimTime_t time, Activity* ev);
     Exit* getExit() { return m_exit; }
 
-
-    /* for introspection*/
-    CompMap_t* getCompMap(){
-	    return compMap;
-	}
-
     LinkMap* getComponentLinkMap(ComponentId_t id) {
 	return component_links[id];
     }
+
+    const CompMap_t& getComponentMap(void) const { return compMap; }
     
-    Component* getComponent(const char* type){
-	    ComponentId_t id = atoi(type);
-	    std::map<ComponentId_t, Component*>::iterator it;
-	    it = compMap->find(id);
-            if (it != compMap->end() )   // found key
-               return it->second;
-	    else { 
-	       printf("Simulation::getComponent couldn't find component with id = %lu\n",id); exit(1); 
-	    }
+    Component*
+    getComponent(const std::string &name) 
+    {
+        CompMap_t::iterator i = compMap.find(name);
+        if (i != compMap.end()) {
+            return i->second;
+        } else {
+            printf("Simulation::getComponent() couldn't find component with name = %s\n",
+                   name.c_str()); 
+            exit(1); 
+        }
     }
 
-    Introspector* getIntrospector(const char* type){
-	    ComponentId_t id = atoi(type);
-	    std::map<ComponentId_t, Introspector*>::iterator it;
-	    it = introMap->find(id);
-            if (it != introMap->end() )   // found key
-               return it->second;
-	    else { 
-	       printf("Simulation::getIntrospector couldn't find introspector with id = %lu\n",id); exit(1); 
-	    }
+    Introspector*
+    getIntrospector(const std::string &name)
+    {
+        IntroMap_t::iterator i = introMap.find(name);
+        if (i != introMap.end()) {
+            return i->second;
+        } else {
+            printf("Simulation::getIntrospector() couldn't find introspector with name = %s\n",
+                   name.c_str()); 
+            exit(1); 
+        }
     }
 
 protected:
@@ -150,8 +150,8 @@ private:
 
     TimeVortex*      timeVortex;
     Sync*            sync;
-    CompMap_t*       compMap;
-    IntroMap_t*      introMap;
+    CompMap_t        compMap;
+    IntroMap_t       introMap;
     clockMap_t       clockMap;
     SimTime_t        currentSimCycle;
     Exit*            m_exit;

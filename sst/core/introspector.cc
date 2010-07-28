@@ -32,10 +32,10 @@ Introspector::Introspector(ComponentId_t id) : IntrospectedComponent( id )
 
 std::list<IntrospectedComponent*> Introspector::getModels(const std::string CompType)
 {
-    CompMap_t *CompMap = Simulation::getSimulation()->getCompMap();
+    const CompMap_t &CompMap = Simulation::getSimulation()->getComponentMap();
 
-    for( CompMap_t::iterator iter = CompMap->begin();
-    	                    iter != CompMap->end(); ++iter )
+    for( CompMap_t::const_iterator iter = CompMap.begin();
+    	                    iter != CompMap.end(); ++iter )
     {
 	//printf("CompMap has %s with id = %lu\n", (*iter).second->type.c_str(), (*iter).second->Id());
         if (CompType.empty() == true)
