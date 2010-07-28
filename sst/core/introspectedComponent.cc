@@ -175,9 +175,9 @@ std::pair<bool, int> IntrospectedComponent::ifMonitorDoubleData(std::string data
 * addToIntroList	                                     *
 * Add the id of the introspector to MyIntroList		     *
 **************************************************************/
-void IntrospectedComponent::addToIntroList(ComponentId_t id){
+void IntrospectedComponent::addToIntroList(Introspector *introspector){
 	
-	MyIntroList.push_back(id);
+	MyIntroList.push_back(introspector);
 }
 
 

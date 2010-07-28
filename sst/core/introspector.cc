@@ -24,11 +24,17 @@
 namespace SST {
 
 
-Introspector::Introspector(ComponentId_t id) : IntrospectedComponent( id )
+Introspector::Introspector()
 {
-//     _id = id;
-    _INTROSPECTOR_DBG( "new\n" );
 }
+
+TimeConverter*
+Introspector::registerClock( std::string freq, Clock::HandlerBase* handler)
+{
+    defaultTimeBase = Simulation::getSimulation()->registerClock(freq,handler);
+    return defaultTimeBase;
+}
+
 
 std::list<IntrospectedComponent*> Introspector::getModels(const std::string CompType)
 {
@@ -50,7 +56,7 @@ std::list<IntrospectedComponent*> Introspector::getModels(const std::string Comp
 
 void Introspector::monitorComponent(IntrospectedComponent* c)
 {
-    c->addToIntroList(this->getId());
+    c->addToIntroList(this);
 }
 
 void Introspector::addToIntDatabase(IntrospectedComponent* c, int dataID){

@@ -135,12 +135,10 @@ private:
     Simulation(Simulation const&);     // Don't Implement
     void operator=(Simulation const&); // Don't implement
 	
-//     std::string EventName(Event *);
     Component* createComponent(ComponentId_t id, std::string name, 
                                Component::Params_t params);
-//     EventQueue_t* getEventQueue() { return eQueue; }
-
-//     EventQueue_t*    eQueue;
+    Introspector* createIntrospector(std::string name, 
+                                     Component::Params_t params );
 
     TimeVortex* getTimeVortex() { return timeVortex; }
 

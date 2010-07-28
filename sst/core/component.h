@@ -44,8 +44,7 @@ public:
     /** Component's type, set by the factory when the object is created.
         It is identical to the configuration string used to create the
         component. I.e. the XML "<component id="aFoo"><foo>..." would
-        generate a component from libfoo.so and set component::type to
-        "foo" */
+        set component::type to "foo" */
     std::string type;
 
     /** Called after all components have been constructed, but before

@@ -15,29 +15,40 @@
 #include <sst/core/component.h>
 
 namespace SST {
-    typedef Component* (*componentAllocate)(ComponentId_t, Component::Params_t&);
-    typedef void (*eventInitialize)(void);
+class Introspector;
 
-    struct ElementInfoComponent {
-        const char *name;
-        const char *description;
-        void (*printHelp)(FILE *output);
-        componentAllocate alloc;
-    };
+typedef Component* (*componentAllocate)(ComponentId_t, Component::Params_t&);
+typedef Introspector* (*introspectorAllocate)(Component::Params_t&);
+typedef void (*eventInitialize)(void);
 
-    struct ElementInfoEvent {
-        const char *name;
-        const char *description;
-        void (*printHelp)(FILE *output);
-        eventInitialize init;
-    };
+struct ElementInfoComponent {
+    const char *name;
+    const char *description;
+    void (*printHelp)(FILE *output);
+    componentAllocate alloc;
+};
 
-    struct ElementLibraryInfo {
-        const char *name;
-        const char *description;
-        const struct ElementInfoComponent* components;
-        const struct ElementInfoEvent* events;
-    };
+struct ElementInfoIntrospector {
+    const char *name;
+    const char *description;
+    void (*printHelp)(FILE *output);
+    introspectorAllocate alloc;
+};
+
+struct ElementInfoEvent {
+    const char *name;
+    const char *description;
+    void (*printHelp)(FILE *output);
+    eventInitialize init;
+};
+
+struct ElementLibraryInfo {
+    const char *name;
+    const char *description;
+    const struct ElementInfoComponent* components;
+    const struct ElementInfoEvent* events;
+    const struct ElementInfoIntrospector* introspectors;
+};
 };
 
 #endif // SST_ELEMENT_H

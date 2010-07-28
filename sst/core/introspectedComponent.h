@@ -62,6 +62,8 @@ std::basic_ostream<CharType, CharTraits>
 
 namespace SST {
 
+class Introspector;
+
 typedef boost::numeric::interval<double> I;
 
 typedef struct {
@@ -140,7 +142,7 @@ public:
     virtual ~IntrospectedComponent() {} 
 
     /** List of id of introspectors that monitor this component. */
-    std::list<ComponentId_t> MyIntroList;
+    std::list<Introspector*> MyIntroList;
 
     // Power
     /** Central power/energy database that stores power dissipation data 
@@ -183,7 +185,7 @@ public:
     /** Add the "id" of a introspector to an internal list, MyIntroList.
         Indicates the introspector monitors the component.
         @param id ID of the introspector that monitors the component*/
-    void addToIntroList(ComponentId_t id);
+    void addToIntroList(Introspector *introspector);
     /** Check if current is the time for the component to push/report data (e.g. power)
         by querying its introspector.
         @param current Current cycle from component's view

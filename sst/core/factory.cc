@@ -133,6 +133,33 @@ Factory::CreateComponent(ComponentId_t id,
 }
 
 
+Introspector*
+Factory::CreateIntrospector(std::string type, 
+                            Component::Params_t& params)
+{
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(type);
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // now look for component
+    std::string tmp = elemlib + "." + elem;
+    eii_map_t::iterator eii = 
+        found_introspectors.find(tmp);
+    if (eii == found_introspectors.end()) {
+        _abort(Factory,"can't find requested introspector %s.\n ", tmp.c_str());
+        return NULL;
+    }
+
+    const ElementInfoIntrospector *ei = eii->second;
+    Introspector *ret = ei->alloc(params);
+    return ret;
+}
+
+
 void
 Factory::RegisterEvent(std::string eventname)
 {
@@ -182,6 +209,15 @@ Factory::findLibrary(std::string elemlib)
             found_events[tmp] = eie;
             if (eie->init != NULL) eie->init();
             eie++;
+        }
+    }
+
+    if (NULL != eli->introspectors) {
+        const ElementInfoIntrospector *eii = eli->introspectors;
+        while (NULL != eii->name) {
+            std::string tmp = elemlib + "." + eii->name;
+            found_introspectors[tmp] = eii;
+            eii++;
         }
     }
 
@@ -241,6 +277,7 @@ Factory::loadLibrary(std::string elemlib)
                 elcp[1].alloc = NULL;
                 eli->components = elcp;
                 eli->events = NULL;
+                eli->introspectors = NULL;
                 fprintf(stderr, "WARNING: Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
             } else {
                 fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
@@ -305,6 +342,7 @@ Factory::loadLibrary(std::string elemlib)
             elcp[1].alloc = NULL;
             eli->components = elcp;
             eli->events = NULL;
+            eli->introspectors = NULL;
             fprintf(stderr, "WARNING: Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
         } else {
             fprintf(stderr, "Could not find ELI block %s in %s: %s\n",

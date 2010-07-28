@@ -29,6 +29,8 @@ class Factory {
 public:
     Component* CreateComponent(ComponentId_t id, std::string componentname,
                                Component::Params_t& params);
+    Introspector* CreateIntrospector(std::string introspectorname,
+                               Component::Params_t& params);
     void RegisterEvent(std::string eventname);
   
 private:
@@ -37,6 +39,7 @@ private:
     typedef std::map<std::string, const ElementLibraryInfo*> eli_map_t;
     typedef std::map<std::string, const ElementInfoComponent*> eic_map_t;
     typedef std::map<std::string, const ElementInfoEvent*> eie_map_t;
+    typedef std::map<std::string, const ElementInfoIntrospector*> eii_map_t;
 
     Factory(std::string searchPaths);
     ~Factory();
@@ -52,6 +55,7 @@ private:
 
     eli_map_t loaded_libraries;
     eic_map_t found_components;
+    eii_map_t found_introspectors;
     eie_map_t found_events;
     std::string searchPaths;
     FactoryLoaderData *loaderData;

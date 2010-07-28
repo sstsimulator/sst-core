@@ -106,7 +106,13 @@ Component*
 Simulation::createComponent( ComponentId_t id, std::string name, 
                             Component::Params_t params )
 {
-    return factory->CreateComponent( id, name, params );
+    return factory->CreateComponent(id, name, params);
+}
+
+Introspector*
+Simulation::createIntrospector(std::string name, Component::Params_t params )
+{
+    return factory->CreateIntrospector(name, params);
 }
 
 
@@ -124,22 +130,19 @@ Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
         std::string    name  = v->prop_list.get(GRAPH_COMP_NAME).c_str();
         ComponentId_t  id  = atoi(v->prop_list.get(GRAPH_ID).c_str() );
         SDL_Component* sdl_c = sdlMap[name.c_str()];
-        Component*     tmp;
 
         if (sdl_c->isIntrospector()) {
-	    Introspector* itmp;
+	    Introspector* tmp;
 
             _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
 		     name.c_str(), sdl_c->type().c_str(), (int)id );
             
-            tmp = createComponent( id, sdl_c->type().c_str(),
-                                   sdl_c->params );
-            itmp = dynamic_cast<Introspector *> (tmp); 
-            assert(itmp);
-
-            introMap[name] = itmp;
+            tmp = createIntrospector(sdl_c->type().c_str(),
+                                     sdl_c->params);
+            introMap[name] = tmp;
 
         } else if (vertRank == myRank) {
+            Component* tmp;
             _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
