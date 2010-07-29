@@ -104,7 +104,7 @@ public:
         the basic collective operations, broadcast, (all)reduce and (all)gather.
         @param time The simulation time when the introspectors will communicate among themselves
         @param functor Event handling functor that invokes member communication function*/
-    void oneTimeCollect(SimTime_t time, EventHandlerBase<bool,Event*>* functor); 
+	void oneTimeCollect(SimTime_t time, Event::HandlerBase* functor); 
 
 
     /** List of components that this introspector is monitoring.*/

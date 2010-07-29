@@ -29,7 +29,6 @@ nobase_dist_sst_HEADERS = \
 	debug.h \
 	element.h \
 	event.h \
-	eventFunctor.h \
 	exit.h \
 	factory.h \
 	graph.h \

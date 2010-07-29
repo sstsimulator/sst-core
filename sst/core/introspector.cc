@@ -141,7 +141,7 @@ void Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operatio
 }
 
 // KSH:  SyncEvent is gone.  Introspector should create an action to do what syncevent was doing
-void Introspector::oneTimeCollect(SimTime_t time, EventHandlerBase<bool,Event*>* functor){
+    void Introspector::oneTimeCollect(SimTime_t time, Event::HandlerBase* functor){
 //     Simulation *sim = Simulation::getSimulation();
 //     SyncEvent* event = new SyncEvent();
 

@@ -13,8 +13,9 @@
 #ifndef SST_CORE_EVENT_H
 #define SST_CORE_EVENT_H
 
-#include <sst/core/eventFunctor.h>
-/* #include <sst/core/debug.h> */
+//#include <sst/core/eventFunctor.h>
+#include <sst/core/sst_types.h>
+#include <sst/core/debug.h>
 #include <sst/core/activity.h>
 
 namespace SST {
