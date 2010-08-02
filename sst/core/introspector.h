@@ -139,6 +139,11 @@ protected:
         Component::getCurrentSimTime(). Often set by Component::registerClock()
         function */
     TimeConverter* defaultTimeBase;
+
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive& ar, const unsigned int version);
 };
 
 

@@ -10,6 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
+#include "sst/core/serialization/core.h"
 
 #include <boost/foreach.hpp>
 #include <boost/mpi.hpp>
@@ -149,5 +150,18 @@ void Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operatio
 
 }
 
+template<class Archive>
+void
+Introspector::serialize(Archive& ar, const unsigned int version) {
+    ar & BOOST_SERIALIZATION_NVP(MyCompList);
+    ar & BOOST_SERIALIZATION_NVP(DatabaseInt);
+    ar & BOOST_SERIALIZATION_NVP(DatabaseDouble);
+    ar & BOOST_SERIALIZATION_NVP(minvalue);
+    ar & BOOST_SERIALIZATION_NVP(maxvalue);
+    ar & BOOST_SERIALIZATION_NVP(value);
+    ar & BOOST_SERIALIZATION_NVP(arrayvalue);
+}
 
 } //namespace SST
+
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Introspector::serialize)
