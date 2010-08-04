@@ -32,6 +32,7 @@ nobase_dist_sst_HEADERS = \
 	exit.h \
 	factory.h \
 	graph.h \
+	introspectAction.h \
 	introspector.h \
 	introspectedComponent.h \
 	link.h \
@@ -71,6 +72,7 @@ sst_x_SOURCES = \
 	exit.cc \
 	export.cc \
 	factory.cc \
+	introspectAction.cc \
 	introspector.cc \
 	introspectedComponent.cc \
 	link.cc \
