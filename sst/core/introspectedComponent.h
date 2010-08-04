@@ -110,7 +110,7 @@ public:
 
     /** List of common statistics that components want to be monitored.
         When editting the list, make sure to edit the vector, stats_name, 
-	in Component::getDataID() as well. */
+	in introspectedComponent::getDataID() as well. */
     enum stats {/*McPAT counters*/
         core_temperature,branch_read, branch_write, RAS_read, RAS_write,
         il1_read, il1_readmiss, IB_read, IB_write, BTB_read, BTB_write,
@@ -132,7 +132,11 @@ public:
         prefetch_insertions, prefetch_useful_insertions, MSHR_occupancy /* Miss Status Handling Registers total occupancy */,
         MSHR_full_cycles /* number of cycles when full */, WBB_insertions /* total writebacks */, WBB_victim_insertions /* total non-dirty insertions */,
         WBB_combines /* number eliminated due to write combining */, WBB_occupancy /* total occupancy */, WBB_full_cycles /* number of cycles when full */,
-        WBB_hits, WBB_victim_hits, core_lookups, core_misses, MSHR_combos
+        WBB_hits, WBB_victim_hits, core_lookups, core_misses, MSHR_combos,
+	/*IntSim*/
+	ib_access, issueQ_access, decoder_access, pipeline_access, lsq_access,
+	rat_access, rob_access, btb_access, l2_access, mc_access,
+	loadQ_access, rename_access, scheduler_access, l3_access, l1dir_access, l2dir_access
     }; 
 
     /** Constructor. Generally only called by the factory class. 
@@ -204,18 +208,18 @@ public:
         @param index of the table (if the data structure is a table); default is set to 0 */ 
     virtual double getDoubleData(int dataID, int index=0){ return 0;}
     /** Returns the ID of the data associated with the string indicated by "dataName".
-        This function is usually called in Component::registerMonitorInt() or Component::registerMonitorDouble().
+        This function is usually called in introspectedComponent::registerMonitorInt() or Component::registerMonitorDouble().
         @param dataName Description of the integer data*/
     int getDataID(std::string dataName);
 
 protected:
     /** Database of integer monitors (arbitrary integer data that a
 	compopent wishes to be monitored) available through
-	Component::getMonitorIntData() */	
+	introspectedComponent::getMonitorIntData() */	
     Monitors monitorINT;
     /** Database of double monitors (arbitrary double data that a
 	compopent wishes to be monitored) available through
-	Component::getMonitorDoubleData() */	
+	introspectedComponent::getMonitorDoubleData() */	
     Monitors monitorDOUBLE;
 	
 private:

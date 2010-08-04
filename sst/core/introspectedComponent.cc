@@ -222,16 +222,21 @@ int IntrospectedComponent::getDataID(std::string dataName){
 	    "int_regfile_reads", "int_regfile_writes", "float_regfile_reads", "float_regfile_writes", "RFWIN_read", "RFWIN_write",
 	    "bypass_access", "router_access",
 	    "L2_read", "L2_readmiss", "L2_write", "L2_writemiss", "L3_read", "L3_readmiss", "L3_write", "L3_writemiss",
-	    "L1Dir_read", "L1Dir_readmiss", "L1Dir_write", "L1Dir_writemiss", "L2Dir_read", "L2Dir_readmiss", "L2Dir_write", 		 		    "L2Dir_writemiss",
+	    "L1Dir_read", "L1Dir_readmiss", "L1Dir_write", "L1Dir_writemiss", "L2Dir_read", "L2Dir_readmiss", "L2Dir_write", "L2Dir_writemiss",
 	    "memctrl_read", "memctrl_write",
 	    /*sim-panalyzer counters*/
 	    "alu_access", "fpu_access", "mult_access", "io_access",
 	    /*zesto counters */
-	    "cache_load_lookups", "cache_load_misses", "cache_store_lookups", "cache_store_misses", "writeback_lookups", "writeback_misses", 		    "prefetch_lookups", "prefetch_misses", 
+	    "cache_load_lookups", "cache_load_misses", "cache_store_lookups", "cache_store_misses", "writeback_lookups", "writeback_misses", 
+	    "prefetch_lookups", "prefetch_misses", 
 	    "prefetch_insertions", "prefetch_useful_insertions", "MSHR_occupancy",
 	    "MSHR_full_cycles", "WBB_insertions", "WBB_victim_insertions",
     	    "WBB_combines", "WBB_occupancy", "WBB_full_cycles",
-    	    "WBB_hits", "WBB_victim_hits", "core_lookups", "core_misses", "MSHR_combos"};
+    	    "WBB_hits", "WBB_victim_hits", "core_lookups", "core_misses", "MSHR_combos",
+	    /*IntSim*/
+	    "ib_access", "issueQ_access", "decoder_access", "pipeline_access", "lsq_access",
+	    "rat_access", "rob_access", "btb_access", "l2_access", "mc_access",
+	    "loadQ_access", "rename_access", "scheduler_access", "l3_access", "l1dir_access", "l2dir_access"};
 
 	std::vector<std::string> stats_names(stats_names_array, stats_names_array + sizeof(stats_names_array) / sizeof(stats_names_array[0]) );
 	unsigned int pos = std::find(stats_names.begin(), stats_names.end(), dataName) - stats_names.begin();
