@@ -28,7 +28,7 @@
 namespace SST {
 
 // We hardcode this here so we don't have to include netsim_internal.h
-#define CPUNICEVNET_MAX_PARAMS		(64)
+#define CPUNICEVENT_MAX_PARAMS		(64)
 
 class CPUNicEvent : public Event {
     public:
@@ -53,8 +53,8 @@ class CPUNicEvent : public Event {
 
 	// Functions to attach and detach parameters
 	inline void AttachParams(const void *input, int len)   {
-	    if (len > CPUNICEVNET_MAX_PARAMS)   {
-		_ABORT(CPUNicEvent, "Only have room for %d bytes!!\n", CPUNICEVNET_MAX_PARAMS);
+	    if (len > CPUNICEVENT_MAX_PARAMS)   {
+		_ABORT(CPUNicEvent, "Only have room for %d bytes!!\n", CPUNICEVENT_MAX_PARAMS);
 	    }
 	    params_present= true;
 	    params_len= len;
@@ -65,9 +65,9 @@ class CPUNicEvent : public Event {
 	    if (!params_present)   {
 		_ABORT(CPUNicEvent, "No params present!\n");
 	    }
-	    if (*len > CPUNICEVNET_MAX_PARAMS)   {
+	    if (*len > CPUNICEVENT_MAX_PARAMS)   {
 		_ABORT(CPUNicEvent, "Can't detach %d bytes. Only have %d bytes (%d max) of params!!\n",
-		    *len, params_len, CPUNICEVNET_MAX_PARAMS);
+		    *len, params_len, CPUNICEVENT_MAX_PARAMS);
 	    }
 	    if ((int) params_len > *len)   {
 		_ABORT(CPUNicEvent, "Have %d bytes of params, but user only wants %d!\n",
@@ -121,7 +121,7 @@ class CPUNicEvent : public Event {
 	bool params_present;
 	int routine;
 	unsigned int params_len;
-	uint8_t event_params[CPUNICEVNET_MAX_PARAMS];
+	uint8_t event_params[CPUNICEVENT_MAX_PARAMS];
 	std::vector<uint8_t>msg_payload;
 	bool payload_present;
 	int payload_len;
