@@ -86,7 +86,7 @@ public:
     int performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		       int minPart, int myRank );
     void Run();
-    SimTime_t getCurrentSimCycle() const { return currentSimCycle; }
+    SimTime_t getCurrentSimCycle() const;
     TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
     void insertActivity(SimTime_t time, Activity* ev);

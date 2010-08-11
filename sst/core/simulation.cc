@@ -421,6 +421,12 @@ void Simulation::Run() {
 
 }
 
+SimTime_t
+Simulation::getCurrentSimCycle() const
+{
+    return currentSimCycle; 
+}
+
 void
 Simulation::printStatus(void)
 {

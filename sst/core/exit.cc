@@ -104,7 +104,7 @@ Exit::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(m_refCount);
     ar & BOOST_SERIALIZATION_NVP(m_period);
     ar & BOOST_SERIALIZATION_NVP(m_idSet);
-    printf("begin Exit::serialize\n");
+    printf("end Exit::serialize\n");
 }
 
 } // namespace SST
