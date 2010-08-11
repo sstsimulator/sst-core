@@ -11,6 +11,7 @@
 
 
 #include "sst_config.h"
+#include "sst/core/serialization/core.h"
 
 #include <sst/core/sst_types.h>
 #include <sst/core/debug.h>
