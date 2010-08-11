@@ -236,7 +236,9 @@ int IntrospectedComponent::getDataID(std::string dataName){
 	    /*IntSim*/
 	    "ib_access", "issueQ_access", "decoder_access", "pipeline_access", "lsq_access",
 	    "rat_access", "rob_access", "btb_access", "l2_access", "mc_access",
-	    "loadQ_access", "rename_access", "scheduler_access", "l3_access", "l1dir_access", "l2dir_access"};
+	    "loadQ_access", "rename_access", "scheduler_access", "l3_access", "l1dir_access", "l2dir_access",
+	    /*DRAMSim*/
+	    "dram_backgroundEnergy", "dram_burstEnergy", "dram_actpreEnergy", "dram_refreshEnergy"};
 
 	std::vector<std::string> stats_names(stats_names_array, stats_names_array + sizeof(stats_names_array) / sizeof(stats_names_array[0]) );
 	unsigned int pos = std::find(stats_names.begin(), stats_names.end(), dataName) - stats_names.begin();

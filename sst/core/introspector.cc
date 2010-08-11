@@ -62,10 +62,10 @@ void Introspector::monitorComponent(IntrospectedComponent* c)
 
 void Introspector::addToIntDatabase(IntrospectedComponent* c, int dataID){
     //std::cout << "Introspector::addToIntDatabase added component " << c->Id() << "'s data with dataID = " << dataID << std::endl;
-    DatabaseInt.insert(std::make_pair(c, dataID)); 
+    DatabaseInt.insert(std::make_pair(dataID, c)); //dataID is unique so make it as the key in the map
 }
 void Introspector::addToDoubleDatabase(IntrospectedComponent* c, int dataID){ 
-    DatabaseDouble.insert(std::make_pair(c, dataID)); 
+    DatabaseDouble.insert(std::make_pair(dataID, c)); 
 }
 
 void Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operation op, int rank){

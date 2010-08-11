@@ -136,7 +136,9 @@ public:
 	/*IntSim*/
 	ib_access, issueQ_access, decoder_access, pipeline_access, lsq_access,
 	rat_access, rob_access, btb_access, l2_access, mc_access,
-	loadQ_access, rename_access, scheduler_access, l3_access, l1dir_access, l2dir_access
+	loadQ_access, rename_access, scheduler_access, l3_access, l1dir_access, l2dir_access,
+	/*DRAMSim*/
+	dram_backgroundEnergy, dram_burstEnergy, dram_actpreEnergy, dram_refreshEnergy 
     }; 
 
     /** Constructor. Generally only called by the factory class. 
