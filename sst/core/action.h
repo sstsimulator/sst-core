@@ -20,7 +20,7 @@ namespace SST {
 class Action : public Activity {
 public:
     Action() {}
-    ~Action() {}
+    virtual ~Action() {}
 
 protected:
     void endSimulation();
@@ -31,7 +31,9 @@ private:
      void
      serialize(Archive & ar, const unsigned int version )
      {
+         printf("begin Action::serialize\n");
          ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
+         printf("end Action::serialize\n");
      }
 };
 

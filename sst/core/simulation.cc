@@ -56,7 +56,9 @@ void
 SimulationBase::serialize(Archive & ar, const unsigned int version)
 {
     printf("begin SimulationBase::serialize\n");
+    printf("  - SimulationBase::factory\n");
     ar & BOOST_SERIALIZATION_NVP(factory);
+    printf("  - SimulationBase::timeLord\n");
     ar & BOOST_SERIALIZATION_NVP(timeLord);
     printf("end SimulationBase::serialize\n");
 }
@@ -514,23 +516,23 @@ Simulation::serialize(Archive & ar, const unsigned int version)
 {
     printf("begin Simulation::serialize\n");
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SimulationBase);
-    printf("Simulation::serialize about to serialize timeVortex\n");
-    ar & BOOST_SERIALIZATION_NVP(timeVortex);
-    printf("Simulation::serialize about to serialize sync\n");
+    printf("  - Simulation::sync (%p)\n", sync);
     ar & BOOST_SERIALIZATION_NVP(sync);
-    printf("Simulation::serialize about to serialize compMap\n");
+    printf("  - Simulation::timeVortex\n");
+    ar & BOOST_SERIALIZATION_NVP(timeVortex);
+    printf("  - Simulation::compMap\n");
     ar & BOOST_SERIALIZATION_NVP(compMap);
-    printf("Simulation::serialize about to serialize introMap\n");
+    printf("  - Simulation::introMap\n");
     ar & BOOST_SERIALIZATION_NVP(introMap);
-    printf("Simulation::serialize about to serialize clockMap\n");
+    printf("  - Simulation::clockMap\n");
     ar & BOOST_SERIALIZATION_NVP(clockMap);
-    printf("Simulation::serialize about to serialize currentSimCycle\n");
+    printf("  - Simulation::currentSimCycle\n");
     ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
-    printf("Simulation::serialize about to serialize m_exit\n");
+    printf("  - Simulation::m_exit\n");
     ar & BOOST_SERIALIZATION_NVP(m_exit);
-    printf("Simulation::serialize about to serialize endSim\n");
+    printf("  - Simulation::endSim\n");
     ar & BOOST_SERIALIZATION_NVP(endSim);
-    printf("Simulation::serialize about to serialize component_links\n");
+    printf("  - Simulation::component_links\n");
     ar & BOOST_SERIALIZATION_NVP(component_links);
     printf("end Simulation::serialize\n");
 }

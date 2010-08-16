@@ -28,11 +28,6 @@ namespace SST {
 	sim->insertActivity( next, this );
     }
     
-    Sync::Sync()
-    {
-        // For serialization
-    }
-
     Sync::~Sync()
     {
         for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
@@ -106,5 +101,4 @@ namespace SST {
 
 
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Sync::serialize)
-
 BOOST_CLASS_EXPORT(SST::Sync)

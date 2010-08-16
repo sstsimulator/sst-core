@@ -38,8 +38,11 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
+        printf("begin TimeVortex::serialize\n");
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
+        printf("  - TimeVortex::data\n");
         ar & BOOST_SERIALIZATION_NVP(data);
+        printf("end TimeVortex::serialize\n");
     }
 };
 

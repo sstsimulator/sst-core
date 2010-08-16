@@ -76,8 +76,12 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
+        printf("begin Activity::serialize\n");
+        printf("  - Activity::delivery_time\n");
         ar & BOOST_SERIALIZATION_NVP(delivery_time);
+        printf("  - Activity::priority\n");
         ar & BOOST_SERIALIZATION_NVP(priority);
+        printf("end Activity::serialize\n");
     }
 };
 

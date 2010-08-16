@@ -25,7 +25,6 @@ namespace SST {
 class SyncQueue;
 class Link;
 class TimeConverter;
-class Activity;
 
 class Sync : public Action {
 public:
@@ -39,7 +38,7 @@ private:
     typedef std::map<int, std::pair<SyncQueue*, std::vector<Activity*>* > > comm_map_t;
     typedef std::map<LinkId_t, Link*> link_map_t;
 
-    Sync();
+    Sync() { }
 
     TimeConverter* period;
     comm_map_t comm_map;
