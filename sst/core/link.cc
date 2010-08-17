@@ -20,6 +20,7 @@
 #include <sst/core/event.h>
 #include <sst/core/pollingLinkQueue.h>
 #include <sst/core/timeVortex.h>
+#include <sst/core/syncQueue.h>
 
 namespace SST { 
 
@@ -110,13 +111,23 @@ template<class Archive>
 void
 Link::serialize(Archive & ar, const unsigned int version)
 {
+    std::string type;
+
+    printf("begin Link::serialize\n");
+    printf("  - Link::recvQueue\n");
     ar & BOOST_SERIALIZATION_NVP( recvQueue );
     // don't serialize rFunctor
+    printf("  - Link::defaultTimeBase\n");
     ar & BOOST_SERIALIZATION_NVP( defaultTimeBase );
+    printf("  - Link::latency\n");
     ar & BOOST_SERIALIZATION_NVP( latency );
+    printf("  - Link::pair_link\n");
     ar & BOOST_SERIALIZATION_NVP(pair_link);
+    printf("  - Link::type\n");
     ar & BOOST_SERIALIZATION_NVP( type );
+    printf("  - Link::id\n");
     ar & BOOST_SERIALIZATION_NVP(id);
+    printf("end Link::serialize\n");
 }
 
 
@@ -133,5 +144,5 @@ SelfLink::serialize(Archive & ar, const unsigned int version)
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Link::serialize)
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SelfLink::serialize)
 
-BOOST_CLASS_EXPORT(SST::Link)
-BOOST_CLASS_EXPORT(SST::SelfLink)
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::Link)
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::SelfLink)

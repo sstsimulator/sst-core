@@ -144,4 +144,7 @@ public:
 
 } // namespace SST
 
+BOOST_CLASS_EXPORT_KEY(SST::Link)
+BOOST_CLASS_EXPORT_KEY(SST::SelfLink)
+
 #endif

@@ -203,4 +203,4 @@ Component::serialize(Archive& ar, const unsigned int version) {
 
 
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Component::serialize)
-
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::Component)

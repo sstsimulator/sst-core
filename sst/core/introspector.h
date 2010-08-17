@@ -148,4 +148,7 @@ private:
 
 
 } //end namespace
+
+BOOST_CLASS_EXPORT_KEY(SST::Introspector)
+
 #endif

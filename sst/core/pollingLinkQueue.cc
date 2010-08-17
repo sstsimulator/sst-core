@@ -51,3 +51,5 @@ namespace SST {
 
 
 } // namespace SST
+
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::PollingLinkQueue)

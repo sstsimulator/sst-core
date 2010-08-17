@@ -96,4 +96,6 @@ class TimeLord {
 
 } // namespace SST
 
+BOOST_CLASS_EXPORT_KEY(SST::TimeLord)
+
 #endif

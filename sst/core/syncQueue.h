@@ -42,11 +42,16 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
+        printf("begin SyncQueue::serialize\n");
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
+        printf("  - SyncQueue::data\n");
         ar & BOOST_SERIALIZATION_NVP(data);
+        printf("end SyncQueue::serialize\n");
     }
 };
 
 }
+
+BOOST_CLASS_EXPORT_KEY(SST::SyncQueue)
 
 #endif // SST_SYNCQUEUE_H

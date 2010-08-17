@@ -516,12 +516,16 @@ Simulation::serialize(Archive & ar, const unsigned int version)
 {
     printf("begin Simulation::serialize\n");
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SimulationBase);
-    printf("  - Simulation::sync (%p)\n", sync);
-    ar & BOOST_SERIALIZATION_NVP(sync);
+
     printf("  - Simulation::timeVortex\n");
     ar & BOOST_SERIALIZATION_NVP(timeVortex);
+
+    printf("  - Simulation::sync (%p)\n", sync);
+    ar & BOOST_SERIALIZATION_NVP(sync);
+
     printf("  - Simulation::compMap\n");
     ar & BOOST_SERIALIZATION_NVP(compMap);
+
     printf("  - Simulation::introMap\n");
     ar & BOOST_SERIALIZATION_NVP(introMap);
     printf("  - Simulation::clockMap\n");
@@ -532,8 +536,10 @@ Simulation::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(m_exit);
     printf("  - Simulation::endSim\n");
     ar & BOOST_SERIALIZATION_NVP(endSim);
+
     printf("  - Simulation::component_links\n");
     ar & BOOST_SERIALIZATION_NVP(component_links);
+
     printf("end Simulation::serialize\n");
 }
 
@@ -542,3 +548,6 @@ Simulation::serialize(Archive & ar, const unsigned int version)
 
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SimulationBase::serialize)
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Simulation::serialize)
+
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::SimulationBase)
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::Simulation)

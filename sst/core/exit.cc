@@ -111,4 +111,4 @@ Exit::serialize(Archive & ar, const unsigned int version)
 
 
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Exit::serialize)
-BOOST_CLASS_EXPORT(SST::Exit);
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::Exit);

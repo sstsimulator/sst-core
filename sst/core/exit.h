@@ -59,4 +59,6 @@ private:
 
 } // namespace SST
 
+BOOST_CLASS_EXPORT_KEY(SST::Exit)
+
 #endif // SST_EXIT_H

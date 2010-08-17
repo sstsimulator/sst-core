@@ -56,4 +56,6 @@ private:
 
 }
 
+BOOST_CLASS_EXPORT_KEY(SST::LinkPair)
+
 #endif // SST_LINKPAIR_H

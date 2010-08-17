@@ -57,8 +57,8 @@ public:
     }
 };
 
-
-    
 } // namespace SST
+
+BOOST_CLASS_EXPORT_KEY(SST::LinkMap)
 
 #endif // SST_LINKMAP_H

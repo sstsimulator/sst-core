@@ -19,7 +19,7 @@
 
 namespace SST {
 
-    class PollingLinkQueue : public ActivityQueue {
+class PollingLinkQueue : public ActivityQueue {
 public:
     PollingLinkQueue();
     ~PollingLinkQueue();
@@ -32,17 +32,23 @@ public:
     
     
 private:
-
     std::multiset<Activity*,Activity::less_time> data;
     
-//     friend class boost::serialization::access;
-//     template<class Archive>
-//     void
-//     serialize(Archive & ar, const unsigned int version )
-//     {
-//     }
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+        printf("begin PollingLinkQueue::serialize\n");
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
+        printf("  - PollingLinkQueue::data\n");
+        ar & BOOST_SERIALIZATION_NVP(data);
+        printf("end PollingLinkQueue::serialize\n");
+    }
 };
 
 }
+
+BOOST_CLASS_EXPORT_KEY(SST::PollingLinkQueue)
 
 #endif // SST_POLLINGLINKQUEUE_H

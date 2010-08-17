@@ -18,6 +18,7 @@
 
 #include "sst/core/archive.h"
 #include "sst/core/simulation.h"
+#include "sst/core/sync.h"
 
 using namespace SST;
 

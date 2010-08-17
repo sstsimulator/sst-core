@@ -54,4 +54,5 @@ namespace SST {
 
 } // namespace SST
 
-BOOST_CLASS_EXPORT(SST::TimeVortex)
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::ActivityQueue)
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::TimeVortex)

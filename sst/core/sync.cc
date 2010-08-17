@@ -90,8 +90,11 @@ namespace SST {
     {
         printf("begin Sync::serialize\n");
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
+        printf("  - Sync::period\n");
         ar & BOOST_SERIALIZATION_NVP(period);
+        printf("  - Sync::comm_map (%d)\n", (int) comm_map.size());
         ar & BOOST_SERIALIZATION_NVP(comm_map);
+        printf("  - Sync::link_map (%d)\n", (int) link_map.size());
         ar & BOOST_SERIALIZATION_NVP(link_map);
         // don't serialize comm - let it be silently rebuilt at restart
         printf("end Sync::serialize\n");
@@ -101,4 +104,4 @@ namespace SST {
 
 
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Sync::serialize)
-BOOST_CLASS_EXPORT(SST::Sync)
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::Sync)

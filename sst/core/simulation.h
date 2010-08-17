@@ -182,4 +182,7 @@ private:
 
 } // namespace SST
 
+BOOST_CLASS_EXPORT_KEY(SST::SimulationBase)
+BOOST_CLASS_EXPORT_KEY(SST::Simulation)
+
 #endif

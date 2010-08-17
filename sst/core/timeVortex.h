@@ -48,4 +48,6 @@ private:
 
 }
 
+BOOST_CLASS_EXPORT_KEY(SST::TimeVortex)
+
 #endif // SST_TIMEVORTEX_H

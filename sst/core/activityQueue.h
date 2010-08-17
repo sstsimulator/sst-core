@@ -40,4 +40,6 @@ private:
 
 }
 
+BOOST_CLASS_EXPORT_KEY(SST::ActivityQueue)
+
 #endif // SST_ACTIVITYQUEUE_H

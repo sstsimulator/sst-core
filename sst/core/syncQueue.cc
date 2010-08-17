@@ -64,4 +64,4 @@ namespace SST {
 
 } // namespace SST
 
-BOOST_CLASS_EXPORT(SST::SyncQueue)
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::SyncQueue)

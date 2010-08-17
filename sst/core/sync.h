@@ -52,4 +52,6 @@ private:
 
 } // namespace SST
 
+BOOST_CLASS_EXPORT_KEY(SST::Sync)
+
 #endif // SST_SYNC_H

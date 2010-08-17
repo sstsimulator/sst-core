@@ -24,4 +24,4 @@ void Action::endSimulation() {
 
 } // namespace SST
 
-BOOST_CLASS_EXPORT(SST::Action);
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::Action);

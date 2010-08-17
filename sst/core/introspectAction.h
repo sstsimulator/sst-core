@@ -45,4 +45,6 @@ private:
 
 }
 
+BOOST_CLASS_EXPORT_KEY(SST::IntrospectAction)
+
 #endif // SST_INTROSPECTACTION_H

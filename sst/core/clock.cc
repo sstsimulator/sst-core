@@ -98,5 +98,5 @@ void Clock::execute( void ) {
 
 } // namespace SST
 
-BOOST_CLASS_EXPORT(SST::Clock);
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::Clock);
 

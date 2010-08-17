@@ -117,4 +117,7 @@ private:
 };
 }
 
+BOOST_CLASS_EXPORT_KEY(SST::Event)
+BOOST_CLASS_EXPORT_KEY(SST::NullEvent)
+
 #endif // SST_EVENT_H

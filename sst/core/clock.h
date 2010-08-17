@@ -108,4 +108,6 @@ private:
 
 } // namespace SST
 
+BOOST_CLASS_EXPORT_KEY(SST::Clock)
+
 #endif // SST_CLOCK_H

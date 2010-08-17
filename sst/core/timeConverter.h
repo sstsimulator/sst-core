@@ -75,4 +75,6 @@ class TimeConverter {
 
 } // namespace SST
 
+BOOST_CLASS_EXPORT_KEY(SST::TimeConverter)
+
 #endif
