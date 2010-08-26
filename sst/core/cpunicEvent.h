@@ -41,6 +41,7 @@ class CPUNicEvent : public Event {
 	    hops= 0;
 	    congestion_cnt= 0;
 	    congestion_delay= 0;
+	    entry_port= -1;
 	}
 
 	// How to route this event through the network
@@ -49,6 +50,9 @@ class CPUNicEvent : public Event {
 	int hops;
 	long long congestion_cnt;
 	SimTime_t congestion_delay;
+
+	// The router model uses this to carry over input port info
+	int entry_port;
 
 	// Some envelope info
 	uint64_t msg_match_bits;
