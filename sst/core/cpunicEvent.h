@@ -39,12 +39,16 @@ class CPUNicEvent : public Event {
 	    payload_len= 0;
 	    payload_present= false;
 	    hops= 0;
+	    congestion_cnt= 0;
+	    congestion_delay= 0;
 	}
 
 	// How to route this event through the network
 	std::vector<uint8_t>route;
 	SimTime_t router_delay;
 	int hops;
+	long long congestion_cnt;
+	SimTime_t congestion_delay;
 
 	// Some envelope info
 	uint64_t msg_match_bits;
@@ -134,6 +138,8 @@ class CPUNicEvent : public Event {
 	    ar & BOOST_SERIALIZATION_NVP(route);
 	    ar & BOOST_SERIALIZATION_NVP(router_delay);
 	    ar & BOOST_SERIALIZATION_NVP(hops);
+	    ar & BOOST_SERIALIZATION_NVP(congestion_cnt);
+	    ar & BOOST_SERIALIZATION_NVP(congestion_delay);
 	    ar & BOOST_SERIALIZATION_NVP(msg_match_bits);
 	    ar & BOOST_SERIALIZATION_NVP(msg_len);
 	    ar & BOOST_SERIALIZATION_NVP(event_params);
