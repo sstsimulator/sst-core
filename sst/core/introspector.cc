@@ -62,7 +62,7 @@ void Introspector::monitorComponent(IntrospectedComponent* c)
 
 void Introspector::addToIntDatabase(IntrospectedComponent* c, int dataID){
     //std::cout << "Introspector::addToIntDatabase added component " << c->Id() << "'s data with dataID = " << dataID << std::endl;
-    DatabaseInt.insert(std::make_pair(dataID, c)); //dataID is unique so make it as the key in the map
+    DatabaseInt.insert(std::make_pair(dataID, c)); //use multimap since there are cases where neither dataID or component is unique
 }
 void Introspector::addToDoubleDatabase(IntrospectedComponent* c, int dataID){ 
     DatabaseDouble.insert(std::make_pair(dataID, c)); 
