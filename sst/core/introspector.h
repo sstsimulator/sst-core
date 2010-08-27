@@ -35,7 +35,7 @@ namespace SST {
  */
 class Introspector {
 public:
-    typedef std::map<int, IntrospectedComponent*> Database_t;	
+   typedef std::multimap<int, IntrospectedComponent*> Database_t;	
 
     /** Types of boost MPI collective operations that introspector can perform.*/ 
     enum collect_type { GATHER, ALLGATHER, BROADCAST, REDUCE, ALLREDUCE};

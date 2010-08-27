@@ -138,8 +138,11 @@ public:
 	rat_access, rob_access, btb_access, l2_access, mc_access,
 	loadQ_access, rename_access, scheduler_access, l3_access, l1dir_access, l2dir_access,
 	/*DRAMSim*/
-	dram_backgroundEnergy, dram_burstEnergy, dram_actpreEnergy, dram_refreshEnergy 
-    }; 
+	dram_backgroundEnergy, dram_burstEnergy, dram_actpreEnergy, dram_refreshEnergy,
+	/*router/NoC*/
+	router_delay,
+	/*power data*/
+	current_power, leakage_power, runtime_power, total_power, peak_power     }; 
 
     /** Constructor. Generally only called by the factory class. 
         @param id Unique component ID
