@@ -42,6 +42,7 @@ class CPUNicEvent : public Event {
 	    congestion_cnt= 0;
 	    congestion_delay= 0;
 	    entry_port= -1;
+	    local_traffic= false;
 	}
 
 	// How to route this event through the network
@@ -50,6 +51,10 @@ class CPUNicEvent : public Event {
 	int hops;
 	long long congestion_cnt;
 	SimTime_t congestion_delay;
+
+	// If this is data between cores sharing a cache, do not count
+	// this as a router access.
+	bool local_traffic;
 
 	// The router model uses this to carry over input port info
 	int entry_port;
