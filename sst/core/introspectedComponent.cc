@@ -240,7 +240,7 @@ int IntrospectedComponent::getDataID(std::string dataName){
 	    /*DRAMSim*/
 	    "dram_backgroundEnergy", "dram_burstEnergy", "dram_actpreEnergy", "dram_refreshEnergy",
 	    /*router/NoC*/
-	    "router_delay",
+	    "router_delay", "local_message", 
 	    /*power data*/
 	    "current_power", "leakage_power", "runtime_power", "total_power", "peak_power"};
 
