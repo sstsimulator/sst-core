@@ -42,6 +42,7 @@ class CPUNicEvent : public Event {
 	    congestion_cnt= 0;
 	    congestion_delay= 0;
 	    entry_port= -1;
+	    dest= -1;
 	    local_traffic= false;
 	}
 
@@ -58,6 +59,9 @@ class CPUNicEvent : public Event {
 
 	// The router model uses this to carry over input port info
 	int entry_port;
+
+	// The destination rank for routing verification purposes
+	int dest;
 
 	// Some envelope info
 	uint64_t msg_match_bits;
