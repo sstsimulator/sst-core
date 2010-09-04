@@ -44,10 +44,11 @@ class CPUNicEvent : public Event {
 	    entry_port= -1;
 	    dest= -1;
 	    local_traffic= false;
+	    msg_id= 0;
 	}
 
 	// How to route this event through the network
-	std::vector<uint8_t>route;
+	std::vector<int>route;
 	SimTime_t router_delay;
 	int hops;
 	long long congestion_cnt;
@@ -62,6 +63,7 @@ class CPUNicEvent : public Event {
 
 	// The destination rank for routing verification purposes
 	int dest;
+	uint64_t msg_id;// Each message event should have a unique ID for debugging
 
 	// Some envelope info
 	uint64_t msg_match_bits;
