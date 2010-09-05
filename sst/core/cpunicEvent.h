@@ -49,6 +49,7 @@ class CPUNicEvent : public Event {
 
 	// How to route this event through the network
 	std::vector<int>route;
+	std::vector<int>reverse_route; // Needed for bit_bucket
 	SimTime_t router_delay;
 	int hops;
 	long long congestion_cnt;
@@ -151,6 +152,7 @@ class CPUNicEvent : public Event {
         {
             ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
 	    ar & BOOST_SERIALIZATION_NVP(route);
+	    ar & BOOST_SERIALIZATION_NVP(reverse_route);
 	    ar & BOOST_SERIALIZATION_NVP(router_delay);
 	    ar & BOOST_SERIALIZATION_NVP(hops);
 	    ar & BOOST_SERIALIZATION_NVP(congestion_cnt);
