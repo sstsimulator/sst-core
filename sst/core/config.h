@@ -31,7 +31,7 @@ public:
     Mode_t          runMode;
     std::string     libpath;
     std::string     sdlfile;
-    Cycle_t         stopAtCycle;
+    std::string     stopAtCycle;
     std::string     timeBase;
 	
     inline Mode_t

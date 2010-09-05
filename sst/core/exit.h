@@ -51,7 +51,7 @@ private:
     unsigned int    m_refCount;
     TimeConverter*  m_period;
     std::set<ComponentId_t> m_idSet;
-
+    
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);

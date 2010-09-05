@@ -22,7 +22,7 @@ Exit::Exit( Simulation* sim, TimeConverter* period ) :
     Action(),
 //     m_functor( new EventHandler<Exit,bool,Event*> (this,&Exit::handler ) ),
     m_refCount( 0 ),
-    m_period( period ) 
+    m_period( period )
 {
     _EXIT_DBG("\n");
 
@@ -34,6 +34,7 @@ bool Exit::refInc( ComponentId_t id )
 {
     _EXIT_DBG( "refCount=%d\n", m_refCount );
 
+    
     if ( m_idSet.find( id ) != m_idSet.end() ) {
         _DBG( Exit, "component multiple increment\n" );
         return true;

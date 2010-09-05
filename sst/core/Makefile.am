@@ -44,7 +44,7 @@ nobase_dist_sst_HEADERS = \
 	sdl.h \
 	simulation.h \
 	sst_types.h \
-	stopEvent.h \
+	stopAction.h \
 	sync.h \
 	syncQueue.h \
 	timeConverter.h \

@@ -35,7 +35,7 @@ Config::Config( )
     runMode     = BOTH;
     libpath     = SST_ELEMLIB_DIR;
     sdlfile     = "sdl.xml";
-    stopAtCycle = 0;
+    stopAtCycle = "0 ns";
     timeBase    = "1 ps";
 }
 
@@ -48,6 +48,7 @@ void Config::Print( )
     printf("runMode %d\n",runMode);
     printf("libpath %s\n",libpath.c_str());
     printf("sdlfile %s\n",sdlfile.c_str());
+    printf("stopAtCycle %s\n",stopAtCycle.c_str());
     printf("timeBase %s\n",timeBase.c_str());
 }
 
@@ -79,7 +80,7 @@ int Config::Init( int argc, char *argv[], int rank )
                                 "component library path")
         ("run-mode", po::value< string >(), 
                                 "run mode [ init | run | both ]")
-        ("stopAtCycle", po::value< Cycle_t >(&stopAtCycle), 
+        ("stopAtCycle", po::value< string >(&stopAtCycle), 
 	                        "how long should the simulation run")
         ("timeBase", po::value< string >(&timeBase), 
                                 "the base time of the simulation")

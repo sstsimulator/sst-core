@@ -19,7 +19,7 @@
 
 #include <sst/core/simulation.h>
 #include <sst/core/factory.h>
-#include <sst/core/stopEvent.h>
+#include <sst/core/stopAction.h>
 #include <sst/core/exit.h>
 #include <sst/core/event.h>
 #include <sst/core/config.h>
@@ -79,11 +79,18 @@ Simulation::Simulation( Config* cfg ) :
 {
 //     eQueue = new EventQueue_t;
     timeVortex = new TimeVortex;
-    printf("Inserting stop event at cycle %ld\n",
-           (long int)cfg->stopAtCycle);
 
+    SimTime_t stopAt = timeLord->getSimCycles(cfg->stopAtCycle,"StopAction configure");
+    if ( stopAt != 0 ) {
+	printf("Inserting stop event at cycle %s\n",
+	       cfg->stopAtCycle.c_str());
+	StopAction* sa = new StopAction();
+	sa->setDeliveryTime(stopAt);
+	timeVortex->insert(sa);
+    }
+    
     // KSH FIXME:  need to add this back one once things stabilize
-//     if ( cfg->stopAtCycle ) {
+//    if ( cfg->stopAtCycle ) {
 //         StopEvent* se = new StopEvent();
 //         std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
 //         envelope.first = se->getFunctor();

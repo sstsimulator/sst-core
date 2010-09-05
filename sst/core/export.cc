@@ -13,8 +13,8 @@
 #include "sst_config.h"
 #include "sst/core/serialization/core.h"
 
-#include "sst/core/stopEvent.h"
+#include "sst/core/stopAction.h"
 
 #include "timeConverter.h"
 
-BOOST_CLASS_EXPORT( SST::StopEvent )
+BOOST_CLASS_EXPORT( SST::StopAction )
