@@ -62,6 +62,9 @@ class CPUNicEvent : public Event {
 	// The router model uses this to carry over input port info
 	int entry_port;
 
+	// Bit bucket uses this event on return sends.
+	int return_event;
+
 	// The destination rank for routing verification purposes
 	int dest;
 	uint64_t msg_id;// Each message event should have a unique ID for debugging
