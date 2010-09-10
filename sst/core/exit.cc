@@ -18,16 +18,17 @@
 
 namespace SST {
 
-Exit::Exit( Simulation* sim, TimeConverter* period ) :
+Exit::Exit( Simulation* sim, TimeConverter* period, bool single_rank ) :
     Action(),
 //     m_functor( new EventHandler<Exit,bool,Event*> (this,&Exit::handler ) ),
     m_refCount( 0 ),
-    m_period( period )
+    m_period( period ),
+    single_rank(single_rank)	
 {
     _EXIT_DBG("\n");
-
+    
     setPriority(99);
-    sim->insertActivity( period->getFactor(), this );
+    if (!single_rank) sim->insertActivity( period->getFactor(), this );
 }
 
 bool Exit::refInc( ComponentId_t id )
@@ -65,6 +66,8 @@ bool Exit::refDec( ComponentId_t id )
     m_idSet.erase( id );
 
     --m_refCount;
+
+    if ( single_rank && m_refCount == 0 ) Simulation::getSimulation()->insertActivity( m_period->getFactor(), this );
 
     return false;
 }
@@ -105,6 +108,7 @@ Exit::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(m_refCount);
     ar & BOOST_SERIALIZATION_NVP(m_period);
     ar & BOOST_SERIALIZATION_NVP(m_idSet);
+    ar & BOOST_SERIALIZATION_NVP(single_rank);
     printf("end Exit::serialize\n");
 }
 

@@ -34,7 +34,7 @@ public:
     // exception to the "constructors shouldn't take simulation
     // pointers" rule.  However, it still needs to follow the "classes
     // shouldn't contain pointers back to Simulation" rule.
-    Exit( Simulation* sim, TimeConverter* period );
+    Exit( Simulation* sim, TimeConverter* period, bool single_rank );
 
     bool refInc( ComponentId_t );
     bool refDec( ComponentId_t );
@@ -51,6 +51,8 @@ private:
     unsigned int    m_refCount;
     TimeConverter*  m_period;
     std::set<ComponentId_t> m_idSet;
+
+    bool single_rank;
     
     friend class boost::serialization::access;
     template<class Archive>

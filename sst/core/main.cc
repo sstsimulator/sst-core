@@ -54,7 +54,7 @@ main(int argc, char *argv[])
     DebugInit( world.rank(), world.size() );
 
     if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) { 
-        sim = Simulation::createSimulation(&cfg);
+        sim = Simulation::createSimulation(&cfg, world.rank(), world.size());
 
         signal(SIGUSR1, sigHandlerPrintStatus);
 

@@ -77,7 +77,7 @@ public:
     typedef std::map<SimTime_t, Clock*> clockMap_t; 
     typedef std::map< unsigned int, Sync* > SyncMap_t;
 
-    static Simulation *createSimulation(Config *config);
+    static Simulation *createSimulation(Config *config, int my_rank, int num_ranks);
     static Simulation *getSimulation() { return instance; }
     static void printStatus(void);
 
@@ -134,7 +134,7 @@ private:
     friend class Action;
 
     Simulation(); // Don't call.  Only rational way to serialize
-    Simulation(Config* config);
+    Simulation(Config* config, int my_rank, int num_ranks);
     Simulation(Simulation const&);     // Don't Implement
     void operator=(Simulation const&); // Don't implement
 	
@@ -155,6 +155,9 @@ private:
     SimTime_t        currentSimCycle;
     Exit*            m_exit;
     bool endSim;
+    int              my_rank;
+    int              num_ranks;
+
     std::map<ComponentId_t,LinkMap*> component_links;
     
     static Simulation *instance;

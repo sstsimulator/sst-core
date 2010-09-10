@@ -67,15 +67,15 @@ SimulationBase::serialize(Archive & ar, const unsigned int version)
 Simulation* Simulation::instance = NULL;
 
 Simulation*
-Simulation::createSimulation(Config *config)
+Simulation::createSimulation(Config *config, int my_rank, int num_ranks)
 {
-    instance = new Simulation(config);
+    instance = new Simulation(config,my_rank,num_ranks);
     return instance;
 }
 
 
-Simulation::Simulation( Config* cfg ) :
-    SimulationBase(cfg), currentSimCycle(0), endSim(false)
+Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
+    SimulationBase(cfg), currentSimCycle(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks)
 {
 //     eQueue = new EventQueue_t;
     timeVortex = new TimeVortex;
@@ -99,7 +99,7 @@ Simulation::Simulation( Config* cfg ) :
 //         eQueue->insert( cfg->stopAtCycle, envelope ); 
 //     }
 
-    m_exit = new Exit( this, timeLord->getTimeConverter("10ns") );
+    m_exit = new Exit( this, timeLord->getTimeConverter("10ns"), num_ranks == 1 );
 }
 
 Simulation::Simulation()
@@ -268,7 +268,7 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
 
-//     if ( minPart < 99999 ) {
+//     if ( minPart < 99999 )
 	sync = new Sync( minPartToTC(minPart) );
 //     }
 
@@ -543,6 +543,10 @@ Simulation::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(m_exit);
     printf("  - Simulation::endSim\n");
     ar & BOOST_SERIALIZATION_NVP(endSim);
+    printf("  - Simulation::my_rank\n");
+    ar & BOOST_SERIALIZATION_NVP(my_rank);
+    printf("  - Simulation::num_ranks\n");
+    ar & BOOST_SERIALIZATION_NVP(num_ranks);
 
     printf("  - Simulation::component_links\n");
     ar & BOOST_SERIALIZATION_NVP(component_links);
