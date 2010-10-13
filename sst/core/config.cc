@@ -37,6 +37,7 @@ Config::Config( )
     sdlfile     = "sdl.xml";
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
+    partitioner = "zoltan";
 }
 
 
@@ -50,6 +51,7 @@ void Config::Print( )
     printf("sdlfile %s\n",sdlfile.c_str());
     printf("stopAtCycle %s\n",stopAtCycle.c_str());
     printf("timeBase %s\n",timeBase.c_str());
+    printf("partitioner %s\n",partitioner.c_str());
 }
 
 int Config::Init( int argc, char *argv[], int rank )
@@ -84,6 +86,8 @@ int Config::Init( int argc, char *argv[], int rank )
 	                        "how long should the simulation run")
         ("timeBase", po::value< string >(&timeBase), 
                                 "the base time of the simulation")
+        ("partitioner", po::value< string >(&partitioner), 
+                                "partitioner to be used <zoltan | self>")
     ;
 
     po::variables_map vm;

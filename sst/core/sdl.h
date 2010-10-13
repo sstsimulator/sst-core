@@ -36,6 +36,7 @@ public:
     std::string &type( void ) { return _type; };
     bool isIntrospector( void ) { return _isIntrospector; };
     float        weight;
+    int          rank;
     SDL_params_t params;
     SDL_links_t  links;
     bool _isIntrospector;

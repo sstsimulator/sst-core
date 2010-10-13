@@ -131,7 +131,8 @@ Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
          iter != graph.vlist.end() ; ++iter )
     {
         Vertex*        v = (*iter).second;
-        int            vertRank = atoi( v->prop_list.get(GRAPH_RANK).c_str() );
+//         int            vertRank = atoi( v->prop_list.get(GRAPH_RANK).c_str() );
+        int            vertRank = v->rank;
         std::string    name  = v->prop_list.get(GRAPH_COMP_NAME).c_str();
         ComponentId_t  id  = atoi(v->prop_list.get(GRAPH_ID).c_str() );
         SDL_Component* sdl_c = sdlMap[name.c_str()];
@@ -278,8 +279,10 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     {
         Edge *e = (*iter).second;
         int rank[2];
-        rank[0] = atoi(graph.vlist[e->v(0)]->prop_list.get(GRAPH_RANK).c_str());
-        rank[1] = atoi(graph.vlist[e->v(1)]->prop_list.get(GRAPH_RANK).c_str());
+//         rank[0] = atoi(graph.vlist[e->v(0)]->prop_list.get(GRAPH_RANK).c_str());
+//         rank[1] = atoi(graph.vlist[e->v(1)]->prop_list.get(GRAPH_RANK).c_str());
+        rank[0] = graph.vlist[e->v(0)]->rank;
+        rank[1] = graph.vlist[e->v(1)]->rank;
 
         if ( rank[0] != myRank && rank[1] != myRank ) { 
             continue;

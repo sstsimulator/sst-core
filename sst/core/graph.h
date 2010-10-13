@@ -41,6 +41,7 @@ class Vertex {
 public:
     Vertex() : _id(++count) {};
 	PropList prop_list;
+	int rank;
 	int id() { return _id; }  
 	std::list<int> adj_list;
 

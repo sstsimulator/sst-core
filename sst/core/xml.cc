@@ -81,11 +81,12 @@ static void links( SDL_links_t &links, TiXmlNode* node )
 }
 
 
-static SDL_Component * component( TiXmlNode* node, float weight, bool isIntrospector )
+static SDL_Component * component( TiXmlNode* node, float weight, int rank, bool isIntrospector )
 {
     SDL_Component *c = new SDL_Component( node->Value() );
     TiXmlNode* pChild;
 
+    c->rank = rank;
     c->weight = weight;
     c->_isIntrospector = isIntrospector;
 
@@ -110,8 +111,14 @@ static void parse_component( TiXmlNode* pParent, SDL_CompMap_t &compMap )
     TiXmlElement* element = pParent->ToElement();
     TiXmlNode* pChild;
     float weight = 1.0;
+    int rank = -1;
     bool isIntrospector = false;
 
+    if ( element->Attribute("rank") ) {
+        rank = atoi( element->Attribute("rank") );
+    }
+    
+    
     if ( element->Attribute("weight") ) {
         weight =atof( element->Attribute("weight") );
     }
@@ -122,7 +129,7 @@ static void parse_component( TiXmlNode* pParent, SDL_CompMap_t &compMap )
                                         pChild = pChild->NextSibling()) 
     {
         _SDL_DBG("child %s\n",pChild->Value());
-        compMap[element->Attribute("id")] = component( pChild, weight, isIntrospector );
+        compMap[element->Attribute("id")] = component( pChild, weight, rank, isIntrospector );
         return;
     }
 }
@@ -145,7 +152,7 @@ static void parse_introspector( TiXmlNode* pParent, SDL_CompMap_t &compMap )
                                         pChild = pChild->NextSibling()) 
     {
         _SDL_DBG("child %s\n",pChild->Value());
-        compMap[element->Attribute("id")] = component( pChild, weight, isIntrospector );
+        compMap[element->Attribute("id")] = component( pChild, weight, -1, isIntrospector );
         return;
     }
 }

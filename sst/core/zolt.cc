@@ -294,7 +294,8 @@ void partitionGraph(Graph &config_graph, int argc, char* argv[]) {
   
   for( VertexList_t::iterator iter = theG->vlist.begin(); iter != theG->vlist.end(); ++iter ) {
 	Vertex *v = (*iter).second;	
-	v->prop_list.set(GRAPH_RANK, boost::str(boost::format("%1%") % assignmentMap[ v->id() ] ) );
+ 	v->prop_list.set(GRAPH_RANK, boost::str(boost::format("%1%") % assignmentMap[ v->id() ] ) );
+	v->rank = assignmentMap[ v->id() ];
   }
 
 

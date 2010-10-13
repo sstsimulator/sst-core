@@ -62,6 +62,7 @@ makeGraph(Simulation *sim, SDL_CompMap_t& map, Graph& graph)
         v->prop_list.set(GRAPH_ID, boost::str(boost::format("%1%") % vId++ ) );
         v->prop_list.set(GRAPH_WEIGHT, 
                          boost::str(boost::format("%1%") % c->weight  ) );
+	v->rank = c->rank;
 
         for (SDL_links_t::iterator l_iter = c->links.begin(); 
              l_iter != c->links.end();
@@ -116,8 +117,10 @@ printGraph(Graph &graph, SDL_CompMap_t &compMap)
         Vertex *v = (*iter).second; 
         SDL_Component *sdl_comp = compMap[v->prop_list.get(GRAPH_COMP_NAME)];
 
-        printf(" %2d type:%6s rank:%s\n", v->id(), 
-               sdl_comp->type().c_str(), v->prop_list.get(GRAPH_RANK).c_str());
+//         printf(" %2d type:%6s rank:%s\n", v->id(), 
+//                sdl_comp->type().c_str(), v->prop_list.get(GRAPH_RANK).c_str());
+        printf(" %2d type:%6s rank:%d\n", v->id(), 
+               sdl_comp->type().c_str(), v->rank);
     }
 
     for( EdgeList_t::iterator iter = graph.elist.begin();
@@ -144,8 +147,10 @@ findMinPart(Graph &graph)
              ++iter ) {
             Edge *e = (*iter).second; 
             int lat = atoi( e->prop_list.get(GRAPH_WEIGHT).c_str() );
-            int sRank = atoi(graph.vlist[e->v(0)]->prop_list.get(GRAPH_RANK).c_str());
-            int tRank = atoi(graph.vlist[e->v(1)]->prop_list.get(GRAPH_RANK).c_str());
+//             int sRank = atoi(graph.vlist[e->v(0)]->prop_list.get(GRAPH_RANK).c_str());
+//             int tRank = atoi(graph.vlist[e->v(1)]->prop_list.get(GRAPH_RANK).c_str());
+            int sRank = graph.vlist[e->v(0)]->rank;
+            int tRank = graph.vlist[e->v(1)]->rank;
             if ( sRank != tRank ) {
                 if (lat < minPart) minPart = lat;
             }	

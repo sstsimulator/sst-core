@@ -33,6 +33,7 @@ public:
     std::string     sdlfile;
     std::string     stopAtCycle;
     std::string     timeBase;
+    std::string     partitioner;
 	
     inline Mode_t
     RunMode( std::string mode ) 

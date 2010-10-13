@@ -63,7 +63,12 @@ main(int argc, char *argv[])
         Graph graph(0);
 
         makeGraph(sim, sdlMap, graph);
-        partitionGraph( graph, argc, argv );
+	if ( !strcmp(cfg.partitioner.c_str(),"zoltan") ) {
+	    partitionGraph( graph, argc, argv );
+	}
+	else {
+	    // For now, only option is self, so do nothing
+	}
         int minPart = findMinPart( graph );
 	sim->performWireUp( graph, sdlMap, minPart, world.rank() );
         sim->WireUp( graph, sdlMap, minPart, world.rank() );
