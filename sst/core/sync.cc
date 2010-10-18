@@ -62,6 +62,8 @@ namespace SST {
         }
         boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
 
+	Simulation *sim = Simulation::getSimulation();
+	SimTime_t current_cycle = sim->getCurrentSimCycle();
         for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
             i->second.first->clear();
 
@@ -73,13 +75,14 @@ namespace SST {
                     printf("Link not found in map!\n");
                     abort();
                 } else {
-                    link->second->Send(ev);
+		    // Need to figure out what the "delay" is for this event.
+		    SimTime_t delay = ev->getDeliveryTime() - current_cycle;
+                    link->second->Send(delay,ev);
                 }
             }
             tmp->clear();
         }        
 
-	Simulation *sim = Simulation::getSimulation();
 	SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
 	sim->insertActivity( next, this );
     }

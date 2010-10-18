@@ -89,7 +89,7 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
 	timeVortex->insert(sa);
     }
     
-    m_exit = new Exit( this, timeLord->getTimeConverter("10ns"), num_ranks == 1 );
+    m_exit = new Exit( this, timeLord->getTimeConverter("100ns"), num_ranks == 1 );
 }
 
 Simulation::Simulation()
