@@ -87,6 +87,8 @@ public:
 		       int minPart, int myRank );
     void Run();
     SimTime_t getCurrentSimCycle() const;
+    int getRank() const {return my_rank;}
+    int getNumRanks() const {return num_ranks;}
     TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
     void insertActivity(SimTime_t time, Activity* ev);
@@ -154,7 +156,7 @@ private:
     clockMap_t       clockMap;
     SimTime_t        currentSimCycle;
     Exit*            m_exit;
-    bool endSim;
+    bool             endSim;
     int              my_rank;
     int              num_ranks;
 

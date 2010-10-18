@@ -89,16 +89,6 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
 	timeVortex->insert(sa);
     }
     
-    // KSH FIXME:  need to add this back one once things stabilize
-//    if ( cfg->stopAtCycle ) {
-//         StopEvent* se = new StopEvent();
-//         std::pair<EventHandlerBase<bool,Event*>*,Event*> envelope;
-//         envelope.first = se->getFunctor();
-//         envelope.second = se;
-    
-//         eQueue->insert( cfg->stopAtCycle, envelope ); 
-//     }
-
     m_exit = new Exit( this, timeLord->getTimeConverter("10ns"), num_ranks == 1 );
 }
 
@@ -455,24 +445,6 @@ Simulation::printStatus(void)
 
     if (quit)  _ABORT(Simulation, "Status()\n");
 }
-
-// std::string Simulation::EventName( Event *e )
-// {
-//     std::string eventType = "Unknown"; 
-//     if ( dynamic_cast< StopEvent* >( e ) ) {
-//         eventType = "StopEvent";
-//     }
-//     if ( dynamic_cast< ClockEvent* >( e ) ) {
-//         eventType = "ClockEvent";
-//     }
-// //     if ( dynamic_cast< SyncEvent* >( e ) ) {
-// //         eventType = "SyncEvent";
-// //     }
-//     if ( dynamic_cast< Event* >( e ) ) {
-//         eventType = "Event";
-//     }
-//     return eventType;
-// }
 
 TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* handler )
 {
