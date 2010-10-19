@@ -435,6 +435,7 @@ Simulation::printStatus(void)
     bool quit = false;
 
     printf("Simulation: instance: 0x%lx\n", (long) Simulation::instance);
+    printf("  Current cycle: %lu\n", Simulation::instance->currentSimCycle);
 
     if (Simulation::instance != NULL) {
         for (CompMap_t::iterator iter = instance->compMap.begin() ;
