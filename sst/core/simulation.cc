@@ -475,9 +475,9 @@ void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler)
 	clockMap[ tc->getFactor() ]->HandlerUnregister( 
 						       Clock::DEFAULT , handler, empty );
 	
-	if ( empty == 0 ) {
-	    clockMap.erase( tc->getFactor() );
-	}
+// 	if ( empty == 0 ) {
+// 	    clockMap.erase( tc->getFactor() );
+// 	}
     }
 }
 

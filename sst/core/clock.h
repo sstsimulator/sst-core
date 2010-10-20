@@ -14,6 +14,7 @@
 #define SST_CLOCK_H
 
 #include <deque>
+#include <list>
 
 #include <sst/core/action.h>
 //#include <sst/core/clockHandler.h>
@@ -87,6 +88,7 @@ public:
     
 private:
     typedef std::deque<Clock::HandlerBase*> HandlerMap_t;
+//     typedef std::list<Clock::HandlerBase*> HandlerMap_t;
 
     Clock() { }
 

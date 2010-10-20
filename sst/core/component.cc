@@ -55,6 +55,10 @@ TimeConverter* Component::registerClock( std::string freq, Clock::HandlerBase* h
     return tc;
 }
 
+void Component::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
+    Simulation::getSimulation()->unregisterClock(tc,handler);
+}
+
 TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
     TimeConverter* tc = Simulation::getSimulation()->getTimeLord()->getTimeConverter(base);
     

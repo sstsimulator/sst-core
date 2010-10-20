@@ -47,7 +47,7 @@ bool Clock::HandlerRegister( Which_t which, Clock::HandlerBase* handler )
 
     HandlerMap_t::iterator iter = handlerMap[which].begin();
 
-    for ( ; iter < handlerMap[which].end(); iter++ ) {
+    for ( ; iter != handlerMap[which].end(); iter++ ) {
         if ( *iter == handler ) {
             _CLE_DBG("erase handler %p\n",handler);
             handlerMap[which].erase( iter );
@@ -78,16 +78,17 @@ void Clock::execute( void ) {
     // Derive the current cycle from the core time
     currentCycle = period->convertFromCoreTime(sim->getCurrentSimCycle());
     
-//     BOOST_FOREACH( ClockHandler_t* c, handlerMap[PRE] ) {
-//         ( *c )( currentCycle );
-//     }
-    BOOST_FOREACH( Clock::HandlerBase* c, handlerMap[DEFAULT] ) {
-        ( *c )( currentCycle );
-    }
-//     BOOST_FOREACH( ClockHandler_t* c, handlerMap[POST] ) {
+//     BOOST_FOREACH( Clock::HandlerBase* c, handlerMap[DEFAULT] ) {
 //         ( *c )( currentCycle );
 //     }
 
+    HandlerMap_t::iterator op_iter, curr;
+    for ( op_iter = handlerMap[DEFAULT].begin(); op_iter != handlerMap[DEFAULT].end();  ) {
+	curr = op_iter++;
+	Clock::HandlerBase* handler = *curr;
+	(*handler)(currentCycle);
+    }
+    
 
     SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
     _CLE_DBG( "all called next %lu\n", (unsigned long) next );
