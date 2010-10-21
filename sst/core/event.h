@@ -88,6 +88,12 @@ public:
 		(object->*member)(event);
 	    }
     };
+
+    void print(const std::string& header) const {
+	printf("%sGeneric Event to be delivered at %lu with priority %d\n",
+	       header.c_str(),getDeliveryTime(),getPriority());
+	
+    }    
     
 protected:
     Link* delivery_link;

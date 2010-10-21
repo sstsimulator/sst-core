@@ -62,6 +62,10 @@ public:
 	return priority;
     }
 
+    virtual void print(const std::string& header) const {
+	printf("%sGeneric Activity to be delivered at %lu with priority %d\n",header.c_str(),delivery_time,priority);
+    }
+    
 protected:
     void setPriority(int priority) {
 	this->priority = priority;

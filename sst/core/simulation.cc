@@ -437,14 +437,17 @@ Simulation::printStatus(void)
     printf("Simulation: instance: 0x%lx\n", (long) Simulation::instance);
     printf("  Current cycle: %lu\n", Simulation::instance->currentSimCycle);
 
-    if (Simulation::instance != NULL) {
-        for (CompMap_t::iterator iter = instance->compMap.begin() ;
-             iter != instance->compMap.end() ; ++iter ) {
-            if (iter->second->Status()) quit = true;
-        }
-    }
+    Simulation::instance->timeVortex->print();
+    
+    
+//     if (Simulation::instance != NULL) {
+//         for (CompMap_t::iterator iter = instance->compMap.begin() ;
+//              iter != instance->compMap.end() ; ++iter ) {
+//             if (iter->second->Status()) quit = true;
+//         }
+//     }
 
-    if (quit)  _ABORT(Simulation, "Status()\n");
+//     if (quit)  _ABORT(Simulation, "Status()\n");
 }
 
 TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* handler )

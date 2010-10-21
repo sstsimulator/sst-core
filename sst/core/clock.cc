@@ -35,6 +35,13 @@ bool Clock::HandlerRegister( Clock::HandlerBase* handler )
 {
     _CLE_DBG("handler %p\n",handler);
     handlerMap.push_back( handler );
+
+
+//     std::pair<bool,Clock::HandlerBase*> tmp;
+//     tmp.first = true;
+//     tmp.second = handler;
+//     handlerMap.push_back( tmp );
+
     return 0;
 }
 
@@ -79,9 +86,14 @@ void Clock::execute( void ) {
     for ( op_iter = handlerMap.begin(); op_iter != handlerMap.end();  ) {
 	curr = op_iter++;
 	Clock::HandlerBase* handler = *curr;
-	(*handler)(currentCycle);
+	if ( (*handler)(currentCycle) ) handlerMap.erase(curr);
     }
-    
+
+//     for ( int i = 0; i < handlerMap.size(); i++ ) {
+// 	if (handlerMap[i].first) {
+// 	    handlerMap[i].first = !( (*handlerMap[i].second)(currentCycle) );
+// 	}
+//     }
 
     SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
     _CLE_DBG( "all called next %lu\n", (unsigned long) next );

@@ -91,6 +91,7 @@ private:
 //     typedef std::deque<Clock::HandlerBase*> HandlerMap_t;
 //     typedef std::vector<Clock::HandlerBase*> HandlerMap_t;
     typedef std::list<Clock::HandlerBase*> HandlerMap_t;
+//     typedef std::vector<std::pair<bool,Clock::HandlerBase*> > HandlerMap_t;
 
     Clock() { }
 

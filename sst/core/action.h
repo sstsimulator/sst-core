@@ -22,6 +22,13 @@ public:
     Action() {}
     virtual ~Action() {}
 
+    void print(const std::string& header) const {
+	printf("%sGeneric Action to be delivered at %lu with priority %d\n",
+	       header.c_str(),getDeliveryTime(),getPriority());
+	
+    }
+
+    
 protected:
     void endSimulation();
     

@@ -29,6 +29,8 @@ public:
     void insert(Activity* activity);
     Activity* pop();
     Activity* front();
+
+    void print() const;
     
 private:
     std::multiset<Activity*,Activity::less_time_priority> data;

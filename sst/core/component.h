@@ -90,7 +90,7 @@ public:
         @param tc TimeConverter specificing the units */
     SimTime_t getCurrentSimTime(TimeConverter *tc);
     /** return the time since the simulation began in the default timebase */
-    SimTime_t getCurrentSimTime() { 
+    inline SimTime_t getCurrentSimTime() { 
         return getCurrentSimTime(defaultTimeBase); 
     }
     /** return the time since the simulation began in timebase specified
