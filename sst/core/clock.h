@@ -15,6 +15,7 @@
 
 #include <deque>
 #include <list>
+#include <vector>
 
 #include <sst/core/action.h>
 //#include <sst/core/clockHandler.h>
@@ -28,7 +29,7 @@ class TimeConverter;
 class Clock : public Action
 {
 public:
-    typedef enum { DEFAULT, PRE, POST } Which_t;
+//     typedef enum { DEFAULT, PRE, POST } Which_t;
 
     Clock( TimeConverter* period );
 
@@ -80,15 +81,16 @@ public:
 
 
     
-//     bool HandlerRegister( Which_t which, ClockHandler_t* handler ); 
-//     bool HandlerUnregister( Which_t which, ClockHandler_t* handler, bool& empty );
-    bool HandlerRegister( Which_t which, Clock::HandlerBase* handler ); 
-    bool HandlerUnregister( Which_t which, Clock::HandlerBase* handler, bool& empty );
+//     bool HandlerRegister( Which_t which, Clock::HandlerBase* handler ); 
+//     bool HandlerUnregister( Which_t which, Clock::HandlerBase* handler, bool& empty );
+    bool HandlerRegister( Clock::HandlerBase* handler ); 
+    bool HandlerUnregister( Clock::HandlerBase* handler, bool& empty );
 
     
 private:
-    typedef std::deque<Clock::HandlerBase*> HandlerMap_t;
-//     typedef std::list<Clock::HandlerBase*> HandlerMap_t;
+//     typedef std::deque<Clock::HandlerBase*> HandlerMap_t;
+//     typedef std::vector<Clock::HandlerBase*> HandlerMap_t;
+    typedef std::list<Clock::HandlerBase*> HandlerMap_t;
 
     Clock() { }
 
@@ -96,7 +98,7 @@ private:
 
     Cycle_t         currentCycle;
     TimeConverter*  period;
-    HandlerMap_t    handlerMap[3];
+    HandlerMap_t    handlerMap;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -105,6 +107,7 @@ private:
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
         ar & BOOST_SERIALIZATION_NVP(currentCycle);
         ar & BOOST_SERIALIZATION_NVP(period);
+        ar & BOOST_SERIALIZATION_NVP(handlerMap);
     }
 };
 

@@ -18,13 +18,15 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/sdl.h"
 #include "sst/core/component.h"
-#include "sst/core/clock.h"
+//#include "sst/core/clock.h"
 
 namespace SST {
 
 #define _SIM_DBG( fmt, args...) __DBG( DBG_SIM, Sim, fmt, ## args )
 
 class Activity;
+class Clock;
+class Clock::HandlerBase;
 class Config;
 class Exit;
 class Factory;

@@ -461,7 +461,7 @@ TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* 
 	ce->setDeliveryTime( currentSimCycle + tcFreq->getFactor() );
 	timeVortex->insert( ce );
     }
-    clockMap[ tcFreq->getFactor() ]->HandlerRegister( Clock::DEFAULT, handler );
+    clockMap[ tcFreq->getFactor() ]->HandlerRegister( handler );
     return tcFreq;
     
 }
@@ -472,8 +472,7 @@ void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler)
     if ( clockMap.find( tc->getFactor() ) != clockMap.end() ) {
 	_SIM_DBG( "\n" );
 	bool empty;
-	clockMap[ tc->getFactor() ]->HandlerUnregister( 
-						       Clock::DEFAULT , handler, empty );
+	clockMap[ tc->getFactor() ]->HandlerUnregister( handler, empty );
 	
 // 	if ( empty == 0 ) {
 // 	    clockMap.erase( tc->getFactor() );

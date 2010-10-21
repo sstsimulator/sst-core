@@ -24,38 +24,35 @@ namespace SST {
 
 Clock::Clock( TimeConverter* period ) :
     Action(),
-//     functor( new EventHandler< Clock, bool, Time_t, Event* >
-//                                         ( this, &Clock::handler ) ),
     currentCycle(0),
     period( period )
 {
-//   functor = new EventHandler< Clock, bool, Event* >( this, &Clock::handler );
     setPriority(40);
 } 
 
 
-bool Clock::HandlerRegister( Which_t which, Clock::HandlerBase* handler )
+bool Clock::HandlerRegister( Clock::HandlerBase* handler )
 {
     _CLE_DBG("handler %p\n",handler);
-    handlerMap[which].push_back( handler );
+    handlerMap.push_back( handler );
     return 0;
 }
 
-    bool Clock::HandlerUnregister( Which_t which, Clock::HandlerBase* handler, bool& empty )
+    bool Clock::HandlerUnregister( Clock::HandlerBase* handler, bool& empty )
 {
     _CLE_DBG("handler %p\n",handler);
 
-    HandlerMap_t::iterator iter = handlerMap[which].begin();
+    HandlerMap_t::iterator iter = handlerMap.begin();
 
-    for ( ; iter != handlerMap[which].end(); iter++ ) {
+    for ( ; iter != handlerMap.end(); iter++ ) {
         if ( *iter == handler ) {
             _CLE_DBG("erase handler %p\n",handler);
-            handlerMap[which].erase( iter );
+            handlerMap.erase( iter );
             break;
         }
     }
   
-    empty = handlerMap[which].empty();  
+    empty = handlerMap.empty();  
     
     return 0;
 }
@@ -66,24 +63,20 @@ void Clock::execute( void ) {
     
     _CLE_DBG("time=FIXME cycle=%lu epoch=FIXME\n", (unsigned long) currentCycle );
 
-    if ( handlerMap[PRE].empty() &&
-            handlerMap[DEFAULT].empty() &&
-            handlerMap[POST].empty() ) 
+    if ( handlerMap.empty() ) 
     {
-//         _CLE_DBG( "empty\n" );
-//         delete event;
         return;
     } 
 
     // Derive the current cycle from the core time
     currentCycle = period->convertFromCoreTime(sim->getCurrentSimCycle());
     
-//     BOOST_FOREACH( Clock::HandlerBase* c, handlerMap[DEFAULT] ) {
+//     BOOST_FOREACH( Clock::HandlerBase* c, handlerMap ) {
 //         ( *c )( currentCycle );
 //     }
 
     HandlerMap_t::iterator op_iter, curr;
-    for ( op_iter = handlerMap[DEFAULT].begin(); op_iter != handlerMap[DEFAULT].end();  ) {
+    for ( op_iter = handlerMap.begin(); op_iter != handlerMap.end();  ) {
 	curr = op_iter++;
 	Clock::HandlerBase* handler = *curr;
 	(*handler)(currentCycle);
