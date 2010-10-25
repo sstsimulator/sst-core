@@ -8,3 +8,5 @@ nodist_sst_HEADERS = \
 	sst_stdint.h
 
 EXTRA_DIST = mainpage.dox
+
+DISTCLEANFILES = sst_stdint.h
