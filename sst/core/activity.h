@@ -14,6 +14,7 @@
 #define SST_ACTIVITY_H
 
 #include <sst/core/sst_types.h>
+#include <iostream>
 
 namespace SST {
 
@@ -63,7 +64,8 @@ public:
     }
 
     virtual void print(const std::string& header) const {
-	printf("%sGeneric Activity to be delivered at %lu with priority %d\n",header.c_str(),delivery_time,priority);
+        std::cout << header << "Generic Activity to be delivered at "
+                  << delivery_time << " with priority " << priority << std::endl;
     }
     
 protected:

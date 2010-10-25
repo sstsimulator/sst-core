@@ -90,9 +90,8 @@ public:
     };
 
     void print(const std::string& header) const {
-	printf("%sGeneric Event to be delivered at %lu with priority %d\n",
-	       header.c_str(),getDeliveryTime(),getPriority());
-	
+        std::cout << header << "Generic Event to be delivered at "
+                  << getDeliveryTime() << " with priority " << getPriority() << std::endl;
     }    
     
 protected:
