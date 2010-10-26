@@ -228,6 +228,9 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 	    SyncQueue* sync_q = sync->registerLink(rank[remote],id,lp->getRight());
 	    lp->getRight()->recvQueue = sync_q;
         }
+
+	// Done with that edge, delete it.
+	delete e;
     }
 
     // Now, build all the components
@@ -271,7 +274,9 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
                 _ABORT(Simulation, 
                        "component id does not match assigned id (%d)\n", (int)id);
             }
-        } 
+        }
+	// Done with vertex, delete it;
+	delete v;
     } // end for all vertex
     
 
