@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 // Copyright 2009-2010 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
@@ -83,8 +85,6 @@ public:
     static Simulation *getSimulation() { return instance; }
     static void printStatus(void);
 
-    int WireUp(Graph& graph, SDL_CompMap_t& sdlMap,
-               int minPart, int myRank);
     int performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		       int minPart, int myRank );
     void Run();

@@ -71,7 +71,6 @@ main(int argc, char *argv[])
 	}
         int minPart = findMinPart( graph );
 	sim->performWireUp( graph, sdlMap, minPart, world.rank() );
-        sim->WireUp( graph, sdlMap, minPart, world.rank() );
 
         if (cfg.archive) {
             archive.SaveSimulation(sim);

@@ -1,3 +1,5 @@
+// -*- c++ -*-
+
 // Copyright 2009-2010 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
@@ -53,8 +55,6 @@ class TimeLord {
     
  private:
     friend class SST::SimulationBase;
-    friend int Simulation::WireUp(Graph& graph, SDL_CompMap_t& sdlMap,
-                                  int minPart, int myRank);
 
     // Needed by the simulator to turn minPart back into a
     // TimeConverter object.

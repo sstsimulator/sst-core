@@ -111,144 +111,6 @@ Simulation::createIntrospector(std::string name, Component::Params_t params )
 }
 
 
-int
-Simulation::WireUp( Graph& graph, SDL_CompMap_t& sdlMap,
-                    int minPart, int myRank )
-{
-    _SIM_DBG("minPart=%d myRank=%d\n", minPart, myRank );
-
-    for (VertexList_t::iterator iter = graph.vlist.begin() ;
-         iter != graph.vlist.end() ; ++iter )
-    {
-        Vertex*        v = (*iter).second;
-//         int            vertRank = atoi( v->prop_list.get(GRAPH_RANK).c_str() );
-        int            vertRank = v->rank;
-        std::string    name  = v->prop_list.get(GRAPH_COMP_NAME).c_str();
-        ComponentId_t  id  = atoi(v->prop_list.get(GRAPH_ID).c_str() );
-        SDL_Component* sdl_c = sdlMap[name.c_str()];
-
-        if (sdl_c->isIntrospector()) {
-	    Introspector* tmp;
-
-            _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
-		     name.c_str(), sdl_c->type().c_str(), (int)id );
-            
-            tmp = createIntrospector(sdl_c->type().c_str(),
-                                     sdl_c->params);
-            introMap[name] = tmp;
-
-        } else if (vertRank == myRank) {
-            Component* tmp;
-            _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
-		     name.c_str(), sdl_c->type().c_str(), (int)id );
-
-            // Check to make sure there is a LinkMap for this component
-            std::map<ComponentId_t,LinkMap*>::iterator it;
-            it = component_links.find(id);
-            if ( it == component_links.end() ) {
-                printf("WARNING: Building component \"%s\" with no links assigned.\n",name.c_str());
-                LinkMap* lm = new LinkMap();
-                component_links[id] = lm;
-            }
-		
-            tmp = createComponent( id, sdl_c->type().c_str(),
-                                   sdl_c->params );
-            compMap[name] = tmp;
-            if (tmp->getId() != id) {
-                _ABORT(Simulation, 
-                       "component id does not match assigned id (%d)\n", (int)id);
-            }
-        } 
-    } // end for all vertex
-
-    // this is a mess
-    // we can have a sync object for each set of links that have the same
-    // frequency but currently the partition code does not support this
-    // can it support it? 
-    // if minPart is 99999 we are running within 1 rank
-    // we need to use something other than 99999 to indicate this
-    if ( minPart < 99999 ) {
-//         syncMap[0] = new Sync( timeLord->getTimeConverter(minPart) );
-    }
-    /*
-    for( EdgeList_t::iterator iter = graph.elist.begin();
-                            iter != graph.elist.end(); ++iter )
-    {
-        Edge *e = (*iter).second;
-        int rank[2];
-        rank[0] = atoi(graph.vlist[e->v(0)]->prop_list.get(GRAPH_RANK).c_str());
-        rank[1] = atoi(graph.vlist[e->v(1)]->prop_list.get(GRAPH_RANK).c_str());
-
-        if ( rank[0] != myRank && rank[1] != myRank ) { 
-            continue;
-        }
-// 	printf("Found a link on my rank\n");
-        std::string compName[2];
-        std::string linkName[2];
-        ComponentId_t cId[2];
-	    uint64_t latency[2];
-	
-        std::string edge_name = e->prop_list.get(GRAPH_LINK_NAME);
-//         printf("Edge: %s %d %d\n", edge_name.c_str(), e->v(0), e->v(1) );
-
-        SDL_Link*       sdlLink;
-        SDL_Component*  sdlComp;
-        Vertex*         vertex;
-
-        vertex      = graph.vlist[e->v(0)];
-        sdlComp     = sdlMap[ vertex->prop_list.get(GRAPH_COMP_NAME).c_str() ];
-        sdlLink     = sdlComp->links[edge_name];
-        compName[0] = vertex->prop_list.get(GRAPH_COMP_NAME); 
-        cId[0]      = atoi(vertex->prop_list.get(GRAPH_ID).c_str()); 
-        linkName[0] = sdlLink->params["name"];
-	latency[0]  = timeLord->getSimCycles(sdlLink->params["lat"], edge_name);
-
-        vertex      = graph.vlist[e->v(1)];
-        sdlComp     = sdlMap[ vertex->prop_list.get(GRAPH_COMP_NAME).c_str() ];
-        sdlLink     = sdlComp->links[edge_name];
-        compName[1] = vertex->prop_list.get(GRAPH_COMP_NAME); 
-        cId[1]      = atoi(vertex->prop_list.get(GRAPH_ID).c_str()); 
-        linkName[1] = sdlLink->params["name"];
-	latency[1]  = timeLord->getSimCycles(sdlLink->params["lat"], edge_name);
-
-        _SIM_DBG("Connecting component \"%s\" with link \"%s\" to component \"%s\" on link \"%s\"\n",
-			    compName[0].c_str(),
-                            linkName[0].c_str(),
-                            compName[1].c_str(),
-                            linkName[1].c_str());
-
-        if ( rank[0] == rank[1] ) { 
-
-	        _SIM_DBG("Both components are on the same rank\n");
-	        if ( Connect( (*compMap)[ cId[0] ], linkName[0], latency[0], 
-		                    (*compMap)[ cId[1] ], linkName[1], latency[1] ) )
-            {
-                _abort(Simulation,"Connect failed %s <-> %s\n",
-                                  linkName[0].c_str(), linkName[1].c_str() );
-            }
-        } else {
-            if ( myRank == rank[0] ) {
-		        _SIM_DBG("This component is on one rank\n");
-                syncMap[0]->registerLink( edge_name, 
-                           (*compMap)[ cId[0] ]->LinkGet( linkName[0] ),
-                            rank[1], latency[0] );
-            } else {
-		        _SIM_DBG("This component is on the other rank\n");
-                syncMap[0]->registerLink( edge_name, 
-                           (*compMap)[ cId[1] ]->LinkGet( linkName[1] ),
-                           rank[0], latency[1] );
-            }
-        }
-    }
-    */
-//     if ( ! syncMap.empty() ) {
-//         syncMap[0]->exchangeFunctors();
-//     }
-
-    _SIM_DBG( "config done\n\n" );
-    return 0;
-}
-
 int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
             int minPart, int myRank )
 {
@@ -259,9 +121,7 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
 
-//     if ( minPart < 99999 )
-	sync = new Sync( minPartToTC(minPart) );
-//     }
+    if ( num_ranks > 1 ) sync = new Sync( minPartToTC(minPart) );
 
     
     for( EdgeList_t::iterator iter = graph.elist.begin();
@@ -269,8 +129,6 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     {
         Edge *e = (*iter).second;
         int rank[2];
-//         rank[0] = atoi(graph.vlist[e->v(0)]->prop_list.get(GRAPH_RANK).c_str());
-//         rank[1] = atoi(graph.vlist[e->v(1)]->prop_list.get(GRAPH_RANK).c_str());
         rank[0] = graph.vlist[e->v(0)]->rank;
         rank[1] = graph.vlist[e->v(1)]->rank;
 
@@ -279,7 +137,6 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
         }
 	
 	int id = e->id();
-//         std::string compName[2];
         std::string linkName[2];
         ComponentId_t cId[2];
 	uint64_t latency[2];
@@ -374,6 +231,50 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     }
 
     // Now, build all the components
+    for (VertexList_t::iterator iter = graph.vlist.begin() ;
+         iter != graph.vlist.end() ; ++iter )
+    {
+        Vertex*        v = (*iter).second;
+        int            vertRank = v->rank;
+        std::string    name  = v->prop_list.get(GRAPH_COMP_NAME).c_str();
+        ComponentId_t  id  = atoi(v->prop_list.get(GRAPH_ID).c_str() );
+        SDL_Component* sdl_c = sdlMap[name.c_str()];
+
+        if (sdl_c->isIntrospector()) {
+	    Introspector* tmp;
+
+            _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
+		     name.c_str(), sdl_c->type().c_str(), (int)id );
+            
+            tmp = createIntrospector(sdl_c->type().c_str(),
+                                     sdl_c->params);
+            introMap[name] = tmp;
+
+        } else if (vertRank == myRank) {
+            Component* tmp;
+            _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
+		     name.c_str(), sdl_c->type().c_str(), (int)id );
+
+            // Check to make sure there is a LinkMap for this component
+            std::map<ComponentId_t,LinkMap*>::iterator it;
+            it = component_links.find(id);
+            if ( it == component_links.end() ) {
+                printf("WARNING: Building component \"%s\" with no links assigned.\n",name.c_str());
+                LinkMap* lm = new LinkMap();
+                component_links[id] = lm;
+            }
+		
+            tmp = createComponent( id, sdl_c->type().c_str(),
+                                   sdl_c->params );
+            compMap[name] = tmp;
+            if (tmp->getId() != id) {
+                _ABORT(Simulation, 
+                       "component id does not match assigned id (%d)\n", (int)id);
+            }
+        } 
+    } // end for all vertex
+    
+
     
     return 0;
 }
