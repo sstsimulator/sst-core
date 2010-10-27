@@ -75,7 +75,7 @@ Simulation::createSimulation(Config *config, int my_rank, int num_ranks)
 
 
 Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
-    SimulationBase(cfg), currentSimCycle(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks)
+    SimulationBase(cfg), timeVortex(NULL), sync(NULL), currentSimCycle(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks)
 {
 //     eQueue = new EventQueue_t;
     timeVortex = new TimeVortex;
@@ -99,13 +99,13 @@ Simulation::Simulation()
 
 Component*
 Simulation::createComponent( ComponentId_t id, std::string name, 
-                            Component::Params_t params )
+                             Params params )
 {
     return factory->CreateComponent(id, name, params);
 }
 
 Introspector*
-Simulation::createIntrospector(std::string name, Component::Params_t params )
+Simulation::createIntrospector(std::string name, Params params )
 {
     return factory->CreateIntrospector(name, params);
 }
@@ -338,10 +338,8 @@ Simulation::getCurrentSimCycle() const
 void
 Simulation::printStatus(void)
 {
-    bool quit = false;
-
-    printf("Simulation: instance: 0x%lx\n", (long) Simulation::instance);
-    printf("  Current cycle: %lu\n", Simulation::instance->currentSimCycle);
+    std::cout << "Simulation: instance: " << (long) Simulation::instance << std::endl;
+    std::cout << "  Current cycle: " << Simulation::instance->currentSimCycle << std::endl;
 
     Simulation::instance->timeVortex->print();
     

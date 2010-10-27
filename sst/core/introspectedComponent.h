@@ -103,8 +103,6 @@ typedef std::map<ComponentId_t, Pdissipation_t> PowerDatabase;
  */
 class IntrospectedComponent : public Component {
 public:
-    typedef  std::map<std::string,std::string> Params_t;
-    
     typedef std::map<std::string, int> Monitors;
 
 

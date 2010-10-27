@@ -11,6 +11,7 @@
 
 
 #include <sst_config.h>
+#include "sst/core/serialization/core.h"
 
 #include <sst/core/sdl.h>
 #include <tinyxml/tinyxml.h>
@@ -21,7 +22,7 @@ namespace SST {
 
 #define _SDL_DBG( fmt, args...) __DBG( DBG_SDL, SDL, fmt, ## args )
 
-static void parameters( SDL_params_t &params, TiXmlNode* node )
+static void parameters( Params &params, TiXmlNode* node )
 {
     _SDL_DBG("%s\n",node->Value());
 
@@ -41,7 +42,7 @@ static void parameters( SDL_params_t &params, TiXmlNode* node )
     }
 }
 
-static void link( SDL_params_t &params, TiXmlNode* node )
+static void link( Params &params, TiXmlNode* node )
 {
     TiXmlNode* pChild;
     _SDL_DBG("%s\n",node->Value());
@@ -380,11 +381,11 @@ static std::string get_config( TiXmlNode* pParent )
 }
 
 #if 0
-static void parameters_print( std::string prefix, SDL_params_t &p, std::string postfix )
+static void parameters_print( std::string prefix, Params &p, std::string postfix )
 {
     if ( p.size() == 0) return;
     std::cout << prefix;
-    for ( SDL_params_t::iterator iter = p.begin(); iter != p.end(); ++iter ) {
+    for ( Params::iterator iter = p.begin(); iter != p.end(); ++iter ) {
         std::cout << (*iter).first << "=" << (*iter).second << " ";
     }
     std::cout << postfix;

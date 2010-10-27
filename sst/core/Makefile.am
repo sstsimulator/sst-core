@@ -40,6 +40,7 @@ nobase_dist_sst_HEADERS = \
 	linkPair.h \
 	log.h \
 	memEvent.h \
+	params.h \
 	pollingLinkQueue.h \
 	sdl.h \
 	simulation.h \

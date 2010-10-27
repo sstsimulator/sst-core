@@ -11,6 +11,7 @@
 
 
 #include <sst_config.h>
+#include "sst/core/serialization/core.h"
 
 #include <errno.h>
 #include <iostream>

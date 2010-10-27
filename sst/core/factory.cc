@@ -37,6 +37,7 @@
 
 #include "sst/core/factory.h"
 #include "sst/core/element.h"
+#include "sst/core/params.h"
 
 namespace SST {
 
@@ -108,7 +109,7 @@ Factory::~Factory()
 Component*
 Factory::CreateComponent(ComponentId_t id, 
                          std::string type, 
-                         Component::Params_t& params)
+                         Params& params)
 {
     std::string elemlib, elem;
     boost::tie(elemlib, elem) = parseLoadName(type);
@@ -136,7 +137,7 @@ Factory::CreateComponent(ComponentId_t id,
 
 Introspector*
 Factory::CreateIntrospector(std::string type, 
-                            Component::Params_t& params)
+                            Params& params)
 {
     std::string elemlib, elem;
     boost::tie(elemlib, elem) = parseLoadName(type);

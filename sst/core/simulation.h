@@ -20,7 +20,7 @@
 #include "sst/core/sst_types.h"
 #include "sst/core/sdl.h"
 #include "sst/core/component.h"
-//#include "sst/core/clock.h"
+#include "sst/core/params.h"
 
 namespace SST {
 
@@ -143,9 +143,9 @@ private:
     void operator=(Simulation const&); // Don't implement
 	
     Component* createComponent(ComponentId_t id, std::string name, 
-                               Component::Params_t params);
+                               Params params);
     Introspector* createIntrospector(std::string name, 
-                                     Component::Params_t params );
+                                     Params params );
 
     TimeVortex* getTimeVortex() const { return timeVortex; }
 

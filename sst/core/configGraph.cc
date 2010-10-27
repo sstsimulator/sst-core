@@ -38,7 +38,7 @@ find_lat(Simulation *sim, SDL_Component *c, std::string edge )
     SDL_links_t::iterator iter = c->links.find( edge );
     if ( iter == c->links.end() ) return 0;
     SDL_Link *l = (*iter).second;
-    SDL_params_t::iterator p_iter = l->params.find( "lat" ); 
+    Params::iterator p_iter = l->params.find( "lat" ); 
     if ( p_iter == l->params.end() ) return 0;
     return sim->getTimeLord()->getSimCycles((*p_iter).second, 
                                             "edge " + edge );

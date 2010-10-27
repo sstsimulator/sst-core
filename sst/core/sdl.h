@@ -17,14 +17,14 @@
 #include <map>
 #include <string>
 
-namespace SST {
+#include "sst/core/params.h"
 
-typedef std::map<std::string,std::string> SDL_params_t;
+namespace SST {
 
 class SDL_Link {
     public:
     float        weight;
-    SDL_params_t params;
+    Params params;
 };
 
 typedef std::map<std::string,SDL_Link *> SDL_links_t;
@@ -37,7 +37,7 @@ public:
     bool isIntrospector( void ) { return _isIntrospector; };
     float        weight;
     int          rank;
-    SDL_params_t params;
+    Params params;
     SDL_links_t  links;
     bool _isIntrospector;
 };

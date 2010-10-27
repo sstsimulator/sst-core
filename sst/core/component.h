@@ -19,6 +19,7 @@
 #include <sst/core/linkMap.h>
 #include <sst/core/clock.h>
 #include <sst/core/timeConverter.h>
+#include <sst/core/params.h>
 
 namespace SST {
 
@@ -30,7 +31,8 @@ namespace SST {
  */
 class Component {
 public:
-    typedef  std::map<std::string,std::string> Params_t;
+    /* Deprecated typedef */
+    typedef Params Params_t;
 
     /** Constructor. Generally only called by the factory class. 
         @param id Unique component ID

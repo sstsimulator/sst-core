@@ -28,9 +28,9 @@ struct FactoryLoaderData;
 class Factory {
 public:
     Component* CreateComponent(ComponentId_t id, std::string componentname,
-                               Component::Params_t& params);
+                               Params& params);
     Introspector* CreateIntrospector(std::string introspectorname,
-                               Component::Params_t& params);
+                               Params& params);
     void RegisterEvent(std::string eventname);
   
 private:

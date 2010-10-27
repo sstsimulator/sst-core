@@ -13,12 +13,13 @@
 #define SST_ELEMENT_H
 
 #include <sst/core/component.h>
+#include <sst/core/params.h>
 
 namespace SST {
 class Introspector;
 
-typedef Component* (*componentAllocate)(ComponentId_t, Component::Params_t&);
-typedef Introspector* (*introspectorAllocate)(Component::Params_t&);
+typedef Component* (*componentAllocate)(ComponentId_t, Params&);
+typedef Introspector* (*introspectorAllocate)(Params&);
 typedef void (*eventInitialize)(void);
 
 struct ElementInfoComponent {
