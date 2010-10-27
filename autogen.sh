@@ -23,7 +23,7 @@ echo "Finding element libraries ..."
 elemlib_list=
 elemlib_m4_list=
 for elemlib_dir in sst/elements/* ; do
-  if test -d "$elemlib_dir" ; then
+  if test -d "$elemlib_dir" -a -r "$elemlib_dir/Makefile.am" ; then
     elemlib=`basename "$elemlib_dir"`
     if test -f "$elemlib_dir/.ignore" -a ! -f "$elemlib_dir/.unignore" ; then
       echo " - ignoring element library $elemlib"
