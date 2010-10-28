@@ -14,6 +14,7 @@
 #include "sst/core/serialization/core.h"
 
 #include <sst/core/sdl.h>
+#include <sst/core/configGraph.h>
 #include <tinyxml/tinyxml.h>
 
 #include <sst/core/debug.h>
@@ -24,8 +25,6 @@ namespace SST {
 
 static void parameters( Params &params, TiXmlNode* node )
 {
-    _SDL_DBG("%s\n",node->Value());
-
     TiXmlNode* pChild;
     for ( pChild = node->FirstChild(); pChild != 0; 
                                         pChild = pChild->NextSibling()) 
@@ -38,7 +37,28 @@ static void parameters( Params &params, TiXmlNode* node )
             } 
             _SDL_DBG("name=%s value=%s\n", pChild->Value(),
                                     pChild->ToElement()->GetText() ); 
-            params[pChild->Value()] = pChild->ToElement()->GetText();
+
+	    params[pChild->Value()] = pChild->ToElement()->GetText();
+    }
+}
+
+static void parameters_link( ConfigLink* link, int which_comp, TiXmlNode* node )
+{
+    TiXmlNode* pChild;
+    for ( pChild = node->FirstChild(); pChild != 0; 
+                                        pChild = pChild->NextSibling()) 
+    {
+            if ( pChild->ToElement()->GetText() == NULL ) {
+                _abort(SDL,"element \"%s\" has no text\n",pChild->Value());
+            } 
+            _SDL_DBG("name=%s value=%s\n", pChild->Value(),
+                                    pChild->ToElement()->GetText() ); 
+	    if ( strcmp( pChild->Value(), "name" ) == 0 ) {
+		link->port[which_comp] = pChild->ToElement()->GetText();
+	    }
+	    if ( strcmp( pChild->Value(), "lat" ) == 0 ) {
+		link->latency[which_comp] = pChild->ToElement()->GetText();
+	    }
     }
 }
 
@@ -52,6 +72,20 @@ static void link( Params &params, TiXmlNode* node )
     {
         if ( strcmp( pChild->Value(), "params" ) == 0 ) {
             parameters( params, pChild);
+        }
+    }
+}
+
+static void new_link( ConfigLink* link, int which_comp, TiXmlNode* node )
+{
+    TiXmlNode* pChild;
+    _SDL_DBG("%s\n",node->Value());
+
+    for ( pChild = node->FirstChild(); pChild != 0; 
+                                        pChild = pChild->NextSibling()) 
+    {
+        if ( strcmp( pChild->Value(), "params" ) == 0 ) {
+            parameters_link( link, which_comp, pChild);
         }
     }
 }
@@ -81,6 +115,36 @@ static void links( SDL_links_t &links, TiXmlNode* node )
     }
 }
 
+static void new_links( ConfigGraph &graph, ConfigComponent* comp, TiXmlNode* node )
+{
+    TiXmlNode* pChild;
+
+    for ( pChild = node->FirstChild(); pChild != 0; 
+                                        pChild = pChild->NextSibling()) 
+    {
+        if ( strcmp( pChild->Value(), "link" ) == 0 ) {
+	    std::string name = link_id(pChild);
+	    // See if the link already exists
+	    ConfigLink* link;
+	    int which_comp;
+	    if ( graph.links.count(name) ) {
+		link = graph.links[name];
+		which_comp = 1;
+	    }
+	    else {
+		link = new ConfigLink();
+		graph.links[name] = link;
+		which_comp = 0;
+	    }
+	    // Now, set all the parameters for the link
+	    link->component[which_comp] = comp;
+	    new_link(link, which_comp, pChild);
+	    comp->links.push_back(link);
+
+        }
+    }
+}
+
 
 static SDL_Component * component( TiXmlNode* node, float weight, int rank, bool isIntrospector )
 {
@@ -106,6 +170,25 @@ static SDL_Component * component( TiXmlNode* node, float weight, int rank, bool 
     return c;
 }
 
+// static ConfigComponent* new_component( TiXmlNode* node, ConfigGraph &graph, std::string name,
+// 				       float weight, int rank, bool isIntrospector )
+// {
+//     ConfigComponent* c = new ConfigComponent( name, node->Value(), weight, rank, isIntrospector );
+//     TiXmlNode* pChild;
+
+//     for ( pChild = node->FirstChild(); pChild != 0; 
+//                                         pChild = pChild->NextSibling()) 
+//     {
+//         if ( strcmp( pChild->Value(), "params" ) == 0 ) {
+//             parameters( c->params, pChild );
+//         }
+//         if ( strcmp( pChild->Value(), "links" ) == 0 ) {
+//             new_links( graph, c, pChild );
+//         }
+//     }
+//     return c;
+// }
+
 
 static void parse_component( TiXmlNode* pParent, SDL_CompMap_t &compMap )
 {
@@ -125,7 +208,7 @@ static void parse_component( TiXmlNode* pParent, SDL_CompMap_t &compMap )
     }
 
     _SDL_DBG("id=%s weight=%f\n", element->Attribute("id"), weight );
-    
+
     for ( pChild = pParent->FirstChild(); pChild != 0; 
                                         pChild = pChild->NextSibling()) 
     {
@@ -133,6 +216,49 @@ static void parse_component( TiXmlNode* pParent, SDL_CompMap_t &compMap )
         compMap[element->Attribute("id")] = component( pChild, weight, rank, isIntrospector );
         return;
     }
+}
+
+static void new_parse_component( TiXmlNode* pParent, ConfigGraph &graph )
+{
+    TiXmlElement* element = pParent->ToElement();
+    TiXmlNode* node_type;
+    float weight = 1.0;
+    int rank = -1;
+    bool isIntrospector = false;
+
+    if ( element->Attribute("rank") ) {
+        rank = atoi( element->Attribute("rank") );
+    }
+    
+    if ( element->Attribute("weight") ) {
+        weight =atof( element->Attribute("weight") );
+    }
+
+    _SDL_DBG("id=%s weight=%f\n", element->Attribute("id"), weight );
+
+    // Create the ConfigComponent
+    node_type = pParent->FirstChild();
+    ConfigComponent* comp;
+    if ( node_type != NULL ) {
+	comp = new ConfigComponent(element->Attribute("id"), node_type->Value(), weight, rank, isIntrospector );
+    }
+    else {
+	return;
+    }
+
+    graph.comps[comp->id] = comp;
+    
+    for ( TiXmlNode* pChild = node_type->FirstChild(); pChild != NULL; pChild = pChild->NextSibling() ) {
+        if ( strcmp( pChild->Value(), "params" ) == 0 ) {
+            parameters( comp->params, pChild );
+        }
+
+        else if ( strcmp( pChild->Value(), "links" ) == 0 ) {
+	    new_links(graph, comp, pChild );
+        }
+    }
+
+    return;
 }
 
 
@@ -147,16 +273,32 @@ static void parse_introspector( TiXmlNode* pParent, SDL_CompMap_t &compMap )
         weight =atof( element->Attribute("weight") );
     }
 
-    _SDL_DBG("id=%s weight=%f\n", element->Attribute("id"), weight );
-    
     for ( pChild = pParent->FirstChild(); pChild != 0; 
                                         pChild = pChild->NextSibling()) 
     {
-        _SDL_DBG("child %s\n",pChild->Value());
         compMap[element->Attribute("id")] = component( pChild, weight, -1, isIntrospector );
         return;
     }
 }
+
+// static void new_parse_introspector( TiXmlNode* pParent, SDL_CompMap_t &compMap )
+// {
+//     TiXmlElement* element = pParent->ToElement();
+//     TiXmlNode* pChild;
+//     float weight = 1.0;
+//     bool isIntrospector = true;
+
+//     if ( element->Attribute("weight") ) {
+//         weight =atof( element->Attribute("weight") );
+//     }
+
+//     for ( pChild = pParent->FirstChild(); pChild != 0; 
+//                                         pChild = pChild->NextSibling()) 
+//     {
+//         compMap[element->Attribute("id")] = component( pChild, weight, -1, isIntrospector );
+//         return;
+//     }
+// }
 
 
 static std::string parse_config( TiXmlNode* pParent )
@@ -194,6 +336,34 @@ static void parse( TiXmlNode* pParent, SDL_CompMap_t &compMap )
                                 pChild = pChild->NextSibling()) 
     {
         parse( pChild, compMap );
+    }
+}
+
+static void new_parse( TiXmlNode* pParent, ConfigGraph &graph )
+{
+    if ( !pParent ) return;
+
+    TiXmlNode* pChild;
+
+    switch (  pParent->Type())
+    {
+    case TiXmlNode::ELEMENT:
+        _SDL_DBG( "Element [%s]\n", pParent->Value() );
+        if ( strcmp( pParent->Value(), "component") == 0 ) {
+            new_parse_component( pParent, graph ); 
+        }
+// 	else if ( strcmp( pParent->Value(), "introspector") == 0 ) {
+//             new_parse_introspector( pParent, compMap ); 
+//         }
+        break;
+
+    default:
+        break;
+    }
+    for ( pChild = pParent->FirstChild(); pChild != 0;
+                                pChild = pChild->NextSibling()) 
+    {
+        new_parse( pChild, graph );
     }
 }
 

@@ -30,6 +30,9 @@ namespace SST {
 int Vertex::count = 0;
 int Edge::count = 0;
 
+ComponentId_t ConfigComponent::count = 0;
+LinkId_t ConfigLink::count = 0;
+
 static inline int min( int x, int y ) { return x < y ? x : y; }
 
 static int
