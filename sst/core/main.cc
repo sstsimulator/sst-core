@@ -14,8 +14,11 @@
 #include "sst/core/serialization/core.h"
 
 #include <boost/mpi.hpp>
+#include <boost/mpi/timer.hpp>
 
 #include <signal.h>
+
+#include <iomanip>
 
 #include <sst/core/archive.h>
 #include <sst/core/config.h>
@@ -50,6 +53,11 @@ main(int argc, char *argv[])
 
     Archive archive(cfg.archiveType, cfg.archiveFile);
 
+    boost::mpi::timer* timer = new boost::mpi::timer();
+    double start = timer->elapsed();
+    double end_build, start_run, end_run;
+    
+        
     printf("main() My rank is %d, on %d nodes\n", world.rank(), world.size());
     DebugInit( world.rank(), world.size() );
 
@@ -79,6 +87,14 @@ main(int argc, char *argv[])
         }
     }
 
+    end_build = timer->elapsed();
+    double build_time = end_build - start;
+
+    double max_build_time;
+    all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
+
+    start_run = timer->elapsed();
+    
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) { 
         if ( cfg.archive ) {
             sim = archive.LoadSimulation();
@@ -86,7 +102,27 @@ main(int argc, char *argv[])
         }
 	
         sim->Run();
-        delete sim;
+
+
+	delete sim;
+    }
+
+    end_run = timer->elapsed();
+
+    double run_time = end_run - start_run;
+    double total_time = end_run - start;
+
+    double max_run_time, max_total_time;
+
+    all_reduce(world, &run_time, 1, &max_run_time, boost::mpi::maximum<double>() );
+    all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
+
+    if ( world.rank() == 0 ) {
+	std::cout << setprecision(3);
+	std::cout << endl << "Simulation times" << endl;;
+	std::cout << "  Build time: " << max_build_time << " s" << std::endl;
+	std::cout << "  Simulation time: " << max_run_time << " s" << std::endl;
+	std::cout << "  Total time: " << max_total_time << " s" << std::endl;
     }
 
     delete mpiEnv;
