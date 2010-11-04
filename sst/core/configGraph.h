@@ -87,6 +87,8 @@ private:
 
 typedef std::map<std::string,ConfigLink*> ConfigLinkMap_t;
 typedef std::map<ComponentId_t,ConfigComponent*> ConfigComponentMap_t;
+typedef std::map<std::string,Params*> ParamsMap_t;
+typedef std::map<std::string,std::string> VariableMap_t;
 
     
 class ConfigGraph {
@@ -94,8 +96,8 @@ public:
     ConfigLinkMap_t      links;
     ConfigComponentMap_t comps;
 
-private:
-    static ComponentId_t count;
+    ParamsMap_t          includes;
+    VariableMap_t        variables;
 };
 
  

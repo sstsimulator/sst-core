@@ -43,8 +43,10 @@ public:
 };
 
 typedef std::map < std::string, SDL_Component * > SDL_CompMap_t;
-
+ class ConfigGraph;
+ 
 extern int xml_parse( std::string file, SDL_CompMap_t& map);
+extern int xml_parse( std::string fileName, ConfigGraph& graph );
 extern std::string xmlGetConfig( std::string file );
 extern std::string xmlGetVersion( std::string file );
 

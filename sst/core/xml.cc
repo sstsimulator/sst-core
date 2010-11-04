@@ -218,48 +218,48 @@ static void parse_component( TiXmlNode* pParent, SDL_CompMap_t &compMap )
     }
 }
 
-static void new_parse_component( TiXmlNode* pParent, ConfigGraph &graph )
-{
-    TiXmlElement* element = pParent->ToElement();
-    TiXmlNode* node_type;
-    float weight = 1.0;
-    int rank = -1;
-    bool isIntrospector = false;
+// static void new_parse_component( TiXmlNode* pParent, ConfigGraph &graph )
+// {
+//     TiXmlElement* element = pParent->ToElement();
+//     TiXmlNode* node_type;
+//     float weight = 1.0;
+//     int rank = -1;
+//     bool isIntrospector = false;
 
-    if ( element->Attribute("rank") ) {
-        rank = atoi( element->Attribute("rank") );
-    }
+//     if ( element->Attribute("rank") ) {
+//         rank = atoi( element->Attribute("rank") );
+//     }
     
-    if ( element->Attribute("weight") ) {
-        weight =atof( element->Attribute("weight") );
-    }
+//     if ( element->Attribute("weight") ) {
+//         weight =atof( element->Attribute("weight") );
+//     }
 
-    _SDL_DBG("id=%s weight=%f\n", element->Attribute("id"), weight );
+//     _SDL_DBG("id=%s weight=%f\n", element->Attribute("id"), weight );
 
-    // Create the ConfigComponent
-    node_type = pParent->FirstChild();
-    ConfigComponent* comp;
-    if ( node_type != NULL ) {
-	comp = new ConfigComponent(element->Attribute("id"), node_type->Value(), weight, rank, isIntrospector );
-    }
-    else {
-	return;
-    }
+//     // Create the ConfigComponent
+//     node_type = pParent->FirstChild();
+//     ConfigComponent* comp;
+//     if ( node_type != NULL ) {
+// 	comp = new ConfigComponent(element->Attribute("id"), node_type->Value(), weight, rank, isIntrospector );
+//     }
+//     else {
+// 	return;
+//     }
 
-    graph.comps[comp->id] = comp;
+//     graph.comps[comp->id] = comp;
     
-    for ( TiXmlNode* pChild = node_type->FirstChild(); pChild != NULL; pChild = pChild->NextSibling() ) {
-        if ( strcmp( pChild->Value(), "params" ) == 0 ) {
-            parameters( comp->params, pChild );
-        }
+//     for ( TiXmlNode* pChild = node_type->FirstChild(); pChild != NULL; pChild = pChild->NextSibling() ) {
+//         if ( strcmp( pChild->Value(), "params" ) == 0 ) {
+//             parameters( comp->params, pChild );
+//         }
 
-        else if ( strcmp( pChild->Value(), "links" ) == 0 ) {
-	    new_links(graph, comp, pChild );
-        }
-    }
+//         else if ( strcmp( pChild->Value(), "links" ) == 0 ) {
+// 	    new_links(graph, comp, pChild );
+//         }
+//     }
 
-    return;
-}
+//     return;
+// }
 
 
 static void parse_introspector( TiXmlNode* pParent, SDL_CompMap_t &compMap )
@@ -348,33 +348,6 @@ static void parse( TiXmlNode* pParent, SDL_CompMap_t &compMap )
     }
 }
 
-static void new_parse( TiXmlNode* pParent, ConfigGraph &graph )
-{
-    if ( !pParent ) return;
-
-    TiXmlNode* pChild;
-
-    switch (  pParent->Type())
-    {
-    case TiXmlNode::ELEMENT:
-        _SDL_DBG( "Element [%s]\n", pParent->Value() );
-        if ( strcmp( pParent->Value(), "component") == 0 ) {
-            new_parse_component( pParent, graph ); 
-        }
-// 	else if ( strcmp( pParent->Value(), "introspector") == 0 ) {
-//             new_parse_introspector( pParent, compMap ); 
-//         }
-        break;
-
-    default:
-        break;
-    }
-    for ( pChild = pParent->FirstChild(); pChild != 0;
-                                pChild = pChild->NextSibling()) 
-    {
-        new_parse( pChild, graph );
-    }
-}
 
 
 
@@ -605,6 +578,7 @@ int xml_parse( std::string fileName,  SDL_CompMap_t &map )
     if (loadOkay)
     {
         init_references( &doc );
+	printf("Initialized references\n");
         _SDL_DBG("file=\"%s\"\n", fileName.c_str());
         parse( &doc, map );
     }
@@ -658,6 +632,173 @@ std::string xmlGetConfig( std::string fileName )
     {
         throw doc.ErrorDesc();
     }
+    return 0;
+}
+
+
+// Version 2.0 parsing
+
+
+static void new_parse_param_include( TiXmlNode* pParent, ConfigGraph &graph )
+{
+    TiXmlNode* pChild;
+
+    for ( pChild = pParent->FirstChild(); pChild != NULL; pChild = pChild->NextSibling()) 
+    {
+	// Each node at this level is a separate set of parameters
+	std::string include_name = pChild->Value();
+	Params* params = new Params();
+
+	for ( TiXmlNode* param = pChild->FirstChild(); param != NULL; param = param->NextSibling()) {
+	    printf("Parameter: %s,  Value: %s\n",param->Value(),param->ToElement()->GetText());
+	    (*params)[param->Value()] = param->ToElement()->GetText();
+	}
+	graph.includes[include_name] = params;
+    }    
+}
+
+static void new_parse_variable( TiXmlNode* pParent, ConfigGraph &graph )
+{
+    std::string var_name = pParent->ToElement()->FirstAttribute()->Name();
+    std::string var_value = pParent->ToElement()->FirstAttribute()->Value();
+
+    graph.variables[var_name] = var_value;
+    printf("Variable: %s,  Value: %s\n",var_name.c_str(),var_value.c_str());
+}
+
+static void new_parse_component( TiXmlNode* pParent, ConfigGraph& graph ) {
+    printf("Component: %s\n",pParent->ToElement()->Attribute("name"));
+    ConfigComponent* comp = new ConfigComponent();
+
+    TiXmlElement* element = pParent->ToElement();
+    if ( element->Attribute("name") == NULL ) {
+	printf("ERROR: Parsing SDL file: Unspecified component name on or near line %d\n",pParent->Row());
+	exit(1);
+    }
+    else {
+	comp->name = element->Attribute("name");
+    }
+    if ( element->Attribute("type") == NULL ) {
+	printf("ERROR: Parsing SDL file: Unspecified component type on or near line %d\n",pParent->Row());
+	exit(1);
+    }
+    else {
+	comp->type = element->Attribute("type");
+    }
+
+    int status;
+    // Get the rank
+    status = element->QueryIntAttribute("rank",&comp->rank);
+    if ( status == TIXML_WRONG_TYPE ) {
+	printf("ERROR: Parsing SDL file: Bad rank specified (%s) on or near line %d\n",
+	       element->Attribute("rank"),pParent->Row());
+	exit(1);
+    }
+    else if ( status == TIXML_NO_ATTRIBUTE ) {
+	comp->rank = -1;
+    }
+
+    // Get the weight
+    status = element->QueryFloatAttribute("weight",&comp->weight);
+    if ( status == TIXML_WRONG_TYPE ) {
+	printf("ERROR: Parsing SDL file: Bad weight specified (%s) on or near line %d\n",
+	       element->Attribute("weight"),pParent->Row());
+	exit(1);
+    }
+    else if ( status == TIXML_NO_ATTRIBUTE ) {
+	comp->weight = 0;
+    }
+
+    
+}
+
+static void parse( TiXmlNode* pParent, ConfigGraph &graph )
+{
+    if ( !pParent ) return;
+    printf("In parse\n");
+
+    TiXmlNode* pChild;
+    TiXmlNode* sst_section;
+
+    // First, we need to look for includes and variables and find the sst section
+    for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
+    {
+	switch (  pChild->Type()) {
+	case TiXmlNode::ELEMENT:
+	    if ( strcmp( pChild->Value(), "param_include") == 0 ) {
+		new_parse_param_include( pChild, graph ); 
+	    }
+	    else if ( strcmp( pChild->Value(), "variable") == 0 ) {
+ 		new_parse_variable( pChild, graph ); 
+	    }
+	    else if ( strcmp( pChild->Value(), "sst") == 0 ) {
+		sst_section = pChild;
+	    }
+	    break;
+	default:
+	    break;
+	}
+    }
+
+    // Now, process the sst section, which contains a list of components in the sim
+    for ( pChild = sst_section->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
+    {
+	switch (  pChild->Type()) {
+	case TiXmlNode::ELEMENT:
+	    if ( strcmp( pChild->Value(), "component") == 0 ) {
+		new_parse_component( pChild, graph ); 
+	    }
+// 	    else if ( strcmp( pChild->Value(), "variable") == 0 ) {
+//  		new_parse_variable( pChild, graph ); 
+// 	    }
+// 	    else if ( strcmp( pChild->Value(), "sst") == 0 ) {
+// 		sst_section = pChild;
+// 	    }
+	    break;
+	default:
+	    break;
+	}
+    }
+    
+    
+	
+//     for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
+//     {
+// 	switch (  pParent->Type()) {
+// 	case TiXmlNode::ELEMENT:
+// 	    if ( strcmp( pParent->Value(), "component") == 0 ) {
+// 		new_parse_component( pParent, graph ); 
+// 	    }
+// 	    else if ( strcmp( pParent->Value(), "introspector") == 0 ) {
+// 		new_parse_introspector( pParent, compMap ); 
+// 	    }
+// 	    else if ( strcmp( pParent->Value(), "param_include") == 0 ) {
+	    
+// 	    break;
+// 	case TiXmlNode::DECLARATION:
+// 	    break;
+// 	default:
+// 	    new_parse( pChild, graph );
+// 	    break;
+// 	}
+//     }
+}
+
+
+int xml_parse( std::string fileName, ConfigGraph& graph )
+{
+    printf("In xml_parse\n");
+    TiXmlDocument doc(fileName.c_str());
+    bool loadOkay = doc.LoadFile();
+    if (loadOkay)
+    {
+        parse( &doc, graph );
+    }
+    else
+    {
+        _ABORT(,"Failed to load file \"%s\"\n", fileName.c_str());
+    }
+
     return 0;
 }
 

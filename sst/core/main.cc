@@ -67,24 +67,27 @@ main(int argc, char *argv[])
         signal(SIGUSR1, sigHandlerPrintStatus);
 
 	if ( !strcmp(cfg.sdl_version.c_str(),"2.0") ) {
+	    ConfigGraph graph;
+	    xml_parse(cfg.sdlfile, graph);
 	    printf("Using new parser\n");
 	    exit(0);
 	}
-	
-        SDL_CompMap_t sdlMap;
-        xml_parse( cfg.sdlfile, sdlMap );
-        Graph graph(0);
-
-        makeGraph(sim, sdlMap, graph);
-	if ( !strcmp(cfg.partitioner.c_str(),"zoltan") ) {
-	    partitionGraph( graph, argc, argv );
-	}
 	else {
-	    // For now, only option is self, so do nothing
+	
+	    SDL_CompMap_t sdlMap;
+	    xml_parse( cfg.sdlfile, sdlMap );
+	    Graph graph(0);
+	    
+	    makeGraph(sim, sdlMap, graph);
+	    if ( !strcmp(cfg.partitioner.c_str(),"zoltan") ) {
+		partitionGraph( graph, argc, argv );
+	    }
+	    else {
+		// For now, only option is self, so do nothing
+	    }
+	    int minPart = findMinPart( graph );
+	    sim->performWireUp( graph, sdlMap, minPart, world.rank() );
 	}
-        int minPart = findMinPart( graph );
-	sim->performWireUp( graph, sdlMap, minPart, world.rank() );
-
         if (cfg.archive) {
             archive.SaveSimulation(sim);
             delete sim;
@@ -123,7 +126,7 @@ main(int argc, char *argv[])
     all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
 
     if ( world.rank() == 0 ) {
-	std::cout << setprecision(3);
+	std::cout << setiosflags(ios::fixed) << setprecision(2);
 	std::cout << endl << "Simulation times" << endl;;
 	std::cout << "  Build time: " << max_build_time << " s" << std::endl;
 	std::cout << "  Simulation time: " << max_run_time << " s" << std::endl;
