@@ -34,7 +34,8 @@ public:
     std::string     stopAtCycle;
     std::string     timeBase;
     std::string     partitioner;
-	
+
+    std::string     sdl_version;
     inline Mode_t
     RunMode( std::string mode ) 
     {

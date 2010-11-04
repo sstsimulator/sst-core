@@ -46,6 +46,7 @@ typedef std::map < std::string, SDL_Component * > SDL_CompMap_t;
 
 extern int xml_parse( std::string file, SDL_CompMap_t& map);
 extern std::string xmlGetConfig( std::string file );
+extern std::string xmlGetVersion( std::string file );
 
 } // namespace SST
 

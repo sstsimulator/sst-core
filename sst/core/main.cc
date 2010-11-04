@@ -66,6 +66,11 @@ main(int argc, char *argv[])
 
         signal(SIGUSR1, sigHandlerPrintStatus);
 
+	if ( !strcmp(cfg.sdl_version.c_str(),"2.0") ) {
+	    printf("Using new parser\n");
+	    exit(0);
+	}
+	
         SDL_CompMap_t sdlMap;
         xml_parse( cfg.sdlfile, sdlMap );
         Graph graph(0);

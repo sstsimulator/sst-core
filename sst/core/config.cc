@@ -112,7 +112,8 @@ int Config::Init( int argc, char *argv[], int rank )
 
     std::string xmlConfigStr;
     try {
-        xmlConfigStr = xmlGetConfig( sdlfile);
+	sdl_version = xmlGetVersion(sdlfile);
+	xmlConfigStr = xmlGetConfig( sdlfile);
     } catch ( const char * e ) {
         printf("ERROR: invalid sdl file\n");
 	printf("\t=> Attempted to load \"%s\"\n", sdlfile.c_str());

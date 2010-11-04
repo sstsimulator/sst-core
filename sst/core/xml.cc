@@ -317,25 +317,34 @@ static void parse( TiXmlNode* pParent, SDL_CompMap_t &compMap )
 
     TiXmlNode* pChild;
 
-    switch (  pParent->Type())
-    {
-    case TiXmlNode::ELEMENT:
-        _SDL_DBG( "Element [%s]\n", pParent->Value() );
-        if ( strcmp( pParent->Value(), "component") == 0 ) {
-            parse_component( pParent, compMap ); 
-        }
-	else if ( strcmp( pParent->Value(), "introspector") == 0 ) {
-            parse_introspector( pParent, compMap ); 
-        }
-        break;
-
-    default:
-        break;
-    }
     for ( pChild = pParent->FirstChild(); pChild != 0;
                                 pChild = pChild->NextSibling()) 
     {
-        parse( pChild, compMap );
+	switch (  pParent->Type())
+        {
+	case TiXmlNode::ELEMENT:
+	    _SDL_DBG( "Element [%s]\n", pParent->Value() );
+	    if ( strcmp( pParent->Value(), "component") == 0 ) {
+		parse_component( pParent, compMap ); 
+	    }
+	    else if ( strcmp( pParent->Value(), "introspector") == 0 ) {
+		parse_introspector( pParent, compMap ); 
+	    }
+	    else {
+		parse( pChild, compMap );
+	    }
+	    break;
+	    
+	case TiXmlNode::DECLARATION:
+	    {
+// 	    TiXmlDeclaration* dec = static_cast<TiXmlDeclaration*>(pParent);
+// 	    printf("Version: %s\n",dec->Version());
+	    }
+	    break;
+	default:
+	    parse( pChild, compMap );
+	    break;
+	}
     }
 }
 
@@ -611,6 +620,18 @@ int xml_parse( std::string fileName,  SDL_CompMap_t &map )
     return 0;
 }
 
+std::string xmlGetVersion( std::string fileName )
+{
+    TiXmlDocument doc(fileName.c_str());
+    bool loadOkay = doc.LoadFile();
+    if (loadOkay)
+    {
+	TiXmlDeclaration* dec = static_cast<TiXmlDeclaration*>(doc.FirstChild());
+	printf("Version: %s\n",dec->Version());
+	return dec->Version();
+    }
+    return "UNKNOWN";
+}
 std::string xmlGetConfig( std::string fileName )
 {
     _SDL_DBG("\n%s:\n", fileName.c_str());
@@ -619,7 +640,8 @@ std::string xmlGetConfig( std::string fileName )
     if (loadOkay)
     {
         std::string tmp = get_config( &doc );
-        
+
+	
         std::string::size_type pos = 0;
         while ( ( pos = tmp.find( ' ', pos ) ) != std::string::npos ) {
             tmp.replace( pos, 1, 1, '\n' );
