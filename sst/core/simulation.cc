@@ -284,6 +284,150 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     return 0;
 }
 
+#if 0
+int Simulation::performWireUp( ConfigGraph& graph, int minPart, int myRank )
+{
+    // For now only works with a single rank (though some of the
+    // multi-rank code is there)
+
+    // We will go through all the links and create LinkPairs for each
+    // link.  We will also create a LinkMap for each component and put
+    // them into a map with ComponentID as the key.
+
+    if ( num_ranks > 1 ) sync = new Sync( minPartToTC(minPart) );
+
+    
+    for( ConfigLinkMap_t::iterator iter = graph.links.begin();
+                            iter != graph.links.end(); ++iter )
+    {
+        ConfigLink* clink = (*iter).second;
+        int rank[2];
+        rank[0] = clink->component[0]->rank;
+        rank[1] = clink->component[1]->rank;
+
+        if ( rank[0] != myRank && rank[1] != myRank ) { 
+            continue;
+        }
+
+	SimTime_t latency[2];
+
+ 	latency[0]  = timeLord->getSimCycles(clink->latency[0], clink->name);
+	latency[1]  = timeLord->getSimCycles(clink->latency[1], clink->name);
+
+	if ( rank[0] != myRank && rank[1] != myRank ) {
+	    // Nothing to be done
+	}	
+        else if ( rank[0] == rank[1] ) { 
+	    // Create a LinkPair to represent this link
+	    LinkPair* lp = new LinkPair(clink->id);
+
+	    lp->getLeft()->setLatency(latency[0]);
+	    lp->getRight()->setLatency(latency[1]);
+
+	    // Add this link to the appropriate LinkMap
+	    std::map<ComponentId_t,LinkMap*>::iterator it;
+	    it = component_links.find(clink->component[0]->id);
+	    if ( it == component_links.end() ) {
+		LinkMap* lm = new LinkMap();
+		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[0]->id,lm));
+ 		it = ret_val.first;
+	    }
+ 	    it->second->insertLink(clink->port[0],lp->getLeft());
+
+	    it = component_links.find(clink->component[1]->id);
+	    if ( it == component_links.end() ) {
+		LinkMap* lm = new LinkMap();
+		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[1]->id,lm));
+ 		it = ret_val.first;
+	    }
+ 	    it->second->insertLink(clink->port[1],lp->getRight());
+
+	}
+	else {
+	    int local, remote;
+	    if ( rank[0] == myRank ) {
+		local = 0;
+		remote = 1;
+	    }
+	    else {
+		local = 1;
+		remote = 0;
+	    }
+
+	    // Create a LinkPair to represent this link
+	    LinkPair* lp = new LinkPair(clink->id);
+	    
+	    lp->getLeft()->setLatency(latency[local]);
+	    lp->getRight()->setLatency(0);
+	    lp->getRight()->setDefaultTimeBase(minPartToTC(1));
+            
+
+	    // Add this link to the appropriate LinkMap for the local component
+	    std::map<ComponentId_t,LinkMap*>::iterator it;
+	    it = component_links.find(clink->component[local]->id);
+	    if ( it == component_links.end() ) {
+		LinkMap* lm = new LinkMap();
+		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[local]->id,lm));
+ 		it = ret_val.first;
+	    }
+ 	    it->second->insertLink(clink->port[local],lp->getLeft());
+
+	    // For the remote side, register with sync object
+	    SyncQueue* sync_q = sync->registerLink(rank[remote],clink->id,lp->getRight());
+	    lp->getRight()->recvQueue = sync_q;
+        }
+
+	// Done with that edge, delete it.
+	delete clink;
+    }
+
+    // Now, build all the components
+    for ( ConfigComponentMap_t::iterator iter = graph.comps.begin();
+                            iter != graph.comps.end(); ++iter )
+    {
+	ConfigComponent* ccomp = (*iter).second;
+
+        if (sdl_c->isIntrospector()) {
+// 	    Introspector* tmp;
+
+//             _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
+// 		     name.c_str(), sdl_c->type().c_str(), (int)id );
+            
+//             tmp = createIntrospector(sdl_c->type().c_str(),
+//                                      sdl_c->params);
+//             introMap[name] = tmp;
+
+        } else if (vertRank == myRank) {
+            Component* tmp;
+//             _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
+// 		     name.c_str(), sdl_c->type().c_str(), (int)id );
+
+            // Check to make sure there is a LinkMap for this component
+            std::map<ComponentId_t,LinkMap*>::iterator it;
+            it = component_links.find(ccomp->id);
+            if ( it == component_links.end() ) {
+                printf("WARNING: Building component \"%s\" with no links assigned.\n",name.c_str());
+                LinkMap* lm = new LinkMap();
+                component_links[ccomp->id] = lm;
+            }
+		
+            tmp = createComponent( ccomp->id, ccomp->type.c_str(),
+                                   ccomp->params );
+            compMap[ccomp->name] = tmp;
+            if (tmp->getId() != id) {
+                _ABORT(Simulation, 
+                       "component id does not match assigned id (%d)\n", (int)id);
+            }
+        }
+	// Done with vertex, delete it;
+	delete ccomp;
+    } // end for all vertex    
+    return 0;
+}
+#endif
 void Simulation::Run() {
     _SIM_DBG( "RUN\n" );
 

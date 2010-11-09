@@ -35,6 +35,22 @@ LinkId_t ConfigLink::count = 0;
 
 static inline int min( int x, int y ) { return x < y ? x : y; }
 
+void ConfigComponent::print_component(std::ostream &os) const {
+    os << "Component " << name << " (id = " << id << ")" << std::endl;
+    os << "  type = " << type << std::endl;
+    os << "  weight = " << weight << std::endl;
+    os << "  rank = " << rank << std::endl;
+    os << "  isIntrospector = " << isIntrospector << std::endl;
+    os << "  Links:" << std::endl;
+    for (size_t i = 0 ; i != links.size() ; ++i) {
+	links[i]->print_link(os);
+    }
+    
+    os << "  Params:" << std::endl;
+    params.print_all_params(os);
+    
+}
+
 static int
 find_lat(Simulation *sim, SDL_Component *c, std::string edge )
 {
@@ -164,5 +180,37 @@ findMinPart(Graph &graph)
 
     return minPart;
 }
+
+// find the minimum partition latency which passes between ranks. This
+// gives us the dt for the conservative distance based optimization.
+// int
+// findMinPart(ConfigGraph &graph)
+// {
+//     mpi::communicator world;
+//     int minPart = 9999999;
+//     if (world.rank() == 0) { // only rank 0 does the search
+// 	for( ConfigLinkMap_t::iterator iter = graph.links.begin();
+// 	     iter != graph.links.end(); ++iter )
+// 	{
+// 	    ConfigLink clink* = (*iter).second;
+	    
+// 	}
+//         for( EdgeList_t::iterator iter = graph.elist.begin(); 
+//              iter != graph.elist.end(); 
+//              ++iter ) {
+//             Edge *e = (*iter).second; 
+//             int lat = atoi( e->prop_list.get(GRAPH_WEIGHT).c_str() );
+//             int sRank = graph.vlist[e->v(0)]->rank;
+//             int tRank = graph.vlist[e->v(1)]->rank;
+//             if ( sRank != tRank ) {
+//                 if (lat < minPart) minPart = lat;
+//             }	
+// 	}
+//     }
+//     // share the results
+//     broadcast(world, minPart, 0);
+
+//     return minPart;
+// }
 
 } // namespace SST

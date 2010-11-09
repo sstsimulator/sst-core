@@ -638,6 +638,17 @@ std::string xmlGetConfig( std::string fileName )
 
 // Version 2.0 parsing
 
+inline static std::string resolve_variable(VariableMap_t& var_map, const std::string& value, int line_number)
+{
+    // Check to see if this is a variable
+    if ( value.find("$") != 0 ) return value;
+    std::string var_name = value.substr(1);
+    if ( var_map.find(var_name) == var_map.end() ) {
+	printf("ERROR: Parsing SDL file: Unknown variable specified (%s) on or around line %d\n",value.c_str(), line_number);
+	exit(1);
+    }
+    return var_map[var_name];
+}
 
 static void new_parse_param_include( TiXmlNode* pParent, ConfigGraph &graph )
 {
@@ -650,10 +661,22 @@ static void new_parse_param_include( TiXmlNode* pParent, ConfigGraph &graph )
 	Params* params = new Params();
 
 	for ( TiXmlNode* param = pChild->FirstChild(); param != NULL; param = param->NextSibling()) {
-	    printf("Parameter: %s,  Value: %s\n",param->Value(),param->ToElement()->GetText());
+// 	    printf("Parameter: %s,  Value: %s\n",param->Value(),param->ToElement()->GetText());
 	    (*params)[param->Value()] = param->ToElement()->GetText();
 	}
 	graph.includes[include_name] = params;
+    }    
+}
+
+static void new_parse_variables( TiXmlNode* pParent, ConfigGraph &graph )
+{
+    TiXmlNode* pChild;
+
+    for ( pChild = pParent->FirstChild(); pChild != NULL; pChild = pChild->NextSibling()) 
+    {
+	// Each node at this level is a separate set of parameters
+	std::string variable_name = pChild->Value();
+	graph.variables[variable_name] = pChild->ToElement()->GetText();
     }    
 }
 
@@ -663,11 +686,103 @@ static void new_parse_variable( TiXmlNode* pParent, ConfigGraph &graph )
     std::string var_value = pParent->ToElement()->FirstAttribute()->Value();
 
     graph.variables[var_name] = var_value;
-    printf("Variable: %s,  Value: %s\n",var_name.c_str(),var_value.c_str());
+//     printf("Variable: %s,  Value: %s\n",var_name.c_str(),var_value.c_str());
 }
 
+static void new_parse_params( TiXmlNode* pParent, ConfigGraph &graph, ConfigComponent* comp ) {
+    TiXmlElement* element = pParent->ToElement();
+
+    // First, put all the params specified here in the Params object
+    // of the component.  The includes will be merged after, and the
+    // net result will be parameters specified in the component will
+    // take priority over those specified in includes
+    for ( TiXmlNode* param = pParent->FirstChild(); param != NULL; param = param->NextSibling()) {
+	comp->params[param->Value()] = param->ToElement()->GetText();
+    }
+
+    // Now, see if there are any includes
+    if ( element->Attribute("include") != NULL ) {
+	// Include could be a comma separated list
+	std::string includes = element->Attribute("include");
+	size_t start = 0;
+	size_t end = 0;
+	do {
+	    end = includes.find(',',start);
+	    size_t length = end - start;
+	    std::string sub = includes.substr(start,length);
+	    // See if the include exists
+	    if ( graph.includes.find(sub) == graph.includes.end() ) {
+		printf("ERROR: Parsing sdl file: Unknown include (%s) on or near line %d\n",sub.c_str(),pParent->Row());
+		exit(1);
+	    }
+	    else {
+		// Merge the two params
+	        Params* inc_params = graph.includes[sub];
+ 		comp->params.insert(inc_params->begin(),inc_params->end());
+	    }
+	    start = end + 1;
+	} while (end != std::string::npos);
+//  	comp->params.print_all_params(std::cout);
+    }
+}
+
+static void new_parse_link( TiXmlNode* pParent, ConfigGraph &graph, ConfigComponent* comp ) {
+
+    TiXmlElement* element = pParent->ToElement();
+
+    std::string name;
+    if ( element->Attribute("name") == NULL ) {
+	printf("ERROR: Parsing SDL file: Unspecified link name on or near line %d\n",pParent->Row());
+	exit(1);
+    }
+    else {
+	name = element->Attribute("name");
+    }
+
+    // Need to see if someone else has referenced this link;
+    ConfigLink* link;
+    if ( graph.links.find(name) == graph.links.end() ) {
+	link = new ConfigLink();
+	link->name = name;
+	graph.links[name] = link;
+    }
+    else {
+	link = graph.links[name];
+	if ( link->current_ref >= 2 ) {
+	    printf("ERROR: Parsing SDL file: Link %s referenced more than two times\n",name.c_str());
+	    exit(1);
+	}
+    }
+
+    std::string port;
+    if ( element->Attribute("port") == NULL ) {
+	printf("ERROR: Parsing SDL file: Unspecified link port on or near line %d\n",pParent->Row());
+	exit(1);
+    }
+    else {
+	port = element->Attribute("port");
+    }
+    
+    std::string latency;
+    if ( element->Attribute("latency") == NULL ) {
+	printf("ERROR: Parsing SDL file: Unspecified link latency on or near line %d\n",pParent->Row());
+	exit(1);
+    }
+    else {
+	latency = element->Attribute("latency");
+	latency = resolve_variable(graph.variables,latency,pParent->Row());
+    }
+    
+    int index = link->current_ref++;
+    link->component[index] = comp;
+    link->port[index] = port;
+    link->latency[index] = latency;
+
+    comp->links.push_back(link);
+}
+
+
 static void new_parse_component( TiXmlNode* pParent, ConfigGraph& graph ) {
-    printf("Component: %s\n",pParent->ToElement()->Attribute("name"));
     ConfigComponent* comp = new ConfigComponent();
 
     TiXmlElement* element = pParent->ToElement();
@@ -709,13 +824,30 @@ static void new_parse_component( TiXmlNode* pParent, ConfigGraph& graph ) {
 	comp->weight = 0;
     }
 
+    // Now get the rest of the data (params and links)
+    TiXmlNode* pChild;
+    for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) {
+	switch (  pChild->Type()) {
+	case TiXmlNode::ELEMENT:
+	    if ( strcmp( pChild->Value(), "params") == 0 ) {
+		new_parse_params( pChild, graph, comp );
+	    }
+	    else if ( strcmp( pChild->Value(), "link") == 0 ) {
+ 		new_parse_link( pChild, graph, comp ); 
+	    }
+	    break;
+	default:
+	    break;
+	}	
+    }
+
+    graph.comps[comp->id] = comp;
     
 }
 
 static void parse( TiXmlNode* pParent, ConfigGraph &graph )
 {
     if ( !pParent ) return;
-    printf("In parse\n");
 
     TiXmlNode* pChild;
     TiXmlNode* sst_section;
@@ -730,6 +862,9 @@ static void parse( TiXmlNode* pParent, ConfigGraph &graph )
 	    }
 	    else if ( strcmp( pChild->Value(), "variable") == 0 ) {
  		new_parse_variable( pChild, graph ); 
+	    }
+	    else if ( strcmp( pChild->Value(), "variables") == 0 ) {
+ 		new_parse_variables( pChild, graph ); 
 	    }
 	    else if ( strcmp( pChild->Value(), "sst") == 0 ) {
 		sst_section = pChild;
@@ -748,8 +883,8 @@ static void parse( TiXmlNode* pParent, ConfigGraph &graph )
 	    if ( strcmp( pChild->Value(), "component") == 0 ) {
 		new_parse_component( pChild, graph ); 
 	    }
-// 	    else if ( strcmp( pChild->Value(), "variable") == 0 ) {
-//  		new_parse_variable( pChild, graph ); 
+// 	    else if ( strcmp( pChild->Value(), "introspector") == 0 ) {
+//  		new_parse_introspector( pChild, graph ); 
 // 	    }
 // 	    else if ( strcmp( pChild->Value(), "sst") == 0 ) {
 // 		sst_section = pChild;
@@ -759,35 +894,11 @@ static void parse( TiXmlNode* pParent, ConfigGraph &graph )
 	    break;
 	}
     }
-    
-    
-	
-//     for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
-//     {
-// 	switch (  pParent->Type()) {
-// 	case TiXmlNode::ELEMENT:
-// 	    if ( strcmp( pParent->Value(), "component") == 0 ) {
-// 		new_parse_component( pParent, graph ); 
-// 	    }
-// 	    else if ( strcmp( pParent->Value(), "introspector") == 0 ) {
-// 		new_parse_introspector( pParent, compMap ); 
-// 	    }
-// 	    else if ( strcmp( pParent->Value(), "param_include") == 0 ) {
-	    
-// 	    break;
-// 	case TiXmlNode::DECLARATION:
-// 	    break;
-// 	default:
-// 	    new_parse( pChild, graph );
-// 	    break;
-// 	}
-//     }
 }
 
 
 int xml_parse( std::string fileName, ConfigGraph& graph )
 {
-    printf("In xml_parse\n");
     TiXmlDocument doc(fileName.c_str());
     bool loadOkay = doc.LoadFile();
     if (loadOkay)

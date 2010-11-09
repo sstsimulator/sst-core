@@ -58,6 +58,8 @@ public:
 	id = count++;
     }
     
+    void print_component(std::ostream &os) const;  // Defined below
+
 private:
     static ComponentId_t count;
 
@@ -70,21 +72,30 @@ public:
     ConfigComponent* component[2];
     std::string      port[2];
     std::string      latency[2];
-//     ConfigComponent* left_component;
-//     std::string      left_port;
-//     std::string      left_latency;
-//     ConfigComponent* right_component;
-//     std::string      right_port;
-//     std::string      right_latency;
-
+    int              current_ref;
+    
     ConfigLink() {
 	id = count++;
+	current_ref = 0;
+    }
+
+    void print_link(std::ostream &os) const {
+	os << "Link " << name << " (id = " << id << ")" << std::endl;
+	os << "  component[0] = " << component[0]->name << std::endl;
+	os << "  port[0] = " << port[0] << std::endl;
+	os << "  latency[0] = " << latency[0] << std::endl;
+	os << "  component[1] = " << component[1]->name << std::endl;
+	os << "  port[1] = " << port[1] << std::endl;
+	os << "  latency[1] = " << latency[1] << std::endl;
     }
     
+
+
 private:
     static LinkId_t count;
 };
 
+    
 typedef std::map<std::string,ConfigLink*> ConfigLinkMap_t;
 typedef std::map<ComponentId_t,ConfigComponent*> ConfigComponentMap_t;
 typedef std::map<std::string,Params*> ParamsMap_t;
@@ -98,6 +109,14 @@ public:
 
     ParamsMap_t          includes;
     VariableMap_t        variables;
+
+    void print_graph(std::ostream &os) const {
+	os << "Printing graph" << std::endl;
+        for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+	    (*i).second->print_component(os);
+	}
+    }
+
 };
 
  
