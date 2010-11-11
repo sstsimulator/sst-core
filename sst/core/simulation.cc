@@ -23,6 +23,7 @@
 #include <sst/core/exit.h>
 #include <sst/core/event.h>
 #include <sst/core/config.h>
+#include <sst/core/configGraph.h>
 #include <sst/core/graph.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/linkPair.h>
@@ -284,8 +285,7 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     return 0;
 }
 
-#if 0
-int Simulation::performWireUp( ConfigGraph& graph, int minPart, int myRank )
+int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 {
     // For now only works with a single rank (though some of the
     // multi-rank code is there)
@@ -294,8 +294,21 @@ int Simulation::performWireUp( ConfigGraph& graph, int minPart, int myRank )
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
 
-    if ( num_ranks > 1 ) sync = new Sync( minPartToTC(minPart) );
+    SimTime_t min_part = 0xffffffffl;
+    for( ConfigLinkMap_t::iterator iter = graph.links.begin();
+                            iter != graph.links.end(); ++iter )
+    {
+        ConfigLink* clink = (*iter).second;
+        int rank[2];
+        rank[0] = clink->component[0]->rank;
+        rank[1] = clink->component[1]->rank;
+	if ( rank[0] == rank[1] ) continue;
+	if ( clink->getMinLatency() < min_part ) {
+	    min_part = clink->getMinLatency();
+	}	
+    }
 
+    if ( num_ranks > 1 ) sync = new Sync( minPartToTC(min_part) );
     
     for( ConfigLinkMap_t::iterator iter = graph.links.begin();
                             iter != graph.links.end(); ++iter )
@@ -305,24 +318,17 @@ int Simulation::performWireUp( ConfigGraph& graph, int minPart, int myRank )
         rank[0] = clink->component[0]->rank;
         rank[1] = clink->component[1]->rank;
 
-        if ( rank[0] != myRank && rank[1] != myRank ) { 
-            continue;
-        }
-
-	SimTime_t latency[2];
-
- 	latency[0]  = timeLord->getSimCycles(clink->latency[0], clink->name);
-	latency[1]  = timeLord->getSimCycles(clink->latency[1], clink->name);
-
 	if ( rank[0] != myRank && rank[1] != myRank ) {
 	    // Nothing to be done
+	    delete clink;
+            continue;
 	}	
         else if ( rank[0] == rank[1] ) { 
 	    // Create a LinkPair to represent this link
 	    LinkPair* lp = new LinkPair(clink->id);
 
-	    lp->getLeft()->setLatency(latency[0]);
-	    lp->getRight()->setLatency(latency[1]);
+	    lp->getLeft()->setLatency(clink->latency[0]);
+	    lp->getRight()->setLatency(clink->latency[1]);
 
 	    // Add this link to the appropriate LinkMap
 	    std::map<ComponentId_t,LinkMap*>::iterator it;
@@ -359,7 +365,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int minPart, int myRank )
 	    // Create a LinkPair to represent this link
 	    LinkPair* lp = new LinkPair(clink->id);
 	    
-	    lp->getLeft()->setLatency(latency[local]);
+	    lp->getLeft()->setLatency(clink->latency[local]);
 	    lp->getRight()->setLatency(0);
 	    lp->getRight()->setDefaultTimeBase(minPartToTC(1));
             
@@ -390,7 +396,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int minPart, int myRank )
     {
 	ConfigComponent* ccomp = (*iter).second;
 
-        if (sdl_c->isIntrospector()) {
+        if (ccomp->isIntrospector) {
 // 	    Introspector* tmp;
 
 //             _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
@@ -400,7 +406,8 @@ int Simulation::performWireUp( ConfigGraph& graph, int minPart, int myRank )
 //                                      sdl_c->params);
 //             introMap[name] = tmp;
 
-        } else if (vertRank == myRank) {
+        }
+	else if ( ccomp->rank == myRank ) {
             Component* tmp;
 //             _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
 // 		     name.c_str(), sdl_c->type().c_str(), (int)id );
@@ -409,7 +416,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int minPart, int myRank )
             std::map<ComponentId_t,LinkMap*>::iterator it;
             it = component_links.find(ccomp->id);
             if ( it == component_links.end() ) {
-                printf("WARNING: Building component \"%s\" with no links assigned.\n",name.c_str());
+                printf("WARNING: Building component \"%s\" with no links assigned.\n",ccomp->name.c_str());
                 LinkMap* lm = new LinkMap();
                 component_links[ccomp->id] = lm;
             }
@@ -417,17 +424,13 @@ int Simulation::performWireUp( ConfigGraph& graph, int minPart, int myRank )
             tmp = createComponent( ccomp->id, ccomp->type.c_str(),
                                    ccomp->params );
             compMap[ccomp->name] = tmp;
-            if (tmp->getId() != id) {
-                _ABORT(Simulation, 
-                       "component id does not match assigned id (%d)\n", (int)id);
-            }
         }
 	// Done with vertex, delete it;
 	delete ccomp;
     } // end for all vertex    
     return 0;
 }
-#endif
+
 void Simulation::Run() {
     _SIM_DBG( "RUN\n" );
 

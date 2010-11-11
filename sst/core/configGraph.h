@@ -58,20 +58,20 @@ public:
 	id = count++;
     }
     
-    void print_component(std::ostream &os) const;  // Defined below
+    void print_component(std::ostream &os) const;
 
 private:
     static ComponentId_t count;
 
 };
-    
+
 class ConfigLink {
 public:
     LinkId_t         id;
     std::string      name;
     ConfigComponent* component[2];
     std::string      port[2];
-    std::string      latency[2];
+    SimTime_t        latency[2];
     int              current_ref;
     
     ConfigLink() {
@@ -79,6 +79,11 @@ public:
 	current_ref = 0;
     }
 
+    SimTime_t getMinLatency() {
+	if ( latency[0] < latency[1] ) return latency[0];
+	return latency[1];
+    }
+    
     void print_link(std::ostream &os) const {
 	os << "Link " << name << " (id = " << id << ")" << std::endl;
 	os << "  component[0] = " << component[0]->name << std::endl;

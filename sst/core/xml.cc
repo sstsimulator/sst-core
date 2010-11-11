@@ -15,6 +15,8 @@
 
 #include <sst/core/sdl.h>
 #include <sst/core/configGraph.h>
+#include <sst/core/simulation.h>
+#include <sst/core/timeLord.h>
 #include <tinyxml/tinyxml.h>
 
 #include <sst/core/debug.h>
@@ -44,22 +46,22 @@ static void parameters( Params &params, TiXmlNode* node )
 
 static void parameters_link( ConfigLink* link, int which_comp, TiXmlNode* node )
 {
-    TiXmlNode* pChild;
-    for ( pChild = node->FirstChild(); pChild != 0; 
-                                        pChild = pChild->NextSibling()) 
-    {
-            if ( pChild->ToElement()->GetText() == NULL ) {
-                _abort(SDL,"element \"%s\" has no text\n",pChild->Value());
-            } 
-            _SDL_DBG("name=%s value=%s\n", pChild->Value(),
-                                    pChild->ToElement()->GetText() ); 
-	    if ( strcmp( pChild->Value(), "name" ) == 0 ) {
-		link->port[which_comp] = pChild->ToElement()->GetText();
-	    }
-	    if ( strcmp( pChild->Value(), "lat" ) == 0 ) {
-		link->latency[which_comp] = pChild->ToElement()->GetText();
-	    }
-    }
+//     TiXmlNode* pChild;
+//     for ( pChild = node->FirstChild(); pChild != 0; 
+//                                         pChild = pChild->NextSibling()) 
+//     {
+//             if ( pChild->ToElement()->GetText() == NULL ) {
+//                 _abort(SDL,"element \"%s\" has no text\n",pChild->Value());
+//             } 
+//             _SDL_DBG("name=%s value=%s\n", pChild->Value(),
+//                                     pChild->ToElement()->GetText() ); 
+// 	    if ( strcmp( pChild->Value(), "name" ) == 0 ) {
+// 		link->port[which_comp] = pChild->ToElement()->GetText();
+// 	    }
+// 	    if ( strcmp( pChild->Value(), "lat" ) == 0 ) {
+// 		link->latency[which_comp] = pChild->ToElement()->GetText();
+// 	    }
+//     }
 }
 
 static void link( Params &params, TiXmlNode* node )
@@ -763,14 +765,15 @@ static void new_parse_link( TiXmlNode* pParent, ConfigGraph &graph, ConfigCompon
 	port = element->Attribute("port");
     }
     
-    std::string latency;
+    SimTime_t latency;
     if ( element->Attribute("latency") == NULL ) {
 	printf("ERROR: Parsing SDL file: Unspecified link latency on or near line %d\n",pParent->Row());
 	exit(1);
     }
     else {
-	latency = element->Attribute("latency");
-	latency = resolve_variable(graph.variables,latency,pParent->Row());
+	std::string lat_str = element->Attribute("latency");
+	lat_str = resolve_variable(graph.variables,lat_str,pParent->Row());
+	latency = Simulation::getSimulation()->getTimeLord()->getSimCycles(lat_str, "Parsing sdl");
     }
     
     int index = link->current_ref++;

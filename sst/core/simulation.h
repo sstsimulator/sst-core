@@ -87,7 +87,7 @@ public:
 
     int performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		       int minPart, int myRank );
-    int performWireUp( ConfigGraph& graph, int minPart, int myRank );
+    int performWireUp( ConfigGraph& graph, int myRank );
 
     void Run();
     SimTime_t getCurrentSimCycle() const;

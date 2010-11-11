@@ -69,10 +69,10 @@ main(int argc, char *argv[])
 	if ( !strcmp(cfg.sdl_version.c_str(),"2.0") ) {
 	    ConfigGraph graph;
 	    xml_parse(cfg.sdlfile, graph);
-// 	    graph.print_graph(std::cout);
+//  	    graph.print_graph(std::cout);
 // 	    printf("Using new parser\n");
 // 	    int minPart = findMinPart(graph);
-	    exit(0);
+	    sim->performWireUp( graph, world.rank() );
 	}
 	else {
 	
