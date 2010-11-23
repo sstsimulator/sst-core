@@ -90,6 +90,8 @@ public:
     inline void deliverEvent(Event* event) {
 	(*rFunctor)(event);
     }
+
+    LinkId_t getId() { return id; }
     
 protected:
     Link();

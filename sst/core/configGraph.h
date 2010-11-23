@@ -54,7 +54,9 @@ public:
 	id = count++;
     }
 
-    ConfigComponent() {
+    ConfigComponent() :
+        isIntrospector(false)
+    {
 	id = count++;
     }
     

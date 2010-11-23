@@ -787,6 +787,7 @@ static void new_parse_link( TiXmlNode* pParent, ConfigGraph &graph, ConfigCompon
 
 static void new_parse_component( TiXmlNode* pParent, ConfigGraph& graph ) {
     ConfigComponent* comp = new ConfigComponent();
+    comp->isIntrospector = false;
 
     TiXmlElement* element = pParent->ToElement();
     if ( element->Attribute("name") == NULL ) {

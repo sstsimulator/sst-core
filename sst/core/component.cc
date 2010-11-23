@@ -84,11 +84,11 @@ Component::configureLink(std::string name, TimeConverter* time_base, Event::Hand
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
     
-    tmp->setFunctor(handler);
     // If no functor, this is a polling link
     if ( handler == NULL ) {
 	tmp->setPolling();
     }
+    tmp->setFunctor(handler);
     tmp->setDefaultTimeBase(time_base);
     return tmp;    
 }
@@ -105,11 +105,11 @@ Component::configureLink(std::string name, Event::HandlerBase* handler)
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
     
-    tmp->setFunctor(handler);
     // If no functor, this is a polling link
     if ( handler == NULL ) {
 	tmp->setPolling();
     }
+    tmp->setFunctor(handler);
     return tmp;    
 }
 

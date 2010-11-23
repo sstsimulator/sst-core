@@ -28,6 +28,7 @@ Link::Link(LinkId_t id) :
     rFunctor( NULL ),
     defaultTimeBase( NULL ),
     latency(1),
+    type(HANDLER),
     id(id)
 {
     recvQueue = Simulation::getSimulation()->getTimeVortex();
@@ -78,7 +79,6 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {
     event->setDeliveryTime(cycle);
     event->setDeliveryLink(id,pair_link);
     
-//     pair_link->recvQueue->insert( cycle, event );
     pair_link->recvQueue->insert( event );
 }
     
