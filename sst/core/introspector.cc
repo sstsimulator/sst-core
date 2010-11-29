@@ -37,7 +37,20 @@ Introspector::registerClock( std::string freq, Clock::HandlerBase* handler)
 }
 
 
-std::list<IntrospectedComponent*> Introspector::getModels(const std::string CompType)
+std::list<IntrospectedComponent*> Introspector::getModelsByName(const std::string CompName)
+{
+    const CompMap_t &CompMap = Simulation::getSimulation()->getComponentMap();
+
+     CompMap_t::const_iterator i = CompMap.find(CompName);
+     if (i != CompMap.end()) {
+            MyCompList.push_back(dynamic_cast<IntrospectedComponent*>(i->second));
+     } 
+
+    return MyCompList;
+}
+
+
+std::list<IntrospectedComponent*> Introspector::getModelsByType(const std::string CompType)
 {
     const CompMap_t &CompMap = Simulation::getSimulation()->getComponentMap();
 
@@ -55,18 +68,7 @@ std::list<IntrospectedComponent*> Introspector::getModels(const std::string Comp
     return MyCompList;
 }
 
-void Introspector::monitorComponent(IntrospectedComponent* c)
-{
-    c->addToIntroList(this);
-}
 
-void Introspector::addToIntDatabase(IntrospectedComponent* c, int dataID){
-    //std::cout << "Introspector::addToIntDatabase added component " << c->Id() << "'s data with dataID = " << dataID << std::endl;
-    DatabaseInt.insert(std::make_pair(dataID, c)); //use multimap since there are cases where neither dataID or component is unique
-}
-void Introspector::addToDoubleDatabase(IntrospectedComponent* c, int dataID){ 
-    DatabaseDouble.insert(std::make_pair(dataID, c)); 
-}
 
 void Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operation op, int rank){
 
@@ -141,12 +143,9 @@ void Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operatio
     }
 }
 
-// KSH:  SyncEvent is gone.  Introspector should create an action to do what syncevent was doing
-void Introspector::oneTimeCollect(SimTime_t time, Event::HandlerBase* functor){
-//     Simulation *sim = Simulation::getSimulation();
-//     SyncEvent* event = new SyncEvent();
 
-//     sim->insertEvent( time, event, functor );
+void Introspector::oneTimeCollect(SimTime_t time, Event::HandlerBase* functor){
+
 	Simulation *sim = Simulation::getSimulation();
 	IntrospectAction* act = new IntrospectAction(functor);
 

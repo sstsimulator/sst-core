@@ -33,6 +33,7 @@ namespace SST {
  *  All models inherit from this. 
  * Introspection interface is a unified way to gather statistics and arbitrary data from components.
  */
+
 class Introspector {
 public:
    typedef std::multimap<int, IntrospectedComponent*> Database_t;	
@@ -59,32 +60,31 @@ public:
         destroyed. A good place to print out statistics. */
     virtual int Finish( ) { return 0; }
         
+    /** Get component of a certain type indicated by CompName on this rank.
+	Name is unique so the fuction actually returns a list with only one component.
+        This function is usually used in Introspector::Setup().
+        @param CompName Component's name*/
+    std::list<IntrospectedComponent*> getModelsByName(const std::string CompName); 
     /** Get component of a certain type indicated by CompType on this rank.
         If CompType is blank, a list of all local components is returned.
         This function is usually used in Introspector::Setup().
         @param CompType Component's type*/
-    std::list<IntrospectedComponent*> getModels(const std::string CompType);
-    /** Declare that this introspector will be monitoring a given component. 
-        The information of the introspector is also stored in the component's MyIntroList.
-        This function is usually used in Introspector::Setup().
-        @param c Pointer to the component that will be monitored*/
-    void monitorComponent(IntrospectedComponent* c);
-    /** Store pointer to the component and the data ID of the integer data of interest in a local map.
-        This function is usually used in Introspector::Setup().
-        @param c Pointer to the component that is monitored by this introspector
-        @param dataID ID of the integer data */
-    void addToIntDatabase(IntrospectedComponent* c, int dataID); 
-    /** Store pointer to the component and the data ID of the double data of interest in a local map.
-        This function is usually used in Introspector::Setup().
-        @param c Pointer to the component that is monitored by this introspector
-        @param dataID ID of the double data */
-    void addToDoubleDatabase(IntrospectedComponent* c, int dataID);
-    /** Query the components it is moniroting at regular intervals to retrieve components' statistics & data. 
-        Introspector-writers will implement their own pullData function. This function calls Component::getIntData()
-        or Component::getDoubleData() to retrieve components' data, and is a good place to manipulate the data 
-        (print to screen, MPI collective communication, etc). 
-        This function can be invoked by an event handler triggered by a clock.*/
-    virtual bool pullData( Cycle_t ) { return false; } 
+    std::list<IntrospectedComponent*> getModelsByType(const std::string CompType);
+
+    /** Query the components indicated by "c" to retrieve components' statistics & data.
+	Return the value of the data indicated by "dataname".
+        The function is usually called by introspector-pull mechanism in Introspector::triggeredUpdate().
+	@param c Pointer to the component
+        @param dataname Name of the data */ 
+    template <typename typeT> 
+    typeT getData(IntrospectedComponent* c, std::string dataname);
+     /** Introspector-writers will implement their own triggeredUpdate function.
+	 This function calls Introspector::getData() to retrieve components' data, 
+	and is a good place to manipulate the data 
+	(print to screen, MPI collective communication, etc).  */
+    virtual bool triggeredUpdate() { return false; } 
+    
+   
     /** Introspectors communicate among themselves with Boost MPI to exchange their integer data, invalue. 
         This function initiates a specific type of collective communicaiton indicated by ctype. The data 
         are operated based on ctype and on the MPI operation, op. An introspector type can have periodic 
@@ -146,6 +146,18 @@ private:
     void serialize(Archive& ar, const unsigned int version);
 };
 
+template <typename typeT> 
+typeT Introspector::getData(IntrospectedComponent* c, std::string dataname)
+{
+    IntrospectedComponent::MonitorBase* monitor;
+    
+    ////monitor = c->getMonitor<typeT>(dataname);
+    monitor = c->getMonitor(dataname);
+
+    ////return (dynamic_cast<IntrospectedComponent::Monitor<typeT>*>(monitor)());
+    return any_cast<typeT>( (*monitor)());
+    
+}
 
 } //end namespace
 
