@@ -131,8 +131,14 @@ class CPUNicEvent : public Event {
 		    payload_len, *len);
 	    }
 
-	    std::memcpy(output, &msg_payload[0], payload_len);
-	    *len= payload_len;
+	    int actual_len;
+	    if (payload_len < *len)   {
+		actual_len= payload_len;
+	    } else   {
+		actual_len= *len;
+	    }
+	    std::memcpy(output, &msg_payload[0], actual_len);
+	    *len= actual_len;
 	}
 
 	inline int GetPayloadLen(void)   {
