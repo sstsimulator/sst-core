@@ -20,6 +20,7 @@
 #include "sst/core/simulation.h"
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
+#include "sst/core/linkMap.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/event.h"
 
@@ -34,6 +35,12 @@ Component::Component(ComponentId_t id) :
 
 Component::Component() 
 {
+}
+
+Component::~Component() 
+{
+    Simulation::getSimulation()->removeComponentLinkMap(id);
+    delete myLinks;
 }
 
 TimeConverter* Component::registerClock( std::string freq, Clock::HandlerBase* handler, bool regAll) {

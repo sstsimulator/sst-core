@@ -38,6 +38,7 @@ Link::Link() :
     rFunctor( NULL ),
     defaultTimeBase( NULL ),
     latency(1),
+    type(HANDLER),
     id(-1)
 {
     recvQueue = Simulation::getSimulation()->getTimeVortex();
@@ -47,11 +48,11 @@ Link::~Link() {
     if ( type == POLL ) {
 	delete recvQueue;
     }
+    if ( rFunctor != NULL ) delete rFunctor;
 }
 
 void Link::setPolling() {
     type = POLL;
-//     recvQueue = new EventQueue_t;
     recvQueue = new PollingLinkQueue();
 }
 

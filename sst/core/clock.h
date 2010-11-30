@@ -32,7 +32,8 @@ public:
 //     typedef enum { DEFAULT, PRE, POST } Which_t;
 
     Clock( TimeConverter* period );
-
+    ~Clock();
+    
     // Functor classes for Clock handling
     class HandlerBase {
     public:
@@ -56,9 +57,9 @@ public:
 	    data(data)
 	{}
 
-	    bool operator()(Cycle_t cycle) {
-		return (object->*member)(cycle,data);
-	    }
+        bool operator()(Cycle_t cycle) {
+	    return (object->*member)(cycle,data);
+	}
     };
     
     template <typename classT>
@@ -74,24 +75,19 @@ public:
 	    member(member)
 	{}
 
-	    bool operator()(Cycle_t cycle) {
-		return (object->*member)(cycle);
-	    }
+	bool operator()(Cycle_t cycle) {
+	    return (object->*member)(cycle);
+	}
     };
 
 
     
-//     bool HandlerRegister( Which_t which, Clock::HandlerBase* handler ); 
-//     bool HandlerUnregister( Which_t which, Clock::HandlerBase* handler, bool& empty );
-    bool HandlerRegister( Clock::HandlerBase* handler ); 
-    bool HandlerUnregister( Clock::HandlerBase* handler, bool& empty );
+    bool registerHandler( Clock::HandlerBase* handler ); 
+    bool unregisterHandler( Clock::HandlerBase* handler, bool& empty );
 
     
 private:
-//     typedef std::deque<Clock::HandlerBase*> HandlerMap_t;
-//     typedef std::vector<Clock::HandlerBase*> HandlerMap_t;
     typedef std::list<Clock::HandlerBase*> HandlerMap_t;
-//     typedef std::vector<std::pair<bool,Clock::HandlerBase*> > HandlerMap_t;
 
     Clock() { }
 

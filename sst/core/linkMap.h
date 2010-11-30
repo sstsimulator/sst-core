@@ -17,7 +17,6 @@
 #include <map>
 
 #include <sst/core/sst_types.h>
-#include <sst/core/link.h>
 
 namespace SST { 
 
@@ -32,7 +31,13 @@ private:
 
 public:
     LinkMap() {}
-    ~LinkMap() {}
+    ~LinkMap() {
+	// Delete all the links in the map
+	for ( std::map<std::string,Link*>::iterator it = linkMap.begin(); it != linkMap.end(); ++it ) {
+	    delete it->second;
+	}
+	linkMap.clear();
+    }
     
     void insertLink(std::string name, Link* link) {
 	linkMap.insert(std::pair<std::string,Link*>(name,link));
@@ -44,7 +49,8 @@ public:
 	else return it->second;
     }
 
-    // FIXME: Cludge for now
+    // FIXME: Cludge for now, fix later.  Need to make LinkMap look
+    // like a regular map instead.
     std::map<std::string,Link*>& getLinkMap() {
 	return linkMap;
     }

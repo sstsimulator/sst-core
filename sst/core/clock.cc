@@ -30,8 +30,16 @@ Clock::Clock( TimeConverter* period ) :
     setPriority(40);
 } 
 
+Clock::~Clock()
+{
+    // Delete all the handlers
+    for ( HandlerMap_t::iterator it = handlerMap.begin(); it != handlerMap.end(); ++it ) {
+	delete *it;
+    }
+    handlerMap.clear();
+}
 
-bool Clock::HandlerRegister( Clock::HandlerBase* handler )
+bool Clock::registerHandler( Clock::HandlerBase* handler )
 {
     _CLE_DBG("handler %p\n",handler);
     handlerMap.push_back( handler );
@@ -45,7 +53,7 @@ bool Clock::HandlerRegister( Clock::HandlerBase* handler )
     return 0;
 }
 
-    bool Clock::HandlerUnregister( Clock::HandlerBase* handler, bool& empty )
+    bool Clock::unregisterHandler( Clock::HandlerBase* handler, bool& empty )
 {
     _CLE_DBG("handler %p\n",handler);
 

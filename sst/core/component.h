@@ -16,13 +16,15 @@
 #include <map>
 
 #include <sst/core/sst_types.h>
-#include <sst/core/linkMap.h>
 #include <sst/core/clock.h>
 #include <sst/core/timeConverter.h>
 #include <sst/core/params.h>
+#include <sst/core/link.h>
 
 namespace SST {
 
+class LinkMap;
+    
 #define _COMP_DBG( fmt, args...) __DBG( DBG_COMP, Component, fmt, ## args )
 
 /**
@@ -38,7 +40,7 @@ public:
         @param id Unique component ID
     */
     Component( ComponentId_t id );
-    virtual ~Component() {}
+    virtual ~Component();
 
     /** Returns unique component ID */
     inline ComponentId_t getId() const { return id; }
@@ -106,10 +108,11 @@ public:
     /** Utility function to return the time since the simulation began in milliseconds */ 
     SimTime_t getCurrentSimTimeMilli();
 
-    /** Register that the simulation should not end until this component
-        says it is OK to. Calling this function (generally done in
-        Component::Setup()) increments a global counter. Calls to
-        Component::unregisterExit() decrement the counter. The
+    /** Register that the simulation should not end until this
+        component says it is OK to. Calling this function (generally
+        done in Component::Setup() or in component constructor)
+        increments a global counter. Calls to
+        Component::unregisterExit() decrements the counter. The
         simulation cannot end unless this counter reaches zero, or the
         simulation time limit is reached. This counter is synchonized
         periodically with the other nodes.

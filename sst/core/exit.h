@@ -35,7 +35,8 @@ public:
     // pointers" rule.  However, it still needs to follow the "classes
     // shouldn't contain pointers back to Simulation" rule.
     Exit( Simulation* sim, TimeConverter* period, bool single_rank );
-
+    ~Exit();
+    
     bool refInc( ComponentId_t );
     bool refDec( ComponentId_t );
 

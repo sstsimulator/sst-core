@@ -35,6 +35,11 @@ namespace SST {
             delete i->second.second;
         }
         comm_map.clear();
+
+        for (link_map_t::iterator i = link_map.begin() ; i != link_map.end() ; ++i) {
+            delete i->second;
+        }
+	link_map.clear();
     }
     
     SyncQueue* Sync::registerLink(int rank, LinkId_t link_id, Link* link)

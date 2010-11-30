@@ -20,7 +20,7 @@ namespace SST {
 class Action : public Activity {
 public:
     Action() {}
-    virtual ~Action() {}
+    ~Action() {}
 
     void print(const std::string& header) const {
         std::cout << header << "Generic Action to be delivered at "

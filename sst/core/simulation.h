@@ -81,9 +81,11 @@ public:
     typedef std::map<SimTime_t, Clock*> clockMap_t; 
     typedef std::map< unsigned int, Sync* > SyncMap_t;
 
+    ~Simulation();
+
     static Simulation *createSimulation(Config *config, int my_rank, int num_ranks);
     static Simulation *getSimulation() { return instance; }
-    static void printStatus(void);
+    static void printStatus(bool print_timevortex);
 
     int performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		       int minPart, int myRank );
@@ -104,6 +106,15 @@ public:
             return NULL;
         } else {
             return i->second;
+        }
+    }
+
+    void removeComponentLinkMap(ComponentId_t id) {
+        std::map<ComponentId_t,LinkMap*>::iterator i = component_links.find(id);
+        if (i == component_links.end()) {
+            return;
+        } else {
+            component_links.erase(i);
         }
     }
 
@@ -150,10 +161,11 @@ private:
                                      Params params );
 
     TimeVortex* getTimeVortex() const { return timeVortex; }
-
+    
     void endSimulation(void) { endSim = true; }
 
     TimeVortex*      timeVortex;
+    Activity*        current_activity;
     Sync*            sync;
     CompMap_t        compMap;
     IntroMap_t       introMap;
@@ -163,7 +175,6 @@ private:
     bool             endSim;
     int              my_rank;
     int              num_ranks;
-
     std::map<ComponentId_t,LinkMap*> component_links;
     
     static Simulation *instance;

@@ -19,7 +19,16 @@ namespace SST {
 
     TimeVortex::TimeVortex() : ActivityQueue() {}
 
-    TimeVortex::~TimeVortex() {}
+    TimeVortex::~TimeVortex()
+    {
+	// Activities in TimeVortex all need to be deleted
+	std::multiset<Activity*,Activity::less_time_priority>::iterator it;
+
+	for ( it = data.begin(); it != data.end(); ++it ) {
+	    delete *it;
+	}
+	data.clear();
+    }
     
     bool TimeVortex::empty()
     {

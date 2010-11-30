@@ -26,6 +26,7 @@
 #include <sst/core/configGraph.h>
 #include <sst/core/graph.h>
 #include <sst/core/timeLord.h>
+#include <sst/core/linkMap.h>
 #include <sst/core/linkPair.h>
 #include <sst/core/sync.h>
 #include <sst/core/syncQueue.h>
@@ -46,6 +47,7 @@ SimulationBase::~SimulationBase()
 {
     //    delete factory;
     delete timeLord;
+    
 }
 
 TimeConverter* SimulationBase::minPartToTC(SimTime_t cycles) const {
@@ -66,6 +68,40 @@ SimulationBase::serialize(Archive & ar, const unsigned int version)
 
 
 Simulation* Simulation::instance = NULL;
+
+Simulation::~Simulation()
+{
+    // Clean up as best we can
+
+    // Delete the timeVortex first.  This will delete all events left
+    // in the queue, as well as the Sync, Exit and Clock objects.
+    delete timeVortex;
+
+    // Delete all the components
+    for ( CompMap_t::iterator it = compMap.begin(); it != compMap.end(); ++it ) {
+	delete it->second;
+    }
+    compMap.clear();
+    
+    // Delete all the introspectors
+    for ( IntroMap_t::iterator it = introMap.begin(); it != introMap.end(); ++it ) {
+	delete it->second;
+    }
+    introMap.clear();
+
+    // Clocks already got deleted by timeVortex, simply clear the clockMap
+    clockMap.clear();
+    
+    
+    // Delete any remaining links.  This should never happen now, but
+    // when we add an API to have components build subcomponents, user
+    // error could cause LinkMaps to be left.
+    std::map<ComponentId_t,LinkMap*>::iterator it;
+    for ( it = component_links.begin(); it != component_links.end(); ++it ) {
+	delete it->second;
+    }
+    component_links.clear();
+}
 
 Simulation*
 Simulation::createSimulation(Config *config, int my_rank, int num_ranks)
@@ -169,10 +205,10 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 	}	
         else if ( rank[0] == rank[1] ) { 
 	    // Create a LinkPair to represent this link
-	    LinkPair* lp = new LinkPair(id);
+	    LinkPair lp(id);
 
-	    lp->getLeft()->setLatency(latency[0]);
-	    lp->getRight()->setLatency(latency[1]);
+	    lp.getLeft()->setLatency(latency[0]);
+	    lp.getRight()->setLatency(latency[1]);
 
 	    // Add this link to the appropriate LinkMap
 	    std::map<ComponentId_t,LinkMap*>::iterator it;
@@ -183,7 +219,7 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(cId[0],lm));
  		it = ret_val.first;
 	    }
- 	    it->second->insertLink(linkName[0],lp->getLeft());
+ 	    it->second->insertLink(linkName[0],lp.getLeft());
 
 	    it = component_links.find(cId[1]);
 	    if ( it == component_links.end() ) {
@@ -192,7 +228,7 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(cId[1],lm));
  		it = ret_val.first;
 	    }
- 	    it->second->insertLink(linkName[1],lp->getRight());
+ 	    it->second->insertLink(linkName[1],lp.getRight());
 
 	}
 	else {
@@ -207,11 +243,11 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 	    }
 
 	    // Create a LinkPair to represent this link
-	    LinkPair* lp = new LinkPair(id);
+	    LinkPair lp(id);
 	    
-	    lp->getLeft()->setLatency(latency[local]);
-	    lp->getRight()->setLatency(0);
-	    lp->getRight()->setDefaultTimeBase(minPartToTC(1));
+	    lp.getLeft()->setLatency(latency[local]);
+	    lp.getRight()->setLatency(0);
+	    lp.getRight()->setDefaultTimeBase(minPartToTC(1));
             
 
 	    // Add this link to the appropriate LinkMap for the local component
@@ -223,11 +259,11 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(cId[local],lm));
  		it = ret_val.first;
 	    }
- 	    it->second->insertLink(linkName[local],lp->getLeft());
+ 	    it->second->insertLink(linkName[local],lp.getLeft());
 
 	    // For the remote side, register with sync object
-	    SyncQueue* sync_q = sync->registerLink(rank[remote],id,lp->getRight());
-	    lp->getRight()->recvQueue = sync_q;
+	    SyncQueue* sync_q = sync->registerLink(rank[remote],id,lp.getRight());
+	    lp.getRight()->recvQueue = sync_q;
         }
 
 	// Done with that edge, delete it.
@@ -287,29 +323,29 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 
 int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 {
-    // For now only works with a single rank (though some of the
-    // multi-rank code is there)
 
+    if ( num_ranks > 1 ) {
+	// Find the minimum latency across a partition
+	SimTime_t min_part = 0xffffffffl;
+	for( ConfigLinkMap_t::iterator iter = graph.links.begin();
+	     iter != graph.links.end(); ++iter )
+	{
+	    ConfigLink* clink = (*iter).second;
+	    int rank[2];
+	    rank[0] = clink->component[0]->rank;
+	    rank[1] = clink->component[1]->rank;
+	    if ( rank[0] == rank[1] ) continue;
+	    if ( clink->getMinLatency() < min_part ) {
+		min_part = clink->getMinLatency();
+	    }	
+	}
+	
+	sync = new Sync( minPartToTC(min_part) );
+    }
+    
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
-
-    SimTime_t min_part = 0xffffffffl;
-    for( ConfigLinkMap_t::iterator iter = graph.links.begin();
-                            iter != graph.links.end(); ++iter )
-    {
-        ConfigLink* clink = (*iter).second;
-        int rank[2];
-        rank[0] = clink->component[0]->rank;
-        rank[1] = clink->component[1]->rank;
-	if ( rank[0] == rank[1] ) continue;
-	if ( clink->getMinLatency() < min_part ) {
-	    min_part = clink->getMinLatency();
-	}	
-    }
-
-    if ( num_ranks > 1 ) sync = new Sync( minPartToTC(min_part) );
-    
     for( ConfigLinkMap_t::iterator iter = graph.links.begin();
                             iter != graph.links.end(); ++iter )
     {
@@ -325,10 +361,10 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 	}	
         else if ( rank[0] == rank[1] ) { 
 	    // Create a LinkPair to represent this link
-	    LinkPair* lp = new LinkPair(clink->id);
+	    LinkPair lp(clink->id);
 
-	    lp->getLeft()->setLatency(clink->latency[0]);
-	    lp->getRight()->setLatency(clink->latency[1]);
+	    lp.getLeft()->setLatency(clink->latency[0]);
+	    lp.getRight()->setLatency(clink->latency[1]);
 
 	    // Add this link to the appropriate LinkMap
 	    std::map<ComponentId_t,LinkMap*>::iterator it;
@@ -339,7 +375,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[0]->id,lm));
  		it = ret_val.first;
 	    }
- 	    it->second->insertLink(clink->port[0],lp->getLeft());
+ 	    it->second->insertLink(clink->port[0],lp.getLeft());
 
 	    it = component_links.find(clink->component[1]->id);
 	    if ( it == component_links.end() ) {
@@ -348,7 +384,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[1]->id,lm));
  		it = ret_val.first;
 	    }
- 	    it->second->insertLink(clink->port[1],lp->getRight());
+ 	    it->second->insertLink(clink->port[1],lp.getRight());
 
 	}
 	else {
@@ -363,11 +399,11 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 	    }
 
 	    // Create a LinkPair to represent this link
-	    LinkPair* lp = new LinkPair(clink->id);
+	    LinkPair lp(clink->id);
 	    
-	    lp->getLeft()->setLatency(clink->latency[local]);
-	    lp->getRight()->setLatency(0);
-	    lp->getRight()->setDefaultTimeBase(minPartToTC(1));
+	    lp.getLeft()->setLatency(clink->latency[local]);
+	    lp.getRight()->setLatency(0);
+	    lp.getRight()->setDefaultTimeBase(minPartToTC(1));
             
 
 	    // Add this link to the appropriate LinkMap for the local component
@@ -379,11 +415,11 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[local]->id,lm));
  		it = ret_val.first;
 	    }
- 	    it->second->insertLink(clink->port[local],lp->getLeft());
+ 	    it->second->insertLink(clink->port[local],lp.getLeft());
 
 	    // For the remote side, register with sync object
-	    SyncQueue* sync_q = sync->registerLink(rank[remote],clink->id,lp->getRight());
-	    lp->getRight()->recvQueue = sync_q;
+	    SyncQueue* sync_q = sync->registerLink(rank[remote],clink->id,lp.getRight());
+	    lp.getRight()->recvQueue = sync_q;
         }
 
 	// Done with that edge, delete it.
@@ -454,8 +490,10 @@ void Simulation::Run() {
     while( LIKELY( ! endSim ) ) {
  	currentSimCycle = timeVortex->front()->getDeliveryTime();
 
- 	Activity *ptr = timeVortex->pop();
-  	ptr->execute();
+//  	Activity *ptr = timeVortex->pop();
+//   	ptr->execute();
+ 	current_activity = timeVortex->pop();
+  	current_activity->execute();
     }
 
     for( CompMap_t::iterator iter = compMap.begin();
@@ -483,12 +521,14 @@ Simulation::getCurrentSimCycle() const
 }
 
 void
-Simulation::printStatus(void)
+Simulation::printStatus(bool print_timevortex)
 {
     std::cout << "Simulation: instance: " << (long) Simulation::instance << std::endl;
     std::cout << "  Current cycle: " << Simulation::instance->currentSimCycle << std::endl;
-
-    Simulation::instance->timeVortex->print();
+    std::cout << "  Current activity: ";
+    Simulation::instance->current_activity->print("");
+    
+    if ( print_timevortex) Simulation::instance->timeVortex->print();
     
     
 //     if (Simulation::instance != NULL) {
@@ -515,7 +555,7 @@ TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* 
 	ce->setDeliveryTime( currentSimCycle + tcFreq->getFactor() );
 	timeVortex->insert( ce );
     }
-    clockMap[ tcFreq->getFactor() ]->HandlerRegister( handler );
+    clockMap[ tcFreq->getFactor() ]->registerHandler( handler );
     return tcFreq;
     
 }
@@ -526,21 +566,12 @@ void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler)
     if ( clockMap.find( tc->getFactor() ) != clockMap.end() ) {
 	_SIM_DBG( "\n" );
 	bool empty;
-	clockMap[ tc->getFactor() ]->HandlerUnregister( handler, empty );
+	clockMap[ tc->getFactor() ]->unregisterHandler( handler, empty );
 	
-// 	if ( empty == 0 ) {
-// 	    clockMap.erase( tc->getFactor() );
-// 	}
     }
 }
 
-// void Simulation::insertEvent(SimTime_t time, Activity* ev, EventHandlerBase<bool,Activity*>* functor) {
 void Simulation::insertActivity(SimTime_t time, Activity* ev) {
-//     std::pair<EventHandlerBase<bool,Activity*>*,Activity*> envelope;
-//     envelope.first = NULL;
-//     envelope.second = ev;
-
-//     eQueue->insert(time,envelope);
     ev->setDeliveryTime(time);
     timeVortex->insert(ev);
 }

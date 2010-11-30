@@ -31,6 +31,11 @@ Exit::Exit( Simulation* sim, TimeConverter* period, bool single_rank ) :
     if (!single_rank) sim->insertActivity( period->getFactor(), this );
 }
 
+Exit::~Exit()
+{
+    m_idSet.clear();
+}
+    
 bool Exit::refInc( ComponentId_t id )
 {
     _EXIT_DBG( "refCount=%d\n", m_refCount );
@@ -90,15 +95,19 @@ void Exit::execute( void )
 
     _EXIT_DBG("%d\n",out);
 
-    if ( out ) {
-        SimTime_t next = sim->getCurrentSimCycle() + 
-            m_period->getFactor();
-        sim->insertActivity( next, this );
-    }
-    else {
+    // If out is 0, then it's time to end
+    if ( !out ) {
 	endSimulation();
     }
-//     return ( out == 0 ); 
+    // Reinsert into TimeVortex.  We do this even when ending so that
+    // it will get deleted with the TimeVortex on termination.  We do
+    // this in case we exit with a StopEvent instead.  In that case,
+    // there is no way to know if the Exit object is deleted in the
+    // TimeVortex or not, so we just make sure it is always deleted
+    // there.
+    SimTime_t next = sim->getCurrentSimCycle() + 
+	m_period->getFactor();
+    sim->insertActivity( next, this );
 }
 
 

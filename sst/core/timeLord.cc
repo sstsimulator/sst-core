@@ -112,7 +112,19 @@ TimeLord::TimeLord(std::string timeBaseString) :
     milli = getTimeConverter("1ms");
 }
 
-TimeLord::~TimeLord() {}
+TimeLord::~TimeLord() {
+    // Delete all the TimeConverter objects
+    std::map<ComponentId_t,LinkMap*>::iterator it;
+    for ( TimeConverterMap_t::iterator it = tcMap.begin(); it != tcMap.end(); ++it ) {
+	delete it->second;
+    }
+    tcMap.clear();
+
+    // Clear the contents of the cache
+    parseCache.clear();
+    
+    
+}
 
 SimTime_t TimeLord::getSimCycles(std::string timeString, std::string where) {
 

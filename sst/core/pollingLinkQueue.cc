@@ -18,7 +18,14 @@
 namespace SST {
 
     PollingLinkQueue::PollingLinkQueue() : ActivityQueue() {}
-    PollingLinkQueue::~PollingLinkQueue() {}
+    PollingLinkQueue::~PollingLinkQueue() {
+	// Need to delete any events left in the queue
+	std::multiset<Activity*,Activity::less_time>::iterator it;
+	for ( it = data.begin(); it != data.end(); ++it ) {
+	    delete *it;
+	}
+	data.clear();
+    }
 
     bool PollingLinkQueue::empty()
     {
