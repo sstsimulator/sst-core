@@ -186,8 +186,25 @@ public:
 	    }
     };
 
-    template <typename ptrT>
+    template <typename ptrT, typename idxT = void>
     class MonitorPointer : public MonitorBase{
+    private:
+	ptrT *data;
+	idxT index;
+	
+    public:
+	MonitorPointer( ptrT* const data, idxT index ) :
+	    data(data),
+	    index(index)
+	{}
+
+	    boost::any operator()() {
+          	 return static_cast<boost::any>( *data[index] );
+	    }
+    };
+
+    template <typename ptrT>
+    class MonitorPointer<ptrT, void> : public MonitorBase{
     private:
 	ptrT* data;
 	
