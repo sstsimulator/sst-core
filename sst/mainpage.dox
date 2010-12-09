@@ -226,29 +226,28 @@ Other commonly used SST::Link functions are:
     (I.e. a component "pulls" events from the link, rather than having
     them "pushed" into an event handler). 
 
-<h2>Power Modeling Libraries</h2>
-SST components can query power modeling libraries for power dissipation 
-analysis through the power interface. Currently, SST is integrated with 
-two power/area modeling libraries (Sim-Panalyzer and McPAT) that support 
-power/area analysis of five component types (core, clock, shared cache, 
-memory controller and NoC/router). A component type may be broken into 
-several sub-component types for power/area analysis. For example, a core 
+<h2>Technology Interface</h2>
+SST components can query power/thermal modeling libraries for power dissipation 
+and temperature through the technology interface. Currently, SST technology interface 
+is integrated with four power/area modeling libraries (McPAT, ORION, IntSim and Sim-Panalyzer)
+ that support power/area analysis of five component types (core, clock, shared cache, 
+memory controller and NoC/router). It is also integrated with a thermal modeling tool,
+HotSpot and provides the leakge-feedback functionality. A component type may be broken 
+into several sub-component types for power/area analysis. For example, a core 
 component is broken into iL1 cache, dL1 cache, L2 cache, L3 cache, iTLB cache, 
 dTLB cache, branch predictor, register file, ALU, FPU, instruction buffer, LSQ, 
 bypass, pipeline, BTB, schedler unit, rename unit, etc. A component can specify 
 which sub-components it wants power analyzed in SST::Component::Setup() by 
 calling Power::setTech().
 
-SST component specifies in the XML file if it wants power analyzed, and if yes, 
-which power model to query at what level of details. For example, 
+SST component specifies in the XML file if it wants power/temperature analyzed. For example, 
 
 @verbatim
 <component id="processor">	
  <cpu_power>
   <params>
    <power_monitor>YES</power_monitor>
-   <power_model>SimPanalyzer</power_model>
-   <power_level>1</power_level> 
+   <temperature_monitor>YES</temperature_monitor> 
   </params> 
   .
   .
@@ -257,42 +256,41 @@ which power model to query at what level of details. For example,
 </component>
 @endverbatim
 
-specifies a component, a processor, that want power analysis by the 
-Sim-Panalyzer library at high-level in the \c param block.
+specifies a component, a processor, wants power and thermal modeling
+in the \c param block.
 
-   - The \c power_monitor specifies if the component wants power analisys. 
+   - The \c power_monitor specifies if the component wants power modeling. 
      Options are YES or NO.	
-   - The \c power_model is the model that will be called to model power 
-     dissipation. Choices are SimPanalyzer or McPAT.
-   - The \c power_level specifies what level of details power is modeled.
-     This is specially set for SimPanalyzer. Options are 1 (high-level; 
-     less details) or 2 (low-level; more details). Default is 1.
+   - The \c temperature_monitor specifies if the component wants temperature modeling. 
+     Options are YES or NO.
   
-<h2>Estimating Power Dissipation</h2>
-Dynamic energy of a SST component is calculated inside the power interface 
-by summarizing the usage counts of its subcomponent multiplying with the 
-corresponding dynamic energy per access (unit energy). There are two 
-main steps for a SST componet to get power analysis. First is to call 
-Power::setTech() to get unit energy where technology parameters of the 
+<h2>Estimate Power Dissipation</h2>
+Dynamic energy of a SST component is calculated inside the power interface.
+The technology interface first gets usage count of the component. It then
+calculates the dynamic energy by multiplying the usage count by the 
+corresponding dynamic energy per access (unit energy) statically calculated by power models.
+ There are three main steps for a SST componet to get power analysis. First is to call
+Power::setChip() to setup chip-level parameters and create silicon laye floorplans. 
+Second, call Power::setTech() to get unit energy where technology parameters of the 
 component are decoupled from the XML file and fed into the power models. 
 This step is usually done in SST::Component::Setup(), so unit energy of 
-the sub-components are calculated only once at the beginning of the simulation 
+sub-components are calculated only once at the beginning of the simulation 
 and stored locally. For example, 
 
 @verbatim
 int Setup() {
-    power = new Power(Id());  
-
-    power->setTech(Id(), params, CACHE_IL1); 
-    power->setTech(Id(), params, ALU); 
+    power = new Power(getId());  
+    power->setChip(params);
+    power->setTech(getId(), params, CACHE_IL1, McPAT); 
+    power->setTech(getId(), params, ROUTER, ORION); 
 }
 @endverbatim
 
-creates an Power object in SST::Component::Setup() which calls Power::setTech() 
-to get unit energy of il1 cache and ALU of the SST component calculated by the
-selected power model.  
+first creates an Power object in Setup(). It calls Power::setChip() and 
+ then Power::setTech() to get unit energy of il1 cache and router calculated by
+McPAT and ORION, respectively.  
 
-Second, the component needs to pass its usage counts to the power interface 
+Last, the component needs to pass its usage counts to the technology interface 
 in a structure through Power::getPower() to get dynamic energy. The structure 
 (see usagecounts_t in Power) contains over specified counter names, such as 
 number_of_il1_read, number_of_L2_read, number_of_router_access, etc, that are 
@@ -305,21 +303,21 @@ an event occurs, or at a given frequency, etc. For example,
 @verbatim 
     mycounts.il1_read=1; mycounts.il1_readmiss=0; mycounts.IB_read=2; 
     mycounts.IB_write=2; mycounts.BTB_read=2; mycounts.BTB_write=2;
-    pdata = power->getPower(current, CACHE_IL1, mycounts, 2);
+    pdata = power->getPower(this, CACHE_IL1, mycounts);
     regPowerStats(pdata);    
 @endverbatim
 
-shows how to get the current dynamic energy of il1 cahce of a SST component. The
-component first set the values of the il1-related counters in the structure, 
-\c mycounts. Then it called Power::getPower(Cycle_t \c current, ptype \c power_type, 
-usagecounts_t \c counts, int \c total_cycles) to get power information, where 
-\c current is current cycle, \c power_type is the sub-component type, \c counts 
-is the over-specified structure that contains various counters, and \c total_cycles 
-is the time interval. The above example indicates that in the past two cycle, 
-il1 cache is read once, instruction buffer (IB) is read and write twice, and 
-branch predictor buffer (BTB) is read and write twice. Power::getPower returns 
-power data in a structure (\c pdata with type \c Pdissipation_t) based on these 
-usage counts. The structure contains power information such as, leakage power, 
+shows how to get the current dynamic energy of level-1 intruction (il1) cahce 
+of a SST component. The component first set the values of the il1-related counters 
+in the structure, \c mycounts. Then it called Power::getPower(IntrospectedComponent \c *c,
+ ptype \c power_type, usagecounts_t \c counts) to get power information, where 
+\c c is pointer to the component (which should be inherits from SST::introspectedComponent. 
+See the Introspection Interface Section below), \c power_type is the sub-component type, and \c counts 
+is the over-specified structure that contains various counters. The above example 
+indicates that since last power extimation, il1 cache is read once, instruction buffer (IB)
+ is read and write twice, and branch predictor buffer (BTB) is read and write twice. 
+Power::getPower returns power data in a structure (\c pdata with type \c Pdissipation_t) 
+based on these usage counts. The structure contains power information such as, leakage power, 
 runtime dynamic power, total power, peak power, etc. These data information were then
 stored in a central power database, SST::Component::PDB by SST::Component::regPowerStats(). 
 After Power::gerPower(), SST component needs to re-set the values of the counters 
@@ -329,8 +327,8 @@ to zero. For example,
 power->resetCounts(mycounts); 
 @endverbatim
 
-re-sets the counters in the above example to zero, and the component is ready for 
-keeping track of the new usage counts for the next power anaylsis.
+re-sets the counters in the above example to zero, and the component continues to 
+update the usage counts for the next power estimation.
 
 The power data of a certain SST component can be read from the power database by
 SST::Component::readPowerStats(). For example, the following codes in SST::Component::Finish()
@@ -338,15 +336,19 @@ print out the power dissipation data at the end of the simulation.
 
 @verbatim
 using namespace io_interval;
-pstats = readPowerStats(this); 
-std::cout <<"ID " << Id() <<": current power = " << pstats.currentPower << " W" << std::endl;
-std::cout <<"ID " << Id() <<": total energy = " << pstats.totalEnergy << " J" << std::endl;
-std::cout <<"ID " << Id() <<": peak power = " << pstats.peak << " W" << std::endl;
-std::cout <<"ID " << Id() <<": current cycle = " << pstats.currentCycle << std::endl;
+std::pair<bool, Pdissipation_t> res = readPowerStats(this);
+
+if(res.first){
+    std::cout <<"ID " << getId() <<": current power = " << res.second.currentPower << " W" << std::endl;
+    std::cout <<"ID " << getId() <<": total energy = " << res.second.totalEnergy << " J" << std::endl;
+    std::cout <<"ID " << getId() <<": peak power = " << res.second.peak << " W" << std::endl;
+    std::cout <<"ID " << getId() <<": current cycle = " << res.second.currentCycle << std::endl;
+}
+
 @endverbatim
 
-, which first read power data of this component from the central power database and 
-print power data in a range:
+, which first read power data of this component from the central power database 
+(if there is such data entry in the databse) and print the power data in a range:
 
 @verbatim
 ID 0: current power = 134.184 ± 0.000670918 W
@@ -355,28 +357,58 @@ ID 0: peak power = 68.9647 ± 3.4486 W
 ID 0: current cycle = 1
 @endverbatim
 
-<h2>Introspectors</h2>
+<h2>Calculate Temperature</h2>
+Once the power calculation is done for all components in the simulated chip, 
+a SST component can call Power::compute_temperature() to trigger temperature
+calculation. The Technology interface makes sure that all the components that 
+want power modeling have power eatimated already before trigger the thermal 
+model to calculate temperature. For example, a SST component only wants power 
+modeling of its caches (il1, il2, itlb, dtlb, and L2), and it calls 
+Power::compute_temperature() after it calls Power::getPower() for each of these 
+subcomponents. 
+
+@verbatim
+pdata = power->getPower(this, CACHE_IL1, mycounts);
+pdata = power->getPower(this, CACHE_DL1, mycounts);
+pdata = power->getPower(this, CACHE_ITLB, mycounts);
+pdata = power->getPower(this, CACHE_DTLB, mycounts);
+pdata = power->getPower(this, CACHE_L2, mycounts);
+power->compute_temperature(getId());
+@endverbatim
+
+Components can call Power::printFloorplanAreaInfo(), Power::printFloorplanPowerInfo(),
+and Power::printFloorplanThermalInfo() to print area/power/temperature information.
+
+
+
+
+<h2>Introspection Interface</h2>
 The introspection interface is a unified way to report and record simulation data 
-for analysis and display. The SST::Introspector class inherits from SST::Component 
-and can be created to monitor information from all, or a sub set of other real 
-components. Like SST components, an introspector is an object which receives a 
-clock event, allowing it to perform regular, periodic actions. Introspector writers 
-must create a class which inherits from SST::Introspector and which contains a constructor. 
-This class should be created in a dynamic library (.so file) and should include a C-style 
-function of the form <introspectorName>AllocComponent(), which returns a pointer to a 
-newly instantiated introspector. The key differences between an introspector and a 
-component is that an introspector:
+for analysis and display. The SST::Introspector class can be created to monitor 
+information from all, or a sub set of other real components. Like SST components, 
+an introspector is an object which receives a clock event, allowing it to perform 
+regular, periodic actions. Introspector writers must create a class which inherits 
+from SST::Introspector and which contains a constructor. This class should be created 
+in a dynamic library (.so file) and should include a C-style function of the form 
+<introspectorName>AllocComponent(), which returns a pointer to a newly instantiated 
+introspector. The key differences between an introspector and a component is that 
+an introspector:
     - does not send or receive events
     - is not partitioned (i.e. a copy exists on every rank)
 
-Introspectors can access other components (SST::Introspector::getCompMap()), 
-select the components they wish to monitor (SST::Introspector::getModels() and
-SST::Introspector::monitorComponent()), and they query those components at 
-regular intervals to retrieve component state (e.g. power) by SST::Introspector::pullData(). Additionally, SST components can provide arbitrary data to be monitored by the 
-introspectors (SST::Component::registerMonitorInt(), SST::Component::registerMonitorDouble(), SST::Component::getIntData() and SST::Component::getDoubleData()). SST 
-introspectors can exchange and manipulate these components data via Boost::mpi 
-collective communication periodically (SST::Introspector::collectInt()) or 
-at an arbitrary time (SST::Introspector::oneTimeCollect()).
+If a component writer wants to utilize the introspection interface, he/she follows the 
+same steps described in the previous section to create a class except that the class must inherits from
+SST::introspectedComponent. SST introspected components declare which introspectors will be monitoring them 
+(SST::introspectedComponent::registerIntrospector()) and provide arbitrary data to be 
+monitored by the introspectors (SST::introspectedComponent::registerMonitor()).
+Additoinally, they can report exceptional or rare events to the introspectors 
+through the "push" mechanism (SST::introspectedComponent::triggerUpdate()).
+Introspectors can access components they monitor (SST::Introspector::getModelsbyName() 
+and SST::Introspector::getModelsbyType()), query these components to retrieve component 
+data (e.g. power) by SST::Introspector::getData() and analyze/display the data by 
+SST::Introspector::triggeredUpdate(). SST introspectors can exchange and manipulate 
+these components data via Boost::mpi collective communication periodically 
+(SST::Introspector::collectInt()) or at an arbitrary time (SST::Introspector::oneTimeCollect()).
 
 Like components, introspectors are created and parameterized by the SDL.
 For example,
@@ -396,63 +428,53 @@ specifies an introspector which pulls some data from cpu (\c model
 in the \c params block) every 50 ns (\c period in the \c params block).
 
 <h2>Data Monitoring</h2>
-SST::Component::stats is an enum of common statistics (data) that components 
-want to be monitored, such as core_temperature, number of branch read, etc.
-This gives data ID (for example, ID of core_temperature is 0 and ID of branch_read 
-is 1, etc). Component writes can append the enum to include other arbitrary data 
-not considered here.
-
-For arbitrary data introspection, a component needs to specify the 
+For arbitrary data introspection, a SST introspected component needs to specify the 
 data that it wishes to be monitored by calling 
-SST::Component::registerMonitorInt(std::string dataName) if the data is 
-integer or by calling SST::Component::registerMonitorDouble(std::string dataName)
- if the data is double (\c dataName is the description of the data). This is usually
-called in SST::Component::Setup(). For example,
+SST::introspectedComponent::registerMonitor(std::string dataName, IntrospectedComponent::MonitorBase* handler)
+The \c dataName is the description of the data. The SST::IntrospectedComponent::MonitorBase class 
+is the pure virtual base class of monitors (data which introspected components wish to be monitored). 
+A monitor can be a pointer to a data (SST::IntrospectedComponent::MonitorPointer) 
+or an accessor function (SST::IntrospectedComponent::MonitorFunction). Both classes inherit from the 
+SST::IntrospectedComponent::MonitorBase class and are templated to create either type of monitor. The  
+SST::IntrospectedComponent::MonitorPointer class creates either type of MonitorPointer by creating 
+a functor which returns value of a given member variable whenever triggered. 
+For example,
 
 @verbatim
-num_il1_read = 0;
-num_branch_read = 0;
-num_branch_write = 0;
-
-
-registerMonitorInt("il1_read");
-registerMonitorInt("branch_read");
+int counts;
+...
+cpuMonitorPointer = new MonitorPointer<int>(&counts);
 @endverbatim
 
-indicates the cpu component has three variables and it wants two of them
-(\c num_il1_read and \c num_branch_read) to be monitored.
-
-Besides, SST component needs to implement its own SST::Component::getIntData(int dataID) 
-that returns the value of the data indicated by \c dataID. For example,
+creates a MonitorPointer which returns the value of a variable \c counts of type \c int.
+Similarly, the SST::introspectedComponent::MonitorFunction class creates either type of MonitorFunction by
+creating a functor that invokes a given member function whenever triggered. For example,
 
 @verbatim
-uint64_t getIntData(int dataID)
-{ 
-	  switch(dataID)
-	  {
-	    case 1:
-	    //branch_read
-		return (num_branch_read);
-		break;
-	    case 5:
-	    //il1_read
-		return (num_il1_read);
-		break;
-	    default:
-		return (0);
-		break;	
-	  }
+cpuMonitorFunction = new MonitorFunction<Cpu, double>(this, &Cpu::updateTemperature);
+...
+double Cpu::updateTemperature() {
+...
 }
 @endverbatim
 
-returns the value of the local variable indicated by \c dataID in a cpu.
+creates a MonitorFunction which calls \c Cpu::updateTemperature().
+ 
+SST::introspectedComponent::registerMonitor() is usually
+called in SST::Component::Setup(). For example,
 
-On the SST::Introspector's side, it first calls SST::Introspector::getModels(const std::string CompType) 
-to get a list of relevant component with type indicated by \c CompType on the rank and uses 
-SST::Introspector::monitorComponent(Component *c) to state that it will monitor the component 
-referred from the pointer \c *c. Then it calls SST::Introspector::addToIntDatabase(Component* c, int dataID)
-to store the pointer to the component and the \c dataID of the data of interest to ask later 
-by SST::Introspector::pullData(). These are usually done in SST::Introspector::Setup().
+@verbatim
+registerIntrospector("CpuIntropector");
+registerMonitor("temperature", new MonitorFunction<Cpu, double>(this, &Cpu::updateTemperature));
+registerMonitor("totalCounts", new MonitorPointer<int>(&counts));
+@endverbatim
+
+indicates the Cpu component registers its introspector whose name is \c CpuIntrospector 
+and asks it to monitor the two data with name \c temperature and \c totalCounts.
+
+On the SST::Introspector's side, it first calls SST::Introspector::getModelsByType(const std::string CompType) 
+(or SST::introspector::getModelsByName(const std::string CompName)) to get a list of relevant 
+component with type indicated by \c CompType on the rank. This is usually done in SST::Introspector::Setup().
 For example,
 
 @verbatim
@@ -460,46 +482,49 @@ MyCompList = getModels(model);
 
 for (std::list<Component*>::iterator i = MyCompList.begin();
      i != MyCompList.end(); ++i) {
-    monitorComponent(*i);
-
-    //check if the component counts the specified int/double data
-    pint = (*i)->ifMonitorIntData("il1_read");
-	
-    if(pint.first){
-	//store pointer to component and the dataID of the data of interest
-	addToIntDatabase(*i, pint.second);
-    }
+    
 }
 @endverbatim
 
 specifies a SST introspector stored a list of components with SST::Component::type 
 indicated by \c model to a local list, \c MyCompList. It went over the \c MyCompList
-and stated that it will monitor each of the components on the list. It then checked
-if a component on the list monitors integer data with name indicated by "il1_read".
-If yes, the introspector added the pointer to the component as well as the dataID
-of the data (il1_read).  
+and stated that it will monitor each of the components on the list. 
 
-SST::Introspector writers implement their own SST::Introspector::pullData() function 
-based on what they want to do with the data (print to screen, manipulate, etc). SST
-introspectors can periodically pull data by creating an event handler which invokes 
-the function pullDate() and register the event handler to a clock. The following is
-an example of pullData() which prints the data it is monitoring to screen.
+SST::Introspector writers implement their own SST::Introspector::triggeredUpdate() function.
+In this function, introspector-writers should first call SST::Introspector::getData(IntrospectedComponent* c, std::string dataname)
+to retrieve a component data by passing in pointer to the component \c c and the data name \c dataname.
+Then they implement the function based on what they want to do with the data (print to screen, manipulate, etc).
+SST introspectors can periodically pull data from components (this is called introspector "pull" mechanism) 
+by creating an event handler which invokes the function triggeredUpdate() and register the event handler 
+to a clock. The following is an example of triggeredUpdate() which prints the data it is monitoring to screen.
 
 @verbatim
-bool Introspector_cpu::pullData( Cycle_t current )
+bool Introspector_cpu::triggeredUpdate()
 {
-    Component *c;
-
-    for( Database_t::iterator iter = DatabaseInt.begin();
-                            iter != DatabaseInt.end(); ++iter )
-    {
-	c = iter->first;
-        std::cout << "Pull data of component ID " << c->Id() << " with dataID = ";
-        std::cout << iter->second << " and value = " << c->getIntData(iter->second) << std::endl;
-    }
+    for (std::list<IntrospectedComponent*>::iterator i = MyCompList.begin();
+	     i != MyCompList.end(); ++i) {
+		std::cout << "Pull data from component ID " << (*i)->getId() << " and total counts = " << getData<uint64_t>(*i, "totalCounts") << std::endl;
+		std::cout << "Pull data from component ID " << (*i)->getId() << " and temperature = " << getData<double>(*i, "temperature") << std::endl;
+		std::cout << "Pull data from component ID " << (*i)->getId() << " and general counts = " << getData<int>(*i, "generalCounts") << std::endl;
+	        ////intData = getData(*i, "totalCounts");
+	    }
     return false;
 }
 @endverbatim
+
+SST::Introspector::getData<typeT>(IntrospectedComponent* c, std::string dataname) is a template function
+ with template parameter \c typeT which is the type of the monitored data. In the example above, 
+ 
+@verbatim
+getData<uint64_t>(*i, "totalCounts");
+@endverbatim
+
+returns value of the monitored data with name \c totalCounts and the type of the data is \c uint64_t.
+
+In addition to introspector "pull" mechanism, there is also component "push" mechanism.
+This is implemented by SST::introspectedComponent::triggerUpdate(). Introspected components 
+can call the function to have data pulled by their introspectors for analysis/display.
+
 
 <h2>Introspectors MPI communication</h2>
 SST::Introspector communicates with introspectors on other ranks via
