@@ -194,3 +194,100 @@ added shortly.
 
 
 
+--------  Sample  ----------
+
+<?xml version="2.0"?>
+
+
+<config>
+    run-mode=both
+</config>
+
+<variables>
+    <nic_link_lat> 200ns </nic_link_lat>
+    <rtr_link_lat> 10ns </rtr_link_lat>
+</variables>
+
+<param_include>
+
+    <rtr_params>
+        <clock> 500Mhz </clock>
+
+        <network.xDimSize> 2 </network.xDimSize>
+        <network.yDimSize> 1 </network.yDimSize>
+        <network.zDimSize> 1 </network.zDimSize>
+
+        <routing.xDateline> 0 </routing.xDateline>
+        <routing.yDateline> 0 </routing.yDateline>
+        <routing.zDateline> 0 </routing.zDateline>
+    </rtr_params>
+
+    <cpu_params>
+        <radix> 2 </radix>
+        <nodes> 2 </nodes>
+        <msgrate> 5MHz </msgrate>
+        <xDimSize> 2 </xDimSize>
+        <yDimSize> 1 </yDimSize>
+        <zDimSize> 1 </zDimSize>
+        <application> allreduce.tree_triggered </application>
+    </cpu_params>
+
+    <nic_params>
+        <clock> 500Mhz </clock>
+        <timing_set> 2 </timing_set>
+    </nic_params>
+
+</param_include>
+
+
+<sst>
+    <component name=0.cpu type=portals4_sm.trig_cpu >
+        <params include=cpu_params>
+            <id> 0 </id>
+        </params>
+        <link name=0.cpu2nic port=nic latency=$nic_link_lat/>
+    </component>
+
+    <component name=0.nic type=portals4_sm.trig_nic >
+        <params include=nic_params1,nic_params2>
+            <id> 0 </id>
+        </params>
+        <link name=0.cpu2nic port=cpu latency=$nic_link_lat/>
+        <link name=0.nic2rtr port=rtr latency=$nic_link_lat/>
+    </component>
+
+    <component name=0.rtr type=SS_router.SS_router >
+        <params include=rtr_params>
+            <id> 0 </id>
+        </params>
+        <link name=0.nic2rtr port=nic latency=$nic_link_lat/>
+        <link name=xr2r.0.0.1 port=xPos latency=$rtr_link_lat/>
+        <link name=xr2r.0.0.0 port=xNeg latency=$rtr_link_lat/>
+    </component>
+
+
+    <component name=1.cpu type=portals4_sm.trig_cpu >
+        <params include=cpu_params>
+            <id> 1 </id>
+        </params>
+        <link name=1.cpu2nic port=nic latency=$nic_link_lat/>
+    </component>
+
+    <component name=1.nic type=portals4_sm.trig_nic >
+        <params include=nic_params1,nic_params2>
+            <id> 1 </id>
+        </params>
+        <link name=1.cpu2nic port=cpu latency=$nic_link_lat/>
+        <link name=1.nic2rtr port=rtr latency=$nic_link_lat/>
+    </component>
+
+    <component name=1.rtr type=SS_router.SS_router >
+        <params include=rtr_params>
+            <id> 1 </id>
+        </params>
+        <link name=1.nic2rtr port=nic latency=$nic_link_lat/>
+        <link name=xr2r.0.0.0 port=xPos latency=$rtr_link_lat/>
+        <link name=xr2r.0.0.1 port=xNeg latency=$rtr_link_lat/>
+    </component>
+
+</sst>
