@@ -172,25 +172,6 @@ static SDL_Component * component( TiXmlNode* node, float weight, int rank, bool 
     return c;
 }
 
-// static ConfigComponent* new_component( TiXmlNode* node, ConfigGraph &graph, std::string name,
-// 				       float weight, int rank, bool isIntrospector )
-// {
-//     ConfigComponent* c = new ConfigComponent( name, node->Value(), weight, rank, isIntrospector );
-//     TiXmlNode* pChild;
-
-//     for ( pChild = node->FirstChild(); pChild != 0; 
-//                                         pChild = pChild->NextSibling()) 
-//     {
-//         if ( strcmp( pChild->Value(), "params" ) == 0 ) {
-//             parameters( c->params, pChild );
-//         }
-//         if ( strcmp( pChild->Value(), "links" ) == 0 ) {
-//             new_links( graph, c, pChild );
-//         }
-//     }
-//     return c;
-// }
-
 
 static void parse_component( TiXmlNode* pParent, SDL_CompMap_t &compMap )
 {
@@ -220,49 +201,6 @@ static void parse_component( TiXmlNode* pParent, SDL_CompMap_t &compMap )
     }
 }
 
-// static void new_parse_component( TiXmlNode* pParent, ConfigGraph &graph )
-// {
-//     TiXmlElement* element = pParent->ToElement();
-//     TiXmlNode* node_type;
-//     float weight = 1.0;
-//     int rank = -1;
-//     bool isIntrospector = false;
-
-//     if ( element->Attribute("rank") ) {
-//         rank = atoi( element->Attribute("rank") );
-//     }
-    
-//     if ( element->Attribute("weight") ) {
-//         weight =atof( element->Attribute("weight") );
-//     }
-
-//     _SDL_DBG("id=%s weight=%f\n", element->Attribute("id"), weight );
-
-//     // Create the ConfigComponent
-//     node_type = pParent->FirstChild();
-//     ConfigComponent* comp;
-//     if ( node_type != NULL ) {
-// 	comp = new ConfigComponent(element->Attribute("id"), node_type->Value(), weight, rank, isIntrospector );
-//     }
-//     else {
-// 	return;
-//     }
-
-//     graph.comps[comp->id] = comp;
-    
-//     for ( TiXmlNode* pChild = node_type->FirstChild(); pChild != NULL; pChild = pChild->NextSibling() ) {
-//         if ( strcmp( pChild->Value(), "params" ) == 0 ) {
-//             parameters( comp->params, pChild );
-//         }
-
-//         else if ( strcmp( pChild->Value(), "links" ) == 0 ) {
-// 	    new_links(graph, comp, pChild );
-//         }
-//     }
-
-//     return;
-// }
-
 
 static void parse_introspector( TiXmlNode* pParent, SDL_CompMap_t &compMap )
 {
@@ -282,25 +220,6 @@ static void parse_introspector( TiXmlNode* pParent, SDL_CompMap_t &compMap )
         return;
     }
 }
-
-// static void new_parse_introspector( TiXmlNode* pParent, SDL_CompMap_t &compMap )
-// {
-//     TiXmlElement* element = pParent->ToElement();
-//     TiXmlNode* pChild;
-//     float weight = 1.0;
-//     bool isIntrospector = true;
-
-//     if ( element->Attribute("weight") ) {
-//         weight =atof( element->Attribute("weight") );
-//     }
-
-//     for ( pChild = pParent->FirstChild(); pChild != 0; 
-//                                         pChild = pChild->NextSibling()) 
-//     {
-//         compMap[element->Attribute("id")] = component( pChild, weight, -1, isIntrospector );
-//         return;
-//     }
-// }
 
 
 static std::string parse_config( TiXmlNode* pParent )
