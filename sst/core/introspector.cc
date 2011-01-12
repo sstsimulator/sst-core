@@ -156,8 +156,6 @@ template<class Archive>
 void
 Introspector::serialize(Archive& ar, const unsigned int version) {
     ar & BOOST_SERIALIZATION_NVP(MyCompList);
-    ar & BOOST_SERIALIZATION_NVP(DatabaseInt);
-    ar & BOOST_SERIALIZATION_NVP(DatabaseDouble);
     ar & BOOST_SERIALIZATION_NVP(minvalue);
     ar & BOOST_SERIALIZATION_NVP(maxvalue);
     ar & BOOST_SERIALIZATION_NVP(value);
@@ -167,3 +165,4 @@ Introspector::serialize(Archive& ar, const unsigned int version) {
 } //namespace SST
 
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Introspector::serialize)
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::Introspector)

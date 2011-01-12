@@ -36,7 +36,6 @@ namespace SST {
 
 class Introspector {
 public:
-   typedef std::multimap<int, IntrospectedComponent*> Database_t;	
 
     /** Types of boost MPI collective operations that introspector can perform.*/ 
     enum collect_type { GATHER, ALLGATHER, BROADCAST, REDUCE, ALLREDUCE};
@@ -51,7 +50,7 @@ public:
     /** Constructor. Generally only called by the factory class. 
         @param id Unique introspector ID*/
     Introspector();
-    virtual ~Introspector() = 0;
+    virtual ~Introspector() {}
 
     /** Called after all components/introspectors have been constructed, but before
         simulation time has begun. */
@@ -109,10 +108,6 @@ public:
 
     /** List of components that this introspector is monitoring.*/
     std::list<IntrospectedComponent*> MyCompList;
-    /** Database of the integer data monitored by this introspector available through Introspector::pullData().*/
-    Database_t DatabaseInt;
-    /** Database of the double data monitored by this introspector available through Introspector::pullData().*/
-    Database_t DatabaseDouble;
     /** Minimum value of the integer values collected from all introspectors by Introspector::collectInt().*/
     uint64_t minvalue;
     /** Maximum value of the integer values collected from all introspectors by Introspector::collectInt().*/
