@@ -145,13 +145,17 @@ template <typename typeT>
 typeT Introspector::getData(IntrospectedComponent* c, std::string dataname)
 {
     IntrospectedComponent::MonitorBase* monitor;
-    
-    ////monitor = c->getMonitor<typeT>(dataname);
-    monitor = c->getMonitor(dataname);
+    std::pair<bool, IntrospectedComponent::MonitorBase*> p;    
+   
+    p = c->getMonitor(dataname);
 
-    ////return (dynamic_cast<IntrospectedComponent::Monitor<typeT>*>(monitor)());
-    return any_cast<typeT>( (*monitor)());
-    
+    //check if the component cares about this data
+    if (p.first){
+        monitor = p.second;
+        return any_cast<typeT>( (*monitor)());
+    }
+    else 
+	return (-9999); //return an unreasonable number for now
 }
 
 } //end namespace

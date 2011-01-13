@@ -230,7 +230,7 @@ public:
     void registerMonitor(std::string dataName, IntrospectedComponent::MonitorBase* handler);      
     /** Find monitor indicated by "dataname" from the map. This is called in Introspector::getData()
 	@param dataname name of the data*/
-    IntrospectedComponent::MonitorBase* getMonitor(std::string dataname);
+    std::pair<bool, IntrospectedComponent::MonitorBase*> getMonitor(std::string dataname);
     /** 'Component-push' mechanism. Component asks  its introspector(s) to pull data in.*/
     void triggerUpdate();
 

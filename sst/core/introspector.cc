@@ -160,6 +160,7 @@ Introspector::serialize(Archive& ar, const unsigned int version) {
     ar & BOOST_SERIALIZATION_NVP(maxvalue);
     ar & BOOST_SERIALIZATION_NVP(value);
     ar & BOOST_SERIALIZATION_NVP(arrayvalue);
+    ar & BOOST_SERIALIZATION_NVP(defaultTimeBase);
 }
 
 } //namespace SST

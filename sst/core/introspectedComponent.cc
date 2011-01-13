@@ -141,16 +141,17 @@ void IntrospectedComponent::registerMonitor(std::string dataName, IntrospectedCo
 * find monitor from the map; this is called in Introspector::getData() *
 *********************************************************/
 
-IntrospectedComponent::MonitorBase* IntrospectedComponent::getMonitor(std::string dataname)
+std::pair<bool, IntrospectedComponent::MonitorBase*> IntrospectedComponent::getMonitor(std::string dataname)
 {
      MonitorMap_t::iterator i = monitorMap.find(dataname);
      if (i != monitorMap.end()) {
             ////return (boost::unsafe_any_cast<IntrospectedComponent::MonitorBase<returnT>*>(i->second));
-	    return (i->second);
+	    return (std::make_pair(true, i->second));
      } 
      else{
-	std::cout<< "IntrospectedComponent::getMonitor-- data name " << dataname << " does not associate with a monitor." << std::endl;
-	exit(1);
+	    return (std::make_pair(false, i->second));
+	//std::cout<< "IntrospectedComponent::getMonitor-- data name " << dataname << " does not associate with a monitor." << std::endl;
+	//exit(1);
      }
 }
 
@@ -202,6 +203,7 @@ void
 IntrospectedComponent::serialize(Archive& ar, const unsigned int version) {
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Component);
     ar & BOOST_SERIALIZATION_NVP(MyIntroList);
+    ar & BOOST_SERIALIZATION_NVP(monitorMap);
 }
     
 } // namespace SST
