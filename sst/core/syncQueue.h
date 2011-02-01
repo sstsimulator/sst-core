@@ -17,6 +17,8 @@
 
 #include <sst/core/activityQueue.h>
 
+#include <cstdio> // For printf
+
 namespace SST {
 
 class SyncQueue : public ActivityQueue {
