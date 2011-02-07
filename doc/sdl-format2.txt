@@ -232,10 +232,13 @@ added shortly.
         <application> allreduce.tree_triggered </application>
     </cpu_params>
 
-    <nic_params>
+    <nic_params1>
         <clock> 500Mhz </clock>
+    </nic_params1>
+
+    <nic_params2>
         <timing_set> 2 </timing_set>
-    </nic_params>
+    </nic_params2>
 
 </param_include>
 
