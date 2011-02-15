@@ -24,11 +24,13 @@ namespace SST {
 
 Clock::Clock( TimeConverter* period ) :
     Action(),
-    currentCycle(0),
-    period( period )
+    currentCycle( 0 ),
+    period( period ),
+    started(false)
 {
     setPriority(40);
 } 
+
 
 Clock::~Clock()
 {
@@ -39,21 +41,24 @@ Clock::~Clock()
     handlerMap.clear();
 }
 
+
 bool Clock::registerHandler( Clock::HandlerBase* handler )
 {
     _CLE_DBG("handler %p\n",handler);
-    handlerMap.push_back( handler );
+    if ( started )
+    	handlerMap.push_back( handler );
+    else
+    	staticHandlerMap.push_back( handler );
 
-
-//     std::pair<bool,Clock::HandlerBase*> tmp;
-//     tmp.first = true;
-//     tmp.second = handler;
-//     handlerMap.push_back( tmp );
+    // // if ( !started )
+    // staticHandlerMap.push_back( handler );
+    // // handlerMap.push_back( handler );
 
     return 0;
 }
 
-    bool Clock::unregisterHandler( Clock::HandlerBase* handler, bool& empty )
+
+bool Clock::unregisterHandler( Clock::HandlerBase* handler, bool& empty )
 {
     _CLE_DBG("handler %p\n",handler);
 
@@ -72,13 +77,11 @@ bool Clock::registerHandler( Clock::HandlerBase* handler )
     return 0;
 }
 
-// bool Clock::handler( Event* event ) {
 void Clock::execute( void ) {
     Simulation *sim = Simulation::getSimulation();
     
-    _CLE_DBG("time=FIXME cycle=%lu epoch=FIXME\n", (unsigned long) currentCycle );
-
-    if ( handlerMap.empty() ) 
+    if ( !started ) started = true;
+    if ( handlerMap.empty() && staticHandlerMap.empty() ) 
     {
         return;
     } 
@@ -86,22 +89,43 @@ void Clock::execute( void ) {
     // Derive the current cycle from the core time
     currentCycle = period->convertFromCoreTime(sim->getCurrentSimCycle());
     
-//     BOOST_FOREACH( Clock::HandlerBase* c, handlerMap ) {
-//         ( *c )( currentCycle );
-//     }
-
     HandlerMap_t::iterator op_iter, curr;
     for ( op_iter = handlerMap.begin(); op_iter != handlerMap.end();  ) {
-	curr = op_iter++;
-	Clock::HandlerBase* handler = *curr;
-	if ( (*handler)(currentCycle) ) handlerMap.erase(curr);
+    	curr = op_iter++;
+    	Clock::HandlerBase* handler = *curr;
+    	if ( (*handler)(currentCycle) ) handlerMap.erase(curr);
     }
 
-//     for ( int i = 0; i < handlerMap.size(); i++ ) {
-// 	if (handlerMap[i].first) {
-// 	    handlerMap[i].first = !( (*handlerMap[i].second)(currentCycle) );
-// 	}
-//     }
+    StaticHandlerMap_t::iterator sop_iter,start_iter,stop_iter;
+    bool group = false;
+    for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
+    	Clock::HandlerBase* handler = *sop_iter;
+    	if ( (*handler)(currentCycle) ) sop_iter = staticHandlerMap.erase(sop_iter);
+    	else ++sop_iter;
+    	// (*handler)(currentCycle);
+    	// ++sop_iter;
+    }
+
+    // for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
+    // 	Clock::HandlerBase* handler = *sop_iter;
+    // 	if ( (*handler)(currentCycle) ) {
+    // 	    if (!group) {
+    // 		group = true;
+    // 		start_iter = sop_iter;
+    // 	    }
+    // 	}
+    // 	else {
+    // 	    if ( group ) {
+    // 		sop_iter = staticHandlerMap.erase(start_iter,sop_iter);
+    // 		group = false;
+    // 	    }
+    // 	}
+    // 	++sop_iter;
+    // }
+    // if ( group ) {
+    // 	staticHandlerMap.erase(start_iter,staticHandlerMap.end());
+    // 	group = false;
+    // }
 
     SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
     _CLE_DBG( "all called next %lu\n", (unsigned long) next );

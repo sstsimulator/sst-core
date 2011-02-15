@@ -29,7 +29,6 @@ class TimeConverter;
 class Clock : public Action
 {
 public:
-//     typedef enum { DEFAULT, PRE, POST } Which_t;
 
     Clock( TimeConverter* period );
     ~Clock();
@@ -88,15 +87,19 @@ public:
     
 private:
     typedef std::list<Clock::HandlerBase*> HandlerMap_t;
-
+    typedef std::vector<Clock::HandlerBase*> StaticHandlerMap_t;
+    
     Clock() { }
 
     void execute( void );
 
-    Cycle_t         currentCycle;
-    TimeConverter*  period;
-    HandlerMap_t    handlerMap;
+    Cycle_t            currentCycle;
+    TimeConverter*     period;
+    HandlerMap_t       handlerMap;
+    StaticHandlerMap_t staticHandlerMap;
 
+    bool started;
+    
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
@@ -105,6 +108,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(currentCycle);
         ar & BOOST_SERIALIZATION_NVP(period);
         ar & BOOST_SERIALIZATION_NVP(handlerMap);
+        ar & BOOST_SERIALIZATION_NVP(staticHandlerMap);
     }
 };
 
