@@ -45,9 +45,9 @@ Clock::~Clock()
 bool Clock::registerHandler( Clock::HandlerBase* handler )
 {
     _CLE_DBG("handler %p\n",handler);
-    if ( started )
-    	handlerMap.push_back( handler );
-    else
+//     if ( started )
+//     	handlerMap.push_back( handler );
+//     else
     	staticHandlerMap.push_back( handler );
 
     // // if ( !started )
@@ -89,12 +89,12 @@ void Clock::execute( void ) {
     // Derive the current cycle from the core time
     currentCycle = period->convertFromCoreTime(sim->getCurrentSimCycle());
     
-    HandlerMap_t::iterator op_iter, curr;
-    for ( op_iter = handlerMap.begin(); op_iter != handlerMap.end();  ) {
-    	curr = op_iter++;
-    	Clock::HandlerBase* handler = *curr;
-    	if ( (*handler)(currentCycle) ) handlerMap.erase(curr);
-    }
+//     HandlerMap_t::iterator op_iter, curr;
+//     for ( op_iter = handlerMap.begin(); op_iter != handlerMap.end();  ) {
+//     	curr = op_iter++;
+//     	Clock::HandlerBase* handler = *curr;
+//     	if ( (*handler)(currentCycle) ) handlerMap.erase(curr);
+//     }
 
     StaticHandlerMap_t::iterator sop_iter,start_iter,stop_iter;
     bool group = false;

@@ -86,7 +86,8 @@ public:
 
     
 private:
-    typedef std::list<Clock::HandlerBase*> HandlerMap_t;
+/*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */
+    typedef std::vector<Clock::HandlerBase*> HandlerMap_t;
     typedef std::vector<Clock::HandlerBase*> StaticHandlerMap_t;
     
     Clock() { }
