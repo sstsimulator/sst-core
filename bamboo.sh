@@ -1,9 +1,10 @@
-# stage1_bamboo.sh
+#!/bin/sh
+# bamboo.sh
 
 # Description:
 
-# A quick and dirty shell script to command a build from the Atlassian
-# Bamboo Continuous Integration Environment.
+# A shell script to command a build from the Atlassian Bamboo
+# Continuous Integration Environment.
 
 # Because there are pre-make steps that need to occur due to the use
 # of the GNU Autotools, this script simplifies the build activation by
@@ -13,31 +14,88 @@
 # the SST Google Code repository prior to invocation of this
 # script. Plow through the build, exiting if something goes wrong.
 
-./autogen.sh
 
-lastexit=$?
+#-------------------------------------------------------------------------
+# Function: defaultaction
+# Description:
+#   Purpose: Default action for Bamboo script.
+#   Input: none
+#   Output: none
+#   Return value: 0 if success, or error at step.
+defaultaction() {
 
-if [ $lastexit -ne 0 ]
+    # autogen to create ./configure
+    ./autogen.sh
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
+    # configure SST
+    ./configure --prefix=/usr/local --with-boost=/usr/local --with-zoltan=/usr/local --with-parmetis=/usr/local
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
+    # build SST
+    make all
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
+}
+
+#-------------------------------------------------------------------------
+# Function: customaction1
+# Description:
+#   Purpose: Custom action example.
+#   Input: none
+#   Output: none
+#   Return value: 0 if success
+# customaction1() {
+#     # Example template for custom build actions
+#     # If a step fails, exit at that point, return with the error code.
+# }
+
+
+#=========================================================================
+
+retval=0
+
+if [ $# -ne 1 ]
 then
-    exit $lastexit
+    echo "Usage : $0 <action>"
+    retval=0
+elif [ $1 = "default" ]
+then
+    defaultaction
+    retval=$?
+# elif [ $1 = "custom1" ]
+# then
+#     # example custom action 1
+#     customaction1
+#     retval=$?
+#
+# elif [ $1 = "custom2" ]
+# then
+#     # example custom action 2
+#     customaction2
+#     retval=$?
+else
+    echo "$0 : unknown action \"$1\""
+    retval=1
 fi
 
-./configure --prefix=/usr/local --with-boost=/usr/local --with-zoltan=/usr/local --with-parmetis=/usr/local
-
-lastexit=$?
-
-if [ $lastexit -ne 0 ]
+if [ $retval -ne 0 ]
 then
-    exit $lastexit
+    echo "$0 : exit failure."
+else
+    echo "$0 : exit success."
 fi
 
-make all
-
-lastexit=$?
-
-if [ $lastexit -ne 0 ]
-then
-    exit $lastexit
-fi
-
-
+exit $retval
