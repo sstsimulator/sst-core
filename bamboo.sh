@@ -51,6 +51,41 @@ defaultaction() {
 }
 
 #-------------------------------------------------------------------------
+# Function: dramsim_test
+# Description:
+#   Purpose: Configure and build with DRAMSim2.
+#   Input: none
+#   Output: none
+#   Return value: 0 if success
+dramsim_test() {
+
+    # autogen to create ./configure
+    ./autogen.sh
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
+    # configure SST with DRAMSim2
+    ./configure --prefix=/usr/local --with-boost=/usr/local --with-zoltan=/usr/local --with-parmetis=/usr/local --with-dramsim=/usr/local
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
+    # build SST
+    make all
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
+}
+
+#-------------------------------------------------------------------------
 # Function: customaction1
 # Description:
 #   Purpose: Custom action example.
@@ -71,10 +106,18 @@ if [ $# -ne 1 ]
 then
     echo "Usage : $0 <action>"
     retval=0
+
 elif [ $1 = "default" ]
 then
     defaultaction
     retval=$?
+
+elif [ $1 = "DRAMSim_test" ]
+then
+    # Build SST with DRAMSim2
+    dramsim_test
+    retval=$?
+
 # elif [ $1 = "custom1" ]
 # then
 #     # example custom action 1
