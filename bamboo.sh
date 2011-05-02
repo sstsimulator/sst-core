@@ -51,6 +51,41 @@ defaultaction() {
 }
 
 #-------------------------------------------------------------------------
+# Function: powertherm_test
+# Description:
+#   Purpose: Configure and build with DRAMSim2.
+#   Input: none
+#   Output: none
+#   Return value: 0 if success
+powertherm_test() {
+
+    # autogen to create ./configure
+    ./autogen.sh
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
+    # configure SST with power and thermal options enabled
+    ./configure --prefix=/usr/local --with-boost=/usr/local --with-zoltan=/usr/local --with-parmetis=/usr/local --with-McPAT=/usr/local/lib --with-hotspot=/usr/local/lib --with-orion=/usr/local/lib
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
+    # build SST
+    make all
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
+}
+
+#-------------------------------------------------------------------------
 # Function: dramsim_test
 # Description:
 #   Purpose: Configure and build with DRAMSim2.
@@ -114,8 +149,14 @@ then
 
 elif [ $1 = "DRAMSim_test" ]
 then
-    # Build SST with DRAMSim2
+    # Build SST with DRAMSim2 options enabled
     dramsim_test
+    retval=$?
+
+elif [ $1 = "PowerTherm_test" ]
+then
+    # Build SST with Power and Thermal options enabled
+    powertherm_test
     retval=$?
 
 # elif [ $1 = "custom1" ]
