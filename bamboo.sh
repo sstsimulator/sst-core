@@ -48,18 +48,15 @@ getconfig() {
             esac
 
             # Environment variables used for Disksim config
-	    disksimenv="CFLAGS=-DDISKSIM_DBG CFLAGS=-g CXXFLAGS=-g"
+            disksimenv="CFLAGS=-DDISKSIM_DBG CFLAGS=-g CXXFLAGS=-g"
 
             configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=/usr/local/$disksimdir --no-recursion $disksimenv"
             ;;
         PowerTherm_test)
             configStr="$baseoptions --with-McPAT=/usr/local/lib --with-hotspot=/usr/local/lib --with-orion=/usr/local/lib"
             ;;
-        DRAMSim_test)
-            configStr="$baseoptions --with-dramsim=/usr/local"
-            ;;
         default|*)
-            configStr="$baseoptions"
+            configStr="$baseoptions --with-dramsim=/usr/local"
             ;;
     esac
 
@@ -119,7 +116,7 @@ else
     arch=`uname -p`
 
     case $1 in
-        default|DRAMSim_test|PowerTherm_test|Disksim_test)
+        default|PowerTherm_test|Disksim_test)
             configline=`getconfig $1 $arch`
 #            echo "generated config line: $configline"
             dobuild $configline
