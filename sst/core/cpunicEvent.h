@@ -69,10 +69,11 @@ class CPUNicEvent : public Event {
 	int dest;
 	uint64_t msg_id;// Each message event should have a unique ID for debugging
 
-	// Some envelope info
+	// Some envelope info that can be used by the endpoints
 	uint64_t msg_match_bits;
 	uint64_t buf;
 	uint32_t msg_len;
+	uint32_t tag;
 
 	// Functions to attach and detach parameters
 	inline void AttachParams(const void *input, int len)   {
