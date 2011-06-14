@@ -50,7 +50,7 @@ main(int argc, char *argv[])
     boost::mpi::communicator world;
 
     Config cfg;
-    SST::Simulation*  sim;
+    SST::Simulation*  sim= NULL;
 
     if ( cfg.Init( argc, argv, world.rank() ) ) {
         delete mpiEnv;
