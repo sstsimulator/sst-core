@@ -54,6 +54,10 @@ namespace SST {
 
     void SyncQueue::clear()
     {
+	// Need to delete the event
+	for ( unsigned int i = 0; i < data.size(); i++ ) {
+	    delete data[i];
+	}
 	data.clear();
     }
 
