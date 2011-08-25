@@ -31,7 +31,7 @@
 getconfig() {
 
     # These base options get applied to every 'configure'
-    baseoptions="--prefix=/usr/local --with-boost=/usr/local --with-zoltan=/usr/local --with-parmetis=/usr/local"
+    baseoptions="--disable-silent-rules --prefix=/usr/local --with-boost=/usr/local --with-zoltan=/usr/local --with-parmetis=/usr/local"
 
     case $1 in
         Disksim_test)
