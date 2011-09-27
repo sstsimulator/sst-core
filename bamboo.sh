@@ -15,7 +15,57 @@
 # script. Plow through the build, exiting if something goes wrong.
 
 #=========================================================================
-# functions
+# Definitions
+#=========================================================================
+# Root of directory checked out, where this script should be found
+export SST_ROOT=`pwd`
+# Location of SST library dependencies
+export SST_DEPS=/usr/local
+# Location where SST files are installed
+export SST_INSTALL=${HOME}/local
+# Location where SST build files are installed
+export SST_INSTALL_BIN=${SST_INSTALL}/bin
+# Initialize build type to null
+export SST_BUILD_TYPE=""
+# Load test definitions
+. test/include/testDefinitions.sh
+
+#=========================================================================
+# Functions
+#=========================================================================
+
+#-------------------------------------------------------------------------
+# Function: dotests
+# Description:
+#   Purpose:
+#       Based on build type and architecture, run tests
+#   Input:
+#       $1 (build type): kind of build to run tests for
+#   Output: none
+#   Return value: 0 if success
+dotests() {
+    # Build type is available as SST_BUILD_TYPE global, if
+    # needed to be selective about the tests that are run.
+
+    # Initialize directory to hold testOutputs
+    rm -Rf ${SST_TEST_OUTPUTS}
+    mkdir -p ${SST_TEST_OUTPUTS}
+
+    # Initialize directory to hold Bamboo-compatible XML test results
+    rm -Rf ${SST_TEST_RESULTS}
+    mkdir -p ${SST_TEST_RESULTS}
+
+    # Run test suites; build type is available as SST_BUILD_TYPE global.
+    # DO NOT pass args to the test suite, it confuses shunit.
+    ${SST_TEST_SUITES}/testSuite_portals.sh
+    # Add other test suites here, i.e.
+    # ${SST_TEST_SUITES}/testSuite_moe.sh
+    # ${SST_TEST_SUITES}/testSuite_larry.sh
+    # ${SST_TEST_SUITES}/testSuite_curly.sh
+    # ${SST_TEST_SUITES}/testSuite_shemp.sh
+    # etc.
+}
+
 
 #-------------------------------------------------------------------------
 # Function: getconfig
@@ -31,7 +81,7 @@
 getconfig() {
 
     # These base options get applied to every 'configure'
-    baseoptions="--disable-silent-rules --prefix=/usr/local --with-boost=/usr/local --with-zoltan=/usr/local --with-parmetis=/usr/local"
+    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS --with-zoltan=$SST_DEPS --with-parmetis=$SST_DEPS"
 
     case $1 in
         Disksim_test)
@@ -50,13 +100,13 @@ getconfig() {
             # Environment variables used for Disksim config
             disksimenv="CFLAGS=-DDISKSIM_DBG CFLAGS=-g CXXFLAGS=-g"
 
-            configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=/usr/local/$disksimdir --no-recursion $disksimenv"
+            configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_DEPS/$disksimdir --no-recursion $disksimenv"
             ;;
         PowerTherm_test)
-            configStr="$baseoptions --with-McPAT=/usr/local/lib --with-hotspot=/usr/local/lib --with-orion=/usr/local/lib"
+            configStr="$baseoptions --with-McPAT=$SST_DEPS/lib --with-hotspot=$SST_DEPS/lib --with-orion=$SST_DEPS/lib"
             ;;
         default|*)
-            configStr="$baseoptions --with-dramsim=/usr/local"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS"
             ;;
     esac
 
@@ -98,6 +148,14 @@ dobuild() {
         return $retval
     fi
 
+    # install SST
+    make install
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
+
 }
 
 #=========================================================================
@@ -117,8 +175,9 @@ else
 
     case $1 in
         default|PowerTherm_test|Disksim_test)
+            # Build type given as argument to this script
+            export SST_BUILD_TYPE=$1
             configline=`getconfig $1 $arch`
-#            echo "generated config line: $configline"
             dobuild $configline
             retval=$?
             ;;
@@ -128,6 +187,13 @@ else
             retval=1
             ;;
     esac
+fi
+
+if [ $retval ]
+then
+    # Build was successful, so run tests, providing command line args
+    # as a convenience
+    dotests $1
 fi
 
 if [ $retval -ne 0 ]
