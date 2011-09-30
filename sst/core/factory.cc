@@ -280,7 +280,7 @@ Factory::loadLibrary(std::string elemlib)
                 eli->components = elcp;
                 eli->events = NULL;
                 eli->introspectors = NULL;
-                fprintf(stderr, "WARNING: Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
+                fprintf(stderr, "# WARNING: Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
             } else {
                 fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
                        infoname.c_str(), libname.c_str(), old_error);
@@ -345,7 +345,7 @@ Factory::loadLibrary(std::string elemlib)
             eli->components = elcp;
             eli->events = NULL;
             eli->introspectors = NULL;
-            fprintf(stderr, "WARNING: Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
+            fprintf(stderr, "# WARNING: Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
         } else {
             fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
                     infoname.c_str(), libname.c_str(), old_error);

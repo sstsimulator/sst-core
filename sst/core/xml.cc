@@ -259,7 +259,7 @@ static void parse( TiXmlNode* pParent, SDL_CompMap_t &compMap )
 	case TiXmlNode::DECLARATION:
 	    {
 // 	    TiXmlDeclaration* dec = static_cast<TiXmlDeclaration*>(pParent);
-// 	    printf("Version: %s\n",dec->Version());
+// 	    printf("# Version: %s\n",dec->Version());
 	    }
 	    break;
 	default:
@@ -499,7 +499,7 @@ int xml_parse( std::string fileName,  SDL_CompMap_t &map )
     if (loadOkay)
     {
         init_references( &doc );
-	printf("Initialized references\n");
+	printf("# Initialized references\n");
         _SDL_DBG("file=\"%s\"\n", fileName.c_str());
         parse( &doc, map );
     }
@@ -522,7 +522,7 @@ std::string xmlGetVersion( std::string fileName )
     if (loadOkay)
     {
 	TiXmlDeclaration* dec = static_cast<TiXmlDeclaration*>(doc.FirstChild());
-	printf("Version: %s\n",dec->Version());
+	printf("# Version: %s\n",dec->Version());
 	return dec->Version();
     }
     return "UNKNOWN";

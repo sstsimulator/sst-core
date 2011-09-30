@@ -64,7 +64,7 @@ main(int argc, char *argv[])
     double end_build, start_run, end_run;
     
         
-    printf("main() My rank is %d, on %d nodes\n", world.rank(), world.size());
+    printf("# main() My rank is %d, on %d nodes\n", world.rank(), world.size());
     DebugInit( world.rank(), world.size() );
 
     if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) { 
@@ -77,7 +77,7 @@ main(int argc, char *argv[])
 	    ConfigGraph graph;
 	    xml_parse(cfg.sdlfile, graph);
 //  	    graph.print_graph(std::cout);
-// 	    printf("Using new parser\n");
+// 	    printf("# Using new parser\n");
 // 	    int minPart = findMinPart(graph);
 	    sim->performWireUp( graph, world.rank() );
 	}
@@ -100,7 +100,7 @@ main(int argc, char *argv[])
         if (cfg.archive) {
             archive.SaveSimulation(sim);
             delete sim;
-	    printf("Finished writing serialization file\n");
+	    printf("# Finished writing serialization file\n");
         }
     }
 
@@ -115,7 +115,7 @@ main(int argc, char *argv[])
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) { 
         if ( cfg.archive ) {
             sim = archive.LoadSimulation();
-	    printf("Finished reading serialization file\n");
+	    printf("# Finished reading serialization file\n");
         }
 	
         sim->Run();
@@ -136,10 +136,10 @@ main(int argc, char *argv[])
 
     if ( world.rank() == 0 ) {
 	std::cout << setiosflags(ios::fixed) << setprecision(2);
-	std::cout << endl << "Simulation times" << endl;;
-	std::cout << "  Build time: " << max_build_time << " s" << std::endl;
-	std::cout << "  Simulation time: " << max_run_time << " s" << std::endl;
-	std::cout << "  Total time: " << max_total_time << " s" << std::endl;
+	std::cout << "#" << endl << "# Simulation times" << endl;;
+	std::cout << "#  Build time: " << max_build_time << " s" << std::endl;
+	std::cout << "#  Simulation time: " << max_run_time << " s" << std::endl;
+	std::cout << "#  Total time: " << max_total_time << " s" << std::endl;
     }
 
     delete mpiEnv;
