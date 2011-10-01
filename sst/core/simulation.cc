@@ -486,7 +486,7 @@ void Simulation::Run() {
         }
     }
 
-    printf("Starting main event loop\n");
+    printf("# Starting main event loop\n");
     while( LIKELY( ! endSim ) ) {
  	currentSimCycle = timeVortex->front()->getDeliveryTime();
 
