@@ -85,8 +85,12 @@ sst_x_SOURCES = \
 	syncQueue.cc \
 	timeLord.cc \
 	timeVortex.cc \
-	xml.cc \
-	zolt.cc
+	xml.cc
+
+if HAVE_ZOLTAN
+sst_x_SOURCES += zolt.cc
+endif
+
 sst_x_LDADD = \
 	$(LIBLTDL) \
 	$(BOOST_SERIALIZATION_LIB) \
