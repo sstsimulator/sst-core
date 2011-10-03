@@ -65,6 +65,21 @@ public:
 private:
     static ComponentId_t count;
 
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+	ar & BOOST_SERIALIZATION_NVP(id);
+	ar & BOOST_SERIALIZATION_NVP(name);
+	ar & BOOST_SERIALIZATION_NVP(type);
+	ar & BOOST_SERIALIZATION_NVP(weight);
+	ar & BOOST_SERIALIZATION_NVP(rank);
+	ar & BOOST_SERIALIZATION_NVP(links);
+	ar & BOOST_SERIALIZATION_NVP(params);
+	ar & BOOST_SERIALIZATION_NVP(isIntrospector);
+    }
+    
 };
 
 class ConfigLink {
@@ -100,6 +115,21 @@ public:
 
 private:
     static LinkId_t count;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+	ar & BOOST_SERIALIZATION_NVP(id);
+	ar & BOOST_SERIALIZATION_NVP(name);
+	ar & BOOST_SERIALIZATION_NVP(component);
+	ar & BOOST_SERIALIZATION_NVP(port);
+	ar & BOOST_SERIALIZATION_NVP(latency);
+	ar & BOOST_SERIALIZATION_NVP(current_ref);
+    }
+
+
 };
 
     
@@ -124,6 +154,20 @@ public:
 	}
     }
 
+private:
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+	ar & BOOST_SERIALIZATION_NVP(links);
+	ar & BOOST_SERIALIZATION_NVP(comps);
+	ar & BOOST_SERIALIZATION_NVP(includes);
+	ar & BOOST_SERIALIZATION_NVP(variables);
+    }
+    
+    
 };
 
  

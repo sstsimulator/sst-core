@@ -38,7 +38,11 @@ Config::Config( )
     sdlfile     = "sdl.xml";
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
+#ifdef HAVE_ZOLTAN
     partitioner = "zoltan";
+#else
+    partitioner = "single";
+#endif
 }
 
 
@@ -87,9 +91,14 @@ int Config::Init( int argc, char *argv[], int rank )
 	                        "how long should the simulation run")
         ("timeBase", po::value< string >(&timeBase), 
                                 "the base time of the simulation")
+#ifdef HAVE_ZOLTAN
         ("partitioner", po::value< string >(&partitioner), 
-                                "partitioner to be used <zoltan | self>")
-    ;
+                                "partitioner to be used <single | zoltan | self>")
+#else
+        ("partitioner", po::value< string >(&partitioner), 
+                                "partitioner to be used <single | self>")
+#endif
+	;
 
     po::variables_map vm;
     po::parsed_options parsed =

@@ -88,7 +88,7 @@ public:
     static void printStatus(bool print_timevortex);
 
     int performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
-		       int minPart, int myRank );
+		       int minPart, int myRank, bool single );
     int performWireUp( ConfigGraph& graph, int myRank );
 
     void Run();

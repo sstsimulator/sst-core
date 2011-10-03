@@ -75,10 +75,14 @@ main(int argc, char *argv[])
 
 	if ( !strcmp(cfg.sdl_version.c_str(),"2.0") ) {
 	    ConfigGraph graph;
-	    xml_parse(cfg.sdlfile, graph);
-//  	    graph.print_graph(std::cout);
-// 	    printf("# Using new parser\n");
-// 	    int minPart = findMinPart(graph);
+	    // if ( world.rank() == 0 ) {
+		xml_parse(cfg.sdlfile, graph);
+	    // }
+	    // // Broadcast the data structures
+	    // printf("start broadcast\n");
+	    // broadcast(world, graph, 0);
+	    // printf("end broadcast\n");
+
 	    sim->performWireUp( graph, world.rank() );
 	}
 	else {
@@ -86,16 +90,25 @@ main(int argc, char *argv[])
 	    SDL_CompMap_t sdlMap;
 	    xml_parse( cfg.sdlfile, sdlMap );
 	    Graph graph(0);
+	    bool single = false;
 	    
 	    makeGraph(sim, sdlMap, graph);
 	    if ( !strcmp(cfg.partitioner.c_str(),"zoltan") ) {
+#ifdef HAVE_ZOLTAN
 		partitionGraph( graph, argc, argv );
+#else
+		printf("Requested zoltan partitioner, but SST was built without zoltan support, aborting...\n");
+		abort();
+#endif
 	    }
-	    else {
-		// For now, only option is self, so do nothing
+	    else if ( !strcmp(cfg.partitioner.c_str(),"single") ) {
+		single = true;
+	    }
+	    else if ( !strcmp(cfg.partitioner.c_str(),"self") ) {
+		// For now, do nothing, later we need to do some sanity checks
 	    }
 	    int minPart = findMinPart( graph );
-	    sim->performWireUp( graph, sdlMap, minPart, world.rank() );
+	    sim->performWireUp( graph, sdlMap, minPart, world.rank(), single );
 	}
         if (cfg.archive) {
             archive.SaveSimulation(sim);

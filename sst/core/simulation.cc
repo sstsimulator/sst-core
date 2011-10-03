@@ -149,7 +149,7 @@ Simulation::createIntrospector(std::string name, Params params )
 
 
 int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
-            int minPart, int myRank )
+			       int minPart, int myRank, bool single )
 {
     // For now only works with a single rank (though some of the
     // multi-rank code is there)
@@ -166,8 +166,8 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
     {
         Edge *e = (*iter).second;
         int rank[2];
-        rank[0] = graph.vlist[e->v(0)]->rank;
-        rank[1] = graph.vlist[e->v(1)]->rank;
+        rank[0] = single ? 1 : graph.vlist[e->v(0)]->rank;
+        rank[1] = single ? 1 : graph.vlist[e->v(1)]->rank;
 
         if ( rank[0] != myRank && rank[1] != myRank ) { 
             continue;
