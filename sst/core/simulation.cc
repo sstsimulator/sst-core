@@ -332,8 +332,10 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 	{
 	    ConfigLink* clink = (*iter).second;
 	    int rank[2];
-	    rank[0] = clink->component[0]->rank;
-	    rank[1] = clink->component[1]->rank;
+//	    rank[0] = clink->component[0]->rank;
+//	    rank[1] = clink->component[1]->rank;
+	    rank[0] = graph.comps[clink->component[0]]->rank;
+	    rank[1] = graph.comps[clink->component[1]]->rank;
 	    if ( rank[0] == rank[1] ) continue;
 	    if ( clink->getMinLatency() < min_part ) {
 		min_part = clink->getMinLatency();
@@ -351,8 +353,8 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
     {
         ConfigLink* clink = (*iter).second;
         int rank[2];
-        rank[0] = clink->component[0]->rank;
-        rank[1] = clink->component[1]->rank;
+        rank[0] = graph.comps[clink->component[0]]->rank;
+        rank[1] = graph.comps[clink->component[1]]->rank;
 
 	if ( rank[0] != myRank && rank[1] != myRank ) {
 	    // Nothing to be done
@@ -368,20 +370,24 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 
 	    // Add this link to the appropriate LinkMap
 	    std::map<ComponentId_t,LinkMap*>::iterator it;
-	    it = component_links.find(clink->component[0]->id);
+	    // it = component_links.find(clink->component[0]->id);
+	    it = component_links.find(clink->component[0]);
 	    if ( it == component_links.end() ) {
 		LinkMap* lm = new LinkMap();
 		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[0]->id,lm));
+		// ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[0]->id,lm));
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[0],lm));
  		it = ret_val.first;
 	    }
  	    it->second->insertLink(clink->port[0],lp.getLeft());
 
-	    it = component_links.find(clink->component[1]->id);
+	    // it = component_links.find(clink->component[1]->id);
+	    it = component_links.find(clink->component[1]);
 	    if ( it == component_links.end() ) {
 		LinkMap* lm = new LinkMap();
 		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[1]->id,lm));
+		// ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[1]->id,lm));
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[1],lm));
  		it = ret_val.first;
 	    }
  	    it->second->insertLink(clink->port[1],lp.getRight());
@@ -408,11 +414,11 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 
 	    // Add this link to the appropriate LinkMap for the local component
 	    std::map<ComponentId_t,LinkMap*>::iterator it;
-	    it = component_links.find(clink->component[local]->id);
+	    it = component_links.find(clink->component[local]);
 	    if ( it == component_links.end() ) {
 		LinkMap* lm = new LinkMap();
 		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[local]->id,lm));
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[local],lm));
  		it = ret_val.first;
 	    }
  	    it->second->insertLink(clink->port[local],lp.getLeft());

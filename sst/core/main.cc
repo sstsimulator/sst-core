@@ -57,6 +57,9 @@ main(int argc, char *argv[])
         return -1;
     }
 
+    // cfg.print();
+    // exit(0);
+    
     Archive archive(cfg.archiveType, cfg.archiveFile);
 
     boost::mpi::timer* timer = new boost::mpi::timer();
@@ -75,14 +78,11 @@ main(int argc, char *argv[])
 
 	if ( !strcmp(cfg.sdl_version.c_str(),"2.0") ) {
 	    ConfigGraph graph;
-	    // if ( world.rank() == 0 ) {
+	    if ( world.rank() == 0 ) {
 		xml_parse(cfg.sdlfile, graph);
-	    // }
-	    // // Broadcast the data structures
-	    // printf("start broadcast\n");
-	    // broadcast(world, graph, 0);
-	    // printf("end broadcast\n");
-
+	    }
+	    // Broadcast the data structures
+	    broadcast(world, graph, 0);
 	    sim->performWireUp( graph, world.rank() );
 	}
 	else {
@@ -97,8 +97,8 @@ main(int argc, char *argv[])
 #ifdef HAVE_ZOLTAN
 		partitionGraph( graph, argc, argv );
 #else
-		printf("Requested zoltan partitioner, but SST was built without zoltan support, aborting...\n");
-		abort();
+ 		printf("Requested zoltan partitioner, but SST was built without zoltan support, aborting...\n");
+ 		exit(1);
 #endif
 	    }
 	    else if ( !strcmp(cfg.partitioner.c_str(),"single") ) {
@@ -119,6 +119,7 @@ main(int argc, char *argv[])
 
     end_build = timer->elapsed();
     double build_time = end_build - start;
+    // std::cout << "#  Build time: " << build_time << " s" << std::endl;
 
     double max_build_time;
     all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
@@ -149,7 +150,7 @@ main(int argc, char *argv[])
 
     if ( world.rank() == 0 ) {
 	std::cout << setiosflags(ios::fixed) << setprecision(2);
-	std::cout << "#" << endl << "# Simulation times" << endl;;
+	std::cout << "#" << endl << "# Simulation times" << endl;
 	std::cout << "#  Build time: " << max_build_time << " s" << std::endl;
 	std::cout << "#  Simulation time: " << max_run_time << " s" << std::endl;
 	std::cout << "#  Total time: " << max_total_time << " s" << std::endl;

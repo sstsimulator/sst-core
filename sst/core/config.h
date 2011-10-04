@@ -44,6 +44,19 @@ public:
         if( ! mode.compare( "both" ) ) return BOTH; 
         return UNKNOWN;
     }
+
+    void print() {
+	std::cout << "archive = " << archive << std::endl;
+	std::cout << "archiveType = " << archiveType << std::endl;
+	std::cout << "archiveFile = " << archiveFile << std::endl;
+	std::cout << "runMode = " << runMode << std::endl;
+	std::cout << "libpath = " << libpath << std::endl;
+	std::cout << "sdlfile = " << sdlfile << std::endl;
+	std::cout << "stopAtCycle = " << stopAtCycle << std::endl;
+	std::cout << "timeBase = " << timeBase << std::endl;
+	std::cout << "partitioner = " << partitioner << std::endl;
+	std::cout << "sdl_version = " << sdl_version << std::endl;
+    }
 };
 
 } // namespace SST

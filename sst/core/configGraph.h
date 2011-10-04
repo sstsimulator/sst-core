@@ -86,7 +86,8 @@ class ConfigLink {
 public:
     LinkId_t         id;
     std::string      name;
-    ConfigComponent* component[2];
+    // ConfigComponent* component[2];
+    ComponentId_t    component[2];
     std::string      port[2];
     SimTime_t        latency[2];
     int              current_ref;
@@ -103,10 +104,10 @@ public:
     
     void print_link(std::ostream &os) const {
 	os << "Link " << name << " (id = " << id << ")" << std::endl;
-	os << "  component[0] = " << component[0]->name << std::endl;
+	os << "  component[0] = " << component[0] << std::endl;
 	os << "  port[0] = " << port[0] << std::endl;
 	os << "  latency[0] = " << latency[0] << std::endl;
-	os << "  component[1] = " << component[1]->name << std::endl;
+	os << "  component[1] = " << component[1] << std::endl;
 	os << "  port[1] = " << port[1] << std::endl;
 	os << "  latency[1] = " << latency[1] << std::endl;
     }

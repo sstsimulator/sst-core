@@ -44,26 +44,6 @@ static void parameters( Params &params, TiXmlNode* node )
     }
 }
 
-static void parameters_link( ConfigLink* link, int which_comp, TiXmlNode* node )
-{
-//     TiXmlNode* pChild;
-//     for ( pChild = node->FirstChild(); pChild != 0; 
-//                                         pChild = pChild->NextSibling()) 
-//     {
-//             if ( pChild->ToElement()->GetText() == NULL ) {
-//                 _abort(SDL,"element \"%s\" has no text\n",pChild->Value());
-//             } 
-//             _SDL_DBG("name=%s value=%s\n", pChild->Value(),
-//                                     pChild->ToElement()->GetText() ); 
-// 	    if ( strcmp( pChild->Value(), "name" ) == 0 ) {
-// 		link->port[which_comp] = pChild->ToElement()->GetText();
-// 	    }
-// 	    if ( strcmp( pChild->Value(), "lat" ) == 0 ) {
-// 		link->latency[which_comp] = pChild->ToElement()->GetText();
-// 	    }
-//     }
-}
-
 static void link( Params &params, TiXmlNode* node )
 {
     TiXmlNode* pChild;
@@ -74,20 +54,6 @@ static void link( Params &params, TiXmlNode* node )
     {
         if ( strcmp( pChild->Value(), "params" ) == 0 ) {
             parameters( params, pChild);
-        }
-    }
-}
-
-static void new_link( ConfigLink* link, int which_comp, TiXmlNode* node )
-{
-    TiXmlNode* pChild;
-    _SDL_DBG("%s\n",node->Value());
-
-    for ( pChild = node->FirstChild(); pChild != 0; 
-                                        pChild = pChild->NextSibling()) 
-    {
-        if ( strcmp( pChild->Value(), "params" ) == 0 ) {
-            parameters_link( link, which_comp, pChild);
         }
     }
 }
@@ -116,37 +82,6 @@ static void links( SDL_links_t &links, TiXmlNode* node )
         }
     }
 }
-
-static void new_links( ConfigGraph &graph, ConfigComponent* comp, TiXmlNode* node )
-{
-    TiXmlNode* pChild;
-
-    for ( pChild = node->FirstChild(); pChild != 0; 
-                                        pChild = pChild->NextSibling()) 
-    {
-        if ( strcmp( pChild->Value(), "link" ) == 0 ) {
-	    std::string name = link_id(pChild);
-	    // See if the link already exists
-	    ConfigLink* link;
-	    int which_comp;
-	    if ( graph.links.count(name) ) {
-		link = graph.links[name];
-		which_comp = 1;
-	    }
-	    else {
-		link = new ConfigLink();
-		graph.links[name] = link;
-		which_comp = 0;
-	    }
-	    // Now, set all the parameters for the link
-	    link->component[which_comp] = comp;
-	    new_link(link, which_comp, pChild);
-	    comp->links.push_back(link);
-
-        }
-    }
-}
-
 
 static SDL_Component * component( TiXmlNode* node, float weight, int rank, bool isIntrospector )
 {
@@ -696,7 +631,7 @@ static void new_parse_link( TiXmlNode* pParent, ConfigGraph &graph, ConfigCompon
     }
     
     int index = link->current_ref++;
-    link->component[index] = comp;
+    link->component[index] = comp->id;
     link->port[index] = port;
     link->latency[index] = latency;
 
