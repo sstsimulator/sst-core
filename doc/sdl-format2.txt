@@ -1,9 +1,12 @@
-The system description language (SDL) file is made up of 5 parts.  The
-first is the line giving the xml version.  This file describes version
+The system description language (SDL) file is made up of 6 parts.  The
+first is the line giving the xml version (1.0).
+
+<?xml version="1.0"?>
+
+The second specified the sdl version.  This file describes version
 2.0.  The line is written as:
 
-<?xml version="2.0"?>
-
+<sdl version="2.0"/>
 
 There are 4 other sections to the file: config, variables,
 param_include and sst.  Ordering of these four sections does not
@@ -19,7 +22,7 @@ The <config> section contains definitions for simulation parameters.
 The parameters in this section are the same as those that can be
 defined on the command line (with the exception of the sdl-file
 parameter, for obvious reasons).  Parameters are defined one per line,
-using the parameter=value syntax.  An example follows:
+using the parameter=value (no spaces allowed) syntax.  An example follows:
 
 <config>
     run-mode=both
@@ -196,8 +199,9 @@ added shortly.
 
 --------  Sample  ----------
 
-<?xml version="2.0"?>
+<?xml version="1.0"?>
 
+<sdl version="2.0"/>
 
 <config>
     run-mode=both

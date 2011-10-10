@@ -19,8 +19,14 @@
 
 #include "sst/core/params.h"
 
+
+class TiXmlDocument;
+class TiXmlNode;
+
 namespace SST {
 
+// Legacy support
+    
 class SDL_Link {
     public:
     float        weight;
@@ -47,9 +53,50 @@ typedef std::map < std::string, SDL_Component * > SDL_CompMap_t;
  
 extern int xml_parse( std::string file, SDL_CompMap_t& map);
 extern int xml_parse( std::string fileName, ConfigGraph& graph );
+extern int xml_parse( TiXmlDocument* doc, ConfigGraph& graph );
 extern std::string xmlGetConfig( std::string file );
 extern std::string xmlGetVersion( std::string file );
 
+// End legacy support
+
+ 
+typedef std::map<std::string,Params*> ParamsMap_t;
+typedef std::map<std::string,std::string> VariableMap_t;
+
+class ConfigComponent;
+ 
+class sdl_parser {
+
+public:
+    sdl_parser(std::string filename);
+    ~sdl_parser();
+
+    std::string getSDLConfigString();
+    ConfigGraph* createConfigGraph();
+    std::string getVersion() {return version;}
+    
+private:
+
+    ConfigGraph* graph;
+    
+    TiXmlDocument*   doc;
+    std::string      version;
+
+    std::map<std::string,Params*> includes;
+    /* ParamsMap_t      includes; */
+    VariableMap_t    variables;
+
+    // Parsing methods
+    void parse_param_include(TiXmlNode* pParent);
+    void parse_variable(TiXmlNode* pParent);
+    void parse_variables(TiXmlNode* pParent);
+    void parse_component(TiXmlNode* pParent);
+    void parse_params(TiXmlNode* pParent, ConfigComponent* comp);
+    void parse_link(TiXmlNode* pParent, ConfigComponent* comp);
+    std::string resolve_variable(const std::string value, int line_number);
+};
+
+ 
 } // namespace SST
 
 #endif

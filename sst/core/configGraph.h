@@ -145,7 +145,8 @@ public:
     ConfigLinkMap_t      links;
     ConfigComponentMap_t comps;
 
-    ParamsMap_t          includes;
+    std::map<std::string,Params*> includes;
+    // ParamsMap_t          includes;
     VariableMap_t        variables;
 
     void print_graph(std::ostream &os) const {

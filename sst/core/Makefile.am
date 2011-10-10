@@ -80,6 +80,7 @@ sst_x_SOURCES = \
 	main.cc \
 	memEvent.cc \
 	pollingLinkQueue.cc \
+	sdl.cc \
 	simulation.cc \
 	sync.cc \
 	syncQueue.cc \

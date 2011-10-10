@@ -16,12 +16,26 @@
 #include <string>
 #include <sst/core/sst_types.h>
 
+namespace boost {
+    namespace program_options {
+
+	class options_description;
+	class positional_options_description;
+	class variables_map;
+    }
+}
+
 namespace SST {
 class Config {
 public:
     typedef enum { UNKNOWN, INIT, RUN, BOTH } Mode_t;
 
-    Config();
+    Config(int my_rank);
+    ~Config();
+
+    int parse_cmd_line( int argc, char* argv[] );
+    int parse_config_file( std::string config_string );
+    
     int Init( int argc, char *argv[], int rank );
     void Print();
 
@@ -57,6 +71,17 @@ public:
 	std::cout << "partitioner = " << partitioner << std::endl;
 	std::cout << "sdl_version = " << sdl_version << std::endl;
     }
+
+private:
+    boost::program_options::options_description* helpDesc;
+    boost::program_options::options_description* hiddenDesc;
+    boost::program_options::options_description* mainDesc;
+    boost::program_options::positional_options_description* posDesc;
+    boost::program_options::variables_map* var_map;
+    std::string run_name;
+
+    int rank;
+
 };
 
 } // namespace SST

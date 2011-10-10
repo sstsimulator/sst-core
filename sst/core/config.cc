@@ -28,8 +28,17 @@ using namespace std;
 
 namespace SST {
 
-Config::Config( )
+Config::~Config() {
+    delete helpDesc;
+    delete hiddenDesc;
+    delete mainDesc;
+    delete posDesc;
+    delete var_map;
+}
+    
+Config::Config( int my_rank )
 {
+    rank        = my_rank;
     archive     = false;
     archiveType = "bin";
     archiveFile = "sst_checkpoint";
@@ -43,50 +52,33 @@ Config::Config( )
 #else
     partitioner = "single";
 #endif
-}
 
-
-void Config::Print( )
-{
-    printf("archive %d\n",archive);
-    printf("atype %s\n", archiveType.c_str());
-    printf("archiveFile %s\n",archiveFile.c_str());
-    printf("runMode %d\n",runMode);
-    printf("libpath %s\n",libpath.c_str());
-    printf("sdlfile %s\n",sdlfile.c_str());
-    printf("stopAtCycle %s\n",stopAtCycle.c_str());
-    printf("timeBase %s\n",timeBase.c_str());
-    printf("partitioner %s\n",partitioner.c_str());
-}
-
-int Config::Init( int argc, char *argv[], int rank )
-{
     // Some config items can be initialized from either the command line or
     // the config file. The command line has precedence. We need to initialize
     // the items found in the sdl file first. They will be overridden later.
     // We need to find the sdlfile amongst the command line arguments
 
-    po::options_description helpDesc( "Allowed options:" );
-    helpDesc.add_options()
+    helpDesc = new po::options_description( "Allowed options:" );
+    helpDesc->add_options()
         ("help", "print help message")
     ; 
 
-    po::options_description hiddenDesc( "" );
-    hiddenDesc.add_options()
+    hiddenDesc = new po::options_description( "" );
+    hiddenDesc->add_options()
         ("sdl-file", po::value< string >( &sdlfile ), 
                                 "system description file")
     ; 
 
-    po::positional_options_description posDesc;
-    posDesc.add("sdl-file", 1);
+    posDesc = new po::positional_options_description();
+    posDesc->add("sdl-file", 1);
     
-    po::options_description desc( "" );
-    desc.add_options()
+    mainDesc = new po::options_description( "" );
+    mainDesc->add_options()
         ("debug", po::value< vector<string> >()->multitoken(), 
                 "{ all | cache | queue | archive | clock | sync | link |\
                  linkmap | linkc2m | linkc2c | linkc2s | comp | factory |\
                  stop | compevent | sim | clockevent | sdl | graph | zolt }")
-        ("archive-type", po::value< string >(), 
+        ("archive-type", po::value< string >( &archiveType ), 
                                 "archive type [ xml | text | bin ]")
         ("archive-file", po::value< string >( &archiveFile ), 
                                 "archive file name")
@@ -106,85 +98,106 @@ int Config::Init( int argc, char *argv[], int rank )
                                 "partitioner to be used <single | self>")
 #endif
 	;
+
+    var_map = new po::variables_map();
+}
+
+int
+Config::parse_cmd_line(int argc, char* argv[]) {
+    run_name = argv[0];
     
     po::options_description cmdline_options;
-    cmdline_options.add(helpDesc).add(hiddenDesc).add(desc);
-
-    po::variables_map vm;
+    cmdline_options.add(*helpDesc).add(*hiddenDesc).add(*mainDesc);
 
     try {
 	po::parsed_options parsed =
-	    po::command_line_parser(argc,argv).options(cmdline_options).positional(posDesc).
-	    run();
-	po::store( parsed, vm );
-	po::notify( vm );
+	    po::command_line_parser(argc,argv).options(cmdline_options).positional(*posDesc).run();
+	po::store( parsed, *var_map );
+	po::notify( *var_map );
     }
     catch (exception& e) {
 	cout << "Error: " << e.what() << endl;
 	return -1;
     }
 
-    if ( vm.count("debug") ) {
-        if ( DebugSetFlag( vm[ "debug" ].as< vector<string> >() ) ) {
+    if ( var_map->count("debug") ) {
+        if ( DebugSetFlag( (*var_map)[ "debug" ].as< vector<string> >() ) ) {
             return -1;
         }
     }
 
-    if ( vm.count( "help" ) ) {
-	cout << "Usage: " << argv[0] << " sdl-file [options]" << endl;
+    if ( var_map->count( "help" ) ) {
+	cout << "Usage: " << run_name << " sdl-file [options]" << endl;
         cout << helpDesc;
-        cout << desc << endl;
+        cout << mainDesc << endl;
         return 1;
     }
 
-    if ( !vm.count( "sdl-file" ) ) {
+    if ( !var_map->count( "sdl-file" ) ) {
 	cout << "Error: no sdl-file specified" << endl;
-	cout << "  Usage: " << argv[0] << " sdl-file [options]" << endl;
+	cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
         return -1;
     }
 
-    std::string xmlConfigStr;
-    try {
-	sdl_version = xmlGetVersion(sdlfile);
-	xmlConfigStr = xmlGetConfig(sdlfile);
-    } catch ( const char * e ) {
-        printf("ERROR: invalid sdl file\n");
-	printf("\t=> Attempted to load \"%s\"\n", sdlfile.c_str());
-	printf("\t=> XML Parser said: %s\n", e);
-	cout << "Usage: " << argv[0] << " sdl-file [options]" << endl;
-        cout << helpDesc;
-        cout << desc << "\n";
-        return -1;
+    if ( var_map->count( "archive-type" ) ) {
+	archiveType = (*var_map)[ "archive-type" ].as< string >(); 
+	archive = true;
     }
-    std::stringbuf sb( xmlConfigStr );
+    if ( var_map->count( "archive-file" ) ) {
+	archive = true;
+    }
+
+    // Get the full path to the sdl file
+    #define BUF_LEN 100
+    char buf[BUF_LEN];
+    if (getcwd( buf, BUF_LEN ) == NULL) {
+	cerr << "could not find my cwd:" << strerror(errno) << endl;
+	return -1;
+    }
+    std::string cwd = buf;
+
+    cwd.append("/");
+
+    // get the absolute path to the sdl file 
+    if ( sdlfile.compare(0,1,"/" ) ) {
+        sdlfile = cwd + sdlfile;
+    }
+
+    return 0;
+}
+
+int
+Config::parse_config_file(string config_string)
+{
+    std::stringbuf sb( config_string );
     std::istream ifs(&sb);
 
     // std::vector<string> the_rest = 
     //         po::collect_unrecognized( parsed.options, po::include_positional );
     
     try {
-        // po::variables_map vm;
-        // po::store( po::command_line_parser(the_rest).options(desc).run(), vm);
-        po::store( po::parse_config_file( ifs, desc), vm);
-        po::notify( vm );
+        // po::variables_map var_map;
+        // po::store( po::command_line_parser(the_rest).options(desc).run(), var_map);
+        po::store( po::parse_config_file( ifs, *mainDesc), *var_map);
+        po::notify( *var_map );
 
-        if ( vm.count( "archive-type" ) ) {
-            archiveType = vm[ "archive-type" ].as< string >(); 
+        if ( var_map->count( "archive-type" ) ) {
+            archiveType = (*var_map)[ "archive-type" ].as< string >(); 
             archive = true;
         }
-        if ( vm.count( "archive-file" ) ) {
+        if ( var_map->count( "archive-file" ) ) {
             archive = true;
         }
 
-        if ( vm.count("run-mode") ) {
-            runMode = Config::RunMode( vm[ "run-mode" ].as< string >() ); 
+        if ( var_map->count("run-mode") ) {
+            runMode = Config::RunMode( (*var_map)[ "run-mode" ].as< string >() ); 
             if ( runMode == Config::UNKNOWN ) {
                 // this needs to be improved 
                 printf("ERROR: Unknown run mode %s\n", 
-                            vm[ "run-mode" ].as< string >().c_str());
-		cout << "Usage: " << argv[0] << " sdl-file [options]" << endl;
+		       (*var_map)[ "run-mode" ].as< string >().c_str());
+		cout << "Usage: " << run_name << " sdl-file [options]" << endl;
                 cout << helpDesc;
-                cout << desc << "\n";
+                cout << mainDesc << "\n";
                 return -1;
             }
         }
@@ -217,15 +230,33 @@ int Config::Init( int argc, char *argv[], int rank )
     archiveFile.append( buf );
     
     // get the absolute path to the sdl file 
-    if ( sdlfile.compare(0,1,"/" ) ) {
-        sdlfile = cwd + sdlfile;
-    }
-
-    // get the absolute path to the sdl file 
     if ( libpath.compare(0,1,"/" ) ) {
         libpath = cwd + libpath;
     }
 
+    return 0;
+}
+    
+    
+int Config::Init( int argc, char *argv[], int rank )
+{
+    parse_cmd_line(argc,argv);
+    
+    std::string xmlConfigStr;
+    try {
+	xmlConfigStr = xmlGetConfig(sdlfile);
+    } catch ( const char * e ) {
+        printf("ERROR: invalid sdl file\n");
+	printf("\t=> Attempted to load \"%s\"\n", sdlfile.c_str());
+	printf("\t=> XML Parser said: %s\n", e);
+	cout << "Usage: " << run_name << " sdl-file [options]" << endl;
+        cout << helpDesc;
+        cout << mainDesc << "\n";
+        return -1;
+    }
+
+    parse_config_file( xmlConfigStr );
+    
     return 0;
 }
 

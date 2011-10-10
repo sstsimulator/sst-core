@@ -49,16 +49,23 @@ main(int argc, char *argv[])
     boost::mpi::environment* mpiEnv = new boost::mpi::environment(argc,argv);
     boost::mpi::communicator world;
 
-    Config cfg;
+    Config cfg(world.rank());
     SST::Simulation*  sim= NULL;
 
-    if ( cfg.Init( argc, argv, world.rank() ) ) {
-        delete mpiEnv;
+    if ( cfg.parse_cmd_line(argc, argv) ) {
+    // if ( cfg.Init(argc, argv, world.rank()) ) {
+	delete mpiEnv;
         return -1;
     }
 
+    // Create the sdl parser
+    sdl_parser* parser = new sdl_parser(cfg.sdlfile);
+
+    string config_string = parser->getSDLConfigString();
+    cfg.sdl_version = parser->getVersion();
+    
+    cfg.parse_config_file(config_string);
     // cfg.print();
-    // exit(0);
     
     Archive archive(cfg.archiveType, cfg.archiveFile);
 
@@ -77,13 +84,18 @@ main(int argc, char *argv[])
         signal(SIGUSR2, sigHandlerPrintStatus2);
 
 	if ( !strcmp(cfg.sdl_version.c_str(),"2.0") ) {
-	    ConfigGraph graph;
+	    ConfigGraph* graph;
 	    if ( world.rank() == 0 ) {
-		xml_parse(cfg.sdlfile, graph);
+		// xml_parse(cfg.sdlfile, graph);
+		graph = parser->createConfigGraph();
+	    }
+	    else {
+		graph = new ConfigGraph();
 	    }
 	    // Broadcast the data structures
-	    broadcast(world, graph, 0);
-	    sim->performWireUp( graph, world.rank() );
+	    broadcast(world, *graph, 0);
+	    sim->performWireUp( *graph, world.rank() );
+	    delete graph;
 	}
 	else {
 	
