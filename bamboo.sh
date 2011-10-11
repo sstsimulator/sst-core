@@ -64,6 +64,10 @@ dotests() {
     # ${SST_TEST_SUITES}/testSuite_curly.sh
     # ${SST_TEST_SUITES}/testSuite_shemp.sh
     # etc.
+
+    # Purge SST install
+    rm -Rf ${SST_INSTALL}
+
 }
 
 
@@ -189,18 +193,18 @@ else
     esac
 fi
 
-if [ $retval ]
+if [ $retval -eq 0 ]
 then
     # Build was successful, so run tests, providing command line args
     # as a convenience
     dotests $1
 fi
 
-if [ $retval -ne 0 ]
+if [ $retval -eq 0 ]
 then
-    echo "$0 : exit failure."
-else
     echo "$0 : exit success."
+else
+    echo "$0 : exit failure."
 fi
 
 exit $retval
