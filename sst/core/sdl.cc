@@ -18,7 +18,7 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/sdl.h"
 #include "sst/core/simulation.h"
-#include "sst/core/timelord.h"
+#include "sst/core/timeLord.h"
 
 #include <tinyxml/tinyxml.h>
 
@@ -134,9 +134,9 @@ sdl_parser::createConfigGraph()
 	    if ( strcmp( pChild->Value(), "component") == 0 ) {
 		parse_component( pChild ); 
 	    }
-// 	    else if ( strcmp( pChild->Value(), "introspector") == 0 ) {
-//  		new_parse_introspector( pChild, graph ); 
-// 	    }
+	    else if ( strcmp( pChild->Value(), "introspector") == 0 ) {
+ 	    	parse_introspector( pChild ); 
+	    }
 	    break;
 	default:
 	    break;
@@ -215,7 +215,7 @@ sdl_parser::parse_component(TiXmlNode* pParent)
 	exit(1);
     }
     else if ( status == TIXML_NO_ATTRIBUTE ) {
-	comp->rank = -1;
+	comp->rank =0;
     }
 
     // Get the weight
@@ -239,6 +239,46 @@ sdl_parser::parse_component(TiXmlNode* pParent)
 	    }
 	    else if ( strcmp( pChild->Value(), "link") == 0 ) {
  		parse_link( pChild, comp ); 
+	    }
+	    break;
+	default:
+	    break;
+	}	
+    }
+
+    graph->comps[comp->id] = comp;    
+}
+
+void
+sdl_parser::parse_introspector(TiXmlNode* pParent)
+{
+    ConfigComponent* comp = new ConfigComponent();
+    comp->isIntrospector = true;
+
+    // Get the attributes from the component
+    TiXmlElement* element = pParent->ToElement();
+    if ( element->Attribute("name") == NULL ) {
+	cout << "ERROR: Parsing SDL file: Unspecified introspector name on or near line " << pParent->Row() << endl;
+	exit(1);
+    }
+    else {
+	comp->name = element->Attribute("name");
+    }
+    if ( element->Attribute("type") == NULL ) {
+	cout << "ERROR: Parsing SDL file: Unspecified introspector type on or near line " << pParent->Row() << endl;
+	exit(1);
+    }
+    else {
+	comp->type = element->Attribute("type");
+    }
+
+    // Now get the rest of the data (params and links)
+    TiXmlNode* pChild;
+    for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) {
+	switch (  pChild->Type()) {
+	case TiXmlNode::ELEMENT:
+	    if ( strcmp( pChild->Value(), "params") == 0 ) {
+		parse_params( pChild, comp );
 	    }
 	    break;
 	default:

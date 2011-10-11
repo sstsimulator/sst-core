@@ -191,11 +191,23 @@ A complete component declaration uses the following syntax:
     
 <introspector>
 
-Introspectors are not yet supported in this sdl format, but will be
-added shortly.
+The format for introspectors is the same as for components, except
+that you only specify name and type in the introspector information
+section.  Additionally, there is not <links> section.
+
+A complete introspector declaration uses the follwing syntax:
+
+<introspector name=name type=type>
+    <params include=include_list>
+        <param1> value1 </param1>
+	<param2> value2 </param2>
+	....
+    </params>
+</introspector>
 
 
-
+NOTE: This sample file is intended only to show format, it cannot be
+used to run an actual simulation.
 
 --------  Sample  ----------
 
@@ -248,6 +260,13 @@ added shortly.
 
 
 <sst>
+
+    <introspector name=routers type=portals4_sm.router_introspector >
+        <params include=cpu_params>
+            <id> 0 </id>
+        </params>
+    </introspector>
+
     <component name=0.cpu type=portals4_sm.trig_cpu >
         <params include=cpu_params>
             <id> 0 </id>

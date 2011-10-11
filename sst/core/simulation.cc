@@ -160,17 +160,17 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 
     if ( num_ranks > 1 ) sync = new Sync( minPartToTC(minPart) );
 
-    
+
     for( EdgeList_t::iterator iter = graph.elist.begin();
                             iter != graph.elist.end(); ++iter )
     {
         Edge *e = (*iter).second;
         int rank[2];
-        rank[0] = single ? 1 : graph.vlist[e->v(0)]->rank;
-        rank[1] = single ? 1 : graph.vlist[e->v(1)]->rank;
+        rank[0] = single ? myRank : graph.vlist[e->v(0)]->rank;
+        rank[1] = single ? myRank : graph.vlist[e->v(1)]->rank;
 
         if ( rank[0] != myRank && rank[1] != myRank ) { 
-            continue;
+	    continue;
         }
 	
 	int id = e->id();
@@ -275,7 +275,7 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
          iter != graph.vlist.end() ; ++iter )
     {
         Vertex*        v = (*iter).second;
-        int            vertRank = v->rank;
+        int            vertRank = single ? myRank : v->rank;
         std::string    name  = v->prop_list.get(GRAPH_COMP_NAME).c_str();
         ComponentId_t  id  = atoi(v->prop_list.get(GRAPH_ID).c_str() );
         SDL_Component* sdl_c = sdlMap[name.c_str()];
@@ -332,8 +332,6 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 	{
 	    ConfigLink* clink = (*iter).second;
 	    int rank[2];
-//	    rank[0] = clink->component[0]->rank;
-//	    rank[1] = clink->component[1]->rank;
 	    rank[0] = graph.comps[clink->component[0]]->rank;
 	    rank[1] = graph.comps[clink->component[1]]->rank;
 	    if ( rank[0] == rank[1] ) continue;
@@ -439,15 +437,13 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 	ConfigComponent* ccomp = (*iter).second;
 
         if (ccomp->isIntrospector) {
-// 	    Introspector* tmp;
+	    Introspector* tmp;
 
-//             _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
-// 		     name.c_str(), sdl_c->type().c_str(), (int)id );
+            // _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
+	    // 	     name.c_str(), sdl_c->type().c_str(), (int)id );
             
-//             tmp = createIntrospector(sdl_c->type().c_str(),
-//                                      sdl_c->params);
-//             introMap[name] = tmp;
-
+            tmp = createIntrospector( ccomp->type.c_str(),ccomp->params );
+            introMap[ccomp->name] = tmp;
         }
 	else if ( ccomp->rank == myRank ) {
             Component* tmp;

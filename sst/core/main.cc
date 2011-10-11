@@ -98,7 +98,6 @@ main(int argc, char *argv[])
 	    delete graph;
 	}
 	else {
-	
 	    SDL_CompMap_t sdlMap;
 	    xml_parse( cfg.sdlfile, sdlMap );
 	    Graph graph(0);

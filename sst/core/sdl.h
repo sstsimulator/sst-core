@@ -91,6 +91,7 @@ private:
     void parse_variable(TiXmlNode* pParent);
     void parse_variables(TiXmlNode* pParent);
     void parse_component(TiXmlNode* pParent);
+    void parse_introspector(TiXmlNode* pParent);
     void parse_params(TiXmlNode* pParent, ConfigComponent* comp);
     void parse_link(TiXmlNode* pParent, ConfigComponent* comp);
     std::string resolve_variable(const std::string value, int line_number);
