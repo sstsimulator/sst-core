@@ -143,13 +143,6 @@ typedef std::map<std::string,std::string> VariableMap_t;
     
 class ConfigGraph {
 public:
-    ConfigLinkMap_t      links;
-    ConfigComponentMap_t comps;
-
-    std::map<std::string,Params*> includes;
-    // ParamsMap_t          includes;
-    VariableMap_t        variables;
-
     void print_graph(std::ostream &os) const {
 	os << "Printing graph" << std::endl;
         for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
@@ -160,8 +153,18 @@ public:
     // Helper function to set all the ranks to the same value
     void setComponentRanks(int rank);
 
+    ConfigComponent* addComponent(std::string name, std::string type, float weight, int rank);
+    ConfigComponent* addComponent(std::string name, std::string type);
+    
+    ConfigComponent* addIntrospector(std::string name, std::string type);
     
 private:
+    friend class Simulation;
+    friend class sdl_parser;
+    
+    ConfigLinkMap_t      links;
+    ConfigComponentMap_t comps;
+
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -170,8 +173,6 @@ private:
     {
 	ar & BOOST_SERIALIZATION_NVP(links);
 	ar & BOOST_SERIALIZATION_NVP(comps);
-	ar & BOOST_SERIALIZATION_NVP(includes);
-	ar & BOOST_SERIALIZATION_NVP(variables);
     }
     
     
