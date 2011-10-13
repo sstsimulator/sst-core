@@ -32,7 +32,8 @@ public:
     Introspector* CreateIntrospector(std::string introspectorname,
                                Params& params);
     void RegisterEvent(std::string eventname);
-  
+
+    partitionFunction GetPartitioner(std::string name);
 private:
     friend class SST::SimulationBase;
 
@@ -40,6 +41,7 @@ private:
     typedef std::map<std::string, const ElementInfoComponent*> eic_map_t;
     typedef std::map<std::string, const ElementInfoEvent*> eie_map_t;
     typedef std::map<std::string, const ElementInfoIntrospector*> eii_map_t;
+    typedef std::map<std::string, const ElementInfoPartitioner*> eip_map_t;
 
     Factory(std::string searchPaths);
     ~Factory();
@@ -57,6 +59,7 @@ private:
     eic_map_t found_components;
     eii_map_t found_introspectors;
     eie_map_t found_events;
+    eip_map_t found_partitioners;
     std::string searchPaths;
     FactoryLoaderData *loaderData;
 

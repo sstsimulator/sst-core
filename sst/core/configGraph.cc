@@ -51,6 +51,18 @@ void ConfigComponent::print_component(std::ostream &os) const {
     
 }
 
+void
+ConfigGraph::setComponentRanks(int rank)
+{
+    for ( ConfigComponentMap_t::iterator iter = comps.begin();
+                            iter != comps.end(); ++iter )
+    {
+	(*iter).second->rank = rank;
+    }
+    
+}
+
+    
 static int
 find_lat(Simulation *sim, SDL_Component *c, std::string edge )
 {

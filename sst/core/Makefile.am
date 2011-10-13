@@ -41,6 +41,7 @@ nobase_dist_sst_HEADERS = \
 	log.h \
 	memEvent.h \
 	params.h \
+	partitioner.h \
 	pollingLinkQueue.h \
 	sdl.h \
 	simulation.h \

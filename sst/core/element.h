@@ -17,11 +17,13 @@
 
 namespace SST {
 class Introspector;
-
+class ConfigGraph;
+ 
 typedef Component* (*componentAllocate)(ComponentId_t, Params&);
 typedef Introspector* (*introspectorAllocate)(Params&);
 typedef void (*eventInitialize)(void);
-
+typedef void (*partitionFunction)(ConfigGraph*,int);
+ 
 struct ElementInfoComponent {
     const char *name;
     const char *description;
@@ -43,12 +45,20 @@ struct ElementInfoEvent {
     eventInitialize init;
 };
 
+ struct ElementInfoPartitioner {
+    const char *name;
+    const char *description;
+    void (*printHelp)(FILE *output);
+    partitionFunction func;
+};
+
 struct ElementLibraryInfo {
     const char *name;
     const char *description;
     const struct ElementInfoComponent* components;
     const struct ElementInfoEvent* events;
     const struct ElementInfoIntrospector* introspectors;
+    const struct ElementInfoPartitioner* partitioners;
 };
 };
 

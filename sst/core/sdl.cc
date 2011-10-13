@@ -55,9 +55,7 @@ sdl_parser::sdl_parser( const string fileName )
 		}
 	    }
 	}
-    }
-    
-    cout << "Version: " << version << endl;
+    }    
 }
 
 sdl_parser::~sdl_parser()
@@ -215,7 +213,7 @@ sdl_parser::parse_component(TiXmlNode* pParent)
 	exit(1);
     }
     else if ( status == TIXML_NO_ATTRIBUTE ) {
-	comp->rank =0;
+	comp->rank = -1;
     }
 
     // Get the weight

@@ -62,6 +62,7 @@ public:
     
     void print_component(std::ostream &os) const;
 
+    
 private:
     static ComponentId_t count;
 
@@ -156,6 +157,10 @@ public:
 	}
     }
 
+    // Helper function to set all the ranks to the same value
+    void setComponentRanks(int rank);
+
+    
 private:
 
     friend class boost::serialization::access;

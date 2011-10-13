@@ -22,6 +22,8 @@
 
 #include <sst/core/archive.h>
 #include <sst/core/config.h>
+#include <sst/core/element.h>
+#include <sst/core/factory.h>
 #include <sst/core/configGraph.h>
 #include <sst/core/zolt.h>
 #include <sst/core/simulation.h>
@@ -85,9 +87,30 @@ main(int argc, char *argv[])
 
 	if ( !strcmp(cfg.sdl_version.c_str(),"2.0") ) {
 	    ConfigGraph* graph;
-	    if ( world.rank() == 0 ) {
-		// xml_parse(cfg.sdlfile, graph);
+	    if ( world.size() == 1 ) {
 		graph = parser->createConfigGraph();
+		graph->setComponentRanks(0);
+	    }
+	    else if ( world.rank() == 0 ) {
+		graph = parser->createConfigGraph();
+
+		// Do the partitioning.
+		if ( cfg.partitioner != "self" ) {
+		    graph->setComponentRanks(-1);
+		}
+
+		if ( cfg.partitioner == "self" ) {
+		    // For now, do nothing.  Eventually we need to
+		    // have a checker for the partitioning.
+		}
+		else if ( cfg.partitioner == "zoltan" ) {
+		    printf("Zoltan support is currently not available, aborting...\n");
+		    abort();
+		}
+		else {
+		    partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
+		    func(graph,world.size());
+		}
 	    }
 	    else {
 		graph = new ConfigGraph();

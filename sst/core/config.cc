@@ -58,7 +58,7 @@ Config::Config( int my_rank )
     // the items found in the sdl file first. They will be overridden later.
     // We need to find the sdlfile amongst the command line arguments
 
-    helpDesc = new po::options_description( "Allowed options:" );
+    helpDesc = new po::options_description( "Allowed options" );
     helpDesc->add_options()
         ("help", "print help message")
     ; 
@@ -92,10 +92,10 @@ Config::Config( int my_rank )
                                 "the base time of the simulation")
 #ifdef HAVE_ZOLTAN
         ("partitioner", po::value< string >(&partitioner), 
-                                "partitioner to be used <single | zoltan | self>")
+	 "partitioner to be used <zoltan | self | lib.partitioner_name> (option ignored for serial jobs)" )
 #else
         ("partitioner", po::value< string >(&partitioner), 
-                                "partitioner to be used <single | self>")
+         "partitioner to be used <self | lib.partitioner_name> (option ignored for serial jobs)")
 #endif
 	;
 
@@ -128,8 +128,8 @@ Config::parse_cmd_line(int argc, char* argv[]) {
 
     if ( var_map->count( "help" ) ) {
 	cout << "Usage: " << run_name << " sdl-file [options]" << endl;
-        cout << helpDesc;
-        cout << mainDesc << endl;
+        cout << *helpDesc;
+        cout << *mainDesc << endl;
         return 1;
     }
 

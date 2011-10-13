@@ -181,6 +181,30 @@ Factory::RegisterEvent(std::string eventname)
     }
 }
 
+partitionFunction
+Factory::GetPartitioner(std::string name)
+{
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(name);
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // Look for the partitioner
+    std::string tmp = elemlib + "." + elem;
+    eip_map_t::iterator eii =
+	found_partitioners.find(tmp);
+    if ( eii == found_partitioners.end() ) {
+        _abort(Factory,"can't find requested partitioner %s.\n ", tmp.c_str());
+        return NULL;
+    }
+
+    const ElementInfoPartitioner *ei = eii->second;
+    return ei->func;
+}
+
 
 const ElementLibraryInfo*
 Factory::findLibrary(std::string elemlib)
@@ -220,6 +244,15 @@ Factory::findLibrary(std::string elemlib)
             std::string tmp = elemlib + "." + eii->name;
             found_introspectors[tmp] = eii;
             eii++;
+        }
+    }
+
+    if (NULL != eli->partitioners) {
+        const ElementInfoPartitioner *eip = eli->partitioners;
+        while (NULL != eip->name) {
+            std::string tmp = elemlib + "." + eip->name;
+            found_partitioners[tmp] = eip;
+            eip++;
         }
     }
 

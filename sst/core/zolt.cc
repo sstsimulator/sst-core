@@ -189,7 +189,8 @@ void partitionGraph(Graph &config_graph, int argc, char* argv[]) {
   myRank = world.rank();
 
   float ver;
-  int rc = Zoltan_Initialize(argc, argv, &ver);
+  // int rc = Zoltan_Initialize(argc, argv, &ver);
+  int rc = Zoltan_Initialize(0,NULL,&ver);
   if (rc != ZOLTAN_OK){
     printf("sorry...\n");
     MPI_Finalize();
