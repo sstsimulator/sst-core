@@ -47,6 +47,10 @@ dotests() {
     # Build type is available as SST_BUILD_TYPE global, if
     # needed to be selective about the tests that are run.
 
+    # NOTE: Bamboo does a fresh checkout of code each time, so there
+    # are no residuals left over from the last build. The directories
+    # initialized here are ephemeral, and not kept in CM/SVN.
+
     # Initialize directory to hold testOutputs
     rm -Rf ${SST_TEST_OUTPUTS}
     mkdir -p ${SST_TEST_OUTPUTS}
@@ -55,8 +59,14 @@ dotests() {
     rm -Rf ${SST_TEST_RESULTS}
     mkdir -p ${SST_TEST_RESULTS}
 
-    # Run test suites; build type is available as SST_BUILD_TYPE global.
-    # DO NOT pass args to the test suite, it confuses shunit.
+    # Initialize directory to hold temporary test input files
+    rm -Rf ${SST_TEST_INPUTS_TEMP}
+    mkdir -p ${SST_TEST_INPUTS_TEMP}
+
+    # Run test suites
+
+    # DO NOT pass args to the test suite, it confuses
+    # shunit. Use an environment variable instead.
     ${SST_TEST_SUITES}/testSuite_portals.sh
     # Add other test suites here, i.e.
     # ${SST_TEST_SUITES}/testSuite_moe.sh
@@ -65,7 +75,7 @@ dotests() {
     # ${SST_TEST_SUITES}/testSuite_shemp.sh
     # etc.
 
-    # Purge SST install
+    # Purge SST installation
     rm -Rf ${SST_INSTALL}
 
 }
