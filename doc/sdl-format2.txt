@@ -119,8 +119,9 @@ The component information section includes the <component>
 declaration, along with the component name and type.  It is also
 possible to optionally specify the MPI rank this component should be
 mapped to in the simulation (this allows the user to self partition
-the simulation).  These options are specified with the component
-declaration as follows:
+the simulation).  The rank specifications are ignored unless the
+partitioner is set to "self".  These options are specified with the
+component declaration as follows:
 
 <component name="name" type="type" rank="rank">
 
