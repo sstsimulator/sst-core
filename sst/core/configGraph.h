@@ -157,6 +157,11 @@ public:
     ConfigComponent* addComponent(std::string name, std::string type);
     
     ConfigComponent* addIntrospector(std::string name, std::string type);
+
+    // Temporary until we have a better API
+    ConfigComponentMap_t& getComponentMap() {
+	return comps;
+    }
     
 private:
     friend class Simulation;
