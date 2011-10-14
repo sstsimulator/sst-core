@@ -64,6 +64,9 @@ public:
 
     
 private:
+
+    friend class ConfigGraph;
+    
     static ComponentId_t count;
 
     friend class boost::serialization::access;
@@ -153,11 +156,27 @@ public:
     // Helper function to set all the ranks to the same value
     void setComponentRanks(int rank);
 
-    ConfigComponent* addComponent(std::string name, std::string type, float weight, int rank);
-    ConfigComponent* addComponent(std::string name, std::string type);
+    // ConfigComponent* addComponent(std::string name, std::string type, float weight, int rank);
+    // ConfigComponent* addComponent(std::string name, std::string type);
     
-    ConfigComponent* addIntrospector(std::string name, std::string type);
+    // ConfigComponent* addIntrospector(std::string name, std::string type);
 
+    // API for programatic initialization
+    ComponentId_t addComponent(std::string name, std::string type, float weight, int rank);
+    ComponentId_t addComponent(std::string name, std::string type);
+
+    void setComponentRank(ComponentId_t comp_id, int rank);
+    void setComponentWeight(ComponentId_t comp_id, float weight);
+
+    void addParams(ComponentId_t comp_id, Params& p); 
+    void addParameter(ComponentId_t comp_id, std::string key, std::string value, bool overwrite = false);
+
+    void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str);
+    
+    ComponentId_t addIntrospector(std::string name, std::string type);
+
+    
+    
     // Temporary until we have a better API
     ConfigComponentMap_t& getComponentMap() {
 	return comps;
