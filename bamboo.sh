@@ -75,7 +75,7 @@ dotests() {
     # ${SST_TEST_SUITES}/testSuite_shemp.sh
     # etc.
 
-    # Purge SST installation
+    # Purge SST installation 
     rm -Rf ${SST_INSTALL}
 
 }
@@ -206,7 +206,7 @@ fi
 if [ $retval -eq 0 ]
 then
     # Build was successful, so run tests, providing command line args
-    # as a convenience
+    # as a convenience. SST binaries must be generated before testing.
     dotests $1
 fi
 
