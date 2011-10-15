@@ -156,28 +156,12 @@ class CPUNicEvent : public Event {
 	bool payload_present;
 	int payload_len;
 
-        friend class boost::serialization::access;
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version )
-        {
-            ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
-	    ar & BOOST_SERIALIZATION_NVP(route);
-	    ar & BOOST_SERIALIZATION_NVP(reverse_route);
-	    ar & BOOST_SERIALIZATION_NVP(router_delay);
-	    ar & BOOST_SERIALIZATION_NVP(hops);
-	    ar & BOOST_SERIALIZATION_NVP(congestion_cnt);
-	    ar & BOOST_SERIALIZATION_NVP(congestion_delay);
-	    ar & BOOST_SERIALIZATION_NVP(msg_match_bits);
-	    ar & BOOST_SERIALIZATION_NVP(msg_len);
-	    ar & BOOST_SERIALIZATION_NVP(event_params);
-	    ar & BOOST_SERIALIZATION_NVP(routine);
-	    ar & BOOST_SERIALIZATION_NVP(params_len);
-	    ar & BOOST_SERIALIZATION_NVP(params_present);
-	    ar & BOOST_SERIALIZATION_NVP(payload_len);
-	    ar & BOOST_SERIALIZATION_NVP(msg_payload);
-	    ar & BOOST_SERIALIZATION_NVP(payload_present);
-        }
+	friend class boost::serialization::access;
+	template<class Archive>
+	void serialize(Archive & ar, const unsigned int version);
 };
 } //namespace SST
+
+BOOST_CLASS_EXPORT_KEY(SST::CPUNicEvent)
 
 #endif // SST_CPUNICEVENT_H
