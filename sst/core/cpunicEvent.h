@@ -21,9 +21,9 @@
 #ifndef SST_CPUNICEVENT_H
 #define SST_CPUNICEVENT_H
 
+#include <boost/serialization/vector.hpp>
 #include <cstring>
-
-#include "sst/core/event.h"
+#include <sst/core/event.h>
 
 namespace SST {
 
@@ -156,9 +156,10 @@ class CPUNicEvent : public Event {
 	bool payload_present;
 	int payload_len;
 
-	friend class boost::serialization::access;
-	template<class Archive>
-	void serialize(Archive & ar, const unsigned int version);
+        friend class boost::serialization::access;
+        template<class Archive>
+	void serialize(Archive &ar, const unsigned int version);
+
 };
 } //namespace SST
 
