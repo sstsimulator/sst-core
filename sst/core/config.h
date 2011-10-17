@@ -48,7 +48,12 @@ public:
     std::string     stopAtCycle;
     std::string     timeBase;
     std::string     partitioner;
+    std::string     generator;
+    std::string     generator_options;
 
+    bool            all_parse;
+    bool            verbose;
+    
     std::string     sdl_version;
     inline Mode_t
     RunMode( std::string mode ) 
@@ -69,6 +74,8 @@ public:
 	std::cout << "stopAtCycle = " << stopAtCycle << std::endl;
 	std::cout << "timeBase = " << timeBase << std::endl;
 	std::cout << "partitioner = " << partitioner << std::endl;
+	std::cout << "generator = " << generator << std::endl;
+	std::cout << "generator_options = " << generator_options << std::endl;
 	std::cout << "sdl_version = " << sdl_version << std::endl;
     }
 
@@ -79,6 +86,25 @@ private:
     boost::program_options::positional_options_description* posDesc;
     boost::program_options::variables_map* var_map;
     std::string run_name;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+	ar & BOOST_SERIALIZATION_NVP(archive);
+	ar & BOOST_SERIALIZATION_NVP(archiveType);
+	ar & BOOST_SERIALIZATION_NVP(archiveFile);
+	ar & BOOST_SERIALIZATION_NVP(runMode);
+	ar & BOOST_SERIALIZATION_NVP(libpath);
+	ar & BOOST_SERIALIZATION_NVP(sdlfile);
+	ar & BOOST_SERIALIZATION_NVP(stopAtCycle);
+	ar & BOOST_SERIALIZATION_NVP(timeBase);
+	ar & BOOST_SERIALIZATION_NVP(partitioner);
+	ar & BOOST_SERIALIZATION_NVP(generator);
+	ar & BOOST_SERIALIZATION_NVP(generator_options);
+	ar & BOOST_SERIALIZATION_NVP(sdl_version);
+    }
 
     int rank;
 

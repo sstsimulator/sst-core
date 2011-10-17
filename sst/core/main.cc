@@ -54,29 +54,45 @@ main(int argc, char *argv[])
     Config cfg(world.rank());
     SST::Simulation*  sim= NULL;
 
+    // All ranks parse the command line
     if ( cfg.parse_cmd_line(argc, argv) ) {
     // if ( cfg.Init(argc, argv, world.rank()) ) {
 	delete mpiEnv;
         return -1;
     }
 
-    // Create the sdl parser
-    sdl_parser* parser = new sdl_parser(cfg.sdlfile);
+    // In fast build mode, everyone builds the entire graph structure
+    // (saving the slow broadcast).  In non-fast, only rank 0 will
+    // parse the sdl and build the graph.  It is then broadcast.  In
+    // single rank mode, the option is ignored.
+    sdl_parser* parser;
+    if ( cfg.sdlfile != "NONE" ) {
+	if ( cfg.all_parse || world.rank() == 0 ) {
+	    // Create the sdl parser
+	    parser = new sdl_parser(cfg.sdlfile);
+	    
+	    cfg.sdl_version = parser->getVersion();
+	    
+	    string config_string = parser->getSDLConfigString();
+	    cfg.parse_config_file(config_string);
+	    // cfg.print();
 
-    string config_string = parser->getSDLConfigString();
-    cfg.sdl_version = parser->getVersion();
-    
-    cfg.parse_config_file(config_string);
-    // cfg.print();
+	}
+
+	// If this is a parallel job, we need to broadcast the configuration
+	if ( world.size() > 1 ) {
+	    broadcast(world,cfg,0);
+	}
+    }
+	
     
     Archive archive(cfg.archiveType, cfg.archiveFile);
 
     boost::mpi::timer* timer = new boost::mpi::timer();
     double start = timer->elapsed();
     double end_build, start_run, end_run;
-    
-        
-    printf("# main() My rank is %d, on %d nodes\n", world.rank(), world.size());
+            
+    if ( cfg.verbose) printf("# main() My rank is %d, on %d nodes\n", world.rank(), world.size());
     DebugInit( world.rank(), world.size() );
 
     if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) { 
@@ -85,14 +101,29 @@ main(int argc, char *argv[])
         signal(SIGUSR1, sigHandlerPrintStatus1);
         signal(SIGUSR2, sigHandlerPrintStatus2);
 
-	if ( !strcmp(cfg.sdl_version.c_str(),"2.0") ) {
+	if ( cfg.sdl_version == "2.0" ) {
 	    ConfigGraph* graph;
+
 	    if ( world.size() == 1 ) {
-		graph = parser->createConfigGraph();
+		if ( cfg.generator != "NONE" ) {
+		    generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
+		    graph = new ConfigGraph();
+		    func(graph,cfg.generator_options);
+		}
+		else {
+		    graph = parser->createConfigGraph();
+		}
 		graph->setComponentRanks(0);
 	    }
-	    else if ( world.rank() == 0 ) {
-		graph = parser->createConfigGraph();
+	    // Need to worry about partitioning for parallel jobs
+	    else if ( world.rank() == 0 || cfg.all_parse ) {
+		if ( cfg.generator != "NONE" ) {
+		    generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
+		    func(graph,cfg.generator_options);
+		}
+		else {
+		    graph = parser->createConfigGraph();
+		}
 
 		// Do the partitioning.
 		if ( cfg.partitioner != "self" ) {
@@ -110,13 +141,17 @@ main(int argc, char *argv[])
 		else {
 		    partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
 		    func(graph,world.size());
+		    // graph->print_graph(cout);
+		    // exit(1);
 		}
 	    }
 	    else {
 		graph = new ConfigGraph();
 	    }
-	    // Broadcast the data structures
-	    broadcast(world, *graph, 0);
+	    // Broadcast the data structures if only rank 0 built the
+	    // graph
+	    if ( !cfg.all_parse ) broadcast(world, *graph, 0);
+
 	    sim->performWireUp( *graph, world.rank() );
 	    delete graph;
 	}
@@ -125,7 +160,7 @@ main(int argc, char *argv[])
 	    xml_parse( cfg.sdlfile, sdlMap );
 	    Graph graph(0);
 	    bool single = false;
-	    
+
 	    makeGraph(sim, sdlMap, graph);
 	    if ( !strcmp(cfg.partitioner.c_str(),"zoltan") ) {
 #ifdef HAVE_ZOLTAN
@@ -166,6 +201,7 @@ main(int argc, char *argv[])
 	    printf("# Finished reading serialization file\n");
         }
 	
+	if ( cfg.verbose ) printf("# Starting main event loop\n");
         sim->Run();
 
 
@@ -182,7 +218,7 @@ main(int argc, char *argv[])
     all_reduce(world, &run_time, 1, &max_run_time, boost::mpi::maximum<double>() );
     all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
 
-    if ( world.rank() == 0 ) {
+    if ( world.rank() == 0 && cfg.verbose ) {
 	std::cout << setiosflags(ios::fixed) << setprecision(2);
 	std::cout << "#" << endl << "# Simulation times" << endl;
 	std::cout << "#  Build time: " << max_build_time << " s" << std::endl;

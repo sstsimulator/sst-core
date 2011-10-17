@@ -44,7 +44,7 @@ Config::Config( int my_rank )
     archiveFile = "sst_checkpoint";
     runMode     = BOTH;
     libpath     = SST_ELEMLIB_DIR;
-    sdlfile     = "sdl.xml";
+    sdlfile     = "NONE";
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
 #ifdef HAVE_ZOLTAN
@@ -52,6 +52,11 @@ Config::Config( int my_rank )
 #else
     partitioner = "single";
 #endif
+    generator   = "NONE";
+    all_parse   = true;
+    verbose     = false;
+    
+    sdl_version = "1.0";
 
     // Some config items can be initialized from either the command line or
     // the config file. The command line has precedence. We need to initialize
@@ -61,12 +66,17 @@ Config::Config( int my_rank )
     helpDesc = new po::options_description( "Allowed options" );
     helpDesc->add_options()
         ("help", "print help message")
+        ("verbose", "print information about core runtimes")
     ; 
 
     hiddenDesc = new po::options_description( "" );
     hiddenDesc->add_options()
         ("sdl-file", po::value< string >( &sdlfile ), 
                                 "system description file")
+        ("generator", po::value< string >(&generator), 
+         "generator to be used to build simulation <lib.generator_name>")
+        ("generator_options", po::value< string >(&generator), 
+         "options to be passed to generator function (must use quotes if whitespace is present)")
     ; 
 
     posDesc = new po::positional_options_description();
@@ -90,6 +100,8 @@ Config::Config( int my_rank )
 	                        "how long should the simulation run")
         ("timeBase", po::value< string >(&timeBase), 
                                 "the base time of the simulation")
+        ("all_parse", po::value< bool >(&all_parse), 
+                                "determine whether all ranks parse the sdl file, or only rank 0 [ true (default) | false ].  All_parse true is generally faster, but requires more memory.")
 #ifdef HAVE_ZOLTAN
         ("partitioner", po::value< string >(&partitioner), 
 	 "partitioner to be used <zoltan | self | lib.partitioner_name> (option ignored for serial jobs)" )
@@ -97,6 +109,7 @@ Config::Config( int my_rank )
         ("partitioner", po::value< string >(&partitioner), 
          "partitioner to be used <self | lib.partitioner_name> (option ignored for serial jobs)")
 #endif
+	
 	;
 
     var_map = new po::variables_map();
@@ -133,10 +146,20 @@ Config::parse_cmd_line(int argc, char* argv[]) {
         return 1;
     }
 
-    if ( !var_map->count( "sdl-file" ) ) {
-	cout << "Error: no sdl-file specified" << endl;
-	cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
-        return -1;
+    if ( var_map->count( "verbose" ) ) {
+        verbose = true;
+    }
+
+    if ( sdlfile == "NONE" ) {
+	if ( generator != "NONE" ) {
+	    // Need to set version to 2.0
+	    sdl_version = "2.0";
+	}
+	else {
+	    cout << "Error: no sdl-file and no generator specified" << endl;
+	    cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
+	    return -1;
+	}
     }
 
     if ( var_map->count( "archive-type" ) ) {
@@ -159,8 +182,10 @@ Config::parse_cmd_line(int argc, char* argv[]) {
     cwd.append("/");
 
     // get the absolute path to the sdl file 
-    if ( sdlfile.compare(0,1,"/" ) ) {
-        sdlfile = cwd + sdlfile;
+    if ( sdlfile != "NONE" ) {
+	if ( sdlfile.compare(0,1,"/" ) ) {
+	    sdlfile = cwd + sdlfile;
+	}
     }
 
     return 0;

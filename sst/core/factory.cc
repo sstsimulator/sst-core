@@ -205,6 +205,30 @@ Factory::GetPartitioner(std::string name)
     return ei->func;
 }
 
+generateFunction
+Factory::GetGenerator(std::string name)
+{
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(name);
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // Look for the generator
+    std::string tmp = elemlib + "." + elem;
+    eig_map_t::iterator eii =
+	found_generators.find(tmp);
+    if ( eii == found_generators.end() ) {
+        _abort(Factory,"can't find requested partitioner %s.\n ", tmp.c_str());
+        return NULL;
+    }
+
+    const ElementInfoGenerator *ei = eii->second;
+    return ei->func;
+}
+
 
 const ElementLibraryInfo*
 Factory::findLibrary(std::string elemlib)
@@ -253,6 +277,15 @@ Factory::findLibrary(std::string elemlib)
             std::string tmp = elemlib + "." + eip->name;
             found_partitioners[tmp] = eip;
             eip++;
+        }
+    }
+
+    if (NULL != eli->generators) {
+        const ElementInfoGenerator *eig = eli->generators;
+        while (NULL != eig->name) {
+            std::string tmp = elemlib + "." + eig->name;
+            found_generators[tmp] = eig;
+            eig++;
         }
     }
 
@@ -314,6 +347,7 @@ Factory::loadLibrary(std::string elemlib)
                 eli->events = NULL;
                 eli->introspectors = NULL;
                 eli->partitioners = NULL;
+                eli->generators = NULL;
                 fprintf(stderr, "# WARNING: (1) Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
             } else {
                 fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
@@ -380,6 +414,7 @@ Factory::loadLibrary(std::string elemlib)
             eli->events = NULL;
             eli->introspectors = NULL;
 	    eli->partitioners = NULL;
+	    eli->generators = NULL;
             fprintf(stderr, "# WARNING: (2) Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
         } else {
             fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
