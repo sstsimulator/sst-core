@@ -181,6 +181,9 @@ public:
     ConfigComponentMap_t& getComponentMap() {
 	return comps;
     }
+    ConfigLinkMap_t& getLinkMap() {
+	return links;
+    }
     
 private:
     friend class Simulation;
