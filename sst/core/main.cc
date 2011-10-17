@@ -118,6 +118,7 @@ main(int argc, char *argv[])
 	    // Need to worry about partitioning for parallel jobs
 	    else if ( world.rank() == 0 || cfg.all_parse ) {
 		if ( cfg.generator != "NONE" ) {
+		    graph = new ConfigGraph();
 		    generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
 		    func(graph,cfg.generator_options);
 		}
