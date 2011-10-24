@@ -76,7 +76,10 @@ dotests() {
     # etc.
 
     # Purge SST installation 
-    rm -Rf ${SST_INSTALL}
+    if [[ ${SST_RETAIN_BIN:+isSet} != isSet ]]
+    then
+        rm -Rf ${SST_INSTALL}
+    fi
 
 }
 
