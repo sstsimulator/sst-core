@@ -60,7 +60,6 @@ main(int argc, char *argv[])
 	delete mpiEnv;
         return -1;
     }
-
     // In fast build mode, everyone builds the entire graph structure
     // (saving the slow broadcast).  In non-fast, only rank 0 will
     // parse the sdl and build the graph.  It is then broadcast.  In
@@ -109,6 +108,8 @@ main(int argc, char *argv[])
 		    generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
 		    graph = new ConfigGraph();
 		    func(graph,cfg.generator_options);
+		    // printf("Done with generate function: %s\n",cfg.generator_options.c_str());
+		    // graph->print_graph(cout);
 		}
 		else {
 		    graph = parser->createConfigGraph();

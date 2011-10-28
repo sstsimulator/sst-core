@@ -53,6 +53,7 @@ Config::Config( int my_rank )
     partitioner = "single";
 #endif
     generator   = "NONE";
+    generator_options   = "";
     all_parse   = true;
     verbose     = false;
     
@@ -75,7 +76,7 @@ Config::Config( int my_rank )
                                 "system description file")
         ("generator", po::value< string >(&generator), 
          "generator to be used to build simulation <lib.generator_name>")
-        ("generator_options", po::value< string >(&generator), 
+        ("gen_options", po::value< string >(&generator_options), 
          "options to be passed to generator function (must use quotes if whitespace is present)")
     ; 
 

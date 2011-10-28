@@ -323,7 +323,6 @@ int Simulation::performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
 
 int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 {
-
     if ( num_ranks > 1 ) {
 	// Find the minimum latency across a partition
 	SimTime_t min_part = 0xffffffffl;
@@ -458,10 +457,11 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
                 LinkMap* lm = new LinkMap();
                 component_links[ccomp->id] = lm;
             }
-		
+	    
             tmp = createComponent( ccomp->id, ccomp->type.c_str(),
                                    ccomp->params );
             compMap[ccomp->name] = tmp;
+	    
         }
 	// Done with vertex, delete it;
 	delete ccomp;

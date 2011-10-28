@@ -75,7 +75,7 @@ public:
 	std::cout << "timeBase = " << timeBase << std::endl;
 	std::cout << "partitioner = " << partitioner << std::endl;
 	std::cout << "generator = " << generator << std::endl;
-	std::cout << "generator_options = " << generator_options << std::endl;
+	std::cout << "gen_options = " << generator_options << std::endl;
 	std::cout << "sdl_version = " << sdl_version << std::endl;
     }
 

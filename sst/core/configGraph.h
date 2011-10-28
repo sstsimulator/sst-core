@@ -62,6 +62,10 @@ public:
     
     void print_component(std::ostream &os) const;
 
+    void addParams(Params p);
+    void addParameter(std::string key, std::string value);
+
+    void addLink(std::string name, std::string port, std::string latency);
     
 private:
 
