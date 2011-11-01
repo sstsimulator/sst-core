@@ -25,45 +25,11 @@ class TiXmlNode;
 
 namespace SST {
 
-// Legacy support
-    
-class SDL_Link {
-    public:
-    float        weight;
-    Params params;
-};
-
-typedef std::map<std::string,SDL_Link *> SDL_links_t;
-
-class SDL_Component {
-    std::string _type;
-public:
-    SDL_Component( std::string type) : _type(type), _isIntrospector(0) {};
-    std::string &type( void ) { return _type; };
-    bool isIntrospector( void ) { return _isIntrospector; };
-    float        weight;
-    int          rank;
-    Params params;
-    SDL_links_t  links;
-    bool _isIntrospector;
-};
-
-typedef std::map < std::string, SDL_Component * > SDL_CompMap_t;
- class ConfigGraph;
- 
-extern int xml_parse( std::string file, SDL_CompMap_t& map);
-extern int xml_parse( std::string fileName, ConfigGraph& graph );
-extern int xml_parse( TiXmlDocument* doc, ConfigGraph& graph );
-extern std::string xmlGetConfig( std::string file );
-extern std::string xmlGetVersion( std::string file );
-
-// End legacy support
-
- 
 typedef std::map<std::string,Params*> ParamsMap_t;
 typedef std::map<std::string,std::string> VariableMap_t;
 
 class ConfigComponent;
+class ConfigGraph;
  
 class sdl_parser {
 

@@ -85,8 +85,7 @@ sst_x_SOURCES = \
 	sync.cc \
 	syncQueue.cc \
 	timeLord.cc \
-	timeVortex.cc \
-	xml.cc
+	timeVortex.cc
 
 if HAVE_ZOLTAN
 sst_x_SOURCES += zolt.cc

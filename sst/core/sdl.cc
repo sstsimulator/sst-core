@@ -35,26 +35,28 @@ sdl_parser::sdl_parser( const string fileName )
 	exit(1);
     }
 
-    // Figure out the sdl version
-    TiXmlDeclaration* dec = static_cast<TiXmlDeclaration*>(doc->FirstChild());
-    if ( !strcmp(dec->Version(),"2.0") ) {
-	cout << "WARNING: Using deprecated method of specifying SDL versions: <?xml version=\"2.0\"?>" << endl;
-	cout << "  Please use new format <sdl version=\"2.0\"/>." << endl;
-	cout << "  NOTE:  You will need to return the xml version to 1.0." << endl;
-	cout << "  Legacy support will be dropped on or after 11/1/2011" << endl;
-	version = dec->Version();
-    }
-    else {
-	TiXmlNode* root = doc;
-	TiXmlNode* child;
-
-	for ( child = root->FirstChild(); child != 0; child = child->NextSibling() ) {
-	    if ( child->Type() == TiXmlNode::ELEMENT ) {
-		if ( !strcmp( child->Value(), "sdl" ) ) {
-		    version = child->ToElement()->Attribute("version");
-		}
+    // Get the SDL version number
+    version = "NONE";
+    TiXmlNode* root = doc;
+    TiXmlNode* child;
+    
+    for ( child = root->FirstChild(); child != 0; child = child->NextSibling() ) {
+	if ( child->Type() == TiXmlNode::ELEMENT ) {
+	    if ( !strcmp( child->Value(), "sdl" ) ) {
+		version = child->ToElement()->Attribute("version");
 	    }
 	}
+    }
+
+    if ( version == "NONE" ) {
+	cout << "ERROR: No SDL version number specified in file " << fileName << "." << endl;
+	cout << "  Please add a version number to SDL file: <sdl version=VERSION>." << endl;
+	exit(1);
+    }
+    else if ( version == "2.0" ) {} // valid version
+    else {
+	cout << "ERROR: Unsupported SDL version: " << version << " in file " << fileName << "." << endl;
+	exit(1);
     }    
 }
 

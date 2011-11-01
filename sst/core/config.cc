@@ -151,16 +151,10 @@ Config::parse_cmd_line(int argc, char* argv[]) {
         verbose = true;
     }
 
-    if ( sdlfile == "NONE" ) {
-	if ( generator != "NONE" ) {
-	    // Need to set version to 2.0
-	    sdl_version = "2.0";
-	}
-	else {
-	    cout << "Error: no sdl-file and no generator specified" << endl;
-	    cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
-	    return -1;
-	}
+    if ( sdlfile == "NONE" && generator == "NONE" ) {
+	cout << "ERROR: no sdl-file and no generator specified" << endl;
+	cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
+	return -1;
     }
 
     if ( var_map->count( "archive-type" ) ) {
@@ -264,26 +258,4 @@ Config::parse_config_file(string config_string)
 }
     
     
-int Config::Init( int argc, char *argv[], int rank )
-{
-    parse_cmd_line(argc,argv);
-    
-    std::string xmlConfigStr;
-    try {
-	xmlConfigStr = xmlGetConfig(sdlfile);
-    } catch ( const char * e ) {
-        printf("ERROR: invalid sdl file\n");
-	printf("\t=> Attempted to load \"%s\"\n", sdlfile.c_str());
-	printf("\t=> XML Parser said: %s\n", e);
-	cout << "Usage: " << run_name << " sdl-file [options]" << endl;
-        cout << helpDesc;
-        cout << mainDesc << "\n";
-        return -1;
-    }
-
-    parse_config_file( xmlConfigStr );
-    
-    return 0;
-}
-
 } // namespace SST

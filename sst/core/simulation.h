@@ -35,7 +35,6 @@ class Factory;
 class Graph;
 class Introspector;
 class LinkMap;
-class SDL_CompMap;
 class Sync;
 class TimeConverter;
 class TimeLord;
@@ -87,8 +86,6 @@ public:
     static Simulation *getSimulation() { return instance; }
     static void printStatus(bool print_timevortex);
 
-    int performWireUp( Graph& graph, SDL_CompMap_t& sdlMap,
-		       int minPart, int myRank, bool single );
     int performWireUp( ConfigGraph& graph, int myRank );
 
     void Run();

@@ -28,9 +28,6 @@ namespace SST {
 
 class Simulation;
 
-extern void makeGraph(Simulation *sim, SDL_CompMap_t& map, Graph& graph );
-extern int findMinPart(Graph &graph);
-
 class ConfigLink;
     
 class ConfigComponent {
@@ -61,11 +58,6 @@ public:
     }
     
     void print_component(std::ostream &os) const;
-
-    void addParams(Params p);
-    void addParameter(std::string key, std::string value);
-
-    void addLink(std::string name, std::string port, std::string latency);
     
 private:
 
@@ -159,7 +151,9 @@ public:
 
     // Helper function to set all the ranks to the same value
     void setComponentRanks(int rank);
-
+    bool containsComponentInRank(int rank);
+    bool checkRanks(int ranks);
+    
     // ConfigComponent* addComponent(std::string name, std::string type, float weight, int rank);
     // ConfigComponent* addComponent(std::string name, std::string type);
     

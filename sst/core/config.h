@@ -36,7 +36,6 @@ public:
     int parse_cmd_line( int argc, char* argv[] );
     int parse_config_file( std::string config_string );
     
-    int Init( int argc, char *argv[], int rank );
     void Print();
 
     bool            archive;

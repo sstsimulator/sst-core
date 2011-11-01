@@ -56,7 +56,6 @@ main(int argc, char *argv[])
 
     // All ranks parse the command line
     if ( cfg.parse_cmd_line(argc, argv) ) {
-    // if ( cfg.Init(argc, argv, world.rank()) ) {
 	delete mpiEnv;
         return -1;
     }
@@ -79,7 +78,7 @@ main(int argc, char *argv[])
 	}
 
 	// If this is a parallel job, we need to broadcast the configuration
-	if ( world.size() > 1 ) {
+	if ( world.size() > 1 && !cfg.all_parse ) {
 	    broadcast(world,cfg,0);
 	}
     }
@@ -100,92 +99,74 @@ main(int argc, char *argv[])
         signal(SIGUSR1, sigHandlerPrintStatus1);
         signal(SIGUSR2, sigHandlerPrintStatus2);
 
-	if ( cfg.sdl_version == "2.0" ) {
-	    ConfigGraph* graph;
-
-	    if ( world.size() == 1 ) {
-		if ( cfg.generator != "NONE" ) {
-		    generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
-		    graph = new ConfigGraph();
-		    func(graph,cfg.generator_options);
-		    // printf("Done with generate function: %s\n",cfg.generator_options.c_str());
-		    // graph->print_graph(cout);
-		}
-		else {
-		    graph = parser->createConfigGraph();
-		}
-		graph->setComponentRanks(0);
-	    }
-	    // Need to worry about partitioning for parallel jobs
-	    else if ( world.rank() == 0 || cfg.all_parse ) {
-		if ( cfg.generator != "NONE" ) {
-		    graph = new ConfigGraph();
-		    generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
-		    func(graph,cfg.generator_options);
-		}
-		else {
-		    graph = parser->createConfigGraph();
-		}
-
-		// Do the partitioning.
-		if ( cfg.partitioner != "self" ) {
-		    graph->setComponentRanks(-1);
-		}
-
-		if ( cfg.partitioner == "self" ) {
-		    // For now, do nothing.  Eventually we need to
-		    // have a checker for the partitioning.
-		}
-		else if ( cfg.partitioner == "zoltan" ) {
-		    printf("Zoltan support is currently not available, aborting...\n");
-		    abort();
-		}
-		else {
-		    partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
-		    func(graph,world.size());
-		    // graph->print_graph(cout);
-		    // exit(1);
-		}
+	ConfigGraph* graph;
+	
+	if ( world.size() == 1 ) {
+	    if ( cfg.generator != "NONE" ) {
+		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
+		graph = new ConfigGraph();
+		func(graph,cfg.generator_options);
 	    }
 	    else {
-		graph = new ConfigGraph();
+		graph = parser->createConfigGraph();
 	    }
-	    // Broadcast the data structures if only rank 0 built the
-	    // graph
-	    if ( !cfg.all_parse ) broadcast(world, *graph, 0);
-
-	    sim->performWireUp( *graph, world.rank() );
-	    delete graph;
+	    // Set all components to be instanced on rank 0 (the only
+	    // one that exists)
+	    graph->setComponentRanks(0);
+	}
+	// Need to worry about partitioning for parallel jobs
+	else if ( world.rank() == 0 || cfg.all_parse ) {
+	    if ( cfg.generator != "NONE" ) {
+		graph = new ConfigGraph();
+		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
+		func(graph,cfg.generator_options);
+	    }
+	    else {
+		graph = parser->createConfigGraph();
+	    }
+	    
+	    // Do the partitioning.
+	    if ( cfg.partitioner != "self" ) {
+		// If partitioning not specified by sdl or generator,
+		// set all component ranks to -1 so it's easier to
+		// detect some types of partitioning errors
+		graph->setComponentRanks(-1);
+	    }
+	    
+	    if ( cfg.partitioner == "self" ) {
+		// For now, do nothing.  Eventually we need to
+		// have a checker for the partitioning.
+	    }
+	    else if ( cfg.partitioner == "zoltan" ) {
+		printf("Zoltan support is currently not available, aborting...\n");
+		abort();
+	    }
+	    else {
+		partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
+		func(graph,world.size());
+	    }
 	}
 	else {
-	    SDL_CompMap_t sdlMap;
-	    xml_parse( cfg.sdlfile, sdlMap );
-	    Graph graph(0);
-	    bool single = false;
-
-	    makeGraph(sim, sdlMap, graph);
-	    if ( !strcmp(cfg.partitioner.c_str(),"zoltan") ) {
-#ifdef HAVE_ZOLTAN
-		partitionGraph( graph, argc, argv );
-#else
- 		printf("Requested zoltan partitioner, but SST was built without zoltan support, aborting...\n");
- 		exit(1);
-#endif
-	    }
-	    else if ( !strcmp(cfg.partitioner.c_str(),"single") ) {
-		single = true;
-	    }
-	    else if ( !strcmp(cfg.partitioner.c_str(),"self") ) {
-		// For now, do nothing, later we need to do some sanity checks
-	    }
-	    int minPart = findMinPart( graph );
-	    sim->performWireUp( graph, sdlMap, minPart, world.rank(), single );
+	    graph = new ConfigGraph();
 	}
-        if (cfg.archive) {
-            archive.SaveSimulation(sim);
-            delete sim;
-	    printf("# Finished writing serialization file\n");
-        }
+	// Broadcast the data structures if only rank 0 built the
+	// graph
+	if ( !cfg.all_parse ) broadcast(world, *graph, 0);
+	
+	if ( !graph->checkRanks( world.size() ) ) {
+	    if ( world.rank() == 0 ) {
+		std::cout << "ERROR: bad partitioning; partition included bad ranks." << endl;
+	    }
+	    exit(1);
+	}
+	else {
+	    if ( !graph->containsComponentInRank( world.rank() ) ) {
+		std::cout << "WARNING: no components assigned to rank: " << world.rank() << "." << endl;
+	    }
+	}
+	
+	sim->performWireUp( *graph, world.rank() );
+	delete graph;
     }
 
     end_build = timer->elapsed();
