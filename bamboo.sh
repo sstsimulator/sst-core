@@ -122,6 +122,9 @@ getconfig() {
         PowerTherm_test)
             configStr="$baseoptions --with-McPAT=$SST_DEPS/lib --with-hotspot=$SST_DEPS/lib --with-orion=$SST_DEPS/lib"
             ;;
+        dramsim_test)
+            configStr="$baseoptions --with-dramsim=$HOME/scratch/dramsim2"
+            ;;
         default|*)
             configStr="$baseoptions --with-dramsim=$SST_DEPS"
             ;;
@@ -191,7 +194,7 @@ else
     arch=`uname -p`
 
     case $1 in
-        default|PowerTherm_test|Disksim_test)
+        default|PowerTherm_test|Disksim_test|dramsim_test)
             # Build type given as argument to this script
             export SST_BUILD_TYPE=$1
             configline=`getconfig $1 $arch`
