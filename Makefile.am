@@ -10,10 +10,7 @@ EXTRA_DIST = \
 
 SUBDIRS = \
 	sst \
-	doc \
-	user_includes \
-	user_libs \
-	user_tests 
+	doc 
 
 dist-hook:
 	@ if test $(SST_DISTABLE_LIBTOOL) -eq 0 ; then \
