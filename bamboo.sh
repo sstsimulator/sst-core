@@ -19,16 +19,25 @@
 #=========================================================================
 # Root of directory checked out, where this script should be found
 export SST_ROOT=`pwd`
+#<!!! DEPRECATE SST_DEPS>
 # Location of SST library dependencies
 export SST_DEPS=/usr/local
 # Location where SST files are installed
 export SST_INSTALL=${HOME}/local
 # Location where SST build files are installed
 export SST_INSTALL_BIN=${SST_INSTALL}/bin
+
+# Location where SST dependencies are installed. This only specifies
+# the root; dependencies may be installed in various locations under
+# this directory. The user can override this value by setting the
+# exporting the SST_INSTALL_DEPS_USER variable in their environment.
+export SST_INSTALL_DEPS=${HOME}/sstDeps
 # Initialize build type to null
 export SST_BUILD_TYPE=""
 # Load test definitions
 . test/include/testDefinitions.sh
+# Load dependency definitions
+. deps/include/depsDefinitions.sh
 
 #=========================================================================
 # Functions
@@ -98,6 +107,7 @@ dotests() {
 getconfig() {
 
     # These base options get applied to every 'configure'
+#<!!! DEPRECATE SST_DEPS>
     baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS --with-zoltan=$SST_DEPS --with-parmetis=$SST_DEPS"
 
     case $1 in
@@ -117,15 +127,18 @@ getconfig() {
             # Environment variables used for Disksim config
             disksimenv="CFLAGS=-DDISKSIM_DBG CFLAGS=-g CXXFLAGS=-g"
 
+#<!!! DEPRECATE SST_DEPS>
             configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_DEPS/$disksimdir --no-recursion $disksimenv"
             ;;
         PowerTherm_test)
+#<!!! DEPRECATE SST_DEPS>
             configStr="$baseoptions --with-McPAT=$SST_DEPS/lib --with-hotspot=$SST_DEPS/lib --with-orion=$SST_DEPS/lib"
             ;;
         dramsim_test)
             configStr="$baseoptions --with-dramsim=$HOME/scratch/dramsim2"
             ;;
         default|*)
+#<!!! DEPRECATE SST_DEPS>
             configStr="$baseoptions --with-dramsim=$SST_DEPS"
             ;;
     esac
@@ -142,6 +155,8 @@ getconfig() {
 #   Output: none
 #   Return value: 0 if success
 dobuild() {
+    # build, patch, and install dependencies
+#    $SST_DEPS_BIN/sstDependencies.sh
 
     # autogen to create ./configure
     ./autogen.sh
