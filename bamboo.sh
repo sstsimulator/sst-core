@@ -21,7 +21,7 @@
 export SST_ROOT=`pwd`
 #<!!! DEPRECATE SST_DEPS>
 # Location of SST library dependencies
-export SST_DEPS=/usr/local
+export SST_DEPS=${HOME}/local
 # Location where SST files are installed
 export SST_INSTALL=${HOME}/local
 # Location where SST build files are installed
@@ -31,7 +31,7 @@ export SST_INSTALL_BIN=${SST_INSTALL}/bin
 # the root; dependencies may be installed in various locations under
 # this directory. The user can override this value by setting the
 # exporting the SST_INSTALL_DEPS_USER variable in their environment.
-export SST_INSTALL_DEPS=${HOME}/sstDeps
+export SST_INSTALL_DEPS=${HOME}/local
 # Initialize build type to null
 export SST_BUILD_TYPE=""
 # Load test definitions
@@ -156,8 +156,14 @@ getconfig() {
 #   Return value: 0 if success
 dobuild() {
     # build, patch, and install dependencies
-#    $SST_DEPS_BIN/sstDependencies.sh
+    $SST_DEPS_BIN/sstDependencies.sh cleanBuild
+    retval=$?
+    if [ $retval -ne 0 ]
+    then
+        return $retval
+    fi
 
+    export LD_LIBRARY_PATH=$SST_DEPS/lib
     # autogen to create ./configure
     ./autogen.sh
     retval=$?
