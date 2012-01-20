@@ -39,6 +39,8 @@ export SST_BUILD_TYPE=""
 # Load dependency definitions
 . deps/include/depsDefinitions.sh
 
+# Uncomment the following line to retain binaries after build
+export SST_RETAIN_BIN=1
 #=========================================================================
 # Functions
 #=========================================================================
@@ -137,6 +139,13 @@ getconfig() {
         dramsim_test)
             configStr="$baseoptions --with-dramsim=$HOME/scratch/dramsim2"
             ;;
+        gem5_test)
+	    gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v003/build/X86_SE/"
+            cc_compiler=`which mpicc`
+            cxx_compiler=`which mpicxx`
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            configStr="$baseoptions --with-gem5=$gem5dir $gem5env"
+            ;;
         default|*)
 #<!!! DEPRECATE SST_DEPS>
             configStr="$baseoptions --with-dramsim=$SST_DEPS"
@@ -163,7 +172,8 @@ dobuild() {
         return $retval
     fi
 
-    export LD_LIBRARY_PATH=$SST_DEPS/lib
+    export PYTHON_DEV_INCLUDE=/usr/include/python2.6
+    export LD_LIBRARY_PATH=$SST_DEPS/lib:$PYTHON_DEV_INCLUDE:$LD_LIBRARY_PATH
     # autogen to create ./configure
     ./autogen.sh
     retval=$?
@@ -215,7 +225,7 @@ else
     arch=`uname -p`
 
     case $1 in
-        default|PowerTherm_test|Disksim_test|dramsim_test)
+        default|PowerTherm_test|Disksim_test|dramsim_test|gem5_test)
             # Build type given as argument to this script
             export SST_BUILD_TYPE=$1
             configline=`getconfig $1 $arch`
