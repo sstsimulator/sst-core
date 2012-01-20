@@ -40,7 +40,7 @@ export SST_BUILD_TYPE=""
 . deps/include/depsDefinitions.sh
 
 # Uncomment the following line to retain binaries after build
-export SST_RETAIN_BIN=1
+#export SST_RETAIN_BIN=1
 #=========================================================================
 # Functions
 #=========================================================================
