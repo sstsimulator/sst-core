@@ -19,7 +19,7 @@
 #=========================================================================
 # Root of directory checked out, where this script should be found
 export SST_ROOT=`pwd`
-#<!!! DEPRECATE SST_DEPS>
+
 # Location of SST library dependencies
 export SST_DEPS=${HOME}/local
 # Location where SST files are installed
@@ -109,11 +109,15 @@ dotests() {
 getconfig() {
 
     # These base options get applied to every 'configure'
-#<!!! DEPRECATE SST_DEPS>
+
     baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS --with-zoltan=$SST_DEPS --with-parmetis=$SST_DEPS"
 
     case $1 in
         Disksim_test)
+            #-----------------------------------------------------------------
+            # Disksim_test
+            #     This option used for configuring SST for use with DiskSim
+            #-----------------------------------------------------------------
             # TAU installs in architecture-specific directories
             case $2 in
                 x86_64)
@@ -129,25 +133,37 @@ getconfig() {
             # Environment variables used for Disksim config
             disksimenv="CFLAGS=-DDISKSIM_DBG CFLAGS=-g CXXFLAGS=-g"
 
-#<!!! DEPRECATE SST_DEPS>
+
             configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_DEPS/$disksimdir --no-recursion $disksimenv"
             ;;
         PowerTherm_test)
-#<!!! DEPRECATE SST_DEPS>
+            #-----------------------------------------------------------------
+            # PowerTherm_test
+            #     This option used for configuring SST with Power and
+            #     Therm enabled
+            #-----------------------------------------------------------------
             configStr="$baseoptions --with-McPAT=$SST_DEPS/lib --with-hotspot=$SST_DEPS/lib --with-orion=$SST_DEPS/lib"
             ;;
         dramsim_test)
+            #-----------------------------------------------------------------
+            # dramsim_test
+            #     This option used for configuring SST with DRAMSim enabled
+            #-----------------------------------------------------------------
             configStr="$baseoptions --with-dramsim=$HOME/scratch/dramsim2"
             ;;
         gem5_test)
-	    gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v003/build/X86_SE/"
+            #-----------------------------------------------------------------
+            # gem5_test
+            #     This option used for configuring SST with gem5 enabled
+            #-----------------------------------------------------------------
+            gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
             cc_compiler=`which mpicc`
             cxx_compiler=`which mpicxx`
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
             configStr="$baseoptions --with-gem5=$gem5dir $gem5env"
             ;;
         default|*)
-#<!!! DEPRECATE SST_DEPS>
+
             configStr="$baseoptions --with-dramsim=$SST_DEPS"
             ;;
     esac
