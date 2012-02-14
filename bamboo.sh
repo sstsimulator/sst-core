@@ -230,18 +230,43 @@ dobuild() {
 
 retval=0
 
-if [ $# -ne 1 ]
+if [ $# -ne 2 ]
 then
-    # need 1 build type as argument
-    echo "Usage : $0 <buildtype>"
+    # need build type and MPI type as argument
+    #   MPI type = ompi_stable, ompi_[version],
+    #              mpich2_stable, mpich_[version]
+    echo "Usage : $0 <buildtype> <mpitype>"
+    exit 0
 
 else
 
     # Determine architecture
     arch=`uname -p`
+    # Determine kernel name (Linux or MacOS i.e. Darwin)
+    kernel=`uname -s`
 
     case $1 in
         default|PowerTherm_test|Disksim_test|dramsim_test|gem5_test)
+            # Configure MPI (Linux only)
+            if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
+            then
+                # For some reason, .bashrc is not being run prior to
+                # this script. Kludge initialization of modules.
+                . $HOME/modulesSingleUser/Modules/default/init/bash
+
+                # Load modules in $HOME/privatemodules
+                module load use.own
+                case $2 in
+                    mpich2_stable)
+                        echo "MPICH2 stable selected"
+                        module load mpich2/mpich2-1.4.1p1;;
+                    *)
+                        echo "OpenMPI stable (default MPI) selected"
+                        module load openmpi/openmpi-1.4.4;;
+                esac
+
+            fi
+
             # Build type given as argument to this script
             export SST_BUILD_TYPE=$1
             configline=`getconfig $1 $arch`
