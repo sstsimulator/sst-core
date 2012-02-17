@@ -97,6 +97,9 @@ public:
     void insertActivity(SimTime_t time, Activity* ev);
     Exit* getExit() const { return m_exit; }
 
+    // this is a hack to expose the time between sync's to components
+    TimeConverter* getMinPartTC() { return minPartTC; }	
+
     LinkMap* getComponentLinkMap(ComponentId_t id) const {
         std::map<ComponentId_t,LinkMap*>::const_iterator i = component_links.find(id);
         if (i == component_links.end()) {
@@ -162,6 +165,7 @@ private:
     void endSimulation(void) { endSim = true; }
 
     TimeVortex*      timeVortex;
+    TimeConverter*   minPartTC;
     Activity*        current_activity;
     Sync*            sync;
     CompMap_t        compMap;

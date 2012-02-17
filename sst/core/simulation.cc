@@ -165,7 +165,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 	    }	
 	}
 	
-	sync = new Sync( minPartToTC(min_part) );
+	sync = new Sync( minPartTC = minPartToTC(min_part) );
     }
     
     // We will go through all the links and create LinkPairs for each
