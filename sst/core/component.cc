@@ -27,7 +27,7 @@
 namespace SST {
 
 Component::Component(ComponentId_t id) :
-    id( id )
+    id( id ), defaultTimeBase(NULL)
 {
     myLinks = Simulation::getSimulation()->getComponentLinkMap(id);
     _COMP_DBG( "new\n" );
