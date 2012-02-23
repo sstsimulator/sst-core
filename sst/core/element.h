@@ -23,7 +23,7 @@ typedef Component* (*componentAllocate)(ComponentId_t, Params&);
 typedef Introspector* (*introspectorAllocate)(Params&);
 typedef void (*eventInitialize)(void);
 typedef void (*partitionFunction)(ConfigGraph*,int);
-typedef void (*generateFunction)(ConfigGraph*, std::string options);
+typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
  
 struct ElementInfoComponent {
     const char *name;

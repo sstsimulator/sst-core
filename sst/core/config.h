@@ -53,7 +53,6 @@ public:
     bool            all_parse;
     bool            verbose;
     
-    std::string     sdl_version;
     inline Mode_t
     RunMode( std::string mode ) 
     {
@@ -75,12 +74,12 @@ public:
 	std::cout << "partitioner = " << partitioner << std::endl;
 	std::cout << "generator = " << generator << std::endl;
 	std::cout << "gen_options = " << generator_options << std::endl;
-	std::cout << "sdl_version = " << sdl_version << std::endl;
     }
 
 private:
-    boost::program_options::options_description* helpDesc;
-    boost::program_options::options_description* hiddenDesc;
+    boost::program_options::options_description* visNoConfigDesc;
+    boost::program_options::options_description* hiddenNoConfigDesc;
+    boost::program_options::options_description* legacyDesc;
     boost::program_options::options_description* mainDesc;
     boost::program_options::positional_options_description* posDesc;
     boost::program_options::variables_map* var_map;
@@ -102,7 +101,6 @@ private:
 	ar & BOOST_SERIALIZATION_NVP(partitioner);
 	ar & BOOST_SERIALIZATION_NVP(generator);
 	ar & BOOST_SERIALIZATION_NVP(generator_options);
-	ar & BOOST_SERIALIZATION_NVP(sdl_version);
     }
 
     int rank;

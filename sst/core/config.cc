@@ -29,8 +29,9 @@ using namespace std;
 namespace SST {
 
 Config::~Config() {
-    delete helpDesc;
-    delete hiddenDesc;
+    delete visNoConfigDesc;
+    delete hiddenNoConfigDesc;
+    delete legacyDesc;
     delete mainDesc;
     delete posDesc;
     delete var_map;
@@ -57,27 +58,29 @@ Config::Config( int my_rank )
     all_parse   = true;
     verbose     = false;
     
-    sdl_version = "1.0";
-
     // Some config items can be initialized from either the command line or
     // the config file. The command line has precedence. We need to initialize
     // the items found in the sdl file first. They will be overridden later.
     // We need to find the sdlfile amongst the command line arguments
 
-    helpDesc = new po::options_description( "Allowed options" );
-    helpDesc->add_options()
+    visNoConfigDesc = new po::options_description( "Allowed options" );
+    visNoConfigDesc->add_options()
         ("help", "print help message")
         ("verbose", "print information about core runtimes")
     ; 
 
-    hiddenDesc = new po::options_description( "" );
-    hiddenDesc->add_options()
+    hiddenNoConfigDesc = new po::options_description( "" );
+    hiddenNoConfigDesc->add_options()
         ("sdl-file", po::value< string >( &sdlfile ), 
                                 "system description file")
-        ("generator", po::value< string >(&generator), 
-         "generator to be used to build simulation <lib.generator_name>")
-        ("gen_options", po::value< string >(&generator_options), 
-         "options to be passed to generator function (must use quotes if whitespace is present)")
+    ; 
+
+    legacyDesc = new po::options_description( "Legacy options" );
+    legacyDesc->add_options()
+        ("stopAtCycle", po::value< string >(&stopAtCycle), 
+	                        "how long should the simulation run")
+        ("timeBase", po::value< string >(&timeBase), 
+                                "the base time of the simulation")
     ; 
 
     posDesc = new po::positional_options_description();
@@ -97,12 +100,12 @@ Config::Config( int my_rank )
                                 "component library path")
         ("run-mode", po::value< string >(), 
                                 "run mode [ init | run | both ]")
-        ("stopAtCycle", po::value< string >(&stopAtCycle), 
-	                        "how long should the simulation run")
-        ("timeBase", po::value< string >(&timeBase), 
-                                "the base time of the simulation")
-        ("all_parse", po::value< bool >(&all_parse), 
-                                "determine whether all ranks parse the sdl file, or only rank 0 [ true (default) | false ].  All_parse true is generally faster, but requires more memory.")
+        ("stop-at", po::value< string >(&stopAtCycle), 
+	                        "set time at which simulation will end execution")
+        ("timebase", po::value< string >(&timeBase), 
+                                "sets the base time step of the simulation (default: 1ps)")
+        ("all-parse", po::value< bool >(&all_parse), 
+                                "determine whether all ranks parse the sdl file, or only rank 0 [ true (default) | false ].  All-parse true is generally faster, but requires more memory.")
 #ifdef HAVE_ZOLTAN
         ("partitioner", po::value< string >(&partitioner), 
 	 "partitioner to be used <zoltan | self | lib.partitioner_name> (option ignored for serial jobs)" )
@@ -110,6 +113,10 @@ Config::Config( int my_rank )
         ("partitioner", po::value< string >(&partitioner), 
          "partitioner to be used <self | lib.partitioner_name> (option ignored for serial jobs)")
 #endif
+        ("generator", po::value< string >(&generator), 
+         "generator to be used to build simulation <lib.generator_name>")
+        ("gen-options", po::value< string >(&generator_options), 
+         "options to be passed to generator function (must use quotes if whitespace is present)")
 	
 	;
 
@@ -121,7 +128,7 @@ Config::parse_cmd_line(int argc, char* argv[]) {
     run_name = argv[0];
     
     po::options_description cmdline_options;
-    cmdline_options.add(*helpDesc).add(*hiddenDesc).add(*mainDesc);
+    cmdline_options.add(*visNoConfigDesc).add(*hiddenNoConfigDesc).add(*mainDesc).add(*legacyDesc);
 
     try {
 	po::parsed_options parsed =
@@ -141,8 +148,8 @@ Config::parse_cmd_line(int argc, char* argv[]) {
     }
 
     if ( var_map->count( "help" ) ) {
-	cout << "Usage: " << run_name << " sdl-file [options]" << endl;
-        cout << *helpDesc;
+	cout << "Usage: " << run_name << " [options] sdl-file" << endl;
+        cout << *visNoConfigDesc;
         cout << *mainDesc << endl;
         return 1;
     }
@@ -198,7 +205,10 @@ Config::parse_config_file(string config_string)
     try {
         // po::variables_map var_map;
         // po::store( po::command_line_parser(the_rest).options(desc).run(), var_map);
-        po::store( po::parse_config_file( ifs, *mainDesc), *var_map);
+	po::options_description config_options;
+	config_options.add(*mainDesc).add(*legacyDesc);
+	
+        po::store( po::parse_config_file( ifs, config_options), *var_map);
         po::notify( *var_map );
 
         if ( var_map->count( "archive-type" ) ) {
@@ -216,7 +226,7 @@ Config::parse_config_file(string config_string)
                 printf("ERROR: Unknown run mode %s\n", 
 		       (*var_map)[ "run-mode" ].as< string >().c_str());
 		cout << "Usage: " << run_name << " sdl-file [options]" << endl;
-                cout << helpDesc;
+                cout << visNoConfigDesc;
                 cout << mainDesc << "\n";
                 return -1;
             }

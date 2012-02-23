@@ -69,8 +69,6 @@ main(int argc, char *argv[])
 	    // Create the sdl parser
 	    parser = new sdl_parser(cfg.sdlfile);
 	    
-	    cfg.sdl_version = parser->getVersion();
-	    
 	    string config_string = parser->getSDLConfigString();
 	    cfg.parse_config_file(config_string);
 	    // cfg.print();
@@ -105,7 +103,7 @@ main(int argc, char *argv[])
 	    if ( cfg.generator != "NONE" ) {
 		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
 		graph = new ConfigGraph();
-		func(graph,cfg.generator_options);
+		func(graph,cfg.generator_options,world.size());
 	    }
 	    else {
 		graph = parser->createConfigGraph();
@@ -119,7 +117,7 @@ main(int argc, char *argv[])
 	    if ( cfg.generator != "NONE" ) {
 		graph = new ConfigGraph();
 		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
-		func(graph,cfg.generator_options);
+		func(graph,cfg.generator_options, world.size());
 	    }
 	    else {
 		graph = parser->createConfigGraph();
