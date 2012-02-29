@@ -180,6 +180,7 @@ getconfig() {
 #   Output: none
 #   Return value: 0 if success
 dobuild() {
+    export PATH=$SST_INSTALL_BIN:$PATH
     # build, patch, and install dependencies
     $SST_DEPS_BIN/sstDependencies.sh cleanBuild
     retval=$?
