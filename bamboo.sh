@@ -160,7 +160,7 @@ getconfig() {
             cc_compiler=`which mpicc`
             cxx_compiler=`which mpicxx`
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            configStr="$baseoptions --with-gem5=$gem5dir $gem5env"
+            configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
             ;;
         default|*)
 
