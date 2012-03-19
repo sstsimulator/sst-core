@@ -39,10 +39,11 @@ export SST_BUILD_TYPE=""
 # Load dependency definitions
 . deps/include/depsDefinitions.sh
 
-# Uncomment the following line to retain binaries after build
+# Uncomment the following line or export from your environment to
+# retain binaries after build
 #export SST_RETAIN_BIN=1
 #=========================================================================
-# Functions
+#Functions
 #=========================================================================
 
 #-------------------------------------------------------------------------
@@ -108,9 +109,14 @@ dotests() {
 #   Return value: none
 getconfig() {
 
-    # These base options get applied to every 'configure'
+    # Select default dependency versions for this build
+    local defaultDeps="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -h default"
 
-    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS --with-zoltan=$SST_DEPS --with-parmetis=$SST_DEPS"
+    local depsStr=""
+
+    # These base options get applied to every 'configure'
+    local baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS --with-zoltan=$SST_DEPS --with-parmetis=$SST_DEPS"
+
 
     case $1 in
         Disksim_test)
@@ -135,6 +141,7 @@ getconfig() {
 
 
             configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_DEPS/$disksimdir --no-recursion $disksimenv"
+            depsStr="$defaultDeps"
             ;;
         PowerTherm_test)
             #-----------------------------------------------------------------
@@ -143,6 +150,7 @@ getconfig() {
             #     Therm enabled
             #-----------------------------------------------------------------
             configStr="$baseoptions --with-McPAT=$SST_DEPS/lib --with-hotspot=$SST_DEPS/lib --with-orion=$SST_DEPS/lib"
+            depsStr="$defaultDeps"
             ;;
         dramsim_test)
             #-----------------------------------------------------------------
@@ -150,6 +158,7 @@ getconfig() {
             #     This option used for configuring SST with DRAMSim enabled
             #-----------------------------------------------------------------
             configStr="$baseoptions --with-dramsim=$HOME/scratch/dramsim2"
+            depsStr="$defaultDeps"
             ;;
         gem5_test)
             #-----------------------------------------------------------------
@@ -161,14 +170,17 @@ getconfig() {
             cxx_compiler=`which mpicxx`
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
             configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
+            depsStr="$defaultDeps"
             ;;
         default|*)
-
             configStr="$baseoptions --with-dramsim=$SST_DEPS"
+            depsStr="$defaultDeps"
             ;;
     esac
 
-    echo $configStr
+    export SST_SELECTED_DEPS="$depsStr"
+    export SST_SELECTED_CONFIG="$configStr"
+#    echo $configStr
 }
 
 
@@ -176,13 +188,43 @@ getconfig() {
 # Function: dobuild
 # Description:
 #   Purpose: Performs the actual build
-#   Input: string for 'configure' operation
+#   Input:
+#     -t <build type>
+#     -a <architecture>
 #   Output: none
 #   Return value: 0 if success
 dobuild() {
+
+    # process cmdline options
+    OPTIND=1
+    while getopts :t:a: opt
+    do
+        case "$opt" in
+            t) # build type
+                local buildtype=$OPTARG
+                ;;
+            a) # architecture
+                local architecture=$OPTARG
+                ;;
+            *) # unknown option 
+                echo "dobuild () : Unknown option $opt"
+                return 126 # command can't execute
+                ;;
+        esac
+    done
+
     export PATH=$SST_INSTALL_BIN:$PATH
+
+    # obtain dependency and configure args
+    getconfig $buildtype $architecture
+
+    # after getconfig is run,
+    # $SST_SELECTED_DEPS now contains selected dependencies 
+    # $SST_SELECTED_CONFIG now contains config line
+
+    # based on buildtype, configure and build dependencies
     # build, patch, and install dependencies
-    $SST_DEPS_BIN/sstDependencies.sh cleanBuild
+    $SST_DEPS_BIN/sstDependencies.sh $SST_SELECTED_DEPS cleanBuild
     retval=$?
     if [ $retval -ne 0 ]
     then
@@ -199,9 +241,8 @@ dobuild() {
         return $retval
     fi
 
-    # configure SST with passed-in string
-    echo "bamboo.sh: config args = $*"
-    ./configure $*
+    echo "bamboo.sh: config args = $SST_SELECTED_CONFIG"
+    ./configure $SST_SELECTED_CONFIG
     retval=$?
     if [ $retval -ne 0 ]
     then
@@ -270,8 +311,8 @@ else
 
             # Build type given as argument to this script
             export SST_BUILD_TYPE=$1
-            configline=`getconfig $1 $arch`
-            dobuild $configline
+
+            dobuild -t $SST_BUILD_TYPE -a $arch
             retval=$?
             ;;
 
