@@ -110,13 +110,21 @@ dotests() {
 getconfig() {
 
     # Select default dependency versions for this build
-    local defaultDeps="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -h default"
+    local defaultDeps="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s none"
 
     local depsStr=""
 
     # These base options get applied to every 'configure'
     local baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS --with-zoltan=$SST_DEPS --with-parmetis=$SST_DEPS"
 
+    local cc_compiler=`which mpicc`
+    local cxx_compiler=`which mpicxx`
+
+    # make sure that sstmacro is suppressed
+    if [ -e ./sst/elements/macro_component/.unignore ] && [ -f ./sst/elements/macro_component/.unignore ]
+    then
+        rm ./sst/elements/macro_component/.unignore
+    fi
 
     case $1 in
         Disksim_test)
@@ -138,7 +146,6 @@ getconfig() {
 
             # Environment variables used for Disksim config
             disksimenv="CFLAGS=-DDISKSIM_DBG CFLAGS=-g CXXFLAGS=-g"
-
 
             configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_DEPS/$disksimdir --no-recursion $disksimenv"
             depsStr="$defaultDeps"
@@ -166,11 +173,28 @@ getconfig() {
             #     This option used for configuring SST with gem5 enabled
             #-----------------------------------------------------------------
             gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
-            cc_compiler=`which mpicc`
-            cxx_compiler=`which mpicxx`
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
             configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
             depsStr="$defaultDeps"
+            ;;
+        sstmacro_latest_test)
+            #-----------------------------------------------------------------
+            # sstmacro_latest_test
+            #     This option used for configuring SST with gem5 enabled
+            #-----------------------------------------------------------------
+            echo "$USER" > ./sst/elements/macro_component/.unignore
+            gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
+            depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s default"
+            ;;
+        dramsim_latest_test)
+            #-----------------------------------------------------------------
+            # dramsim_test
+            #     This option used for configuring SST with latest devel DRAMSim 
+            #-----------------------------------------------------------------
+            configStr="$baseoptions --with-dramsim=$HOME/scratch/dramsim2"
+            depsStr="-k default -d stabledevel -p default -z default -b default -g default -m default -i default -o default -h default -s none"
             ;;
         default|*)
             configStr="$baseoptions --with-dramsim=$SST_DEPS"
@@ -257,6 +281,13 @@ dobuild() {
         return $retval
     fi
 
+    # print linkage information for warm fuzzy
+    echo "SSTBUILD============================================================"
+    echo "sst exectuable linkage information"
+    echo "$ ldd ./sst/core/sst.x"
+    ldd ./sst/core/sst.x
+    echo "SSTBUILD============================================================"
+
     # install SST
     make install
     retval=$?
@@ -288,7 +319,7 @@ else
     kernel=`uname -s`
 
     case $1 in
-        default|PowerTherm_test|Disksim_test|dramsim_test|gem5_test)
+        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|dramsim_latest_test|dramsim_test|gem5_test)
             # Configure MPI (Linux only)
             if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
             then
