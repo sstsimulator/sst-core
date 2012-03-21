@@ -180,13 +180,13 @@ getconfig() {
         sstmacro_latest_test)
             #-----------------------------------------------------------------
             # sstmacro_latest_test
-            #     This option used for configuring SST with gem5 enabled
+            #     This option used for configuring SST with latest devel sstmacro
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
             gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
             configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
-            depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s default"
+            depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s stabledevel"
             ;;
         dramsim_latest_test)
             #-----------------------------------------------------------------
@@ -195,6 +195,16 @@ getconfig() {
             #-----------------------------------------------------------------
             configStr="$baseoptions --with-dramsim=$HOME/scratch/dramsim2"
             depsStr="-k default -d stabledevel -p default -z default -b default -g default -m default -i default -o default -h default -s none"
+            ;;
+        boost_1.49_test)
+            #-----------------------------------------------------------------
+            # dramsim_test
+            #     This option used for configuring SST with latest devel DRAMSim 
+            #-----------------------------------------------------------------
+            gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
+            depsStr="-k default -d default -p default -z default -b 1.49 -g default -m default -i default -o default -h default -s none"
             ;;
         default|*)
             configStr="$baseoptions --with-dramsim=$SST_DEPS"
@@ -319,7 +329,7 @@ else
     kernel=`uname -s`
 
     case $1 in
-        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|dramsim_latest_test|dramsim_test|gem5_test)
+        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test)
             # Configure MPI (Linux only)
             if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
             then
