@@ -188,6 +188,17 @@ getconfig() {
             configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
             depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s stabledevel"
             ;;
+        sstmacro_2.2.0_test)
+            #-----------------------------------------------------------------
+            # sstmacro_2.2.0_test
+            #     This option used for configuring SST with sstmacro 2.2.0
+            #-----------------------------------------------------------------
+            echo "$USER" > ./sst/elements/macro_component/.unignore
+            gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
+            depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s 2.2.0"
+            ;;
         dramsim_latest_test)
             #-----------------------------------------------------------------
             # dramsim_test
@@ -329,7 +340,7 @@ else
     kernel=`uname -s`
 
     case $1 in
-        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test)
+        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test)
             # Configure MPI (Linux only)
             if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
             then
