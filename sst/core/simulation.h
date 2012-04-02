@@ -27,8 +27,6 @@ namespace SST {
 #define _SIM_DBG( fmt, args...) __DBG( DBG_SIM, Sim, fmt, ## args )
 
 class Activity;
-class Clock;
-class Clock::HandlerBase;
 class Config;
 class Exit;
 class Factory;
