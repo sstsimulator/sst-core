@@ -20,7 +20,7 @@
 # Root of directory checked out, where this script should be found
 export SST_ROOT=`pwd`
 
-# Location of SST library dependencies
+# Location of SST library dependencies (deprecated)
 export SST_DEPS=${HOME}/local
 # Location where SST files are installed
 export SST_INSTALL=${HOME}/local
@@ -109,13 +109,13 @@ dotests() {
 #   Return value: none
 getconfig() {
 
-    # Select default dependency versions for this build
+    # Configure default dependencies to use if nothing is explicitly specified
     local defaultDeps="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s none"
 
     local depsStr=""
 
     # These base options get applied to every 'configure'
-    local baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS --with-zoltan=$SST_DEPS --with-parmetis=$SST_DEPS"
+    local baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-parmetis=$SST_DEPS_INSTALL_PARMETIS"
 
     local cc_compiler=`which mpicc`
     local cxx_compiler=`which mpicxx`
@@ -147,7 +147,7 @@ getconfig() {
             # Environment variables used for Disksim config
             disksimenv="CFLAGS=-DDISKSIM_DBG CFLAGS=-g CXXFLAGS=-g"
 
-            configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_DEPS/$disksimdir --no-recursion $disksimenv"
+            configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_INSTALL_DEPS/$disksimdir --no-recursion $disksimenv"
             depsStr="$defaultDeps"
             ;;
         PowerTherm_test)
@@ -156,7 +156,7 @@ getconfig() {
             #     This option used for configuring SST with Power and
             #     Therm enabled
             #-----------------------------------------------------------------
-            configStr="$baseoptions --with-McPAT=$SST_DEPS/lib --with-hotspot=$SST_DEPS/lib --with-orion=$SST_DEPS/lib"
+            configStr="$baseoptions --with-McPAT=$SST_DEPS_INSTALL_MCPAT --with-hotspot=$SST_DEPS_INSTALL_HOTSPOT --with-orion=$SST_DEPS_INSTALL_ORION"
             depsStr="$defaultDeps"
             ;;
         dramsim_test)
@@ -164,7 +164,7 @@ getconfig() {
             # dramsim_test
             #     This option used for configuring SST with DRAMSim enabled
             #-----------------------------------------------------------------
-            configStr="$baseoptions --with-dramsim=$HOME/scratch/dramsim2"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             depsStr="$defaultDeps"
             ;;
         gem5_test)
@@ -172,9 +172,8 @@ getconfig() {
             # gem5_test
             #     This option used for configuring SST with gem5 enabled
             #-----------------------------------------------------------------
-            gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             depsStr="$defaultDeps"
             ;;
         sstmacro_latest_test)
@@ -183,9 +182,8 @@ getconfig() {
             #     This option used for configuring SST with latest devel sstmacro
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
-            gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s stabledevel"
             ;;
         sstmacro_2.2.0_test)
@@ -194,9 +192,8 @@ getconfig() {
             #     This option used for configuring SST with sstmacro 2.2.0
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
-            gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s 2.2.0"
             ;;
         dramsim_latest_test)
@@ -204,7 +201,7 @@ getconfig() {
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
-            configStr="$baseoptions --with-dramsim=$HOME/scratch/dramsim2"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             depsStr="-k default -d stabledevel -p default -z default -b default -g default -m default -i default -o default -h default -s none"
             ;;
         boost_1.49_test)
@@ -212,13 +209,12 @@ getconfig() {
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
-            gem5dir="${HOME}/sstDeps/src/staged/gem5-patched-v004/build/X86_SE/"
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            configStr="$baseoptions --with-gem5=$gem5dir --with-m5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             depsStr="-k default -d default -p default -z default -b 1.49 -g default -m default -i default -o default -h default -s none"
             ;;
         default|*)
-            configStr="$baseoptions --with-dramsim=$SST_DEPS"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             depsStr="$defaultDeps"
             ;;
     esac
@@ -277,7 +273,7 @@ dobuild() {
     fi
 
     export PYTHON_DEV_INCLUDE=/usr/include/python2.6
-    export LD_LIBRARY_PATH=$SST_DEPS/lib:$PYTHON_DEV_INCLUDE:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${PYTHON_DEV_INCLUDE}:${LD_LIBRARY_PATH}
     # autogen to create ./configure
     ./autogen.sh
     retval=$?
@@ -302,8 +298,13 @@ dobuild() {
         return $retval
     fi
 
-    # print linkage information for warm fuzzy
+    # print build and linkage information for warm fuzzy
     echo "SSTBUILD============================================================"
+    echo "Built SST with configure string"
+    echo "    ./configure ${SST_SELECTED_CONFIG}"
+    echo "----------------"
+    echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+    echo "----------------"
     echo "sst exectuable linkage information"
     echo "$ ldd ./sst/core/sst.x"
     ldd ./sst/core/sst.x
@@ -352,10 +353,10 @@ else
                 module load use.own
                 case $2 in
                     mpich2_stable)
-                        echo "MPICH2 stable selected"
+                        echo "MPICH2 stable (mpich2-1.4.1p1) selected"
                         module load mpich2/mpich2-1.4.1p1;;
                     *)
-                        echo "OpenMPI stable (default MPI) selected"
+                        echo "OpenMPI stable (openmpi-1.4.4, default) selected"
                         module load openmpi/openmpi-1.4.4;;
                 esac
 
