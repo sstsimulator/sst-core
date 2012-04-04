@@ -272,6 +272,10 @@ dobuild() {
         return $retval
     fi
 
+    # load convenience variables
+    $SST_DEPS_BIN/sstDependencies.sh $SST_SELECTED_DEPS queryEnv > $HOME/SST_deps_env.sh
+    source $HOME/SST_deps_env.sh
+
     export PYTHON_DEV_INCLUDE=/usr/include/python2.6
     export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${PYTHON_DEV_INCLUDE}:${LD_LIBRARY_PATH}
     # autogen to create ./configure
