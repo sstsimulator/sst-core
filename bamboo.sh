@@ -107,10 +107,13 @@ dotests() {
 #   Return value: none
 setConvenienceVars() {
     # generate & load convenience variables
+    echo "setConvenienceVars() : input = ($1)"
     $SST_DEPS_BIN/sstDependencies.sh "$1" queryEnv > $HOME/SST_deps_env.sh
     . $HOME/SST_deps_env.sh
+    echo "setConvenienceVars() : exported variables"
+    export | egrep SST_DEPS_
     baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-parmetis=$SST_DEPS_INSTALL_PARMETIS"
-
+    echo "setConvenienceVars() : baseoptions = $baseoptions"
 }
 
 #-------------------------------------------------------------------------
