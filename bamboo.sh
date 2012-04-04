@@ -97,6 +97,23 @@ dotests() {
 
 
 #-------------------------------------------------------------------------
+# Function: setConvenienceVars
+# Description:
+#   Purpose:
+#       set convenience vars
+#   Input:
+#       $1 (depsStr): selected dependencies
+#   Output: string containing 'configure' parameters
+#   Return value: none
+setConvenienceVars() {
+    # generate & load convenience variables
+    $SST_DEPS_BIN/sstDependencies.sh "$1" queryEnv > $HOME/SST_deps_env.sh
+    . $HOME/SST_deps_env.sh
+    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-parmetis=$SST_DEPS_INSTALL_PARMETIS"
+
+}
+
+#-------------------------------------------------------------------------
 # Function: getconfig
 # Description:
 #   Purpose:
@@ -113,9 +130,6 @@ getconfig() {
     local defaultDeps="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s none"
 
     local depsStr=""
-
-    # These base options get applied to every 'configure'
-    local baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-parmetis=$SST_DEPS_INSTALL_PARMETIS"
 
     local cc_compiler=`which mpicc`
     local cxx_compiler=`which mpicxx`
@@ -146,9 +160,9 @@ getconfig() {
 
             # Environment variables used for Disksim config
             disksimenv="CFLAGS=-DDISKSIM_DBG CFLAGS=-g CXXFLAGS=-g"
-
-            configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_INSTALL_DEPS/$disksimdir --no-recursion $disksimenv"
             depsStr="$defaultDeps"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_INSTALL_DEPS/$disksimdir --no-recursion $disksimenv"
             ;;
         PowerTherm_test)
             #-----------------------------------------------------------------
@@ -156,16 +170,18 @@ getconfig() {
             #     This option used for configuring SST with Power and
             #     Therm enabled
             #-----------------------------------------------------------------
-            configStr="$baseoptions --with-McPAT=$SST_DEPS_INSTALL_MCPAT --with-hotspot=$SST_DEPS_INSTALL_HOTSPOT --with-orion=$SST_DEPS_INSTALL_ORION"
             depsStr="$defaultDeps"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-McPAT=$SST_DEPS_INSTALL_MCPAT --with-hotspot=$SST_DEPS_INSTALL_HOTSPOT --with-orion=$SST_DEPS_INSTALL_ORION"
             ;;
         dramsim_test)
             #-----------------------------------------------------------------
             # dramsim_test
             #     This option used for configuring SST with DRAMSim enabled
             #-----------------------------------------------------------------
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             depsStr="$defaultDeps"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             ;;
         gem5_test)
             #-----------------------------------------------------------------
@@ -174,8 +190,9 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             depsStr="$defaultDeps"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
         sstmacro_latest_test)
             #-----------------------------------------------------------------
@@ -184,8 +201,9 @@ getconfig() {
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s stabledevel"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
         sstmacro_2.2.0_test)
             #-----------------------------------------------------------------
@@ -194,16 +212,18 @@ getconfig() {
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s 2.2.0"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
         dramsim_latest_test)
             #-----------------------------------------------------------------
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             depsStr="-k default -d stabledevel -p default -z default -b default -g default -m default -i default -o default -h default -s none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             ;;
         boost_1.49_test)
             #-----------------------------------------------------------------
@@ -211,12 +231,14 @@ getconfig() {
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             depsStr="-k default -d default -p default -z default -b 1.49 -g default -m default -i default -o default -h default -s none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
         default|*)
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             depsStr="$defaultDeps"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             ;;
     esac
 
@@ -272,19 +294,6 @@ dobuild() {
     then
         return $retval
     fi
-
-    # load convenience variables
-    echo "bamboo.sh: exporting dependency convenience variables to file"
-    $SST_DEPS_BIN/sstDependencies.sh $SST_SELECTED_DEPS queryEnv
-    echo "bamboo.sh: variable file content:"
-    cat $HOME/SST_deps_env.sh
-    echo "bamboo.sh: sourcing variable file SST_deps_env.sh"
-    $SST_DEPS_BIN/sstDependencies.sh $SST_SELECTED_DEPS queryEnv > $HOME/SST_deps_env.sh
-    source $HOME/SST_deps_env.sh
-    . $HOME/SST_deps_env.sh
-    echo "bamboo.sh: imported variables:"
-    env | egrep "SST_DEPS_"
-    echo "bamboo.sh: done listing imported variables"
 
     export PYTHON_DEV_INCLUDE=/usr/include/python2.6
     export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${PYTHON_DEV_INCLUDE}:${LD_LIBRARY_PATH}
