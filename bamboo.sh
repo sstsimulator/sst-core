@@ -172,6 +172,7 @@ getconfig() {
             # gem5_test
             #     This option used for configuring SST with gem5 enabled
             #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             depsStr="$defaultDeps"
@@ -273,6 +274,8 @@ dobuild() {
     fi
 
     # load convenience variables
+    echo "bamboo.sh: exporting dependency convenience variables"
+    $SST_DEPS_BIN/sstDependencies.sh $SST_SELECTED_DEPS queryEnv
     $SST_DEPS_BIN/sstDependencies.sh $SST_SELECTED_DEPS queryEnv > $HOME/SST_deps_env.sh
     source $HOME/SST_deps_env.sh
 
