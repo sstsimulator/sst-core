@@ -274,10 +274,17 @@ dobuild() {
     fi
 
     # load convenience variables
-    echo "bamboo.sh: exporting dependency convenience variables"
+    echo "bamboo.sh: exporting dependency convenience variables to file"
     $SST_DEPS_BIN/sstDependencies.sh $SST_SELECTED_DEPS queryEnv
+    echo "bamboo.sh: variable file content:"
+    cat $HOME/SST_deps_env.sh
+    echo "bamboo.sh: sourcing variable file SST_deps_env.sh"
     $SST_DEPS_BIN/sstDependencies.sh $SST_SELECTED_DEPS queryEnv > $HOME/SST_deps_env.sh
     source $HOME/SST_deps_env.sh
+    . $HOME/SST_deps_env.sh
+    echo "bamboo.sh: imported variables:"
+    env | egrep "SST_DEPS_"
+    echo "bamboo.sh: done listing imported variables"
 
     export PYTHON_DEV_INCLUDE=/usr/include/python2.6
     export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${PYTHON_DEV_INCLUDE}:${LD_LIBRARY_PATH}
