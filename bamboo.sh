@@ -108,7 +108,7 @@ dotests() {
 setConvenienceVars() {
     # generate & load convenience variables
     echo "setConvenienceVars() : input = ($1), capturing to SST_deps_env.sh..."
-    $SST_DEPS_BIN/sstDependencies.sh "$1" queryEnv > $HOME/SST_deps_env.sh
+    $SST_DEPS_BIN/sstDependencies.sh $1 queryEnv > $HOME/SST_deps_env.sh
     . $HOME/SST_deps_env.sh
     echo "setConvenienceVars() : SST_deps_env.sh file contents"
     echo "startfile-----"
