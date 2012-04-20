@@ -208,7 +208,7 @@ getconfig() {
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s stabledevel"
+            depsStr="-k default -d default -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s stabledevel"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
@@ -219,7 +219,7 @@ getconfig() {
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            depsStr="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s 2.2.0"
+            depsStr="-k default -d default -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s 2.2.0"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
@@ -228,7 +228,7 @@ getconfig() {
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
-            depsStr="-k default -d stabledevel -p default -z default -b default -g default -m default -i default -o default -h default -s none"
+            depsStr="-k default -d stabledevel -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             ;;
@@ -238,7 +238,7 @@ getconfig() {
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            depsStr="-k default -d default -p default -z default -b 1.49 -g default -m default -i default -o default -h default -s none"
+            depsStr="-k default -d default -p default -z default -b 1.49 -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
