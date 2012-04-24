@@ -197,7 +197,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            depsStr="$defaultDeps"
+            depsStr="-k default -d default -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
