@@ -377,17 +377,19 @@ else
             then
                 # For some reason, .bashrc is not being run prior to
                 # this script. Kludge initialization of modules.
-                . $HOME/modulesSingleUser/Modules/default/init/bash
+                if [ -f /etc/profile.modules ]
+                then
+                    . /etc/profile.modules
+                fi
 
-                # Load modules in $HOME/privatemodules
-                module load use.own
+
                 case $2 in
                     mpich2_stable)
                         echo "MPICH2 stable (mpich2-1.4.1p1) selected"
-                        module load mpich2/mpich2-1.4.1p1;;
+                        module load mpi/mpich2-1.4.1p1;;
                     *)
                         echo "OpenMPI stable (openmpi-1.4.4, default) selected"
-                        module load openmpi/openmpi-1.4.4;;
+                        module load mpi/openmpi-1.4.4;;
                 esac
 
             fi
