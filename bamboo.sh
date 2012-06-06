@@ -20,10 +20,17 @@
 # Root of directory checked out, where this script should be found
 export SST_ROOT=`pwd`
 
+#	This assumes a directory strucure
+#                     SST_BASE   (was $HOME)
+#           devel                sstDeps
+#           trunk (SST_ROOT)       src
+
+export SST_BASE=`(builtin cd ../.. ; pwd )`
+
 # Location of SST library dependencies (deprecated)
-export SST_DEPS=${HOME}/local
+export SST_DEPS=${SST_BASE}/local
 # Location where SST files are installed
-export SST_INSTALL=${HOME}/local
+export SST_INSTALL=${SST_BASE}/local
 # Location where SST build files are installed
 export SST_INSTALL_BIN=${SST_INSTALL}/bin
 
@@ -31,7 +38,7 @@ export SST_INSTALL_BIN=${SST_INSTALL}/bin
 # the root; dependencies may be installed in various locations under
 # this directory. The user can override this value by setting the
 # exporting the SST_INSTALL_DEPS_USER variable in their environment.
-export SST_INSTALL_DEPS=${HOME}/local
+export SST_INSTALL_DEPS=${SST_BASE}/local
 # Initialize build type to null
 export SST_BUILD_TYPE=""
 # Load test definitions
@@ -108,11 +115,11 @@ dotests() {
 setConvenienceVars() {
     # generate & load convenience variables
     echo "setConvenienceVars() : input = ($1), capturing to SST_deps_env.sh..."
-    $SST_DEPS_BIN/sstDependencies.sh $1 queryEnv > $HOME/SST_deps_env.sh
-    . $HOME/SST_deps_env.sh
+    $SST_DEPS_BIN/sstDependencies.sh $1 queryEnv > $SST_BASE/SST_deps_env.sh
+    . $SST_BASE/SST_deps_env.sh
     echo "setConvenienceVars() : SST_deps_env.sh file contents"
     echo "startfile-----"
-    cat $HOME/SST_deps_env.sh
+    cat $SST_BASE/SST_deps_env.sh
     echo "endfile-------"
     echo "setConvenienceVars() : exported variables"
     export | egrep SST_DEPS_
@@ -354,6 +361,8 @@ dobuild() {
 # main
 
 retval=0
+echo  $0  $1 $2  $3
+echo `pwd`
 
 if [ $# -ne 2 ]
 then
