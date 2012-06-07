@@ -25,7 +25,12 @@ export SST_ROOT=`pwd`
 #           devel                sstDeps
 #           trunk (SST_ROOT)       src
 
-export SST_BASE=`(builtin cd ../.. ; pwd )`
+if [[ ${SST_DEPS_USER_MODE:+isSet} = isSet ]]
+then
+    export SST_BASE=$SST_DEPS_USER_DIR
+else
+    export SST_BASE=$HOME
+fi
 
 # Location of SST library dependencies (deprecated)
 export SST_DEPS=${SST_BASE}/local
