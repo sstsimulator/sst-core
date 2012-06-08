@@ -146,7 +146,7 @@ setConvenienceVars() {
 getconfig() {
 
     # Configure default dependencies to use if nothing is explicitly specified
-    local defaultDeps="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s none -q default"
+    local defaultDeps="-k default -d default -p default -z default -b default -g default -m default -i default -o default -h default -s none -q none"
 
     local depsStr=""
 
