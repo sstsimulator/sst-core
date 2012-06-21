@@ -14,6 +14,7 @@
 #include "sst/core/serialization/core.h"
 
 #include <iostream>
+#include <ctime>
 
 #include "sst/core/configGraph.h"
 #include "sst/core/sdl.h"
@@ -41,7 +42,7 @@ sdl_parser::sdl_parser( const string fileName )
     TiXmlNode* child;
     
     for ( child = root->FirstChild(); child != 0; child = child->NextSibling() ) {
-	if ( child->Type() == TiXmlNode::ELEMENT ) {
+	if ( child->Type() == TiXmlNode::TINYXML_ELEMENT ) {
 	    if ( !strcmp( child->Value(), "sdl" ) ) {
 		version = child->ToElement()->Attribute("version");
 	    }
@@ -74,7 +75,7 @@ sdl_parser::getSDLConfigString() {
     string config;
     
     for ( child = root->FirstChild(); child != 0; child = child->NextSibling() ) {
-	if ( child->Type() == TiXmlNode::ELEMENT ) {
+	if ( child->Type() == child->TINYXML_ELEMENT ) {
 	    if ( !strcmp( child->Value(), "config" ) ) {
 		config = child->FirstChild()->Value();
 		break;
@@ -96,7 +97,7 @@ sdl_parser::getSDLConfigString() {
 
 ConfigGraph*
 sdl_parser::createConfigGraph()
-{
+{ 
     graph = new ConfigGraph();
     
     TiXmlNode* pParent = doc;
@@ -107,7 +108,7 @@ sdl_parser::createConfigGraph()
     for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
     {
 	switch (  pChild->Type()) {
-	case TiXmlNode::ELEMENT:
+	case TiXmlNode::TINYXML_ELEMENT:
 	    if ( strcmp( pChild->Value(), "param_include") == 0 ) {
 		parse_param_include( pChild ); 
 	    }
@@ -130,7 +131,7 @@ sdl_parser::createConfigGraph()
     for ( pChild = sst_section->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 
     {
 	switch (  pChild->Type()) {
-	case TiXmlNode::ELEMENT:
+	case TiXmlNode::TINYXML_ELEMENT:
 	    if ( strcmp( pChild->Value(), "component") == 0 ) {
 		parse_component( pChild ); 
 	    }
@@ -142,6 +143,7 @@ sdl_parser::createConfigGraph()
 	    break;
 	}
     }
+
     return graph;
 }
     
@@ -233,7 +235,7 @@ sdl_parser::parse_component(TiXmlNode* pParent)
     TiXmlNode* pChild;
     for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) {
 	switch (  pChild->Type()) {
-	case TiXmlNode::ELEMENT:
+	case TiXmlNode::TINYXML_ELEMENT:
 	    if ( strcmp( pChild->Value(), "params") == 0 ) {
 		parse_params( pChild, comp );
 	    }
@@ -276,7 +278,7 @@ sdl_parser::parse_introspector(TiXmlNode* pParent)
     TiXmlNode* pChild;
     for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) {
 	switch (  pChild->Type()) {
-	case TiXmlNode::ELEMENT:
+	case TiXmlNode::TINYXML_ELEMENT:
 	    if ( strcmp( pChild->Value(), "params") == 0 ) {
 		parse_params( pChild, comp );
 	    }
