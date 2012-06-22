@@ -101,7 +101,10 @@ main(int argc, char *argv[])
 
 	ConfigGraph* graph;
 	
+	
 	if ( world.size() == 1 ) {
+	    clock_t start_graph_gen = clock();
+
 	    if ( cfg.generator != "NONE" ) {
 		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
 		graph = new ConfigGraph();
@@ -110,12 +113,23 @@ main(int argc, char *argv[])
 	    else {
 		graph = parser->createConfigGraph();
 	    }
+
+            clock_t end_graph_gen = clock();
+   
+            if(cfg.verbose && (world.rank() == 0)) {
+            	std::cout << "# Graph construction took " <<
+			((end_graph_gen - start_graph_gen) / CLOCKS_PER_SEC) << " seconds." 
+			<< std::endl;
+            }
+
 	    // Set all components to be instanced on rank 0 (the only
 	    // one that exists)
 	    graph->setComponentRanks(0);
 	}
 	// Need to worry about partitioning for parallel jobs
 	else if ( world.rank() == 0 || cfg.all_parse ) {
+	    clock_t start_graph_gen = clock();
+
 	    if ( cfg.generator != "NONE" ) {
 		graph = new ConfigGraph();
 		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
@@ -124,7 +138,16 @@ main(int argc, char *argv[])
 	    else {
 		graph = parser->createConfigGraph();
 	    }
+
+	    clock_t end_graph_gen = clock();
+   
+            if(cfg.verbose && (world.rank() == 0)) {
+            	std::cout << "# Graph construction took " <<
+			((end_graph_gen - start_graph_gen) / CLOCKS_PER_SEC) << " seconds." 
+			<< std::endl;
+            }
 	    
+	    clock_t	start_part = clock();
 	    // Do the partitioning.
 	    if ( cfg.partitioner != "self" ) {
 		// If partitioning not specified by sdl or generator,
@@ -145,10 +168,18 @@ main(int argc, char *argv[])
 		partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
 		func(graph,world.size());
 	    }
+
+	    clock_t end_part = clock();
+
+	    if(cfg.verbose && (world.rank() == 0)) {
+		std::cout << "# Graph partitionning took " <<
+			((end_part - start_part) / CLOCKS_PER_SEC) << " seconds." << std::endl;
+	    }
 	}
 	else {
 	    graph = new ConfigGraph();
 	}
+	
 
 	// If the user asks us to dump the partionned graph.
 	if(cfg.dump_component_graph_file != "" && world.rank() == 0) {
