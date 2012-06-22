@@ -19,6 +19,8 @@
 #include <signal.h>
 
 #include <iomanip>
+#include <iostream>
+#include <fstream>
 
 #include <sst/core/archive.h>
 #include <sst/core/config.h>
@@ -147,6 +149,35 @@ main(int argc, char *argv[])
 	else {
 	    graph = new ConfigGraph();
 	}
+
+	// If the user asks us to dump the partionned graph.
+	if(cfg.dump_component_graph_file != "" && world.rank() == 0) {
+		if(cfg.verbose) 
+			std::cout << "# Dumping partitionned component graph to " <<
+				cfg.dump_component_graph_file << std::endl;
+
+		ofstream graph_file(cfg.dump_component_graph_file.c_str());
+		ConfigComponentMap_t& component_map = graph->getComponentMap();
+
+		for(int i = 0; i < world.size(); i++) {
+			graph_file << "Rank: " << i << " Component List:" << std::endl;
+
+			for (ConfigComponentMap_t::const_iterator j = component_map.begin() ; j != component_map.end() ; ++j) {
+	   		 	if((*(*j).second).rank == i) {
+					graph_file << "   " << (*(*j).second).name << " (ID=" << (*(*j).second).id << ")" << std::endl;
+					graph_file << "      -> type      " << (*(*j).second).type << std::endl;
+					graph_file << "      -> weight    " << (*(*j).second).weight << std::endl;
+					graph_file << "      -> linkcount " << (*(*j).second).links.size() << std::endl;
+				}
+			}
+		}
+
+		graph_file.close();
+
+		if(cfg.verbose) 
+			std::cout << "# Dump of partition graph is complete." << std::endl;
+	}
+
 	// Broadcast the data structures if only rank 0 built the
 	// graph
 	if ( !cfg.all_parse ) broadcast(world, *graph, 0);

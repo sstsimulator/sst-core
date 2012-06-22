@@ -49,6 +49,7 @@ public:
     std::string     partitioner;
     std::string     generator;
     std::string     generator_options;
+    std::string     dump_component_graph_file;
 
     bool            all_parse;
     bool            verbose;
@@ -101,6 +102,7 @@ private:
 	ar & BOOST_SERIALIZATION_NVP(partitioner);
 	ar & BOOST_SERIALIZATION_NVP(generator);
 	ar & BOOST_SERIALIZATION_NVP(generator_options);
+        ar & BOOST_SERIALIZATION_NVP(dump_component_graph_file);
     }
 
     int rank;

@@ -55,6 +55,7 @@ Config::Config( int my_rank )
 #endif
     generator   = "NONE";
     generator_options   = "";
+    dump_component_graph_file = "";
     all_parse   = true;
     verbose     = false;
     
@@ -117,6 +118,8 @@ Config::Config( int my_rank )
          "generator to be used to build simulation <lib.generator_name>")
         ("gen-options", po::value< string >(&generator_options), 
          "options to be passed to generator function (must use quotes if whitespace is present)")
+        ("dump_partition", po::value< string >(&dump_component_graph_file), 
+         "dump component partition to this file (default is not to dump information)")
 	
 	;
 
