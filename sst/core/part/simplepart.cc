@@ -1,0 +1,203 @@
+
+
+#include <sst_config.h>
+
+#include <string>
+#include <vector>
+#include <map>
+#include <set>
+
+#include <boost/mpi.hpp>
+
+#include "sst/core/configGraph.h"
+#include "sst/core/graph.h"
+#include "sst/core/sdl.h"
+#include "sst/core/sst_types.h"
+#include "sst/core/serialization/core.h"
+
+using namespace std;
+
+namespace SST {
+
+	// Get the minimum latency associated with a link
+	inline SimTime_t cost_individual_link(ConfigLink* link) {
+		return link->getMinLatency();
+	}
+
+	inline int findIndex(ComponentId_t* theArray, const int length, ComponentId_t findThis) {
+		int index = -1;
+		
+		for(int i = 0; i < length; i++) {
+			if(theArray[i] == findThis) {
+				index = i; break;
+			}
+		}
+
+		return index;
+	}
+
+	SimTime_t cost_external_links(ComponentId_t* setA, 
+				const int lengthA,
+				ComponentId_t* setB,
+				const int lengthB,
+				map<ComponentId_t, map<ComponentId_t, SimTime_t>*>& timeTable) {
+
+		SimTime_t cost = 0;
+
+		for(int i = 0; i < lengthA; i++) {
+			map<ComponentId_t, SimTime_t>* compMap = timeTable[setA[i]];
+
+			for(map<ComponentId_t, SimTime_t>::const_iterator compMapItr = compMap->begin();
+				compMapItr != compMap->end();
+				compMapItr++) {
+
+				if(findIndex(setB, lengthB, (*compMapItr).first) > -1) {
+					cost += (*compMapItr).second;
+				}
+			}
+		}
+
+		return cost;
+	}
+
+	void simple_partition_step(ConfigComponentMap_t& component_map,
+			ComponentId_t* setA, const int lengthA, int rankA,
+			ComponentId_t* setB, const int lengthB, int rankB,
+			map<ComponentId_t, map<ComponentId_t, SimTime_t>*> timeTable,
+			int world_size, int step) {
+
+		SimTime_t costExt = cost_external_links(setA, lengthA, setB, lengthB, timeTable);
+
+		for(int i = 0; i < lengthA; i++) {
+			for(int j = 0; j < lengthB; j++) {
+				ComponentId_t tempA = setA[i];
+				setA[i] = setB[j]; 
+				setB[j] = tempA;
+
+				SimTime_t newCost = cost_external_links(setA, lengthA, setB, lengthB, timeTable);
+
+				if(newCost >= costExt) {
+					costExt = newCost;
+				} else {
+					ComponentId_t tempB = setB[j];
+					setB[j] = setA[i];
+					setA[i] = tempB;
+				}
+			}	
+		}
+
+		/////////////////////////////////////////////////////////////////////////////////////
+		// Sub-divide and repeat
+		for(int i = 0; i < lengthA; i++) {
+			component_map[setA[i]]->rank = rankA;
+		}
+
+		for(int i = 0; i < lengthB; i++) {
+			component_map[setB[i]]-> rank = rankB;
+		}
+
+		const int A1_rank = rankA;
+		const int A2_rank = rankA + pow(2, step);
+
+		if(A2_rank < world_size) {		
+			const int lengthA1 = lengthA % 2 == 1 ? (lengthA / 2) + 1 : (lengthA / 2);
+			const int lengthA2 = lengthA / 2;
+
+			ComponentId_t setA1[lengthA1];
+			ComponentId_t setA2[lengthA2];
+
+			int A1index = 0;
+			int A2index = 0;
+
+			for(int i = 0; i < lengthA; i++) {
+				if(i % 2 == 0) {
+					setA1[A1index++] = setA[i];
+				} else {
+					setA2[A2index++] = setA[i];
+				}
+			}
+
+			simple_partition_step(component_map, setA1, lengthA1, A1_rank,
+				setA2, lengthA2, A2_rank, timeTable, world_size, step + 1);
+		}
+
+		const int B1_rank = rankB;
+		const int B2_rank = rankB + pow(2, step);
+		
+		if(B2_rank < world_size) {		
+			const int lengthB1 = lengthB % 2 == 1 ? (lengthB / 2) + 1 : (lengthB / 2);
+			const int lengthB2 = lengthB / 2;
+
+			ComponentId_t setB1[lengthB1];
+			ComponentId_t setB2[lengthB2];
+
+			int B1index = 0;
+			int B2index = 0;
+
+			for(int i = 0; i < lengthB; i++) {
+				if(i % 2 == 0) {
+					setB1[B1index++] = setB[i];
+				} else {
+					setB2[B2index++] = setB[i];
+				}
+			}
+
+			simple_partition_step(component_map, setB1, lengthB1, B1_rank,
+				setB2, lengthB2, B2_rank, timeTable, world_size, step + 1);
+		}
+	}
+
+	void simple_partition(ConfigGraph* graph, int world_size) {
+		ConfigComponentMap_t& component_map = graph->getComponentMap();
+
+
+		if(world_size == 1) {
+			for(ConfigComponentMap_t::iterator compItr = component_map.begin();
+				compItr != component_map.end();
+				compItr++) {
+
+				compItr->second->rank = 0;
+			}
+		} else {
+			const int A_size = component_map.size() % 2 == 1 ? (component_map.size() / 2) + 1 : (component_map.size() / 2);
+			const int B_size = component_map.size() / 2;
+
+			ComponentId_t setA[A_size];
+			ComponentId_t setB[B_size];
+
+			int indexA = 0;
+			int indexB = 0;		
+			int count  = 0;
+
+			map<ComponentId_t, map<ComponentId_t, SimTime_t>*> timeTable;
+
+			for(ConfigComponentMap_t::iterator compItr = component_map.begin();
+				compItr != component_map.end();
+				compItr++) {
+
+				ComponentId_t theComponent = (*compItr).first;
+
+				map<ComponentId_t, SimTime_t>* compConnectMap = new map<ComponentId_t, SimTime_t>();
+				timeTable[theComponent] = compConnectMap;
+
+				if(count++ % 2 == 0) {
+					setA[indexA++] = theComponent;	
+				} else {
+					setB[indexB++] = theComponent;
+				}
+
+				vector<ConfigLink*> component_links = graph->getComponentMap().find(theComponent)->second->links;
+
+				for(vector<ConfigLink*>::const_iterator linkItr = component_links.begin();
+					linkItr != component_links.end();
+					linkItr++) {
+
+					ConfigLink* theLink = (*linkItr);
+					compConnectMap->insert( pair<ComponentId_t, SimTime_t>(theLink->component[1], theLink->getMinLatency()) );
+				}
+			}
+
+			simple_partition_step(component_map, setA, A_size, 0, setB, B_size, 1, timeTable, world_size, 1);
+		}
+	}
+}

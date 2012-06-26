@@ -108,3 +108,5 @@ sst_x_LDFLAGS = \
 	$(SST_LTLIBS_INTROSPECTORS)
 
 include tinyxml/Makefile.inc
+include part/Makefile.inc
+

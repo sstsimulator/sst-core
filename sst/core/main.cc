@@ -32,6 +32,9 @@
 #include <sst/core/action.h>
 #include <sst/core/activity.h>
 
+#include <sst/core/part/simplepart.h>
+#include <sst/core/part/rrobin.h>
+
 using namespace std;
 using namespace SST;
 
@@ -100,8 +103,7 @@ main(int argc, char *argv[])
         signal(SIGUSR2, sigHandlerPrintStatus2);
 
 	ConfigGraph* graph;
-	
-	
+
 	if ( world.size() == 1 ) {
 	    clock_t start_graph_gen = clock();
 
@@ -143,11 +145,11 @@ main(int argc, char *argv[])
    
             if(cfg.verbose && (world.rank() == 0)) {
             	std::cout << "# Graph construction took " <<
-			((end_graph_gen - start_graph_gen) / CLOCKS_PER_SEC) << " seconds." 
-			<< std::endl;
+			((end_graph_gen - start_graph_gen) / CLOCKS_PER_SEC) << " seconds." << std::endl;
             }
 	    
 	    clock_t	start_part = clock();
+
 	    // Do the partitioning.
 	    if ( cfg.partitioner != "self" ) {
 		// If partitioning not specified by sdl or generator,
@@ -155,10 +157,25 @@ main(int argc, char *argv[])
 		// detect some types of partitioning errors
 		graph->setComponentRanks(-1);
 	    }
-	    
+
 	    if ( cfg.partitioner == "self" ) {
 		// For now, do nothing.  Eventually we need to
 		// have a checker for the partitioning.
+	    }
+	    else if ( cfg.partitioner == "simple" ) {
+		if(cfg.verbose && world.rank() == 0) 
+			std::cout << "# Performing a simple partition..." << std::endl;
+		simple_partition(graph, world.size());
+		if(cfg.verbose && world.rank() == 0) 
+			std::cout << "# Partitionning process is complete." << std::endl;
+            }
+	    else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
+		// perform a basic round robin partition
+		if(cfg.verbose && world.rank() == 0) 
+			std::cout << "# Performing a round-robin partition..." << std::endl;
+		rrobin_partition(graph, world.size());
+		if(cfg.verbose && world.rank() == 0) 
+			std::cout << "# Partitionning process is complete." << std::endl;
 	    }
 	    else if ( cfg.partitioner == "zoltan" ) {
 		printf("Zoltan support is currently not available, aborting...\n");
@@ -179,8 +196,8 @@ main(int argc, char *argv[])
 	else {
 	    graph = new ConfigGraph();
 	}
-	
 
+        ///////////////////////////////////////////////////////////////////////	
 	// If the user asks us to dump the partionned graph.
 	if(cfg.dump_component_graph_file != "" && world.rank() == 0) {
 		if(cfg.verbose) 
@@ -209,6 +226,7 @@ main(int argc, char *argv[])
 			std::cout << "# Dump of partition graph is complete." << std::endl;
 	}
 
+        ///////////////////////////////////////////////////////////////////////
 	// Broadcast the data structures if only rank 0 built the
 	// graph
 	if ( !cfg.all_parse ) broadcast(world, *graph, 0);
@@ -263,10 +281,11 @@ main(int argc, char *argv[])
 
     if ( world.rank() == 0 && cfg.verbose ) {
 	std::cout << setiosflags(ios::fixed) << setprecision(2);
-	std::cout << "#" << endl << "# Simulation times" << endl;
-	std::cout << "#  Build time: " << max_build_time << " s" << std::endl;
-	std::cout << "#  Simulation time: " << max_run_time << " s" << std::endl;
-	std::cout << "#  Total time: " << max_total_time << " s" << std::endl;
+	std::cout << "#" << endl;
+	std::cout << "#  Simulation Timing Information:" << endl;
+	std::cout << "#  Build time:      " << max_build_time << " s" << std::endl;
+	std::cout << "#  Simulation time: " << max_run_time   << " s" << std::endl;
+	std::cout << "#  Total time:      " << max_total_time << " s" << std::endl;
     }
 
     delete mpiEnv;
