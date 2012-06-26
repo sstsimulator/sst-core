@@ -19,11 +19,7 @@ using namespace std;
 
 namespace SST {
 
-	// Get the minimum latency associated with a link
-	inline SimTime_t cost_individual_link(ConfigLink* link) {
-		return link->getMinLatency();
-	}
-
+	// Find the index of a specific component in this array
 	inline int findIndex(ComponentId_t* theArray, const int length, ComponentId_t findThis) {
 		int index = -1;
 		
@@ -36,6 +32,8 @@ namespace SST {
 		return index;
 	}
 
+	// Cost up all of the links between two sets (that is all links which originate in A
+	// and connect to a vertex in B
 	SimTime_t cost_external_links(ComponentId_t* setA, 
 				const int lengthA,
 				ComponentId_t* setB,
@@ -51,8 +49,8 @@ namespace SST {
 				compMapItr != compMap->end();
 				compMapItr++) {
 
-				if(findIndex(setB, lengthB, (*compMapItr).first) > -1) {
-					cost += (*compMapItr).second;
+				if(findIndex(setB, lengthB, compMapItr->first) > -1) {
+					cost += compMapItr->second;
 				}
 			}
 		}
@@ -60,6 +58,7 @@ namespace SST {
 		return cost;
 	}
 
+	// Perform one step of the recursive algorithm to partition the graph
 	void simple_partition_step(ConfigComponentMap_t& component_map,
 			ComponentId_t* setA, const int lengthA, int rankA,
 			ComponentId_t* setB, const int lengthB, int rankB,
@@ -76,6 +75,7 @@ namespace SST {
 
 				SimTime_t newCost = cost_external_links(setA, lengthA, setB, lengthB, timeTable);
 
+				// check higher? if yes then keep otherwise swap back 
 				if(newCost >= costExt) {
 					costExt = newCost;
 				} else {
