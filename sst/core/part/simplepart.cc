@@ -19,6 +19,16 @@ using namespace std;
 
 namespace SST {
 
+	inline int pow2(int step) {
+		int value = 1;
+
+		for(int i = 0; i < step; i++) {
+			value *= 2;
+		}
+
+		return value;
+	}
+
 	// Find the index of a specific component in this array
 	inline int findIndex(ComponentId_t* theArray, const int length, ComponentId_t findThis) {
 		int index = -1;
@@ -97,7 +107,7 @@ namespace SST {
 		}
 
 		const int A1_rank = rankA;
-		const int A2_rank = rankA + pow(2, step);
+		const int A2_rank = rankA + pow2(step);
 
 		if(A2_rank < world_size) {		
 			const int lengthA1 = lengthA % 2 == 1 ? (lengthA / 2) + 1 : (lengthA / 2);
@@ -122,7 +132,7 @@ namespace SST {
 		}
 
 		const int B1_rank = rankB;
-		const int B2_rank = rankB + pow(2, step);
+		const int B2_rank = rankB + pow2(step);
 		
 		if(B2_rank < world_size) {		
 			const int lengthB1 = lengthB % 2 == 1 ? (lengthB / 2) + 1 : (lengthB / 2);
