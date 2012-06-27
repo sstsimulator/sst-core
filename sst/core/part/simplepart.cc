@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <stdlib.h>
 
 #include <boost/mpi.hpp>
 
@@ -113,8 +114,8 @@ namespace SST {
 			const int lengthA1 = lengthA % 2 == 1 ? (lengthA / 2) + 1 : (lengthA / 2);
 			const int lengthA2 = lengthA / 2;
 
-			ComponentId_t setA1[lengthA1];
-			ComponentId_t setA2[lengthA2];
+			ComponentId_t* setA1 = (ComponentId_t*) malloc(sizeof(ComponentId_t) * lengthA1);
+			ComponentId_t* setA2 = (ComponentId_t*) malloc(sizeof(ComponentId_t) * lengthA2);
 
 			int A1index = 0;
 			int A2index = 0;
@@ -129,6 +130,9 @@ namespace SST {
 
 			simple_partition_step(component_map, setA1, lengthA1, A1_rank,
 				setA2, lengthA2, A2_rank, timeTable, world_size, step + 1);
+
+			free(setA1);
+			free(setA2);
 		}
 
 		const int B1_rank = rankB;
@@ -138,8 +142,8 @@ namespace SST {
 			const int lengthB1 = lengthB % 2 == 1 ? (lengthB / 2) + 1 : (lengthB / 2);
 			const int lengthB2 = lengthB / 2;
 
-			ComponentId_t setB1[lengthB1];
-			ComponentId_t setB2[lengthB2];
+			ComponentId_t* setB1 = (ComponentId_t*) malloc(sizeof(ComponentId_t) * lengthB1);
+			ComponentId_t* setB2 = (ComponentId_t*) malloc(sizeof(ComponentId_t) * lengthB2);
 
 			int B1index = 0;
 			int B2index = 0;
@@ -154,6 +158,9 @@ namespace SST {
 
 			simple_partition_step(component_map, setB1, lengthB1, B1_rank,
 				setB2, lengthB2, B2_rank, timeTable, world_size, step + 1);
+
+			free(setB1);
+			free(setB2);
 		}
 	}
 
