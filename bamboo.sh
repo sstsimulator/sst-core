@@ -92,6 +92,10 @@ dotests() {
     # DO NOT pass args to the test suite, it confuses
     # shunit. Use an environment variable instead.
     ${SST_TEST_SUITES}/testSuite_portals.sh
+    if [ $1 == "portals4_test" ]
+    then
+        ${SST_TEST_SUITES}/testSuite_portals4.sh
+    fi
     # Add other test suites here, i.e.
     # ${SST_TEST_SUITES}/testSuite_moe.sh
     # ${SST_TEST_SUITES}/testSuite_larry.sh
@@ -254,6 +258,10 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
+        portals4_test)
+            depsStr="-k none -d none -p none -z none -b none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
+            configStr="--prefix=$SST_INSTALL --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            ;;
         default|*)
             depsStr="$defaultDeps"
             setConvenienceVars "$depsStr"
@@ -385,7 +393,7 @@ else
     kernel=`uname -s`
 
     case $1 in
-        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test)
+        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test)
             # Configure MPI (Linux only)
             if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
             then
