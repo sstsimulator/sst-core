@@ -259,7 +259,7 @@ getconfig() {
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
         portals4_test)
-            depsStr="-k none -d none -p none -z none -b none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
+            depsStr="-k none -d none -p none -z none -b 1.43 -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
             ;;
         default|*)
