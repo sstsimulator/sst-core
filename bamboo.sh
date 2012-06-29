@@ -260,7 +260,7 @@ getconfig() {
             ;;
         portals4_test)
             depsStr="-k none -d none -p none -z none -b none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
-            configStr="--prefix=$SST_INSTALL --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
             ;;
         default|*)
             depsStr="$defaultDeps"
