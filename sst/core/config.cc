@@ -175,20 +175,17 @@ Config::parse_cmd_line(int argc, char* argv[]) {
 	archive = true;
     }
 
-    // Get the full path to the sdl file
-    #define BUF_LEN 200
-    char buf[BUF_LEN];
-    if (getcwd( buf, BUF_LEN ) == NULL) {
-	cerr << "could not find my cwd:" << strerror(errno) << endl;
-	return -1;
-    }
-    std::string cwd = buf;
-
-    cwd.append("/");
-
     // get the absolute path to the sdl file 
     if ( sdlfile != "NONE" ) {
 	if ( sdlfile.compare(0,1,"/" ) ) {
+	    #define BUF_LEN PATH_MAX
+	    char buf[BUF_LEN];
+	    if (getcwd( buf, BUF_LEN ) == NULL) {
+	        cerr << "could not find my cwd:" << strerror(errno) << endl;
+	        return -1;
+	    }
+	    std::string cwd = buf;
+	    cwd.append("/");
 	    sdlfile = cwd + sdlfile;
 	}
     }
@@ -248,7 +245,7 @@ Config::parse_config_file(string config_string)
         return -1;
     }
 
-    #define BUF_LEN 100
+    #define BUF_LEN PATH_MAX
     char buf[BUF_LEN];
     if (getcwd( buf, BUF_LEN ) == NULL) {
 	cerr << "could not find my cwd:" << strerror(errno) << endl;
