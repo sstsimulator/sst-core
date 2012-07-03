@@ -176,7 +176,7 @@ Config::parse_cmd_line(int argc, char* argv[]) {
     }
 
     // Get the full path to the sdl file
-    #define BUF_LEN 100
+    #define BUF_LEN 200
     char buf[BUF_LEN];
     if (getcwd( buf, BUF_LEN ) == NULL) {
 	cerr << "could not find my cwd:" << strerror(errno) << endl;
