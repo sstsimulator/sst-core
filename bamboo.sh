@@ -91,10 +91,17 @@ dotests() {
 
     # DO NOT pass args to the test suite, it confuses
     # shunit. Use an environment variable instead.
-    ${SST_TEST_SUITES}/testSuite_portals.sh
+    if [ $1 != "iris_test" ]
+    then
+        ${SST_TEST_SUITES}/testSuite_portals.sh
+    fi
     if [ $1 == "portals4_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals4.sh
+    fi
+    if [ $1 == "iris_test" ]
+    then
+        ${SST_TEST_SUITES}/testSuite_iris.sh
     fi
     # Add other test suites here, i.e.
     # ${SST_TEST_SUITES}/testSuite_moe.sh
@@ -263,6 +270,10 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
             ;;
+        iris_test)
+            depsStr="-k none -d none -p none -z none -b none -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
+            configStr="--prefix=$SST_INSTALL --enable-iris"
+            ;;
         default|*)
             depsStr="$defaultDeps"
             setConvenienceVars "$depsStr"
@@ -394,7 +405,7 @@ else
     kernel=`uname -s`
 
     case $1 in
-        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test)
+        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test)
             # Configure MPI (Linux only)
             if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
             then
