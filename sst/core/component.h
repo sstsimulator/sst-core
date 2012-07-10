@@ -24,7 +24,7 @@
 namespace SST {
 
 class LinkMap;
-    
+
 #define _COMP_DBG( fmt, args...) __DBG( DBG_COMP, Component, fmt, ## args )
 
 /**
