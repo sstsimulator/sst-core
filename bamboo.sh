@@ -271,8 +271,9 @@ getconfig() {
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
             ;;
         iris_test)
-            depsStr="-k none -d none -p none -z none -b none -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
-            configStr="--prefix=$SST_INSTALL --enable-iris"
+            depsStr="-k none -d none -p none -z none -b 1.43 -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
+            setConvenienceVars "$depsStr"
+            configStr="--prefix=$SST_INSTALL --enable-iris --with-boost=$SST_DEPS_INSTALL_BOOST"
             ;;
         default|*)
             depsStr="$defaultDeps"
