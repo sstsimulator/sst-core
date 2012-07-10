@@ -316,7 +316,7 @@ void Simulation::Run() {
 
     // Check to make sure we have something to do.  If not print error
     // message and exit
-    if ( timeVortex->front() == NULL ) {
+    if ( timeVortex->front() == NULL && num_ranks == 1 ) {
 	std::cout << "No clocks registered and no events sent during initialization.  Exiting simulation..." << std::endl;
 	exit(1);
     }
