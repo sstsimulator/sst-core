@@ -164,6 +164,10 @@ getconfig() {
     local cc_compiler=`which mpicc`
     local cxx_compiler=`which mpicxx`
 
+    # Interrogate Python install to obtain location of Python includes
+    local tmp_python_inc=`python-config --includes`
+    local python_inc_dir=`expr "$tmp_python_inc" : '\([[:graph:]]*/python2\..\)'`
+
     # make sure that sstmacro is suppressed
     if [ -e ./sst/elements/macro_component/.unignore ] && [ -f ./sst/elements/macro_component/.unignore ]
     then
@@ -219,8 +223,8 @@ getconfig() {
             #     This option used for configuring SST with gem5 enabled
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
-            depsStr="-k default -d default -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s none"
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d default -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
@@ -230,7 +234,7 @@ getconfig() {
             #     This option used for configuring SST with latest devel sstmacro
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             depsStr="-k default -d default -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s stabledevel"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
@@ -241,7 +245,7 @@ getconfig() {
             #     This option used for configuring SST with sstmacro 2.2.0
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             depsStr="-k default -d default -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s 2.2.0"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
@@ -260,7 +264,7 @@ getconfig() {
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             depsStr="-k default -d default -p default -z default -b 1.49 -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
@@ -268,7 +272,7 @@ getconfig() {
         portals4_test)
             depsStr="-k none -d none -p none -z none -b 1.43 -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
             setConvenienceVars "$depsStr"
-            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE CFLAGS=-I/usr/include/python2.6 CXXFLAGS=-I/usr/include/python2.6"
+            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             ;;
         iris_test)
             depsStr="-k none -d none -p none -z none -b 1.43 -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
@@ -301,7 +305,7 @@ dobuild() {
 
     # process cmdline options
     OPTIND=1
-    while getopts :t:a: opt
+    while getopts :t:a:k: opt
     do
         case "$opt" in
             t) # build type
@@ -309,6 +313,9 @@ dobuild() {
                 ;;
             a) # architecture
                 local architecture=$OPTARG
+                ;;
+            k) #kernel
+                local kernel=$OPTARG
                 ;;
             *) # unknown option 
                 echo "dobuild () : Unknown option $opt"
@@ -335,8 +342,13 @@ dobuild() {
         return $retval
     fi
 
-    export PYTHON_DEV_INCLUDE=/usr/include/python2.6
-    export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${PYTHON_DEV_INCLUDE}:${LD_LIBRARY_PATH}
+    echo "==================== Building SST ===================="
+    export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${LD_LIBRARY_PATH}
+    # Mac OS X needs some help finding dylibs
+    if [ $kernel == "Darwin" ]
+    then
+	export DYLD_LIBRARY_PATH=${LD_LIBRARY_PATH}
+    fi
     # autogen to create ./configure
     ./autogen.sh
     retval=$?
@@ -367,10 +379,23 @@ dobuild() {
     echo "    ./configure ${SST_SELECTED_CONFIG}"
     echo "----------------"
     echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
+    if [ $kernel == "Darwin" ]
+    then
+	# Mac OS X
+	echo "DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}"
+    fi
     echo "----------------"
     echo "sst exectuable linkage information"
-    echo "$ ldd ./sst/core/sst.x"
-    ldd ./sst/core/sst.x
+
+    if [ $kernel == "Darwin" ]
+    then
+        # Mac OS X 
+        echo "$ otool -L ./sst/core/sst.x"
+        otool -L ./sst/core/sst.x
+    else
+        echo "$ ldd ./sst/core/sst.x"
+        ldd ./sst/core/sst.x
+    fi
     echo "SSTBUILD============================================================"
 
     # install SST
@@ -432,7 +457,7 @@ else
             # Build type given as argument to this script
             export SST_BUILD_TYPE=$1
 
-            dobuild -t $SST_BUILD_TYPE -a $arch
+            dobuild -t $SST_BUILD_TYPE -a $arch -k $kernel
             retval=$?
             ;;
 
