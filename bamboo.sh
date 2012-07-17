@@ -152,6 +152,7 @@ setConvenienceVars() {
 #   Input:
 #       $1 (build type): kind of build to configure for
 #       $2 (architecture): build platform architecture from uname
+#       $3 (os): operating system name
 #   Output: string containing 'configure' parameters
 #   Return value: none
 getconfig() {
@@ -172,6 +173,12 @@ getconfig() {
     if [ -e ./sst/elements/macro_component/.unignore ] && [ -f ./sst/elements/macro_component/.unignore ]
     then
         rm ./sst/elements/macro_component/.unignore
+    fi
+
+    # On MacOSX Lion, suppress genericProc
+    if [ $3 == "Darwin" ]
+    then
+        echo "$USER" > ./sst/elements/genericProc/.ignore
     fi
 
     case $1 in
@@ -327,7 +334,7 @@ dobuild() {
     export PATH=$SST_INSTALL_BIN:$PATH
 
     # obtain dependency and configure args
-    getconfig $buildtype $architecture
+    getconfig $buildtype $architecture $kernel
 
     # after getconfig is run,
     # $SST_SELECTED_DEPS now contains selected dependencies 
