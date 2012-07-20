@@ -182,6 +182,17 @@ getconfig() {
     fi
 
     case $1 in
+        sst2.2_config)
+            #-----------------------------------------------------------------
+            # sst2.2_config
+            #     This option used for configuring SST with supported 2.2 deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d stabledevel -p 3.1.1 -z 3.2 -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.2.0 -q 0.1.4"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
+            ;;
         Disksim_test)
             #-----------------------------------------------------------------
             # Disksim_test
@@ -438,7 +449,7 @@ else
     kernel=`uname -s`
 
     case $1 in
-        default|PowerTherm_test|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test)
+        default|PowerTherm_test|sst2.2_config|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test)
             # Configure MPI (Linux only)
             if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
             then
@@ -454,6 +465,9 @@ else
                     mpich2_stable)
                         echo "MPICH2 stable (mpich2-1.4.1p1) selected"
                         module load mpi/mpich2-1.4.1p1;;
+                    ompi_1.6_stable)
+                        echo "OpenMPI stable (openmpi-1.6) selected"
+                        module load mpi/openmpi-1.6;;
                     *)
                         echo "OpenMPI stable (openmpi-1.4.4, default) selected"
                         module load mpi/openmpi-1.4.4;;
