@@ -193,6 +193,17 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
+        sst2.2_config_macosx)
+            #-----------------------------------------------------------------
+            # sst2.2_config_macosx
+            #     This option used for configuring SST with supported 2.2 deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d stabledevel -p 3.1.1 -z 3.2 -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.2.0 -q none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
+            ;;
         Disksim_test)
             #-----------------------------------------------------------------
             # Disksim_test
@@ -365,7 +376,7 @@ dobuild() {
     # Mac OS X needs some help finding dylibs
     if [ $kernel == "Darwin" ]
     then
-	export DYLD_LIBRARY_PATH=${LD_LIBRARY_PATH}
+	    export DYLD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DYLD_LIBRARY_PATH}
     fi
     # autogen to create ./configure
     ./autogen.sh
@@ -449,7 +460,7 @@ else
     kernel=`uname -s`
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test)
+        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test)
             # Configure MPI (Linux only)
             if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
             then
