@@ -475,12 +475,15 @@ else
                 case $2 in
                     mpich2_stable)
                         echo "MPICH2 stable (mpich2-1.4.1p1) selected"
+                        module unload mpi # unload any default to avoid conflict error
                         module load mpi/mpich2-1.4.1p1;;
                     ompi_1.6_stable)
                         echo "OpenMPI stable (openmpi-1.6) selected"
+                        module unload mpi # unload any default to avoid conflict error
                         module load mpi/openmpi-1.6;;
                     *)
                         echo "OpenMPI stable (openmpi-1.4.4, default) selected"
+                        module unload mpi # unload any default to avoid conflict error
                         module load mpi/openmpi-1.4.4;;
                 esac
 
