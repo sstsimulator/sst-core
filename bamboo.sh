@@ -378,6 +378,15 @@ dobuild() {
     then
 	    export DYLD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DYLD_LIBRARY_PATH}
     fi
+    # debugging
+    echo "--------------------env--------------------"
+    env
+    echo "--------------------env--------------------"
+    echo "--------------------modules status--------------------"
+    module avail
+    module list
+    echo "--------------------modules status--------------------"
+    # debugging
     # autogen to create ./configure
     ./autogen.sh
     retval=$?
