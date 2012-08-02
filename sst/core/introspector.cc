@@ -155,7 +155,7 @@ void Introspector::oneTimeCollect(SimTime_t time, Event::HandlerBase* functor){
 template<class Archive>
 void
 Introspector::serialize(Archive& ar, const unsigned int version) {
-    ar & BOOST_SERIALIZATION_NVP(MyCompList);
+//    ar & BOOST_SERIALIZATION_NVP(MyCompList);
     ar & BOOST_SERIALIZATION_NVP(minvalue);
     ar & BOOST_SERIALIZATION_NVP(maxvalue);
     ar & BOOST_SERIALIZATION_NVP(value);
