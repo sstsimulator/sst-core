@@ -98,11 +98,17 @@ dotests() {
     if [ $1 == "portals4_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals4.sh
-    fi
-    if [ $1 == "iris_test" ]
-    then
+
         ${SST_TEST_SUITES}/testSuite_iris.sh
+
+        if [ `find . -name libm5C.so | wc -w` != 0 ]
+        then
+            ${SST_TEST_SUITES}/testSuite_M5.sh
+        else
+            echo   No M5 test:  libm5C.so is not available
+        fi
     fi
+
     # Add other test suites here, i.e.
     # ${SST_TEST_SUITES}/testSuite_moe.sh
     # ${SST_TEST_SUITES}/testSuite_larry.sh
