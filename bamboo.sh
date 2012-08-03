@@ -115,6 +115,10 @@ dotests() {
     # ${SST_TEST_SUITES}/testSuite_curly.sh
     # ${SST_TEST_SUITES}/testSuite_shemp.sh
     # etc.
+   if [ $1 == "phoenixsim_test" ]
+   then 
+   ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
+   fi
 
     # Purge SST installation 
     if [[ ${SST_RETAIN_BIN:+isSet} != isSet ]]
@@ -304,6 +308,15 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
             ;;
+        phoenixsim_test)
+            #-----------------------------------------------------------------
+            # phoenixsim_test
+            #     This option used for configuring SST with PhoenixSim enabled
+            #-----------------------------------------------------------------
+            depsStr="-b default -e default"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-phoenixsim=${SST_DEPS_SRC_STAGING}/omnetpp-4.1/"
+            ;;
         portals4_test)
             depsStr="-k none -d none -p none -z none -b 1.43 -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
             setConvenienceVars "$depsStr"
@@ -479,7 +492,7 @@ else
     kernel=`uname -s`
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test)
+        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test|phoenixsim_test)
             # Configure MPI (Linux only)
             if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
             then
