@@ -302,7 +302,7 @@ getconfig() {
             #-----------------------------------------------------------------
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
-            #-----------------------------------------------------------------
+           #-----------------------------------------------------------------
             gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             depsStr="-k default -d default -p default -z default -b 1.49 -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
@@ -315,7 +315,7 @@ getconfig() {
             #-----------------------------------------------------------------
             depsStr="-b default -e default"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-phoenixsim=${SST_DEPS_SRC_STAGING}/omnetpp-4.1/"
+            configStr="$baseoptions --with-omnetpp=${SST_DEPS_SRC_STAGING}/omnetpp-4.1/"
             ;;
         portals4_test)
             depsStr="-k none -d none -p none -z none -b 1.43 -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
