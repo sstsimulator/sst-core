@@ -468,20 +468,24 @@ dobuild() {
 #=========================================================================
 # main
 
+# $1 = build type
+# $2 = MPI type
+# $3 = boost type
+#=========================================================================
+
 echo "==============================ENVIRONMENT DUMP=============================="
 env
 echo "==============================ENVIRONMENT DUMP=============================="
 
 retval=0
-echo  $0  $1 $2  $3
+echo  $0  $1 $2 $3
 echo `pwd`
 
-if [ $# -ne 2 ]
+if [ $# -ne 3 ]
 then
     # need build type and MPI type as argument
-    #   MPI type = ompi_stable, ompi_[version],
-    #              mpich2_stable, mpich_[version]
-    echo "Usage : $0 <buildtype> <mpitype>"
+
+    echo "Usage : $0 <buildtype> <mpitype> <boost type>"
     exit 0
 
 else
@@ -493,7 +497,7 @@ else
 
     case $1 in
         default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test|phoenixsim_test)
-            # Configure MPI (Linux only)
+            # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
             then
                 # For some reason, .bashrc is not being run prior to
@@ -503,21 +507,49 @@ else
                     . /etc/profile.modules
                 fi
 
-
+                # load MPI
                 case $2 in
-                    mpich2_stable)
+                    mpich2_stable|mpich2-1.4.1p1)
                         echo "MPICH2 stable (mpich2-1.4.1p1) selected"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/mpich2-1.4.1p1;;
-                    ompi_1.6_stable)
+                        module load mpi/mpich2-1.4.1p1
+                        boostsuffix="mpich2-1.4.1p1"
+                        ;;
+                    ompi_1.6_stable|openmpi-1.6)
                         echo "OpenMPI stable (openmpi-1.6) selected"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/openmpi-1.6;;
+                        module load mpi/openmpi-1.6
+                        boostsuffix="ompi-1.6"
+                        ;;
                     *)
-                        echo "OpenMPI stable (openmpi-1.4.4, default) selected"
+                        echo "OpenMPI stable (openmpi-1.4.4) selected"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/openmpi-1.4.4;;
+                        module load mpi/openmpi-1.4.4
+                        boostsuffix="ompi-1.4.4"
+                        ;;
                 esac
+
+                # load corresponding Boost
+                case $3 in
+                    boost-1.43)
+                        echo "bamboo.sh: Boost 1.43 selected"
+                        module unload boost
+                        module load boost/boost-1.43.0_${boostsuffix}
+                        ;;
+                    boost-1.48)
+                        echo "bamboo.sh: Boost 1.48 selected"
+                        module unload boost
+                        module load boost/boost-1.48.0_${boostsuffix}
+                        ;;
+                    boost-1.50)
+                        echo "bamboo.sh: Boost 1.50 selected"
+                        module unload boost
+                        module load boost/boost-1.50.0_${boostsuffix}
+                        ;;
+                esac
+                echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
+                export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
+                echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
 
             fi
 
