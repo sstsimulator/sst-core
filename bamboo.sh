@@ -397,7 +397,7 @@ dobuild() {
     then
 	    export DYLD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DYLD_LIBRARY_PATH}
     fi
-    # debugging
+    # Dump pre-build environment and modules status
     echo "--------------------env--------------------"
     env
     echo "--------------------env--------------------"
@@ -405,23 +405,30 @@ dobuild() {
     module avail
     module list
     echo "--------------------modules status--------------------"
-    # debugging
+
     # autogen to create ./configure
+    echo "bamboo.sh: running \"autogen.sh\"..."
     ./autogen.sh
     retval=$?
     if [ $retval -ne 0 ]
     then
         return $retval
     fi
-
+    echo "bamboo.sh: running \"configure\"..."
     echo "bamboo.sh: config args = $SST_SELECTED_CONFIG"
     ./configure $SST_SELECTED_CONFIG
     retval=$?
     if [ $retval -ne 0 ]
     then
+        # Something went wrong in configure, so dump config.log
+        echo "bamboo.sh: dumping config.log"
+        cat "--------------------dump of config.log--------------------"
+        sed -e 's/^/#dump /' ./config.log
+        cat "--------------------dump of config.log--------------------"
         return $retval
     fi
 
+    echo "bamboo.sh: making SST"
     # build SST
     make all
     retval=$?
@@ -438,8 +445,8 @@ dobuild() {
     echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}"
     if [ $kernel == "Darwin" ]
     then
-	# Mac OS X
-	echo "DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}"
+        # Mac OS X
+        echo "DYLD_LIBRARY_PATH=${DYLD_LIBRARY_PATH}"
     fi
     echo "----------------"
     echo "sst exectuable linkage information"
@@ -551,6 +558,10 @@ else
                 export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
                 echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
 
+            else
+                echo "bamboo.sh: MacOS build."
+                echo "bamboo.sh:   MPI = $2, Boost = $3"
+                echo "bamboo.sh:   MPI and Boost options ignored; using default MPI and Boost per $1 buildtype"
             fi
 
             # Build type given as argument to this script
