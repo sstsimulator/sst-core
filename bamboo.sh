@@ -422,9 +422,9 @@ dobuild() {
     then
         # Something went wrong in configure, so dump config.log
         echo "bamboo.sh: dumping config.log"
-        cat "--------------------dump of config.log--------------------"
+        echo "--------------------dump of config.log--------------------"
         sed -e 's/^/#dump /' ./config.log
-        cat "--------------------dump of config.log--------------------"
+        echo "--------------------dump of config.log--------------------"
         return $retval
     fi
 
