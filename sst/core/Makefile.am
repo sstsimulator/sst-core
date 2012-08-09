@@ -98,7 +98,8 @@ sst_x_LDADD = \
 	$(BOOST_PROGRAM_OPTIONS_LIB) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
-	$(MPILIBS)
+	$(MPILIBS) \
+	-lm
 sst_x_LDFLAGS = \
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \
@@ -106,8 +107,7 @@ sst_x_LDFLAGS = \
 	$(BOOST_MPI_LIB) \
 	-export-dynamic \
 	$(SST_LTLIBS_COMPONENTS) \
-	$(SST_LTLIBS_INTROSPECTORS) \
-	-lm
+	$(SST_LTLIBS_INTROSPECTORS)
 
 include tinyxml/Makefile.inc
 include part/Makefile.inc
