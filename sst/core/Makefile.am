@@ -106,7 +106,8 @@ sst_x_LDFLAGS = \
 	$(BOOST_MPI_LIB) \
 	-export-dynamic \
 	$(SST_LTLIBS_COMPONENTS) \
-	$(SST_LTLIBS_INTROSPECTORS)
+	$(SST_LTLIBS_INTROSPECTORS) \
+	-lm
 
 include tinyxml/Makefile.inc
 include part/Makefile.inc
