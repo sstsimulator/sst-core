@@ -149,7 +149,7 @@ setConvenienceVars() {
     echo "endfile-------"
     echo "setConvenienceVars() : exported variables"
     export | egrep SST_DEPS_
-    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-parmetis=$SST_DEPS_INSTALL_PARMETIS --with-parmetis-libdir=$SST_DEPS_INSTALL_PARMETIS/lib --with-parmetis-incdir=$SST_DEPS_INSTALL_PARMETIS/include"
+    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-parmetis=$SST_DEPS_INSTALL_PARMETIS"
     echo "setConvenienceVars() : baseoptions = $baseoptions"
 }
 
