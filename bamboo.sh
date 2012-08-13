@@ -502,10 +502,12 @@ else
     # Determine kernel name (Linux or MacOS i.e. Darwin)
     kernel=`uname -s`
 
+    echo "bamboo.sh: KERNEL = $kernel"
+
     case $1 in
         default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test|phoenixsim_test)
             # Configure MPI and Boost (Linux only)
-            if [ $kernel != "Darwin" ] && [ "$MODULESHOME" ]
+            if [ $kernel != "Darwin" ]
             then
                 # For some reason, .bashrc is not being run prior to
                 # this script. Kludge initialization of modules.
