@@ -561,6 +561,19 @@ else
                 echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
 
             else
+                # Initialize modules for Jenkins (taken from $HOME/.bashrc on Mac)
+                if [ -f /etc/profile.modules ]
+                then
+                    . /etc/profile.modules
+                # put any module loads here
+                    echo "bamboo.sh: Loadin Modules for MacOSX"
+                    module add boost/boost-1.50.0
+                    module list
+                fi
+
+                # Make sure that Mac uses the "new" autotools.
+                PATH=$PATH:$HOME/tools/autotools/bin:$HOME/bin; export PATH
+
                 echo "bamboo.sh: MacOS build."
                 echo "bamboo.sh:   MPI = $2, Boost = $3"
                 echo "bamboo.sh:   MPI and Boost options ignored; using default MPI and Boost per $1 buildtype"
