@@ -119,6 +119,11 @@ dotests() {
    then 
    ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
    fi
+   
+   if [ $1 == "macro_test" ]
+   then 
+   ${SST_TEST_SUITES}/testSuite_macro.sh
+   fi
 
     # Purge SST installation 
     if [[ ${SST_RETAIN_BIN:+isSet} != isSet ]]
@@ -505,7 +510,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test|phoenixsim_test)
+        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test|phoenixsim_test|macro_test)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
