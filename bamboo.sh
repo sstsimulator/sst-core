@@ -577,7 +577,7 @@ else
                 fi
 
                 # Make sure that Mac uses the "new" autotools and can find other utils
-                PATH=$PATH:$HOME/tools/autotools/bin:/opt/openmpi/bin:/opt/local/bin:/usr/bin:$HOME/bin:/usr/local/bin; export PATH
+                PATH=$HOME/tools/autotools/bin:/opt/openmpi/bin:/opt/local/bin:/usr/bin:$HOME/bin:/usr/local/bin:$PATH; export PATH
 
                 echo "bamboo.sh: MacOS build."
                 echo "bamboo.sh:   MPI = $2, Boost = $3"
