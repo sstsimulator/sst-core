@@ -565,7 +565,7 @@ else
                 export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
                 echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
 
-            else
+            else  # MacOS
                 # Initialize modules for Jenkins (taken from $HOME/.bashrc on Mac)
                 if [ -f /etc/profile.modules ]
                 then
@@ -576,8 +576,8 @@ else
                     module list
                 fi
 
-                # Make sure that Mac uses the "new" autotools.
-                PATH=$PATH:$HOME/tools/autotools/bin:$HOME/bin; export PATH
+                # Make sure that Mac uses the "new" autotools and can find other utils
+                PATH=$PATH:$HOME/tools/autotools/bin:/opt/local/bin:$HOME/bin; export PATH
 
                 echo "bamboo.sh: MacOS build."
                 echo "bamboo.sh:   MPI = $2, Boost = $3"
