@@ -329,7 +329,7 @@ void Simulation::Run() {
  	current_activity = timeVortex->pop();
   	current_activity->execute();
     }
-    printf("Sim ended\n");
+
 
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
