@@ -47,9 +47,19 @@ export SST_INSTALL_DEPS=${SST_BASE}/local
 # Initialize build type to null
 export SST_BUILD_TYPE=""
 # Load test definitions
+echo "bamboo.sh: This directory is:"
+pwd
+echo "bamboo.sh: ls test/include"
+ls test/include
+echo "bamboo.sh: ls deps/include"
+ls deps/include
+echo "bamboo.sh: Sourcing test/include/testDefinitions.sh"
 . test/include/testDefinitions.sh
+echo "bamboo.sh: Done sourcing test/include/testDefinitions.sh"
 # Load dependency definitions
+echo "bamboo.sh: deps/include/depsDefinitions.sh"
 . deps/include/depsDefinitions.sh
+echo "bamboo.sh: Done sourcing deps/include/depsDefinitions.sh"
 
 # Uncomment the following line or export from your environment to
 # retain binaries after build
