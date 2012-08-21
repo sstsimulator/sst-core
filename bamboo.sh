@@ -105,6 +105,12 @@ dotests() {
     then
         ${SST_TEST_SUITES}/testSuite_portals.sh
     fi
+
+    if [ $1 != "simpleComponent_test" ]
+    then
+        ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
+    fi
+
     if [ $1 == "portals4_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals4.sh
@@ -342,6 +348,11 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --enable-iris --with-boost=$SST_DEPS_INSTALL_BOOST"
             ;;
+	simpleComponent_test)
+            depsStr="-k none -d none -p none -z none -b 1.43 -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
+            setConvenienceVars "$depsStr"
+            configStr="--prefix=$SST_INSTALL --enable-simpleComponent --with-boost=$SST_DEPS_INSTALL_BOOST"
+            ;;
         default|*)
             depsStr="$defaultDeps"
             setConvenienceVars "$depsStr"
@@ -520,7 +531,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test|phoenixsim_test|macro_test)
+        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
