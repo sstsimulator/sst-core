@@ -104,16 +104,13 @@ dotests() {
     if [ $1 != "iris_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals.sh
+	# jwilso: running simpleComponent test here temporarily
+        ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
     fi
 
     if [ $1 != "PowerTherm_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_PowerTherm.sh
-    fi
-
-    if [ $1 != "simpleComponent_test" ]
-    then
-        ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
     fi
 
     if [ $1 == "portals4_test" ]
