@@ -38,6 +38,7 @@ for elemlib_dir in sst/elements/* ; do
         elemlib_list="$elemlib_list, $elemlib"
       fi
       if test -f "$elemlib_dir/configure.m4" ; then
+	echo " - including: $elemlib_dir/configure.m4"
         elemlib_m4_list="$elemlib_m4_list $elemlib_dir/configure.m4"
       fi
     fi
