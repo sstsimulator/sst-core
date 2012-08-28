@@ -588,6 +588,13 @@ else
                         module unload boost
                         module load boost/boost-1.50.0_${boostsuffix}
                         ;;
+                    *)
+                        echo "bamboo.sh: No Valid Boost selected"
+                        echo "Third argument was $3"
+                        echo "Using Boost-1.50 by default"
+                        module unload boost
+                        module load boost/boost-1.50.0_${boostsuffix}
+                        ;;
                 esac
                 echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
                 export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
