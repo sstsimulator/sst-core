@@ -177,7 +177,7 @@ setConvenienceVars() {
     echo "endfile-------"
     echo "setConvenienceVars() : exported variables"
     export | egrep SST_DEPS_
-    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-parmetis=$SST_DEPS_INSTALL_PARMETIS"
+    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --without-zoltan"
     echo "setConvenienceVars() : baseoptions = $baseoptions"
 }
 
@@ -185,10 +185,10 @@ setConvenienceVars() {
 # Function: getconfig
 # Description:
 #   Purpose:
-#       Based on build type and architecture, generate 'configure'
+#       Based on build config and architecture, generate 'configure'
 #       parameters.
 #   Input:
-#       $1 (build type): kind of build to configure for
+#       $1 (build configuration): name of build configuration
 #       $2 (architecture): build platform architecture from uname
 #       $3 (os): operating system name
 #   Output: string containing 'configure' parameters
@@ -200,8 +200,10 @@ getconfig() {
 
     local depsStr=""
 
+    # Determine MPI wrappers
     local cc_compiler=`which mpicc`
     local cxx_compiler=`which mpicxx`
+    local mpi_environment="CC=${cc_compiler} CXX=${cxx_compiler}"
 
     # Interrogate Python install to obtain location of Python includes
     local tmp_python_inc=`python-config --includes`
@@ -226,10 +228,10 @@ getconfig() {
             #     This option used for configuring SST with supported 2.2 deps
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d stabledevel -p 3.1.1 -z 3.2 -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.2.0 -q 0.1.4"
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d stabledevel -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.2.0 -q 0.1.4"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
         sst2.2_config_macosx)
             #-----------------------------------------------------------------
@@ -237,10 +239,10 @@ getconfig() {
             #     This option used for configuring SST with supported 2.2 deps
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d stabledevel -p 3.1.1 -z 3.2 -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none"
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d stabledevel -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
         Disksim_test)
             #-----------------------------------------------------------------
@@ -290,10 +292,10 @@ getconfig() {
             #     This option used for configuring SST with gem5 enabled
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d default -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s none"
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d default -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
         sstmacro_latest_test)
             #-----------------------------------------------------------------
@@ -301,10 +303,10 @@ getconfig() {
             #     This option used for configuring SST with latest devel sstmacro
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k default -d default -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s stabledevel"
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k default -d default -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s stabledevel"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
         sstmacro_2.2.0_test)
             #-----------------------------------------------------------------
@@ -312,17 +314,17 @@ getconfig() {
             #     This option used for configuring SST with sstmacro 2.2.0
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d default -p default -z default -b default -g stabledevel -m none -i none -o none -h default -s 2.2.0"
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d default -p none -z none -b default -g stabledevel -m none -i none -o none -h default -s 2.2.0"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
         dramsim_latest_test)
             #-----------------------------------------------------------------
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
-            depsStr="-k default -d stabledevel -p default -z default -b default -g stabledevel -m default -i default -o default -h default -s none"
+            depsStr="-k default -d stabledevel -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             ;;
@@ -331,10 +333,10 @@ getconfig() {
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
            #-----------------------------------------------------------------
-            gem5env="CC=${cc_compiler} CXX=${cxx_compiler} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k default -d default -p default -z default -b 1.49 -g stabledevel -m default -i default -o default -h default -s none"
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k default -d default -p none -z none -b 1.49 -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $gem5env"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
         phoenixsim_test)
             #-----------------------------------------------------------------
@@ -355,7 +357,7 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --enable-iris --with-boost=$SST_DEPS_INSTALL_BOOST"
             ;;
-	simpleComponent_test)
+        simpleComponent_test)
             depsStr="-k none -d none -p none -z none -b 1.43 -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --enable-simpleComponent --with-boost=$SST_DEPS_INSTALL_BOOST"
