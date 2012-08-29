@@ -275,7 +275,7 @@ getconfig() {
             #-----------------------------------------------------------------
             depsStr="$defaultDeps"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-McPAT=$SST_DEPS_INSTALL_MCPAT --with-hotspot=$SST_DEPS_INSTALL_HOTSPOT --with-orion=$SST_DEPS_INSTALL_ORION --with-IntSim= $SST_DEPS_INSTALL_INTSIM"
+            configStr="$baseoptions --with-McPAT=$SST_DEPS_INSTALL_MCPAT --with-hotspot=$SST_DEPS_INSTALL_HOTSPOT --with-orion=$SST_DEPS_INSTALL_ORION --with-IntSim=$SST_DEPS_INSTALL_INTSIM"
             ;;
         dramsim_test)
             #-----------------------------------------------------------------
