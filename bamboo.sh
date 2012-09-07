@@ -108,7 +108,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
     fi
 
-    if [ $1 != "PowerTherm_test" ]
+    if [ $1 == "PowerTherm_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_PowerTherm.sh
     fi
