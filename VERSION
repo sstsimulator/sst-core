@@ -3,5 +3,5 @@ There are three ways to get the SST version number:
 grep AC_INIT $<your_sst_topdir>/configure.ac
 2. From an built source tree:
 grep PACKAGE_VERSION $<your_sst_topdir>/sst/sst_config.h
-3. From the sst.x binary: (planned)
+3. From the sst.x binary:
 $ sst.x --version

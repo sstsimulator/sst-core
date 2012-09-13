@@ -68,6 +68,7 @@ Config::Config( int my_rank )
     visNoConfigDesc->add_options()
         ("help", "print help message")
         ("verbose", "print information about core runtimes")
+        ("version", "print SST Release Version")
     ; 
 
     hiddenNoConfigDesc = new po::options_description( "" );
@@ -159,6 +160,11 @@ Config::parse_cmd_line(int argc, char* argv[]) {
 
     if ( var_map->count( "verbose" ) ) {
         verbose = true;
+    }
+
+    if ( var_map->count( "version" ) ) {
+        cout << "SST Release Version " PACKAGE_VERSION << endl;
+        return 1;
     }
 
     if ( sdlfile == "NONE" && generator == "NONE" ) {
