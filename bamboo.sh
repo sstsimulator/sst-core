@@ -557,19 +557,19 @@ else
                         echo "MPICH2 stable (mpich2-1.4.1p1) selected"
                         module unload mpi # unload any default to avoid conflict error
                         module load mpi/mpich2-1.4.1p1
-                        boostsuffix="mpich2-1.4.1p1"
+                        mpisuffix="mpich2-1.4.1p1"
                         ;;
                     ompi_1.6_stable|openmpi-1.6)
                         echo "OpenMPI stable (openmpi-1.6) selected"
                         module unload mpi # unload any default to avoid conflict error
                         module load mpi/openmpi-1.6
-                        boostsuffix="ompi-1.6"
+                        mpisuffix="ompi-1.6"
                         ;;
                     *)
                         echo "OpenMPI stable (openmpi-1.4.4) selected"
                         module unload mpi # unload any default to avoid conflict error
                         module load mpi/openmpi-1.4.4
-                        boostsuffix="ompi-1.4.4"
+                        mpisuffix="ompi-1.4.4"
                         ;;
                 esac
 
@@ -578,29 +578,33 @@ else
                     boost-1.43)
                         echo "bamboo.sh: Boost 1.43 selected"
                         module unload boost
-                        module load boost/boost-1.43.0_${boostsuffix}
+                        module load boost/boost-1.43.0_${mpisuffix}
                         ;;
                     boost-1.48)
                         echo "bamboo.sh: Boost 1.48 selected"
                         module unload boost
-                        module load boost/boost-1.48.0_${boostsuffix}
+                        module load boost/boost-1.48.0_${mpisuffix}
                         ;;
                     boost-1.50)
                         echo "bamboo.sh: Boost 1.50 selected"
                         module unload boost
-                        module load boost/boost-1.50.0_${boostsuffix}
+                        module load boost/boost-1.50.0_${mpisuffix}
                         ;;
                     *)
                         echo "bamboo.sh: No Valid Boost selected"
                         echo "Third argument was $3"
                         echo "Using Boost-1.50 by default"
                         module unload boost
-                        module load boost/boost-1.50.0_${boostsuffix}
+                        module load boost/boost-1.50.0_${mpisuffix}
                         ;;
                 esac
                 echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
                 export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
                 echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
+
+                # load corresponding OMNET++, depending on MPI
+		module unload omnet++
+		module load omnet++/omnet++-4.1_${mpisuffix}
 
             else  # MacOS
                 # Initialize modules for Jenkins (taken from $HOME/.bashrc on Mac)
