@@ -1,0 +1,5 @@
+The PhoenixSim model cannot be used on MacOS. It requires 
+OMNet++ 4.1 which does not support a 64-bit MacOS. OMNet++ 4.2 
+supports MacOS in 64-bit mode, but it is not compatible with 
+SST's version of the PhoenixSim model. This will be addressed 
+by the next release of SST/Micro.

@@ -1,0 +1,16 @@
+2012-09-30 Sue Kelly 
+* Release 2.2 of SST/Micro. 
+  Support for SDL version 1 has been deprecated. 
+  Added the ability to have custom partitioners and generators. 
+  Deleted several deprecated directories:
+    bus, cpu_PowerAndData, cpu_router_power, DRAMSimTrace,
+    genericProc, introspector_dram, introspector_mesmthi,
+    introductor_router, libsim_panalyzer, resil, and schedule
+  Although not deleted from the development trunk, the following
+    components are not provided: cpu_data cpu_power, Mcniagara,
+    Mcopteron, merlin, mesmthi, mosaic_cpu, mosaic_nic, palacios,
+    parser, sstdisksim, and zesto. Some are not ready yet, others
+    are missing a nightly regression test.
+
+2010-10-xx Jon Wilson
+* Release 2.1 of SST/Micro.

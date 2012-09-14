@@ -1,0 +1,44 @@
+*************************************************************************
+*
+* This the micro-level Structural Simulator Toolkit (SST)
+* For the latest information, see http://code.google.com/p/sst-simulator/
+*
+* Copyright (c) 2009, Sandia Corporation (See LICENSE file)
+*
+*************************************************************************
+
+The Structural Simulation Toolkit (SST) explores innovations 
+in highly concurrent systems where the ISA, microarchitecture, 
+and memory interact with the programming model and communication system. 
+The package provides two novel capabilities. The first is a fully modular 
+design that enables extensive exploration of an individual system 
+parameter without the need for intrusive changes to the simulator. The 
+second is a parallel simulation environment based on MPI. This provides 
+a high level of performance and the ability to look at large systems. 
+The framework has been successfully used to model concepts ranging from 
+processing in memory to conventional processors connected by conventional 
+network interfaces and running MPI. 
+
+The SST software is comprised of the core framework and supported elements.
+The following list identifies the elements by directory name:
+
+SST core
+SST integrated techModels: libHotSpot, libIntSim, libMcPATbeta, and libORION  
+IRIS 
+patterns 
+PhoenixSim (not supported on Mac)
+portals4
+portals4_sm
+scheduler
+simpleComponent
+SS_router 
+
+The following external components are required:
+Boost 1.50.0
+DRAMSim2 version 4b00b228abaa9d9dcd27ffbb48cfa71db53d520f
+GEM5 from https://code.google.com/p/sst-gem5-devel.devel/  which was forked from gem5-stable at change set   8642:549b72de8f72  from Dec 15 2011
+SST/Macro V2.3
+Mpich2-1.4.1
+OMNeT++ 4.1
+OpenMPI 1.6
+
