@@ -1,12 +1,12 @@
 *************************************************************************
 *
-* This the micro-level Structural Simulator Toolkit (SST)
+* This is the micro-level Structural Simulator Toolkit (SST)
 * For the latest information, see http://code.google.com/p/sst-simulator/
 *
 * Copyright (c) 2009, Sandia Corporation (See LICENSE file)
 *
 *************************************************************************
-
+ 
 The Structural Simulation Toolkit (SST) explores innovations 
 in highly concurrent systems where the ISA, microarchitecture, 
 and memory interact with the programming model and communication system. 
@@ -18,11 +18,11 @@ a high level of performance and the ability to look at large systems.
 The framework has been successfully used to model concepts ranging from 
 processing in memory to conventional processors connected by conventional 
 network interfaces and running MPI. 
-
-The SST software is comprised of the core framework and supported elements.
-The following list identifies the elements by directory name:
-
-SST core
+ 
+The SST software is comprised of the core framework and supported models.
+The following list identifies the elements:
+ 
+core
 SST integrated techModels: libHotSpot, libIntSim, libMcPATbeta, and libORION  
 IRIS 
 patterns 
@@ -32,13 +32,53 @@ portals4_sm
 scheduler
 simpleComponent
 SS_router 
-
-The following external components are required:
+ 
+The following external components are used:
 Boost 1.50.0
 DRAMSim2 version 4b00b228abaa9d9dcd27ffbb48cfa71db53d520f
-GEM5 from https://code.google.com/p/sst-gem5-devel.devel/  which was forked from gem5-stable at change set   8642:549b72de8f72  from Dec 15 2011
+GEM5 from https://code.google.com/p/sst-gem5-devel.devel which was forked from 
+ gem5-stable at change set 8642:549b72de8f72  from Dec 15 2011
 SST/Macro V2.3
 Mpich2-1.4.1
 OMNeT++ 4.1
 OpenMPI 1.6
 
+Element Directories:
+cpu_data
+cpu_power
+DRAMSimC - a glue layer for interfacing to a DRAMSim2 library from another SST
+ component.
+event_test - test for SST/micro core
+introspector_cpu
+introspector_cpuTemperature
+iris - flit-level network model  - 
+  http://www.ece.gatech.edu/research/labs/casl/multicore.html
+libHotSpot - study thermal evolution over a long running application. It uses a 
+  circuit model of equivalent thermal resistors and capacitors to those 
+  used within a computer component. 
+  http://lava.cs.virginia.edu/HotSpot/documentation.htm
+libIntSim - a 2D integrated circuit interconnect simulator.
+  Ref: Sekar, Naeemi, Sarvari, Davis, and Meindl, "IntSim: A CAD tool for 
+  optimization of multilevel interconnect networks", ICCAD '07 Proceedings 
+  of the 2007 IEEE/ACM international conference on Computer-aided design, 
+   pp 560-567.
+libMcPATbeta - McPAT (Multicore Power, Area, and Timing) is an integrated 
+  power, area, and timing modeling framework for multithreaded, multicore, 
+  and manycore architectures. 
+  http://www.hpl.hp.com/research/mcpat/
+libORION - suite of dynamic and leakage power models developed for various 
+  architectural components of on-chip networks 
+  http://projects.csail.mit.edu/cgi-bin/wiki/view/LSPgroup/OrionPage
+M5 - glue layer for interfacing to gem5.
+macro_component - glue layer for interfacing with SST/macro.
+patterns - 
+PhoenixSim - modeld properties of photonic interconnect networks including 
+  propagation delay, insertion loss, extinction ratio, spectral resonant 
+  profiles, area occupation, and energy dissipation. 
+  http://lightwave.ee.columbia.edu/?s=research&p=phoenixsim
+portals4 - network protocol models
+portals4_sm - state machine model based on injecting discrete events
+power - technology support model
+scheduler - 
+simpleComponent -
+SS_router - router model
