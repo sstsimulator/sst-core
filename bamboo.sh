@@ -566,10 +566,10 @@ else
                         mpisuffix="ompi-1.6"
                         ;;
                     *)
-                        echo "OpenMPI stable (openmpi-1.4.4) selected"
+                        echo "OpenMPI stable (openmpi-1.6) selected"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/openmpi-1.4.4
-                        mpisuffix="ompi-1.4.4"
+                        module load mpi/openmpi-1.6
+                        mpisuffix="ompi-1.6"
                         ;;
                 esac
 
