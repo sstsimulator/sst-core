@@ -128,10 +128,7 @@ dotests() {
     fi
 
     # Add other test suites here, i.e.
-    if [ `find . -name liboppsim.so | wc -w` != 0 ]
-    then
-        ${SST_TEST_SUITES}/testSuite_phoenixsim_sh
-    fi
+    ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     # ${SST_TEST_SUITES}/testSuite_moe.sh
     # ${SST_TEST_SUITES}/testSuite_larry.sh
@@ -177,7 +174,7 @@ setConvenienceVars() {
     echo "endfile-------"
     echo "setConvenienceVars() : exported variables"
     export | egrep SST_DEPS_
-    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --without-zoltan"
+    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-omnetpp=$SST_DEPS_INSTALL_OMNET --without-zoltan"
     echo "setConvenienceVars() : baseoptions = $baseoptions"
 }
 
@@ -350,7 +347,7 @@ getconfig() {
         portals4_test)
             depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
             setConvenienceVars "$depsStr"
-            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --with-omnetpp=$SST_DEPS_INSTALL_OMNET CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             ;;
         iris_test)
             depsStr="-k none -d none -p none -z none -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
@@ -603,8 +600,11 @@ else
                 echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
 
                 # load corresponding OMNET++, depending on MPI
-		module unload omnet++
-		module load omnet++/omnet++-4.1_${mpisuffix}
+                module unload omnet++
+                module load omnet++/omnet++-4.1_${mpisuffix}
+                echo "bamboo.sh: OMNET_HOME=${OMNET_HOME}"
+                export SST_DEPS_INSTALL_OMNET=${OMNET_HOME}
+                echo "bamboo.sh: SST_DEPS_INSTALL_OMNET=${SST_DEPS_INSTALL_OMNET}"
 
             else  # MacOS
                 # Initialize modules for Jenkins (taken from $HOME/.bashrc on Mac)
