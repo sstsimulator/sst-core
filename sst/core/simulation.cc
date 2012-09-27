@@ -34,6 +34,7 @@
 #include <sst/core/timeVortex.h>
 #include <sst/core/archive.h>
 
+#define SST_SIMTIME_MAX  0xffffffffffffffff
 
 namespace SST { 
 
@@ -328,9 +329,9 @@ void Simulation::Run() {
     // the simulation will likely deadlock as only some of the ranks
     // will hit the anomoly.
     StopAction* sa = new StopAction("*** Event queue empty, exiting simulation...");
-    sa->setDeliveryTime(UINT64_MAX);
+    sa->setDeliveryTime(SST_SIMTIME_MAX);
     timeVortex->insert(sa);
-    
+
     
     while( LIKELY( ! endSim ) ) {
  	currentSimCycle = timeVortex->front()->getDeliveryTime();
@@ -338,9 +339,8 @@ void Simulation::Run() {
 //  	Activity *ptr = timeVortex->pop();
 //   	ptr->execute();
  	current_activity = timeVortex->pop();
-  	current_activity->execute();
+ 	current_activity->execute();
     }
-
 
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
