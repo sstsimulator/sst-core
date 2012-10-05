@@ -187,7 +187,7 @@ setConvenienceVars() {
     echo "endfile-------"
     echo "setConvenienceVars() : exported variables"
     export | egrep SST_DEPS_
-    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-omnetpp=$SST_DEPS_INSTALL_OMNET --without-zoltan"
+    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --without-zoltan"
     echo "setConvenienceVars() : baseoptions = $baseoptions"
 }
 
@@ -241,9 +241,9 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d stabledevel -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.2.0 -q none"
+            depsStr="-k none -d stabledevel -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
             ;;
         sst2.2_config_macosx)
             #-----------------------------------------------------------------
@@ -252,9 +252,9 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d stabledevel -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none"
+            depsStr="-k none -d stabledevel -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
             ;;
         Disksim_test)
             #-----------------------------------------------------------------
@@ -328,6 +328,17 @@ getconfig() {
             echo "$USER" > ./sst/elements/macro_component/.unignore
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             depsStr="-k none -d default -p none -z none -b default -g stabledevel -m none -i none -o none -h default -s 2.2.0"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
+            ;;
+        sstmacro_2.3.0_test)
+            #-----------------------------------------------------------------
+            # sstmacro_2.3.0_test
+            #     This option used for configuring SST with sstmacro 2.3.0
+            #-----------------------------------------------------------------
+            echo "$USER" > ./sst/elements/macro_component/.unignore
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d default -p none -z none -b default -g stabledevel -m none -i none -o none -h default -s 2.3.0"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
@@ -438,7 +449,7 @@ dobuild() {
     fi
 
     echo "==================== Building SST ===================="
-    export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${LD_LIBRARY_PATH}
+    export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${SST_DEPS_INSTALL_GEM5SST}:${LD_LIBRARY_PATH}
     # Mac OS X needs some help finding dylibs
     if [ $kernel == "Darwin" ]
     then
@@ -552,7 +563,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test)
+        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
@@ -578,10 +589,10 @@ else
                         mpisuffix="ompi-1.6"
                         ;;
                     *)
-                        echo "OpenMPI stable (openmpi-1.6) selected"
+                        echo "OpenMPI stable (openmpi-1.4.4) selected"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/openmpi-1.6
-                        mpisuffix="ompi-1.6"
+                        module load mpi/openmpi-1.4.4
+                        mpisuffix="ompi-1.4.4"
                         ;;
                 esac
 
