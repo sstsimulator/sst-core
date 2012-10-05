@@ -127,8 +127,21 @@ dotests() {
         echo -e  "No M5 test:  libm5C.so is not available\n"
     fi
 
+    if [ `find . -name libPhoenixSim.so | wc -w` != 0 ]
+    then
+        ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
+    else
+        echo -e  "No PhoenixSim test:  libPhoenixSim.so is not available\n"
+    fi
+
+    if [[ $BOOST_HOME == *boost-1.50* ]]
+    then
+        ${SST_TEST_SUITES}/testSuite_macro.sh
+    else
+        echo -e "No SST Macro test:    Only test with Boost 1.50"
+    fi
+
     # Add other test suites here, i.e.
-    ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     # ${SST_TEST_SUITES}/testSuite_moe.sh
     # ${SST_TEST_SUITES}/testSuite_larry.sh
@@ -213,9 +226,11 @@ getconfig() {
     fi
 
     # On MacOSX Lion, suppress genericProc
+    # On MacOSX Lion, suppress PhoenixSim
     if [ $3 == "Darwin" ]
     then
         echo "$USER" > ./sst/elements/genericProc/.ignore
+        echo "$USER" > ./sst/elements/PhoenixSim/.ignore
     fi
 
     case $1 in
@@ -228,7 +243,7 @@ getconfig() {
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             depsStr="-k none -d stabledevel -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.2.0 -q none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
             ;;
         sst2.2_config_macosx)
             #-----------------------------------------------------------------
@@ -345,9 +360,9 @@ getconfig() {
             configStr="$baseoptions --with-omnetpp=${SST_DEPS_SRC_STAGING}/omnetpp-4.1/"
             ;;
         portals4_test)
-            depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
+            depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s 2.3.0 -4 stabledevel"
             setConvenienceVars "$depsStr"
-            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --with-omnetpp=$SST_DEPS_INSTALL_OMNET CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             ;;
         iris_test)
             depsStr="-k none -d none -p none -z none -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
