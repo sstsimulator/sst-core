@@ -318,29 +318,30 @@ void Simulation::Run() {
     // // Check to make sure we have something to do.  If not print error
     // // message and exit
     // if ( timeVortex->front() == NULL && num_ranks == 1 ) {
-    // 	std::cout << "No clocks registered and no events sent during initialization.  Exiting simulation..." << std::endl;
-    // 	exit(1);
+    //	std::cout << "No clocks registered and no events sent during initialization.  Exiting simulation..." << std::endl;
+    //	exit(1);
     // }
-
-    // Put a stop event and the end of the timeVortex.  Simulation
-    // will only get to this if there are no other events in the
-    // queue.  In general, this shouldn't happen, especially for
-    // parallel simulations.  If it happens in a parallel simulation
-    // the simulation will likely deadlock as only some of the ranks
+    
+    // Fix taken from Scott's change to mainline (SDH, Sep 27 12)
+    // Put a stop event at the end of the timeVortex. Simulation will
+    // only get to this is there are no other events in the queue.
+    // In general, this shouldn't happen, especially for parallel
+    // simulations. If it happens in a parallel simulation the 
+    // simulation will likely deadlock as only some of the ranks
     // will hit the anomoly.
-    StopAction* sa = new StopAction("*** Event queue empty, exiting simulation...");
+    StopAction* sa = new StopAction("*** Event queue empty, exiting simulation... ***");
     sa->setDeliveryTime(SST_SIMTIME_MAX);
     timeVortex->insert(sa);
 
-    
     while( LIKELY( ! endSim ) ) {
  	currentSimCycle = timeVortex->front()->getDeliveryTime();
 
 //  	Activity *ptr = timeVortex->pop();
 //   	ptr->execute();
  	current_activity = timeVortex->pop();
- 	current_activity->execute();
+  	current_activity->execute();
     }
+
 
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
