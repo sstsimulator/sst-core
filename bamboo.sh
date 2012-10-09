@@ -120,12 +120,7 @@ dotests() {
 
     ${SST_TEST_SUITES}/testSuite_iris.sh
 
-    if [ `find . -name libm5C.so | wc -w` != 0 ]
-    then
-        ${SST_TEST_SUITES}/testSuite_M5.sh
-    else
-        echo -e  "No M5 test:  libm5C.so is not available\n"
-    fi
+    ${SST_TEST_SUITES}/testSuite_M5.sh
 
     if [ `find . -name libPhoenixSim.so | wc -w` != 0 ]
     then
