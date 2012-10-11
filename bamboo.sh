@@ -299,7 +299,7 @@ getconfig() {
             #     This option used for configuring SST with gem5 enabled
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            miscEnv="${mpi_environment}"
             depsStr="-k none -d default -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
@@ -310,7 +310,7 @@ getconfig() {
             #     This option used for configuring SST with latest devel sstmacro
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            miscEnv="${mpi_environment}"
             depsStr="-k default -d default -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s stabledevel"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
@@ -368,7 +368,7 @@ getconfig() {
         portals4_test)
             depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s 2.3.0 -4 stabledevel"
             setConvenienceVars "$depsStr"
-            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO"
             ;;
         iris_test)
             depsStr="-k none -d none -p none -z none -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
