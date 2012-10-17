@@ -280,7 +280,8 @@ getconfig() {
             #     This option used for configuring SST with Power and
             #     Therm enabled
             #-----------------------------------------------------------------
-            depsStr="$defaultDeps"
+            depsStr="-k none -d default -p default -z none -b default -g stabledevel -m default -i default -o default -h default -s none -q none"
+
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-McPAT=$SST_DEPS_INSTALL_MCPAT --with-hotspot=$SST_DEPS_INSTALL_HOTSPOT --with-orion=$SST_DEPS_INSTALL_ORION --with-IntSim=$SST_DEPS_INSTALL_INTSIM"
             ;;
