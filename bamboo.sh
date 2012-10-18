@@ -116,6 +116,7 @@ dotests() {
     if [ $1 == "portals4_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals4.sh
+        ${SST_TEST_SUITES}/testSuite_PowerTherm.sh
     fi
 
     ${SST_TEST_SUITES}/testSuite_iris.sh
@@ -367,9 +368,9 @@ getconfig() {
             configStr="$baseoptions --with-omnetpp=${SST_DEPS_SRC_STAGING}/omnetpp-4.1/"
             ;;
         portals4_test)
-            depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s 2.3.0 -4 stabledevel"
+            depsStr="-k none -d none -p none -z none -g stabledevel -m default -i default -o default -h default -s 2.3.0 -4 stabledevel"
             setConvenienceVars "$depsStr"
-            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO"
+            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO --with-McPAT=$SST_DEPS_INSTALL_MCPAT --with-hotspot=$SST_DEPS_INSTALL_HOTSPOT --with-orion=$SST_DEPS_INSTALL_ORION --with-IntSim=$SST_DEPS_INSTALL_INTSIM"
             ;;
         iris_test)
             depsStr="-k none -d none -p none -z none -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
