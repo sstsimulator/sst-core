@@ -115,7 +115,6 @@ dotests() {
 
     if [ $1 == "portals4_test" ]
     then
-        ${SST_TEST_SUITES}/testSuite_portals4.sh
         ${SST_TEST_SUITES}/testSuite_PowerTherm.sh
     fi
 
@@ -138,6 +137,7 @@ dotests() {
     fi
 
     # Add other test suites here, i.e.
+    ${SST_TEST_SUITES}/testSuite_portals4.sh
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     # ${SST_TEST_SUITES}/testSuite_moe.sh
     # ${SST_TEST_SUITES}/testSuite_larry.sh
@@ -293,7 +293,7 @@ getconfig() {
             #-----------------------------------------------------------------
             depsStr="$defaultDeps"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt"
             ;;
         gem5_test)
             #-----------------------------------------------------------------
@@ -344,9 +344,9 @@ getconfig() {
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
-            depsStr="-k default -d stabledevel -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s none"
+            depsStr="-k none -d masterlatest -p none -z none  -g stabledevel -m none -i none -o none -h none -s none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt"
             ;;
         boost_1.49_test)
             #-----------------------------------------------------------------
@@ -446,7 +446,7 @@ dobuild() {
     fi
 
     echo "==================== Building SST ===================="
-    export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${SST_DEPS_INSTALL_GEM5SST}:${LD_LIBRARY_PATH}
+    export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${SST_DEPS_INSTALL_GEM5SST}:${SST_INSTALL_DEPS}/packages/DRAMSim:${LD_LIBRARY_PATH}
     # Mac OS X needs some help finding dylibs
     if [ $kernel == "Darwin" ]
     then
