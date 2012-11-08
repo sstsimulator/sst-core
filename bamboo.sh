@@ -135,9 +135,19 @@ dotests() {
     else
         echo -e "No SST Macro test:    Only test with Boost 1.50"
     fi
-
+    
+    #  The following restrictions are not about required dependencies,
+    #  but are to only run the lengthy test on one case per OS environment.
+    if [[ $BOOST_HOME == *boost-1.50* ]] && [[ $MPIHOME == *openmpi-1.4.4* ]]
+    then 
+        ${SST_TEST_SUITES}/testSuite_portals4.sh
+    else
+        if [ $1 == "portals4_test" ]
+        then
+            ${SST_TEST_SUITES}/testSuite_portals4.sh
+        fi
+    fi
     # Add other test suites here, i.e.
-    ${SST_TEST_SUITES}/testSuite_portals4.sh
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     # ${SST_TEST_SUITES}/testSuite_moe.sh
     # ${SST_TEST_SUITES}/testSuite_larry.sh
