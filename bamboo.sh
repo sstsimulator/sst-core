@@ -446,7 +446,7 @@ dobuild() {
     fi
 
     echo "==================== Building SST ===================="
-    export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${SST_DEPS_INSTALL_GEM5SST}:${SST_INSTALL_DEPS}/packages/DRAMSim:${LD_LIBRARY_PATH}
+    export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${SST_DEPS_INSTALL_GEM5SST}:${LD_LIBRARY_PATH}
     # Mac OS X needs some help finding dylibs
     if [ $kernel == "Darwin" ]
     then
