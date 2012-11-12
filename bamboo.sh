@@ -595,6 +595,12 @@ else
                         module load mpi/openmpi-1.6
                         mpisuffix="ompi-1.6"
                         ;;
+                    openmpi-1.4.4)
+                        echo "OpenMPI (openmpi-1.4.4) selected"
+                        module unload mpi # unload any default to avoid conflict error
+                        module load mpi/openmpi-1.4.4
+                        mpisuffix="ompi-1.4.4"
+                        ;;
                     *)
                         echo "Default OpenMPI stable (openmpi-1.6) selected"
                         module unload mpi # unload any default to avoid conflict error
