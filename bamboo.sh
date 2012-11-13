@@ -144,11 +144,14 @@ dotests() {
     
     #  The following restrictions are not about required dependencies,
     #  but are to only run the lengthy test on one case per OS environment.
-    if [[ $BOOST_HOME == *boost-1.50* ]] && [[ $MPIHOME == *openmpi-1.4.4* ]]
+echo "BOOST_HOME is ${BOOST_HOME}, MPIHOME is ${MPIHOME}"
+    if [[ $BOOST_HOME == *boost-1.50* ]] && [[ "$MPIHOME" == *openmpi-1.4.4* ]]
     then 
+echo  "Dotests is invoking the portals4 test"
         ${SST_TEST_SUITES}/testSuite_portals4.sh
     else
-        if [ $1 == "portals4_test" ]
+echo " Arg in is $1,  kernel is ${kernel} "
+        if [ $1 == "portals4_test" ] || [ $kernel == "Darwin" ]
         then
             ${SST_TEST_SUITES}/testSuite_portals4.sh
         fi
