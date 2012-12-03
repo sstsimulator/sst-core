@@ -382,8 +382,9 @@ Factory::loadLibrary(std::string elemlib)
     // from dlopen, which is a useful error message for the user.
     handle = dlopen(fullpath.c_str(), RTLD_NOW|RTLD_GLOBAL);
     if (NULL == handle) {
-        fprintf(stderr, "Opening element library %s failed: %s\n",
-               elemlib.c_str(), dlerror());
+        fprintf(stderr,
+            "Opening and resolving references for element library %s failed:\n"
+            "\t%s\n", elemlib.c_str(), dlerror());
         return NULL;
     }
 
