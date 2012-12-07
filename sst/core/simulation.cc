@@ -284,11 +284,12 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
                 LinkMap* lm = new LinkMap();
                 component_links[ccomp->id] = lm;
             }
-	    
+
+			compIdMap[ccomp->id] = ccomp->name;
             tmp = createComponent( ccomp->id, ccomp->type.c_str(),
                                    ccomp->params );
             compMap[ccomp->name] = tmp;
-	    
+
         }
 	// Done with vertex, delete it;
 	delete ccomp;

@@ -45,6 +45,9 @@ public:
     /** Returns unique component ID */
     inline ComponentId_t getId() const { return id; }
 
+	/** Returns component Name */
+	inline const std::string& getName() const { return name; }
+
     /** Component's type, set by the factory when the object is created.
         It is identical to the configuration string used to create the
         component. I.e. the XML "<component id="aFoo"><foo>..." would
@@ -145,15 +148,16 @@ protected:
 private:
 
     void addSelfLink(std::string name);
-    
+
     /** Unique ID */
     ComponentId_t   id;
+	std::string name;
     LinkMap* myLinks;
-    
+
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version);
-}; 
+};
 
 }
 

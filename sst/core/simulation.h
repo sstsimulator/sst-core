@@ -40,6 +40,7 @@ class TimeVortex;
 
 typedef std::map<std::string, Introspector* > IntroMap_t;
 typedef std::map<std::string, Component* > CompMap_t;
+typedef std::map<ComponentId_t, std::string > CompIdMap_t;
 
 // The Factory and TimeLord objects both should only be associated
 // with a simulation object and never created on their own.  To
@@ -117,7 +118,8 @@ public:
     }
 
     const CompMap_t& getComponentMap(void) const { return compMap; }
-    
+    const CompIdMap_t& getComponentIdMap(void) const { return compIdMap; }
+
     Component*
     getComponent(const std::string &name) const
     {
@@ -129,6 +131,18 @@ public:
                    name.c_str()); 
             exit(1); 
         }
+    }
+
+    Component*
+    getComponent(const ComponentId_t &id) const
+    {
+		CompIdMap_t::const_iterator i = compIdMap.find(id);
+		if (i != compIdMap.end()) {
+			return getComponent(i->second);
+		} else {
+            printf("Simulation::getComponent() couldn't find component with id = %lu\n", id);
+            exit(1);
+		}
     }
 
     Introspector*
@@ -167,6 +181,7 @@ private:
     Activity*        current_activity;
     Sync*            sync;
     CompMap_t        compMap;
+    CompIdMap_t      compIdMap;
     IntroMap_t       introMap;
     clockMap_t       clockMap;
     SimTime_t        currentSimCycle;

@@ -30,6 +30,9 @@ Component::Component(ComponentId_t id) :
     id( id ), defaultTimeBase(NULL)
 {
     myLinks = Simulation::getSimulation()->getComponentLinkMap(id);
+	const CompIdMap_t& map = Simulation::getSimulation()->getComponentIdMap();
+	CompIdMap_t::const_iterator i = map.find(id);
+	if ( i != map.end() ) name = i->second;
     _COMP_DBG( "new\n" );
 }
 
@@ -206,6 +209,7 @@ void
 Component::serialize(Archive& ar, const unsigned int version) {
     ar & BOOST_SERIALIZATION_NVP(type);
     ar & BOOST_SERIALIZATION_NVP(id);
+    ar & BOOST_SERIALIZATION_NVP(name);
     ar & BOOST_SERIALIZATION_NVP(defaultTimeBase);
     ar & BOOST_SERIALIZATION_NVP(myLinks);
 }
