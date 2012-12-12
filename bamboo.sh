@@ -249,6 +249,17 @@ getconfig() {
     fi
 
     case $1 in
+        sst2.3_config)
+            #-----------------------------------------------------------------
+            # sst2.3_config
+            #     This option used for configuring SST with supported 2.3 deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d 2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
+            ;;
         sst2.2_config)
             #-----------------------------------------------------------------
             # sst2.2_config
@@ -256,9 +267,20 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d stabledevel -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
+            depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
+            ;;
+        sst2.3_config_macosx)
+            #-----------------------------------------------------------------
+            # sst2.3_config_macosx
+            #     This option used for configuring SST with supported 2.3 deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d 2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
             ;;
         sst2.2_config_macosx)
             #-----------------------------------------------------------------
@@ -267,7 +289,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d stabledevel -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
+            depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
             ;;
@@ -300,7 +322,7 @@ getconfig() {
             #     This option used for configuring SST with Power and
             #     Therm enabled
             #-----------------------------------------------------------------
-            depsStr="-k none -d default -p default -z none -b default -g stabledevel -m default -i default -o default -h default -s none -q none"
+            depsStr="-k none -d r4b00b22 -p default -z none -b default -g stabledevel -m default -i default -o default -h default -s none -q none"
 
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-McPAT=$SST_DEPS_INSTALL_MCPAT --with-hotspot=$SST_DEPS_INSTALL_HOTSPOT --with-orion=$SST_DEPS_INSTALL_ORION --with-IntSim=$SST_DEPS_INSTALL_INTSIM"
@@ -321,7 +343,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
-            depsStr="-k none -d default -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s none"
+            depsStr="-k none -d r4b00b22 -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
@@ -332,7 +354,7 @@ getconfig() {
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
             miscEnv="${mpi_environment}"
-            depsStr="-k default -d default -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s stabledevel"
+            depsStr="-k default -d r4b00b22 -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s stabledevel"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
@@ -343,7 +365,7 @@ getconfig() {
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d default -p none -z none -b default -g stabledevel -m none -i none -o none -h default -s 2.2.0"
+            depsStr="-k none -d r4b00b22 -p none -z none -b default -g stabledevel -m none -i none -o none -h default -s 2.2.0"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
@@ -354,7 +376,7 @@ getconfig() {
             #-----------------------------------------------------------------
             echo "$USER" > ./sst/elements/macro_component/.unignore
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d default -p none -z none -b default -g stabledevel -m none -i none -o none -h default -s 2.3.0"
+            depsStr="-k none -d r4b00b22 -p none -z none -b default -g stabledevel -m none -i none -o none -h default -s 2.3.0"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
@@ -363,7 +385,7 @@ getconfig() {
             # dramsim_test
             #     This option used for configuring SST with latest devel DRAMSim 
             #-----------------------------------------------------------------
-            depsStr="-k none -d masterlatest -p none -z none  -g stabledevel -m none -i none -o none -h none -s none"
+            depsStr="-k none -d stabledevel -p none -z none  -g stabledevel -m none -i none -o none -h none -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt"
             ;;
@@ -373,7 +395,7 @@ getconfig() {
             #     This option used for configuring SST with latest devel DRAMSim 
            #-----------------------------------------------------------------
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k default -d default -p none -z none -b 1.49 -g stabledevel -m default -i default -o default -h default -s none"
+            depsStr="-k default -d stabledevel -p none -z none -b 1.49 -g stabledevel -m default -i default -o default -h default -s none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
             ;;
@@ -579,7 +601,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.2_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test)
+        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst2.2_config_macosx|sst2.3_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
