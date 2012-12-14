@@ -669,9 +669,9 @@ else
                 export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
                 echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
 
-                # load corresponding OMNET++, depending on MPI
+                # load OMNet++
                 module unload omnet++
-                module load omnet++/omnet++-4.1_${mpisuffix}
+                module load omnet++/omnet++-4.1_no-mpi
                 echo "bamboo.sh: OMNET_HOME=${OMNET_HOME}"
                 export SST_DEPS_INSTALL_OMNET=${OMNET_HOME}
                 echo "bamboo.sh: SST_DEPS_INSTALL_OMNET=${SST_DEPS_INSTALL_OMNET}"
