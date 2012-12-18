@@ -271,6 +271,18 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
             ;;
+        X_sst2.2_config)
+            #-----------------------------------------------------------------
+            # X-sst2.2_config
+            #     This option used for configuring SST with supported 2.2 deps
+            #           Using not standard configuration
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET"
+            ;;
         sst2.3_config_macosx)
             #-----------------------------------------------------------------
             # sst2.3_config_macosx
@@ -601,7 +613,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst2.2_config_macosx|sst2.3_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test)
+        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst2.2_config_macosx|sst2.3_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|X_sst2.2_config)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
