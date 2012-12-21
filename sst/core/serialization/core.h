@@ -28,6 +28,8 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/split_member.hpp>
+#include <boost/serialization/type_info_implementation.hpp>
+#include <boost/serialization/extended_type_info_no_rtti.hpp>
 #include <boost/mpi.hpp>
 
 #include "sst/core/serialization/types.h"
@@ -41,7 +43,25 @@
     template void                                                       \
     func<boost::archive::polymorphic_oarchive>(                         \
                                     boost::archive::polymorphic_oarchive & ar, \
-                                    const unsigned int file_version);
+                                    const unsigned int file_version);   \
+    template void                                                       \
+    func(boost::mpi::packed_iarchive & ar,                              \
+         const unsigned int file_version);                              \
+    template void                                                       \
+    func(boost::mpi::packed_oarchive & ar,                              \
+         const unsigned int file_version);                              \
+    template void                                                       \
+    func(boost::mpi::packed_skeleton_iarchive & ar,                     \
+         const unsigned int file_version);                              \
+    template void                                                       \
+    func(boost::mpi::packed_skeleton_oarchive & ar,                     \
+         const unsigned int file_version);                              \
+    template void                                                       \
+    func(boost::mpi::detail::mpi_datatype_oarchive & ar,                \
+             const unsigned int file_version);                          \
+    template void                                                       \
+    func(boost::mpi::detail::content_oarchive & ar,                     \
+         const unsigned int file_version);
 #else
 #define SST_BOOST_SERIALIZATION_INSTANTIATE(func)                       \
     template void                                                       \
