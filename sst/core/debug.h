@@ -50,6 +50,7 @@ extern int DebugSetFlag( std::vector<std::string> strFlags );
 #define DBG_GRAPH      (1<<18)
 #define DBG_ZOLT       (1<<19)
 #define DBG_EXIT       (1<<20)
+#define DBG_MEMORY     (1<<21)
 #define DBG_ALL        (DBG_ANY | \
 			DBG_CACHE| \
 			DBG_QUEUE| \
@@ -71,6 +72,7 @@ extern int DebugSetFlag( std::vector<std::string> strFlags );
 			DBG_GRAPH| \
 			DBG_ZOLT| \
 			DBG_EXIT| \
+			DBG_MEMORY| \
                         0)
 
 #define __DBG( flag, name, fmt, args...) if (flag & SST::_debug_flags)\
