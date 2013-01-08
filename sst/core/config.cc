@@ -110,10 +110,10 @@ Config::Config( int my_rank )
                                 "determine whether all ranks parse the sdl file, or only rank 0 [ true (default) | false ].  All-parse true is generally faster, but requires more memory.")
 #ifdef HAVE_ZOLTAN
         ("partitioner", po::value< string >(&partitioner), 
-	 "partitioner to be used <zoltan | self | lib.partitioner_name> (option ignored for serial jobs)" )
+	 "partitioner to be used <zoltan | self | simple | rrobin | lib.partitioner_name> (option ignored for serial jobs)" )
 #else
         ("partitioner", po::value< string >(&partitioner), 
-         "partitioner to be used <self | lib.partitioner_name> (option ignored for serial jobs)")
+         "partitioner to be used <self | simple | rrobin | lib.partitioner_name> (option ignored for serial jobs)")
 #endif
         ("generator", po::value< string >(&generator), 
          "generator to be used to build simulation <lib.generator_name>")
