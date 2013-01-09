@@ -74,7 +74,8 @@ bool Exit::refDec( ComponentId_t id )
 
     if ( single_rank && m_refCount == 0 ) {
 	Simulation* sim = Simulation::getSimulation();
-	sim->insertActivity( sim->getCurrentSimCycle() + m_period->getFactor(), this );
+	// sim->insertActivity( sim->getCurrentSimCycle() + m_period->getFactor(), this );
+	sim->insertActivity( sim->getCurrentSimCycle() + 1, this );
     }
 
     return false;
