@@ -42,7 +42,8 @@ bool Exit::refInc( ComponentId_t id )
 
     
     if ( m_idSet.find( id ) != m_idSet.end() ) {
-        _DBG( Exit, "component multiple increment\n" );
+        _DBG( Exit, "component (%s) multiple increment\n",
+                Simulation::getSimulation()->getComponent(id)->getName().c_str() );
         return true;
     } 
 
@@ -58,7 +59,8 @@ bool Exit::refDec( ComponentId_t id )
     _EXIT_DBG("refCount=%d\n",m_refCount );
 
     if ( m_idSet.find( id ) == m_idSet.end() ) {
-        _DBG( Exit, "component multiple decrement\n" );
+        _DBG( Exit, "component (%s) multiple decrement\n",
+                Simulation::getSimulation()->getComponent(id)->getName().c_str() );
         return true;
     } 
 

@@ -48,6 +48,7 @@ int Str2Type( std::string name ) {
     if ( ! name.compare("zolt") ) return DBG_ZOLT;
     if ( ! name.compare("exit") ) return DBG_EXIT;
     if ( ! name.compare("memory") ) return DBG_MEMORY;
+    if ( ! name.compare("network") ) return DBG_NETWORK;
     if ( ! name.compare("all") ) return DBG_ALL;
     return DBG_UNKNOWN;
 }
