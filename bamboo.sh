@@ -151,7 +151,13 @@ echo  "Dotests is invoking the portals4 test"
         ${SST_TEST_SUITES}/testSuite_portals4.sh
     else
 echo " Arg in is $1,  kernel is ${kernel} "
-        if [ $1 == "portals4_test" ] || [ $kernel == "Darwin" ]
+## Disable test in nightly on MacOS per Issue #38
+#        if [ $1 == "portals4_test" ] || [ $kernel == "Darwin" ]
+        if [ $kernel == "Darwin" ]
+        then
+            echo "Portals4 test is disabled -- see Issue #38"
+        fi
+        if [ $1 == "portals4_test" ] 
         then
             ${SST_TEST_SUITES}/testSuite_portals4.sh
         fi
