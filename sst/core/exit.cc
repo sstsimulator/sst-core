@@ -40,12 +40,29 @@ bool Exit::refInc( ComponentId_t id )
 {
     _EXIT_DBG( "refCount=%d\n", m_refCount );
 
-    
     if ( m_idSet.find( id ) != m_idSet.end() ) {
-        _DBG( Exit, "component (%s) multiple increment\n",
-                Simulation::getSimulation()->getComponent(id)->getName().c_str() );
+	CompMap_t comp_map = Simulation::getSimulation()->getComponentMap();
+	bool found_in_map = false;
+
+	for(CompMap_t::iterator comp_map_itr = comp_map.begin();
+		comp_map_itr != comp_map.end();
+		++comp_map_itr) {
+
+		if(comp_map_itr->second->getId() == id) {
+			found_in_map = true;
+			break;
+		}
+	}
+
+	if(found_in_map) {
+		_DBG( Exit, "component (%s) multiple increment\n",
+                	Simulation::getSimulation()->getComponent(id)->getName().c_str() );
+	} else {
+		_DBG( Exit, "component in construction increments exit multiple times.\n" );
+	}
+
         return true;
-    } 
+    }
 
     m_idSet.insert( id );
 
