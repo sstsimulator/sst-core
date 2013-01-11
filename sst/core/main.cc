@@ -21,6 +21,7 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#include <ctime>
 
 #include <sst/core/archive.h>
 #include <sst/core/config.h>
@@ -255,14 +256,44 @@ main(int argc, char *argv[])
     all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
 
     start_run = timer->elapsed();
-    
+
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) { 
         if ( cfg.archive ) {
             sim = archive.LoadSimulation();
 	    printf("# Finished reading serialization file\n");
         }
-	
-	if ( cfg.verbose ) printf("# Starting main event loop\n");
+
+	if ( cfg.verbose ) {
+		printf("# Starting main event loop\n");
+
+		time_t the_time = time(0);
+		struct tm* now = localtime( &the_time );
+
+		std::cout << "# Start time: " <<
+			(now->tm_year + 1900) << "/" <<
+			(now->tm_mon+1) << "/";
+
+		if(now->tm_mday < 10) 
+			std::cout << "0";
+
+		std::cout << (now->tm_mday) << " at: ";
+
+		if(now->tm_hour < 10) 
+			std::cout << "0";
+
+		std::cout << (now->tm_hour) << ":";
+
+		if(now->tm_min < 10)
+			std::cout << "0";
+
+		std::cout << (now->tm_min)  << ":";
+
+		if(now->tm_sec < 10) 
+			std::cout << "0";
+
+		std::cout << (now->tm_sec) << std::endl;
+	}
+
         sim->Run();
 
 
