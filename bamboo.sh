@@ -165,7 +165,7 @@ echo " Arg in is $1,  kernel is ${kernel} "
     # Add other test suites here, i.e.
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     ${SST_TEST_SUITES}/testSuite_patterns.sh
-    ${SST_TEST_SUITES}/testSuite_zesto.sh
+##     ${SST_TEST_SUITES}/testSuite_zesto.sh
 echo  '          ZESTO test disable  1/14/2013  Broken again'
 
     # ${SST_TEST_SUITES}/testSuite_moe.sh
