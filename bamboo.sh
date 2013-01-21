@@ -101,6 +101,9 @@ dotests() {
 
     # DO NOT pass args to the test suite, it confuses
     # shunit. Use an environment variable instead.
+
+    ${SST_TEST_SUITES}/testSuite_macsim.sh
+
     if [ $1 != "iris_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals.sh
