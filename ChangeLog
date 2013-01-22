@@ -1,3 +1,328 @@
+2013-1-31
+* Release V2.3 includes the remaining, existing SST components that were not
+integrated in time for SST V2.2. They are now being tested on a nightly basis. 
+Revisions since V2.2 are listed below
+r3788 | simon.hammond | 2013-01-18 09:36:20 -0700 (Fri, 18 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/zesto/Makefile.am
+   M /trunk/sst/elements/zesto/configure.m4
+Adds an --enable-zesto flag for configure.
+------------------------------------------------------------------------
+r3749 | simon.hammond | 2013-01-16 09:29:37 -0700 (Wed, 16 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/portals4/Makefile.am
+Changes to include new -lrt check and configure time.
+------------------------------------------------------------------------
+r3741 | simon.hammond | 2013-01-14 12:05:04 -0700 (Mon, 14 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/PhoenixSim/Makefile.am
+Adds if controls to force PhoenixSim to be selected by a --enable-phoenixsim option (at configure).
+------------------------------------------------------------------------
+r3740 | simon.hammond | 2013-01-14 12:02:14 -0700 (Mon, 14 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/configure.m4
+   M /trunk/sst/elements/PhoenixSim/configure.m4
+Fixes M4 configuration errors needed to support an enable-phoenixsim option.
+------------------------------------------------------------------------
+r3738 | simon.hammond | 2013-01-14 11:52:49 -0700 (Mon, 14 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/PhoenixSim/configure.m4
+Added enable-phoenixsim option.
+------------------------------------------------------------------------
+r3734 | chad.d.kersey@gmail.com | 2013-01-14 02:38:03 -0700 (Mon, 14 Jan 2013) | 1 line
+Changed paths:
+   A /trunk/sst/elements/zesto/doc/README.qsim
+A temporary documentation note.
+------------------------------------------------------------------------
+r3733 | chad.d.kersey@gmail.com | 2013-01-14 02:30:25 -0700 (Mon, 14 Jan 2013) | 1 line
+Changed paths:
+   M /trunk/sst/elements/zesto/Makefile.am
+   A /trunk/sst/elements/zesto/configure.m4
+   A /trunk/test/testReferenceFiles/test_zesto_conf5x1_qsimlib.out
+   A /trunk/test/testReferenceFiles/test_zesto_simple3_qsimlib.out
+   A /trunk/test/testReferenceFiles/test_zesto_simple3_with_nic_qsimlib.out
+   A /trunk/test/testSuites/testSuite_zesto_qsimlib.sh (from /trunk/test/testSuites/testSuite_zesto.sh:3725)
+Added Zesto/QSim unit test. Added QSim support to build system.
+------------------------------------------------------------------------
+r3728 | simon.hammond | 2013-01-11 09:03:27 -0700 (Fri, 11 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/core/main.cc
+Adds a start time output in verbose mode, useful for when we are starting up debugging and testing simulations investigating performance.
+------------------------------------------------------------------------
+r3718 | simon.hammond | 2013-01-10 11:38:12 -0700 (Thu, 10 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/core/exit.cc
+Fixes bug which stops M5 simulations loading during initialization.
+------------------------------------------------------------------------
+r3715 | branden.moore@gmail.com | 2013-01-09 11:25:57 -0700 (Wed, 09 Jan 2013) | 1 line
+Changed paths:
+   M /trunk/sst/core/debug.cc
+   M /trunk/sst/core/debug.h
+   M /trunk/sst/core/exit.cc
+Added extra debugging info to exit.  Added 'network' as a debug flag
+------------------------------------------------------------------------
+r3713 | scott.hemmert | 2013-01-09 10:42:25 -0700 (Wed, 09 Jan 2013) | 1 line
+Changed paths:
+   M /trunk/sst/core/exit.cc
+Made the exit terminate simulation immediately after all components unregister on single rank jobs.  It used to wait the synchonization interval, which is only used for parallel runs.
+------------------------------------------------------------------------
+r3708 | simon.hammond | 2013-01-08 17:08:36 -0700 (Tue, 08 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/zesto/core/trace-core.cc
+John's fix to control 64-bit-ness of pointer for program counter.
+r3731 | chad.d.kersey@gmail.com | 2013-01-13 23:12:04 -0700 (Sun, 13 Jan 2013) | 7 lines
+Changed paths:
+   M /trunk/sst/elements/zesto/Makefile.am
+   M /trunk/sst/elements/zesto/core/qsim/qsimclient-core.cc
+   M /trunk/sst/elements/zesto/core/qsim/qsimclient-core.h
+   M /trunk/sst/elements/zesto/core/qsim/qsimlib-core.cc
+   M /trunk/sst/elements/zesto/core/qsim/qsimlib-core.h
+   M /trunk/sst/elements/zesto/core/zesto-qsim.cpp
+   M /trunk/sst/elements/zesto/core/zesto-qsim.h
+   M /trunk/sst/elements/zesto/sdl/conf5x1_qsimlib.xml
+   M /trunk/sst/elements/zesto/sdl/simple3_qsimlib.xml
+   M /trunk/sst/elements/zesto/sdl/simple3_with_nic_qsimlib.xml
+Fixed a few qsim-related things in the zesto component:
+  -The SDL files for qsim-lib had some errors (did they ever run successfully?) 
+  -The old internal copy of the client library was still hanging around.
+  -There was no mention in any documentation or anywhere else that -lqsim and
+   -lqsimclient absolutely must make their way into the linker flags for
+   correct behavior.
+------------------------------------------------------------------------
+r3707 | simon.hammond | 2013-01-08 15:42:22 -0700 (Tue, 08 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/core/config.cc
+Adds simple and rrobin options to help display for partionner option. This is being used for our benchmarking of the core (for release prep.).
+------------------------------------------------------------------------
+r3706 | simon.hammond | 2013-01-08 15:26:43 -0700 (Tue, 08 Jan 2013) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/configure.m4
+Fixes problem with configure halting when GEM5 is not required to be built but Python can also not be found.
+------------------------------------------------------------------------
+r3696 | branden.moore@gmail.com | 2013-01-02 14:11:48 -0700 (Wed, 02 Jan 2013) | 1 line
+Changed paths:
+   M /trunk/sst/core/debug.cc
+   M /trunk/sst/core/debug.h
+   M /trunk/sst/elements/mem_hierarchy/cache.cc
+   M /trunk/sst/elements/mem_hierarchy/cache.h
+   M /trunk/sst/elements/mem_hierarchy/trivialMemory.cc
+   M /trunk/sst/elements/mem_hierarchy/trivialMemory.h
+More bugfixes for the cache model.  Added a separate 'MEMORY' debug target
+------------------------------------------------------------------------
+r3695 | branden.moore@gmail.com | 2013-01-02 14:05:22 -0700 (Wed, 02 Jan 2013) | 1 line
+Changed paths:
+   M /trunk/sst/elements/include/memoryDev.h
+   M /trunk/sst/elements/include/memoryDev2.h
+Moved default arguments to declaration, rather than definition.
+------------------------------------------------------------------------
+r3691 | bwbarrett@gmail.com | 2012-12-21 11:51:41 -0700 (Fri, 21 Dec 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/core/serialization/core.h
+Explicitly instantiate the MPI archivers, as they don't always get instantiated
+properly when using the PIMPL methodolgy :(
+------------------------------------------------------------------------
+r3648 | branden.moore@gmail.com | 2012-12-07 14:00:12 -0700 (Fri, 07 Dec 2012) | 1 line
+Changed paths:
+   M /trunk/sst/core/component.cc
+   M /trunk/sst/core/component.h
+   M /trunk/sst/core/simulation.cc
+   M /trunk/sst/core/simulation.h
+Make components aware of their name
+------------------------------------------------------------------------
+r3631 | jpvandy4sst | 2012-12-03 14:33:00 -0700 (Mon, 03 Dec 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/core/factory.cc
+Change in wording of the error report when sst.x can not locate all the pieces of an element.   This attempts to make it clearer what is going on.
+------------------------------------------------------------------------
+r3623 | jpvandy4sst | 2012-11-29 16:11:53 -0700 (Thu, 29 Nov 2012) | 2 lines
+Changed paths:
+   M /trunk/sst/elements/iris/router.h
+   M /trunk/test/testSuites/testSuite_iris.sh
+Very minor clean up of the iris test.   More information if it fails.  Send the output, that will be compared with the reference file, to stdout not stderr.
+------------------------------------------------------------------------
+r3618 | branden.moore@gmail.com | 2012-11-26 10:30:03 -0700 (Mon, 26 Nov 2012) | 1 line
+Changed paths:
+   M /trunk/sst/elements/M5/dummyThreadContext.h
+------------------------------------------------------------------------
+r3617 | branden.moore@gmail.com | 2012-11-21 15:39:12 -0700 (Wed, 21 Nov 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/memLink.h
+   M /trunk/sst/elements/M5/portLink.h
+Updates to work with newer gem5-sst integration
+------------------------------------------------------------------------
+r3605 | mjleven@sandia.gov | 2012-11-14 14:11:14 -0700 (Wed, 14 Nov 2012) | 9 lines
+Changed paths:
+   A /trunk/sst/elements/M5/xml/split/3rank-4core
+   A /trunk/sst/elements/M5/xml/split/3rank-4core/mem-M5.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-4core/np3.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-4core/socket0-M5.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-4core/socket1-M5.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-8core
+   A /trunk/sst/elements/M5/xml/split/3rank-8core/mem-M5.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-8core/np3.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-8core/socket0-M5.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-8core/socket1-M5.xml
+   A /trunk/sst/elements/M5/xml/split/5rank-16core
+   A /trunk/sst/elements/M5/xml/split/5rank-16core/mem-M5.xml
+   A /trunk/sst/elements/M5/xml/split/5rank-16core/np5.xml
+   A /trunk/sst/elements/M5/xml/split/5rank-16core/socket0-M5.xml
+   A /trunk/sst/elements/M5/xml/split/5rank-16core/socket1-M5.xml
+   A /trunk/sst/elements/M5/xml/split/5rank-16core/socket2-M5.xml
+   A /trunk/sst/elements/M5/xml/split/5rank-16core/socket3-M5.xml
+new configs
+2 sockets with 2 cores each
+2 sockets with 4 cores each
+4 sockets with 4 cores each
+one rank for membus/memory and one rank for each socket
+------------------------------------------------------------------------
+r3601 | mjleven@sandia.gov | 2012-11-12 15:50:53 -0700 (Mon, 12 Nov 2012) | 2 lines
+Changed paths:
+   A /trunk/sst/elements/M5/xml/split
+   A /trunk/sst/elements/M5/xml/split/3rank-2core
+   A /trunk/sst/elements/M5/xml/split/3rank-2core/core0-M5.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-2core/core1-M5.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-2core/mem-M5.xml
+   A /trunk/sst/elements/M5/xml/split/3rank-2core/np3.xml
+   A /trunk/sst/elements/M5/xml/split/4rank-3core
+   A /trunk/sst/elements/M5/xml/split/4rank-3core/core0-M5.xml
+   A /trunk/sst/elements/M5/xml/split/4rank-3core/core1-M5.xml
+   A /trunk/sst/elements/M5/xml/split/4rank-3core/core2-M5.xml
+   A /trunk/sst/elements/M5/xml/split/4rank-3core/mem-M5.xml
+   A /trunk/sst/elements/M5/xml/split/4rank-3core/np4.xml
+configurations for pthread apps spread across different SST ranks
+------------------------------------------------------------------------
+r3590 | simon.hammond | 2012-11-02 14:15:45 -0600 (Fri, 02 Nov 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/factory.h
+Added warning to M5 component when GEM5 cannot be loaded correctly.
+------------------------------------------------------------------------
+r3538 | jpvandy4sst | 2012-10-16 16:58:57 -0600 (Tue, 16 Oct 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/power/HotSpot-interface.h
+   M /trunk/sst/elements/power/IntSim-interface.h
+   M /trunk/sst/elements/power/power.h
+   M /trunk/test/testSuites/testSuite_PowerTherm.sh
+Rev 3355 moved (copied) the techModels to a new home in trunk/deps/src.  
+Rev 3504 deleted the techModels from trunk/sst/core.   This Rev allows 
+compile of power after the move by pointing include files to the new location.
+There are, at least, two outstanding issues after this.  When power is built, 
+for SST to link and begin execution, there are three .so files missing from 
+the attempt which were in svn before 3504.  These should be being rebuilt 
+from source, rather than cached in SVN.   The second problem which was noted 
+in mid September is that the current (Mid-September and October 16th) version 
+of the code and installed PowerTherm test enters a nearly infinite loop in SST.
+(Failed to complete in 90 hours in September.)
+------------------------------------------------------------------------
+r3528 | jpvandy4sst | 2012-10-11 16:44:28 -0600 (Thu, 11 Oct 2012) | 2 lines
+Changed paths:
+   D /trunk/sst/elements/PhoenixSim/PhoenixSim/out/gcc-debug/PhoenixSim
+remove another large binary  from SVN
+------------------------------------------------------------------------
+r3524 | jpvandy4sst | 2012-10-11 15:51:11 -0600 (Thu, 11 Oct 2012) | 2 lines
+Changed paths:
+   D /trunk/sst/elements/PhoenixSim/simEnv.h.gch
+Delete binary stored in SVN that appear to not be needed
+------------------------------------------------------------------------
+r3517 | simon.hammond | 2012-10-11 11:40:45 -0600 (Thu, 11 Oct 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/configure.m4
+Auto-checks for Python using the python-config executable now.
+------------------------------------------------------------------------
+r3514 | simon.hammond | 2012-10-10 13:21:40 -0600 (Wed, 10 Oct 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/configure.m4
+Added the revised M5 Python imports.
+------------------------------------------------------------------------
+r3513 | branden.moore@gmail.com | 2012-10-10 11:27:57 -0600 (Wed, 10 Oct 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/configure.m4
+Added python checking back in.
+------------------------------------------------------------------------
+r3509 | simon.hammond | 2012-10-10 09:44:53 -0600 (Wed, 10 Oct 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/configure.m4
+Uses MPICXX for libgem5_opt testing.
+------------------------------------------------------------------------
+r3507 | simon.hammond | 2012-10-09 14:33:15 -0600 (Tue, 09 Oct 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/patterns/components/routermodel/Makefile.inc
+Fixes issues with importing old code.
+------------------------------------------------------------------------
+r3506 | simon.hammond | 2012-10-09 13:22:43 -0600 (Tue, 09 Oct 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/m5.h
+   M /trunk/sst/elements/power/HotSpot-interface.h
+First attempt to clean up this power and thermal reliance on specific paths. 
+This is messy so may break.
+------------------------------------------------------------------------
+r3505 | simon.hammond | 2012-10-09 13:20:41 -0600 (Tue, 09 Oct 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/M5/configure.m4
+Changes so build stops if M5 is specified but cannot be built.
+------------------------------------------------------------------------
+r3504 | simon.hammond | 2012-10-09 12:56:53 -0600 (Tue, 09 Oct 2012) | 3 lines
+Changed paths:
+   D /trunk/sst/core/techModels
+Removed techModels from SST trunk. These are now outside of the core to allow 
+for easy updates and configure time switching.
+------------------------------------------------------------------------
+r3484 | jpvandy4sst | 2012-10-05 13:11:41 -0600 (Fri, 05 Oct 2012) | 6 lines
+Changed paths:
+   M /trunk/ISSUES
+   M /trunk/config/ax_boost_base.m4
+   M /trunk/config/ax_boost_common.m4
+   M /trunk/config/ax_boost_mpi.m4
+   M /trunk/config/ax_boost_thread.m4
+   M /trunk/config/sst_check_sstmacro.m4
+   M /trunk/configure.ac
+   A /trunk/deps/bin/sstDep_sstmacro_2.3.0.sh
+   M /trunk/deps/bin/sstDependencies.sh
+   M /trunk/doc/Doxyfile.in
+   M /trunk/sst/elements/M5/Makefile.am
+   M /trunk/sst/elements/M5/configure.m4
+   M /trunk/sst/elements/M5/factory.h
+   M /trunk/sst/elements/M5/portLink.h
+   M /trunk/sst/elements/macro_component/Makefile.am
+   M /trunk/sst/elements/macro_component/macro_processor.cc
+   M /trunk/test/testSuites/testM5/buildall.sh
+   M /trunk/test/testSuites/testSuite_M5.sh
+Move more mods from Branch to trunk
+Including MacOS M5 test fix
+Switching to sstMacro 2.3.0  and building it
+Kyle's configure fix
+updates to sst/elements  M5 and macro
+------------------------------------------------------------------------
+r3482 | jpvandy4sst | 2012-10-05 12:35:41 -0600 (Fri, 05 Oct 2012) | 2 lines
+Changed paths:
+   M /trunk
+   M /trunk/bamboo.sh
+   D /trunk/sst/elements/macro_component/.ignore
+   M /trunk/sst/elements/scheduler
+   M /trunk/sst/elements/scheduler/JobKillEvent.h
+   M /trunk/test/testReferenceFiles/test_macro_0001.out
+   A /trunk/test/testSuites/testM5/fpmath/fpmath (from /branches/2.2.0_pre/test/testSuites/testM5/fpmath/fpmath:3408)
+   A /trunk/test/testSuites/testM5/hellow/hellow (from /branches/2.2.0_pre/test/testSuites/testM5/hellow/hellow:3408)
+   A /trunk/test/testSuites/testM5/memalloc/memalloc (from /branches/2.2.0_pre/test/testSuites/testM5/memalloc/memalloc:3408)
+   M /trunk/test/testSuites/testSuite_macro.sh
+Push a bunch of changes from the branch, 2.2.0_pre to the Mainlin
+------------------------------------------------------------------------
+r3466 | mjleven@sandia.gov | 2012-10-02 14:31:32 -0600 (Tue, 02 Oct 2012) | 2 lines
+Changed paths:
+   M /trunk/sst/elements/M5/factory.h
+   M /trunk/sst/elements/M5/portLink.h
+add support for deferred packets
+------------------------------------------------------------------------
+r3461 | simon.hammond | 2012-10-02 07:13:15 -0600 (Tue, 02 Oct 2012) | 3 lines
+Changed paths:
+   M /trunk/sst/elements/scheduler/Makefile.am
+Removes Boost library imports in CFLAGS (trunk), gets lots of warnings on Mac OSX.
+------------------------------------------------------------------------
+r3452 | branden.moore@gmail.com | 2012-09-28 14:20:39 -0600 (Fri, 28 Sep 2012) | 1 line
+Changed paths:
+   M /trunk/sst/elements/M5/configure.m4
+Fixed up python includes for M5
+------------------------------------------------------------------------
+
 2012-09-30 Sue Kelly 
 * Release 2.2 of SST/Micro. 
   Support for SDL version 1 has been deprecated. 
@@ -7,10 +332,10 @@
     genericProc, introspector_dram, introspector_mesmthi,
     introductor_router, libsim_panalyzer, resil, and schedule
   Although not deleted from the development trunk, the following
-    components are not provided: cpu_data cpu_power, Mcniagara,
-    Mcopteron, merlin, mesmthi, mosaic_cpu, mosaic_nic, palacios,
-    parser, sstdisksim, and zesto. Some are not ready yet, others
-    are missing a nightly regression test.
+    components are not provided: Mcniagara, Mcopteron, merlin, 
+    mesmthi, mosaic_cpu, mosaic_nic, palacios, parser, sstdisksim, 
+    and zesto. Some are not ready yet, others are missing a 
+    nightly regression test.
 
 2010-10-xx Jon Wilson
 * Release 2.1 of SST/Micro.
