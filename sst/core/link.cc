@@ -20,6 +20,7 @@
 #include <sst/core/event.h>
 #include <sst/core/pollingLinkQueue.h>
 #include <sst/core/timeVortex.h>
+#include <sst/core/timeLord.h>
 #include <sst/core/syncQueue.h>
 
 namespace SST { 
@@ -61,6 +62,14 @@ void Link::setLatency(Cycle_t lat) {
     latency = lat;
 }
     
+void Link::addOutputLatency(int cycles, std::string timebase) {
+    SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase,"addOutputLatency");
+    latency += (cycles * tb);
+}
+    
+void Link::addOutputLatency(SimTime_t cycles, TimeConverter* timebase) {
+    latency += timebase->convertToCoreTime(cycles);
+}
     
 void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {
 //     _LINK_DBG("delay=%lu sendQueue=%p event=%p sFunctor=%p\n",

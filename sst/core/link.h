@@ -40,7 +40,9 @@ public:
     
     /** set minimum link latency */
     void setLatency(Cycle_t lat);
-
+    void addOutputLatency(int cycles, std::string timebase);
+    void addOutputLatency(SimTime_t cycles, TimeConverter* timebase);
+    
 //     void setFunctor(EventHandler_t* functor) {
     void setFunctor(Event::HandlerBase* functor) {
 	rFunctor = functor;
