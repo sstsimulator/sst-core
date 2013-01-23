@@ -8,7 +8,13 @@
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
-
+//
+// History:
+// Unkown - Created [?????2009]
+// Michael Scoggin(org1422) - Comment and Error Handling [Jan09,2012]
+//		modified:	parse_params() parse_variables() parse_variable()
+//		created:	parse_parameter() get_node_text()
+//		added:		verbosity
 
 
 #ifndef _SST_SDL_H
@@ -25,45 +31,49 @@ class TiXmlNode;
 
 namespace SST {
 
-typedef std::map<std::string,Params*> ParamsMap_t;
-typedef std::map<std::string,std::string> VariableMap_t;
+	typedef std::map<std::string,Params*> ParamsMap_t;
+	typedef std::map<std::string,std::string> VariableMap_t;
 
-class ConfigComponent;
-class ConfigGraph;
- 
-class sdl_parser {
+	class ConfigComponent;
+	class ConfigGraph;
 
-public:
-    sdl_parser(std::string filename);
-    ~sdl_parser();
+	class sdl_parser {
 
-    std::string getSDLConfigString();
-    ConfigGraph* createConfigGraph();
-    std::string getVersion() {return version;}
-    
-private:
+		public:
+			sdl_parser(std::string filename);
+			~sdl_parser();
 
-    ConfigGraph* graph;
-    
-    TiXmlDocument*   doc;
-    std::string      version;
+			std::string getSDLConfigString();
+			ConfigGraph* createConfigGraph();
+			std::string getVersion() {return version;}
 
-    std::map<std::string,Params*> includes;
-    /* ParamsMap_t      includes; */
-    VariableMap_t    variables;
 
-    // Parsing methods
-    void parse_param_include(TiXmlNode* pParent);
-    void parse_variable(TiXmlNode* pParent);
-    void parse_variables(TiXmlNode* pParent);
-    void parse_component(TiXmlNode* pParent);
-    void parse_introspector(TiXmlNode* pParent);
-    void parse_params(TiXmlNode* pParent, ConfigComponent* comp);
-    void parse_link(TiXmlNode* pParent, ConfigComponent* comp);
-    std::string resolve_variable(const std::string value, int line_number);
-};
+			int verbosity;//Scoggin(Jan09,2013) 0=quiet, 1=coarse, 2=parameters, 3=comments
+		private:
 
- 
+			ConfigGraph* graph;
+
+			TiXmlDocument*   doc;
+			std::string      version;
+
+			std::map<std::string,Params*> includes;
+			/* ParamsMap_t      includes; */
+			VariableMap_t    variables;
+
+			// Parsing methods
+			void parse_parameter(TiXmlNode* pParent, Params* params);//Scoggin(Jan09,2013)
+			void parse_param_include(TiXmlNode* pParent);
+			void parse_variable(TiXmlNode* pParent);
+			void parse_variables(TiXmlNode* pParent);
+			void parse_component(TiXmlNode* pParent);
+			void parse_introspector(TiXmlNode* pParent);
+			void parse_params(TiXmlNode* pParent, ConfigComponent* comp);
+			void parse_link(TiXmlNode* pParent, ConfigComponent* comp);
+			std::string resolve_variable(const std::string value, int line_number);
+			const char* get_node_text(TiXmlNode* pParent);//Scoggin(Jan09,2013)
+	};
+
+
 } // namespace SST
 
 #endif
