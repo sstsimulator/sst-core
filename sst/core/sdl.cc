@@ -33,7 +33,7 @@ using namespace std;
 namespace SST {
 	sdl_parser::sdl_parser( const string fileName )
 	{
-		verbosity=2;		//Scoggin(Jan09,2013) Added for feedback
+		verbosity=0;		//Scoggin(Jan09,2013) Added for feedback
 		doc = new TiXmlDocument(fileName.c_str());
 		bool load_ok = doc->LoadFile();
 		if ( !load_ok ) {
@@ -104,7 +104,7 @@ namespace SST {
 
 		TiXmlNode* pParent = doc;
 		TiXmlNode* pChild;
-		TiXmlNode* sst_section;
+		TiXmlNode* sst_section = 0; //Scoggin(Jan23,2013) Fix initialization warning on build.
 
 		// First, we need to look for includes and variables and find the sst section
 		for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) 

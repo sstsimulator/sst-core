@@ -27,7 +27,7 @@
 namespace SST {
 
 Component::Component(ComponentId_t id) :
-    id( id ), defaultTimeBase(NULL)
+     defaultTimeBase(NULL), id( id)
 {
     myLinks = Simulation::getSimulation()->getComponentLinkMap(id);
 	const CompIdMap_t& map = Simulation::getSimulation()->getComponentIdMap();

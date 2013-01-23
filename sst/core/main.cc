@@ -69,7 +69,7 @@ main(int argc, char *argv[])
     // (saving the slow broadcast).  In non-fast, only rank 0 will
     // parse the sdl and build the graph.  It is then broadcast.  In
     // single rank mode, the option is ignored.
-    sdl_parser* parser;
+    sdl_parser* parser=0;	//(Scoggin:Jan23,2013) Fix initialization warning in build
     if ( cfg.sdlfile != "NONE" ) {
 	if ( cfg.all_parse || world.rank() == 0 ) {
 	    // Create the sdl parser
