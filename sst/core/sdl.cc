@@ -209,7 +209,8 @@ namespace SST {
 			for ( TiXmlNode* param = pChild->FirstChild(); param != NULL; param = param->NextSibling()) {
 				parse_parameter(param,params); //Scoggin(Jan09,2013) modified for error and comment handling
 				if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
-					std::cout<<"  "<<pChild->Value()<<"="<<(*params)[pChild->Value()]<<std::endl;
+					if((*params).find(pChild->Value() ) != (*params).end() )
+						std::cout<<"  "<<pChild->Value()<<"="<<(*params)[pChild->Value()]<<std::endl;
 			}
 			includes[include_name] = params;
 		}        
@@ -264,7 +265,8 @@ namespace SST {
 		for ( pChild = pParent->FirstChild(); pChild != NULL; pChild = pChild->NextSibling()) {
 			parse_variable(pChild); //Scoggin(Jan09,2013) modified for error and comment handling
 			if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
-				std::cout<<"  "<<pChild->Value()<<"="<<variables[pChild->Value()]<<std::endl;
+				if(variables.find(pChild->Value() ) != variables.end() )
+					std::cout<<"  "<<pChild->Value()<<"="<<variables[pChild->Value()]<<std::endl;
 			// Each node at this level is a separate set of parameters
 			//std::string variable_name = pChild->Value();
 			//			if(pChild->ToElement()->GetText())	
@@ -388,7 +390,8 @@ namespace SST {
 		for ( TiXmlNode* param = pParent->FirstChild(); param != NULL; param = param->NextSibling()) {
 			parse_parameter(param,&comp->params);		//Scoggin(Jan09,2013) Modified for error and comment handling
 			if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
-				std::cout<<"   "<<param->Value()<<"="<<comp->params[param->Value()]<<std::endl;
+				if(comp->params.find(param->Value() ) != comp->params.end() )
+					std::cout<<"   "<<param->Value()<<" = '"<<comp->params[param->Value()]<<"'"<<std::endl;
 		}
 
 		// Now, see if there are any includes
