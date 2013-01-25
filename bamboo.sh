@@ -140,7 +140,10 @@ dotests() {
 
     if [[ $BOOST_HOME == *boost-1.50* ]]
     then
-        ${SST_TEST_SUITES}/testSuite_macro.sh
+#        2012-JAN-25 (JW) : temporarily disabling sstmacro tests due to 
+#                           sstmacro 4.2 integration issues
+#        ${SST_TEST_SUITES}/testSuite_macro.sh
+        echo -e "SSTMACRO tests DISABLED on Boost 1.50 [2012-JAN-25 (JW)]"
     else
         echo -e "No SST Macro test:    Only test with Boost 1.50"
     fi
