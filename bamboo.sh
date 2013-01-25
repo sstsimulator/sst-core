@@ -269,9 +269,14 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none -M 1.1"
+            # disable sstmacro
+            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -M 1.1"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
+            # # with sstmacro
+            # depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none -M 1.1"
+            # setConvenienceVars "$depsStr"
+            # configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
             ;;
         sst2.2_config)
             #-----------------------------------------------------------------
@@ -303,9 +308,14 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none"
+            # disable sstmacro
+            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
+            # # with sstmacro
+            # depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none"
+            # setConvenienceVars "$depsStr"
+            # configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
             ;;
         sst2.2_config_macosx)
             #-----------------------------------------------------------------
