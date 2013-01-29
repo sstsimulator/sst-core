@@ -140,10 +140,7 @@ dotests() {
 
     if [[ $BOOST_HOME == *boost-1.50* ]]
     then
-#        2012-JAN-25 (JW) : temporarily disabling sstmacro tests due to 
-#                           sstmacro 4.2 integration issues
-#        ${SST_TEST_SUITES}/testSuite_macro.sh
-        echo -e "SSTMACRO tests DISABLED on Boost 1.50 [2012-JAN-25 (JW)]"
+        ${SST_TEST_SUITES}/testSuite_macro.sh
     else
         echo -e "No SST Macro test:    Only test with Boost 1.50"
     fi
@@ -274,14 +271,14 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            # disable sstmacro
-            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -M 1.1"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
-            # # with sstmacro
-            # depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none -M 1.1"
+            # # disable sstmacro
+            # depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -M 1.1"
             # setConvenienceVars "$depsStr"
-            # configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
+            # configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
+            # with sstmacro
+            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none -M 1.1"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
             ;;
         sst2.2_config)
             #-----------------------------------------------------------------
@@ -289,7 +286,8 @@ getconfig() {
             #     This option used for configuring SST with supported 2.2 deps
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir
+"
             depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
