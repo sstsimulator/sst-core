@@ -242,9 +242,11 @@ getconfig() {
     local depsStr=""
 
     # Determine MPI wrappers
-    local cc_compiler=`which mpicc`
-    local cxx_compiler=`which mpicxx`
-    local mpi_environment="CC=${cc_compiler} CXX=${cxx_compiler}"
+    local mpicc_compiler=`which mpicc`
+    local mpicxx_compiler=`which mpicxx`
+    local cc_compiler=`which gcc`
+    local cxx_compiler=`which g++`
+    local mpi_environment="CC=${cc_compiler} CXX=${cxx_compiler} MPICC=${mpicc_compiler} MPICXX=${mpicxx_compiler}"
 
     # Interrogate Python install to obtain location of Python includes
     local tmp_python_inc=`python-config --includes`
