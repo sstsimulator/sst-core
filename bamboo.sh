@@ -104,6 +104,11 @@ dotests() {
 
     ${SST_TEST_SUITES}/testSuite_macsim.sh
 
+    ${SST_TEST_SUITES}/testSuite_zesto.sh
+
+    ${SST_TEST_SUITES}/testSuite_zesto_qsimlib.sh
+
+
     if [ $1 != "iris_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals.sh
@@ -168,8 +173,7 @@ echo " Arg in is $1,  kernel is ${kernel} "
     # Add other test suites here, i.e.
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     ${SST_TEST_SUITES}/testSuite_patterns.sh
-##     ${SST_TEST_SUITES}/testSuite_zesto.sh
-echo  '          ZESTO test disable  1/14/2013  Broken again'
+    ${SST_TEST_SUITES}/testSuite_zesto.sh
 
     # ${SST_TEST_SUITES}/testSuite_moe.sh
     # ${SST_TEST_SUITES}/testSuite_larry.sh
@@ -271,9 +275,9 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none -M 1.1"
+            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q stabledevel -M 1.1"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
         sst2.2_config)
             #-----------------------------------------------------------------
@@ -304,6 +308,7 @@ getconfig() {
             # sst2.3_config_macosx
             #     This option used for configuring SST with supported 2.3 deps
             #-----------------------------------------------------------------
+            QSIM_T="`pwd`/../../sstDeps/src/staged/Qsim_stabledevel"
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none"
@@ -504,7 +509,6 @@ dobuild() {
     # after getconfig is run,
     # $SST_SELECTED_DEPS now contains selected dependencies 
     # $SST_SELECTED_CONFIG now contains config line
-
     # based on buildtype, configure and build dependencies
     # build, patch, and install dependencies
     $SST_DEPS_BIN/sstDependencies.sh $SST_SELECTED_DEPS cleanBuild
@@ -540,6 +544,7 @@ dobuild() {
     fi
     echo "bamboo.sh: running \"configure\"..."
     echo "bamboo.sh: config args = $SST_SELECTED_CONFIG"
+
     ./configure $SST_SELECTED_CONFIG
     retval=$?
     if [ $retval -ne 0 ]
@@ -699,7 +704,14 @@ else
 
                 # load OMNet++
                 module unload omnet++
-                module load omnet++/omnet++-4.1_no-mpi
+                module load omnet++/omnet++-4.1_no-mpi 2>__std.err__
+
+                cat __std.err__
+                if [[ "`cat __std.err__`" == *ERROR* ]]
+                then
+                     echo Load of omnet module failed
+                     exit
+                fi
                 echo "bamboo.sh: OMNET_HOME=${OMNET_HOME}"
                 export SST_DEPS_INSTALL_OMNET=${OMNET_HOME}
                 echo "bamboo.sh: SST_DEPS_INSTALL_OMNET=${SST_DEPS_INSTALL_OMNET}"
