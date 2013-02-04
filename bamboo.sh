@@ -102,17 +102,20 @@ dotests() {
     # DO NOT pass args to the test suite, it confuses
     # shunit. Use an environment variable instead.
 
-    ${SST_TEST_SUITES}/testSuite_macsim.sh
+    if [ $kernel != "Darwin" ]
+    then
+        # Only run if the OS *isn't* Darwin (MacOS)
+        ${SST_TEST_SUITES}/testSuite_macsim.sh
+        ${SST_TEST_SUITES}/testSuite_zesto.sh
+        ${SST_TEST_SUITES}/testSuite_zesto_qsimlib.sh
+    fi
 
-    ${SST_TEST_SUITES}/testSuite_zesto.sh
-
-    ${SST_TEST_SUITES}/testSuite_zesto_qsimlib.sh
 
 
     if [ $1 != "iris_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals.sh
-	# jwilso: running simpleComponent test here temporarily
+        # jwilso: running simpleComponent test here temporarily
         ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
     fi
 
@@ -308,7 +311,6 @@ getconfig() {
             # sst2.3_config_macosx
             #     This option used for configuring SST with supported 2.3 deps
             #-----------------------------------------------------------------
-            QSIM_T="`pwd`/../../sstDeps/src/staged/Qsim_stabledevel"
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
             depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none"
