@@ -111,6 +111,7 @@ dotests() {
         ## ${SST_TEST_SUITES}/testSuite_zesto_qsimlib.sh
     fi
 
+    ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
 
 
     if [ $1 != "iris_test" ]
