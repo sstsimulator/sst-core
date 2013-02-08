@@ -112,6 +112,7 @@ dotests() {
     fi
 
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
+    ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
 
 
     if [ $1 != "iris_test" ]
