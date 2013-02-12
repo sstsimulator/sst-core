@@ -280,7 +280,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g SST-2.3.0 -m none -i none -o none -h none -s 2.4.0 -q SST-2.3 -M 1.1"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-2.3.0 -m none -i none -o none -h none -s 2.4.0 -q SST-2.3 -M 1.1"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
@@ -315,7 +315,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d 2.2.1 -p none -z none -b 1.50 -g SST-2.3.0 -m none -i none -o none -h none -s 2.4.0 -q none"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-2.3.0 -m none -i none -o none -h none -s 2.4.0 -q none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
             ;;
