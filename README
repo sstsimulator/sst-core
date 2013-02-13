@@ -22,6 +22,7 @@ network interfaces and running MPI.
 The SST software is comprised of the core framework and supported models.
 The following list identifies the elements:
 core
+SST integrated techModels: libHotSpot, libIntSim, libMcPATbeta, and libORION
 IRIS 
 Mcniagara
 Mcopteron
@@ -38,22 +39,66 @@ Zesto
  
 The following external components are used:
 Boost 1.50.0
-DRAMSim2 version 2.2?
+DRAMSim2 2.2.2
 GEM5 tag V2.3 from https://code.google.com/p/sst-gem5-devel.devel which was 
 forked from gem5-stable at change set 8642:549b72de8f72 back on Dec 15 2011
-SST/Macro V2.3?
-MacSim V1.1
-Mpich2-1.4.1
-OMNeT++ 4.1
-OpenMPI 1.6
-QSim V?
+SST/Macro 2.4
+MacSim 1.1
+Mpich2-1.4.1.p2 (not supported on MacOS)
+OMNeT++ 4.1 (not supported on MacOS)
+OpenMPI 1.6 (V1.4.4 on MacOS via Xcode)
+QSim 0.1.6? (support for zesto only)
 
 Element Support Directories:
+cpu_data - directory containing an example (from Component's perspective)
+ for the usage of the SST Introspection Interface
+cpu_power - directory containing a test for the SST power and thermal models
 DRAMSimC - a glue layer for interfacing to a DRAMSim2 library from another SST
  component.
+ https://wiki.umd.edu/DRAMSim2
 event_test - test for SST/micro core
+introspector_cpu - directory containing an example (from Introspector's
+perspective) for the usage of the SST Introspection Interface)
+introspector_cpuTemperature - directory containing an example (from 
+Introspector's perspective) for the usage of the SST Introspection Interface)
+iris - Flit-level interconnection network simulator
+  http://www.ece.gatech.edu/research/labs/casl/multicore.html
+libHotSpot - study thermal evolution over a long running application. It uses a 
+  circuit model of equivalent thermal resistors and capacitors to those 
+  used within a computer component. 
+  http://lava.cs.virginia.edu/HotSpot/documentation.htm
+libIntSim - a 2D integrated circuit interconnect simulator.
+  Ref: Sekar, Naeemi, Sarvari, Davis, and Meindl, "IntSim: A CAD tool for 
+  optimization of multilevel interconnect networks", ICCAD '07 Proceedings 
+  of the 2007 IEEE/ACM international conference on Computer-aided design, 
+   pp 560-567.
+libMcPATbeta - McPAT (Multicore Power, Area, and Timing) is an integrated 
+  power, area, and timing modeling framework for multithreaded, multicore, 
+  and manycore architectures. 
+  http://www.hpl.hp.com/research/mcpat/
+libORION - suite of dynamic and leakage power models developed for various 
+  architectural components of on-chip networks 
+  http://projects.csail.mit.edu/cgi-bin/wiki/view/LSPgroup/OrionPage
 M5 - glue layer for interfacing to gem5.
 macro_component - glue layer for interfacing with SST/macro.
-power - technology interface directory
+  http://sst.sandia.gov/about_sstmacro.html
+patterns - allows the generation of network traffic without incurring
+  the proessing and memory overhead of running a full endpoint simulator.
+PhoenixSim - models properties of photonic interconnect networks including 
+  propagation delay, insertion loss, extinction ratio, spectral resonant 
+  profiles, area occupation, and energy dissipation. 
+  http://lightwave.ee.columbia.edu/?s=research&p=phoenixsim
+portals4 - Model Portals4 NIC. Portals message matching and data movement 
+  is preformed by the NIC. The NIC sits between a network router and 
+  bus model. The currently supported models are Gem5 and SS_router.
+portals4_sm - state machine model based on injecting discrete events
+power - glue layer for interfacing to SST power, thermal and
+  reliability models
+scheduler - implements 4 models in 2 components. Scheduling, allocation,
+  and machine models are implemented in the schedComponent, and node 
+  and failure models are implemented in the nodeComponent.
+simpleComponent -
+SS_router -  models the internal crossbar and input/out queues of the
+  SeaStar. Added flexibility is enabled by parameterizing queue depth,
+  FLIT size and number of FLITS in a packet.
 sstdisksim - glue directory to DiskSim (will be deprecated in next release)
-
