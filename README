@@ -44,10 +44,11 @@ GEM5 tag V2.3 from https://code.google.com/p/sst-gem5-devel.devel which was
 forked from gem5-stable at change set 8642:549b72de8f72 back on Dec 15 2011
 SST/Macro 2.4
 MacSim 1.1
-Mpich2-1.4.1.p2 (not supported on MacOS)
+Mpich2 1.4.1.p2 (not supported on MacOS)
 OMNeT++ 4.1 (not supported on MacOS)
 OpenMPI 1.6 (V1.4.4 on MacOS via Xcode)
-QSim 0.1.6? (support for zesto only)
+QEMU 0.12.3
+QSim SST_2.3 tag (support for zesto only)
 
 Element Support Directories:
 cpu_data - directory containing an example (from Component's perspective)

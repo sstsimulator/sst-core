@@ -2,6 +2,120 @@
 * Release V2.3 includes the remaining, existing SST components that were not
 integrated in time for SST V2.2. They are now being tested on a nightly basis. 
 Revisions since V2.2 are listed below
+------------------------------------------------------------------------
+r3971 | mjleven@sandia.gov | 2013-02-12 15:23:12 -0700 (Tue, 12 Feb 2013) | 3
+lines
+Changed paths:
+   M /trunk/sst/elements/M5/DRAMSimWrap.cpp
+    tell DRAMSim2 to use the clock it finds in the ini file
+------------------------------------------------------------------------
+r3924 | Michael.P.Scoggin@gmail.com | 2013-02-05 16:33:22 -0700 (Tue, 05 Feb
+2013) | 1 line
+Changed paths:
+   M /trunk/sst/elements
+   D /trunk/sst/elements/mcniagara
+   3 /trunk/sst/elements/scheduler
+   M /trunk/sst/elements/scheduler/JobKillEvent.h
+   M /trunk/sst/elements/scheduler/Makefile.am
+   A /trunk/sst/elements/sst_mcniagara (from /branches/mps_mcniagra/sst/elements/sst_mcniagara:3922)
+...
+McNiagara integration into the trunk
+------------------------------------------------------------------------
+r3906 | bwbarrett@gmail.com | 2013-02-04 13:31:26 -0700 (Mon, 04 Feb 2013) | 4 lines
+Changed paths:
+   M /trunk/sst/elements/zesto/Makefile.am
+   Defining CC to be CXX is a fairly repulsive thing to do, but ignoring that...
+   On modern versions of AC/AM, it's an error to redefine CC/CXX/etc. in an
+   AM_CONDITIONAL.  Since there's no inheretence here, it's safe to just
+   always set it.
+------------------------------------------------------------------------
+r3898 | 88jwilson@gmail.com | 2013-02-01 17:17:22 -0700 (Fri, 01 Feb 2013) | 1 line
+Changed paths:
+   M /trunk
+   M /trunk/bamboo.sh
+   R /trunk/deps/bin/sstDep_macsim.sh (from /branches/jpvandy/deps/bin/sstDep_macsim.sh:3897)
+   A /trunk/deps/bin/sstDep_qsim_SST-2.3.sh (from /branches/jpvandy/deps/bin/sstDep_qsim_SST-2.3.sh:3897)
+   M /trunk/deps/bin/sstDep_qsim_stabledevel.sh
+   M /trunk/deps/bin/sstDependencies.sh
+   R /trunk/deps/src/macsim.tar.gz (from /branches/jpvandy/deps/src/macsim.tar.gz:3897)
+   M /trunk/sst/core
+   M /trunk/sst/elements
+   D /trunk/sst/elements/PhoenixSim/PhoenixSim/PhoenixSim
+   M /trunk/sst/elements/merlin/test/nic.cc
+   M /trunk/sst/elements/scheduler
+   M /trunk/sst/elements/scheduler/JobKillEvent.h
+   M /trunk/sst/elements/sst_mcopteron
+   R /trunk/sst/elements/zesto/core/simplescalar/endian.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/endian.cpp:3897)
+   R /trunk/sst/elements/zesto/core/simplescalar/eval.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/eval.cpp:3897)
+   R /trunk/sst/elements/zesto/core/simplescalar/machine.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/machine.cpp:3897)
+   R /trunk/sst/elements/zesto/core/simplescalar/memory.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/memory.cpp:3897)
+   R /trunk/sst/elements/zesto/core/simplescalar/misc.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/misc.cpp:3897)
+ R /trunk/sst/elements/zesto/core/simplescalar/options.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/options.cpp:3897)
+ R /trunk/sst/elements/zesto/core/simplescalar/range.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/range.cpp:3897)
+ R /trunk/sst/elements/zesto/core/simplescalar/regs.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/regs.cpp:3897)
+ R /trunk/sst/elements/zesto/core/simplescalar/stats.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/stats.cpp:3897)
+ R /trunk/sst/elements/zesto/core/simplescalar/symbol.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/symbol.cpp:3897)
+ R /trunk/sst/elements/zesto/core/simplescalar/syscall.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/syscall.cpp:3897)
+ R /trunk/sst/elements/zesto/core/simplescalar/sysprobe.cpp (from /branches/jpvandy/sst/elements/zesto/core/simplescalar/sysprobe.cpp:3897)
+ R /trunk/test/include/testSubroutines.sh (from /branches/jpvandy/test/include/testSubroutines.sh:3897)
+ R /trunk/test/testInputFiles/testSdlFiles/test_patterns_allreduce_deep_4096.xml (from /branches/jpvandy/test/testInputFiles/testSdlFiles/test_patterns_allreduce_deep_4096.xml:3897)
+ R /trunk/test/testReferenceFiles/test_macsim.out (from /branches/jpvandy/test/testReferenceFiles/test_macsim.out:3897)
+ R /trunk/test/testReferenceFiles/test_patterns_allreduce_deep_4096.out (from /branches/jpvandy/test/testReferenceFiles/test_patterns_allreduce_deep_4096.out:3897)
+ R /trunk/test/testReferenceFiles/test_simpleClocker.out (from /branches/jpvandy/test/testReferenceFiles/test_simpleClocker.out:3897)
+ R /trunk/test/testReferenceFiles/test_simpleNetwork.out (from /branches/jpvandy/test/testReferenceFiles/test_simpleNetwork.out:3897)
+ R /trunk/test/testReferenceFiles/test_zesto_conf5x1.out (from /branches/jpvandy/test/testReferenceFiles/test_zesto_conf5x1.out:3897)
+ R /trunk/test/testReferenceFiles/test_zesto_simple3.out (from /branches/jpvandy/test/testReferenceFiles/test_zesto_simple3.out:3897)
+ R /trunk/test/testReferenceFiles/test_zesto_simple3_with_nic.out (from /branches/jpvandy/test/testReferenceFiles/test_zesto_simple3_with_nic.out:3897)
+ R /trunk/test/testSuites/testSuite_macsim.sh (from /branches/jpvandy/test/testSuites/testSuite_macsim.sh:3897)
+ R /trunk/test/testSuites/testSuite_patterns.sh (from /branches/jpvandy/test/testSuites/testSuite_patterns.sh:3897)
+ R /trunk/test/testSuites/testSuite_simpleTiming.sh (from /branches/jpvandy/test/testSuites/testSuite_simpleTiming.sh:3897)
+ R /trunk/test/testSuites/testSuite_zesto.sh (from /branches/jpvandy/test/testSuites/testSuite_zesto.sh:3897)
+  Merge in zesto/qsim support for SST 2.3
+------------------------------------------------------------------------
+r3874 | gilbert.hendry@gmail.com | 2013-01-29 17:31:59 -0700 (Tue, 29 Jan
+2013) | 1 line
+Changed paths:
+   M /trunk/sst/elements/macro_component/10x0-1-8.xml
+   M /trunk/sst/elements/macro_component/macro_network.cc
+   M /trunk/sst/elements/macro_component/macro_processor.cc
+   M /trunk/sst/elements/macro_component/macro_processor.h
+GH: macro component works, seg faults at the end
+------------------------------------------------------------------------
+r3869 | Michael.P.Scoggin@gmail.com | 2013-01-29 13:47:40 -0700 (Tue, 29 Jan
+2013) | 1 line
+Changed paths:
+   M /trunk/sst/elements/sst_mcopteron
+   M /trunk/sst/elements/sst_mcopteron/mcopteron/Dependency.cc
+   M /trunk/sst/elements/sst_mcopteron/mcopteron/InstructionInfo.cc
+   M /trunk/sst/elements/sst_mcopteron/mcopteron/OpteronDefs.cc
+   M /trunk/sst/elements/sst_mcopteron/mcopteron/OpteronDefs.h
+Merging in osxbuild fix
+------------------------------------------------------------------------
+r3866 | gilbert.hendry@gmail.com | 2013-01-29 11:48:23 -0700 (Tue, 29 Jan
+2013) | 1 line
+Changed paths:
+   M /trunk/sst/elements/macro_component/Makefile.am
+   M /trunk/sst/elements/macro_component/macro_processor.cc
+GH: macro component compiles now
+------------------------------------------------------------------------
+r3836 | gilbert.hendry@gmail.com | 2013-01-23 11:10:40 -0700 (Wed, 23 Jan
+2013) | 1 line
+Changed paths:
+   M /trunk/config/sst_check_sstmacro.m4
+   M /trunk/sst/elements/macro_component/Makefile.am
+   M /trunk/sst/elements/macro_component/macro_fakeeventmanager.h
+   M /trunk/sst/elements/macro_component/macro_network.h
+   M /trunk/sst/elements/macro_component/macro_parameters.h
+   M /trunk/sst/elements/macro_component/macro_processor.h
+GH: updates to macro_component for latest 2.4 release
+------------------------------------------------------------------------
+r3831 | scott.hemmert | 2013-01-22 14:34:51 -0700 (Tue, 22 Jan 2013) | 1 line
+Changed paths:
+   M /trunk/sst/core/link.cc
+   M /trunk/sst/core/link.h
+Added the ability for the receive side of a link to add extra latency
+to the link using addOutputLatency.
+------------------------------------------------------------------------
 r3788 | simon.hammond | 2013-01-18 09:36:20 -0700 (Fri, 18 Jan 2013) | 3 lines
 Changed paths:
    M /trunk/sst/elements/zesto/Makefile.am
