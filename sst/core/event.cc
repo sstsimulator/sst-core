@@ -33,7 +33,7 @@ void
 Event::serialize(Archive & ar, const unsigned int version)
 {
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
-    ar & BOOST_SERIALIZATION_NVP(delivery_link);
+    // ar & BOOST_SERIALIZATION_NVP(delivery_link);
     ar & BOOST_SERIALIZATION_NVP(link_id);
 }
 

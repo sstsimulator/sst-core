@@ -29,6 +29,7 @@ Link::Link(LinkId_t id) :
     rFunctor( NULL ),
     defaultTimeBase( NULL ),
     latency(1),
+    initData(NULL),
     type(HANDLER),
     id(id)
 {
@@ -39,6 +40,7 @@ Link::Link() :
     rFunctor( NULL ),
     defaultTimeBase( NULL ),
     latency(1),
+    initData(NULL),
     type(HANDLER),
     id(-1)
 {
@@ -107,6 +109,52 @@ Event* Link::Recv()
     }
     return event;
 } 
+
+void Link::sendInitData(LinkInitData* init_data)
+{
+    if ( init_data->getLinkId() != -1 ) {
+	std::cout << "LinkInitData already associated with another link.  LinkInitData objects must be unique across links.  Aborting..." << std::endl;
+	abort();
+    }
+    init_data->setLinkId(id);
+    pair_link->initData = init_data;
+}
+
+void Link::sendInitData(std::string init_data)
+{
+    sendInitData(new LinkInitData(init_data));
+}
+
+
+LinkInitData* Link::recvInitData()
+{
+    LinkInitData* tmp = initData;
+    initData = NULL;
+    return tmp;
+}
+
+std::string Link::recvInitDataString()
+{
+	std::string tmp = "";
+	if ( initData != NULL ) {
+		tmp = initData->getDataString();
+		delete initData;
+		initData = NULL;
+	}
+    return tmp;
+}
+
+void
+Link::moveInitDataToRecvQueue()
+{
+    if ( dynamic_cast<SyncQueue*>(recvQueue) == NULL ) {
+	std::cout << "Attemping to move InitData to non-sync queue.  Aborting..." << std::endl;
+	abort();
+    }
+    if ( initData == NULL ) return;
+    recvQueue->insert( initData );
+    initData = NULL;
+}
     
 void Link::setDefaultTimeBase(TimeConverter* tc) {
     defaultTimeBase = tc;
@@ -148,11 +196,30 @@ SelfLink::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Link);
 }
 
+template<class Archive>
+void
+LinkInitData::serialize(Archive & ar, const unsigned int version)
+{
+    printf("%p\n",this);
+    printf("%p\n",&data_string);
+    printf("%s\n",data_string.c_str());
+    std::cout << "foo" << std::endl;
+    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
+    std::cout << data_string << std::endl;
+    std::cout << "foo 1" << std::endl;
+    ar & BOOST_SERIALIZATION_NVP(data_string);
+    std::cout << "foo 2" << std::endl;
+    ar & BOOST_SERIALIZATION_NVP(link_id);
+    std::cout << "foo 3" << std::endl;
+}
     
 } // namespace SST
 
+
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Link::serialize)
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SelfLink::serialize)
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::LinkInitData::serialize)
 
 BOOST_CLASS_EXPORT_IMPLEMENT(SST::Link)
 BOOST_CLASS_EXPORT_IMPLEMENT(SST::SelfLink)
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::LinkInitData)

@@ -12,7 +12,7 @@ AM_CPPFLAGS =  \
 	$(LTDLINCL)
 
 DIST_SUBDIRS = libltdl .
-SUBDIRS = $(LIBLTDL_DIR) .
+SUBDIRS = libltdl .
 EXTRA_DIST =
 
 sstdir = $(includedir)/sst/core
@@ -55,7 +55,10 @@ nobase_dist_sst_HEADERS = \
 	serialization/archive.h \
 	serialization/core.h \
 	serialization/types.h \
-	serialization/element.h
+	serialization/element.h \
+	interfaces/TestEvent.h \
+	interfaces/memEvent.h
+
 nobase_nodist_sst_HEADERS = \
 	build_info.h
 
@@ -85,7 +88,9 @@ sst_x_SOURCES = \
 	sync.cc \
 	syncQueue.cc \
 	timeLord.cc \
-	timeVortex.cc
+	timeVortex.cc \
+	interfaces/memEvent.cc \
+	interfaces/TestEvent.cc
 
 if HAVE_ZOLTAN
 sst_x_SOURCES += zolt.cc
@@ -105,9 +110,11 @@ sst_x_LDFLAGS = \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
-	-export-dynamic \
-	$(SST_LTLIBS_COMPONENTS) \
-	$(SST_LTLIBS_INTROSPECTORS)
+	-export-dynamic
+
+# BWB: FIX ME: after we merge back into the trunk, this needs to be
+#	re-added to LDFLAGS and the component naming problems fixed.
+#	$(SST_LTLIBS_ELEMLIBS)
 
 include tinyxml/Makefile.inc
 include part/Makefile.inc

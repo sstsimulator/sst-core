@@ -35,7 +35,7 @@ namespace SST {
     void SyncQueue::insert(Activity* activity)
     {
 	data.push_back(activity);
-	static_cast<Event*>(activity)->setRemoteEvent();
+	// static_cast<Event*>(activity)->setRemoteEvent();
     }
     
     Activity* SyncQueue::pop()

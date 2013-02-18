@@ -70,6 +70,8 @@ namespace SST {
 			void parse_params(TiXmlNode* pParent, ConfigComponent* comp);
 			void parse_link(TiXmlNode* pParent, ConfigComponent* comp);
 			std::string resolve_variable(const std::string value, int line_number);
+			std::string resolveEnvVars(const char* input);
+			std::string resolveEnvVars(std::string input);
 			const char* get_node_text(TiXmlNode* pParent);//Scoggin(Jan09,2013)
 	};
 

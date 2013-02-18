@@ -157,7 +157,9 @@ public:
             exit(1); 
         }
     }
-	
+
+    void requireEvent(std::string name);
+    
 private:
     friend class Link;
     friend class Action;

@@ -31,7 +31,7 @@ public:
                                Params& params);
     Introspector* CreateIntrospector(std::string introspectorname,
                                Params& params);
-    void RegisterEvent(std::string eventname);
+    void RequireEvent(std::string eventname);
 
     partitionFunction GetPartitioner(std::string name);
     generateFunction GetGenerator(std::string name);

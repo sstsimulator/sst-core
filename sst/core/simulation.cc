@@ -148,6 +148,12 @@ Simulation::createIntrospector(std::string name, Params params )
     return factory->CreateIntrospector(name, params);
 }
 
+void
+Simulation::requireEvent(std::string name)
+{
+    factory->RequireEvent(name);
+}
+
 int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 {
     if ( num_ranks > 1 ) {
@@ -300,6 +306,11 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 void Simulation::Run() {
     _SIM_DBG( "RUN\n" );
 
+    // Need to exchange LinkInitData objects if we are multirank
+    if ( num_ranks > 1 ) {
+	sync->exchangeLinkInitData();
+    }
+    
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
     {

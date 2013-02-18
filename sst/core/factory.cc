@@ -18,9 +18,7 @@
 
 #include <stdio.h>
 
-#if SST_HAVE_LIBLTDL_SUPPORT
 #include <ltdl.h>
-#endif
 
 #ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
@@ -45,17 +43,13 @@ namespace SST {
    libtool-specific code (and therefore need the libtool headers) in
    factory.h */
 struct FactoryLoaderData {
-#ifdef HAVE_LT_DLADVISE
     lt_dladvise advise_handle;
-#endif
 };
 
 Factory::Factory(std::string searchPaths) :
     searchPaths(searchPaths)
 {
     loaderData = new FactoryLoaderData;
-
-#if SST_HAVE_LIBLTDL_SUPPORT
     int ret;
 
     ret = lt_dlinit();
@@ -64,7 +58,6 @@ Factory::Factory(std::string searchPaths) :
         abort();
     }
 
-#ifdef HAVE_LT_DLADVISE
     ret = lt_dladvise_init(&loaderData->advise_handle);
     if (ret != 0) {
         fprintf(stderr, "lt_dladvise_init returned %d, %s\n", ret, lt_dlerror());
@@ -82,25 +75,19 @@ Factory::Factory(std::string searchPaths) :
         fprintf(stderr, "lt_dladvise_global returned %d, %s\n", ret, lt_dlerror());
         abort();
     }
-#endif
 
     ret = lt_dlsetsearchpath(searchPaths.c_str());
     if (ret != 0) {
         fprintf(stderr, "lt_dlsetsearchpath returned %d, %s\n", ret, lt_dlerror());
         abort();
     }
-#endif
 }
 
 
 Factory::~Factory()
 {
-#if SST_HAVE_LIBLTDL_SUPPORT
-#ifdef HAVE_LT_DLADVISE
     lt_dladvise_destroy(&loaderData->advise_handle);
-#endif
     lt_dlexit();
-#endif
 
     delete loaderData;
 }
@@ -163,7 +150,7 @@ Factory::CreateIntrospector(std::string type,
 
 
 void
-Factory::RegisterEvent(std::string eventname)
+Factory::RequireEvent(std::string eventname)
 {
     std::string elemlib, elem;
     boost::tie(elemlib, elem) = parseLoadName(eventname);
@@ -175,7 +162,7 @@ Factory::RegisterEvent(std::string eventname)
 
     // initializer fires at library load time, so all we have to do is
     // make sure the event actually exists...
-    if (found_events.find(elem) == found_events.end()) {
+    if (found_events.find(eventname) == found_events.end()) {
         _abort(Factory,"can't find event %s in %s\n ", eventname.c_str(),
                searchPaths.c_str() );
     }
@@ -298,27 +285,16 @@ Factory::loadLibrary(std::string elemlib)
 {
     ElementLibraryInfo *eli = NULL;
     std::string libname = "lib" + elemlib;
-
-#if SST_HAVE_LIBLTDL_SUPPORT
     lt_dlhandle lt_handle;
 
-#ifdef HAVE_LT_DLADVISE
     lt_handle = lt_dlopenadvise(libname.c_str(), loaderData->advise_handle);
-#else
-    lt_handle = lt_dlopenext(libname.c_str());
-#endif
     if (NULL == lt_handle) {
         // So this sucks.  the preopen module runs last and if the
         // component was found earlier, but has a missing symbol or
         // the like, we just get an amorphous "file not found" error,
-        // which is totally useless, so we instead fall to the dlopen
-        // case in hopes it can be more useful...
-        const char *tmp = lt_dlerror();
-        if (0 != strcmp(tmp, "file not found")) {
-            fprintf(stderr, "Opening element library %s failed: %s\n",
-                    elemlib.c_str(), tmp);
-            return NULL;
-        }
+        // which is totally useless...
+        fprintf(stderr, "Opening element library %s failed: %s\n",
+                elemlib.c_str(), lt_dlerror());
     } else {
         // look for an info block
         std::string infoname = elemlib + "_eli";
@@ -355,71 +331,6 @@ Factory::loadLibrary(std::string elemlib)
             }
 
             free(old_error);
-        }
-        return eli;
-    }
-#endif // SST_HAVE_LIBLTDL_SUPPORT
-
-    // dlopen case
-    libname.append(".so");
-    std::string fullpath;
-    void *handle;
-
-    std::vector<std::string> paths;
-    boost::split(paths, searchPaths, boost::is_any_of(":"));
-    
-    BOOST_FOREACH( std::string path, paths ) {
-        struct stat sbuf;
-        int ret;
-
-        fullpath = path + "/" + libname;
-        ret = stat(fullpath.c_str(), &sbuf);
-        if (ret == 0) break;
-    }
-
-    // This is a little weird, but always try the last path - if we
-    // didn't succeed in the stat, we'll get a file not found error
-    // from dlopen, which is a useful error message for the user.
-    handle = dlopen(fullpath.c_str(), RTLD_NOW|RTLD_GLOBAL);
-    if (NULL == handle) {
-        fprintf(stderr,
-            "Opening and resolving references for element library %s failed:\n"
-            "\t%s\n", elemlib.c_str(), dlerror());
-        return NULL;
-    }
-
-    std::string infoname = elemlib;
-    infoname.append("_eli");
-    eli = (ElementLibraryInfo*) dlsym(handle, infoname.c_str());
-    if (NULL == eli) {
-        char *old_error = strdup(dlerror());
-
-        // backward compatibility (ugh!)  Yes, it leaks memory.  But 
-        // hopefully it's going away soon.
-        std::string symname = elemlib + "AllocComponent";
-        void *sym = dlsym(handle, symname.c_str());
-        if (NULL != sym) {
-            eli = new ElementLibraryInfo;
-            eli->name = elemlib.c_str();
-            eli->description = "backward compatibility filler";
-            ElementInfoComponent *elcp = new ElementInfoComponent[2];
-            elcp[0].name = elemlib.c_str();
-            elcp[0].description = "backward compatibility filler";
-            elcp[0].printHelp = NULL;
-            elcp[0].alloc = (componentAllocate) sym;
-            elcp[1].name = NULL;
-            elcp[1].description = NULL;
-            elcp[1].printHelp = NULL;
-            elcp[1].alloc = NULL;
-            eli->components = elcp;
-            eli->events = NULL;
-            eli->introspectors = NULL;
-	    eli->partitioners = NULL;
-	    eli->generators = NULL;
-            fprintf(stderr, "# WARNING: (2) Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
-        } else {
-            fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
-                    infoname.c_str(), libname.c_str(), old_error);
         }
     }
 

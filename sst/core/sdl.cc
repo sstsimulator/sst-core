@@ -81,7 +81,7 @@ namespace SST {
 		for ( child = root->FirstChild(); child != 0; child = child->NextSibling() ) {
 			if ( child->Type() == child->TINYXML_ELEMENT ) {
 				if ( !strcmp( child->Value(), "config" ) ) {
-					config = child->FirstChild()->Value();
+					config = resolveEnvVars(child->FirstChild()->Value());
 					break;
 				}
 			}
@@ -167,7 +167,7 @@ namespace SST {
 				break;
 			case TiXmlNode::TINYXML_ELEMENT:
 				if(get_node_text(pParent)){
-					(*params)[pParent->Value()]=get_node_text(pParent);
+					(*params)[pParent->Value()]=resolveEnvVars(get_node_text(pParent));
 				}
 				break;
 			case TiXmlNode::TINYXML_TEXT:
@@ -233,7 +233,7 @@ namespace SST {
 				break;
 			case TiXmlNode::TINYXML_ELEMENT:
 				if(get_node_text(pParent)){
-					variables[pParent->Value()]=get_node_text(pParent);
+					variables[pParent->Value()]=resolveEnvVars(get_node_text(pParent));
 				}
 				break;
 			case TiXmlNode::TINYXML_TEXT:
@@ -285,14 +285,14 @@ namespace SST {
 			exit(1);
 		}
 		else {
-			comp->name = element->Attribute("name");
+			comp->name = resolveEnvVars(element->Attribute("name"));
 		}
 		if ( element->Attribute("type") == NULL ) {
 			cout << "ERROR: Parsing SDL file: Unspecified component type on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
-			comp->type = element->Attribute("type");
+			comp->type = resolveEnvVars(element->Attribute("type"));
 		}
 		if(verbosity>=1)						//Scoggin(Jan09,2013) Added for feedback
 			cout<<" "<<comp->name<<endl;
@@ -351,14 +351,14 @@ namespace SST {
 			exit(1);
 		}
 		else {
-			comp->name = element->Attribute("name");
+			comp->name = resolveEnvVars(element->Attribute("name"));
 		}
 		if ( element->Attribute("type") == NULL ) {
 			cout << "ERROR: Parsing SDL file: Unspecified introspector type on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
-			comp->type = element->Attribute("type");
+			comp->type = resolveEnvVars(element->Attribute("type"));
 		}
 		if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
 			std::cout<<" "<<comp->name<<std::endl;
@@ -397,7 +397,7 @@ namespace SST {
 		// Now, see if there are any includes
 		if ( element->Attribute("include") != NULL ) {
 			// Include could be a comma separated list
-			std::string includes_str = element->Attribute("include");
+			std::string includes_str = resolveEnvVars(element->Attribute("include"));
 			size_t start = 0;
 			size_t end = 0;
 			do {
@@ -429,7 +429,7 @@ namespace SST {
 			exit(1);
 		}
 		else {
-			name = element->Attribute("name");
+			name = resolveEnvVars(element->Attribute("name"));
 		}
 		if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
 			std::cout<<"  "<<name<<std::endl;
@@ -454,7 +454,7 @@ namespace SST {
 			exit(1);
 		}
 		else {
-			port = element->Attribute("port");
+			port = resolveEnvVars(element->Attribute("port"));
 		}
 
 		SimTime_t latency;
@@ -463,7 +463,7 @@ namespace SST {
 			exit(1);
 		}
 		else {
-			std::string lat_str = element->Attribute("latency");
+			std::string lat_str = resolveEnvVars(element->Attribute("latency"));
 			lat_str = resolve_variable(lat_str,pParent->Row());
 			latency = Simulation::getSimulation()->getTimeLord()->getSimCycles(lat_str, "Parsing sdl");
 		}
@@ -486,6 +486,30 @@ namespace SST {
 			exit(1);
 		}
 		return variables[var_name];
+	}
+
+
+	std::string sdl_parser::resolveEnvVars(const char *input) {
+		std::string res = input;
+		return resolveEnvVars(res);
+	}
+
+	std::string sdl_parser::resolveEnvVars(std::string input) {
+		std::string res = input;
+		size_t envStart;
+		while ( (envStart = res.find("${")) != std::string::npos ) {
+			size_t envEnd = res.find("}", envStart);
+			if ( envEnd == std::string::npos ) {
+				// No end tag.  Must be malformed
+				break;
+			}
+			size_t len = envEnd - envStart -2;
+			std::string envname = res.substr(envStart+2, len);
+			const char *envval = getenv(envname.c_str());
+			if ( envval )
+				res.replace(envStart, len+3, envval);
+		}
+		return res;
 	}
 
 	/* get_node_text
