@@ -110,11 +110,8 @@ sst_x_LDFLAGS = \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
-	-export-dynamic
-
-# BWB: FIX ME: after we merge back into the trunk, this needs to be
-#	re-added to LDFLAGS and the component naming problems fixed.
-#	$(SST_LTLIBS_ELEMLIBS)
+	-export-dynamic \
+	$(SST_LTLIBS_ELEMLIBS)
 
 include tinyxml/Makefile.inc
 include part/Makefile.inc
