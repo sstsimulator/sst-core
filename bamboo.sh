@@ -660,7 +660,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst2.2_config_macosx|sst2.3_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|non_std_sst2.2_config)
+        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst3.0_config|sst2.2_config_macosx|sst2.3_config_macosx|sst3.0_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|non_std_sst2.2_config)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
