@@ -469,6 +469,11 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE"
             ;;
+        zesto_test)
+            depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel -q stabledevel"
+            setConvenienceVars "$depsStr"
+            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM"
+            ;;
         iris_test)
             depsStr="-k none -d none -p none -z none -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
             setConvenienceVars "$depsStr"
@@ -657,7 +662,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst3.0_config|sst2.2_config_macosx|sst2.3_config_macosx|sst3.0_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|non_std_sst2.2_config)
+        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst3.0_config|sst2.2_config_macosx|sst2.3_config_macosx|sst3.0_config_macosx|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|non_std_sst2.2_config|zesto_test)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
