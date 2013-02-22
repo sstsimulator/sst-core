@@ -254,18 +254,15 @@ getconfig() {
     local cxx_compiler=`which g++`
     local mpi_environment="CC=${cc_compiler} CXX=${cxx_compiler} MPICC=${mpicc_compiler} MPICXX=${mpicxx_compiler}"
 
-    # Interrogate Python install to obtain location of Python includes
-    local tmp_python_inc=`python-config --includes`
-    local python_inc_dir=`expr "$tmp_python_inc" : '\([[:graph:]]*/python2\..\)'`
-
     # make sure that sstmacro is suppressed
     if [ -e ./sst/elements/macro_component/.unignore ] && [ -f ./sst/elements/macro_component/.unignore ]
     then
         rm ./sst/elements/macro_component/.unignore
     fi
 
-    # On MacOSX Lion, suppress genericProc
-    # On MacOSX Lion, suppress PhoenixSim
+    # On MacOSX Lion, suppress the following:
+    #      genericProc
+    #      PhoenixSim
     if [ $3 == "Darwin" ]
     then
         echo "$USER" > ./sst/elements/genericProc/.ignore
@@ -279,7 +276,7 @@ getconfig() {
             #     This option used for configuring SST with supported 3.0 deps
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q stabledevel -M none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
@@ -290,7 +287,7 @@ getconfig() {
             #     This option used for configuring SST with supported 2.3 deps
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-2.3.0 -m none -i none -o none -h none -s 2.4.0 -q SST-2.3 -M 1.1"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
@@ -325,7 +322,7 @@ getconfig() {
             #     This option used for configuring SST with supported 3.0 deps
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
@@ -336,7 +333,7 @@ getconfig() {
             #     This option used for configuring SST with supported 2.3 deps
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
+            miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-2.3.0 -m none -i none -o none -h none -s 2.4.0 -q none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
@@ -552,9 +549,9 @@ dobuild() {
 	    export DYLD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${DYLD_LIBRARY_PATH}
     fi
     # Dump pre-build environment and modules status
-    echo "--------------------env--------------------"
-    env
-    echo "--------------------env--------------------"
+    echo "--------------------PRE-BUILD ENVIRONMENT VARIABLE DUMP--------------------"
+    env | sort
+    echo "--------------------PRE-BUILD ENVIRONMENT VARIABLE DUMP--------------------"
     echo "--------------------modules status--------------------"
     module avail
     module list
@@ -576,7 +573,7 @@ dobuild() {
     if [ $retval -ne 0 ]
     then
         # Something went wrong in configure, so dump config.log
-        echo "bamboo.sh: dumping config.log"
+        echo "bamboo.sh: Uh oh. Something went wrong during configure of sst.x.  Dumping config.log"
         echo "--------------------dump of config.log--------------------"
         sed -e 's/^/#dump /' ./config.log
         echo "--------------------dump of config.log--------------------"
@@ -593,7 +590,7 @@ dobuild() {
     fi
 
     # print build and linkage information for warm fuzzy
-    echo "SSTBUILD============================================================"
+    echo "SSTBUILD INFO============================================================"
     echo "Built SST with configure string"
     echo "    ./configure ${SST_SELECTED_CONFIG}"
     echo "----------------"
@@ -615,7 +612,7 @@ dobuild() {
         echo "$ ldd ./sst/core/sst.x"
         ldd ./sst/core/sst.x
     fi
-    echo "SSTBUILD============================================================"
+    echo "SSTBUILD INFO============================================================"
 
     # install SST
     make install
@@ -635,9 +632,9 @@ dobuild() {
 # $3 = boost type
 #=========================================================================
 
-echo "==============================ENVIRONMENT DUMP=============================="
-env
-echo "==============================ENVIRONMENT DUMP=============================="
+echo "==============================INITIAL ENVIRONMENT DUMP=============================="
+env|sort
+echo "==============================INITIAL ENVIRONMENT DUMP=============================="
 
 retval=0
 echo  $0  $1 $2 $3
