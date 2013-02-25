@@ -496,8 +496,8 @@ namespace SST {
 
 	std::string sdl_parser::resolveEnvVars(std::string input) {
 		std::string res = input;
-		size_t envStart;
-		while ( (envStart = res.find("${")) != std::string::npos ) {
+		size_t envStart = 0;
+		while ( (envStart = res.find("${", envStart)) != std::string::npos ) {
 			size_t envEnd = res.find("}", envStart);
 			if ( envEnd == std::string::npos ) {
 				// No end tag.  Must be malformed
@@ -508,6 +508,8 @@ namespace SST {
 			const char *envval = getenv(envname.c_str());
 			if ( envval )
 				res.replace(envStart, len+3, envval);
+			else
+				envStart = envEnd;
 		}
 		return res;
 	}
