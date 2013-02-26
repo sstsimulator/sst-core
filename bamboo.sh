@@ -105,7 +105,7 @@ dotests() {
     if [ $kernel != "Darwin" ]
     then
         # Only run if the OS *isn't* Darwin (MacOS)
-#        ${SST_TEST_SUITES}/testSuite_macsim.sh
+        ${SST_TEST_SUITES}/testSuite_macsim.sh
         ${SST_TEST_SUITES}/testSuite_zesto.sh
         ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
         #      zesto with qsim tests to not run correctly anywhere Feb. 4, 2013
@@ -113,6 +113,7 @@ dotests() {
     fi
 
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
+##    ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
 
 
     if [ $1 != "iris_test" ]
@@ -312,7 +313,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
+            depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none -M default"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET"
             ;;
@@ -465,12 +466,12 @@ getconfig() {
             configStr="$baseoptions --with-omnetpp=${SST_DEPS_SRC_STAGING}/omnetpp-4.1/"
             ;;
         portals4_test|M5_test)
-            depsStr="-k none -d none -p none -z none -g stabledevel -m default -i default -o default -h default -s none -4 stabledevel"
+            depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE"
             ;;
         zesto_test)
-            depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel -q stabledevel"
+            depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel -q stabledevel -M default"
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM"
             ;;
