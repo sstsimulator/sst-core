@@ -184,7 +184,7 @@ Factory::GetPartitioner(std::string name)
     eip_map_t::iterator eii =
 	found_partitioners.find(tmp);
     if ( eii == found_partitioners.end() ) {
-        _abort(Factory,"can't find requested partitioner %s.\n ", tmp.c_str());
+        _abort(Factory,"Error: Unable to find requested partitioner %s, check --help for information on partitioners.\n ", tmp.c_str());
         return NULL;
     }
 
