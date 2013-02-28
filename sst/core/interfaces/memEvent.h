@@ -59,6 +59,7 @@ static const std::string BROADCAST_TARGET = "BROADCAST";
 class MemEvent : public SST::Event {
 public:
 	static const uint32_t F_WRITEBACK = (1<<0);
+	static const uint32_t F_LOCKED    = (1<<1);
 
 	typedef std::vector<uint8_t> dataVec;
 	typedef std::pair<uint64_t, int> id_type;
@@ -149,11 +150,14 @@ public:
 	void clearFlags(void) { flags = 0; }
 	bool queryFlag(uint32_t flag) const { return flags & flag; };
 	void setFlags(uint32_t _flags) { flags = _flags; }
+	uint64_t getLockID(void) const { return lockid; }
+	void setLockID(uint64_t id) { lockid = id; }
 
 private:
 	static uint64_t main_id;
 	id_type event_id;
 	id_type response_to_id;
+	uint64_t lockid; // Key for what thread is locking.
 	Addr addr;
 	uint32_t size;
 	Command cmd;
