@@ -84,7 +84,7 @@ struct ElementLibraryInfo {
     const struct ElementInfoComponent* components;
     const struct ElementInfoEvent* events;
     const struct ElementInfoIntrospector* introspectors;
-    const struct ElementInfoSubcomponent* subcomponents;
+    /* const struct ElementInfoSubcomponent* subcomponents; */
 //    const struct ElementInfoModule* modules;
     const struct ElementInfoPartitioner* partitioners;
     const struct ElementInfoGenerator* generators;
