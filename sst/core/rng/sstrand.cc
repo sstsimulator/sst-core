@@ -14,10 +14,27 @@ SSTRandom::SSTRandom(unsigned int initial_z, unsigned int initial_w) {
 	seed.
 */
 SSTRandom::SSTRandom() {
-	fstream rand_file("/dev/random", fstream::in);
-	rand_file >> m_z;
-	rand_file >> m_w;
-	rand_file.close();
+#if defined(__i386__)
+  		unsigned long long int x;
+
+     		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+		m_z = (unsigned int) x;
+
+     		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
+		m_w = (unsigned int) x;
+
+#elif defined(__x86_64__)
+	 	 unsigned hi, lo;
+  		__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+  		m_z = (unsigned int) ( ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 ) );
+
+  		__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
+  		m_w = (unsigned int) ( ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 ) );
+#else
+		// Create seeds from two primes
+		m_z = 102197;
+		m_w = 47657;
+#endif
 }
 
 /*
