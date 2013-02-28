@@ -57,7 +57,8 @@ nobase_dist_sst_HEADERS = \
 	serialization/types.h \
 	serialization/element.h \
 	interfaces/TestEvent.h \
-	interfaces/memEvent.h
+	interfaces/memEvent.h \
+	rng/sstrand.h
 
 nobase_nodist_sst_HEADERS = \
 	build_info.h
@@ -90,7 +91,8 @@ sst_x_SOURCES = \
 	timeLord.cc \
 	timeVortex.cc \
 	interfaces/memEvent.cc \
-	interfaces/TestEvent.cc
+	interfaces/TestEvent.cc \
+	rng/sstrand.cc
 
 if HAVE_ZOLTAN
 sst_x_SOURCES += zolt.cc
