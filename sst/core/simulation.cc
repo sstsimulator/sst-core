@@ -113,7 +113,7 @@ Simulation::createSimulation(Config *config, int my_rank, int num_ranks)
 
 
 Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
-    SimulationBase(cfg), timeVortex(NULL), minPartTC( NULL ), sync(NULL), currentSimCycle(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks)
+    SimulationBase(cfg), timeVortex(NULL), minPartTC( NULL ), sync(NULL), currentSimCycle(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks), init_msg_count(0), init_phase(0)
 {
 //     eQueue = new EventQueue_t;
     timeVortex = new TimeVortex;
@@ -301,6 +301,27 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 	delete ccomp;
     } // end for all vertex    
     return 0;
+}
+
+void Simulation::initialize() {
+    bool done = false;
+    do {
+	init_msg_count = 0;
+    	for ( CompMap_t::iterator iter = compMap.begin(); iter != compMap.end(); ++iter ) {
+    	    (*iter).second->init();
+    	}
+	if ( init_msg_count == 0 ) break;
+	init_phase++;
+    } while ( !done);
+
+    // Walk through all the links and call finalizeConfiguration
+    for ( std::map<ComponentId_t,LinkMap*>::iterator i = component_links.begin(); i != component_links.end(); ++i) {
+	std::map<std::string,Link*>& map = (*i).second->getLinkMap();
+	for ( std::map<std::string,Link*>::iterator j = map.begin(); j != map.end(); ++j ) {
+	    (*j).second->finalizeConfiguration();
+	}
+    }
+
 }
 
 void Simulation::Run() {

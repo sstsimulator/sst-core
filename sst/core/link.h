@@ -25,46 +25,7 @@ class TimeConverter;
 class LinkPair;
 class Simulation;
 class ActivityQueue;
-class Sync; 
-
-// Class used to initialize links.  They can be sent in a component
-// constructor and received in the setup() function.  The class
-// extends Activity simply so we can use the exising infrastructure in
-// Sync to transfer data between ranks.
-class LinkInitData : public Activity {
-private:
-    std::string data_string;
-    LinkId_t link_id;
-    
-public:
-    LinkInitData() :
-	Activity(),
-	data_string(""),
-	link_id(-1)
-    {}
-    
-    LinkInitData(std::string init_data) :
-	Activity(),
-	data_string(init_data),
-	link_id(-1)
-    {
-	std::cout << data_string << std::endl;
-    }
-
-    void execute() {}
-    
-    inline void setDataString(std::string str) {data_string = str;}
-    inline std::string getDataString() {return data_string;}
-
-    inline void setLinkId(LinkId_t id) {link_id = id;}
-    inline LinkId_t getLinkId() {return link_id;}
-
-private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version );
-};
+class Sync;
  
   /** Link between two components. Carries events */
 class Link {
@@ -135,15 +96,17 @@ public:
 
     LinkId_t getId() { return id; }
 
-    void sendInitData(LinkInitData* init_data);
-    void sendInitData(std::string init_data);
-    LinkInitData* recvInitData();
-    std::string recvInitDataString();
+    void sendInitData(Event* init_data);
+    Event* recvInitData();
     
 protected:
     Link();
 
     ActivityQueue* recvQueue;
+    ActivityQueue* initQueue;
+    ActivityQueue* configuredQueue;
+    static ActivityQueue* uninitQueue;
+    static ActivityQueue* afterInitQueue;
     
     /** Recieve functor. This functor is set when the link is connected.
 	Determines what the receiver wants to be called */ 
@@ -162,16 +125,15 @@ protected:
 
     Link* pair_link;
 
-    LinkInitData* initData;
-
 private:
     Link( const Link& l );
+
+    void finalizeConfiguration();
     
     Type_t type;
     LinkId_t id;
     
-    friend class SST::Sync;
-    void moveInitDataToRecvQueue();
+    //    friend class SST::Sync;
     
     friend class boost::serialization::access;
     template<class Archive>
@@ -197,7 +159,6 @@ public:
 
 BOOST_CLASS_EXPORT_KEY(SST::Link)
 BOOST_CLASS_EXPORT_KEY(SST::SelfLink)
-BOOST_CLASS_EXPORT_KEY(SST::LinkInitData)
 
 
 #endif

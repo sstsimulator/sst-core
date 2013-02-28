@@ -87,6 +87,7 @@ public:
 
     int performWireUp( ConfigGraph& graph, int myRank );
 
+    void initialize();
     void Run();
     SimTime_t getCurrentSimCycle() const;
     int getRank() const {return my_rank;}
@@ -163,7 +164,7 @@ public:
 private:
     friend class Link;
     friend class Action;
-
+    
     Simulation(); // Don't call.  Only rational way to serialize
     Simulation(Config* config, int my_rank, int num_ranks);
     Simulation(Simulation const&);     // Don't Implement
@@ -191,6 +192,8 @@ private:
     bool             endSim;
     int              my_rank;
     int              num_ranks;
+    int              init_msg_count;
+    unsigned int     init_phase;
     std::map<ComponentId_t,LinkMap*> component_links;
     
     static Simulation *instance;

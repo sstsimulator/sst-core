@@ -32,6 +32,7 @@ nobase_dist_sst_HEADERS = \
 	exit.h \
 	factory.h \
 	graph.h \
+	initQueue.h \
 	introspectAction.h \
 	introspector.h \
 	introspectedComponent.h \
@@ -51,6 +52,7 @@ nobase_dist_sst_HEADERS = \
 	timeConverter.h \
 	timeLord.h \
 	timeVortex.h \
+	uninitializedQueue.h \
 	zolt.h \
 	serialization/archive.h \
 	serialization/core.h \
@@ -77,6 +79,7 @@ sst_x_SOURCES = \
 	exit.cc \
 	export.cc \
 	factory.cc \
+	initQueue.cc \
 	introspectAction.cc \
 	introspector.cc \
 	introspectedComponent.cc \
@@ -90,6 +93,7 @@ sst_x_SOURCES = \
 	syncQueue.cc \
 	timeLord.cc \
 	timeVortex.cc \
+	uninitializedQueue.cc \
 	interfaces/memEvent.cc \
 	interfaces/TestEvent.cc \
 	rng/sstrand.cc

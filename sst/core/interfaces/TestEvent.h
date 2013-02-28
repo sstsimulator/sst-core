@@ -21,8 +21,10 @@ namespace Interfaces {
 class TestEvent : public SST::Event {
 public:
     TestEvent();
+    ~TestEvent();
     int count;
-
+    bool print_on_delete;
+    
 private:
     friend class boost::serialization::access;
     template<class Archive>

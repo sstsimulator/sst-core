@@ -22,29 +22,46 @@
 #include <sst/core/timeVortex.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/syncQueue.h>
+#include <sst/core/initQueue.h>
+#include <sst/core/uninitializedQueue.h>
 
 namespace SST { 
 
+ActivityQueue* Link::uninitQueue = NULL;
+ActivityQueue* Link::afterInitQueue = NULL;
+    
 Link::Link(LinkId_t id) :
     rFunctor( NULL ),
     defaultTimeBase( NULL ),
     latency(1),
-    initData(NULL),
     type(HANDLER),
     id(id)
 {
-    recvQueue = Simulation::getSimulation()->getTimeVortex();
+    if ( uninitQueue == NULL )
+	uninitQueue = new UninitializedQueue("ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before setup.");
+    if ( afterInitQueue == NULL )
+	afterInitQueue = new UninitializedQueue("ERROR: Trying to call sendInitData or recvInitData after initialziation phase.");
+    
+    recvQueue = uninitQueue;
+    initQueue = NULL;
+    configuredQueue = Simulation::getSimulation()->getTimeVortex();
 }
 
 Link::Link() :
     rFunctor( NULL ),
     defaultTimeBase( NULL ),
     latency(1),
-    initData(NULL),
     type(HANDLER),
     id(-1)
 {
-    recvQueue = Simulation::getSimulation()->getTimeVortex();
+    if ( uninitQueue == NULL )
+	uninitQueue = new UninitializedQueue("ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before setup.");
+    if ( afterInitQueue == NULL )
+	afterInitQueue = new UninitializedQueue("ERROR: Trying to call sendInitData or recvInitData after initialziation phase.");
+    
+    recvQueue = uninitQueue;
+    initQueue = NULL;
+    configuredQueue = Simulation::getSimulation()->getTimeVortex();
 }
 
 Link::~Link() {
@@ -54,9 +71,20 @@ Link::~Link() {
     if ( rFunctor != NULL ) delete rFunctor;
 }
 
+void Link::finalizeConfiguration() {
+    recvQueue = configuredQueue;
+    configuredQueue = NULL;
+    if ( initQueue != NULL ) {
+	if ( dynamic_cast<InitQueue*>(initQueue) != NULL) {
+	    delete initQueue;
+	}
+    }
+    initQueue = afterInitQueue;
+}
+
 void Link::setPolling() {
     type = POLL;
-    recvQueue = new PollingLinkQueue();
+    configuredQueue = new PollingLinkQueue();
 }
 
     
@@ -110,50 +138,31 @@ Event* Link::Recv()
     return event;
 } 
 
-void Link::sendInitData(LinkInitData* init_data)
+void Link::sendInitData(Event* init_data)
 {
-    if ( init_data->getLinkId() != -1 ) {
-	std::cout << "LinkInitData already associated with another link.  LinkInitData objects must be unique across links.  Aborting..." << std::endl;
-	abort();
+    if ( pair_link->initQueue == NULL ) {
+	pair_link->initQueue = new InitQueue();
     }
-    init_data->setLinkId(id);
-    pair_link->initData = init_data;
+    Simulation::getSimulation()->init_msg_count++;
+    init_data->setDeliveryTime(Simulation::getSimulation()->init_phase + 1);
+    init_data->setDeliveryLink(id,pair_link);
+
+    pair_link->initQueue->insert(init_data);
 }
 
-void Link::sendInitData(std::string init_data)
+Event* Link::recvInitData()
 {
-    sendInitData(new LinkInitData(init_data));
-}
+    if ( initQueue == NULL ) return NULL;
 
-
-LinkInitData* Link::recvInitData()
-{
-    LinkInitData* tmp = initData;
-    initData = NULL;
-    return tmp;
-}
-
-std::string Link::recvInitDataString()
-{
-	std::string tmp = "";
-	if ( initData != NULL ) {
-		tmp = initData->getDataString();
-		delete initData;
-		initData = NULL;
+    Event* event = NULL;
+    if ( !initQueue->empty() ) {
+	Activity* activity = initQueue->front();
+	if ( activity->getDeliveryTime() <= Simulation::getSimulation()->init_phase ) {
+	    event = static_cast<Event*>(activity);
+	    initQueue->pop();
 	}
-    return tmp;
-}
-
-void
-Link::moveInitDataToRecvQueue()
-{
-    if ( dynamic_cast<SyncQueue*>(recvQueue) == NULL ) {
-	std::cout << "Attemping to move InitData to non-sync queue.  Aborting..." << std::endl;
-	abort();
     }
-    if ( initData == NULL ) return;
-    recvQueue->insert( initData );
-    initData = NULL;
+    return event;
 }
     
 void Link::setDefaultTimeBase(TimeConverter* tc) {
@@ -174,6 +183,10 @@ Link::serialize(Archive & ar, const unsigned int version)
     printf("begin Link::serialize\n");
     printf("  - Link::recvQueue\n");
     ar & BOOST_SERIALIZATION_NVP( recvQueue );
+    printf("  - Link::initQueue\n");
+    ar & BOOST_SERIALIZATION_NVP( initQueue );
+    printf("  - Link::configuredQueue\n");
+    ar & BOOST_SERIALIZATION_NVP( configuredQueue );
     // don't serialize rFunctor
     printf("  - Link::defaultTimeBase\n");
     ar & BOOST_SERIALIZATION_NVP( defaultTimeBase );
@@ -195,31 +208,12 @@ SelfLink::serialize(Archive & ar, const unsigned int version)
 {
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Link);
 }
-
-template<class Archive>
-void
-LinkInitData::serialize(Archive & ar, const unsigned int version)
-{
-    printf("%p\n",this);
-    printf("%p\n",&data_string);
-    printf("%s\n",data_string.c_str());
-    std::cout << "foo" << std::endl;
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
-    std::cout << data_string << std::endl;
-    std::cout << "foo 1" << std::endl;
-    ar & BOOST_SERIALIZATION_NVP(data_string);
-    std::cout << "foo 2" << std::endl;
-    ar & BOOST_SERIALIZATION_NVP(link_id);
-    std::cout << "foo 3" << std::endl;
-}
     
 } // namespace SST
 
 
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Link::serialize)
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SelfLink::serialize)
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::LinkInitData::serialize)
 
 BOOST_CLASS_EXPORT_IMPLEMENT(SST::Link)
 BOOST_CLASS_EXPORT_IMPLEMENT(SST::SelfLink)
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::LinkInitData)

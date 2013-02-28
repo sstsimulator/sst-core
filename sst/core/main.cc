@@ -294,6 +294,7 @@ main(int argc, char *argv[])
 		std::cout << (now->tm_sec) << std::endl;
 	}
 
+	sim->initialize();
         sim->Run();
 
 

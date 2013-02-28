@@ -53,6 +53,7 @@ namespace SST {
 
     Activity* PollingLinkQueue::front()
     {
+	if ( data.size() == 0 ) return NULL;
 	return *data.begin();
     }
 

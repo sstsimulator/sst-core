@@ -10,36 +10,44 @@
 // distribution.
 
 
-#ifndef SST_ACTIVITYQUEUE_H
-#define SST_ACTIVITYQUEUE_H
+#ifndef SST_INITQUEUE_H
+#define SST_INITQUEUE_H
 
-#include <sst/core/activity.h>
+#include <deque>
+
+#include <sst/core/activityQueue.h>
+
+#include <cstdio> // For printf
 
 namespace SST {
 
-class ActivityQueue {
+class InitQueue : public ActivityQueue {
 public:
-    ActivityQueue() {}
-    virtual ~ActivityQueue() {}
+    InitQueue();
+    ~InitQueue();
 
-    virtual bool empty() = 0;
-    virtual int size() = 0;
-    virtual Activity* pop() = 0;
-    virtual void insert(Activity* activity) = 0;
-    virtual Activity* front() = 0;
+    bool empty();
+    int size();
+    void insert(Activity* activity);
+    Activity* pop();
+    Activity* front();
+    
     
 private:
+    std::deque<Activity*> data;
     
     friend class boost::serialization::access;
     template<class Archive>
     void
     serialize(Archive & ar, const unsigned int version )
     {
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
+        ar & BOOST_SERIALIZATION_NVP(data);
     }
 };
- 
+
 }
 
-BOOST_CLASS_EXPORT_KEY(SST::ActivityQueue)
+BOOST_CLASS_EXPORT_KEY(SST::InitQueue)
 
-#endif // SST_ACTIVITYQUEUE_H
+#endif // SST_INITQUEUE_H

@@ -92,46 +92,6 @@ namespace SST {
 	sim->insertActivity( next, this );
     }
 
-    void
-    Sync::exchangeLinkInitData()
-    {
-	// Loop through the links and get each of their LinkInitData
-	// objects.  If it is not NULL, put them into the appropriate
-	// sync queue.
-        for (link_map_t::iterator i = link_map.begin() ; i != link_map.end() ; ++i) {
-	    // Move the init data to the Sync queue for transfer to other rank
-	    i->second->moveInitDataToRecvQueue();
-	}
-	
-        std::vector<boost::mpi::request> pending_requests;
-	// Data is ready to send.  Send each vector of LinkInitData
-	// objects to the appropriate peer.
-        for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
-            pending_requests.push_back(comm.isend(i->first, 0, i->second.first->getVector()));
-            pending_requests.push_back(comm.irecv(i->first, 0, i->second.second));
-        }
-        boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
-
-        for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
-            i->second.first->clear();
-
-            std::vector<Activity*> *tmp = i->second.second;
-            for (std::vector<Activity*>::iterator j = tmp->begin() ; j != tmp->end() ; ++j) {
-                LinkInitData* lid = dynamic_cast<LinkInitData*>(*j);
-                link_map_t::iterator link = link_map.find(lid->getLinkId());
-                if (link == link_map.end()) {
-                    printf("Link not found in map!\n");
-                    abort();
-                } else {
-		    // Need to reset link ID because link will set it again
-		    lid->setLinkId(-1);
-                    link->second->sendInitData(lid);
-                }
-            }
-            tmp->clear();
-        }        
-    }
-
     
     template<class Archive>
     void

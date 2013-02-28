@@ -34,7 +34,7 @@ public:
     SyncQueue* registerLink(int rank, LinkId_t link_id, Link* link);
     void execute(void);
 
-    void exchangeLinkInitData();
+    void exchangeLinkInitData() {}
     
 private:
     typedef std::map<int, std::pair<SyncQueue*, std::vector<Activity*>* > > comm_map_t;
