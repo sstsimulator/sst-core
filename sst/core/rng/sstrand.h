@@ -20,4 +20,4 @@ class SSTRandom {
 	unsigned int m_z;
 	unsigned int m_w;
 
-}
+};
