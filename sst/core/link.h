@@ -34,7 +34,8 @@ public:
 
     friend class LinkPair;
     friend class Simulation;
-
+    friend class Sync;
+    
     Link(LinkId_t id);
     
     virtual ~Link();
@@ -128,6 +129,7 @@ protected:
 private:
     Link( const Link& l );
 
+    void sendInitData_sync(Event* init_data);
     void finalizeConfiguration();
     
     Type_t type;

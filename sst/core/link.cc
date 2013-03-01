@@ -150,6 +150,16 @@ void Link::sendInitData(Event* init_data)
     pair_link->initQueue->insert(init_data);
 }
 
+void Link::sendInitData_sync(Event* init_data)
+{
+    if ( pair_link->initQueue == NULL ) {
+	pair_link->initQueue = new InitQueue();
+    }
+    // init_data->setDeliveryLink(id,pair_link);
+
+    pair_link->initQueue->insert(init_data);
+}
+
 Event* Link::recvInitData()
 {
     if ( initQueue == NULL ) return NULL;

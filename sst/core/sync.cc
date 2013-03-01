@@ -57,6 +57,13 @@ namespace SST {
     }
 
     void
+    Sync::finalizeLinkConfigurations() {
+        for (link_map_t::iterator i = link_map.begin() ; i != link_map.end() ; ++i) {
+	    i->second->finalizeConfiguration();
+        }
+    }
+
+    void
     Sync::execute(void)
     {
         std::vector<boost::mpi::request> pending_requests;
@@ -67,11 +74,14 @@ namespace SST {
         }
         boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
 
-	Simulation *sim = Simulation::getSimulation();
+	Simulation* sim = Simulation::getSimulation();
 	SimTime_t current_cycle = sim->getCurrentSimCycle();
+	// Clear the SyncQueue used to send the data
         for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
             i->second.first->clear();
 
+	    // Need to look through all the entries in the vector and
+	    // put them on the correct link
             std::vector<Activity*> *tmp = i->second.second;
             for (std::vector<Activity*>::iterator j = tmp->begin() ; j != tmp->end() ; ++j) {
                 Event *ev = static_cast<Event*>(*j);
@@ -85,6 +95,7 @@ namespace SST {
                     link->second->Send(delay,ev);
                 }
             }
+	    // Clear the receive vector
             tmp->clear();
         }        
 
@@ -92,6 +103,46 @@ namespace SST {
 	sim->insertActivity( next, this );
     }
 
+    int
+    Sync::exchangeLinkInitData(int msg_count)
+    {
+        std::vector<boost::mpi::request> pending_requests;
+
+        for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
+            pending_requests.push_back(comm.isend(i->first, 0, i->second.first->getVector()));
+            pending_requests.push_back(comm.irecv(i->first, 0, i->second.second));
+        }
+        boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
+
+        for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
+	    // Clear the SyncQueue used to send the data
+            i->second.first->clear();
+
+	    // Need to look through all the entries in the vector and
+	    // put them on the correct link
+            std::vector<Activity*> *tmp = i->second.second;
+            for (std::vector<Activity*>::iterator j = tmp->begin() ; j != tmp->end() ; ++j) {
+                Event *ev = static_cast<Event*>(*j);
+                link_map_t::iterator link = link_map.find(ev->getLinkId());
+                if (link == link_map.end()) {
+                    printf("Link not found in map!\n");
+                    abort();
+                } else {
+		    // Need to figure out what the "delay" is for this event.
+                    link->second->sendInitData_sync(ev);
+                }
+            }
+	    // Clear the receive vector
+            tmp->clear();
+        }
+
+	// Do an allreduce to see if there were any messages sent
+	boost::mpi::communicator world;
+	int input = msg_count;
+	int count;
+	all_reduce( world, &input, 1, &count, std::plus<int>() );
+	return count;
+    }
     
     template<class Archive>
     void

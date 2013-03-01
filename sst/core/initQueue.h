@@ -32,7 +32,6 @@ public:
     Activity* pop();
     Activity* front();
     
-    
 private:
     std::deque<Activity*> data;
     

@@ -255,7 +255,9 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 
 	    // For the remote side, register with sync object
 	    SyncQueue* sync_q = sync->registerLink(rank[remote],clink->id,lp.getRight());
-	    lp.getRight()->recvQueue = sync_q;
+	    // lp.getRight()->recvQueue = sync_q;
+	    lp.getRight()->configuredQueue = sync_q;
+	    lp.getRight()->initQueue = sync_q;
         }
 
 	// Done with that edge, delete it.
@@ -308,9 +310,17 @@ void Simulation::initialize() {
     do {
 	init_msg_count = 0;
     	for ( CompMap_t::iterator iter = compMap.begin(); iter != compMap.end(); ++iter ) {
-    	    (*iter).second->init();
+    	    (*iter).second->init(init_phase);
     	}
-	if ( init_msg_count == 0 ) break;
+
+	// Exchange data for parallel jobs
+	if ( num_ranks > 1 ) {
+	    init_msg_count = sync->exchangeLinkInitData(init_msg_count);
+	}
+
+	// We're done if no new messages were sent
+	if ( init_msg_count == 0 ) done = true;
+
 	init_phase++;
     } while ( !done);
 
@@ -321,17 +331,14 @@ void Simulation::initialize() {
 	    (*j).second->finalizeConfiguration();
 	}
     }
-
+    if ( num_ranks > 1 ) {
+	sync->finalizeLinkConfigurations();
+    }
 }
 
 void Simulation::Run() {
     _SIM_DBG( "RUN\n" );
 
-    // Need to exchange LinkInitData objects if we are multirank
-    if ( num_ranks > 1 ) {
-	sync->exchangeLinkInitData();
-    }
-    
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
     {
