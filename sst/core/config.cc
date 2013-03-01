@@ -48,11 +48,12 @@ Config::Config( int my_rank )
     sdlfile     = "NONE";
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
-#ifdef HAVE_ZOLTAN
-    partitioner = "zoltan";
-#else
-    partitioner = "single";
-#endif
+// #ifdef HAVE_ZOLTAN
+//     partitioner = "zoltan";
+// #else
+//     partitioner = "single";
+// #endif
+    partitioner = "rrobin";
     generator   = "NONE";
     generator_options   = "";
     dump_component_graph_file = "";
