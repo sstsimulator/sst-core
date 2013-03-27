@@ -660,6 +660,7 @@ dobuild() {
 # $1 = build type
 # $2 = MPI type
 # $3 = boost type
+# $4 = compiler type
 #=========================================================================
 
 echo "==============================INITIAL ENVIRONMENT DUMP=============================="
@@ -667,17 +668,30 @@ env|sort
 echo "==============================INITIAL ENVIRONMENT DUMP=============================="
 
 retval=0
-echo  $0  $1 $2 $3
+echo  $0  $1 $2 $3 $4
 echo `pwd`
 
-if [ $# -ne 3 ]
+if [ $# -lt 3 ] || [ $# -gt 4 ]
 then
     # need build type and MPI type as argument
 
-    echo "Usage : $0 <buildtype> <mpitype> <boost type>"
+    echo "Usage : $0 <buildtype> <mpitype> <boost type> <[compiler type (optional)]>"
     exit 0
 
 else
+    # get desired compiler, if option provided
+    compiler=""
+    if [ "x$4" = x ]
+    then
+        echo "bamboo.sh: \$4 is empty or null, setting compiler to default"
+        compiler="default"
+    else
+        echo "bamboo.sh: setting compiler to \$4"
+        compiler="$4"
+    fi
+
+    echo "bamboo.sh: compiler is set to $compiler"
+
 
     # Determine architecture
     arch=`uname -p`
@@ -769,19 +783,68 @@ else
                 export SST_DEPS_INSTALL_OMNET=${OMNET_HOME}
                 echo "bamboo.sh: SST_DEPS_INSTALL_OMNET=${SST_DEPS_INSTALL_OMNET}"
 
-            else  # MacOS
+            else  # kernel is "Darwin", so this is MacOS
+                # Obtain Mac OS version (works only on MacOS!!!)
+                macosVersionFull=`sw_vers -productVersion`
+                macosVersion=${macosVersionFull%.*}
+
+                # Make sure that Mac uses the "new" autotools and can find other utils
+                PATH=$HOME/tools/autotools/bin:/opt/openmpi/bin:/opt/local/bin:/usr/bin:$HOME/bin:/usr/local/bin:$PATH; export PATH
+
                 # Initialize modules for Jenkins (taken from $HOME/.bashrc on Mac)
                 if [ -f /etc/profile.modules ]
                 then
                     . /etc/profile.modules
-                # put any module loads here
-                    echo "bamboo.sh: Loadin Modules for MacOSX"
-                    module add boost/boost-1.50.0
-                    module list
-                fi
+                    # put any module loads here
+                    echo "bamboo.sh: Loading Modules for MacOSX"
+                    # Do things specific to the MacOS version
+                    case $macosVersion in
+                        10.6) # Snow Leopard
+                            # use modules Boost, built-in MPI, default compiler
+                            module unload boost
+                            module add boost/boost-1.50.0
+                            module list
+                            ;;
+                        10.7) # Lion
+                            # use modules Boost, built-in MPI, default compiler
+                            module unload boost
+                            module add boost/boost-1.50.0
+                            module list
+                            ;;
+                        10.8) # Mountain Lion
+                            # Depending on specified compiler, load Boost and MPI
+                            case $compiler in
+                                gcc-4.2.1)
+                                    # Use Boost and MPI built with GCC
+                                    module unload boost
+                                    module unload mpi
+                                    module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                                    module add mpi/openmpi-1.6.3_gcc-4.2.1
+                                    ;;
+                                clang-425.0.27)
+                                    # Use Boost and MPI built with CLANG
+                                    module unload boost
+                                    module unload mpi
+                                    module add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
+                                    mpi/openmpi-1.6.3_clang-425.0.27
+                                    ;;
+                                *)
+                                    # unknown compiler, use default
+                                    echo "bamboo.sh: Unknown compiler selection. Assuming gcc."
+                                    module unload boost
+                                    module unload mpi
+                                    module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                                    module add mpi/openmpi-1.6.3_gcc-4.2.1
+                                    ;;  
+                            esac
+                            ;;
+                        *) # unknown
+                            echo "bamboo.sh: Unknown Mac OS version."
+                            ;;
+                    esac
 
-                # Make sure that Mac uses the "new" autotools and can find other utils
-                PATH=$HOME/tools/autotools/bin:/opt/openmpi/bin:/opt/local/bin:/usr/bin:$HOME/bin:/usr/local/bin:$PATH; export PATH
+
+                fi
 
                 echo "bamboo.sh: MacOS build."
                 echo "bamboo.sh:   MPI = $2, Boost = $3"
