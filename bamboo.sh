@@ -810,9 +810,11 @@ else
                             module list
                             ;;
                         10.7) # Lion
-                            # use modules Boost, built-in MPI, default compiler
+                            # use modules Boost and MPI, default compiler (gcc)
+                            module unload mpi
                             module unload boost
-                            module add boost
+                            module add mpi/openmpi-1.4.4_gcc-4.2.1
+                            module add boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1
                             module list
                             ;;
                         10.8) # Mountain Lion
@@ -820,17 +822,19 @@ else
                             case $compiler in
                                 gcc-4.2.1)
                                     # Use Boost and MPI built with GCC
-                                    module unload boost
                                     module unload mpi
-                                    module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                                    module unload boost
                                     module add mpi/openmpi-1.6.3_gcc-4.2.1
+                                    module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                                    module list
                                     ;;
                                 clang-425.0.27)
                                     # Use Boost and MPI built with CLANG
-                                    module unload boost
                                     module unload mpi
+                                    module unload boost
+                                    module add mpi/openmpi-1.6.3_clang-425.0.27
                                     module add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
-                                    mpi/openmpi-1.6.3_clang-425.0.27
+                                    module list
                                     ;;
                                 *)
                                     # unknown compiler, use default
@@ -839,6 +843,7 @@ else
                                     module unload mpi
                                     module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
                                     module add mpi/openmpi-1.6.3_gcc-4.2.1
+                                    module list
                                     ;;  
                             esac
                             ;;
