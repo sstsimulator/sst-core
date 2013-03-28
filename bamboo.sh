@@ -847,6 +847,8 @@ else
                             ;;
                     esac
 
+                    echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
+                    export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
 
                 fi
 
