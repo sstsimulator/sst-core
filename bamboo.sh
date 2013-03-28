@@ -791,6 +791,10 @@ else
                 # Make sure that Mac uses the "new" autotools and can find other utils
                 PATH=$HOME/tools/autotools/bin:/opt/openmpi/bin:/opt/local/bin:/usr/bin:$HOME/bin:/usr/local/bin:$PATH; export PATH
 
+                # Point to aclocal per instructions from sourceforge on MacOSX installation
+                export ACLOCAL_FLAGS="-I/opt/local/share/aclocal $ACLOCAL_FLAGS"
+                echo $ACLOCAL_FLAGS
+
                 # Initialize modules for Jenkins (taken from $HOME/.bashrc on Mac)
                 if [ -f /etc/profile.modules ]
                 then
