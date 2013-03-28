@@ -808,7 +808,7 @@ else
                         10.7) # Lion
                             # use modules Boost, built-in MPI, default compiler
                             module unload boost
-                            module add boost/boost-1.50.0
+                            module add boost
                             module list
                             ;;
                         10.8) # Mountain Lion
