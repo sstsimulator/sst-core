@@ -799,6 +799,8 @@ else
                 if [ -f /etc/profile.modules ]
                 then
                     . /etc/profile.modules
+                    echo "bamboo.sh: loaded /etc/profile.modules. Available modules"
+                    module avail
                     # put any module loads here
                     echo "bamboo.sh: Loading Modules for MacOSX"
                     # Do things specific to the MacOS version
