@@ -150,7 +150,7 @@ dotests() {
         echo -e  "No PhoenixSim test:  libPhoenixSim.so is not available\n"
     fi
 
-    if [[ $BOOST_HOME == *boost-1.50* ]]
+    if [[ $BOOST_HOME == *boost*1.50* ]]
     then
         ${SST_TEST_SUITES}/testSuite_macro.sh
     else
