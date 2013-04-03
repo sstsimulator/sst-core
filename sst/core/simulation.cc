@@ -276,7 +276,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
             // _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
 	    // 	     name.c_str(), sdl_c->type().c_str(), (int)id );
             
-            tmp = createIntrospector( ccomp->type.c_str(),ccomp->params );
+            tmp = createIntrospector( ccomp->type, ccomp->params );
             introMap[ccomp->name] = tmp;
         }
 	else if ( ccomp->rank == myRank ) {
@@ -294,7 +294,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
             }
 
 			compIdMap[ccomp->id] = ccomp->name;
-            tmp = createComponent( ccomp->id, ccomp->type.c_str(),
+            tmp = createComponent( ccomp->id, ccomp->type,
                                    ccomp->params );
             compMap[ccomp->name] = tmp;
 
