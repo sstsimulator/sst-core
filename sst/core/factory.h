@@ -38,10 +38,52 @@ public:
 private:
     friend class SST::SimulationBase;
 
+    struct ComponentInfo {
+        const ElementInfoComponent* component;
+        std::set<std::string> params;
+
+        ComponentInfo() {}
+
+        ComponentInfo(const ElementInfoComponent *component, 
+                      std::set<std::string> params) : component(component), params(params)
+        { }
+
+        ComponentInfo(const ComponentInfo& old) : component(old.component), params(old.params)
+        { }
+
+        ComponentInfo& operator=(const ComponentInfo& old)
+        {
+            component = old.component;
+            params = old.params;
+            return *this;
+        }
+    };
+
+    struct IntrospectorInfo {
+        const ElementInfoIntrospector* introspector;
+        std::set<std::string> params;
+
+        IntrospectorInfo() {}
+
+        IntrospectorInfo(const ElementInfoIntrospector *introspector, 
+                         std::set<std::string> params) : introspector(introspector), params(params)
+        { }
+
+        IntrospectorInfo(const IntrospectorInfo& old) : introspector(old.introspector), params(old.params)
+        { }
+
+        IntrospectorInfo& operator=(const IntrospectorInfo& old)
+        {
+            introspector = old.introspector;
+            params = old.params;
+            return *this;
+        }
+    };
+
     typedef std::map<std::string, const ElementLibraryInfo*> eli_map_t;
-    typedef std::map<std::string, const ElementInfoComponent*> eic_map_t;
+    typedef std::map<std::string, ComponentInfo> eic_map_t;
     typedef std::map<std::string, const ElementInfoEvent*> eie_map_t;
-    typedef std::map<std::string, const ElementInfoIntrospector*> eii_map_t;
+    typedef std::map<std::string, IntrospectorInfo> eii_map_t;
     typedef std::map<std::string, const ElementInfoPartitioner*> eip_map_t;
     typedef std::map<std::string, const ElementInfoGenerator*> eig_map_t;
 
@@ -51,6 +93,8 @@ private:
     Factory();                      // Don't Implement
     Factory(Factory const&);        // Don't Implement
     void operator=(Factory const&); // Don't Implement
+
+    std::set<std::string> create_params_set(const ElementInfoParam *params);
 
     // find library information for name
     const ElementLibraryInfo* findLibrary(std::string name);

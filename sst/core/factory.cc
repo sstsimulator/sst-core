@@ -32,6 +32,7 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#include <set>
 
 #include "sst/core/factory.h"
 #include "sst/core/element.h"
@@ -115,8 +116,13 @@ Factory::CreateComponent(ComponentId_t id,
         return NULL;
     }
 
-    const ElementInfoComponent *ei = eii->second;
-    Component *ret = ei->alloc(id, params);
+    const ComponentInfo ci = eii->second;
+
+    if (!ci.params.empty()) {
+        params.verify_params(ci.params, ci.component->name);
+    }
+
+    Component *ret = ci.component->alloc(id, params);
     ret->type = type;
     return ret;
 }
@@ -143,8 +149,13 @@ Factory::CreateIntrospector(std::string type,
         return NULL;
     }
 
-    const ElementInfoIntrospector *ei = eii->second;
-    Introspector *ret = ei->alloc(params);
+    const IntrospectorInfo ii = eii->second;
+
+    if (!ii.params.empty()) {
+        params.verify_params(ii.params, ii.introspector->name);
+    }
+
+    Introspector *ret = ii.introspector->alloc(params);
     return ret;
 }
 
@@ -217,6 +228,22 @@ Factory::GetGenerator(std::string name)
 }
 
 
+std::set<std::string>
+Factory::create_params_set(const ElementInfoParam *params)
+{
+    std::set<std::string> retset;
+
+    if (NULL != params) {
+        while (NULL != params->name) {
+            retset.insert(params->name);
+            params++;
+        }
+    }
+
+    return retset;
+}
+
+
 const ElementLibraryInfo*
 Factory::findLibrary(std::string elemlib)
 {
@@ -234,7 +261,7 @@ Factory::findLibrary(std::string elemlib)
         const ElementInfoComponent *eic = eli->components;
         while (NULL != eic->name) {
             std::string tmp = elemlib + "." + eic->name;
-            found_components[tmp] = eic;
+            found_components[tmp] = ComponentInfo(eic, create_params_set(eic->params));
             eic++;
         }
     }
@@ -253,7 +280,7 @@ Factory::findLibrary(std::string elemlib)
         const ElementInfoIntrospector *eii = eli->introspectors;
         while (NULL != eii->name) {
             std::string tmp = elemlib + "." + eii->name;
-            found_introspectors[tmp] = eii;
+            found_introspectors[tmp] = IntrospectorInfo(eii, create_params_set(eii->params));
             eii++;
         }
     }

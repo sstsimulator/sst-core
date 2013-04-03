@@ -13,7 +13,7 @@
 #define SST_PARAM_H
 
 #include <map>
-#include <ostream>
+#include <iostream>
 #include <utility>
 
 #include <stdlib.h>
@@ -84,31 +84,52 @@ public:
     friend bool operator<(const Params& a, const Params& b);
 
     // and have some friendly accessor functions
-    long find_integer(const key_type &k, long not_found_value = -1) const {
+    long find_integer(const key_type &k, long default_value, bool &found) const {
         const_iterator i = data.find(k);
         if (i == data.end()) {
-            return not_found_value;
+            found = false;
+            return default_value;
         } else {
+            found = true;
             return strtol(i->second.c_str(), NULL, 0);
         }
     }
 
-    double find_floating(const key_type& k, double not_found_value = -1.0) const {
+    long find_integer(const key_type &k, long default_value = -1) const {
+        bool tmp;
+        return find_integer(k, default_value, tmp);
+    }
+
+    double find_floating(const key_type& k, double default_value, bool &found) const {
         const_iterator i = data.find(k);
         if (i == data.end()) {
-            return not_found_value;
+            found = false;
+            return default_value;
         } else {
+            found = true;
             return strtod(i->second.c_str(), NULL);
         }
     }
 
-    std::string find_string(const key_type &k, std::string not_found_value = "") const {
+    double find_floating(const key_type& k, double default_value = -1.0) const {
+        bool tmp;
+        return find_integer(k, default_value, tmp);
+    }
+
+    std::string find_string(const key_type &k, std::string default_value, bool &found) const {
         const_iterator i = data.find(k);
         if (i == data.end()) {
-            return not_found_value;
+            found = false;
+            return default_value;
         } else {
+            found = true;
             return i->second;
         }
+    }
+
+    std::string find_string(const key_type &k, std::string default_value = "") const {
+        bool tmp;
+        return find_string(k, default_value, tmp);
     }
 
     void print_all_params(std::ostream &os) const {
@@ -130,6 +151,17 @@ public:
 
     // Note: This makes a COPY of the data.  Be very, very careful what you wish for!
     std::map<std::string, std::string> get_map() const { return data; }
+
+    void verify_params(std::set<std::string> info_params, std::string obj_name) {
+        const_iterator i, end = data.end();
+
+        for (i = data.begin() ; i != end ; ++i) {
+            if (info_params.end() == info_params.find(i->first)) {
+                std::cerr << "Warning: Invalid Parameter \"" << i->first
+                          << "\" specified for " << obj_name << "." << std::endl;
+            }
+        }
+    }
 
 private:
     std::map<std::string, std::string> data;

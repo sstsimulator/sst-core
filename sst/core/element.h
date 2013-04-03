@@ -1,8 +1,8 @@
-// Copyright 2009-2010 Sandia Corporation. Under the terms
+// Copyright 2009-2013 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2010, Sandia Corporation
+// Copyright (c) 2009-2013, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -29,11 +29,17 @@ typedef Subcomponent* (*subcomponentLoad)(Component*, Params&);
 typedef void (*partitionFunction)(ConfigGraph*,int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
  
+struct ElementInfoParam {
+    const char *name;
+    const char *description;
+};
+
 struct ElementInfoComponent {
     const char *name;
     const char *description;
     void (*printHelp)(FILE *output);
     componentAllocate alloc;
+    const ElementInfoParam *params;
 };
 
 struct ElementInfoIntrospector {
@@ -41,6 +47,7 @@ struct ElementInfoIntrospector {
     const char *description;
     void (*printHelp)(FILE *output);
     introspectorAllocate alloc;
+    ElementInfoParam *params;
 };
 
 struct ElementInfoEvent {
@@ -55,6 +62,7 @@ struct ElementInfoSubcomponent {
     const char *description;
     void (*printHelp)(FILE *output);
     subcomponentLoad func;
+    ElementInfoParam *params;
 };
 
 //struct ElementInfoModule {
