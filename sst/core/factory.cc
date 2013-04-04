@@ -390,7 +390,6 @@ followError(std::string libname, std::string elemlib, ElementLibraryInfo* eli, s
     std::vector<std::string> paths;
     boost::split(paths, searchPaths, boost::is_any_of(":"));
    
-fprintf(stderr, "  ****************  This is johns added code  \n"); 
     BOOST_FOREACH( std::string path, paths ) {
         struct stat sbuf;
         int ret;
