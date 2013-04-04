@@ -47,6 +47,8 @@ struct FactoryLoaderData {
     lt_dladvise advise_handle;
 };
 
+ElementLibraryInfo* followError(std::string, std::string, ElementLibraryInfo*, std::string searchPaths);
+
 Factory::Factory(std::string searchPaths) :
     searchPaths(searchPaths)
 {
@@ -322,6 +324,7 @@ Factory::loadLibrary(std::string elemlib)
         // which is totally useless...
         fprintf(stderr, "Opening element library %s failed: %s\n",
                 elemlib.c_str(), lt_dlerror());
+        eli = followError(libname, elemlib, eli, searchPaths);
     } else {
         // look for an info block
         std::string infoname = elemlib + "_eli";
@@ -360,7 +363,6 @@ Factory::loadLibrary(std::string elemlib)
             free(old_error);
         }
     }
-
     return eli;
 } 
 
@@ -375,5 +377,78 @@ Factory::parseLoadName(std::string wholename)
         return make_pair(parts[0], parts[1]);
     }
 }
+
+ElementLibraryInfo*
+followError(std::string libname, std::string elemlib, ElementLibraryInfo* eli, std::string searchPaths)
+{
+
+    // dlopen case
+    libname.append(".so");
+    std::string fullpath;
+    void *handle;
+
+    std::vector<std::string> paths;
+    boost::split(paths, searchPaths, boost::is_any_of(":"));
+   
+fprintf(stderr, "  ****************  This is johns added code  \n"); 
+    BOOST_FOREACH( std::string path, paths ) {
+        struct stat sbuf;
+        int ret;
+
+        fullpath = path + "/" + libname;
+        ret = stat(fullpath.c_str(), &sbuf);
+        if (ret == 0) break;
+    }
+
+    // This is a little weird, but always try the last path - if we
+    // didn't succeed in the stat, we'll get a file not found error
+    // from dlopen, which is a useful error message for the user.
+    handle = dlopen(fullpath.c_str(), RTLD_NOW|RTLD_GLOBAL);
+    if (NULL == handle) {
+        fprintf(stderr,
+            "Opening and resolving references for element library %s failed:\n"
+            "\t%s\n", elemlib.c_str(), dlerror());
+        return NULL;
+    }
+
+    std::string infoname = elemlib;
+    infoname.append("_eli");
+    eli = (ElementLibraryInfo*) dlsym(handle, infoname.c_str());
+    if (NULL == eli) {
+        char *old_error = strdup(dlerror());
+
+        // backward compatibility (ugh!)  Yes, it leaks memory.  But 
+        // hopefully it's going away soon.
+        std::string symname = elemlib + "AllocComponent";
+        void *sym = dlsym(handle, symname.c_str());
+        if (NULL != sym) {
+            eli = new ElementLibraryInfo;
+            eli->name = elemlib.c_str();
+            eli->description = "backward compatibility filler";
+            ElementInfoComponent *elcp = new ElementInfoComponent[2];
+            elcp[0].name = elemlib.c_str();
+            elcp[0].description = "backward compatibility filler";
+            elcp[0].printHelp = NULL;
+            elcp[0].alloc = (componentAllocate) sym;
+            elcp[1].name = NULL;
+            elcp[1].description = NULL;
+            elcp[1].printHelp = NULL;
+            elcp[1].alloc = NULL;
+            eli->components = elcp;
+            eli->events = NULL;
+            eli->introspectors = NULL;
+	    eli->partitioners = NULL;
+	    eli->generators = NULL;
+            fprintf(stderr, "# WARNING: (2) Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
+        } else {
+            fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
+                    infoname.c_str(), libname.c_str(), old_error);
+        }
+    }
+
+
+     return eli;
+} 
+ 
 
 } //namespace SST
