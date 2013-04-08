@@ -60,6 +60,7 @@ class MemEvent : public SST::Event {
 public:
 	static const uint32_t F_WRITEBACK = (1<<0);
 	static const uint32_t F_LOCKED    = (1<<1);
+    static const uint32_t F_DELAYED   = (1<<2); // Used to delay snoops when a block is locked
 
 	typedef std::vector<uint8_t> dataVec;
 	typedef std::pair<uint64_t, int> id_type;
