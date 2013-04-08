@@ -38,6 +38,14 @@
 #include "sst/core/element.h"
 #include "sst/core/params.h"
 
+/* This needs to happen before lt_dlinit() and sets up the preload
+   libraries properly.  The macro declares an extern symbol, so if we
+   do this in the sst namespace, the symbol is namespaced and then not
+   found in linking.  So have this short function here. */
+static void preload_symbols(void) {
+    LTDL_SET_PRELOADED_SYMBOLS();
+}
+
 namespace SST {
 
 /* This structure exists so that we don't need to have any
@@ -54,6 +62,8 @@ Factory::Factory(std::string searchPaths) :
 {
     loaderData = new FactoryLoaderData;
     int ret;
+
+    preload_symbols();
 
     ret = lt_dlinit();
     if (ret != 0) {
