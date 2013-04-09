@@ -1,19 +1,16 @@
-// Copyright 2009-2013 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
-// Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2013, Sandia Corporation
-// All rights reserved.
-// 
-// This file is part of the SST software package. For license
-// information, see the LICENSE file in the top level directory of the
-// distribution.
 
+#ifndef _H_SST_RAND
+#define _H_SST_RAND
 
 #include <iostream>
 #include <fstream>
 
+#include <stdint.h>
+
 using namespace std;
+
+namespace SST
+{
 
 /*
 	Implements basic random number generation for SST core or 
@@ -22,14 +19,14 @@ using namespace std;
 class SSTRandom {
 
     public:
-  	SSTRandom(unsigned int initial_z,
-		unsigned int initial_w);
-	SSTRandom();
-	double nextUniform();
-
-    private:
-	unsigned int generateNext();
-	unsigned int m_z;
-	unsigned int m_w;
+	virtual double   nextUniform() = 0;
+	virtual uint32_t generateNextUInt32() = 0;
+	virtual uint64_t generateNextUInt64() = 0;
+	virtual int64_t	 generateNextInt64() = 0;
+        virtual int32_t  generateNextInt32() = 0;
 
 };
+
+}
+
+#endif
