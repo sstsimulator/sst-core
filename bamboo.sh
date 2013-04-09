@@ -734,7 +734,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst2.3.1_config|sst3.0_config|sst3.0_config_static|sst3.0_config_clang_core_only|sst2.2_config_macosx|sst2.3_config_macosx|sst2.3.1_config_macosx|sst3.0_config_macosx|sst3.0_config_macosx_static|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|non_std_sst2.2_config|zesto_test)
+        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst2.3.1_config|sst3.0_config|sst3.0_config_static|sst3.0_config_clang_core_only|sst2.2_config_macosx|sst2.3_config_macosx|sst2.3.1_config_macosx|sst3.0_config_macosx|sst3.0_config_macosx_static|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|non_std_sst2.2_config|zesto_test|documentation)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
@@ -900,8 +900,18 @@ else
             # Build type given as argument to this script
             export SST_BUILD_TYPE=$1
 
-            dobuild -t $SST_BUILD_TYPE -a $arch -k $kernel
-            retval=$?
+            if [ $SST_BUILD_TYPE = "documentation" ]
+            then
+                # build documentation, create list of undocumented files
+                ./configure --disable-silent-rules --prefix=$HOME/local --with-boost=$BOOST_HOME
+                make html 2> $SST_ROOT/doc/makeHtmlErrors.txt
+                egrep "is not documented" $SST_ROOT/doc/makeHtmlErrors.txt | sort > $SST_ROOT/doc/undoc.txt
+                retval=0
+            else
+                dobuild -t $SST_BUILD_TYPE -a $arch -k $kernel
+                retval=$?
+            fi
+
             ;;
 
         *)
@@ -913,9 +923,18 @@ fi
 
 if [ $retval -eq 0 ]
 then
-    # Build was successful, so run tests, providing command line args
-    # as a convenience. SST binaries must be generated before testing.
-    dotests $1
+    if [ $SST_BUILD_TYPE = "documentation" ]
+    then
+        # dump list of undocumented files
+        echo "==============================DOXYGEN UNDOCUMENTED FILES =============================="
+        sed -e 's/^/#doxygen /' $SST_ROOT/doc/undoc.txt
+        echo "==============================DOXYGEN UNDOCUMENTED FILES =============================="
+        retval=0
+    else
+        # Build was successful, so run tests, providing command line args
+        # as a convenience. SST binaries must be generated before testing.
+        dotests $1
+    fi
 fi
 
 if [ $retval -eq 0 ]
