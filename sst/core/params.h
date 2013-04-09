@@ -113,7 +113,7 @@ public:
 
     double find_floating(const key_type& k, double default_value = -1.0) const {
         bool tmp;
-        return find_integer(k, default_value, tmp);
+        return find_floating(k, default_value, tmp);
     }
 
     std::string find_string(const key_type &k, std::string default_value, bool &found) const {
