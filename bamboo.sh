@@ -297,6 +297,15 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM --enable-static --disable-shared $miscEnv"
             ;;
+        sst3.0_config_clang_core_only)
+            #-----------------------------------------------------------------
+            # sst3.0_config_clang_core_only
+            #     This option used for configuring SST with no deps to build the core with clang
+            #-----------------------------------------------------------------
+            depsStr="-k none -d none -p none -z none -b none -g none -m none -i none -o none -h none -s none -q none -M none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions"
+            ;;
         sst2.3.1_config)
             #-----------------------------------------------------------------
             # sst2.3.1_config
@@ -725,7 +734,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst2.3.1_config|sst3.0_config|sst3.0_config_static|sst2.2_config_macosx|sst2.3_config_macosx|sst2.3.1_config_macosx|sst3.0_config_macosx|sst3.0_config_macosx_static|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|non_std_sst2.2_config|zesto_test)
+        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst2.3.1_config|sst3.0_config|sst3.0_config_static|sst3.0_config_clang_core_only|sst2.2_config_macosx|sst2.3_config_macosx|sst2.3.1_config_macosx|sst3.0_config_macosx|sst3.0_config_macosx_static|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|non_std_sst2.2_config|zesto_test)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
