@@ -9,6 +9,7 @@ AM_CPPFLAGS =  \
 	-DTIXML_USE_STL \
 	$(BOOST_CPPFLAGS) \
 	$(ZOLTAN_CPPFLAGS) \
+	$(SST_CXX0X_FLAGS) \
 	$(LTDLINCL)
 
 DIST_SUBDIRS = libltdl .
@@ -60,7 +61,8 @@ nobase_dist_sst_HEADERS = \
 	serialization/element.h \
 	interfaces/TestEvent.h \
 	interfaces/memEvent.h \
-	rng/sstrand.h
+	rng/sstrand.h \
+	rng/marsaglia.h
 
 nobase_nodist_sst_HEADERS = \
 	build_info.h
@@ -96,7 +98,8 @@ sst_x_SOURCES = \
 	uninitializedQueue.cc \
 	interfaces/memEvent.cc \
 	interfaces/TestEvent.cc \
-	rng/sstrand.cc
+	rng/sstrand.cc \
+	rng/marsaglia.cc
 
 if HAVE_ZOLTAN
 sst_x_SOURCES += zolt.cc
