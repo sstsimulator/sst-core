@@ -903,6 +903,7 @@ else
             if [ $SST_BUILD_TYPE = "documentation" ]
             then
                 # build documentation, create list of undocumented files
+                ./autogen.sh
                 ./configure --disable-silent-rules --prefix=$HOME/local --with-boost=$BOOST_HOME
                 make html 2> $SST_ROOT/doc/makeHtmlErrors.txt
                 egrep "is not documented" $SST_ROOT/doc/makeHtmlErrors.txt | sort > $SST_ROOT/doc/undoc.txt
@@ -926,9 +927,9 @@ then
     if [ $SST_BUILD_TYPE = "documentation" ]
     then
         # dump list of undocumented files
-        echo "==============================DOXYGEN UNDOCUMENTED FILES =============================="
+        echo "============================== DOXYGEN UNDOCUMENTED FILES =============================="
         sed -e 's/^/#doxygen /' $SST_ROOT/doc/undoc.txt
-        echo "==============================DOXYGEN UNDOCUMENTED FILES =============================="
+        echo "============================== DOXYGEN UNDOCUMENTED FILES =============================="
         retval=0
     else
         # Build was successful, so run tests, providing command line args
