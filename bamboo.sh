@@ -178,6 +178,8 @@ echo " Arg in is $1,  kernel is ${kernel} "
         fi
     fi
     # Add other test suites here, i.e.
+    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
+    ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
 ##    ${SST_TEST_SUITES}/testSuite_scheduler.sh
 ##    ${SST_TEST_SUITES}/testSuite_patterns.sh
 
