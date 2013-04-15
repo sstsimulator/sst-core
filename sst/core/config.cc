@@ -40,6 +40,7 @@ Config::~Config() {
 Config::Config( int my_rank )
 {
     rank        = my_rank;
+    debugFile   = "/dev/null";
     archive     = false;
     archiveType = "bin";
     archiveFile = "sst_checkpoint";
@@ -95,6 +96,8 @@ Config::Config( int my_rank )
                 "{ all | cache | queue | archive | clock | sync | link |\
                  linkmap | linkc2m | linkc2c | linkc2s | comp | factory |\
                  stop | compevent | sim | clockevent | sdl | graph | zolt }")
+        ("debug-file", po::value <string> ( &debugFile ),
+                                "file where debug output will go")
         ("archive-type", po::value< string >( &archiveType ), 
                                 "archive type [ xml | text | bin ]")
         ("archive-file", po::value< string >( &archiveFile ), 
@@ -148,6 +151,12 @@ Config::parse_cmd_line(int argc, char* argv[]) {
 
     if ( var_map->count("debug") ) {
         if ( DebugSetFlag( (*var_map)[ "debug" ].as< vector<string> >() ) ) {
+            return -1;
+        }
+    }
+
+    if ( var_map->count("debug-file") ) {
+        if ( DebugSetFile(debugFile) ) {
             return -1;
         }
     }
@@ -206,20 +215,20 @@ Config::parse_config_file(string config_string)
     std::stringbuf sb( config_string );
     std::istream ifs(&sb);
 
-    // std::vector<string> the_rest = 
+    // std::vector<string> the_rest =
     //         po::collect_unrecognized( parsed.options, po::include_positional );
-    
+
     try {
         // po::variables_map var_map;
         // po::store( po::command_line_parser(the_rest).options(desc).run(), var_map);
-	po::options_description config_options;
-	config_options.add(*mainDesc).add(*legacyDesc);
-	
+        po::options_description config_options;
+        config_options.add(*mainDesc).add(*legacyDesc);
+
         po::store( po::parse_config_file( ifs, config_options), *var_map);
         po::notify( *var_map );
 
         if ( var_map->count( "archive-type" ) ) {
-            archiveType = (*var_map)[ "archive-type" ].as< string >(); 
+            archiveType = (*var_map)[ "archive-type" ].as< string >();
             archive = true;
         }
         if ( var_map->count( "archive-file" ) ) {
@@ -227,12 +236,12 @@ Config::parse_config_file(string config_string)
         }
 
         if ( var_map->count("run-mode") ) {
-            runMode = Config::RunMode( (*var_map)[ "run-mode" ].as< string >() ); 
+            runMode = Config::RunMode( (*var_map)[ "run-mode" ].as< string >() );
             if ( runMode == Config::UNKNOWN ) {
                 // this needs to be improved 
                 printf("ERROR: Unknown run mode %s\n", 
-		       (*var_map)[ "run-mode" ].as< string >().c_str());
-		cout << "Usage: " << run_name << " sdl-file [options]" << endl;
+                        (*var_map)[ "run-mode" ].as< string >().c_str());
+                cout << "Usage: " << run_name << " sdl-file [options]" << endl;
                 cout << visNoConfigDesc;
                 cout << mainDesc << "\n";
                 return -1;
@@ -252,11 +261,11 @@ Config::parse_config_file(string config_string)
         return -1;
     }
 
-    #define BUF_LEN PATH_MAX
+#define BUF_LEN PATH_MAX
     char buf[BUF_LEN];
     if (getcwd( buf, BUF_LEN ) == NULL) {
-	cerr << "could not find my cwd:" << strerror(errno) << endl;
-	return -1;
+        cerr << "could not find my cwd:" << strerror(errno) << endl;
+        return -1;
     }
     std::string cwd = buf;
 
@@ -265,7 +274,7 @@ Config::parse_config_file(string config_string)
     // create a unique archive file name for each rank
     sprintf(buf,".%d",rank);
     archiveFile.append( buf );
-    
+
     // get the absolute path to the sdl file 
     if ( libpath.compare(0,1,"/" ) ) {
         libpath = cwd + libpath;

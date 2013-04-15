@@ -20,6 +20,8 @@ unsigned long _debug_flags = 0;
 int _debug_rank = -1;
 int _debug_nnodes = 0;
 
+FILE* _dbg_stream = stdout;
+
 void DebugInit( int rank, int nnodes )
 {
     _debug_rank = rank;
@@ -69,6 +71,18 @@ int DebugSetFlag( std::vector<std::string> strFlags )
 	}
     }
 
+    return 0;
+}
+
+int DebugSetFile( const std::string& filename )
+{
+    FILE *fp = fopen(filename.c_str(), "w");
+    if ( !fp ) {
+        fprintf(stderr, "Unable to set debug file to '%s'\n", filename.c_str());
+        perror("fopen");
+        return -1;
+    }
+    _dbg_stream = fp;
     return 0;
 }
 

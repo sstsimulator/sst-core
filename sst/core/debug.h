@@ -22,9 +22,11 @@ namespace SST {
 extern unsigned long _debug_flags;
 extern int _debug_rank;
 extern int _debug_nnodes;
+extern FILE* _dbg_stream;
 
 extern void DebugInit( int rank, int nnodes );
 extern int DebugSetFlag( std::vector<std::string> strFlags );
+extern int DebugSetFile( const std::string& filename );
 
 } // namespace SST
 
@@ -78,16 +80,16 @@ extern int DebugSetFlag( std::vector<std::string> strFlags );
                         0)
 
 #define __DBG( flag, name, fmt, args...) if (flag & SST::_debug_flags)\
-         printf( "%d:%s::%s():%d: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args ) 
+         fprintf(_dbg_stream, "%d:%s::%s():%d: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args )
 
 #define _DBG( name, fmt, args...) \
-         printf( "%d:%s::%s():%d: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args ) 
+         fprintf(_dbg_stream, "%d:%s::%s():%d: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args )
 
 #define _AR_DBG( name, fmt, args...) __DBG( DBG_ARCHIVE, name, fmt, ## args )
 
 #define _abort( name, fmt, args...)\
 {\
-    printf( "%d:%s::%s():%d:ABORT: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args ); \
+    fprintf(stderr, "%d:%s::%s():%d:ABORT: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args ); \
     exit(-1); \
 }\
 /**/

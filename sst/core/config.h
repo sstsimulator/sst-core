@@ -39,6 +39,7 @@ public:
     void Print();
 
     bool            archive;
+    std::string     debugFile;
     std::string     archiveType;
     std::string     archiveFile;
     Mode_t          runMode;
@@ -64,6 +65,7 @@ public:
     }
 
     void print() {
+	std::cout << "debugFile = " << debugFile << std::endl;
 	std::cout << "archive = " << archive << std::endl;
 	std::cout << "archiveType = " << archiveType << std::endl;
 	std::cout << "archiveFile = " << archiveFile << std::endl;
@@ -91,6 +93,7 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
+	ar & BOOST_SERIALIZATION_NVP(debugFile);
 	ar & BOOST_SERIALIZATION_NVP(archive);
 	ar & BOOST_SERIALIZATION_NVP(archiveType);
 	ar & BOOST_SERIALIZATION_NVP(archiveFile);
