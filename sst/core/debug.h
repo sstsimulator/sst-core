@@ -79,8 +79,13 @@ extern int DebugSetFile( const std::string& filename );
 			DBG_NETWORK| \
                         0)
 
-#define __DBG( flag, name, fmt, args...) if (flag & SST::_debug_flags)\
-         fprintf(_dbg_stream, "%d:%s::%s():%d: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args )
+#define __DBG( flag, name, fmt, args...) \
+    do { \
+        if (flag & SST::_debug_flags) {\
+            fprintf(_dbg_stream, "%d:%s::%s():%d: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args ); \
+            fflush(_dbg_stream); \
+        } \
+    } while(0)
 
 #define _DBG( name, fmt, args...) \
          fprintf(_dbg_stream, "%d:%s::%s():%d: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args )
