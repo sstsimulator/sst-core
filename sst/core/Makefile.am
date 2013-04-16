@@ -97,6 +97,7 @@ sst_x_SOURCES = \
 	timeVortex.cc \
 	uninitializedQueue.cc \
 	interfaces/memEvent.cc \
+	interfaces/stringEvent.cc \
 	interfaces/TestEvent.cc \
 	rng/sstrand.cc \
 	rng/marsaglia.cc
