@@ -37,7 +37,6 @@ MersenneRNG::MersenneRNG(unsigned int seed) {
 
 void MersenneRNG::generateNextBatch() {
 	index = 0;
-	std::cout << "Generating next batch of RNGs..." << std::endl;
 	for(int i = 0; i < 624; ++i) {
 		uint32_t temp = (numbers[i] & 0x80000000) +
 			(numbers[(i+1) % 624] & 0x7fffffff);
@@ -48,8 +47,6 @@ void MersenneRNG::generateNextBatch() {
 			numbers[i] = numbers[i] ^ 2567483615UL;
 		}
 	}
-
-	std::cout << "Finished generating next batch." << std::endl;
 }
 
 /*
@@ -62,8 +59,6 @@ double MersenneRNG::nextUniform() {
 }
 
 uint32_t MersenneRNG::generateNextUInt32() {
-	std::cout << "RNG Index is: " << index << std::endl;
-
 	if(index == 0)
                 generateNextBatch();
 
@@ -82,9 +77,19 @@ uint64_t MersenneRNG::generateNextUInt64() {
 }
 
 int64_t  MersenneRNG::generateNextInt64() {
-	return nextUniform() * MERSENNE_INT64_MAX;
+	double next = nextUniform();
+	if(next > 0.5) 
+		next = next * -0.5;
+	next = next * 2;
+
+	return (int64_t) (next * MERSENNE_INT64_MAX);
 }
 
 int32_t  MersenneRNG::generateNextInt32() {
-	return nextUniform() * MERSENNE_INT32_MAX;
+	double next = nextUniform();
+	if(next > 0.5) 
+		next = next * -0.5;
+	next = next * 2;
+
+	return (int32_t) (next * MERSENNE_INT32_MAX);
 }

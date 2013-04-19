@@ -57,18 +57,31 @@ double MarsagliaRNG::nextUniform() {
         return (next_uint + 1) * 2.328306435454494e-10;
 }
 
-uint32_t MarsagliaRNG::generateNextUInt32() {
-	return nextUniform() * MARSAGLIA_UINT32_MAX;
-}
 
 uint64_t MarsagliaRNG::generateNextUInt64() {
 	return nextUniform() * MARSAGLIA_UINT64_MAX;
 }
 
 int64_t  MarsagliaRNG::generateNextInt64() {
-	return nextUniform() * MARSAGLIA_INT64_MAX;
+	double next = nextUniform();
+	if(next > 0.5)
+		next = next * -0.5;
+	next = next * 2;
+
+	return (int64_t) (next * MARSAGLIA_INT64_MAX);
 }
 
 int32_t  MarsagliaRNG::generateNextInt32() {
-	return nextUniform() * MARSAGLIA_INT32_MAX;
+	double next = nextUniform();
+	if(next > 0.5)
+		next = next * -0.5;
+	next = next * 2;
+
+	return (int32_t) (next * MARSAGLIA_INT32_MAX);
 }
+
+
+uint32_t MarsagliaRNG::generateNextUInt32() {
+	return nextUniform() * MARSAGLIA_UINT32_MAX;
+}
+
