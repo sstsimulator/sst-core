@@ -5,6 +5,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdint.h>
+#include <sys/time.h>
 #include "sstrand.h"
 
 #define MARSAGLIA_UINT32_MAX 4294967295U

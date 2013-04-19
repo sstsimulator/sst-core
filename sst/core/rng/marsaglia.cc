@@ -15,27 +15,11 @@ MarsagliaRNG::MarsagliaRNG(unsigned int initial_z, unsigned int initial_w) {
 	seed.
 */
 MarsagliaRNG::MarsagliaRNG() {
-#if defined(__i386__)
-  		unsigned long long int x;
+	struct timeval now;
+        gettimeofday(&now, NULL);
 
-     		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-		m_z = (unsigned int) x;
-
-     		__asm__ volatile (".byte 0x0f, 0x31" : "=A" (x));
-		m_w = (unsigned int) x;
-
-#elif defined(__x86_64__)
-	 	 unsigned hi, lo;
-  		__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-  		m_z = (unsigned int) ( ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 ) );
-
-  		__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-  		m_w = (unsigned int) ( ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 ) );
-#else
-		// Create seeds from two primes
-		m_z = 102197;
-		m_w = 47657;
-#endif
+        m_z = (uint32_t) now.tv_usec;
+	m_w = (uint32_t) now.tv_sec;
 }
 
 /*
