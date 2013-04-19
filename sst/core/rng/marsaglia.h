@@ -14,9 +14,10 @@
 
 using namespace std;
 using namespace SST;
+using namespace SST::RNG;
 
-namespace SST
-{
+namespace SST {
+namespace RNG {
 /*
 	Implements basic random number generation for SST core or 
 	components.
@@ -40,6 +41,7 @@ class MarsagliaRNG : public SSTRandom {
 
 };
 
+}
 }
 
 #endif

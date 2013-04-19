@@ -9,8 +9,8 @@
 
 using namespace std;
 
-namespace SST
-{
+namespace SST {
+namespace RNG {
 
 /*
 	Implements basic random number generation for SST core or 
@@ -27,6 +27,7 @@ class SSTRandom {
 
 };
 
+}
 }
 
 #endif
