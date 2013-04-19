@@ -62,7 +62,8 @@ nobase_dist_sst_HEADERS = \
 	interfaces/TestEvent.h \
 	interfaces/memEvent.h \
 	rng/sstrand.h \
-	rng/marsaglia.h
+	rng/marsaglia.h \
+	rng/mersenne.h
 
 nobase_nodist_sst_HEADERS = \
 	build_info.h
@@ -100,7 +101,8 @@ sst_x_SOURCES = \
 	interfaces/stringEvent.cc \
 	interfaces/TestEvent.cc \
 	rng/sstrand.cc \
-	rng/marsaglia.cc
+	rng/marsaglia.cc \
+	rng/mersenne.cc
 
 if HAVE_ZOLTAN
 sst_x_SOURCES += zolt.cc
