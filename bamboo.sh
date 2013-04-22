@@ -77,6 +77,7 @@ echo "bamboo.sh: Done sourcing deps/include/depsDefinitions.sh"
 #       $1 (build type): kind of build to run tests for
 #   Output: none
 #   Return value: 0 if success
+###-BEGIN-DOTESTS
 dotests() {
     # Build type is available as SST_BUILD_TYPE global, if
     # needed to be selective about the tests that are run.
@@ -159,19 +160,12 @@ dotests() {
     
     #  The following restrictions are not about required dependencies,
     #  but are to only run the lengthy test on one case per OS environment.
-echo "BOOST_HOME is ${BOOST_HOME}, MPIHOME is ${MPIHOME}"
-    if [[ $BOOST_HOME == *boost-1.50* ]] && [[ "$MPIHOME" == *openmpi-1.4.4* ]]
+    sed 1q /etc/*release | grep -iq -e ubuntu -e centos
+    if [[ "$MPIHOME" == *openmpi-1.6* ]] &&  [ $? = 0 ]
     then 
 echo  "Dotests is invoking the portals4 test"
         ${SST_TEST_SUITES}/testSuite_portals4.sh
     else
-echo " Arg in is $1,  kernel is ${kernel} "
-## Disable test in nightly on MacOS per Issue #38
-#        if [ $1 == "portals4_test" ] || [ $kernel == "Darwin" ]
-        if [ $kernel == "Darwin" ]
-        then
-            echo "Portals4 test is disabled -- see Issue #38"
-        fi
         if [ $1 == "portals4_test" ] 
         then
             ${SST_TEST_SUITES}/testSuite_portals4.sh
@@ -206,7 +200,7 @@ echo " Arg in is $1,  kernel is ${kernel} "
     fi
 
 }
-
+###-END-DOTESTS
 
 #-------------------------------------------------------------------------
 # Function: setConvenienceVars
