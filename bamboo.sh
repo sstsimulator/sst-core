@@ -111,6 +111,13 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
         #      zesto with qsim tests to not run correctly anywhere Feb. 4, 2013
         ## ${SST_TEST_SUITES}/testSuite_zesto_qsimlib.sh
+        #  The following restrictions are not about required dependencies,
+        #  but are to only run the lengthy test on one case per OS environment.
+        sed 1q /etc/*release | grep -iq -e ubuntu -e centos
+        if [[ "$MPIHOME" == *openmpi-1.6* ]] &&  [ $? = 0 ]
+        then 
+            ${SST_TEST_SUITES}/testSuite_portals4.sh
+        fi
     fi
 
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
@@ -158,18 +165,9 @@ dotests() {
         echo -e "No SST Macro test:    Only test with Boost 1.50"
     fi
     
-    #  The following restrictions are not about required dependencies,
-    #  but are to only run the lengthy test on one case per OS environment.
-    sed 1q /etc/*release | grep -iq -e ubuntu -e centos
-    if [[ "$MPIHOME" == *openmpi-1.6* ]] &&  [ $? = 0 ]
-    then 
-echo  "Dotests is invoking the portals4 test"
+    if [ $1 == "portals4_test" ] 
+    then
         ${SST_TEST_SUITES}/testSuite_portals4.sh
-    else
-        if [ $1 == "portals4_test" ] 
-        then
-            ${SST_TEST_SUITES}/testSuite_portals4.sh
-        fi
     fi
     # Add other test suites here, i.e.
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
