@@ -204,6 +204,25 @@ bool Component::unregisterExit()
     return Simulation::getSimulation()->getExit()->refDec( getId() ); 
 }
 
+void
+Component::registerAsPrimaryComponent()
+{
+    // Nop for now.  Will put in complete semantics later
+}
+
+void
+Component::primaryComponentDoNotEndSim()
+{
+    Simulation::getSimulation()->getExit()->refInc( getId() ); 
+}
+    
+void
+Component::primaryComponentOKToEndSim()
+{
+    Simulation::getSimulation()->getExit()->refDec( getId() ); 
+}
+
+    
 template<class Archive>
 void
 Component::serialize(Archive& ar, const unsigned int version) {
