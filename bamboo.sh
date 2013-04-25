@@ -170,6 +170,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_portals4.sh
     fi
     # Add other test suites here, i.e.
+    ${SST_TEST_SUITES}/testSuite_merlin.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
