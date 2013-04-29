@@ -115,7 +115,7 @@ dotests() {
         #  but are to only run the lengthy test on one case per OS environment.
         sed 1q /etc/*release | grep -iq -e ubuntu -e centos
         if [[ "$MPIHOME" == *openmpi-1.6* ]] &&  [ $? = 0 ]
-        then 
+        then
             ${SST_TEST_SUITES}/testSuite_portals4.sh
         fi
     fi
@@ -164,12 +164,17 @@ dotests() {
     else
         echo -e "No SST Macro test:    Only test with Boost 1.50"
     fi
-    
-    if [ $1 == "portals4_test" ] 
+
+    if [ $1 == "portals4_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals4.sh
     fi
     # Add other test suites here, i.e.
+    # ${SST_TEST_SUITES}/testSuite_moe.sh
+    # ${SST_TEST_SUITES}/testSuite_larry.sh
+    # ${SST_TEST_SUITES}/testSuite_curly.sh
+    # ${SST_TEST_SUITES}/testSuite_shemp.sh
+    # etc.
     ${SST_TEST_SUITES}/testSuite_merlin.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
@@ -177,22 +182,17 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
     ${SST_TEST_SUITES}/testSuite_patterns.sh
 
-    # ${SST_TEST_SUITES}/testSuite_moe.sh
-    # ${SST_TEST_SUITES}/testSuite_larry.sh
-    # ${SST_TEST_SUITES}/testSuite_curly.sh
-    # ${SST_TEST_SUITES}/testSuite_shemp.sh
-    # etc.
-   if [ $1 == "phoenixsim_test" ]
-   then 
-   ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
-   fi
-   
-   if [ $1 == "macro_test" ]
-   then 
-   ${SST_TEST_SUITES}/testSuite_macro.sh
-   fi
+    if [ $1 == "phoenixsim_test" ]
+    then
+        ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
+    fi
 
-    # Purge SST installation 
+    if [ $1 == "macro_test" ]
+    then
+        ${SST_TEST_SUITES}/testSuite_macro.sh
+    fi
+
+    # Purge SST installation
     if [[ ${SST_RETAIN_BIN:+isSet} != isSet ]]
     then
         rm -Rf ${SST_INSTALL}
@@ -244,7 +244,7 @@ getconfig() {
 
     local depsStr=""
 
-    # Determine MPI wrappers
+    # Determine compilers
     local mpicc_compiler=`which mpicc`
     local mpicxx_compiler=`which mpicxx`
     local cc_compiler=`which gcc`
@@ -267,7 +267,7 @@ getconfig() {
     fi
 
     case $1 in
-        sst3.0_config)
+        sst3.0_config) 
             #-----------------------------------------------------------------
             # sst3.0_config
             #     This option used for configuring SST with supported 3.0 deps
@@ -280,7 +280,7 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
-        sst3.0_config_static)
+        sst3.0_config_static) 
             #-----------------------------------------------------------------
             # sst3.0_config_static
             #     This option used for configuring SST with supported 3.0 deps
@@ -293,7 +293,7 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM --enable-static --disable-shared $miscEnv"
             ;;
-        sst3.0_config_clang_core_only)
+        sst3.0_config_clang_core_only) 
             #-----------------------------------------------------------------
             # sst3.0_config_clang_core_only
             #     This option used for configuring SST with no deps to build the core with clang
@@ -302,41 +302,34 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions"
             ;;
-        sst2.3.1_config)
+        sst3.0_config_macosx) 
             #-----------------------------------------------------------------
-            # sst2.3.1_config
-            #     This option used for configuring SST with supported 2.3.1 deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-2.3.1 -m none -i none -o none -h none -s 2.4.0 -q SST-2.3 -M 1.1"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
-            ;;
-        sst2.3_config)
-            #-----------------------------------------------------------------
-            # sst2.3_config
-            #     This option used for configuring SST with supported 2.3 deps
+            # sst3.0_config_macosx
+            #     This option used for configuring SST with supported 3.0 deps
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-2.3.0 -m none -i none -o none -h none -s 2.4.0-beta1 -q SST-2.3 -M 1.1"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
             ;;
-        sst2.2_config)
+        sst3.0_config_macosx_static) 
             #-----------------------------------------------------------------
-            # sst2.2_config
-            #     This option used for configuring SST with supported 2.2 deps
+            # sst3.0_config_macosx_static
+            #     This option used for configuring SST with supported 3.0 deps
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir
-"
-            depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO --enable-static --disable-shared $miscEnv"
             ;;
-        non_std_sst2.2_config)
+        # ====================================================================
+        # ====                                                            ====
+        # ====  Experimental/exploratory build configurations start here  ====
+        # ====                                                            ====
+        # ====================================================================
+        non_std_sst2.2_config) 
             #-----------------------------------------------------------------
             # non_std_sst2.2_config
             #     This option used for configuring SST with supported 2.2 deps
@@ -348,197 +341,30 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET"
             ;;
-        sst3.0_config_macosx)
+        portals4_test|M5_test) 
             #-----------------------------------------------------------------
-            # sst3.0_config_macosx
-            #     This option used for configuring SST with supported 3.0 deps
+            # portals4_test|M5_test
+            #     This is an experimental build configuration.
             #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
-            ;;
-        sst3.0_config_macosx_static)
-            #-----------------------------------------------------------------
-            # sst3.0_config_macosx_static
-            #     This option used for configuring SST with supported 3.0 deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.4.0 -q none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO --enable-static --disable-shared $miscEnv"
-            ;;
-        sst2.3.1_config_macosx_static)
-            #-----------------------------------------------------------------
-            # sst2.3.1_config_macosx_static
-            #     This option used for configuring SST with supported 2.3.1 deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-2.3.0 -m none -i none -o none -h none -s 2.4.0 -q none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
-            ;;
-        sst2.3_config_macosx)
-            #-----------------------------------------------------------------
-            # sst2.3_config_macosx
-            #     This option used for configuring SST with supported 2.3 deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-2.3.0 -m none -i none -o none -h none -s 2.4.0-beta1 -q none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
-            ;;
-        sst2.2_config_macosx)
-            #-----------------------------------------------------------------
-            # sst2.2_config_macosx
-            #     This option used for configuring SST with supported 2.2 deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
-            ;;
-        Disksim_test)
-            #-----------------------------------------------------------------
-            # Disksim_test
-            #     This option used for configuring SST for use with DiskSim
-            #-----------------------------------------------------------------
-            # TAU installs in architecture-specific directories
-            case $2 in
-                x86_64)
-                    # 64-bit Linux 
-                    disksimdir="x86_64"
-                    ;;
-                i686)
-                    # 32-bit Linux 
-                    disksimdir="i386_linux"
-                    ;;
-            esac
-
-            # Environment variables used for Disksim config
-            disksimenv="CFLAGS=-DDISKSIM_DBG CFLAGS=-g CXXFLAGS=-g"
-            depsStr="$defaultDeps"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-boost-mpi --with-dramsim=no --with-disksim=$SST_INSTALL_DEPS/$disksimdir --no-recursion $disksimenv"
-            ;;
-        PowerTherm_test)
-            #-----------------------------------------------------------------
-            # PowerTherm_test
-            #     This option used for configuring SST with Power and
-            #     Therm enabled
-            #-----------------------------------------------------------------
-            depsStr="-k none -d r4b00b22 -p default -z none -b default -g stabledevel -m default -i default -o default -h default -s none -q none"
-
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-McPAT=$SST_DEPS_INSTALL_MCPAT --with-hotspot=$SST_DEPS_INSTALL_HOTSPOT --with-orion=$SST_DEPS_INSTALL_ORION --with-IntSim=$SST_DEPS_INSTALL_INTSIM"
-            ;;
-        dramsim_test)
-            #-----------------------------------------------------------------
-            # dramsim_test
-            #     This option used for configuring SST with DRAMSim enabled
-            #-----------------------------------------------------------------
-            depsStr="$defaultDeps"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt"
-            ;;
-        gem5_test)
-            #-----------------------------------------------------------------
-            # gem5_test
-            #     This option used for configuring SST with gem5 enabled
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d r4b00b22 -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
-            ;;
-        sstmacro_latest_test)
-            #-----------------------------------------------------------------
-            # sstmacro_latest_test
-            #     This option used for configuring SST with latest devel sstmacro
-            #-----------------------------------------------------------------
-            echo "$USER" > ./sst/elements/macro_component/.unignore
-            miscEnv="${mpi_environment}"
-            depsStr="-k default -d r4b00b22 -p none -z none -b default -g stabledevel -m default -i default -o default -h default -s stabledevel"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
-            ;;
-        sstmacro_2.2.0_test)
-            #-----------------------------------------------------------------
-            # sstmacro_2.2.0_test
-            #     This option used for configuring SST with sstmacro 2.2.0
-            #-----------------------------------------------------------------
-            echo "$USER" > ./sst/elements/macro_component/.unignore
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d r4b00b22 -p none -z none -b default -g stabledevel -m none -i none -o none -h default -s 2.2.0"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
-            ;;
-        sstmacro_2.3.0_test)
-            #-----------------------------------------------------------------
-            # sstmacro_2.3.0_test
-            #     This option used for configuring SST with sstmacro 2.3.0
-            #-----------------------------------------------------------------
-            echo "$USER" > ./sst/elements/macro_component/.unignore
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d r4b00b22 -p none -z none -b default -g stabledevel -m none -i none -o none -h default -s 2.3.0"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
-            ;;
-        dramsim_latest_test)
-            #-----------------------------------------------------------------
-            # dramsim_test
-            #     This option used for configuring SST with latest devel DRAMSim 
-            #-----------------------------------------------------------------
-            depsStr="-k none -d stabledevel -p none -z none  -g stabledevel -m none -i none -o none -h none -s none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt"
-            ;;
-        boost_1.49_test)
-            #-----------------------------------------------------------------
-            # dramsim_test
-            #     This option used for configuring SST with latest devel DRAMSim 
-           #-----------------------------------------------------------------
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k default -d stabledevel -p none -z none -b 1.49 -g stabledevel -m default -i default -o default -h default -s none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt $miscEnv"
-            ;;
-        phoenixsim_test)
-            #-----------------------------------------------------------------
-            # phoenixsim_test
-            #     This option used for configuring SST with PhoenixSim enabled
-            #-----------------------------------------------------------------
-            depsStr="-b default -e default"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-omnetpp=${SST_DEPS_SRC_STAGING}/omnetpp-4.1/"
-            ;;
-        portals4_test|M5_test)
             depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE"
             ;;
-        zesto_test)
+        zesto_test) 
+            #-----------------------------------------------------------------
+            # zesto_test
+            #     This is an experimental build configuration.
+            #-----------------------------------------------------------------
             depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel -q stabledevel -M 1.2"
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM"
             ;;
-        iris_test)
-            depsStr="-k none -d none -p none -z none -g none -m none -i none -o none -h none -s none -4 none -I stabledevel -M 1.2"
-            setConvenienceVars "$depsStr"
-            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST"
-            ;;
-        simpleComponent_test)
-            depsStr="-k none -d none -p none -z none -b 1.43 -g none -m none -i none -o none -h none -s none -4 none -I stabledevel"
-            setConvenienceVars "$depsStr"
-            configStr="--prefix=$SST_INSTALL --enable-simpleComponent --with-boost=$SST_DEPS_INSTALL_BOOST"
-            ;;
         default|*)
+            #-----------------------------------------------------------------
+            # default
+            #     If you've made a mistake in specifying your build config,
+            #     do the default build. But this is probably not what you want!
+            #-----------------------------------------------------------------
             depsStr="$defaultDeps"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
@@ -730,7 +556,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|PowerTherm_test|sst2.2_config|sst2.3_config|sst2.3.1_config|sst3.0_config|sst3.0_config_static|sst3.0_config_clang_core_only|sst2.2_config_macosx|sst2.3_config_macosx|sst2.3.1_config_macosx|sst3.0_config_macosx|sst3.0_config_macosx_static|Disksim_test|sstmacro_latest_test|sstmacro_2.2.0_test|dramsim_latest_test|dramsim_test|boost_1.49_test|gem5_test|portals4_test|M5_test|iris_test|simpleComponent_test|phoenixsim_test|macro_test|sstmacro_2.3.0_test|non_std_sst2.2_config|zesto_test|documentation)
+        default|sst3.0_config|sst3.0_config_static|sst3.0_config_clang_core_only|sst3.0_config_macosx|sst3.0_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|zesto_test|documentation)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
