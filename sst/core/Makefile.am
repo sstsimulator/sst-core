@@ -41,7 +41,6 @@ nobase_dist_sst_HEADERS = \
 	linkMap.h \
 	linkPair.h \
 	log.h \
-	memEvent.h \
 	params.h \
 	pollingLinkQueue.h \
 	sdl.h \
@@ -88,7 +87,6 @@ sst_x_SOURCES = \
 	introspectedComponent.cc \
 	link.cc \
 	main.cc \
-	memEvent.cc \
 	pollingLinkQueue.cc \
 	sdl.cc \
 	simulation.cc \
