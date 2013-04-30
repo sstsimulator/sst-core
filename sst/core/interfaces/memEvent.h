@@ -123,12 +123,19 @@ public:
 	uint32_t getSize(void) const { return size; }
 	void setSize(uint32_t sz) {
 		size = sz;
-		payload.resize(size);
 	}
 
-	dataVec& getPayload(void) { return payload; }
-	void setPayload(uint32_t size, uint8_t *data) {
+	dataVec& getPayload(void)
+    {
+        /* Lazily allocate space for payload */
+        if ( payload.size() < size )
+            payload.resize(size);
+        return payload;
+    }
+	void setPayload(uint32_t size, uint8_t *data)
+    {
 		setSize(size);
+        payload.resize(size);
 		for ( uint32_t i = 0 ; i < size ; i++ ) {
 			payload[i] = data[i];
 		}
@@ -173,7 +180,7 @@ private:
 		case RequestData:
 			return SupplyData;
 		case SupplyData:
-			return WriteResp; // TODO
+			return WriteResp;
 		case ReadReq:
 			return ReadResp;
 		case WriteReq:
