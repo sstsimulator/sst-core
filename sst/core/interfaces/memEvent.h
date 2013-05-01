@@ -36,6 +36,8 @@ typedef uint64_t Addr;
 	X(RequestBus) \
 	X(CancelBusRequest) \
 	X(BusClearToSend) \
+    /* Misc */ \
+    X(ACK) \
 	X(NULLCMD)
 
 typedef enum {
@@ -185,6 +187,8 @@ private:
 			return ReadResp;
 		case WriteReq:
 			return WriteResp;
+        case Invalidate:
+            return ACK;
 		default:
 			return NULLCMD;
 		}
