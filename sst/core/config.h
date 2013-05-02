@@ -33,8 +33,6 @@ public:
     Config(int my_rank);
     ~Config();
 
-//    int parse_cmd_line( int argc, char* argv[] );        Renamed per Issue 70 - ALevine
-//    int parse_config_file( std::string config_string );
     int parseCmdLine( int argc, char* argv[] );
     int parseConfigFile( std::string config_string );
     
@@ -58,7 +56,6 @@ public:
     bool            verbose;
     
     inline Mode_t
-//    RunMode( std::string mode )  // Renamed per Issue 70 - ALevine 
     setRunMode( std::string mode ) 
     {
         if( ! mode.compare( "init" ) ) return INIT; 

@@ -51,7 +51,6 @@ Archive::~Archive()
 
 
 void
-//Archive::SaveSimulation(Simulation* simulation) // Renamed per Issue 70 - ALevine
 Archive::saveSimulation(Simulation* simulation)
 {
     std::string savename = filename + "." + type;
@@ -82,7 +81,6 @@ Archive::saveSimulation(Simulation* simulation)
 
 
 Simulation* 
-//Archive::LoadSimulation(void)  // Renamed per Issue 70 - ALevine
 Archive::loadSimulation(void)
 {
     std::string loadname = filename + "." + type;

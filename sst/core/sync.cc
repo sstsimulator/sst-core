@@ -92,7 +92,7 @@ namespace SST {
                 } else {
 		    // Need to figure out what the "delay" is for this event.
 		    SimTime_t delay = ev->getDeliveryTime() - current_cycle;
-                    link->second->send(delay,ev);   // Renamed per Issue 70 - ALevine
+                    link->second->send(delay,ev);
                 }
             }
 	    // Clear the receive vector

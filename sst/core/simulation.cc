@@ -336,26 +336,19 @@ void Simulation::initialize() {
     }
 }
 
-//void Simulation::Run() {    // Renamed per Issue 70 - ALevine
 void Simulation::run() {  
     _SIM_DBG( "RUN\n" );
 
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
     {
-//        if ( (*iter).second->Setup() ) {    // Renamed per Issue 70 - ALevine
-//            _ABORT(Simulation,"Setup()\n");
-//        }
-        (*iter).second->setup();
+      (*iter).second->setup();
     }
     //for introspector
     for( IntroMap_t::iterator iter = introMap.begin();
                             iter != introMap.end(); ++iter )
     {
-//        if ( (*iter).second->Setup() ) {    // Renamed per Issue 70 - ALevine
-//            _ABORT(Simulation,"Setup()\n");
-//        }
-        (*iter).second->setup();
+      (*iter).second->setup();
     }
 
     // // Check to make sure we have something to do.  If not print error
@@ -389,19 +382,13 @@ void Simulation::run() {
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
     {
-//        if ( (*iter).second->Finish() ) {    // Renamed per Issue 70 - ALevine
-//            _ABORT(Simulation,"Finish()\n");
-//        }
-        (*iter).second->finish();
+      (*iter).second->finish();
     }
     //for introspector
     for( IntroMap_t::iterator iter = introMap.begin();
                             iter != introMap.end(); ++iter )
     {
-//        if ( (*iter).second->Finish() ) {    // Renamed per Issue 70 - ALevine
-//            _ABORT(Simulation,"Finish()\n");
-//        }
-        (*iter).second->finish();
+      (*iter).second->finish();
     }
 
 }

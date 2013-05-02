@@ -60,7 +60,6 @@ public:
 	@param tc The time converter to specify units for the additional delay
 	@param the Event to send
     */
-//    void Send( SimTime_t delay, TimeConverter* tc, Event* event );   // Renamed per Issue 70 - ALevine
     void send( SimTime_t delay, TimeConverter* tc, Event* event );   
     
     /** Send an event with additional delay. Sends an event over a link
@@ -69,14 +68,12 @@ public:
 	@param delay The additional delay, in units of the default Link timebase
 	@param event The event to send
     */
-//    inline void Send( SimTime_t delay, Event* event ) {   // Renamed per Issue 70 - ALevine
     inline void send( SimTime_t delay, Event* event ) {  
 	send(delay,defaultTimeBase,event);
     }
     
     /** Send an event with the Link's default delay
 	@param event The event to send */
-//    inline void Send( Event* event ) {   // Renamed per Issue 70 - ALevine
     inline void send( Event* event ) {
 	send( 0, event );
     }
@@ -86,7 +83,6 @@ public:
 	have a set event handler, they can be polled with this function.
 	Returns NULL if there is no pending event.
     */
-//    Event* Recv();   // Renamed per Issue 70 - ALevine
     Event* recv();
     
     

@@ -54,11 +54,9 @@ public:
 
     /** Called after all components/introspectors have been constructed, but before
         simulation time has begun. */
-//    virtual int Setup( ) { return 0; }  // Renamed per Issue 70 - ALevine
     virtual void setup( ) { }
     /** Called after simulation completes, but before objects are
         destroyed. A good place to print out statistics. */
-//    virtual int Finish( ) { return 0; }  // Renamed per Issue 70 - ALevine
     virtual void finish( ) { }
         
     /** Get component of a certain type indicated by CompName on this rank.

@@ -132,7 +132,6 @@ Config::Config( int my_rank )
 }
 
 int
-//Config::parse_cmd_line(int argc, char* argv[]) {  // Renamed per Issue 70 - ALevine
 Config::parseCmdLine(int argc, char* argv[]) {
     run_name = argv[0];
     
@@ -211,7 +210,6 @@ Config::parseCmdLine(int argc, char* argv[]) {
 }
 
 int
-//Config::parse_config_file(string config_string)  // Renamed per Issue 70 - ALevine
 Config::parseConfigFile(string config_string)
 {
     std::stringbuf sb( config_string );
@@ -238,7 +236,6 @@ Config::parseConfigFile(string config_string)
         }
 
         if ( var_map->count("run-mode") ) {
-//            runMode = Config::RunMode( (*var_map)[ "run-mode" ].as< string >() );  // Renamed per Issue 70 - ALevine
             runMode = Config::setRunMode( (*var_map)[ "run-mode" ].as< string >() );
             if ( runMode == Config::UNKNOWN ) {
                 // this needs to be improved 
