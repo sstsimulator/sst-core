@@ -61,7 +61,8 @@ main(int argc, char *argv[])
     SST::Simulation*  sim= NULL;
 
     // All ranks parse the command line
-    if ( cfg.parse_cmd_line(argc, argv) ) {
+//    if ( cfg.parse_cmd_line(argc, argv) ) {  // Renamed per Issue 70 - ALevine
+    if ( cfg.parseCmdLine(argc, argv) ) {
 	delete mpiEnv;
         return -1;
     }
@@ -76,7 +77,8 @@ main(int argc, char *argv[])
 	    parser = new sdl_parser(cfg.sdlfile);
 	    
 	    string config_string = parser->getSDLConfigString();
-	    cfg.parse_config_file(config_string);
+//	    cfg.parse_config_file(config_string);  // Renamed per Issue 70 - ALevine
+	    cfg.parseConfigFile(config_string);
 	    // cfg.print();
 
 	}
@@ -259,7 +261,8 @@ main(int argc, char *argv[])
 
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) { 
         if ( cfg.archive ) {
-            sim = archive.LoadSimulation();
+//            sim = archive.LoadSimulation();  // Renamed per Issue 70 - ALevine
+            sim = archive.loadSimulation();
 	    printf("# Finished reading serialization file\n");
         }
 
@@ -295,7 +298,8 @@ main(int argc, char *argv[])
 	}
 
 	sim->initialize();
-        sim->Run();
+//        sim->Run();    // Renamed per Issue 70 - ALevine
+        sim->run();    // Renamed per Issue 70 - ALevine
 
 
 	delete sim;

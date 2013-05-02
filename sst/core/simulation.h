@@ -88,7 +88,8 @@ public:
     int performWireUp( ConfigGraph& graph, int myRank );
 
     void initialize();
-    void Run();
+//    void Run();    // Renamed per Issue 70 - ALevine
+    void run(); 
     SimTime_t getCurrentSimCycle() const;
     int getRank() const {return my_rank;}
     int getNumRanks() const {return num_ranks;}

@@ -57,7 +57,8 @@ public:
 	id = count++;
     }
     
-    void print_component(std::ostream &os) const;
+//    void print_component(std::ostream &os) const;  // Renamed per Issue 70 - ALevine
+    void print(std::ostream &os) const;
     
 private:
 
@@ -102,7 +103,8 @@ public:
 	return latency[1];
     }
     
-    void print_link(std::ostream &os) const {
+//    void print_link(std::ostream &os) const {  // Renamed per Issue 70 - ALevine
+    void print(std::ostream &os) const {
 	os << "Link " << name << " (id = " << id << ")" << std::endl;
 	os << "  component[0] = " << component[0] << std::endl;
 	os << "  port[0] = " << port[0] << std::endl;
@@ -142,10 +144,12 @@ typedef std::map<std::string,std::string> VariableMap_t;
     
 class ConfigGraph {
 public:
-    void print_graph(std::ostream &os) const {
+//    void print_graph(std::ostream &os) const {  // Renamed Per Issue 70 - ALevine
+    void print(std::ostream &os) const {
 	os << "Printing graph" << std::endl;
         for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-	    (*i).second->print_component(os);
+//	    (*i).second->print_component(os);  // Renamed per Issue 70 - ALevine
+	    (*i).second->print(os);
 	}
     }
 

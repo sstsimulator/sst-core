@@ -101,7 +101,8 @@ void Link::addOutputLatency(SimTime_t cycles, TimeConverter* timebase) {
     latency += timebase->convertToCoreTime(cycles);
 }
     
-void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {
+//void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {   // Renamed per Issue 70 - ALevine
+void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {  
 //     _LINK_DBG("delay=%lu sendQueue=%p event=%p sFunctor=%p\n",
 //               (unsigned long) delay,sendQueue,event,sFunctor);
     if ( tc == NULL ) {
@@ -123,7 +124,8 @@ void Link::Send( SimTime_t delay, TimeConverter* tc, Event* event ) {
 }
     
 
-Event* Link::Recv()
+//Event* Link::Recv()   // Renamed per Issue 70 - ALevine
+Event* Link::recv() 
 {
     Event* event = NULL;
     Simulation *simulation = Simulation::getSimulation();

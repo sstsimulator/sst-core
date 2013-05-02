@@ -59,10 +59,12 @@ public:
     virtual void init(unsigned int phase) {}
     /** Called after all components have been constructed and inialization has
 	completed, but before simulation time has begun. */
-    virtual int Setup( ) { return 0; }
+//    virtual int Setup( ) { return 0; }  // Renamed per Issue 70 - ALevine
+    virtual void setup( ) { }
     /** Called after simulation completes, but before objects are
         destroyed. A good place to print out statistics. */
-    virtual int Finish( ) { return 0; }
+//    virtual int Finish( ) { return 0; }  // Renamed per Issue 70 - ALevine
+    virtual void finish( ) { }
 
     virtual bool Status( ) { return 0; }
     
@@ -116,7 +118,7 @@ public:
 
     /** Register that the simulation should not end until this
         component says it is OK to. Calling this function (generally
-        done in Component::Setup() or in component constructor)
+        done in Component::setup() or in component constructor)
         increments a global counter. Calls to
         Component::unregisterExit() decrements the counter. The
         simulation cannot end unless this counter reaches zero, or the

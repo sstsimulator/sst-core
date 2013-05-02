@@ -54,19 +54,21 @@ public:
 
     /** Called after all components/introspectors have been constructed, but before
         simulation time has begun. */
-    virtual int Setup( ) { return 0; }
+//    virtual int Setup( ) { return 0; }  // Renamed per Issue 70 - ALevine
+    virtual void setup( ) { }
     /** Called after simulation completes, but before objects are
         destroyed. A good place to print out statistics. */
-    virtual int Finish( ) { return 0; }
+//    virtual int Finish( ) { return 0; }  // Renamed per Issue 70 - ALevine
+    virtual void finish( ) { }
         
     /** Get component of a certain type indicated by CompName on this rank.
 	Name is unique so the fuction actually returns a list with only one component.
-        This function is usually used in Introspector::Setup().
+        This function is usually used in Introspector::setup().
         @param CompName Component's name*/
     std::list<IntrospectedComponent*> getModelsByName(const std::string CompName); 
     /** Get component of a certain type indicated by CompType on this rank.
         If CompType is blank, a list of all local components is returned.
-        This function is usually used in Introspector::Setup().
+        This function is usually used in Introspector::setup().
         @param CompType Component's type*/
     std::list<IntrospectedComponent*> getModelsByType(const std::string CompType);
 

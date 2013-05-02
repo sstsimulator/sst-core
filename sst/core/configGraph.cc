@@ -37,7 +37,8 @@ LinkId_t ConfigLink::count = 0;
 
 static inline int min( int x, int y ) { return x < y ? x : y; }
 
-void ConfigComponent::print_component(std::ostream &os) const {
+//void ConfigComponent::print_component(std::ostream &os) const {  // Renamed per Issue 70 - ALevine
+void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
     os << "  type = " << type << std::endl;
     os << "  weight = " << weight << std::endl;
@@ -45,7 +46,8 @@ void ConfigComponent::print_component(std::ostream &os) const {
     os << "  isIntrospector = " << isIntrospector << std::endl;
     os << "  Links:" << std::endl;
     for (size_t i = 0 ; i != links.size() ; ++i) {
-	links[i]->print_link(os);
+//	links[i]->print_link(os);  // Renamed per Issue 70 - ALevine
+	links[i]->print(os);
     }
     
     os << "  Params:" << std::endl;

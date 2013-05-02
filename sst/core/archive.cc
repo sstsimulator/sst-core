@@ -51,7 +51,8 @@ Archive::~Archive()
 
 
 void
-Archive::SaveSimulation(Simulation* simulation)
+//Archive::SaveSimulation(Simulation* simulation) // Renamed per Issue 70 - ALevine
+Archive::saveSimulation(Simulation* simulation)
 {
     std::string savename = filename + "." + type;
     std::ofstream ofs(savename.c_str());
@@ -81,7 +82,8 @@ Archive::SaveSimulation(Simulation* simulation)
 
 
 Simulation* 
-Archive::LoadSimulation(void)
+//Archive::LoadSimulation(void)  // Renamed per Issue 70 - ALevine
+Archive::loadSimulation(void)
 {
     std::string loadname = filename + "." + type;
     std::ifstream ifs(loadname.c_str());

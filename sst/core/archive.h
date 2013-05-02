@@ -23,8 +23,10 @@ namespace SST {
         Archive(std::string, std::string);
         ~Archive();
 
-        void SaveSimulation(Simulation* sim);
-        Simulation* LoadSimulation(void);
+//        void SaveSimulation(Simulation* sim);  // Renamed Per Issue 70 - ALevine
+//        Simulation* LoadSimulation(void);
+        void saveSimulation(Simulation* sim);
+        Simulation* loadSimulation(void);
     private:
         Archive(); // do not implement
         std::string type;
