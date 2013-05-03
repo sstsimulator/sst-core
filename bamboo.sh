@@ -192,6 +192,13 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_macro.sh
     fi
 
+    if [ $1 = "gem5_no_dramsim_config" ]
+    then
+        # placeholder for tests requiring gem5 with no dramsim
+        :  #noop
+    fi
+
+
     # Purge SST installation
     if [[ ${SST_RETAIN_BIN:+isSet} != isSet ]]
     then
@@ -356,6 +363,18 @@ getconfig() {
             depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel -q stabledevel -M 1.2"
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE --enable-zesto --with-qsim=$SST_DEPS_INSTALL_QSIM"
+            ;;
+        gem5_no_dramsim_config) 
+            #-----------------------------------------------------------------
+            # gem5_no_dramsim_config
+            #     This option used for configuring SST with gem5, but without
+            #     dramsim enabled
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d none -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -M none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST $miscEnv"
             ;;
         default|*)
             #-----------------------------------------------------------------
@@ -554,7 +573,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sst3.0_config|sst3.0_config_static|sst3.0_config_clang_core_only|sst3.0_config_macosx|sst3.0_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|zesto_test|documentation)
+        default|sst3.0_config|sst3.0_config_static|sst3.0_config_clang_core_only|sst3.0_config_macosx|sst3.0_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|zesto_test|gem5_no_dramsim_config|documentation)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
