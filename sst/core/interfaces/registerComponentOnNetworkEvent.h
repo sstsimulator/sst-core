@@ -6,7 +6,7 @@
 #include <sst/core/debug.h>
 #include <sst/core/activity.h>
 
-#include <cstdint>
+#include <stdint.h>
 
 namespace SST {
 namespace Interfaces {
