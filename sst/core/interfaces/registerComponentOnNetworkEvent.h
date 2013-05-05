@@ -9,12 +9,12 @@
 namespace SST {
 namespace Interfaces {
 
-class RegisterComponentOnNetwork : public SST::Event {
+class RegisterComponentOnNetworkEvent : public SST::Event {
 public:
 	RegisterComponentOnNetworkEvent() {} // For serialization only
 
-	RegisterComponentOnNetworkEvent(const std::string &componentNetworkName) :
-		SST::Event(), componentNetworkName
+	RegisterComponentOnNetworkEvent(const std::string &componentNetName) :
+		SST::Event(), componentNetworkName(componentNetName)
 	{ }
 
 	RegisterComponentOnNetworkEvent(const RegisterComponentOnNetworkEvent &me) : SST::Event()

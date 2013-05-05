@@ -60,6 +60,8 @@ nobase_dist_sst_HEADERS = \
 	serialization/element.h \
 	interfaces/TestEvent.h \
 	interfaces/memEvent.h \
+	interfaces/stringEvent.h \
+	interfaces/registerComponentOnNetworkEvent.h \
 	rng/sstrand.h \
 	rng/marsaglia.h \
 	rng/mersenne.h
@@ -97,6 +99,7 @@ sst_x_SOURCES = \
 	uninitializedQueue.cc \
 	interfaces/memEvent.cc \
 	interfaces/stringEvent.cc \
+	interfaces/registerComponentOnNetworkEvent.cc \
 	interfaces/TestEvent.cc \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
