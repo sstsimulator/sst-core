@@ -47,7 +47,7 @@ int Str2Type( std::string name ) {
     if ( ! name.compare("clockevent") ) return DBG_CLOCKEVENT;
     if ( ! name.compare("sdl") ) return DBG_SDL;
     if ( ! name.compare("graph") ) return DBG_GRAPH;
-    if ( ! name.compare("zolt") ) return DBG_ZOLT;
+    if ( ! name.compare("partition") ) return DBG_PARTITION;
     if ( ! name.compare("exit") ) return DBG_EXIT;
     if ( ! name.compare("memory") ) return DBG_MEMORY;
     if ( ! name.compare("network") ) return DBG_NETWORK;

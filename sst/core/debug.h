@@ -50,7 +50,7 @@ extern int DebugSetFile( const std::string& filename );
 #define DBG_CLOCKEVENT (1<<16)
 #define DBG_SDL        (1<<17)
 #define DBG_GRAPH      (1<<18)
-#define DBG_ZOLT       (1<<19)
+#define DBG_PARTITION  (1<<19)
 #define DBG_EXIT       (1<<20)
 #define DBG_MEMORY     (1<<21)
 #define DBG_NETWORK    (1<<22)
@@ -73,7 +73,7 @@ extern int DebugSetFile( const std::string& filename );
 			DBG_CLOCKEVENT| \
 			DBG_SDL| \
 			DBG_GRAPH| \
-			DBG_ZOLT| \
+			DBG_PARTITION | \
 			DBG_EXIT| \
 			DBG_MEMORY| \
 			DBG_NETWORK| \

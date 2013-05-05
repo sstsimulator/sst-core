@@ -33,7 +33,7 @@ namespace mpi = boost::mpi;
 
 namespace SST {
 
-#define _ZOLT_DBG( fmt, args...) __DBG( DBG_ZOLT, Zolt, fmt, ## args )
+#define _ZOLT_DBG( fmt, args...) __DBG( DBG_PARTITION, Zolt, fmt, ## args )
 
 
 /* accessors */
