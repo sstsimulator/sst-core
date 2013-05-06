@@ -24,6 +24,7 @@
 namespace SST {
 
 class LinkMap;
+class Module;
 
 #define _COMP_DBG( fmt, args...) __DBG( DBG_COMP, Component, fmt, ## args )
 
@@ -175,7 +176,7 @@ public:
     */
     void primaryComponentOKToEndSim();
     
-    
+    Module* loadModule(std::string type, Params& params);
     
     
 protected:

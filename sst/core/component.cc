@@ -19,6 +19,7 @@
 #include "sst/core/component.h"
 #include "sst/core/simulation.h"
 #include "sst/core/exit.h"
+#include "sst/core/factory.h"
 #include "sst/core/link.h"
 #include "sst/core/linkMap.h"
 #include "sst/core/timeLord.h"
@@ -220,6 +221,12 @@ void
 Component::primaryComponentOKToEndSim()
 {
     Simulation::getSimulation()->getExit()->refDec( getId() ); 
+}
+
+Module*
+Component::loadModule(std::string type, Params& params)
+{
+    return Simulation::getSimulation()->getFactory()->CreateModule(type,params);
 }
 
     

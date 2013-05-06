@@ -41,6 +41,7 @@ nobase_dist_sst_HEADERS = \
 	linkMap.h \
 	linkPair.h \
 	log.h \
+	module.h \
 	params.h \
 	pollingLinkQueue.h \
 	sdl.h \

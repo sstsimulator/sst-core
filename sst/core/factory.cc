@@ -171,6 +171,36 @@ Factory::CreateIntrospector(std::string type,
     return ret;
 }
 
+Module*
+Factory::CreateModule(std::string type, Params& params)
+{
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(type);
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // now look for module
+    std::string tmp = elemlib + "." + elem;
+    eim_map_t::iterator eim = 
+        found_modules.find(tmp);
+    if (eim == found_modules.end()) {
+        _abort(Factory,"can't find requested module %s.\n ", tmp.c_str());
+        return NULL;
+    }
+
+    const ModuleInfo mi = eim->second;
+
+    if (!mi.params.empty()) {
+        params.verify_params(mi.params, mi.module->name);
+    }
+
+    Module *ret = mi.module->alloc(params);
+    return ret;
+}
+
 
 void
 Factory::RequireEvent(std::string eventname)
@@ -294,6 +324,15 @@ Factory::findLibrary(std::string elemlib)
             std::string tmp = elemlib + "." + eii->name;
             found_introspectors[tmp] = IntrospectorInfo(eii, create_params_set(eii->params));
             eii++;
+        }
+    }
+
+    if (NULL != eli->modules) {
+        const ElementInfoModule *eim = eli->modules;
+        while (NULL != eim->name) {
+            std::string tmp = elemlib + "." + eim->name;
+            found_modules[tmp] = ModuleInfo(eim, create_params_set(eim->params));
+            eim++;
         }
     }
 

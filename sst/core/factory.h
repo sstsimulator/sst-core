@@ -33,6 +33,8 @@ public:
                                Params& params);
     void RequireEvent(std::string eventname);
 
+    Module* CreateModule(std::string type, Params& params);
+    
     partitionFunction GetPartitioner(std::string name);
     generateFunction GetGenerator(std::string name);
 private:
@@ -80,10 +82,33 @@ private:
         }
     };
 
+
+    struct ModuleInfo {
+        const ElementInfoModule* module;
+        std::set<std::string> params;
+
+        ModuleInfo() {}
+
+        ModuleInfo(const ElementInfoModule *module, 
+                         std::set<std::string> params) : module(module), params(params)
+        { }
+
+        ModuleInfo(const ModuleInfo& old) : module(old.module), params(old.params)
+        { }
+
+        ModuleInfo& operator=(const ModuleInfo& old)
+        {
+            module = old.module;
+            params = old.params;
+            return *this;
+        }
+    };
+
     typedef std::map<std::string, const ElementLibraryInfo*> eli_map_t;
     typedef std::map<std::string, ComponentInfo> eic_map_t;
     typedef std::map<std::string, const ElementInfoEvent*> eie_map_t;
     typedef std::map<std::string, IntrospectorInfo> eii_map_t;
+    typedef std::map<std::string, ModuleInfo> eim_map_t;
     typedef std::map<std::string, const ElementInfoPartitioner*> eip_map_t;
     typedef std::map<std::string, const ElementInfoGenerator*> eig_map_t;
 
@@ -105,6 +130,7 @@ private:
     eic_map_t found_components;
     eii_map_t found_introspectors;
     eie_map_t found_events;
+    eim_map_t found_modules;
     eip_map_t found_partitioners;
     eig_map_t found_generators;
     std::string searchPaths;

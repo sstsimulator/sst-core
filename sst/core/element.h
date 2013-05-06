@@ -18,14 +18,12 @@
 namespace SST {
 class Introspector;
 class ConfigGraph;
-class Subcomponent;
-//class Module;
+class Module;
  
 typedef Component* (*componentAllocate)(ComponentId_t, Params&);
 typedef Introspector* (*introspectorAllocate)(Params&);
 typedef void (*eventInitialize)(void);
-typedef Subcomponent* (*subcomponentLoad)(Component*, Params&);
-//typedef Module* (*moduleLoad)(Params&);
+typedef Module* (*moduleAllocate)(Params&);
 typedef void (*partitionFunction)(ConfigGraph*,int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
  
@@ -57,20 +55,13 @@ struct ElementInfoEvent {
     eventInitialize init;
 };
 
-struct ElementInfoSubcomponent {
+struct ElementInfoModule {
     const char *name;
     const char *description;
     void (*printHelp)(FILE *output);
-    subcomponentLoad func;
+    moduleAllocate alloc;
     ElementInfoParam *params;
 };
-
-//struct ElementInfoModule {
-//    const char *name;
-//    const char *description;
-//    void (*printHelp)(FILE *output);
-//    moduleLoad func;
-//};
 
 struct ElementInfoPartitioner {
     const char *name;
@@ -93,7 +84,7 @@ struct ElementLibraryInfo {
     const struct ElementInfoEvent* events;
     const struct ElementInfoIntrospector* introspectors;
     /* const struct ElementInfoSubcomponent* subcomponents; */
-//    const struct ElementInfoModule* modules;
+    const struct ElementInfoModule* modules;
     const struct ElementInfoPartitioner* partitioners;
     const struct ElementInfoGenerator* generators;
 };
