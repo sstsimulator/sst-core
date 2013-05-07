@@ -181,6 +181,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
     ${SST_TEST_SUITES}/testSuite_patterns.sh
+    ${SST_TEST_SUITES}/testSuite_prospero.sh
 
     if [ $1 == "phoenixsim_test" ]
     then
