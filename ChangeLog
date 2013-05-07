@@ -1,3 +1,73 @@
+2013-5-08
+* Release V3.0.0
+This release of SST/Micro introduces a number of new features and changes.
+They are grouped below by 1) core changes 2) component changes 3) new models, 
+and 3) other
+SST core changes:
+API changes were the primary motivation for incrementing the major revision 
+number. The number of APIs did not change, but the capitalization was made
+consistent across them. Additional parameter checking and the
+infrastructure to self-document components has been added. The core provides
+an optional new init stage which is called between the constructor and the
+setup stage. It can pass data from one component to another. It is now
+possible to load a module out of a library.
+
+Component changes:
+Each SST component is now in its own C++ namespace. The SST version of GEM5
+has been modified to support the new hierachical memory model.  Added
+PHXsimWrap to Gem5 which links to a proprietary HMC component, phxsim.so.
+The scheduler component has new scheduling an dallocaiton algorithms, as
+well as enhancement to the base component for new requirements, in particular,
+resiliency.
+
+New Models:
+This release introduces new scheduler models, simple clock and network
+models, a generic router model and hierarchical memory model.  The memory
+hieraarchy model plugs into gem5, but instead of using its memory
+models (classic and ruby), memHierarchy provides snoopy based coherency and
+has working atomics. (The directory based model is under development.) A new
+utility a reads a trace file and generates standard memory events that 
+can then be passed to the new hierachical cache/memory models.
+
+Other:
+There is a new WIKI page that explains how to install a user-level phython
+version.
+
+The individual commits/revisions (i.e. ChangeLog) since V2.3 are not provided 
+as there were approximately 500 revisions committed. It would be impossible to
+read and digest. The SST wiki http://code.google.com/p/sst-simulator/source/list
+can be browsed for the individual revisions.
+
+A number of issues were resolved by fixes in this release. The full
+description of each issue can be found on the SST wiki at 
+http://code.google.com/p/sst-simulator/issues/list.
+11  Mainline build breakage when Zesto enables Qsim
+37  Need SST-DRAMSim interface unit test
+39  Seems unreasonable to have to add boost to LD_LIBRARY_PATH for
+configure when location also specified on "--with boost=" parameter
+42  Default lib-path does not appear to be set correctly.
+44  SST/GEM5 Build Failure on Mac OSX using MacPorts OpenMPI
+45  Patterns element in non-compliance with 1 element library per element
+directory convention
+47  SST needs random number generators in core
+49  SST/micro V2.3 supports SST/macro V2.4 --not V2.3
+50  Doxygen documentation generation needs to be re-instituted
+51  mpirun -np <n> requires parameter when "n" is greater than one
+52  Scheduler component sending events in constructor. This is no longer
+allowed as of r4111.
+56  gem5 cache bug seen for miniFE (miniapp)
+57  SST source tree contains xml files that no longer work
+59  SST fails to build statically.
+60  SST Component Parameter Documentation
+61  Not all source files have copyright info
+63  core/params.h generates a compile warning 
+64  Static MacOS (Lion) build fails with undefined Reference to marsagliaRNG
+65  nicMmu.h needs to include unistd.h
+67  Is DRAMSimC no longer needed?
+70  Requested Low Level SST API Changes
+72  Patterns allreduce generates an NAN out output
+73  Static Build of SST has errors in Patterns Component
+
 2013-1-31
 * Release V2.3 includes the remaining, existing SST components that were not
 integrated in time for SST V2.2. They are now being tested on a nightly basis. 
