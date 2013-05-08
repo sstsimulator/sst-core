@@ -26,7 +26,7 @@ DRAMSim2 2.2.2
 GEM5 tag V3.0.0 from https://code.google.com/p/sst-gem5-devel.devel which was 
  a fork of gem5-stable at change set 8642:549b72de8f72 back on Dec 15 2011
 SST/Macro 2.4
-MacSim 1.1 (Builds on all but MacOS. Test fails everywhere.)
+MacSim 1.2 (Builds on all but MacOS. Test fails everywhere.)
 Mpich2 1.4.1.p2 (not supported on MacOS)
 OMNeT++ 4.1 (not supported on MacOS)
 OpenMPI 1.6 (V1.4.4 on MacOS via Xcode)
