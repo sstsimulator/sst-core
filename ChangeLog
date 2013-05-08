@@ -1,4 +1,4 @@
-2013-5-08
+2013-05-08
 * Release V3.0.0
 This release of SST/Micro introduces a number of new features and changes.
 They are grouped below by 1) core changes 2) component changes 3) new models, 
@@ -6,7 +6,7 @@ and 3) other
 SST core changes:
 API changes were the primary motivation for incrementing the major revision 
 number. The number of APIs did not change, but the capitalization was made
-consistent across them. Additional parameter checking and the
+consistent across the function names. Additional parameter checking and the
 infrastructure to self-document components has been added. The core provides
 an optional new init stage which is called between the constructor and the
 setup stage. It can pass data from one component to another. It is now
@@ -16,18 +16,18 @@ Component changes:
 Each SST component is now in its own C++ namespace. The SST version of GEM5
 has been modified to support the new hierachical memory model.  Added
 PHXsimWrap to Gem5 which links to a proprietary HMC component, phxsim.so.
-The scheduler component has new scheduling an dallocaiton algorithms, as
-well as enhancement to the base component for new requirements, in particular,
+The scheduler component has new scheduling and allocation algorithms, as
+well as enhancements to the base component for new requirements, in particular,
 resiliency.
 
 New Models:
 This release introduces new scheduler models, simple clock and network
 models, a generic router model and hierarchical memory model.  The memory
-hieraarchy model plugs into gem5, but instead of using its memory
+hieraarchy model plugs into gem5, but instead of using gem5's memory
 models (classic and ruby), memHierarchy provides snoopy based coherency and
 has working atomics. (The directory based model is under development.) A new
 utility a reads a trace file and generates standard memory events that 
-can then be passed to the new hierachical cache/memory models.
+can then be passed to the new hierachical cache/memory model.
 
 Other:
 There is a new WIKI page that explains how to install a user-level phython

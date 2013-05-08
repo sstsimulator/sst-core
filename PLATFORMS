@@ -1,10 +1,10 @@
-SST and the supported models are built nightly for the following
-OS/compiler combination:
-1. Ubunto 12.10 LTS (64-bit) with gcc v4.6.3
+SST and the supported models are built and tested nightly for the following
+OS/compiler combinations:
+1. Ubunto 12.04 LTS (64-bit) with gcc v4.6.3
 2. MacOS 10.7.4 (lion) with LLVM i686-apple-darwin11-llvm-g++-4.2.1
 3. MacOS 10.8.3 (mountain lion) with LLVM i686-apple-darwin11-llvm-g++-4.2.1
 4. CentOS 6.2 with gcc V4.4.6
-4. TOSS 2.0 -0rc4.ch5 with RHEL 6.2 (Santiago) with gcc 4.4.6 
+5. TOSS 2.0 -0rc4.ch5 with RHEL 6.2 (Santiago) with gcc 4.4.6 
    (see http://code.google.com/p/chaos-release/wiki/CHAOS_Description)
 
 Note: SST is only supported on 64-bit platforms.

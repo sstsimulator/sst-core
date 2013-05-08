@@ -66,7 +66,7 @@ macro_component - glue layer for interfacing with SST/macro.
 memHierarchy - models a memory hierarchy, such as multiple cache levels. 
 merlin - generic router and NIC model intended to connect to vendor-proprietary
   or other ASICs. 
-messageGeneratorComponent
+messageGeneratorComponent -
 patterns - allows the generation of network traffic without incurring
   the proessing and memory overhead of running a full endpoint simulator.
 PhoenixSim - models properties of photonic interconnect networks including 
@@ -77,7 +77,7 @@ portals4 - Model Portals4 NIC. Portals message matching and data movement
   is preformed by the NIC. The NIC sits between a network router and 
   bus model. The currently supported models are Gem5 and SS_router.
 portals4_sm - state machine model based on injecting discrete events
-#power - glue layer for interfacing to SST power, thermal and
+*power - glue layer for interfacing to SST power, thermal and
   reliability models
 propero - reads a trace file and generates standard memory events that can 
   then be passed to memHierarchy cache/memory models. Prospero also has a 
@@ -108,3 +108,4 @@ DRAMSimC - a glue layer for interfacing to a DRAMSim2 library from another SST
  component.
  https://wiki.umd.edu/DRAMSim2
 sstdisksim - glue directory to DiskSim (will be deprecated in next release)
+
