@@ -142,7 +142,6 @@ private:
     template<class Archive>
     void save(Archive & ar, const unsigned int version) const
     {
-        printf("begin Factory::save\n");
         std::vector<std::string> loaded_element_libraries;
         loaded_element_libraries.reserve(loaded_libraries.size());
         for (eli_map_t::const_iterator i = loaded_libraries.begin() ;
@@ -150,14 +149,12 @@ private:
              ++i) {
             loaded_element_libraries.push_back(i->first);
         }
-        printf("end Factory::save (%d)\n", (int) loaded_element_libraries.size());
         ar & BOOST_SERIALIZATION_NVP(loaded_element_libraries);
     }
 
     template<class Archive>
     void load(Archive & ar, const unsigned int version)
     {
-        printf("begin Factory::load\n");
         std::vector<std::string> loaded_element_libraries;
         ar & BOOST_SERIALIZATION_NVP(loaded_element_libraries); 
         BOOST_FOREACH(std::string type, loaded_element_libraries) {
@@ -168,7 +165,6 @@ private:
                 abort();
             }
         }
-        printf("end Factory::load (%d)\n", (int) loaded_element_libraries.size());
     }
 
     template<class Archive>
@@ -176,10 +172,8 @@ private:
                                     const Factory * t, 
                                     const unsigned int file_version)
     {
-        printf("begin Factory::save_construct_data\n");
         std::string search_path = t->searchPaths;
         ar << BOOST_SERIALIZATION_NVP(search_path);
-        printf("end Factory::save_construct_data\n");
     }
 
     template<class Archive>
@@ -187,11 +181,9 @@ private:
                                     Factory * t,
                                     const unsigned int file_version)
     {
-        printf("begin Factory::load_construct_data\n");
         std::string search_path;
         ar >> BOOST_SERIALIZATION_NVP(search_path);
         ::new(t)Factory(search_path);
-        printf("end Factory::load_construct_data\n");
     }
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
