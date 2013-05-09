@@ -64,6 +64,8 @@ allowed as of r4111.
 64  Static MacOS (Lion) build fails with undefined Reference to marsagliaRNG
 65  nicMmu.h needs to include unistd.h
 67  Is DRAMSimC no longer needed?
+69  internal factory constructor attempts to dlopen itself, but libm5c 
+    is built as a static library when configure
 70  Requested Low Level SST API Changes
 72  Patterns allreduce generates an NAN out output
 73  Static Build of SST has errors in Patterns Component
