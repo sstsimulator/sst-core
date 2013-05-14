@@ -141,7 +141,8 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_PowerTherm.sh
     fi
 
-    ${SST_TEST_SUITES}/testSuite_iris.sh
+#    !!! Disable iris test due to infinite loop (2013-05-14)
+#    ${SST_TEST_SUITES}/testSuite_iris.sh
 
     ${SST_TEST_SUITES}/testSuite_M5.sh
     if [ $1 == "M5_test" ]
