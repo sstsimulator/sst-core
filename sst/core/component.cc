@@ -89,6 +89,12 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
     return tc;
 }
 
+bool
+Component::isPortConnected(const std::string &name) const
+{
+    return (myLinks->getLink(name) != NULL);
+}
+
 Link*
 Component::configureLink(std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
 {

@@ -66,7 +66,8 @@ public:
     virtual void finish( ) { }
 
     virtual bool Status( ) { return 0; }
-    
+
+    bool isPortConnected(const std::string &name) const;
     Link* configureLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
     Link* configureLink( std::string name, std::string time_base, Event::HandlerBase* handler = NULL);
     Link* configureLink( std::string name, Event::HandlerBase* handler = NULL);
