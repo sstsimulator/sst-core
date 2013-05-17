@@ -304,7 +304,7 @@ getconfig() {
             #-----------------------------------------------------------------
             depsStr="-k none -d 2.2.2 -p none -z none -b none -g none -m none -i none -o none -h none -s none -q none -M none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
             ;;
         sst3.0_config_macosx) 
             #-----------------------------------------------------------------
