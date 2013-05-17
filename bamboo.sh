@@ -302,7 +302,7 @@ getconfig() {
             # sst3.0_config_clang_core_only
             #     This option used for configuring SST with no deps to build the core with clang
             #-----------------------------------------------------------------
-            depsStr="-k none -d none -p none -z none -b none -g none -m none -i none -o none -h none -s none -q none -M none"
+            depsStr="-k none -d 2.2.2 -p none -z none -b none -g none -m none -i none -o none -h none -s none -q none -M none"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions"
             ;;
