@@ -1,10 +1,10 @@
 // Copyright 2009-2013 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
-// 
+//
 // Copyright (c) 2009-2013, Sandia Corporation
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -36,8 +36,10 @@ typedef uint64_t Addr;
 	X(RequestBus) \
 	X(CancelBusRequest) \
 	X(BusClearToSend) \
-    /* Misc */ \
+    /* Directoyr Controller */ \
     X(ACK) \
+    X(Fetch) \
+    X(FetchInvalidate) \
 	X(NULLCMD)
 
 typedef enum {
@@ -63,6 +65,7 @@ public:
 	static const uint32_t F_WRITEBACK = (1<<0);
 	static const uint32_t F_LOCKED    = (1<<1);
     static const uint32_t F_DELAYED   = (1<<2); // Used to delay snoops when a block is locked
+    static const uint32_t F_EXCLUSIVE = (1<<3);
 
 	typedef std::vector<uint8_t> dataVec;
 	typedef std::pair<uint64_t, int> id_type;
@@ -121,6 +124,7 @@ public:
 	Command getCmd(void) const { return cmd; }
 	void setCmd(Command newcmd) { cmd = newcmd; }
 	Addr getAddr(void) const { return addr; }
+	void setAddr(Addr newAddr) { addr = newAddr; }
 
 	uint32_t getSize(void) const { return size; }
 	void setSize(uint32_t sz) {
