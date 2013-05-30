@@ -151,11 +151,11 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_M5.sh
     fi
 
-    if [ `find . -name libPhoenixSim.so | wc -w` != 0 ]
+    if [ `find . -name 'libPhoenixSim.*' | wc -w` != 0 ]
     then
         ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
     else
-        echo -e  "No PhoenixSim test:  libPhoenixSim.so is not available\n"
+        echo -e  "No PhoenixSim test:   No libPhoenixSim is available\n"
     fi
 
     if [[ $BOOST_HOME == *boost*1.50* ]]
