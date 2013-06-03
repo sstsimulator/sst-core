@@ -28,16 +28,17 @@ typedef uint64_t Addr;
 	X(ReadResp) \
 	X(WriteReq) \
 	X(WriteResp) \
-	/* Cache <-> Cache/MemControl */ \
+	/* Cache <-> Cache/MemControl/DirCtrl */ \
 	X(RequestData) \
 	X(SupplyData) \
 	X(Invalidate) \
+    X(ACK) \
+    X(NACK) \
 	/* Component <-> Bus */ \
 	X(RequestBus) \
 	X(CancelBusRequest) \
 	X(BusClearToSend) \
-    /* Directoyr Controller */ \
-    X(ACK) \
+    /* Directory Controller */ \
     X(Fetch) \
     X(FetchInvalidate) \
 	X(NULLCMD)
@@ -193,6 +194,9 @@ private:
 			return WriteResp;
         case Invalidate:
             return ACK;
+        case Fetch:
+        case FetchInvalidate:
+            return SupplyData;
 		default:
 			return NULLCMD;
 		}
