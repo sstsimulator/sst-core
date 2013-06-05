@@ -82,19 +82,19 @@ extern int DebugSetFile( const std::string& filename );
 #define __DBG( flag, name, fmt, args...) \
     do { \
         if (flag & SST::_debug_flags) {\
-            fprintf(_dbg_stream, "%d:%s::%s():%d: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args ); \
+            fprintf(_dbg_stream, "%d:%s::%s():%d: " fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args ); \
             fflush(_dbg_stream); \
         } \
     } while(0)
 
 #define _DBG( name, fmt, args...) \
-         fprintf(_dbg_stream, "%d:%s::%s():%d: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args )
+         fprintf(_dbg_stream, "%d:%s::%s():%d: " fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args )
 
 #define _AR_DBG( name, fmt, args...) __DBG( DBG_ARCHIVE, name, fmt, ## args )
 
 #define _abort( name, fmt, args...)\
 {\
-    fprintf(stderr, "%d:%s::%s():%d:ABORT: "fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args ); \
+    fprintf(stderr, "%d:%s::%s():%d:ABORT: " fmt, SST::_debug_rank, #name, __FUNCTION__,__LINE__, ## args ); \
     exit(-1); \
 }\
 /**/
