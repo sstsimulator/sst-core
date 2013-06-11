@@ -71,8 +71,6 @@ public:
 	typedef std::vector<uint8_t> dataVec;
 	typedef std::pair<uint64_t, int> id_type;
 
-	MemEvent() {} // For serialization only
-
 	MemEvent(const Component *_src, Addr _addr, Command _cmd) :
 		SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName())
 	{
@@ -180,6 +178,9 @@ private:
 	std::string src;
 	std::string dst;
 	uint32_t flags;
+
+
+	MemEvent() {} // For serialization only
 
 	Command commandResponse(Command c)
 	{
