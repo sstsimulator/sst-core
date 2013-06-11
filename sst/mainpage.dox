@@ -23,7 +23,15 @@ Academia, and the National Labs in designing and evaluating future
 architectures.
 
 <h2> Key Interfaces for Component Writers</h2>
+<hr>
+<b>NOTE</b>: As of 2013-JUN-11, please refer to
 
+<a href="http://code.google.com/p/sst-simulator/wiki/IntegrateYourComponentWithSST" target="_blank">Integrate Your Component With SST</a>
+
+SST wiki entry for further information on writing and integrating a component. 
+
+<b>The information from the "Key Interfaces" link below is deprecated until further notice.</b>
+<hr>
 \subpage interfaces
 
 <h2> Install </h2>
@@ -77,7 +85,15 @@ afrodri@sandia.gov
 */
 
 /** @page interfaces Key Interfaces
+<hr>
+<b>NOTE</b>: As of 2013-JUN-11, please refer to
 
+<a href="http://code.google.com/p/sst-simulator/wiki/IntegrateYourComponentWithSST" target="_blank">Integrate Your Component With SST</a>
+
+SST wiki entry for further information on writing and integrating a component.
+
+<b>The information following this notice is deprecated until further notice.</b>
+<hr>
 <h2>The Component</h2>
 
 The most important class for is SST::Component, the base class from
