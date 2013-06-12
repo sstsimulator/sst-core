@@ -93,9 +93,15 @@ Config::Config( int my_rank )
     mainDesc = new po::options_description( "" );
     mainDesc->add_options()
         ("debug", po::value< vector<string> >()->multitoken(), 
+#ifdef HAVE_ZOLTAN
                 "{ all | cache | queue | archive | clock | sync | link |\
                  linkmap | linkc2m | linkc2c | linkc2s | comp | factory |\
                  stop | compevent | sim | clockevent | sdl | graph | zolt }")
+#else
+                "{ all | cache | queue | archive | clock | sync | link |\
+                 linkmap | linkc2m | linkc2c | linkc2s | comp | factory |\
+                 stop | compevent | sim | clockevent | sdl | graph }")
+#endif
         ("debug-file", po::value <string> ( &debugFile ),
                                 "file where debug output will go")
         ("archive-type", po::value< string >( &archiveType ), 
@@ -119,6 +125,7 @@ Config::Config( int my_rank )
         ("partitioner", po::value< string >(&partitioner), 
          "partitioner to be used <self | simple | rrobin | lib.partitioner_name> (option ignored for serial jobs)")
 #endif
+
         ("generator", po::value< string >(&generator), 
          "generator to be used to build simulation <lib.generator_name>")
         ("gen-options", po::value< string >(&generator_options), 
