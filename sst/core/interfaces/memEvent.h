@@ -67,6 +67,7 @@ public:
 	static const uint32_t F_LOCKED    = (1<<1);
     static const uint32_t F_DELAYED   = (1<<2); // Used to delay snoops when a block is locked
     static const uint32_t F_EXCLUSIVE = (1<<3);
+    static const uint32_t F_UNCACHED  = (1<<4);
 
 	typedef std::vector<uint8_t> dataVec;
 	typedef std::pair<uint64_t, int> id_type;
