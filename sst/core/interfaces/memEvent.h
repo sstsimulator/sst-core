@@ -116,6 +116,8 @@ public:
 		me->setSize(size);
 		me->response_to_id = event_id;
 		me->dst = src;
+        if ( queryFlag(F_UNCACHED) )
+            me->setFlag(F_UNCACHED);
 		return me;
 	}
 
