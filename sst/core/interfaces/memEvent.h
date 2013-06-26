@@ -41,6 +41,7 @@ typedef uint64_t Addr;
     /* Directory Controller */ \
     X(Fetch) \
     X(FetchInvalidate) \
+    X(Evicted) \
 	X(NULLCMD)
 
 /** \enum Valid commands for the MemEvent */
