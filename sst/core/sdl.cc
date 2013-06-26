@@ -37,7 +37,7 @@ namespace SST {
 		doc = new TiXmlDocument(fileName.c_str());
 		bool load_ok = doc->LoadFile();
 		if ( !load_ok ) {
-			cout << "Error loading " << fileName <<": " << doc->ErrorDesc() << endl;
+			cout << "Error loading " << fileName <<": " << doc->ErrorDesc() << " on line " << doc->ErrorRow() << endl;
 			exit(1);
 		}
 
