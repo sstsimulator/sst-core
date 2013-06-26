@@ -42,6 +42,7 @@ nobase_dist_sst_HEADERS = \
 	linkPair.h \
 	log.h \
 	module.h \
+	output.h \
 	params.h \
 	pollingLinkQueue.h \
 	sdl.h \
@@ -90,6 +91,7 @@ sst_x_SOURCES = \
 	introspectedComponent.cc \
 	link.cc \
 	main.cc \
+	output.cc \
 	pollingLinkQueue.cc \
 	sdl.cc \
 	simulation.cc \

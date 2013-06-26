@@ -19,6 +19,7 @@
 
 #include "sst/core/config.h"
 #include "sst/core/debug.h"
+#include "sst/core/output.h"
 #include "sst/core/sdl.h"
 #include "sst/core/build_info.h"
 
@@ -140,6 +141,8 @@ Config::Config( int my_rank )
 
 int
 Config::parseCmdLine(int argc, char* argv[]) {
+    std::string tempFileName = "sst_output"; 
+
     run_name = argv[0];
     
     po::options_description cmdline_options;
@@ -163,9 +166,16 @@ Config::parseCmdLine(int argc, char* argv[]) {
     }
 
     if ( var_map->count("debug-file") ) {
-        if ( DebugSetFile(debugFile) ) {
+        Output::setFileName(debugFile);
+
+        // Rename the debug file until the Output Class takes over
+        tempFileName = debugFile + "_DBG"; 
+        if ( DebugSetFile(tempFileName) ) {
             return -1;
         }
+    }
+    else {
+        Output::setFileName(tempFileName);
     }
 
     if ( var_map->count( "help" ) ) {
