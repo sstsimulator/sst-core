@@ -19,20 +19,53 @@ using namespace SST::RNG;
 
 namespace SST {
 namespace RNG {
-/*
-	Implements basic random number generation for SST core or 
-	components.
+/**
+	Implements a random number generator using the Marsaglia method. This method is
+	computationally cheap and provides a reasonable distribution of random numbers. If
+	you need additional strength in the random numbers you may want to consider the
+	Mersenne RNG.
 */
 class MarsagliaRNG : public SSTRandom {
 
     public:
+	/**
+		Creates a new Marsaglia RNG using the initial seeds.
+		@param[initial_z] One of the random seed pairs
+		@param[initial_w] One of the random seed pairs.
+	*/
         MarsagliaRNG(unsigned int initial_z,
                 unsigned int initial_w);
+
+	/**
+		Creates a new Marsaglia RNG using random initial seeds (which are
+		read from the system clock). Note that these will create variation
+		between runs and between platforms.
+	*/
         MarsagliaRNG();
+
+	/**
+		Generates the next random number as a double in the range 0 to 1.
+	*/
 	double   nextUniform();
+
+	/**
+		Generates the next random number as an unsigned 32-bit integer.
+	*/
 	uint32_t generateNextUInt32();
+
+	/**
+		Generates the next random number as an unsigned 64-bit integer.
+	*/
 	uint64_t generateNextUInt64();
+
+	/**
+		Generates the next number as a signed 64-bit integer.
+	*/
 	int64_t  generateNextInt64();
+
+	/**
+		Generates the next number as a signed 32-bit integer.
+	*/
         int32_t   generateNextInt32();
 
     private:
