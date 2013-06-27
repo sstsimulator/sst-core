@@ -20,6 +20,8 @@ using namespace SST::RNG;
 namespace SST {
 namespace RNG {
 /*
+	\class MersenneRNG mersenne.h "sst/core/rng/mersenne.h"
+
 	Implements a Mersenne-based RNG for use in the SST core or components. The Mersenne
 	RNG provides a better "randomness" to the distribution of outputs but is computationally
 	more expensive than the Marsaglia RNG.

@@ -20,6 +20,8 @@ using namespace SST::RNG;
 namespace SST {
 namespace RNG {
 /**
+	\class MarsagliaRNG marsaglia.h "sst/core/rng/marsaglia.h"
+
 	Implements a random number generator using the Marsaglia method. This method is
 	computationally cheap and provides a reasonable distribution of random numbers. If
 	you need additional strength in the random numbers you may want to consider the
