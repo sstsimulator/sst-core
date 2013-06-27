@@ -11,5 +11,9 @@
 
 
 namespace SST {
+	/**
+		Implements the round robin partitioning scheme for
+		SST.
+	*/
 	void rrobin_partition(ConfigGraph* graph, int world_size);
 }
