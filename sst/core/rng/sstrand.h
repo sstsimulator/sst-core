@@ -13,6 +13,8 @@ namespace SST {
 namespace RNG {
 
 /**
+	\class SSTRandom sstrand.h "sst/core/rng/sstrand.h"
+
 	Implements the base class for random number generators for the SST core. This does not
 	implement an actual RNG itself only the base class which describes the methods each
 	class will implement.
