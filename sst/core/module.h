@@ -14,7 +14,9 @@
 #define SST_MODULE_H
 
 namespace SST {
-
+  /**
+     Module is a tag class used with the loadModule function.
+   */
     class Module {
 
     public:
