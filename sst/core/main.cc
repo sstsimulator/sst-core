@@ -36,6 +36,8 @@
 #include <sst/core/part/simplepart.h>
 #include <sst/core/part/rrobin.h>
 
+#include <sys/resource.h>
+
 using namespace std;
 using namespace SST;
 
@@ -295,7 +297,7 @@ main(int argc, char *argv[])
 	}
 
 	sim->initialize();
-  sim->run();
+        sim->run();
 
 
 	delete sim;
@@ -312,12 +314,21 @@ main(int argc, char *argv[])
     all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
 
     if ( world.rank() == 0 && cfg.verbose ) {
+	struct rusage sim_ruse;
+	getrusage(RUSAGE_SELF, &sim_ruse);
+
 	std::cout << setiosflags(ios::fixed) << setprecision(2);
 	std::cout << "#" << endl;
 	std::cout << "#  Simulation Timing Information:" << endl;
-	std::cout << "#  Build time:      " << max_build_time << " s" << std::endl;
-	std::cout << "#  Simulation time: " << max_run_time   << " s" << std::endl;
-	std::cout << "#  Total time:      " << max_total_time << " s" << std::endl;
+	std::cout << "#  Build time:             " << max_build_time << " s" << std::endl;
+	std::cout << "#  Simulation time:        " << max_run_time   << " s" << std::endl;
+	std::cout << "#  Total time:             " << max_total_time << " s" << std::endl;
+
+	std::cout << "#" << std::endl;
+	std::cout << "#  Simulation Resource Information:" << std::endl;
+	std::cout << "#  Max Resident Set Size:  " << sim_ruse.ru_maxrss << " bytes" << std::endl;
+	std::cout << "#  Page Faults:            " << sim_ruse.ru_majflt << " faults" << std::endl;
+
     }
 
     delete mpiEnv;
