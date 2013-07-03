@@ -158,12 +158,12 @@ dotests() {
         echo -e  "No PhoenixSim test:   No libPhoenixSim is available\n"
     fi
 
-    if [[ $BOOST_HOME == *boost*1.50* ]]
-    then
-        ${SST_TEST_SUITES}/testSuite_macro.sh
-    else
-        echo -e "No SST Macro test:    Only test with Boost 1.50"
-    fi
+    # if [[ $BOOST_HOME == *boost*1.50* ]]
+    # then
+    #     ${SST_TEST_SUITES}/testSuite_macro.sh
+    # else
+    #     echo -e "No SST Macro test:    Only test with Boost 1.50"
+    # fi
 
     if [ $1 == "portals4_test" ]
     then
