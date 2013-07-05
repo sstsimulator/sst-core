@@ -34,10 +34,6 @@ typedef uint64_t Addr;
 	X(Invalidate) \
     X(ACK) \
     X(NACK) \
-	/* Component <-> Bus */ \
-	X(RequestBus) \
-	X(CancelBusRequest) \
-	X(BusClearToSend) \
     /* Directory Controller */ \
     X(Fetch) \
     X(FetchInvalidate) \
