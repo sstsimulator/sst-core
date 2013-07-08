@@ -17,6 +17,11 @@
 // CHOOSE THE --enable-debug OPTION DURING SST CONFIGURATION
 //#define __SST_DEBUG_OUTPUT__
 
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS
+#endif
+#include <inttypes.h>
+
 #include <cstdio>
 
 namespace SST {
