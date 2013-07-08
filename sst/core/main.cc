@@ -326,7 +326,7 @@ main(int argc, char *argv[])
 
 	std::cout << "#" << std::endl;
 	std::cout << "#  Simulation Resource Information:" << std::endl;
-	std::cout << "#  Max Resident Set Size:  " << sim_ruse.ru_maxrss << " bytes" << std::endl;
+	std::cout << "#  Max Resident Set Size:  " << sim_ruse.ru_maxrss << " KB" << std::endl;
 	std::cout << "#  Page Faults:            " << sim_ruse.ru_majflt << " faults" << std::endl;
 
     }
