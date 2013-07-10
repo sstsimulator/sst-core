@@ -181,7 +181,7 @@ void Output::verbose(uint32_t line, std::string file, std::string func, uint32_t
     if (true == m_objInitialized) {
         // First check to see if we are allowed to send output based upon the 
         // verbose_mask and verbose_level checks
-        if (((output_bits & m_verboseMask) == m_verboseMask) &&
+        if (((output_bits & ~m_verboseMask) == 0) &&
            (output_level <= m_verboseLevel)){
     
             // Create the prefix string
@@ -206,7 +206,7 @@ void Output::debug(uint32_t line, std::string file, std::string func, uint32_t o
     if (true == m_objInitialized) {
         // First check to see if we are allowed to send output based upon the 
         // verbose_mask and verbose_level checks
-        if (((output_bits & m_verboseMask) == m_verboseMask) &&
+        if (((output_bits & ~m_verboseMask) == 0) &&
            (output_level <= m_verboseLevel)){
     
             // Create the prefix string
@@ -230,7 +230,7 @@ void Output::fatal(uint32_t line, std::string file, std::string func, uint32_t e
     if (true == m_objInitialized) {
         // First check to see if we are allowed to send output based upon the 
         // verbose_mask and verbose_level checks
-        if (((output_bits & m_verboseMask) == m_verboseMask) &&
+        if (((output_bits & ~m_verboseMask) == 0) &&
            (output_level <= m_verboseLevel)){
     
             // Create the prefix string

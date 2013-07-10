@@ -62,8 +62,9 @@ public:
                   retrieved from the SST Core.   
         @param verbose_mask Bitmask of allowed message types for debug(), 
                verbose() and fatal().  The Output object will only output the 
-               message if all set bits of the output_bits parameter 
-               are set in the verbose_mask of the object. 
+               message if the set bits of the output_bits parameter 
+               are set in the verbose_mask of the object.  It uses this logic: 
+               if (~verbose_mask & output_bits == 0) then output is enabled. 
         @param verbose_level Debugging output level.  Calls to debug(), 
                verbose() and fatal() are only output if their output_level 
                parameter is less than or equal to the verbose_level currently 
@@ -104,8 +105,9 @@ public:
                   retrieved from the SST Core.   
         @param verbose_mask Bitmask of allowed message types for debug(), 
                verbose() and fatal().  The Output object will only output the 
-               message if all set bits of the output_bits parameter 
-               are set in the verbose_mask of the object. 
+               message if the set bits of the output_bits parameter 
+               are set in the verbose_mask of the object.  It uses this logic: 
+               if (~verbose_mask & output_bits == 0) then output is enabled. 
         @param verbose_level Debugging output level.  Calls to debug(), 
                verbose() and fatal() are only output if their output_level 
                parameter is less than or equal to the verbose_level currently 
@@ -150,8 +152,10 @@ public:
         @param func Function name calling function (use CALL_INFO macro)
         @param output_level For output to occur, output_level must be less than 
                or equal to verbose_level set in object
-        @param output_bits For output to occur, all bits in output_bits must 
-               be set the in the verbose_mask set in object
+        @param output_bits The Output object will only output the
+               message if the set bits of the output_bits parameter are set in 
+               the verbose_mask of the object.  It uses this logic: 
+               if (~verbose_mask & output_bits == 0) then output is enabled.                
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.  
      */
@@ -171,8 +175,10 @@ public:
         @param func Function name calling function (use CALL_INFO macro)
         @param output_level For output to occur, output_level must be less than
                or equal to verbose_level set in object
-        @param output_bits For output to occur, all bits in output_bits must 
-               be set the in the verbose_mask set in object
+        @param output_bits The Output object will only output the
+               message if the set bits of the output_bits parameter are set in 
+               the verbose_mask of the object.  It uses this logic: 
+               if (~verbose_mask & output_bits == 0) then output is enabled.                
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.  
      */
@@ -189,11 +195,13 @@ public:
         @param file File name calling function (use CALL_INFO macro)
         @param func Function name calling function (use CALL_INFO macro)
         @param exit_code The exit code used for termination of simuation.
-               will be passed to MPI_Abort
+               will be passed to MPI_Abort()
         @param output_level For output to occur, output_level must be less than 
                or equal to verbose_level set in object
-        @param output_bits For output to occur, all bits in output_bits must 
-               be set the in the verbose_mask set in object
+        @param output_bits The Output object will only output the
+               message if the set bits of the output_bits parameter are set in 
+               the verbose_mask of the object.  It uses this logic: 
+               if (~verbose_mask & output_bits == 0) then output is enabled.                
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.  
      */
@@ -228,8 +236,9 @@ public:
     /** Sets object verbose mask
         @param verbose_mask Bitmask of allowed message types for debug(), 
                verbose() and fatal().  The Output object will only output the 
-               message if all set bits of the output_bits parameter 
-               are set in the verbose_mask of the object. 
+               message if the set bits of the output_bits parameter 
+               are set in the verbose_mask of the object.  It uses this logic: 
+               if (~verbose_mask & output_bits == 0) then output is enabled. 
     */
     void setVerboseMask(uint32_t verbose_mask);
 
