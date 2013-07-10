@@ -47,7 +47,9 @@ public:
     
     /** Constructor.  Set up output configuration. 
         @param prefix Prefix to be prepended to all strings emitted by calls to 
-               debug() or verbose().
+               debug(), verbose(), fatal() and possibly output().
+               NOTE: No space will be inserted between the prepended prefix 
+               string and the normal output string.
                Prefix can contain the following escape codes:
                @f Name of the file in which output call was made.
                @l Line number in the file in which output call was made.
@@ -56,15 +58,18 @@ public:
                   MPI_COMM_WORLD size is 1. 
                @R MPI rank of the calling process.  Will be 0 if 
                   MPI_COMM_WORLD size is 1. 
-        @param verbose_mask Bitmask of allowed message types for debug() and
-               verbose().  The Output object will only output the message if all 
-               set bits of the output_bits parameter of debug() and verbose() 
+               @t Simulation time.  Will be the raw simulaton cycle time 
+                  retrieved from the SST Core.   
+        @param verbose_mask Bitmask of allowed message types for debug(), 
+               verbose() and fatal().  The Output object will only output the 
+               message if all set bits of the output_bits parameter 
                are set in the verbose_mask of the object. 
-        @param verbose_level Debugging output level.  Calls to debug() and 
-               verbose() are only output if their output_level parameter is equal
-               or greater than the verbose_level currently set for the object 
-        @param location Output location.  Ouput will be directed to stdout, 
-               stderr, to a file, or nowhere.  If FILE output is selected, the 
+        @param verbose_level Debugging output level.  Calls to debug(), 
+               verbose() and fatal() are only output if their output_level 
+               parameter is less than or equal to the verbose_level currently 
+               set for the object 
+        @param location Output location.  Ouput will be directed to STDOUT, 
+               STDERR, FILE, or NONE.  If FILE output is selected, the 
                output will be directed to the file defined by the 
                --debug runtime parameter, or to the file 'sst_output' if the 
                --debug parameter is not defined.  If the size of MPI_COMM_WORLD 
@@ -84,7 +89,9 @@ public:
     
     /** Initialize the object after construction 
         @param prefix Prefix to be prepended to all strings emitted by calls to 
-               debug() or verbose().
+               debug(), verbose(), fatal() and possibly output().
+               NOTE: No space will be inserted between the prepended prefix 
+               string and the normal output string.
                Prefix can contain the following escape codes:
                @f Name of the file in which output call was made.
                @l Line number in the file in which output call was made.
@@ -93,15 +100,18 @@ public:
                   MPI_COMM_WORLD size is 1. 
                @R MPI rank of the calling process.  Will be 0 if 
                   MPI_COMM_WORLD size is 1. 
-        @param verbose_mask Bitmask of allowed message types for debug() and
-               verbose().  The Output object will only output the message if all 
-               set bits of the output_bits parameter of debug() and verbose() 
+               @t Simulation time.  Will be the raw simulaton cycle time 
+                  retrieved from the SST Core.   
+        @param verbose_mask Bitmask of allowed message types for debug(), 
+               verbose() and fatal().  The Output object will only output the 
+               message if all set bits of the output_bits parameter 
                are set in the verbose_mask of the object. 
-        @param verbose_level Debugging output level.  Calls to debug() and 
-               verbose() are only output if their output_level parameter is equal
-               or greater than the verbose_level currently set for the object 
-        @param location Output location.  Ouput will be directed to stdout, 
-               stderr, to a file, or nowhere.  If FILE output is selected, the 
+        @param verbose_level Debugging output level.  Calls to debug(), 
+               verbose() and fatal() are only output if their output_level 
+               parameter is less than or equal to the verbose_level currently 
+               set for the object 
+        @param location Output location.  Ouput will be directed to STDOUT, 
+               STDERR, FILE, or NONE.  If FILE output is selected, the 
                output will be directed to the file defined by the 
                --debug runtime parameter, or to the file 'sst_output' if the 
                --debug parameter is not defined.  If the size of MPI_COMM_WORLD 
@@ -115,7 +125,7 @@ public:
     // NOTE: __ATTRIBUTE__ Performs printf type mismatch checks on the format parameter
     /** Output the message with formatting as specified by the format parameter.
         @param format Format string.  All valid formats for printf are available.
-        @param ... Argument strings for format.  
+        @param ... Arguments for format.  
      */
     void output(const char* format, ...) 
          __attribute__ ((format (printf, 2, 3)));
@@ -138,12 +148,12 @@ public:
         @param line Line number of calling function (use CALL_INFO macro)
         @param file File name calling function (use CALL_INFO macro)
         @param func Function name calling function (use CALL_INFO macro)
-        @param output_level For output to occur, output_level must be greater
-               than verbose_level set in object
+        @param output_level For output to occur, output_level must be less than 
+               or equal to verbose_level set in object
         @param output_bits For output to occur, all bits in output_bits must 
                be set the in the verbose_mask set in object
         @param format Format string.  All valid formats for printf are available.
-        @param ... Argument strings for format.  
+        @param ... Arguments for format.  
      */
     void verbose(uint32_t line, std::string file, std::string func, uint32_t output_level, 
                   uint32_t output_bits, const char* format, ...)    
@@ -159,22 +169,46 @@ public:
         @param line Line number of calling function (use CALL_INFO macro)
         @param file File name calling function (use CALL_INFO macro)
         @param func Function name calling function (use CALL_INFO macro)
-        @param output_level For output to occur, output_level must be greater
-               than verbose_level set in object
+        @param output_level For output to occur, output_level must be less than
+               or equal to verbose_level set in object
         @param output_bits For output to occur, all bits in output_bits must 
                be set the in the verbose_mask set in object
         @param format Format string.  All valid formats for printf are available.
-        @param ... Argument strings for format.  
+        @param ... Arguments for format.  
      */
     void debug(uint32_t line, std::string file, std::string func, uint32_t output_level, 
                uint32_t output_bits, const char* format, ...)   
                __attribute__ ((format (printf, 7, 8)));
     
+    /** Output the fatal message with formatting as specified by the format 
+        parameter. Output will only occur if specified output_level and 
+        output_bits meet criteria defined by object.  The output will be 
+        prepended with the expanded prefix set in the object.
+        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+        @param line Line number of calling function (use CALL_INFO macro)
+        @param file File name calling function (use CALL_INFO macro)
+        @param func Function name calling function (use CALL_INFO macro)
+        @param exit_code The exit code used for termination of simuation.
+               will be passed to MPI_Abort
+        @param output_level For output to occur, output_level must be less than 
+               or equal to verbose_level set in object
+        @param output_bits For output to occur, all bits in output_bits must 
+               be set the in the verbose_mask set in object
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.  
+     */
+    void fatal(uint32_t line, std::string file, std::string func, 
+                  uint32_t exit_code, uint32_t output_level, 
+                  uint32_t output_bits, const char* format, ...)    
+                  __attribute__ ((format (printf, 8, 9)));
+    
     // GET / SET METHODS
     
     /** Sets object prefix
         @param prefix Prefix to be prepended to all strings emitted by calls to 
-               debug() or verbose().
+               debug(), verbose(), fatal() and possibly output().
+               NOTE: No space will be inserted between the prepended prefix 
+               string and the normal output string.
                Prefix can contain the following escape codes:
                @f Name of the file in which output call was made.
                @l Line number in the file in which output call was made.
@@ -183,6 +217,8 @@ public:
                   MPI_COMM_WORLD size is 1. 
                @R MPI rank of the calling process.  Will be 0 if 
                   MPI_COMM_WORLD size is 1. 
+               @t Simulation time.  Will be the raw simulaton cycle time 
+                  retrieved from the SST Core.   
     */
     void setPrefix(const std::string& prefix);
 
@@ -190,9 +226,9 @@ public:
     std::string getPrefix() const;
 
     /** Sets object verbose mask
-        @param verbose_mask Bitmask of allowed message types for debug() and
-               verbose().  The Output object will only output the message if all 
-               set bits of the output_bits parameter of debug() and verbose() 
+        @param verbose_mask Bitmask of allowed message types for debug(), 
+               verbose() and fatal().  The Output object will only output the 
+               message if all set bits of the output_bits parameter 
                are set in the verbose_mask of the object. 
     */
     void setVerboseMask(uint32_t verbose_mask);
@@ -201,9 +237,10 @@ public:
     uint32_t getVerboseMask() const;
 
     /** Sets object verbose level
-        @param verbose_level Debugging output level.  Calls to debug() and 
-               verbose() are only output if their output_level parameter is equal
-               or greater than the verbose_level currently set for the object 
+        @param verbose_level Debugging output level.  Calls to debug(), 
+               verbose() and fatal() are only output if their output_level 
+               parameter is less than or equal to the verbose_level currently 
+               set for the object 
     */
     void setVerboseLevel(uint32_t verbose_level);
 
@@ -211,8 +248,8 @@ public:
     uint32_t getVerboseLevel() const;
     
     /** Sets object output location
-        @param location Output location.  Ouput will be directed to stdout, 
-               stderr, to a file, or nowhere.  If FILE output is selected, the 
+        @param location Output location.  Ouput will be directed to STDOUT, 
+               STDERR, FILE, or NONE.  If FILE output is selected, the 
                output will be directed to the file defined by the 
                --debug runtime parameter, or to the file 'sst_output' if the 
                --debug parameter is not defined.  If the size of MPI_COMM_WORLD 

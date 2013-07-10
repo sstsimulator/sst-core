@@ -15,6 +15,7 @@
 #include "sst_config.h"
 #include "sst/core/serialization/core.h"
 
+#include "sst/core/simulation.h"
 #include "sst/core/output.h"
 
 // System Headers
@@ -180,8 +181,8 @@ void Output::verbose(uint32_t line, std::string file, std::string func, uint32_t
     if (true == m_objInitialized) {
         // First check to see if we are allowed to send output based upon the 
         // verbose_mask and verbose_level checks
-        if (((output_bits & m_verboseMask) == output_bits) &&
-           (output_level >= m_verboseLevel)){
+        if (((output_bits & m_verboseMask) == m_verboseMask) &&
+           (output_level <= m_verboseLevel)){
     
             // Create the prefix string
             prefixString = buildPrefixString(line, file, func);
@@ -205,8 +206,8 @@ void Output::debug(uint32_t line, std::string file, std::string func, uint32_t o
     if (true == m_objInitialized) {
         // First check to see if we are allowed to send output based upon the 
         // verbose_mask and verbose_level checks
-        if (((output_bits & m_verboseMask) == output_bits) &&
-           (output_level >= m_verboseLevel)){
+        if (((output_bits & m_verboseMask) == m_verboseMask) &&
+           (output_level <= m_verboseLevel)){
     
             // Create the prefix string
             prefixString = buildPrefixString(line, file, func);
@@ -221,6 +222,29 @@ void Output::debug(uint32_t line, std::string file, std::string func, uint32_t o
 #endif    
 }
 
+void Output::fatal(uint32_t line, std::string file, std::string func, uint32_t exit_code, uint32_t output_level, uint32_t output_bits, const char* format, ...)    
+{
+    va_list     arg;
+    std::string prefixString;
+    
+    if (true == m_objInitialized) {
+        // First check to see if we are allowed to send output based upon the 
+        // verbose_mask and verbose_level checks
+        if (((output_bits & m_verboseMask) == m_verboseMask) &&
+           (output_level <= m_verboseLevel)){
+    
+            // Create the prefix string
+            prefixString = buildPrefixString(line, file, func);
+    
+            // Get the argument list and then print it out
+            va_start(arg, format);
+            outputprintf(prefixString, format, arg);
+            va_end(arg);    
+        }
+    }
+    boost::mpi::environment::abort(exit_code);      
+
+}
 
 void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
 {
@@ -372,6 +396,11 @@ std::string Output::buildPrefixString(uint32_t line, std::string& file, std::str
                     sprintf(tempBuf, "%d", m_MPIWorldRank);
                     rtnstring += tempBuf;
                 }
+                startindex = findindex + 2;
+                break;
+            case 't' :
+                sprintf(tempBuf, "%"PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
+                rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
 
