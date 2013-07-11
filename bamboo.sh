@@ -165,6 +165,12 @@ dotests() {
     #     echo -e "No SST Macro test:    Only test with Boost 1.50"
     # fi
 
+    echo SST MACRO: $SST_DEPS_INSTALL_SSTMACRO
+    if [[ ${SST_DEPS_INSTALL_SSTMACRO:+isSet} = isSet ]]
+    then
+        ${SST_TEST_SUITES}/testSuite_macro.sh
+    fi
+
     if [ $1 == "portals4_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_portals4.sh
