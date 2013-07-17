@@ -127,6 +127,12 @@ main(int argc, char *argv[])
 			<< std::endl;
             }
 
+	    // Check config graph to see if there are structural errors.
+	    if ( graph->checkForStructuralErrors() ) {
+		printf("Structural errors found in the ConfigGraph.  Aborting...\n");
+		exit(-1);
+	    }
+	    
 	    // Set all components to be instanced on rank 0 (the only
 	    // one that exists)
 	    graph->setComponentRanks(0);
@@ -144,6 +150,14 @@ main(int argc, char *argv[])
 		graph = parser->createConfigGraph();
 	    }
 
+	    if ( world.rank() == 0 ) {
+		// Check config graph to see if there are structural errors.
+		if ( graph->checkForStructuralErrors() ) {
+		    printf("Structural errors found in the ConfigGraph.  Aborting...\n");
+		    exit(-1);
+		}
+	    }
+	    
 	    clock_t end_graph_gen = clock();
    
             if(cfg.verbose && (world.rank() == 0)) {

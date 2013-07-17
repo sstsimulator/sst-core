@@ -86,8 +86,36 @@ ConfigGraph::checkRanks(int ranks)
 	if ( rank < 0 || rank >= ranks ) return false;
     }
     return true;
-    
 }
+
+
+bool
+ConfigGraph::checkForStructuralErrors()
+{
+    // Check to make sure there are no dangling links.  A dangling
+    // link is found by looking though the links in the graph and
+    // making sure there are components on both sides of the link.
+    bool found_error = false;
+    for( ConfigLinkMap_t::iterator iter = links.begin();
+	 iter != links.end(); ++iter )
+    {
+	ConfigLink* clink = (*iter).second;
+	// This one should never happen since the slots are
+	// initialized in order, but just in case...
+	if ( clink->component[0] == ULONG_MAX ) {
+	    printf("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
+		   comps[clink->component[1]]->name.c_str());
+	    found_error = true;
+	}
+	if ( clink->component[1] == ULONG_MAX ) {
+	    printf("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
+		   comps[clink->component[0]]->name.c_str());
+	    found_error = true;
+	}
+    }
+    return found_error;
+}
+
 
 
 

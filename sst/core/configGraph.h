@@ -92,9 +92,14 @@ public:
     SimTime_t        latency[2];
     int              current_ref;
     
-    ConfigLink() {
+    ConfigLink()
+    {
 	id = count++;
 	current_ref = 0;
+
+	// Initialize the component data items
+	component[0] = ULONG_MAX;
+	component[1] = ULONG_MAX;
     }
 
     SimTime_t getMinLatency() {
@@ -173,6 +178,7 @@ public:
     
     ComponentId_t addIntrospector(std::string name, std::string type);
 
+    bool checkForStructuralErrors();
     
     
     // Temporary until we have a better API
