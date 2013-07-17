@@ -135,6 +135,8 @@ Factory::CreateComponent(ComponentId_t id,
     }
 
     Component *ret = ci.component->alloc(id, params);
+    if (NULL == ret) return ret;
+
     ret->type = type;
     return ret;
 }
@@ -416,14 +418,15 @@ Factory::loadLibrary(std::string elemlib)
 } 
 
 std::pair<std::string, std::string>
-Factory::parseLoadName(std::string wholename)
+Factory::parseLoadName(const std::string& wholename)
 {
-    std::vector<std::string> parts;
-    boost::split(parts, wholename, boost::is_any_of("."));
-    if (parts.size() == 1) {
-        return make_pair(parts[0], parts[0]);
+    std::size_t found = wholename.find_first_of(".");
+    if (found == std::string::npos) {
+        return make_pair(wholename, wholename);
     } else {
-        return make_pair(parts[0], parts[1]);
+        std::string eli(wholename, 0, found);
+        std::string el(wholename, (size_t)(found + 1));
+        return make_pair(eli, el);
     }
 }
 

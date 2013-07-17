@@ -136,7 +136,7 @@ private:
     std::string searchPaths;
     FactoryLoaderData *loaderData;
 
-    std::pair<std::string, std::string> parseLoadName(std::string wholename);
+    std::pair<std::string, std::string> parseLoadName(const std::string& wholename);
 
     friend class boost::serialization::access;
     template<class Archive>
