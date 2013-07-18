@@ -146,7 +146,7 @@ void Output::output(const char* format, ...)
     va_list     arg;
     std::string prefixString = "";
     
-    if (true == m_objInitialized) {
+    if (true == m_objInitialized && NONE != m_targetLoc ) {
         // Get the argument list and then print it out
         va_start(arg, format);
         outputprintf(prefixString, format, arg); 
@@ -160,7 +160,7 @@ void Output::output(uint32_t line, std::string file, std::string func, const cha
     va_list     arg;
     std::string prefixString;
     
-    if (true == m_objInitialized) {
+    if (true == m_objInitialized && NONE != m_targetLoc ) {
 
         // Create the prefix string
         prefixString = buildPrefixString(line, file, func);
@@ -178,7 +178,7 @@ void Output::verbose(uint32_t line, std::string file, std::string func, uint32_t
     va_list     arg;
     std::string prefixString;
     
-    if (true == m_objInitialized) {
+    if (true == m_objInitialized && NONE != m_targetLoc ) {
         // First check to see if we are allowed to send output based upon the 
         // verbose_mask and verbose_level checks
         if (((output_bits & ~m_verboseMask) == 0) &&
@@ -203,7 +203,7 @@ void Output::debug(uint32_t line, std::string file, std::string func, uint32_t o
     va_list     arg;
     std::string prefixString;
     
-    if (true == m_objInitialized) {
+    if (true == m_objInitialized && NONE != m_targetLoc ) {
         // First check to see if we are allowed to send output based upon the 
         // verbose_mask and verbose_level checks
         if (((output_bits & ~m_verboseMask) == 0) &&
