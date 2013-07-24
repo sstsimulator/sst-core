@@ -69,8 +69,8 @@ namespace SST {
         std::vector<boost::mpi::request> pending_requests;
 
         for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
-            pending_requests.push_back(comm.isend(i->first, 0, i->second.first->getVector()));
-            pending_requests.push_back(comm.irecv(i->first, 0, i->second.second));
+	   pending_requests.push_back(comm.isend(i->first, 0, *(i->second.first->getVector())));
+	   pending_requests.push_back(comm.irecv(i->first, 0, *(i->second.second)));
         }
         boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
 
