@@ -188,6 +188,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
     ${SST_TEST_SUITES}/testSuite_patterns.sh
     ${SST_TEST_SUITES}/testSuite_prospero.sh
+    ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
 
     if [ $1 == "phoenixsim_test" ]
     then
