@@ -15,6 +15,7 @@
 #ifndef SST_CORE_SIMULATION_H
 #define SST_CORE_SIMULATION_H
 
+#include <signal.h>
 #include <iostream>
 
 #include "sst/core/sst_types.h"
