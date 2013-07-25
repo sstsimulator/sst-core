@@ -113,7 +113,7 @@ Simulation::createSimulation(Config *config, int my_rank, int num_ranks)
 
 
 Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
-    SimulationBase(cfg), timeVortex(NULL), minPartTC( NULL ), sync(NULL), currentSimCycle(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks), init_msg_count(0), init_phase(0)
+    SimulationBase(cfg), timeVortex(NULL), minPartTC( NULL ), sync(NULL), currentSimCycle(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks), init_msg_count(0), init_phase(0), lastRecvdSignal(0)
 {
 //     eQueue = new EventQueue_t;
     timeVortex = new TimeVortex;
