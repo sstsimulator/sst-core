@@ -66,6 +66,12 @@ public:
     virtual void finish( ) { }
 
     virtual bool Status( ) { return 0; }
+    /**
+     * Called by the Simulation to request that the component
+     * print it's current status.  Useful for debugging.
+     * @param out The Output class which should be used to print component status.
+     */
+    virtual void printStatus(Output &out) { return; }
 
     bool isPortConnected(const std::string &name) const;
     Link* configureLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);

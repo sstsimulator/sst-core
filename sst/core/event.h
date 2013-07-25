@@ -89,11 +89,11 @@ public:
 	    }
     };
 
-    void print(const std::string& header) const {
-        std::cout << header << "Generic Event to be delivered at "
-                  << getDeliveryTime() << " with priority " << getPriority() << std::endl;
-    }    
-    
+    virtual void print(const std::string& header, Output &out) const {
+        out.output("%s Generic Event to be delivered at %"PRIu64" with priority %d\n",
+                header.c_str(), getDeliveryTime(), getPriority());
+    }
+
 protected:
     Link* delivery_link;
     

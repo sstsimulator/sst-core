@@ -42,16 +42,11 @@ using namespace std;
 using namespace SST;
 
 static void
-sigHandlerPrintStatus1(int signal)
+sigHandlerPrintStatus(int signal)
 {
-    Simulation::printStatus(false);
+    Simulation::setSignal(signal);
 }
 
-static void
-sigHandlerPrintStatus2(int signal)
-{
-    Simulation::printStatus(true);
-}
 
 int 
 main(int argc, char *argv[])
@@ -102,8 +97,8 @@ main(int argc, char *argv[])
     if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) { 
         sim = Simulation::createSimulation(&cfg, world.rank(), world.size());
 
-        signal(SIGUSR1, sigHandlerPrintStatus1);
-        signal(SIGUSR2, sigHandlerPrintStatus2);
+        signal(SIGUSR1, sigHandlerPrintStatus);
+        signal(SIGUSR2, sigHandlerPrintStatus);
 
 	ConfigGraph* graph;
 

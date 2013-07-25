@@ -43,7 +43,11 @@ public:
 	}
 	endSimulation();
     }
-    
+
+    void print(const std::string &header, Output &out) const {
+        out.output("%s StopAction to be delivered at %"PRIu64"\n", header.c_str(), getDeliveryTime());
+    }
+
     friend class boost::serialization::access;
     template<class Archive>
     void

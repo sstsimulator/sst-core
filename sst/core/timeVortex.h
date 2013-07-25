@@ -21,6 +21,8 @@
 
 namespace SST {
 
+class Output;
+
 class TimeVortex : public ActivityQueue {
 public:
 	TimeVortex();
@@ -32,7 +34,7 @@ public:
     Activity* pop();
     Activity* front();
 
-    void print() const;
+    void print(Output &out) const;
     
 private:
     std::multiset<Activity*,Activity::less_time_priority> data;

@@ -115,6 +115,10 @@ public:
 		setDeliveryLink(me->getLinkId(), NULL);
 	}
 
+    virtual void print(const std::string& header, Output &out) const {
+        out.output("%s Mem Event (id: (%"PRIu64", %d)) to be delivered at %"PRIu64"\n",
+                header.c_str(), event_id.first, event_id.second, getDeliveryTime());
+    }
 
     /**
      * Creates a new MemEvent instance, pre-configured to act as a response

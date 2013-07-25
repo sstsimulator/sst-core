@@ -14,7 +14,7 @@
 #define SST_ACTIVITY_H
 
 #include <sst/core/sst_types.h>
-#include <iostream>
+#include <sst/core/output.h>
 
 namespace SST {
 
@@ -63,9 +63,9 @@ public:
 	return priority;
     }
 
-    virtual void print(const std::string& header) const {
-        std::cout << header << "Generic Activity to be delivered at "
-                  << delivery_time << " with priority " << priority << std::endl;
+    virtual void print(const std::string& header, Output &out) const {
+        out.output("%s Generic Activity to be delivered at %"PRIu64" with priority %d\n",
+                header.c_str(), delivery_time, priority);
     }
     
 protected:

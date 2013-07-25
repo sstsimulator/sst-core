@@ -351,13 +351,6 @@ void Simulation::run() {
       (*iter).second->setup();
     }
 
-    // // Check to make sure we have something to do.  If not print error
-    // // message and exit
-    // if ( timeVortex->front() == NULL && num_ranks == 1 ) {
-    //	std::cout << "No clocks registered and no events sent during initialization.  Exiting simulation..." << std::endl;
-    //	exit(1);
-    // }
-    
     // Fix taken from Scott's change to mainline (SDH, Sep 27 12)
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.
@@ -370,12 +363,14 @@ void Simulation::run() {
     timeVortex->insert(sa);
 
     while( LIKELY( ! endSim ) ) {
- 	currentSimCycle = timeVortex->front()->getDeliveryTime();
+        if ( UNLIKELY( 0 != lastRecvdSignal ) ) {
+            printStatus(lastRecvdSignal == SIGUSR2);
+            lastRecvdSignal = 0;
+        }
+        currentSimCycle = timeVortex->front()->getDeliveryTime();
 
-//  	Activity *ptr = timeVortex->pop();
-//   	ptr->execute();
- 	current_activity = timeVortex->pop();
-  	current_activity->execute();
+        current_activity = timeVortex->pop();
+        current_activity->execute();
     }
 
 
@@ -399,25 +394,26 @@ Simulation::getCurrentSimCycle() const
     return currentSimCycle; 
 }
 
-void
-Simulation::printStatus(bool print_timevortex)
-{
-    std::cout << "Simulation: instance: " << (long) Simulation::instance << std::endl;
-    std::cout << "  Current cycle: " << Simulation::instance->currentSimCycle << std::endl;
-    std::cout << "  Current activity: ";
-    Simulation::instance->current_activity->print("");
-    
-    if ( print_timevortex) Simulation::instance->timeVortex->print();
-    
-    
-//     if (Simulation::instance != NULL) {
-//         for (CompMap_t::iterator iter = instance->compMap.begin() ;
-//              iter != instance->compMap.end() ; ++iter ) {
-//             if (iter->second->Status()) quit = true;
-//         }
-//     }
 
-//     if (quit)  _ABORT(Simulation, "Status()\n");
+void Simulation::setSignal(int signal)
+{
+    instance->lastRecvdSignal = signal;
+}
+
+void Simulation::printStatus(bool fullStatus)
+{
+    Output out("SimStatus: @R:@t:", 0, 0, Output::STDERR);
+    out.output("\tCurrentSimCycle:  %"PRIu64"\n", currentSimCycle);
+
+    if ( fullStatus ) {
+        timeVortex->print(out);
+        out.output("---- Components: ----\n");
+        for (CompMap_t::iterator iter = compMap.begin() ; iter != compMap.end() ; ++iter ) {
+            iter->second->printStatus(out);
+        }
+    }
+
+
 }
 
 TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* handler )

@@ -83,7 +83,8 @@ public:
 
     static Simulation *createSimulation(Config *config, int my_rank, int num_ranks);
     static Simulation *getSimulation() { return instance; }
-    static void printStatus(bool print_timevortex);
+    static void setSignal(int signal);
+    void printStatus(bool fullStatus);
 
     int performWireUp( ConfigGraph& graph, int myRank );
 
@@ -191,6 +192,7 @@ private:
     int              num_ranks;
     int              init_msg_count;
     unsigned int     init_phase;
+    volatile sig_atomic_t lastRecvdSignal;
     std::map<ComponentId_t,LinkMap*> component_links;
     
     static Simulation *instance;

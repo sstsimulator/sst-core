@@ -14,6 +14,7 @@
 #include "sst/core/serialization/core.h"
 
 #include <sst/core/timeVortex.h>
+#include <sst/core/output.h>
 
 namespace SST {
 
@@ -60,13 +61,13 @@ namespace SST {
 	return *data.begin();
     }
 
-    void TimeVortex::print() const {
-	std::multiset<Activity*,Activity::less_time_priority>::iterator it;
+    void TimeVortex::print(Output &out) const {
+        std::multiset<Activity*,Activity::less_time_priority>::iterator it;
 
-	printf("TimeVortex state:\n");
-	for ( it = data.begin(); it != data.end(); it++ ) {
-	    (*it)->print("  ");
-	}
+        out.output("TimeVortex state:\n");
+        for ( it = data.begin(); it != data.end(); it++ ) {
+            (*it)->print("  ", out);
+        }
     }
 
     
