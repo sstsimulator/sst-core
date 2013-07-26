@@ -107,7 +107,8 @@ dotests() {
     then
         # Only run if the OS *isn't* Darwin (MacOS)
         ${SST_TEST_SUITES}/testSuite_macsim.sh
-        ${SST_TEST_SUITES}/testSuite_zesto.sh
+##            Disable second zesto test -- July 26, 2013
+##        ${SST_TEST_SUITES}/testSuite_zesto.sh
 ##        ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
         #      zesto with qsim tests to not run correctly anywhere Feb. 4, 2013
         ## ${SST_TEST_SUITES}/testSuite_zesto_qsimlib.sh
