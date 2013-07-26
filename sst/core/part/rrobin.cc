@@ -22,7 +22,7 @@
 #include "sst/core/graph.h"
 #include "sst/core/sdl.h"
 #include "sst/core/sst_types.h"
-#include "sst/core/serialization/core.h"
+#include "sst/core/serialization.h"
 
 using namespace std;
 

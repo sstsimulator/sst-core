@@ -20,7 +20,7 @@
 #include <ctime>
 
 #include <sst_config.h>
-#include "sst/core/serialization/core.h"
+#include "sst/core/serialization.h"
 #include "sst/core/configGraph.h"
 #include "sst/core/sdl.h"
 #include "sst/core/simulation.h"

@@ -13,7 +13,7 @@
 // Include Files per Coding Standards
 ///////////////////////////////////////
 #include "sst_config.h"
-#include "sst/core/serialization/core.h"
+#include "sst/core/serialization.h"
 
 #include "sst/core/simulation.h"
 #include "sst/core/output.h"
@@ -22,7 +22,7 @@
 #include <errno.h>
 
 // Core Headers
-//#include "sst/core/serialization/core.h"
+//#include "sst/core/serialization.h"
 
     
 namespace SST {

@@ -7,6 +7,7 @@ CXX = $(MPICXX)
 
 AM_CPPFLAGS =  \
 	-DTIXML_USE_STL \
+	-DSST_BUILDING_CORE=1 \
 	$(BOOST_CPPFLAGS) \
 	$(ZOLTAN_CPPFLAGS) \
 	$(SST_CXX0X_FLAGS) \
@@ -60,6 +61,7 @@ nobase_dist_sst_HEADERS = \
 	serialization/core.h \
 	serialization/types.h \
 	serialization/element.h \
+	serialization.h \
 	interfaces/TestEvent.h \
 	interfaces/memEvent.h \
 	interfaces/stringEvent.h \

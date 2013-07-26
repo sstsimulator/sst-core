@@ -10,7 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/serialization/core.h"
+#include "sst/core/serialization.h"
 
 #include <boost/foreach.hpp>
 #include <boost/mpi.hpp>

@@ -9,19 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_SERIALIZATION_SERIALIZATION_H
+#define SST_CORE_SERIALIZATION_SERIALIZATION_H
 
-#include "sst_config.h"
-#include "sst/core/serialization.h"
+#ifdef SST_BUILDING_CORE
+#include "sst/core/serialization/core.h"
+#else
+#include "sst/core/serialization/element.h"
+#endif
 
-#include "sst/core/action.h"
-#include "sst/core/simulation.h"
-
-namespace SST {
-
-void Action::endSimulation() {
-    Simulation::getSimulation()->endSimulation();
-}
-
-} // namespace SST
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Action);
+#endif
