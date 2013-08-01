@@ -399,7 +399,7 @@ std::string Output::buildPrefixString(uint32_t line, std::string& file, std::str
                 startindex = findindex + 2;
                 break;
             case 't' :
-                sprintf(tempBuf, "%"PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
+                sprintf(tempBuf, "%" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;

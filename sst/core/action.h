@@ -23,7 +23,7 @@ public:
     ~Action() {}
 
     void print(const std::string& header, Output &out) const {
-        out.output("%s Generic Action to be delivered at %"PRIu64" with priority %d\n",
+        out.output("%s Generic Action to be delivered at %" PRIu64 " with priority %d\n",
                 header.c_str(), getDeliveryTime(), getPriority());
     }
 

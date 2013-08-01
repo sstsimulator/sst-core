@@ -403,7 +403,7 @@ void Simulation::setSignal(int signal)
 void Simulation::printStatus(bool fullStatus)
 {
     Output out("SimStatus: @R:@t:", 0, 0, Output::STDERR);
-    out.output("\tCurrentSimCycle:  %"PRIu64"\n", currentSimCycle);
+    out.output("\tCurrentSimCycle:  %" PRIu64 "\n", currentSimCycle);
 
     if ( fullStatus ) {
         timeVortex->print(out);
