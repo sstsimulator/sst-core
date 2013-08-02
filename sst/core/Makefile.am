@@ -72,8 +72,8 @@ nobase_dist_sst_HEADERS = \
 nobase_nodist_sst_HEADERS = \
 	build_info.h
 
-bin_PROGRAMS = sst.x
-sst_x_SOURCES = \
+noinst_LTLIBRARIES = libsst.la
+libsst_la_SOURCES = \
 	action.cc \
 	archive.cc \
 	clock.cc \
@@ -91,7 +91,6 @@ sst_x_SOURCES = \
 	introspector.cc \
 	introspectedComponent.cc \
 	link.cc \
-	main.cc \
 	output.cc \
 	pollingLinkQueue.cc \
 	sdl.cc \
@@ -108,12 +107,10 @@ sst_x_SOURCES = \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc
-
 if HAVE_ZOLTAN
-sst_x_SOURCES += zolt.cc
+libsst_la_SOURCES += zolt.cc
 endif
-
-sst_x_LDADD = \
+libsst_la_LIBADD = \
 	$(LIBLTDL) \
 	$(BOOST_SERIALIZATION_LIB) \
 	$(BOOST_MPI_LIB) \
@@ -122,13 +119,19 @@ sst_x_LDADD = \
 	$(PARMETIS_LIB) \
 	$(MPILIBS) \
 	-lm
-sst_x_LDFLAGS = \
+libsst_la_LDFLAGS = \
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
-	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
+
+bin_PROGRAMS = sst.x
+sst_x_SOURCES = \
+	main.cc
+sst_x_LDFLAGS = \
+	-export-dynamic \
+sst_x_LDADD = libsst.la
 
 include tinyxml/Makefile.inc
 include part/Makefile.inc
