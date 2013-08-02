@@ -15,6 +15,7 @@
 
 #include <sst/core/sst_types.h>
 #include <sst/core/link.h>
+#include <sst/core/serialization.h>
 
 namespace SST {
 

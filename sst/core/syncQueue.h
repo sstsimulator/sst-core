@@ -16,6 +16,7 @@
 #include <vector>
 
 #include <sst/core/activityQueue.h>
+#include <sst/core/serialization.h>
 
 #include <cstdio> // For printf
 

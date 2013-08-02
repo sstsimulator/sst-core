@@ -19,6 +19,8 @@
 
 #include <stdlib.h>
 
+#include <sst/core/serialization.h>
+
 
 namespace SST {
 

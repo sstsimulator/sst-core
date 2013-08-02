@@ -12,7 +12,7 @@
 #ifndef SST_CORE_SERIALIZATION_ELEMENT_H
 #define SST_CORE_SERIALIZATION_ELEMENT_H
 
-#if defined(SST_CORE_SERIALIZATION_ARCHIVE_H) || defined(SST_CORE_SERIALIZATION_CORE_H)
+#if defined(SST_CORE_SERIALIZATION_ARCHIVE_H)
 #error "Include only one serialization/ header file"
 #endif
 

@@ -15,6 +15,12 @@
 
 #include <string>
 
+// Do NOT include a serialization header in this file.  The
+// implementation of Archive requires some special Boost.Serialization
+// magic not needed for the rest of the core, and it is handled in
+// archive.cc.  There's no serialization interfaces in this header, so
+// no include is required.
+
 namespace SST {
     class Simulation;
 

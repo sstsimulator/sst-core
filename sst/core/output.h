@@ -20,6 +20,8 @@
 #include <inttypes.h>
 #include <cstdio>
 
+#include <sst/core/serialization.h>
+
 namespace SST {
 
 // MACROS TO HELP BUILD THE CALLING FUNCTIONS INFORMATION

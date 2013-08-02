@@ -57,7 +57,6 @@ nobase_dist_sst_HEADERS = \
 	timeVortex.h \
 	uninitializedQueue.h \
 	zolt.h \
-	serialization/archive.h \
 	serialization/core.h \
 	serialization/types.h \
 	serialization/element.h \

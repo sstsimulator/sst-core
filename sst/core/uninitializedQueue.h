@@ -14,6 +14,7 @@
 #define SST_UNINITIALIZEDQUEUE_H
 
 #include <sst/core/activityQueue.h>
+#include <sst/core/serialization.h>
 
 
 namespace SST {

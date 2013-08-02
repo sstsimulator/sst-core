@@ -19,6 +19,7 @@
 
 #include <sst/core/action.h>
 //#include <sst/core/clockHandler.h>
+#include <sst/core/serialization.h>
 
 #define _CLE_DBG( fmt, args...)__DBG( DBG_CLOCK, Clock, fmt, ## args )
 

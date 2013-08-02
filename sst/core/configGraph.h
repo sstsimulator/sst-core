@@ -23,6 +23,7 @@
 
 #include "sst/core/sst_types.h"
 #include "sst/core/params.h"
+#include <sst/core/serialization.h>
 
 namespace SST {
 

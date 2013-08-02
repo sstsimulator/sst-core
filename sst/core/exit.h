@@ -17,6 +17,7 @@
 
 #include "sst/core/sst_types.h"
 #include "sst/core/action.h"
+#include <sst/core/serialization.h>
 
 namespace SST{
 

@@ -14,6 +14,7 @@
 #define SST_TIMECONVERTER_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/serialization.h>
 
 namespace SST {
 

@@ -20,6 +20,7 @@
 #include <sst/core/timeConverter.h>
 #include <sst/core/params.h>
 #include <sst/core/link.h>
+#include <sst/core/serialization.h>
 
 namespace SST {
 

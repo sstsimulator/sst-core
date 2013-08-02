@@ -21,7 +21,7 @@
 #ifndef SST_CPUNICEVENT_H
 #define SST_CPUNICEVENT_H
 
-#include <boost/serialization/vector.hpp>
+#include <sst/core/serialization.h>
 #include <cstring>
 #include <sst/core/event.h>
 

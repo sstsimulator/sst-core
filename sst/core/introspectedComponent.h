@@ -35,6 +35,7 @@
 #include <sst/core/sst_types.h>
 //#include <sst/core/linkMap.h>
 #include <sst/core/timeConverter.h>
+#include <sst/core/serialization.h>
 
 namespace io_interval {  // from boost interval io example (io_wide)
 template<class T, class Policies, class CharType, class CharTraits>

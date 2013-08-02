@@ -19,6 +19,7 @@
 #include <sst/core/component.h>
 #include <sst/core/introspector.h>
 #include <sst/core/element.h>
+#include <sst/core/serialization.h>
 
 namespace SST {
 

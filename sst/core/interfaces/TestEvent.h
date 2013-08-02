@@ -14,6 +14,7 @@
 #define INTERFACES_TEST_EVENT_H
 
 #include <sst/core/event.h>
+#include <sst/core/serialization.h>
 
 namespace SST{
 namespace Interfaces {

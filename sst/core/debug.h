@@ -14,8 +14,7 @@
 #define _SST_DEBUG_H
 
 #include <stdio.h>
-#include <boost/serialization/string.hpp>
-#include <boost/serialization/vector.hpp>
+#include <sst/core/serialization.h>
 
 namespace SST {
 

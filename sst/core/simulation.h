@@ -22,6 +22,7 @@
 #include "sst/core/sdl.h"
 #include "sst/core/component.h"
 #include "sst/core/params.h"
+#include <sst/core/serialization.h>
 
 namespace SST {
 

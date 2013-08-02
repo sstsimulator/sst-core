@@ -6,6 +6,7 @@
 #include <sst/core/debug.h>
 #include <sst/core/activity.h>
 #include <sst/sst_stdint.h>
+#include <sst/core/serialization.h>
 
 namespace SST {
 namespace Interfaces {

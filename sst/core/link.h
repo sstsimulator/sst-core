@@ -16,6 +16,7 @@
 #include <sst/core/sst_types.h>
 // #include <sst/core/eventFunctor.h>
 #include <sst/core/event.h>
+#include <sst/core/serialization.h>
 
 namespace SST { 
 

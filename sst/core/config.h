@@ -15,6 +15,7 @@
 
 #include <string>
 #include <sst/core/sst_types.h>
+#include <sst/core/serialization.h>
 
 namespace boost {
     namespace program_options {

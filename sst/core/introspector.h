@@ -17,6 +17,7 @@
 #include "sst/core/simulation.h"
 #include "sst/core/clock.h"
 #include "sst/core/timeConverter.h"
+#include <sst/core/serialization.h>
 
 namespace SST {
 
