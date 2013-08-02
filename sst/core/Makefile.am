@@ -118,19 +118,21 @@ libsst_la_LIBADD = \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
 	$(MPILIBS) \
+	$(TCMALLOC_LIB) \
 	-lm
 libsst_la_LDFLAGS = \
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
-	$(SST_LTLIBS_ELEMLIBS)
+	$(SST_LTLIBS_ELEMLIBS) \
+	$(TCMALLOC_LDFLAGS)
 
 bin_PROGRAMS = sst.x
 sst_x_SOURCES = \
 	main.cc
 sst_x_LDFLAGS = \
-	-export-dynamic \
+	-export-dynamic
 sst_x_LDADD = libsst.la
 
 include tinyxml/Makefile.inc
