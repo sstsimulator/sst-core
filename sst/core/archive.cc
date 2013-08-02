@@ -9,8 +9,6 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#define SST_SERIALIALIZATION_IN_ARCHIVE
-
 #include "sst_config.h"
 
 #if SST_WANT_POLYMORPHIC_ARCHIVE
