@@ -72,8 +72,7 @@ nobase_dist_sst_HEADERS = \
 nobase_nodist_sst_HEADERS = \
 	build_info.h
 
-noinst_LTLIBRARIES = libsst.la
-libsst_la_SOURCES = \
+sst_core_sources = \
 	action.cc \
 	archive.cc \
 	clock.cc \
@@ -108,9 +107,16 @@ libsst_la_SOURCES = \
 	rng/marsaglia.cc \
 	rng/mersenne.cc
 if HAVE_ZOLTAN
-libsst_la_SOURCES += zolt.cc
+sst_core_sources += zolt.cc
 endif
-libsst_la_LIBADD = \
+
+
+bin_PROGRAMS = sst.x
+sst_x_SOURCES = \
+	main.cc \
+	$(sst_core_sources)
+
+sst_x_LDADD = \
 	$(LIBLTDL) \
 	$(BOOST_SERIALIZATION_LIB) \
 	$(BOOST_MPI_LIB) \
@@ -119,22 +125,15 @@ libsst_la_LIBADD = \
 	$(PARMETIS_LIB) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
-	-lm
-libsst_la_LDFLAGS = \
+	-lm \
+	$(SST_LTLIBS_ELEMLIBS)
+sst_x_LDFLAGS = \
+	-export-dynamic
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
 	$(TCMALLOC_LDFLAGS)
-
-# Note: SST_LTLIBS_ELEMLIBS is the list of 
-bin_PROGRAMS = sst.x
-sst_x_SOURCES = \
-	main.cc
-sst_x_LDFLAGS = \
-	-export-dynamic
-sst_x_LDADD = libsst.la \
-	$(SST_LTLIBS_ELEMLIBS)
 
 include tinyxml/Makefile.inc
 include part/Makefile.inc

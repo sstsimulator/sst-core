@@ -2,7 +2,7 @@
 #
 #
 
-libsst_la_SOURCES += \
+sst_core_sources += \
 	tinyxml/tinystr.cpp \
 	tinyxml/tinyxml.cpp \
 	tinyxml/tinyxmlerror.cpp \
