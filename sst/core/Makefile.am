@@ -125,15 +125,16 @@ sst_x_LDADD = \
 	$(PARMETIS_LIB) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
-	-lm \
-	$(SST_LTLIBS_ELEMLIBS)
+	-lm
 sst_x_LDFLAGS = \
-	-export-dynamic
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
 	$(TCMALLOC_LDFLAGS)
+	-export-dynamic \
+	$(SST_LTLIBS_ELEMLIBS)
+
 
 include tinyxml/Makefile.inc
 include part/Makefile.inc
