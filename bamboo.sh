@@ -648,6 +648,14 @@ else
             if [ $kernel != "Darwin" ]
             then
 
+                # For some reason, .bashrc is not being run prior to
+                # this script. Kludge initialization of modules.
+                if [ -f /etc/profile.modules ]
+                then
+                    . /etc/profile.modules
+                fi
+
+
                 # build MPI and Boost selectors
                 if [[ "$2" =~ openmpi.* ]]
                 then
@@ -681,13 +689,6 @@ else
                 # echo "CHECK:  \$4: ${4}"
                 # echo "CHECK:  \$desiredMPI: ${desiredMPI}"
                 # echo "CHECK:  \$desiredBoost: ${desiredBoost}"
-
-                # For some reason, .bashrc is not being run prior to
-                # this script. Kludge initialization of modules.
-                if [ -f /etc/profile.modules ]
-                then
-                    . /etc/profile.modules
-                fi
 
                 # load MPI
                 case $2 in
