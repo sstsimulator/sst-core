@@ -144,7 +144,12 @@ dotests() {
 
     ${SST_TEST_SUITES}/testSuite_iris.sh
 
-    ${SST_TEST_SUITES}/testSuite_M5.sh
+    if [ $1 != "sstmainline_config_gcc_4_8_1" ]
+    then
+        # Don't run gem5 suite because gcc 4.8.1 chokes on current sst-gem5
+        ${SST_TEST_SUITES}/testSuite_M5.sh
+    fi
+
     if [ $1 == "M5_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_M5.sh
