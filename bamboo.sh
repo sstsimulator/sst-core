@@ -295,6 +295,18 @@ getconfig() {
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
+        sstmainline_config_gcc_4_8_1) 
+            #-----------------------------------------------------------------
+            # sstmainline_config_gcc_4_8_1
+            #     This option used for configuring SST with supported stabledevel deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g none -m none -i none -o none -h none -s none -q none -M 1.2"
+            setConvenienceVars "$depsStr"
+#            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            configStr="$baseoptions  --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET  $miscEnv"
+            ;;
         sstmainline_config_static) 
             #-----------------------------------------------------------------
             # sstmainline_config_static
@@ -611,7 +623,7 @@ else
         echo "bamboo.sh: \$4 is empty or null, setting compiler to default"
         compiler="default"
     else
-        echo "bamboo.sh: setting compiler to \$4"
+        echo "bamboo.sh: setting compiler to $4"
         compiler="$4"
     fi
 
@@ -626,10 +638,45 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|documentation)
+        default|sstmainline_config|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|documentation)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
+
+                # build MPI and Boost selectors
+                if [[ "$2" =~ openmpi.* ]]
+                then
+                    # since Boost flavor labeled with "ompi" not "openmpi"
+                    mpiStr="ompi-"$(expr "$2" : '.*openmpi-\([0-9]\.[0-9][0-9]*\).*')
+                else
+                    mpiStr=${2}
+                fi
+
+                if [ $compiler = "default" ]
+                then
+                    desiredMPI="${2}"
+                    desiredBoost="${3}.0_${mpiStr}"
+                    module unload swig/swig-2.0.9
+                else
+                    desiredMPI="${2}_${4}"
+                    desiredBoost="${3}.0_${mpiStr}_${4}"
+                    # load non-default compiler
+                    if   [[ "$4" =~ gcc.* ]]
+                    then
+                        module load gcc/${4}
+                        module load swig/swig-2.0.9
+                        echo "LOADED gcc/${4} compiler"
+                    # elif [[ "$4" =+ intel.* ]]
+                    # then
+                    #     module load intel/${4}
+                    fi
+                fi
+                # echo "CHECK:  \$2: ${2}"
+                # echo "CHECK:  \$3: ${3}"
+                # echo "CHECK:  \$4: ${4}"
+                # echo "CHECK:  \$desiredMPI: ${desiredMPI}"
+                # echo "CHECK:  \$desiredBoost: ${desiredBoost}"
+
                 # For some reason, .bashrc is not being run prior to
                 # this script. Kludge initialization of modules.
                 if [ -f /etc/profile.modules ]
@@ -642,26 +689,22 @@ else
                     mpich2_stable|mpich2-1.4.1p1)
                         echo "MPICH2 stable (mpich2-1.4.1p1) selected"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/mpich2-1.4.1p1
-                        mpisuffix="mpich2-1.4.1p1"
+                        module load mpi/${desiredMPI}
                         ;;
                     ompi_1.6_stable|openmpi-1.6)
                         echo "OpenMPI stable (openmpi-1.6) selected"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/openmpi-1.6
-                        mpisuffix="ompi-1.6"
+                        module load mpi/${desiredMPI}
                         ;;
                     openmpi-1.4.4)
                         echo "OpenMPI (openmpi-1.4.4) selected"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/openmpi-1.4.4
-                        mpisuffix="ompi-1.4.4"
+                        module load mpi/${desiredMPI}
                         ;;
                     *)
                         echo "Default OpenMPI stable (openmpi-1.6) selected"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/openmpi-1.6
-                        mpisuffix="ompi-1.6"
+                        module load mpi/${desiredMPI}
                         ;;
                 esac
 
@@ -670,24 +713,24 @@ else
                     boost-1.43)
                         echo "bamboo.sh: Boost 1.43 selected"
                         module unload boost
-                        module load boost/boost-1.43.0_${mpisuffix}
+                        module load boost/${desiredBoost}
                         ;;
                     boost-1.48)
                         echo "bamboo.sh: Boost 1.48 selected"
                         module unload boost
-                        module load boost/boost-1.48.0_${mpisuffix}
+                        module load boost/${desiredBoost}
                         ;;
                     boost-1.50)
                         echo "bamboo.sh: Boost 1.50 selected"
                         module unload boost
-                        module load boost/boost-1.50.0_${mpisuffix}
+                        module load boost/${desiredBoost}
                         ;;
                     *)
                         echo "bamboo.sh: No Valid Boost selected"
                         echo "Third argument was $3"
                         echo "Using Boost-1.50 by default"
                         module unload boost
-                        module load boost/boost-1.50.0_${mpisuffix}
+                        module load boost/${desiredBoost}
                         ;;
                 esac
                 echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
@@ -788,6 +831,9 @@ else
                 echo "bamboo.sh:   MPI = $2, Boost = $3"
                 echo "bamboo.sh:   MPI and Boost options ignored; using default MPI and Boost per $1 buildtype"
             fi
+
+            echo "bamboo.sh: LISTING LOADED MODULES"
+            module list
 
             # Build type given as argument to this script
             export SST_BUILD_TYPE=$1
