@@ -114,10 +114,14 @@ dotests() {
         ## ${SST_TEST_SUITES}/testSuite_zesto_qsimlib.sh
         #  The following restrictions are not about required dependencies,
         #  but are to only run the lengthy test on one case per OS environment.
-        sed 1q /etc/*release | grep -iq -e ubuntu -e centos
-        if [[ "$MPIHOME" == *openmpi-1.6* ]] &&  [ $? = 0 ]
+        if [ $1 != "sstmainline_config_gcc_4_8_1" ]
         then
-            ${SST_TEST_SUITES}/testSuite_portals4.sh
+            # Don't run portals4 suite because gcc 4.8.1 chokes on current sst-gem5
+            sed 1q /etc/*release | grep -iq -e ubuntu -e centos
+            if [[ "$MPIHOME" == *openmpi-1.6* ]] &&  [ $? = 0 ]
+            then
+                ${SST_TEST_SUITES}/testSuite_portals4.sh
+            fi
         fi
     fi
 
@@ -125,17 +129,9 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
 
 
-    if [ $1 != "iris_test" ]
-    then
-        ${SST_TEST_SUITES}/testSuite_portals.sh
-        # jwilso: running simpleComponent test here temporarily
-        ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
-    fi
-
-    if [ $1 == "PowerTherm_test" ]
-    then
-        ${SST_TEST_SUITES}/testSuite_PowerTherm.sh
-    fi
+    ${SST_TEST_SUITES}/testSuite_portals.sh
+    # jwilso: running simpleComponent test here temporarily
+    ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
 
     if [ $1 == "portals4_test" ]
     then
@@ -189,22 +185,16 @@ dotests() {
     # etc.
     ${SST_TEST_SUITES}/testSuite_merlin.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
-    ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
+    if [ $1 != "sstmainline_config_gcc_4_8_1" ]
+    then
+        # Don't run suite that uses gem5 because gcc 4.8.1 chokes on current sst-gem5
+        ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
+    fi
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
     ${SST_TEST_SUITES}/testSuite_patterns.sh
     ${SST_TEST_SUITES}/testSuite_prospero.sh
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
-
-    if [ $1 == "phoenixsim_test" ]
-    then
-        ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
-    fi
-
-    if [ $1 == "macro_test" ]
-    then
-        ${SST_TEST_SUITES}/testSuite_macro.sh
-    fi
 
     if [ $1 = "gem5_no_dramsim_config" ]
     then
