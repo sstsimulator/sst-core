@@ -698,9 +698,14 @@ else
                         module load mpi/${desiredMPI}
                         ;;
                     *)
-                        echo "Default OpenMPI stable (openmpi-1.6) selected"
+                        echo "Default MPI option, loading mpi/${desiredMPI}"
                         module unload mpi # unload any default to avoid conflict error
-                        module load mpi/${desiredMPI}
+                        module load mpi/${desiredMPI} 2>catch.err
+                        if [ -s catch.err ] 
+                        then
+                            cat catch.err
+                            exit 0
+                        fi
                         ;;
                 esac
 
@@ -722,11 +727,16 @@ else
                         module load boost/${desiredBoost}
                         ;;
                     *)
-                        echo "bamboo.sh: No Valid Boost selected"
+                        echo "bamboo.sh: \"Default\" Boost selected"
                         echo "Third argument was $3"
-                        echo "Using Boost-1.50 by default"
+                        echo "Loading boost/${desiredBoost}"
                         module unload boost
-                        module load boost/${desiredBoost}
+                        module load boost/${desiredBoost} 2>catch.err
+                        if [ -s catch.err ] 
+                        then
+                            cat catch.err
+                            exit 0
+                        fi
                         ;;
                 esac
                 echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
