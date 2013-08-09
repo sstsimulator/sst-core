@@ -128,7 +128,16 @@ public:
         @param ... Arguments for format.  
      */
     void output(const char* format, ...) 
-         __attribute__ ((format (printf, 2, 3)));
+         __attribute__ ((format (printf, 2, 3)))
+    {
+            va_list arg;
+            if (true == m_objInitialized && NONE != m_targetLoc) {
+                // Get the argument list and then print it out
+                va_start(arg, format);
+                outputprintf(format, arg); 
+                va_end(arg);
+            }
+    }
 
     /** Output the message with formatting as specified by the format parameter.
         The output will be prepended with the expanded prefix set in the object.
@@ -138,8 +147,18 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Argument strings for format.  
      */
-    void output(uint32_t line, std::string file, std::string func, const char* format, ...) 
-         __attribute__ ((format (printf, 5, 6)));
+    void output(uint32_t line, const char* file, const char* func,
+                const char* format, ...) 
+        __attribute__ ((format (printf, 5, 6)))
+    {
+        va_list arg;
+        if (true == m_objInitialized && NONE != m_targetLoc ) {
+            // Get the argument list and then print it out
+            va_start(arg, format);
+            outputprintf(line, file, func, format, arg);
+            va_end(arg);
+        }
+    }
        
     /** Output the verbose message with formatting as specified by the format 
         parameter. Output will only occur if specified output_level and 
@@ -157,9 +176,25 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.  
      */
-    void verbose(uint32_t line, std::string file, std::string func, uint32_t output_level, 
-                  uint32_t output_bits, const char* format, ...)    
-                  __attribute__ ((format (printf, 7, 8)));
+    void verbose(uint32_t line, const char* file, const char* func,
+                 uint32_t output_level, uint32_t output_bits,
+                 const char* format, ...)    
+        __attribute__ ((format (printf, 7, 8)))
+    {
+        va_list arg;
+    
+        if (true == m_objInitialized && NONE != m_targetLoc ) {
+            // First check to see if we are allowed to send output based upon the 
+            // verbose_mask and verbose_level checks
+            if (((output_bits & ~m_verboseMask) == 0) &&
+                (output_level <= m_verboseLevel)){
+                // Get the argument list and then print it out
+                va_start(arg, format);
+                outputprintf(line, file, func, format, arg);
+                va_end(arg);    
+            }
+        }
+    }
     
     /** Output the debug message with formatting as specified by the format 
         parameter. Output will only occur if specified output_level and 
@@ -180,9 +215,26 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.  
      */
-    void debug(uint32_t line, std::string file, std::string func, uint32_t output_level, 
-               uint32_t output_bits, const char* format, ...)   
-               __attribute__ ((format (printf, 7, 8)));
+    void debug(uint32_t line, const char* file, const char* func,
+               uint32_t output_level, uint32_t output_bits,
+               const char* format, ...)   
+        __attribute__ ((format (printf, 7, 8)))
+    {
+#ifdef __SST_DEBUG_OUTPUT__
+        va_list arg;
+        if (true == m_objInitialized && NONE != m_targetLoc ) {
+            // First check to see if we are allowed to send output based upon the 
+            // verbose_mask and verbose_level checks
+            if (((output_bits & ~m_verboseMask) == 0) &&
+                (output_level <= m_verboseLevel)){
+                // Get the argument list and then print it out
+                va_start(arg, format);
+                outputprintf(line, file, func, format, arg);
+                va_end(arg);    
+            }
+        }
+#endif    
+    }
     
     /** Output the fatal message with formatting as specified by the format 
         parameter. Output will only occur if specified output_level and 
@@ -203,7 +255,7 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.  
      */
-    void fatal(uint32_t line, std::string file, std::string func, 
+    void fatal(uint32_t line, const char* file, const char* func,
                   uint32_t exit_code, uint32_t output_level, 
                   uint32_t output_bits, const char* format, ...)    
                   __attribute__ ((format (printf, 8, 9)));
@@ -279,8 +331,10 @@ private:
     void setTargetOutput(output_location_t location);
     void openSSTTargetFile();
     void closeSSTTargetFile();
-    std::string buildPrefixString(uint32_t line, std::string& file, std::string& func);
-    void outputprintf (std::string& prefixStr, const char* format, va_list arg);   
+    std::string buildPrefixString(uint32_t line, const std::string& file, const std::string& func);
+    void outputprintf(uint32_t line, const std::string &file, const std::string &func, 
+                      const char *format, va_list arg);
+    void outputprintf(const char *format, va_list arg);
 
     // Internal Member Variables
     bool              m_objInitialized;

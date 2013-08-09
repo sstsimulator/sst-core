@@ -141,104 +141,21 @@ Output::output_location_t Output::getOutputLocation() const
 }
 
 
-void Output::output(const char* format, ...)
+void Output::fatal(uint32_t line, const char* file, const char* func,
+                   uint32_t exit_code, uint32_t output_level, uint32_t output_bits,
+                   const char* format, ...)    
 {
     va_list     arg;
-    std::string prefixString = "";
-    
-    if (true == m_objInitialized && NONE != m_targetLoc ) {
-        // Get the argument list and then print it out
-        va_start(arg, format);
-        outputprintf(prefixString, format, arg); 
-        va_end(arg);
-    }    
-}
-
-
-void Output::output(uint32_t line, std::string file, std::string func, const char* format, ...) 
-{
-    va_list     arg;
-    std::string prefixString;
-    
-    if (true == m_objInitialized && NONE != m_targetLoc ) {
-
-        // Create the prefix string
-        prefixString = buildPrefixString(line, file, func);
-        
-        // Get the argument list and then print it out
-        va_start(arg, format);
-        outputprintf(prefixString, format, arg);
-        va_end(arg);
-    }
-}
-
-
-void Output::verbose(uint32_t line, std::string file, std::string func, uint32_t output_level, uint32_t output_bits, const char* format, ...)    
-{
-    va_list     arg;
-    std::string prefixString;
-    
-    if (true == m_objInitialized && NONE != m_targetLoc ) {
-        // First check to see if we are allowed to send output based upon the 
-        // verbose_mask and verbose_level checks
-        if (((output_bits & ~m_verboseMask) == 0) &&
-           (output_level <= m_verboseLevel)){
-    
-            // Create the prefix string
-            prefixString = buildPrefixString(line, file, func);
-            
-            // Get the argument list and then print it out
-            va_start(arg, format);
-            outputprintf(prefixString, format, arg);
-            va_end(arg);    
-        }
-    }
-}
-
-
-void Output::debug(uint32_t line, std::string file, std::string func, uint32_t output_level, uint32_t output_bits, const char* format, ...)    
-{
-#ifdef __SST_DEBUG_OUTPUT__
-    
-    va_list     arg;
-    std::string prefixString;
-    
-    if (true == m_objInitialized && NONE != m_targetLoc ) {
-        // First check to see if we are allowed to send output based upon the 
-        // verbose_mask and verbose_level checks
-        if (((output_bits & ~m_verboseMask) == 0) &&
-           (output_level <= m_verboseLevel)){
-    
-            // Create the prefix string
-            prefixString = buildPrefixString(line, file, func);
-    
-            // Get the argument list and then print it out
-            va_start(arg, format);
-            outputprintf(prefixString, format, arg);
-            va_end(arg);    
-        }
-    }
-    
-#endif    
-}
-
-void Output::fatal(uint32_t line, std::string file, std::string func, uint32_t exit_code, uint32_t output_level, uint32_t output_bits, const char* format, ...)    
-{
-    va_list     arg;
-    std::string prefixString;
     
     if (true == m_objInitialized) {
         // First check to see if we are allowed to send output based upon the 
         // verbose_mask and verbose_level checks
         if (((output_bits & ~m_verboseMask) == 0) &&
            (output_level <= m_verboseLevel)){
-    
-            // Create the prefix string
-            prefixString = buildPrefixString(line, file, func);
-    
+        
             // Get the argument list and then print it out
             va_start(arg, format);
-            outputprintf(prefixString, format, arg);
+            outputprintf(line, file, func, format, arg);
             va_end(arg);    
         }
     }
@@ -345,7 +262,7 @@ void Output::closeSSTTargetFile()
 }
 
 
-std::string Output::buildPrefixString(uint32_t line, std::string& file, std::string& func)
+std::string Output::buildPrefixString(uint32_t line, const std::string& file, const std::string& func)
 {
     std::string rtnstring = "";
     size_t      startindex = 0;
@@ -419,7 +336,8 @@ std::string Output::buildPrefixString(uint32_t line, std::string& file, std::str
 }
 
 
-void Output::outputprintf (std::string& prefixStr, const char* format, va_list arg)
+void Output::outputprintf(uint32_t line, const std::string &file,
+                          const std::string &func, const char* format, va_list arg)
 {
     std::string newFmt;
     
@@ -430,9 +348,22 @@ void Output::outputprintf (std::string& prefixStr, const char* format, va_list a
     
     // Check to make sure output location is not NONE
     if (NONE != m_targetLoc) {
-        
-        newFmt = prefixStr + format;
+        newFmt = buildPrefixString(line, file, func) + format;
         std::vfprintf(*m_targetOutputRef, newFmt.c_str(), arg);
+    }
+}
+
+
+void Output::outputprintf(const char* format, va_list arg)
+{
+    // If the target output is a file, Make sure that the file is created and opened
+    if ((FILE == m_targetLoc) && (0 == m_sstFileHandle)) {
+        openSSTTargetFile();
+    }
+    
+    // Check to make sure output location is not NONE
+    if (NONE != m_targetLoc) {
+        std::vfprintf(*m_targetOutputRef, format, arg);
     }
 }
 
