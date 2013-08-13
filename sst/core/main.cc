@@ -173,6 +173,9 @@ main(int argc, char *argv[])
 	    if ( cfg.partitioner == "self" ) {
 		// For now, do nothing.  Eventually we need to
 		// have a checker for the partitioning.
+		if(world.rank() == 0) {
+		   std::cout << "# SST will use a self-guided partition scheme." << std::endl;
+		}
 	    }
 	    else if ( cfg.partitioner == "simple" ) {
 		if(cfg.verbose && world.rank() == 0) 
@@ -194,6 +197,10 @@ main(int argc, char *argv[])
 		abort();
 	    }
 	    else {
+	        if(world.rank() == 0) {
+			std::cout << "# Partition scheme was not specified, using: " <<
+				cfg.partitioner << std::endl;
+		}
 		partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
 		func(graph,world.size());
 	    }
