@@ -114,16 +114,22 @@ dotests() {
         ## ${SST_TEST_SUITES}/testSuite_zesto_qsimlib.sh
         #  The following restrictions are not about required dependencies,
         #  but are to only run the lengthy test on one case per OS environment.
-        if [ $1 != "sstmainline_config_gcc_4_8_1" ]
+        # if [ $1 != "sstmainline_config_gcc_4_8_1" ]
+        # then
+        #     # Don't run portals4 suite because gcc 4.8.1 chokes on current sst-gem5
+        #     sed 1q /etc/*release | grep -iq -e ubuntu -e centos
+        #     if [[ "$MPIHOME" == *openmpi-1.6* ]] &&  [ $? = 0 ]
+        #     then
+        #         ${SST_TEST_SUITES}/testSuite_portals4.sh
+        #     fi
+        # fi
+
+        # only run portals4 test when gem5 sconsed with sstdevice=1
+        if [ $1 == "sstmainline_config_with_sstdevice" ]
         then
-            # Don't run portals4 suite because gcc 4.8.1 chokes on current sst-gem5
-            sed 1q /etc/*release | grep -iq -e ubuntu -e centos
-            if [[ "$MPIHOME" == *openmpi-1.6* ]] &&  [ $? = 0 ]
-            then
-                :
-#                ${SST_TEST_SUITES}/testSuite_portals4.sh
-            fi
+            ${SST_TEST_SUITES}/testSuite_portals4.sh
         fi
+
     fi
 
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
@@ -291,6 +297,21 @@ getconfig() {
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
+
+        sstmainline_config_with_sstdevice) 
+            #-----------------------------------------------------------------
+            # sstmainline_config_with_sstdevice
+            #     This option used for configuring SST with supported stabledevel deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel-with-sstdevice -m none -i none -o none -h none -s none -q 0.2.1 -M none"
+            setConvenienceVars "$depsStr"
+#            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            ;;
+
+
         sstmainline_config_gcc_4_8_1) 
             #-----------------------------------------------------------------
             # sstmainline_config_gcc_4_8_1
@@ -634,7 +655,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|documentation)
+        default|sstmainline_config|sstmainline_config_with_sstdevice|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|documentation)
             # Configure MPI and Boost (Linux only)
             if [ $kernel != "Darwin" ]
             then
