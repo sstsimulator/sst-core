@@ -15,14 +15,13 @@
 #include "sst_config.h"
 #include "sst/core/serialization.h"
 
-#include "sst/core/simulation.h"
 #include "sst/core/output.h"
 
 // System Headers
 #include <errno.h>
 
 // Core Headers
-//#include "sst/core/serialization.h"
+#include "sst/core/simulation.h"
 
     
 namespace SST {
@@ -143,7 +142,7 @@ Output::output_location_t Output::getOutputLocation() const
 
 void Output::fatal(uint32_t line, const char* file, const char* func,
                    uint32_t exit_code, uint32_t output_level, uint32_t output_bits,
-                   const char* format, ...)    
+                   const char* format, ...)    const
 {
     va_list     arg;
     
@@ -159,6 +158,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
             va_end(arg);    
         }
     }
+    flush();
     boost::mpi::environment::abort(exit_code);      
 
 }
@@ -213,7 +213,7 @@ void Output::setTargetOutput(output_location_t location)
 }
 
 
-void Output::openSSTTargetFile()
+void Output::openSSTTargetFile() const
 {
     std::FILE*  handle;
     std::string tempFileName;
@@ -262,7 +262,7 @@ void Output::closeSSTTargetFile()
 }
 
 
-std::string Output::buildPrefixString(uint32_t line, const std::string& file, const std::string& func)
+std::string Output::buildPrefixString(uint32_t line, const std::string& file, const std::string& func) const
 {
     std::string rtnstring = "";
     size_t      startindex = 0;
@@ -337,7 +337,7 @@ std::string Output::buildPrefixString(uint32_t line, const std::string& file, co
 
 
 void Output::outputprintf(uint32_t line, const std::string &file,
-                          const std::string &func, const char* format, va_list arg)
+                          const std::string &func, const char* format, va_list arg) const
 {
     std::string newFmt;
     
@@ -354,7 +354,7 @@ void Output::outputprintf(uint32_t line, const std::string &file,
 }
 
 
-void Output::outputprintf(const char* format, va_list arg)
+void Output::outputprintf(const char* format, va_list arg) const
 {
     // If the target output is a file, Make sure that the file is created and opened
     if ((FILE == m_targetLoc) && (0 == m_sstFileHandle)) {

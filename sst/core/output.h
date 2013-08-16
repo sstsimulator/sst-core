@@ -17,6 +17,10 @@
 // CHOOSE THE --enable-debug OPTION DURING SST CONFIGURATION
 //#define __SST_DEBUG_OUTPUT__
 
+//This must be defined before inclusion of intttypes.h
+#ifndef __STDC_FORMAT_MACROS  
+#define __STDC_FORMAT_MACROS
+#endif
 #include <inttypes.h>
 #include <cstdio>
 
@@ -127,8 +131,8 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.  
      */
-    void output(const char* format, ...) 
-         __attribute__ ((format (printf, 2, 3)))
+    void output(const char* format, ...) const
+         __attribute__ ((format (printf, 2, 3))) 
     {
             va_list arg;
             if (true == m_objInitialized && NONE != m_targetLoc) {
@@ -148,8 +152,8 @@ public:
         @param ... Argument strings for format.  
      */
     void output(uint32_t line, const char* file, const char* func,
-                const char* format, ...) 
-        __attribute__ ((format (printf, 5, 6)))
+                const char* format, ...) const
+        __attribute__ ((format (printf, 5, 6))) 
     {
         va_list arg;
         if (true == m_objInitialized && NONE != m_targetLoc ) {
@@ -178,7 +182,7 @@ public:
      */
     void verbose(uint32_t line, const char* file, const char* func,
                  uint32_t output_level, uint32_t output_bits,
-                 const char* format, ...)    
+                 const char* format, ...)    const
         __attribute__ ((format (printf, 7, 8)))
     {
         va_list arg;
@@ -217,8 +221,8 @@ public:
      */
     void debug(uint32_t line, const char* file, const char* func,
                uint32_t output_level, uint32_t output_bits,
-               const char* format, ...)   
-        __attribute__ ((format (printf, 7, 8)))
+               const char* format, ...)   const
+        __attribute__ ((format (printf, 7, 8))) 
     {
 #ifdef __SST_DEBUG_OUTPUT__
         va_list arg;
@@ -257,8 +261,8 @@ public:
      */
     void fatal(uint32_t line, const char* file, const char* func,
                   uint32_t exit_code, uint32_t output_level, 
-                  uint32_t output_bits, const char* format, ...)    
-                  __attribute__ ((format (printf, 8, 9)));
+                  uint32_t output_bits, const char* format, ...)    const
+                  __attribute__ ((format (printf, 8, 9))) ;
     
     // GET / SET METHODS
     
@@ -326,15 +330,23 @@ public:
      */
     static void setFileName(const std::string& filename);
 
+    /** This method allows for the manual flushing of the output. */
+    inline void flush() const {std::fflush(*m_targetOutputRef);}
+
 private:
     // Support Methods
     void setTargetOutput(output_location_t location);
-    void openSSTTargetFile();
+    void openSSTTargetFile() const;
     void closeSSTTargetFile();
-    std::string buildPrefixString(uint32_t line, const std::string& file, const std::string& func);
-    void outputprintf(uint32_t line, const std::string &file, const std::string &func, 
-                      const char *format, va_list arg);
-    void outputprintf(const char *format, va_list arg);
+    std::string buildPrefixString(uint32_t line, 
+                                  const std::string& file, 
+                                  const std::string& func) const;
+    void outputprintf(uint32_t line, 
+                      const std::string &file, 
+                      const std::string &func, 
+                      const char *format, 
+                      va_list arg) const;
+    void outputprintf(const char *format, va_list arg) const;
 
     // Internal Member Variables
     bool              m_objInitialized;
