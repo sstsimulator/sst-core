@@ -1,14 +1,12 @@
 
 #ifndef _REGISTER_COMPONENT_ON_NETWORK_EVENT_H
 #define _REGISTER_COMPONENT_ON_NETWORK_EVENT_H
+
 #include <sst/core/sst_types.h>
-
-//#include <sst/core/activity.h>
 #include <sst/core/debug.h>
-#include <sst/core/event.h>
-#include <sst/core/serialization.h>
-
+#include <sst/core/activity.h>
 #include <sst/sst_stdint.h>
+#include <sst/core/serialization.h>
 
 namespace SST {
 namespace Interfaces {
@@ -54,7 +52,7 @@ private:
 	}
 };
 
-} //namespace Interfaces
-} //namespace SST
+}
+}
 
 #endif /* _RegisterComponentOnNetworkEvent_H */

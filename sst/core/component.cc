@@ -12,20 +12,18 @@
 
 #include <sst_config.h>
 #include "sst/core/serialization.h"
-#include "sst/core/component.h"
 
 #include <boost/foreach.hpp>
-#include <string>
+#include <string.h>
 
-#include "sst/core/debug.h"
-//#include "sst/core/event.h"
+#include "sst/core/component.h"
+#include "sst/core/simulation.h"
 #include "sst/core/exit.h"
 #include "sst/core/factory.h"
 #include "sst/core/link.h"
 #include "sst/core/linkMap.h"
-#include "sst/core/simulation.h"
-#include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
+#include "sst/core/event.h"
 
 namespace SST {
 

@@ -13,8 +13,8 @@
 #ifndef SST_CLOCK_H
 #define SST_CLOCK_H
 
-//#include <deque>
-//#include <list>
+#include <deque>
+#include <list>
 #include <vector>
 
 #include <sst/core/action.h>

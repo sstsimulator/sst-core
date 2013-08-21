@@ -12,18 +12,18 @@
 
 #ifndef SST_LINKMAP_H
 #define SST_LINKMAP_H
-#include <sst/core/sst_types.h>
 
 #include <string>
 #include <map>
 
-#include <sst/core/link.h>
+#include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 
 namespace SST { 
 
 #define _LM_DBG( fmt, args...) __DBG( DBG_LINKMAP, LinkMap, fmt, ## args )
 
+class Link;
 
 class LinkMap {
 

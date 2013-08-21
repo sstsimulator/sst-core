@@ -12,9 +12,9 @@
 #ifndef SST_PARAM_H
 #define SST_PARAM_H
 
-#include <iostream>
 #include <map>
 #include <set>
+#include <iostream>
 #include <utility>
 
 #include <stdlib.h>
