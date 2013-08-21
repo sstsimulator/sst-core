@@ -12,8 +12,8 @@
 
 #include "sst_config.h"
 #include "sst/core/serialization.h"
-
 #include <sst/core/syncQueue.h>
+
 #include <sst/core/event.h>
 
 namespace SST {

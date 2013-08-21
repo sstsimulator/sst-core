@@ -14,14 +14,14 @@
 
 #ifndef SST_CONFIGGRAPH_H
 #define SST_CONFIGGRAPH_H
+#include "sst/core/sst_types.h"
 
 #include <vector>
 #include <map>
 
 #include "sst/core/graph.h"
-#include "sst/core/sdl.h"
+//#include "sst/core/sdl.h"
 
-#include "sst/core/sst_types.h"
 #include "sst/core/params.h"
 #include <sst/core/serialization.h>
 

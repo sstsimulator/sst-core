@@ -12,19 +12,22 @@
 
 #ifndef _SST_FACTORY_H
 #define _SST_FACTORY_H
+#include <sst/core/sst_types.h>
 
+#include <stdio.h>
 #include <boost/foreach.hpp>
 
-#include <sst/core/sst_types.h>
-#include <sst/core/component.h>
-#include <sst/core/introspector.h>
+//#include <sst/core/component.h>
 #include <sst/core/element.h>
+//#include <sst/core/introspector.h>
 #include <sst/core/serialization.h>
 
 namespace SST {
 
-class SimulationBase;
+class Component;
+class Introspector;
 struct FactoryLoaderData;
+class SimulationBase;
 
 class Factory {
 public:

@@ -14,14 +14,15 @@
 
 #ifndef SST_CORE_SIMULATION_H
 #define SST_CORE_SIMULATION_H
+#include "sst/core/sst_types.h"
 
 #include <signal.h>
 #include <iostream>
 
-#include "sst/core/sst_types.h"
-#include "sst/core/sdl.h"
-#include "sst/core/component.h"
-#include "sst/core/params.h"
+#include "sst/core/clock.h"
+//#include "sst/core/sdl.h"
+//#include "sst/core/component.h"
+//#include "sst/core/params.h"
 #include <sst/core/serialization.h>
 
 namespace SST {
@@ -29,12 +30,15 @@ namespace SST {
 #define _SIM_DBG( fmt, args...) __DBG( DBG_SIM, Sim, fmt, ## args )
 
 class Activity;
+class Component;
 class Config;
+class ConfigGraph;
 class Exit;
 class Factory;
-class Graph;
+//class Graph;
 class Introspector;
 class LinkMap;
+class Params;
 class Sync;
 class TimeConverter;
 class TimeLord;

@@ -14,7 +14,7 @@
 #define SST_INTROSPECTACTION_H
 
 
-#include <sst/core/debug.h>
+//#include <sst/core/debug.h>
 #include <sst/core/action.h>
 #include <sst/core/event.h>
 #include <sst/core/serialization.h>

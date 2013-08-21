@@ -12,10 +12,10 @@
 
 #ifndef SST_CORE_EXIT_H
 #define SST_CORE_EXIT_H
+#include "sst/core/sst_types.h"
 
 #include <set>
 
-#include "sst/core/sst_types.h"
 #include "sst/core/action.h"
 #include <sst/core/serialization.h>
 

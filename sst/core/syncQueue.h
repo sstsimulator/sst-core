@@ -13,12 +13,12 @@
 #ifndef SST_SYNCQUEUE_H
 #define SST_SYNCQUEUE_H
 
+#include <cstdio> // For printf
 #include <vector>
 
 #include <sst/core/activityQueue.h>
 #include <sst/core/serialization.h>
 
-#include <cstdio> // For printf
 
 namespace SST {
 

@@ -13,12 +13,12 @@
 #ifndef SST_TIMEVORTEX_H
 #define SST_TIMEVORTEX_H
 
+#include <cstdio> // For printf
 #include <set>
 
 #include <sst/core/activityQueue.h>
 #include <sst/core/serialization.h>
 
-#include <cstdio> // For printf
 
 namespace SST {
 

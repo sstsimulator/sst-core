@@ -9,9 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 namespace SST {
-
+  class ConfigGraph;
 	/**
 		Implements the "simple" partitioner which uses latency
 		information in the SST component configuration to perform
