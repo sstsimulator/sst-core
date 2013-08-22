@@ -135,6 +135,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl1.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl3.sh
+    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl4.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
 
@@ -194,7 +195,7 @@ dotests() {
     # ${SST_TEST_SUITES}/testSuite_shemp.sh
     # etc.
     ${SST_TEST_SUITES}/testSuite_merlin.sh
-    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
+##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
     if [ $1 != "sstmainline_config_gcc_4_8_1" ]
     then
         # Don't run suite that uses gem5 because gcc 4.8.1 chokes on current sst-gem5
