@@ -14,11 +14,11 @@
 
 #ifndef _SST_TIMELORD_H
 #define _SST_TIMELORD_H
-
-#include <string>
-#include <map>
-
 #include <sst/core/sst_types.h>
+
+#include <map>
+#include <string>
+
 #include <sst/core/simulation.h>
 #include <sst/core/serialization.h>
 

@@ -16,13 +16,15 @@
 //		created:	parse_parameter() get_node_text()
 
 
-#include <iostream>
-#include <ctime>
 
 #include <sst_config.h>
 #include "sst/core/serialization.h"
-#include "sst/core/configGraph.h"
 #include "sst/core/sdl.h"
+
+#include <iostream>
+//#include <ctime>
+//
+#include "sst/core/configGraph.h"
 #include "sst/core/simulation.h"
 #include "sst/core/timeLord.h"
 

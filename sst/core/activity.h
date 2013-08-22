@@ -12,14 +12,8 @@
 
 #ifndef SST_ACTIVITY_H
 #define SST_ACTIVITY_H
-
-//Included for c++11 compatibility for PRIu_64
-#ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
-#endif
-
 #include <sst/core/sst_types.h>
+
 #include <sst/core/output.h>
 #include <sst/core/serialization.h>
 
@@ -69,12 +63,11 @@ public:
     inline int getPriority() const {
 	return priority;
     }
-
     virtual void print(const std::string& header, Output &out) const {
         out.output("%s Generic Activity to be delivered at %" PRIu64 " with priority %d\n",
                 header.c_str(), delivery_time, priority);
     }
-    
+
 protected:
     void setPriority(int priority) {
 	this->priority = priority;

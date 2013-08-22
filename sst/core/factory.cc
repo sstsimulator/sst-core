@@ -12,13 +12,15 @@
 
 #include "sst_config.h"
 #include "sst/core/serialization.h"
+#include "sst/core/factory.h"
 
 #include <boost/algorithm/string.hpp>
 #include <boost/tuple/tuple.hpp>
 
+#include <ltdl.h>
+#include <set>
 #include <stdio.h>
 
-#include <ltdl.h>
 
 #ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
@@ -32,10 +34,11 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-#include <set>
 
-#include "sst/core/factory.h"
+#include "sst/core/component.h"
+#include "sst/core/debug.h"
 #include "sst/core/element.h"
+#include "sst/core/introspector.h"
 #include "sst/core/params.h"
 
 /* This needs to happen before lt_dlinit() and sets up the preload

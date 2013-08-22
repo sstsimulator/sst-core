@@ -14,9 +14,10 @@
 #ifndef _SST_ZOLT_H
 #define _SST_ZOLT_H
 
-#include <sst/core/graph.h>
+//#include <sst/core/graph.h>
 
 namespace SST {
+class Graph;
 extern void partitionGraph(Graph& graph, int argc, char* argv[]);
 
 } // namespace SST

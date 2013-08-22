@@ -12,9 +12,10 @@
 
 #ifndef SST_CONFIG_H
 #define SST_CONFIG_H
+#include <sst/core/sst_types.h>
 
 #include <string>
-#include <sst/core/sst_types.h>
+
 #include <sst/core/serialization.h>
 
 namespace boost {

@@ -12,8 +12,8 @@
 
 #ifndef SST_LINKPAIR_H
 #define SST_LINKPAIR_H
-
 #include <sst/core/sst_types.h>
+
 #include <sst/core/link.h>
 #include <sst/core/serialization.h>
 

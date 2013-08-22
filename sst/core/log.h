@@ -13,8 +13,8 @@
 #ifndef _SST_LOG_H
 #define _SST_LOG_H
 
-#include <stdio.h>
 #include <cstdarg>
+#include <stdio.h>
 #include <string>
 
 namespace SST { 

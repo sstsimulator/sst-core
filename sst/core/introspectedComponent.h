@@ -12,11 +12,12 @@
 
 #ifndef SST_INTROSPECTED_COMPONENT_H
 #define SST_INTROSPECTED_COMPONENT_H
+#include <sst/core/sst_types.h>
 
 #include <cmath>
+//#include <deque>
 #include <iostream>
 #include <list>
-#include <deque>
 #include <map>
 
 #if defined(__x86_64__) && defined(__APPLE__) && !defined(__USE_ISOC99)
@@ -32,7 +33,6 @@
 #include <boost/any.hpp>
 
 #include <sst/core/component.h>
-#include <sst/core/sst_types.h>
 //#include <sst/core/linkMap.h>
 #include <sst/core/timeConverter.h>
 #include <sst/core/serialization.h>

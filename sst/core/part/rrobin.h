@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 namespace SST {
+class ConfigGraph;
 	/**
 		Implements the round robin partitioning scheme for
 		SST.
