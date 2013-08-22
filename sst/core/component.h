@@ -12,24 +12,20 @@
 
 #ifndef SST_COMPONENT_H
 #define SST_COMPONENT_H
-#include <sst/core/sst_types.h>
 
 #include <map>
 
+#include <sst/core/sst_types.h>
 #include <sst/core/clock.h>
-#include <sst/core/event.h>
-//#include <sst/core/params.h>
-//#include <sst/core/link.h>
-//#include <sst/core/serialization.h>
-//#include <sst/core/timeConverter.h>
+#include <sst/core/timeConverter.h>
+#include <sst/core/params.h>
+#include <sst/core/link.h>
+#include <sst/core/serialization.h>
 
 namespace SST {
 
-class Link;
 class LinkMap;
 class Module;
-class Params;
-class TimeConverter;
 
 #define _COMP_DBG( fmt, args...) __DBG( DBG_COMP, Component, fmt, ## args )
 
@@ -40,7 +36,7 @@ class TimeConverter;
 class Component {
 public:
     /* Deprecated typedef */
-//    typedef Params Params_t;
+    typedef Params Params_t;
 
     /** Constructor. Generally only called by the factory class. 
         @param id Unique component ID

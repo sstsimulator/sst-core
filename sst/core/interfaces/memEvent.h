@@ -11,12 +11,10 @@
 
 #ifndef _MEMEVENT_H
 #define _MEMEVENT_H
-#include <sst/core/sst_types.h>
 
-//#include <sst/core/activity.h>
-#include <sst/core/component.h>
-//#include <sst/core/debug.h>
-#include <sst/core/event.h>
+#include <sst/core/sst_types.h>
+#include <sst/core/debug.h>
+#include <sst/core/activity.h>
 #include <sst/core/serialization.h>
 
 namespace SST {
@@ -281,7 +279,7 @@ private:
 	}
 };
 
-} //namepace Interfaces
-} //namespace SST
+}
+}
 
 #endif /* _MEMEVENT_H */

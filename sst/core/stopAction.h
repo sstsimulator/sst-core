@@ -13,9 +13,8 @@
 #ifndef _SST_STOPACTION_H
 #define _SST_STOPACTION_H
 
-#include <iostream>
-
 #include <sst/core/action.h>
+#include <iostream>
 #include <sst/core/serialization.h>
 
 namespace SST {

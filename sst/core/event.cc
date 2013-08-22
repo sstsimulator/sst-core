@@ -12,8 +12,8 @@
 
 #include "sst_config.h"
 #include "sst/core/serialization.h"
-#include "sst/core/event.h"
 
+#include "sst/core/event.h"
 #include "sst/core/link.h"
 
 namespace SST {

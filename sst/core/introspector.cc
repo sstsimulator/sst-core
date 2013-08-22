@@ -11,15 +11,15 @@
 
 #include "sst_config.h"
 #include "sst/core/serialization.h"
-#include "sst/core/introspector.h"
 
-//#include <boost/foreach.hpp>
+#include <boost/foreach.hpp>
 #include <boost/mpi.hpp>
 
-//#include "sst/core/exit.h"
-#include "sst/core/introspectAction.h"
 #include "sst/core/simulation.h"
-//#include "sst/core/timeLord.h"
+#include "sst/core/introspector.h"
+#include "sst/core/exit.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/introspectAction.h"
 
 
 namespace SST {

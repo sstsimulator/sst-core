@@ -21,11 +21,9 @@
 #ifndef SST_CPUNICEVENT_H
 #define SST_CPUNICEVENT_H
 
-#include <cstring>
-
-#include <sst/core/debug.h>
-#include <sst/core/event.h>
 #include <sst/core/serialization.h>
+#include <cstring>
+#include <sst/core/event.h>
 
 namespace SST {
 

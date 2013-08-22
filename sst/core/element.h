@@ -11,17 +11,14 @@
 
 #ifndef SST_ELEMENT_H
 #define SST_ELEMENT_H
-#include <sst/core/sst_types.h>
 
-//#include <sst/core/component.h>
-//#include <sst/core/params.h>
+#include <sst/core/component.h>
+#include <sst/core/params.h>
 
 namespace SST {
-class Component;
-class ConfigGraph;
 class Introspector;
+class ConfigGraph;
 class Module;
-class Params;
  
 typedef Component* (*componentAllocate)(ComponentId_t, Params&);
 typedef Introspector* (*introspectorAllocate)(Params&);
