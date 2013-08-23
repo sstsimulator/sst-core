@@ -132,10 +132,10 @@ dotests() {
 
     fi
 
-    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl1.sh
-    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
-    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl3.sh
-    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl4.sh
+    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
+##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
+##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl3.sh
+##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl4.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
 
