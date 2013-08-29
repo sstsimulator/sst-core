@@ -207,6 +207,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_patterns.sh
     ${SST_TEST_SUITES}/testSuite_prospero.sh
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
+    ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
 
     if [ $1 = "gem5_no_dramsim_config" ]
     then
