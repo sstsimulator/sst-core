@@ -271,8 +271,21 @@ getconfig() {
     # Determine compilers
     local mpicc_compiler=`which mpicc`
     local mpicxx_compiler=`which mpicxx`
-    local cc_compiler=`which gcc`
-    local cxx_compiler=`which g++`
+
+    if [[ ${CC:+isSet} = isSet ]]
+    then
+        local cc_compiler=$CC
+    else
+        local cc_compiler=`which gcc`
+    fi
+
+    if [[ ${CXX:+isSet} = isSet ]]
+    then
+        local cxx_compiler=$CXX
+    else
+        local cxx_compiler=`which g++`
+    fi
+
     local mpi_environment="CC=${cc_compiler} CXX=${cxx_compiler} MPICC=${mpicc_compiler} MPICXX=${mpicxx_compiler}"
 
     # make sure that sstmacro is suppressed
@@ -662,7 +675,7 @@ else
 
     case $1 in
         default|sstmainline_config|sstmainline_config_with_sstdevice|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|documentation)
-            # Configure MPI and Boost (Linux only)
+            # Configure MPI, Boost, and Compiler (Linux only)
             if [ $kernel != "Darwin" ]
             then
 
@@ -678,7 +691,7 @@ else
                 if [[ "$2" =~ openmpi.* ]]
                 then
                     # since Boost flavor labeled with "ompi" not "openmpi"
-                    mpiStr="ompi-"$(expr "$2" : '.*openmpi-\([0-9]\.[0-9][0-9]*\).*')
+                    mpiStr="ompi-"$(expr "$2" : '.*openmpi-\([0-9]\(\.[0-9][0-9]*\)*\)')
                 else
                     mpiStr=${2}
                 fi
@@ -697,21 +710,26 @@ else
                         module load gcc/${4}
                         module load swig/swig-2.0.9
                         echo "LOADED gcc/${4} compiler"
-                    # elif [[ "$4" =+ intel.* ]]
-                    # then
-                    #     module load intel/${4}
+                    elif [[ "$4" =~ intel.* ]]
+                    then
+                        module load intel/${4}
                     fi
                 fi
-                # echo "CHECK:  \$2: ${2}"
-                # echo "CHECK:  \$3: ${3}"
-                # echo "CHECK:  \$4: ${4}"
-                # echo "CHECK:  \$desiredMPI: ${desiredMPI}"
-                # echo "CHECK:  \$desiredBoost: ${desiredBoost}"
+                echo "CHECK:  \$2: ${2}"
+                echo "CHECK:  \$3: ${3}"
+                echo "CHECK:  \$4: ${4}"
+                echo "CHECK:  \$desiredMPI: ${desiredMPI}"
+                echo "CHECK:  \$desiredBoost: ${desiredBoost}"
 
                 # load MPI
                 case $2 in
                     mpich2_stable|mpich2-1.4.1p1)
                         echo "MPICH2 stable (mpich2-1.4.1p1) selected"
+                        module unload mpi # unload any default to avoid conflict error
+                        module load mpi/${desiredMPI}
+                        ;;
+                    openmpi-1.7.2)
+                        echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
                         module unload mpi # unload any default to avoid conflict error
                         module load mpi/${desiredMPI}
                         ;;
@@ -830,6 +848,8 @@ else
                                     module unload boost
                                     module add mpi/openmpi-1.6.3_gcc-4.2.1
                                     module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                                    export CC='which gcc'
+                                    export CXX='which g++'
                                     module list
                                     ;;
                                 clang-425.0.27)
@@ -838,6 +858,8 @@ else
                                     module unload boost
                                     module add mpi/openmpi-1.6.3_clang-425.0.27
                                     module add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
+                                    export CC='which clang'
+                                    export CXX='which clang++'
                                     module list
                                     ;;
                                 *)
