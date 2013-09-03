@@ -10,11 +10,11 @@
 // distribution.
 
 
-#ifndef _SST_LOG_H
-#define _SST_LOG_H
+#ifndef SST_CORE_LOG_H
+#define SST_CORE_LOG_H
 
-#include <stdio.h>
 #include <cstdarg>
+#include <stdio.h>
 #include <string>
 
 namespace SST { 
@@ -57,4 +57,4 @@ class Log {
 };
 } // namespace SST
 
-#endif
+#endif //SST_CORE_LOG_H

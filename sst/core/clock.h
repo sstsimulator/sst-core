@@ -10,16 +10,17 @@
 // distribution.
 
 
-#ifndef SST_CLOCK_H
-#define SST_CLOCK_H
+#ifndef SST_CORE_CLOCK_H
+#define SST_CORE_CLOCK_H
 
-#include <deque>
-#include <list>
+#include <sst/core/serialization.h>
+
+//#include <deque>
+//#include <list>
 #include <vector>
 
 #include <sst/core/action.h>
 //#include <sst/core/clockHandler.h>
-#include <sst/core/serialization.h>
 
 #define _CLE_DBG( fmt, args...)__DBG( DBG_CLOCK, Clock, fmt, ## args )
 
@@ -118,4 +119,4 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(SST::Clock)
 
-#endif // SST_CLOCK_H
+#endif // SST_CORE_CLOCK_H

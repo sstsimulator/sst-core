@@ -11,30 +11,34 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_SIMULATION_H
 #define SST_CORE_SIMULATION_H
+
+#include "sst/core/sst_types.h"
+#include <sst/core/serialization.h>
 
 #include <signal.h>
 #include <iostream>
 
-#include "sst/core/sst_types.h"
-#include "sst/core/sdl.h"
-#include "sst/core/component.h"
-#include "sst/core/params.h"
-#include <sst/core/serialization.h>
+#include "sst/core/clock.h"
+//#include "sst/core/sdl.h"
+//#include "sst/core/component.h"
+//#include "sst/core/params.h"
 
 namespace SST {
 
 #define _SIM_DBG( fmt, args...) __DBG( DBG_SIM, Sim, fmt, ## args )
 
 class Activity;
+class Component;
 class Config;
+class ConfigGraph;
 class Exit;
 class Factory;
-class Graph;
+//class Graph;
 class Introspector;
 class LinkMap;
+class Params;
 class Sync;
 class TimeConverter;
 class TimeLord;
@@ -225,4 +229,4 @@ private:
 BOOST_CLASS_EXPORT_KEY(SST::SimulationBase)
 BOOST_CLASS_EXPORT_KEY(SST::Simulation)
 
-#endif
+#endif //SST_CORE_SIMULATION_H

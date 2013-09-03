@@ -12,16 +12,16 @@
 
 #include <sst_config.h>
 #include "sst/core/serialization.h"
+#include "sst/core/config.h"
 
 #include <errno.h>
 #include <iostream>
 #include <boost/program_options.hpp>
 
-#include "sst/core/config.h"
+#include "sst/core/build_info.h"
 #include "sst/core/debug.h"
 #include "sst/core/output.h"
-#include "sst/core/sdl.h"
-#include "sst/core/build_info.h"
+//#include "sst/core/sdl.h"
 
 namespace po = boost::program_options;
 

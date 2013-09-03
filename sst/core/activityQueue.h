@@ -10,11 +10,12 @@
 // distribution.
 
 
-#ifndef SST_ACTIVITYQUEUE_H
-#define SST_ACTIVITYQUEUE_H
+#ifndef SST_CORE_ACTIVITYQUEUE_H
+#define SST_CORE_ACTIVITYQUEUE_H
+
+#include <sst/core/serialization.h>
 
 #include <sst/core/activity.h>
-#include <sst/core/serialization.h>
 
 namespace SST {
 
@@ -39,8 +40,8 @@ private:
     }
 };
  
-}
+} //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::ActivityQueue)
 
-#endif // SST_ACTIVITYQUEUE_H
+#endif // SST_CORE_ACTIVITYQUEUE_H

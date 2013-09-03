@@ -11,16 +11,16 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef _SST_TIMELORD_H
-#define _SST_TIMELORD_H
-
-#include <string>
-#include <map>
+#ifndef SST_CORE_TIMELORD_H
+#define SST_CORE_TIMELORD_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/simulation.h>
 #include <sst/core/serialization.h>
+
+#include <map>
+#include <string>
+
+#include <sst/core/simulation.h>
 
 namespace SST {
 
@@ -99,4 +99,4 @@ class TimeLord {
 
 BOOST_CLASS_EXPORT_KEY(SST::TimeLord)
 
-#endif
+#endif //SST_CORE_TIMELORD_H

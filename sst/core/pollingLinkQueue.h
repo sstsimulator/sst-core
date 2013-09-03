@@ -9,16 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_POLLINGLINKQUEUE_H
+#define SST_CORE_POLLINGLINKQUEUE_H
 
-#ifndef SST_POLLINGLINKQUEUE_H
-#define SST_POLLINGLINKQUEUE_H
-
-#include <set>
-
-#include <sst/core/activityQueue.h>
 #include <sst/core/serialization.h>
 
 #include <cstdio> // For printf
+#include <set>
+
+#include <sst/core/activityQueue.h>
 
 namespace SST {
 
@@ -50,8 +49,8 @@ private:
     }
 };
 
-}
+} //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::PollingLinkQueue)
 
-#endif // SST_POLLINGLINKQUEUE_H
+#endif // SST_CORE_POLLINGLINKQUEUE_H

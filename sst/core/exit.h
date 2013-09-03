@@ -9,15 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_CORE_EXIT_H
+#define SST_CORE_CORE_EXIT_H
 
-#ifndef SST_CORE_EXIT_H
-#define SST_CORE_EXIT_H
+#include <sst/core/sst_types.h>
+#include <sst/core/serialization.h>
 
 #include <set>
 
-#include "sst/core/sst_types.h"
-#include "sst/core/action.h"
-#include <sst/core/serialization.h>
+#include <sst/core/action.h>
 
 namespace SST{
 
@@ -65,4 +65,4 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(SST::Exit)
 
-#endif // SST_EXIT_H
+#endif // SST_CORE_EXIT_H

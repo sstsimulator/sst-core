@@ -8,10 +8,10 @@
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
-
-
+#ifndef SST_CORE_PART_SIMPLEPART_H
+#define SST_CORE_PART_SIMPLEPART_H
 namespace SST {
-
+  class ConfigGraph;
 	/**
 		Implements the "simple" partitioner which uses latency
 		information in the SST component configuration to perform
@@ -20,4 +20,5 @@ namespace SST {
 	*/
 	void simple_partition(ConfigGraph* graph, int world_size);
 
-}
+} //namespace SST
+#endif //SST_CORE_PART_SIMPLERPART_H

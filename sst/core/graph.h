@@ -9,13 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef _SST_GRAPH_H_
-#define _SST_GRAPH_H_
+#ifndef SST_CORE_GRAPH_H
+#define SST_CORE_GRAPH_H
 
 #include <map>
 #include <list>
-
 
 namespace SST {
 
@@ -81,4 +79,4 @@ class Graph {
 
 } // namespace SST
 
-#endif
+#endif // SST_CORE_GRAPH_H

@@ -9,13 +9,16 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _MEMEVENT_H
-#define _MEMEVENT_H
+#ifndef INTERFACES_MEMEVENT_H
+#define INTERFACES_MEMEVENT_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/debug.h>
-#include <sst/core/activity.h>
 #include <sst/core/serialization.h>
+
+//#include <sst/core/activity.h>
+#include <sst/core/component.h>
+//#include <sst/core/debug.h>
+#include <sst/core/event.h>
 
 namespace SST {
 namespace Interfaces {
@@ -279,7 +282,7 @@ private:
 	}
 };
 
-}
-}
+} //namepace Interfaces
+} //namespace SST
 
-#endif /* _MEMEVENT_H */
+#endif /* INTERFACES_MEMEVENT_H */

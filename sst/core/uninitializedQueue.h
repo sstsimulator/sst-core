@@ -10,12 +10,12 @@
 // distribution.
 
 
-#ifndef SST_UNINITIALIZEDQUEUE_H
-#define SST_UNINITIALIZEDQUEUE_H
+#ifndef SST_CORE_UNINITIALIZEDQUEUE_H
+#define SST_CORE_UNINITIALIZEDQUEUE_H
 
-#include <sst/core/activityQueue.h>
 #include <sst/core/serialization.h>
 
+#include <sst/core/activityQueue.h>
 
 namespace SST {
 
@@ -45,8 +45,8 @@ private:
     }
 };
 
-}
+} //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::UninitializedQueue)
 
-#endif // SST_UNINITIALIZEDQUEUE_H
+#endif // SST_CORE_UNINITIALIZEDQUEUE_H

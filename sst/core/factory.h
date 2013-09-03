@@ -9,22 +9,25 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef _SST_FACTORY_H
-#define _SST_FACTORY_H
-
-#include <boost/foreach.hpp>
+#ifndef _SST_CORE_FACTORY_H
+#define _SST_CORE_FACTORY_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/component.h>
-#include <sst/core/introspector.h>
-#include <sst/core/element.h>
 #include <sst/core/serialization.h>
+
+#include <stdio.h>
+#include <boost/foreach.hpp>
+
+//#include <sst/core/component.h>
+#include <sst/core/element.h>
+//#include <sst/core/introspector.h>
 
 namespace SST {
 
-class SimulationBase;
+class Component;
+class Introspector;
 struct FactoryLoaderData;
+class SimulationBase;
 
 class Factory {
 public:
@@ -194,4 +197,4 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(SST::Factory)
 
-#endif
+#endif // SST_CORE_FACTORY_H

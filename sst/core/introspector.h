@@ -9,15 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_INTROSPECTOR_H
 #define SST_CORE_INTROSPECTOR_H
 
-#include "sst/core/introspectedComponent.h"
-#include "sst/core/simulation.h"
-#include "sst/core/clock.h"
-#include "sst/core/timeConverter.h"
 #include <sst/core/serialization.h>
+
+#include "sst/core/clock.h"
+#include "sst/core/introspectedComponent.h"
+//#include "sst/core/simulation.h"
+//#include "sst/core/timeConverter.h"
 
 namespace SST {
 
@@ -159,8 +159,8 @@ typeT Introspector::getData(IntrospectedComponent* c, std::string dataname)
 	return (-9999); //return an unreasonable number for now
 }
 
-} //end namespace
+} // namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::Introspector)
 
-#endif
+#endif // SST_CORE_INTROSPECTOR_H

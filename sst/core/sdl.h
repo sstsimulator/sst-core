@@ -17,8 +17,8 @@
 //		added:		verbosity
 
 
-#ifndef _SST_SDL_H
-#define _SST_SDL_H
+#ifndef SST_CORE_SDL_H
+#define SST_CORE_SDL_H
 
 #include <map>
 #include <string>
@@ -78,4 +78,4 @@ namespace SST {
 
 } // namespace SST
 
-#endif
+#endif //SST_CORE_SDL_H

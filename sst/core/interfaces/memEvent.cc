@@ -9,12 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #include "sst_config.h"
 #include "sst/core/serialization.h"
+#include "memEvent.h"
 
 #include "sst/core/element.h"
-#include "memEvent.h"
 
 using namespace SST;
 using namespace SST::Interfaces;

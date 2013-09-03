@@ -9,15 +9,14 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_INTROSPECTACTION_H
+#define SST_CORE_INTROSPECTACTION_H
 
-#ifndef SST_INTROSPECTACTION_H
-#define SST_INTROSPECTACTION_H
+#include <sst/core/serialization.h>
 
-
-#include <sst/core/debug.h>
+//#include <sst/core/debug.h>
 #include <sst/core/action.h>
 #include <sst/core/event.h>
-#include <sst/core/serialization.h>
 
 namespace SST {
 
@@ -44,8 +43,8 @@ private:
     
 };
 
-}
+} //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::IntrospectAction)
 
-#endif // SST_INTROSPECTACTION_H
+#endif // SST_CORE_INTROSPECTACTION_H

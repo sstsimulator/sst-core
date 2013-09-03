@@ -9,10 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-
-#ifndef _SST_SST_H
-#define _SST_SST_H
+#ifndef SST_CORE_SST_TYPES_H
+#define SST_CORE_SST_TYPES_H
 
 #include <sst_stdint.h>
 
@@ -37,4 +35,4 @@ typedef double volts;
 
 } // namespace SST
 
-#endif
+#endif //SST_CORE_SST_TYPES_H

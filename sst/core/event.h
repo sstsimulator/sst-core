@@ -9,15 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_CORE_EVENT_H
+#define SST_CORE_CORE_EVENT_H
 
-#ifndef SST_CORE_EVENT_H
-#define SST_CORE_EVENT_H
-
-//#include <sst/core/eventFunctor.h>
 #include <sst/core/sst_types.h>
-#include <sst/core/debug.h>
-#include <sst/core/activity.h>
 #include <sst/core/serialization.h>
+
+#include <sst/core/activity.h>
+//#include <sst/core/debug.h>
+//#include <sst/core/eventFunctor.h>
 
 namespace SST {
 
@@ -121,9 +121,9 @@ private:
     void
     serialize(Archive & ar, const unsigned int version );
 };
-}
+} //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::Event)
 BOOST_CLASS_EXPORT_KEY(SST::NullEvent)
 
-#endif // SST_EVENT_H
+#endif // SST_CORE_EVENT_H

@@ -9,14 +9,14 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_LINK_H
 #define SST_CORE_LINK_H
 
 #include <sst/core/sst_types.h>
-// #include <sst/core/eventFunctor.h>
-#include <sst/core/event.h>
 #include <sst/core/serialization.h>
+
+#include <sst/core/event.h>
+// #include <sst/core/eventFunctor.h>
 
 namespace SST { 
 
@@ -164,4 +164,4 @@ BOOST_CLASS_EXPORT_KEY(SST::Link)
 BOOST_CLASS_EXPORT_KEY(SST::SelfLink)
 
 
-#endif
+#endif // SST_CORE_LINK_H

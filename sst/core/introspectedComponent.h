@@ -9,14 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef SST_INTROSPECTED_COMPONENT_H
-#define SST_INTROSPECTED_COMPONENT_H
+#ifndef SST_CORE_INTROSPECTED_COMPONENT_H
+#define SST_CORE_INTROSPECTED_COMPONENT_H
+#include <sst/core/sst_types.h>
+#include <sst/core/serialization.h>
 
 #include <cmath>
+//#include <deque>
 #include <iostream>
 #include <list>
-#include <deque>
 #include <map>
 
 #if defined(__x86_64__) && defined(__APPLE__) && !defined(__USE_ISOC99)
@@ -32,10 +33,8 @@
 #include <boost/any.hpp>
 
 #include <sst/core/component.h>
-#include <sst/core/sst_types.h>
 //#include <sst/core/linkMap.h>
 #include <sst/core/timeConverter.h>
-#include <sst/core/serialization.h>
 
 namespace io_interval {  // from boost interval io example (io_wide)
 template<class T, class Policies, class CharType, class CharTraits>
@@ -280,11 +279,8 @@ private:
     void serialize(Archive& ar, const unsigned int version);
 }; 
 
-
-
-
-}
+} //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::IntrospectedComponent)
 
-#endif
+#endif // SST_CORE_INTROSPECTED_COMPONENT_H

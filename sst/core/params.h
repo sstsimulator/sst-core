@@ -9,18 +9,16 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_PARAM_H
-#define SST_PARAM_H
-
-#include <map>
-#include <set>
-#include <iostream>
-#include <utility>
-
-#include <stdlib.h>
+#ifndef SST_CORE_PARAM_H
+#define SST_CORE_PARAM_H
 
 #include <sst/core/serialization.h>
 
+#include <iostream>
+#include <map>
+#include <set>
+#include <stdlib.h>
+#include <utility>
 
 namespace SST {
 
@@ -181,6 +179,6 @@ private:
 inline bool operator==(const Params& a, const Params& b) { return a.data == b.data; }
 inline bool operator<(const Params& a, const Params& b) { return a.data < b.data; }
 
-}
+} //namespace SST
 
-#endif
+#endif //SST_CORE_PARAMS_H

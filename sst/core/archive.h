@@ -10,8 +10,8 @@
 // distribution.
 
 
-#ifndef SST_ARCHIVE_H
-#define SST_ARCHIVE_H
+#ifndef SST_CORE_ARCHIVE_H
+#define SST_CORE_ARCHIVE_H
 
 #include <string>
 
@@ -39,4 +39,4 @@ namespace SST {
 
 } //namespace SST
 
-#endif // SST_ARCHIVE_H
+#endif // SST_CORE_ARCHIVE_H

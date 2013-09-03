@@ -9,13 +9,14 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_STOPACTION_H
+#define SST_CORE_STOPACTION_H
 
-#ifndef _SST_STOPACTION_H
-#define _SST_STOPACTION_H
+#include <sst/core/serialization.h>
+
+#include <iostream>
 
 #include <sst/core/action.h>
-#include <iostream>
-#include <sst/core/serialization.h>
 
 namespace SST {
 
@@ -62,4 +63,4 @@ public:
 
 } // namespace SST
 
-#endif
+#endif //SST_CORE_STOPACTION_H

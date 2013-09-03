@@ -9,21 +9,21 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_LINKMAP_H
+#define SST_CORE_LINKMAP_H
 
-#ifndef SST_LINKMAP_H
-#define SST_LINKMAP_H
+#include <sst/core/sst_types.h>
+#include <sst/core/serialization.h>
 
 #include <string>
 #include <map>
 
-#include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
+#include <sst/core/link.h>
 
 namespace SST { 
 
 #define _LM_DBG( fmt, args...) __DBG( DBG_LINKMAP, LinkMap, fmt, ## args )
 
-class Link;
 
 class LinkMap {
 
@@ -68,4 +68,4 @@ public:
 
 BOOST_CLASS_EXPORT_KEY(SST::LinkMap)
 
-#endif // SST_LINKMAP_H
+#endif // SST_CORE_LINKMAP_H

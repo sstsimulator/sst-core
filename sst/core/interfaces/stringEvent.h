@@ -9,13 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _STRINGEVENT_H
-#define _STRINGEVENT_H
+#ifndef INTERFACES_STRINGEVENT_H
+#define INTERFACES_STRINGEVENT_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/debug.h>
-#include <sst/core/activity.h>
 #include <sst/core/serialization.h>
+
+//#include <sst/core/activity.h>
+#include <sst/core/debug.h>
+#include <sst/core/event.h>
 
 namespace SST {
 namespace Interfaces {
@@ -54,7 +56,7 @@ private:
 	}
 };
 
-}
-}
+} //namespace Interfaces
+} //namespace SST
 
-#endif /* _STRINGEVENT_H */
+#endif /* INTERFACES_STRINGEVENT_H */

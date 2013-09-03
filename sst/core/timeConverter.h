@@ -9,9 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef SST_TIMECONVERTER_H
-#define SST_TIMECONVERTER_H
+#ifndef SST_CORE_TIMECONVERTER_H
+#define SST_CORE_TIMECONVERTER_H
 
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
@@ -78,4 +77,4 @@ class TimeConverter {
 
 BOOST_CLASS_EXPORT_KEY(SST::TimeConverter)
 
-#endif
+#endif //SST_CORE_TIMECONVERTER_H

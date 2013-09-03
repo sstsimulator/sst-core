@@ -10,8 +10,8 @@
 // distribution.
 
 
-#ifndef _SST_DEBUG_H
-#define _SST_DEBUG_H
+#ifndef _SST_CORE_DEBUG_H
+#define _SST_CORE_DEBUG_H
 
 #include <stdio.h>
 #include <sst/core/serialization.h>
@@ -100,4 +100,4 @@ extern int DebugSetFile( const std::string& filename );
 
 #define _ABORT _abort
 
-#endif
+#endif // SST_CORE_DEBUG_H

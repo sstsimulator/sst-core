@@ -18,4 +18,4 @@
 #include "sst/core/serialization/element.h"
 #endif
 
-#endif
+#endif //SST_CORE_SERIALIZATOIN_SERIALIZATION_H

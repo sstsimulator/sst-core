@@ -10,11 +10,13 @@
 // distribution.
 
 
-#ifndef SST_ACTION_H
-#define SST_ACTION_H
+#ifndef SST_CORE_ACTION_H
+#define SST_CORE_ACTION_H
+
+#include <sst/core/serialization.h>
 
 #include <sst/core/activity.h>
-#include <sst/core/serialization.h>
+#include <sst/core/output.h>
 
 namespace SST {
 
@@ -42,8 +44,8 @@ private:
      }
 };
 
-}
+} //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::Action)
 
-#endif // SST_ACTION_H
+#endif // SST_CORE_ACTION_H

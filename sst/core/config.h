@@ -9,13 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_CONFIG_H
+#define SST_CORE_CONFIG_H
 
-#ifndef SST_CONFIG_H
-#define SST_CONFIG_H
-
-#include <string>
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
+
+#include <string>
 
 namespace boost {
     namespace program_options {
@@ -115,4 +115,4 @@ private:
 
 } // namespace SST
 
-#endif // SST_CONFIG_H
+#endif // SST_CORE_CONFIG_H

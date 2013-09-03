@@ -9,15 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_SYNC_H
 #define SST_CORE_SYNC_H
 
+#include "sst/core/sst_types.h"
+#include <sst/core/serialization.h>
+
 #include <map>
 
-#include "sst/core/sst_types.h"
 #include "sst/core/action.h"
-#include <sst/core/serialization.h>
 
 namespace SST {
 
@@ -58,4 +58,4 @@ private:
 
 BOOST_CLASS_EXPORT_KEY(SST::Sync)
 
-#endif // SST_SYNC_H
+#endif // SST_CORE_SYNC_H

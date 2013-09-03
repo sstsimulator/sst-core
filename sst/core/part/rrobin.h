@@ -8,12 +8,14 @@
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
-
-
+#ifndef SST_CORE_PART_RROBIN_H
+#define SST_CORE_PART_RROBIN_H
 namespace SST {
+class ConfigGraph;
 	/**
 		Implements the round robin partitioning scheme for
 		SST.
 	*/
 	void rrobin_partition(ConfigGraph* graph, int world_size);
-}
+} //namespace SST
+#endif //SST_CORE_PART_RROBIN_H

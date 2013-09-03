@@ -10,8 +10,8 @@
 // distribution.
 
 
-#ifndef SST_MODULE_H
-#define SST_MODULE_H
+#ifndef SST_CORE_MODULE_H
+#define SST_CORE_MODULE_H
 
 namespace SST {
   /**
@@ -31,8 +31,8 @@ namespace SST {
 //      {
 //      }
     };
-}
+} //namespace SST
 
 // BOOST_CLASS_EXPORT_KEY(SST::Module)
 
-#endif // SST_ACTION_H
+#endif // SST_CORE_ACTION_H

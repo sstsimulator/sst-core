@@ -17,12 +17,15 @@
 // The idea is to pack netsim API info into a data structure and
 // send it off to the NIC which will know what to do with the
 // data.
-//
-#ifndef SST_CPUNICEVENT_H
-#define SST_CPUNICEVENT_H
+
+#ifndef SST_CORE_CPUNICEVENT_H
+#define SST_CORE_CPUNICEVENT_H
 
 #include <sst/core/serialization.h>
+
 #include <cstring>
+
+#include <sst/core/debug.h>
 #include <sst/core/event.h>
 
 namespace SST {
@@ -165,4 +168,4 @@ class CPUNicEvent : public Event {
 
 BOOST_CLASS_EXPORT_KEY(SST::CPUNicEvent)
 
-#endif // SST_CPUNICEVENT_H
+#endif // SST_CORE_CPUNICEVENT_H

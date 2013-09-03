@@ -9,23 +9,27 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_COMPONENT_H
+#define SST_CORE_COMPONENT_H
 
-#ifndef SST_COMPONENT_H
-#define SST_COMPONENT_H
+#include <sst/core/sst_types.h>
+#include <sst/core/serialization.h>
 
 #include <map>
 
-#include <sst/core/sst_types.h>
 #include <sst/core/clock.h>
-#include <sst/core/timeConverter.h>
-#include <sst/core/params.h>
-#include <sst/core/link.h>
-#include <sst/core/serialization.h>
+#include <sst/core/event.h>
+//#include <sst/core/params.h>
+//#include <sst/core/link.h>
+//#include <sst/core/timeConverter.h>
 
 namespace SST {
 
+class Link;
 class LinkMap;
 class Module;
+class Params;
+class TimeConverter;
 
 #define _COMP_DBG( fmt, args...) __DBG( DBG_COMP, Component, fmt, ## args )
 
@@ -36,7 +40,7 @@ class Module;
 class Component {
 public:
     /* Deprecated typedef */
-    typedef Params Params_t;
+//    typedef Params Params_t;
 
     /** Constructor. Generally only called by the factory class. 
         @param id Unique component ID
@@ -216,8 +220,8 @@ private:
     void serialize(Archive& ar, const unsigned int version);
 };
 
-}
+} //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::Component)
 
-#endif
+#endif // SST_CORE_COMPONENT_H

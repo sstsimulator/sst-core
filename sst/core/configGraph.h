@@ -11,19 +11,19 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#ifndef SST_CORE_CONFIGGRAPH_H
+#define SST_CORE_CONFIGGRAPH_H
 
-#ifndef SST_CONFIGGRAPH_H
-#define SST_CONFIGGRAPH_H
+#include "sst/core/sst_types.h"
+#include <sst/core/serialization.h>
 
 #include <vector>
 #include <map>
 
 #include "sst/core/graph.h"
-#include "sst/core/sdl.h"
-
-#include "sst/core/sst_types.h"
 #include "sst/core/params.h"
-#include <sst/core/serialization.h>
+//#include "sst/core/sdl.h"
+
 
 namespace SST {
 
@@ -213,4 +213,4 @@ private:
  
 } // namespace SST
 
-#endif // SST_CONFIGGRAPH_H
+#endif // SST_CORE_CONFIGGRAPH_H
