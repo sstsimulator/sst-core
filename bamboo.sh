@@ -106,23 +106,7 @@ dotests() {
     if [ $kernel != "Darwin" ]
     then
         # Only run if the OS *isn't* Darwin (MacOS)
-###        ${SST_TEST_SUITES}/testSuite_macsim.sh   Disable test Aug. 8, 2013
-##            Disable second zesto test -- July 26, 2013
-##        ${SST_TEST_SUITES}/testSuite_zesto.sh
-##        ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
-        #      zesto with qsim tests to not run correctly anywhere Feb. 4, 2013
-        ## ${SST_TEST_SUITES}/testSuite_zesto_qsimlib.sh
-        #  The following restrictions are not about required dependencies,
-        #  but are to only run the lengthy test on one case per OS environment.
-        # if [ $1 != "sstmainline_config_gcc_4_8_1" ]
-        # then
-        #     # Don't run portals4 suite because gcc 4.8.1 chokes on current sst-gem5
-        #     sed 1q /etc/*release | grep -iq -e ubuntu -e centos
-        #     if [[ "$MPIHOME" == *openmpi-1.6* ]] &&  [ $? = 0 ]
-        #     then
-        #         ${SST_TEST_SUITES}/testSuite_portals4.sh
-        #     fi
-        # fi
+        ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
 
         # only run portals4 test when gem5 sconsed with sstdevice=1
         if [ $1 == "sstmainline_config_with_sstdevice" ]
@@ -207,7 +191,6 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_patterns.sh
     ${SST_TEST_SUITES}/testSuite_prospero.sh
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
-    ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
 
     if [ $1 = "gem5_no_dramsim_config" ]
     then
