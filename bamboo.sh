@@ -295,11 +295,9 @@ getconfig() {
     fi
 
     # On MacOSX Lion, suppress the following:
-    #      genericProc
     #      PhoenixSim
     if [ $3 == "Darwin" ]
     then
-        echo "$USER" > ./sst/elements/genericProc/.ignore
         echo "$USER" > ./sst/elements/PhoenixSim/.ignore
     fi
 
@@ -848,8 +846,8 @@ else
                                     module unload boost
                                     module add mpi/openmpi-1.6.3_gcc-4.2.1
                                     module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
-                                    export CC='which gcc'
-                                    export CXX='which g++'
+                                    export CC=`which gcc`
+                                    export CXX=`which g++`
                                     module list
                                     ;;
                                 clang-425.0.27)
@@ -858,8 +856,8 @@ else
                                     module unload boost
                                     module add mpi/openmpi-1.6.3_clang-425.0.27
                                     module add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
-                                    export CC='which clang'
-                                    export CXX='which clang++'
+                                    export CC=`which clang`
+                                    export CXX=`which clang++`
                                     module list
                                     ;;
                                 *)
