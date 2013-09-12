@@ -40,7 +40,33 @@ public:
 	    else return lhs.delivery_time < rhs.delivery_time;
 	}
     };
-    
+
+    // To use with STL priority queues, that order in reverse.
+    class pq_less_time_priority {
+    public:
+        inline bool operator()(const Activity* lhs, const Activity* rhs) const {
+            if ( lhs->delivery_time == rhs->delivery_time ) {
+                if ( lhs->priority == rhs->priority ) {
+                    /* TODO:  Handle 64-bit wrap-around */
+                    return lhs->queue_order > rhs->queue_order;
+                }
+                return lhs->priority > rhs->priority;
+            }
+            return lhs->delivery_time > rhs->delivery_time;
+        }
+
+        inline bool operator()(const Activity& lhs, const Activity& rhs) {
+            if ( lhs.delivery_time == rhs.delivery_time ) {
+                if ( lhs.priority == rhs.priority ) {
+                    /* TODO:  Handle 64-bit wrap-around */
+                    return lhs.queue_order > rhs.queue_order;
+                }
+                return lhs.priority > rhs.priority;
+            }
+            return lhs.delivery_time > rhs.delivery_time;
+        }
+    };
+
     // Comparator class to use with STL container classes.
     class less_time {
     public:
@@ -69,12 +95,18 @@ public:
                 header.c_str(), delivery_time, priority);
     }
 
+    void setQueueOrder(uint64_t order) {
+        queue_order = order;
+    }
+
 protected:
     void setPriority(int priority) {
 	this->priority = priority;
     }
 
+
 private:
+    uint64_t  queue_order;
     SimTime_t delivery_time;
     int       priority;
 

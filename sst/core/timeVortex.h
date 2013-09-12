@@ -15,7 +15,9 @@
 #include <sst/core/serialization.h>
 
 #include <cstdio> // For printf
-#include <set>
+#include <functional>
+#include <queue>
+#include <vector>
 
 #include <sst/core/activityQueue.h>
 
@@ -35,10 +37,12 @@ public:
     Activity* front();
 
     void print(Output &out) const;
-    
+
 private:
-    std::multiset<Activity*,Activity::less_time_priority> data;
-    
+    typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::pq_less_time_priority> dataType_t;
+    dataType_t data;
+    uint64_t insertOrder;
+
     friend class boost::serialization::access;
     template<class Archive>
     void
@@ -47,7 +51,7 @@ private:
         printf("begin TimeVortex::serialize\n");
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
         printf("  - TimeVortex::data\n");
-        ar & BOOST_SERIALIZATION_NVP(data);
+//        ar & BOOST_SERIALIZATION_NVP(data);
         printf("end TimeVortex::serialize\n");
     }
 };

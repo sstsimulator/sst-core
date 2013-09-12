@@ -18,59 +18,62 @@
 
 namespace SST {
 
-    TimeVortex::TimeVortex() : ActivityQueue() {}
+TimeVortex::TimeVortex() : ActivityQueue(), insertOrder(0) {}
 
-    TimeVortex::~TimeVortex()
-    {
-	// Activities in TimeVortex all need to be deleted
-	std::multiset<Activity*,Activity::less_time_priority>::iterator it;
-
-	for ( it = data.begin(); it != data.end(); ++it ) {
-	    delete *it;
-	}
-	data.clear();
-    }
-    
-    bool TimeVortex::empty()
-    {
-	return data.empty();
-    }
-    
-    int TimeVortex::size()
-    {
-	return data.size();
-    }
-    
-    void TimeVortex::insert(Activity* activity)
-    {
-	data.insert(activity);
-    }
-    
-    Activity* TimeVortex::pop()
-    {
-	if ( data.size() == 0 ) return NULL;
-	std::multiset<Activity*,Activity::less_time_priority>::iterator it = data.begin();
-	Activity* ret_val = (*it);
-	data.erase(it);
-	return ret_val;
-
+TimeVortex::~TimeVortex()
+{
+    // Activities in TimeVortex all need to be deleted
+    while ( !data.empty() ) {
+        Activity *it = data.top();
+        delete it;
+        data.pop();
     }
 
-    Activity* TimeVortex::front()
-    {
-	return *data.begin();
-    }
+}
 
-    void TimeVortex::print(Output &out) const {
-        std::multiset<Activity*,Activity::less_time_priority>::iterator it;
+bool TimeVortex::empty()
+{
+    return data.empty();
+}
 
-        out.output("TimeVortex state:\n");
-        for ( it = data.begin(); it != data.end(); it++ ) {
-            (*it)->print("  ", out);
-        }
-    }
+int TimeVortex::size()
+{
+    return data.size();
+}
 
-    
+void TimeVortex::insert(Activity* activity)
+{
+    activity->setQueueOrder(insertOrder++);
+    data.push(activity);
+}
+
+Activity* TimeVortex::pop()
+{
+    if ( data.empty() ) return NULL;
+    Activity* ret_val = data.top();
+    data.pop();
+    return ret_val;
+
+}
+
+Activity* TimeVortex::front()
+{
+    return data.top();
+}
+
+void TimeVortex::print(Output &out) const
+{
+    out.output("TimeVortex state:\n");
+
+//  STL's priority_queue does not support iteration.
+//
+//    dataType_t::iterator it;
+//    for ( it = data.begin(); it != data.end(); it++ ) {
+//        (*it)->print("  ", out);
+//    }
+}
+
+
 
 } // namespace SST
 
