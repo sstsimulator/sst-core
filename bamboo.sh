@@ -825,21 +825,127 @@ else
                             # Depending on specified compiler, load Boost and MPI
                             case $compiler in
                                 gcc-4.2.1)
-                                    # Use Boost and MPI built with GCC
+                                    # Use Selected Boost and MPI built with GCC
                                     module unload mpi
                                     module unload boost
-                                    module add mpi/openmpi-1.6.3_gcc-4.2.1
-                                    module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+
+                                   #Check for Illegal configurations of Boost and MPI
+                                    if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
+                                          ( $2 = "openmpi-1.7.2" &&  $3 = "boost-1.50" )    || \
+                                          ( $2 = "openmpi-1.6.3" &&  $3 = "boost-1.54" )    || \
+                                          ( $2 = "ompi_default"  &&  $3 = "boost-1.54" ) ]]
+                                    then
+                                        echo "ERROR: Invalid configuration of $2 and $3 These two modules cannot be combined"
+                                        exit 0
+                                    fi
+                                   
+                                    # load MPI
+                                    case $2 in
+                                        openmpi-1.7.2)
+                                            echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
+                                            module add mpi/openmpi-1.7.2_gcc-4.2.1
+                                            ;;
+                                        ompi_default|openmpi-1.6.3)
+                                            echo "OpenMPI 1.6.3 (Default) (openmpi-1.6.3) selected"
+                                            module add mpi/openmpi-1.6.3_gcc-4.2.1
+                                            ;;
+                                        *)
+                                            echo "Default MPI option, loading mpi/openmpi-1.6.3"
+                                            module load mpi/openmpi-1.6.3_gcc-4.2.1 2>catch.err
+                                            if [ -s catch.err ] 
+                                            then
+                                                cat catch.err
+                                                exit 0
+                                            fi
+                                            ;;
+                                    esac
+                                                        
+                                    # load corresponding Boost
+                                    case $3 in
+                                        boost-1.54)
+                                            echo "Boost 1.54 selected"
+                                            module add boost/boost-1.54.0_ompi-1.7.2_gcc-4.2.1
+                                            ;;
+                                        boost_default|boost-1.50)
+                                            echo "Boost 1.50 (Default) selected"
+                                            module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                                            ;;
+                                        *)
+                                            echo "bamboo.sh: \"Default\" Boost selected"
+                                            echo "Third argument was $3"
+                                            echo "Loading boost/Boost 1.50"
+                                            module load boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1 2>catch.err
+                                            if [ -s catch.err ] 
+                                            then
+                                                cat catch.err
+                                                exit 0
+                                            fi
+                                            ;;
+                                    esac
                                     export CC=`which gcc`
                                     export CXX=`which g++`
                                     module list
                                     ;;
+                                    
+                                    
                                 clang-425.0.27)
                                     # Use Boost and MPI built with CLANG
                                     module unload mpi
                                     module unload boost
-                                    module add mpi/openmpi-1.6.3_clang-425.0.27
-                                    module add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
+
+                                   #Check for Illegal configurations of Boost and MPI
+                                    if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
+                                          ( $2 = "openmpi-1.7.2" &&  $3 = "boost-1.50" )    || \
+                                          ( $2 = "openmpi-1.6.3" &&  $3 = "boost-1.54" )    || \
+                                          ( $2 = "ompi_default"  &&  $3 = "boost-1.54" ) ]]
+                                    then
+                                        echo "ERROR: Invalid configuration of $2 and $3 These two modules cannot be combined"
+                                        exit 0
+                                    fi
+
+                                    # load MPI
+                                    case $2 in
+                                        openmpi-1.7.2)
+                                            echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
+                                            module add mpi/openmpi-1.7.2_clang-425.0.27
+                                            ;;
+                                        ompi_default|openmpi-1.6.3)
+                                            echo "OpenMPI 1.6.3 (Default) (openmpi-1.6.3) selected"
+                                            module add mpi/openmpi-1.6.3_clang-425.0.27
+                                            ;;
+                                        *)
+                                            echo "Default MPI option, loading mpi/openmpi-1.6.3"
+                                            module load mpi/openmpi-1.6.3_clang-425.0.27 2>catch.err
+                                            if [ -s catch.err ] 
+                                            then
+                                                cat catch.err
+                                                exit 0
+                                            fi
+                                            ;;
+                                    esac
+                                                        
+                                    # load corresponding Boost
+                                    case $3 in
+                                        boost-1.54)
+                                            echo "Boost 1.54 selected"
+                                            module add boost/boost-1.54.0_ompi-1.7.2_clang-425.0.27
+                                            ;;
+                                        boost_default|boost-1.50)
+                                            echo "Boost 1.50 (Default) selected"
+                                            module add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
+                                            ;;
+                                        *)
+                                            echo "bamboo.sh: \"Default\" Boost selected"
+                                            echo "Third argument was $3"
+                                            echo "Loading boost/Boost 1.50"
+                                            module load boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27 2>catch.err
+                                            if [ -s catch.err ] 
+                                            then
+                                                cat catch.err
+                                                exit 0
+                                            fi
+                                            ;;
+                                    esac
                                     export CC=`which clang`
                                     export CXX=`which clang++`
                                     module list
@@ -867,7 +973,6 @@ else
 
                 echo "bamboo.sh: MacOS build."
                 echo "bamboo.sh:   MPI = $2, Boost = $3"
-                echo "bamboo.sh:   MPI and Boost options ignored; using default MPI and Boost per $1 buildtype"
             fi
 
             echo "bamboo.sh: LISTING LOADED MODULES"
