@@ -55,7 +55,7 @@ Config::Config( int my_rank )
 // #else
 //     partitioner = "single";
 // #endif
-    partitioner = "rrobin";
+    partitioner = "linear";
     generator   = "NONE";
     generator_options   = "";
     dump_component_graph_file = "";
