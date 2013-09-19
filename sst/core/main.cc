@@ -36,6 +36,7 @@
 
 #include <sst/core/part/simplepart.h>
 #include <sst/core/part/rrobin.h>
+#include <sst/core/part/linpart.h>
 
 #include <sys/resource.h>
 
@@ -192,6 +193,10 @@ main(int argc, char *argv[])
 		rrobin_partition(graph, world.size());
 		if(cfg.verbose && world.rank() == 0) 
 			std::cout << "# Partitionning process is complete." << std::endl;
+	    }
+	    else if ( cfg.partitioner == "linear" ) {
+		SSTLinearPartition* linear = new SSTLinearPartition(world.size(), cfg.verbose ? 2 : 0);
+		linear->performPartition(graph);
 	    }
 	    else if ( cfg.partitioner == "zoltan" ) {
 		printf("Zoltan support is currently not available, aborting...\n");
