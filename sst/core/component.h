@@ -189,6 +189,7 @@ public:
     void primaryComponentOKToEndSim();
     
     Module* loadModule(std::string type, Params& params);
+    Module* loadModuleWithComponent(std::string type, Component* comp, Params& params);
     
     
 protected:

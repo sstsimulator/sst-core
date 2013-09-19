@@ -236,6 +236,12 @@ Component::loadModule(std::string type, Params& params)
     return Simulation::getSimulation()->getFactory()->CreateModule(type,params);
 }
 
+Module*
+Component::loadModuleWithComponent(std::string type, Component* comp, Params& params)
+{
+    return Simulation::getSimulation()->getFactory()->CreateModuleWithComponent(type,comp,params);
+}
+
     
 template<class Archive>
 void

@@ -38,6 +38,7 @@ public:
     void RequireEvent(std::string eventname);
 
     Module* CreateModule(std::string type, Params& params);
+    Module* CreateModuleWithComponent(std::string type, Component* comp, Params& params);
     
     partitionFunction GetPartitioner(std::string name);
     generateFunction GetGenerator(std::string name);

@@ -28,6 +28,7 @@ typedef Component* (*componentAllocate)(ComponentId_t, Params&);
 typedef Introspector* (*introspectorAllocate)(Params&);
 typedef void (*eventInitialize)(void);
 typedef Module* (*moduleAllocate)(Params&);
+ typedef Module* (*moduleAllocateWithComponent)(Component*, Params&);
 typedef void (*partitionFunction)(ConfigGraph*,int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
  
@@ -64,6 +65,7 @@ struct ElementInfoModule {
     const char *description;
     void (*printHelp)(FILE *output);
     moduleAllocate alloc;
+    moduleAllocateWithComponent alloc_with_comp;
     ElementInfoParam *params;
 };
 
