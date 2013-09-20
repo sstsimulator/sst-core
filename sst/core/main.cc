@@ -70,23 +70,33 @@ main(int argc, char *argv[])
     // single rank mode, the option is ignored.
     sdl_parser* parser=0;	//(Scoggin:Jan23,2013) Fix initialization warning in build
     if ( cfg.sdlfile != "NONE" ) {
-	if ( cfg.all_parse || world.rank() == 0 ) {
-	    // Create the sdl parser
-	    parser = new sdl_parser(cfg.sdlfile);
-	    
-	    string config_string = parser->getSDLConfigString();
-	    cfg.parseConfigFile(config_string);
-	    // cfg.print();
+	string file_ext = "";
 
+	if(cfg.sdlfile.size() > 3) {
+		file_ext = cfg.sdlfile.substr(cfg.sdlfile.size() - 3);
+
+		if(file_ext == "xml") {
+			if ( cfg.all_parse || world.rank() == 0 ) {
+			    // Create the sdl parser
+			    parser = new sdl_parser(cfg.sdlfile);
+			    string config_string = parser->getSDLConfigString();
+			    cfg.parseConfigFile(config_string);
+			    // cfg.print();
+			}
+
+			// If this is a parallel job, we need to broadcast the configuration
+			if ( world.size() > 1 && !cfg.all_parse ) {
+			    broadcast(world,cfg,0);
+			}
+		} else if(file_ext == ".py") {
+
+		}
+	} else {
+		return -1;
 	}
 
-	// If this is a parallel job, we need to broadcast the configuration
-	if ( world.size() > 1 && !cfg.all_parse ) {
-	    broadcast(world,cfg,0);
-	}
     }
-	
-    
+
     Archive archive(cfg.archiveType, cfg.archiveFile);
 
     boost::mpi::timer* timer = new boost::mpi::timer();
