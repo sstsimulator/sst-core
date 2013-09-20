@@ -75,7 +75,7 @@ main(int argc, char *argv[])
 	if(cfg.sdlfile.size() > 3) {
 		file_ext = cfg.sdlfile.substr(cfg.sdlfile.size() - 3);
 
-		if(file_ext == "xml") {
+		if(file_ext == "xml" || file_ext == "sdl") {
 			if ( cfg.all_parse || world.rank() == 0 ) {
 			    // Create the sdl parser
 			    parser = new sdl_parser(cfg.sdlfile);
@@ -109,7 +109,7 @@ main(int argc, char *argv[])
     boost::mpi::timer* timer = new boost::mpi::timer();
     double start = timer->elapsed();
     double end_build, start_run, end_run;
-            
+ 
     if ( cfg.verbose) printf("# main() My rank is %d, on %d nodes\n", world.rank(), world.size());
     DebugInit( world.rank(), world.size() );
 
