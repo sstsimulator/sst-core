@@ -11,6 +11,7 @@ AM_CPPFLAGS =  \
 	$(BOOST_CPPFLAGS) \
 	$(ZOLTAN_CPPFLAGS) \
 	$(SST_CXX0X_FLAGS) \
+	$(PYTHON_CPPFLAGS) \
 	$(LTDLINCL)
 
 DIST_SUBDIRS = libltdl .
@@ -46,7 +47,6 @@ nobase_dist_sst_HEADERS = \
 	output.h \
 	params.h \
 	pollingLinkQueue.h \
-	sdl.h \
 	simulation.h \
 	sst_types.h \
 	stopAction.h \
@@ -92,7 +92,6 @@ sst_core_sources = \
 	link.cc \
 	output.cc \
 	pollingLinkQueue.cc \
-	sdl.cc \
 	simulation.cc \
 	sync.cc \
 	syncQueue.cc \
@@ -126,16 +125,18 @@ sst_x_LDADD = \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
 	-lm
+
 sst_x_LDFLAGS = \
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
 	$(TCMALLOC_LDFLAGS) \
+        $(PYTHON_LDFLAGS) \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 
 
 include tinyxml/Makefile.inc
 include part/Makefile.inc
-
+include model/Makefile.inc

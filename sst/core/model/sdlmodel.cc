@@ -9,21 +9,12 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 //
-// History:
-// Unkown - Created [?????2009]
-// Michael Scoggin(org1422) - Comment and Error Handling [Jan09,2012]
-//		modified:	parse_params() parse_variables() parse_variable() sdl_parser()
-//		created:	parse_parameter() get_node_text()
-
-
 
 #include <sst_config.h>
 #include "sst/core/serialization.h"
-#include "sst/core/sdl.h"
+#include <sst/core/model/sdlmodel.h>
 
 #include <iostream>
-//#include <ctime>
-//
 #include "sst/core/configGraph.h"
 #include "sst/core/simulation.h"
 #include "sst/core/timeLord.h"
@@ -33,7 +24,8 @@
 using namespace std;
 
 namespace SST {
-	sdl_parser::sdl_parser( const string fileName )
+	SSTSDLModelDefinition::SSTSDLModelDefinition( const string fileName ) :
+		SSTModelDescription()
 	{
 		verbosity=0;		//Scoggin(Jan09,2013) Added for feedback
 		doc = new TiXmlDocument(fileName.c_str());
@@ -68,12 +60,12 @@ namespace SST {
 		}    
 	}
 
-	sdl_parser::~sdl_parser()
+	SSTSDLModelDefinition::~SSTSDLModelDefinition()
 	{
 		delete doc;
 	}
 
-	string sdl_parser::getSDLConfigString() {
+	string SSTSDLModelDefinition::getSDLConfigString() {
 
 		TiXmlNode* root = doc;
 		TiXmlNode* child;
@@ -101,7 +93,7 @@ namespace SST {
 	}
 
 
-	ConfigGraph* sdl_parser::createConfigGraph(){ 
+	ConfigGraph* SSTSDLModelDefinition::createConfigGraph(){ 
 		graph = new ConfigGraph();
 
 		TiXmlNode* pParent = doc;
@@ -161,7 +153,7 @@ namespace SST {
 	 *
 	 * Scoggin(Jan09,2013)
 	 */
-	void sdl_parser::parse_parameter(TiXmlNode* pParent, Params* params){
+	void SSTSDLModelDefinition::parse_parameter(TiXmlNode* pParent, Params* params){
 		switch(pParent->Type()){
 			case TiXmlNode::TINYXML_COMMENT:
 				if(verbosity>=3)						//Scoggin(Jan09,2013) Added for feedback
@@ -195,7 +187,7 @@ namespace SST {
 		}
 	}
 
-	void sdl_parser::parse_param_include( TiXmlNode* pParent ){
+	void SSTSDLModelDefinition::parse_param_include( TiXmlNode* pParent ){
 		TiXmlNode* pChild;
 		if(verbosity>=1)						//Scoggin(Jan09,2013) Added for feedback
 			std::cout<<std::endl<<"Parsing Includes"<<std::endl;
@@ -224,7 +216,7 @@ namespace SST {
 	 *
 	 * Scoggin(Jan09,2012) Retrofited for error and comment handling
 	 */
-	void sdl_parser::parse_variable( TiXmlNode* pParent ){
+	void SSTSDLModelDefinition::parse_variable( TiXmlNode* pParent ){
 		//string var_name = pParent->ToElement()->FirstAttribute()->Name();
 		//variables[var_name] = pParent->ToElement()->FirstAttribute()->Value();    
 
@@ -260,7 +252,7 @@ namespace SST {
 		}
 	}
 
-	void sdl_parser::parse_variables( TiXmlNode* pParent ){
+	void SSTSDLModelDefinition::parse_variables( TiXmlNode* pParent ){
 		TiXmlNode* pChild;
 		if(verbosity>=1)						//Scoggin(Jan09,2013) Added for feedback
 			std::cout<<std::endl<<"Parsing Variables"<<std::endl;
@@ -276,7 +268,7 @@ namespace SST {
 		}    
 	}
 
-	void sdl_parser::parse_component(TiXmlNode* pParent){
+	void SSTSDLModelDefinition::parse_component(TiXmlNode* pParent){
 		ConfigComponent* comp = new ConfigComponent();
 		comp->isIntrospector = false;
 
@@ -336,13 +328,13 @@ namespace SST {
 					break;
 				default:
 					break;
-			}	
+			}
 		}
 
-		graph->comps[comp->id] = comp;    
+		graph->comps[comp->id] = comp;
 	}
 
-	void sdl_parser::parse_introspector(TiXmlNode* pParent){
+	void SSTSDLModelDefinition::parse_introspector(TiXmlNode* pParent){
 		ConfigComponent* comp = new ConfigComponent();
 		comp->isIntrospector = true;
 
@@ -381,7 +373,7 @@ namespace SST {
 		graph->comps[comp->id] = comp;    
 	}
 
-	void sdl_parser::parse_params(TiXmlNode* pParent, ConfigComponent* comp) {
+	void SSTSDLModelDefinition::parse_params(TiXmlNode* pParent, ConfigComponent* comp) {
 		TiXmlElement* element = pParent->ToElement();
 		if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
 			std::cout<<"  Parameters"<<std::endl;
@@ -422,7 +414,7 @@ namespace SST {
 		} 
 	}
 
-	void sdl_parser::parse_link(TiXmlNode* pParent, ConfigComponent* comp){
+	void SSTSDLModelDefinition::parse_link(TiXmlNode* pParent, ConfigComponent* comp){
 		TiXmlElement* element = pParent->ToElement();
 
 		std::string name;
@@ -479,7 +471,7 @@ namespace SST {
 
 	}
 
-	string sdl_parser::resolve_variable(const string value, int line_number){
+	string SSTSDLModelDefinition::resolve_variable(const string value, int line_number){
 		// Check to see if this is a variable
 		if ( value.find("$") != 0 ) return value;
 		std::string var_name = value.substr(1);
@@ -491,12 +483,12 @@ namespace SST {
 	}
 
 
-	std::string sdl_parser::resolveEnvVars(const char *input) {
+	std::string SSTSDLModelDefinition::resolveEnvVars(const char *input) {
 		std::string res = input;
 		return resolveEnvVars(res);
 	}
 
-	std::string sdl_parser::resolveEnvVars(std::string input) {
+	std::string SSTSDLModelDefinition::resolveEnvVars(std::string input) {
 		std::string res = input;
 		size_t envStart = 0;
 		while ( (envStart = res.find("${", envStart)) != std::string::npos ) {
@@ -522,7 +514,7 @@ namespace SST {
 	 *
 	 * Scoggin(Jan09,2013)
 	 */
-	const char* sdl_parser::get_node_text(TiXmlNode* pParent){
+	const char* SSTSDLModelDefinition::get_node_text(TiXmlNode* pParent){
 		const char* nodeText=0;
 		for(TiXmlNode* child=pParent->FirstChild();child;child=child->NextSibling()){
 			//		std::cout<<".";

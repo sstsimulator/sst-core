@@ -16,21 +16,16 @@
 #include <boost/mpi.hpp>
 #include <boost/mpi/timer.hpp>
 
-//#include <ctime>
 #include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <signal.h>
 
-//#include <sst/core/action.h>
-//#include <sst/core/activity.h>
 #include <sst/core/archive.h>
 #include <sst/core/config.h>
 #include <sst/core/configGraph.h>
 #include <sst/core/debug.h>
-//#include <sst/core/element.h>
 #include <sst/core/factory.h>
-#include <sst/core/sdl.h>
 #include <sst/core/simulation.h>
 #include <sst/core/zolt.h>
 
@@ -38,7 +33,14 @@
 #include <sst/core/part/rrobin.h>
 #include <sst/core/part/linpart.h>
 
+#include <sst/core/model/sstmodel.h>
+#include <sst/core/model/sdlmodel.h>
+
 #include <sys/resource.h>
+
+#ifdef HAVE_PYTHON
+#include <Python.h>
+#endif
 
 using namespace std;
 using namespace SST;
@@ -68,7 +70,9 @@ main(int argc, char *argv[])
     // (saving the slow broadcast).  In non-fast, only rank 0 will
     // parse the sdl and build the graph.  It is then broadcast.  In
     // single rank mode, the option is ignored.
-    sdl_parser* parser=0;	//(Scoggin:Jan23,2013) Fix initialization warning in build
+ //   sdl_parser* parser=0;	//(Scoggin:Jan23,2013) Fix initialization warning in build
+    SSTModelDescription* modelGen = 0;
+
     if ( cfg.sdlfile != "NONE" ) {
 	string file_ext = "";
 
@@ -78,8 +82,8 @@ main(int argc, char *argv[])
 		if(file_ext == "xml" || file_ext == "sdl") {
 			if ( cfg.all_parse || world.rank() == 0 ) {
 			    // Create the sdl parser
-			    parser = new sdl_parser(cfg.sdlfile);
-			    string config_string = parser->getSDLConfigString();
+			    modelGen = new SSTSDLModelDefinition(cfg.sdlfile);
+			    string config_string = ((SSTSDLModelDefinition*) modelGen)->getSDLConfigString();
 			    cfg.parseConfigFile(config_string);
 			    // cfg.print();
 			}
@@ -130,7 +134,7 @@ main(int argc, char *argv[])
 		func(graph,cfg.generator_options,world.size());
 	    }
 	    else {
-		graph = parser->createConfigGraph();
+		graph = modelGen->createConfigGraph();
 	    }
 
             clock_t end_graph_gen = clock();
@@ -161,7 +165,7 @@ main(int argc, char *argv[])
 		func(graph,cfg.generator_options, world.size());
 	    }
 	    else {
-		graph = parser->createConfigGraph();
+		graph = modelGen->createConfigGraph();
 	    }
 
 	    if ( world.rank() == 0 ) {
