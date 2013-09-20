@@ -88,8 +88,15 @@ main(int argc, char *argv[])
 			if ( world.size() > 1 && !cfg.all_parse ) {
 			    broadcast(world,cfg,0);
 			}
-		} else if(file_ext == ".py") {
-
+		}
+#ifdef HAVE_PYTHON
+		else if(file_ext == ".py") {
+			std::cerr << "Python SDL files are not currently supported." << std::endl;
+		}
+#endif
+		else {
+			std::cerr << "Unsupported SDL file type: " << file_ext << std::endl;
+			return -1;
 		}
 	} else {
 		return -1;
