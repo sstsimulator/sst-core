@@ -65,9 +65,6 @@ static PyObject* createNewComponent(PyObject* self, PyObject* args) {
 	int ok = PyArg_ParseTuple(args, "s#s#", &comp_name, &comp_name_size,
 			&comp_type, &comp_type_size);
 
-	std::cout << "Creating a new component: " << comp_name << " " <<
-		comp_type << std::endl;
-
 	if(ok) {
 		string comp_name_str = comp_name;
 		string comp_type_str = comp_type;
