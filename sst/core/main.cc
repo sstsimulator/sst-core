@@ -35,6 +35,7 @@
 
 #include <sst/core/model/sstmodel.h>
 #include <sst/core/model/sdlmodel.h>
+#include <sst/core/model/pymodel.h>
 
 #include <sys/resource.h>
 
@@ -95,7 +96,9 @@ main(int argc, char *argv[])
 		}
 #ifdef HAVE_PYTHON
 		else if(file_ext == ".py") {
-			std::cerr << "Python SDL files are not currently supported." << std::endl;
+			//std::cerr << "Python SDL files are not currently supported." << std::endl;
+
+			modelGen = new SSTPythonModelDefinition(cfg.sdlfile, cfg.verbose ? 4 : 0 );
 		}
 #endif
 		else {

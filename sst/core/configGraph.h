@@ -22,8 +22,6 @@
 
 #include "sst/core/graph.h"
 #include "sst/core/params.h"
-//#include "sst/core/sdl.h"
-
 
 namespace SST {
 
