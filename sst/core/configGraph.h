@@ -190,9 +190,8 @@ public:
     
 private:
     friend class Simulation;
-    friend class sdl_parser;
     friend class SSTSDLModelDefinition;
-    
+
     ConfigLinkMap_t      links;
     ConfigComponentMap_t comps;
 
