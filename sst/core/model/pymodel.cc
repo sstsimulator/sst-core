@@ -26,7 +26,7 @@ static PyObject* createNewGraph(PyObject* self, PyObject* args) {
 
 static PyObject* createNewComponent(PyObject* self, PyObject* args) {
 	if(current_graph == NULL) {
-		return PyInt_FromLong(1);
+		return PyLong_FromUnsignedLong((unsigned long) 0);
 	}
 
 	char* comp_name;
@@ -45,10 +45,10 @@ static PyObject* createNewComponent(PyObject* self, PyObject* args) {
 		string comp_name_str = comp_name;
 		string comp_type_str = comp_type;
 
-		current_component = current_graph->addComponent(comp_name_str, comp_type_str);
-		return PyInt_FromLong(0);
+		ComponentId_t newCompID = current_graph->addComponent(comp_name_str, comp_type_str);
+		return PyLong_FromUnsignedLong((unsigned long) newCompID);
 	} else {
-		return PyInt_FromLong(1);
+		return PyLong_FromUnsignedLong((unsigned long) 0);
 	}
 }
 
@@ -58,10 +58,11 @@ static PyObject* setComponentRank(PyObject* self, PyObject* args) {
 	}
 
 	int comp_rank;
-	int ok = PyArg_ParseTuple(args, "i", &comp_rank);
+	unsigned long compID;
+	int ok = PyArg_ParseTuple(args, "ki", &compID, &comp_rank);
 
 	if(ok) {
-		current_graph->setComponentRank(current_component, comp_rank);
+		current_graph->setComponentRank((ComponentId_t) compID, comp_rank);
 		return PyInt_FromLong(0);
 	} else {
 		return PyInt_FromLong(1);
@@ -74,10 +75,11 @@ static PyObject* setComponentWeight(PyObject* self, PyObject* args) {
 	}
 
 	float comp_weight;
-	int ok = PyArg_ParseTuple(args, "f", &comp_weight);
+	unsigned long compID;
+	int ok = PyArg_ParseTuple(args, "kf", &compID, &comp_weight);
 
 	if(ok) {
-		current_graph->setComponentWeight(current_component, comp_weight);
+		current_graph->setComponentWeight((ComponentId_t) compID, comp_weight);
 		return PyInt_FromLong(0);
 	} else {
 		return PyInt_FromLong(1);
@@ -93,8 +95,10 @@ static PyObject* addParameter(PyObject*self, PyObject* args) {
 	char* param_value;
 	int param_key_size = 0;
 	int param_value_size = 0;
+	unsigned long compID;
 
-	int ok = PyArg_ParseTuple(args, "s#s#",
+	int ok = PyArg_ParseTuple(args, "ks#s#",
+			&compID,
 			&param_key, &param_key_size,
 			&param_value, &param_value_size);
 
@@ -102,7 +106,7 @@ static PyObject* addParameter(PyObject*self, PyObject* args) {
 		string param_key_str = param_key;
 		string param_val_str = param_value;
 
-		current_graph->addParameter(current_component, param_key_str, param_val_str, true);
+		current_graph->addParameter((ComponentId_t) compID, param_key_str, param_val_str, true);
 		return PyInt_FromLong(0);
 	} else {
 		return PyInt_FromLong(1);
@@ -120,8 +124,10 @@ static PyObject* addLink(PyObject* self, PyObject* args) {
 	int link_name_size;
 	int port_name_size;
 	int link_lat_size;
+	unsigned long compID;
 
-	int ok = PyArg_ParseTuple(args, "s#s#s#",
+	int ok = PyArg_ParseTuple(args, "ks#s#s#",
+			&compID,
 			&link_name, &link_name_size,
 			&port_name, &port_name_size,
 			&link_lat, &link_lat_size);
@@ -131,7 +137,7 @@ static PyObject* addLink(PyObject* self, PyObject* args) {
 		string port_name_str = port_name;
 		string link_lat_str  = link_lat;
 
-		current_graph->addLink(current_component, link_name_str,
+		current_graph->addLink((ComponentId_t) compID, link_name_str,
 			port_name_str, link_lat_str);
 		return PyInt_FromLong(0);
 	} else {
@@ -143,10 +149,10 @@ static PyMethodDef sstPyMethods[] = {
 	{ "printsst", printsst, METH_VARARGS, "Print hello" },
 	{ "creategraph", createNewGraph, METH_NOARGS, "Creates a new configGraph in SST." },
 	{ "createcomponent", createNewComponent, METH_VARARGS, "Creates a new component in the configGraph." },
-	{ "setcurcomprank", setComponentRank, METH_O, "Sets the rank of the current component." },
-	{ "setcurcompweight", setComponentWeight, METH_O, "Sets the weight of the current component." },
-	{ "addcurcompparam", addParameter, METH_VARARGS, "Adds a parameter value pair to the current component" },
-	{ "addcurcomplink", addLink, METH_VARARGS, "Adds a link to the current component" },
+	{ "setcomprank", setComponentRank, METH_VARARGS, "Sets the rank of the current component." },
+	{ "setcompweight", setComponentWeight, METH_VARARGS, "Sets the weight of the current component." },
+	{ "addcompparam", addParameter, METH_VARARGS, "Adds a parameter value pair to the current component" },
+	{ "addcomplink", addLink, METH_VARARGS, "Adds a link to the current component" },
 	{ "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
 	{ NULL, NULL, 0, NULL }
 };
