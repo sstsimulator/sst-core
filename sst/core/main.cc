@@ -96,9 +96,8 @@ main(int argc, char *argv[])
 		}
 #ifdef HAVE_PYTHON
 		else if(file_ext == ".py") {
-			//std::cerr << "Python SDL files are not currently supported." << std::endl;
-
-			modelGen = new SSTPythonModelDefinition(cfg.sdlfile, cfg.verbose ? 4 : 0 );
+			modelGen = new SSTPythonModelDefinition(cfg.sdlfile, cfg.verbose ? 4 : 0 ,
+				&cfg);
 		}
 #endif
 		else {
@@ -153,7 +152,7 @@ main(int argc, char *argv[])
 		printf("Structural errors found in the ConfigGraph.  Aborting...\n");
 		exit(-1);
 	    }
-	    
+
 	    // Set all components to be instanced on rank 0 (the only
 	    // one that exists)
 	    graph->setComponentRanks(0);

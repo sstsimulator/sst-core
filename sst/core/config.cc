@@ -139,6 +139,14 @@ Config::Config( int my_rank )
     var_map = new po::variables_map();
 }
 
+void Config::setTimeBase(std::string timebaseStr) {
+	timeBase = timebaseStr;
+}
+
+void Config::setStopAt(std::string stopAt) {
+	stopAtCycle = stopAt;
+}
+
 int
 Config::parseCmdLine(int argc, char* argv[]) {
     std::string tempFileName = "sst_output"; 

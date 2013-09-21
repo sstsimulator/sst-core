@@ -9,6 +9,7 @@
 #ifdef HAVE_PYTHON
 
 #include <sst/core/model/sstmodel.h>
+#include <sst/core/config.h>
 #include <sst/core/output.h>
 #include <Python.h>
 
@@ -20,15 +21,18 @@ namespace SST {
 class SSTPythonModelDefinition : public SSTModelDescription {
 
 	public:
-		SSTPythonModelDefinition(const string script_file, int verbosity);
+		SSTPythonModelDefinition(const string script_file, int verbosity, Config* config);
 		~SSTPythonModelDefinition();
 
 		ConfigGraph* createConfigGraph();
+		string getStopAtString();
+		string getTimeBaseString();
 
 	protected:
 		Output* output;
 		PyObject* modelCreateFunc;
 		int verboseLevel;
+		Config* config;
 
 };
 

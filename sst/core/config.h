@@ -36,7 +36,9 @@ public:
 
     int parseCmdLine( int argc, char* argv[] );
     int parseConfigFile( std::string config_string );
-    
+
+    void setStopAt(std::string stopAtStr);
+    void setTimeBase(std::string timeBase);
     void Print();
 
     bool            archive;

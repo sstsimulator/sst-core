@@ -5,13 +5,40 @@
 
 ConfigGraph* current_graph;
 ComponentId_t current_component;
+char* timeBaseString = NULL;
+char* stopAtString = NULL;
 
 extern "C" {
 
-static PyObject* printsst(PyObject* self, PyObject* args) {
-	std::cout << "Hello from with SST!" << std::endl;
-	return PyInt_FromLong(0);
-};
+static PyObject* setTimeBase(PyObject* self, PyObject* args) {
+	char* tmp_timebase;
+	int timebase_size;
+
+	int ok = PyArg_ParseTuple(args, "s#", &tmp_timebase, &timebase_size);
+
+	if(ok) {
+		timeBaseString = (char*) malloc(sizeof(char) * (timebase_size + 1));
+		strcpy(timeBaseString, tmp_timebase);
+		return PyInt_FromLong(0);
+	} else {
+		return PyInt_FromLong(1);
+	}
+}
+
+static PyObject* setStopAt(PyObject* self, PyObject* args) {
+	char* tmp_stopat;
+	int stopat_size;
+
+	int ok = PyArg_ParseTuple(args, "s#", &tmp_stopat, &stopat_size);
+
+	if(ok) {
+		stopAtString = (char*) malloc(sizeof(char) * (stopat_size + 1));
+		strcpy(stopAtString, tmp_stopat);
+		return PyInt_FromLong(0);
+	} else {
+		return PyInt_FromLong(1);
+	}
+}
 
 static PyObject* exitsst(PyObject* self, PyObject* args) {
 	std::cerr << "Exit called from SST Python model" << std::endl;
@@ -146,24 +173,27 @@ static PyObject* addLink(PyObject* self, PyObject* args) {
 }
 
 static PyMethodDef sstPyMethods[] = {
-	{ "printsst", printsst, METH_VARARGS, "Print hello" },
 	{ "creategraph", createNewGraph, METH_NOARGS, "Creates a new configGraph in SST." },
 	{ "createcomponent", createNewComponent, METH_VARARGS, "Creates a new component in the configGraph." },
 	{ "setcomprank", setComponentRank, METH_VARARGS, "Sets the rank of the current component." },
 	{ "setcompweight", setComponentWeight, METH_VARARGS, "Sets the weight of the current component." },
 	{ "addcompparam", addParameter, METH_VARARGS, "Adds a parameter value pair to the current component" },
 	{ "addcomplink", addLink, METH_VARARGS, "Adds a link to the current component" },
+	{ "setsimstopat", setStopAt, METH_O, "Sets when simulation should stop." },
+	{ "setsimtimebase", setTimeBase, METH_O, "Sets the simulation timebase" },
 	{ "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
 	{ NULL, NULL, 0, NULL }
 };
 
 }
 
-SSTPythonModelDefinition::SSTPythonModelDefinition(const string script_file, int verbosity) :
+SSTPythonModelDefinition::SSTPythonModelDefinition(const string script_file, int verbosity,
+	Config* configObj) :
 	SSTModelDescription() {
 
 	output = new Output("SSTPythonModel ", verbosity, 0, SST::Output::STDOUT);
 	verboseLevel = verbosity;
+	config = configObj;
 
 	string local_script_name;
 	int substr_index = 0;
@@ -225,6 +255,16 @@ SSTPythonModelDefinition::~SSTPythonModelDefinition() {
 	Py_Finalize();
 }
 
+std::string SSTPythonModelDefinition::getTimeBaseString() {
+	string timebase_str = timeBaseString;
+	return timebase_str;
+}
+
+std::string SSTPythonModelDefinition::getStopAtString() {
+	string stop_str = stopAtString;
+	return stop_str;
+}
+
 ConfigGraph* SSTPythonModelDefinition::createConfigGraph() {
 	output->verbose(CALL_INFO, 1, 0, "Creating config graph for SST using Python model...\n");
 
@@ -255,6 +295,16 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph() {
 	Py_DECREF(createReturn);
 
 	output->verbose(CALL_INFO, 1, 0, "Construction of config graph with Python is complete.\n");
+
+	if(NULL != stopAtString) {
+		std::string stopat_string = stopAtString;
+		config->setStopAt(stopat_string);
+	}
+
+	if(NULL != timeBaseString) {
+		std::string timebase_string = timeBaseString;
+		config->setTimeBase(timebase_string);
+	}
 
 	return current_graph;
 }
