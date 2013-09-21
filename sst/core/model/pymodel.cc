@@ -3,6 +3,9 @@
 
 #ifdef HAVE_PYTHON
 
+ConfigGraph* current_graph;
+ComponentId_t current_component;
+
 extern "C" {
 
 static PyObject* printsst(PyObject* self, PyObject* args) {
@@ -16,8 +19,126 @@ static PyObject* exitsst(PyObject* self, PyObject* args) {
 	return NULL;
 }
 
+static PyObject* createNewGraph(PyObject* self, PyObject* args) {
+	current_graph = new ConfigGraph();
+	return PyInt_FromLong(0);
+}
+
+static PyObject* createNewComponent(PyObject* self, PyObject* args) {
+	if(current_graph == NULL) {
+		return PyInt_FromLong(1);
+	}
+
+	char* comp_name;
+	char* comp_type;
+
+	int comp_name_size = 0;
+	int comp_type_size = 0;
+
+	int ok = PyArg_ParseTuple(args, "s#s#", &comp_name, &comp_name_size,
+			&comp_type, &comp_type_size);
+
+	std::cout << "Creating a new component: " << comp_name << " " <<
+		comp_type << std::endl;
+
+	if(ok) {
+		string comp_name_str = comp_name;
+		string comp_type_str = comp_type;
+
+		current_component = current_graph->addComponent(comp_name_str, comp_type_str);
+		return PyInt_FromLong(0);
+	} else {
+		return PyInt_FromLong(1);
+	}
+}
+
+static PyObject* setComponentRank(PyObject* self, PyObject* args) {
+	if(current_graph == NULL) {
+		return PyInt_FromLong(1);
+	}
+
+	int comp_rank;
+	int ok = PyArg_ParseTuple(args, "i", &comp_rank);
+
+	if(ok) {
+		current_graph->setComponentRank(current_component, comp_rank);
+		return PyInt_FromLong(0);
+	} else {
+		return PyInt_FromLong(1);
+	}
+}
+
+static PyObject* setComponentWeight(PyObject* self, PyObject* args) {
+	if(current_graph == NULL) {
+		return PyInt_FromLong(1);
+	}
+
+	current_graph->setComponentWeight(current_component, 1.0);
+	return PyInt_FromLong(0);
+}
+
+static PyObject* addParameter(PyObject*self, PyObject* args) {
+	if(current_graph == NULL) {
+		return PyInt_FromLong(1);
+	}
+
+	char* param_key;
+	char* param_value;
+	int param_key_size = 0;
+	int param_value_size = 0;
+
+	int ok = PyArg_ParseTuple(args, "s#s#",
+			&param_key, &param_key_size,
+			&param_value, &param_value_size);
+
+	if(ok) {
+		string param_key_str = param_key;
+		string param_val_str = param_value;
+
+		current_graph->addParameter(current_component, param_key_str, param_val_str, true);
+		return PyInt_FromLong(0);
+	} else {
+		return PyInt_FromLong(1);
+	}
+}
+
+static PyObject* addLink(PyObject* self, PyObject* args) {
+	if(current_graph == NULL) {
+		return PyInt_FromLong(1);
+	}
+
+	char* link_name;
+	char* port_name;
+	char* link_lat;
+	int link_name_size;
+	int port_name_size;
+	int link_lat_size;
+
+	int ok = PyArg_ParseTuple(args, "s#s#s#",
+			&link_name, &link_name_size,
+			&port_name, &port_name_size,
+			&link_lat, &link_lat_size);
+
+	if(ok) {
+		string link_name_str = link_name;
+		string port_name_str = port_name;
+		string link_lat_str  = link_lat;
+
+		current_graph->addLink(current_component, link_name_str,
+			port_name_str, link_lat_str);
+		return PyInt_FromLong(0);
+	} else {
+		return PyInt_FromLong(1);
+	}
+}
+
 static PyMethodDef sstPyMethods[] = {
 	{ "printsst", printsst, METH_VARARGS, "Print hello" },
+	{ "creategraph", createNewGraph, METH_NOARGS, "Creates a new configGraph in SST." },
+	{ "createcomponent", createNewComponent, METH_VARARGS, "Creates a new component in the configGraph." },
+	{ "setcurcomprank", setComponentRank, METH_O, "Sets the rank of the current component." },
+	{ "addcurcompparam", addParameter, METH_VARARGS, "Adds a parameter value pair to the current component" },
+	{ "addcurcomplink", addLink, METH_VARARGS, "Adds a link to the current component" },
 	{ "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
 	{ NULL, NULL, 0, NULL }
 };
@@ -121,7 +242,7 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph() {
 
 	output->verbose(CALL_INFO, 1, 0, "Construction of config graph with Python is complete.\n");
 
-	return NULL;
+	return current_graph;
 }
 
 #endif
