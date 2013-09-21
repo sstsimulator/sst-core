@@ -7,8 +7,17 @@ ConfigGraph* current_graph;
 ComponentId_t current_component;
 char* timeBaseString = NULL;
 char* stopAtString = NULL;
+bool isVerbose;
 
 extern "C" {
+
+static PyObject* isSimulationVerbose(PyObject* self, PyObject* args) {
+	if(isVerbose) {
+		return Py_True;
+	} else {
+		return Py_False;
+	}
+}
 
 static PyObject* setTimeBase(PyObject* self, PyObject* args) {
 	char* tmp_timebase;
@@ -178,6 +187,7 @@ static PyMethodDef sstPyMethods[] = {
 	{ "addcomplink", addLink, METH_VARARGS, "Adds a link to the current component" },
 	{ "setsimstopat", setStopAt, METH_O, "Sets when simulation should stop." },
 	{ "setsimtimebase", setTimeBase, METH_O, "Sets the simulation timebase" },
+	{ "verbose", isSimulationVerbose, METH_NOARGS, "Checks whether simulation is verbose" },
 	{ "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
 	{ NULL, NULL, 0, NULL }
 };
@@ -265,10 +275,9 @@ std::string SSTPythonModelDefinition::getStopAtString() {
 ConfigGraph* SSTPythonModelDefinition::createConfigGraph() {
 	output->verbose(CALL_INFO, 1, 0, "Creating config graph for SST using Python model...\n");
 
-	PyObject* args = PyTuple_New(1);
-	PyObject* verbArg   = PyInt_FromLong(verboseLevel);
-        PyTuple_SetItem(args, 0, verbArg);
+	isVerbose = config->verbose;
 
+	PyObject* args = PyTuple_New(0);
 	PyObject* createReturn = PyObject_CallObject(modelCreateFunc, args);
 
 	if(NULL != PyErr_Occurred()) {
@@ -287,7 +296,6 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph() {
 	}
 
 	// Free up the arguments to be de-alloc'd
-        Py_DECREF(verbArg);
 	Py_DECREF(args);
 	Py_DECREF(createReturn);
 
