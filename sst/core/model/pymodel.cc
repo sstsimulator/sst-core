@@ -73,8 +73,15 @@ static PyObject* setComponentWeight(PyObject* self, PyObject* args) {
 		return PyInt_FromLong(1);
 	}
 
-	current_graph->setComponentWeight(current_component, 1.0);
-	return PyInt_FromLong(0);
+	float comp_weight;
+	int ok = PyArg_ParseTuple(args, "f", &comp_weight);
+
+	if(ok) {
+		current_graph->setComponentWeight(current_component, comp_weight);
+		return PyInt_FromLong(0);
+	} else {
+		return PyInt_FromLong(1);
+	}
 }
 
 static PyObject* addParameter(PyObject*self, PyObject* args) {
@@ -137,6 +144,7 @@ static PyMethodDef sstPyMethods[] = {
 	{ "creategraph", createNewGraph, METH_NOARGS, "Creates a new configGraph in SST." },
 	{ "createcomponent", createNewComponent, METH_VARARGS, "Creates a new component in the configGraph." },
 	{ "setcurcomprank", setComponentRank, METH_O, "Sets the rank of the current component." },
+	{ "setcurcompweight", setComponentWeight, METH_O, "Sets the weight of the current component." },
 	{ "addcurcompparam", addParameter, METH_VARARGS, "Adds a parameter value pair to the current component" },
 	{ "addcurcomplink", addLink, METH_VARARGS, "Adds a link to the current component" },
 	{ "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
