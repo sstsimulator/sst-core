@@ -148,12 +148,12 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_M5.sh
     fi
 
-    if [ `find . -name 'libPhoenixSim.*' | wc -w` != 0 ]
-    then
-        ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
-    else
-        echo -e  "No PhoenixSim test:   No libPhoenixSim is available\n"
-    fi
+#    if [ `find . -name 'libPhoenixSim.*' | wc -w` != 0 ]
+#    then
+#        ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
+#    else
+#        echo -e  "No PhoenixSim test:   No libPhoenixSim is available\n"
+#    fi
 
     # if [[ $BOOST_HOME == *boost*1.50* ]]
     # then
@@ -280,11 +280,11 @@ getconfig() {
     fi
 
     # On MacOSX Lion, suppress the following:
-    #      PhoenixSim
-    if [ $3 == "Darwin" ]
-    then
-        echo "$USER" > ./sst/elements/PhoenixSim/.ignore
-    fi
+#    #      PhoenixSim
+#    if [ $3 == "Darwin" ]
+#    then
+#        echo "$USER" > ./sst/elements/PhoenixSim/.ignore
+#    fi
 
     case $1 in
         sstmainline_config) 
@@ -297,7 +297,7 @@ getconfig() {
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M none"
             setConvenienceVars "$depsStr"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
 
         sstmainline_config_with_sstdevice) 
@@ -310,7 +310,7 @@ getconfig() {
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel-with-sstdevice -m none -i none -o none -h none -s none -q 0.2.1 -M none"
             setConvenienceVars "$depsStr"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
 
 
@@ -324,7 +324,7 @@ getconfig() {
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g none -m none -i none -o none -h none -s none -q 0.2.1 -M none"
             setConvenienceVars "$depsStr"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
-            configStr="$baseoptions  --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            configStr="$baseoptions  --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
         sstmainline_config_static) 
             #-----------------------------------------------------------------
@@ -336,7 +336,7 @@ getconfig() {
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M none"
             setConvenienceVars "$depsStr"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM --enable-static --disable-shared $miscEnv"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM --enable-static --disable-shared $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --enable-static --disable-shared $miscEnv"
 
             ;;
         sstmainline_config_clang_core_only) 
@@ -381,7 +381,7 @@ getconfig() {
             miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s stabledevel -q 0.2.1 -M none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM --enable-static --disable-shared $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-qsim=$SST_DEPS_INSTALL_QSIM --enable-static --disable-shared $miscEnv"
             ;;
         sstmainline_sstmacro_xconfig) 
             #-----------------------------------------------------------------
@@ -392,7 +392,7 @@ getconfig() {
             miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s stabledevel -q 0.2.1 -M none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
 
         # ====================================================================
@@ -772,19 +772,19 @@ else
                 export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
                 echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
 
-                # load OMNet++
-                module unload omnet++
-                module load omnet++/omnet++-4.1_no-mpi 2>__std.err__
-
-                cat __std.err__
-                if [[ "`cat __std.err__`" == *ERROR* ]]
-                then
-                     echo Load of omnet module failed
-                     exit
-                fi
-                echo "bamboo.sh: OMNET_HOME=${OMNET_HOME}"
-                export SST_DEPS_INSTALL_OMNET=${OMNET_HOME}
-                echo "bamboo.sh: SST_DEPS_INSTALL_OMNET=${SST_DEPS_INSTALL_OMNET}"
+#                # load OMNet++
+#                module unload omnet++
+#                module load omnet++/omnet++-4.1_no-mpi 2>__std.err__
+#
+#                cat __std.err__
+#                if [[ "`cat __std.err__`" == *ERROR* ]]
+#                then
+#                     echo Load of omnet module failed
+#                     exit
+#                fi
+#                echo "bamboo.sh: OMNET_HOME=${OMNET_HOME}"
+#                export SST_DEPS_INSTALL_OMNET=${OMNET_HOME}
+#                echo "bamboo.sh: SST_DEPS_INSTALL_OMNET=${SST_DEPS_INSTALL_OMNET}"
 
             else  # kernel is "Darwin", so this is MacOS
                 # Obtain Mac OS version (works only on MacOS!!!)
