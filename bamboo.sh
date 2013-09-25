@@ -107,6 +107,7 @@ dotests() {
     then
         # Only run if the OS *isn't* Darwin (MacOS)
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
+        ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
 
         # only run portals4 test when gem5 sconsed with sstdevice=1
         if [ $1 == "sstmainline_config_with_sstdevice" ]
@@ -139,7 +140,9 @@ dotests() {
     then
         # Don't run gem5 suite because gcc 4.8.1 chokes on current sst-gem5
         ${SST_TEST_SUITES}/testSuite_M5.sh
-        ${SST_TEST_SUITES}/testSuite_openMP.sh
+        if [[ $SST_ROOT != *USE_SST_DEVICE* ]] ; then
+             ${SST_TEST_SUITES}/testSuite_openMP.sh
+        fi
     fi
 
     if [ $1 == "M5_test" ]
@@ -194,7 +197,6 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
     ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
     ${SST_TEST_SUITES}/testSuite_VaultSim.sh
-    ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
 
     if [ $1 = "gem5_no_dramsim_config" ]
     then
