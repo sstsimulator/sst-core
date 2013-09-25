@@ -104,5 +104,5 @@ int32_t  MersenneRNG::generateNextInt32() {
 		next = next * -0.5;
 	next = next * 2;
 
-	return (int32_t) (next * (int32_t) MERSENNE_INT32_MAX));
+	return (int32_t) (next * ((int32_t) MERSENNE_INT32_MAX));
 }
