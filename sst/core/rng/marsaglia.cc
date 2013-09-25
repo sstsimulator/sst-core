@@ -66,7 +66,7 @@ int64_t  MarsagliaRNG::generateNextInt64() {
 		next = next * -0.5;
 	next = next * 2;
 
-	return (int64_t) (next * MARSAGLIA_INT64_MAX);
+	return (int64_t) (next * (int64_t) MARSAGLIA_INT64_MAX);
 }
 
 int32_t  MarsagliaRNG::generateNextInt32() {
@@ -75,7 +75,7 @@ int32_t  MarsagliaRNG::generateNextInt32() {
 		next = next * -0.5;
 	next = next * 2;
 
-	return (int32_t) (next * MARSAGLIA_INT32_MAX);
+	return (int32_t) (next * (int32_t) MARSAGLIA_INT32_MAX);
 }
 
 

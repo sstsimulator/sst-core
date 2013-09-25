@@ -29,7 +29,7 @@ MersenneRNG::MersenneRNG() {
 	index = 0;
 
 	for(int i = 1 ; i < 624; i++) {
-		const uint32_t temp = 1812433253UL * (numbers[i-1] ^ (numbers[i-1] >> 30)) + i;
+		const uint32_t temp = ((uint32_t) 1812433253UL) * (numbers[i-1] ^ (numbers[i-1] >> 30)) + i;
 		numbers[i] = temp;
 	}
 }
@@ -43,7 +43,7 @@ MersenneRNG::MersenneRNG(unsigned int seed) {
 	index = 0;
 
 	for(int i = 1 ; i < 624; i++) {
-		const uint32_t temp = 1812433253UL * (numbers[i-1] ^ (numbers[i-1] >> 30)) + i;
+		const uint32_t temp = ((uint32_t) 1812433253UL) * (numbers[i-1] ^ (numbers[i-1] >> 30)) + i;
 		numbers[i] = temp;
 	}
 }
@@ -86,7 +86,7 @@ uint32_t MersenneRNG::generateNextUInt32() {
 }
 
 uint64_t MersenneRNG::generateNextUInt64() {
-	return nextUniform() * MERSENNE_UINT64_MAX;
+	return nextUniform() * (uint64_t) MERSENNE_UINT64_MAX;
 }
 
 int64_t  MersenneRNG::generateNextInt64() {
@@ -95,7 +95,7 @@ int64_t  MersenneRNG::generateNextInt64() {
 		next = next * -0.5;
 	next = next * 2;
 
-	return (int64_t) (next * MERSENNE_INT64_MAX);
+	return (int64_t) (next * ((int64_t) MERSENNE_INT64_MAX));
 }
 
 int32_t  MersenneRNG::generateNextInt32() {
@@ -104,5 +104,5 @@ int32_t  MersenneRNG::generateNextInt32() {
 		next = next * -0.5;
 	next = next * 2;
 
-	return (int32_t) (next * MERSENNE_INT32_MAX);
+	return (int32_t) (next * (int32_t) MERSENNE_INT32_MAX));
 }
