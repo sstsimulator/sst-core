@@ -399,6 +399,71 @@ getconfig() {
 
         # ====================================================================
         # ====                                                            ====
+        # ====  3.1.x build configurations start here                     ====
+        # ====                                                            ====
+        # ====================================================================
+        sst3.1_config) 
+            #-----------------------------------------------------------------
+            # sst3.1_config
+            #     This option used for configuring SST with supported deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0 -m none -i none -o none -h none -s none -q 0.2.1 -M none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            ;;
+
+        sst3.1_config_with_sstdevice) 
+            #-----------------------------------------------------------------
+            # sst3.1_config_with_sstdevice
+            #     This option used for configuring SST with supported deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0-with-sstdevice -m none -i none -o none -h none -s none -q 0.2.1 -M none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            ;;
+
+        sst3.1_config_static) 
+            #-----------------------------------------------------------------
+            # sst3.1_config_static
+            #     This option used for configuring SST with supported deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0 -m none -i none -o none -h none -s none -q 0.2.1 -M none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --enable-static --disable-shared $miscEnv"
+            ;;
+
+        sst3.1_config_macosx) 
+            #-----------------------------------------------------------------
+            # sst3.1_config_macosx
+            #     This option used for configuring SST with supported deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0 -m none -i none -o none -h none -s none -q none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM $miscEnv"
+            ;;
+
+        sst3.1_config_macosx_static) 
+            #-----------------------------------------------------------------
+            # sst3.1_config_macosx_static
+            #     This option used for configuring SST with supported deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0 -m none -i none -o none -h none -s none -q none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-static --disable-shared $miscEnv"
+            ;;
+
+        # ====================================================================
+        # ====                                                            ====
         # ====  Older 3.0.x build configurations start here  ====
         # ====                                                            ====
         # ====================================================================
@@ -659,7 +724,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_with_sstdevice|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|documentation)
+        default|sstmainline_config|sstmainline_config_with_sstdevice|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|documentation)
             # Configure MPI, Boost, and Compiler (Linux only)
             if [ $kernel != "Darwin" ]
             then
