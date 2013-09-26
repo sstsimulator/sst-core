@@ -140,9 +140,7 @@ dotests() {
     then
         # Don't run gem5 suite because gcc 4.8.1 chokes on current sst-gem5
         ${SST_TEST_SUITES}/testSuite_M5.sh
-        if [[ $SST_ROOT != *USE_SST_DEVICE* ]] ; then
-             ${SST_TEST_SUITES}/testSuite_openMP.sh
-        fi
+        ${SST_TEST_SUITES}/testSuite_openMP.sh
     fi
 
     if [ $1 == "M5_test" ]
