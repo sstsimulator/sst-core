@@ -107,7 +107,6 @@ dotests() {
     then
         # Only run if the OS *isn't* Darwin (MacOS)
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
-        ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
 
         # only run portals4 test when gem5 sconsed with sstdevice=1
         if [ $1 == "sstmainline_config_with_sstdevice" ]
@@ -117,6 +116,7 @@ dotests() {
 
     fi
 
+    ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
 ##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
 ##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl3.sh
