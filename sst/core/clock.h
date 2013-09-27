@@ -82,6 +82,7 @@ public:
     };
 
 
+    Cycle_t getNextCycle();
     
     bool registerHandler( Clock::HandlerBase* handler ); 
     bool unregisterHandler( Clock::HandlerBase* handler, bool& empty );
@@ -100,8 +101,7 @@ private:
     TimeConverter*     period;
     HandlerMap_t       handlerMap;
     StaticHandlerMap_t staticHandlerMap;
-
-    bool started;
+    SimTime_t          next;
     
     friend class boost::serialization::access;
     template<class Archive>

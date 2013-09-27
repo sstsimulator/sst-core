@@ -98,6 +98,8 @@ public:
                                   bool regAll = true);
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
 
+    Cycle_t reregisterClock(TimeConverter *freq, Clock::HandlerBase* handler);
+    
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
         components which do not have a clock, but would like a default

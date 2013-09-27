@@ -25,8 +25,7 @@ namespace SST {
 Clock::Clock( TimeConverter* period ) :
     Action(),
     currentCycle( 0 ),
-    period( period ),
-    started(false)
+    period( period )
 {
     setPriority(40);
 } 
@@ -45,15 +44,7 @@ Clock::~Clock()
 bool Clock::registerHandler( Clock::HandlerBase* handler )
 {
     _CLE_DBG("handler %p\n",handler);
-//     if ( started )
-//     	handlerMap.push_back( handler );
-//     else
-    	staticHandlerMap.push_back( handler );
-
-    // // if ( !started )
-    // staticHandlerMap.push_back( handler );
-    // // handlerMap.push_back( handler );
-
+    staticHandlerMap.push_back( handler );	
     return 0;
 }
 
@@ -77,25 +68,25 @@ bool Clock::unregisterHandler( Clock::HandlerBase* handler, bool& empty )
     return 0;
 }
 
+Cycle_t
+Clock::getNextCycle()
+{
+    return currentCycle + 1;
+    // return period->convertFromCoreTime(next);
+}
+    
 void Clock::execute( void ) {
     Simulation *sim = Simulation::getSimulation();
     
-    if ( !started ) started = true;
     if ( handlerMap.empty() && staticHandlerMap.empty() ) 
     {
-        return;
+        // return;
     } 
 
     // Derive the current cycle from the core time
-    currentCycle = period->convertFromCoreTime(sim->getCurrentSimCycle());
+    // currentCycle = period->convertFromCoreTime(sim->getCurrentSimCycle());
+    currentCycle++;
     
-//     HandlerMap_t::iterator op_iter, curr;
-//     for ( op_iter = handlerMap.begin(); op_iter != handlerMap.end();  ) {
-//     	curr = op_iter++;
-//     	Clock::HandlerBase* handler = *curr;
-//     	if ( (*handler)(currentCycle) ) handlerMap.erase(curr);
-//     }
-
     StaticHandlerMap_t::iterator sop_iter,start_iter,stop_iter;
     //bool group = false;	//Scoggin(Jan23,2013) fix unused varialble warning in build
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
@@ -106,28 +97,7 @@ void Clock::execute( void ) {
     	// ++sop_iter;
     }
 
-    // for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
-    // 	Clock::HandlerBase* handler = *sop_iter;
-    // 	if ( (*handler)(currentCycle) ) {
-    // 	    if (!group) {
-    // 		group = true;
-    // 		start_iter = sop_iter;
-    // 	    }
-    // 	}
-    // 	else {
-    // 	    if ( group ) {
-    // 		sop_iter = staticHandlerMap.erase(start_iter,sop_iter);
-    // 		group = false;
-    // 	    }
-    // 	}
-    // 	++sop_iter;
-    // }
-    // if ( group ) {
-    // 	staticHandlerMap.erase(start_iter,staticHandlerMap.end());
-    // 	group = false;
-    // }
-
-    SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
+    next = sim->getCurrentSimCycle() + period->getFactor();
     _CLE_DBG( "all called next %lu\n", (unsigned long) next );
     sim->insertActivity( next, this );
     
