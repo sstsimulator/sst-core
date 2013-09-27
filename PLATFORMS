@@ -4,7 +4,7 @@ OS/compiler combinations:
 2. MacOS 10.7.4 (lion) with LLVM i686-apple-darwin11-llvm-g++-4.2.1
 3. MacOS 10.8.3 (mountain lion) with LLVM i686-apple-darwin11-llvm-g++-4.2.1
 4. CentOS 6.2 with gcc V4.4.6
-5. TOSS 2.0 -0rc4.ch5 with RHEL 6.2 (Santiago) with gcc 4.4.6 
+5. TOSS 2.0 -0rc4.ch5 with RHEL 6.4 (Santiago) with gcc 4.4.7 
    (see http://code.google.com/p/chaos-release/wiki/CHAOS_Description)
 
 Note: SST is only supported on 64-bit platforms.
