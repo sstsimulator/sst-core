@@ -50,7 +50,7 @@ struct ElementInfoIntrospector {
     const char *description;
     void (*printHelp)(FILE *output);
     introspectorAllocate alloc;
-    ElementInfoParam *params;
+    const ElementInfoParam *params;
 };
 
 struct ElementInfoEvent {
@@ -66,7 +66,7 @@ struct ElementInfoModule {
     void (*printHelp)(FILE *output);
     moduleAllocate alloc;
     moduleAllocateWithComponent alloc_with_comp;
-    ElementInfoParam *params;
+    const ElementInfoParam *params;
 };
 
 struct ElementInfoPartitioner {
