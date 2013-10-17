@@ -133,11 +133,10 @@ Factory::CreateComponent(ComponentId_t id,
 
     const ComponentInfo ci = eii->second;
 
-    if (!ci.params.empty()) {
-        params.verify_params(ci.params, ci.component->name);
-    }
-
+    params.pushAllowedKeys(ci.params);
     Component *ret = ci.component->alloc(id, params);
+    params.popAllowedKeys();
+
     if (NULL == ret) return ret;
 
     ret->type = type;
@@ -168,11 +167,9 @@ Factory::CreateIntrospector(std::string type,
 
     const IntrospectorInfo ii = eii->second;
 
-    if (!ii.params.empty()) {
-        params.verify_params(ii.params, ii.introspector->name);
-    }
-
+    params.pushAllowedKeys(ii.params);
     Introspector *ret = ii.introspector->alloc(params);
+    params.popAllowedKeys();
     return ret;
 }
 
@@ -198,11 +195,9 @@ Factory::CreateModule(std::string type, Params& params)
 
     const ModuleInfo mi = eim->second;
 
-    if (!mi.params.empty()) {
-        params.verify_params(mi.params, mi.module->name);
-    }
-
+    params.pushAllowedKeys(mi.params);
     Module *ret = mi.module->alloc(params);
+    params.popAllowedKeys();
     return ret;
 }
 
@@ -229,11 +224,9 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
 
     const ModuleInfo mi = eim->second;
 
-    if (!mi.params.empty()) {
-        params.verify_params(mi.params, mi.module->name);
-    }
-
+    params.pushAllowedKeys(mi.params);
     Module *ret = mi.module->alloc_with_comp(comp, params);
+    params.popAllowedKeys();
     return ret;
 }
 

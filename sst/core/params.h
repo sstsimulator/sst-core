@@ -16,7 +16,7 @@
 
 #include <iostream>
 #include <map>
-#include <set>
+#include <stack>
 #include <stdlib.h>
 #include <utility>
 
@@ -38,6 +38,7 @@ public:
     typedef std::map<std::string, std::string>::const_iterator const_iterator;
     typedef std::map<std::string, std::string>::reverse_iterator reverse_iterator;
     typedef std::map<std::string, std::string>::const_reverse_iterator const_reverse_iterator;
+    typedef std::set<key_type> KeySet_t;
 
     // pretend like we're a map
     iterator begin() { return data.begin(); }
@@ -70,8 +71,8 @@ public:
     void erase(iterator pos) {  data.erase(pos); }
     size_type erase(const key_type& k) { return data.erase(k); }
     void clear() { data.clear(); }
-    iterator find(const key_type& k) { return data.find(k); }
-    const_iterator find(const key_type& k) const { return data.find(k); }
+    iterator find(const key_type& k) { verifyParam(k); return data.find(k); }
+    const_iterator find(const key_type& k) const { verifyParam(k); return data.find(k); }
     size_type count(const key_type& k) { return data.count(k); }
     iterator lower_bound(const key_type& k) { return data.lower_bound(k); }
     const_iterator lower_bound(const key_type& k) const { return data.lower_bound(k); }
@@ -81,12 +82,13 @@ public:
     equal_range(const key_type& k) { return data.equal_range(k); }
     std::pair<const_iterator, const_iterator> 
     equal_range(const key_type& k) const { return data.equal_range(k); }
-    mapped_type& operator[](const key_type& k) { return data[k]; }
+    mapped_type& operator[](const key_type& k) { verifyParam(k); return data[k]; }
     friend bool operator==(const Params& a, const Params& b);
     friend bool operator<(const Params& a, const Params& b);
 
     // and have some friendly accessor functions
     long find_integer(const key_type &k, long default_value, bool &found) const {
+        verifyParam(k);
         const_iterator i = data.find(k);
         if (i == data.end()) {
             found = false;
@@ -103,6 +105,7 @@ public:
     }
 
     double find_floating(const key_type& k, double default_value, bool &found) const {
+        verifyParam(k);
         const_iterator i = data.find(k);
         if (i == data.end()) {
             found = false;
@@ -119,6 +122,7 @@ public:
     }
 
     std::string find_string(const key_type &k, std::string default_value, bool &found) const {
+        verifyParam(k);
         const_iterator i = data.find(k);
         if (i == data.end()) {
             found = false;
@@ -148,25 +152,55 @@ public:
                 ret[i->first.substr(prefix.length())] = i->second;
             }
         }
+        ret.allowedKeys = allowedKeys;
         return ret;
     }
 
     // Note: This makes a COPY of the data.  Be very, very careful what you wish for!
     std::map<std::string, std::string> get_map() const { return data; }
 
-    void verify_params(std::set<std::string> info_params, std::string obj_name) {
-        const_iterator i, end = data.end();
 
-        for (i = data.begin() ; i != end ; ++i) {
-            if (info_params.end() == info_params.find(i->first)) {
-                std::cerr << "Warning: Invalid Parameter \"" << i->first
-                          << "\" specified for " << obj_name << "." << std::endl;
-            }
-        }
+    /***
+     * @param k   Key to search for
+     * @return    True if the params contains the key, false otherwise
+     */
+    bool contains(const key_type &k) {
+        return data.find(k) != data.end();
     }
+
+    /***
+     * @param keys   Set of keys to consider valid to add to the stack
+     *               of legal keys
+     */
+    void pushAllowedKeys(const KeySet_t &keys) {
+        allowedKeys.push_back(keys);
+    }
+
+    /***
+     * Removes the most recent set of keys considered allowed
+     */
+    void popAllowedKeys() {
+        allowedKeys.pop_back();
+    }
+
+    /***
+     * @param k   Key to check for validity
+     * @return    True if the key is considered allowed
+     */
+    void verifyParam(const key_type &k) const {
+        // If there are no explicitly allowed keys in the top set, allow everything
+        if ( allowedKeys.empty() || allowedKeys.back().empty() ) return;
+
+        for ( std::vector<KeySet_t>::const_reverse_iterator ri = allowedKeys.rbegin() ; ri != allowedKeys.rend() ; ++ri ) {
+            if ( ri->find(k) != ri->end() ) return;
+        }
+        std::cerr << "Warning:  Parameter \"" << k << "\" is undocumented." << std::endl;
+    }
+
 
 private:
     std::map<std::string, std::string> data;
+    std::vector<KeySet_t> allowedKeys;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -174,6 +208,7 @@ private:
     {
         ar & BOOST_SERIALIZATION_NVP(data);
     }
+
 };
 
 inline bool operator==(const Params& a, const Params& b) { return a.data == b.data; }
