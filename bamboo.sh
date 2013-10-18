@@ -189,13 +189,23 @@ dotests() {
     fi
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
-    ${SST_TEST_SUITES}/testSuite_simpleTiming.sh
     ${SST_TEST_SUITES}/testSuite_patterns.sh
     ${SST_TEST_SUITES}/testSuite_prospero.sh
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
     ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
     ${SST_TEST_SUITES}/testSuite_VaultSim.sh
 
+    ## run only on HardWare
+    
+    if [ $HOST == "sst-test" ] || [ $HOST == "johnslion" ] ; then
+        echo " $HOST: Running the Wall Clock timing test"
+        ${SST_TEST_SUITES}/testSuite_simpleTiming.sh
+    else
+        echo " $HOST: Not Running the Wall Clock timing test"
+    fi
+
+    ## run above only on HardWare
+    
     if [ $1 = "gem5_no_dramsim_config" ]
     then
         # placeholder for tests requiring gem5 with no dramsim
