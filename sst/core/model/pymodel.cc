@@ -202,6 +202,21 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const string script_file, int
 	verboseLevel = verbosity;
 	config = configObj;
 
+	// See if there is an existing PYTHONPATH the user is providing
+	char* existing_pypath = getenv("PYTHONPATH");
+	if(NULL == existing_pypath) {
+		existing_pypath = "";
+	}
+
+	char* current_directory = (char*) malloc(sizeof(char) * PATH_MAX);
+	getcwd(current_directory, PATH_MAX);
+
+	char* new_pypath = (char*) malloc(sizeof(char) * (strlen(existing_pypath) +
+		strlen(current_directory) + 2));
+	sprintf(new_pypath, "%s:%s", existing_pypath, current_directory);
+	// Override the existing python path with the current directory
+	setenv("PYTHONPATH", new_pypath, 1);
+
 	string local_script_name;
 	int substr_index = 0;
 
