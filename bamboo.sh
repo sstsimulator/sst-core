@@ -195,6 +195,8 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
     ${SST_TEST_SUITES}/testSuite_VaultSim.sh
 
+    HOST=`uname -n | awk -F. '{print $1}'`
+
     ## run only on HardWare
     
     if [ $HOST == "sst-test" ] || [ $HOST == "johnslion" ] ; then
