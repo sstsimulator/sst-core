@@ -314,6 +314,20 @@ getconfig() {
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
+        sstmainline_config_no_gem5) 
+            #-----------------------------------------------------------------
+            # sstmainline_config_no_gem5
+            #     This option used for configuring SST with supported stabledevel deps
+            #     Some compilers (gcc 4.7, 4.8, intel 13.4) have problems building gem5,
+            #     so this option removes gem5 in order to evaluate the rest of the build
+            #     under those compilers.
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g none -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            ;;
 
         sstmainline_config_with_sstdevice) 
             #-----------------------------------------------------------------
