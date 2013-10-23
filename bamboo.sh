@@ -137,13 +137,6 @@ dotests() {
 
     ${SST_TEST_SUITES}/testSuite_iris.sh
 
-    if [ $1 != "sstmainline_config_gcc_4_8_1" ]
-    then
-        # Don't run gem5 suite because gcc 4.8.1 chokes on current sst-gem5
-        ${SST_TEST_SUITES}/testSuite_M5.sh
-        ${SST_TEST_SUITES}/testSuite_openMP.sh
-    fi
-
     if [ $1 == "M5_test" ]
     then
         ${SST_TEST_SUITES}/testSuite_M5.sh
@@ -183,9 +176,13 @@ dotests() {
     # etc.
     ${SST_TEST_SUITES}/testSuite_merlin.sh
 ##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
-    if [ $1 != "sstmainline_config_gcc_4_8_1" ]
+
+    if [ $1 != "sstmainline_config_gcc_4_8_1" -a $1 != "sstmainline_config_no_gem5" ]
     then
-        # Don't run suite that uses gem5 because gcc 4.8.1 chokes on current sst-gem5
+        # Don't run gem5 dependent test suites in these configurations
+        # because gem5 is not enabled in them.
+        ${SST_TEST_SUITES}/testSuite_M5.sh
+        ${SST_TEST_SUITES}/testSuite_openMP.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
     fi
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
