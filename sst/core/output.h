@@ -15,7 +15,7 @@
 
 // UNCOMMENT OUT THIS LINE TO ENABLE THE DEBUG METHOD -OR_
 // CHOOSE THE --enable-debug OPTION DURING SST CONFIGURATION
-//#define __SST_CORE_DEBUG_OUTPUT__
+//#define __SST_DEBUG_OUTPUT__
 
 //This must be defined before inclusion of intttypes.h
 #ifndef __STDC_FORMAT_MACROS  
@@ -204,7 +204,7 @@ public:
         parameter. Output will only occur if specified output_level and 
         output_bits meet criteria defined by object.  The output will be 
         prepended with the expanded prefix set in the object.
-        NOTE: Debug ouputs will only occur if the __SST_CORE_DEBUG_OUTPUT__ is defined.
+        NOTE: Debug ouputs will only occur if the __SST_DEBUG_OUTPUT__ is defined.
               this define can be set in source code or by setting the
               --enable-debug option during SST configuration.
         @param line Line number of calling function (use CALL_INFO macro)
@@ -224,7 +224,7 @@ public:
                const char* format, ...)   const
         __attribute__ ((format (printf, 7, 8))) 
     {
-#ifdef __SST_CORE_DEBUG_OUTPUT__
+#ifdef __SST_DEBUG_OUTPUT__
         va_list arg;
         if (true == m_objInitialized && NONE != m_targetLoc ) {
             // First check to see if we are allowed to send output based upon the 
