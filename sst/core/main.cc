@@ -13,8 +13,10 @@
 #include <sst_config.h>
 #include "sst/core/serialization.h"
 
+#ifdef HAVE_MPI
 #include <boost/mpi.hpp>
-#include <boost/mpi/timer.hpp>
+#endif
+#include <boost/timer.hpp>
 
 #include <iomanip>
 #include <iostream>
@@ -52,19 +54,50 @@ sigHandlerPrintStatus(int signal)
     Simulation::setSignal(signal);
 }
 
+#ifndef HAVE_MPI
+class World {
+public:
+    int rank(void) { return 0; }
+    int size(void) { return 1; }
+};
+
+// These are no-op in the non-mpi case
+template<typename T>
+void broadcast(const World &world, T & value, int root)
+{
+}
+template<typename T, typename Op> 
+void all_reduce(const World & comm, const T * in_value, int count,
+                T * out_value, Op op)
+{
+    int i;
+    for (i = 0 ; i < count ; ++i) {
+        out_value[i] = in_value[i];
+    }
+}
+typedef int maximum;
+#else
+typedef boost::mpi::maximum<double> maximum;
+#endif
 
 int 
 main(int argc, char *argv[])
 {
+#ifdef HAVE_MPI
     boost::mpi::environment* mpiEnv = new boost::mpi::environment(argc,argv);
     boost::mpi::communicator world;
+#else
+    World world;
+#endif
 
     Config cfg(world.rank());
     SST::Simulation*  sim= NULL;
 
     // All ranks parse the command line
     if ( cfg.parseCmdLine(argc, argv) ) {
+#ifdef HAVE_MPI
 	delete mpiEnv;
+#endif
         return -1;
     }
     // In fast build mode, everyone builds the entire graph structure
@@ -89,6 +122,7 @@ main(int argc, char *argv[])
 			    // cfg.print();
 			}
 
+
 			// If this is a parallel job, we need to broadcast the configuration
 			if ( world.size() > 1 && !cfg.all_parse ) {
 			    broadcast(world,cfg,0);
@@ -112,7 +146,7 @@ main(int argc, char *argv[])
 
     Archive archive(cfg.archiveType, cfg.archiveFile);
 
-    boost::mpi::timer* timer = new boost::mpi::timer();
+    boost::timer* timer = new boost::timer();
     double start = timer->elapsed();
     double end_build, start_run, end_run;
  
@@ -300,7 +334,7 @@ main(int argc, char *argv[])
     // std::cout << "#  Build time: " << build_time << " s" << std::endl;
 
     double max_build_time;
-    all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
+    all_reduce(world, &build_time, 1, &max_build_time, maximum() );
 
     start_run = timer->elapsed();
 
@@ -355,8 +389,8 @@ main(int argc, char *argv[])
 
     double max_run_time, max_total_time;
 
-    all_reduce(world, &run_time, 1, &max_run_time, boost::mpi::maximum<double>() );
-    all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
+    all_reduce(world, &run_time, 1, &max_run_time, maximum());
+    all_reduce(world, &total_time, 1, &max_total_time, maximum());
 
     if ( world.rank() == 0 && cfg.verbose ) {
 	struct rusage sim_ruse;
@@ -380,7 +414,9 @@ main(int argc, char *argv[])
 
     }
 
+#ifdef HAVE_MPI
     delete mpiEnv;
+#endif
     return 0;
 }
 

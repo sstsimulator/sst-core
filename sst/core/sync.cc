@@ -19,6 +19,10 @@
 #include "sst/core/syncQueue.h"
 #include "sst/core/timeConverter.h"
 
+#ifdef HAVE_MPI
+#include <boost/mpi.hpp>
+#endif
+
 namespace SST {
 
     Sync::Sync(TimeConverter* period) : Action()
@@ -68,6 +72,7 @@ namespace SST {
     void
     Sync::execute(void)
     {
+#ifdef HAVE_MPI
         std::vector<boost::mpi::request> pending_requests;
 
         for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
@@ -103,11 +108,13 @@ namespace SST {
 
 	SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
 	sim->insertActivity( next, this );
+#endif
     }
 
     int
     Sync::exchangeLinkInitData(int msg_count)
     {
+#ifdef HAVE_MPI
         std::vector<boost::mpi::request> pending_requests;
 
         for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
@@ -144,6 +151,9 @@ namespace SST {
 	int count;
 	all_reduce( world, &input, 1, &count, std::plus<int>() );
 	return count;
+#else
+        return 0;
+#endif
     }
     
     template<class Archive>

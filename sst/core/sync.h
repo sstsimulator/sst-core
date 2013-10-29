@@ -47,7 +47,9 @@ private:
     TimeConverter* period;
     comm_map_t comm_map;
     link_map_t link_map;
+#ifdef HAVE_MPI
     boost::mpi::communicator comm;
+#endif
 
     friend class boost::serialization::access;
     template<class Archive>

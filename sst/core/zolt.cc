@@ -15,7 +15,9 @@
 //#include <boost/serialization/map.hpp>
 #include <sst/core/zolt.h>
 
+#ifdef HAVE_MPI
 #include <boost/mpi.hpp>
+#endif
 #include <boost/format.hpp>
 
 #include <sst/core/debug.h>

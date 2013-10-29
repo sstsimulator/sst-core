@@ -27,7 +27,9 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/split_member.hpp>
+#ifdef HAVE_MPI
 #include <boost/mpi.hpp>
+#endif
 
 #include "sst/core/serialization/types.h"
 
@@ -37,7 +39,6 @@
 
 #include "sst/core/archive.h"
 #include "sst/core/simulation.h"
-#include "sst/core/sync.h"
 
 using namespace SST;
 

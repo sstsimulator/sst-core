@@ -23,6 +23,10 @@
 // Core Headers
 #include "sst/core/simulation.h"
 
+#ifdef HAVE_MPI
+#include <boost/mpi.hpp>
+#endif
+
     
 namespace SST {
 
@@ -70,11 +74,13 @@ void Output::init(const std::string& prefix, uint32_t verbose_level,
         
         setTargetOutput(location);    
         
+#ifdef HAVE_MPI
         // Get the MPI Info
         m_MPIProcName  = boost::mpi::environment::processor_name();      
         boost::mpi::communicator MPIWorld;
         m_MPIWorldSize = MPIWorld.size();
         m_MPIWorldRank = MPIWorld.rank();
+#endif
     
         m_objInitialized = true;
     }
@@ -159,8 +165,11 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
         }
     }
     flush();
+#ifdef HAVE_MPI
     boost::mpi::environment::abort(exit_code);      
-
+#else
+    exit(1);
+#endif
 }
 
 void Output::setFileName(const std::string& filename)  /* STATIC METHOD */

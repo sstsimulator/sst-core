@@ -30,11 +30,14 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/type_info_implementation.hpp>
 #include <boost/serialization/extended_type_info_no_rtti.hpp>
+#ifdef HAVE_MPI
 #include <boost/mpi.hpp>
+#endif
 
 #include "sst/core/serialization/types.h"
 
 #if SST_WANT_POLYMORPHIC_ARCHIVE
+#ifdef HAVE_MPI
 #define SST_BOOST_SERIALIZATION_INSTANTIATE(func)                       \
     template void                                                       \
     func<boost::archive::polymorphic_iarchive>(                         \
@@ -62,6 +65,17 @@
     template void                                                       \
     func(boost::mpi::detail::content_oarchive & ar,                     \
          const unsigned int file_version);
+#else
+#define SST_BOOST_SERIALIZATION_INSTANTIATE(func)                       \
+    template void                                                       \
+    func<boost::archive::polymorphic_iarchive>(                         \
+                                    boost::archive::polymorphic_iarchive & ar, \
+                                    const unsigned int file_version);   \
+    template void                                                       \
+    func<boost::archive::polymorphic_oarchive>(                         \
+                                    boost::archive::polymorphic_oarchive & ar, \
+                                    const unsigned int file_version); 
+#endif
 #else
 #define SST_BOOST_SERIALIZATION_INSTANTIATE(func)                       \
     template void                                                       \

@@ -14,6 +14,10 @@
 #include "sst/core/serialization.h"
 #include "sst/core/exit.h"
 
+#ifdef HAVE_MPI
+#include <boost/mpi.hpp>
+#endif
+
 #include <sst/core/debug.h>
 #include "sst/core/component.h"
 #include "sst/core/simulation.h"
@@ -109,12 +113,16 @@ void Exit::execute( void )
     Simulation *sim = Simulation::getSimulation();
 
     _EXIT_DBG("%lu\n", (unsigned long) sim->getCurrentSimCycle());
-    boost::mpi::communicator world; 
 
     int value = ( m_refCount > 0 );
     int out;
 
+#ifdef HAVE_MPI
+    boost::mpi::communicator world; 
     all_reduce( world, &value, 1, &out, std::plus<int>() );  
+#else
+    out = value;
+#endif
 
     _EXIT_DBG("%d\n",out);
 

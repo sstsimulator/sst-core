@@ -14,7 +14,9 @@
 #include "sst/core/introspector.h"
 
 //#include <boost/foreach.hpp>
+#ifdef HAVE_MPI
 #include <boost/mpi.hpp>
+#endif
 
 //#include "sst/core/exit.h"
 #include "sst/core/introspectAction.h"
@@ -70,8 +72,10 @@ std::list<IntrospectedComponent*> Introspector::getModelsByType(const std::strin
 
 
 
-void Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operation op, int rank){
-
+void
+Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operation op, int rank)
+{
+#ifdef HAVE_MPI
     boost::mpi::communicator world; 
 
     switch(ctype)
@@ -141,6 +145,52 @@ void Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operatio
 	default:
 	    break;	
     }
+#else
+    switch(ctype)
+    {
+        case 0:  //gather
+	case 1:  //all gather
+            arrayvalue[0] = invalue;
+	    break;	
+	case 2:  //broadcast
+            value = invalue;
+	    break;	
+	case 3:  //reduce
+	    switch(op)
+	    {
+		case 0: //minimum
+                    minvalue = invalue;
+		    break;
+		case 1: //maximum
+                    maxvalue = invalue;
+		    break;
+		case 2: //sum
+                    value = invalue;
+		    break;
+		default:
+		    break;
+	    }
+	    break;
+	case 4:  //all reduce
+	    switch(op)
+	    {
+		case 0: //minimum	            
+                    minvalue = invalue;
+		    break;
+		case 1: //maximum            
+                    maxvalue = invalue;
+		    break;
+		case 2: //sum   
+                    value = invalue;
+		    break;
+		default:
+		    break;
+	    }
+	    break;	
+	default:
+	    break;	
+    }
+#endif
 }
 
 
