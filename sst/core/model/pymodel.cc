@@ -203,7 +203,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const string script_file, int
 	config = configObj;
 
 	// See if there is an existing PYTHONPATH the user is providing
-	char* existing_pypath = getenv("PYTHONPATH");
+	const char* existing_pypath = getenv("PYTHONPATH");
 	if(NULL == existing_pypath) {
 		existing_pypath = "";
 	}
