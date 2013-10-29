@@ -2,10 +2,8 @@
 #
 #
 
-if SST_USE_MPI
 CC = $(MPICC)
 CXX = $(MPICXX)
-endif
 
 AM_CPPFLAGS =  \
 	-DTIXML_USE_STL \
