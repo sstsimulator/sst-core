@@ -236,8 +236,8 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
   		partOutput->verbose(CALL_INFO, 1, 0, "Zoltan partition returned successfully.\n");
   	}
   	
-  	printf("Rank %d gets %d components to export and %d components to import\n", rank, num_vertices_export,
-  		num_vertices_import);
+  	//printf("Rank %d gets %d components to export and %d components to import\n", rank, num_vertices_export,
+  	//	num_vertices_import);
   	
   	partOutput->verbose(CALL_INFO, 1, 0, "Assigning components to ranks based on Zoltan output...\n");
   	ConfigComponentMap_t config_map = graph->getComponentMap();
