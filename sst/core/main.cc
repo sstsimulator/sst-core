@@ -13,10 +13,8 @@
 #include <sst_config.h>
 #include "sst/core/serialization.h"
 
-#ifdef HAVE_MPI
 #include <boost/mpi.hpp>
-#endif
-#include <boost/timer.hpp>
+#include <boost/mpi/timer.hpp>
 
 #include <iomanip>
 #include <iostream>
@@ -34,6 +32,9 @@
 #include <sst/core/part/simplepart.h>
 #include <sst/core/part/rrobin.h>
 #include <sst/core/part/linpart.h>
+#ifdef HAVE_ZOLTAN
+#include <sst/core/part/zoltpart.h>
+#endif
 
 #include <sst/core/model/sstmodel.h>
 #include <sst/core/model/sdlmodel.h>
@@ -54,50 +55,19 @@ sigHandlerPrintStatus(int signal)
     Simulation::setSignal(signal);
 }
 
-#ifndef HAVE_MPI
-class World {
-public:
-    int rank(void) { return 0; }
-    int size(void) { return 1; }
-};
-
-// These are no-op in the non-mpi case
-template<typename T>
-void broadcast(const World &world, T & value, int root)
-{
-}
-template<typename T, typename Op> 
-void all_reduce(const World & comm, const T * in_value, int count,
-                T * out_value, Op op)
-{
-    int i;
-    for (i = 0 ; i < count ; ++i) {
-        out_value[i] = in_value[i];
-    }
-}
-typedef int maximum;
-#else
-typedef boost::mpi::maximum<double> maximum;
-#endif
 
 int 
 main(int argc, char *argv[])
 {
-#ifdef HAVE_MPI
     boost::mpi::environment* mpiEnv = new boost::mpi::environment(argc,argv);
     boost::mpi::communicator world;
-#else
-    World world;
-#endif
 
     Config cfg(world.rank());
     SST::Simulation*  sim= NULL;
 
     // All ranks parse the command line
     if ( cfg.parseCmdLine(argc, argv) ) {
-#ifdef HAVE_MPI
 	delete mpiEnv;
-#endif
         return -1;
     }
     // In fast build mode, everyone builds the entire graph structure
@@ -122,7 +92,6 @@ main(int argc, char *argv[])
 			    // cfg.print();
 			}
 
-
 			// If this is a parallel job, we need to broadcast the configuration
 			if ( world.size() > 1 && !cfg.all_parse ) {
 			    broadcast(world,cfg,0);
@@ -146,7 +115,7 @@ main(int argc, char *argv[])
 
     Archive archive(cfg.archiveType, cfg.archiveFile);
 
-    boost::timer* timer = new boost::timer();
+    boost::mpi::timer* timer = new boost::mpi::timer();
     double start = timer->elapsed();
     double end_build, start_run, end_run;
  
@@ -223,49 +192,78 @@ main(int argc, char *argv[])
 
 	    // Do the partitioning.
 	    if ( cfg.partitioner != "self" ) {
-		// If partitioning not specified by sdl or generator,
-		// set all component ranks to -1 so it's easier to
-		// detect some types of partitioning errors
-		graph->setComponentRanks(-1);
+			// If partitioning not specified by sdl or generator,
+			// set all component ranks to -1 so it's easier to
+			// detect some types of partitioning errors
+			graph->setComponentRanks(-1);
 	    }
 
 	    if ( cfg.partitioner == "self" ) {
-		// For now, do nothing.  Eventually we need to
-		// have a checker for the partitioning.
-		if(world.rank() == 0) {
-		   std::cout << "# SST will use a self-guided partition scheme." << std::endl;
-		}
-	    }
-	    else if ( cfg.partitioner == "simple" ) {
-		if(cfg.verbose && world.rank() == 0) 
-			std::cout << "# Performing a simple partition..." << std::endl;
-		simple_partition(graph, world.size());
-		if(cfg.verbose && world.rank() == 0) 
+			// For now, do nothing.  Eventually we need to
+			// have a checker for the partitioning.
+			if(world.rank() == 0) {
+		   		std::cout << "# SST will use a self-guided partition scheme." << std::endl;
+			}
+	    } else if ( cfg.partitioner == "simple" ) {
+			if(cfg.verbose && world.rank() == 0) {
+				std::cout << "# Performing a simple partition..." << std::endl;
+			}
+			
+			simple_partition(graph, world.size());
+			
+			if(cfg.verbose && world.rank() == 0) {
 			std::cout << "# Partitionning process is complete." << std::endl;
-            }
-	    else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
-		// perform a basic round robin partition
-		if(cfg.verbose && world.rank() == 0) 
-			std::cout << "# Performing a round-robin partition..." << std::endl;
-		rrobin_partition(graph, world.size());
-		if(cfg.verbose && world.rank() == 0) 
-			std::cout << "# Partitionning process is complete." << std::endl;
-	    }
-	    else if ( cfg.partitioner == "linear" ) {
-		SSTLinearPartition* linear = new SSTLinearPartition(world.size(), cfg.verbose ? 2 : 0);
-		linear->performPartition(graph);
-	    }
-	    else if ( cfg.partitioner == "zoltan" ) {
-		printf("Zoltan support is currently not available, aborting...\n");
-		abort();
-	    }
-	    else {
+			}
+        } else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
+			// perform a basic round robin partition
+			if(cfg.verbose && world.rank() == 0) {
+				std::cout << "# Performing a round-robin partition..." << std::endl;
+			}
+		
+			rrobin_partition(graph, world.size());
+		
+			if(cfg.verbose && world.rank() == 0) {
+				std::cout << "# Partitionning process is complete." << std::endl;
+	    	}
+	    } else if ( cfg.partitioner == "linear" ) {
+	    	if(cfg.verbose && world.rank() == 0) {
+	    		std::cout << "# Partitionning using a linear scheme..." << std::endl;
+	    	}
+	    	
+			SSTLinearPartition* linear = new SSTLinearPartition(world.size(), cfg.verbose ? 2 : 0);
+			linear->performPartition(graph);
+			delete linear;
+			
+			if(cfg.verbose && world.rank() == 0) {
+				std::cout << "# Partitionning process is complete" << std::endl;
+			}
+	    } else if ( cfg.partitioner == "zoltan" ) {
+#ifdef HAVE_ZOLTAN
+			if(cfg.verbose && world.rank() == 0) {
+				std::cout << "# Partitionning using Zoltan..." << std::endl;
+			}
+			
+			SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose ? 2 : 0);
+			zolt_part->performPartition(graph);
+			
+			broadcast(world, *graph, 0);
+			delete zolt_part;
+			
+			if(cfg.verbose && world.rank() == 0) {
+				std::cout << "# Partitionning is complete." << std::endl;
+			}
+#else
+			printf("Zoltan support is currently not available, aborting...\n");
+			abort();
+#endif
+	    } else {
 	        if(world.rank() == 0) {
-			std::cout << "# Partition scheme was not specified, using: " <<
-				cfg.partitioner << std::endl;
-		}
-		partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
-		func(graph,world.size());
+				std::cout << "# Partition scheme was not specified, using: " <<
+					cfg.partitioner << std::endl;
+			}
+		
+			partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
+			func(graph,world.size());
 	    }
 
 	    clock_t end_part = clock();
@@ -334,7 +332,7 @@ main(int argc, char *argv[])
     // std::cout << "#  Build time: " << build_time << " s" << std::endl;
 
     double max_build_time;
-    all_reduce(world, &build_time, 1, &max_build_time, maximum() );
+    all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
 
     start_run = timer->elapsed();
 
@@ -389,8 +387,8 @@ main(int argc, char *argv[])
 
     double max_run_time, max_total_time;
 
-    all_reduce(world, &run_time, 1, &max_run_time, maximum());
-    all_reduce(world, &total_time, 1, &max_total_time, maximum());
+    all_reduce(world, &run_time, 1, &max_run_time, boost::mpi::maximum<double>() );
+    all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
 
     if ( world.rank() == 0 && cfg.verbose ) {
 	struct rusage sim_ruse;
@@ -414,9 +412,7 @@ main(int argc, char *argv[])
 
     }
 
-#ifdef HAVE_MPI
     delete mpiEnv;
-#endif
     return 0;
 }
 

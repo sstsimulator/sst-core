@@ -56,7 +56,6 @@ nobase_dist_sst_HEADERS = \
 	timeLord.h \
 	timeVortex.h \
 	uninitializedQueue.h \
-	zolt.h \
 	serialization/core.h \
 	serialization/types.h \
 	serialization/element.h \
@@ -105,10 +104,6 @@ sst_core_sources = \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc
-if HAVE_ZOLTAN
-sst_core_sources += zolt.cc
-endif
-
 
 bin_PROGRAMS = sst.x
 sst_x_SOURCES = \

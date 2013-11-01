@@ -9,3 +9,9 @@ sst_core_sources += \
 	part/sstpart.h \
 	part/linpart.cc \
 	part/linpart.h	
+
+if HAVE_ZOLTAN
+sst_core_sources += \
+	part/zoltpart.h \
+	part/zoltpart.cc
+endif
