@@ -381,9 +381,9 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.  
      */
-    void fatal(uint32_t exit_code, 
+    /*void fatal(uint32_t exit_code, 
                const char* format, ...)    const
-                  __attribute__ ((format (printf, 3, 4))) ;
+                  __attribute__ ((format (printf, 3, 4))) ;*/
                   
     // GET / SET METHODS
     

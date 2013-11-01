@@ -194,7 +194,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 }
 
 
-void Output::fatal(uint32_t exit_code, 
+/*void Output::fatal(uint32_t exit_code, 
                    const char* format, ...) const
 {
     va_list     arg1;
@@ -238,7 +238,7 @@ void Output::fatal(uint32_t exit_code,
 #else
     exit(1);
 #endif
-}
+}*/
 
 
 void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
