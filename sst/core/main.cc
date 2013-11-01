@@ -27,7 +27,6 @@
 #include <sst/core/debug.h>
 #include <sst/core/factory.h>
 #include <sst/core/simulation.h>
-#include <sst/core/zolt.h>
 
 #include <sst/core/part/simplepart.h>
 #include <sst/core/part/rrobin.h>
