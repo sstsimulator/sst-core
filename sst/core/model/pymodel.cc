@@ -246,7 +246,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const string script_file, int
 	// If we can't create the engine then we will have to fatal-stop.
 	if(scriptModule == NULL) {
 		PyErr_Print();
-		output->fatal(CALL_INFO, -1, 0, 0,
+		output->fatal(CALL_INFO, -1, 
 			"Unable to create a Python script engine in SST configGraph construction.\n");
 	}
 
@@ -259,7 +259,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const string script_file, int
 		output->debug(CALL_INFO, 1, 0, "Python module loaded and SST model function detected, ready to be run.\n");
 	} else {
 		PyErr_Print();
-		output->fatal(CALL_INFO, -1, 0, 0,
+		output->fatal(CALL_INFO, -1, 
 			"Unable to find an executable function called sstcreatemodel in Python script: %s\n",
 			script_file.c_str());
 	}
@@ -298,15 +298,15 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph() {
 	if(NULL != PyErr_Occurred()) {
 		// Print the Python error and then let SST exit as a fatal-stop.
 		PyErr_Print();
-		output->fatal(CALL_INFO, -1, 0, 0,
+		output->fatal(CALL_INFO, -1, 
 			"Error occurred executing the Python SST model script.\n");
 	}
 
 	if(NULL == createReturn) {
-		output->fatal(CALL_INFO, -1, 0, 0,
+		output->fatal(CALL_INFO, -1, 
 			"Execution of model construction function failed.\n");
 	} else if(0 != PyInt_AsLong(createReturn)) {
-		output->fatal(CALL_INFO, -1, 0, 0,
+		output->fatal(CALL_INFO, -1, 
 			"Model construction script reported a non-zero return code, this indicates a script error.\n");
 	}
 

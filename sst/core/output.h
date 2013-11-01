@@ -62,15 +62,15 @@ public:
                   MPI_COMM_WORLD size is 1. 
                @t Simulation time.  Will be the raw simulaton cycle time 
                   retrieved from the SST Core.   
+        @param verbose_level Debugging output level.  Calls to debug(), 
+               verbose() and fatal() are only output if their output_level 
+               parameter is less than or equal to the verbose_level currently 
+               set for the object 
         @param verbose_mask Bitmask of allowed message types for debug(), 
                verbose() and fatal().  The Output object will only output the 
                message if the set bits of the output_bits parameter 
                are set in the verbose_mask of the object.  It uses this logic: 
                if (~verbose_mask & output_bits == 0) then output is enabled. 
-        @param verbose_level Debugging output level.  Calls to debug(), 
-               verbose() and fatal() are only output if their output_level 
-               parameter is less than or equal to the verbose_level currently 
-               set for the object 
         @param location Output location.  Ouput will be directed to STDOUT, 
                STDERR, FILE, or NONE.  If FILE output is selected, the 
                output will be directed to the file defined by the 
@@ -105,15 +105,15 @@ public:
                   MPI_COMM_WORLD size is 1. 
                @t Simulation time.  Will be the raw simulaton cycle time 
                   retrieved from the SST Core.   
+        @param verbose_level Debugging output level.  Calls to debug(), 
+               verbose() and fatal() are only output if their output_level 
+               parameter is less than or equal to the verbose_level currently 
+               set for the object 
         @param verbose_mask Bitmask of allowed message types for debug(), 
                verbose() and fatal().  The Output object will only output the 
                message if the set bits of the output_bits parameter 
                are set in the verbose_mask of the object.  It uses this logic: 
                if (~verbose_mask & output_bits == 0) then output is enabled. 
-        @param verbose_level Debugging output level.  Calls to debug(), 
-               verbose() and fatal() are only output if their output_level 
-               parameter is less than or equal to the verbose_level currently 
-               set for the object 
         @param location Output location.  Ouput will be directed to STDOUT, 
                STDERR, FILE, or NONE.  If FILE output is selected, the 
                output will be directed to the file defined by the 
@@ -127,22 +127,6 @@ public:
     
     // OUTPUT METHODS
     // NOTE: __ATTRIBUTE__ Performs printf type mismatch checks on the format parameter
-    /** Output the message with formatting as specified by the format parameter.
-        @param format Format string.  All valid formats for printf are available.
-        @param ... Arguments for format.  
-     */
-    void output(const char* format, ...) const
-         __attribute__ ((format (printf, 2, 3))) 
-    {
-            va_list arg;
-            if (true == m_objInitialized && NONE != m_targetLoc) {
-                // Get the argument list and then print it out
-                va_start(arg, format);
-                outputprintf(format, arg); 
-                va_end(arg);
-            }
-    }
-
     /** Output the message with formatting as specified by the format parameter.
         The output will be prepended with the expanded prefix set in the object.
         @param line Line number of calling function (use CALL_INFO macro)
@@ -162,6 +146,22 @@ public:
             outputprintf(line, file, func, format, arg);
             va_end(arg);
         }
+    }
+    
+    /** Output the message with formatting as specified by the format parameter.
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.  
+     */
+    void output(const char* format, ...) const
+         __attribute__ ((format (printf, 2, 3))) 
+    {
+            va_list arg;
+            if (true == m_objInitialized && NONE != m_targetLoc) {
+                // Get the argument list and then print it out
+                va_start(arg, format);
+                outputprintf(format, arg); 
+                va_end(arg);
+            }
     }
        
     /** Output the verbose message with formatting as specified by the format 
@@ -195,6 +195,37 @@ public:
                 // Get the argument list and then print it out
                 va_start(arg, format);
                 outputprintf(line, file, func, format, arg);
+                va_end(arg);    
+            }
+        }
+    }
+
+    /** Output the verbose message with formatting as specified by the format 
+        parameter. Output will only occur if specified output_level and 
+        output_bits meet criteria defined by object.  
+        @param output_level For output to occur, output_level must be less than 
+               or equal to verbose_level set in object
+        @param output_bits The Output object will only output the
+               message if the set bits of the output_bits parameter are set in 
+               the verbose_mask of the object.  It uses this logic: 
+               if (~verbose_mask & output_bits == 0) then output is enabled.                
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.  
+     */
+    void verbose(uint32_t output_level, uint32_t output_bits,
+                 const char* format, ...)    const
+        __attribute__ ((format (printf, 4, 5)))
+    {
+        va_list arg;
+    
+        if (true == m_objInitialized && NONE != m_targetLoc ) {
+            // First check to see if we are allowed to send output based upon the 
+            // verbose_mask and verbose_level checks
+            if (((output_bits & ~m_verboseMask) == 0) &&
+                (output_level <= m_verboseLevel)){
+                // Get the argument list and then print it out
+                va_start(arg, format);
+                outputprintf(format, arg);
                 va_end(arg);    
             }
         }
@@ -240,17 +271,40 @@ public:
 #endif    
     }
     
-    /** Output the fatal message with formatting as specified by the format 
-        parameter. Output will only occur if specified output_level and 
-        output_bits meet criteria defined by object.  The output will be 
-        prepended with the expanded prefix set in the object.
-        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+    /** Output the debug message with formatting as specified by the format 
+        parameter. The output will be prepended with the expanded prefix set in 
+        the object.
+        NOTE: Debug ouputs will only occur if the __SST_DEBUG_OUTPUT__ is defined.
+              this define can be set in source code or by setting the
+              --enable-debug option during SST configuration.
         @param line Line number of calling function (use CALL_INFO macro)
         @param file File name calling function (use CALL_INFO macro)
         @param func Function name calling function (use CALL_INFO macro)
-        @param exit_code The exit code used for termination of simuation.
-               will be passed to MPI_Abort()
-        @param output_level For output to occur, output_level must be less than 
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.  
+     */
+    void debug(uint32_t line, const char* file, const char* func,
+               const char* format, ...)   const
+        __attribute__ ((format (printf, 5, 6))) 
+    {
+#ifdef __SST_DEBUG_OUTPUT__
+        va_list arg;
+        if (true == m_objInitialized && NONE != m_targetLoc ) {
+            // Get the argument list and then print it out
+            va_start(arg, format);
+            outputprintf(line, file, func, format, arg);
+            va_end(arg);    
+        }
+#endif    
+    }
+    
+    /** Output the debug message with formatting as specified by the format 
+        parameter. Output will only occur if specified output_level and 
+        output_bits meet criteria defined by object.  
+        NOTE: Debug ouputs will only occur if the __SST_DEBUG_OUTPUT__ is defined.
+              this define can be set in source code or by setting the
+              --enable-debug option during SST configuration.
+        @param output_level For output to occur, output_level must be less than
                or equal to verbose_level set in object
         @param output_bits The Output object will only output the
                message if the set bits of the output_bits parameter are set in 
@@ -259,15 +313,78 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.  
      */
-    void fatal(uint32_t line, 
-               const char* file, 
-               const char* func,
-               uint32_t exit_code, 
-               uint32_t output_level, 
-               uint32_t output_bits, 
-               const char* format, ...)    const
-                  __attribute__ ((format (printf, 8, 9))) ;
+    void debug(uint32_t output_level, uint32_t output_bits,
+               const char* format, ...)   const
+        __attribute__ ((format (printf, 4, 5))) 
+    {
+#ifdef __SST_DEBUG_OUTPUT__
+        va_list arg;
+        if (true == m_objInitialized && NONE != m_targetLoc ) {
+            // First check to see if we are allowed to send output based upon the 
+            // verbose_mask and verbose_level checks
+            if (((output_bits & ~m_verboseMask) == 0) &&
+                (output_level <= m_verboseLevel)){
+                // Get the argument list and then print it out
+                va_start(arg, format);
+                outputprintf(format, arg);
+                va_end(arg);    
+            }
+        }
+#endif    
+    }
+
+    /** Output the debug message with formatting as specified by the format 
+        parameter. 
+        NOTE: Debug ouputs will only occur if the __SST_DEBUG_OUTPUT__ is defined.
+              this define can be set in source code or by setting the
+              --enable-debug option during SST configuration.
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.  
+     */
+    void debug(const char* format, ...)   const
+        __attribute__ ((format (printf, 2, 3))) 
+    {
+#ifdef __SST_DEBUG_OUTPUT__
+        va_list arg;
+        if (true == m_objInitialized && NONE != m_targetLoc ) {
+            // Get the argument list and then print it out
+            va_start(arg, format);
+            outputprintf(format, arg);
+            va_end(arg);    
+        }
+#endif    
+    }
     
+    /** Output the fatal message with formatting as specified by the format 
+        parameter.  Message will be sent to the output location and to stderr.
+        The output will be prepended with the expanded prefix set 
+        in the object.
+        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+        @param line Line number of calling function (use CALL_INFO macro)
+        @param file File name calling function (use CALL_INFO macro)
+        @param func Function name calling function (use CALL_INFO macro)
+        @param exit_code The exit code used for termination of simuation.
+               will be passed to MPI_Abort()
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.  
+     */
+    void fatal(uint32_t line, const char* file, const char* func,
+               uint32_t exit_code, 
+               const char* format, ...)    const
+                  __attribute__ ((format (printf, 6, 7))) ;
+                  
+    /** Output the fatal message with formatting as specified by the format 
+        parameter. Message will be sent to the output location and to stderr.
+        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+        @param exit_code The exit code used for termination of simuation.
+               will be passed to MPI_Abort()
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.  
+     */
+    void fatal(uint32_t exit_code, 
+               const char* format, ...)    const
+                  __attribute__ ((format (printf, 3, 4))) ;
+                  
     // GET / SET METHODS
     
     /** Sets object prefix
@@ -327,15 +444,15 @@ public:
     /** Returns object output location */
     output_location_t getOutputLocation() const;
     
-               
+    /** This method allows for the manual flushing of the output. */
+    inline void flush() const {std::fflush(*m_targetOutputRef);}
+
+    
     /** This method sets the static filename used by SST.  It can only be called
         once, and is automatically called by the SST Core.  No components should
         call this method.
      */
     static void setFileName(const std::string& filename);
-
-    /** This method allows for the manual flushing of the output. */
-    inline void flush() const {std::fflush(*m_targetOutputRef);}
 
 private:
     // Support Methods

@@ -441,7 +441,7 @@ Cycle_t Simulation::reregisterClock( TimeConverter* freq, Clock::HandlerBase* ha
 {
     if ( clockMap.find( freq->getFactor() ) == clockMap.end() ) {
 	Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-	out.fatal(CALL_INFO, 1, 0, 0,
+	out.fatal(CALL_INFO, 1, 
 		  "Tried to reregister with a clock that was not previously registered, exiting...\n");
     }
     clockMap[ freq->getFactor() ]->registerHandler( handler );

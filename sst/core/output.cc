@@ -147,30 +147,99 @@ Output::output_location_t Output::getOutputLocation() const
 
 
 void Output::fatal(uint32_t line, const char* file, const char* func,
-                   uint32_t exit_code, uint32_t output_level, uint32_t output_bits,
-                   const char* format, ...)    const
+                   uint32_t exit_code, 
+                   const char* format, ...) const
 {
-    va_list     arg;
+    va_list     arg1;
+    va_list     arg2;
+    std::string newFmt;
     
-    if (true == m_objInitialized) {
-        // First check to see if we are allowed to send output based upon the 
-        // verbose_mask and verbose_level checks
-        if (((output_bits & ~m_verboseMask) == 0) &&
-           (output_level <= m_verboseLevel)){
-        
-            // Get the argument list and then print it out
-            va_start(arg, format);
-            outputprintf(line, file, func, format, arg);
-            va_end(arg);    
+    newFmt = std::string("FATAL: ") + buildPrefixString(line, file, func) + format;
+    
+    // Get the argument list
+    va_start(arg1, format);
+    // Always output to STDERR
+    std::vfprintf(stderr, newFmt.c_str(), arg1);
+    va_end(arg1);
+    
+    // Output to the target location as long is it is not NONE or
+    // STDERR (prevent 2 outputs to stderr)
+    if (true == m_objInitialized && NONE != m_targetLoc && STDERR != m_targetLoc) {
+        // Print it out to the target location 
+        va_start(arg2, format);
+
+        // If the target output is a file, Make sure that the file is created and opened
+        if ((FILE == m_targetLoc) && (0 == m_sstFileHandle)) {
+            openSSTTargetFile();
         }
+        
+        // Check to make sure output location is not NONE
+        if (NONE != m_targetLoc) {
+            std::vfprintf(*m_targetOutputRef, newFmt.c_str(), arg2);
+        }
+
+        va_end(arg2);
     }
+    
+    // Flush the outputs    
+    std::fflush(stderr);
     flush();
+
 #ifdef HAVE_MPI
+    // If MPI exists, abort
     boost::mpi::environment::abort(exit_code);      
 #else
     exit(1);
 #endif
 }
+
+
+void Output::fatal(uint32_t exit_code, 
+                   const char* format, ...) const
+{
+    va_list     arg1;
+    va_list     arg2;
+    std::string newFmt;
+    
+    newFmt = std::string("FATAL: ") + format;
+    
+    // Get the argument list
+    va_start(arg1, format);
+    // Always output to STDERR
+    std::vfprintf(stderr, newFmt.c_str(), arg1);
+    va_end(arg1);
+    
+    // Output to the target location as long is it is not NONE or
+    // STDERR (prevent 2 outputs to stderr)
+    if (true == m_objInitialized && NONE != m_targetLoc && STDERR != m_targetLoc) {
+        // Print it out to the target location 
+        va_start(arg2, format);
+
+        // If the target output is a file, Make sure that the file is created and opened
+        if ((FILE == m_targetLoc) && (0 == m_sstFileHandle)) {
+            openSSTTargetFile();
+        }
+        
+        // Check to make sure output location is not NONE
+        if (NONE != m_targetLoc) {
+            std::vfprintf(*m_targetOutputRef, newFmt.c_str(), arg2);
+        }
+
+        va_end(arg2);
+    }
+    
+    // Flush the outputs    
+    std::fflush(stderr);
+    flush();
+
+#ifdef HAVE_MPI
+    // If MPI exists, abort
+    boost::mpi::environment::abort(exit_code);      
+#else
+    exit(1);
+#endif
+}
+
 
 void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
 {
