@@ -1,6 +1,8 @@
 
 #include <sst/core/part/zoltpart.h>
 
+#ifdef HAVE_ZOLTAN
+
 using namespace std;
 using namespace SST;
 
@@ -263,3 +265,5 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
   		&export_ranks, &export_part);
   	partOutput->verbose(CALL_INFO, 1, 0, "Partitioning is complete.\n");
 }
+
+#endif
