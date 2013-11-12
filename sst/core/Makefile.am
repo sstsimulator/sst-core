@@ -66,7 +66,9 @@ nobase_dist_sst_HEADERS = \
 	interfaces/registerComponentOnNetworkEvent.h \
 	rng/sstrand.h \
 	rng/marsaglia.h \
-	rng/mersenne.h
+	rng/mersenne.h \
+	rng/distrib.h \
+	rng/gaussian.h
 
 nobase_nodist_sst_HEADERS = \
 	build_info.h
@@ -103,7 +105,9 @@ sst_core_sources = \
 	interfaces/TestEvent.cc \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
-	rng/mersenne.cc
+	rng/mersenne.cc \
+	rng/distrib.cc \
+	rng/gaussian.cc
 
 bin_PROGRAMS = sst.x
 sst_x_SOURCES = \
