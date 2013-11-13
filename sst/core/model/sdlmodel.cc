@@ -31,7 +31,7 @@ namespace SST {
 		doc = new TiXmlDocument(fileName.c_str());
 		bool load_ok = doc->LoadFile();
 		if ( !load_ok ) {
-			cout << "Error loading " << fileName <<": " << doc->ErrorDesc() << " on line " << doc->ErrorRow() << endl;
+			cerr << "Error loading " << fileName <<": " << doc->ErrorDesc() << " on line " << doc->ErrorRow() << endl;
 			exit(1);
 		}
 
@@ -49,13 +49,13 @@ namespace SST {
 		}
 
 		if ( version == "NONE" ) {
-			cout << "ERROR: No SDL version number specified in file " << fileName << "." << endl;
-			cout << "  Please add a version number to SDL file: <sdl version=VERSION>." << endl;
+			cerr << "ERROR: No SDL version number specified in file " << fileName << "." << endl;
+			cerr << "  Please add a version number to SDL file: <sdl version=VERSION>." << endl;
 			exit(1);
 		}
 		else if ( version == "2.0" ) {} // valid version
 		else {
-			cout << "ERROR: Unsupported SDL version: " << version << " in file " << fileName << "." << endl;
+			cerr << "ERROR: Unsupported SDL version: " << version << " in file " << fileName << "." << endl;
 			exit(1);
 		}    
 	}
@@ -165,23 +165,23 @@ namespace SST {
 				}
 				break;
 			case TiXmlNode::TINYXML_TEXT:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpeted text: "<<pParent->Value()<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpeted text: "<<pParent->Value()<<std::endl;
 				exit(1);
 				break;
 			case TiXmlNode::TINYXML_DOCUMENT:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpeted document: "<<pParent->Value()<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpeted document: "<<pParent->Value()<<std::endl;
 				exit(1);
 				break;
 			case TiXmlNode::TINYXML_DECLARATION:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpected declaration: "<<pParent->Value()<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpected declaration: "<<pParent->Value()<<std::endl;
 				exit(1);
 				break;
 			case TiXmlNode::TINYXML_UNKNOWN:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") unknown node: "<<pParent->Value()<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") unknown node: "<<pParent->Value()<<std::endl;
 				exit(1);
 				break;
 			default:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") default case"<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") default case"<<std::endl;
 				exit(1);
 				break;
 		}
@@ -231,23 +231,23 @@ namespace SST {
 				}
 				break;
 			case TiXmlNode::TINYXML_TEXT:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpeted text: "<<pParent->Value()<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpeted text: "<<pParent->Value()<<std::endl;
 				exit(1);
 				break;
 			case TiXmlNode::TINYXML_DOCUMENT:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpeted document: "<<pParent->Value()<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpeted document: "<<pParent->Value()<<std::endl;
 				exit(1);
 				break;
 			case TiXmlNode::TINYXML_DECLARATION:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpected declaration: "<<pParent->Value()<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") unexpected declaration: "<<pParent->Value()<<std::endl;
 				exit(1);
 				break;
 			case TiXmlNode::TINYXML_UNKNOWN:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") unknown node: "<<pParent->Value()<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") unknown node: "<<pParent->Value()<<std::endl;
 				exit(1);
 				break;
 			default:
-				std::cout<<"ERROR:(SDL line:"<<pParent->Row()<<") default case"<<std::endl;
+				std::cerr<<"ERROR:(SDL line:"<<pParent->Row()<<") default case"<<std::endl;
 				break;
 		}
 	}
@@ -275,14 +275,14 @@ namespace SST {
 		// Get the attributes from the component
 		TiXmlElement* element = pParent->ToElement();
 		if ( element->Attribute("name") == NULL ) {
-			cout << "ERROR: Parsing SDL file: Unspecified component name on or near line " << pParent->Row() << endl;
+			cerr << "ERROR: Parsing SDL file: Unspecified component name on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
 			comp->name = resolveEnvVars(element->Attribute("name"));
 		}
 		if ( element->Attribute("type") == NULL ) {
-			cout << "ERROR: Parsing SDL file: Unspecified component type on or near line " << pParent->Row() << endl;
+			cerr << "ERROR: Parsing SDL file: Unspecified component type on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
@@ -295,7 +295,7 @@ namespace SST {
 		// Get the rank
 		status = element->QueryIntAttribute("rank",&comp->rank);
 		if ( status == TIXML_WRONG_TYPE ) {
-			cout << "ERROR: Parsing SDL file: Bad rank specified (" << element->Attribute("rank") <<
+			cerr << "ERROR: Parsing SDL file: Bad rank specified (" << element->Attribute("rank") <<
 				") on or near line " << pParent->Row();
 			exit(1);
 		}
@@ -306,7 +306,7 @@ namespace SST {
 		// Get the weight
 		status = element->QueryFloatAttribute("weight",&comp->weight);
 		if ( status == TIXML_WRONG_TYPE ) {
-			cout << "ERROR: Parsing SDL file: Bad weight specified (" << element->Attribute("weight") <<
+			cerr << "ERROR: Parsing SDL file: Bad weight specified (" << element->Attribute("weight") <<
 				") on or near line " << pParent->Row();
 			exit(1);
 		}
@@ -341,14 +341,14 @@ namespace SST {
 		// Get the attributes from the component
 		TiXmlElement* element = pParent->ToElement();
 		if ( element->Attribute("name") == NULL ) {
-			cout << "ERROR: Parsing SDL file: Unspecified introspector name on or near line " << pParent->Row() << endl;
+			cerr << "ERROR: Parsing SDL file: Unspecified introspector name on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
 			comp->name = resolveEnvVars(element->Attribute("name"));
 		}
 		if ( element->Attribute("type") == NULL ) {
-			cout << "ERROR: Parsing SDL file: Unspecified introspector type on or near line " << pParent->Row() << endl;
+			cerr << "ERROR: Parsing SDL file: Unspecified introspector type on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
@@ -400,7 +400,7 @@ namespace SST {
 				std::string sub = includes_str.substr(start,length);
 				// See if the include exists
 				if ( includes.find(sub) == includes.end() ) {
-					cout << "ERROR: Parsing sdl file: Unknown include (" << sub.c_str() << ") on or near line "
+					cerr << "ERROR: Parsing sdl file: Unknown include (" << sub.c_str() << ") on or near line "
 						<< pParent->Row() << endl;
 					exit(1);
 				}
@@ -419,7 +419,7 @@ namespace SST {
 
 		std::string name;
 		if ( element->Attribute("name") == NULL ) {
-			cout << "ERROR: Parsing SDL file: Unspecified link name on or near line " << pParent->Row() << endl;
+			cerr << "ERROR: Parsing SDL file: Unspecified link name on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
@@ -437,14 +437,14 @@ namespace SST {
 		else {
 			link = graph->links[name];
 			if ( link->current_ref >= 2 ) {
-				cout << "ERROR: Parsing SDL file: Link " << name << " referenced more than two times" << endl;
+				cerr << "ERROR: Parsing SDL file: Link " << name << " referenced more than two times" << endl;
 				exit(1);
 			}
 		}
 
 		std::string port;
 		if ( element->Attribute("port") == NULL ) {
-			cout << "ERROR: Parsing SDL file: Unspecified link port on or near line " << pParent->Row() << endl;
+			cerr << "ERROR: Parsing SDL file: Unspecified link port on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
@@ -453,7 +453,7 @@ namespace SST {
 
 		SimTime_t latency;
 		if ( element->Attribute("latency") == NULL ) {
-			cout << "ERROR: Parsing SDL file: Unspecified link latency on or near line " << pParent->Row() << endl;
+			cerr << "ERROR: Parsing SDL file: Unspecified link latency on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
@@ -524,7 +524,7 @@ namespace SST {
 						std::cout<<"COMMENT:"<<child->Value()<<std::endl;
 					break;
 				case TiXmlNode::TINYXML_ELEMENT:
-					std::cout<<"ERROR: Parsing SDL file, unexpected element: "<<child->Value()<<std::endl;
+					std::cerr<<"ERROR: Parsing SDL file, unexpected element: "<<child->Value()<<std::endl;
 					exit(1);
 					break;
 				case TiXmlNode::TINYXML_TEXT:
@@ -532,19 +532,19 @@ namespace SST {
 					child=pParent->LastChild();
 					break;
 				case TiXmlNode::TINYXML_DOCUMENT:
-					std::cout<<"ERROR: Parsing SDL file, unexpeted document: "<<child->Value()<<std::endl;
+					std::cerr<<"ERROR: Parsing SDL file, unexpected document: "<<child->Value()<<std::endl;
 					exit(1);
 					break;
 				case TiXmlNode::TINYXML_DECLARATION:
-					std::cout<<"ERROR: Parsing SDL file, unexpected declaration: "<<child->Value()<<std::endl;
+					std::cerr<<"ERROR: Parsing SDL file, unexpected declaration: "<<child->Value()<<std::endl;
 					exit(1);
 					break;
 				case TiXmlNode::TINYXML_UNKNOWN:
-					std::cout<<"ERROR: Parsing SDL file, unknown node: "<<child->Value()<<std::endl;
+					std::cerr<<"ERROR: Parsing SDL file, unknown node: "<<child->Value()<<std::endl;
 					exit(1);
 					break;
 				default:
-					std::cout<<"ERROR: Parsing SDL file, default case"<<std::endl;
+					std::cerr<<"ERROR: Parsing SDL file, default case"<<std::endl;
 					exit(1);
 					break;
 			}
