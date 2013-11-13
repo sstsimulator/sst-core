@@ -79,6 +79,8 @@ static PyObject* createNewComponent(PyObject* self, PyObject* args) {
 		string comp_type_str = comp_type;
 
 		ComponentId_t newCompID = current_graph->addComponent(comp_name_str, comp_type_str);
+		current_graph->setComponentWeight((ComponentId_t) newCompID, 1.0);
+		
 		return PyLong_FromUnsignedLong((unsigned long) newCompID);
 	} else {
 		return PyLong_FromUnsignedLong((unsigned long) 0);

@@ -36,7 +36,7 @@ static void sst_zoltan_get_vertex_list(void* data, int sizeGID, int sizeLID,
 			comp_itr != c_graph->getComponentMap().end(); comp_itr++) {
 			globalIDs[next_entry] = (int) comp_itr->first;
 			localIDs[next_entry] = localID++;
-			//obj_wgts[next_entry] = 1.0;
+			obj_wgts[next_entry] = comp_itr->second->weight;
 
 			next_entry++;
 		}
@@ -180,6 +180,7 @@ void SSTZoltanPartition::initZoltan() {
   	Zoltan_Set_Param(zolt_config, "RETURN_LISTS", "ALL");
   	Zoltan_Set_Param(zolt_config, "CHECK_GRAPH", "2"); 
   	Zoltan_Set_Param(zolt_config, "PHG_EDGE_SIZE_THRESHOLD", ".35");
+  	Zoltan_Set_Param(zolt_config, "OBJ_WEIGHT_DIM", "1");
 
 	partOutput->verbose(CALL_INFO, 2, 0, "Completed initialization of Zoltan interface.\n");
 }
