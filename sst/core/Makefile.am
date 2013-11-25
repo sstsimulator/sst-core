@@ -49,6 +49,7 @@ nobase_dist_sst_HEADERS = \
 	pollingLinkQueue.h \
 	simulation.h \
 	sst_types.h \
+	sstinfo.h \
 	stopAction.h \
 	sync.h \
 	syncQueue.h \
@@ -109,9 +110,13 @@ sst_core_sources = \
 	rng/distrib.cc \
 	rng/gaussian.cc
 
-bin_PROGRAMS = sst.x
+bin_PROGRAMS = sst.x sstinfo
 sst_x_SOURCES = \
 	main.cc \
+	$(sst_core_sources)
+
+sstinfo_SOURCES = \
+	sstinfo.cc \
 	$(sst_core_sources)
 
 sst_x_LDADD = \
@@ -131,10 +136,30 @@ sst_x_LDFLAGS = \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
 	$(TCMALLOC_LDFLAGS) \
-        $(PYTHON_LDFLAGS) \
+    $(PYTHON_LDFLAGS) \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 
+sstinfo_LDADD = \
+	$(LIBLTDL) \
+	$(BOOST_SERIALIZATION_LIB) \
+	$(BOOST_MPI_LIB) \
+	$(BOOST_PROGRAM_OPTIONS_LIB) \
+	$(ZOLTAN_LIB) \
+	$(PARMETIS_LIB) \
+	$(MPILIBS) \
+	$(TCMALLOC_LIB) \
+	-lm
+	
+sstinfo_LDFLAGS = \
+	$(BOOST_LDFLAGS) \
+	$(PARMETIS_LDFLAGS) \
+	$(ZOLTAN_LDFLAGS) \
+	$(BOOST_MPI_LIB) \
+	$(TCMALLOC_LDFLAGS) \
+    $(PYTHON_LDFLAGS) \
+	-export-dynamic \
+	$(SST_LTLIBS_ELEMLIBS)
 
 include tinyxml/Makefile.inc
 include part/Makefile.inc
