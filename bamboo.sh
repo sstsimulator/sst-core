@@ -117,6 +117,7 @@ dotests() {
 
     fi
 
+    ${SST_TEST_SUITES}/testSuite_Ariel.sh
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
 ##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
