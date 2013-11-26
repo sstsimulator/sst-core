@@ -116,8 +116,14 @@ dotests() {
         fi
 
     fi
+    #
+    #   Only run if configured for ariel
+    #
+    if [ $1 == "sstmainline_config_linux_with_ariel" ]
+    then
+         ${SST_TEST_SUITES}/testSuite_Ariel.sh
+    fi
 
-    ${SST_TEST_SUITES}/testSuite_Ariel.sh
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
 ##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
