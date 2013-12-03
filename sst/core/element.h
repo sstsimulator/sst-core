@@ -23,18 +23,24 @@ class ConfigGraph;
 class Introspector;
 class Module;
 class Params;
- 
+
 typedef Component* (*componentAllocate)(ComponentId_t, Params&);
 typedef Introspector* (*introspectorAllocate)(Params&);
 typedef void (*eventInitialize)(void);
 typedef Module* (*moduleAllocate)(Params&);
- typedef Module* (*moduleAllocateWithComponent)(Component*, Params&);
+typedef Module* (*moduleAllocateWithComponent)(Component*, Params&);
 typedef void (*partitionFunction)(ConfigGraph*,int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
- 
+
 struct ElementInfoParam {
     const char *name;
     const char *description;
+};
+
+struct ElementInfoPort {
+    const char *name;
+    const char *description;
+    const char **validEvents;
 };
 
 struct ElementInfoComponent {
@@ -43,6 +49,7 @@ struct ElementInfoComponent {
     void (*printHelp)(FILE *output);
     componentAllocate alloc;
     const ElementInfoParam *params;
+    const ElementInfoPort *ports;
 };
 
 struct ElementInfoIntrospector {
