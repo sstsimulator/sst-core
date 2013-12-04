@@ -194,51 +194,51 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 }
 
 
-/*void Output::fatal(uint32_t exit_code, 
-                   const char* format, ...) const
-{
-    va_list     arg1;
-    va_list     arg2;
-    std::string newFmt;
-    
-    newFmt = std::string("FATAL: ") + format;
-    
-    // Get the argument list
-    va_start(arg1, format);
-    // Always output to STDERR
-    std::vfprintf(stderr, newFmt.c_str(), arg1);
-    va_end(arg1);
-    
-    // Output to the target location as long is it is not NONE or
-    // STDERR (prevent 2 outputs to stderr)
-    if (true == m_objInitialized && NONE != m_targetLoc && STDERR != m_targetLoc) {
-        // Print it out to the target location 
-        va_start(arg2, format);
-
-        // If the target output is a file, Make sure that the file is created and opened
-        if ((FILE == m_targetLoc) && (0 == m_sstFileHandle)) {
-            openSSTTargetFile();
-        }
-        
-        // Check to make sure output location is not NONE
-        if (NONE != m_targetLoc) {
-            std::vfprintf(*m_targetOutputRef, newFmt.c_str(), arg2);
-        }
-
-        va_end(arg2);
-    }
-    
-    // Flush the outputs    
-    std::fflush(stderr);
-    flush();
-
-#ifdef HAVE_MPI
-    // If MPI exists, abort
-    boost::mpi::environment::abort(exit_code);      
-#else
-    exit(1);
-#endif
-}*/
+//void Output::fatal(uint32_t exit_code, 
+//                   const char* format, ...) const
+//{
+//    va_list     arg1;
+//    va_list     arg2;
+//    std::string newFmt;
+//    
+//    newFmt = std::string("FATAL: ") + format;
+//    
+//    // Get the argument list
+//    va_start(arg1, format);
+//    // Always output to STDERR
+//    std::vfprintf(stderr, newFmt.c_str(), arg1);
+//    va_end(arg1);
+//    
+//    // Output to the target location as long is it is not NONE or
+//    // STDERR (prevent 2 outputs to stderr)
+//    if (true == m_objInitialized && NONE != m_targetLoc && STDERR != m_targetLoc) {
+//        // Print it out to the target location 
+//        va_start(arg2, format);
+//
+//        // If the target output is a file, Make sure that the file is created and opened
+//        if ((FILE == m_targetLoc) && (0 == m_sstFileHandle)) {
+//            openSSTTargetFile();
+//        }
+//        
+//        // Check to make sure output location is not NONE
+//        if (NONE != m_targetLoc) {
+//            std::vfprintf(*m_targetOutputRef, newFmt.c_str(), arg2);
+//        }
+//
+//        va_end(arg2);
+//    }
+//    
+//    // Flush the outputs    
+//    std::fflush(stderr);
+//    flush();
+//
+//#ifdef HAVE_MPI
+//    // If MPI exists, abort
+//    boost::mpi::environment::abort(exit_code);      
+//#else
+//    exit(1);
+//#endif
+//}
 
 
 void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
