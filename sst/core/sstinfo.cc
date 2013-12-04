@@ -621,18 +621,111 @@ void SSTElement_ParamInfo::outputParameterInfo(int index)
 }
 
 
+void SSTElement_PortInfo::outputPortInfo(int index)
+{
+    fprintf(stdout, "            PORT %d [%d Valid Events] = %s (%s)\n", index,  m_numValidEvents, getName(), getDesc());
+
+    // Print out the Valid Events Info
+    for (unsigned int x = 0; x < m_numValidEvents; x++) {
+        fprintf(stdout, "               VALID EVENT %d = %s\n", x, getValidEvent(x));
+    }
+}
+
+
+void SSTElement_PortInfo::analyzeValidEventsArray()
+{
+    const char** pValidEventStringArray;
+    const char*  ValidEventText;
+    unsigned int NumValidEvents = 0;
+
+    // Populate the Valid Events Array
+    if (NULL != m_elport->validEvents) {
+        
+        // Temp vars to point to the array of strings and the actual string
+        pValidEventStringArray = m_elport->validEvents;
+        ValidEventText         = *pValidEventStringArray;
+
+        while (NULL != ValidEventText){
+            NumValidEvents++;
+            
+            pValidEventStringArray++;  // Get the next ptr to the string
+            ValidEventText = *pValidEventStringArray;
+        }
+    }
+    m_numValidEvents = NumValidEvents;
+}
+
+
+const char* SSTElement_PortInfo::getValidEvent(unsigned int index)
+{
+    const char** pValidEventStringArray;
+
+    if ((0 <= index) && (m_numValidEvents > index))  {
+        pValidEventStringArray = m_elport->validEvents;
+        if (NULL != pValidEventStringArray[index]) {
+            return pValidEventStringArray[index];
+        }
+    }
+        
+   // Illegal index value or NULL string at index, then just return NULL
+   return NULL;
+}
+
+
 void SSTElement_ComponentInfo::outputComponentInfo(int index)
 {
     // Print out the Component Info
-    fprintf(stdout, "      COMPONENT %d = %s (%s)\n", index, getName(), getDesc());
+    fprintf(stdout, "      COMPONENT %d = %s [%s] (%s)\n", index, getName(), getCategoryString(), getDesc());
 
     // Print out the Parameter Info
     fprintf(stdout, "         NUM PARAMETERS = %ld\n", m_ParamArray.size());
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
         getParamInfo(x)->outputParameterInfo(x);
     }
+
+    // Print out the Port Info
+    fprintf(stdout, "         NUM PORTS = %ld\n", m_PortArray.size());
+    for (unsigned int x = 0; x < m_PortArray.size(); x++) {
+        getPortInfo(x)->outputPortInfo(x);
+    }
 }
 
+
+void SSTElement_ComponentInfo::buildCategoryString()
+{
+    m_CategoryString.clear();
+    
+    // Build a string list of the component catagories assigned to the component
+    if (0 < m_elc->category) {
+        if (m_elc->category & COMPONENT_CATEGORY_PROCESSOR) {
+            if (0 != m_CategoryString.length()) {
+                m_CategoryString += ", ";  
+            }
+            m_CategoryString += "PROCESSOR COMPONENT";  
+        }
+        if (m_elc->category & COMPONENT_CATEGORY_MEMORY) {
+            if (0 != m_CategoryString.length()) {
+                m_CategoryString += ", ";  
+            }
+            m_CategoryString += "MEMORY COMPONENT";  
+        }
+        if (m_elc->category & COMPONENT_CATEGORY_NETWORK) {
+            if (0 != m_CategoryString.length()) {
+                m_CategoryString += ", ";  
+            }
+            m_CategoryString += "NETWORK COMPONENT";  
+        }
+        if (m_elc->category & COMPONENT_CATEGORY_SYSTEM) {
+            if (0 != m_CategoryString.length()) {
+                m_CategoryString += ", ";  
+            }
+            m_CategoryString += "SYSTEM COMPONENT";  
+        }
+        
+    } else {
+        m_CategoryString = "UNCATEGORIZED COMPONENT";
+    }
+}
 
 void SSTElement_IntrospectorInfo::outputIntrospectorInfo(int index)
 {

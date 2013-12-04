@@ -66,28 +66,81 @@ void PopulateParams(const ElementInfoParam* ptrParams, std::vector<SSTElement_Pa
     }
 }
 
+class SSTElement_PortInfo {
+public:
+    SSTElement_PortInfo(const ElementInfoPort* elport)
+    {
+        // Save the Object
+        m_numValidEvents = 0;
+        m_elport = elport;
+        
+        analyzeValidEventsArray();
+    }
+
+    const char* getName() {return m_elport->name;}
+    const char* getDesc() {return m_elport->description;}
+    const char** getValidEvents() {return m_elport->validEvents;}
+
+    int         getNumberOfValidEvents()    {return m_numValidEvents;}
+    const char* getValidEvent(unsigned int index); 
+    
+    void outputPortInfo(int Index);
+    void analyzeValidEventsArray();
+    
+private:    
+    const ElementInfoPort*   m_elport;
+    unsigned int             m_numValidEvents;
+};
+    
+void PopulatePorts(const ElementInfoPort* ptrPorts, std::vector<SSTElement_PortInfo*>* ptrPortArray)
+{
+    // Populate the Ports Array
+    if (NULL != ptrPorts) {
+        while (NULL != ptrPorts->name) {
+            // Create a new SSTElement_PortInfo and add it to the m_PortArray
+            SSTElement_PortInfo* ptrPortInfo = new SSTElement_PortInfo(ptrPorts);
+            ptrPortArray->push_back(ptrPortInfo);
+
+            // If the name is NULL, we have reached the last item
+            ptrPorts++;  // Get the next structure item
+        }
+    }
+}
+
 class SSTElement_ComponentInfo {
 public:
     SSTElement_ComponentInfo(const ElementInfoComponent* elc)
     {
         const ElementInfoParam* ptrParams;
+        const ElementInfoPort*  ptrPorts;
         
         // Save the Object
         m_elc = elc;
 
         ptrParams = elc->params;  // Pointer to the Params Structure Array
         PopulateParams(ptrParams, &m_ParamArray);        
+
+        ptrPorts = elc->ports;  // Pointer to the Ports Structure Array
+        PopulatePorts(ptrPorts, &m_PortArray);
+        
+        buildCategoryString();        
     }
     
     const char*           getName() {return m_elc->name;}
     const char*           getDesc() {return m_elc->description;}
     SSTElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
+    SSTElement_PortInfo*  getPortInfo(int index) {return m_PortArray[index];}
+    uint32_t              getCategoryValue() {return m_elc->category;}
+    const char*           getCategoryString() {return m_CategoryString.c_str();}
 
     void outputComponentInfo(int Index);
+    void buildCategoryString();
     
 private:    
     const ElementInfoComponent*        m_elc;
     std::vector<SSTElement_ParamInfo*> m_ParamArray;
+    std::vector<SSTElement_PortInfo*>  m_PortArray;
+    std::string                        m_CategoryString;
 };
 
 class SSTElement_IntrospectorInfo {

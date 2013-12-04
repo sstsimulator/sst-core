@@ -17,6 +17,13 @@
 //#include <sst/core/component.h>
 //#include <sst/core/params.h>
 
+// Component Category Definitions
+#define COMPONENT_CATEGORY_UNCATEGORIZED 0x00
+#define COMPONENT_CATEGORY_PROCESSOR      0x01
+#define COMPONENT_CATEGORY_MEMORY         0x02
+#define COMPONENT_CATEGORY_NETWORK        0x04
+#define COMPONENT_CATEGORY_SYSTEM         0x08
+
 namespace SST {
 class Component;
 class ConfigGraph;
@@ -50,6 +57,7 @@ struct ElementInfoComponent {
     componentAllocate alloc;
     const ElementInfoParam *params;
     const ElementInfoPort *ports;
+    uint32_t category;
 };
 
 struct ElementInfoIntrospector {
