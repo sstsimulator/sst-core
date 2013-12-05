@@ -7,7 +7,7 @@
 namespace SST {
 namespace RNG {
 
-class RandomDistribution {
+class SSTRandomDistribution {
 
 	public:
 		virtual double getNextDouble() = 0;

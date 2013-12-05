@@ -12,10 +12,10 @@ using namespace SST::RNG;
 namespace SST {
 namespace RNG {
 
-class ExponentialDistribution : public RandomDistribution {
+class SSTExponentialDistribution : public SSTRandomDistribution {
 
 	public:
-		ExponentialDistribution(double mean);
+		SSTExponentialDistribution(double mean);
 		virtual double getNextDouble();		
 		double getMean();
 

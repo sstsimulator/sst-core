@@ -12,11 +12,11 @@ using namespace SST::RNG;
 namespace SST {
 namespace RNG {
 
-class GaussianDistribution : public RandomDistribution {
+class SSTGaussianDistribution : public SSTRandomDistribution {
 
 	public:
-		GaussianDistribution(double mean, double stddev);
-		virtual double getNextDouble();		
+		SSTGaussianDistribution(double mean, double stddev);
+		virtual double getNextDouble();
 		double getMean();
 		double getStandardDev();
 

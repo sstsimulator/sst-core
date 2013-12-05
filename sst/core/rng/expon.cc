@@ -1,17 +1,17 @@
 
 #include "expon.h"
 
-ExponentialDistribution::ExponentialDistribution(double mn) {
+SSTExponentialDistribution::SSTExponentialDistribution(double mn) {
 	mean = mn;
 	baseDistrib = new MersenneRNG();
 }
 
-double ExponentialDistribution::getNextDouble() {
+double SSTExponentialDistribution::getNextDouble() {
 	const double next = baseDistrib->nextUniform();
 	return log(1 - next) / ( -1 * mean );
 }
 
-double ExponentialDistribution::getMean() {
+double SSTExponentialDistribution::getMean() {
 	return mean;
 }
 
