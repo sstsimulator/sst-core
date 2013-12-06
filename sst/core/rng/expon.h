@@ -15,13 +15,14 @@ namespace RNG {
 class SSTExponentialDistribution : public SSTRandomDistribution {
 
 	public:
-		SSTExponentialDistribution(double mean);
-		virtual double getNextDouble();		
-		double getMean();
+		SSTExponentialDistribution(double lambda);
+		SSTExponentialDistribution(double lambda, SSTRandom* baseDist);
+		virtual double getNextDouble();
+		double getLambda();
 
 	protected:
-		double mean;
-		MersenneRNG* baseDistrib;
+		double lambda;
+		SSTRandom* baseDistrib;
 
 };
 

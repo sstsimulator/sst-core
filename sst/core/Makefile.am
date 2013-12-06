@@ -69,7 +69,8 @@ nobase_dist_sst_HEADERS = \
 	rng/marsaglia.h \
 	rng/mersenne.h \
 	rng/distrib.h \
-	rng/gaussian.h
+	rng/gaussian.h \
+	rng/expon.h
 
 nobase_nodist_sst_HEADERS = \
 	build_info.h
@@ -108,7 +109,8 @@ sst_core_sources = \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
 	rng/distrib.cc \
-	rng/gaussian.cc
+	rng/gaussian.cc \
+	rng/expon.cc
 
 bin_PROGRAMS = sst.x sstinfo
 sst_x_SOURCES = \

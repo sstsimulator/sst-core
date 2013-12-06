@@ -2,16 +2,20 @@
 #include "expon.h"
 
 SSTExponentialDistribution::SSTExponentialDistribution(double mn) {
-	mean = mn;
+	lambda = mn;
 	baseDistrib = new MersenneRNG();
+}
+
+SSTExponentialDistribution::SSTExponentialDistribution(double mn, SSTRandom* baseDist) {
+	lambda = mn;
+	baseDistrib = baseDist;
 }
 
 double SSTExponentialDistribution::getNextDouble() {
 	const double next = baseDistrib->nextUniform();
-	return log(1 - next) / ( -1 * mean );
+	return log(1 - next) / ( -1 * lambda );
 }
 
-double SSTExponentialDistribution::getMean() {
-	return mean;
+double SSTExponentialDistribution::getLambda() {
+	return lambda;
 }
-

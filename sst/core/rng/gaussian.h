@@ -16,6 +16,8 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
 
 	public:
 		SSTGaussianDistribution(double mean, double stddev);
+		SSTGaussianDistribution(double mean, double stddev, SSTRandom* baseRNG);
+
 		virtual double getNextDouble();
 		double getMean();
 		double getStandardDev();
@@ -23,7 +25,7 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
 	protected:
 		double mean;
 		double stddev;
-		MersenneRNG* baseDistrib;
+		SSTRandom* baseDistrib;
 		double unusedPair;
 		bool usePair;
 };
