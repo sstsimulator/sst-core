@@ -14,7 +14,6 @@
 #include <sst/sst_config.h>
 
 #include <sst/core/model/pymodel.h>
-
 #include <sst/core/component.h>
 
 #ifdef HAVE_PYTHON
@@ -315,12 +314,7 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
     return PyInt_FromLong(0);
 }
 
-
-
-
-
 /***** Module information *****/
-
 
 static PyObject* setProgramOption(PyObject* self, PyObject* args)
 {
@@ -457,10 +451,62 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
 SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* configObj) :
 	SSTModelDescription(), scriptName(script_file), config(configObj)
 {
-	char** argv = (char**) malloc(sizeof(char*) * 1);
-	argv[0] = "sst.x";
+	std::vector<std::string> argv_vector;
+	argv_vector.push_back("sst.x");
 
-	initModel(script_file, verbosity, configObj, 1, argv);
+	const int input_len = configObj->python_options.length();
+	std::string temp = "";
+	bool in_string = false;
+
+	for(int i = 0; i < input_len; ++i) {
+		if(configObj->python_options.substr(i, 1) == "\"") {
+			if(in_string) {
+				// We are ending a string
+				if(! (temp == "")) {
+					argv_vector.push_back(temp);
+					temp = "";
+				}
+
+				in_string = false;
+			} else {
+				// We are starting a string
+				in_string = true;
+			}
+		} else if(configObj->python_options.substr(i, 1) == " ") {
+			if(in_string) {
+				temp += " ";
+			} else {
+				argv_vector.push_back(temp);
+				temp = "";
+			}
+		} else {
+			temp += configObj->python_options.substr(i, 1);
+		}
+	}
+
+	// need to handle the last argument with a special case
+	if(temp != "") {
+		if(in_string) {
+			// this maybe en error?
+		} else {
+			argv_vector.push_back(temp);
+		}
+	}
+
+	// generate C main style inputs to the Python program based on our processing above.
+	char** argv = (char**) malloc(sizeof(char*) * argv_vector.size());
+	const int argc = argv_vector.size();
+
+	for(int i = 0; i < argc; ++i) {
+		argv[i] = (char*) malloc(sizeof(char) * argv_vector[i].size() + 1);
+		sprintf(argv[i], "%s", argv_vector[i].c_str());
+	}
+
+	// Init the model
+	initModel(script_file, verbosity, configObj, argc, argv);
+
+	// Free the vector
+	free(argv);
 }
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity,

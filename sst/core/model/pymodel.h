@@ -21,6 +21,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include <sst/core/model/sstmodel.h>
 #include <sst/core/config.h>
