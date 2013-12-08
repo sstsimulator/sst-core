@@ -36,11 +36,13 @@ class SSTPythonModelDefinition : public SSTModelDescription {
 
 	public:
 		SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* config, int argc, char **argv);
+		SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* config, const std::string modelParams);
 		~SSTPythonModelDefinition();
 
 		ConfigGraph* createConfigGraph();
 
 	protected:
+		void initModel(const std::string script_file, int verbosity, Config* config, int argc, char** argv);
 		std::string scriptName;
 		Output* output;
 		Config* config;

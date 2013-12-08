@@ -367,7 +367,7 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
     PyDict_SetItem(dict, PyString_FromString("partitioner"), PyString_FromString(cfg->partitioner.c_str()));
     PyDict_SetItem(dict, PyString_FromString("verbose"), PyBool_FromLong(cfg->verbose));
 
-    const char *runModeStr = "UNKNWON";
+    const char *runModeStr = "UNKNOWN";
     switch (cfg->runMode) {
         case Config::INIT: runModeStr = "init"; break;
         case Config::RUN: runModeStr = "run"; break;
@@ -406,20 +406,11 @@ static PyMethodDef sstModuleMethods[] = {
 
 }  /* extern C */
 
-
-
-
-
-
-SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity,
-    Config* configObj, int argc, char **argv) :
-    SSTModelDescription(), scriptName(script_file), config(configObj)
-{
-
+void SSTPythonModelDefinition::initModel(const std::string script_file, int verbosity, Config* config, int argc, char** argv) {
     output = new Output("SSTPythonModel ", verbosity, 0, SST::Output::STDOUT);
 
     if ( gModel ) {
-        output->fatal(CALL_INFO, -1, 0, 0, "A Python Config Model is already in progress.\n");
+        output->fatal(CALL_INFO, -1, "A Python Config Model is already in progress.\n");
     }
     gModel = this;
 
@@ -451,7 +442,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file
     LinkType.tp_new = PyType_GenericNew;
     if ( ( PyType_Ready(&ComponentType) < 0 ) ||
          ( PyType_Ready(&LinkType) < 0 ) ) {
-        output->fatal(CALL_INFO, -1, 0, 0, "Error loading Python types.\n");
+        output->fatal(CALL_INFO, -1, "Error loading Python types.\n");
     }
 
     // Add our built in methods to the Python engine
@@ -461,9 +452,24 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file
     PyModule_AddObject(module, "Component", (PyObject*)&ComponentType);
     Py_INCREF(&LinkType);
     PyModule_AddObject(module, "Link", (PyObject*)&LinkType);
-
 }
 
+SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* configObj,
+	const std::string modelParams) :
+	SSTModelDescription(), scriptName(script_file), config(configObj)
+{
+	char** argv = (char**) malloc(sizeof(char*) * 1);
+	argv[0] = "sst.x";
+
+	initModel(script_file, verbosity, configObj, 1, argv);
+}
+
+SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity,
+    Config* configObj, int argc, char **argv) :
+    SSTModelDescription(), scriptName(script_file), config(configObj)
+{
+	initModel(script_file, verbosity, configObj, argc, argv);
+}
 
 SSTPythonModelDefinition::~SSTPythonModelDefinition() {
     delete output;
@@ -482,7 +488,7 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
 
     FILE *fp = fopen(scriptName.c_str(), "r");
     if ( !fp ) {
-        output->fatal(CALL_INFO, -1, 0, 0,
+        output->fatal(CALL_INFO, -1,
                 "Unable to open python script %s", scriptName.c_str());
     }
     int createReturn = PyRun_AnyFileEx(fp, scriptName.c_str(), 1);
@@ -490,11 +496,11 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
     if(NULL != PyErr_Occurred()) {
         // Print the Python error and then let SST exit as a fatal-stop.
         PyErr_Print();
-        output->fatal(CALL_INFO, -1, 0, 0,
+        output->fatal(CALL_INFO, -1,
             "Error occurred executing the Python SST model script.\n");
     }
     if(-1 == createReturn) {
-        output->fatal(CALL_INFO, -1, 0, 0,
+        output->fatal(CALL_INFO, -1,
             "Execution of model construction function failed.\n");
     }
 
