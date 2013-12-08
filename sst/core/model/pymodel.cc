@@ -454,8 +454,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     PyModule_AddObject(module, "Link", (PyObject*)&LinkType);
 }
 
-SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* configObj,
-	const std::string modelParams) :
+SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* configObj) :
 	SSTModelDescription(), scriptName(script_file), config(configObj)
 {
 	char** argv = (char**) malloc(sizeof(char*) * 1);

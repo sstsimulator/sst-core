@@ -53,6 +53,9 @@ public:
     std::string     partitioner;
     std::string     generator;
     std::string     generator_options;
+#ifdef HAVE_PYTHON
+    std::string     python_options;
+#endif
     std::string     dump_component_graph_file;
 
     bool            all_parse;
@@ -80,6 +83,9 @@ public:
 	std::cout << "partitioner = " << partitioner << std::endl;
 	std::cout << "generator = " << generator << std::endl;
 	std::cout << "gen_options = " << generator_options << std::endl;
+#ifdef HAVE_PYTHON
+        std::cout << "python_options = " << python_options << std::endl;
+#endif
     }
 
 private:
@@ -109,6 +115,9 @@ private:
 	ar & BOOST_SERIALIZATION_NVP(generator);
 	ar & BOOST_SERIALIZATION_NVP(generator_options);
         ar & BOOST_SERIALIZATION_NVP(dump_component_graph_file);
+#ifdef HAVE_PYTHON
+        ar & BOOST_SERIALIZATION_NVP(python_options);
+#endif
     }
 
     int rank;

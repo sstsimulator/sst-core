@@ -59,6 +59,9 @@ Config::Config( int my_rank )
     generator   = "NONE";
     generator_options   = "";
     dump_component_graph_file = "";
+#ifdef HAVE_PYTHON
+    python_options = "";
+#endif
     all_parse   = true;
     verbose     = false;
     
@@ -133,7 +136,10 @@ Config::Config( int my_rank )
          "options to be passed to generator function (must use quotes if whitespace is present)")
         ("dump_partition", po::value< string >(&dump_component_graph_file), 
          "dump component partition to this file (default is not to dump information)")
-	
+#ifdef HAVE_PYTHON
+        ("python_options", po::value< string >(&python_options),
+	 "Provide options to the SST Python scripting engine (default is to provide no script options)")
+#endif
 	;
 
     var_map = new po::variables_map();

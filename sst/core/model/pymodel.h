@@ -36,7 +36,7 @@ class SSTPythonModelDefinition : public SSTModelDescription {
 
 	public:
 		SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* config, int argc, char **argv);
-		SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* config, const std::string modelParams);
+		SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* config);
 		~SSTPythonModelDefinition();
 
 		ConfigGraph* createConfigGraph();
