@@ -109,7 +109,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
         ${SST_TEST_SUITES}/testSuite_hybridsim.sh
 
-        yy# only run portals4 test when gem5 sconsed with sstdevice=1
+        # only run portals4 test when gem5 sconsed with sstdevice=1
         if [ $1 == "sstmainline_config_with_sstdevice" ]
         then
             ${SST_TEST_SUITES}/testSuite_portals4.sh
