@@ -454,12 +454,12 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file
 	std::vector<std::string> argv_vector;
 	argv_vector.push_back("sst.x");
 
-	const int input_len = configObj->python_options.length();
+	const int input_len = configObj->model_options.length();
 	std::string temp = "";
 	bool in_string = false;
 
 	for(int i = 0; i < input_len; ++i) {
-		if(configObj->python_options.substr(i, 1) == "\"") {
+		if(configObj->model_options.substr(i, 1) == "\"") {
 			if(in_string) {
 				// We are ending a string
 				if(! (temp == "")) {
@@ -472,7 +472,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file
 				// We are starting a string
 				in_string = true;
 			}
-		} else if(configObj->python_options.substr(i, 1) == " ") {
+		} else if(configObj->model_options.substr(i, 1) == " ") {
 			if(in_string) {
 				temp += " ";
 			} else {
@@ -480,7 +480,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file
 				temp = "";
 			}
 		} else {
-			temp += configObj->python_options.substr(i, 1);
+			temp += configObj->model_options.substr(i, 1);
 		}
 	}
 

@@ -60,7 +60,7 @@ Config::Config( int my_rank )
     generator_options   = "";
     dump_component_graph_file = "";
 #ifdef HAVE_PYTHON
-    python_options = "";
+    model_options = "";
 #endif
     all_parse   = true;
     verbose     = false;
@@ -137,7 +137,7 @@ Config::Config( int my_rank )
         ("dump_partition", po::value< string >(&dump_component_graph_file), 
          "dump component partition to this file (default is not to dump information)")
 #ifdef HAVE_PYTHON
-        ("python_options", po::value< string >(&python_options),
+        ("model_options", po::value< string >(&model_options),
 	 "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
 	;

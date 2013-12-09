@@ -99,7 +99,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_PYTHON
 		else if(file_ext == ".py") {
 			modelGen = new SSTPythonModelDefinition(cfg.sdlfile, cfg.verbose ? 4 : 0 ,
-				&cfg, argc, argv);
+				&cfg);
 		}
 #endif
 		else {
