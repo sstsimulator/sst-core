@@ -8,7 +8,7 @@ The second specified the sdl version.  This file describes version
 
 <sdl version="2.0"/>
 
-There are 4 other sections to the file: config, variables,
+There are four other sections to the file: config, variables,
 param_include and sst.  Ordering of these four sections does not
 matter.  However, the data structures resulting from the xml parsing
 will process the sections in the proper order (i.e., the variables and
