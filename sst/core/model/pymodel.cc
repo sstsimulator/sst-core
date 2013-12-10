@@ -56,6 +56,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args);
 
 
 static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds);
+static void linkDealloc(LinkPy_t *self);
 static PyObject* linkConnect(PyObject* self, PyObject *args);
 
 
@@ -139,7 +140,7 @@ static PyTypeObject LinkType = {
     "sst.Link",                /* tp_name */
     sizeof(LinkPy_t),          /* tp_basicsize */
     0,                         /* tp_itemsize */
-    0,                         /* tp_dealloc */
+    (destructor)linkDealloc,   /* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
@@ -241,12 +242,16 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
 
 static PyObject* compAddParam(PyObject *self, PyObject *args)
 {
-    char *param, *value;
-    if ( !PyArg_ParseTuple(args, "ss", &param, &value) )
+    char *param = NULL;
+    PyObject *value = NULL;
+    if ( !PyArg_ParseTuple(args, "sO", &param, &value) )
         return NULL;
 
     ComponentId_t id = ((ComponentPy_t*)self)->id;
-    gModel->getConfigGraph()->addParameter(id, param, value, true);
+
+    PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", NULL);
+    gModel->getConfigGraph()->addParameter(id, param, PyString_AsString(vstr), true);
+    Py_XDECREF(vstr);
 
     return PyInt_FromLong(0);
 }
@@ -324,7 +329,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
     if ( !PyArg_ParseTuple(args, "O!ss", &LinkType, &plink, &port, &lat) )
         return NULL;
 
-    LinkPy_t*link = (LinkPy_t*)plink;
+    LinkPy_t* link = (LinkPy_t*)plink;
 
     graph->addLink(id, link->name, port, lat);
 
@@ -339,9 +344,15 @@ static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds)
     char *name;
     if ( !PyArg_ParseTuple(args, "s", &name) ) return -1;
 
-    self->name = name;
+    self->name = strdup(name);
 
     return 0;
+}
+
+static void linkDealloc(LinkPy_t *self)
+{
+    if ( self->name ) free(self->name);
+    self->ob_type->tp_free((PyObject*)self);
 }
 
 
