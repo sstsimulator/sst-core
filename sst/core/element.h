@@ -38,6 +38,7 @@ typedef Module* (*moduleAllocate)(Params&);
 typedef Module* (*moduleAllocateWithComponent)(Component*, Params&);
 typedef void (*partitionFunction)(ConfigGraph*,int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
+typedef void* (*genPythonModuleFunction)(void);
 
 struct ElementInfoParam {
     const char *name;
@@ -108,6 +109,7 @@ struct ElementLibraryInfo {
     const struct ElementInfoModule* modules;
     const struct ElementInfoPartitioner* partitioners;
     const struct ElementInfoGenerator* generators;
+    genPythonModuleFunction pythonModuleGenerator;
 };
 } //namespace SST
 

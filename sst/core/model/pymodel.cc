@@ -13,7 +13,12 @@
 
 #include <sst/sst_config.h>
 
+#include <string.h>
+
 #include <sst/core/model/pymodel.h>
+#include <sst/core/simulation.h>
+#include <sst/core/element.h>
+#include <sst/core/factory.h>
 #include <sst/core/component.h>
 
 #ifdef HAVE_PYTHON
@@ -38,6 +43,10 @@ typedef struct {
 } LinkPy_t;
 
 
+typedef struct {
+    PyObject_HEAD
+} ModuleLoaderPy_t;
+
 static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds);
 static PyObject* compAddParam(PyObject *self, PyObject *args);
 static PyObject* compAddParams(PyObject *self, PyObject *args);
@@ -48,6 +57,10 @@ static PyObject* compAddLink(PyObject *self, PyObject *args);
 
 static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds);
 static PyObject* linkConnect(PyObject* self, PyObject *args);
+
+
+static PyObject* mlFindModule(PyObject *self, PyObject *args);
+static PyObject* mlLoadModule(PyObject *self, PyObject *args);
 
 
 static PyMethodDef componentMethods[] = {
@@ -158,6 +171,56 @@ static PyTypeObject LinkType = {
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
     (initproc)linkInit,        /* tp_init */
+    0,                         /* tp_alloc */
+    0,                         /* tp_new */
+};
+
+
+static PyMethodDef mlMethods[] = {
+    {   "find_module", mlFindModule, METH_VARARGS, "Finds an SST Element Module"},
+    {   "load_module", mlLoadModule, METH_VARARGS, "Loads an SST Element Module"},
+    {   NULL, NULL, 0, NULL }
+};
+
+
+static PyTypeObject ModuleLoaderType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /* ob_size */
+    "ModuleLoader",        /* tp_name */
+    sizeof(ModuleLoaderPy_t),  /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    0,                         /* tp_dealloc */
+    0,                         /* tp_print */
+    0,                         /* tp_getattr */
+    0,                         /* tp_setattr */
+    0,                         /* tp_compare */
+    0,                         /* tp_repr */
+    0,                         /* tp_as_number */
+    0,                         /* tp_as_sequence */
+    0,                         /* tp_as_mapping */
+    0,                         /* tp_hash */
+    0,                         /* tp_call */
+    0,                         /* tp_str */
+    0,                         /* tp_getattro */
+    0,                         /* tp_setattro */
+    0,                         /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    "SST Module Loader",       /* tp_doc */
+    0,                         /* tp_traverse */
+    0,                         /* tp_clear */
+    0,                         /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    0,                         /* tp_iter */
+    0,                         /* tp_iternext */
+    mlMethods,                 /* tp_methods */
+    0,                         /* tp_members */
+    0,                         /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,                         /* tp_init */
     0,                         /* tp_alloc */
     0,                         /* tp_new */
 };
@@ -314,6 +377,53 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
     return PyInt_FromLong(0);
 }
 
+
+static PyObject* mlFindModule(PyObject *self, PyObject *args)
+{
+    char *name;
+    PyObject *path;
+    if ( !PyArg_ParseTuple(args, "s|O", &name, &path) )
+        return NULL;
+
+    if ( !strncmp(name, "sst.", 4) ) {
+        // We know how to handle only sst.<module>
+        return self;
+    }
+
+    Py_RETURN_NONE;
+}
+
+static PyMethodDef emptyModMethods[] = {
+    {NULL, NULL, 0, NULL }
+};
+
+static PyObject* mlLoadModule(PyObject *self, PyObject *args)
+{
+    char *name;
+    if ( !PyArg_ParseTuple(args, "s", &name) )
+        return NULL;
+
+    if ( strncmp(name, "sst.", 4) ) {
+        // We know how to handle only sst.<module>
+        return NULL; // ERROR!
+    }
+
+    char *modName = name+4; // sst.<modName>
+
+    fprintf(stderr, "Loading SST module '%s'\n", modName);
+    genPythonModuleFunction func = Simulation::getSimulation()->getFactory()->getPythonModule(modName);
+    PyObject* mod = NULL;
+    if ( !func ) {
+        mod = Py_InitModule(name, emptyModMethods);
+    } else {
+        mod = static_cast<PyObject*>((*func)());
+    }
+
+    return mod;
+}
+
+
+
 /***** Module information *****/
 
 static PyObject* setProgramOption(PyObject* self, PyObject* args)
@@ -400,6 +510,7 @@ static PyMethodDef sstModuleMethods[] = {
 
 }  /* extern C */
 
+
 void SSTPythonModelDefinition::initModel(const std::string script_file, int verbosity, Config* config, int argc, char** argv) {
     output = new Output("SSTPythonModel ", verbosity, 0, SST::Output::STDOUT);
 
@@ -434,8 +545,10 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     // Initialize our types
     ComponentType.tp_new = PyType_GenericNew;
     LinkType.tp_new = PyType_GenericNew;
+    ModuleLoaderType.tp_new = PyType_GenericNew;
     if ( ( PyType_Ready(&ComponentType) < 0 ) ||
-         ( PyType_Ready(&LinkType) < 0 ) ) {
+         ( PyType_Ready(&LinkType) < 0 ) ||
+         ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
         output->fatal(CALL_INFO, -1, "Error loading Python types.\n");
     }
 
@@ -443,9 +556,22 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     PyObject *module = Py_InitModule("sst", sstModuleMethods);
 
     Py_INCREF(&ComponentType);
-    PyModule_AddObject(module, "Component", (PyObject*)&ComponentType);
     Py_INCREF(&LinkType);
+    Py_INCREF(&ModuleLoaderType);
     PyModule_AddObject(module, "Link", (PyObject*)&LinkType);
+    PyModule_AddObject(module, "Component", (PyObject*)&ComponentType);
+
+
+    // Add our custom loader
+    PyObject *main_module = PyImport_ImportModule("__main__");
+    PyModule_AddObject(main_module, "ModuleLoader", (PyObject*)&ModuleLoaderType);
+    PyRun_SimpleString("def loadLoader():\n"
+            "\timport sys\n"
+            "\tsys.meta_path.append(ModuleLoader())\n"
+            "\timport sst\n"
+            "\tsst.__path__ = []\n"  // Must be here or else meta_path won't be questioned
+            "loadLoader()\n");
+
 }
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* configObj) :

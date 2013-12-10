@@ -42,6 +42,7 @@ public:
     
     partitionFunction GetPartitioner(std::string name);
     generateFunction GetGenerator(std::string name);
+    genPythonModuleFunction getPythonModule(std::string name);
 private:
     friend class SST::SimulationBase;
 

@@ -299,6 +299,19 @@ Factory::GetGenerator(std::string name)
 }
 
 
+genPythonModuleFunction
+Factory::getPythonModule(std::string name)
+{
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(name);
+
+    const ElementLibraryInfo *eli = findLibrary(elemlib);
+
+    return eli->pythonModuleGenerator;
+}
+
+
+
 std::set<std::string>
 Factory::create_params_set(const ElementInfoParam *params)
 {
