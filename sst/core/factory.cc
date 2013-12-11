@@ -305,9 +305,10 @@ Factory::getPythonModule(std::string name)
     std::string elemlib, elem;
     boost::tie(elemlib, elem) = parseLoadName(name);
 
-    const ElementLibraryInfo *eli = findLibrary(elemlib);
-
-    return eli->pythonModuleGenerator;
+    const ElementLibraryInfo *eli = findLibrary(elemlib, false);
+    if ( eli )
+        return eli->pythonModuleGenerator;
+    return NULL;
 }
 
 
@@ -328,15 +329,21 @@ Factory::create_params_set(const ElementInfoParam *params)
 }
 
 
+bool Factory::hasLibrary(std::string elemlib)
+{
+    return (NULL != findLibrary(elemlib, false));
+}
+
+
 const ElementLibraryInfo*
-Factory::findLibrary(std::string elemlib)
+Factory::findLibrary(std::string elemlib, bool showErrors)
 {
     const ElementLibraryInfo *eli = NULL;
 
     eli_map_t::iterator elii = loaded_libraries.find(elemlib);
     if (elii != loaded_libraries.end()) return elii->second;
 
-    eli = loadLibrary(elemlib);
+    eli = loadLibrary(elemlib, showErrors);
     if (NULL == eli) return NULL;
 
     loaded_libraries[elemlib] = eli;
@@ -401,7 +408,7 @@ Factory::findLibrary(std::string elemlib)
 
 
 const ElementLibraryInfo*
-Factory::loadLibrary(std::string elemlib)
+Factory::loadLibrary(std::string elemlib, bool showErrors)
 {
     ElementLibraryInfo *eli = NULL;
     std::string libname = "lib" + elemlib;
@@ -413,9 +420,11 @@ Factory::loadLibrary(std::string elemlib)
         // component was found earlier, but has a missing symbol or
         // the like, we just get an amorphous "file not found" error,
         // which is totally useless...
-        fprintf(stderr, "Opening element library %s failed: %s\n",
-                elemlib.c_str(), lt_dlerror());
-        eli = followError(libname, elemlib, eli, searchPaths);
+        if (showErrors) {
+            fprintf(stderr, "Opening element library %s failed: %s\n",
+                    elemlib.c_str(), lt_dlerror());
+            eli = followError(libname, elemlib, eli, searchPaths);
+        }
     } else {
         // look for an info block
         std::string infoname = elemlib + "_eli";

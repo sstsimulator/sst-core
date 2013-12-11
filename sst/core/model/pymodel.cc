@@ -398,7 +398,10 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
 
     if ( !strncmp(name, "sst.", 4) ) {
         // We know how to handle only sst.<module>
-        return self;
+        // Check for the existence of a library
+        char *modName = name+4;
+        if ( Simulation::getSimulation()->getFactory()->hasLibrary(modName) )
+            return self;
     }
 
     Py_RETURN_NONE;
@@ -421,7 +424,7 @@ static PyObject* mlLoadModule(PyObject *self, PyObject *args)
 
     char *modName = name+4; // sst.<modName>
 
-    fprintf(stderr, "Loading SST module '%s'\n", modName);
+    //fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
     genPythonModuleFunction func = Simulation::getSimulation()->getFactory()->getPythonModule(modName);
     PyObject* mod = NULL;
     if ( !func ) {

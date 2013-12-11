@@ -43,6 +43,7 @@ public:
     partitionFunction GetPartitioner(std::string name);
     generateFunction GetGenerator(std::string name);
     genPythonModuleFunction getPythonModule(std::string name);
+    bool hasLibrary(std::string elemlib);
 private:
     friend class SST::SimulationBase;
 
@@ -128,9 +129,9 @@ private:
     std::set<std::string> create_params_set(const ElementInfoParam *params);
 
     // find library information for name
-    const ElementLibraryInfo* findLibrary(std::string name);
+    const ElementLibraryInfo* findLibrary(std::string name, bool showErrors=true);
     // handle low-level loading of name
-    const ElementLibraryInfo* loadLibrary(std::string name);
+    const ElementLibraryInfo* loadLibrary(std::string name, bool showErrors=true);
 
     eli_map_t loaded_libraries;
     eic_map_t found_components;
