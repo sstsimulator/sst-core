@@ -1,7 +1,6 @@
 #ifndef _H_SST_CORE_RNG_EXP
 #define _H_SST_CORE_RNG_EXP
 
-#include <sst_config.h>
 #include "math.h"
 
 #include "distrib.h"
