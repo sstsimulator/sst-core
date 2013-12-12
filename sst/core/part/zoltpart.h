@@ -2,7 +2,6 @@
 #ifndef SST_CORE_PART_ZOLT
 #define SST_CORE_PART_ZOLT
 
-#include <sst_config.h>
 
 #ifdef HAVE_ZOLTAN
 

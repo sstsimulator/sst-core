@@ -1,7 +1,6 @@
 #ifndef _H_SST_CORE_STATS
 #define _H_SST_CORE_STATS
 
-#include <sst_config.h>
 
 #include <assert.h>
 
