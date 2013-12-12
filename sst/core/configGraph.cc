@@ -235,14 +235,14 @@ void ConfigGraph::dumpToFile(const std::string filePath) {
 	ConfigComponent* the_comp = comp_itr->second;
 
 	fprintf(dumpFile, "%s = sst.Component(\"%s\", \"%s\")\n",
-		the_comp->name.c_str(),
-		the_comp->name.c_str(),
+		makeNamePythonSafe(the_comp->name).c_str(),
+		makeNamePythonSafe(the_comp->name).c_str(),
 		the_comp->type.c_str());
 
 	param_itr = the_comp->params.begin();
 
 	if(param_itr != the_comp->params.end()) {
-		fprintf(dumpFile, "%s.addParams({\n", the_comp->name.c_str());
+		fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(the_comp->name).c_str());
 		fprintf(dumpFile, "      \"%s\" : \"%s\"", param_itr->first.c_str(), param_itr->second.c_str());
 		param_itr++;
 
@@ -263,19 +263,51 @@ void ConfigGraph::dumpToFile(const std::string filePath) {
 	ConfigComponent* link_right = comps[link_itr->second->component[1]];
 
 	fprintf(dumpFile, "%s = sst.Link(\"%s\")\n",
-		link_itr->second->name.c_str(), link_itr->second->name.c_str());
+		makeNamePythonSafe(link_itr->second->name).c_str(), makeNamePythonSafe(link_itr->second->name).c_str());
 	fprintf(dumpFile, "%s.connect( (%s, \"%s\", \"%" PRIu64 "ps\"), (%s, \"%s\", \"%" PRIu64 "ps\") )\n",
-		link_itr->second->name.c_str(),
-		link_left->name.c_str(),
-		link_itr->second->port[0].c_str(),
+		makeNamePythonSafe(link_itr->second->name).c_str(),
+		makeNamePythonSafe(link_left->name).c_str(),
+		makeNamePythonSafe(link_itr->second->port[0]).c_str(),
 		*link_itr->second->latency,
-		link_right->name.c_str(),
-		link_itr->second->port[1].c_str(),
+		makeNamePythonSafe(link_right->name).c_str(),
+		makeNamePythonSafe(link_itr->second->port[1]).c_str(),
 		*link_itr->second->latency );
     }
 
     fprintf(dumpFile, "# End of generated output.\n");
     fclose(dumpFile);
+}
+
+std::string ConfigGraph::makeNamePythonSafe(const std::string name) {
+	const uint32_t name_length = (uint32_t) name.size();
+	char* safe_name = (char*) malloc(sizeof(char) * (name_length + 1));
+	strcpy(safe_name, name.c_str());
+
+	for(uint32_t i = 0; i < name_length; ++i) {
+		switch(safe_name[i]) {
+		case '.':
+			safe_name[i] = '_';
+			break;
+		case ':':
+			safe_name[i] = '_';
+			break;
+		case ',':
+			safe_name[i] = '_';
+			break;
+		case '-':
+			safe_name[i] = '_';
+			break;
+		}
+	}
+
+	if(name_length > 0 && isdigit(safe_name[0])) {
+		std::string safe_name_str = safe_name;
+		std::string safe_name_prefix = "s_";
+		return safe_name_prefix + safe_name_str;
+	} else {
+		std::string safe_name_str = safe_name;
+		return safe_name_str;
+	}
 }
 
 ComponentId_t

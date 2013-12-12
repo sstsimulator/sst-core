@@ -179,7 +179,8 @@ public:
 
     bool checkForStructuralErrors();
     void dumpToFile(std::string filePath);
-    
+    std::string makeNamePythonSafe(const std::string name);
+
     // Temporary until we have a better API
     ConfigComponentMap_t& getComponentMap() {
 	return comps;
