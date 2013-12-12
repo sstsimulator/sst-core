@@ -484,6 +484,9 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
     PyDict_SetItem(dict, PyString_FromString("timebase"), PyString_FromString(cfg->timeBase.c_str()));
     PyDict_SetItem(dict, PyString_FromString("partitioner"), PyString_FromString(cfg->partitioner.c_str()));
     PyDict_SetItem(dict, PyString_FromString("verbose"), PyBool_FromLong(cfg->verbose));
+    PyDict_SetItem(dict, PyString_FromString("dump_partition"), PyString_FromString(cfg->dump_component_graph_file.c_str()));
+    PyDict_SetItem(dict, PyString_FromString("dump_config_graph"), PyString_FromString(cfg->dump_config_graph.c_str()));
+    PyDict_SetItem(dict, PyString_FromString("model_options"), PyString_FromString(cfg->model_options.c_str()));
 
     const char *runModeStr = "UNKNOWN";
     switch (cfg->runMode) {
