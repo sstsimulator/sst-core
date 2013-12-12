@@ -437,15 +437,24 @@ TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* 
     
 }
 
-Cycle_t Simulation::reregisterClock( TimeConverter* freq, Clock::HandlerBase* handler )
+Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* handler )
 {
-    if ( clockMap.find( freq->getFactor() ) == clockMap.end() ) {
+    if ( clockMap.find( tc->getFactor() ) == clockMap.end() ) {
 	Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
 	out.fatal(CALL_INFO, 1, "Tried to reregister with a clock that was not previously registered, exiting...\n");
     }
-    clockMap[ freq->getFactor() ]->registerHandler( handler );
-    return clockMap[freq->getFactor()]->getNextCycle();
+    clockMap[ tc->getFactor() ]->registerHandler( handler );
+    return clockMap[tc->getFactor()]->getNextCycle();
     
+}
+
+Cycle_t Simulation::getNextClockCycle(TimeConverter* tc) {
+    if ( clockMap.find( tc->getFactor() ) == clockMap.end() ) {
+	Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
+	out.fatal(CALL_INFO, 1, 0, 0,
+		  "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
+    }
+    return clockMap[tc->getFactor()]->getNextCycle();
 }
 
 void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {

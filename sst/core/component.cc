@@ -71,6 +71,10 @@ Cycle_t Component::reregisterClock( TimeConverter* freq, Clock::HandlerBase* han
     return Simulation::getSimulation()->reregisterClock(freq,handler);
 }
 
+Cycle_t Component::getNextClockCycle( TimeConverter* freq ) {
+    return Simulation::getSimulation()->getNextClockCycle(freq);
+}
+
 void Component::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
     Simulation::getSimulation()->unregisterClock(tc,handler);
 }

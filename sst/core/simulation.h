@@ -102,6 +102,7 @@ public:
     TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
     Cycle_t reregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
+    Cycle_t getNextClockCycle(TimeConverter* tc);
     void insertActivity(SimTime_t time, Activity* ev);
     Exit* getExit() const { return m_exit; }
 

@@ -99,6 +99,7 @@ public:
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
 
     Cycle_t reregisterClock(TimeConverter *freq, Clock::HandlerBase* handler);
+    Cycle_t getNextClockCycle(TimeConverter *freq);
     
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
