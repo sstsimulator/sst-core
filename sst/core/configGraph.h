@@ -178,7 +178,7 @@ public:
     ComponentId_t addIntrospector(std::string name, std::string type);
 
     bool checkForStructuralErrors();
-    
+    void dumpToFile(std::string filePath);
     
     // Temporary until we have a better API
     ConfigComponentMap_t& getComponentMap() {

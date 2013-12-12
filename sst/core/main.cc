@@ -321,7 +321,12 @@ main(int argc, char *argv[])
 		std::cout << "WARNING: no components assigned to rank: " << world.rank() << "." << endl;
 	    }
 	}
-	
+
+	// User asked us to dump the config graph to a file
+	if(cfg.dump_config_graph != "") {
+		graph->dumpToFile(cfg.dump_config_graph);
+	}
+
 	sim->performWireUp( *graph, world.rank() );
 	delete graph;
     }

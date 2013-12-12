@@ -53,6 +53,7 @@ public:
     std::string     partitioner;
     std::string     generator;
     std::string     generator_options;
+    std::string     dump_config_graph;
 #ifdef HAVE_PYTHON
     std::string     model_options;
 #endif
@@ -83,6 +84,7 @@ public:
 	std::cout << "partitioner = " << partitioner << std::endl;
 	std::cout << "generator = " << generator << std::endl;
 	std::cout << "gen_options = " << generator_options << std::endl;
+        std::cout << "dump_config_graph = " << dump_config_graph << std::endl;
 #ifdef HAVE_PYTHON
         std::cout << "model_options = " << model_options << std::endl;
 #endif
@@ -115,6 +117,7 @@ private:
 	ar & BOOST_SERIALIZATION_NVP(generator);
 	ar & BOOST_SERIALIZATION_NVP(generator_options);
         ar & BOOST_SERIALIZATION_NVP(dump_component_graph_file);
+        ar & BOOST_SERIALIZATION_NVP(dump_config_graph);
 #ifdef HAVE_PYTHON
         ar & BOOST_SERIALIZATION_NVP(model_options);
 #endif

@@ -140,6 +140,9 @@ Config::Config( int my_rank )
         ("model_options", po::value< string >(&model_options),
 	 "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
+        ("dump_config_graph", po::value< string >(&dump_config_graph),
+	 "Dump the SST component and link configuration graph to this file, empty string (default) is not to dump anything.")
+
 	;
 
     var_map = new po::variables_map();

@@ -220,7 +220,64 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 
     comps[comp_id]->links.push_back(link);
 }
-    
+
+void ConfigGraph::dumpToFile(const std::string filePath) {
+    FILE* dumpFile = fopen(filePath.c_str(), "wt");
+    assert(dumpFile);
+
+    ConfigComponentMap_t::iterator comp_itr;
+    std::map<string, string>::iterator param_itr;
+
+    fprintf(dumpFile, "# Automatically generated SST Python input\n");
+    fprintf(dumpFile, "import sst\n\n");
+    fprintf(dumpFile, "# Define the simulation components\n");
+    for(comp_itr = comps.begin(); comp_itr != comps.end(); comp_itr++) {
+	ConfigComponent* the_comp = comp_itr->second;
+
+	fprintf(dumpFile, "%s = sst.Component(\"%s\", \"%s\")\n",
+		the_comp->name.c_str(),
+		the_comp->name.c_str(),
+		the_comp->type.c_str());
+
+	param_itr = the_comp->params.begin();
+
+	if(param_itr != the_comp->params.end()) {
+		fprintf(dumpFile, "%s.addParams({\n", the_comp->name.c_str());
+		fprintf(dumpFile, "      \"%s\" : \"%s\"", param_itr->first.c_str(), param_itr->second.c_str());
+		param_itr++;
+
+		for(; param_itr != the_comp->params.end(); param_itr++) {
+			fprintf(dumpFile, ",\n      \"%s\" : \"%s\"",
+				param_itr->first.c_str(), param_itr->second.c_str());
+		}
+
+		fprintf(dumpFile, "\n})\n");
+	}
+    }
+
+    fprintf(dumpFile, "\n\n# Define the simulation links\n");
+
+    ConfigLinkMap_t::iterator link_itr;
+    for(link_itr = links.begin(); link_itr != links.end(); link_itr++) {
+	ConfigComponent* link_left = comps[link_itr->second->component[0]];
+	ConfigComponent* link_right = comps[link_itr->second->component[1]];
+
+	fprintf(dumpFile, "%s = sst.Link(\"%s\")\n",
+		link_itr->second->name.c_str(), link_itr->second->name.c_str());
+	fprintf(dumpFile, "%s.connect( (%s, \"%s\", \"%" PRIu64 "ps\"), (%s, \"%s\", \"%" PRIu64 "ps\") )\n",
+		link_itr->second->name.c_str(),
+		link_left->name.c_str(),
+		link_itr->second->port[0].c_str(),
+		*link_itr->second->latency,
+		link_right->name.c_str(),
+		link_itr->second->port[1].c_str(),
+		*link_itr->second->latency );
+    }
+
+    fprintf(dumpFile, "# End of generated output.\n");
+    fclose(dumpFile);
+}
+
 ComponentId_t
 ConfigGraph::addIntrospector(string name, string type)
 {
