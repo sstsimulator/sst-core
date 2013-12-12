@@ -324,7 +324,7 @@ main(int argc, char *argv[])
 
 	// User asked us to dump the config graph to a file
 	if(cfg.dump_config_graph != "") {
-		graph->dumpToFile(cfg.dump_config_graph);
+		graph->dumpToFile(cfg.dump_config_graph, &cfg);
 	}
 
 	sim->performWireUp( *graph, world.rank() );

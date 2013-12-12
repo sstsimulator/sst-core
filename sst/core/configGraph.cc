@@ -20,7 +20,6 @@
 #include <sst/core/timeLord.h>
 #include <sst/core/simulation.h>
 
-
 using namespace std;
 
 namespace SST {
@@ -221,7 +220,7 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
     comps[comp_id]->links.push_back(link);
 }
 
-void ConfigGraph::dumpToFile(const std::string filePath) {
+void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg) {
     FILE* dumpFile = fopen(filePath.c_str(), "wt");
     assert(dumpFile);
 
@@ -230,6 +229,9 @@ void ConfigGraph::dumpToFile(const std::string filePath) {
 
     fprintf(dumpFile, "# Automatically generated SST Python input\n");
     fprintf(dumpFile, "import sst\n\n");
+    fprintf(dumpFile, "# Define SST core options\n");
+    fprintf(dumpFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase.c_str());
+    fprintf(dumpFile, "sst.setProgramOption(\"stop-at\", \"%s\")\n\n", cfg->stopAtCycle.c_str());
     fprintf(dumpFile, "# Define the simulation components\n");
     for(comp_itr = comps.begin(); comp_itr != comps.end(); comp_itr++) {
 	ConfigComponent* the_comp = comp_itr->second;

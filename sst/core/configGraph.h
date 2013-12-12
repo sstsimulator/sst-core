@@ -23,6 +23,8 @@
 #include "sst/core/graph.h"
 #include "sst/core/params.h"
 
+#include <sst/core/config.h>
+
 namespace SST {
 
 class Simulation;
@@ -178,7 +180,7 @@ public:
     ComponentId_t addIntrospector(std::string name, std::string type);
 
     bool checkForStructuralErrors();
-    void dumpToFile(std::string filePath);
+    void dumpToFile(std::string filePath, Config* cfg);
     std::string makeNamePythonSafe(const std::string name);
 
     // Temporary until we have a better API
