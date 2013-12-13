@@ -1,4 +1,4 @@
-
+#include <sst_config.h>
 #include <sst/core/part/zoltpart.h>
 
 #ifdef HAVE_ZOLTAN
