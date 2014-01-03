@@ -97,6 +97,7 @@ public:
     void initialize();
     void run(); 
     SimTime_t getCurrentSimCycle() const;
+    void getElapsedSimTime(double *value, char *prefix) const;
     int getRank() const {return my_rank;}
     int getNumRanks() const {return num_ranks;}
     TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);

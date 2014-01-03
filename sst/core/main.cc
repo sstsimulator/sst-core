@@ -55,7 +55,7 @@ sigHandlerPrintStatus(int signal)
 }
 
 
-int 
+int
 main(int argc, char *argv[])
 {
     boost::mpi::environment* mpiEnv = new boost::mpi::environment(argc,argv);
@@ -339,49 +339,51 @@ main(int argc, char *argv[])
     all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
 
     start_run = timer->elapsed();
+    double simulated_time = 0.0;
+    char simulated_time_prefix = ' ';
 
-    if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) { 
+    if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) {
         if ( cfg.archive ) {
             sim = archive.loadSimulation();
-	    printf("# Finished reading serialization file\n");
+            printf("# Finished reading serialization file\n");
         }
 
-	if ( cfg.verbose ) {
-		printf("# Starting main event loop\n");
+        if ( cfg.verbose ) {
+            printf("# Starting main event loop\n");
 
-		time_t the_time = time(0);
-		struct tm* now = localtime( &the_time );
+            time_t the_time = time(0);
+            struct tm* now = localtime( &the_time );
 
-		std::cout << "# Start time: " <<
-			(now->tm_year + 1900) << "/" <<
-			(now->tm_mon+1) << "/";
+            std::cout << "# Start time: " <<
+                (now->tm_year + 1900) << "/" <<
+                (now->tm_mon+1) << "/";
 
-		if(now->tm_mday < 10) 
-			std::cout << "0";
+            if(now->tm_mday < 10) 
+                std::cout << "0";
 
-		std::cout << (now->tm_mday) << " at: ";
+            std::cout << (now->tm_mday) << " at: ";
 
-		if(now->tm_hour < 10) 
-			std::cout << "0";
+            if(now->tm_hour < 10) 
+                std::cout << "0";
 
-		std::cout << (now->tm_hour) << ":";
+            std::cout << (now->tm_hour) << ":";
 
-		if(now->tm_min < 10)
-			std::cout << "0";
+            if(now->tm_min < 10)
+                std::cout << "0";
 
-		std::cout << (now->tm_min)  << ":";
+            std::cout << (now->tm_min)  << ":";
 
-		if(now->tm_sec < 10) 
-			std::cout << "0";
+            if(now->tm_sec < 10) 
+                std::cout << "0";
 
-		std::cout << (now->tm_sec) << std::endl;
-	}
+            std::cout << (now->tm_sec) << std::endl;
+        }
 
-	sim->initialize();
+        sim->initialize();
         sim->run();
 
-
-	delete sim;
+        sim->getElapsedSimTime(&simulated_time, &simulated_time_prefix);
+        delete sim;
     }
 
     end_run = timer->elapsed();
@@ -399,11 +401,12 @@ main(int argc, char *argv[])
 	getrusage(RUSAGE_SELF, &sim_ruse);
 
 	std::cout << setiosflags(ios::fixed) << setprecision(2);
-	std::cout << "#" << endl;
-	std::cout << "#  Simulation Timing Information:" << endl;
-	std::cout << "#  Build time:             " << max_build_time << " s" << std::endl;
-	std::cout << "#  Simulation time:        " << max_run_time   << " s" << std::endl;
-	std::cout << "#  Total time:             " << max_total_time << " s" << std::endl;
+	std::cout << "#" << std::endl;
+	std::cout << "#  Simulation Timing Information:" << std::endl;
+	std::cout << "#  Build time:             " << max_build_time << "  s" << std::endl;
+	std::cout << "#  Simulation time:        " << max_run_time   << "  s" << std::endl;
+	std::cout << "#  Total time:             " << max_total_time << "  s" << std::endl;
+    std::cout << "#  Simulated Time:         " << simulated_time << " " << simulated_time_prefix << "s" << std::endl;
 
 	std::cout << "#" << std::endl;
 	std::cout << "#  Simulation Resource Information:" << std::endl;

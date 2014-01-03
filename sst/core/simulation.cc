@@ -397,6 +397,25 @@ Simulation::getCurrentSimCycle() const
 }
 
 
+void Simulation::getElapsedSimTime(double *value, char *prefix) const
+{
+    static const char siprefix[] = {
+        'a', 'f', 'p', 'n', 'u', 'm', ' '
+    };
+    const int max = sizeof(siprefix) / sizeof(char);
+
+    double val = getCurrentSimCycle() * timeLord->getSecFactor();
+    int lvl = 0;
+    while ( (lvl < max) && (val > 1000.0) ) {
+        val /= 1000.0;
+        ++lvl;
+    }
+    *value = val;
+    *prefix = siprefix[lvl];
+
+}
+
+
 void Simulation::setSignal(int signal)
 {
     instance->lastRecvdSignal = signal;
