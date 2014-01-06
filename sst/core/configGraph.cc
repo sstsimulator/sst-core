@@ -247,11 +247,11 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg) {
 
 	if(param_itr != the_comp->params.end()) {
 		fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(the_comp->name).c_str());
-		fprintf(dumpFile, "      \"%s\" : \"%s\"", param_itr->first.c_str(), param_itr->second.c_str());
+		fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", param_itr->first.c_str(), param_itr->second.c_str());
 		param_itr++;
 
 		for(; param_itr != the_comp->params.end(); param_itr++) {
-			fprintf(dumpFile, ",\n      \"%s\" : \"%s\"",
+			fprintf(dumpFile, ",\n      \"%s\" : \"\"\"%s\"\"\"",
 				param_itr->first.c_str(), param_itr->second.c_str());
 		}
 
