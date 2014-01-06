@@ -106,7 +106,6 @@ dotests() {
     if [ $kernel != "Darwin" ]
     then
         # Only run if the OS *isn't* Darwin (MacOS)
-listLIBS
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
         ${SST_TEST_SUITES}/testSuite_hybridsim.sh
 
@@ -647,7 +646,6 @@ dobuild() {
 
     echo "==================== Building SST ===================="
     export LD_LIBRARY_PATH=${SST_INSTALL_DEPS}/lib:${SST_INSTALL_DEPS}/lib/sst:${SST_DEPS_INSTALL_GEM5SST}:${SST_INSTALL_DEPS}/packages/DRAMSim:${SST_DEPS_INSTALL_NVDIMMSIM}:${SST_DEPS_INSTALL_HYBRIDSIM}:${SST_INSTALL_DEPS}/packages/Qsim/lib:${LD_LIBRARY_PATH}
-    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$BOOST_LIBS
     # Mac OS X needs some help finding dylibs
     if [ $kernel == "Darwin" ]
     then
@@ -873,11 +871,6 @@ else
                         echo "bamboo.sh: Boost 1.50 selected"
                         module unload boost
                         module load boost/${desiredBoost}
-                        ;;
-                    myBoost)
-                        export BOOST_LIBS=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0/lib
-                        export BOOST_HOME=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0
-                        export BOOST_INCLUDE=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0/include
                         ;;
                     *)
                         echo "bamboo.sh: \"Default\" Boost selected"
@@ -1208,9 +1201,6 @@ then
     else
         # Build was successful, so run tests, providing command line args
         # as a convenience. SST binaries must be generated before testing.
-
-listLIBS
-echo " ############################  ENTER dotests ################## "
         dotests $1
     fi
 fi
