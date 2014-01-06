@@ -20,6 +20,8 @@
 #include <sst/core/timeLord.h>
 #include <sst/core/simulation.h>
 
+#include <string.h>
+
 using namespace std;
 
 namespace SST {

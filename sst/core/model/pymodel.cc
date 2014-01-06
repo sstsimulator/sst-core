@@ -14,6 +14,7 @@
 #include <sst/sst_config.h>
 
 #include <string.h>
+#include <sstream>
 
 #include <sst/core/model/pymodel.h>
 #include <sst/core/simulation.h>
