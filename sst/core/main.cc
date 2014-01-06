@@ -13,8 +13,10 @@
 #include <sst_config.h>
 #include "sst/core/serialization.h"
 
+#ifdef HAVE_MPI
 #include <boost/mpi.hpp>
 #include <boost/mpi/timer.hpp>
+#endif
 
 #include <iomanip>
 #include <iostream>
@@ -31,6 +33,9 @@
 #include <sst/core/part/simplepart.h>
 #include <sst/core/part/rrobin.h>
 #include <sst/core/part/linpart.h>
+
+#include <sst/core/cputimer.h>
+
 #ifdef HAVE_ZOLTAN
 #include <sst/core/part/zoltpart.h>
 #endif
@@ -58,15 +63,25 @@ sigHandlerPrintStatus(int signal)
 int
 main(int argc, char *argv[])
 {
+
+#ifdef HAVE_MPI
     boost::mpi::environment* mpiEnv = new boost::mpi::environment(argc,argv);
     boost::mpi::communicator world;
+    const int rank = world.rank();
+    const int size = world.size();
+#else
+    const int rank = 0;
+    const int size = 1;
+#endif
+    Config cfg(rank);
 
-    Config cfg(world.rank());
     SST::Simulation*  sim= NULL;
 
     // All ranks parse the command line
     if ( cfg.parseCmdLine(argc, argv) ) {
+#ifdef HAVE_MPI
 	delete mpiEnv;
+#endif
         return -1;
     }
     // In fast build mode, everyone builds the entire graph structure
@@ -83,17 +98,18 @@ main(int argc, char *argv[])
 		file_ext = cfg.sdlfile.substr(cfg.sdlfile.size() - 3);
 
 		if(file_ext == "xml" || file_ext == "sdl") {
-			if ( cfg.all_parse || world.rank() == 0 ) {
+			if ( cfg.all_parse || rank == 0 ) {
 			    // Create the sdl parser
 			    modelGen = new SSTSDLModelDefinition(cfg.sdlfile);
 			    string config_string = ((SSTSDLModelDefinition*) modelGen)->getSDLConfigString();
 			    cfg.parseConfigFile(config_string);
 			    // cfg.print();
 			}
-
 			// If this is a parallel job, we need to broadcast the configuration
-			if ( world.size() > 1 && !cfg.all_parse ) {
-			    broadcast(world,cfg,0);
+			if ( size > 1 && !cfg.all_parse ) {
+#ifdef HAVE_MPI
+			    broadcast(world, cfg, 0);
+#endif
 			}
 		}
 #ifdef HAVE_PYTHON
@@ -114,38 +130,37 @@ main(int argc, char *argv[])
 
     Archive archive(cfg.archiveType, cfg.archiveFile);
 
-    boost::mpi::timer* timer = new boost::mpi::timer();
-    double start = timer->elapsed();
+    double start = sst_get_cpu_time();
     double end_build, start_run, end_run;
- 
-    if ( cfg.verbose) printf("# main() My rank is %d, on %d nodes\n", world.rank(), world.size());
-    DebugInit( world.rank(), world.size() );
 
-    if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) { 
-        sim = Simulation::createSimulation(&cfg, world.rank(), world.size());
+    if ( cfg.verbose ) printf("# main() My rank is %d, on %d nodes\n", rank, size);
+    DebugInit( rank, size );
+
+    if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) {
+        sim = Simulation::createSimulation(&cfg, rank, size);
 
         signal(SIGUSR1, sigHandlerPrintStatus);
         signal(SIGUSR2, sigHandlerPrintStatus);
 
 	ConfigGraph* graph;
 
-	if ( world.size() == 1 ) {
-	    clock_t start_graph_gen = clock();
+	if ( size == 1 ) {
+	    double start_graph_gen = sst_get_cpu_time();
 
 	    if ( cfg.generator != "NONE" ) {
 		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
 		graph = new ConfigGraph();
-		func(graph,cfg.generator_options,world.size());
+		func(graph,cfg.generator_options,size);
 	    }
 	    else {
 		graph = modelGen->createConfigGraph();
 	    }
 
-            clock_t end_graph_gen = clock();
-   
-            if(cfg.verbose && (world.rank() == 0)) {
+	    double end_graph_gen = sst_get_cpu_time();
+
+            if(cfg.verbose && (rank == 0)) {
             	std::cout << "# Graph construction took " <<
-			((end_graph_gen - start_graph_gen) / CLOCKS_PER_SEC) << " seconds." 
+			(end_graph_gen - start_graph_gen) << " seconds."
 			<< std::endl;
             }
 
@@ -160,34 +175,34 @@ main(int argc, char *argv[])
 	    graph->setComponentRanks(0);
 	}
 	// Need to worry about partitioning for parallel jobs
-	else if ( world.rank() == 0 || cfg.all_parse ) {
-	    clock_t start_graph_gen = clock();
+	else if ( rank == 0 || cfg.all_parse ) {
+            double start_graph_gen = sst_get_cpu_time();
 
 	    if ( cfg.generator != "NONE" ) {
 		graph = new ConfigGraph();
 		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
-		func(graph,cfg.generator_options, world.size());
+		func(graph,cfg.generator_options, size);
 	    }
 	    else {
 		graph = modelGen->createConfigGraph();
 	    }
 
-	    if ( world.rank() == 0 ) {
+	    if ( rank == 0 ) {
 		// Check config graph to see if there are structural errors.
 		if ( graph->checkForStructuralErrors() ) {
 		    printf("Structural errors found in the ConfigGraph.  Aborting...\n");
 		    exit(-1);
 		}
 	    }
-	    
-	    clock_t end_graph_gen = clock();
-   
-            if(cfg.verbose && (world.rank() == 0)) {
+
+	    double end_graph_gen = sst_get_cpu_time();
+
+            if(cfg.verbose && (rank == 0)) {
             	std::cout << "# Graph construction took " <<
-			((end_graph_gen - start_graph_gen) / CLOCKS_PER_SEC) << " seconds." << std::endl;
+			(end_graph_gen - start_graph_gen) << " seconds." << std::endl;
             }
-	    
-	    clock_t	start_part = clock();
+
+	    double start_part = sst_get_cpu_time();
 
 	    // Do the partitioning.
 	    if ( cfg.partitioner != "self" ) {
@@ -200,45 +215,45 @@ main(int argc, char *argv[])
 	    if ( cfg.partitioner == "self" ) {
 			// For now, do nothing.  Eventually we need to
 			// have a checker for the partitioning.
-			if(world.rank() == 0) {
+			if(rank == 0) {
 		   		std::cout << "# SST will use a self-guided partition scheme." << std::endl;
 			}
 	    } else if ( cfg.partitioner == "simple" ) {
-			if(cfg.verbose && world.rank() == 0) {
+			if(cfg.verbose && rank == 0) {
 				std::cout << "# Performing a simple partition..." << std::endl;
 			}
 			
-			simple_partition(graph, world.size());
+			simple_partition(graph, size);
 			
-			if(cfg.verbose && world.rank() == 0) {
+			if(cfg.verbose && rank == 0) {
 			std::cout << "# Partitionning process is complete." << std::endl;
 			}
         } else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
 			// perform a basic round robin partition
-			if(cfg.verbose && world.rank() == 0) {
+			if(cfg.verbose && rank == 0) {
 				std::cout << "# Performing a round-robin partition..." << std::endl;
 			}
 		
-			rrobin_partition(graph, world.size());
+			rrobin_partition(graph, size);
 		
-			if(cfg.verbose && world.rank() == 0) {
+			if(cfg.verbose && rank == 0) {
 				std::cout << "# Partitionning process is complete." << std::endl;
 	    	}
 	    } else if ( cfg.partitioner == "linear" ) {
-	    	if(cfg.verbose && world.rank() == 0) {
+	    	if(cfg.verbose && rank == 0) {
 	    		std::cout << "# Partitionning using a linear scheme..." << std::endl;
 	    	}
 	    	
-			SSTLinearPartition* linear = new SSTLinearPartition(world.size(), cfg.verbose ? 2 : 0);
+			SSTLinearPartition* linear = new SSTLinearPartition(size, cfg.verbose ? 2 : 0);
 			linear->performPartition(graph);
 			delete linear;
 			
-			if(cfg.verbose && world.rank() == 0) {
+			if(cfg.verbose && rank == 0) {
 				std::cout << "# Partitionning process is complete" << std::endl;
 			}
 	    } else if ( cfg.partitioner == "zoltan" ) {
 #ifdef HAVE_ZOLTAN
-			if(cfg.verbose && world.rank() == 0) {
+			if(cfg.verbose && rank == 0) {
 				std::cout << "# Partitionning using Zoltan..." << std::endl;
 			}
 			
@@ -248,7 +263,7 @@ main(int argc, char *argv[])
 			broadcast(world, *graph, 0);
 			delete zolt_part;
 			
-			if(cfg.verbose && world.rank() == 0) {
+			if(cfg.verbose && rank == 0) {
 				std::cout << "# Partitionning is complete." << std::endl;
 			}
 #else
@@ -256,20 +271,20 @@ main(int argc, char *argv[])
 			abort();
 #endif
 	    } else {
-	        if(world.rank() == 0) {
+	        if(rank == 0) {
 				std::cout << "# Partition scheme was not specified, using: " <<
 					cfg.partitioner << std::endl;
 			}
 		
 			partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
-			func(graph,world.size());
+			func(graph,size);
 	    }
 
-	    clock_t end_part = clock();
+            double end_part = sst_get_cpu_time();
 
-	    if(cfg.verbose && (world.rank() == 0)) {
+	    if(cfg.verbose && (rank == 0)) {
 		std::cout << "# Graph partitionning took " <<
-			((end_part - start_part) / CLOCKS_PER_SEC) << " seconds." << std::endl;
+			(end_part - start_part) << " seconds." << std::endl;
 	    }
 	}
 	else {
@@ -278,7 +293,7 @@ main(int argc, char *argv[])
 
         ///////////////////////////////////////////////////////////////////////	
 	// If the user asks us to dump the partionned graph.
-	if(cfg.dump_component_graph_file != "" && world.rank() == 0) {
+	if(cfg.dump_component_graph_file != "" && rank == 0) {
 		if(cfg.verbose) 
 			std::cout << "# Dumping partitionned component graph to " <<
 				cfg.dump_component_graph_file << std::endl;
@@ -286,7 +301,7 @@ main(int argc, char *argv[])
 		ofstream graph_file(cfg.dump_component_graph_file.c_str());
 		ConfigComponentMap_t& component_map = graph->getComponentMap();
 
-		for(int i = 0; i < world.size(); i++) {
+		for(int i = 0; i < size; i++) {
 			graph_file << "Rank: " << i << " Component List:" << std::endl;
 
 			for (ConfigComponentMap_t::const_iterator j = component_map.begin() ; j != component_map.end() ; ++j) {
@@ -308,17 +323,21 @@ main(int argc, char *argv[])
         ///////////////////////////////////////////////////////////////////////
 	// Broadcast the data structures if only rank 0 built the
 	// graph
-	if ( !cfg.all_parse ) broadcast(world, *graph, 0);
-	
-	if ( !graph->checkRanks( world.size() ) ) {
-	    if ( world.rank() == 0 ) {
+	if ( !cfg.all_parse ) {
+#ifdef HAVE_MPI
+		broadcast(world, *graph, 0);
+#endif
+	}
+
+	if ( !graph->checkRanks( size ) ) {
+	    if ( rank == 0 ) {
 		std::cout << "ERROR: bad partitioning; partition included bad ranks." << endl;
 	    }
 	    exit(1);
 	}
 	else {
-	    if ( !graph->containsComponentInRank( world.rank() ) ) {
-		std::cout << "WARNING: no components assigned to rank: " << world.rank() << "." << endl;
+	    if ( !graph->containsComponentInRank( rank ) ) {
+		std::cout << "WARNING: no components assigned to rank: " << rank << "." << endl;
 	    }
 	}
 
@@ -327,18 +346,20 @@ main(int argc, char *argv[])
 		graph->dumpToFile(cfg.dump_config_graph, &cfg);
 	}
 
-	sim->performWireUp( *graph, world.rank() );
+	sim->performWireUp( *graph, rank );
 	delete graph;
     }
 
-    end_build = timer->elapsed();
+    end_build = sst_get_cpu_time();
     double build_time = end_build - start;
     // std::cout << "#  Build time: " << build_time << " s" << std::endl;
 
-    double max_build_time;
+    double max_build_time = build_time;
+#ifdef HAVE_MPI
     all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
+#endif
 
-    start_run = timer->elapsed();
+    start_run = sst_get_cpu_time();
     double simulated_time = 0.0;
     char simulated_time_prefix = ' ';
 
@@ -386,17 +407,22 @@ main(int argc, char *argv[])
         delete sim;
     }
 
-    end_run = timer->elapsed();
+    end_run = sst_get_cpu_time();
 
     double run_time = end_run - start_run;
     double total_time = end_run - start;
 
     double max_run_time, max_total_time;
 
+#ifdef HAVE_MPI
     all_reduce(world, &run_time, 1, &max_run_time, boost::mpi::maximum<double>() );
     all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
+#else
+    max_run_time = run_time;
+    max_total_time = total_time;
+#endif
 
-    if ( world.rank() == 0 && cfg.verbose ) {
+    if ( rank == 0 && cfg.verbose ) {
 	struct rusage sim_ruse;
 	getrusage(RUSAGE_SELF, &sim_ruse);
 
@@ -419,7 +445,10 @@ main(int argc, char *argv[])
 
     }
 
+#ifdef HAVE_MPI
     delete mpiEnv;
+#endif
+
     return 0;
 }
 
