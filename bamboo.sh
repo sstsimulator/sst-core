@@ -206,6 +206,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_prospero.sh
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
     ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
+    ${SST_TEST_SUITES}/testSuite_messageGenerator.sh
 
     HOST=`uname -n | awk -F. '{print $1}'`
 
