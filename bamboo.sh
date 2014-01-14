@@ -192,7 +192,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_merlin.sh
 ##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
 
-    if [ $1 != "sstmainline_config_gcc_4_8_1" -a $1 != "sstmainline_config_no_gem5" ]
+    if [ $1 != "sstmainline_config_gcc_4_8_1" -a $1 != "sstmainline_config_no_gem5" -a $1 != "sstmainline_config_no_mpi" ]
     then
         # Don't run gem5 dependent test suites in these configurations
         # because gem5 is not enabled in them.
@@ -200,9 +200,13 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_openMP.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
     fi
+
+    if [ $1 != "sstmainline_config_no_mpi" ] ; then
+        #  patterns requires MPI in order to build
+        ${SST_TEST_SUITES}/testSuite_patterns.sh
+    fi
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
-    ${SST_TEST_SUITES}/testSuite_patterns.sh
     ${SST_TEST_SUITES}/testSuite_prospero.sh
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
     ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
@@ -366,6 +370,19 @@ getconfig() {
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             ;;
 
+        sstmainline_config_no_mpi) 
+            #-----------------------------------------------------------------
+            # sstmainline_config
+            #     This option used for configuring SST with supported stabledevel deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="CC=${cc_compiler} CXX=${cxx_compiler}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g none -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv --disable-mpi"
+                      #The following is wrong way to do it, but patterns shouldn't need MPI to build!
+            touch $SST_ROOT/sst/elements/patterns/.ignore
+            ;;
 
         sstmainline_config_gcc_4_8_1) 
             #-----------------------------------------------------------------
@@ -775,7 +792,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_with_sstdevice|sstmainline_config_no_gem5|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|documentation)
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_with_sstdevice|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|documentation)
             # Configure MPI, Boost, and Compiler (Linux only)
             if [ $kernel != "Darwin" ]
             then
@@ -844,6 +861,10 @@ else
                         module unload mpi # unload any default to avoid conflict error
                         module load mpi/${desiredMPI}
                         ;;
+                    none)
+                        echo "MPI requested as \"none\".    No MPI loaded"
+                        module unload mpi # unload any default 
+                        ;;
                     *)
                         echo "Default MPI option, loading mpi/${desiredMPI}"
                         module unload mpi # unload any default to avoid conflict error
@@ -872,6 +893,12 @@ else
                         echo "bamboo.sh: Boost 1.50 selected"
                         module unload boost
                         module load boost/${desiredBoost}
+                        ;;
+                    noMpiBoost)
+                        export BOOST_LIBS=/home/jpvandy/local/packages/boost-1.54_no-mpi/lib
+                        export BOOST_HOME=/home/jpvandy/local/packages/boost-1.54_no-mpi
+                        export BOOST_INCLUDE=/home/jpvandy/local/packages/boost-1.54_no-mpi/include
+                        export LD_LIBRARY_PATH=$BOOST_LIBS:$LD_LIBRARY_PATH
                         ;;
                     *)
                         echo "bamboo.sh: \"Default\" Boost selected"
