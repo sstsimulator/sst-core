@@ -94,8 +94,9 @@ public:
 
     int performWireUp( ConfigGraph& graph, int myRank );
 
+    void setStopAtCycle( Config* cfg );
     void initialize();
-    void run(); 
+    void run();
     SimTime_t getCurrentSimCycle() const;
     void getElapsedSimTime(double *value, char *prefix) const;
     int getRank() const {return my_rank;}

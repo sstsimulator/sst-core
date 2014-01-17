@@ -137,6 +137,7 @@ main(int argc, char *argv[])
     DebugInit( rank, size );
 
     if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) {
+	// Now we have a config graph, create the simulation and configure signal handlers
         sim = Simulation::createSimulation(&cfg, rank, size);
 
         signal(SIGUSR1, sigHandlerPrintStatus);
@@ -399,6 +400,8 @@ main(int argc, char *argv[])
 
             std::cout << (now->tm_sec) << std::endl;
         }
+
+        sim->setStopAtCycle(&cfg);
 
         sim->initialize();
         sim->run();

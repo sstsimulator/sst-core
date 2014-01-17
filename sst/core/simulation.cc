@@ -119,7 +119,12 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
 {
 //     eQueue = new EventQueue_t;
     timeVortex = new TimeVortex;
+    m_exit = new Exit( this, timeLord->getTimeConverter("100ns"), num_ranks == 1 );
+}
 
+void
+Simulation::setStopAtCycle( Config* cfg )
+{
     SimTime_t stopAt = timeLord->getSimCycles(cfg->stopAtCycle,"StopAction configure");
     if ( stopAt != 0 ) {
 	printf("Inserting stop event at cycle %s\n",
@@ -128,8 +133,6 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
 	sa->setDeliveryTime(stopAt);
 	timeVortex->insert(sa);
     }
-    
-    m_exit = new Exit( this, timeLord->getTimeConverter("100ns"), num_ranks == 1 );
 }
 
 Simulation::Simulation()
