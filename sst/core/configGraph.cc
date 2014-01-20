@@ -240,14 +240,14 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg) {
 
 	fprintf(dumpFile, "%s = sst.Component(\"%s\", \"%s\")\n",
 		makeNamePythonSafe(the_comp->name).c_str(),
-		makeNamePythonSafe(the_comp->name).c_str(),
+		escapeString(the_comp->name).c_str(),
 		the_comp->type.c_str());
 
 	param_itr = the_comp->params.begin();
 
 	if(param_itr != the_comp->params.end()) {
 		fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(the_comp->name).c_str());
-		fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", param_itr->first.c_str(), escapeString(param_itr->second.c_str()).c_str());
+		fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", escapeString(param_itr->first).c_str(), escapeString(param_itr->second.c_str()).c_str());
 		param_itr++;
 
 		for(; param_itr != the_comp->params.end(); param_itr++) {
@@ -271,10 +271,10 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg) {
 	fprintf(dumpFile, "%s.connect( (%s, \"%s\", \"%" PRIu64 "ps\"), (%s, \"%s\", \"%" PRIu64 "ps\") )\n",
 		makeNamePythonSafe(link_itr->second->name).c_str(),
 		makeNamePythonSafe(link_left->name).c_str(),
-		makeNamePythonSafe(link_itr->second->port[0]).c_str(),
+		escapeString(link_itr->second->port[0]).c_str(),
 		*link_itr->second->latency,
 		makeNamePythonSafe(link_right->name).c_str(),
-		makeNamePythonSafe(link_itr->second->port[1]).c_str(),
+		escapeString(link_itr->second->port[1]).c_str(),
 		*link_itr->second->latency );
     }
 
