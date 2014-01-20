@@ -446,6 +446,7 @@ static PyObject* setProgramOption(PyObject* self, PyObject* args)
     char *param, *value;
     PyErr_Clear();
     int argOK = PyArg_ParseTuple(args, "ss", &param, &value);
+
     if ( argOK ) {
         gModel->getParams()[param] = value;
     } else {
