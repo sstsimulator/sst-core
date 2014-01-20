@@ -287,7 +287,7 @@ std::string ConfigGraph::escapeString(const std::string value) {
 	std::string escaped = "";
 	uint32_t value_length = (uint32_t) value.size();
 
-	printf("Attempting to escape [%s]...\n", value.c_str());
+//	printf("Attempting to escape [%s]...\n", value.c_str());
 
 	for(uint32_t i = 0; i < value_length; ++i) {
 		const char next = value.at(i);
@@ -311,7 +311,7 @@ std::string ConfigGraph::escapeString(const std::string value) {
 		}
 	}
 
-	printf("Replaced with: [%s].\n", escaped.c_str());
+//	printf("Replaced with: [%s].\n", escaped.c_str());
 
 	return escaped;
 }
