@@ -252,7 +252,8 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg) {
 
 		for(; param_itr != the_comp->params.end(); param_itr++) {
 			fprintf(dumpFile, ",\n      \"%s\" : \"\"\"%s\"\"\"",
-				param_itr->first.c_str(), param_itr->second.c_str());
+				escapeString(param_itr->first).c_str(),
+				escapeString(param_itr->second).c_str());
 		}
 
 		fprintf(dumpFile, "\n})\n");
@@ -286,20 +287,22 @@ std::string ConfigGraph::escapeString(const std::string value) {
 	std::string escaped = "";
 	uint32_t value_length = (uint32_t) value.size();
 
+	printf("Attempting to escape [%s]...\n", value.c_str());
+
 	for(uint32_t i = 0; i < value_length; ++i) {
 		const char next = value.at(i);
 
 		switch(next) {
 		case '\"':
-			escaped.append("\\\"");
+			escaped = escaped + "\\\"";
 			break;
 
 		case '\'':
-			escaped.append("\\\'");
+			escaped = escaped + "\\\'";
 			break;
 
 		case '\n':
-			escaped.append("\\n");
+			escaped = escaped + "\\n";
 			break;
 
 		default:
@@ -307,6 +310,8 @@ std::string ConfigGraph::escapeString(const std::string value) {
 			break;
 		}
 	}
+
+	printf("Replaced with: [%s].\n", escaped.c_str());
 
 	return escaped;
 }
