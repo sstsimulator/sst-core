@@ -182,6 +182,7 @@ public:
     bool checkForStructuralErrors();
     void dumpToFile(std::string filePath, Config* cfg);
     std::string makeNamePythonSafe(const std::string name);
+    static std::string escapeString(const std::string value);
 
     // Temporary until we have a better API
     ConfigComponentMap_t& getComponentMap() {

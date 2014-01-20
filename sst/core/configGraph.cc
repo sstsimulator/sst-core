@@ -233,7 +233,7 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg) {
     fprintf(dumpFile, "import sst\n\n");
     fprintf(dumpFile, "# Define SST core options\n");
     fprintf(dumpFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase.c_str());
-    fprintf(dumpFile, "sst.setProgramOption(\"stop-at\", \"%s\")\n\n", cfg->stopAtCycle.c_str());
+    fprintf(dumpFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n\n", cfg->stopAtCycle.c_str());
     fprintf(dumpFile, "# Define the simulation components\n");
     for(comp_itr = comps.begin(); comp_itr != comps.end(); comp_itr++) {
 	ConfigComponent* the_comp = comp_itr->second;
@@ -247,7 +247,7 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg) {
 
 	if(param_itr != the_comp->params.end()) {
 		fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(the_comp->name).c_str());
-		fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", param_itr->first.c_str(), param_itr->second.c_str());
+		fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", param_itr->first.c_str(), escapeString(param_itr->second.c_str()).c_str());
 		param_itr++;
 
 		for(; param_itr != the_comp->params.end(); param_itr++) {
@@ -280,6 +280,35 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg) {
 
     fprintf(dumpFile, "# End of generated output.\n");
     fclose(dumpFile);
+}
+
+std::string ConfigGraph::escapeString(const std::string value) {
+	std::string escaped = "";
+	uint32_t value_length = (uint32_t) value.size();
+
+	for(uint32_t i = 0; i < value_length; ++i) {
+		const char next = value.at(i);
+
+		switch(next) {
+		case '\"':
+			escaped.append("\\\"");
+			break;
+
+		case '\'':
+			escaped.append("\\\'");
+			break;
+
+		case '\n':
+			escaped.append("\\n");
+			break;
+
+		default:
+			escaped.push_back(next);
+			break;
+		}
+	}
+
+	return escaped;
 }
 
 std::string ConfigGraph::makeNamePythonSafe(const std::string name) {
