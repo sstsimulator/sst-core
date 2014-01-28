@@ -43,6 +43,7 @@ typedef void* (*genPythonModuleFunction)(void);
 struct ElementInfoParam {
     const char *name;
     const char *description;
+    const char *defaultValue;  // NULL == required parameter with no default, "" == optional parameter, blank default, "foo" == default value
 };
 
 struct ElementInfoPort {

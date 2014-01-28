@@ -44,6 +44,7 @@ public:
 
     const char* getName() {return m_elparam->name;}
     const char* getDesc() {return m_elparam->description;}
+    const char* getDefault() {return (m_elparam->defaultValue) ? m_elparam->defaultValue : "REQUIRED";}
 
     void outputParameterInfo(int Index);
     
@@ -254,8 +255,8 @@ public:
 
     void populateLibraryInfo();
     
-    std::string getLibraryName() {if (m_eli) return m_eli->name; else return ""; }
-    std::string getLibraryDescription() {if (m_eli) return m_eli->description; else return ""; }
+    std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
+    std::string getLibraryDescription() {if (m_eli && m_eli->description) return m_eli->description; else return ""; }
 
     int         getNumberOfLibraryComponents()    {return m_ComponentArray.size();}
     int         getNumberOfLibraryIntrospectors() {return m_IntrospectorArray.size();}

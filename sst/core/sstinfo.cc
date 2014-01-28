@@ -617,7 +617,7 @@ void SSTElement_LibraryInfo::OutputLibraryInfo(int LibIndex)
 
 void SSTElement_ParamInfo::outputParameterInfo(int index)
 {
-    fprintf(stdout, "            PARAMETER %d = %s (%s)\n", index, getName(), getDesc());
+    fprintf(stdout, "            PARAMETER %d = %s (%s) [%s]\n", index, getName(), getDesc(), getDefault());
 }
 
 
