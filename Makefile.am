@@ -6,7 +6,14 @@ ACLOCAL_AMFLAGS = -I config
 
 EXTRA_DIST = \
 	autogen.sh \
-	LICENSE
+	BUGS \
+	ChangeLog \
+	INSTALL \
+	ISSUES \
+	LICENSE \
+	PLATFORMS \
+	README \
+	VERSION
 
 SUBDIRS = \
 	sst \

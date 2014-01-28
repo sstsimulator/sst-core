@@ -4,7 +4,9 @@
 
 sst_core_sources += \
 	part/simplepart.cc \
+	part/simplepart.h \
 	part/rrobin.cc \
+	part/rrobin.h \
 	part/sstpart.cc \
 	part/sstpart.h \
 	part/linpart.cc \
