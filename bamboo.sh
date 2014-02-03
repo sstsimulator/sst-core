@@ -127,11 +127,11 @@ dotests() {
     # Do not run VaultSim test when gem5 sconsed with sstdevice=1
     #   Test3 gets a different answer than anywhere else, presumed wrong.
     #       November 27, 2013
-    if [ $1 != "sstmainline_config_with_sstdevice" ]
-    then
+#    if [ $1 != "sstmainline_config_with_sstdevice" ]
+#    then
 ##   VaultSim build is ".ignored".   Do not attempt test.
 ##        ${SST_TEST_SUITES}/testSuite_VaultSim.sh
-    fi
+#    fi
 
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
