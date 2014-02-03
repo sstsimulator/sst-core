@@ -129,7 +129,8 @@ dotests() {
     #       November 27, 2013
     if [ $1 != "sstmainline_config_with_sstdevice" ]
     then
-        ${SST_TEST_SUITES}/testSuite_VaultSim.sh
+##   VaultSim build is ".ignored".   Do not attempt test.
+##        ${SST_TEST_SUITES}/testSuite_VaultSim.sh
     fi
 
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
