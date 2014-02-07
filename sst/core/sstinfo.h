@@ -47,6 +47,7 @@ public:
     const char* getDefault() {return (m_elparam->defaultValue) ? m_elparam->defaultValue : "REQUIRED";}
 
     void outputParameterInfo(int Index);
+    void generateParameterInfoXMLData(int Index, TiXmlNode* XMLParentElement);
     
 private:    
     const ElementInfoParam* m_elparam;
@@ -86,6 +87,8 @@ public:
     const char* getValidEvent(unsigned int index); 
     
     void outputPortInfo(int Index);
+    void generatePortInfoXMLData(int Index, TiXmlNode* XMLParentElement);
+    
     void analyzeValidEventsArray();
     
 private:    
@@ -135,6 +138,7 @@ public:
     const char*           getCategoryString() {return m_CategoryString.c_str();}
 
     void outputComponentInfo(int Index);
+    void generateComponentInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     void buildCategoryString();
     
 private:    
@@ -162,6 +166,7 @@ public:
     SSTElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
 
     void outputIntrospectorInfo(int Index);
+    void generateIntrospectorInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
     const ElementInfoIntrospector*     m_eli;
@@ -180,6 +185,7 @@ public:
     const char* getDesc() {return m_ele->description;}
 
     void outputEventInfo(int Index);
+    void generateEventInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
     const ElementInfoEvent* m_ele;
@@ -203,6 +209,7 @@ public:
     SSTElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
 
     void outputModuleInfo(int Index);
+    void generateModuleInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
     const ElementInfoModule*           m_elm;
@@ -221,6 +228,7 @@ public:
     const char* getDesc() {return m_elp->description;}
 
     void outputPartitionerInfo(int Index);
+    void generatePartitionerInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
     const ElementInfoPartitioner* m_elp;
@@ -238,6 +246,7 @@ public:
     const char* getDesc() {return m_elg->description;}
 
     void outputGeneratorInfo(int Index);
+    void generateGeneratorInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
     const ElementInfoGenerator* m_elg;
@@ -275,7 +284,8 @@ public:
     SSTElement_PartitionerInfo*  getInfoPartitioner(int Index)  {return m_PartitionerArray[Index];}
     SSTElement_GeneratorInfo*    getInfoGenerator(int Index)    {return m_GeneratorArray[Index];}
 
-    void OutputLibraryInfo(int LibIndex);
+    void outputLibraryInfo(int LibIndex);
+    void generateLibraryInfoXMLData(int LibIndex, TiXmlDocument* XMLDoc);
 
 private:
     void addInfoComponent(const ElementInfoComponent* eic) {m_ComponentArray.push_back(new SSTElement_ComponentInfo(eic));}
