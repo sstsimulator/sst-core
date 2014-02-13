@@ -637,7 +637,7 @@ void SSTElement_LibraryInfo::outputLibraryInfo(int LibIndex)
     SSTElement_GeneratorInfo*    eig;
     
     fprintf(stdout, "================================================================================\n");
-    fprintf(stdout, "LIBRARY %d = %s (%s)\n", LibIndex, getLibraryName().c_str(), getLibraryDescription().c_str());
+    fprintf(stdout, "ELEMENT %d = %s (%s)\n", LibIndex, getLibraryName().c_str(), getLibraryDescription().c_str());
     
     numObjects = getNumberOfLibraryComponents();
     fprintf(stdout, "   NUM COMPONENTS    = %d\n", numObjects);
@@ -697,21 +697,9 @@ void SSTElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlNode*
     // Build the Element to Represent the Library
 	TiXmlElement* XMLLibraryElement = new TiXmlElement("Element");
 	XMLLibraryElement->SetAttribute("Index", LibIndex);
+	XMLLibraryElement->SetAttribute("Name", getLibraryName().c_str());
+	XMLLibraryElement->SetAttribute("Description", getLibraryDescription().c_str());
 
-	// Library Name
-	TiXmlElement* XMLNameElement = new TiXmlElement("Name");
-	TiXmlText*    XMLNameText = new TiXmlText(getLibraryName().c_str());
-	XMLNameElement->LinkEndChild(XMLNameText);
-
-	// Library Description
-	TiXmlElement* XMLDescriptionElement = new TiXmlElement("Description");
-	TiXmlText*    XMLDescriptionText = new TiXmlText(getLibraryDescription().c_str());
-	XMLDescriptionElement->LinkEndChild(XMLDescriptionText);
-
-	// Add the Name and Description to the Element
-	XMLLibraryElement->LinkEndChild(XMLNameElement);
-	XMLLibraryElement->LinkEndChild(XMLDescriptionElement);
-    
 	// Get the Num Objects and Display an XML comment about them
     numObjects = getNumberOfLibraryComponents();
 	sprintf(Comment, "NUM COMPONENTS = %d", numObjects);
@@ -781,27 +769,10 @@ void SSTElement_ParamInfo::generateParameterInfoXMLData(int Index, TiXmlNode* XM
     // Build the Element to Represent the Parameter
 	TiXmlElement* XMLParameterElement = new TiXmlElement("Parameter");
 	XMLParameterElement->SetAttribute("Index", Index);
+	XMLParameterElement->SetAttribute("Name", getName());
+	XMLParameterElement->SetAttribute("Description", getDesc());
+	XMLParameterElement->SetAttribute("Default", getDefault());
 	
-	// Parameter Name
-	TiXmlElement* XMLNameElement = new TiXmlElement("Name");
-	TiXmlText*    XMLNameText = new TiXmlText(getName());
-	XMLNameElement->LinkEndChild(XMLNameText);
-
-	// Parameter Description
-	TiXmlElement* XMLDescriptionElement = new TiXmlElement("Description");
-	TiXmlText*    XMLDescriptionText = new TiXmlText(getDesc());
-	XMLDescriptionElement->LinkEndChild(XMLDescriptionText);
-
-	// Parameter Default
-	TiXmlElement* XMLDefaultElement = new TiXmlElement("Default");
-	TiXmlText*    XMLDefaultText = new TiXmlText(getDefault());
-	XMLDefaultElement->LinkEndChild(XMLDefaultText);
-
-	// Add the Name, Description and Default to the Element
-	XMLParameterElement->LinkEndChild(XMLNameElement);
-	XMLParameterElement->LinkEndChild(XMLDescriptionElement);
-	XMLParameterElement->LinkEndChild(XMLDefaultElement);
-    
     // Add this Parameter Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLParameterElement);
 }
@@ -826,21 +797,9 @@ void SSTElement_PortInfo::generatePortInfoXMLData(int Index, TiXmlNode* XMLParen
     // Build the Element to Represent the Component
 	TiXmlElement* XMLPortElement = new TiXmlElement("Port");
 	XMLPortElement->SetAttribute("Index", Index);
-	
-	// Port Name
-	TiXmlElement* XMLNameElement = new TiXmlElement("Name");
-	TiXmlText*    XMLNameText = new TiXmlText(getName());
-	XMLNameElement->LinkEndChild(XMLNameText);
+	XMLPortElement->SetAttribute("Name", getName());
+	XMLPortElement->SetAttribute("Description", getDesc());
 
-	// Port Description
-	TiXmlElement* XMLDescriptionElement = new TiXmlElement("Description");
-	TiXmlText*    XMLDescriptionText = new TiXmlText(getDesc());
-	XMLDescriptionElement->LinkEndChild(XMLDescriptionText);
-
-	// Add the Name and Description to the Element
-	XMLPortElement->LinkEndChild(XMLNameElement);
-	XMLPortElement->LinkEndChild(XMLDescriptionElement);
-    
 	// Get the Num Valid Event and Display an XML comment about them
     sprintf(Comment, "NUM Valid Events = %d", m_numValidEvents);
     TiXmlComment* XMLValidEventsComment = new TiXmlComment(Comment);
@@ -932,27 +891,10 @@ void SSTElement_ComponentInfo::generateComponentInfoXMLData(int Index, TiXmlNode
     // Build the Element to Represent the Component
 	TiXmlElement* XMLComponentElement = new TiXmlElement("Component");
 	XMLComponentElement->SetAttribute("Index", Index);
-	
-	// Component Name
-	TiXmlElement* XMLNameElement = new TiXmlElement("Name");
-	TiXmlText*    XMLNameText = new TiXmlText(getName());
-	XMLNameElement->LinkEndChild(XMLNameText);
+	XMLComponentElement->SetAttribute("Name", getName());
+	XMLComponentElement->SetAttribute("Description", getDesc());
+	XMLComponentElement->SetAttribute("Category", getCategoryString());
 
-	// Component Category
-	TiXmlElement* XMLCategoryElement = new TiXmlElement("Category");
-	TiXmlText*    XMLCategoryText = new TiXmlText(getCategoryString());
-	XMLCategoryElement->LinkEndChild(XMLCategoryText);
-
-	// Component Description
-	TiXmlElement* XMLDescriptionElement = new TiXmlElement("Description");
-	TiXmlText*    XMLDescriptionText = new TiXmlText(getDesc());
-	XMLDescriptionElement->LinkEndChild(XMLDescriptionText);
-
-	// Add the Name, Category and Description to the Element
-	XMLComponentElement->LinkEndChild(XMLNameElement);
-	XMLComponentElement->LinkEndChild(XMLCategoryElement);
-	XMLComponentElement->LinkEndChild(XMLDescriptionElement);
-    
 	// Get the Num Parameters and Display an XML comment about them
     sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
     TiXmlComment* XMLParamsComment = new TiXmlComment(Comment);
@@ -1029,21 +971,9 @@ void SSTElement_IntrospectorInfo::generateIntrospectorInfoXMLData(int Index, TiX
     // Build the Element to Represent the Introspector
 	TiXmlElement* XMLIntrospectorElement = new TiXmlElement("Introspector");
 	XMLIntrospectorElement->SetAttribute("Index", Index);
+	XMLIntrospectorElement->SetAttribute("Name", getName());
+	XMLIntrospectorElement->SetAttribute("Description", getDesc());
 	
-	// Introspector Name
-	TiXmlElement* XMLNameElement = new TiXmlElement("Name");
-	TiXmlText*    XMLNameText = new TiXmlText(getName());
-	XMLNameElement->LinkEndChild(XMLNameText);
-
-	// Introspector Description
-	TiXmlElement* XMLDescriptionElement = new TiXmlElement("Description");
-	TiXmlText*    XMLDescriptionText = new TiXmlText(getDesc());
-	XMLDescriptionElement->LinkEndChild(XMLDescriptionText);
-
-	// Add the Name, Category and Description to the Element
-	XMLIntrospectorElement->LinkEndChild(XMLNameElement);
-	XMLIntrospectorElement->LinkEndChild(XMLDescriptionElement);
-    
 	// Get the Num Parameters and Display an XML comment about them
     sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
     TiXmlComment* XMLParamsComment = new TiXmlComment(Comment);
@@ -1067,21 +997,9 @@ void SSTElement_EventInfo::generateEventInfoXMLData(int Index, TiXmlNode* XMLPar
     // Build the Element to Represent the Event
 	TiXmlElement* XMLEventElement = new TiXmlElement("Event");
 	XMLEventElement->SetAttribute("Index", Index);
+	XMLEventElement->SetAttribute("Name", getName());
+	XMLEventElement->SetAttribute("Description", getDesc());
 	
-	// Event Name
-	TiXmlElement* XMLNameElement = new TiXmlElement("Name");
-	TiXmlText*    XMLNameText = new TiXmlText(getName());
-	XMLNameElement->LinkEndChild(XMLNameText);
-
-	// Event Description
-	TiXmlElement* XMLDescriptionElement = new TiXmlElement("Description");
-	TiXmlText*    XMLDescriptionText = new TiXmlText(getDesc());
-	XMLDescriptionElement->LinkEndChild(XMLDescriptionText);
-
-	// Add the Name, Category and Description to the Element
-	XMLEventElement->LinkEndChild(XMLNameElement);
-	XMLEventElement->LinkEndChild(XMLDescriptionElement);
-    
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLEventElement);
 }
@@ -1104,21 +1022,9 @@ void SSTElement_ModuleInfo::generateModuleInfoXMLData(int Index, TiXmlNode* XMLP
     // Build the Element to Represent the Module
 	TiXmlElement* XMLModuleElement = new TiXmlElement("Module");
 	XMLModuleElement->SetAttribute("Index", Index);
+	XMLModuleElement->SetAttribute("Name", getName());
+	XMLModuleElement->SetAttribute("Description", getDesc());
 	
-	// Module Name
-	TiXmlElement* XMLNameElement = new TiXmlElement("Name");
-	TiXmlText*    XMLNameText = new TiXmlText(getName());
-	XMLNameElement->LinkEndChild(XMLNameText);
-
-	// Module Description
-	TiXmlElement* XMLDescriptionElement = new TiXmlElement("Description");
-	TiXmlText*    XMLDescriptionText = new TiXmlText(getDesc());
-	XMLDescriptionElement->LinkEndChild(XMLDescriptionText);
-
-	// Add the Name, Category and Description to the Element
-	XMLModuleElement->LinkEndChild(XMLNameElement);
-	XMLModuleElement->LinkEndChild(XMLDescriptionElement);
-    
 	// Get the Num Parameters and Display an XML comment about them
     sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
     TiXmlComment* XMLParamsComment = new TiXmlComment(Comment);
@@ -1142,21 +1048,9 @@ void SSTElement_PartitionerInfo::generatePartitionerInfoXMLData(int Index, TiXml
     // Build the Element to Represent the Partitioner
 	TiXmlElement* XMLPartitionerElement = new TiXmlElement("Partitioner");
 	XMLPartitionerElement->SetAttribute("Index", Index);
+	XMLPartitionerElement->SetAttribute("Name", getName());
+	XMLPartitionerElement->SetAttribute("Description", getDesc());
 	
-	// Partitioner Name
-	TiXmlElement* XMLNameElement = new TiXmlElement("Name");
-	TiXmlText*    XMLNameText = new TiXmlText(getName());
-	XMLNameElement->LinkEndChild(XMLNameText);
-
-	// Partitioner Description
-	TiXmlElement* XMLDescriptionElement = new TiXmlElement("Description");
-	TiXmlText*    XMLDescriptionText = new TiXmlText(getDesc());
-	XMLDescriptionElement->LinkEndChild(XMLDescriptionText);
-
-	// Add the Name, Category and Description to the Element
-	XMLPartitionerElement->LinkEndChild(XMLNameElement);
-	XMLPartitionerElement->LinkEndChild(XMLDescriptionElement);
-    
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLPartitionerElement);
 }
@@ -1171,21 +1065,9 @@ void SSTElement_GeneratorInfo::generateGeneratorInfoXMLData(int Index, TiXmlNode
     // Build the Element to Represent the Generator
 	TiXmlElement* XMLGeneratorElement = new TiXmlElement("Generator");
 	XMLGeneratorElement->SetAttribute("Index", Index);
+	XMLGeneratorElement->SetAttribute("Name", getName());
+	XMLGeneratorElement->SetAttribute("Description", getDesc());
 	
-	// Generator Name
-	TiXmlElement* XMLNameElement = new TiXmlElement("Name");
-	TiXmlText*    XMLNameText = new TiXmlText(getName());
-	XMLNameElement->LinkEndChild(XMLNameText);
-
-	// Generator Description
-	TiXmlElement* XMLDescriptionElement = new TiXmlElement("Description");
-	TiXmlText*    XMLDescriptionText = new TiXmlText(getDesc());
-	XMLDescriptionElement->LinkEndChild(XMLDescriptionText);
-
-	// Add the Name, Category and Description to the Element
-	XMLGeneratorElement->LinkEndChild(XMLNameElement);
-	XMLGeneratorElement->LinkEndChild(XMLDescriptionElement);
-    
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLGeneratorElement);
 }
