@@ -35,12 +35,12 @@ version.
 
 The individual commits/revisions (i.e. ChangeLog) since V2.3 are not provided 
 as there were approximately 500 revisions committed. It would be impossible to
-read and digest. The SST wiki http://code.google.com/p/sst-simulator/source/list
+read and digest. The SST wiki http://www.sst-simulator.org/browser
 can be browsed for the individual revisions.
 
 A number of issues were resolved by fixes in this release. The full
 description of each issue can be found on the SST wiki at 
-http://code.google.com/p/sst-simulator/issues/list.
+http://www.sst-simulator.org/report.
 11  Mainline build breakage when Zesto enables Qsim
 37  Need SST-DRAMSim interface unit test
 39  Seems unreasonable to have to add boost to LD_LIBRARY_PATH for

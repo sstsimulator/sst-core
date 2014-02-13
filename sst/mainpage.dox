@@ -26,7 +26,7 @@ architectures.
 <hr>
 <b>NOTE</b>: As of 2013-JUN-11, please refer to
 
-<a href="http://code.google.com/p/sst-simulator/wiki/IntegrateYourComponentWithSST" target="_blank">Integrate Your Component With SST</a>
+<a href="http://www.sst-simulator.org/wiki/DeveloperIntegrateYourComponentWithSST target="_blank">Integrate Your Component With SST</a>
 
 SST wiki entry for further information on writing and integrating a component. 
 
@@ -88,7 +88,7 @@ afrodri@sandia.gov
 <hr>
 <b>NOTE</b>: As of 2013-JUN-11, please refer to
 
-<a href="http://code.google.com/p/sst-simulator/wiki/IntegrateYourComponentWithSST" target="_blank">Integrate Your Component With SST</a>
+<a href="http://www.sst-simulator.org/wiki/DeveloperIntegrateYourComponentWithSST" target="_blank">Integrate Your Component With SST</a>
 
 SST wiki entry for further information on writing and integrating a component.
 
