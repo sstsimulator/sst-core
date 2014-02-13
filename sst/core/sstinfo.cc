@@ -278,27 +278,34 @@ void generateXMLOutputFile()
 
     sprintf (Comment, "%d .so FILES FOUND IN DIRECTORY %s\n", g_fileProcessedCount, g_searchPath.c_str());
 	TiXmlComment* XMLNumElementsComment = new TiXmlComment(Comment);
+
+	// Set the Top Level Element
+	TiXmlElement* XMLTopLevelElement = new TiXmlElement("SSTInfoXML");
 	
-	// Set the version information
-	TiXmlElement* XMLVersionInfoElement = new TiXmlElement("SSTInfoXML");
-	XMLVersionInfoElement->SetAttribute("SSTInfoVersion", PACKAGE_VERSION);
-	XMLVersionInfoElement->SetAttribute("FileFormat", "1.0");
-	XMLVersionInfoElement->SetAttribute("TimeStamp", TimeStamp);
-	XMLVersionInfoElement->SetAttribute("FilesProcessed", g_fileProcessedCount);
-	XMLVersionInfoElement->SetAttribute("SearchPath", g_searchPath.c_str());
+	// Set the File Information
+	TiXmlElement* XMLFileInfoElement = new TiXmlElement("FileInfo");
+	XMLFileInfoElement->SetAttribute("SSTInfoVersion", PACKAGE_VERSION);
+	XMLFileInfoElement->SetAttribute("FileFormat", "1.0");
+	XMLFileInfoElement->SetAttribute("TimeStamp", TimeStamp);
+	XMLFileInfoElement->SetAttribute("FilesProcessed", g_fileProcessedCount);
+	XMLFileInfoElement->SetAttribute("SearchPath", g_searchPath.c_str());
+
+	// Add the File Information to the Top Level Element
+	XMLTopLevelElement->LinkEndChild(XMLFileInfoElement);
 	
+    // Now Generate the XML Data that represents the Library Info, 
+    // and add the data to the Top Level Element
+    for (x = 0; x < g_libInfoArray.size(); x++) {
+        pLibInfo = g_libInfoArray[x];
+        pLibInfo->generateLibraryInfoXMLData(x, XMLTopLevelElement);
+    }
+
 	// Add the entries into the XML Document
 	XMLDocument.LinkEndChild(XMLDecl);
 	XMLDocument.LinkEndChild(XMLStartComment);
 	XMLDocument.LinkEndChild(XMLNumElementsComment);
-	XMLDocument.LinkEndChild(XMLVersionInfoElement);
-	
-    // Now Generate the XML File that represents the Library Info
-    for (x = 0; x < g_libInfoArray.size(); x++) {
-        pLibInfo = g_libInfoArray[x];
-        pLibInfo->generateLibraryInfoXMLData(x, &XMLDocument);
-    }
-
+	XMLDocument.LinkEndChild(XMLTopLevelElement);
+    
     // Save the XML Document
 	XMLDocument.SaveFile( "SSTInfo.xml" );
 }
@@ -675,7 +682,7 @@ void SSTElement_LibraryInfo::outputLibraryInfo(int LibIndex)
     }
 }
 
-void SSTElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlDocument* XMLDoc)
+void SSTElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlNode* XMLParentElement)
 {
     int                          x;
     int                          numObjects;
@@ -760,8 +767,8 @@ void SSTElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlDocum
         eig->generateGeneratorInfoXMLData(x, XMLLibraryElement);
     }
 
-    // Add this Library Element to the Document
-    XMLDoc->LinkEndChild(XMLLibraryElement);
+    // Add this Library Element to the Parent Element
+    XMLParentElement->LinkEndChild(XMLLibraryElement);
 }
 
 void SSTElement_ParamInfo::outputParameterInfo(int index)

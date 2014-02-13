@@ -285,7 +285,7 @@ public:
     SSTElement_GeneratorInfo*    getInfoGenerator(int Index)    {return m_GeneratorArray[Index];}
 
     void outputLibraryInfo(int LibIndex);
-    void generateLibraryInfoXMLData(int LibIndex, TiXmlDocument* XMLDoc);
+    void generateLibraryInfoXMLData(int LibIndex, TiXmlNode* XMLParentElement);
 
 private:
     void addInfoComponent(const ElementInfoComponent* eic) {m_ComponentArray.push_back(new SSTElement_ComponentInfo(eic));}
