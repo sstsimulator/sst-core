@@ -695,7 +695,7 @@ void SSTElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlNode*
     char                         Comment[256];
     
     // Build the Element to Represent the Library
-	TiXmlElement* XMLLibraryElement = new TiXmlElement("Library");
+	TiXmlElement* XMLLibraryElement = new TiXmlElement("Element");
 	XMLLibraryElement->SetAttribute("Index", LibIndex);
 
 	// Library Name
@@ -1027,7 +1027,7 @@ void SSTElement_IntrospectorInfo::generateIntrospectorInfoXMLData(int Index, TiX
     char Comment[256];
 
     // Build the Element to Represent the Introspector
-	TiXmlElement* XMLIntrospectorElement = new TiXmlElement("Component");
+	TiXmlElement* XMLIntrospectorElement = new TiXmlElement("Introspector");
 	XMLIntrospectorElement->SetAttribute("Index", Index);
 	
 	// Introspector Name
@@ -1102,7 +1102,7 @@ void SSTElement_ModuleInfo::generateModuleInfoXMLData(int Index, TiXmlNode* XMLP
     char Comment[256];
 
     // Build the Element to Represent the Module
-	TiXmlElement* XMLModuleElement = new TiXmlElement("Component");
+	TiXmlElement* XMLModuleElement = new TiXmlElement("Module");
 	XMLModuleElement->SetAttribute("Index", Index);
 	
 	// Module Name
@@ -1140,7 +1140,7 @@ void SSTElement_PartitionerInfo::outputPartitionerInfo(int index)
 void SSTElement_PartitionerInfo::generatePartitionerInfoXMLData(int Index, TiXmlNode* XMLParentElement)
 {
     // Build the Element to Represent the Partitioner
-	TiXmlElement* XMLPartitionerElement = new TiXmlElement("Event");
+	TiXmlElement* XMLPartitionerElement = new TiXmlElement("Partitioner");
 	XMLPartitionerElement->SetAttribute("Index", Index);
 	
 	// Partitioner Name
@@ -1169,7 +1169,7 @@ void SSTElement_GeneratorInfo::outputGeneratorInfo(int index)
 void SSTElement_GeneratorInfo::generateGeneratorInfoXMLData(int Index, TiXmlNode* XMLParentElement)
 {
     // Build the Element to Represent the Generator
-	TiXmlElement* XMLGeneratorElement = new TiXmlElement("Event");
+	TiXmlElement* XMLGeneratorElement = new TiXmlElement("Generator");
 	XMLGeneratorElement->SetAttribute("Index", Index);
 	
 	// Generator Name
