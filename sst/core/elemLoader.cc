@@ -147,33 +147,8 @@ static ElementLibraryInfo* followError(std::string libname, std::string elemlib,
     if (NULL == eli) {
         char *old_error = strdup(dlerror());
 
-        // backward compatibility (ugh!)  Yes, it leaks memory.  But 
-        // hopefully it's going away soon.
-        std::string symname = elemlib + "AllocComponent";
-        void *sym = dlsym(handle, symname.c_str());
-        if (NULL != sym) {
-            eli = new ElementLibraryInfo;
-            eli->name = elemlib.c_str();
-            eli->description = "backward compatibility filler";
-            ElementInfoComponent *elcp = new ElementInfoComponent[2];
-            elcp[0].name = elemlib.c_str();
-            elcp[0].description = "backward compatibility filler";
-            elcp[0].printHelp = NULL;
-            elcp[0].alloc = (componentAllocate) sym;
-            elcp[1].name = NULL;
-            elcp[1].description = NULL;
-            elcp[1].printHelp = NULL;
-            elcp[1].alloc = NULL;
-            eli->components = elcp;
-            eli->events = NULL;
-            eli->introspectors = NULL;
-	    eli->partitioners = NULL;
-	    eli->generators = NULL;
-            fprintf(stderr, "# WARNING: (2) Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
-        } else {
-            fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
-                    infoname.c_str(), libname.c_str(), old_error);
-        }
+        fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
+                infoname.c_str(), libname.c_str(), old_error);
     }
 
 
@@ -202,37 +177,11 @@ ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
         // look for an info block
         std::string infoname = elemlib + "_eli";
         eli = (ElementLibraryInfo*) lt_dlsym(lt_handle, infoname.c_str());
+
         if (NULL == eli) {
             char *old_error = strdup(lt_dlerror());
-
-            // backward compatibility (ugh!)  Yes, it leaks memory.  But 
-            // hopefully it's going away soon.
-            std::string symname = elemlib + "AllocComponent";
-            void *sym = lt_dlsym(lt_handle, symname.c_str());
-            if (NULL != sym) {
-                eli = new ElementLibraryInfo;
-                eli->name = elemlib.c_str();
-                eli->description = "backward compatibility filler";
-                ElementInfoComponent *elcp = new ElementInfoComponent[2];
-                elcp[0].name = elemlib.c_str();
-                elcp[0].description = "backward compatibility filler";
-                elcp[0].printHelp = NULL;
-                elcp[0].alloc = (componentAllocate) sym;
-                elcp[1].name = NULL;
-                elcp[1].description = NULL;
-                elcp[1].printHelp = NULL;
-                elcp[1].alloc = NULL;
-                eli->components = elcp;
-                eli->events = NULL;
-                eli->introspectors = NULL;
-                eli->partitioners = NULL;
-                eli->generators = NULL;
-                fprintf(stderr, "# WARNING: (1) Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
-            } else {
-                fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
-                       infoname.c_str(), libname.c_str(), old_error);
-            }
-
+            fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
+                    infoname.c_str(), libname.c_str(), old_error);
             free(old_error);
         }
     }
