@@ -35,7 +35,7 @@ version.
 
 The individual commits/revisions (i.e. ChangeLog) since V2.3 are not provided 
 as there were approximately 500 revisions committed. It would be impossible to
-read and digest. The SST wiki http://www.sst-simulator.org/browser
+read and digest. The SST wiki http://www.sst-simulator.org/timeline
 can be browsed for the individual revisions.
 
 A number of issues were resolved by fixes in this release. The full
