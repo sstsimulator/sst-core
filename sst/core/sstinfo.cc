@@ -26,6 +26,7 @@
 #include <dlfcn.h>
 //#include <ctime>
 
+#include <sst/core/elemLoader.h>
 #include <sst/core/element.h>
 #include "sst/core/build_info.h"
 
@@ -35,19 +36,12 @@
 
 namespace po = boost::program_options;
 
-// This needs to happen before lt_dlinit() and sets up the preload
-// libraries properly.  The macro declares an extern symbol, so if we
-// do this in the sst namespace, the symbol is namespaced and then not
-// found in linking.  So have this short function here. 
-static void preloadLTDLSymbols(void) {
-    LTDL_SET_PRELOADED_SYMBOLS();
-}
 
 using namespace std;
 using namespace SST;
 
 // Global Variables
-lt_dladvise                          g_dlAdviseHandle;
+ElemLoader*                          g_loader;
 std::string                          g_searchPath = SST_ELEMLIB_DIR;
 int                                  g_fileProcessedCount;
 std::vector<SSTElement_LibraryInfo*> g_libInfoArray;
@@ -60,9 +54,6 @@ void processSSTElementFiles(std::string searchPath);
 void outputSSTElementInfo();
 void generateXMLOutputFile();
 
-// Forward Declarations of Routines stolen from factory.cc and slightly modified
-ElementLibraryInfo* loadLibrary(std::string elemlib);
-ElementLibraryInfo* followError(std::string, std::string, ElementLibraryInfo* eli, std::string searchPaths);
 
 int main(int argc, char *argv[])
 {
@@ -71,63 +62,18 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    initLTDL(g_searchPath);
-    
+    g_loader = new ElemLoader(g_searchPath);
+
     // Read in the Element files and process them
     processSSTElementFiles(g_searchPath);
     outputSSTElementInfo();
     generateXMLOutputFile();
-    
-    shutdownLTDL();
-    
+
+    delete g_loader;
+
     return 0;
 }
 
-
-void initLTDL(std::string searchPath)
-{
-    int                 ret;
-
-    preloadLTDLSymbols();
-
-    ret = lt_dlinit();
-    if (ret != 0) {
-        fprintf(stderr, "ERROR: lt_dlinit returned %d, %s\n", ret, lt_dlerror());
-        return;
-    }
-
-    ret = lt_dladvise_init(&g_dlAdviseHandle);
-    if (ret != 0) {
-        fprintf(stderr, "ERROR: lt_dladvise_init returned %d, %s\n", ret, lt_dlerror());
-        return;
-    }
-
-    ret = lt_dladvise_ext(&g_dlAdviseHandle);
-    if (ret != 0) {
-        fprintf(stderr, "ERROR: lt_dladvise_ext returned %d, %s\n", ret, lt_dlerror());
-        return;
-    }
-
-    ret = lt_dladvise_global(&g_dlAdviseHandle);
-    if (ret != 0) {
-        fprintf(stderr, "ERROR: lt_dladvise_global returned %d, %s\n", ret, lt_dlerror());
-        return;
-    }
-
-    ret = lt_dlsetsearchpath(searchPath.c_str());
-    if (ret != 0) {
-        fprintf(stderr, "ERROR: lt_dlsetsearchpath returned %d, %s\n", ret, lt_dlerror());
-        return;
-    }
-}
-
-
-void shutdownLTDL()
-{   
-    // Shutdown the LTDL
-    lt_dladvise_destroy(&g_dlAdviseHandle);
-    lt_dlexit();
-}
 
 
 void processSSTElementFiles(std::string searchPath)
@@ -142,7 +88,7 @@ void processSSTElementFiles(std::string searchPath)
     bool                    isDir;
     size_t                  indexExt;
     size_t                  indexLib;
-    ElementLibraryInfo*     pELI;
+    const ElementLibraryInfo* pELI;
     SSTElement_LibraryInfo* pLibInfo;
     unsigned int            x;
     bool                    testAllEntries = false;
@@ -203,9 +149,9 @@ void processSSTElementFiles(std::string searchPath)
                         
                         // Now we process the file and populate our internal structures
 //                      fprintf(stderr, "**** DEBUG - PROCESSING DIR ENTRY NAME = %s; ELEM NAME = %s; TYPE = %d; DIR FLAG = %d\n", dirEntryName.c_str(), elementName.c_str(), pDirEntry->d_type, isDir);
-                        pELI = loadLibrary(elementName);
+                        pELI = g_loader->loadLibrary(elementName, true);
                         if (pELI != NULL) {
-                            // Build 
+                            // Build
                             pLibInfo = new SSTElement_LibraryInfo(pELI); 
                             g_libInfoArray.push_back(pLibInfo);
                             EntryProcessedArray[x] = true;
@@ -309,142 +255,6 @@ void generateXMLOutputFile()
     // Save the XML Document
 	XMLDocument.SaveFile( "SSTInfo.xml" );
 }
-
-// loadLibrary was stolen from factory.cc and slightly modified 
-ElementLibraryInfo* loadLibrary(std::string elemlib)
-{
-    ElementLibraryInfo* eli = NULL;
-    std::string         libname = "lib" + elemlib;
-    lt_dlhandle         lt_handle;
-
-    // Get a handle to the library that we are opening
-    lt_handle = lt_dlopenadvise(libname.c_str(), g_dlAdviseHandle);
-    if (NULL == lt_handle) {
-        // So this sucks.  the preopen module runs last and if the
-        // component was found earlier, but has a missing symbol or
-        // the like, we just get an amorphous "file not found" error,
-        // which is totally useless...
-        fprintf(stderr, "Opening element library %s failed: %s\n", elemlib.c_str(), lt_dlerror());
-        eli = followError(libname, elemlib, eli, g_searchPath);
-    } else {
-        // look for an info block
-        std::string infoname = elemlib + "_eli";
-        eli = (ElementLibraryInfo*) lt_dlsym(lt_handle, infoname.c_str());
-
-        // If eli found, then just return it, otherwise do some more checking to
-        // see if this is an old library
-        if (NULL == eli) {
-            char *old_error = strdup(lt_dlerror());
-
-            // Try loading the symbol for the old style library
-            std::string symname = elemlib + "AllocComponent";
-            void *sym = lt_dlsym(lt_handle, symname.c_str());
-
-            // backward compatibility (ugh!)  Yes, it leaks memory.  But 
-            // hopefully it's going away soon.
-            if (NULL != sym) {
-                eli = new ElementLibraryInfo;
-                eli->name = elemlib.c_str();
-                eli->description = "backward compatibility filler";
-                ElementInfoComponent *elcp = new ElementInfoComponent[2];
-                elcp[0].name = elemlib.c_str();
-                elcp[0].description = "backward compatibility filler";
-                elcp[0].printHelp = NULL;
-                elcp[0].alloc = (componentAllocate) sym;
-                elcp[1].name = NULL;
-                elcp[1].description = NULL;
-                elcp[1].printHelp = NULL;
-                elcp[1].alloc = NULL;
-                eli->components = elcp;
-                eli->events = NULL;
-                eli->introspectors = NULL;
-                eli->partitioners = NULL;
-                eli->generators = NULL;
-                fprintf(stderr, "# WARNING: (1) Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
-            } else {
-                fprintf(stderr, "ERROR: Could not find ELI block %s in %s: %s\n", infoname.c_str(), libname.c_str(), old_error);
-            }
-
-            free(old_error);
-        }
-    }
-    return eli;
-} 
-
-
-// followError was stolen from factory.cc and slightly modified 
-ElementLibraryInfo* followError(std::string libname, std::string elemlib, ElementLibraryInfo* eli, std::string searchPaths)
-{
-    // dlopen case
-    libname.append(".so");
-    std::string fullpath;
-    void*       handle;
-
-    std::vector<std::string> paths;
-    boost::split(paths, searchPaths, boost::is_any_of(":"));
-   
-    BOOST_FOREACH( std::string path, paths ) {
-        struct stat sbuf;
-        int ret;
-
-        fullpath = path + "/" + libname;
-        ret = stat(fullpath.c_str(), &sbuf);
-        if (ret == 0) break;
-    }
-
-    // This is a little weird, but always try the last path - if we
-    // didn't succeed in the stat, we'll get a file not found error
-    // from dlopen, which is a useful error message for the user.
-    handle = dlopen(fullpath.c_str(), RTLD_NOW|RTLD_GLOBAL);
-    if (NULL == handle) {
-        fprintf(stderr,
-            "ERROR: Opening and resolving references for element library %s failed:\n"
-            "\t%s\n", elemlib.c_str(), dlerror());
-        return NULL;
-    }
-
-    // look for an info block
-    std::string infoname = elemlib;
-    infoname.append("_eli");
-    eli = (ElementLibraryInfo*) dlsym(handle, infoname.c_str());
-
-    // If eli found, then just return it, otherwise do some more checking to
-    // see if this is an old library
-    if (NULL == eli) {
-        char *old_error = strdup(dlerror());
-
-        // Try loading the symbol for the old style library
-        std::string symname = elemlib + "AllocComponent";
-        void *sym = dlsym(handle, symname.c_str());
-
-        // backward compatibility (ugh!)  Yes, it leaks memory.  But 
-        // hopefully it's going away soon.
-        if (NULL != sym) {
-            eli = new ElementLibraryInfo;
-            eli->name = elemlib.c_str();
-            eli->description = "backward compatibility filler";
-            ElementInfoComponent *elcp = new ElementInfoComponent[2];
-            elcp[0].name = elemlib.c_str();
-            elcp[0].description = "backward compatibility filler";
-            elcp[0].printHelp = NULL;
-            elcp[0].alloc = (componentAllocate) sym;
-            elcp[1].name = NULL;
-            elcp[1].description = NULL;
-            elcp[1].printHelp = NULL;
-            elcp[1].alloc = NULL;
-            eli->components = elcp;
-            eli->events = NULL;
-            eli->introspectors = NULL;
-	    eli->partitioners = NULL;
-	    eli->generators = NULL;
-            fprintf(stderr, "# WARNING: (2) Backward compatiblity initialization used to load library %s\n", elemlib.c_str());
-        } else {
-            fprintf(stderr, "ERROR: Could not find ELI block %s in %s: %s\n", infoname.c_str(), libname.c_str(), old_error);
-        }
-    }
-
-    return eli;
-} 
 
 
 ConfigSSTInfo::ConfigSSTInfo()

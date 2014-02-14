@@ -31,6 +31,7 @@ nobase_dist_sst_HEADERS = \
 	cpunicEvent.h \
 	debug.h \
 	element.h \
+	elemLoader.h \
 	event.h \
 	exit.h \
 	factory.h \
@@ -84,6 +85,7 @@ sst_core_sources = \
 	configGraph.cc \
 	cpunicEvent.cc \
 	debug.cc \
+	elemLoader.cc \
 	event.cc \
 	exit.cc \
 	export.cc \
