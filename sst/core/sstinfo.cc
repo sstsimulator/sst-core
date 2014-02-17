@@ -601,8 +601,8 @@ void SSTElement_PortInfo::generatePortInfoXMLData(int Index, TiXmlNode* XMLParen
 {
     char          Comment[256];
     TiXmlElement* XMLValidEventElement;
-    TiXmlElement* XMLEventTextElement;
-    TiXmlText*    XMLEventText;
+//    TiXmlElement* XMLEventTextElement;
+//    TiXmlText*    XMLEventText;
 
     // Build the Element to Represent the Component
 	TiXmlElement* XMLPortElement = new TiXmlElement("Port");
@@ -617,16 +617,9 @@ void SSTElement_PortInfo::generatePortInfoXMLData(int Index, TiXmlNode* XMLParen
 	
     for (unsigned int x = 0; x < m_numValidEvents; x++) {
         // Build the Element to Represent the ValidEvent
-        XMLValidEventElement = new TiXmlElement("ValidEvent");
+        XMLValidEventElement = new TiXmlElement("PortValidEvent");
         XMLValidEventElement->SetAttribute("Index", x);
-        
-        // Event Data
-        XMLEventTextElement = new TiXmlElement("Event");
-        XMLEventText = new TiXmlText(getName());
-        XMLEventTextElement->LinkEndChild(XMLEventText);
-        
-        // Add the EventText to the ValidEvent Element
-        XMLValidEventElement->LinkEndChild(XMLEventTextElement);
+        XMLValidEventElement->SetAttribute("Event", getValidEvent(x));
         
         // Add the ValidEvent element to the Port Element
         XMLPortElement->LinkEndChild(XMLValidEventElement);
