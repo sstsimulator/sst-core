@@ -47,6 +47,7 @@ Config::Config( int my_rank )
     archiveFile = "sst_checkpoint";
     runMode     = BOTH;
     libpath     = SST_ELEMLIB_DIR;
+    addlLibPath = "";
     sdlfile     = "NONE";
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
@@ -112,8 +113,10 @@ Config::Config( int my_rank )
                                 "archive type [ xml | text | bin ]")
         ("archive-file", po::value< string >( &archiveFile ), 
                                 "archive file name")
-        ("lib-path", po::value< string >( &libpath ), 
-                                "component library path")
+        ("lib-path", po::value< string >( &libpath ),
+                                "component library path (overwrites default)")
+        ("add-lib-path", po::value< string >( &addlLibPath ),
+                                "add additional component library paths")
         ("run-mode", po::value< string >(), 
                                 "run mode [ init | run | both ]")
         ("stop-at", po::value< string >(&stopAtCycle), 
@@ -308,11 +311,6 @@ Config::parseConfigFile(string config_string)
     // create a unique archive file name for each rank
     sprintf(buf,".%d",rank);
     archiveFile.append( buf );
-
-    // get the absolute path to the sdl file 
-    if ( libpath.compare(0,1,"/" ) ) {
-        libpath = cwd + libpath;
-    }
 
     return 0;
 }

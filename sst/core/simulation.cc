@@ -42,7 +42,7 @@ namespace SST {
 
 SimulationBase::SimulationBase(Config *config)
 {
-    factory = new Factory(config->libpath);
+    factory = new Factory(config->getLibPath());
     timeLord = new TimeLord(config->timeBase);
 }
 

@@ -46,7 +46,6 @@ public:
     std::string     archiveType;
     std::string     archiveFile;
     Mode_t          runMode;
-    std::string     libpath;
     std::string     sdlfile;
     std::string     stopAtCycle;
     std::string     timeBase;
@@ -77,7 +76,7 @@ public:
 	std::cout << "archiveType = " << archiveType << std::endl;
 	std::cout << "archiveFile = " << archiveFile << std::endl;
 	std::cout << "runMode = " << runMode << std::endl;
-	std::cout << "libpath = " << libpath << std::endl;
+	std::cout << "libpath = " << getLibPath() << std::endl;
 	std::cout << "sdlfile = " << sdlfile << std::endl;
 	std::cout << "stopAtCycle = " << stopAtCycle << std::endl;
 	std::cout << "timeBase = " << timeBase << std::endl;
@@ -90,6 +89,16 @@ public:
 #endif
     }
 
+    std::string getLibPath(void) const {
+        char *envpath = getenv("SST_LIB_PATH");
+        if ( !addlLibPath.empty() ) {
+            return addlLibPath + ":" + libpath;
+        } else if ( NULL != envpath ) {
+            return envpath;
+        }
+        return libpath;
+    }
+
 private:
     boost::program_options::options_description* visNoConfigDesc;
     boost::program_options::options_description* hiddenNoConfigDesc;
@@ -98,6 +107,8 @@ private:
     boost::program_options::positional_options_description* posDesc;
     boost::program_options::variables_map* var_map;
     std::string run_name;
+    std::string libpath;
+    std::string addlLibPath;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -110,6 +121,7 @@ private:
 	ar & BOOST_SERIALIZATION_NVP(archiveFile);
 	ar & BOOST_SERIALIZATION_NVP(runMode);
 	ar & BOOST_SERIALIZATION_NVP(libpath);
+	ar & BOOST_SERIALIZATION_NVP(addlLibPath);
 	ar & BOOST_SERIALIZATION_NVP(sdlfile);
 	ar & BOOST_SERIALIZATION_NVP(stopAtCycle);
 	ar & BOOST_SERIALIZATION_NVP(timeBase);

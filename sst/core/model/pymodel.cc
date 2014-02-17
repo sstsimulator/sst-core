@@ -481,7 +481,6 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
 
     PyObject* dict = PyDict_New();
     PyDict_SetItem(dict, PyString_FromString("debug-file"), PyString_FromString(cfg->debugFile.c_str()));
-    PyDict_SetItem(dict, PyString_FromString("lib-path"), PyString_FromString(cfg->libpath.c_str()));
     PyDict_SetItem(dict, PyString_FromString("stop-at"), PyString_FromString(cfg->stopAtCycle.c_str()));
     PyDict_SetItem(dict, PyString_FromString("timebase"), PyString_FromString(cfg->timeBase.c_str()));
     PyDict_SetItem(dict, PyString_FromString("partitioner"), PyString_FromString(cfg->partitioner.c_str()));
