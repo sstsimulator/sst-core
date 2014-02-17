@@ -23,12 +23,11 @@
 #include "sst/core/graph.h"
 #include "sst/core/params.h"
 
-#include <sst/core/config.h>
-
 namespace SST {
 
 class Simulation;
 
+class Config;
 class ConfigLink;
     
 class ConfigComponent {
