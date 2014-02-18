@@ -62,7 +62,6 @@ nobase_dist_sst_HEADERS = \
 	serialization/core.h \
 	serialization/types.h \
 	serialization/element.h \
-	serialization.h \
 	interfaces/TestEvent.h \
 	interfaces/memEvent.h \
 	interfaces/stringEvent.h \
