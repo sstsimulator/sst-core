@@ -49,6 +49,7 @@ nobase_dist_sst_HEADERS = \
 	params.h \
 	pollingLinkQueue.h \
 	simulation.h \
+	serialization.h \
 	sst_types.h \
 	sstinfo.h \
 	stopAction.h \
