@@ -473,7 +473,7 @@ Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* hand
 Cycle_t Simulation::getNextClockCycle(TimeConverter* tc) {
     if ( clockMap.find( tc->getFactor() ) == clockMap.end() ) {
 	Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-	out.fatal(CALL_INFO, 1, 0, 0,
+	out.fatal(CALL_INFO, -1,
 		  "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
     }
     return clockMap[tc->getFactor()]->getNextCycle();
