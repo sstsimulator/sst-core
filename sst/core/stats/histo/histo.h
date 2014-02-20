@@ -40,8 +40,14 @@ template<class HistoType>
 class Histogram {
 	public:
 		Histogram(HistoType binW) {
-			binCount = 0;
+			binCount = 1;
 			binWidth = binW;
+
+			// Create an empty bin
+			bins = new std::vector<HistoBin<HistoType>* >();
+			minVal = 0;
+			maxVal = binW - 1;
+			bins->push_back(new HistoBin<HistoType>(0));
 		}
 
 		void add(HistoType value) {
@@ -49,17 +55,19 @@ class Histogram {
 				// Create a new lower bins
 				HistoType diff = minVal - value;
 				HistoType newMin = value - (value % binWidth);
-				int createEntries = diff / binWidth;
+				uint32_t createEntries = diff / binWidth;
 
 				std::vector<HistoBin<HistoType>* >* newBins = new std::vector<HistoBin<HistoType>* >();
-				for(int i = 0; i < createEntries; ++i) {
+				for(uint32_t i = 0; i < createEntries; ++i) {
 					newBins->push_back( new HistoBin<HistoType>(newMin + (i * binWidth)));
 				}
 
 				// Copy over the existing bins
-				for(unsigned int i = 0; i < bins->size(); ++i) {
+				for(uint32_t i = 0; i < binCount; ++i) {
 					newBins->push_back(bins->at(i));
 				}
+
+				binCount += createEntries;
 
 				// Update to the new list of bins
 				delete bins;
@@ -73,19 +81,21 @@ class Histogram {
 					newMax = value + (binWidth  - (value % binWidth));
 				}
 
-				int createEntries = (newMax - maxVal) / binWidth;
+				uint32_t createEntries = ((newMax - maxVal) / binWidth ) + 1;
 				std::vector<HistoBin<HistoType>* >* newBins = new std::vector<HistoBin<HistoType>* >();
 
-				for(unsigned int i = 0; i < bins->size(); ++i) {
+				for(unsigned int i = 0; i < binCount; ++i) {
 					newBins->push_back(bins->at(i));
 				}
 
-				for(int i = 0; i < createEntries; ++i) {
+				for(uint32_t i = 0; i < createEntries; ++i) {
 					newBins->push_back(new HistoBin<HistoType>(maxVal + (i * binWidth)));
 				}
 
+				binCount += createEntries;
+
 				delete bins;
-				maxVal = newMax;
+				maxVal = (newMax - 1);
 				bins = newBins;
 			}
 
@@ -94,7 +104,7 @@ class Histogram {
 		}
 
 		uint32_t getBinCount() {
-			return (uint32_t) bins->size();
+			return binCount;
 		}
 
 		HistoType getBinWidth() {
