@@ -889,7 +889,7 @@ else
                         if [ -s catch.err ] 
                         then
                             cat catch.err
-                            exit 0
+                            exit 1
                         fi
                         ;;
                 esac
@@ -926,7 +926,7 @@ else
                         if [ -s catch.err ] 
                         then
                             cat catch.err
-                            exit 0
+                            exit 1
                         fi
                         ;;
                 esac
