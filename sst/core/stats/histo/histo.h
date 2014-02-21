@@ -8,99 +8,68 @@
 using namespace std;
 
 template<class HistoType>
-class HistoBin {
-	public:
-		HistoBin(HistoType bValue) {
-			baseValue = bValue;
-			binCount = 0;
-		}
-
-		~HistoBin() {
-
-		}
-
-		void increment() {
-			binCount++;
-		}
-
-		HistoType getBaseValue() {
-			return baseValue;
-		}
-
-		uint64_t getCount() {
-			return binCount;
-		}
-
-	private:
-		HistoType baseValue;
-		uint64_t binCount;
-};
-
-template<class HistoType>
 class Histogram {
 	public:
 		Histogram(HistoType binW) {
-			binCount = 1;
+			binCount = 0;
 			binWidth = binW;
-
-			// Create an empty bin
-			bins = new std::vector<HistoBin<HistoType>* >();
-			minVal = 0;
-			maxVal = binW - 1;
-			bins->push_back(new HistoBin<HistoType>(0));
+			bins = NULL;
 		}
 
 		void add(HistoType value) {
-			if(value < minVal) {
-				// Create a new lower bins
-				HistoType diff = minVal - value;
-				HistoType newMin = value - (value % binWidth);
-				uint32_t createEntries = diff / binWidth;
+			if(NULL == bins) {
+				bins = (HistoType*) malloc(sizeof(HistoType));
+				bins[0] = 1;
+				binCount = 1;
 
-				std::vector<HistoBin<HistoType>* >* newBins = new std::vector<HistoBin<HistoType>* >();
-				for(uint32_t i = 0; i < createEntries; ++i) {
-					newBins->push_back( new HistoBin<HistoType>(newMin + (i * binWidth)));
+				minVal = (value - (value % binWidth));
+				maxVal = minVal + binWidth;
+			} else {
+				if(value < minVal) {
+					HistoType newLower = value - (value % binWidth);
+					HistoType diff = minVal - newLower;
+					int diff_bins = diff / binWidth;
+
+					binCount += (uint32_t) diff_bins;
+					HistoType* newBins = (HistoType*) malloc(binCount * sizeof(HistoType));
+
+					for(uint32_t i = 0; i < (uint32_t) diff_bins; ++i) {
+						newBins[i] = 0;
+					}
+
+					for(uint32_t i = (uint32_t) diff_bins; i < binCount; ++i) {
+						newBins[i] = bins[i - diff_bins];
+					}
+
+					free(bins);
+					bins = newBins;
+					minVal = newLower;
+				} else if (value > maxVal) {
+					HistoType newMax = value + (binWidth - (value % binWidth));
+					HistoType diff = newMax - maxVal;
+					int diff_bins = diff / binWidth;
+
+					binCount += (uint32_t) diff_bins;
+					HistoType* newBins = (HistoType*) malloc(binCount * sizeof(HistoType));
+
+					for(uint32_t i = 0; i < (uint32_t) (binCount - diff_bins); ++i) {
+						newBins[i] = bins[i];
+					}
+
+					for(uint32_t i = diff_bins; i < binCount; ++i) {
+						newBins[i] = 0;
+					}
+
+					free(bins);
+					bins = newBins;
+					maxVal = newMax;
 				}
 
-				// Copy over the existing bins
-				for(uint32_t i = 0; i < binCount; ++i) {
-					newBins->push_back(bins->at(i));
-				}
+				HistoType value_from_base = value = minVal;
+				int inc_element = value_from_base / binWidth;
 
-				binCount += createEntries;
-
-				// Update to the new list of bins
-				delete bins;
-				minVal = newMin;
-				bins = newBins;
-			} else if (value > maxVal) {
-				HistoType newMax = value;
-
-				// If we get an uneven (i.e. no binWidth) value, round up
-				if(value % binWidth > 0) {
-					newMax = value + (binWidth  - (value % binWidth));
-				}
-
-				uint32_t createEntries = ((newMax - maxVal) / binWidth ) + 1;
-				std::vector<HistoBin<HistoType>* >* newBins = new std::vector<HistoBin<HistoType>* >();
-
-				for(unsigned int i = 0; i < binCount; ++i) {
-					newBins->push_back(bins->at(i));
-				}
-
-				for(uint32_t i = 0; i < createEntries; ++i) {
-					newBins->push_back(new HistoBin<HistoType>(maxVal + (i * binWidth)));
-				}
-
-				binCount += createEntries;
-
-				delete bins;
-				maxVal = (newMax - 1);
-				bins = newBins;
+				bins[inc_element]++;
 			}
-
-			int inc_entry = (value - minVal) / binWidth;
-			bins->at(inc_entry)->increment();
 		}
 
 		uint32_t getBinCount() {
@@ -111,12 +80,20 @@ class Histogram {
 			return binWidth;
 		}
 
-		HistoBin<HistoType>* getBinByIndex(int index) {
-			return bins->at(index);
+		HistoType* getBinByIndex(int index) {
+			return &bins[index];
+		}
+
+		HistoType getBinStart() {
+			return minVal;
+		}
+
+		HistoType getBinMax() {
+			return maxVal;
 		}
 
 	private:
-		std::vector<HistoBin<HistoType>* >* bins;
+		HistoType* bins;
 		HistoType binWidth;
 		HistoType minVal;
 		HistoType maxVal;
