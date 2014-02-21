@@ -44,7 +44,7 @@ class Histogram {
 					free(bins);
 					bins = newBins;
 					minVal = newLower;
-				} else if (value > maxVal) {
+				} else if (value >= maxVal) {
 					HistoType newMax = value + (binWidth - (value % binWidth));
 					HistoType diff = newMax - maxVal;
 					int diff_bins = diff / binWidth;
@@ -65,7 +65,7 @@ class Histogram {
 					maxVal = newMax;
 				}
 
-				HistoType value_from_base = value = minVal;
+				HistoType value_from_base = value - minVal;
 				int inc_element = value_from_base / binWidth;
 
 				bins[inc_element]++;
