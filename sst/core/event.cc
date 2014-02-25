@@ -52,6 +52,11 @@ NullEvent::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
 }
 
+
+#if USE_MEMPOOL
+std::vector<std::pair<size_t, Core::MemPool*> > Activity::memPools;
+#endif
+
 } // namespace SST
 
 
