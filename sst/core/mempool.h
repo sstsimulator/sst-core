@@ -69,7 +69,7 @@ private:
 #if 0
         uint8_t *newPool = (uint8_t*)::malloc(arenaSize);
 #else
-        uint8_t *newPool = (uint8_t*)mmap(0, arenaSize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+        uint8_t *newPool = (uint8_t*)mmap(0, arenaSize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
         if ( MAP_FAILED == newPool ) {
             return false;
         }
