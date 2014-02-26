@@ -7,6 +7,9 @@
 
 using namespace std;
 
+namespace SST {
+namespace Statistics {
+
 template<class HistoType>
 class Histogram {
 	public:
@@ -99,5 +102,8 @@ class Histogram {
 		HistoType maxVal;
 		uint32_t binCount;
 };
+
+}
+}
 
 #endif
