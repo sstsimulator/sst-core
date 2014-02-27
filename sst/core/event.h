@@ -37,7 +37,7 @@ public:
 	delivery_link = link;
     }
 
-    inline void getDeliveryLink(){
+    inline Link* getDeliveryLink() {
         return delivery_link;
     }
 
