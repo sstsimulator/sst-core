@@ -37,6 +37,10 @@ public:
 	delivery_link = link;
     }
 
+    inline void getDeliveryLink(){
+        return delivery_link;
+    }
+
     inline void setRemoteEvent() {
 	delivery_link = NULL;
     }

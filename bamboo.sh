@@ -108,6 +108,16 @@ dotests() {
     # DO NOT pass args to the test suite, it confuses
     # shunit. Use an environment variable instead.
 
+    #
+    #  Run only openMP and memHierarchy 
+    #
+    if [ $1 == "sstmainline_config_memH_only" ]
+    then
+        ${SST_TEST_SUITES}/testSuite_openMP.sh
+        ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
+        return
+    fi
+
     if [ $kernel != "Darwin" ]
     then
         # Only run if the OS *isn't* Darwin (MacOS)
@@ -138,6 +148,7 @@ dotests() {
 ##        ${SST_TEST_SUITES}/testSuite_VaultSim.sh
 #    fi
 
+    ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
 ##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
@@ -546,7 +557,18 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-static --disable-shared $miscEnv"
             ;;
-
+        sstmainline_config_memH_only) 
+            #-----------------------------------------------------------------
+            # sstmainline_config
+            #     This option used for Quick test of opemMP and memHierarchy
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -g stabledevel -m none -i none -o none -h none -s none -q none -M none -N default"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM $miscEnv"
+            ;;
+ 
         # ====================================================================
         # ====                                                            ====
         # ====  Older 3.0.x build configurations start here  ====
@@ -809,7 +831,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_with_sstdevice|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|documentation)
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_with_sstdevice|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_memH_only|documentation)
             # Configure MPI, Boost, and Compiler (Linux only)
             if [ $kernel != "Darwin" ]
             then
@@ -911,6 +933,11 @@ else
                         module unload boost
                         module load boost/${desiredBoost}
                         ;;
+                    myBoost)
+                        export BOOST_LIBS=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0/lib
+                        export BOOST_HOME=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0
+                        export BOOST_INCLUDE=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0/include
+                        ;; 
                     noMpiBoost)
                         export BOOST_LIBS=/home/jpvandy/local/packages/boost-1.54_no-mpi/lib
                         export BOOST_HOME=/home/jpvandy/local/packages/boost-1.54_no-mpi
@@ -1246,6 +1273,8 @@ then
     else
         # Build was successful, so run tests, providing command line args
         # as a convenience. SST binaries must be generated before testing.
+
+echo " ############################  ENTER dotests ################## "
         dotests $1
     fi
 fi
