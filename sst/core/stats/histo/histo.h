@@ -17,6 +17,8 @@ class Histogram {
 			binCount = 0;
 			binWidth = binW;
 			bins = NULL;
+			totalSummed = 0;
+			itemCount = 0;
 		}
 
 		void add(HistoType value) {
@@ -27,6 +29,9 @@ class Histogram {
 
 				minVal = (value - (value % binWidth));
 				maxVal = minVal + binWidth;
+
+				itemCount = 1;
+				totalSummed = value;
 			} else {
 				if(value < minVal) {
 					HistoType newLower = value - (value % binWidth);
@@ -72,6 +77,9 @@ class Histogram {
 				int inc_element = value_from_base / binWidth;
 
 				bins[inc_element]++;
+
+				totalSummed += value;
+				itemCount++;
 			}
 		}
 
@@ -95,11 +103,21 @@ class Histogram {
 			return maxVal;
 		}
 
+		uint64_t getItemCount() {
+			return itemCount;
+		}
+
+		HistoType getValuesSummed() {
+			return totalSummed;
+		}
+
 	private:
 		HistoType* bins;
 		HistoType binWidth;
 		HistoType minVal;
 		HistoType maxVal;
+		HistoType totalSummed;
+		uint64_t itemCount;
 		uint32_t binCount;
 };
 
