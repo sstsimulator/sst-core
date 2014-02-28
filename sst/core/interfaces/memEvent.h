@@ -251,8 +251,8 @@ public:
     /** Copy Construtor. */
 	MemEvent(const MemEvent &me) :
         SST::Event(), event_id(me.event_id), response_to_id(me.response_to_id),
-        addr(me.addr), size(me.size), cmd(me.cmd), payload(me.payload),
-        src(me.src), dst(me.dst), flags(me.flags), prefetch(me.prefetch), baseAddr(me.baseAddr)
+        addr(me.addr), baseAddr(me.baseAddr), size(me.size), cmd(me.cmd), payload(me.payload),
+        src(me.src), dst(me.dst), flags(me.flags), prefetch(me.prefetch)
 	{
 		setDeliveryLink(me.getLinkId(), NULL);
 	}
@@ -260,8 +260,8 @@ public:
     /** Copy Construtor. */
 	MemEvent(const MemEvent *me) :
         SST::Event(), event_id(me->event_id), response_to_id(me->response_to_id),
-        addr(me->addr), size(me->size), cmd(me->cmd), payload(me->payload),
-        src(me->src), dst(me->dst), flags(me->flags), prefetch(me->prefetch), baseAddr(me->baseAddr)
+        addr(me->addr), baseAddr(me->baseAddr), size(me->size), cmd(me->cmd), payload(me->payload),
+        src(me->src), dst(me->dst), flags(me->flags), prefetch(me->prefetch)
 	{
 		setDeliveryLink(me->getLinkId(), NULL);
 	}
