@@ -657,13 +657,13 @@ const char* SSTElement_PortInfo::getValidEvent(unsigned int index)
 {
     const char** pValidEventStringArray;
 
-    if ((0 <= index) && (m_numValidEvents > index))  {
+    if (m_numValidEvents > index) {
         pValidEventStringArray = m_elport->validEvents;
         if (NULL != pValidEventStringArray[index]) {
             return pValidEventStringArray[index];
         }
     }
-        
+
    // Illegal index value or NULL string at index, then just return NULL
    return NULL;
 }
