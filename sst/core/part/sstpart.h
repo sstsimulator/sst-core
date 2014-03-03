@@ -11,6 +11,7 @@ class SSTPartitioner
 {
 	public:
 		SSTPartitioner();
+		virtual ~SSTPartitioner() {};
 		virtual void performPartition(ConfigGraph* graph) = 0;
 };
 
