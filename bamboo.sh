@@ -148,7 +148,6 @@ dotests() {
 ##        ${SST_TEST_SUITES}/testSuite_VaultSim.sh
 #    fi
 
-    ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
 ##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
@@ -216,6 +215,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_M5.sh
         ${SST_TEST_SUITES}/testSuite_openMP.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
+        ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
     fi
 
     if [ $1 != "sstmainline_config_no_mpi" ] ; then
