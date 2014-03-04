@@ -23,7 +23,7 @@ namespace SST {
 
 #if DBG_INTROSPECTOR
 #define _INTROSPECTOR_DBG( fmt, args...)                                \
-    printf( "%d:Introspector::%s():%d: "fmt, _debug_rank, __FUNCTION__,__LINE__, ## args )
+    printf( "%d:Introspector::%s():%d: " fmt, _debug_rank, __FUNCTION__,__LINE__, ## args )
 #else
 #define _INTROSPECTOR_DBG( fmt, args...)
 #endif
