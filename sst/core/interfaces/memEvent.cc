@@ -18,6 +18,6 @@
 using namespace SST;
 using namespace SST::Interfaces;
 
-uint64_t SST::Interfaces::MemEvent::main_id = 0;
+uint64t SST::Interfaces::MemEvent::main_id = 0;
 
 BOOST_CLASS_EXPORT(MemEvent)
