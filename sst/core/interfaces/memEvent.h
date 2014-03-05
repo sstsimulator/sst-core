@@ -237,7 +237,7 @@ public:
     }
 
     virtual void print(const std::string& header, Output &out) const {
-        out.output("%s Mem Event (id: (%llx, %d)) to be delivered at %lx \n",
+        out.output("%s Mem Event (id: (%llx, %d)) to be delivered at %"PRIu64" \n",
                 header.c_str(), event_id.first, event_id.second, getDeliveryTime());
     }
 
