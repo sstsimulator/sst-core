@@ -19,8 +19,7 @@
 
 namespace SST { namespace Interfaces {
 
-typedef long long unsigned int Addr;
-typedef long long unsigned int uint64t;
+typedef uint64_t Addr;
 
 
 /* Coherence states for Bottom Coherence Controller Cache Lines, MESI Protocol */
@@ -168,7 +167,7 @@ public:
     /** Data Payload type */
     typedef std::vector<uint8_t> dataVec;
     /** Each MemEvent has a unique (auto-generated) ID of this type */
-    typedef std::pair<uint64t, int> id_type;
+    typedef std::pair<uint64_t, int> id_type;
 
     /** Creates a new MemEvent */
     MemEvent(const Component *_src, Addr _addr, Command _cmd) :
@@ -419,9 +418,9 @@ public:
     void setFlags(uint32_t _flags) { flags = _flags; }
 
     /** @returns the (optional) ID associated with the flag F_LOCKED */
-    uint64t getLockID(void) const { return lockid; }
+    uint64_t getLockID(void) const { return lockid; }
     /** sets the (optional) ID associated with the flag F_LOCKED */
-    void setLockID(uint64t id) { lockid = id; }
+    void setLockID(uint64_t id) { lockid = id; }
     
     Addr getBaseAddr(){ return baseAddr; }
     int  getCacheLineSize() { return cacheLineSize; }
@@ -462,10 +461,10 @@ public:
         }
     }
 private:
-    static uint64t main_id;
+    static uint64_t main_id;
     id_type event_id;
     id_type response_to_id;
-    uint64t lockid; 
+    uint64_t lockid; 
     
     Addr addr;
     Addr baseAddr;
