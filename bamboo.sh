@@ -384,8 +384,8 @@ getconfig() {
             miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel-with-sstdevice -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default"
             setConvenienceVars "$depsStr"
-#            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
+            rm -f ${SVN_ROOT}/sst/elements/portals4/.ignore
             ;;
 
         sstmainline_config_no_mpi) 
@@ -622,6 +622,7 @@ getconfig() {
             depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
             setConvenienceVars "$depsStr"
             configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE"
+            rm -f ${SVN_ROOT}/sst/elements/portals4/.ignore
             ;;
         gem5_no_dramsim_config) 
             #-----------------------------------------------------------------
