@@ -216,6 +216,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_openMP.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
         ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
+        ${SST_TEST_SUITES}/testSuite_dirSweep.sh
     fi
 
     if [ $1 != "sstmainline_config_no_mpi" ] ; then
