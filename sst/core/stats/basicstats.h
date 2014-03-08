@@ -6,6 +6,12 @@
 namespace SST {
 namespace Statistics {
 
+/**
+ 	Sums (adds up) all of the values presented as an array of length.
+	@param values An array of values to be summed up
+	@param length The length of the array in elements
+	@return Returns the values from 0 to length summed up
+*/
 template<typename NumberBase>
 static NumberBase sum(const NumberBase* values, const uint32_t length) {
 	assert(length > 0);
@@ -19,6 +25,13 @@ static NumberBase sum(const NumberBase* values, const uint32_t length) {
 	return sum;
 };
 
+/**
+	Calculates the maximum and minimum of the numbers on the values array.
+	@param values An array of numbers to be searched for min and max
+	@param length The length of the array in elements
+	@param max The output - the maximum of the numbers in values
+	@param min The output - the minimum of the numbers in values
+*/
 template<typename NumberBase>
 static void range(const NumberBase* values, const uint32_t length,
 	NumberBase* max, NumberBase* min) {
@@ -35,6 +48,12 @@ static void range(const NumberBase* values, const uint32_t length,
 	}
 };
 
+/**
+	Calculates the maximum number in the array values
+	@param values An array of numbers to be searched for the max
+	@param length The length of the array of values in elements
+	@return The maximum value found
+*/
 template<typename NumberBase>
 static NumberBase max(const NumberBase* values, const uint32_t length) {
 	assert(length > 0);
@@ -48,6 +67,12 @@ static NumberBase max(const NumberBase* values, const uint32_t length) {
 	return max_;
 };
 
+/**
+	Calculates the minimum number in the array of values
+	@param values An array of numbers to be searched for the min
+	@param length The length of the array of values in elements
+	@return The minimum value found
+*/
 template<typename NumberBase>
 static NumberBase min(const NumberBase* values, const uint32_t length) {
 	assert(length > 0);
@@ -61,6 +86,12 @@ static NumberBase min(const NumberBase* values, const uint32_t length) {
 	return min_;
 };
 
+/**
+	Calculates the arithemetic mean of a set of values (sum of values divided by length)
+	@param values An array of numbers to be averaged
+	@param length The length of the array of values in elemetns
+	@return The arithmetic mean of the values
+*/
 template<typename NumberBase>
 static NumberBase arithmeticMean(const NumberBase* values, const uint32_t length) {
 	return (length > 0) ? 
