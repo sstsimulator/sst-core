@@ -73,6 +73,7 @@ nobase_dist_sst_HEADERS = \
 	rng/gaussian.h \
 	rng/expon.h \
 	stats/basicstats.h \
+	stats/onlinestats.h \
 	stats/histo/histo.h \
 	cputimer.h
 
