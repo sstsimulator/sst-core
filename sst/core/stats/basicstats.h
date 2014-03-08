@@ -1,7 +1,6 @@
 #ifndef _H_SST_CORE_STATS
 #define _H_SST_CORE_STATS
 
-
 #include <assert.h>
 
 namespace SST {
@@ -64,7 +63,9 @@ static NumberBase min(const NumberBase* values, const uint32_t length) {
 
 template<typename NumberBase>
 static NumberBase arithmeticMean(const NumberBase* values, const uint32_t length) {
-	return SST::Statistics::sum<NumberBase>(values, length) / (NumberBase) length;
+	return (length > 0) ? 
+		SST::Statistics::sum<NumberBase>(values, length) / (NumberBase) length :
+		0;
 };
 
 template<typename NumberBase>
