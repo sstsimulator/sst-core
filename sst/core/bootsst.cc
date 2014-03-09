@@ -14,6 +14,10 @@ void update_env_var(const char* name, const int verbose) {
 	size_t new_env_size = strlen(BOOST_LIBDIR);
 	new_env_size += (NULL == current_ld_path) ? 0 : strlen(current_ld_path);
 
+#ifdef HAVE_DRAMSIM
+	new_env_size += strlen(DRAMSIM_LIBDIR) + 1;
+#endif
+
 	// Add 2 characters, we need one for the path seperator and one of the NULL?
 	new_env_size += 2;
 
@@ -24,6 +28,14 @@ void update_env_var(const char* name, const int verbose) {
 	} else {
 		sprintf(updated_environment, "%s:%s", current_ld_path, BOOST_LIBDIR);
 	}
+
+#ifdef HAVE_DRAMSIM
+	char* temp_dram_copy = (char*) malloc(sizeof(char) * strlen(updated_environment));
+	strcpy(temp_dram_copy, updated_environment);
+
+	sprintf(updated_environment, "%s:%s", temp_dram_copy, DRAMSIM_LIBDIR);
+	free(temp_dram_copy);
+#endif
 
 	// Override the exiting LD_LIBRARY_PATH with our updated variable
 	setenv(name, updated_environment, 1);
