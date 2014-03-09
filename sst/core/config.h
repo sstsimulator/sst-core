@@ -60,6 +60,7 @@ public:
 
     bool            all_parse;
     bool            verbose;
+    bool 	    no_env_config;
     
     inline Mode_t
     setRunMode( std::string mode ) 
@@ -84,6 +85,7 @@ public:
 	std::cout << "generator = " << generator << std::endl;
 	std::cout << "gen_options = " << generator_options << std::endl;
         std::cout << "dump_config_graph = " << dump_config_graph << std::endl;
+	std::cout << "no_env_config = " << no_env_config << std::endl;
 #ifdef HAVE_PYTHON
         std::cout << "model_options = " << model_options << std::endl;
 #endif
@@ -130,6 +132,7 @@ private:
 	ar & BOOST_SERIALIZATION_NVP(generator_options);
         ar & BOOST_SERIALIZATION_NVP(dump_component_graph_file);
         ar & BOOST_SERIALIZATION_NVP(dump_config_graph);
+        ar & BOOST_SERIALIZATION_NVP(no_env_config);
 #ifdef HAVE_PYTHON
         ar & BOOST_SERIALIZATION_NVP(model_options);
 #endif

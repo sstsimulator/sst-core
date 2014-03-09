@@ -118,8 +118,12 @@ sst_core_sources = \
 	rng/expon.cc \
 	cputimer.cc
 
-bin_PROGRAMS = sst.x sstinfo
-sst_x_SOURCES = \
+bin_PROGRAMS = sst.x.real sst.x sstinfo
+
+sst_x_SOURCES =\
+	bootsst.cc
+
+sst_x_real_SOURCES = \
 	main.cc \
 	$(sst_core_sources)
 
@@ -127,7 +131,7 @@ sstinfo_SOURCES = \
 	sstinfo.cc \
 	$(sst_core_sources)
 
-sst_x_LDADD = \
+sst_x_real_LDADD = \
 	$(LIBLTDL) \
 	$(BOOST_SERIALIZATION_LIB) \
 	$(BOOST_MPI_LIB) \
@@ -138,13 +142,13 @@ sst_x_LDADD = \
 	$(TCMALLOC_LIB) \
 	-lm
 
-sst_x_LDFLAGS = \
+sst_x_real_LDFLAGS = \
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
 	$(TCMALLOC_LDFLAGS) \
-    $(PYTHON_LDFLAGS) \
+        $(PYTHON_LDFLAGS) \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 
@@ -165,7 +169,7 @@ sstinfo_LDFLAGS = \
 	$(ZOLTAN_LDFLAGS) \
 	$(BOOST_MPI_LIB) \
 	$(TCMALLOC_LDFLAGS) \
-    $(PYTHON_LDFLAGS) \
+        $(PYTHON_LDFLAGS) \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 

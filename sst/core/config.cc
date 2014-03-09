@@ -65,6 +65,7 @@ Config::Config( int my_rank )
 #endif
     all_parse   = true;
     verbose     = false;
+    no_env_config = false;
     
     // Some config items can be initialized from either the command line or
     // the config file. The command line has precedence. We need to initialize
@@ -75,6 +76,7 @@ Config::Config( int my_rank )
     visNoConfigDesc->add_options()
         ("help", "print help message")
         ("verbose", "print information about core runtimes")
+	("no_env_config", "disable SST automatic dynamic library environment configuration")
         ("version", "print SST Release Version")
     ; 
 
