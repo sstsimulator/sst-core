@@ -76,7 +76,7 @@ Config::Config( int my_rank )
     visNoConfigDesc->add_options()
         ("help", "print help message")
         ("verbose", "print information about core runtimes")
-	("no_env_config", "disable SST automatic dynamic library environment configuration")
+	("no-env-config", "disable SST automatic dynamic library environment configuration")
         ("version", "print SST Release Version")
     ; 
 
