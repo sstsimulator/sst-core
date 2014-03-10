@@ -596,7 +596,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file
 	SSTModelDescription(), scriptName(script_file), config(configObj)
 {
 	std::vector<std::string> argv_vector;
-	argv_vector.push_back("sst.x");
+	argv_vector.push_back("sstsim.x");
 
 	const int input_len = configObj->model_options.length();
 	std::string temp = "";
