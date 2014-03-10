@@ -118,7 +118,8 @@ sst_core_sources = \
 	rng/expon.cc \
 	cputimer.cc
 
-bin_PROGRAMS = sstsim.x sst sstinfo
+bin_PROGRAMS = sst sstinfo
+libexec_PROGRAMS = sstsim.x
 
 sst_SOURCES = \
 	bootsst.cc
