@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	char* real_sst_path = (char*) malloc(sizeof(char) * 1024);
-	sprintf(real_sst_path, "%s/bin/sst.x.real", SST_INSTALL_PREFIX);
+	sprintf(real_sst_path, "%s/bin/sstsim.x", SST_INSTALL_PREFIX);
 
 	// User has told us to output environment
 	if(verbose) {

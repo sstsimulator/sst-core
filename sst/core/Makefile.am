@@ -118,12 +118,12 @@ sst_core_sources = \
 	rng/expon.cc \
 	cputimer.cc
 
-bin_PROGRAMS = sst.x.real sst.x sstinfo
+bin_PROGRAMS = sstsim.x sst sstinfo
 
-sst_x_SOURCES =\
+sst_SOURCES = \
 	bootsst.cc
 
-sst_x_real_SOURCES = \
+sstsim_x_SOURCES = \
 	main.cc \
 	$(sst_core_sources)
 
@@ -131,7 +131,7 @@ sstinfo_SOURCES = \
 	sstinfo.cc \
 	$(sst_core_sources)
 
-sst_x_real_LDADD = \
+sstsim_x_LDADD = \
 	$(LIBLTDL) \
 	$(BOOST_SERIALIZATION_LIB) \
 	$(BOOST_MPI_LIB) \
@@ -142,7 +142,7 @@ sst_x_real_LDADD = \
 	$(TCMALLOC_LIB) \
 	-lm
 
-sst_x_real_LDFLAGS = \
+sstsim_x_LDFLAGS = \
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
