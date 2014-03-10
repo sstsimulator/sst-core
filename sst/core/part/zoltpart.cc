@@ -158,7 +158,7 @@ void SSTZoltanPartition::initZoltan() {
 	float zolt_ver = 0;
 	int argc = 1;
 	char* argv[1];
-	argv[0] = "sst.x";
+	argv[0] = "sstsim.x";
 	
 	int z_rc = Zoltan_Initialize(argc, argv, &zolt_ver);
 	
