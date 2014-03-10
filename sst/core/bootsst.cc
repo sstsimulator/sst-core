@@ -18,6 +18,10 @@ void update_env_var(const char* name, const int verbose) {
 	new_env_size += strlen(DRAMSIM_LIBDIR) + 1;
 #endif
 
+#ifdef HAVE_M5
+	new_env_size += strlen(M5_LIBDIR) + 1;
+#endif
+
 	// Add 2 characters, we need one for the path seperator and one of the NULL?
 	new_env_size += 2;
 
@@ -35,6 +39,14 @@ void update_env_var(const char* name, const int verbose) {
 
 	sprintf(updated_environment, "%s:%s", temp_dram_copy, DRAMSIM_LIBDIR);
 	free(temp_dram_copy);
+#endif
+
+#ifdef HAVE_M5
+	char* temp_m5_copy = (char*) malloc(sizeof(char) * strlen(updated_environment));
+	strcpy(temp_m5_copy, updated_environment);
+
+	sprintf(updated_environment, "%s:%s", temp_m5_copy, M5_LIBDIR);
+	free(temp_m5_copy);
 #endif
 
 	// Override the exiting LD_LIBRARY_PATH with our updated variable
