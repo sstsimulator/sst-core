@@ -735,7 +735,7 @@ dobuild() {
     if [ $retval -ne 0 ]
     then
         # Something went wrong in configure, so dump config.log
-        echo "bamboo.sh: Uh oh. Something went wrong during configure of sst.x.  Dumping config.log"
+        echo "bamboo.sh: Uh oh. Something went wrong during configure of sst.  Dumping config.log"
         echo "--------------------dump of config.log--------------------"
         sed -e 's/^/#dump /' ./config.log
         echo "--------------------dump of config.log--------------------"
@@ -768,11 +768,11 @@ dobuild() {
     if [ $kernel == "Darwin" ]
     then
         # Mac OS X 
-        echo "$ otool -L ./sst/core/sst.x"
-        otool -L ./sst/core/sst.x
+        echo "$ otool -L ./sst/core/sstsim.x"
+        otool -L ./sst/core/sstsim.x
     else
-        echo "$ ldd ./sst/core/sst.x"
-        ldd ./sst/core/sst.x
+        echo "$ ldd ./sst/core/sstsim.x"
+        ldd ./sst/core/sstsim.x
     fi
     echo "SSTBUILD INFO============================================================"
 
