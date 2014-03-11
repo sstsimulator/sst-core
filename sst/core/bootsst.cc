@@ -11,19 +11,19 @@ extern char** environ;
 
 void update_env_var(const char* name, const int verbose) {
 	char* current_ld_path = getenv(name);
-	size_t new_env_size = strlen(BOOST_LIBDIR);
+	size_t new_env_size = strlen(BOOST_LIBDIR) + 1;
 	new_env_size += (NULL == current_ld_path) ? 0 : strlen(current_ld_path);
 
 #ifdef HAVE_DRAMSIM
-	new_env_size += strlen(DRAMSIM_LIBDIR) + 1;
+	new_env_size += strlen(DRAMSIM_LIBDIR) + sizeof(char) * 1;
 #endif
 
 #ifdef HAVE_M5
-	new_env_size += strlen(M5_LIBDIR) + 1;
+	new_env_size += strlen(M5_LIBDIR) + sizeof(char) * 1;
 #endif
 
 	// Add 2 characters, we need one for the path seperator and one of the NULL?
-	new_env_size += 2;
+	new_env_size += sizeof(char) * 2;
 
 	char* updated_environment = (char*) malloc(sizeof(char) * new_env_size);
 
@@ -34,7 +34,7 @@ void update_env_var(const char* name, const int verbose) {
 	}
 
 #ifdef HAVE_DRAMSIM
-	char* temp_dram_copy = (char*) malloc(sizeof(char) * strlen(updated_environment));
+	char* temp_dram_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
 	strcpy(temp_dram_copy, updated_environment);
 
 	sprintf(updated_environment, "%s:%s", temp_dram_copy, DRAMSIM_LIBDIR);
@@ -42,7 +42,7 @@ void update_env_var(const char* name, const int verbose) {
 #endif
 
 #ifdef HAVE_M5
-	char* temp_m5_copy = (char*) malloc(sizeof(char) * strlen(updated_environment));
+	char* temp_m5_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
 	strcpy(temp_m5_copy, updated_environment);
 
 	sprintf(updated_environment, "%s:%s", temp_m5_copy, M5_LIBDIR);
