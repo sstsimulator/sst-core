@@ -136,220 +136,224 @@ main(int argc, char *argv[])
     if ( cfg.verbose ) printf("# main() My rank is %d, on %d nodes\n", rank, size);
     DebugInit( rank, size );
 
-    if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) {
-	// Now we have a config graph, create the simulation and configure signal handlers
-        sim = Simulation::createSimulation(&cfg, rank, size);
+	if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) {
+		// Now we have a config graph, create the simulation and configure signal handlers
+		sim = Simulation::createSimulation(&cfg, rank, size);
 
-        signal(SIGUSR1, sigHandlerPrintStatus);
-        signal(SIGUSR2, sigHandlerPrintStatus);
+		signal(SIGUSR1, sigHandlerPrintStatus);
+		signal(SIGUSR2, sigHandlerPrintStatus);
 
-	ConfigGraph* graph;
+		ConfigGraph* graph;
 
-	if ( size == 1 ) {
-	    double start_graph_gen = sst_get_cpu_time();
+		if ( size == 1 ) {
+			double start_graph_gen = sst_get_cpu_time();
 
-	    if ( cfg.generator != "NONE" ) {
-		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
-		graph = new ConfigGraph();
-		func(graph,cfg.generator_options,size);
-	    }
-	    else {
-		graph = modelGen->createConfigGraph();
-	    }
+			if ( cfg.generator != "NONE" ) {
+				generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
+				graph = new ConfigGraph();
+				func(graph,cfg.generator_options,size);
+			}
+			else {
+				graph = modelGen->createConfigGraph();
+			}
 
-	    double end_graph_gen = sst_get_cpu_time();
+			double end_graph_gen = sst_get_cpu_time();
 
-            if(cfg.verbose && (rank == 0)) {
-            	std::cout << "# Graph construction took " <<
-			(end_graph_gen - start_graph_gen) << " seconds."
-			<< std::endl;
-            }
+			if(cfg.verbose && (rank == 0)) {
+				std::cout << "# Graph construction took " <<
+					(end_graph_gen - start_graph_gen) << " seconds."
+					<< std::endl;
+			}
 
-	    // Check config graph to see if there are structural errors.
-	    if ( graph->checkForStructuralErrors() ) {
-		printf("Structural errors found in the ConfigGraph.  Aborting...\n");
-		exit(-1);
-	    }
+			// Check config graph to see if there are structural errors.
+			if ( graph->checkForStructuralErrors() ) {
+				printf("Structural errors found in the ConfigGraph.  Aborting...\n");
+				exit(-1);
+			}
 
-	    // Set all components to be instanced on rank 0 (the only
-	    // one that exists)
-	    graph->setComponentRanks(0);
-	}
-	// Need to worry about partitioning for parallel jobs
-	else if ( rank == 0 || cfg.all_parse ) {
-            double start_graph_gen = sst_get_cpu_time();
-
-	    if ( cfg.generator != "NONE" ) {
-		graph = new ConfigGraph();
-		generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
-		func(graph,cfg.generator_options, size);
-	    }
-	    else {
-		graph = modelGen->createConfigGraph();
-	    }
-
-	    if ( rank == 0 ) {
-		// Check config graph to see if there are structural errors.
-		if ( graph->checkForStructuralErrors() ) {
-		    printf("Structural errors found in the ConfigGraph.  Aborting...\n");
-		    exit(-1);
+			// Set all components to be instanced on rank 0 (the only
+			// one that exists)
+			graph->setComponentRanks(0);
 		}
-	    }
+		// Need to worry about partitioning for parallel jobs
+		else if ( rank == 0 || cfg.all_parse ) {
+			double start_graph_gen = sst_get_cpu_time();
 
-	    double end_graph_gen = sst_get_cpu_time();
-
-            if(cfg.verbose && (rank == 0)) {
-            	std::cout << "# Graph construction took " <<
-			(end_graph_gen - start_graph_gen) << " seconds." << std::endl;
-            }
-
-	    double start_part = sst_get_cpu_time();
-
-	    // Do the partitioning.
-	    if ( cfg.partitioner != "self" ) {
-			// If partitioning not specified by sdl or generator,
-			// set all component ranks to -1 so it's easier to
-			// detect some types of partitioning errors
-			graph->setComponentRanks(-1);
-	    }
-
-	    if ( cfg.partitioner == "self" ) {
-			// For now, do nothing.  Eventually we need to
-			// have a checker for the partitioning.
-			if(rank == 0) {
-		   		std::cout << "# SST will use a self-guided partition scheme." << std::endl;
+			if ( cfg.generator != "NONE" ) {
+				graph = new ConfigGraph();
+				generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
+				func(graph,cfg.generator_options, size);
 			}
-	    } else if ( cfg.partitioner == "simple" ) {
-			if(cfg.verbose && rank == 0) {
-				std::cout << "# Performing a simple partition..." << std::endl;
+			else {
+				graph = modelGen->createConfigGraph();
 			}
-			
-			simple_partition(graph, size);
-			
-			if(cfg.verbose && rank == 0) {
-			std::cout << "# Partitionning process is complete." << std::endl;
-			}
-        } else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
-			// perform a basic round robin partition
-			if(cfg.verbose && rank == 0) {
-				std::cout << "# Performing a round-robin partition..." << std::endl;
-			}
-		
-			rrobin_partition(graph, size);
-		
-			if(cfg.verbose && rank == 0) {
-				std::cout << "# Partitionning process is complete." << std::endl;
-	    	}
-	    } else if ( cfg.partitioner == "linear" ) {
-	    	if(cfg.verbose && rank == 0) {
-	    		std::cout << "# Partitionning using a linear scheme..." << std::endl;
-	    	}
-	    	
-			SSTLinearPartition* linear = new SSTLinearPartition(size, cfg.verbose ? 2 : 0);
-			linear->performPartition(graph);
-			delete linear;
-			
-			if(cfg.verbose && rank == 0) {
-				std::cout << "# Partitionning process is complete" << std::endl;
-			}
-	    } else if ( cfg.partitioner == "zoltan" ) {
-#ifdef HAVE_ZOLTAN
-			if(cfg.verbose && rank == 0) {
-				std::cout << "# Partitionning using Zoltan..." << std::endl;
-			}
-			
-			SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose ? 2 : 0);
-			zolt_part->performPartition(graph);
-			
-			broadcast(world, *graph, 0);
-			delete zolt_part;
-			
-			if(cfg.verbose && rank == 0) {
-				std::cout << "# Partitionning is complete." << std::endl;
-			}
-#else
-			printf("Zoltan support is currently not available, aborting...\n");
-			abort();
-#endif
-	    } else {
-	        if(rank == 0) {
-				std::cout << "# Partition scheme was not specified, using: " <<
-					cfg.partitioner << std::endl;
-			}
-		
-			partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
-			func(graph,size);
-	    }
 
-            double end_part = sst_get_cpu_time();
-
-	    if(cfg.verbose && (rank == 0)) {
-		std::cout << "# Graph partitionning took " <<
-			(end_part - start_part) << " seconds." << std::endl;
-	    }
-	}
-	else {
-	    graph = new ConfigGraph();
-	}
-
-        ///////////////////////////////////////////////////////////////////////	
-	// If the user asks us to dump the partionned graph.
-	if(cfg.dump_component_graph_file != "" && rank == 0) {
-		if(cfg.verbose) 
-			std::cout << "# Dumping partitionned component graph to " <<
-				cfg.dump_component_graph_file << std::endl;
-
-		ofstream graph_file(cfg.dump_component_graph_file.c_str());
-		ConfigComponentMap_t& component_map = graph->getComponentMap();
-
-		for(int i = 0; i < size; i++) {
-			graph_file << "Rank: " << i << " Component List:" << std::endl;
-
-			for (ConfigComponentMap_t::const_iterator j = component_map.begin() ; j != component_map.end() ; ++j) {
-	   		 	if((*(*j).second).rank == i) {
-					graph_file << "   " << (*(*j).second).name << " (ID=" << (*(*j).second).id << ")" << std::endl;
-					graph_file << "      -> type      " << (*(*j).second).type << std::endl;
-					graph_file << "      -> weight    " << (*(*j).second).weight << std::endl;
-					graph_file << "      -> linkcount " << (*(*j).second).links.size() << std::endl;
+			if ( rank == 0 ) {
+				// Check config graph to see if there are structural errors.
+				if ( graph->checkForStructuralErrors() ) {
+					printf("Structural errors found in the ConfigGraph.  Aborting...\n");
+					exit(-1);
 				}
 			}
+
+			double end_graph_gen = sst_get_cpu_time();
+
+			if(cfg.verbose && (rank == 0)) {
+				std::cout << "# Graph construction took " <<
+					(end_graph_gen - start_graph_gen) << " seconds." << std::endl;
+			}
+
+			double start_part = sst_get_cpu_time();
+
+			// Do the partitioning.
+			if ( cfg.partitioner != "self" ) {
+				// If partitioning not specified by sdl or generator,
+				// set all component ranks to -1 so it's easier to
+				// detect some types of partitioning errors
+				graph->setComponentRanks(-1);
+			}
+
+			if ( cfg.partitioner == "self" ) {
+				// For now, do nothing.  Eventually we need to
+				// have a checker for the partitioning.
+				if(rank == 0) {
+					std::cout << "# SST will use a self-guided partition scheme." << std::endl;
+				}
+			} else if ( cfg.partitioner == "simple" ) {
+				if(cfg.verbose && rank == 0) {
+					std::cout << "# Performing a simple partition..." << std::endl;
+				}
+
+				simple_partition(graph, size);
+
+				if(cfg.verbose && rank == 0) {
+					std::cout << "# Partitionning process is complete." << std::endl;
+				}
+			} else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
+				// perform a basic round robin partition
+				if(cfg.verbose && rank == 0) {
+					std::cout << "# Performing a round-robin partition..." << std::endl;
+				}
+
+				rrobin_partition(graph, size);
+
+				if(cfg.verbose && rank == 0) {
+					std::cout << "# Partitionning process is complete." << std::endl;
+				}
+			} else if ( cfg.partitioner == "linear" ) {
+				if(cfg.verbose && rank == 0) {
+					std::cout << "# Partitionning using a linear scheme..." << std::endl;
+				}
+
+				SSTLinearPartition* linear = new SSTLinearPartition(size, cfg.verbose ? 2 : 0);
+				linear->performPartition(graph);
+				delete linear;
+
+				if(cfg.verbose && rank == 0) {
+					std::cout << "# Partitionning process is complete" << std::endl;
+				}
+			} else if ( cfg.partitioner == "zoltan" ) {
+#ifdef HAVE_ZOLTAN
+				if(cfg.verbose && rank == 0) {
+					std::cout << "# Partitionning using Zoltan..." << std::endl;
+				}
+
+				SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose ? 2 : 0);
+				zolt_part->performPartition(graph);
+
+				broadcast(world, *graph, 0);
+				delete zolt_part;
+
+				if(cfg.verbose && rank == 0) {
+					std::cout << "# Partitionning is complete." << std::endl;
+				}
+#else
+				printf("Zoltan support is currently not available, aborting...\n");
+				abort();
+#endif
+			} else {
+				if(rank == 0) {
+					std::cout << "# Partition scheme was not specified, using: " <<
+						cfg.partitioner << std::endl;
+				}
+
+				partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
+				func(graph,size);
+			}
+
+			double end_part = sst_get_cpu_time();
+
+			if(cfg.verbose && (rank == 0)) {
+				std::cout << "# Graph partitionning took " <<
+					(end_part - start_part) << " seconds." << std::endl;
+			}
+		}
+		else {
+			graph = new ConfigGraph();
 		}
 
-		graph_file.close();
+		///////////////////////////////////////////////////////////////////////	
+		// If the user asks us to dump the partionned graph.
+		if(cfg.dump_component_graph_file != "" && rank == 0) {
+			if(cfg.verbose) 
+				std::cout << "# Dumping partitionned component graph to " <<
+					cfg.dump_component_graph_file << std::endl;
 
-		if(cfg.verbose) 
-			std::cout << "# Dump of partition graph is complete." << std::endl;
-	}
+			ofstream graph_file(cfg.dump_component_graph_file.c_str());
+			ConfigComponentMap_t& component_map = graph->getComponentMap();
 
-        ///////////////////////////////////////////////////////////////////////
-	// Broadcast the data structures if only rank 0 built the
-	// graph
-	if ( !cfg.all_parse ) {
+			for(int i = 0; i < size; i++) {
+				graph_file << "Rank: " << i << " Component List:" << std::endl;
+
+				for (ConfigComponentMap_t::const_iterator j = component_map.begin() ; j != component_map.end() ; ++j) {
+					if((*(*j).second).rank == i) {
+						graph_file << "   " << (*(*j).second).name << " (ID=" << (*(*j).second).id << ")" << std::endl;
+						graph_file << "      -> type      " << (*(*j).second).type << std::endl;
+						graph_file << "      -> weight    " << (*(*j).second).weight << std::endl;
+						graph_file << "      -> linkcount " << (*(*j).second).links.size() << std::endl;
+					}
+				}
+			}
+
+			graph_file.close();
+
+			if(cfg.verbose) 
+				std::cout << "# Dump of partition graph is complete." << std::endl;
+		}
+
+		///////////////////////////////////////////////////////////////////////
+		// Broadcast the data structures if only rank 0 built the
+		// graph
+		if ( !cfg.all_parse ) {
 #ifdef HAVE_MPI
-		broadcast(world, *graph, 0);
+			broadcast(world, *graph, 0);
 #endif
-	}
+		}
 
-	if ( !graph->checkRanks( size ) ) {
-	    if ( rank == 0 ) {
-		std::cout << "ERROR: bad partitioning; partition included bad ranks." << endl;
-	    }
-	    exit(1);
-	}
-	else {
-	    if ( !graph->containsComponentInRank( rank ) ) {
-		std::cout << "WARNING: no components assigned to rank: " << rank << "." << endl;
-	    }
-	}
+		if ( !graph->checkRanks( size ) ) {
+			if ( rank == 0 ) {
+				std::cout << "ERROR: bad partitioning; partition included bad ranks." << endl;
+			}
+			exit(1);
+		}
+		else {
+			if ( !graph->containsComponentInRank( rank ) ) {
+				std::cout << "WARNING: no components assigned to rank: " << rank << "." << endl;
+			}
+		}
 
-	// User asked us to dump the config graph to a file
-	if(cfg.dump_config_graph != "") {
-		graph->dumpToFile(cfg.dump_config_graph, &cfg);
-	}
 
-	sim->performWireUp( *graph, rank );
-	delete graph;
-    }
+		// User asked us to dump the config graph to a file
+		if(cfg.dump_config_graph != "") {
+			graph->dumpToFile(cfg.dump_config_graph, &cfg, false);
+		}
+		if(cfg.output_dot != "") {
+			graph->dumpToFile(cfg.output_dot, &cfg, true);
+		}
+
+		sim->performWireUp( *graph, rank );
+		delete graph;
+	}
 
     end_build = sst_get_cpu_time();
     double build_time = end_build - start;

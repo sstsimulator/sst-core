@@ -147,6 +147,8 @@ Config::Config( int my_rank )
 #endif
         ("dump_config_graph", po::value< string >(&dump_config_graph),
 	 "Dump the SST component and link configuration graph to this file, empty string (default) is not to dump anything.")
+		("output-dot", po::value <string >(&output_dot),
+	 "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
 
 	;
 

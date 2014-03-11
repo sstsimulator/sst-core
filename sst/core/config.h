@@ -53,6 +53,7 @@ public:
     std::string     generator;
     std::string     generator_options;
     std::string     dump_config_graph;
+    std::string     output_dot;
 #ifdef HAVE_PYTHON
     std::string     model_options;
 #endif

@@ -58,6 +58,10 @@ public:
     }
     
     void print(std::ostream &os) const;
+
+	void genDot(std::ostream &os) const {
+		os << id << " [label=\"" << name << "\"" << "];\n";
+	}
     
 private:
 
@@ -79,7 +83,8 @@ private:
 	ar & BOOST_SERIALIZATION_NVP(params);
 	ar & BOOST_SERIALIZATION_NVP(isIntrospector);
     }
-    
+
+
 };
 
 class ConfigLink {
@@ -115,8 +120,11 @@ public:
 	os << "  component[1] = " << component[1] << std::endl;
 	os << "  port[1] = " << port[1] << std::endl;
 	os << "  latency[1] = " << latency[1] << std::endl;
-    }
-    
+	}
+
+	void genDot(std::ostream &os) const {
+		os << component[0] << " -- " << component[1] << " [label=\"" << name << "\",headlabel=\"" << port[0] << "\",taillabel=\"" << port[1] << "\"] ;\n";
+	}
 
 
 private:
@@ -147,12 +155,23 @@ typedef std::map<std::string,std::string> VariableMap_t;
     
 class ConfigGraph {
 public:
-    void print(std::ostream &os) const {
-	os << "Printing graph" << std::endl;
-        for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-	    (*i).second->print(os);
+	void print(std::ostream &os) const {
+		os << "Printing graph" << std::endl;
+		for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+			(*i).second->print(os);
+		}
 	}
-    }
+
+	void genDot(std::ostream &os, const std::string &name) const {
+		os << "graph \"" << name << "\" {\n";
+		for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+			i->second->genDot(os);
+		}
+		for (ConfigLinkMap_t::const_iterator i = links.begin() ; i != links.end() ; ++i) {
+			i->second->genDot(os);
+		}
+		os << "\n}\n";
+	}
 
     // Helper function to set all the ranks to the same value
     void setComponentRanks(int rank);
@@ -179,7 +198,7 @@ public:
     ComponentId_t addIntrospector(std::string name, std::string type);
 
     bool checkForStructuralErrors();
-    void dumpToFile(std::string filePath, Config* cfg);
+    void dumpToFile(std::string filePath, Config* cfg, bool asDot);
     std::string makeNamePythonSafe(const std::string name);
     static std::string escapeString(const std::string value);
 

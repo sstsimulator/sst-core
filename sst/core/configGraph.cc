@@ -14,6 +14,7 @@
 #include "sst/core/serialization.h"
 #include <sst/core/configGraph.h>
 
+#include <fstream>
 #include <boost/format.hpp>
 
 #include <sst/core/config.h>
@@ -222,65 +223,81 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
     comps[comp_id]->links.push_back(link);
 }
 
-void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg) {
-    FILE* dumpFile = fopen(filePath.c_str(), "wt");
-    assert(dumpFile);
+void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot) {
+	if ( asDot ) {
+		// Attempt to determine graph name
+		std::string graphName = filePath;
+		size_t off = filePath.rfind('/');
+		if ( off != std::string::npos ) {
+			graphName = filePath.substr(off+1);
+		}
+		
+		std::cerr << "Dumping to " << filePath << " with graph name " << graphName << std::endl;
 
-    ConfigComponentMap_t::iterator comp_itr;
-    std::map<string, string>::iterator param_itr;
+		// Generate file
+		std::ofstream os(filePath.c_str());
+		genDot(os, graphName);
+		os.close();
+	} else {
+		FILE* dumpFile = fopen(filePath.c_str(), "wt");
+		assert(dumpFile);
 
-    fprintf(dumpFile, "# Automatically generated SST Python input\n");
-    fprintf(dumpFile, "import sst\n\n");
-    fprintf(dumpFile, "# Define SST core options\n");
-    fprintf(dumpFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase.c_str());
-    fprintf(dumpFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n\n", cfg->stopAtCycle.c_str());
-    fprintf(dumpFile, "# Define the simulation components\n");
-    for(comp_itr = comps.begin(); comp_itr != comps.end(); comp_itr++) {
-	ConfigComponent* the_comp = comp_itr->second;
+		ConfigComponentMap_t::iterator comp_itr;
+		std::map<string, string>::iterator param_itr;
 
-	fprintf(dumpFile, "%s = sst.Component(\"%s\", \"%s\")\n",
-		makeNamePythonSafe(the_comp->name).c_str(),
-		escapeString(the_comp->name).c_str(),
-		the_comp->type.c_str());
+		fprintf(dumpFile, "# Automatically generated SST Python input\n");
+		fprintf(dumpFile, "import sst\n\n");
+		fprintf(dumpFile, "# Define SST core options\n");
+		fprintf(dumpFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase.c_str());
+		fprintf(dumpFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n\n", cfg->stopAtCycle.c_str());
+		fprintf(dumpFile, "# Define the simulation components\n");
+		for(comp_itr = comps.begin(); comp_itr != comps.end(); comp_itr++) {
+			ConfigComponent* the_comp = comp_itr->second;
 
-	param_itr = the_comp->params.begin();
+			fprintf(dumpFile, "%s = sst.Component(\"%s\", \"%s\")\n",
+					makeNamePythonSafe(the_comp->name).c_str(),
+					escapeString(the_comp->name).c_str(),
+					the_comp->type.c_str());
 
-	if(param_itr != the_comp->params.end()) {
-		fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(the_comp->name).c_str());
-		fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", escapeString(param_itr->first).c_str(), escapeString(param_itr->second.c_str()).c_str());
-		param_itr++;
+			param_itr = the_comp->params.begin();
 
-		for(; param_itr != the_comp->params.end(); param_itr++) {
-			fprintf(dumpFile, ",\n      \"%s\" : \"\"\"%s\"\"\"",
-				escapeString(param_itr->first).c_str(),
-				escapeString(param_itr->second).c_str());
+			if(param_itr != the_comp->params.end()) {
+				fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(the_comp->name).c_str());
+				fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", escapeString(param_itr->first).c_str(), escapeString(param_itr->second.c_str()).c_str());
+				param_itr++;
+
+				for(; param_itr != the_comp->params.end(); param_itr++) {
+					fprintf(dumpFile, ",\n      \"%s\" : \"\"\"%s\"\"\"",
+							escapeString(param_itr->first).c_str(),
+							escapeString(param_itr->second).c_str());
+				}
+
+				fprintf(dumpFile, "\n})\n");
+			}
 		}
 
-		fprintf(dumpFile, "\n})\n");
+		fprintf(dumpFile, "\n\n# Define the simulation links\n");
+
+		ConfigLinkMap_t::iterator link_itr;
+		for(link_itr = links.begin(); link_itr != links.end(); link_itr++) {
+			ConfigComponent* link_left = comps[link_itr->second->component[0]];
+			ConfigComponent* link_right = comps[link_itr->second->component[1]];
+
+			fprintf(dumpFile, "%s = sst.Link(\"%s\")\n",
+					makeNamePythonSafe(link_itr->second->name).c_str(), makeNamePythonSafe(link_itr->second->name).c_str());
+			fprintf(dumpFile, "%s.connect( (%s, \"%s\", \"%" PRIu64 "ps\"), (%s, \"%s\", \"%" PRIu64 "ps\") )\n",
+					makeNamePythonSafe(link_itr->second->name).c_str(),
+					makeNamePythonSafe(link_left->name).c_str(),
+					escapeString(link_itr->second->port[0]).c_str(),
+					*link_itr->second->latency,
+					makeNamePythonSafe(link_right->name).c_str(),
+					escapeString(link_itr->second->port[1]).c_str(),
+					*link_itr->second->latency );
+		}
+
+		fprintf(dumpFile, "# End of generated output.\n");
+		fclose(dumpFile);
 	}
-    }
-
-    fprintf(dumpFile, "\n\n# Define the simulation links\n");
-
-    ConfigLinkMap_t::iterator link_itr;
-    for(link_itr = links.begin(); link_itr != links.end(); link_itr++) {
-	ConfigComponent* link_left = comps[link_itr->second->component[0]];
-	ConfigComponent* link_right = comps[link_itr->second->component[1]];
-
-	fprintf(dumpFile, "%s = sst.Link(\"%s\")\n",
-		makeNamePythonSafe(link_itr->second->name).c_str(), makeNamePythonSafe(link_itr->second->name).c_str());
-	fprintf(dumpFile, "%s.connect( (%s, \"%s\", \"%" PRIu64 "ps\"), (%s, \"%s\", \"%" PRIu64 "ps\") )\n",
-		makeNamePythonSafe(link_itr->second->name).c_str(),
-		makeNamePythonSafe(link_left->name).c_str(),
-		escapeString(link_itr->second->port[0]).c_str(),
-		*link_itr->second->latency,
-		makeNamePythonSafe(link_right->name).c_str(),
-		escapeString(link_itr->second->port[1]).c_str(),
-		*link_itr->second->latency );
-    }
-
-    fprintf(dumpFile, "# End of generated output.\n");
-    fclose(dumpFile);
 }
 
 std::string ConfigGraph::escapeString(const std::string value) {
