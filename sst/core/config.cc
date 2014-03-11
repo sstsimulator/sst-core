@@ -139,13 +139,13 @@ Config::Config( int my_rank )
          "generator to be used to build simulation <lib.generator_name>")
         ("gen-options", po::value< string >(&generator_options), 
          "options to be passed to generator function (must use quotes if whitespace is present)")
-        ("dump_partition", po::value< string >(&dump_component_graph_file), 
+        ("dump-partition", po::value< string >(&dump_component_graph_file), 
          "dump component partition to this file (default is not to dump information)")
 #ifdef HAVE_PYTHON
-        ("model_options", po::value< string >(&model_options),
+        ("model-options", po::value< string >(&model_options),
 	 "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
-        ("dump_config_graph", po::value< string >(&dump_config_graph),
+        ("dump-config-graph", po::value< string >(&dump_config_graph),
 	 "Dump the SST component and link configuration graph to this file, empty string (default) is not to dump anything.")
 		("output-dot", po::value <string >(&output_dot),
 	 "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
