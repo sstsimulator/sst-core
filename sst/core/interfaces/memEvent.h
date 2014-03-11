@@ -193,25 +193,23 @@ public:
         prefetch = false;
     }
     
-    MemEvent(const Component *_src, Addr _addr, Addr _baseAddr, int _cacheLineSize, Command _cmd, uint32_t _size) :                //READS
+    MemEvent(const Component *_src, Addr _addr, Addr _baseAddr, Command _cmd, uint32_t _size) :                //READS
         SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName()){
         event_id = std::make_pair(main_id++, _src->getId());
         response_to_id = std::make_pair(0, -1);
         baseAddr = _baseAddr;
         size = _size;
-        cacheLineSize = _cacheLineSize;
         dst = BROADCAST_TARGET;
         flags = 0;
         prefetch = false;
     }
     
     
-    MemEvent(const Component *_src, Addr _addr, Addr _baseAddr, int _cacheLineSize, Command _cmd, std::vector<uint8_t>& data) :    //WRITES
+    MemEvent(const Component *_src, Addr _addr, Addr _baseAddr, Command _cmd, std::vector<uint8_t>& data) :    //WRITES
         SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName()){
         event_id = std::make_pair(main_id++, _src->getId());
         response_to_id = std::make_pair(0, -1);
         baseAddr = _baseAddr;
-        cacheLineSize = _cacheLineSize;
         dst = BROADCAST_TARGET;
         setPayload(data);
         flags = 0;
@@ -423,7 +421,6 @@ public:
     void setLockID(uint64_t id) { lockid = id; }
     
     Addr getBaseAddr(){ return baseAddr; }
-    int  getCacheLineSize() { return cacheLineSize; }
 
     static Command commandResponse(Command c)
     {
@@ -467,10 +464,9 @@ private:
     uint64_t lockid; 
     
     Addr addr;
-    Addr baseAddr;
+    Addr baseAddr;  
 
     uint32_t size;
-    int cacheLineSize;
 
     Command cmd;
     dataVec payload;
