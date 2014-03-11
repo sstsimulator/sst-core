@@ -35,16 +35,14 @@ void update_env_var(const char* name, const int verbose) {
 
 #ifdef HAVE_DRAMSIM
 	char* temp_dram_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-	strcpy(temp_dram_copy, updated_environment);
-
+	sprintf(temp_dram_copy, "%s", updated_environment);
 	sprintf(updated_environment, "%s:%s", temp_dram_copy, DRAMSIM_LIBDIR);
 	free(temp_dram_copy);
 #endif
 
 #ifdef HAVE_M5
 	char* temp_m5_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-	strcpy(temp_m5_copy, updated_environment);
-
+	sprintf(temp_m5_copy, "%s", updated_environment);
 	sprintf(updated_environment, "%s:%s", temp_m5_copy, M5_LIBDIR);
 	free(temp_m5_copy);
 #endif
