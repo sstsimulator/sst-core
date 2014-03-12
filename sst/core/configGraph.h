@@ -42,27 +42,25 @@ public:
     bool                     isIntrospector;
 
     ConfigComponent(std::string name, std::string type, float weight, int rank, bool isIntrospector) :
-	name(name),
-	type(type),
-	weight(weight),
-	rank(rank),
-	isIntrospector(isIntrospector)
+        name(name),
+        type(type),
+        weight(weight),
+        rank(rank),
+        isIntrospector(isIntrospector)
     {
-	id = count++;
+        id = count++;
     }
 
     ConfigComponent() :
         isIntrospector(false)
     {
-	id = count++;
+        id = count++;
     }
-    
+
     void print(std::ostream &os) const;
 
-	void genDot(std::ostream &os) const {
-		os << id << " [label=\"" << name << "\"" << "];\n";
-	}
-    
+	void genDot(std::ostream &os) const;
+
 private:
 
     friend class ConfigGraph;
@@ -123,7 +121,9 @@ public:
 	}
 
 	void genDot(std::ostream &os) const {
-		os << component[0] << " -- " << component[1] << " [label=\"" << name << "\",headlabel=\"" << port[0] << "\",taillabel=\"" << port[1] << "\"] ;\n";
+		os << component[0] << ":" << port[0]
+            << " -- " << component[1] << ":" << port[1]
+            << " [label=\"" << name << "\"] ;\n";
 	}
 
 
@@ -162,16 +162,7 @@ public:
 		}
 	}
 
-	void genDot(std::ostream &os, const std::string &name) const {
-		os << "graph \"" << name << "\" {\n";
-		for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-			i->second->genDot(os);
-		}
-		for (ConfigLinkMap_t::const_iterator i = links.begin() ; i != links.end() ; ++i) {
-			i->second->genDot(os);
-		}
-		os << "\n}\n";
-	}
+	void genDot(std::ostream &os, const std::string &name) const;
 
     // Helper function to set all the ranks to the same value
     void setComponentRanks(int rank);

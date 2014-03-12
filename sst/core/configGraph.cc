@@ -35,7 +35,9 @@ int Edge::count = 0;
 ComponentId_t ConfigComponent::count = 0;
 LinkId_t ConfigLink::count = 0;
 
+
 static inline int min( int x, int y ) { return x < y ? x : y; }
+
 
 void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
@@ -45,13 +47,26 @@ void ConfigComponent::print(std::ostream &os) const {
     os << "  isIntrospector = " << isIntrospector << std::endl;
     os << "  Links:" << std::endl;
     for (size_t i = 0 ; i != links.size() ; ++i) {
-	links[i]->print(os);
+        links[i]->print(os);
     }
-    
+
     os << "  Params:" << std::endl;
     params.print_all_params(os);
-    
+
 }
+
+void ConfigComponent::genDot(std::ostream &os) const {
+    os  << id
+        << " [label=\"{" << name << "\\n" << type << " | {";
+    for ( std::vector<ConfigLink*>::const_iterator i = links.begin() ; i != links.end() ; ++i ) {
+        // Choose which side of the link we're on
+        int p = ((*i)->component[0] == id) ? 0 : 1;
+        os << " <" << (*i)->port[p] << "> " << (*i)->port[p];
+        if ( i+1 != links.end() ) os << " |";
+    }
+    os << " } }\"];\n";
+}
+
 
 void
 ConfigGraph::setComponentRanks(int rank)
@@ -86,6 +101,32 @@ ConfigGraph::checkRanks(int ranks)
 	if ( rank < 0 || rank >= ranks ) return false;
     }
     return true;
+}
+
+
+void ConfigGraph::genDot(std::ostream &os, const std::string &name) const {
+    os << "graph \"" << name << "\" {\n";
+    os << "\tnode [shape=record] ;\n";
+    // First, see if we need to deal with MPI ranks
+    int maxRank = 0;
+    for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+        if ( i->second->rank > maxRank) maxRank = i->second->rank;
+    }
+
+    for ( int r = 0 ; r <= maxRank ; r++ ) {
+        if ( maxRank > 0 ) os << "\tsubgraph cluster" << r << " {\n";
+        for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+            if ( maxRank > 0 ) os << "\t";
+            os << "\t";
+            i->second->genDot(os);
+        }
+        if ( maxRank > 0 ) os << "\t}\n\n";
+    }
+    for (ConfigLinkMap_t::const_iterator i = links.begin() ; i != links.end() ; ++i) {
+        os << "\t";
+        i->second->genDot(os);
+    }
+    os << "\n}\n";
 }
 
 
