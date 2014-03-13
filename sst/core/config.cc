@@ -145,9 +145,9 @@ Config::Config( int my_rank )
         ("model-options", po::value< string >(&model_options),
 	 "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
-        ("dump-config-graph", po::value< string >(&dump_config_graph),
-	 "Dump the SST component and link configuration graph to this file, empty string (default) is not to dump anything.")
-		("output-dot", po::value <string >(&output_dot),
+        ("output-config", po::value< string >(&dump_config_graph),
+	 "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
+	("output-dot", po::value <string >(&output_dot),
 	 "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
 
 	;
