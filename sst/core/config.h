@@ -54,6 +54,7 @@ public:
     std::string     generator_options;
     std::string     dump_config_graph;
     std::string     output_dot;
+    std::string     output_directory;
 #ifdef HAVE_PYTHON
     std::string     model_options;
 #endif
@@ -87,6 +88,7 @@ public:
 	std::cout << "gen_options = " << generator_options << std::endl;
         std::cout << "dump_config_graph = " << dump_config_graph << std::endl;
 	std::cout << "no_env_config = " << no_env_config << std::endl;
+        std::cout << "output_directory = " << output_directory << std::endl;
 #ifdef HAVE_PYTHON
         std::cout << "model_options = " << model_options << std::endl;
 #endif

@@ -60,6 +60,7 @@ Config::Config( int my_rank )
     generator   = "NONE";
     generator_options   = "";
     dump_component_graph_file = "";
+    output_directory = "";
 #ifdef HAVE_PYTHON
     model_options = "";
 #endif
@@ -149,6 +150,8 @@ Config::Config( int my_rank )
 	 "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
 	("output-dot", po::value <string >(&output_dot),
 	 "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
+	("output-directory", po::value <string >(&output_directory),
+	 "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
 
 	;
 
