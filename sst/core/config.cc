@@ -65,7 +65,7 @@ Config::Config( int my_rank )
     model_options = "";
 #endif
     all_parse   = true;
-    verbose     = false;
+    verbose     = 0;
     no_env_config = false;
     
     // Some config items can be initialized from either the command line or
@@ -75,11 +75,11 @@ Config::Config( int my_rank )
 
     visNoConfigDesc = new po::options_description( "Allowed options" );
     visNoConfigDesc->add_options()
-        ("help", "print help message")
-        ("verbose", "print information about core runtimes")
+        ("help,h", "print help message")
+        ("verbose,V", po::value< uint32_t >(&verbose)->default_value(0)->implicit_value(1), "print information about core runtimes")
 	("no-env-config", "disable SST automatic dynamic library environment configuration")
-        ("version", "print SST Release Version")
-    ; 
+        ("version,v", "print SST Release Version")
+    ;
 
     hiddenNoConfigDesc = new po::options_description( "" );
     hiddenNoConfigDesc->add_options()
@@ -212,9 +212,12 @@ Config::parseCmdLine(int argc, char* argv[]) {
         return 1;
     }
 
+	//verbose = var_map->count( "verbose" );
+#if 0
     if ( var_map->count( "verbose" ) ) {
-        verbose = true;
+        verbose++;
     }
+#endif
 
     if ( var_map->count( "version" ) ) {
         cout << "SST Release Version " PACKAGE_VERSION << endl;

@@ -114,8 +114,7 @@ main(int argc, char *argv[])
 		}
 #ifdef HAVE_PYTHON
 		else if(file_ext == ".py") {
-			modelGen = new SSTPythonModelDefinition(cfg.sdlfile, cfg.verbose ? 4 : 0 ,
-				&cfg);
+			modelGen = new SSTPythonModelDefinition(cfg.sdlfile, cfg.verbose, &cfg);
 		}
 #endif
 		else {
@@ -245,7 +244,7 @@ main(int argc, char *argv[])
 					std::cout << "# Partitionning using a linear scheme..." << std::endl;
 				}
 
-				SSTLinearPartition* linear = new SSTLinearPartition(size, cfg.verbose ? 2 : 0);
+				SSTLinearPartition* linear = new SSTLinearPartition(size, cfg.verbose);
 				linear->performPartition(graph);
 				delete linear;
 
@@ -258,7 +257,7 @@ main(int argc, char *argv[])
 					std::cout << "# Partitionning using Zoltan..." << std::endl;
 				}
 
-				SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose ? 2 : 0);
+				SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
 				zolt_part->performPartition(graph);
 
 				broadcast(world, *graph, 0);
@@ -295,7 +294,7 @@ main(int argc, char *argv[])
 		///////////////////////////////////////////////////////////////////////	
 		// If the user asks us to dump the partionned graph.
 		if(cfg.dump_component_graph_file != "" && rank == 0) {
-			if(cfg.verbose) 
+			if(cfg.verbose)
 				std::cout << "# Dumping partitionned component graph to " <<
 					cfg.dump_component_graph_file << std::endl;
 
@@ -317,7 +316,7 @@ main(int argc, char *argv[])
 
 			graph_file.close();
 
-			if(cfg.verbose) 
+			if(cfg.verbose)
 				std::cout << "# Dump of partition graph is complete." << std::endl;
 		}
 

@@ -61,7 +61,7 @@ public:
     std::string     dump_component_graph_file;
 
     bool            all_parse;
-    bool            verbose;
+    uint32_t        verbose;
     bool 	    no_env_config;
     
     inline Mode_t
