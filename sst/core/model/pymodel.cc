@@ -236,6 +236,7 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
         return -1;
 
     self->id = gModel->getConfigGraph()->addComponent(name, type);
+	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%lu]\n", name, type, self->id);
 
     return 0;
 }
@@ -332,6 +333,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 
     LinkPy_t* link = (LinkPy_t*)plink;
 
+	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %lu to Link %s\n", id, link->name);
     graph->addLink(id, link->name, port, lat);
 
     return PyInt_FromLong(0);
@@ -346,6 +348,7 @@ static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds)
     if ( !PyArg_ParseTuple(args, "s", &name) ) return -1;
 
     self->name = strdup(name);
+	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
 
     return 0;
 }
@@ -385,6 +388,8 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
             ((LinkPy_t*)self)->name,
             port1, lat1);
 
+	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Connecting components %lu and %lu to Link %s\n",
+			((ComponentPy_t*)c0)->id, ((ComponentPy_t*)c1)->id, ((LinkPy_t*)self)->name);
 
     return PyInt_FromLong(0);
 }
@@ -484,7 +489,7 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
     PyDict_SetItem(dict, PyString_FromString("stop-at"), PyString_FromString(cfg->stopAtCycle.c_str()));
     PyDict_SetItem(dict, PyString_FromString("timebase"), PyString_FromString(cfg->timeBase.c_str()));
     PyDict_SetItem(dict, PyString_FromString("partitioner"), PyString_FromString(cfg->partitioner.c_str()));
-    PyDict_SetItem(dict, PyString_FromString("verbose"), PyBool_FromLong(cfg->verbose));
+    PyDict_SetItem(dict, PyString_FromString("verbose"), PyLong_FromLong(cfg->verbose));
     PyDict_SetItem(dict, PyString_FromString("dump_partition"), PyString_FromString(cfg->dump_component_graph_file.c_str()));
     PyDict_SetItem(dict, PyString_FromString("dump_config_graph"), PyString_FromString(cfg->dump_config_graph.c_str()));
     PyDict_SetItem(dict, PyString_FromString("model_options"), PyString_FromString(cfg->model_options.c_str()));
@@ -703,10 +708,10 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
 }
 
 
-std::string SSTPythonModelDefinition::getConfigString()
+std::string SSTPythonModelDefinition::getConfigString() const
 {
     std::stringstream ss;
-    for ( std::map<std::string, std::string>::iterator i = cfgParams.begin(); i != cfgParams.end() ; ++i ) {
+    for ( std::map<std::string, std::string>::const_iterator i = cfgParams.begin(); i != cfgParams.end() ; ++i ) {
         ss << i->first << "=" << i->second << "\n";
     }
     return ss.str();
