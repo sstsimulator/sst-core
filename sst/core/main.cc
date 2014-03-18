@@ -89,7 +89,6 @@ main(int argc, char *argv[])
     // (saving the slow broadcast).  In non-fast, only rank 0 will
     // parse the sdl and build the graph.  It is then broadcast.  In
     // single rank mode, the option is ignored.
- //   sdl_parser* parser=0;	//(Scoggin:Jan23,2013) Fix initialization warning in build
     SSTModelDescription* modelGen = 0;
 
     if ( cfg.sdlfile != "NONE" ) {
@@ -291,9 +290,11 @@ main(int argc, char *argv[])
 		///////////////////////////////////////////////////////////////////////	
 		// If the user asks us to dump the partionned graph.
 		if(cfg.dump_component_graph_file != "" && rank == 0) {
-			if(cfg.verbose)
-				std::cout << "# Dumping partitionned component graph to " <<
-					cfg.dump_component_graph_file << std::endl;
+			if(cfg.verbose) {
+				sim_output->verbose(CALL_INFO, 2, 0,
+					"# Dumping partitionned component graph to %s\n",
+					cfg.dump_component_graph_file.c_str());
+			}
 
 			ofstream graph_file(cfg.dump_component_graph_file.c_str());
 			ConfigComponentMap_t& component_map = graph->getComponentMap();
@@ -313,8 +314,10 @@ main(int argc, char *argv[])
 
 			graph_file.close();
 
-			if(cfg.verbose)
-				std::cout << "# Dump of partition graph is complete." << std::endl;
+			if(cfg.verbose) {
+				sim_output->verbose(CALL_INFO, 2, 0,
+					"# Dump of partition graph is complete.\n");
+			}
 		}
 
 		///////////////////////////////////////////////////////////////////////
@@ -328,13 +331,14 @@ main(int argc, char *argv[])
 
 		if ( !graph->checkRanks( size ) ) {
 			if ( rank == 0 ) {
-				std::cout << "ERROR: bad partitioning; partition included bad ranks." << endl;
+				sim_output->fatal(CALL_INFO, 1,
+					"ERROR: Bad partitionning; partition included unknown ranks.\n");
 			}
-			exit(1);
 		}
 		else {
 			if ( !graph->containsComponentInRank( rank ) ) {
-				std::cout << "WARNING: no components assigned to rank: " << rank << "." << endl;
+				sim_output->output("WARNING: No components are assigned to rank: %d\n", 
+					rank);
 			}
 		}
 
