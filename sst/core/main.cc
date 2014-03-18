@@ -438,8 +438,7 @@ main(int argc, char *argv[])
 	std::cout << "#  Build time:             " << max_build_time << "  s" << std::endl;
 	std::cout << "#  Simulation time:        " << max_run_time   << "  s" << std::endl;
 	std::cout << "#  Total time:             " << max_total_time << "  s" << std::endl;
-    std::cout << "#  Simulated Time:         " << simulated_time << " " << simulated_time_prefix << "s" << std::endl;
-
+        std::cout << "#  Simulated Time:         " << simulated_time << " " << simulated_time_prefix << "s" << std::endl;
 	std::cout << "#" << std::endl;
 	std::cout << "#  Simulation Resource Information:" << std::endl;
 #ifdef SST_COMPILE_MACOSX
@@ -448,8 +447,17 @@ main(int argc, char *argv[])
 	std::cout << "#  Max Resident Set Size:  " << sim_ruse.ru_maxrss << " KB" << std::endl;
 #endif
 	std::cout << "#  Page Faults:            " << sim_ruse.ru_majflt << " faults" << std::endl;
-
+	std::cout << std::endl;
     }
+
+#ifdef HAVE_MPI
+    if( 0 == rank ) {
+#endif
+    // Print out the simulation time regardless of verbosity.
+    std::cout << "Simulation is complete, simulated time: " << simulated_time << " " << simulated_time_prefix << "s" << std::endl;
+#ifdef HAVE_MPI
+    }
+#endif
 
 #ifdef HAVE_MPI
     delete mpiEnv;
