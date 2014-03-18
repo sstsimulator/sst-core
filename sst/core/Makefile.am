@@ -119,16 +119,23 @@ sst_core_sources = \
 	cputimer.cc
 
 bin_PROGRAMS = sst sstinfo
-libexec_PROGRAMS = sstsim.x
+libexec_PROGRAMS = sstsim.x sstinfo.x
+
+sstinfo_SOURCES = \
+	bootsstinfo.cc \
+	bootshared.cc \
+	bootshared.h
 
 sst_SOURCES = \
-	bootsst.cc
+	bootsst.cc \
+	bootshared.cc \
+	bootshared.h
 
 sstsim_x_SOURCES = \
 	main.cc \
 	$(sst_core_sources)
 
-sstinfo_SOURCES = \
+sstinfo_x_SOURCES = \
 	sstinfo.cc \
 	$(sst_core_sources)
 
@@ -153,7 +160,7 @@ sstsim_x_LDFLAGS = \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 
-sstinfo_LDADD = \
+sstinfo_x_LDADD = \
 	$(LIBLTDL) \
 	$(BOOST_SERIALIZATION_LIB) \
 	$(BOOST_MPI_LIB) \
@@ -164,7 +171,7 @@ sstinfo_LDADD = \
 	$(TCMALLOC_LIB) \
 	-lm
 	
-sstinfo_LDFLAGS = \
+sstinfo_x_LDFLAGS = \
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \

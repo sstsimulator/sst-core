@@ -1,4 +1,3 @@
-
 #include <sst_config.h>
 #include <sst/core/bootshared.h>
 
@@ -22,5 +21,5 @@ int main(int argc, char* argv[]) {
 		boot_sst_configure_env(verbose);
 	}
 	
-	boot_sst_executable("sstsim.x", verbose, argv);
+	boot_sst_executable("sstinfo.x", verbose, argv);
 }
