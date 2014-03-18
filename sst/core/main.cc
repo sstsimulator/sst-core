@@ -432,22 +432,26 @@ main(int argc, char *argv[])
 	struct rusage sim_ruse;
 	getrusage(RUSAGE_SELF, &sim_ruse);
 
-	std::cout << setiosflags(ios::fixed) << setprecision(2);
-	std::cout << "#" << std::endl;
-	std::cout << "#  Simulation Timing Information:" << std::endl;
-	std::cout << "#  Build time:             " << max_build_time << "  s" << std::endl;
-	std::cout << "#  Simulation time:        " << max_run_time   << "  s" << std::endl;
-	std::cout << "#  Total time:             " << max_total_time << "  s" << std::endl;
-        std::cout << "#  Simulated Time:         " << simulated_time << " " << simulated_time_prefix << "s" << std::endl;
-	std::cout << "#" << std::endl;
-	std::cout << "#  Simulation Resource Information:" << std::endl;
+	Output& sim_output = Simulation::getSimulation()->getSimulationOutput();
+
+	sim_output.output("#\n");
+	sim_output.output("# Simulation Timing Information:\n");
+	sim_output.output("# Build time:               %f seconds\n", max_build_time);
+	sim_output.output("# Simulation time:          %f seconds\n", max_run_time);
+	sim_output.output("# Total time:               %f seconds\n", max_total_time);
+	sim_output.output("# Simulated time:           %f %cs\n", simulated_time, simulated_time_prefix);
+	sim_output.output("#\n");
+	sim_output.output("# Simulation Resource Information:\n");
 #ifdef SST_COMPILE_MACOSX
-	std::cout << "#  Max Resident Set Size:  " << (sim_ruse.ru_maxrss/1024) << " KB" << std::endl;
+	sim_output.output("# Max Resident Set Size:    %" PRIu64 "KB\n",
+		(uint64_t) (sim_ruse.ru_maxrss/1024));
 #else
-	std::cout << "#  Max Resident Set Size:  " << sim_ruse.ru_maxrss << " KB" << std::endl;
+	sim_output.output("# Max Resident Set Size:    %" PRIu64 "KB\n",
+		(uint64_t) (sim_ruse.ru_maxrss));
 #endif
-	std::cout << "#  Page Faults:            " << sim_ruse.ru_majflt << " faults" << std::endl;
-	std::cout << std::endl;
+	sim_output.output("# Page Faults:              %" PRIu64 " faults\n", 
+		(uint64_t) sim_ruse.ru_majflt);
+	sim_output.output("\n");
     }
 
 #ifdef HAVE_MPI

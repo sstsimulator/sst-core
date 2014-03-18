@@ -36,6 +36,7 @@ public:
 
     int parseCmdLine( int argc, char* argv[] );
     int parseConfigFile( std::string config_string );
+    uint32_t getVerboseLevel();
 
     void setStopAt(std::string stopAtStr);
     void setTimeBase(std::string timeBase);

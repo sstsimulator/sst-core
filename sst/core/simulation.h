@@ -20,6 +20,7 @@
 #include <signal.h>
 #include <iostream>
 
+#include "sst/core/output.h"
 #include "sst/core/clock.h"
 //#include "sst/core/sdl.h"
 //#include "sst/core/component.h"
@@ -97,6 +98,7 @@ public:
     void setStopAtCycle( Config* cfg );
     void initialize();
     void run();
+    Output& getSimulationOutput() { return sim_output; };
     SimTime_t getCurrentSimCycle() const;
     void getElapsedSimTime(double *value, char *prefix) const;
     int getRank() const {return my_rank;}
@@ -184,7 +186,6 @@ private:
                                      Params params );
 
     TimeVortex* getTimeVortex() const { return timeVortex; }
-    
     void endSimulation(void) { endSim = true; }
 
     TimeVortex*      timeVortex;
@@ -204,7 +205,8 @@ private:
     unsigned int     init_phase;
     volatile sig_atomic_t lastRecvdSignal;
     std::map<ComponentId_t,LinkMap*> component_links;
-    
+    Output           sim_output;
+
     static Simulation *instance;
 
     friend class boost::serialization::access;

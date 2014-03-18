@@ -35,6 +35,7 @@
 #include <sst/core/syncQueue.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/timeVortex.h>
+#include <sst/core/output.h>
 
 #define SST_SIMTIME_MAX  0xffffffffffffffff
 
@@ -120,6 +121,7 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
 //     eQueue = new EventQueue_t;
     timeVortex = new TimeVortex;
     m_exit = new Exit( this, timeLord->getTimeConverter("100ns"), num_ranks == 1 );
+    sim_output.init("SSTCore", cfg->getVerboseLevel(), 0, Output::STDOUT);
 }
 
 void

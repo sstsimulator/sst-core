@@ -158,6 +158,10 @@ Config::Config( int my_rank )
     var_map = new po::variables_map();
 }
 
+uint32_t Config::getVerboseLevel() {
+	return verbose;
+}
+
 void Config::setTimeBase(std::string timebaseStr) {
 	timeBase = timebaseStr;
 }
