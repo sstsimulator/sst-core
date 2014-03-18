@@ -75,7 +75,8 @@ main(int argc, char *argv[])
 #endif
     Config cfg(rank);
 
-    SST::Simulation*  sim= NULL;
+    Output* sim_output = NULL;
+    SST::Simulation* sim = NULL;
 
     // All ranks parse the command line
     if ( cfg.parseCmdLine(argc, argv) ) {
@@ -138,6 +139,7 @@ main(int argc, char *argv[])
 	if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) {
 		// Now we have a config graph, create the simulation and configure signal handlers
 		sim = Simulation::createSimulation(&cfg, rank, size);
+		sim_output = &(Simulation::getSimulation()->getSimulationOutput());
 
 		signal(SIGUSR1, sigHandlerPrintStatus);
 		signal(SIGUSR2, sigHandlerPrintStatus);
@@ -159,15 +161,13 @@ main(int argc, char *argv[])
 			double end_graph_gen = sst_get_cpu_time();
 
 			if(cfg.verbose && (rank == 0)) {
-				std::cout << "# Graph construction took " <<
-					(end_graph_gen - start_graph_gen) << " seconds."
-					<< std::endl;
+				sim_output->output("# Graph construction took %f seconds\n",
+					(end_graph_gen - start_graph_gen));
 			}
 
 			// Check config graph to see if there are structural errors.
 			if ( graph->checkForStructuralErrors() ) {
-				printf("Structural errors found in the ConfigGraph.  Aborting...\n");
-				exit(-1);
+				sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
 			}
 
 			// Set all components to be instanced on rank 0 (the only
@@ -190,16 +190,15 @@ main(int argc, char *argv[])
 			if ( rank == 0 ) {
 				// Check config graph to see if there are structural errors.
 				if ( graph->checkForStructuralErrors() ) {
-					printf("Structural errors found in the ConfigGraph.  Aborting...\n");
-					exit(-1);
+					sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
 				}
 			}
 
 			double end_graph_gen = sst_get_cpu_time();
 
 			if(cfg.verbose && (rank == 0)) {
-				std::cout << "# Graph construction took " <<
-					(end_graph_gen - start_graph_gen) << " seconds." << std::endl;
+				sim_output->output("# Graph construction took %f seconds.\n",
+					(end_graph_gen - start_graph_gen));
 			}
 
 			double start_part = sst_get_cpu_time();
@@ -216,32 +215,32 @@ main(int argc, char *argv[])
 				// For now, do nothing.  Eventually we need to
 				// have a checker for the partitioning.
 				if(rank == 0) {
-					std::cout << "# SST will use a self-guided partition scheme." << std::endl;
+					sim_output->output("# SST will use a self-guided partition scheme.\n");
 				}
 			} else if ( cfg.partitioner == "simple" ) {
 				if(cfg.verbose && rank == 0) {
-					std::cout << "# Performing a simple partition..." << std::endl;
+					sim_output->output("# Performing a simple partition...\n");
 				}
 
 				simple_partition(graph, size);
 
 				if(cfg.verbose && rank == 0) {
-					std::cout << "# Partitionning process is complete." << std::endl;
+					sim_output->output("# Partitionning process is completed\n");
 				}
 			} else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
 				// perform a basic round robin partition
 				if(cfg.verbose && rank == 0) {
-					std::cout << "# Performing a round-robin partition..." << std::endl;
+					sim_output->output("# Performing a round-robin partition...\n");
 				}
 
 				rrobin_partition(graph, size);
 
 				if(cfg.verbose && rank == 0) {
-					std::cout << "# Partitionning process is complete." << std::endl;
+					sim_output->output("# Partitionning process is completed.\n");
 				}
 			} else if ( cfg.partitioner == "linear" ) {
 				if(cfg.verbose && rank == 0) {
-					std::cout << "# Partitionning using a linear scheme..." << std::endl;
+					sim_output->output("# Partitionning using a linear scheme...\n");
 				}
 
 				SSTLinearPartition* linear = new SSTLinearPartition(size, cfg.verbose);
@@ -249,12 +248,12 @@ main(int argc, char *argv[])
 				delete linear;
 
 				if(cfg.verbose && rank == 0) {
-					std::cout << "# Partitionning process is complete" << std::endl;
+					sim_output->output("# Partitionning process is completed\n");
 				}
 			} else if ( cfg.partitioner == "zoltan" ) {
 #ifdef HAVE_ZOLTAN
 				if(cfg.verbose && rank == 0) {
-					std::cout << "# Partitionning using Zoltan..." << std::endl;
+					sim_output->output("# Partitionning using Zoltan...\n");
 				}
 
 				SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
@@ -264,16 +263,14 @@ main(int argc, char *argv[])
 				delete zolt_part;
 
 				if(cfg.verbose && rank == 0) {
-					std::cout << "# Partitionning is complete." << std::endl;
+					sim_output->output("# Partitionning is completed.\n");
 				}
 #else
-				printf("Zoltan support is currently not available, aborting...\n");
-				abort();
+				sim_output->fatal(CALL_INFO, -1, "Zoltan support is not available. Configure did not find the Zoltan library.\n");
 #endif
 			} else {
 				if(rank == 0) {
-					std::cout << "# Partition scheme was not specified, using: " <<
-						cfg.partitioner << std::endl;
+					sim_output->output("# Partition scheme was not specified using: %s\n", cfg.partitioner.c_str());
 				}
 
 				partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
@@ -432,26 +429,25 @@ main(int argc, char *argv[])
 	struct rusage sim_ruse;
 	getrusage(RUSAGE_SELF, &sim_ruse);
 
-	Output& sim_output = Simulation::getSimulation()->getSimulationOutput();
-
-	sim_output.output("#\n");
-	sim_output.output("# Simulation Timing Information:\n");
-	sim_output.output("# Build time:               %f seconds\n", max_build_time);
-	sim_output.output("# Simulation time:          %f seconds\n", max_run_time);
-	sim_output.output("# Total time:               %f seconds\n", max_total_time);
-	sim_output.output("# Simulated time:           %f %cs\n", simulated_time, simulated_time_prefix);
-	sim_output.output("#\n");
-	sim_output.output("# Simulation Resource Information:\n");
+	sim_output->output("#\n");
+	sim_output->output("# Simulation Timing Information:\n");
+	sim_output->output("# Build time:               %f seconds\n", max_build_time);
+	sim_output->output("# Simulation time:          %f seconds\n", max_run_time);
+	sim_output->output("# Total time:               %f seconds\n", max_total_time);
+	sim_output->output("# Simulated time:           %f %cs\n", simulated_time, simulated_time_prefix);
+	sim_output->output("#\n");
+	sim_output->output("# Simulation Resource Information:\n");
 #ifdef SST_COMPILE_MACOSX
-	sim_output.output("# Max Resident Set Size:    %" PRIu64 "KB\n",
+	sim_output->output("# Max Resident Set Size:    %" PRIu64 " KB\n",
 		(uint64_t) (sim_ruse.ru_maxrss/1024));
 #else
-	sim_output.output("# Max Resident Set Size:    %" PRIu64 "KB\n",
+	sim_output->output("# Max Resident Set Size:    %" PRIu64 " KB\n",
 		(uint64_t) (sim_ruse.ru_maxrss));
 #endif
-	sim_output.output("# Page Faults:              %" PRIu64 " faults\n", 
+	sim_output->output("# Page Faults:              %" PRIu64 " faults\n",
 		(uint64_t) sim_ruse.ru_majflt);
-	sim_output.output("\n");
+	sim_output->output("#\n");
+	sim_output->output("\n");
     }
 
 #ifdef HAVE_MPI
