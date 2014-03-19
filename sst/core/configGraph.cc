@@ -113,15 +113,25 @@ void ConfigGraph::genDot(std::ostream &os, const std::string &name) const {
         if ( i->second->rank > maxRank) maxRank = i->second->rank;
     }
 
-    for ( int r = 0 ; r <= maxRank ; r++ ) {
-        if ( maxRank > 0 ) os << "\tsubgraph cluster" << r << " {\n";
+	if ( maxRank > 0 ) {
+		for ( int r = 0 ; r <= maxRank ; r++ ) {
+			os << "subgraph cluster" << r << " {\n";
+			for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+				if ( i->second->rank == r ) {
+					os << "\t\t";
+					i->second->genDot(os);
+				}
+			}
+			os << "\t}\n\n";
+		}
+	} else {
         for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-            if ( maxRank > 0 ) os << "\t";
             os << "\t";
             i->second->genDot(os);
         }
-        if ( maxRank > 0 ) os << "\t}\n\n";
-    }
+	}
+
+
     for (ConfigLinkMap_t::const_iterator i = links.begin() ; i != links.end() ; ++i) {
         os << "\t";
         i->second->genDot(os);
