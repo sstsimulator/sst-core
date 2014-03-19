@@ -129,29 +129,28 @@ Config::Config( int my_rank )
         ("all-parse", po::value< bool >(&all_parse), 
                                 "determine whether all ranks parse the sdl file, or only rank 0 [ true (default) | false ].  All-parse true is generally faster, but requires more memory.")
 #ifdef HAVE_ZOLTAN
-        ("partitioner", po::value< string >(&partitioner), 
+        ("partitioner", po::value< string >(&partitioner),
 	 "partitioner to be used <zoltan | self | simple | rrobin | linear | lib.partitioner_name> (option ignored for serial jobs)" )
 #else
-        ("partitioner", po::value< string >(&partitioner), 
+        ("partitioner", po::value< string >(&partitioner),
          "partitioner to be used <self | simple | rrobin | linear | lib.partitioner_name> (option ignored for serial jobs)")
 #endif
-
-        ("generator", po::value< string >(&generator), 
+        ("generator", po::value< string >(&generator),
          "generator to be used to build simulation <lib.generator_name>")
-        ("gen-options", po::value< string >(&generator_options), 
+        ("gen-options", po::value< string >(&generator_options),
          "options to be passed to generator function (must use quotes if whitespace is present)")
-        ("dump-partition", po::value< string >(&dump_component_graph_file), 
-         "dump component partition to this file (default is not to dump information)")
-#ifdef HAVE_PYTHON
-        ("model-options", po::value< string >(&model_options),
-	 "Provide options to the SST Python scripting engine (default is to provide no script options)")
-#endif
+        ("output-partition", po::value< string >(&dump_component_graph_file),
+         "Dump the component partition to this file (default is not to dump information)")
         ("output-config", po::value< string >(&dump_config_graph),
 	 "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
 	("output-dot", po::value <string >(&output_dot),
 	 "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
 	("output-directory", po::value <string >(&output_directory),
 	 "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
+#ifdef HAVE_PYTHON
+        ("model-options", po::value< string >(&model_options),
+	 "Provide options to the SST Python scripting engine (default is to provide no script options)")
+#endif
 
 	;
 
