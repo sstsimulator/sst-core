@@ -64,7 +64,7 @@ Config::Config( int my_rank )
 #ifdef HAVE_PYTHON
     model_options = "";
 #endif
-    all_parse   = true;
+    all_parse   = false;
     verbose     = 0;
     no_env_config = false;
     
@@ -126,8 +126,8 @@ Config::Config( int my_rank )
 	                        "set time at which simulation will end execution")
         ("timebase", po::value< string >(&timeBase), 
                                 "sets the base time step of the simulation (default: 1ps)")
-        ("all-parse", po::value< bool >(&all_parse), 
-                                "determine whether all ranks parse the sdl file, or only rank 0 [ true (default) | false ].  All-parse true is generally faster, but requires more memory.")
+        ("all-parse", po::value< bool >(&all_parse)->default_value(false), 
+                                "determine whether all ranks parse the sdl file, or only rank 0 [ true | false (default)].  All-parse true is generally faster for XML, but requires more memory.  Can cause failures with Python-based configuration")
 #ifdef HAVE_ZOLTAN
         ("partitioner", po::value< string >(&partitioner),
 	 "partitioner to be used <zoltan | self | simple | rrobin | linear | lib.partitioner_name> (option ignored for serial jobs)" )
