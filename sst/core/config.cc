@@ -38,9 +38,10 @@ Config::~Config() {
     delete var_map;
 }
     
-Config::Config( int my_rank )
+Config::Config( int my_rank, int world_size )
 {
     rank        = my_rank;
+	numRanks    = world_size;
     debugFile   = "/dev/null";
     archive     = false;
     archiveType = "bin";

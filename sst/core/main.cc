@@ -73,7 +73,7 @@ main(int argc, char *argv[])
     const int rank = 0;
     const int size = 1;
 #endif
-    Config cfg(rank);
+    Config cfg(rank, size);
 
     Output* sim_output = NULL;
     SST::Simulation* sim = NULL;

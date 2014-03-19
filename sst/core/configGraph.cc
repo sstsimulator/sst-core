@@ -36,9 +36,6 @@ ComponentId_t ConfigComponent::count = 0;
 LinkId_t ConfigLink::count = 0;
 
 
-static inline int min( int x, int y ) { return x < y ? x : y; }
-
-
 void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
     os << "  type = " << type << std::endl;

@@ -31,7 +31,7 @@ class Config {
 public:
     typedef enum { UNKNOWN, INIT, RUN, BOTH } Mode_t;
 
-    Config(int my_rank);
+    Config(int my_rank, int world_size);
     ~Config();
 
     int parseCmdLine( int argc, char* argv[] );
@@ -63,37 +63,36 @@ public:
 
     bool            all_parse;
     uint32_t        verbose;
-    bool 	    no_env_config;
-    
-    inline Mode_t
-    setRunMode( std::string mode ) 
+	bool			no_env_config;
+
+    inline Mode_t setRunMode( std::string mode )
     {
-        if( ! mode.compare( "init" ) ) return INIT; 
-        if( ! mode.compare( "run" ) ) return RUN; 
-        if( ! mode.compare( "both" ) ) return BOTH; 
+        if( ! mode.compare( "init" ) ) return INIT;
+        if( ! mode.compare( "run" ) ) return RUN;
+        if( ! mode.compare( "both" ) ) return BOTH;
         return UNKNOWN;
     }
 
-    void print() {
-	std::cout << "debugFile = " << debugFile << std::endl;
-	std::cout << "archive = " << archive << std::endl;
-	std::cout << "archiveType = " << archiveType << std::endl;
-	std::cout << "archiveFile = " << archiveFile << std::endl;
-	std::cout << "runMode = " << runMode << std::endl;
-	std::cout << "libpath = " << getLibPath() << std::endl;
-	std::cout << "sdlfile = " << sdlfile << std::endl;
-	std::cout << "stopAtCycle = " << stopAtCycle << std::endl;
-	std::cout << "timeBase = " << timeBase << std::endl;
-	std::cout << "partitioner = " << partitioner << std::endl;
-	std::cout << "generator = " << generator << std::endl;
-	std::cout << "gen_options = " << generator_options << std::endl;
-        std::cout << "dump_config_graph = " << dump_config_graph << std::endl;
-	std::cout << "no_env_config = " << no_env_config << std::endl;
-        std::cout << "output_directory = " << output_directory << std::endl;
+	void print() {
+		std::cout << "debugFile = " << debugFile << std::endl;
+		std::cout << "archive = " << archive << std::endl;
+		std::cout << "archiveType = " << archiveType << std::endl;
+		std::cout << "archiveFile = " << archiveFile << std::endl;
+		std::cout << "runMode = " << runMode << std::endl;
+		std::cout << "libpath = " << getLibPath() << std::endl;
+		std::cout << "sdlfile = " << sdlfile << std::endl;
+		std::cout << "stopAtCycle = " << stopAtCycle << std::endl;
+		std::cout << "timeBase = " << timeBase << std::endl;
+		std::cout << "partitioner = " << partitioner << std::endl;
+		std::cout << "generator = " << generator << std::endl;
+		std::cout << "gen_options = " << generator_options << std::endl;
+		std::cout << "dump_config_graph = " << dump_config_graph << std::endl;
+		std::cout << "no_env_config = " << no_env_config << std::endl;
+		std::cout << "output_directory = " << output_directory << std::endl;
 #ifdef HAVE_PYTHON
-        std::cout << "model_options = " << model_options << std::endl;
+		std::cout << "model_options = " << model_options << std::endl;
 #endif
-    }
+	}
 
     std::string getLibPath(void) const {
         char *envpath = getenv("SST_LIB_PATH");
@@ -104,6 +103,9 @@ public:
         }
         return libpath;
     }
+
+	int getRank() const { return rank; }
+	int getNumRanks() const { return numRanks; }
 
 private:
     boost::program_options::options_description* visNoConfigDesc;
@@ -143,6 +145,7 @@ private:
     }
 
     int rank;
+	int numRanks;
 
 };
 
