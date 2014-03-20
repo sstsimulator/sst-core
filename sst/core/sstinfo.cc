@@ -580,9 +580,13 @@ void SSTElement_ParamInfo::generateParameterInfoXMLData(int Index, TiXmlNode* XM
 	TiXmlElement* XMLParameterElement = new TiXmlElement("Parameter");
 	XMLParameterElement->SetAttribute("Index", Index);
 	XMLParameterElement->SetAttribute("Name", getName());
-	XMLParameterElement->SetAttribute("Description", getDesc());
-	XMLParameterElement->SetAttribute("Default", getDefault());
-	
+
+	const char* desc = getDesc();
+	XMLParameterElement->SetAttribute("Description", (NULL == desc) ? "" : desc);
+
+	const char* def = getDefault();
+	XMLParameterElement->SetAttribute("Default", (NULL == def) ? "" : def);
+
     // Add this Parameter Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLParameterElement);
 }
