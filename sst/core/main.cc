@@ -59,7 +59,6 @@ sigHandlerPrintStatus(int signal)
     Simulation::setSignal(signal);
 }
 
-
 int
 main(int argc, char *argv[])
 {
@@ -411,7 +410,6 @@ main(int argc, char *argv[])
         sim->run();
 
         sim->getElapsedSimTime(&simulated_time, &simulated_time_prefix);
-        delete sim;
     }
 
     end_run = sst_get_cpu_time();
@@ -462,6 +460,9 @@ main(int argc, char *argv[])
 #ifdef HAVE_MPI
     }
 #endif
+
+    // Delete the simulation object
+    delete sim;
 
 #ifdef HAVE_MPI
     delete mpiEnv;
