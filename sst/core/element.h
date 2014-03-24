@@ -47,7 +47,7 @@ struct ElementInfoParam {
 };
 
 struct ElementInfoPort {
-    const char *name;
+    const char *name;          // name can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter
     const char *description;
     const char **validEvents;
 };

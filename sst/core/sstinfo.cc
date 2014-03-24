@@ -24,7 +24,6 @@
 #include <sys/stat.h>
 #include <ltdl.h>
 #include <dlfcn.h>
-//#include <ctime>
 
 #include <sst/core/elemLoader.h>
 #include <sst/core/element.h>
@@ -33,9 +32,7 @@
 #include <sst/core/tinyxml/tinyxml.h>
 #include <sst/core/sstinfo.h>
 
-
 namespace po = boost::program_options;
-
 
 using namespace std;
 using namespace SST;
@@ -51,6 +48,8 @@ ConfigSSTInfo                        g_configuration;
 void initLTDL(std::string searchPath); 
 void shutdownLTDL(); 
 void processSSTElementFiles(std::string searchPath);
+bool areOutputFiltersEnabled();
+bool testNameAgainstOutputFilters(std::string testElemName, std::string testCompName);
 void outputSSTElementInfo();
 void generateXMLOutputFile();
 
@@ -66,8 +65,16 @@ int main(int argc, char *argv[])
 
     // Read in the Element files and process them
     processSSTElementFiles(g_searchPath);
-    outputSSTElementInfo();
-    generateXMLOutputFile();
+    
+    // Do we output in Human Readable form
+    if (g_configuration.getOptionBits() & CFG_OUTPUTHUMAN) {
+        outputSSTElementInfo();
+    }
+    
+    // Do we output an XML File
+    if (g_configuration.getOptionBits() & CFG_OUTPUTXML) {
+        generateXMLOutputFile();
+    }
 
     delete g_loader;
 
@@ -93,15 +100,24 @@ void processSSTElementFiles(std::string searchPath)
     unsigned int            x;
     bool                    testAllEntries = false;
     std::vector<bool>       EntryProcessedArray;
+
+    // Tell the user what libraries (if not all selected) will be processed
+    if (g_configuration.getElementsToProcessArray()->size() > 0) {
+        if (g_configuration.getElementsToProcessArray()->at(0) != "all") {
+            for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
+                fprintf (stdout, "Looking For Library \"%s\"\n", g_configuration.getElementsToProcessArray()->at(x).c_str());
+            }
+        }
+    }
     
     // Init global var
     g_fileProcessedCount = 0;
 
     // Figure out if we are supposed to check all entrys, and setup array that 
     // tracks what entries have been processed
-    for (x = 0; x < g_configuration.GetElementsToProcessArray()->size(); x++) {
+    for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
         EntryProcessedArray.push_back(false);
-        if (g_configuration.GetElementsToProcessArray()->at(x) == "all") {
+        if (g_configuration.getElementsToProcessArray()->at(x) == "all") {
             testAllEntries = true;
             EntryProcessedArray[x] = true;
         }
@@ -127,9 +143,9 @@ void processSSTElementFiles(std::string searchPath)
                 return;
             }
             
-            for (x = 0; x < g_configuration.GetElementsToProcessArray()->size(); x++) {
+            for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
                 // Check to see if we are supposed to process just this file or all files
-                if ((true == testAllEntries) || (dirEntryName == g_configuration.GetElementsToProcessArray()->at(x))) {
+                if ((true == testAllEntries) || (dirEntryName == g_configuration.getElementsToProcessArray()->at(x))) {
 
                     // Now only check out files that have the .so extension (.so must 
                     // be at the end of the file name) and a 'lib' in the front of the file
@@ -163,9 +179,9 @@ void processSSTElementFiles(std::string searchPath)
         
         // Now check to see if we processed all entries
         if (false == testAllEntries) {
-            for (x = 0; x < g_configuration.GetElementsToProcessArray()->size(); x++) {
+            for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
                 if (false == EntryProcessedArray[x]) {
-                    std::string name = g_configuration.GetElementsToProcessArray()->at(x);
+                    std::string name = g_configuration.getElementsToProcessArray()->at(x);
                     fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s - BECAUSE IT WAS NOT FOUND\n", name.c_str());
                 }
             }
@@ -179,12 +195,79 @@ void processSSTElementFiles(std::string searchPath)
     }
 }
 
+bool areOutputFiltersEnabled()
+{
+    int filteredElementArraySize = g_configuration.getFilteredElementNamesArray()->size();
+    int filteredElemCompArraySize = g_configuration.getFilteredElementComponentNamesArray()->size();
+
+    // Check if there are no Filters
+    if ((0 == filteredElementArraySize) && (0 == filteredElemCompArraySize)) {
+        // A filters exists, so we need return true to indicate that the 
+        // output filters are enabled.
+        return false;
+    }
+    return true;
+}
+
+bool testNameAgainstOutputFilters(std::string testElemName, std::string testCompName)
+{
+    int x;
+    int filteredElementArraySize = g_configuration.getFilteredElementNamesArray()->size();
+    int filteredElemCompArraySize = g_configuration.getFilteredElementComponentNamesArray()->size();
+    std::string filterName;
+    std::string elemCompName;
+
+    // Check to see if the Output Filters are disabled
+    if (false == areOutputFiltersEnabled()) {
+        // Filters are Disabled, so always allow the output 
+        return true;
+    }
+
+    // Check the Element Name, against the Element Filter list, if there is
+    // a match, then allow the Element to be displayed.  
+    // NOTE: The Element name is also passed in when checking a component
+    //       if the Element is in both Filter lists, the Element will always be
+    //       displayed
+    for (x = 0; x < filteredElementArraySize; x++) {
+        filterName = g_configuration.getFilteredElementNamesArray()->at(x);
+        if (testElemName == filterName) {
+            return true;
+        }
+    }
+    
+    elemCompName = testElemName + "." + testCompName; 
+    // Check the Element.Component Name, against the Element.Component Filter list, 
+    // if there is a match, then allow the Component to be displayed.  
+    for (x = 0; x < filteredElemCompArraySize; x++) {
+        filterName = g_configuration.getFilteredElementComponentNamesArray()->at(x);
+        if (elemCompName == filterName) {
+            return true;
+        }
+    }
+
+    // The Name
+    return false;    
+}
+
 void outputSSTElementInfo()
 {
     unsigned int            x;
     SSTElement_LibraryInfo* pLibInfo;
     
     fprintf (stdout, "PROCESSED %d .so (SST ELEMENT) FILES FOUND IN DIRECTORY %s\n", g_fileProcessedCount, g_searchPath.c_str());
+
+    // Tell the user what Elements will be displayed
+    if (g_configuration.getFilteredElementNamesArray()->size() > 0) {
+        for (x = 0; x < g_configuration.getFilteredElementNamesArray()->size(); x++) {
+            fprintf (stdout, "Filtering output on Element = \"%s\"\n", g_configuration.getFilteredElementNamesArray()->at(x).c_str());
+        }
+    }
+    // Tell the user what Element.Component will be displayed
+    if (g_configuration.getFilteredElementComponentNamesArray()->size() > 0) {
+        for (x = 0; x < g_configuration.getFilteredElementComponentNamesArray()->size(); x++) {
+            fprintf (stdout, "Filtering output on Element.Component = \"%s\"\n", g_configuration.getFilteredElementComponentNamesArray()->at(x).c_str());
+        }
+    }
     
     // Now dump the Library Info
     for (x = 0; x < g_libInfoArray.size(); x++) {
@@ -201,13 +284,28 @@ void generateXMLOutputFile()
     char                    TimeStamp[32];
     std::time_t             now = std::time(NULL);
     std::tm*                ptm = std::localtime(&now);
-
+    FILE* pFile;
+    
+    // Check to see that the file path is valid by trying to create the file
+    pFile = fopen (g_configuration.getXMLFilePath().c_str() , "w+");
+    if (pFile == NULL) {
+        fprintf(stderr, "\n");
+        fprintf(stderr, "================================================================================\n");
+        fprintf(stderr, "ERROR: Unable to create XML File %s\n", g_configuration.getXMLFilePath().c_str());
+        fprintf(stderr, "================================================================================\n");
+        fprintf(stderr, "\n");
+        fprintf(stderr, "\n");
+        return;
+    } else {
+     fclose (pFile);
+    }
+    
     // Create a Timestamp Format: 2014.02.15_20:20:00
     std::strftime(TimeStamp, 32, "%Y.%m.%d_%H:%M:%S", ptm);
     
     fprintf(stdout, "\n");
     fprintf(stdout, "================================================================================\n");
-    fprintf(stdout, "GENERATING XML FILE SSTInfo.xml\n");
+    fprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.getXMLFilePath().c_str());
     fprintf(stdout, "================================================================================\n");
     fprintf(stdout, "\n");
     fprintf(stdout, "\n");
@@ -253,103 +351,180 @@ void generateXMLOutputFile()
 	XMLDocument.LinkEndChild(XMLTopLevelElement);
     
     // Save the XML Document
-	XMLDocument.SaveFile( "SSTInfo.xml" );
+	XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
 }
 
 
 ConfigSSTInfo::ConfigSSTInfo()
 {
-    m_optionBits = 0x0;
+    m_optionBits = CFG_OUTPUTHUMAN;  // Enable normal output by default
+    m_XMLFilePath = "./SSTInfo.xml"; // Default XML File Path
+    
+    // Setup the Visible Options
     m_configDesc = new po::options_description( "options" );
     m_configDesc->add_options()
-        ("help", "Print help message")
-        ("version", "Print sst package Release Version")
-        ("libs", po::value< std::vector<std::string> >()->multitoken(), 
-            "{all | lib<elementname>.so} - Element Library(s) to provide info on - default is 'all'")
-        ("format", po::value< std::string >(), "{human | computer} - Format in either human readable (default) or computer format ") 
+        ("help,h", "Print Help Message")
+        ("version,v", "Print SST Package Release Version")
+        ("nodisplay,n", "Do Not Display Output - default is off")
+        ("xml,x", "Generate XML data - default is off")
+        ("outputxml,o", po::value< string >( &m_XMLFilePath ), "Filepath XML file - default is ./SSTInfo.xml")
+        ("libs,l", po::value< std::vector<std::string> >()->multitoken(), 
+            "{all | <elementname>} - Element Library(s) to process - default is 'all'")
     ; 
+    
+    m_hiddenDesc = new po::options_description( "" );
+    m_hiddenDesc->add_options()
+        ("elemfilt", po::value< std::vector<std::string> >()->multitoken(), 
+            "[<elem[.comp]>] - Element Library(s) and components to filter on output - default is to show all")
+    ; 
+
+    m_posDesc = new po::positional_options_description();
+    m_posDesc->add("elemfilt", -1);
+    
     m_vm = new po::variables_map();
 }
 
 ConfigSSTInfo::~ConfigSSTInfo()
 {
     delete m_configDesc;
+    delete m_hiddenDesc;
+    delete m_posDesc;
     delete m_vm;
 }
- 
+
+void ConfigSSTInfo::outputUsage()
+{
+    cout << "Usage: " << m_AppName << " [<element[.component]>] "<< " [options]" << endl;
+    cout << *m_configDesc << endl;
+}
+
+void ConfigSSTInfo::outputVersion()
+{
+    cout << "SST Release Version " PACKAGE_VERSION << endl;
+}
 
 int ConfigSSTInfo::parseCmdLine(int argc, char* argv[])
 {
-    std::string strformat;
-        
+    unsigned int              x;
+    size_t                    foundIndex;
+    std::string               filterName;
+    std::string               libraryName;
+    std::string               fullLibraryName;
+    std::vector<std::string>  filteredNames;
+
+    m_AppName = argv[0];
+
+    po::options_description cmdline_options;
+    cmdline_options.add(*m_configDesc).add(*m_hiddenDesc);
+
     // Parse the Command line into something we can analyze
     try {
-        po::store(po::parse_command_line(argc, argv, *m_configDesc), *m_vm);
+        po::parsed_options parsed = po::command_line_parser(argc,argv).options(cmdline_options).positional(*m_posDesc).run();
+        po::store( parsed, *m_vm );
         po::notify(*m_vm);
     }
     catch (exception& e) {
-        cout << "Error: " << e.what() << endl;
-        
         // Tell the user the usage when something is wrong on parameters
-        cout << "Usage: " << argv[0] << " [options]" << endl;
-        cout << *m_configDesc << endl;
-
+        cout << "Error: " << e.what() << endl;
+        outputUsage();        
         return -1;
     }
-
+    
     // Check if user is asking for help
-    if (m_vm->count( "help")) {
-        cout << "Usage: " << argv[0] << " [options]" << endl;
-        cout << *m_configDesc << endl;
+    if (m_vm->count("help")) {
+        outputUsage();        
         return 1;
     }
     
     // Check if user is asking for version
     if (m_vm->count("version")) {
-        cout << "SST Release Version " PACKAGE_VERSION << endl;
+        outputVersion();
         return 1;
     }
+
+    // Check if user is asking for XML Output
+    if (m_vm->count("xml")) {
+        m_optionBits |= CFG_OUTPUTXML;
+    }
+
+    // Check if user is asking for NO Text display
+    if (m_vm->count("nodisplay")) {
+        m_optionBits &= ~CFG_OUTPUTHUMAN;
+    }
+
+    // Check if user is setting the XML output filepath
+    if (m_vm->count("outputxml")) {
+    }
+
+    // Get the List of filters on the output
+    if (m_vm->count("elemfilt")) {
+        // Get the list from the command parser
+        filteredNames = (*m_vm)["elemfilt"].as< std::vector<std::string> >();
+        
+        // Look the Name over and decide if it is an element name only or a 
+        // element.component name, and then add it to the appropriate list
+        for (x = 0; x < filteredNames.size(); x++) {
+            filterName = filteredNames[x];
+            foundIndex = filterName.find(".");
+            
+            if (foundIndex != string::npos) {   
+                // We found a "." in the name so assume that this is a element.component
+                m_filteredElementComponentNames.push_back(filterName);
+            } else {
+                // No "." found, this is an element only name
+                m_filteredElementNames.push_back(filterName);
+            }
+        }
+    }    
     
     // Get the List of libs that the user may trying to use
     if (m_vm->count("libs")) {
         // Get the list from the command parser
         m_elementsToProcess = (*m_vm)["libs"].as< std::vector<std::string> >();
         
-        // TODO: WALK ALL ELEMENTS AND SEE IF THEY HAVE A lib and .so in front and back if now,
-        //       EXTEND THEM TO.... 
-       
-        
-        
-        
+        // Walk through each element and make sure it has a "lib" in front 
+        // and a ".so" in back if not, add them
+        for (x = 0; x < m_elementsToProcess.size(); x++) {
+            fullLibraryName = "";
+            libraryName = m_elementsToProcess[x];
+
+            // See if "lib" is at front of the library name; if not, append to full name
+            foundIndex = libraryName.find("lib");
+            if (foundIndex != 0) {
+                fullLibraryName += "lib";
+            }
+            
+            // Add the Library Name to the full name
+            fullLibraryName += libraryName;
+            
+            // See if ".so" is at back of the library name; if not, postpend to full name
+            foundIndex = libraryName.rfind(".so");
+            if (foundIndex != libraryName.length() - 3)
+            {
+                fullLibraryName += ".so";
+            }
+            
+            // Write the full name back to the m_elementsToProcess
+            m_elementsToProcess[x] = fullLibraryName;
+        }
     } else {
         // Build the default value
         m_elementsToProcess.push_back(std::string("all"));
     }
-
-    // Get the List of libs that the user may trying to use
-    if (m_vm->count("format")) {
-        // Get the format from the command parser, and force it to lowercase 
-        strformat = (*m_vm)["format"].as< std::string >();
-        std::transform(strformat.begin(), strformat.end(), strformat.begin(), ::tolower);
-    } else {
-        // Build the default value
-        strformat = "human";
-    }
-    if ((strformat != "human") && (strformat != "computer")) {
-        fprintf(stderr, "WARNING: Undefined format '%s'; defaulting to 'human' format\n", strformat.c_str());
-        strformat = "human";
-    }
-    if (strformat == "human") {
-        m_optionBits |= CFG_FORMATHUMAN;
-    }
-    
     
 //// DEBUG    
-//cout << "DEBUG NUMBER OF ELEMENTS = " << m_elementsToProcess.size() << endl;
-//for (unsigned int x = 0; x < m_elementsToProcess.size(); x++) {
-//    cout << " ELEMENT #" << x << " = " << m_elementsToProcess[x] << endl;
+//cout << "DEBUG ELEMENTS TO PROCESS = " << m_elementsToProcess.size() << endl;
+//for (x = 0; x < m_elementsToProcess.size(); x++) {
+//    cout << " LIBRARY ELEMENT TO PROCESS #" << x << " = " << m_elementsToProcess[x] << endl;
 //}
-//cout << "DEBUG FORMAT = " << strformat << endl;
+//cout << "DEBUG ELEMENT NAMES TO FILTER = " << m_filteredElementNames.size() << endl;
+//for (x = 0; x < m_filteredElementNames.size(); x++) {
+//    cout << " ELEMENT NAME TO FILTER #" << x << " = " << m_filteredElementNames[x] << endl;
+//}
+//cout << "DEBUG ELEMENT.COMP NAMES TO FILTER = " << m_filteredElementComponentNames.size() << endl;
+//for (x = 0; x < m_filteredElementComponentNames.size(); x++) {
+//    cout << " ELEMENT.COMP NAME TO FILTER #" << x << " = " << m_filteredElementComponentNames[x] << endl;
+//}
 //cout << "DEBUG OPTIONBITS = " << m_optionBits << endl;
 //return 1;
 //// DEBUG    
@@ -445,50 +620,84 @@ void SSTElement_LibraryInfo::outputLibraryInfo(int LibIndex)
     SSTElement_ModuleInfo*       eim;
     SSTElement_PartitionerInfo*  eip;
     SSTElement_GeneratorInfo*    eig;
+    bool                         enableFullElementOutput = true;
+    bool                         elemHeaderBeenOutput = false;
+
+    // Test to see if the Output Filters are Enabled, if yes, then
+    // we need to do some more checking
+    if (true == areOutputFiltersEnabled()) {
+        // Test this element name to see if it is in the filter list, if yes
+        // then we allow its full output
+        enableFullElementOutput = testNameAgainstOutputFilters(getLibraryName(), "");
+    }
+
+    // Are we to output the Full Element Information
+    if (true == enableFullElementOutput) {
+       
+        fprintf(stdout, "================================================================================\n");
+        fprintf(stdout, "ELEMENT %d = %s (%s)\n", LibIndex, getLibraryName().c_str(), getLibraryDescription().c_str());
+        
+        numObjects = getNumberOfLibraryComponents();
+        fprintf(stdout, "   NUM COMPONENTS    = %d\n", numObjects);
+        for (x = 0; x < numObjects; x++) {
+            eic = getInfoComponent(x);
+            eic->outputComponentInfo(x);
+        }
+        
+        numObjects = getNumberOfLibraryIntrospectors(); 
+        fprintf(stdout, "   NUM INTROSPECTORS = %d\n", numObjects);
+        for (x = 0; x < numObjects; x++) {
+            eii = getInfoIntrospector(x);
+            eii->outputIntrospectorInfo(x);
+        }
     
-    fprintf(stdout, "================================================================================\n");
-    fprintf(stdout, "ELEMENT %d = %s (%s)\n", LibIndex, getLibraryName().c_str(), getLibraryDescription().c_str());
+        numObjects = getNumberOfLibraryEvents();        
+        fprintf(stdout, "   NUM EVENTS        = %d\n", numObjects);
+        for (x = 0; x < numObjects; x++) {
+            eie = getInfoEvent(x);
+            eie->outputEventInfo(x);
+        }
     
-    numObjects = getNumberOfLibraryComponents();
-    fprintf(stdout, "   NUM COMPONENTS    = %d\n", numObjects);
-    for (x = 0; x < numObjects; x++) {
-        eic = getInfoComponent(x);
-        eic->outputComponentInfo(x);
-    }
+        numObjects = getNumberOfLibraryModules();       
+        fprintf(stdout, "   NUM MODULES       = %d\n", numObjects);
+        for (x = 0; x < numObjects; x++) {
+            eim = getInfoModule(x);
+            eim->outputModuleInfo(x);
+        }
     
-    numObjects = getNumberOfLibraryIntrospectors(); 
-    fprintf(stdout, "   NUM INTROSPECTORS = %d\n", numObjects);
-    for (x = 0; x < numObjects; x++) {
-        eii = getInfoIntrospector(x);
-        eii->outputIntrospectorInfo(x);
-    }
-
-    numObjects = getNumberOfLibraryEvents();        
-    fprintf(stdout, "   NUM EVENTS        = %d\n", numObjects);
-    for (x = 0; x < numObjects; x++) {
-        eie = getInfoEvent(x);
-        eie->outputEventInfo(x);
-    }
-
-    numObjects = getNumberOfLibraryModules();       
-    fprintf(stdout, "   NUM MODULES       = %d\n", numObjects);
-    for (x = 0; x < numObjects; x++) {
-        eim = getInfoModule(x);
-        eim->outputModuleInfo(x);
-    }
-
-    numObjects = getNumberOfLibraryPartitioners();  
-    fprintf(stdout, "   NUM PARTITIONERS  = %d\n", numObjects);
-    for (x = 0; x < numObjects; x++) {
-        eip = getInfoPartitioner(x);
-        eip->outputPartitionerInfo(x);
-    }
-
-    numObjects = getNumberOfLibraryGenerators();    
-    fprintf(stdout, "   NUM GENERATORS    = %d\n", numObjects);
-    for (x = 0; x < numObjects; x++) {
-        eig = getInfoGenerator(x);
-        eig->outputGeneratorInfo(x);
+        numObjects = getNumberOfLibraryPartitioners();  
+        fprintf(stdout, "   NUM PARTITIONERS  = %d\n", numObjects);
+        for (x = 0; x < numObjects; x++) {
+            eip = getInfoPartitioner(x);
+            eip->outputPartitionerInfo(x);
+        }
+    
+        numObjects = getNumberOfLibraryGenerators();    
+        fprintf(stdout, "   NUM GENERATORS    = %d\n", numObjects);
+        for (x = 0; x < numObjects; x++) {
+            eig = getInfoGenerator(x);
+            eig->outputGeneratorInfo(x);
+        }
+    } else {
+        // Check each component one at a time
+        numObjects = getNumberOfLibraryComponents();
+        for (x = 0; x < numObjects; x++) {
+            
+            eic = getInfoComponent(x);
+            
+            // See if this component is to be outputed
+            if (true == testNameAgainstOutputFilters(getLibraryName(), eic->getName())) {
+            
+                // Check to see if we have output'ed the Element header the at least once                 
+                if (false == elemHeaderBeenOutput) {
+                    fprintf(stdout, "================================================================================\n");
+                    fprintf(stdout, "ELEMENT %d = %s (%s)\n", LibIndex, getLibraryName().c_str(), getLibraryDescription().c_str());
+                    elemHeaderBeenOutput = true;
+                }
+                
+                eic->outputComponentInfo(x);
+            }
+        }
     }
 }
 
@@ -579,13 +788,9 @@ void SSTElement_ParamInfo::generateParameterInfoXMLData(int Index, TiXmlNode* XM
     // Build the Element to Represent the Parameter
 	TiXmlElement* XMLParameterElement = new TiXmlElement("Parameter");
 	XMLParameterElement->SetAttribute("Index", Index);
-	XMLParameterElement->SetAttribute("Name", getName());
-
-	const char* desc = getDesc();
-	XMLParameterElement->SetAttribute("Description", (NULL == desc) ? "" : desc);
-
-	const char* def = getDefault();
-	XMLParameterElement->SetAttribute("Default", (NULL == def) ? "" : def);
+	XMLParameterElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLParameterElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
+	XMLParameterElement->SetAttribute("Default", (NULL == getDefault()) ? "" : getDefault());
 
     // Add this Parameter Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLParameterElement);
@@ -605,14 +810,12 @@ void SSTElement_PortInfo::generatePortInfoXMLData(int Index, TiXmlNode* XMLParen
 {
     char          Comment[256];
     TiXmlElement* XMLValidEventElement;
-//    TiXmlElement* XMLEventTextElement;
-//    TiXmlText*    XMLEventText;
 
     // Build the Element to Represent the Component
 	TiXmlElement* XMLPortElement = new TiXmlElement("Port");
 	XMLPortElement->SetAttribute("Index", Index);
-	XMLPortElement->SetAttribute("Name", getName());
-	XMLPortElement->SetAttribute("Description", getDesc());
+	XMLPortElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLPortElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
 
 	// Get the Num Valid Event and Display an XML comment about them
     sprintf(Comment, "NUM Valid Events = %d", m_numValidEvents);
@@ -623,7 +826,7 @@ void SSTElement_PortInfo::generatePortInfoXMLData(int Index, TiXmlNode* XMLParen
         // Build the Element to Represent the ValidEvent
         XMLValidEventElement = new TiXmlElement("PortValidEvent");
         XMLValidEventElement->SetAttribute("Index", x);
-        XMLValidEventElement->SetAttribute("Event", getValidEvent(x));
+        XMLValidEventElement->SetAttribute("Event", (NULL == getValidEvent(x)) ? "" : getValidEvent(x));
         
         // Add the ValidEvent element to the Port Element
         XMLPortElement->LinkEndChild(XMLValidEventElement);
@@ -698,9 +901,9 @@ void SSTElement_ComponentInfo::generateComponentInfoXMLData(int Index, TiXmlNode
     // Build the Element to Represent the Component
 	TiXmlElement* XMLComponentElement = new TiXmlElement("Component");
 	XMLComponentElement->SetAttribute("Index", Index);
-	XMLComponentElement->SetAttribute("Name", getName());
-	XMLComponentElement->SetAttribute("Description", getDesc());
-	XMLComponentElement->SetAttribute("Category", getCategoryString());
+	XMLComponentElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLComponentElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
+	XMLComponentElement->SetAttribute("Category", (NULL == getCategoryString()) ? "" : getCategoryString());
 
 	// Get the Num Parameters and Display an XML comment about them
     sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
@@ -778,8 +981,8 @@ void SSTElement_IntrospectorInfo::generateIntrospectorInfoXMLData(int Index, TiX
     // Build the Element to Represent the Introspector
 	TiXmlElement* XMLIntrospectorElement = new TiXmlElement("Introspector");
 	XMLIntrospectorElement->SetAttribute("Index", Index);
-	XMLIntrospectorElement->SetAttribute("Name", getName());
-	XMLIntrospectorElement->SetAttribute("Description", getDesc());
+	XMLIntrospectorElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLIntrospectorElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
 	
 	// Get the Num Parameters and Display an XML comment about them
     sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
@@ -804,8 +1007,8 @@ void SSTElement_EventInfo::generateEventInfoXMLData(int Index, TiXmlNode* XMLPar
     // Build the Element to Represent the Event
 	TiXmlElement* XMLEventElement = new TiXmlElement("Event");
 	XMLEventElement->SetAttribute("Index", Index);
-	XMLEventElement->SetAttribute("Name", getName());
-	XMLEventElement->SetAttribute("Description", getDesc());
+	XMLEventElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLEventElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
 	
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLEventElement);
@@ -829,8 +1032,8 @@ void SSTElement_ModuleInfo::generateModuleInfoXMLData(int Index, TiXmlNode* XMLP
     // Build the Element to Represent the Module
 	TiXmlElement* XMLModuleElement = new TiXmlElement("Module");
 	XMLModuleElement->SetAttribute("Index", Index);
-	XMLModuleElement->SetAttribute("Name", getName());
-	XMLModuleElement->SetAttribute("Description", getDesc());
+	XMLModuleElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLModuleElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
 	
 	// Get the Num Parameters and Display an XML comment about them
     sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
@@ -855,8 +1058,8 @@ void SSTElement_PartitionerInfo::generatePartitionerInfoXMLData(int Index, TiXml
     // Build the Element to Represent the Partitioner
 	TiXmlElement* XMLPartitionerElement = new TiXmlElement("Partitioner");
 	XMLPartitionerElement->SetAttribute("Index", Index);
-	XMLPartitionerElement->SetAttribute("Name", getName());
-	XMLPartitionerElement->SetAttribute("Description", getDesc());
+	XMLPartitionerElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLPartitionerElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
 	
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLPartitionerElement);
@@ -872,8 +1075,8 @@ void SSTElement_GeneratorInfo::generateGeneratorInfoXMLData(int Index, TiXmlNode
     // Build the Element to Represent the Generator
 	TiXmlElement* XMLGeneratorElement = new TiXmlElement("Generator");
 	XMLGeneratorElement->SetAttribute("Index", Index);
-	XMLGeneratorElement->SetAttribute("Name", getName());
-	XMLGeneratorElement->SetAttribute("Description", getDesc());
+	XMLGeneratorElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLGeneratorElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
 	
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLGeneratorElement);

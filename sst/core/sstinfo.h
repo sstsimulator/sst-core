@@ -16,7 +16,8 @@
 namespace SST { 
     
 // CONFIGURATION BITS    
-#define CFG_FORMATHUMAN 0x00000001
+#define CFG_OUTPUTHUMAN 0x00000001
+#define CFG_OUTPUTXML   0x00000002
     
 class ConfigSSTInfo {
 public:    
@@ -24,14 +25,26 @@ public:
     ~ConfigSSTInfo();
     int parseCmdLine(int argc, char* argv[]);
 
-    std::vector<std::string>* GetElementsToProcessArray() {return &m_elementsToProcess;}
-    unsigned int              GetOptionBits() {return m_optionBits;}
+    std::vector<std::string>* getElementsToProcessArray() {return &m_elementsToProcess;}
+    std::vector<std::string>* getFilteredElementNamesArray() {return &m_filteredElementNames;}
+    std::vector<std::string>* getFilteredElementComponentNamesArray() {return &m_filteredElementComponentNames;}
+    unsigned int              getOptionBits() {return m_optionBits;}
+    std::string&              getXMLFilePath() {return m_XMLFilePath;}
+private:
+    void outputUsage();
+    void outputVersion();
     
 private:      
-    boost::program_options::options_description* m_configDesc;
-    boost::program_options::variables_map*       m_vm;
-    std::vector<std::string>                     m_elementsToProcess;
-    unsigned int                                 m_optionBits;
+    char*                                                   m_AppName;
+    boost::program_options::options_description*            m_configDesc;
+    boost::program_options::options_description*            m_hiddenDesc;
+    boost::program_options::positional_options_description* m_posDesc;
+    boost::program_options::variables_map*                  m_vm;
+    
+    std::vector<std::string>                                m_elementsToProcess;    std::vector<std::string>                                m_filteredElementNames;
+    std::vector<std::string>                                m_filteredElementComponentNames;
+    unsigned int                                            m_optionBits;
+    std::string                                             m_XMLFilePath;
 };    
     
 class SSTElement_ParamInfo {
