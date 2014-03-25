@@ -59,6 +59,7 @@ nobase_dist_sst_HEADERS = \
 	timeConverter.h \
 	timeLord.h \
 	timeVortex.h \
+	math/sqrt.h \
 	uninitializedQueue.h \
 	serialization/core.h \
 	serialization/types.h \
