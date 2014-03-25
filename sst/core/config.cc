@@ -77,9 +77,9 @@ Config::Config( int my_rank, int world_size )
     visNoConfigDesc = new po::options_description( "Allowed options" );
     visNoConfigDesc->add_options()
         ("help,h", "print help message")
-        ("verbose,V", po::value< uint32_t >(&verbose)->default_value(0)->implicit_value(1), "print information about core runtimes")
+        ("verbose,v", "print information about core runtimes")
 	("no-env-config", "disable SST automatic dynamic library environment configuration")
-        ("version,v", "print SST Release Version")
+        ("version,V", "print SST Release Version")
     ;
 
     hiddenNoConfigDesc = new po::options_description( "" );
@@ -216,12 +216,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
         return 1;
     }
 
-	//verbose = var_map->count( "verbose" );
-#if 0
-    if ( var_map->count( "verbose" ) ) {
-        verbose++;
-    }
-#endif
+	verbose = var_map->count( "verbose" );
 
     if ( var_map->count( "version" ) ) {
         cout << "SST Release Version " PACKAGE_VERSION << endl;
