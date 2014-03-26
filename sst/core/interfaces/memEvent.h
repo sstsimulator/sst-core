@@ -220,8 +220,7 @@ public:
     MemEvent(const MemEvent &me) :
         SST::Event(), event_id(me.event_id), response_to_id(me.response_to_id),
         addr(me.addr), baseAddr(me.baseAddr), size(me.size), cmd(me.cmd), payload(me.payload),
-        src(me.src), dst(me.dst), flags(me.flags), prefetch(me.prefetch)
-    {
+        src(me.src), dst(me.dst), flags(me.flags), prefetch(me.prefetch), grantedState(me.grantedState){
         setDeliveryLink(me.getLinkId(), NULL);
     }
 
@@ -229,7 +228,7 @@ public:
     MemEvent(const MemEvent *me) :
         SST::Event(), event_id(me->event_id), response_to_id(me->response_to_id),
         addr(me->addr),baseAddr(me->baseAddr), size(me->size), cmd(me->cmd), payload(me->payload),
-        src(me->src), dst(me->dst), flags(me->flags), prefetch(me->prefetch){
+        src(me->src), dst(me->dst), flags(me->flags), prefetch(me->prefetch), grantedState(me->grantedState){
         setDeliveryLink(me->getLinkId(), NULL);
     }
 
@@ -364,7 +363,7 @@ public:
     }
     
     void setGrantedState(BCC_MESIState _state){
-        state = _state;
+        grantedState = _state;
     }
     
     void setPrefetchFlag(bool _prefetch){
@@ -374,7 +373,7 @@ public:
     bool isPrefetch(){ return prefetch; }
     
     
-    BCC_MESIState getGrantedState(){ return state; }
+    BCC_MESIState getGrantedState(){ return grantedState; }
     
     
     static bool isDataRequest(Command cmd){
@@ -470,7 +469,7 @@ private:
 
     Command cmd;
     dataVec payload;
-    BCC_MESIState state;
+    BCC_MESIState grantedState;
     
     std::string src;
     std::string dst;
