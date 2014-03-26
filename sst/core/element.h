@@ -40,77 +40,94 @@ typedef void (*partitionFunction)(ConfigGraph*,int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
 typedef void* (*genPythonModuleFunction)(void);
 
+/*** Describes Parameters to a Component.
+ */
 struct ElementInfoParam {
-    const char *name;
-    const char *description;
-    const char *defaultValue;  // NULL == required parameter with no default, "" == optional parameter, blank default, "foo" == default value
+    const char *name;			/*!< Name of the parameter */
+    const char *description;	/*!< Brief description of the parameter (ie, what it controls) */
+    const char *defaultValue;	/*!< Default value (if any) NULL == required parameter with no default, "" == optional parameter, blank default, "foo" == default value */
 };
 
+/*** Describes Ports that the Component can use
+ */
 struct ElementInfoPort {
-    const char *name;          // name can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter
-    const char *description;
-    const char **validEvents;
+    const char *name;			/*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter */
+    const char *description;	/*!< Brief description of the port (ie, what it is used for) */
+    const char **validEvents;	/*!< List of fully-qualified event types that this Port expects to send or receive */
 };
 
+/*** Describes a Component and its associated information
+ */
 struct ElementInfoComponent {
-    const char *name;
-    const char *description;
-    void (*printHelp)(FILE *output);
-    componentAllocate alloc;
-    const ElementInfoParam *params;
-    const ElementInfoPort *ports;
-    uint32_t category;
+    const char *name;					/*!< Name of the component */
+    const char *description;			/*!< Brief description of what the component does */
+    void (*printHelp)(FILE *output);	/*!< Pointer to a function that will print additional documentation about the component. (optional) */
+    componentAllocate alloc;			/*!< Pointer to function to allocate a new instance of this component. */
+    const ElementInfoParam *params;		/*!< List of parameters for which this component expects to look. */
+    const ElementInfoPort *ports;		/*!< List of ports that this component uses. */
+    uint32_t category;					/*!< Bit-mask of categories in which this component fits. */
 };
 
+/*** Describes an Introspector
+ */
 struct ElementInfoIntrospector {
-    const char *name;
-    const char *description;
-    void (*printHelp)(FILE *output);
-    introspectorAllocate alloc;
-    const ElementInfoParam *params;
+    const char *name;					/*!< Name of the introspector */
+    const char *description;			/*!< Brief description of what the introspector does. */
+    void (*printHelp)(FILE *output);	/*!< Pointer to a function that will print additional documentation about the introspector. (optional) */
+    introspectorAllocate alloc;			/*!< Pointer to a function to allocate a new instance of this introspector. */
+    const ElementInfoParam *params;		/*!< List of parameters which this introspector uses. */
 };
 
+/*** Describes an Event
+ */
 struct ElementInfoEvent {
-    const char *name;
-    const char *description;
-    void (*printHelp)(FILE *output);
-    eventInitialize init;
+    const char *name;					/*!< Name of the event */
+    const char *description;			/*!< Brief description of this event. */
+    void (*printHelp)(FILE *output);	/*!< Pointer to a function that will print additional documentation about the event. (optional) */
+    eventInitialize init;				/*!< Pointer to a function to initialize the library for use of this event. (optional) */
 };
 
+/*** Describes a Module
+ */
 struct ElementInfoModule {
-    const char *name;
-    const char *description;
-    void (*printHelp)(FILE *output);
-    moduleAllocate alloc;
-    moduleAllocateWithComponent alloc_with_comp;
-    const ElementInfoParam *params;
+    const char *name;								/*!< Name of the module. */
+    const char *description;						/*!< Brief description of the module. */
+    void (*printHelp)(FILE *output);				/*!< Pointer to a function that will print additional documentation about the module. (optional) */
+    moduleAllocate alloc;							/*!< Pointer to a function to do a default initialization of the module. */
+    moduleAllocateWithComponent alloc_with_comp;	/*!< Pointer to a function to initialize a module instance, passing a Component as an argument. */
+    const ElementInfoParam *params;					/*!< List of parameters which are used by this module. */
 };
 
+/*** Describes a Partitioner
+ */
 struct ElementInfoPartitioner {
-    const char *name;
-    const char *description;
-    void (*printHelp)(FILE *output);
-    partitionFunction func;
+    const char *name;					/*!< Name of the Partitioner */
+    const char *description;			/*!< Brief description of the partitioner */
+    void (*printHelp)(FILE *output);	/*!< Pointer to a function that will print additional documentation about the partitioner. (optional) */
+    partitionFunction func;				/*!< Function to be called to perform the paritioning */
 };
 
+/*** Describes a Generator
+ */
 struct ElementInfoGenerator {
-    const char *name;
-    const char *description;
-    void (*printHelp)(FILE *output);
-    generateFunction func;
+    const char *name;					/*!< Name of the Generator */
+    const char *description;			/*!< Brief description of the generator */
+    void (*printHelp)(FILE *output);	/*!< Pointer to a function that will print additional documentation about the generator. (optional) */
+    generateFunction func;				/*!< Function to be called to perform the graph generation */
 };
 
+/*** Describes all the parts of the Element Library
+ */
 struct ElementLibraryInfo {
-    const char *name;
-    const char *description;
-    const struct ElementInfoComponent* components;
-    const struct ElementInfoEvent* events;
-    const struct ElementInfoIntrospector* introspectors;
-    /* const struct ElementInfoSubcomponent* subcomponents; */
-    const struct ElementInfoModule* modules;
-    const struct ElementInfoPartitioner* partitioners;
-    const struct ElementInfoGenerator* generators;
-    genPythonModuleFunction pythonModuleGenerator;
+    const char *name;										/*!< Name of the Library. */
+    const char *description;								/*!< Brief description of the Library */
+    const struct ElementInfoComponent* components;			/*!< List of Components contained in the library. */
+    const struct ElementInfoEvent* events;					/*!< List of Events exported by the library. */
+    const struct ElementInfoIntrospector* introspectors;	/*!< List of Introspectors provided by the library. */
+    const struct ElementInfoModule* modules;				/*!< List of Modules provided by the library. */
+    const struct ElementInfoPartitioner* partitioners;		/*!< List of Partitioners provided by the library. */
+    const struct ElementInfoGenerator* generators;			/*!< List of Generators provided by the library. */
+    genPythonModuleFunction pythonModuleGenerator;			/*!< Pointer to Function to generate a Python Module for use in Configurations */
 };
 } //namespace SST
 
