@@ -469,7 +469,6 @@ private:
 
     Command cmd;
     dataVec payload;
-    BCC_MESIState grantedState;
     
     std::string src;
     std::string dst;
@@ -477,6 +476,7 @@ private:
     Command nackOrigCmd;
     uint32_t flags; 
     bool prefetch;
+    BCC_MESIState grantedState;
 
     MemEvent() {} // For serialization only
 
