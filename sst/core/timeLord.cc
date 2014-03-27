@@ -47,19 +47,29 @@ TimeConverter* TimeLord::getTimeConverter(SimTime_t simCycles) {
 TimeConverter* TimeLord::getTimeConverter(const UnitAlgebra& ts) {
     SimTime_t simCycles;
     UnitAlgebra period = ts;
+    UnitAlgebra uaFactor;
     // Need to differentiate between Hz and s.
     if ( period.hasUnits("s") ) {
-        simCycles = (period / timeBase).getRoundedValue();
+        // simCycles = (period / timeBase).getRoundedValue();
+        uaFactor = period / timeBase;
     }
     else if ( period.hasUnits("Hz") ) {
         UnitAlgebra temp = timeBase;
-        simCycles = (temp.invert() / period).getRoundedValue();
+        // simCycles = (temp.invert() / period).getRoundedValue();
+        uaFactor = temp.invert() / period;
     }
     else {
         _abort(TimeLord,
                "getTimeConverter(): Format error: Time Coverter creation requires "
                "a time unit (s or Hz)");
     }
+    // Check to see if number is too big or too small
+    if ( uaFactor.getValue() > 0xffffffffffffffffl ) {
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Error:  Attempting to getTimeConverter for a time (%s) which is too large for the timebase (%s)\n",ts.toString().c_str(),timeBase.toStringBestSI().c_str());
+
+    }
+    simCycles = uaFactor.getRoundedValue();
     TimeConverter* tc = getTimeConverter(simCycles);
     return tc;
 }

@@ -447,7 +447,7 @@ UnitAlgebra::getRoundedValue() const
     // int64_t ret;
 
     // ss << round(value);
-    // ss >> ret;
+    // ss >> ret;    
     // return ret;
     return llround(value);
 }
