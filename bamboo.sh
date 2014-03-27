@@ -744,7 +744,7 @@ dobuild() {
 
     echo "bamboo.sh: making SST"
     # build SST
-    make all
+    make -j4 all
     retval=$?
     if [ $retval -ne 0 ]
     then
