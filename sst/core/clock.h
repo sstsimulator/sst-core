@@ -27,7 +27,6 @@
 namespace SST {
 
 class TimeConverter;
-
 class Clock : public Action
 {
 public:
@@ -38,47 +37,47 @@ public:
     // Functor classes for Clock handling
     class HandlerBase {
     public:
-	virtual bool operator()(Cycle_t) = 0;
-	virtual ~HandlerBase() {}
+        virtual bool operator()(Cycle_t) = 0;
+        virtual ~HandlerBase() {}
     };
     
 
     template <typename classT, typename argT = void>
     class Handler : public HandlerBase {
     private:
-	typedef bool (classT::*PtrMember)(Cycle_t, argT);
-	classT* object;
-	const PtrMember member;
-	argT data;
+        typedef bool (classT::*PtrMember)(Cycle_t, argT);
+        classT* object;
+        const PtrMember member;
+        argT data;
 	
     public:
-	Handler( classT* const object, PtrMember member, argT data ) :
-	    object(object),
-	    member(member),
-	    data(data)
-	{}
+        Handler( classT* const object, PtrMember member, argT data ) :
+            object(object),
+            member(member),
+            data(data)
+        {}
 
         bool operator()(Cycle_t cycle) {
-	    return (object->*member)(cycle,data);
-	}
+            return (object->*member)(cycle,data);
+        }
     };
     
     template <typename classT>
     class Handler<classT, void> : public HandlerBase {
     private:
-	typedef bool (classT::*PtrMember)(Cycle_t);
-	classT* object;
-	const PtrMember member;
+        typedef bool (classT::*PtrMember)(Cycle_t);
+        classT* object;
+        const PtrMember member;
 	
     public:
-	Handler( classT* const object, PtrMember member ) :
-	    object(object),
-	    member(member)
-	{}
+        Handler( classT* const object, PtrMember member ) :
+            object(object),
+            member(member)
+        {}
 
-	bool operator()(Cycle_t cycle) {
-	    return (object->*member)(cycle);
-	}
+        bool operator()(Cycle_t cycle) {
+            return (object->*member)(cycle);
+        }
     };
 
 
@@ -87,6 +86,11 @@ public:
     bool registerHandler( Clock::HandlerBase* handler ); 
     bool unregisterHandler( Clock::HandlerBase* handler, bool& empty );
 
+    void print(const std::string& header, Output &out) const {
+        out.output("%s Clock Activity to be delivered at %" PRIu64 " with priority %d, "
+                   "with %d items on clock list\n",
+                   header.c_str(), getDeliveryTime(), getPriority(), (int)staticHandlerMap.size());
+    }
     
 private:
 /*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */

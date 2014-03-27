@@ -61,6 +61,7 @@ nobase_dist_sst_HEADERS = \
 	timeVortex.h \
 	math/sqrt.h \
 	uninitializedQueue.h \
+	unitAlgebra.h \
 	serialization/core.h \
 	serialization/types.h \
 	serialization/element.h \
@@ -108,6 +109,7 @@ sst_core_sources = \
 	timeLord.cc \
 	timeVortex.cc \
 	uninitializedQueue.cc \
+	unitAlgebra.cc \
 	interfaces/memEvent.cc \
 	interfaces/stringEvent.cc \
 	interfaces/TestEvent.cc \

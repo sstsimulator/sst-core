@@ -129,8 +129,8 @@ Simulation::setStopAtCycle( Config* cfg )
 {
     SimTime_t stopAt = timeLord->getSimCycles(cfg->stopAtCycle,"StopAction configure");
     if ( stopAt != 0 ) {
-	printf("Inserting stop event at cycle %s\n",
-	       cfg->stopAtCycle.c_str());
+	printf("Inserting stop event at cycle %s, %llu\n",
+	       cfg->stopAtCycle.c_str(), stopAt);
 	StopAction* sa = new StopAction();
 	sa->setDeliveryTime(stopAt);
 	timeVortex->insert(sa);
@@ -369,6 +369,7 @@ void Simulation::run() {
     sa->setDeliveryTime(SST_SIMTIME_MAX);
     timeVortex->insert(sa);
 
+    // Output out("",5,0xffffffff,Output::STDOUT);
     while( LIKELY( ! endSim ) ) {
         if ( UNLIKELY( 0 != lastRecvdSignal ) ) {
             printStatus(lastRecvdSignal == SIGUSR2);
@@ -377,7 +378,9 @@ void Simulation::run() {
         currentSimCycle = timeVortex->front()->getDeliveryTime();
 
         current_activity = timeVortex->pop();
+        // current_activity->print("",out);
         current_activity->execute();
+        // if ( currentSimCycle > 100000 ) break;
     }
 
 
@@ -402,24 +405,28 @@ Simulation::getCurrentSimCycle() const
 }
 
 
-void Simulation::getElapsedSimTime(double *value, char *prefix) const
+// void Simulation::getElapsedSimTime(double *value, char *prefix) const
+// {
+//     static const char siprefix[] = {
+//         'a', 'f', 'p', 'n', 'u', 'm', ' '
+//     };
+//     const int max = sizeof(siprefix) / sizeof(char);
+
+//     double val = getCurrentSimCycle() * 1000;
+//     int lvl = 0;
+//     while ( (lvl < max) && (val > 1000.0) ) {
+//         val /= 1000.0;
+//         ++lvl;
+//     }
+//     *value = val;
+//     *prefix = siprefix[lvl];
+
+// }
+
+UnitAlgebra Simulation::getElapsedSimTime() const
 {
-    static const char siprefix[] = {
-        'a', 'f', 'p', 'n', 'u', 'm', ' '
-    };
-    const int max = sizeof(siprefix) / sizeof(char);
-
-    double val = getCurrentSimCycle() * timeLord->getSecFactor();
-    int lvl = 0;
-    while ( (lvl < max) && (val > 1000.0) ) {
-        val /= 1000.0;
-        ++lvl;
-    }
-    *value = val;
-    *prefix = siprefix[lvl];
-
+    return timeLord->getTimeBase() * getCurrentSimCycle();
 }
-
 
 void Simulation::setSignal(int signal)
 {

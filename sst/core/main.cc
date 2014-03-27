@@ -364,9 +364,10 @@ main(int argc, char *argv[])
 #endif
 
     start_run = sst_get_cpu_time();
-    double simulated_time = 0.0;
-    char simulated_time_prefix = ' ';
-
+    // double simulated_time = 0.0;
+    // char simulated_time_prefix = ' ';
+    UnitAlgebra simulated_time;
+    
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) {
         if ( cfg.archive ) {
             sim = archive.loadSimulation();
@@ -409,7 +410,7 @@ main(int argc, char *argv[])
         sim->initialize();
         sim->run();
 
-        sim->getElapsedSimTime(&simulated_time, &simulated_time_prefix);
+        simulated_time = sim->getElapsedSimTime();
     }
 
     end_run = sst_get_cpu_time();
@@ -436,7 +437,7 @@ main(int argc, char *argv[])
 	sim_output->output("# Build time:               %f seconds\n", max_build_time);
 	sim_output->output("# Simulation time:          %f seconds\n", max_run_time);
 	sim_output->output("# Total time:               %f seconds\n", max_total_time);
-	sim_output->output("# Simulated time:           %f %cs\n", simulated_time, simulated_time_prefix);
+	sim_output->output("# Simulated time:           %s\n", simulated_time.toStringBestSI().c_str());
 	sim_output->output("#\n");
 	sim_output->output("# Simulation Resource Information:\n");
 #ifdef SST_COMPILE_MACOSX
@@ -456,7 +457,7 @@ main(int argc, char *argv[])
     if( 0 == rank ) {
 #endif
     // Print out the simulation time regardless of verbosity.
-    std::cout << "Simulation is complete, simulated time: " << simulated_time << " " << simulated_time_prefix << "s" << std::endl;
+        std::cout << "Simulation is complete, simulated time: " << simulated_time.toStringBestSI() << std::endl;
 #ifdef HAVE_MPI
     }
 #endif

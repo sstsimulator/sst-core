@@ -99,7 +99,8 @@ bool Exit::refDec( ComponentId_t id )
     --m_refCount;
 
     if ( single_rank && m_refCount == 0 ) {
-	Simulation* sim = Simulation::getSimulation();
+        std::cout << "Exiting..." << std::endl;
+        Simulation* sim = Simulation::getSimulation();
 	// sim->insertActivity( sim->getCurrentSimCycle() + m_period->getFactor(), this );
 	sim->insertActivity( sim->getCurrentSimCycle() + 1, this );
     }

@@ -22,6 +22,7 @@
 
 #include "sst/core/output.h"
 #include "sst/core/clock.h"
+#include "sst/core/unitAlgebra.h"
 //#include "sst/core/sdl.h"
 //#include "sst/core/component.h"
 //#include "sst/core/params.h"
@@ -100,7 +101,8 @@ public:
     void run();
     Output& getSimulationOutput() { return sim_output; };
     SimTime_t getCurrentSimCycle() const;
-    void getElapsedSimTime(double *value, char *prefix) const;
+    // void getElapsedSimTime(double *value, char *prefix) const;
+    UnitAlgebra getElapsedSimTime() const;
     int getRank() const {return my_rank;}
     int getNumRanks() const {return num_ranks;}
     TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);

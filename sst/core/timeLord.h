@@ -21,11 +21,13 @@
 #include <string>
 
 #include <sst/core/simulation.h>
+#include <sst/core/unitAlgebra.h>
 
 namespace SST {
 
 class TimeConverter;
-
+class UnitAlgebra;
+    
   /** 
       Class for creating and managing TimeConverter objects
    */
@@ -46,13 +48,16 @@ class TimeLord {
       (mega), and 'G' (giga).
    */
     TimeConverter* getTimeConverter(std::string ts);
+    TimeConverter* getTimeConverter(const UnitAlgebra& ts);
+    
     SimTime_t getSimCycles(std::string timeString, std::string where);
-
+    UnitAlgebra getTimeBase() const { return timeBase; }
+    
     TimeConverter* getNano() {return nano;}
     TimeConverter* getMicro() {return micro;}
     TimeConverter* getMilli() {return milli;}
     /* Used by power API to calculate time period in sec since last power query*/
-    Time_t getSecFactor(){ return (Time_t)sec_factor;}
+    // Time_t getSecFactor(){ return (Time_t)sec_factor;}
     
  private:
     friend class SST::SimulationBase;
@@ -71,10 +76,9 @@ class TimeLord {
     // Variables that need to be saved when serialized
     std::string timeBaseString;
     TimeConverterMap_t tcMap;
-
-    // Variables that will be recreated so don't need to be saved when
-    // serialized
-    double sec_factor;
+    UnitAlgebra timeBase;
+    
+    // double sec_factor;
     StringToTCMap_t parseCache;
 
     TimeConverter* nano;
@@ -87,7 +91,7 @@ class TimeLord {
     {
         ar & BOOST_SERIALIZATION_NVP(timeBaseString);
         ar & BOOST_SERIALIZATION_NVP(tcMap);
-        ar & BOOST_SERIALIZATION_NVP(sec_factor);
+        // ar & BOOST_SERIALIZATION_NVP(timeBase);
         ar & BOOST_SERIALIZATION_NVP(parseCache);
         ar & BOOST_SERIALIZATION_NVP(nano);
         ar & BOOST_SERIALIZATION_NVP(micro);
