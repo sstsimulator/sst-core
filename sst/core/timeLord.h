@@ -38,7 +38,7 @@ class TimeLord {
  public:
   /** 
       Create a new TimeConverter object using specified SI Units. For
-      example, "1 Ghz" (1 Gigahertz), "2.5 ns" (2.5 nanoseconds).  
+      example, "1 GHz" (1 Gigahertz), "2.5 ns" (2.5 nanoseconds).  
 
       @param ts String indicating the base unit for this object. The
       string should be a floating point number followed by a prefix,
