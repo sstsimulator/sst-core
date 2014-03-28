@@ -22,6 +22,7 @@
 #include <sst/core/simulation.h>
 
 #include <string.h>
+#include <set>
 
 using namespace std;
 
@@ -140,27 +141,55 @@ void ConfigGraph::genDot(std::ostream &os, const std::string &name) const {
 bool
 ConfigGraph::checkForStructuralErrors()
 {
+    // Output object for error messages
+    Output output = Simulation::getSimulation()->getSimulationOutput();
+    
     // Check to make sure there are no dangling links.  A dangling
     // link is found by looking though the links in the graph and
     // making sure there are components on both sides of the link.
     bool found_error = false;
     for( ConfigLinkMap_t::iterator iter = links.begin();
-	 iter != links.end(); ++iter )
+         iter != links.end(); ++iter )
     {
-	ConfigLink* clink = (*iter).second;
-	// This one should never happen since the slots are
-	// initialized in order, but just in case...
-	if ( clink->component[0] == ULONG_MAX ) {
-	    printf("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
-		   comps[clink->component[1]]->name.c_str());
-	    found_error = true;
-	}
-	if ( clink->component[1] == ULONG_MAX ) {
-	    printf("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
-		   comps[clink->component[0]]->name.c_str());
-	    found_error = true;
-	}
+        ConfigLink* clink = (*iter).second;
+        // This one should never happen since the slots are
+        // initialized in order, but just in case...
+        if ( clink->component[0] == ULONG_MAX ) {
+            output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
+                   comps[clink->component[1]]->name.c_str());
+            found_error = true;
+        }
+        if ( clink->component[1] == ULONG_MAX ) {
+            output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
+                   comps[clink->component[0]]->name.c_str());
+            found_error = true;
+        }
     }
+
+    // Check to make sure all the component names are unique.  This
+    // could be memory intensive for large graphs because we will
+    // simply put things in a set and check to see if there are
+    // duplicates.
+    std::set<std::string> name_set;
+    int count = 10;
+    for ( ConfigComponentMap_t::iterator iter = comps.begin();
+          iter != comps.end(); ++iter )
+    {
+        ConfigComponent* ccomp = (*iter).second;
+        if ( name_set.find(ccomp->name) == name_set.end() ) {
+            name_set.insert(ccomp->name);
+        }
+        else {
+            found_error = true;
+            output.output("Found duplicate component nane: %s\n",ccomp->name.c_str());
+            count--;
+            if ( count == 0 ) {
+                output.output("Maximum name clashes reached, no more checks will be made.\n");
+                break;
+            }
+        }
+    }
+    
     return found_error;
 }
 
