@@ -72,7 +72,7 @@ Thus, a param_include section would look something like the following:
 <param_include>
 
     <rtr_params>
-        <clock> 500MHz </clock>
+        <clock> 500Mhz </clock>
 
         <network.xDimSize> 2 </network.xDimSize>
         <network.yDimSize> 2 </network.yDimSize>
@@ -95,7 +95,7 @@ Thus, a param_include section would look something like the following:
     </cpu_params>
 
     <nic_params>
-        <clock> 500MHz </clock>
+        <clock> 500Mhz </clock>
         <timing_set> 2 </timing_set>
     </nic_params>
 
@@ -228,7 +228,7 @@ used to run an actual simulation.
 <param_include>
 
     <rtr_params>
-        <clock> 500MHz </clock>
+        <clock> 500Mhz </clock>
 
         <network.xDimSize> 2 </network.xDimSize>
         <network.yDimSize> 1 </network.yDimSize>
@@ -250,7 +250,7 @@ used to run an actual simulation.
     </cpu_params>
 
     <nic_params1>
-        <clock> 500MHz </clock>
+        <clock> 500Mhz </clock>
     </nic_params1>
 
     <nic_params2>

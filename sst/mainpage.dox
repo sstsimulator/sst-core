@@ -154,7 +154,7 @@ this way:
 
 @verbatim
 LinkAdd("mem0", NICeventHandler)
-registerClock( "1GHz", clockHandler );
+registerClock( "1Ghz", clockHandler );
 @endverbatim
 
 Note that SST::Component::registerClock() can have its period or
