@@ -31,7 +31,6 @@ using namespace SST;
 extern "C" {
 
 
-
 typedef struct {
     PyObject_HEAD
     ComponentId_t id;
@@ -235,7 +234,8 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
     if ( !PyArg_ParseTuple(args, "ss", &name, &type) )
         return -1;
 
-    self->id = gModel->getConfigGraph()->addComponent(name, type);
+    char *fullName = gModel->addNamePrefix(name);
+    self->id = gModel->addComponent(fullName, type);
 	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%lu]\n", name, type, self->id);
 
     return 0;
@@ -252,7 +252,7 @@ static PyObject* compAddParam(PyObject *self, PyObject *args)
     ComponentId_t id = ((ComponentPy_t*)self)->id;
 
     PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", NULL);
-    gModel->getConfigGraph()->addParameter(id, param, PyString_AsString(vstr), true);
+    gModel->addParameter(id, param, PyString_AsString(vstr));
     Py_XDECREF(vstr);
 
     return PyInt_FromLong(0);
@@ -261,7 +261,6 @@ static PyObject* compAddParam(PyObject *self, PyObject *args)
 
 static PyObject* compAddParams(PyObject *self, PyObject *args)
 {
-    ConfigGraph *graph = gModel->getConfigGraph();
     ComponentId_t id = ((ComponentPy_t*)self)->id;
 
     if ( !PyDict_Check(args) ) {
@@ -275,7 +274,7 @@ static PyObject* compAddParams(PyObject *self, PyObject *args)
     while ( PyDict_Next(args, &pos, &key, &val) ) {
         PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", NULL);
         PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", NULL);
-        graph->addParameter(id, PyString_AsString(kstr), PyString_AsString(vstr));
+        gModel->addParameter(id, PyString_AsString(kstr), PyString_AsString(vstr));
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
         count++;
@@ -286,7 +285,6 @@ static PyObject* compAddParams(PyObject *self, PyObject *args)
 
 static PyObject* compSetRank(PyObject *self, PyObject *arg)
 {
-    ConfigGraph *graph = gModel->getConfigGraph();
     ComponentId_t id = ((ComponentPy_t*)self)->id;
 
     PyErr_Clear();
@@ -296,7 +294,7 @@ static PyObject* compSetRank(PyObject *self, PyObject *arg)
         exit(-1);
     }
 
-    graph->setComponentRank(id, rank);
+    gModel->setComponentRank(id, rank);
 
     return PyInt_FromLong(0);
 }
@@ -304,7 +302,6 @@ static PyObject* compSetRank(PyObject *self, PyObject *arg)
 
 static PyObject* compSetWeight(PyObject *self, PyObject *arg)
 {
-    ConfigGraph *graph = gModel->getConfigGraph();
     ComponentId_t id = ((ComponentPy_t*)self)->id;
 
     PyErr_Clear();
@@ -314,7 +311,7 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg)
         exit(-1);
     }
 
-    graph->setComponentWeight(id, weight);
+    gModel->setComponentWeight(id, weight);
 
     return PyInt_FromLong(0);
 }
@@ -322,7 +319,6 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg)
 
 static PyObject* compAddLink(PyObject *self, PyObject *args)
 {
-    ConfigGraph *graph = gModel->getConfigGraph();
     ComponentId_t id = ((ComponentPy_t*)self)->id;
 
     PyObject *plink;
@@ -334,7 +330,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
     LinkPy_t* link = (LinkPy_t*)plink;
 
 	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %lu to Link %s\n", id, link->name);
-    graph->addLink(id, link->name, port, lat);
+    gModel->addLink(id, link->name, port, lat);
 
     return PyInt_FromLong(0);
 }
@@ -347,7 +343,7 @@ static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds)
     char *name;
     if ( !PyArg_ParseTuple(args, "s", &name) ) return -1;
 
-    self->name = strdup(name);
+    self->name = gModel->addNamePrefix(name);
 	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
 
     return 0;
@@ -380,11 +376,10 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
                 &ComponentType, &c1, &port1, &lat1) )
         return NULL;
 
-    ConfigGraph *graph = gModel->getConfigGraph();
-    graph->addLink(((ComponentPy_t*)c0)->id,
+    gModel->addLink(((ComponentPy_t*)c0)->id,
             ((LinkPy_t*)self)->name,
             port0, lat0);
-    graph->addLink(((ComponentPy_t*)c1)->id,
+    gModel->addLink(((ComponentPy_t*)c1)->id,
             ((LinkPy_t*)self)->name,
             port1, lat1);
 
@@ -507,6 +502,27 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
 }
 
 
+static PyObject* pushNamePrefix(PyObject* self, PyObject* arg)
+{
+    char *name = NULL;
+    PyErr_Clear();
+    name = PyString_AsString(arg);
+
+    if ( name != NULL ) {
+        gModel->pushNamePrefix(name);
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* popNamePrefix(PyObject* self, PyObject* args)
+{
+    gModel->popNamePrefix();
+    return PyInt_FromLong(0);
+}
+
 
 static PyObject* exitsst(PyObject* self, PyObject* args)
 {
@@ -526,6 +542,12 @@ static PyMethodDef sstModuleMethods[] = {
     {   "getProgramOptions",
         getProgramOptions, METH_NOARGS,
         "Returns a dict of the current program options."},
+    {   "pushNamePrefix",
+        pushNamePrefix, METH_O,
+        "Pushes a string onto the prefix of new component and link names"},
+    {   "popNamePrefix",
+        popNamePrefix, METH_NOARGS,
+        "Removes the most recent addition to the prefix of new component and link names"},
     {   "exit",
         exitsst, METH_NOARGS,
         "Exits SST - indicates the script wanted to exit." },
@@ -535,7 +557,8 @@ static PyMethodDef sstModuleMethods[] = {
 }  /* extern C */
 
 
-void SSTPythonModelDefinition::initModel(const std::string script_file, int verbosity, Config* config, int argc, char** argv) {
+void SSTPythonModelDefinition::initModel(const std::string script_file, int verbosity, Config* config, int argc, char** argv)
+{
     output = new Output("SSTPythonModel ", verbosity, 0, SST::Output::STDOUT);
 
     if ( gModel ) {
@@ -599,7 +622,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
 }
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* configObj) :
-	SSTModelDescription(), scriptName(script_file), config(configObj)
+	SSTModelDescription(), scriptName(script_file), config(configObj), namePrefix(NULL), namePrefixLen(0)
 {
 	std::vector<std::string> argv_vector;
 	argv_vector.push_back("sstsim.x");
@@ -670,6 +693,8 @@ SSTPythonModelDefinition::~SSTPythonModelDefinition() {
     delete output;
     gModel = NULL;
 
+    if ( NULL != namePrefix ) free(namePrefix);
+
     // Shut Python engine down, this consumes a fair amount of resources
     // according to some guides so we may need to do this earlier (after
     // model generation or be quick to free the model definition.
@@ -716,6 +741,57 @@ std::string SSTPythonModelDefinition::getConfigString() const
         ss << i->first << "=" << i->second << "\n";
     }
     return ss.str();
+}
+
+
+void SSTPythonModelDefinition::pushNamePrefix(const char *name)
+{
+    if ( NULL == namePrefix ) {
+        namePrefix = (char*)calloc(128, 1);
+        namePrefixLen = 128;
+    }
+
+    size_t origLen = strlen(namePrefix);
+    size_t newLen = strlen(name);
+
+    // Verify space available
+    while ( (origLen + 2 + newLen) < namePrefixLen ) {
+        namePrefix = (char*)realloc(namePrefix, 2*namePrefixLen);
+        namePrefixLen *= 2;
+    }
+
+    if ( origLen > 0 ) {
+        namePrefix[origLen] = '.';
+        namePrefix[origLen+1] = '\0';
+    }
+    strcat(namePrefix, name);
+    nameStack.push_back(origLen);
+}
+
+
+void SSTPythonModelDefinition::popNamePrefix(void)
+{
+    if ( nameStack.empty() ) return;
+    size_t off = nameStack.back();
+    nameStack.pop_back();
+    namePrefix[off] = '\0';
+}
+
+
+char* SSTPythonModelDefinition::addNamePrefix(const char *name) const
+{
+    if ( nameStack.empty() ) {
+        return strdup(name);
+    }
+    size_t prefixLen = strlen(namePrefix);
+    char *buf = (char*)malloc(prefixLen + 2 + strlen(name));
+
+    strcpy(buf, namePrefix);
+    buf[prefixLen] = '.';
+    buf[prefixLen+1] = '\0';
+    strcat(buf, name);
+
+    return buf;
 }
 
 #endif

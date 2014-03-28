@@ -21,6 +21,7 @@
 
 #include <map>
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include <sst/core/model/sstmodel.h>
@@ -49,13 +50,25 @@ class SSTPythonModelDefinition : public SSTModelDescription {
 		Config* config;
 		ConfigGraph *graph;
 		std::map<std::string, std::string> cfgParams;
+        char *namePrefix;
+        size_t namePrefixLen;
+        std::vector<size_t> nameStack;
 
 	public:  /* Public, but private.  Called only from Python functions */
 		Config* getConfig(void) const { return config; }
 		std::map<std::string, std::string>& getParams(void) { return cfgParams; }
-		ConfigGraph* getConfigGraph(void) const { return graph; }
+		//ConfigGraph* getConfigGraph(void) const { return graph; }
 		std::string getConfigString(void) const;
 		Output* getOutput() const { return output; }
+        ComponentId_t addComponent(const char *name, const char *type) const { return graph->addComponent(name, type); }
+        void addParameter(ComponentId_t id, const char *name, const char *value) const { graph->addParameter(id, name, value, true); }
+        void setComponentRank(ComponentId_t id, int rank) const { graph->setComponentRank(id, rank); }
+        void setComponentWeight(ComponentId_t id, float weight) const { graph->setComponentWeight(id, weight); }
+        void addLink(ComponentId_t id, const char *name, const char *port, const char *latency) const {graph->addLink(id, name, port, latency); }
+
+        void pushNamePrefix(const char *name);
+        void popNamePrefix(void);
+        char* addNamePrefix(const char *name) const;
 
 };
 
