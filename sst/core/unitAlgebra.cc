@@ -80,6 +80,9 @@ Units::initialize()
     registerBaseUnit("b");
     
     registerCompoundUnit("Hz","1/s");
+    // Yes, I know it's wrong, but other people don't always realize
+    // that.
+    registerCompoundUnit("hz","1/s");
     registerCompoundUnit("Bps","B/s");
     registerCompoundUnit("bps","b/s");
 }
