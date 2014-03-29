@@ -34,6 +34,7 @@ extern "C" {
 typedef struct {
     PyObject_HEAD
     ComponentId_t id;
+	char *name;
 } ComponentPy_t;
 
 
@@ -48,11 +49,13 @@ typedef struct {
 } ModuleLoaderPy_t;
 
 static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds);
+static void compDealloc(ComponentPy_t *self);
 static PyObject* compAddParam(PyObject *self, PyObject *args);
 static PyObject* compAddParams(PyObject *self, PyObject *args);
 static PyObject* compSetRank(PyObject *self, PyObject *arg);
 static PyObject* compSetWeight(PyObject *self, PyObject *arg);
 static PyObject* compAddLink(PyObject *self, PyObject *args);
+static PyObject* compGetFullName(PyObject *self, PyObject *args);
 
 
 static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds);
@@ -80,6 +83,9 @@ static PyMethodDef componentMethods[] = {
     {   "addLink",
         compAddLink, METH_VARARGS,
         "Connects this component to a Link"},
+	{	"getFullName",
+		compGetFullName, METH_NOARGS,
+		"Returns the full name, after any prefix, of the component."},
     {   NULL, NULL, 0, NULL }
 };
 
@@ -90,7 +96,7 @@ static PyTypeObject ComponentType = {
     "sst.Component",           /* tp_name */
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
-    0,                         /* tp_dealloc */
+    (destructor)compDealloc,   /* tp_dealloc */
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
@@ -234,12 +240,20 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
     if ( !PyArg_ParseTuple(args, "ss", &name, &type) )
         return -1;
 
-    char *fullName = gModel->addNamePrefix(name);
-    self->id = gModel->addComponent(fullName, type);
+    self->name = gModel->addNamePrefix(name);
+    self->id = gModel->addComponent(self->name, type);
 	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%lu]\n", name, type, self->id);
 
     return 0;
 }
+
+
+static void compDealloc(ComponentPy_t *self)
+{
+    if ( self->name ) free(self->name);
+    self->ob_type->tp_free((PyObject*)self);
+}
+
 
 
 static PyObject* compAddParam(PyObject *self, PyObject *args)
@@ -335,6 +349,11 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
     return PyInt_FromLong(0);
 }
 
+
+static PyObject* compGetFullName(PyObject *self, PyObject *args)
+{
+    return PyString_FromString(((ComponentPy_t*)self)->name);
+}
 
 
 
@@ -755,7 +774,7 @@ void SSTPythonModelDefinition::pushNamePrefix(const char *name)
     size_t newLen = strlen(name);
 
     // Verify space available
-    while ( (origLen + 2 + newLen) < namePrefixLen ) {
+    while ( (origLen + 2 + newLen) >= namePrefixLen ) {
         namePrefix = (char*)realloc(namePrefix, 2*namePrefixLen);
         namePrefixLen *= 2;
     }
