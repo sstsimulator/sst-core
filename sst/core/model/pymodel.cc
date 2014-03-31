@@ -420,8 +420,11 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
         // We know how to handle only sst.<module>
         // Check for the existence of a library
         char *modName = name+4;
-        if ( Simulation::getSimulation()->getFactory()->hasLibrary(modName) )
-            return self;
+        if ( Simulation::getSimulation()->getFactory()->hasLibrary(modName) ) {
+            genPythonModuleFunction func = Simulation::getSimulation()->getFactory()->getPythonModule(modName);
+            if ( func )
+                return self;
+        }
     }
 
     Py_RETURN_NONE;
