@@ -75,8 +75,10 @@ namespace SST {
 		for ( child = root->FirstChild(); child != 0; child = child->NextSibling() ) {
 			if ( child->Type() == child->TINYXML_ELEMENT ) {
 				if ( !strcmp( child->Value(), "config" ) ) {
-					config = resolveEnvVars(child->FirstChild()->Value());
-					break;
+                    if ( child->FirstChild() ) {
+                        config = resolveEnvVars(child->FirstChild()->Value());
+                        break;
+                    }
 				}
 			}
 		}
