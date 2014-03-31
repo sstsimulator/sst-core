@@ -41,7 +41,7 @@ class Histogram {
 					binCount += (uint32_t) diff_bins;
 					HistoType* newBins = (HistoType*) malloc(binCount * sizeof(HistoType));
 
-					for(uint32_t i = 0; i < (uint32_t) diff_bins; ++i) {
+					for(uint32_t i = 0; i < binCount; ++i) {
 						newBins[i] = 0;
 					}
 
@@ -60,12 +60,12 @@ class Histogram {
 					binCount += (uint32_t) diff_bins;
 					HistoType* newBins = (HistoType*) malloc(binCount * sizeof(HistoType));
 
-					for(uint32_t i = 0; i < (uint32_t) (binCount - diff_bins); ++i) {
-						newBins[i] = bins[i];
+					for(uint32_t i = 0; i < binCount; ++i) {
+						newBins[i] = 0;
 					}
 
-					for(uint32_t i = diff_bins; i < binCount; ++i) {
-						newBins[i] = 0;
+					for(uint32_t i = 0; i < (uint32_t) (binCount - diff_bins); ++i) {
+						newBins[i] = bins[i];
 					}
 
 					free(bins);
