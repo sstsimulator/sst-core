@@ -23,6 +23,45 @@
 namespace SST {
 
 class Params {
+private:
+    struct KeyCompare : std::binary_function<std::string, std::string, bool>
+    {
+        bool operator()(const std::string& X, const std::string& Y) const
+        {
+            const char *x = X.c_str();
+            const char *y = Y.c_str();
+
+#define EAT_VAR(A, B) \
+            do { \
+                if ( *x == '%' && (*(x+1) == '(' || *(x+1) == 'd')) {   \
+                    /* We need to eat off some tokens */                \
+                    ++x;                                                \
+                    if ( *x == '(' ) {                                  \
+                        do { x++; } while ( *x && *x != ')' );          \
+                        x++; /* *x should now == 'd' */                 \
+                    }                                                   \
+                    if ( *x != 'd' ) goto NO_VARIABLE;                  \
+                    x++; /* Finish eating the variable */               \
+                    /* Now, eat of digits of Y */                       \
+                    while ( *y && isdigit(*y) ) y++;                    \
+                }                                                       \
+            } while(0)
+
+            do {
+                EAT_VAR(x, y);
+                EAT_VAR(y, x);
+NO_VARIABLE:
+                if ( *x < *y ) return true;
+                if ( *x > *y ) return false;
+                x++;
+                y++;
+            } while ( *x && *y );
+            if ( !(*x) && (*y) ) return true;
+            return false;
+
+#undef EAT_VAR
+        }
+    };
 public:
     typedef std::map<std::string, std::string>::key_type key_type;
     typedef std::map<std::string, std::string>::mapped_type mapped_type;
@@ -38,7 +77,7 @@ public:
     typedef std::map<std::string, std::string>::const_iterator const_iterator;
     typedef std::map<std::string, std::string>::reverse_iterator reverse_iterator;
     typedef std::map<std::string, std::string>::const_reverse_iterator const_reverse_iterator;
-    typedef std::set<key_type> KeySet_t;
+    typedef std::set<key_type, KeyCompare> KeySet_t;
 
     // pretend like we're a map
     iterator begin() { return data.begin(); }

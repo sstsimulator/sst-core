@@ -248,10 +248,9 @@ Factory::getPythonModule(std::string name)
 
 
 
-std::set<std::string>
-Factory::create_params_set(const ElementInfoParam *params)
+Params::KeySet_t Factory::create_params_set(const ElementInfoParam *params)
 {
-    std::set<std::string> retset;
+    Params::KeySet_t retset;
 
     if (NULL != params) {
         while (NULL != params->name) {

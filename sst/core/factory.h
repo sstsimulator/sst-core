@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <boost/foreach.hpp>
 
+#include <sst/core/Params.h>
 #include <sst/core/elemLoader.h>
 #include <sst/core/element.h>
 
@@ -47,12 +48,12 @@ private:
 
     struct ComponentInfo {
         const ElementInfoComponent* component;
-        std::set<std::string> params;
+        Params::KeySet_t params;
 
         ComponentInfo() {}
 
-        ComponentInfo(const ElementInfoComponent *component, 
-                      std::set<std::string> params) : component(component), params(params)
+        ComponentInfo(const ElementInfoComponent *component,
+                      Params::KeySet_t params) : component(component), params(params)
         { }
 
         ComponentInfo(const ComponentInfo& old) : component(old.component), params(old.params)
@@ -68,12 +69,12 @@ private:
 
     struct IntrospectorInfo {
         const ElementInfoIntrospector* introspector;
-        std::set<std::string> params;
+        Params::KeySet_t params;
 
         IntrospectorInfo() {}
 
-        IntrospectorInfo(const ElementInfoIntrospector *introspector, 
-                         std::set<std::string> params) : introspector(introspector), params(params)
+        IntrospectorInfo(const ElementInfoIntrospector *introspector,
+                         Params::KeySet_t params) : introspector(introspector), params(params)
         { }
 
         IntrospectorInfo(const IntrospectorInfo& old) : introspector(old.introspector), params(old.params)
@@ -90,12 +91,12 @@ private:
 
     struct ModuleInfo {
         const ElementInfoModule* module;
-        std::set<std::string> params;
+        Params::KeySet_t params;
 
         ModuleInfo() {}
 
-        ModuleInfo(const ElementInfoModule *module, 
-                         std::set<std::string> params) : module(module), params(params)
+        ModuleInfo(const ElementInfoModule *module,
+                         Params::KeySet_t params) : module(module), params(params)
         { }
 
         ModuleInfo(const ModuleInfo& old) : module(old.module), params(old.params)
@@ -124,7 +125,7 @@ private:
     Factory(Factory const&);        // Don't Implement
     void operator=(Factory const&); // Don't Implement
 
-    std::set<std::string> create_params_set(const ElementInfoParam *params);
+    Params::KeySet_t create_params_set(const ElementInfoParam *params);
 
     // find library information for name
     const ElementLibraryInfo* findLibrary(std::string name, bool showErrors=true);
