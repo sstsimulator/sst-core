@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <boost/foreach.hpp>
 
-#include <sst/core/Params.h>
+#include <sst/core/params.h>
 #include <sst/core/elemLoader.h>
 #include <sst/core/element.h>
 
