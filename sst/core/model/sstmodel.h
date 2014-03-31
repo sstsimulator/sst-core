@@ -10,6 +10,7 @@ class SSTModelDescription {
 
 	public:
 		SSTModelDescription();
+		virtual ~SSTModelDescription() {};
 		virtual ConfigGraph* createConfigGraph() = 0;
 
 };
