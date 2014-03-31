@@ -74,6 +74,7 @@ nobase_dist_sst_HEADERS = \
 	rng/distrib.h \
 	rng/gaussian.h \
 	rng/expon.h \
+	rng/constant.h \
 	stats/basicstats.h \
 	stats/onlinestats.h \
 	stats/histo/histo.h \
@@ -119,6 +120,7 @@ sst_core_sources = \
 	rng/distrib.cc \
 	rng/gaussian.cc \
 	rng/expon.cc \
+	rng/constant.cc \
 	cputimer.cc
 
 bin_PROGRAMS = sst sstinfo
