@@ -139,9 +139,6 @@ main(int argc, char *argv[])
 		sim = Simulation::createSimulation(&cfg, rank, size);
 		sim_output = &(Simulation::getSimulation()->getSimulationOutput());
 
-		signal(SIGUSR1, sigHandlerPrintStatus);
-		signal(SIGUSR2, sigHandlerPrintStatus);
-
 		ConfigGraph* graph;
 
 		if ( size == 1 ) {
@@ -286,6 +283,10 @@ main(int argc, char *argv[])
 			graph = new ConfigGraph();
 		}
 
+        delete modelGen;
+        modelGen = NULL;
+
+
 		///////////////////////////////////////////////////////////////////////	
 		// If the user asks us to dump the partionned graph.
 		if(cfg.dump_component_graph_file != "" && rank == 0) {
@@ -367,7 +368,12 @@ main(int argc, char *argv[])
     // double simulated_time = 0.0;
     // char simulated_time_prefix = ' ';
     UnitAlgebra simulated_time;
-    
+
+    signal(SIGUSR1, sigHandlerPrintStatus);
+    signal(SIGUSR2, sigHandlerPrintStatus);
+    // libpython appears to be replacing the signal handler for SIGINT.  Let's restore it to SIG_DFL
+    signal(SIGINT, SIG_DFL);
+
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) {
         if ( cfg.archive ) {
             sim = archive.loadSimulation();
