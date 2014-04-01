@@ -121,7 +121,7 @@ public:
 	}
 
 	void genDot(std::ostream &os) const {
-		os << component[0] << ":" << port[0]
+		os << component[0] << ":\"" << port[0] << "\""
             << " -- " << component[1] << ":" << port[1]
             << " [label=\"" << name << "\"] ;\n";
 	}
