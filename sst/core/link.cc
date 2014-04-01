@@ -26,6 +26,7 @@
 #include <sst/core/timeVortex.h>
 //#include <sst/core/syncQueue.h>
 #include <sst/core/uninitializedQueue.h>
+#include <sst/core/unitAlgebra.h>
 
 namespace SST { 
 
@@ -94,29 +95,27 @@ void Link::setLatency(Cycle_t lat) {
     latency = lat;
 }
     
-void Link::addOutputLatency(int cycles, std::string timebase) {
+void Link::addRecvLatency(int cycles, std::string timebase) {
     SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase,"addOutputLatency");
-    latency += (cycles * tb);
+    pair_link->latency += (cycles * tb);
 }
     
-void Link::addOutputLatency(SimTime_t cycles, TimeConverter* timebase) {
-    latency += timebase->convertToCoreTime(cycles);
+void Link::addRecvLatency(SimTime_t cycles, TimeConverter* timebase) {
+    pair_link->latency += timebase->convertToCoreTime(cycles);
 }
     
 void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {  
-//     _LINK_DBG("delay=%lu sendQueue=%p event=%p sFunctor=%p\n",
-//               (unsigned long) delay,sendQueue,event,sFunctor);
     if ( tc == NULL ) {
-	_abort(Link,"Cannot send an event on Link with NULL TimeConverter\n");
+        _abort(Link,"Cannot send an event on Link with NULL TimeConverter\n");
     }
-
+    
     Cycle_t cycle = Simulation::getSimulation()->getCurrentSimCycle() +
-                    tc->convertToCoreTime(delay) + latency;
+        tc->convertToCoreTime(delay) + latency;
     
     _LINK_DBG( "cycle=%lu\n", (unsigned long)cycle );
-
+    
     if ( event == NULL ) {
-	event = new NullEvent();
+        event = new NullEvent();
     }
     event->setDeliveryTime(cycle);
     event->setDeliveryLink(id,pair_link);
@@ -176,6 +175,18 @@ Event* Link::recvInitData()
     }
     return event;
 }
+
+// UnitAlgebra
+// Link::getTotalInputLatency()
+// {
+    
+// }
+    
+// UnitAlgebra
+// Link::getTotalOutputLatency()
+// {
+    
+// }
     
 void Link::setDefaultTimeBase(TimeConverter* tc) {
     defaultTimeBase = tc;

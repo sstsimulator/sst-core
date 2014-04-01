@@ -64,7 +64,7 @@ TimeConverter* TimeLord::getTimeConverter(const UnitAlgebra& ts) {
                "a time unit (s or Hz)");
     }
     // Check to see if number is too big or too small
-    if ( uaFactor.getValue() > 0xffffffffffffffffl ) {
+    if ( uaFactor.getValue() > MAX_SIMTIME_T ) {
         Output abort = Simulation::getSimulation()->getSimulationOutput();
         abort.fatal(CALL_INFO,1,"Error:  Attempting to get TimeConverter for a time (%s) which is too large for the timebase (%s)\n",ts.toString().c_str(),timeBase.toStringBestSI().c_str());
 

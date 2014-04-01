@@ -21,6 +21,8 @@ typedef long   LinkId_t;
 typedef uint64_t  Cycle_t;
 typedef uint64_t  SimTime_t;
 typedef double          Time_t;
+
+#define MAX_SIMTIME_T 0xFFFFFFFFFFFFFFFFl
  
 typedef double watts;
 typedef double joules;

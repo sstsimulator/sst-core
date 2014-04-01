@@ -27,6 +27,8 @@ class LinkPair;
 class Simulation;
 class ActivityQueue;
 class Sync;
+
+class UnitAlgebra;
  
   /** Link between two components. Carries events */
 class Link {
@@ -43,8 +45,8 @@ public:
     
     /** set minimum link latency */
     void setLatency(Cycle_t lat);
-    void addOutputLatency(int cycles, std::string timebase);
-    void addOutputLatency(SimTime_t cycles, TimeConverter* timebase);
+    void addRecvLatency(int cycles, std::string timebase);
+    void addRecvLatency(SimTime_t cycles, TimeConverter* timebase);
     
 //     void setFunctor(EventHandler_t* functor) {
     void setFunctor(Event::HandlerBase* functor) {
@@ -100,6 +102,9 @@ public:
 
     void sendInitData(Event* init_data);
     Event* recvInitData();
+
+    // UnitAlgebra getTotalInputLatency();
+    // UnitAlgebra getTotalOutputLatency();
     
 protected:
     Link();
