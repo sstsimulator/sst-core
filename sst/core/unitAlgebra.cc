@@ -17,6 +17,9 @@
 
 #include "unitAlgebra.h"
 
+#include <sst/core/output.h>
+#include <sst/core/simulation.h>
+
 #include <boost/assign.hpp>
 
 
@@ -357,8 +360,8 @@ UnitAlgebra::UnitAlgebra(string val)
         value = sst_dec_float(number);
     }
     catch (runtime_error e) {
-        cout << "Error" << endl;
-        exit(1);
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Error: invalud number string: %s\n",number.c_str());
     }
     
     value *= multiplier;

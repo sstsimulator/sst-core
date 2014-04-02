@@ -17,7 +17,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include <sst/core/debug.h>
+#include <sst/core/output.h>
 #include <sst/core/linkMap.h>
 #include <sst/core/timeConverter.h>
 
@@ -59,14 +59,17 @@ TimeConverter* TimeLord::getTimeConverter(const UnitAlgebra& ts) {
         uaFactor = temp.invert() / period;
     }
     else {
-        _abort(TimeLord,
-               "getTimeConverter(): Format error: Time Coverter creation requires "
-               "a time unit (s or Hz)");
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Error:  TimeConverter creation requires "
+                    "a time unit (s or Hz), %s was passed to call\n",
+                    ts.toString().c_str());
     }
     // Check to see if number is too big or too small
     if ( uaFactor.getValue() > MAX_SIMTIME_T ) {
         Output abort = Simulation::getSimulation()->getSimulationOutput();
-        abort.fatal(CALL_INFO,1,"Error:  Attempting to get TimeConverter for a time (%s) which is too large for the timebase (%s)\n",ts.toString().c_str(),timeBase.toStringBestSI().c_str());
+        abort.fatal(CALL_INFO,1,"Error:  Attempting to get TimeConverter for a time (%s) "
+                    "which is too large for the timebase (%s)\n",
+                    ts.toString().c_str(),timeBase.toStringBestSI().c_str());
 
     }
     simCycles = uaFactor.getRoundedValue();
