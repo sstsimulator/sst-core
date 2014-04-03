@@ -168,12 +168,13 @@ public:
     typedef std::vector<uint8_t> dataVec;
     /** Each MemEvent has a unique (auto-generated) ID of this type */
     typedef std::pair<uint64_t, int> id_type;
+    static const id_type NO_ID;
 
     /** Creates a new MemEvent */
     MemEvent(const Component *_src, Addr _addr, Command _cmd) :
         SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName()){
         event_id = std::make_pair(main_id++, _src->getId());
-        response_to_id = std::make_pair(0, -1);
+        response_to_id = NO_ID;
         baseAddr = _addr;
         dst = BROADCAST_TARGET;
         size = 0;
@@ -185,7 +186,7 @@ public:
     MemEvent(const Component *_src, Addr _addr, Command _cmd, id_type id) :   
         SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName()) {
         event_id = id;
-        response_to_id = std::make_pair(0, -1);
+        response_to_id = NO_ID;
         baseAddr = _addr;
         size = 0;
         dst = BROADCAST_TARGET;
@@ -196,7 +197,7 @@ public:
     MemEvent(const Component *_src, Addr _addr, Addr _baseAddr, Command _cmd, uint32_t _size) :                //READS
         SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName()){
         event_id = std::make_pair(main_id++, _src->getId());
-        response_to_id = std::make_pair(0, -1);
+        response_to_id = NO_ID;
         baseAddr = _baseAddr;
         size = _size;
         dst = BROADCAST_TARGET;
@@ -208,7 +209,7 @@ public:
     MemEvent(const Component *_src, Addr _addr, Addr _baseAddr, Command _cmd, std::vector<uint8_t>& data) :    //WRITES
         SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName()){
         event_id = std::make_pair(main_id++, _src->getId());
-        response_to_id = std::make_pair(0, -1);
+        response_to_id = NO_ID;
         baseAddr = _baseAddr;
         dst = BROADCAST_TARGET;
         setPayload(data);

@@ -19,5 +19,6 @@ using namespace SST;
 using namespace SST::Interfaces;
 
 uint64_t SST::Interfaces::MemEvent::main_id = 0;
+const SST::Interfaces::MemEvent::id_type SST::Interfaces::MemEvent::NO_ID = std::make_pair(0, -1);
 
 BOOST_CLASS_EXPORT(MemEvent)
