@@ -40,7 +40,7 @@ typedef void (*partitionFunction)(ConfigGraph*,int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
 typedef void* (*genPythonModuleFunction)(void);
 
-/*** Describes Parameters to a Component.
+/** Describes Parameters to a Component.
  */
 struct ElementInfoParam {
     const char *name;			/*!< Name of the parameter */
@@ -48,7 +48,7 @@ struct ElementInfoParam {
     const char *defaultValue;	/*!< Default value (if any) NULL == required parameter with no default, "" == optional parameter, blank default, "foo" == default value */
 };
 
-/*** Describes Ports that the Component can use
+/** Describes Ports that the Component can use
  */
 struct ElementInfoPort {
     const char *name;			/*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter */
@@ -56,7 +56,7 @@ struct ElementInfoPort {
     const char **validEvents;	/*!< List of fully-qualified event types that this Port expects to send or receive */
 };
 
-/*** Describes a Component and its associated information
+/** Describes a Component and its associated information
  */
 struct ElementInfoComponent {
     const char *name;					/*!< Name of the component */
@@ -68,7 +68,7 @@ struct ElementInfoComponent {
     uint32_t category;					/*!< Bit-mask of categories in which this component fits. */
 };
 
-/*** Describes an Introspector
+/** Describes an Introspector
  */
 struct ElementInfoIntrospector {
     const char *name;					/*!< Name of the introspector */
@@ -78,7 +78,7 @@ struct ElementInfoIntrospector {
     const ElementInfoParam *params;		/*!< List of parameters which this introspector uses. */
 };
 
-/*** Describes an Event
+/** Describes an Event
  */
 struct ElementInfoEvent {
     const char *name;					/*!< Name of the event */
@@ -87,7 +87,7 @@ struct ElementInfoEvent {
     eventInitialize init;				/*!< Pointer to a function to initialize the library for use of this event. (optional) */
 };
 
-/*** Describes a Module
+/** Describes a Module
  */
 struct ElementInfoModule {
     const char *name;								/*!< Name of the module. */
@@ -98,7 +98,7 @@ struct ElementInfoModule {
     const ElementInfoParam *params;					/*!< List of parameters which are used by this module. */
 };
 
-/*** Describes a Partitioner
+/** Describes a Partitioner
  */
 struct ElementInfoPartitioner {
     const char *name;					/*!< Name of the Partitioner */
@@ -107,7 +107,7 @@ struct ElementInfoPartitioner {
     partitionFunction func;				/*!< Function to be called to perform the paritioning */
 };
 
-/*** Describes a Generator
+/** Describes a Generator
  */
 struct ElementInfoGenerator {
     const char *name;					/*!< Name of the Generator */
@@ -116,7 +116,7 @@ struct ElementInfoGenerator {
     generateFunction func;				/*!< Function to be called to perform the graph generation */
 };
 
-/*** Describes all the parts of the Element Library
+/** Describes all the parts of the Element Library
  */
 struct ElementLibraryInfo {
     const char *name;										/*!< Name of the Library. */
