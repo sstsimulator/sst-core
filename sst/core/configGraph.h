@@ -195,7 +195,7 @@ public:
     /** Create a new component */
     ComponentId_t addComponent(std::string name, std::string type);
 
-    /** Set on which rank a Component will exist (partitioning)
+    /** Set on which rank a Component will exist (partitioning) */
     void setComponentRank(ComponentId_t comp_id, int rank);
     /** Set the weight of a Component (partitioning) */
     void setComponentWeight(ComponentId_t comp_id, float weight);
