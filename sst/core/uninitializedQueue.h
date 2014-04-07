@@ -19,8 +19,15 @@
 
 namespace SST {
 
+/** Always unitialized queue
+ * @brief Used for debugging, and preventing accidentally sending messages
+ * into an incorrect queue
+ */
 class UninitializedQueue : public ActivityQueue {
 public:
+    /** Create a new Queue
+     * @param message - Message to print when something attempts to use this Queue
+     */
     UninitializedQueue(std::string message);
     UninitializedQueue(); // Only used for serialization
     ~UninitializedQueue();
@@ -30,8 +37,8 @@ public:
     void insert(Activity* activity);
     Activity* pop();
     Activity* front();
-    
-    
+
+
 private:
     std::string message;
 
