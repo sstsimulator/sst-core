@@ -47,7 +47,14 @@ namespace SST {
 class Output
 {
 public:
-    enum output_location_t { NONE, STDOUT, STDERR, FILE };
+    /** Choice of output location
+     */
+    enum output_location_t {
+        NONE,           /*!< No output */
+        STDOUT,     /*!< Print to stdout */
+        STDERR,     /*!< Print to stderr */
+        FILE        /*!< Print to a file */
+    };
 
     /** Constructor.  Set up output configuration.
         @param prefix Prefix to be prepended to all strings emitted by calls to
@@ -55,14 +62,14 @@ public:
                NOTE: No space will be inserted between the prepended prefix
                string and the normal output string.
                Prefix can contain the following escape codes:
-               @f Name of the file in which output call was made.
-               @l Line number in the file in which output call was made.
-               @p Name of the function from which output call was made.
-               @r MPI rank of the calling process.  Will be empty if
+               - \@f Name of the file in which output call was made.
+               - \@l Line number in the file in which output call was made.
+               - \@p Name of the function from which output call was made.
+               - \@r MPI rank of the calling process.  Will be empty if
                   MPI_COMM_WORLD size is 1.
-               @R MPI rank of the calling process.  Will be 0 if
+               - \@R MPI rank of the calling process.  Will be 0 if
                   MPI_COMM_WORLD size is 1.
-               @t Simulation time.  Will be the raw simulaton cycle time
+               - \@t Simulation time.  Will be the raw simulaton cycle time
                   retrieved from the SST Core.
         @param verbose_level Debugging output level.  Calls to debug(),
                verbose() and fatal() are only output if their output_level
@@ -98,14 +105,14 @@ public:
                NOTE: No space will be inserted between the prepended prefix
                string and the normal output string.
                Prefix can contain the following escape codes:
-               @f Name of the file in which output call was made.
-               @l Line number in the file in which output call was made.
-               @p Name of the function from which output call was made.
-               @r MPI rank of the calling process.  Will be empty if
+               - \@f Name of the file in which output call was made.
+               - \@l Line number in the file in which output call was made.
+               - \@p Name of the function from which output call was made.
+               - \@r MPI rank of the calling process.  Will be empty if
                   MPI_COMM_WORLD size is 1.
-               @R MPI rank of the calling process.  Will be 0 if
+               - \@R MPI rank of the calling process.  Will be 0 if
                   MPI_COMM_WORLD size is 1.
-               @t Simulation time.  Will be the raw simulaton cycle time
+               - \@t Simulation time.  Will be the raw simulaton cycle time
                   retrieved from the SST Core.
         @param verbose_level Debugging output level.  Calls to debug(),
                verbose() and fatal() are only output if their output_level
@@ -127,8 +134,6 @@ public:
     void init(const std::string& prefix, uint32_t verbose_level,
               uint32_t verbose_mask, output_location_t location);
 
-    // OUTPUT METHODS
-    // NOTE: __ATTRIBUTE__ Performs printf type mismatch checks on the format parameter
     /** Output the message with formatting as specified by the format parameter.
         The output will be prepended with the expanded prefix set in the object.
         @param line Line number of calling function (use CALL_INFO macro)
@@ -269,14 +274,14 @@ public:
                NOTE: No space will be inserted between the prepended prefix
                string and the normal output string.
                Prefix can contain the following escape codes:
-               @f Name of the file in which output call was made.
-               @l Line number in the file in which output call was made.
-               @p Name of the function from which output call was made.
-               @r MPI rank of the calling process.  Will be empty if
+               - \@f Name of the file in which output call was made.
+               - \@l Line number in the file in which output call was made.
+               - \@p Name of the function from which output call was made.
+               - \@r MPI rank of the calling process.  Will be empty if
                   MPI_COMM_WORLD size is 1.
-               @R MPI rank of the calling process.  Will be 0 if
+               - \@R MPI rank of the calling process.  Will be 0 if
                   MPI_COMM_WORLD size is 1.
-               @t Simulation time.  Will be the raw simulaton cycle time
+               - \@t Simulation time.  Will be the raw simulaton cycle time
                   retrieved from the SST Core.
     */
     void setPrefix(const std::string& prefix);
