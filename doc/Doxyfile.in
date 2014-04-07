@@ -685,20 +685,7 @@ RECURSIVE              = YES
 # run.
 
 EXCLUDE                = sst/core/tinyxml \
-                         sst/elements \
-                         sst/core/initQueue.h \ 
-                         sst/core/stopAction.h \ 
-                         sst/core/uninitializedQueue.h 
-
-# SST NOTE on EXCLUDE:
-#   The following are not considered part of the public API, and
-#   are temporarily excluded from processing while the public API
-#   is being documented
-#                          sst/core/initQueue.h \ 
-#                          sst/core/stopAction.h \ 
-#                          sst/core/uninitializedQueue.h 
-
-
+                         sst/elements 
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
@@ -712,7 +699,7 @@ EXCLUDE_SYMLINKS       = YES
 # against the file with absolute path, so to exclude all test directories
 # for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       = *config*.h \
+EXCLUDE_PATTERNS       = sst_config.h \
                          ltdl.h \
                          */.svn \
                          */.svn/* \

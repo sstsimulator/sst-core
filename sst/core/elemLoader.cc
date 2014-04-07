@@ -44,10 +44,11 @@ static void preload_symbols(void) {
 
 namespace SST {
 
-/* This structure exists so that we don't need to have any
+/** This structure exists so that we don't need to have any
    libtool-specific code (and therefore need the libtool headers) in
    factory.h */
 struct LoaderData {
+    /** Handle from Libtool */
     lt_dladvise advise_handle;
 };
 

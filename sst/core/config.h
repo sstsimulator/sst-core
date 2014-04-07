@@ -27,44 +27,68 @@ namespace boost {
 }
 
 namespace SST {
+
+/**
+ * Class to contain SST Simulation Configuration variables
+ */
 class Config {
 public:
-    typedef enum { UNKNOWN, INIT, RUN, BOTH } Mode_t;
+    /** Type of Run Modes */
+    typedef enum {
+        UNKNOWN,    /*!< Unknown mode - Invalid for running */
+        INIT,       /*!< Initialize-only.  Useful for debugging initialization and graph generation */
+        RUN,        /*!< Run-only.  Useful when restoring from a checkpoint */
+        BOTH        /*!< Default.  Both initialize and Run the simulation */
+    } Mode_t;
 
+    /** Create a new Config object.
+     * @param my_rank - parallel rank of this instance
+     * @param world_size - number of parallel ranks in the simulation
+     */
     Config(int my_rank, int world_size);
     ~Config();
 
+    /** Parse command-line arguments to update configuration values */
     int parseCmdLine( int argc, char* argv[] );
+    /** Parse a configuration string to update configuration values */
     int parseConfigFile( std::string config_string );
+    /** Return the current Verbosity level */
     uint32_t getVerboseLevel();
 
+    /** Set the cycle at which to stop the simulation */
     void setStopAt(std::string stopAtStr);
+    /** Sets the default timebase of the simulation */
     void setTimeBase(std::string timeBase);
+    /** Print the current configuration to stdout */
     void Print();
 
-    bool            archive;
-    std::string     debugFile;
-    std::string     archiveType;
-    std::string     archiveFile;
-    Mode_t          runMode;
-    std::string     sdlfile;
-    std::string     stopAtCycle;
-    std::string     timeBase;
-    std::string     partitioner;
-    std::string     generator;
-    std::string     generator_options;
-    std::string     dump_config_graph;
-    std::string     output_dot;
-    std::string     output_directory;
+    bool            archive;            /*!< If an archive method or file has been set */
+    std::string     debugFile;          /*!< File to which debug information should be written */
+    std::string     archiveType;        /*!< Type of Archive (bin, xml, text) */
+    std::string     archiveFile;        /*!< File for Archival work */
+    Mode_t          runMode;            /*!< Run Mode (Init, Both, Run-only) */
+    std::string     sdlfile;            /*!< Graph generation file */
+    std::string     stopAtCycle;        /*!< When to stop the simulation */
+    std::string     timeBase;           /*!< Timebase of simulation */
+    std::string     partitioner;        /*!< Partitioner to use */
+    std::string     generator;          /*!< Generator to use */
+    std::string     generator_options;  /*!< Options to pass to the generator */
+    std::string     dump_config_graph;  /*!< File to dump configuration graph */
+    std::string     output_dot;         /*!< File to dump dot output */
+    std::string     output_directory;   /*!< Output directory to dump all files to */
 #ifdef HAVE_PYTHON
-    std::string     model_options;
+    std::string     model_options;      /*!< Options to pass to Python Model generator */
 #endif
-    std::string     dump_component_graph_file;
+    std::string     dump_component_graph_file; /*!< File to dump component graph */
 
-    bool            all_parse;
-    uint32_t        verbose;
-	bool			no_env_config;
+    bool            all_parse;          /*!< Should all ranks parse input, or just rank 0 */
+    uint32_t        verbose;            /*!< Verbosity */
+	bool			no_env_config;      /*!< Bypass compile-time environmental configuration */
 
+    /** Set the run-mode
+     * @param mode - string "init" "run" "both"
+     * @return the Mode_t corresponding
+     */
     inline Mode_t setRunMode( std::string mode )
     {
         if( ! mode.compare( "init" ) ) return INIT;
@@ -73,6 +97,7 @@ public:
         return UNKNOWN;
     }
 
+    /** Print to stdout the current configuration */
 	void print() {
 		std::cout << "debugFile = " << debugFile << std::endl;
 		std::cout << "archive = " << archive << std::endl;
@@ -94,6 +119,7 @@ public:
 #endif
 	}
 
+    /** Return the library search path */
     std::string getLibPath(void) const {
         char *envpath = getenv("SST_LIB_PATH");
         if ( !addlLibPath.empty() ) {
@@ -104,7 +130,9 @@ public:
         return libpath;
     }
 
+    /** Return the current Parallel Rank */
 	int getRank() const { return rank; }
+    /** Return the number of parallel ranks in the simulation */
 	int getNumRanks() const { return numRanks; }
 
 private:

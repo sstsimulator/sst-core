@@ -197,7 +197,7 @@ ConfigGraph::checkForStructuralErrors()
 
 
 ComponentId_t
-ConfigGraph::addComponent(string name, string type, float weight, int rank)
+ConfigGraph::addComponent(std::string name, std::string type, float weight, int rank)
 {
     ConfigComponent* comp = new ConfigComponent();
     comp->name = name;
@@ -210,7 +210,7 @@ ConfigGraph::addComponent(string name, string type, float weight, int rank)
 }
 
 ComponentId_t
-ConfigGraph::addComponent(string name, string type)
+ConfigGraph::addComponent(std::string name, std::string type)
 {
     ConfigComponent* comp = new ConfigComponent();
     comp->name = name;

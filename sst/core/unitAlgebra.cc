@@ -206,7 +206,7 @@ Units::registerCompoundUnit(string u, string v)
     return;
 }
 
-Units::Units(string units, sst_dec_float& multiplier)
+Units::Units(std::string units, sst_dec_float& multiplier)
 {   
     // Get the numerator and the denominator
     string s_numerator;
@@ -321,7 +321,7 @@ Units::toString() const
 // UnitAlgebra
 
 string
-UnitAlgebra::trim(string str)
+UnitAlgebra::trim(std::string str)
 {
     // Find whitespace in front
     int front_index = 0;
@@ -335,7 +335,7 @@ UnitAlgebra::trim(string str)
 }
 
 
-UnitAlgebra::UnitAlgebra(string val)
+UnitAlgebra::UnitAlgebra(std::string val)
 {
     //Trim off all whitespace on front and back
     string parse = trim(val);
