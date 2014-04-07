@@ -50,29 +50,40 @@ typedef std::map<std::string, Introspector* > IntroMap_t;
 typedef std::map<std::string, Component* > CompMap_t;
 typedef std::map<ComponentId_t, std::string > CompIdMap_t;
 
-// The Factory and TimeLord objects both should only be associated
-// with a simulation object and never created on their own.  To
-// accomplish this, create a base class of Simluation which is
-// friended by both Factory and TimeLord.  The friendship is not
-// inherited by the Simulation class, limiting the exposure of
-// internal information to the 20 line object below and it is
-// impossible to create either a Factory or a timeLord without a
-// simulation object.
+/** The Factory and TimeLord objects both should only be associated
+    with a simulation object and never created on their own.  To
+    accomplish this, create a base class of Simluation which is
+    friended by both Factory and TimeLord.  The friendship is not
+    inherited by the Simulation class, limiting the exposure of
+    internal information to the 20 line object below and it is
+    impossible to create either a Factory or a timeLord without a
+    simulation object.
+ */
 class SimulationBase {
 public:
+    /** Return the Factory associated with this Simulation */
     Factory* getFactory(void) const { return factory; }
+    /** Return the TimeLord associated with this Simulation */
     TimeLord* getTimeLord(void) const { return timeLord; }
 
 protected:
+    /** Constructor
+     * @param config - Configuration to use for this simulation
+     */
     SimulationBase(Config* config);
     SimulationBase() { } // Don't call - here for serialization
     virtual ~SimulationBase();
 
+    /** Get a handle to a TimeConverter
+     * @param cycles Frequency which is the base of the TimeConverter
+     */
     TimeConverter* minPartToTC(SimTime_t cycles) const;
 
+    /** Factory used to generate the simulation components */
     Factory *factory;
+    /** TimeLord of the simulation */
     TimeLord *timeLord;
-    
+
 private:
     SimulationBase(SimulationBase const&); // Don't Implement
     void operator=(SimulationBase const&); // Don't implement
@@ -82,36 +93,71 @@ private:
     void serialize(Archive & ar, const unsigned int version);
 };
 
+/**
+ * Main control class for a SST Simulation.
+ * Provides base features for managing the simulation
+ */
 class Simulation : public SimulationBase {
 public:
-    typedef std::map<SimTime_t, Clock*> clockMap_t; 
-    typedef std::map< unsigned int, Sync* > SyncMap_t;
+    typedef std::map<SimTime_t, Clock*> clockMap_t;    /*!< Map of times to clocks */
+    typedef std::map< unsigned int, Sync* > SyncMap_t; /*!< Map of times to Sync Objects */
 
     ~Simulation();
 
+    /** Create new simulation
+     * @param config - Configuration of the simulation
+     * @param my_rank - Parallel Rank of this simulation object
+     * @param num_ranks - How many Ranks are in the simulation
+     */
     static Simulation *createSimulation(Config *config, int my_rank, int num_ranks);
+    /** Return a pointer to the singleton instance of the Simulation */
     static Simulation *getSimulation() { return instance; }
+    /** Sets an internal flag for signaling the simulation.  Used internally */
     static void setSignal(int signal);
+    /** Causes the current status of the simulation to be printed to stderr.
+     * @param fullStatus - if true, call printStatus() on all components as well
+     *        as print the base Simulation's status
+     */
     void printStatus(bool fullStatus);
 
+    /** Converts a ConfigGraph graph into actual set of links and components */
     int performWireUp( ConfigGraph& graph, int myRank );
 
+    /** Set cycle count, which, if reached, will cause the simulation to halt. */
     void setStopAtCycle( Config* cfg );
+    /** Perform the init() phase of simulation */
     void initialize();
+    /** Perform the setup() and run phases of the simulation. */
     void run();
+    /** Return the base simulation Output class instance */
     Output& getSimulationOutput() { return sim_output; };
+
+    /** Return the current simulation time as a cycle count*/
     SimTime_t getCurrentSimCycle() const;
-    // void getElapsedSimTime(double *value, char *prefix) const;
+    /** Return the elapsed simulation time as a time */
     UnitAlgebra getElapsedSimTime() const;
+    /** Get this instance's parallel rank */
     int getRank() const {return my_rank;}
+    /** Get the number of parallel ranks in the simulation */
     int getNumRanks() const {return num_ranks;}
+    /** Register a handler to be called on a set frequency */
     TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);
+    /** Remove a clock handler from the list of active clock handlers */
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
+    /** Reactivate an existing clock and handler.
+     * @return time when handler will next fire
+     */
     Cycle_t reregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
+    /** Returns the next Cycle that the TImeConverter would fire. */
     Cycle_t getNextClockCycle(TimeConverter* tc);
+
+    /** Insert an activity to fire at a specified time */
     void insertActivity(SimTime_t time, Activity* ev);
+
+    /** Return the exit event */
     Exit* getExit() const { return m_exit; }
 
+    /** Return pointer to map of links for a given component id */
     LinkMap* getComponentLinkMap(ComponentId_t id) const {
         std::map<ComponentId_t,LinkMap*>::const_iterator i = component_links.find(id);
         if (i == component_links.end()) {
@@ -121,6 +167,7 @@ public:
         }
     }
 
+    /** Clears the linkMap for a given Component ID */
     void removeComponentLinkMap(ComponentId_t id) {
         std::map<ComponentId_t,LinkMap*>::iterator i = component_links.find(id);
         if (i == component_links.end()) {
@@ -130,11 +177,13 @@ public:
         }
     }
 
+    /** Returns reference to the Component Map */
     const CompMap_t& getComponentMap(void) const { return compMap; }
+    /** Returns reference to the Component ID Map */
     const CompIdMap_t& getComponentIdMap(void) const { return compIdMap; }
 
-    Component*
-    getComponent(const std::string &name) const
+    /** Returns the component with a given name */
+    Component* getComponent(const std::string &name) const
     {
         CompMap_t::const_iterator i = compMap.find(name);
         if (i != compMap.end()) {
@@ -146,8 +195,8 @@ public:
         }
     }
 
-    Component*
-    getComponent(const ComponentId_t &id) const
+    /** returns the component with the given ID */
+    Component* getComponent(const ComponentId_t &id) const
     {
 		CompIdMap_t::const_iterator i = compIdMap.find(id);
 		if (i != compIdMap.end()) {
@@ -158,8 +207,8 @@ public:
 		}
     }
 
-    Introspector*
-    getIntrospector(const std::string &name) const
+    /** Returns the Introspector with the given name */
+    Introspector* getIntrospector(const std::string &name) const
     {
         IntroMap_t::const_iterator i = introMap.find(name);
         if (i != introMap.end()) {
@@ -171,8 +220,12 @@ public:
         }
     }
 
+    /** Signifies that an event type is required for this simulation
+     *  Causes to Factory to verify that the required event type can be found.
+     *  @param name fully qualified libraryName.EventName
+     */
     void requireEvent(std::string name);
-    
+
 private:
     friend class Link;
     friend class Action;
