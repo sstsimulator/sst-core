@@ -23,11 +23,18 @@
 namespace SST {
 namespace Core {
 
+/**
+ * Simple Memory Pool class
+ */
 class MemPool
 {
 public:
-	MemPool(size_t elementSize, size_t initialSize=(2<<20))
-        : numAlloc(0), numFree(0),
+    /** Create a new Memory Pool.
+     * @param elementSize - Size of each Element
+     * @param initialSize - Size of the memory pool (in bytes)
+     */
+	MemPool(size_t elementSize, size_t initialSize=(2<<20)) :
+        numAlloc(0), numFree(0),
         elemSize(elementSize), arenaSize(initialSize)
     {
         allocPool();
@@ -40,6 +47,7 @@ public:
         }
     }
 
+    /** Allocate a new element from the memory pool */
 	void* malloc()
     {
         if ( freeList.empty() ) {
@@ -52,6 +60,7 @@ public:
         return ret;
     }
 
+    /** Return an element to the memory pool */
 	void free(void *ptr)
     {
         // TODO:  Make sure this is in one of our arenas
@@ -59,7 +68,9 @@ public:
         ++numFree;
     }
 
+    /** Counter:  Number of times elements have been allocated */
     uint64_t numAlloc;
+    /** Counter:  Number times elements have been freed */
     uint64_t numFree;
 
 private:

@@ -30,10 +30,11 @@ public:
                 header.c_str(), getDeliveryTime(), getPriority());
     }
 
-    
+
 protected:
+    /** Called to signal to the Simulation object to end the simulation */
     void endSimulation();
-    
+
 private:
      friend class boost::serialization::access;
      template<class Archive>
