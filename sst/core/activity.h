@@ -26,30 +26,35 @@
 
 namespace SST {
 
+/** Base class for all Activities in the SST Event Queue */
 class Activity {
 public:
   Activity() {}
     virtual ~Activity() {}
 
+    /** Function which will be called when the time for this Activity comes to pass. */
     virtual void execute(void) = 0;
-    
-    // Comparator class to use with STL container classes.
+
+    /** Comparator class to use with STL container classes. */
     class less_time_priority {
     public:
-	inline bool operator()(const Activity* lhs, const Activity* rhs) {
-	    if (lhs->delivery_time == rhs->delivery_time ) return lhs->priority < rhs->priority;
-	    else return lhs->delivery_time < rhs->delivery_time;
-	}
+        /** Compare based off pointers */
+        inline bool operator()(const Activity* lhs, const Activity* rhs) {
+            if (lhs->delivery_time == rhs->delivery_time ) return lhs->priority < rhs->priority;
+            else return lhs->delivery_time < rhs->delivery_time;
+        }
 
-	inline bool operator()(const Activity& lhs, const Activity& rhs) {
-	    if (lhs.delivery_time == rhs.delivery_time ) return lhs.priority < rhs.priority;
-	    else return lhs.delivery_time < rhs.delivery_time;
-	}
+        /** Compare based off references */
+        inline bool operator()(const Activity& lhs, const Activity& rhs) {
+            if (lhs.delivery_time == rhs.delivery_time ) return lhs.priority < rhs.priority;
+            else return lhs.delivery_time < rhs.delivery_time;
+        }
     };
 
-    // To use with STL priority queues, that order in reverse.
+    /** To use with STL priority queues, that order in reverse. */
     class pq_less_time_priority {
     public:
+        /** Compare based off pointers */
         inline bool operator()(const Activity* lhs, const Activity* rhs) const {
             if ( lhs->delivery_time == rhs->delivery_time ) {
                 if ( lhs->priority == rhs->priority ) {
@@ -61,6 +66,7 @@ public:
             return lhs->delivery_time > rhs->delivery_time;
         }
 
+        /** Compare based off references */
         inline bool operator()(const Activity& lhs, const Activity& rhs) {
             if ( lhs.delivery_time == rhs.delivery_time ) {
                 if ( lhs.priority == rhs.priority ) {
@@ -73,39 +79,50 @@ public:
         }
     };
 
-    // Comparator class to use with STL container classes.
+    /** Comparator class to use with STL container classes. */
     class less_time {
     public:
-	inline bool operator()(const Activity* lhs, const Activity* rhs) {
-	    return lhs->delivery_time < rhs->delivery_time;
-	}
+        /** Compare pointers */
+        inline bool operator()(const Activity* lhs, const Activity* rhs) {
+            return lhs->delivery_time < rhs->delivery_time;
+        }
 
-	inline bool operator()(const Activity& lhs, const Activity& rhs) {
-	    return lhs.delivery_time < rhs.delivery_time;
-	}
+        /** Compare references */
+        inline bool operator()(const Activity& lhs, const Activity& rhs) {
+            return lhs.delivery_time < rhs.delivery_time;
+        }
     };
-    
+
+    /** Set the time for which this Activity should be delivered */
     void setDeliveryTime(SimTime_t time) {
-	delivery_time = time;
+        delivery_time = time;
     }
 
+    /** Return the time at which this Activity will be delivered */
     inline SimTime_t getDeliveryTime() const {
-	return delivery_time;
+        return delivery_time;
     }
 
+    /** Return the Priority of this Activity */
     inline int getPriority() const {
-	return priority;
+        return priority;
     }
+
+    /** Generic print-print function for this Activity.
+     * Subclasses should override this function.
+     */
     virtual void print(const std::string& header, Output &out) const {
         out.output("%s Generic Activity to be delivered at %" PRIu64 " with priority %d\n",
                 header.c_str(), delivery_time, priority);
     }
 
+    /** Set a new Queue order */
     void setQueueOrder(uint64_t order) {
         queue_order = order;
     }
 
 #if USE_MEMPOOL
+    /** Allocates memory from a memory pool for a new Activity */
 	void* operator new(std::size_t size) throw()
     {
         /* 1) Find memory pool
@@ -139,6 +156,7 @@ public:
     }
 
 
+    /** Returns memory for this Activity to the appropriate memory pool */
 	void operator delete(void* ptr)
     {
         /* 1) Decrement pointer
@@ -154,8 +172,9 @@ public:
 #endif
 
 protected:
+    /** Set the priority of the Activity */
     void setPriority(int priority) {
-	this->priority = priority;
+        this->priority = priority;
     }
 
 
