@@ -19,34 +19,41 @@
 
 namespace SST {
 
+/**
+ * Defines a pair of links (to define a connected link)
+ */
 class LinkPair {
 public:
+    /** Create a new LinkPair with specified ID */
     LinkPair(LinkId_t id) :
-	left(new Link(id)),
-	right(new Link(id))
+        left(new Link(id)),
+        right(new Link(id))
     {
-	my_id = id;
+        my_id = id;
 
-	left->pair_link = right;
-	right->pair_link = left;
+        left->pair_link = right;
+        right->pair_link = left;
 
     }
     virtual ~LinkPair() {}
 
+    /** return the ID of the LinkPair */
     LinkId_t getId() {
-	return my_id;
+        return my_id;
     }
 
+    /** Return the Left Link */
     inline Link* getLeft() {return left;}
+    /** Return the Right Link */
     inline Link* getRight() {return right;}
-    
+
 private:
-    
+
     Link* left;
     Link* right;
 
     LinkId_t my_id;
-    
+
     friend class boost::serialization::access;
     template<class Archive>
     void

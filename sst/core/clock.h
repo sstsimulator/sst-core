@@ -27,21 +27,33 @@
 namespace SST {
 
 class TimeConverter;
+
+/**
+ * A Clock class.
+ *
+ * Calls callback functions (handlers) on a specified period
+ */
 class Clock : public Action
 {
 public:
 
+    /** Create a new clock with a specified period */
     Clock( TimeConverter* period );
     ~Clock();
-    
-    // Functor classes for Clock handling
+
+    /** Functor classes for Clock handling */
     class HandlerBase {
     public:
+        /** Function called when Handler is invoked */
         virtual bool operator()(Cycle_t) = 0;
         virtual ~HandlerBase() {}
     };
-    
 
+
+    /** Event Handler class with user-data argument
+     * @tparam classT Type of the Object
+     * @tparam argT Type of the argument
+     */
     template <typename classT, typename argT = void>
     class Handler : public HandlerBase {
     private:
@@ -51,6 +63,11 @@ public:
         argT data;
 	
     public:
+        /** Constructor
+         * @param object - Pointer to Object upon which to call the handler
+         * @param member - Member function to call as the handler
+         * @param data - Additional argument to pass to handler
+         */
         Handler( classT* const object, PtrMember member, argT data ) :
             object(object),
             member(member),
@@ -61,15 +78,22 @@ public:
             return (object->*member)(cycle,data);
         }
     };
-    
+
+    /** Event Handler class without user-data
+     * @tparam classT Type of the Object
+     */
     template <typename classT>
     class Handler<classT, void> : public HandlerBase {
     private:
         typedef bool (classT::*PtrMember)(Cycle_t);
         classT* object;
         const PtrMember member;
-	
+
     public:
+        /** Constructor
+         * @param object - Pointer to Object upon which to call the handler
+         * @param member - Member function to call as the handler
+         */
         Handler( classT* const object, PtrMember member ) :
             object(object),
             member(member)
@@ -81,9 +105,12 @@ public:
     };
 
 
+    /** Return the time of the next clock tick */
     Cycle_t getNextCycle();
-    
-    bool registerHandler( Clock::HandlerBase* handler ); 
+
+    /** Add a handler to be called on this clock's tick */
+    bool registerHandler( Clock::HandlerBase* handler );
+    /** Remove a handler from the list of handlers to be called on the clock tick */
     bool unregisterHandler( Clock::HandlerBase* handler, bool& empty );
 
     void print(const std::string& header, Output &out) const {

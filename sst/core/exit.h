@@ -26,19 +26,33 @@ namespace SST{
 class Simulation;
 class TimeConverter;
 
+/**
+ * Exit Event Action
+ *
+ * Causes the simulation to halt
+ */
 class Exit : public Action {
 public:
-    // Exit needs to register a handler during constructor time, which
-    // requires a simulation object.  But the simulation class creates
-    // an Exit object during it's construction, meaning that
-    // Simulation::getSimulation() won't work yet.  So Exit is the one
-    // exception to the "constructors shouldn't take simulation
-    // pointers" rule.  However, it still needs to follow the "classes
-    // shouldn't contain pointers back to Simulation" rule.
+    /**
+     * Create a new ExitEvent
+     * @param sim - Simulation Object
+     * @param period - Period upon which to check for exit status
+     * @param single_rank - True if there are no parallel ranks
+     *
+     *  Exit needs to register a handler during constructor time, which
+     * requires a simulation object.  But the simulation class creates
+     * an Exit object during it's construction, meaning that
+     * Simulation::getSimulation() won't work yet.  So Exit is the one
+     * exception to the "constructors shouldn't take simulation
+     * pointers" rule.  However, it still needs to follow the "classes
+     * shouldn't contain pointers back to Simulation" rule.
+     */
     Exit( Simulation* sim, TimeConverter* period, bool single_rank );
     ~Exit();
-    
+
+    /** Increment Reference Count for a given Component ID */
     bool refInc( ComponentId_t );
+    /** Decrement Reference Count for a given Component ID */
     bool refDec( ComponentId_t );
 
 private:

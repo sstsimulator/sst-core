@@ -20,11 +20,11 @@
 
 #include <sst/core/link.h>
 
-namespace SST { 
+namespace SST {
 
-#define _LM_DBG( fmt, args...) __DBG( DBG_LINKMAP, LinkMap, fmt, ## args )
-
-
+/**
+ * Maps names of Links to actual SST Link structures
+ */
 class LinkMap {
 
 private:
@@ -33,30 +33,34 @@ private:
 public:
     LinkMap() {}
     ~LinkMap() {
-	// Delete all the links in the map
-	for ( std::map<std::string,Link*>::iterator it = linkMap.begin(); it != linkMap.end(); ++it ) {
-	    delete it->second;
-	}
-	linkMap.clear();
-    }
-    
-    void insertLink(std::string name, Link* link) {
-	linkMap.insert(std::pair<std::string,Link*>(name,link));
+        // Delete all the links in the map
+        for ( std::map<std::string,Link*>::iterator it = linkMap.begin(); it != linkMap.end(); ++it ) {
+            delete it->second;
+        }
+        linkMap.clear();
     }
 
+    /** Inserts a new pair of name and link into the map */
+    void insertLink(std::string name, Link* link) {
+        linkMap.insert(std::pair<std::string,Link*>(name,link));
+    }
+
+    /** Returns a Link pointer for a given name */
     Link* getLink(std::string name) {
-	std::map<std::string,Link*>::iterator it = linkMap.find(name);
-	if ( it == linkMap.end() ) return NULL;
-	else return it->second;
+        std::map<std::string,Link*>::iterator it = linkMap.find(name);
+        if ( it == linkMap.end() ) return NULL;
+        else return it->second;
     }
 
     // FIXME: Cludge for now, fix later.  Need to make LinkMap look
     // like a regular map instead.
+    /** Return a reference to the internal map */
     std::map<std::string,Link*>& getLinkMap() {
-	return linkMap;
+        return linkMap;
     }
 
     friend class boost::serialization::access;
+    /** Serialize LinkMap */
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version )
     {

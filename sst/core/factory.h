@@ -28,21 +28,61 @@ class Component;
 class Introspector;
 class SimulationBase;
 
+/**
+ * Class for instantiating Components, Links and the like out
+ * of element libraries.
+ */
 class Factory {
 public:
+    /** Attempt to create a new Component instantiation
+     * @param id - The unique ID of the component instantiation
+     * @param componentname - The fully qualified elementlibname.componentname type of component
+     * @param params - The params to pass to the component's constructor
+     * @return Newly created component
+     */
     Component* CreateComponent(ComponentId_t id, std::string componentname,
                                Params& params);
+    /** Attempt to create a new Introspector instantiation
+     * @param introspectorname - The fully qualified elementlibname.introspectorname type of introspector
+     * @param params - The params to pass to the introspectors's constructor
+     * @return Newly created introspector
+     */
     Introspector* CreateIntrospector(std::string introspectorname,
                                Params& params);
+
+    /** Ensure that an element library containing the required event is loaded
+     * @param eventname - The fully qualified elementlibname.eventname type
+     */
     void RequireEvent(std::string eventname);
 
+    /** Instatiate a new Module
+     * @param type - Fully qualified elementlibname.modulename type
+     * @param params - Parameters to pass to the Module's constructor
+     */
     Module* CreateModule(std::string type, Params& params);
+
+    /** Instatiate a new Module
+     * @param type - Fully qualified elementlibname.modulename type
+     * @param comp - Component instance to pass to the Module's constructor
+     * @param params - Parameters to pass to the Module's constructor
+     */
     Module* CreateModuleWithComponent(std::string type, Component* comp, Params& params);
-    
+
+    /** Return partitioner function
+     * @param name - Fully qualified elementlibname.partitioner type name
+     */
     partitionFunction GetPartitioner(std::string name);
+    /** Return generator function
+     * @param name - Fully qualified elementlibname.generator type name
+     */
     generateFunction GetGenerator(std::string name);
+    /** Return Python Module creation function
+     * @param name - Fully qualified elementlibname.pythonModName type name
+     */
     genPythonModuleFunction getPythonModule(std::string name);
+    /** Checks to see if library exists and can be loaded */
     bool hasLibrary(std::string elemlib);
+
 private:
     friend class SST::SimulationBase;
 

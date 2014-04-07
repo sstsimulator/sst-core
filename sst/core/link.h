@@ -39,97 +39,122 @@ public:
     friend class Simulation;
     friend class Sync;
     
+    /** Create a new link with a given ID */
     Link(LinkId_t id);
     
     virtual ~Link();
     
     /** set minimum link latency */
     void setLatency(Cycle_t lat);
+    /** Set additional Latency to be added on to events coming in on this link.
+     * @param cycles Number of Cycles to be added
+     * @param timebase Base Units of cycles
+     */
     void addRecvLatency(int cycles, std::string timebase);
+    /** Set additional Latency to be added on to events coming in on this link.
+     * @param cycles Number of Cycles to be added
+     * @param timebase Base Units of cycles
+     */
     void addRecvLatency(SimTime_t cycles, TimeConverter* timebase);
-    
-//     void setFunctor(EventHandler_t* functor) {
+
+    /** Set the callback function to be called when a message is delivered. */
     void setFunctor(Event::HandlerBase* functor) {
-	rFunctor = functor;
+        rFunctor = functor;
     }
 
+    /** Specifies that this link has no callback, and is poll-based only */
     void setPolling();
-    
+
     /** Send an event over the link with additional delay. Sends an event
-	over a link with an additional delay specified with a
-	TimeConverter. I.e. the total delay is the link's delay + the
-	additional specified delay.
-	@param delay The additional delay
-	@param tc The time converter to specify units for the additional delay
-	@param the Event to send
-    */
-    void send( SimTime_t delay, TimeConverter* tc, Event* event );   
-    
+      over a link with an additional delay specified with a
+      TimeConverter. I.e. the total delay is the link's delay + the
+      additional specified delay.
+      @param delay - additional delay
+      @param tc - time converter to specify units for the additional delay
+      @param event - the Event to send
+      */
+    void send( SimTime_t delay, TimeConverter* tc, Event* event );
+
     /** Send an event with additional delay. Sends an event over a link
-	with additional delay specified by the Link's default
-	timebase.
-	@param delay The additional delay, in units of the default Link timebase
-	@param event The event to send
-    */
-    inline void send( SimTime_t delay, Event* event ) {  
-	send(delay,defaultTimeBase,event);
+      with additional delay specified by the Link's default
+      timebase.
+      @param delay The additional delay, in units of the default Link timebase
+      @param event The event to send
+      */
+    inline void send( SimTime_t delay, Event* event ) {
+        send(delay,defaultTimeBase,event);
     }
-    
+
     /** Send an event with the Link's default delay
-	@param event The event to send */
+      @param event The event to send
+    */
     inline void send( Event* event ) {
-	send( 0, event );
+        send( 0, event );
     }
-    
-    
+
+
     /** Retrieve a pending event from the Link. For links which do not
-	have a set event handler, they can be polled with this function.
-	Returns NULL if there is no pending event.
+      have a set event handler, they can be polled with this function.
+      Returns NULL if there is no pending event.
     */
     Event* recv();
-    
-    
-    /** Manually set the default detaulTimeBase 
-	@param tc TimeConverter object for the timebase */ 
+
+
+    /** Manually set the default detaulTimeBase
+      @param tc TimeConverter object for the timebase */
     void setDefaultTimeBase(TimeConverter* tc);
+    /** Return the default Time Base for this link */
     TimeConverter* getDefaultTimeBase();
-    
+
+    /** Causes an event to be delivered to the registered callback */
     inline void deliverEvent(Event* event) {
-	(*rFunctor)(event);
+        (*rFunctor)(event);
     }
 
+    /** Return the ID of this link */
     LinkId_t getId() { return id; }
 
+    /** Send data during the init() phase. */
     void sendInitData(Event* init_data);
+    /** Receive an event (if any) during the init() phase */
     Event* recvInitData();
 
     // UnitAlgebra getTotalInputLatency();
     // UnitAlgebra getTotalOutputLatency();
-    
+
 protected:
     Link();
 
+    /** Queue of events to be received by the owning component */
     ActivityQueue* recvQueue;
+    /** Queue of events to be received during init by the owning component */
     ActivityQueue* initQueue;
+    /** Currently active Queue */
     ActivityQueue* configuredQueue;
+    /** Unitialized queue.  Used for error detection */
     static ActivityQueue* uninitQueue;
+    /** Unitialized queue.  Used for error detection */
     static ActivityQueue* afterInitQueue;
-    
+
     /** Recieve functor. This functor is set when the link is connected.
-	Determines what the receiver wants to be called */ 
+      Determines what the receiver wants to be called
+    */
     Event::HandlerBase*  rFunctor;
-    
+
     /** Timebase used if no other timebase is specified. Used to specify
-	the untits for added delays when sending, such as in
-	Link::send(). Often set by the Component::registerClock()
-	function if the regAll argument is true. */
+      the untits for added delays when sending, such as in
+      Link::send(). Often set by the Component::registerClock()
+      function if the regAll argument is true.
+      */
     TimeConverter*     defaultTimeBase;
-    
+
     /** Latency of the link. It is used by the partitioner as the
-	weight. This latency is added to the delay put on the event by
-	the component. */
+      weight. This latency is added to the delay put on the event by
+      the component.
+    */
     SimTime_t            latency;
 
+    /** Pointer to the opposite side of this link */
     Link* pair_link;
 
 private:
@@ -148,19 +173,20 @@ private:
     void serialize(Archive & ar, const unsigned int version );
 };
 
+/** Self Links are links from a component to itself */
 class SelfLink : public Link {
 public:
-    SelfLink() :
-	Link()
+    SelfLink() : Link()
     {
-	pair_link = this;
-	latency = 0;
+        pair_link = this;
+        latency = 0;
     }
 
     friend class boost::serialization::access;
+    /** Serialize the state of the link */
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version );
-};    
+};
 
 
 } // namespace SST

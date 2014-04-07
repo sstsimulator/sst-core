@@ -26,10 +26,16 @@ namespace SST {
 
     class Archive {
     public:
+        /** Create a new Archive.
+         * @param ttype - Type of archive (xml, text, bin)
+         * @param filename - File to archive to or from
+         */
         Archive(std::string, std::string);
         ~Archive();
 
+        /** Save the simulation state to a file */
         void saveSimulation(Simulation* sim);
+        /** Restore Simulation state from a file */
         Simulation* loadSimulation(void);
     private:
         Archive(); // do not implement
