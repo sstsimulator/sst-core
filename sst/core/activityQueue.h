@@ -19,17 +19,24 @@
 
 namespace SST {
 
+/** Base Class for a queue of Activities
+ */
 class ActivityQueue {
 public:
     ActivityQueue() {}
     virtual ~ActivityQueue() {}
 
+    /** Returns true if the queue is empty */
     virtual bool empty() = 0;
+    /** Returns the number of activities in the queue */
     virtual int size() = 0;
+    /** Remove and return the next activity */
     virtual Activity* pop() = 0;
+    /** Insert a new activity into the queue */
     virtual void insert(Activity* activity) = 0;
+    /** Returns the next activity */
     virtual Activity* front() = 0;
-    
+
 private:
     
     friend class boost::serialization::access;
