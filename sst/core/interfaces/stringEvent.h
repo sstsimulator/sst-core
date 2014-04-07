@@ -22,25 +22,35 @@
 namespace SST {
 namespace Interfaces {
 
+/**
+ * Simple event to pass strings between components
+ */
 class StringEvent : public SST::Event {
 public:
 	StringEvent() {} // For serialization only
 
+    /** Create a new StringEvent
+     * @param str - The String contents of this event
+     */
 	StringEvent(const std::string &str) :
 		SST::Event(), str(str)
 	{ }
 
+    /** Copies an existing StringEvent */
 	StringEvent(const StringEvent &me) : SST::Event()
 	{
 		str = me.str;
 		setDeliveryLink(me.getLinkId(), NULL);
 	}
+
+    /** Copies an existing StringEvent */
 	StringEvent(const StringEvent *me) : SST::Event()
 	{
 		str = me->str;
 		setDeliveryLink(me->getLinkId(), NULL);
 	}
 
+    /** Returns the contents of this Event */
 	const std::string& getString(void) { return str; }
 
 private:
