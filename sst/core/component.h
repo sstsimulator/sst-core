@@ -70,7 +70,9 @@ public:
         destroyed. A good place to print out statistics. */
     virtual void finish( ) { }
 
+    /** Currently unused function */
     virtual bool Status( ) { return 0; }
+
     /**
      * Called by the Simulation to request that the component
      * print it's current status.  Useful for debugging.
@@ -78,13 +80,49 @@ public:
      */
     virtual void printStatus(Output &out) { return; }
 
+    /** Determine if a port name is connected to any links */
     bool isPortConnected(const std::string &name) const;
+
+    /** Configure a Link
+     * @param name - Port Name on which the link to configure is attached.
+     * @param time_base - Time Base of the link
+     * @param handler - Optional Handler to be called when an Event is received
+     * @return A pointer to the configured link, or NULL if an error occured.
+     */
     Link* configureLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
+    /** Configure a Link
+     * @param name - Port Name on which the link to configure is attached.
+     * @param time_base - Time Base of the link
+     * @param handler - Optional Handler to be called when an Event is received
+     * @return A pointer to the configured link, or NULL if an error occured.
+     */
     Link* configureLink( std::string name, std::string time_base, Event::HandlerBase* handler = NULL);
+    /** Configure a Link
+     * @param name - Port Name on which the link to configure is attached.
+     * @param handler - Optional Handler to be called when an Event is received
+     * @return A pointer to the configured link, or NULL if an error occured.
+     */
     Link* configureLink( std::string name, Event::HandlerBase* handler = NULL);
 
+    /** Configure a SelfLink  (Loopback link)
+     * @param name - Name of the self-link port
+     * @param time_base - Time Base of the link
+     * @param handler - Optional Handler to be called when an Event is received
+     * @return A pointer to the configured link, or NULL if an error occured.
+     */
     Link* configureSelfLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
+    /** Configure a SelfLink  (Loopback link)
+     * @param name - Name of the self-link port
+     * @param time_base - Time Base of the link
+     * @param handler - Optional Handler to be called when an Event is received
+     * @return A pointer to the configured link, or NULL if an error occured.
+     */
     Link* configureSelfLink( std::string name, std::string time_base, Event::HandlerBase* handler = NULL);
+    /** Configure a SelfLink  (Loopback link)
+     * @param name - Name of the self-link port
+     * @param handler - Optional Handler to be called when an Event is received
+     * @return A pointer to the configured link, or NULL if an error occured.
+     */
     Link* configureSelfLink( std::string name, Event::HandlerBase* handler = NULL);
 
     /** Registers a clock for this component.
@@ -94,19 +132,24 @@ public:
         @param regAll Should this clock perioud be used as the default
         time base for all of the links connected to this component
     */
-    TimeConverter* registerClock( std::string freq, Clock::HandlerBase* handler, 
+    TimeConverter* registerClock( std::string freq, Clock::HandlerBase* handler,
                                   bool regAll = true);
+    /** Removes a clock handler from the component */
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
 
+    /** Reactivates an existing Clock and Handler
+     * @return time of next time clock handler will fire
+     */
     Cycle_t reregisterClock(TimeConverter *freq, Clock::HandlerBase* handler);
+    /** Returns the next Cycle that the TimeConverter would fire */
     Cycle_t getNextClockCycle(TimeConverter *freq);
-    
+
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
         components which do not have a clock, but would like a default
         timebase.
-        @params base Frequency for the clock in SI units
-        @params regAll Should this clock perioud be used as the default
+        @param base Frequency for the clock in SI units
+        @param regAll Should this clock perioud be used as the default
         time base for all of the links connected to this component
     */
     TimeConverter* registerTimeBase( std::string base, bool regAll = true);
@@ -190,8 +233,19 @@ public:
         @sa Component::primaryComponentDoNotEndSim()
     */
     void primaryComponentOKToEndSim();
-    
+
+    /** Loads a module from an element Library
+     * @param type Fully Qualified library.moduleName
+     * @param params Parameters the module should use for configuration
+     * @return handle to new instance of module, or NULL on failure.
+     */
     Module* loadModule(std::string type, Params& params);
+    /** Loads a module from an element Library
+     * @param type Fully Qualified library.moduleName
+     * @param comp Pointer to component to pass to Module's constructor
+     * @param params Parameters the module should use for configuration
+     * @return handle to new instance of module, or NULL on failure.
+     */
     Module* loadModuleWithComponent(std::string type, Component* comp, Params& params);
     
     
@@ -208,6 +262,7 @@ protected:
         function */
     TimeConverter* defaultTimeBase;
 
+    /** Creates a new selfLink */
     Link* selfLink( std::string name, Event::HandlerBase* handler = NULL );
 
 private:
