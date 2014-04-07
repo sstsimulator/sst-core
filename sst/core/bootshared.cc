@@ -9,11 +9,15 @@ void update_env_var(const char* name, const int verbose) {
         new_env_size += (NULL == current_ld_path) ? 0 : strlen(current_ld_path);
 
 #ifdef HAVE_DRAMSIM
-        new_env_size += strlen(DRAMSIM_LIBDIR) + sizeof(char) * 1;
+        new_env_size += (strlen(DRAMSIM_LIBDIR) + 2) + sizeof(char) * 1;
 #endif
 
 #ifdef HAVE_M5
-        new_env_size += strlen(M5_LIBDIR) + sizeof(char) * 1;
+        new_env_size += (strlen(M5_LIBDIR) + 2) + sizeof(char) * 1;
+#endif
+
+#ifdef HAVE_LIBPHX
+        new_env_size += (strlen(LIBPHX_LIBDIR) + 2) + sizeof(char) * 1;
 #endif
 
         // Add 2 characters, we need one for the path seperator and one of the NULL?
@@ -39,6 +43,13 @@ void update_env_var(const char* name, const int verbose) {
         sprintf(temp_m5_copy, "%s", updated_environment);
         sprintf(updated_environment, "%s:%s", temp_m5_copy, M5_LIBDIR);
         free(temp_m5_copy);
+#endif
+
+#ifdef HAVE_LIBPHX
+        char* temp_phx_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
+        sprintf(temp_phx_copy, "%s", updated_environment);
+        sprintf(updated_environment, "%s:%s", temp_phx_copy, LIBPHX_LIBDIR);
+        free(temp_phx_copy);
 #endif
 
         // Override the exiting LD_LIBRARY_PATH with our updated variable
