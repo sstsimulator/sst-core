@@ -22,8 +22,6 @@
 #include <cstring>
 #include <errno.h>
 
-#define USE_MEMPOOL 1
-
 namespace SST {
 
 /** Base class for all Activities in the SST Event Queue */
@@ -121,7 +119,7 @@ public:
         queue_order = order;
     }
 
-#if USE_MEMPOOL
+#ifdef USE_MEMPOOL
     /** Allocates memory from a memory pool for a new Activity */
 	void* operator new(std::size_t size) throw()
     {
@@ -182,7 +180,7 @@ private:
     uint64_t  queue_order;
     SimTime_t delivery_time;
     int       priority;
-#if USE_MEMPOOL
+#ifdef USE_MEMPOOL
 	static std::vector<std::pair<size_t, Core::MemPool*> > memPools;
 #endif
 

@@ -53,7 +53,7 @@ NullEvent::serialize(Archive & ar, const unsigned int version)
 }
 
 
-#if USE_MEMPOOL
+#ifdef USE_MEMPOOL
 std::vector<std::pair<size_t, Core::MemPool*> > Activity::memPools;
 #endif
 
