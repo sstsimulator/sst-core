@@ -25,6 +25,9 @@ namespace SST {
 
 class Output;
 
+/**
+ * Primary Event Queue
+ */
 class TimeVortex : public ActivityQueue {
 public:
 	TimeVortex();
@@ -36,6 +39,7 @@ public:
     Activity* pop();
     Activity* front();
 
+    /** Print the state of the TimeVortex */
     void print(Output &out) const;
 
 private:

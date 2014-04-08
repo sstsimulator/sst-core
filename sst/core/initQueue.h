@@ -21,6 +21,9 @@
 
 namespace SST {
 
+/**
+ * ActivityQueue for use during the init() phase
+ */
 class InitQueue : public ActivityQueue {
 public:
     InitQueue();

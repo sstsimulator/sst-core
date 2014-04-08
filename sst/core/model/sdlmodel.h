@@ -32,49 +32,55 @@ class TiXmlNode;
 
 namespace SST {
 
-        typedef std::map<std::string,Params*> ParamsMap_t;
-        typedef std::map<std::string,std::string> VariableMap_t;
 
-        class ConfigComponent;
-        class ConfigGraph;
+/** Map a name to a Value */
+typedef std::map<std::string,std::string> VariableMap_t;
 
-        class SSTSDLModelDefinition : public SSTModelDescription {
+class ConfigComponent;
+class ConfigGraph;
 
-                public:
-                       	SSTSDLModelDefinition(std::string filename);
-                        ~SSTSDLModelDefinition();
+/** XML Parser/Model generator */
+class SSTSDLModelDefinition : public SSTModelDescription {
 
-                        std::string getSDLConfigString();
-                        ConfigGraph* createConfigGraph();
-                        std::string getVersion() {return version;}
+public:
+    /** Create a new ModelDefinition object using the XML found in filename */
+    SSTSDLModelDefinition(std::string filename);
+    ~SSTSDLModelDefinition();
 
+    /** Returns a string suitable for parsing by SST::Config */
+    std::string getSDLConfigString();
 
-                        int verbosity;//Scoggin(Jan09,2013) 0=quiet, 1=coarse, 2=parameters, 3=comments
-                private:
+    ConfigGraph* createConfigGraph();
 
-                        ConfigGraph* graph;
+    /** Returns the SDL version */
+    std::string getVersion() {return version;}
 
-                        TiXmlDocument*   doc;
-                        std::string	 version;
+    /** 0=quiet, 1=coarse, 2=parameters, 3=comments */
+    int verbosity;
+private:
 
-                        std::map<std::string,Params*> includes;
-                        /* ParamsMap_t      includes; */
-                        VariableMap_t    variables;
+    ConfigGraph* graph;
 
-                        // Parsing methods
-                        void parse_parameter(TiXmlNode* pParent, Params* params);//Scoggin(Jan09,2013)
-                        void parse_param_include(TiXmlNode* pParent);
-                        void parse_variable(TiXmlNode* pParent);
-                        void parse_variables(TiXmlNode* pParent);
-                        void parse_component(TiXmlNode* pParent);
-                       	void parse_introspector(TiXmlNode* pParent);
-                       	void parse_params(TiXmlNode* pParent, ConfigComponent* comp);
-                       	void parse_link(TiXmlNode* pParent, ConfigComponent* comp);
-                       	std::string resolve_variable(const std::string value, int line_number);
-                       	std::string resolveEnvVars(const char* input);
-                       	std::string resolveEnvVars(std::string input);
-                       	const char* get_node_text(TiXmlNode* pParent);//Scoggin(Jan09,2013)
-       	};
+    TiXmlDocument*   doc;
+    std::string	 version;
+
+    std::map<std::string,Params*> includes;
+    VariableMap_t    variables;
+
+    // Parsing methods
+    void parse_parameter(TiXmlNode* pParent, Params* params);//Scoggin(Jan09,2013)
+    void parse_param_include(TiXmlNode* pParent);
+    void parse_variable(TiXmlNode* pParent);
+    void parse_variables(TiXmlNode* pParent);
+    void parse_component(TiXmlNode* pParent);
+    void parse_introspector(TiXmlNode* pParent);
+    void parse_params(TiXmlNode* pParent, ConfigComponent* comp);
+    void parse_link(TiXmlNode* pParent, ConfigComponent* comp);
+    std::string resolve_variable(const std::string value, int line_number);
+    std::string resolveEnvVars(const char* input);
+    std::string resolveEnvVars(std::string input);
+    const char* get_node_text(TiXmlNode* pParent);//Scoggin(Jan09,2013)
+};
 
 
 } // namespace SST

@@ -11,6 +11,10 @@ using namespace SST::Partition;
 namespace SST {
 namespace Partition {
 
+/**
+ * Performs a linear partition.
+ * Components with sequential ids will be placed close together
+ */
 class SSTLinearPartition : public SST::Partition::SSTPartitioner {
 
 	public:

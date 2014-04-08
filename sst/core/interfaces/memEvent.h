@@ -61,7 +61,7 @@ typedef uint64_t Addr;
     X(Evicted) \
     X(NULLCMD)
 
-/** \enum Valid commands for the MemEvent */
+/** Valid commands for the MemEvent */
 typedef enum {
 #define X(x) x,
     X_TYPES
@@ -85,7 +85,7 @@ static const char* CommandString[] __attribute__((unused)) = {
     X(InvX_A) \
     X(Inv_A)
 
-/** \enum Valid commands for the MemEvent */
+/** Valid commands for the MemEvent */
 typedef enum {
 #define X(x) x,
     TCCLINE_TYPES
@@ -168,6 +168,7 @@ public:
     typedef std::vector<uint8_t> dataVec;
     /** Each MemEvent has a unique (auto-generated) ID of this type */
     typedef std::pair<uint64_t, int> id_type;
+    /** Constant, default value for MemEvent IDs */
     static const id_type NO_ID;
 
     /** Creates a new MemEvent */
@@ -181,9 +182,10 @@ public:
         flags = 0;
         prefetch = false;
     }
-    
-    
-    MemEvent(const Component *_src, Addr _addr, Command _cmd, id_type id) :   
+
+
+    /** Creates a new MemEvent */
+    MemEvent(const Component *_src, Addr _addr, Command _cmd, id_type id) :
         SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName()) {
         event_id = id;
         response_to_id = NO_ID;
@@ -193,7 +195,8 @@ public:
         flags = 0;
         prefetch = false;
     }
-    
+
+    /** Creates a new MemEvent */
     MemEvent(const Component *_src, Addr _addr, Addr _baseAddr, Command _cmd, uint32_t _size) :                //READS
         SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName()){
         event_id = std::make_pair(main_id++, _src->getId());
@@ -204,8 +207,9 @@ public:
         flags = 0;
         prefetch = false;
     }
-    
-    
+
+
+    /** Creates a new MemEvent */
     MemEvent(const Component *_src, Addr _addr, Addr _baseAddr, Command _cmd, std::vector<uint8_t>& data) :    //WRITES
         SST::Event(), addr(_addr), cmd(_cmd), src(_src->getName()){
         event_id = std::make_pair(main_id++, _src->getId());
@@ -238,6 +242,9 @@ public:
                 header.c_str(), event_id.first, event_id.second, getDeliveryTime());
     }
 
+    /**
+     * Create a new MemEvent instance, pre-configured to act as a NACK response
+     */
     MemEvent* makeNackResponse(const Component *source){
         MemEvent *me = new MemEvent(source, addr, Nack);
         me->setSize(size);
@@ -267,10 +274,9 @@ public:
         me->setGrantedState(NULLST);
         return me;
     }
-    
-    
-    
-    
+
+
+    /** Generate a new MemEvent, pre-populated as a response */
     MemEvent* makeResponse(const Component *source, std::vector<uint8_t> &data){
         MemEvent *me = new MemEvent(source, addr, commandResponse(cmd));
         me->response_to_id = event_id;
@@ -283,7 +289,8 @@ public:
         me->setGrantedState(NULLST);
         return me;
     }
-    
+
+    /** Generate a new MemEvent, pre-populated as a response */
     MemEvent* makeResponse(const Component *source, std::vector<uint8_t> &data, BCC_MESIState state){
         MemEvent *me = new MemEvent(source, addr, commandResponse(cmd));
         me->setSize(size);
@@ -296,7 +303,8 @@ public:
         me->prefetch = prefetch;
         return me;
     }
-    
+
+    /** Generate a new MemEvent, pre-populated as a response */
     MemEvent* makeResponse(const Component *source, BCC_MESIState state){
             MemEvent *me = new MemEvent(source, addr, commandResponse(cmd));
         me->setSize(0);
@@ -308,7 +316,8 @@ public:
         me->prefetch = prefetch;
         return me;
     }
-    
+
+    /** return the original command that caused a NACK */
     Command getNackOrigCmd() { return nackOrigCmd; }
 
     /** @return  Unique ID of this MemEvent */
@@ -323,6 +332,7 @@ public:
     Addr getAddr(void) const { return addr; }
     /** Sets the target Address of this MemEvent */
     void setAddr(Addr newAddr) { addr = newAddr; }
+    /** Sets the Base Address of this MemEvent */
     void setBaseAddr(Addr newBaseAddr) { baseAddr = newBaseAddr; }
 
     /** @return  the size in bytes that this MemEvent represents */
@@ -362,21 +372,26 @@ public:
             payload[i] = data[i];
         }
     }
-    
+
+    /** Sets the Granted State */
     void setGrantedState(BCC_MESIState _state){
         grantedState = _state;
     }
-    
+
+    /** Sets that this is a prefetch command */
     void setPrefetchFlag(bool _prefetch){
         prefetch = _prefetch;
     }
-    
+
+    /** Returns true if this is a prefetch command */
     bool isPrefetch(){ return prefetch; }
-    
-    
+
+
+    /** Return the Granted State */
     BCC_MESIState getGrantedState(){ return grantedState; }
-    
-    
+
+
+    /** Returns true if this is a Data Request */
     static bool isDataRequest(Command cmd){
         return (cmd == GetS || cmd == GetX || cmd == GetSEx || cmd == Fetch || cmd == FetchInvalidate);
     }
@@ -419,9 +434,11 @@ public:
     uint64_t getLockID(void) const { return lockid; }
     /** sets the (optional) ID associated with the flag F_LOCKED */
     void setLockID(uint64_t id) { lockid = id; }
-    
+
+    /** Return the BaseAddr */
     Addr getBaseAddr(){ return baseAddr; }
 
+    /** Return the command that is the Response to the input command */
     static Command commandResponse(Command c)
     {
         switch(c) {
