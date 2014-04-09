@@ -336,7 +336,7 @@ getconfig() {
 #        echo "$USER" > ./sst/elements/PhoenixSim/.ignore
 #    fi
 
-    mpi_environment="${mpi_environment} --disable-mem-pools"
+##    mpi_environment="${mpi_environment} --disable-mem-pools"
     case $1 in
         sstmainline_config) 
             #-----------------------------------------------------------------
