@@ -1,4 +1,5 @@
 
+#include <sst_config.h>
 #include "expon.h"
 
 SSTExponentialDistribution::SSTExponentialDistribution(double mn) {

@@ -1,4 +1,5 @@
 
+#include <sst_config.h>
 #include "gaussian.h"
 
 SSTGaussianDistribution::SSTGaussianDistribution(double mn, double sd) {

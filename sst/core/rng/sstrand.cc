@@ -10,5 +10,6 @@
 // distribution.
 
 
+#include <sst_config.h>
 #include "sstrand.h"
 
