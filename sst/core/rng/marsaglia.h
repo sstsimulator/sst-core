@@ -25,10 +25,6 @@
 #define MARSAGLIA_INT32_MAX  2147483647L
 #define MARSAGLIA_INT64_MAX  9223372036854775807LL
 
-//using namespace std;
-//using namespace SST;
-//using namespace SST::RNG;
-
 namespace SST {
 namespace RNG {
 /**
@@ -38,6 +34,9 @@ namespace RNG {
 	computationally cheap and provides a reasonable distribution of random numbers. If
 	you need additional strength in the random numbers you may want to consider the
 	Mersenne RNG.
+
+        For more information see the Multiply-with-carry Random Number Generator article
+	at Wikipedia (http://en.wikipedia.org/wiki/Multiply-with-carry).
 */
 class MarsagliaRNG : public SSTRandom {
 
