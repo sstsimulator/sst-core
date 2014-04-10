@@ -148,7 +148,6 @@ dotests() {
 ##        ${SST_TEST_SUITES}/testSuite_VaultSim.sh
 #    fi
 
-    ${SST_TEST_SUITES}/testSuite_stream.sh
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
 ##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
@@ -215,6 +214,7 @@ dotests() {
         # because gem5 is not enabled in them.
         ${SST_TEST_SUITES}/testSuite_M5.sh
         ${SST_TEST_SUITES}/testSuite_openMP.sh
+        ${SST_TEST_SUITES}/testSuite_stream.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
         ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
         ${SST_TEST_SUITES}/testSuite_dirSweep.sh
