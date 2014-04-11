@@ -65,8 +65,8 @@ nobase_dist_sst_HEADERS = \
 	serialization/types.h \
 	serialization/element.h \
 	interfaces/TestEvent.h \
-	interfaces/memEvent.h \
 	interfaces/stringEvent.h \
+	interfaces/simpleMem.h \
 	rng/sstrand.h \
 	rng/marsaglia.h \
 	rng/mersenne.h \
@@ -110,9 +110,9 @@ sst_core_sources = \
 	timeVortex.cc \
 	uninitializedQueue.cc \
 	unitAlgebra.cc \
-	interfaces/memEvent.cc \
 	interfaces/stringEvent.cc \
 	interfaces/TestEvent.cc \
+	interfaces/simpleMem.cc \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
