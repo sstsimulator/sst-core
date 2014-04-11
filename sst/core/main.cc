@@ -328,6 +328,7 @@ main(int argc, char *argv[])
 			broadcast(world, *graph, 0);
 			broadcast(world, Params::keyMap, 0);
 			broadcast(world, Params::keyMapReverse, 0);
+			broadcast(world, Params::nextKeyID, 0);
 #endif
 		}
 

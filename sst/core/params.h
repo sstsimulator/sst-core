@@ -477,13 +477,13 @@ private:
     }
 
 
-	/** NOT FOR PUBLIC USE **/
-    static uint32_t nextKeyID;
 public:
 	/** NOT FOR PUBLIC USE **/
     static std::map<std::string, uint32_t> keyMap;
 	/** NOT FOR PUBLIC USE **/
     static std::vector<std::string> keyMapReverse;
+	/** NOT FOR PUBLIC USE **/
+    static uint32_t nextKeyID;
 
 
 };
