@@ -247,12 +247,12 @@ private:
     template<class Archive>
     void
     serialize(Archive & ar, const unsigned int version )
-    {
-	ar & BOOST_SERIALIZATION_NVP(links);
-	ar & BOOST_SERIALIZATION_NVP(comps);
-    }
-    
-    
+	{
+		ar & BOOST_SERIALIZATION_NVP(links);
+		ar & BOOST_SERIALIZATION_NVP(comps);
+	}
+
+
 };
 
  

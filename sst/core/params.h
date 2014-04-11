@@ -22,6 +22,8 @@
 
 namespace SST {
 
+class ConfigGraph;
+
 /**
  * Parameter store
  *
@@ -74,19 +76,19 @@ NO_VARIABLE:
 
 public:
     typedef std::map<std::string, std::string>::key_type key_type;  /*!< Type of key (string) */
-    typedef std::map<std::string, std::string>::mapped_type mapped_type; /*!< Type of value (string) */
+    typedef std::map<uint32_t, std::string>::mapped_type mapped_type; /*!< Type of value (string) */
     typedef std::map<std::string, std::string>::value_type value_type; /*!< Pair of strings */
-    typedef std::map<std::string, std::string>::key_compare key_compare; /*!< Key comparator type */
-    typedef std::map<std::string, std::string>::value_compare value_compare; /*!< Value comparator type */
-    typedef std::map<std::string, std::string>::pointer pointer; /*!< Pointer type */
-    typedef std::map<std::string, std::string>::reference reference; /*!< Reference type */
-    typedef std::map<std::string, std::string>::const_reference const_reference; /*!< Const Reference type */
-    typedef std::map<std::string, std::string>::size_type size_type; /*!< Size type */
-    typedef std::map<std::string, std::string>::difference_type difference_type; /*!< Difference type */
-    typedef std::map<std::string, std::string>::iterator iterator; /*!< Iterator type */
-    typedef std::map<std::string, std::string>::const_iterator const_iterator; /*!< Const Iterator type */
-    typedef std::map<std::string, std::string>::reverse_iterator reverse_iterator; /*!< Reverse Iterator type */
-    typedef std::map<std::string, std::string>::const_reverse_iterator const_reverse_iterator; /*!< Const Reverse Iterator type */
+    typedef std::map<uint32_t, std::string>::key_compare key_compare; /*!< Key comparator type */
+    typedef std::map<uint32_t, std::string>::value_compare value_compare; /*!< Value comparator type */
+    typedef std::map<uint32_t, std::string>::pointer pointer; /*!< Pointer type */
+    typedef std::map<uint32_t, std::string>::reference reference; /*!< Reference type */
+    typedef std::map<uint32_t, std::string>::const_reference const_reference; /*!< Const Reference type */
+    typedef std::map<uint32_t, std::string>::size_type size_type; /*!< Size type */
+    typedef std::map<uint32_t, std::string>::difference_type difference_type; /*!< Difference type */
+    typedef std::map<uint32_t, std::string>::iterator iterator; /*!< Iterator type */
+    typedef std::map<uint32_t, std::string>::const_iterator const_iterator; /*!< Const Iterator type */
+    typedef std::map<uint32_t, std::string>::reverse_iterator reverse_iterator; /*!< Reverse Iterator type */
+    typedef std::map<uint32_t, std::string>::const_reverse_iterator const_reverse_iterator; /*!< Const Reverse Iterator type */
     typedef std::set<key_type, KeyCompare> KeySet_t; /*!< Type of a set of keys */
 
     // pretend like we're a map
@@ -136,48 +138,20 @@ public:
     size_type max_size() const { return data.max_size(); }
     /** Returns true if the Params is empty.  (Thus begin() would equal end().) */
     bool empty() const { return data.empty(); }
-    /** Returns the key comparison object out of which the Params was
-     *  constructed.
-     */
-    key_compare key_comp() const { return data.key_comp(); }
-    /** Returns a value comparison object, built from the key comparison
-     *  object out of which the Params was constructed.
-     */
-    value_compare value_comp() const { return data.value_comp(); }
 
 
     /** Create a new, empty Params */
     Params() : data() { }
+
     /** Create a new, empty Params with specified key comparison functor */
     Params(const key_compare& comp) : data(comp) { }
 
-    /**
-     *  @brief  Builds a Params from a range.
-     *  @param  f  An input iterator.
-     *  @param  l  An input iterator.
-     *
-     *  Create a Params consisting of copies of the elements from [first,last).
-     *  This is linear in N if the range is already sorted, and NlogN
-     *  otherwise (where N is distance(first,last)).
-     */
-    template <class InputIterator>
-    Params(InputIterator f, InputIterator l) : data(f, l) { }
-    /**
-     *  @brief  Builds a Params from a range.
-     *  @param  f  An input iterator.
-     *  @param  l  An input iterator.
-     *  @param  comp  A comparison functor.
-     *
-     *  Create a Params consisting of copies of the elements from [first,last).
-     *  This is linear in N if the range is already sorted, and NlogN
-     *  otherwise (where N is distance(first,last)).
-     */
-    template <class InputIterator>
-    Params(InputIterator f, InputIterator l, const key_compare& comp) : data(f, l, comp) { }
 
     /** Create a copy of a Params object */
     Params(const Params& old) : data(old.data) { }
+
     virtual ~Params() { }
+
     /**
      *  @brief  Map assignment operator.
      *  @param  old  A %map of identical element and allocator types.
@@ -186,23 +160,12 @@ public:
      *  the allocator object is not copied.
      */
     Params& operator=(const Params& old) { data = old.data; return *this; }
-    /**
-     *  @brief  Swaps data with another %map.
-     *  @param  old  A Params of the same element and allocator types.
-     *
-     *  This exchanges the elements between two maps in constant
-     *  time.  (It is only swapping a pointer, an integer, and an
-     *  instance of the @c Compare type (which itself is often
-     *  stateless and empty), so it should be quite fast.)  Note
-     *  that the global std::swap() function is specialized such
-     *  that std::swap(m1,m2) will feed to this function.
-     */
-    void swap(Params& old) { data.swap(old.data); }
+
     /**
      *  @brief Attempts to insert a std::pair into the %map.
      *
      *  @param  x  Pair to be inserted (see std::make_pair for easy creation 
-     *	     of pairs).
+     *         of pairs).
      *
      *  @return  A pair, of which the first element is an iterator that 
      *           points to the possibly inserted pair, and the second is 
@@ -214,7 +177,11 @@ public:
      *
      *  Insertion requires logarithmic time.
      */
-    std::pair<iterator, bool> insert(const value_type& x) { return data.insert(x); }
+    std::pair<iterator, bool> insert(const value_type& x) {
+        uint32_t id = getKey(x.first);
+        return data.insert(std::make_pair(id, x.second));
+    }
+
     /**
      *  @brief Attempts to insert a std::pair into the %map.
      *  @param  pos  An iterator that serves as a hint as to where the
@@ -234,7 +201,10 @@ public:
      *
      *  Insertion requires logarithmic time (if the hint is not taken).
      */
-    iterator insert(iterator pos, const value_type& x) { return data.insert(pos, x); }
+    iterator insert(iterator pos, const value_type& x) {
+        uint32_t id = getKey(x.first);
+        return data.insert(pos, std::make_pair(id, x.second));
+    }
     /**
      *  @brief Template function that attemps to insert a range of elements.
      *  @param  f  Iterator pointing to the start of the range to be
@@ -244,7 +214,9 @@ public:
      *  Complexity similar to that of the range constructor.
      */
     template <class InputIterator>
-        void insert(InputIterator f, InputIterator l) { data.insert(f, l); }
+    void insert(InputIterator f, InputIterator l) {
+        data.insert(f, l);
+    }
 
     /**
      *  @brief Erases an element from a %map.
@@ -268,7 +240,7 @@ public:
      *  the element is itself a pointer, the pointed-to memory is not touched
      *  in any way.  Managing the pointer is the user's responsibilty.
      */
-    size_type erase(const key_type& k) { return data.erase(k); }
+    size_type erase(const key_type& k) { return data.erase(getKey(k)); }
     /**
      *  Erases all elements in a %map.  Note that this function only
      *  erases the elements, and that if the elements themselves are
@@ -289,7 +261,7 @@ public:
      *  pointing to the sought after %pair.  If unsuccessful it returns the
      *  past-the-end ( @c end() ) iterator.
      */
-    iterator find(const key_type& k) { verifyParam(k); return data.find(k); }
+    iterator find(const key_type& k) { verifyParam(k); return data.find(getKey(k)); }
     /**
      *  @brief Tries to locate an element in a %map.
      *  @param  k  Key of (key, value) %pair to be located.
@@ -301,7 +273,7 @@ public:
      *  iterator pointing to the sought after %pair. If unsuccessful it
      *  returns the past-the-end ( @c end() ) iterator.
      */
-    const_iterator find(const key_type& k) const { verifyParam(k); return data.find(k); }
+    const_iterator find(const key_type& k) const { verifyParam(k); return data.find(getKey(k)); }
     /**
      *  @brief  Finds the number of elements with given key.
      *  @param  k  Key of (key, value) pairs to be located.
@@ -310,77 +282,7 @@ public:
      *  This function only makes sense for multimaps; for map the result will
      *  either be 0 (not present) or 1 (present).
      */
-    size_type count(const key_type& k) { return data.count(k); }
-    /**
-     *  @brief Finds the beginning of a subsequence matching given key.
-     *  @param  k  Key of (key, value) pair to be located.
-     *  @return  Iterator pointing to first element equal to or greater
-     *           than key, or end().
-     *
-     *  This function returns the first element of a subsequence of elements
-     *  that matches the given key.  If unsuccessful it returns an iterator
-     *  pointing to the first element that has a greater value than given key
-     *  or end() if no such element exists.
-     */
-    iterator lower_bound(const key_type& k) { return data.lower_bound(k); }
-    /**
-     *  @brief Finds the beginning of a subsequence matching given key.
-     *  @param  k  Key of (key, value) pair to be located.
-     *  @return  Read-only (constant) iterator pointing to first element
-     *           equal to or greater than key, or end().
-     *
-     *  This function returns the first element of a subsequence of elements
-     *  that matches the given key.  If unsuccessful it returns an iterator
-     *  pointing to the first element that has a greater value than given key
-     *  or end() if no such element exists.
-     */
-    const_iterator lower_bound(const key_type& k) const { return data.lower_bound(k); }
-    /**
-     *  @brief Finds the end of a subsequence matching given key.
-     *  @param  k  Key of (key, value) pair to be located.
-     *  @return Iterator pointing to the first element
-     *          greater than key, or end().
-     */
-    iterator upper_bound(const key_type& k) { return data.upper_bound(k); }
-    /**
-     *  @brief Finds the end of a subsequence matching given key.
-     *  @param  k  Key of (key, value) pair to be located.
-     *  @return  Read-only (constant) iterator pointing to first iterator
-     *           greater than key, or end().
-     */
-    const_iterator upper_bound(const key_type& k) const { return data.upper_bound(k); }
-    /**
-     *  @brief Finds a subsequence matching given key.
-     *  @param  k  Key of (key, value) pairs to be located.
-     *  @return  Pair of iterators that possibly points to the subsequence
-     *           matching given key.
-     *
-     *  This function is equivalent to
-     *  @code
-     *    std::make_pair(c.lower_bound(val),
-     *                   c.upper_bound(val))
-     *  @endcode
-     *  (but is faster than making the calls separately).
-     *
-     *  This function probably only makes sense for multimaps.
-     */
-    std::pair<iterator, iterator> equal_range(const key_type& k) { return data.equal_range(k); }
-    /**
-     *  @brief Finds a subsequence matching given key.
-     *  @param  k  Key of (key, value) pairs to be located.
-     *  @return  Pair of read-only (constant) iterators that possibly points
-     *           to the subsequence matching given key.
-     *
-     *  This function is equivalent to
-     *  @code
-     *    std::make_pair(c.lower_bound(val),
-     *                   c.upper_bound(val))
-     *  @endcode
-     *  (but is faster than making the calls separately).
-     *
-     *  This function probably only makes sense for multimaps.
-     */
-    std::pair<const_iterator, const_iterator> equal_range(const key_type& k) const { return data.equal_range(k); }
+    size_type count(const key_type& k) { return data.count(getKey(k)); }
     /**
      *  @brief  Subscript ( @c [] ) access to %map data.
      *  @param  k  The key for which data should be retrieved.
@@ -393,30 +295,7 @@ public:
      *
      *  Lookup requires logarithmic time.
      */
-    mapped_type& operator[](const key_type& k) { verifyParam(k); return data[k]; }
-    /**
-     *  @brief  Map equality comparison.
-     *  @param  a  A %map.
-     *  @param  b  A %map of the same type as @a x.
-     *  @return  True iff the size and elements of the maps are equal.
-     *
-     *  This is an equivalence relation.  It is linear in the size of the
-     *  maps.  Maps are considered equivalent if their sizes are equal,
-     *  and if corresponding elements compare equal.
-     */
-    friend bool operator==(const Params& a, const Params& b);
-    /**
-     *  @brief  Map ordering relation.
-     *  @param  a  A %map.
-     *  @param  b  A %map of the same type as @a x.
-     *  @return  True iff @a x is lexicographically less than @a y.
-     *
-     *  This is a total ordering relation.  It is linear in the size of the
-     *  maps.  The elements must be comparable with @c <.
-     *
-     *  See std::lexicographical_compare() for how the determination is made.
-     */
-    friend bool operator<(const Params& a, const Params& b);
+    mapped_type& operator[](const key_type& k) { verifyParam(k); return data[getKey(k)]; }
 
     /** Find a Parameter value in the set, and return its value as an integer
      * @param k - Parameter name
@@ -425,7 +304,7 @@ public:
      */
     long find_integer(const key_type &k, long default_value, bool &found) const {
         verifyParam(k);
-        const_iterator i = data.find(k);
+        const_iterator i = data.find(getKey(k));
         if (i == data.end()) {
             found = false;
             return default_value;
@@ -451,7 +330,7 @@ public:
      */
     double find_floating(const key_type& k, double default_value, bool &found) const {
         verifyParam(k);
-        const_iterator i = data.find(k);
+        const_iterator i = data.find(getKey(k));
         if (i == data.end()) {
             found = false;
             return default_value;
@@ -477,7 +356,7 @@ public:
      */
     std::string find_string(const key_type &k, std::string default_value, bool &found) const {
         verifyParam(k);
-        const_iterator i = data.find(k);
+        const_iterator i = data.find(getKey(k));
         if (i == data.end()) {
             found = false;
             return default_value;
@@ -499,7 +378,7 @@ public:
     /** Print all key/value parameter pairs to specified ostream */
     void print_all_params(std::ostream &os) const {
         for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
-            os << "key=" << i->first << ", value=" << i->second << std::endl;
+            os << "key=" << keyMapReverse[i->first] << ", value=" << i->second << std::endl;
         }
     }
 
@@ -509,17 +388,14 @@ public:
     Params find_prefix_params(std::string prefix) const {
         Params ret;
         for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
-            std::string key = i->first.substr(0, prefix.length());
+            std::string key = keyMapReverse[i->first].substr(0, prefix.length());
             if (key == prefix) {
-                ret[i->first.substr(prefix.length())] = i->second;
+                ret[keyMapReverse[i->first].substr(prefix.length())] = i->second;
             }
         }
         ret.allowedKeys = allowedKeys;
         return ret;
     }
-
-    /// Note: This makes a COPY of the data.  Be very, very careful what you wish for!
-    std::map<std::string, std::string> get_map() const { return data; }
 
 
     /**
@@ -527,7 +403,7 @@ public:
      * @return    True if the params contains the key, false otherwise
      */
     bool contains(const key_type &k) {
-        return data.find(k) != data.end();
+        return data.find(getKey(k)) != data.end();
     }
 
     /**
@@ -560,9 +436,38 @@ public:
     }
 
 
+    static const std::string& getParamName(uint32_t id)
+    {
+        return keyMapReverse[id];
+    }
+
+
+
 private:
-    std::map<std::string, std::string> data;
+    std::map<uint32_t, std::string> data;
     std::vector<KeySet_t> allowedKeys;
+
+    uint32_t getKey(const std::string &str) const
+    {
+        std::map<std::string, uint32_t>::iterator i = keyMap.find(str);
+        if ( i == keyMap.end() ) {
+            return (uint32_t)-1;
+        }
+        return i->second;
+    }
+
+    uint32_t getKey(const std::string &str)
+    {
+        std::map<std::string, uint32_t>::iterator i = keyMap.find(str);
+        if ( i == keyMap.end() ) {
+            uint32_t id = nextKeyID++;
+            keyMap.insert(std::make_pair(str, id));
+            keyMapReverse.push_back(str);
+            assert(keyMapReverse.size() == nextKeyID);
+            return id;
+        }
+        return i->second;
+    }
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -571,10 +476,17 @@ private:
         ar & BOOST_SERIALIZATION_NVP(data);
     }
 
-};
 
-inline bool operator==(const Params& a, const Params& b) { return a.data == b.data; }
-inline bool operator<(const Params& a, const Params& b) { return a.data < b.data; }
+	/** NOT FOR PUBLIC USE **/
+    static uint32_t nextKeyID;
+public:
+	/** NOT FOR PUBLIC USE **/
+    static std::map<std::string, uint32_t> keyMap;
+	/** NOT FOR PUBLIC USE **/
+    static std::vector<std::string> keyMapReverse;
+
+
+};
 
 } //namespace SST
 

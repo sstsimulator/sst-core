@@ -320,7 +320,7 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 		assert(dumpFile);
 
 		ConfigComponentMap_t::iterator comp_itr;
-		std::map<string, string>::iterator param_itr;
+		Params::iterator param_itr;
 
 		fprintf(dumpFile, "# Automatically generated SST Python input\n");
 		fprintf(dumpFile, "import sst\n\n");
@@ -340,12 +340,12 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 
 			if(param_itr != the_comp->params.end()) {
 				fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(the_comp->name).c_str());
-				fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", escapeString(param_itr->first).c_str(), escapeString(param_itr->second.c_str()).c_str());
+				fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", escapeString(Params::getParamName(param_itr->first)).c_str(), escapeString(param_itr->second.c_str()).c_str());
 				param_itr++;
 
 				for(; param_itr != the_comp->params.end(); param_itr++) {
 					fprintf(dumpFile, ",\n      \"%s\" : \"\"\"%s\"\"\"",
-							escapeString(param_itr->first).c_str(),
+							escapeString(Params::getParamName(param_itr->first)).c_str(),
 							escapeString(param_itr->second).c_str());
 				}
 

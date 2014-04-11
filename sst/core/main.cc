@@ -326,6 +326,8 @@ main(int argc, char *argv[])
 		if ( !cfg.all_parse ) {
 #ifdef HAVE_MPI
 			broadcast(world, *graph, 0);
+			broadcast(world, Params::keyMap, 0);
+			broadcast(world, Params::keyMapReverse, 0);
 #endif
 		}
 

@@ -101,6 +101,7 @@ sst_core_sources = \
 	introspectedComponent.cc \
 	link.cc \
 	output.cc \
+	params.cc \
 	pollingLinkQueue.cc \
 	simulation.cc \
 	sync.cc \
