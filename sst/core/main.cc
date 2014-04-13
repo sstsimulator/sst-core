@@ -303,11 +303,11 @@ main(int argc, char *argv[])
 				graph_file << "Rank: " << i << " Component List:" << std::endl;
 
 				for (ConfigComponentMap_t::const_iterator j = component_map.begin() ; j != component_map.end() ; ++j) {
-					if((*(*j).second).rank == i) {
-						graph_file << "   " << (*(*j).second).name << " (ID=" << (*(*j).second).id << ")" << std::endl;
-						graph_file << "      -> type      " << (*(*j).second).type << std::endl;
-						graph_file << "      -> weight    " << (*(*j).second).weight << std::endl;
-						graph_file << "      -> linkcount " << (*(*j).second).links.size() << std::endl;
+					if(j->rank == i) {
+						graph_file << "   " << j->name << " (ID=" << j->id << ")" << std::endl;
+						graph_file << "      -> type      " << j->type << std::endl;
+						graph_file << "      -> weight    " << j->weight << std::endl;
+						graph_file << "      -> linkcount " << j->links.size() << std::endl;
 					}
 				}
 			}

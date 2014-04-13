@@ -271,7 +271,8 @@ namespace SST {
 	}
 
 	void SSTSDLModelDefinition::parse_component(TiXmlNode* pParent){
-		ConfigComponent* comp = new ConfigComponent();
+		graph->comps.push_back(ConfigComponent());
+		ConfigComponent* comp = &(graph->comps.back());
 		comp->isIntrospector = false;
 
 		// Get the attributes from the component
@@ -333,11 +334,11 @@ namespace SST {
 			}
 		}
 
-		graph->comps[comp->id] = comp;
 	}
 
 	void SSTSDLModelDefinition::parse_introspector(TiXmlNode* pParent){
-		ConfigComponent* comp = new ConfigComponent();
+		graph->comps.push_back(ConfigComponent());
+		ConfigComponent* comp = &(graph->comps.back());
 		comp->isIntrospector = true;
 
 		// Get the attributes from the component
@@ -372,7 +373,6 @@ namespace SST {
 			}	
 		}
 
-		graph->comps[comp->id] = comp;    
 	}
 
 	void SSTSDLModelDefinition::parse_params(TiXmlNode* pParent, ConfigComponent* comp) {
@@ -432,12 +432,11 @@ namespace SST {
 		// Need to see if someone else has referenced this link;
 		ConfigLink* link;
 		if ( graph->links.find(name) == graph->links.end() ) {
-			link = new ConfigLink();
-			link->name = name;
-			graph->links[name] = link;
+            graph->links[name] = ConfigLink(name);
+            link = &graph->links[name];
 		}
 		else {
-			link = graph->links[name];
+			link = &graph->links[name];
 			if ( link->current_ref >= 2 ) {
 				cerr << "ERROR: Parsing SDL file: Link " << name << " referenced more than two times" << endl;
 				exit(1);

@@ -129,7 +129,7 @@ Simulation::setStopAtCycle( Config* cfg )
 {
     SimTime_t stopAt = timeLord->getSimCycles(cfg->stopAtCycle,"StopAction configure");
     if ( stopAt != 0 ) {
-	printf("Inserting stop event at cycle %s, %llu\n",
+	printf("Inserting stop event at cycle %s, %" PRIu64 "\n",
 	       cfg->stopAtCycle.c_str(), stopAt);
 	StopAction* sa = new StopAction();
 	sa->setDeliveryTime(stopAt);
@@ -169,13 +169,13 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 	for( ConfigLinkMap_t::iterator iter = graph.links.begin();
 	     iter != graph.links.end(); ++iter )
 	{
-	    ConfigLink* clink = (*iter).second;
+	    ConfigLink &clink = (*iter).second;
 	    int rank[2];
-	    rank[0] = graph.comps[clink->component[0]]->rank;
-	    rank[1] = graph.comps[clink->component[1]]->rank;
+	    rank[0] = graph.comps[clink.component[0]].rank;
+	    rank[1] = graph.comps[clink.component[1]].rank;
 	    if ( rank[0] == rank[1] ) continue;
-	    if ( clink->getMinLatency() < min_part ) {
-		min_part = clink->getMinLatency();
+	    if ( clink.getMinLatency() < min_part ) {
+		min_part = clink.getMinLatency();
 	    }	
 	}
 	
@@ -188,46 +188,45 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
     for( ConfigLinkMap_t::iterator iter = graph.links.begin();
                             iter != graph.links.end(); ++iter )
     {
-        ConfigLink* clink = (*iter).second;
+        ConfigLink &clink = (*iter).second;
         int rank[2];
-        rank[0] = graph.comps[clink->component[0]]->rank;
-        rank[1] = graph.comps[clink->component[1]]->rank;
+        rank[0] = graph.comps[clink.component[0]].rank;
+        rank[1] = graph.comps[clink.component[1]].rank;
 
 	if ( rank[0] != myRank && rank[1] != myRank ) {
 	    // Nothing to be done
-	    delete clink;
             continue;
 	}	
         else if ( rank[0] == rank[1] ) { 
 	    // Create a LinkPair to represent this link
-	    LinkPair lp(clink->id);
+	    LinkPair lp(clink.id);
 
-	    lp.getLeft()->setLatency(clink->latency[0]);
-	    lp.getRight()->setLatency(clink->latency[1]);
+	    lp.getLeft()->setLatency(clink.latency[0]);
+	    lp.getRight()->setLatency(clink.latency[1]);
 
 	    // Add this link to the appropriate LinkMap
 	    std::map<ComponentId_t,LinkMap*>::iterator it;
-	    // it = component_links.find(clink->component[0]->id);
-	    it = component_links.find(clink->component[0]);
+	    // it = component_links.find(clink.component[0]->id);
+	    it = component_links.find(clink.component[0]);
 	    if ( it == component_links.end() ) {
 		LinkMap* lm = new LinkMap();
 		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-		// ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[0]->id,lm));
-		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[0],lm));
+		// ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[0]->id,lm));
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[0],lm));
  		it = ret_val.first;
 	    }
- 	    it->second->insertLink(clink->port[0],lp.getLeft());
+ 	    it->second->insertLink(clink.port[0],lp.getLeft());
 
-	    // it = component_links.find(clink->component[1]->id);
-	    it = component_links.find(clink->component[1]);
+	    // it = component_links.find(clink.component[1]->id);
+	    it = component_links.find(clink.component[1]);
 	    if ( it == component_links.end() ) {
 		LinkMap* lm = new LinkMap();
 		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-		// ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[1]->id,lm));
-		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[1],lm));
+		// ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[1]->id,lm));
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[1],lm));
  		it = ret_val.first;
 	    }
- 	    it->second->insertLink(clink->port[1],lp.getRight());
+ 	    it->second->insertLink(clink.port[1],lp.getRight());
 
 	}
 	else {
@@ -242,40 +241,40 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 	    }
 
 	    // Create a LinkPair to represent this link
-	    LinkPair lp(clink->id);
+	    LinkPair lp(clink.id);
 	    
-	    lp.getLeft()->setLatency(clink->latency[local]);
+	    lp.getLeft()->setLatency(clink.latency[local]);
 	    lp.getRight()->setLatency(0);
 	    lp.getRight()->setDefaultTimeBase(minPartToTC(1));
             
 
 	    // Add this link to the appropriate LinkMap for the local component
 	    std::map<ComponentId_t,LinkMap*>::iterator it;
-	    it = component_links.find(clink->component[local]);
+	    it = component_links.find(clink.component[local]);
 	    if ( it == component_links.end() ) {
 		LinkMap* lm = new LinkMap();
 		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink->component[local],lm));
+		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[local],lm));
  		it = ret_val.first;
 	    }
- 	    it->second->insertLink(clink->port[local],lp.getLeft());
+ 	    it->second->insertLink(clink.port[local],lp.getLeft());
 
 	    // For the remote side, register with sync object
-	    SyncQueue* sync_q = sync->registerLink(rank[remote],clink->id,lp.getRight());
+	    SyncQueue* sync_q = sync->registerLink(rank[remote],clink.id,lp.getRight());
 	    // lp.getRight()->recvQueue = sync_q;
 	    lp.getRight()->configuredQueue = sync_q;
 	    lp.getRight()->initQueue = sync_q;
         }
 
-	// Done with that edge, delete it.
-	delete clink;
     }
+	// Done with that edge, delete it.
+    graph.links.clear();
 
     // Now, build all the components
     for ( ConfigComponentMap_t::iterator iter = graph.comps.begin();
                             iter != graph.comps.end(); ++iter )
     {
-	ConfigComponent* ccomp = (*iter).second;
+	ConfigComponent* ccomp = &(*iter);
 
         if (ccomp->isIntrospector) {
 	    Introspector* tmp;
@@ -306,9 +305,9 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
             compMap[ccomp->name] = tmp;
 
         }
-	// Done with vertex, delete it;
-	delete ccomp;
     } // end for all vertex    
+	// Done with verticies, delete them;
+	graph.comps.clear();
     return 0;
 }
 

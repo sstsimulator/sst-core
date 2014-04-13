@@ -31,9 +31,9 @@ void SSTLinearPartition::performPartition(ConfigGraph* graph) {
 		compItr++) {
 
 		partOutput->verbose(CALL_INFO, 1, 0, "> Allocating component: %lu to rank: %d\n",
-			compItr->first, currentAllocatingRank);
+			compItr->id, currentAllocatingRank);
 
-		compItr->second->rank = currentAllocatingRank;
+		compItr->rank = currentAllocatingRank;
 		componentsOnCurrentRank++;
 
 		if(currentAllocatingRank < componentRemainder) {

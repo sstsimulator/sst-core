@@ -110,11 +110,11 @@ namespace SST {
 		/////////////////////////////////////////////////////////////////////////////////////
 		// Sub-divide and repeat
 		for(int i = 0; i < lengthA; i++) {
-			component_map[setA[i]]->rank = rankA;
+			component_map[setA[i]].rank = rankA;
 		}
 
 		for(int i = 0; i < lengthB; i++) {
-			component_map[setB[i]]-> rank = rankB;
+			component_map[setB[i]].rank = rankB;
 		}
 
 		const int A1_rank = rankA;
@@ -183,7 +183,7 @@ namespace SST {
 				compItr != component_map.end();
 				compItr++) {
 
-				compItr->second->rank = 0;
+				compItr->rank = 0;
 			}
 		} else {
 			const int A_size = component_map.size() % 2 == 1 ? (component_map.size() / 2) + 1 : (component_map.size() / 2);
@@ -198,11 +198,8 @@ namespace SST {
 
 			map<ComponentId_t, map<ComponentId_t, SimTime_t>*> timeTable;
 
-			for(ConfigComponentMap_t::iterator compItr = component_map.begin();
-				compItr != component_map.end();
-				compItr++) {
-
-				ComponentId_t theComponent = (*compItr).first;
+			size_t nComp = component_map.size();
+			for(size_t theComponent = 0 ; theComponent < nComp ; theComponent++ ) {
 
 				map<ComponentId_t, SimTime_t>* compConnectMap = new map<ComponentId_t, SimTime_t>();
 				timeTable[theComponent] = compConnectMap;
@@ -213,7 +210,7 @@ namespace SST {
 					setB[indexB++] = theComponent;
 				}
 
-				vector<ConfigLink*> component_links = graph->getComponentMap().find(theComponent)->second->links;
+				vector<ConfigLink*> component_links = component_map[theComponent].links;
 
 				for(vector<ConfigLink*>::const_iterator linkItr = component_links.begin();
 					linkItr != component_links.end();

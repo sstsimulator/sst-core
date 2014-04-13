@@ -109,6 +109,17 @@ public:
         component[1] = ULONG_MAX;
     }
 
+    ConfigLink(const std::string &n)
+    {
+        id = count++;
+        current_ref = 0;
+        name = n;
+
+        // Initialize the component data items
+        component[0] = ULONG_MAX;
+        component[1] = ULONG_MAX;
+    }
+
 
     /** Return the minimum latency of this link (from both sides) */
     SimTime_t getMinLatency() {
@@ -156,9 +167,9 @@ private:
 
 
 /** Map names to Links */
-typedef std::map<std::string,ConfigLink*> ConfigLinkMap_t;
+typedef std::map<std::string,ConfigLink> ConfigLinkMap_t;
 /** Map IDs to Components */
-typedef std::map<ComponentId_t,ConfigComponent*> ConfigComponentMap_t;
+typedef std::vector<ConfigComponent> ConfigComponentMap_t;
 /** Map names to Parameter Sets: XML only */
 typedef std::map<std::string,Params*> ParamsMap_t;
 /** Map names to variable values:  XML only */
@@ -174,7 +185,7 @@ public:
 	void print(std::ostream &os) const {
 		os << "Printing graph" << std::endl;
 		for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-			(*i).second->print(os);
+			i->print(os);
 		}
 	}
 

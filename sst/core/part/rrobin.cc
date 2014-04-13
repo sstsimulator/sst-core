@@ -33,11 +33,11 @@ namespace SST {
 		ConfigComponentMap_t compMap = graph->getComponentMap();
 		int counter = 0;
 		
-		for(ConfigComponentMap_t::const_iterator compItr = compMap.begin();
+		for(ConfigComponentMap_t::iterator compItr = compMap.begin();
 			compItr != compMap.end();
 			compItr++) {
 			
-			(*compItr).second->rank = (counter % world_size);
+			compItr->rank = (counter % world_size);
 			counter++;
 		}
 	}

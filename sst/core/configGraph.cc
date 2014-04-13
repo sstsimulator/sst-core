@@ -72,9 +72,9 @@ ConfigGraph::setComponentRanks(int rank)
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
     {
-	(*iter).second->rank = rank;
+        iter->rank = rank;
     }
-    
+
 }
 
 bool
@@ -83,10 +83,10 @@ ConfigGraph::containsComponentInRank(int rank)
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
     {
-	if ( (*iter).second->rank == rank) return true;
+        if ( iter->rank == rank ) return true;
     }
     return false;
-    
+
 }
 
 bool
@@ -95,8 +95,8 @@ ConfigGraph::checkRanks(int ranks)
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
     {
-	int rank = (*iter).second->rank;
-	if ( rank < 0 || rank >= ranks ) return false;
+        int rank = iter->rank;
+        if ( rank < 0 || rank >= ranks ) return false;
     }
     return true;
 }
@@ -108,16 +108,16 @@ void ConfigGraph::genDot(std::ostream &os, const std::string &name) const {
     // First, see if we need to deal with MPI ranks
     int maxRank = 0;
     for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-        if ( i->second->rank > maxRank) maxRank = i->second->rank;
+        if ( i->rank > maxRank) maxRank = i->rank;
     }
 
 	if ( maxRank > 0 ) {
 		for ( int r = 0 ; r <= maxRank ; r++ ) {
 			os << "subgraph cluster" << r << " {\n";
 			for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-				if ( i->second->rank == r ) {
+				if ( i->rank == r ) {
 					os << "\t\t";
-					i->second->genDot(os);
+					i->genDot(os);
 				}
 			}
 			os << "\t}\n\n";
@@ -125,14 +125,14 @@ void ConfigGraph::genDot(std::ostream &os, const std::string &name) const {
 	} else {
         for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
             os << "\t";
-            i->second->genDot(os);
+            i->genDot(os);
         }
 	}
 
 
     for (ConfigLinkMap_t::const_iterator i = links.begin() ; i != links.end() ; ++i) {
         os << "\t";
-        i->second->genDot(os);
+        i->second.genDot(os);
     }
     os << "\n}\n";
 }
@@ -151,17 +151,17 @@ ConfigGraph::checkForStructuralErrors()
     for( ConfigLinkMap_t::iterator iter = links.begin();
          iter != links.end(); ++iter )
     {
-        ConfigLink* clink = (*iter).second;
+        ConfigLink* clink = &((*iter).second);
         // This one should never happen since the slots are
         // initialized in order, but just in case...
         if ( clink->component[0] == ULONG_MAX ) {
             output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
-                   comps[clink->component[1]]->name.c_str());
+                   comps[clink->component[1]].name.c_str());
             found_error = true;
         }
         if ( clink->component[1] == ULONG_MAX ) {
             output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
-                   comps[clink->component[0]]->name.c_str());
+                   comps[clink->component[0]].name.c_str());
             found_error = true;
         }
     }
@@ -175,7 +175,7 @@ ConfigGraph::checkForStructuralErrors()
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
           iter != comps.end(); ++iter )
     {
-        ConfigComponent* ccomp = (*iter).second;
+        ConfigComponent* ccomp = &(*iter);
         if ( name_set.find(ccomp->name) == name_set.end() ) {
             name_set.insert(ccomp->name);
         }
@@ -199,105 +199,69 @@ ConfigGraph::checkForStructuralErrors()
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type, float weight, int rank)
 {
-    ConfigComponent* comp = new ConfigComponent();
-    comp->name = name;
-    comp->type = type;
-    comp->weight = weight;
-    comp->rank = rank;
-
-    comps[comp->id] = comp;
-    return comp->id;
+	comps.push_back(ConfigComponent(name, type, weight, rank, false));
+	assert(comps.back().id == (comps.size()-1));
+    return comps.back().id;
 }
 
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type)
 {
-    ConfigComponent* comp = new ConfigComponent();
-    comp->name = name;
-    comp->type = type;
-
-    comps[comp->id] = comp;
-    return comp->id;
+	comps.push_back(ConfigComponent(name, type, 0.0f, 0, false));
+	assert(comps.back().id == (comps.size()-1));
+    return comps.back().id;
 }
 
 void
 ConfigGraph::setComponentRank(ComponentId_t comp_id, int rank)
 {
-    if ( comps.find(comp_id) == comps.end() ) {
-	cout << "Invalid component id: " << comp_id << " in call to ConfigGraph::setComponentRank, aborting..." << endl;
-	abort();
-    }
-    comps[comp_id]->rank = rank;
+    comps[comp_id].rank = rank;
 }
-    
+
 void
 ConfigGraph::setComponentWeight(ComponentId_t comp_id, float weight)
 {
-    if ( comps.find(comp_id) == comps.end() ) {
-	cout << "Invalid component id: " << comp_id << " in call to ConfigGraph::setComponentRank, aborting..." << endl;
-	abort();
-    }
-    comps[comp_id]->weight = weight;
+	comps[comp_id].weight = weight;
 }
 
 void
 ConfigGraph::addParams(ComponentId_t comp_id, Params& p)
 {
-    if ( comps.find(comp_id) == comps.end() ) {
-	cout << "Invalid component id: " << comp_id << " in call to ConfigGraph::addParams, aborting..." << endl;
-	abort();
-    }
-
-    comps[comp_id]->params.insert(p.begin(),p.end());
+    comps[comp_id].params.insert(p.begin(),p.end());
 }
-    
+
 void
 ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string value, bool overwrite)
 {
-    if ( comps.find(comp_id) == comps.end() ) {
-	cout << "Invalid component id: " << comp_id << " in call to ConfigGraph::addParameter, aborting..." << endl;
-	abort();
-    }
-
-    if ( overwrite ) {
-	comps[comp_id]->params[key] = value;
-    }
-    else {
-	comps[comp_id]->params.insert(pair<string,string>(key,value));
-    }
+	if ( overwrite ) {
+		comps[comp_id].params[key] = value;
+	}
+	else {
+		comps[comp_id].params.insert(pair<string,string>(key,value));
+	}
 }
 
 void
 ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, string latency_str)
 {
-    if ( comps.find(comp_id) == comps.end() ) {
-	cout << "Invalid component id: " << comp_id << " in call to ConfigGraph::addLink, aborting..." << endl;
-	abort();
+	if ( links.find(link_name) == links.end() ) {
+        links[link_name] = ConfigLink(link_name);
+	}
+	ConfigLink &link = links[link_name];
+    if ( link.current_ref >= 2 ) {
+        cout << "ERROR: Parsing SDL file: Link " << link_name << " referenced more than two times" << endl;
+        exit(1);
     }
 
-    ConfigLink* link;
-    if ( links.find(link_name) == links.end() ) {
-	link = new ConfigLink();
-	link->name = link_name;
-	links[link_name] = link;
-    }
-    else {
-	link = links[link_name];
-	if ( link->current_ref >= 2 ) {
-	    cout << "ERROR: Parsing SDL file: Link " << link_name << " referenced more than two times" << endl;
-	    exit(1);
-	}	
-    }
+	// Convert the latency string to a number
+	SimTime_t latency = Simulation::getSimulation()->getTimeLord()->getSimCycles(latency_str, "ConfigGraph::addLink");
 
-    // Convert the latency string to a number
-    SimTime_t latency = Simulation::getSimulation()->getTimeLord()->getSimCycles(latency_str, "ConfigGraph::addLink");
-    
-    int index = link->current_ref++;
-    link->component[index] = comp_id;
-    link->port[index] = port;
-    link->latency[index] = latency;
+	int index = link.current_ref++;
+	link.component[index] = comp_id;
+	link.port[index] = port;
+	link.latency[index] = latency;
 
-    comps[comp_id]->links.push_back(link);
+	comps[comp_id].links.push_back(&link);
 }
 
 void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot) {
@@ -308,7 +272,7 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 		if ( off != std::string::npos ) {
 			graphName = filePath.substr(off+1);
 		}
-		
+
 		std::cerr << "Dumping to " << filePath << " with graph name " << graphName << std::endl;
 
 		// Generate file
@@ -329,21 +293,20 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 		fprintf(dumpFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n\n", cfg->stopAtCycle.c_str());
 		fprintf(dumpFile, "# Define the simulation components\n");
 		for(comp_itr = comps.begin(); comp_itr != comps.end(); comp_itr++) {
-			ConfigComponent* the_comp = comp_itr->second;
 
 			fprintf(dumpFile, "%s = sst.Component(\"%s\", \"%s\")\n",
-					makeNamePythonSafe(the_comp->name).c_str(),
-					escapeString(the_comp->name).c_str(),
-					the_comp->type.c_str());
+					makeNamePythonSafe(comp_itr->name).c_str(),
+					escapeString(comp_itr->name).c_str(),
+					comp_itr->type.c_str());
 
-			param_itr = the_comp->params.begin();
+			param_itr = comp_itr->params.begin();
 
-			if(param_itr != the_comp->params.end()) {
-				fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(the_comp->name).c_str());
+			if(param_itr != comp_itr->params.end()) {
+				fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(comp_itr->name).c_str());
 				fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", escapeString(Params::getParamName(param_itr->first)).c_str(), escapeString(param_itr->second.c_str()).c_str());
 				param_itr++;
 
-				for(; param_itr != the_comp->params.end(); param_itr++) {
+				for(; param_itr != comp_itr->params.end(); param_itr++) {
 					fprintf(dumpFile, ",\n      \"%s\" : \"\"\"%s\"\"\"",
 							escapeString(Params::getParamName(param_itr->first)).c_str(),
 							escapeString(param_itr->second).c_str());
@@ -357,19 +320,19 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 
 		ConfigLinkMap_t::iterator link_itr;
 		for(link_itr = links.begin(); link_itr != links.end(); link_itr++) {
-			ConfigComponent* link_left = comps[link_itr->second->component[0]];
-			ConfigComponent* link_right = comps[link_itr->second->component[1]];
+			ConfigComponent* link_left  = &comps[link_itr->second.component[0]];
+			ConfigComponent* link_right = &comps[link_itr->second.component[1]];
 
 			fprintf(dumpFile, "%s = sst.Link(\"%s\")\n",
-					makeNamePythonSafe(link_itr->second->name).c_str(), makeNamePythonSafe(link_itr->second->name).c_str());
+					makeNamePythonSafe(link_itr->second.name).c_str(), makeNamePythonSafe(link_itr->second.name).c_str());
 			fprintf(dumpFile, "%s.connect( (%s, \"%s\", \"%" PRIu64 "ps\"), (%s, \"%s\", \"%" PRIu64 "ps\") )\n",
-					makeNamePythonSafe(link_itr->second->name).c_str(),
+					makeNamePythonSafe(link_itr->second.name).c_str(),
 					makeNamePythonSafe(link_left->name).c_str(),
-					escapeString(link_itr->second->port[0]).c_str(),
-					*link_itr->second->latency,
+					escapeString(link_itr->second.port[0]).c_str(),
+					*link_itr->second.latency,
 					makeNamePythonSafe(link_right->name).c_str(),
-					escapeString(link_itr->second->port[1]).c_str(),
-					*link_itr->second->latency );
+					escapeString(link_itr->second.port[1]).c_str(),
+					*link_itr->second.latency );
 		}
 
 		fprintf(dumpFile, "# End of generated output.\n");
@@ -445,13 +408,10 @@ std::string ConfigGraph::makeNamePythonSafe(const std::string name) {
 ComponentId_t
 ConfigGraph::addIntrospector(string name, string type)
 {
-    ConfigComponent* comp = new ConfigComponent();
-    comp->name = name;
-    comp->type = type;
-    comp->isIntrospector = true;
+	comps.push_back(ConfigComponent(name, type, 0.0f, 0, true));
+	assert(comps.back().id == (comps.size()-1));
+    return comps.back().id;
 
-    comps[comp->id] = comp;
-    return comp->id;    
 }
-    
+
 } // namespace SST
