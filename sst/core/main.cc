@@ -43,6 +43,7 @@
 #include <sst/core/model/sstmodel.h>
 #include <sst/core/model/sdlmodel.h>
 #include <sst/core/model/pymodel.h>
+#include <sst/core/memuse.h>
 
 #include <sys/resource.h>
 
@@ -50,6 +51,7 @@
 #include <Python.h>
 #endif
 
+using namespace SST::Core;
 using namespace std;
 using namespace SST;
 
@@ -437,18 +439,14 @@ main(int argc, char *argv[])
     max_total_time = total_time;
 #endif
 
-    struct rusage sim_ruse;
-    getrusage(RUSAGE_SELF, &sim_ruse);
-
-    uint64_t local_max_rss = sim_ruse.ru_maxrss;
-    uint64_t global_max_rss = local_max_rss;
-#ifdef HAVE_MPI
-    all_reduce(world, &local_max_rss, 1, &global_max_rss, std::plus<uint64_t>() );
-#endif
+    const uint64_t local_max_rss  = maxLocalMemSize();
+    const uint64_t global_max_rss = maxGlobalMemSize();
 
     if ( rank == 0 && cfg.verbose ) {
 
+	sim_output->output("\n");
 	sim_output->output("#\n");
+        sim_output->output("# ------------------------------------------------------------\n");
 	sim_output->output("# Simulation Timing Information:\n");
 	sim_output->output("# Build time:                      %f seconds\n", max_build_time);
 	sim_output->output("# Simulation time:                 %f seconds\n", max_run_time);
@@ -456,20 +454,15 @@ main(int argc, char *argv[])
 	sim_output->output("# Simulated time:                  %s\n", simulated_time.toStringBestSI().c_str());
 	sim_output->output("#\n");
 	sim_output->output("# Simulation Resource Information:\n");
-
-#ifdef SST_COMPILE_MACOSX
-	sim_output->output("# Max Resident Set Size:           %" PRIu64 " KB\n",
-		(uint64_t) (local_max_rss / 1024) );
-	sim_output->output("# Approx. Global Max RSS Size:     %" PRIu64 " KB\n",
-		(uint64_t) (global_max_rss / 1024) );
-#else
 	sim_output->output("# Max Resident Set Size:           %" PRIu64 " KB\n",
 		local_max_rss);
 	sim_output->output("# Approx. Global Max RSS Size:     %" PRIu64 " KB\n",
 		global_max_rss);
-#endif
-	sim_output->output("# Page Faults:                     %" PRIu64 " faults\n",
-		(uint64_t) sim_ruse.ru_majflt);
+	sim_output->output("# Max Local Page Faults:           %" PRIu64 " faults\n",
+		maxLocalPageFaults());
+	sim_output->output("# Global Page Faults:              %" PRIu64 " faults\n",
+		globalPageFaults());
+        sim_output->output("# ------------------------------------------------------------\n");
 	sim_output->output("#\n");
 	sim_output->output("\n");
     }

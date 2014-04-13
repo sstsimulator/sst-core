@@ -44,6 +44,7 @@ nobase_dist_sst_HEADERS = \
 	linkPair.h \
 	log.h \
 	mempool.h \
+        memuse.h \
 	module.h \
 	output.h \
 	params.h \
@@ -100,6 +101,7 @@ sst_core_sources = \
 	introspector.cc \
 	introspectedComponent.cc \
 	link.cc \
+        memuse.cc \
 	output.cc \
 	params.cc \
 	pollingLinkQueue.cc \
