@@ -86,6 +86,7 @@ main(int argc, char *argv[])
 #endif
         return -1;
     }
+
     // In fast build mode, everyone builds the entire graph structure
     // (saving the slow broadcast).  In non-fast, only rank 0 will
     // parse the sdl and build the graph.  It is then broadcast.  In
@@ -141,6 +142,9 @@ main(int argc, char *argv[])
 		sim = Simulation::createSimulation(&cfg, rank, size);
 		sim_output = &(Simulation::getSimulation()->getSimulationOutput());
 
+		// Get the memory before we create the graph
+		const uint64_t pre_graph_create_rss = maxGlobalMemSize();
+
 		ConfigGraph* graph;
 
 		if ( size == 1 ) {
@@ -156,10 +160,15 @@ main(int argc, char *argv[])
 			}
 
 			double end_graph_gen = sst_get_cpu_time();
+			const uint64_t post_graph_create_rss = maxGlobalMemSize();
 
 			if(cfg.verbose && (rank == 0)) {
+				sim_output->output("# ------------------------------------------------------------\n");
 				sim_output->output("# Graph construction took %f seconds\n",
 					(end_graph_gen - start_graph_gen));
+				sim_output->output("# Graph construction raised RSS by %" PRIu64 " KB\n",
+					(post_graph_create_rss - pre_graph_create_rss));
+                 		sim_output->output("# ------------------------------------------------------------\n");
 			}
 
 			// Check config graph to see if there are structural errors.
@@ -192,10 +201,15 @@ main(int argc, char *argv[])
 			}
 
 			double end_graph_gen = sst_get_cpu_time();
+			const uint64_t post_graph_create_rss = maxGlobalMemSize();
 
 			if(cfg.verbose && (rank == 0)) {
+        			sim_output->output("# ------------------------------------------------------------\n");
 				sim_output->output("# Graph construction took %f seconds.\n",
 					(end_graph_gen - start_graph_gen));
+				sim_output->output("# Graph construction raised RSS by %" PRIu64 " KB\n",
+                                        (post_graph_create_rss - pre_graph_create_rss));
+			        sim_output->output("# ------------------------------------------------------------\n");
 			}
 
 			double start_part = sst_get_cpu_time();
