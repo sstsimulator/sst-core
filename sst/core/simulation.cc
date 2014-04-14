@@ -22,6 +22,7 @@
 #include <sst/core/clock.h>
 #include <sst/core/config.h>
 #include <sst/core/configGraph.h>
+#include <sst/core/heartbeat.h>
 #include <sst/core/debug.h>
 //#include <sst/core/event.h>
 #include <sst/core/exit.h>
@@ -119,9 +120,12 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
     SimulationBase(cfg), timeVortex(NULL), minPartTC( NULL ), sync(NULL), currentSimCycle(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks), init_msg_count(0), init_phase(0), lastRecvdSignal(0)
 {
 //     eQueue = new EventQueue_t;
+    sim_output.init("SSTCore", cfg->getVerboseLevel(), 0, Output::STDOUT);
+
     timeVortex = new TimeVortex;
     m_exit = new Exit( this, timeLord->getTimeConverter("100ns"), num_ranks == 1 );
-    sim_output.init("SSTCore", cfg->getVerboseLevel(), 0, Output::STDOUT);
+    m_heartbeat = new SimulatorHeartbeat(cfg, my_rank, this, timeLord->getTimeConverter("100ns") );
+
 }
 
 void

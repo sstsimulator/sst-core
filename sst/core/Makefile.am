@@ -35,6 +35,7 @@ nobase_dist_sst_HEADERS = \
 	exit.h \
 	factory.h \
 	graph.h \
+        heartbeat.h \
 	initQueue.h \
 	introspectAction.h \
 	introspector.h \
@@ -96,6 +97,7 @@ sst_core_sources = \
 	exit.cc \
 	export.cc \
 	factory.cc \
+        heartbeat.cc \
 	initQueue.cc \
 	introspectAction.cc \
 	introspector.cc \

@@ -37,6 +37,7 @@ class Config;
 class ConfigGraph;
 class Exit;
 class Factory;
+class SimulatorHeartbeat;
 //class Graph;
 class Introspector;
 class LinkMap;
@@ -253,6 +254,7 @@ private:
     clockMap_t       clockMap;
     SimTime_t        currentSimCycle;
     Exit*            m_exit;
+    SimulatorHeartbeat*	m_heartbeat;
     bool             endSim;
     int              my_rank;
     int              num_ranks;

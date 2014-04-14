@@ -160,15 +160,11 @@ main(int argc, char *argv[])
 			}
 
 			double end_graph_gen = sst_get_cpu_time();
-			const uint64_t post_graph_create_rss = maxGlobalMemSize();
 
 			if(cfg.verbose && (rank == 0)) {
 				sim_output->output("# ------------------------------------------------------------\n");
 				sim_output->output("# Graph construction took %f seconds\n",
 					(end_graph_gen - start_graph_gen));
-				sim_output->output("# Graph construction raised RSS by %" PRIu64 " KB\n",
-					(post_graph_create_rss - pre_graph_create_rss));
-                 		sim_output->output("# ------------------------------------------------------------\n");
 			}
 
 			// Check config graph to see if there are structural errors.
@@ -201,15 +197,11 @@ main(int argc, char *argv[])
 			}
 
 			double end_graph_gen = sst_get_cpu_time();
-			const uint64_t post_graph_create_rss = maxGlobalMemSize();
 
 			if(cfg.verbose && (rank == 0)) {
         			sim_output->output("# ------------------------------------------------------------\n");
 				sim_output->output("# Graph construction took %f seconds.\n",
 					(end_graph_gen - start_graph_gen));
-				sim_output->output("# Graph construction raised RSS by %" PRIu64 " KB\n",
-                                        (post_graph_create_rss - pre_graph_create_rss));
-			        sim_output->output("# ------------------------------------------------------------\n");
 			}
 
 			double start_part = sst_get_cpu_time();
@@ -299,9 +291,16 @@ main(int argc, char *argv[])
 			graph = new ConfigGraph();
 		}
 
-        delete modelGen;
-        modelGen = NULL;
+		const uint64_t post_graph_create_rss = maxGlobalMemSize();
 
+		if(cfg.verbose && (0 == rank) ){
+			sim_output->output("# Graph construction and partition raised RSS by %" PRIu64 " KB\n",
+                        	(post_graph_create_rss - pre_graph_create_rss));
+			sim_output->output("# ------------------------------------------------------------\n");
+		}
+
+        	delete modelGen;
+        	modelGen = NULL;
 
 		///////////////////////////////////////////////////////////////////////	
 		// If the user asks us to dump the partionned graph.
@@ -455,6 +454,8 @@ main(int argc, char *argv[])
 
     const uint64_t local_max_rss  = maxLocalMemSize();
     const uint64_t global_max_rss = maxGlobalMemSize();
+    const uint64_t local_max_pf   = maxLocalPageFaults();
+    const uint64_t global_pf      = globalPageFaults();
 
     if ( rank == 0 && cfg.verbose ) {
 
@@ -473,9 +474,9 @@ main(int argc, char *argv[])
 	sim_output->output("# Approx. Global Max RSS Size:     %" PRIu64 " KB\n",
 		global_max_rss);
 	sim_output->output("# Max Local Page Faults:           %" PRIu64 " faults\n",
-		maxLocalPageFaults());
+		local_max_pf);
 	sim_output->output("# Global Page Faults:              %" PRIu64 " faults\n",
-		globalPageFaults());
+		global_pf);
         sim_output->output("# ------------------------------------------------------------\n");
 	sim_output->output("#\n");
 	sim_output->output("\n");
