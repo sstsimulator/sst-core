@@ -271,9 +271,10 @@ namespace SST {
 	}
 
 	void SSTSDLModelDefinition::parse_component(TiXmlNode* pParent){
-		graph->comps.push_back(ConfigComponent());
-		ConfigComponent* comp = &(graph->comps.back());
-		comp->isIntrospector = false;
+        std::string name;
+        std::string type;
+        float weight = 0.0f;
+        int rank = 0;
 
 		// Get the attributes from the component
 		TiXmlElement* element = pParent->ToElement();
@@ -282,40 +283,44 @@ namespace SST {
 			exit(1);
 		}
 		else {
-			comp->name = resolveEnvVars(element->Attribute("name"));
+			name = resolveEnvVars(element->Attribute("name"));
 		}
 		if ( element->Attribute("type") == NULL ) {
 			cerr << "ERROR: Parsing SDL file: Unspecified component type on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
-			comp->type = resolveEnvVars(element->Attribute("type"));
+			type = resolveEnvVars(element->Attribute("type"));
 		}
 		if(verbosity>=1)						//Scoggin(Jan09,2013) Added for feedback
-			cout<<" "<<comp->name<<endl;
+			cout<<" "<<name<<endl;
 
 		int status;
 		// Get the rank
-		status = element->QueryIntAttribute("rank",&comp->rank);
+		status = element->QueryIntAttribute("rank",&rank);
 		if ( status == TIXML_WRONG_TYPE ) {
 			cerr << "ERROR: Parsing SDL file: Bad rank specified (" << element->Attribute("rank") <<
 				") on or near line " << pParent->Row();
 			exit(1);
 		}
 		else if ( status == TIXML_NO_ATTRIBUTE ) {
-			comp->rank = -1;
+			rank = -1;
 		}
 
 		// Get the weight
-		status = element->QueryFloatAttribute("weight",&comp->weight);
+		status = element->QueryFloatAttribute("weight",&weight);
 		if ( status == TIXML_WRONG_TYPE ) {
 			cerr << "ERROR: Parsing SDL file: Bad weight specified (" << element->Attribute("weight") <<
 				") on or near line " << pParent->Row();
 			exit(1);
 		}
 		else if ( status == TIXML_NO_ATTRIBUTE ) {
-			comp->weight = 0;
+			weight = 0;
 		}
+
+
+
+        ComponentId_t comp = graph->addComponent(name, type, weight, rank);
 
 		// Now get the rest of the data (params and links)
 		TiXmlNode* pChild;
@@ -337,9 +342,8 @@ namespace SST {
 	}
 
 	void SSTSDLModelDefinition::parse_introspector(TiXmlNode* pParent){
-		graph->comps.push_back(ConfigComponent());
-		ConfigComponent* comp = &(graph->comps.back());
-		comp->isIntrospector = true;
+        std::string name;
+        std::string type;
 
 		// Get the attributes from the component
 		TiXmlElement* element = pParent->ToElement();
@@ -348,18 +352,22 @@ namespace SST {
 			exit(1);
 		}
 		else {
-			comp->name = resolveEnvVars(element->Attribute("name"));
+			name = resolveEnvVars(element->Attribute("name"));
 		}
 		if ( element->Attribute("type") == NULL ) {
 			cerr << "ERROR: Parsing SDL file: Unspecified introspector type on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
-			comp->type = resolveEnvVars(element->Attribute("type"));
+			type = resolveEnvVars(element->Attribute("type"));
 		}
 		if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
-			std::cout<<" "<<comp->name<<std::endl;
+			std::cout<<" "<<name<<std::endl;
 		// Now get the rest of the data (params and links)
+
+        ComponentId_t comp = graph->addIntrospector(name, type);
+
+
 		TiXmlNode* pChild;
 		for ( pChild = pParent->FirstChild(); pChild != 0; pChild = pChild->NextSibling()) {
 			switch (  pChild->Type()) {
@@ -375,7 +383,7 @@ namespace SST {
 
 	}
 
-	void SSTSDLModelDefinition::parse_params(TiXmlNode* pParent, ConfigComponent* comp) {
+	void SSTSDLModelDefinition::parse_params(TiXmlNode* pParent, ComponentId_t comp) {
 		TiXmlElement* element = pParent->ToElement();
 		if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
 			std::cout<<"  Parameters"<<std::endl;
@@ -383,11 +391,12 @@ namespace SST {
 		// of the component.  The includes will be merged after, and the
 		// net result will be parameters specified in the component will
 		// take priority over those specified in includes
+        Params params;
 		for ( TiXmlNode* param = pParent->FirstChild(); param != NULL; param = param->NextSibling()) {
-			parse_parameter(param,&comp->params);		//Scoggin(Jan09,2013) Modified for error and comment handling
+			parse_parameter(param,&params);		//Scoggin(Jan09,2013) Modified for error and comment handling
 			if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
-				if(comp->params.find(param->Value() ) != comp->params.end() )
-					std::cout<<"   "<<param->Value()<<" = '"<<comp->params[param->Value()]<<"'"<<std::endl;
+				if(params.find(param->Value() ) != params.end() )
+					std::cout<<"   "<<param->Value()<<" = '"<<params[param->Value()]<<"'"<<std::endl;
 		}
 
 		// Now, see if there are any includes
@@ -409,14 +418,15 @@ namespace SST {
 				else {
 					// Merge the two params
 					Params* inc_params = includes[sub];
-					comp->params.insert(inc_params->begin(),inc_params->end());
+					params.insert(inc_params->begin(),inc_params->end());
 				}
 				start = end + 1;
 			} while (end != std::string::npos);
-		} 
+		}
+        graph->addParams(comp, params);
 	}
 
-	void SSTSDLModelDefinition::parse_link(TiXmlNode* pParent, ConfigComponent* comp){
+	void SSTSDLModelDefinition::parse_link(TiXmlNode* pParent, ComponentId_t comp){
 		TiXmlElement* element = pParent->ToElement();
 
 		std::string name;
@@ -429,19 +439,6 @@ namespace SST {
 		}
 		if(verbosity>=2)						//Scoggin(Jan09,2013) Added for feedback
 			std::cout<<"  "<<name<<std::endl;
-		// Need to see if someone else has referenced this link;
-		ConfigLink* link;
-		if ( graph->links.find(name) == graph->links.end() ) {
-            graph->links[name] = ConfigLink(name);
-            link = &graph->links[name];
-		}
-		else {
-			link = &graph->links[name];
-			if ( link->current_ref >= 2 ) {
-				cerr << "ERROR: Parsing SDL file: Link " << name << " referenced more than two times" << endl;
-				exit(1);
-			}
-		}
 
 		std::string port;
 		if ( element->Attribute("port") == NULL ) {
@@ -452,23 +449,17 @@ namespace SST {
 			port = resolveEnvVars(element->Attribute("port"));
 		}
 
-		SimTime_t latency;
+        std::string lat_str;
 		if ( element->Attribute("latency") == NULL ) {
 			cerr << "ERROR: Parsing SDL file: Unspecified link latency on or near line " << pParent->Row() << endl;
 			exit(1);
 		}
 		else {
-			std::string lat_str = resolveEnvVars(element->Attribute("latency"));
+			lat_str = resolveEnvVars(element->Attribute("latency"));
 			lat_str = resolve_variable(lat_str,pParent->Row());
-			latency = Simulation::getSimulation()->getTimeLord()->getSimCycles(lat_str, "Parsing sdl");
 		}
 
-		int index = link->current_ref++;
-		link->component[index] = comp->id;
-		link->port[index] = port;
-		link->latency[index] = latency;
-
-		comp->links.push_back(link);
+        graph->addLink(comp, name, port, lat_str);
 
 	}
 

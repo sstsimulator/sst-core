@@ -42,23 +42,6 @@ public:
     Params                   params;            /*!< Set of Parameters */
     bool                     isIntrospector;    /*!< Is this an Introspector? */
 
-    /** Create a new Component */
-    ConfigComponent(std::string name, std::string type, float weight, int rank, bool isIntrospector) :
-        name(name),
-        type(type),
-        weight(weight),
-        rank(rank),
-        isIntrospector(isIntrospector)
-    {
-        id = count++;
-    }
-
-    ConfigComponent() :
-        isIntrospector(false)
-    {
-        id = count++;
-    }
-
     /** Print Component information */
     void print(std::ostream &os) const;
 
@@ -68,8 +51,18 @@ public:
 private:
 
     friend class ConfigGraph;
-    
-    static ComponentId_t count;
+    /** Create a new Component */
+    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, int rank, bool isIntrospector) :
+        id(id),
+        name(name),
+        type(type),
+        weight(weight),
+        rank(rank),
+        isIntrospector(isIntrospector)
+    { }
+
+    ConfigComponent() {}
+
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -99,28 +92,6 @@ public:
     SimTime_t        latency[2];    /*!< Latency from each side */
     int              current_ref;   /*!< Number of components currently referring to this Link */
 
-    ConfigLink()
-    {
-        id = count++;
-        current_ref = 0;
-
-        // Initialize the component data items
-        component[0] = ULONG_MAX;
-        component[1] = ULONG_MAX;
-    }
-
-    ConfigLink(const std::string &n)
-    {
-        id = count++;
-        current_ref = 0;
-        name = n;
-
-        // Initialize the component data items
-        component[0] = ULONG_MAX;
-        component[1] = ULONG_MAX;
-    }
-
-
     /** Return the minimum latency of this link (from both sides) */
     SimTime_t getMinLatency() {
         if ( latency[0] < latency[1] ) return latency[0];
@@ -146,8 +117,32 @@ public:
 	}
 
 
+    /* Do not use.  For serialization only */
+    ConfigLink() {}
 private:
-    static LinkId_t count;
+    friend class ConfigGraph;
+    ConfigLink(LinkId_t id) :
+        id(id)
+    {
+        current_ref = 0;
+
+        // Initialize the component data items
+        component[0] = ULONG_MAX;
+        component[1] = ULONG_MAX;
+    }
+
+    ConfigLink(LinkId_t id, const std::string &n) :
+        id(id)
+    {
+        current_ref = 0;
+        name = n;
+
+        // Initialize the component data items
+        component[0] = ULONG_MAX;
+        component[1] = ULONG_MAX;
+    }
+
+
 
     friend class boost::serialization::access;
     template<class Archive>

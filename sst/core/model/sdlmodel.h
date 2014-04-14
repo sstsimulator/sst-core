@@ -74,8 +74,8 @@ private:
     void parse_variables(TiXmlNode* pParent);
     void parse_component(TiXmlNode* pParent);
     void parse_introspector(TiXmlNode* pParent);
-    void parse_params(TiXmlNode* pParent, ConfigComponent* comp);
-    void parse_link(TiXmlNode* pParent, ConfigComponent* comp);
+    void parse_params(TiXmlNode* pParent, ComponentId_t comp);
+    void parse_link(TiXmlNode* pParent, ComponentId_t comp);
     std::string resolve_variable(const std::string value, int line_number);
     std::string resolveEnvVars(const char* input);
     std::string resolveEnvVars(std::string input);

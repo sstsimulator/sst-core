@@ -33,9 +33,6 @@ namespace SST {
 int Vertex::count = 0;
 int Edge::count = 0;
 
-ComponentId_t ConfigComponent::count = 0;
-LinkId_t ConfigLink::count = 0;
-
 
 void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
@@ -199,16 +196,14 @@ ConfigGraph::checkForStructuralErrors()
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type, float weight, int rank)
 {
-	comps.push_back(ConfigComponent(name, type, weight, rank, false));
-	assert(comps.back().id == (comps.size()-1));
+	comps.push_back(ConfigComponent(comps.size(), name, type, weight, rank, false));
     return comps.back().id;
 }
 
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type)
 {
-	comps.push_back(ConfigComponent(name, type, 0.0f, 0, false));
-	assert(comps.back().id == (comps.size()-1));
+	comps.push_back(ConfigComponent(comps.size(), name, type, 0.0f, 0, false));
     return comps.back().id;
 }
 
@@ -245,7 +240,7 @@ void
 ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, string latency_str)
 {
 	if ( links.find(link_name) == links.end() ) {
-        links[link_name] = ConfigLink(link_name);
+        links[link_name] = ConfigLink(links.size(), link_name);
 	}
 	ConfigLink &link = links[link_name];
     if ( link.current_ref >= 2 ) {
@@ -408,8 +403,7 @@ std::string ConfigGraph::makeNamePythonSafe(const std::string name) {
 ComponentId_t
 ConfigGraph::addIntrospector(string name, string type)
 {
-	comps.push_back(ConfigComponent(name, type, 0.0f, 0, true));
-	assert(comps.back().id == (comps.size()-1));
+	comps.push_back(ConfigComponent(comps.size(), name, type, 0.0f, 0, true));
     return comps.back().id;
 
 }
