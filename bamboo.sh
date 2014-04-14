@@ -34,7 +34,7 @@ else
     echo SST_BASE=\$HOME
     export SST_BASE=$HOME
 fi
-echo ' ' ; echo "ERGO    SST_BASE = $SST_BASE" ; echo ' '
+echo ' ' ; echo "        SST_BASE = $SST_BASE" ; echo ' '
 
 # Location of SST library dependencies (deprecated)
 export SST_DEPS=${SST_BASE}/local
@@ -655,7 +655,12 @@ getconfig() {
             ;;
         sst_dist_test)
             #-----------------------------------------------------------------
-            #    Write the prolog with you know what this does
+            # sst_dist_test
+            #      Do a "make dist"  (creating a tar file.)
+            #      Then,  untar the created tar-file.
+            #      Invoke bamboo.sh, (this file), to build sst from the tar.  
+            #            Yes, bamboo invoked from bamboo.
+            #      Finally, run tests to validate the created sst.
             #-----------------------------------------------------------------
             depsStr="-d none -g none"
             setConvenienceVars "$depsStr"
@@ -1544,9 +1549,9 @@ then
         # Build was successful, so run tests, providing command line args
         # as a convenience. SST binaries must be generated before testing.
 
-        if [ $buildtype == "sst_dist_test" ] ; then     ## Fails   $buildtype unknown
-             echo "Setting up the make dist"
-echo "----------------   PWD  `pwd`"           ## Original trunk
+        if [ $buildtype == "sst_dist_test" ] ; then  
+             echo "Setting up to build from the tar created by make dist"
+             echo "---   PWD  `pwd`"           ## Original trunk
              mkdir $SST_ROOT/distTestDir
              cd $SST_ROOT/distTestDir
              mv $SST_ROOT/sst-trunk.tar.gz .
@@ -1554,17 +1559,19 @@ echo "----------------   PWD  `pwd`"           ## Original trunk
                   echo "Move failed  \$SST_ROOT/sst-trunk.tar.gz to ."
                   exit 1
              fi
+             echo "   Untar the created file, sst-trunk.tar.gz"
              tar xzf sst-trunk.tar.gz
              if [ $? -ne 0 ] ; then
                   echo "Untar of sst-trunk.tar.gz failed"
                   exit 1
              fi
              mv sst-trunk trunk
+             echo "Move in items not in the trunk, that are need for the bamboo build and test"
              cp  $SST_ROOT/bamboo.sh trunk
-             cp -r $SST_ROOT/deps trunk
+             cp -r $SST_ROOT/deps trunk          ## the deps scripts
              cd trunk
+             ln -s ../../test              ## the subtree of tests
 ls
-echo almost time to launch bamboo.sh
              echo SST_INSTALL_DEPS =  $SST_INSTALL_DEPS
                 ## pristine is not at the same relative depth on Jenkins as it is for me.
             echo "  Find pristine"
@@ -1589,21 +1596,23 @@ echo almost time to launch bamboo.sh
             ln -s $PRISTINE .
             ls -l pristine
             popd
-## echo "short stop, exit 35 " ; exit 35
             echo SST_DEPS_USER_DIR= $SST_DEPS_USER_DIR
+                     ##  Here is the bamboo invocation within bamboo
             echo "         INVOKE bamboo for the build from the dist tar"
             ./bamboo.sh sstmainline_config $SST_DIST_MPI $SST_DIST_BOOST $SST_DIST_PARAM4
             echo "         Returned from bamboo.sh "
       echo PWD `pwd`
       echo "ls ../.. is:"
       ls ../..
-      ln -s ../../test
       echo "\$1 is $1"
 
+      echo  "             Invoke dotests"
+echo  "Why is this done here outside of (the second) bamboo.sh?"
+echo  "     Are there not environment variable issues?"
       dotests sstmainline_config
 echo  "                       The End    (for now)   "
 exit 0
-        else     
+        else          #  not make dist
             pwd
 echo "            CHECK ENVIRONMENT VARIABLES "
 env | grep SST
@@ -1615,7 +1624,7 @@ echo " \"test\" is a directory"
 echo " ############################  ENTER dotests ################## "
                 dotests $1
             fi
-        fi
+        fi               #   End of sst_dist_test  conditional
     fi
 fi
 
