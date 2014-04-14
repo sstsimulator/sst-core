@@ -124,8 +124,11 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
 
     timeVortex = new TimeVortex;
     m_exit = new Exit( this, timeLord->getTimeConverter("100ns"), num_ranks == 1 );
-    m_heartbeat = new SimulatorHeartbeat(cfg, my_rank, this, timeLord->getTimeConverter(cfg->heartbeatPeriod) );
 
+    if(strcmp(cfg->heartbeatPeriod.c_str(), "N") != 0) {
+        sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeatPeriod.c_str());
+    	m_heartbeat = new SimulatorHeartbeat(cfg, my_rank, this, timeLord->getTimeConverter(cfg->heartbeatPeriod) );
+    }
 }
 
 void

@@ -52,7 +52,7 @@ Config::Config( int my_rank, int world_size )
     sdlfile     = "NONE";
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
-    heartbeatPeriod = "10000 s";
+    heartbeatPeriod = "N";
 // #ifdef HAVE_ZOLTAN
 //     partitioner = "zoltan";
 // #else
