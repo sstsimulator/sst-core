@@ -25,12 +25,16 @@ export SST_ROOT=`pwd`
 #           devel                sstDeps
 #           trunk (SST_ROOT)       src
 
+echo SST_DEPS_USER_MODE = ${SST_DEPS_USER_MODE}
 if [[ ${SST_DEPS_USER_MODE:+isSet} = isSet ]]
 then
+    echo  SST_BASE=\$SST_DEPS_USER_DIR
     export SST_BASE=$SST_DEPS_USER_DIR
 else
+    echo SST_BASE=\$HOME
     export SST_BASE=$HOME
 fi
+echo ' ' ; echo "ERGO    SST_BASE = $SST_BASE" ; echo ' '
 
 # Location of SST library dependencies (deprecated)
 export SST_DEPS=${SST_BASE}/local
@@ -336,7 +340,6 @@ getconfig() {
 #        echo "$USER" > ./sst/elements/PhoenixSim/.ignore
 #    fi
 
-##    mpi_environment="${mpi_environment} --disable-mem-pools"
     case $1 in
         sstmainline_config) 
             #-----------------------------------------------------------------
@@ -650,6 +653,16 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST $miscEnv"
             ;;
+        sst_dist_test)
+            #-----------------------------------------------------------------
+            #    Write the prolog with you know what this does
+            #-----------------------------------------------------------------
+            depsStr="-d none -g none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
+   
+  ## perhaps do no more here
+            ;;
         default|*)
             #-----------------------------------------------------------------
             # default
@@ -685,7 +698,7 @@ dobuild() {
     do
         case "$opt" in
             t) # build type
-                local buildtype=$OPTARG
+                buildtype=$OPTARG
                 ;;
             a) # architecture
                 local architecture=$OPTARG
@@ -756,6 +769,27 @@ dobuild() {
         return $retval
     fi
 
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo ' '    
+echo       Configure complete without error
+echo ' '    
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+
+echo "at this time \$buildtype is $buildtype"
+echo " compare is with \"sst_dist_test\"   "
+
+    if [ $buildtype == "sst_dist_test" ] ; then
+        make dist
+        retval=$?
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+echo ' '    
+echo       make dist is done
+echo ' '    
+echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+ls -ltr | tail -5
+        return $retval        ##   This is in dobuild
+    fi
+echo   " This is the non dist test path     +++++++++++++++++++++++++++++++++++++++++++++++"
     echo "bamboo.sh: making SST"
     # build SST
     make -j2 all
@@ -847,7 +881,12 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_with_sstdevice|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_memH_only|documentation)
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_with_sstdevice|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_memH_only|sst_dist_test|documentation)
+            #   Save Parameters $2, $3 and $4 in case they are need later
+            SST_DIST_MPI=$2
+            SST_DIST_BOOST=$3
+            SST_DIST_PARAM4=$4
+
             # Configure MPI, Boost, and Compiler (Linux only)
             if [ $kernel != "Darwin" ]
             then
@@ -1491,7 +1530,7 @@ else
             ;;
     esac
 fi
-
+   
 if [ $retval -eq 0 ]
 then
     if [ $SST_BUILD_TYPE = "documentation" ]
@@ -1505,8 +1544,78 @@ then
         # Build was successful, so run tests, providing command line args
         # as a convenience. SST binaries must be generated before testing.
 
+        if [ $buildtype == "sst_dist_test" ] ; then     ## Fails   $buildtype unknown
+             echo "Setting up the make dist"
+echo "----------------   PWD  `pwd`"           ## Original trunk
+             mkdir $SST_ROOT/distTestDir
+             cd $SST_ROOT/distTestDir
+             mv $SST_ROOT/sst-trunk.tar.gz .
+             if [ $? -ne 0 ] ; then
+                  echo "Move failed  \$SST_ROOT/sst-trunk.tar.gz to ."
+                  exit 1
+             fi
+             tar xzf sst-trunk.tar.gz
+             if [ $? -ne 0 ] ; then
+                  echo "Untar of sst-trunk.tar.gz failed"
+                  exit 1
+             fi
+             mv sst-trunk trunk
+             cp  $SST_ROOT/bamboo.sh trunk
+             cp -r $SST_ROOT/deps trunk
+             cd trunk
+ls
+echo almost time to launch bamboo.sh
+             echo SST_INSTALL_DEPS =  $SST_INSTALL_DEPS
+                ## pristine is not at the same relative depth on Jenkins as it is for me.
+            echo "  Find pristine"
+            if [ $SST_BASE == "/home/jwilso" ] ; then
+                PRISTINE="/home/jwilso/sstDeps/src/pristine"
+            else 
+                find $SST_BASE -name pristine
+                PRISTINE=`find $SST_BASE -name pristine`
+            fi
+            echo "\$PRISTINE = $PRISTINE"
+            ls $PRISTINE/*
+            if [[ $? != 0 ]] ; then
+                echo " Failed to find pristine "
+                exit 1
+            fi
+            export SST_BASE=$SST_ROOT
+            export SST_DEPS_USER_DIR=$SST_ROOT
+            export SST_DEPS_USER_MODE=1
+            export SST_INSTALL_DEPS=$SST_BASE/local
+            mkdir -p ../../sstDeps/src
+            pushd ../../sstDeps/src
+            ln -s $PRISTINE .
+            ls -l pristine
+            popd
+## echo "short stop, exit 35 " ; exit 35
+            echo SST_DEPS_USER_DIR= $SST_DEPS_USER_DIR
+            echo "         INVOKE bamboo for the build from the dist tar"
+            ./bamboo.sh sstmainline_config $SST_DIST_MPI $SST_DIST_BOOST $SST_DIST_PARAM4
+            echo "         Returned from bamboo.sh "
+      echo PWD `pwd`
+      echo "ls ../.. is:"
+      ls ../..
+      ln -s ../../test
+      echo "\$1 is $1"
+
+      dotests sstmainline_config
+echo  "                       The End    (for now)   "
+exit 0
+        else     
+            pwd
+echo "            CHECK ENVIRONMENT VARIABLES "
+env | grep SST
+echo "            End of SST Environs"
+pwd
+ls
+            if [ -d "test" ] ; then
+echo " \"test\" is a directory"
 echo " ############################  ENTER dotests ################## "
-        dotests $1
+                dotests $1
+            fi
+        fi
     fi
 fi
 
