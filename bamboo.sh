@@ -224,10 +224,10 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_dirSweep.sh
     fi
 
-#    if [ $1 != "sstmainline_config_no_mpi" ] ; then
+    if [ $1 != "sstmainline_config_no_mpi" ] ; then
         #  patterns requires MPI in order to build
-#        ${SST_TEST_SUITES}/testSuite_patterns.sh
-#    fi
+        ${SST_TEST_SUITES}/testSuite_patterns.sh
+    fi
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
     ${SST_TEST_SUITES}/testSuite_prospero.sh
