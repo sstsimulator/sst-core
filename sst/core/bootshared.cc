@@ -63,7 +63,12 @@ void boot_sst_configure_env(const int verbose) {
 
 void boot_sst_executable(const char* binary, const int verbose, char* argv[]) {
 	char* real_binary_path = (char*) malloc(sizeof(char) * PATH_MAX);
-	sprintf(real_binary_path, "%s/libexec/%s", SST_INSTALL_PREFIX, binary);
+
+	if(strcmp(SST_INSTALL_PREFIX, "NONE") == 0) {
+		sprintf(real_binary_path, "/usr/libexec/%s", binary);
+	} else {
+		sprintf(real_binary_path, "%s/libexec/%s", SST_INSTALL_PREFIX, binary);
+	}
 
 	if(verbose) {
 		char** check_env = environ;
