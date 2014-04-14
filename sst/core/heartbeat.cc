@@ -29,7 +29,7 @@ SimulatorHeartbeat::SimulatorHeartbeat( Config* cfg, int this_rank, Simulation* 
     Action(),
     m_period( period )
 {
-    if(cfg->verbose && (0 == this_rank) ) {
+    if( (0 == this_rank) ) {
     	sim->insertActivity( period->getFactor(), this );
 	lastTime = sst_get_cpu_time();
     }
