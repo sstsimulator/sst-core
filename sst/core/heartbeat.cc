@@ -31,6 +31,7 @@ SimulatorHeartbeat::SimulatorHeartbeat( Config* cfg, int this_rank, Simulation* 
 {
     if(cfg->verbose && (0 == this_rank) ) {
     	sim->insertActivity( period->getFactor(), this );
+	lastTime = sst_get_cpu_time();
     }
 }
 
@@ -41,9 +42,12 @@ SimulatorHeartbeat::~SimulatorHeartbeat() {
 void SimulatorHeartbeat::execute( void )
 {
     Simulation *sim = Simulation::getSimulation();
-    sim->getSimulationOutput().output("# Heartbeat: %" PRIu64 " cycles\n",
-	sim->getCurrentSimCycle() );
+    const double now = sst_get_cpu_time();
 
+    sim->getSimulationOutput().output("# Simulation Heartbeat: Simulated Time %s (Real CPU time since last period %.5f seconds)\n",
+	sim->getElapsedSimTime().toString().c_str(), (now - lastTime) );
+
+    lastTime = now;
     SimTime_t next = sim->getCurrentSimCycle() +
 	m_period->getFactor();
     sim->insertActivity( next, this );

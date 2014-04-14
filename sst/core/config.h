@@ -69,6 +69,7 @@ public:
     Mode_t          runMode;            /*!< Run Mode (Init, Both, Run-only) */
     std::string     sdlfile;            /*!< Graph generation file */
     std::string     stopAtCycle;        /*!< When to stop the simulation */
+    std::string     heartbeatPeriod;    /*!< Sets the heartbeat period for the simulation */
     std::string     timeBase;           /*!< Timebase of simulation */
     std::string     partitioner;        /*!< Partitioner to use */
     std::string     generator;          /*!< Generator to use */

@@ -16,6 +16,7 @@
 #include <sst/core/serialization.h>
 #include <sst/core/output.h>
 #include <sst/core/config.h>
+#include <sst/core/cputimer.h>
 
 #ifdef HAVE_MPI
 #include <boost/mpi.hpp>
@@ -41,6 +42,7 @@ private:
     void operator=(SimulatorHeartbeat const&);
     void execute(void);
     TimeConverter*  m_period;
+    double lastTime;
 
     friend class boost::serialization::access;
     template<class Archive>
