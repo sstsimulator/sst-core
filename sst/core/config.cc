@@ -127,7 +127,7 @@ Config::Config( int my_rank, int world_size )
         ("stop-at", po::value< string >(&stopAtCycle), 
 	                        "set time at which simulation will end execution")
         ("heartbead-period", po::value< string >(&heartbeatPeriod),
-				"Set time for heart beats to be published (these are approximate timings published by the core to update on progress), default is every 10000 seconds")
+				"Set time for heart beats to be published (these are approximate timings published by the core to update on progress), default is every 10000 simulated seconds")
         ("timebase", po::value< string >(&timeBase), 
                                 "sets the base time step of the simulation (default: 1ps)")
         ("all-parse", po::value< bool >(&all_parse)->default_value(false), 
