@@ -1600,7 +1600,12 @@ ls
                      ##  Here is the bamboo invocation within bamboo
             echo "         INVOKE bamboo for the build from the dist tar"
             ./bamboo.sh sstmainline_config $SST_DIST_MPI $SST_DIST_BOOST $SST_DIST_PARAM4
-            echo "         Returned from bamboo.sh "
+            retval=$?
+            echo "         Returned from bamboo.sh $retval"
+            if [ $retval != 0 ] ; then
+                echo "bamboo build reports failure  retval = $reval"
+                exit 1
+            fi
       echo PWD `pwd`
       echo "ls ../.. is:"
       ls ../..
