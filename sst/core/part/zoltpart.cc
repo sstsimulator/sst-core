@@ -34,9 +34,9 @@ static void sst_zoltan_get_vertex_list(void* data, int sizeGID, int sizeLID,
 	
 		for(ConfigComponentMap_t::iterator comp_itr = c_graph->getComponentMap().begin();
 			comp_itr != c_graph->getComponentMap().end(); comp_itr++) {
-			globalIDs[next_entry] = (int) comp_itr->first;
+			globalIDs[next_entry] = (int) comp_itr->id;
 			localIDs[next_entry] = localID++;
-			obj_wgts[next_entry] = comp_itr->second->weight;
+			obj_wgts[next_entry] = comp_itr->weight;
 
 			next_entry++;
 		}
@@ -69,7 +69,7 @@ static void sst_zoltan_get_num_edges_list(void *data, int sizeGID, int sizeLID, 
 			ConfigLinkMap_t::iterator map_itr;
 		
 			for(map_itr = link_map.begin(); map_itr != link_map.end(); map_itr++) {
-				if(map_itr->second->component[0] == (ComponentId_t) i) {
+				if(map_itr->second.component[0] == (ComponentId_t) i) {
 					this_comp_links++;
 				}
 			}
@@ -120,8 +120,8 @@ static void sst_zoltan_get_edge_list(void *data, int sizeGID, int sizeLID,
 					fprintf(stderr, "Error: Zoltan partition scheme failed. More links from a component than anticipated.\n");
 				}
 			
-				if(map_itr->second->component[0] == (ComponentId_t) i) {
-					next_nbor_entry[0] = (int) map_itr->second->component[1];
+				if(map_itr->second.component[0] == (ComponentId_t) i) {
+					next_nbor_entry[0] = (int) map_itr->second.component[1];
 					next_proc_entry[0] = (int) 0;
 				
 					next_proc_entry++;
@@ -249,12 +249,12 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
 	if(0 == rank) {
 		ConfigComponentMap_t::iterator config_map_itr;
 		for(config_map_itr = config_map.begin(); config_map_itr != config_map.end(); config_map_itr++) {
-			config_map_itr->second->rank = 0;
+			config_map_itr->rank = 0;
 		}
 
 		// Go over what we have to export, set the component to the appropriate rank
   		for(int i = 0; i < num_vertices_export; ++i) {
-  			config_map[export_global_ids[i]]->rank = export_ranks[i];
+  			config_map[export_global_ids[i]].rank = export_ranks[i];
   		}
   	} 
   	partOutput->verbose(CALL_INFO, 1, 0, "Assignment is complete.\n");
