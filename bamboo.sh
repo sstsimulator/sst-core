@@ -1606,27 +1606,29 @@ ls
                 echo "bamboo build reports failure  retval = $reval"
                 exit 1
             fi
-      echo PWD `pwd`
-      echo "ls ../.. is:"
-      ls ../..
-      echo "\$1 is $1"
-
-      echo  "             Invoke dotests"
-echo  "Why is this done here outside of (the second) bamboo.sh?"
-echo  "     Are there not environment variable issues?"
-      dotests sstmainline_config
-echo  "                       The End    (for now)   "
-exit 0
+##                    echo PWD `pwd`
+##                    echo "ls ../.. is:"
+##                    ls ../..
+##                    echo "\$1 is $1"
+##              
+##                    echo  "             Invoke dotests"
+##              echo  "Why is this done here outside of (the second) bamboo.sh?"
+##              echo  "     Are there not environment variable issues?"
+##                    dotests sstmainline_config
+##              echo  "                       The End    (for now)   "
+             exit 0                  #  Normal Exit for make dist
         else          #  not make dist
+##    ---  These are probably temporary, but let's line them up properly anyway
             pwd
-echo "            CHECK ENVIRONMENT VARIABLES "
-env | grep SST
-echo "            End of SST Environs"
-pwd
-ls
+            echo "            CHECK ENVIRONMENT VARIABLES "
+            env | grep SST
+            echo "            End of SST Environs"
+            pwd
+            ls
+##    ---
             if [ -d "test" ] ; then
-echo " \"test\" is a directory"
-echo " ############################  ENTER dotests ################## "
+                echo " \"test\" is a directory"
+                echo " ############################  ENTER dotests ################## "
                 dotests $1
             fi
         fi               #   End of sst_dist_test  conditional
