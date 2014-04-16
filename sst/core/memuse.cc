@@ -11,7 +11,14 @@
 
 
 #include "sst_config.h"
+
 #include "sst/core/memuse.h"
+
+#include <sys/resource.h>
+#ifdef HAVE_MPI
+#include <boost/mpi.hpp>
+#endif
+
 
 using namespace SST::Core;
 

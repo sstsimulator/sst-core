@@ -13,10 +13,7 @@
 #ifndef _H_SST_CORE_MEMUSE
 #define _H_SST_CORE_MEMUSE
 
-#include "sst_config.h"
-
-#include <sys/resource.h>
-#include <boost/mpi.hpp>
+#include <inttypes.h>
 
 namespace SST {
 namespace Core {
