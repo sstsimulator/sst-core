@@ -653,9 +653,9 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST $miscEnv"
             ;;
-        sst_dist_test)
+        sst_config_dist_test)
             #-----------------------------------------------------------------
-            # sst_dist_test
+            # sst_config_dist_test
             #      Do a "make dist"  (creating a tar file.)
             #      Then,  untar the created tar-file.
             #      Invoke bamboo.sh, (this file), to build sst from the tar.  
@@ -781,9 +781,9 @@ echo ' '
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 echo "at this time \$buildtype is $buildtype"
-echo " compare is with \"sst_dist_test\"   "
+echo " compare is with \"sst_config_dist_test\"   "
 
-    if [ $buildtype == "sst_dist_test" ] ; then
+    if [ $buildtype == "sst_config_dist_test" ] ; then
         make dist
         retval=$?
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
@@ -886,7 +886,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_with_sstdevice|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_memH_only|sst_dist_test|documentation)
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_with_sstdevice|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_memH_only|sst_config_dist_test|documentation)
             #   Save Parameters $2, $3 and $4 in case they are need later
             SST_DIST_MPI=$2
             SST_DIST_BOOST=$3
@@ -1549,7 +1549,7 @@ then
         # Build was successful, so run tests, providing command line args
         # as a convenience. SST binaries must be generated before testing.
 
-        if [ $buildtype == "sst_dist_test" ] ; then  
+        if [ $buildtype == "sst_config_dist_test" ] ; then  
              echo "Setting up to build from the tar created by make dist"
              echo "---   PWD  `pwd`"           ## Original trunk
              mkdir $SST_ROOT/distTestDir
@@ -1631,7 +1631,7 @@ ls
                 echo " ############################  ENTER dotests ################## "
                 dotests $1
             fi
-        fi               #   End of sst_dist_test  conditional
+        fi               #   End of sst_config_dist_test  conditional
     fi
 fi
 
