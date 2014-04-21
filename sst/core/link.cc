@@ -68,8 +68,8 @@ Link::Link() :
 }
 
 Link::~Link() {
-    if ( type == POLL ) {
-	delete recvQueue;
+    if ( type == POLL && recvQueue != uninitQueue && recvQueue != afterInitQueue ) {
+        delete recvQueue;
     }
     if ( rFunctor != NULL ) delete rFunctor;
 }
