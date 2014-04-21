@@ -88,6 +88,8 @@ Units::initialize()
     registerCompoundUnit("hz","1/s");
     registerCompoundUnit("Bps","B/s");
     registerCompoundUnit("bps","b/s");
+
+    return true;
 }
 
 void
@@ -224,14 +226,14 @@ Units::Units(std::string units, sst_dec_float& multiplier)
     split(s_numerator, "-", tokens);
 
     // Add all the numerators
-    for ( int i = 0; i < tokens.size(); i++ ) {
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         addUnit(tokens[i], multiplier, false);
     }
     tokens.clear();
     split(s_denominator, "-", tokens);
 
     // Add all the denominators
-    for ( int i = 0; i < tokens.size(); i++ ) {
+    for ( unsigned int i = 0; i < tokens.size(); i++ ) {
         addUnit(tokens[i], multiplier, true);
     }
     reduce();
@@ -269,10 +271,10 @@ Units::operator== (const Units &lhs) const
 {
     if ( numerator.size() != lhs.numerator.size() ) return false;
     if ( denominator.size() != lhs.denominator.size() ) return false;
-    for ( int i = 0; i < numerator.size(); i++ ) {
+    for ( unsigned int i = 0; i < numerator.size(); i++ ) {
         if ( numerator[i] != lhs.numerator[i] ) return false;
     }
-    for ( int i = 0; i < denominator.size(); i++ ) {
+    for ( unsigned int i = 0; i < denominator.size(); i++ ) {
         if ( denominator[i] != lhs.denominator[i] ) return false;
     }
     return true;
@@ -300,7 +302,7 @@ Units::toString() const
     if ( numerator.size() == 0 ) ret.append("1");
     else {
         ret.append(unit_strings[numerator[0]]);
-        for ( int i = 1; i < numerator.size(); i++ ) {
+        for ( unsigned int i = 1; i < numerator.size(); i++ ) {
             ret.append("-");
             ret.append(unit_strings[numerator[i]]);
         }
@@ -309,7 +311,7 @@ Units::toString() const
     if ( denominator.size() != 0 ) {
         ret.append("/");
         ret.append(unit_strings[denominator[0]]);
-        for ( int i = 1; i < denominator.size(); i++ ) {
+        for ( unsigned int i = 1; i < denominator.size(); i++ ) {
             ret.append("-");
             ret.append(unit_strings[denominator[i]]);
         }
