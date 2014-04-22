@@ -127,13 +127,6 @@ dotests() {
         # Only run if the OS *isn't* Darwin (MacOS)
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
         ${SST_TEST_SUITES}/testSuite_hybridsim.sh
-
-        # only run portals4 test when gem5 sconsed with sstdevice=1
-        if [ $1 == "sstmainline_config_with_sstdevice" ]
-        then
-            ${SST_TEST_SUITES}/testSuite_portals4.sh
-        fi
-
     fi
     #
     #   Only run if configured for ariel
@@ -143,20 +136,8 @@ dotests() {
          ${SST_TEST_SUITES}/testSuite_Ariel.sh
     fi
 
-    # Do not run VaultSim test when gem5 sconsed with sstdevice=1
-    #   Test3 gets a different answer than anywhere else, presumed wrong.
-    #       November 27, 2013
-#    if [ $1 != "sstmainline_config_with_sstdevice" ]
-#    then
-##   VaultSim build is ".ignored".   Do not attempt test.
-##        ${SST_TEST_SUITES}/testSuite_VaultSim.sh
-#    fi
-
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
-##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl2.sh
-##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl3.sh
-##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl4.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
 
@@ -165,26 +146,7 @@ dotests() {
     # jwilso: running simpleComponent test here temporarily
     ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
 
-    if [ $1 == "portals4_test" ]
-    then
-        ${SST_TEST_SUITES}/testSuite_PowerTherm.sh
-    fi
-
     ${SST_TEST_SUITES}/testSuite_iris.sh
-
-    if [ $1 == "M5_test" ]
-    then
-        ${SST_TEST_SUITES}/testSuite_M5.sh
-        ${SST_TEST_SUITES}/testSuite_M5.sh
-        ${SST_TEST_SUITES}/testSuite_M5.sh
-    fi
-
-#    if [ `find . -name 'libPhoenixSim.*' | wc -w` != 0 ]
-#    then
-#        ${SST_TEST_SUITES}/testSuite_phoenixsim.sh
-#    else
-#        echo -e  "No PhoenixSim test:   No libPhoenixSim is available\n"
-#    fi
 
     # if [[ $BOOST_HOME == *boost*1.50* ]]
     # then
@@ -199,10 +161,6 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_macro.sh
     fi
 
-    if [ $1 == "portals4_test" ]
-    then
-        ${SST_TEST_SUITES}/testSuite_portals4.sh
-    fi
     # Add other test suites here, i.e.
     # ${SST_TEST_SUITES}/testSuite_moe.sh
     # ${SST_TEST_SUITES}/testSuite_larry.sh
@@ -210,7 +168,6 @@ dotests() {
     # ${SST_TEST_SUITES}/testSuite_shemp.sh
     # etc.
     ${SST_TEST_SUITES}/testSuite_merlin.sh
-##    ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
 
     if [ $1 != "sstmainline_config_gcc_4_8_1" -a $1 != "sstmainline_config_no_gem5" -a $1 != "sstmainline_config_no_mpi" ]
     then
@@ -378,19 +335,6 @@ getconfig() {
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g none -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
-            ;;
-
-        sstmainline_config_with_sstdevice) 
-            #-----------------------------------------------------------------
-            # sstmainline_config_with_sstdevice
-            #     This option used for configuring SST with supported stabledevel deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel-with-sstdevice -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
-            rm -f ${SVN_ROOT}/sst/elements/portals4/.ignore
             ;;
 
         sstmainline_config_no_mpi) 
@@ -630,16 +574,6 @@ getconfig() {
             depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none -M default"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET"
-            ;;
-        portals4_test|M5_test) 
-            #-----------------------------------------------------------------
-            # portals4_test|M5_test
-            #     This is an experimental build configuration.
-            #-----------------------------------------------------------------
-            depsStr="-k none -d none -p none -z none -g stabledevel -m none -i none -o none -h none -s none -4 stabledevel"
-            setConvenienceVars "$depsStr"
-            configStr="--prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --with-gem5=$SST_BASE/sstDeps/src/staged/sst-gem5-devel.devel/build/X86_SE"
-            rm -f ${SVN_ROOT}/sst/elements/portals4/.ignore
             ;;
         gem5_no_dramsim_config) 
             #-----------------------------------------------------------------
@@ -886,7 +820,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_with_sstdevice|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|portals4_test|M5_test|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_memH_only|sst_config_dist_test|documentation)
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_memH_only|sst_config_dist_test|documentation)
             #   Save Parameters $2, $3 and $4 in case they are need later
             SST_DIST_MPI=$2
             SST_DIST_BOOST=$3
