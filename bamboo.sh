@@ -195,7 +195,7 @@ dotests() {
     HOST=`uname -n | awk -F. '{print $1}'`
 
     # for now, only run VaultSim test on these special configurations
-    if [ $1 == "sstmainline_configA" ] || [-a $1 == "sstmainline_configB" ] ; then
+    if [ $1 == "sstmainline_configA" ] || [ $1 == "sstmainline_configB" ] ; then
         if [ $HOST == "sst-test" ] ; then
             ${SST_TEST_SUITES}/testSuite_VaultSim.sh
         fi
@@ -741,6 +741,17 @@ echo ' '
 echo       Configure complete without error
 echo ' '    
 echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+######  Ugly debug code
+
+if [ $buildtype == "sstmainline_configB" ] ; then
+echo Groups  `groups`
+ls -ld .
+ls -l /home/jpvandy/local
+ls -l /home/jpvandy/local/packages
+ls -l /home/jpvandy/local/packages/libphx
+cat  /home/jpvandy/local/packages/libphx/*.h > away
+return 4
+fi
 
 echo "at this time \$buildtype is $buildtype"
 echo " compare is with \"sst_config_dist_test\"   "
