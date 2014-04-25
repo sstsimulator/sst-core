@@ -43,7 +43,6 @@ nobase_dist_sst_HEADERS = \
 	link.h \
 	linkMap.h \
 	linkPair.h \
-	log.h \
 	mempool.h \
         memuse.h \
 	module.h \
