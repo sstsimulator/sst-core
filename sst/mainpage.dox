@@ -101,7 +101,7 @@ which all simulation components inherit. At the very least, a
 component writer must create a class which inherits from
 SST::Component and which contains a constructor. This class should be
 created in a dynamic library (.so file) and should include a C-style
-function of the form <componentName>AllocComponent(), which returns a
+function of the form &lt;componentName&gt;AllocComponent(), which returns a
 pointer to a newly instantiated component. 
 
 SST::Component also contains useful functions for component setup
@@ -406,7 +406,7 @@ an introspector is an object which receives a clock event, allowing it to perfor
 regular, periodic actions. Introspector writers must create a class which inherits 
 from SST::Introspector and which contains a constructor. This class should be created 
 in a dynamic library (.so file) and should include a C-style function of the form 
-<introspectorName>AllocComponent(), which returns a pointer to a newly instantiated 
+&lt;introspectorName&gt;AllocComponent(), which returns a pointer to a newly instantiated 
 introspector. The key differences between an introspector and a component is that 
 an introspector:
     - does not send or receive events

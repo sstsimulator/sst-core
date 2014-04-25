@@ -436,6 +436,11 @@ public:
     }
 
 
+    /**
+     * Given a Parameter Key ID, return the Name of the matching parameter
+     * @param id  Key ID to look up
+     * @return    String name of the parameter
+     */
     static const std::string& getParamName(uint32_t id)
     {
         return keyMapReverse[id];
