@@ -62,10 +62,14 @@ private:
                 EAT_VAR(x, y);
                 EAT_VAR(y, x);
 NO_VARIABLE:
-                if ( *x < *y ) return true;
-                if ( *x > *y ) return false;
-                x++;
-                y++;
+                if ( *x == *y ) {
+                    if ( '\0' == *x ) return false;
+                    x++;
+                    y++;
+                } else {
+                    if ( *x < *y ) return true;
+                    return false;
+                }
             } while ( *x && *y );
             if ( !(*x) && (*y) ) return true;
             return false;
