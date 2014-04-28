@@ -67,6 +67,7 @@ public:
     Units& operator*= (const Units& v);
     Units& operator/= (const Units& v);
     bool operator== (const Units &lhs) const;
+    bool operator!= (const Units &lhs) const {return !(*this == lhs);}
     Units& invert();
     
     std::string toString() const;
@@ -103,6 +104,10 @@ public:
         return *this;
     }
 
+    bool operator> (const UnitAlgebra& v);
+    bool operator>= (const UnitAlgebra& v);
+    bool operator< (const UnitAlgebra& v);
+    bool operator<= (const UnitAlgebra& v);
     UnitAlgebra& invert();
     
     bool hasUnits(std::string u) const;

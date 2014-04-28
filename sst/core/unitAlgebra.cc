@@ -283,7 +283,7 @@ Units::operator== (const Units &lhs) const
 Units&
 Units::invert()
 {
-    std::vector<unit_id_t> temp = numerator;
+    std::vector<unit_id_t> temp = denominator;
     denominator = numerator;
     numerator = temp;
     return *this;
@@ -427,6 +427,55 @@ UnitAlgebra::operator/= (const UnitAlgebra& v)
     unit /= v.unit;
     return *this;
 }
+
+bool
+UnitAlgebra::operator> (const UnitAlgebra& v)
+{
+    if ( unit != v.unit ) {
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Error: Attempting to compare UnitAlgebra values "
+                    "with non-matching units: %s, %s\n",
+                    toString().c_str(), v.toString().c_str());
+    }
+    return value > v.value;
+}
+
+bool
+UnitAlgebra::operator>= (const UnitAlgebra& v)
+{
+    if ( unit != v.unit ) {
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Error: Attempting to compare UnitAlgebra values "
+                    "with non-matching units: %s, %s\n",
+                    toString().c_str(), v.toString().c_str());
+    }
+    return value >= v.value;
+}
+
+bool
+UnitAlgebra::operator< (const UnitAlgebra& v)
+{
+    if ( unit != v.unit ) {
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Error: Attempting to compare UnitAlgebra values "
+                    "with non-matching units: %s, %s\n",
+                    toString().c_str(), v.toString().c_str());
+    }
+    return value < v.value;
+}
+
+bool
+UnitAlgebra::operator<= (const UnitAlgebra& v)
+{
+    if ( unit != v.unit ) {
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Error: Attempting to compare UnitAlgebra values "
+                    "with non-matching units: %s, %s\n",
+                    toString().c_str(), v.toString().c_str());
+    }
+    return value <= v.value;
+}
+
 
 UnitAlgebra&
 UnitAlgebra::invert()
