@@ -750,11 +750,9 @@ ls -l /home/jpvandy/local
 ls -l /home/jpvandy/local/packages
 ls -l /home/jpvandy/local/packages/libphx
 cat  /home/jpvandy/local/packages/libphx/*.h > away
-return 4
 fi
 
 echo "at this time \$buildtype is $buildtype"
-echo " compare is with \"sst_config_dist_test\"   "
 
     if [ $buildtype == "sst_config_dist_test" ] ; then
         make dist
