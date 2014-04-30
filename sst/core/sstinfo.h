@@ -18,18 +18,40 @@ namespace SST {
 // CONFIGURATION BITS    
 #define CFG_OUTPUTHUMAN 0x00000001
 #define CFG_OUTPUTXML   0x00000002
-    
-class ConfigSSTInfo {
+
+/**
+ * The SSTInfo Configuration class.
+ *
+ * This class will parse the command line, and setup internal 
+ * lists of elements and components to be processed. 
+ */
+class SSTInfoConfig {
 public:    
-    ConfigSSTInfo();
-    ~ConfigSSTInfo();
+    /** Create a new SSTInfo configuration and parse the Command Line. */
+    SSTInfoConfig();
+    ~SSTInfoConfig();
+
+    /** Parse the Command Line.
+     * @param argc The number of arguments passed to the application
+     * @param argv The array of arguments
+     */
     int parseCmdLine(int argc, char* argv[]);
 
+    /** Return the list of elements to be processed. */
     std::vector<std::string>* getElementsToProcessArray() {return &m_elementsToProcess;}
+    
+    /** Return the list of filtered element names. */
     std::vector<std::string>* getFilteredElementNamesArray() {return &m_filteredElementNames;}
+    
+    /** Return the list of filtered element.component names. */
     std::vector<std::string>* getFilteredElementComponentNamesArray() {return &m_filteredElementComponentNames;}
+    
+    /** Return the bit field of various command line options enabled. */
     unsigned int              getOptionBits() {return m_optionBits;}
+    
+    /** Return the user defined path the XML File. */
     std::string&              getXMLFilePath() {return m_XMLFilePath;}
+    
 private:
     void outputUsage();
     void outputVersion();
@@ -41,38 +63,61 @@ private:
     boost::program_options::positional_options_description* m_posDesc;
     boost::program_options::variables_map*                  m_vm;
     
-    std::vector<std::string>                                m_elementsToProcess;    std::vector<std::string>                                m_filteredElementNames;
+    std::vector<std::string>                                m_elementsToProcess;    
+    std::vector<std::string>                                m_filteredElementNames;
     std::vector<std::string>                                m_filteredElementComponentNames;
     unsigned int                                            m_optionBits;
     std::string                                             m_XMLFilePath;
 };    
     
-class SSTElement_ParamInfo {
+/**
+ * The SSTInfo representation of ElementInfoParam object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoParam objects. 
+ */
+class SSTInfoElement_ParamInfo {
 public:
-    SSTElement_ParamInfo(const ElementInfoParam* elparam)
+    /** Create a new SSTInfoElement_ParamInfo object.
+     * @param elparam Pointer to an ElementInfoParam object.
+     */
+    SSTInfoElement_ParamInfo(const ElementInfoParam* elparam)
     {
         // Save the Object
         m_elparam = elparam;
     }
 
+    /** Return the Name of the Parameter. */
     const char* getName() {return m_elparam->name;}
+
+    /** Return the Description of the Parameter. */
     const char* getDesc() {return m_elparam->description;}
+    
+    /** Return the Default value of the Parameter. */
     const char* getDefault() {return (m_elparam->defaultValue) ? m_elparam->defaultValue : "REQUIRED";}
 
+    /** Output the Parameter Information. 
+     * @param Index The Index of the Parameter.
+     */
     void outputParameterInfo(int Index);
+
+    /** Create the formatted XML data of the Parameter.
+     * @param Index The Index of the Parameter.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
     void generateParameterInfoXMLData(int Index, TiXmlNode* XMLParentElement);
     
 private:    
     const ElementInfoParam* m_elparam;
 };
     
-void PopulateParams(const ElementInfoParam* ptrParams, std::vector<SSTElement_ParamInfo*>* ptrParamArray)
+void PopulateParams(const ElementInfoParam* ptrParams, std::vector<SSTInfoElement_ParamInfo*>* ptrParamArray)
 {
     // Populate the Parameter Array
     if (NULL != ptrParams) {
         while (NULL != ptrParams->name) {
-            // Create a new SSTElement_ParamInfo and add it to the m_ParamArray
-            SSTElement_ParamInfo* ptrParamInfo = new SSTElement_ParamInfo(ptrParams);
+            // Create a new SSTInfoElement_ParamInfo and add it to the m_ParamArray
+            SSTInfoElement_ParamInfo* ptrParamInfo = new SSTInfoElement_ParamInfo(ptrParams);
             ptrParamArray->push_back(ptrParamInfo);
 
             // If the name is NULL, we have reached the last item
@@ -81,9 +126,18 @@ void PopulateParams(const ElementInfoParam* ptrParams, std::vector<SSTElement_Pa
     }
 }
 
-class SSTElement_PortInfo {
+/**
+ * The SSTInfo representation of ElementInfoPort object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoPort objects. 
+ */
+class SSTInfoElement_PortInfo {
 public:
-    SSTElement_PortInfo(const ElementInfoPort* elport)
+    /** Create a new SSTInfoElement_PortInfo object.
+     * @param elport Pointer to an ElementInfoPort object.
+     */
+    SSTInfoElement_PortInfo(const ElementInfoPort* elport)
     {
         // Save the Object
         m_numValidEvents = 0;
@@ -92,30 +146,48 @@ public:
         analyzeValidEventsArray();
     }
 
+    /** Return the Name of the Port. */
     const char* getName() {return m_elport->name;}
+
+    /** Return the Description of the Port. */
     const char* getDesc() {return m_elport->description;}
+
+    /** Return the array of Valid Events related to the Port. */
     const char** getValidEvents() {return m_elport->validEvents;}
 
+    /** Return the number of Valid Events related to the Port. */
     int         getNumberOfValidEvents()    {return m_numValidEvents;}
+
+    /** Return the a specific Valid Events.
+     * @param index The index of the Valid Event.
+     */
     const char* getValidEvent(unsigned int index); 
     
+    /** Output the Port Information. 
+     * @param Index The Index of the Port.
+     */
     void outputPortInfo(int Index);
+
+    /** Create the formatted XML data of the Port.
+     * @param Index The Index of the Port.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
     void generatePortInfoXMLData(int Index, TiXmlNode* XMLParentElement);
-    
+
+private:    
     void analyzeValidEventsArray();
     
-private:    
     const ElementInfoPort*   m_elport;
     unsigned int             m_numValidEvents;
 };
     
-void PopulatePorts(const ElementInfoPort* ptrPorts, std::vector<SSTElement_PortInfo*>* ptrPortArray)
+void PopulatePorts(const ElementInfoPort* ptrPorts, std::vector<SSTInfoElement_PortInfo*>* ptrPortArray)
 {
     // Populate the Ports Array
     if (NULL != ptrPorts) {
         while (NULL != ptrPorts->name) {
-            // Create a new SSTElement_PortInfo and add it to the m_PortArray
-            SSTElement_PortInfo* ptrPortInfo = new SSTElement_PortInfo(ptrPorts);
+            // Create a new SSTInfoElement_PortInfo and add it to the m_PortArray
+            SSTInfoElement_PortInfo* ptrPortInfo = new SSTInfoElement_PortInfo(ptrPorts);
             ptrPortArray->push_back(ptrPortInfo);
 
             // If the name is NULL, we have reached the last item
@@ -124,9 +196,18 @@ void PopulatePorts(const ElementInfoPort* ptrPorts, std::vector<SSTElement_PortI
     }
 }
 
-class SSTElement_ComponentInfo {
+/**
+ * The SSTInfo representation of ElementInfoComponent object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoComponent objects. 
+ */
+class SSTInfoElement_ComponentInfo {
 public:
-    SSTElement_ComponentInfo(const ElementInfoComponent* elc)
+    /** Create a new SSTInfoElement_ComponentInfo object.
+     * @param elc Pointer to an ElementInfoComponent object.
+     */
+    SSTInfoElement_ComponentInfo(const ElementInfoComponent* elc)
     {
         const ElementInfoParam* ptrParams;
         const ElementInfoPort*  ptrPorts;
@@ -143,27 +224,60 @@ public:
         buildCategoryString();        
     }
     
+    /** Return the Name of the Component. */
     const char*           getName() {return m_elc->name;}
+
+    /** Return the Description of the Component. */
     const char*           getDesc() {return m_elc->description;}
-    SSTElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
-    SSTElement_PortInfo*  getPortInfo(int index) {return m_PortArray[index];}
+
+    /** Return a Parameter Info Object. 
+     * @param index The index of the Parameter.
+     */
+    SSTInfoElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
+
+    /** Return a Port Info Object. 
+     * @param index The index of the Port.
+     */
+    SSTInfoElement_PortInfo*  getPortInfo(int index) {return m_PortArray[index];}
+
+    /** Return the Category value of the Component. */
     uint32_t              getCategoryValue() {return m_elc->category;}
+
+    /** Return the name of the Category of the Component. */
     const char*           getCategoryString() {return m_CategoryString.c_str();}
 
+    /** Output the Component Information. 
+     * @param Index The Index of the Component.
+     */
     void outputComponentInfo(int Index);
+    
+    /** Create the formatted XML data of the Component.
+     * @param Index The Index of the Component.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
     void generateComponentInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
-    void buildCategoryString();
     
 private:    
+    void buildCategoryString();
+    
     const ElementInfoComponent*        m_elc;
-    std::vector<SSTElement_ParamInfo*> m_ParamArray;
-    std::vector<SSTElement_PortInfo*>  m_PortArray;
+    std::vector<SSTInfoElement_ParamInfo*> m_ParamArray;
+    std::vector<SSTInfoElement_PortInfo*>  m_PortArray;
     std::string                        m_CategoryString;
 };
 
-class SSTElement_IntrospectorInfo {
+/**
+ * The SSTInfo representation of ElementInfoIntrospector object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoIntrospector objects. 
+ */
+class SSTInfoElement_IntrospectorInfo {
 public:
-    SSTElement_IntrospectorInfo(const ElementInfoIntrospector* eli)
+    /** Create a new SSTInfoElement_IntrospectorInfo object.
+     * @param eli Pointer to an ElementInfoIntrospector object.
+     */
+    SSTInfoElement_IntrospectorInfo(const ElementInfoIntrospector* eli)
     {
         const ElementInfoParam* ptrParams;
         
@@ -174,39 +288,83 @@ public:
         PopulateParams(ptrParams, &m_ParamArray);        
     }
 
+    /** Return the Name of the Introspector. */
     const char*           getName() {return m_eli->name;}
-    const char*           getDesc() {return m_eli->description;}
-    SSTElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
 
+    /** Return the Description of the Introspector. */
+    const char*           getDesc() {return m_eli->description;}
+
+    /** Return a Parameter Info Object. 
+     * @param index The index of the Parameter.
+     */
+    SSTInfoElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
+
+    /** Output the Introspector Information. 
+     * @param Index The Index of the Introspector.
+     */
     void outputIntrospectorInfo(int Index);
+    
+    /** Create the formatted XML data of the Introspector.
+     * @param Index The Index of the Introspector.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
     void generateIntrospectorInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
     const ElementInfoIntrospector*     m_eli;
-    std::vector<SSTElement_ParamInfo*> m_ParamArray;
+    std::vector<SSTInfoElement_ParamInfo*> m_ParamArray;
 };
 
-class SSTElement_EventInfo {
+/**
+ * The SSTInfo representation of ElementInfoEvent object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoEvent objects. 
+ */
+class SSTInfoElement_EventInfo {
 public:
-    SSTElement_EventInfo(const ElementInfoEvent* ele)
+    /** Create a new SSTInfoElement_EventInfo object.
+     * @param ele Pointer to an ElementInfoEvent object.
+     */
+    SSTInfoElement_EventInfo(const ElementInfoEvent* ele)
     {
         // Save the Object
         m_ele = ele;
     }
 
+    /** Return the Name of the Event. */
     const char* getName() {return m_ele->name;}
+
+    /** Return the Description of the Event. */
     const char* getDesc() {return m_ele->description;}
 
+    /** Output the Event Information. 
+     * @param Index The Index of the Event.
+     */
     void outputEventInfo(int Index);
+    
+    /** Create the formatted XML data of the Event.
+     * @param Index The Index of the Event.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
     void generateEventInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
     const ElementInfoEvent* m_ele;
 };
 
-class SSTElement_ModuleInfo {
+/**
+ * The SSTInfo representation of ElementInfoModule object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoModule objects. 
+ */
+class SSTInfoElement_ModuleInfo {
 public:
-    SSTElement_ModuleInfo(const ElementInfoModule* elm)
+    /** Create a new SSTInfoElement_ModuleInfo object.
+     * @param elm Pointer to an ElementInfoModule object.
+     */
+    SSTInfoElement_ModuleInfo(const ElementInfoModule* elm)
     {
         const ElementInfoParam* ptrParams;
         
@@ -217,48 +375,103 @@ public:
         PopulateParams(ptrParams, &m_ParamArray);        
     }
 
+    /** Return the Name of the Module. */
     const char*           getName() {return m_elm->name;}
-    const char*           getDesc() {return m_elm->description;}
-    SSTElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
 
+    /** Return the Description of the Module. */
+    const char*           getDesc() {return m_elm->description;}
+
+    /** Return a Parameter Info Object. 
+     * @param index The index of the Parameter.
+     */
+    SSTInfoElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
+
+    /** Output the Module Information. 
+     * @param Index The Index of the Module.
+     */
     void outputModuleInfo(int Index);
+    
+    /** Create the formatted XML data of the Module.
+     * @param Index The Index of the Module.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
     void generateModuleInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
     const ElementInfoModule*           m_elm;
-    std::vector<SSTElement_ParamInfo*> m_ParamArray;
+    std::vector<SSTInfoElement_ParamInfo*> m_ParamArray;
 };
 
-class SSTElement_PartitionerInfo {
+/**
+ * The SSTInfo representation of ElementInfoPartitioner object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoPartitioner objects. 
+ */
+class SSTInfoElement_PartitionerInfo {
 public:
-    SSTElement_PartitionerInfo(const ElementInfoPartitioner* elp)
+    /** Create a new SSTInfoElement_PartitionerInfo object.
+     * @param elp Pointer to an ElementInfoPartitioner object.
+     */
+    SSTInfoElement_PartitionerInfo(const ElementInfoPartitioner* elp)
     {
         // Save the Object
         m_elp = elp;
     }
 
+    /** Return the Name of the Partitioner. */
     const char* getName() {return m_elp->name;}
+
+    /** Return the Description of the Partitioner. */
     const char* getDesc() {return m_elp->description;}
 
+    /** Output the Partitioner Information. 
+     * @param Index The Index of the Partitioner.
+     */
     void outputPartitionerInfo(int Index);
+
+    /** Create the formatted XML data of the Partitioner.
+     * @param Index The Index of the Partitioner.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
     void generatePartitionerInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
     const ElementInfoPartitioner* m_elp;
 };
 
-class SSTElement_GeneratorInfo {
+/**
+ * The SSTInfo representation of ElementInfoGenerator object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoGenerator objects. 
+ */
+class SSTInfoElement_GeneratorInfo {
 public:
-    SSTElement_GeneratorInfo(const ElementInfoGenerator* elg)
+    /** Create a new SSTInfoElement_GeneratorInfo object.
+     * @param elg Pointer to an ElementInfoGenerator object.
+     */
+    SSTInfoElement_GeneratorInfo(const ElementInfoGenerator* elg)
     {
         // Save the Object
         m_elg = elg;
     }
 
+    /** Return the Name of the Generator. */
     const char* getName() {return m_elg->name;}
+
+    /** Return the Description of the Generator. */
     const char* getDesc() {return m_elg->description;}
 
+    /** Output the Generator Information. 
+     * @param Index The Index of the Generator.
+     */
     void outputGeneratorInfo(int Index);
+
+    /** Create the formatted XML data of the Generator.
+     * @param Index The Index of the Generator.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
     void generateGeneratorInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
     
 private:    
@@ -266,58 +479,111 @@ private:
 };
 
 
-class SSTElement_LibraryInfo {
+/**
+ * The SSTInfo representation of ElementLibraryInfo object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementLibraryInfo objects. 
+ */
+class SSTInfoElement_LibraryInfo {
 
 public:
-    SSTElement_LibraryInfo(const ElementLibraryInfo* eli)
+    /** Create a new SSTInfoElement_LibraryInfo object.
+     * @param eli Pointer to an ElementLibraryInfo object.
+     */
+    SSTInfoElement_LibraryInfo(const ElementLibraryInfo* eli)
     {
         m_eli = eli;
         populateLibraryInfo();
     }
 
-    void populateLibraryInfo();
-    
+    /** Return the Name of the Library. */
     std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
+
+    /** Return the Description of the Library. */
     std::string getLibraryDescription() {if (m_eli && m_eli->description) return m_eli->description; else return ""; }
 
+    /** Return the number of Components within the Library. */
     int         getNumberOfLibraryComponents()    {return m_ComponentArray.size();}
+
+    /** Return the number of Introspectors within the Library. */
     int         getNumberOfLibraryIntrospectors() {return m_IntrospectorArray.size();}
+
+    /** Return the number of Events within the Library. */
     int         getNumberOfLibraryEvents()        {return m_EventArray.size();}
+
+    /** Return the number of Modules within the Library. */
     int         getNumberOfLibraryModules()       {return m_ModuleArray.size();}
+
+    /** Return the number of Partitioners within the Library. */
     int         getNumberOfLibraryPartitioners()  {return m_PartitionerArray.size();}
+
+    /** Return the number of Generators within the Library. */
     int         getNumberOfLibraryGenerators()    {return m_GeneratorArray.size();}
 
-    
+    /** Return the ElementLibraryInfo object. */
     const ElementLibraryInfo*    getLibraryInfo() {return m_eli;}
 
-    SSTElement_ComponentInfo*    getInfoComponent(int Index)    {return m_ComponentArray[Index];}
-    SSTElement_IntrospectorInfo* getInfoIntrospector(int Index) {return m_IntrospectorArray[Index];}
-    SSTElement_EventInfo*        getInfoEvent(int Index)        {return m_EventArray[Index];}
-    SSTElement_ModuleInfo*       getInfoModule(int Index)       {return m_ModuleArray[Index];}
-    SSTElement_PartitionerInfo*  getInfoPartitioner(int Index)  {return m_PartitionerArray[Index];}
-    SSTElement_GeneratorInfo*    getInfoGenerator(int Index)    {return m_GeneratorArray[Index];}
+    /** Return a specific SSTInfoElement_ComponentInfo object. 
+     * @param Index The index of the object.
+     */
+    SSTInfoElement_ComponentInfo*    getInfoComponent(int Index)    {return m_ComponentArray[Index];}
 
+    /** Return a specific SSTInfoElement_IntrospectorInfo object. 
+     * @param Index The index of the object.
+     */
+    SSTInfoElement_IntrospectorInfo* getInfoIntrospector(int Index) {return m_IntrospectorArray[Index];}
+
+    /** Return a specific SSTInfoElement_EventInfo object. 
+     * @param Index The index of the object.
+     */
+    SSTInfoElement_EventInfo*        getInfoEvent(int Index)        {return m_EventArray[Index];}
+
+    /** Return a specific SSTInfoElement_ModuleInfo object. 
+     * @param Index The index of the object.
+     */
+    SSTInfoElement_ModuleInfo*       getInfoModule(int Index)       {return m_ModuleArray[Index];}
+
+    /** Return a specific SSTInfoElement_PartitionerInfo object. 
+     * @param Index The index of the object.
+     */
+    SSTInfoElement_PartitionerInfo*  getInfoPartitioner(int Index)  {return m_PartitionerArray[Index];}
+
+    /** Return a specific SSTInfoElement_GeneratorInfo object. 
+     * @param Index The index of the object.
+     */
+    SSTInfoElement_GeneratorInfo*    getInfoGenerator(int Index)    {return m_GeneratorArray[Index];}
+
+    /** Output the Library Information. 
+     * @param LibIndex The Index of the Library.
+     */
     void outputLibraryInfo(int LibIndex);
+
+    /** Create the formatted XML data of the Library.
+     * @param LibIndex The Index of the Library.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
     void generateLibraryInfoXMLData(int LibIndex, TiXmlNode* XMLParentElement);
 
 private:
-    void addInfoComponent(const ElementInfoComponent* eic) {m_ComponentArray.push_back(new SSTElement_ComponentInfo(eic));}
-    void addInfoIntrospector(const ElementInfoIntrospector* eii) {m_IntrospectorArray.push_back(new SSTElement_IntrospectorInfo(eii));}
-    void addInfoEvent(const ElementInfoEvent* eie) {m_EventArray.push_back(new SSTElement_EventInfo(eie));}
-    void addInfoModule(const ElementInfoModule* eim) {m_ModuleArray.push_back(new SSTElement_ModuleInfo(eim));}
-    void addInfoPartitioner(const ElementInfoPartitioner* eip) {m_PartitionerArray.push_back(new SSTElement_PartitionerInfo(eip));}
-    void addInfoGenerator(const ElementInfoGenerator* eig) {m_GeneratorArray.push_back(new SSTElement_GeneratorInfo(eig));}
+    void populateLibraryInfo();
+    void addInfoComponent(const ElementInfoComponent* eic) {m_ComponentArray.push_back(new SSTInfoElement_ComponentInfo(eic));}
+    void addInfoIntrospector(const ElementInfoIntrospector* eii) {m_IntrospectorArray.push_back(new SSTInfoElement_IntrospectorInfo(eii));}
+    void addInfoEvent(const ElementInfoEvent* eie) {m_EventArray.push_back(new SSTInfoElement_EventInfo(eie));}
+    void addInfoModule(const ElementInfoModule* eim) {m_ModuleArray.push_back(new SSTInfoElement_ModuleInfo(eim));}
+    void addInfoPartitioner(const ElementInfoPartitioner* eip) {m_PartitionerArray.push_back(new SSTInfoElement_PartitionerInfo(eip));}
+    void addInfoGenerator(const ElementInfoGenerator* eig) {m_GeneratorArray.push_back(new SSTInfoElement_GeneratorInfo(eig));}
     
     const ElementLibraryInfo*                 m_eli;
-    std::vector<SSTElement_ComponentInfo*>    m_ComponentArray;
-    std::vector<SSTElement_IntrospectorInfo*> m_IntrospectorArray;
-    std::vector<SSTElement_EventInfo*>        m_EventArray;
-    std::vector<SSTElement_ModuleInfo*>       m_ModuleArray;
-    std::vector<SSTElement_PartitionerInfo*>  m_PartitionerArray;
-    std::vector<SSTElement_GeneratorInfo*>    m_GeneratorArray;
+    std::vector<SSTInfoElement_ComponentInfo*>    m_ComponentArray;
+    std::vector<SSTInfoElement_IntrospectorInfo*> m_IntrospectorArray;
+    std::vector<SSTInfoElement_EventInfo*>        m_EventArray;
+    std::vector<SSTInfoElement_ModuleInfo*>       m_ModuleArray;
+    std::vector<SSTInfoElement_PartitionerInfo*>  m_PartitionerArray;
+    std::vector<SSTInfoElement_GeneratorInfo*>    m_GeneratorArray;
 
 };
 
-} // namespace SSTINFO
+} // namespace SST
 
 #endif  // SST_INFO_H
