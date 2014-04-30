@@ -422,8 +422,10 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
         char *modName = name+4;
         if ( Simulation::getSimulation()->getFactory()->hasLibrary(modName) ) {
             genPythonModuleFunction func = Simulation::getSimulation()->getFactory()->getPythonModule(modName);
-            if ( func )
+            if ( func ) {
+                Py_INCREF(self);
                 return self;
+	    }
         }
     }
 
