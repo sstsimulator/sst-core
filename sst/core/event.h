@@ -16,8 +16,6 @@
 #include <sst/core/serialization.h>
 
 #include <sst/core/activity.h>
-//#include <sst/core/debug.h>
-//#include <sst/core/eventFunctor.h>
 
 namespace SST {
 
@@ -29,6 +27,13 @@ class Link;
  */
 class Event : public Activity {
 public:
+
+    /** Type definition of unique identifiers */
+    typedef std::pair<uint64_t, int> id_type;
+    /** Constatn, default value for id_types */
+    static const id_type NO_ID;
+
+
     Event() : Activity() {
         setPriority(50);
     }
@@ -130,7 +135,10 @@ protected:
     /** Link used for delivery */
     Link* delivery_link;
 
+    id_type generateUniqueId();
+
 private:
+    static uint64_t id_counter;
     LinkId_t link_id;
 
     friend class boost::serialization::access;
