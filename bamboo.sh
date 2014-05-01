@@ -208,7 +208,7 @@ dotests() {
     
     if [ $HOST == "sst-test" ] || [ $HOST == "johnslion" ] ; then
         echo " $HOST: Running the Wall Clock timing test"
-        ${SST_TEST_SUITES}/testSuite_simpleTiming.sh
+        ${SST_TEST_SUITES}/testSuite_simpleClocker.sh
     else
         echo " $HOST: Not Running the Wall Clock timing test"
     fi
