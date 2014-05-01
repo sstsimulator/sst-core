@@ -28,11 +28,28 @@ using namespace SST::Partition;
 namespace SST {
 namespace Partition {
 
+/**
+	\class SSTZoltanPartition creates a partitioner interface to the
+	Zoltan partioner library developed by Sandia National Labs. This is
+	an option to partition simulations if the user has configured SST
+	to find and compile with the Zoltan external dependency.
+*/
 class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 
 	public:
+		/**
+			Create a Zoltan-based partition scheme
+			\param verbosity Verbosity level with which messages and information are generated
+		*/
 		SSTZoltanPartition(int verbosity);
 		~SSTZoltanPartition();
+
+		/**
+			Performs a partition of an SST configuration graph. Components in the graph
+			have their setRank() attribute set based on the partition scheme computed
+			by Zoltan.
+			\param graph An SST configuration graph
+		*/
 		void performPartition(ConfigGraph* graph);
 
 	protected:
