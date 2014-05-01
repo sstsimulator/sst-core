@@ -48,6 +48,9 @@ class SSTConstantDistribution : public SSTRandomDistribution {
 		double getMean();
 
 	protected:
+		/**
+			Describes the constant value to return from the distribution.
+		*/
 		double mean;
 
 };

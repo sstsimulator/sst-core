@@ -62,10 +62,25 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
 		double getStandardDev();
 
 	protected:
+		/**
+			The mean of the Gaussian distribution
+		*/
 		double mean;
+		/**
+			The standard deviation of the Gaussian distribution
+		*/
 		double stddev;
+		/**
+			The base random number generator for the distribution
+		*/
 		SSTRandom* baseDistrib;
+		/**
+			Random numbers for the distribution are read in pairs, this stores the second of the pair
+		*/
 		double unusedPair;
+		/**
+			Random numbers for the distribution are read in pairs, this tells the code to use the second of the pair
+		*/
 		bool usePair;
 };
 

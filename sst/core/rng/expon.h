@@ -55,7 +55,13 @@ class SSTExponentialDistribution : public SSTRandomDistribution {
 		double getLambda();
 
 	protected:
+		/**
+			Sets the lambda of the exponential distribution.
+		*/
 		double lambda;
+		/**
+			Sets the base random number generator for the distribution.
+		*/
 		SSTRandom* baseDistrib;
 
 };

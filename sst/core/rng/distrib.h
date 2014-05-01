@@ -17,9 +17,16 @@
 namespace SST {
 namespace RNG {
 
+/**
+	\class SSTRandomDistribution declares the base class of statistical distributions in SST.
+*/
 class SSTRandomDistribution {
 
 	public:
+		/**
+			Obtains the next double from the distribution
+			\return The next double in the distribution being sampled
+		*/
 		virtual double getNextDouble() = 0;
 
 };
