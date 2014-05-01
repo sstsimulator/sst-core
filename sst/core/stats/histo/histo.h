@@ -131,12 +131,31 @@ class Histogram {
 		typedef typename std::map<HistoBinType, HistoCountType>::iterator histo_itr;
 
 	private:
+		/**
+			The minimum value in the Histogram
+		*/
 		HistoBinType minVal;
+		/**
+			The maximum bin-value of the Histrogram (i.e. the maximum value rounded up)
+		*/
 		HistoBinType maxVal;
+		/**
+			The width of a Histogram bin
+		*/
 		HistoBinType binWidth;
+		/**
+			The sum of all values added into the Histogram, this is calculated and the sum of all values presented
+			to be entered into the Histogram not with bin-width multiplied by the (max-min)/2 of the bin.
+		*/
 		HistoBinType totalSummed;
+		/**
+			Total count of items added to the Histogram
+		*/
 		HistoCountType itemCount;
 
+		/**
+			A map of the the bin starts to the bin counts
+		*/
 		std::map<HistoBinType, HistoCountType> bins;
 };
 
