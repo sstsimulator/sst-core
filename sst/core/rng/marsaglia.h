@@ -43,8 +43,8 @@ class MarsagliaRNG : public SSTRandom {
     public:
 	/**
 		Creates a new Marsaglia RNG using the initial seeds.
-		@param[initial_z] One of the random seed pairs
-		@param[initial_w] One of the random seed pairs.
+		@param[in] initial_z One of the random seed pairs
+		@param[in] initial_w One of the random seed pairs.
 	*/
         MarsagliaRNG(unsigned int initial_z,
                 unsigned int initial_w);
@@ -82,8 +82,19 @@ class MarsagliaRNG : public SSTRandom {
         int32_t   generateNextInt32();
 
     private:
+	/**
+		Generates the next random number
+	*/
         unsigned int generateNext();
+
+	/**
+		The Z seed of the Marsaglia generator
+	*/
         unsigned int m_z;
+
+	/**
+		The W seed of the Marsaglia generator
+	*/
         unsigned int m_w;
 
 };

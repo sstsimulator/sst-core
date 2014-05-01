@@ -12,8 +12,6 @@
 #ifndef SST_CORE_RNG_MERSENNE_H
 #define SST_CORE_RNG_MERSENNE_H
 
-//#include <iostream>
-//#include <fstream>
 #include <stdint.h>
 #include <sys/time.h>
 
@@ -23,10 +21,6 @@
 #define MERSENNE_UINT64_MAX 18446744073709551615ULL
 #define MERSENNE_INT32_MAX  2147483647L
 #define MERSENNE_INT64_MAX  9223372036854775807LL
-
-//using namespace std;
-//using namespace SST;
-//using namespace SST::RNG;
 
 namespace SST {
 namespace RNG {
@@ -42,7 +36,7 @@ class MersenneRNG : public SSTRandom {
     public:
 	/**
 		Create a new Mersenne RNG with a specified seed
-		@param[seed] The seed for this RNG
+		@param[in] seed The seed for this RNG
 	*/
         MersenneRNG(unsigned int seed);
 
@@ -79,8 +73,19 @@ class MersenneRNG : public SSTRandom {
         int32_t  generateNextInt32();
 
     private:
+	/**
+		Generates the next batch of random numbers
+	*/
         void  generateNextBatch();
+
+	/**
+		Stores the next set of random numbers
+	*/
         uint32_t* numbers;
+
+	/**
+		Tells us what index of the random number list the next returnable number should come from
+	*/
         int index;
 
 };
