@@ -31,8 +31,14 @@ namespace SST {
 class Simulation;
 class TimeConverter;
 
+/**
+	\class SimulatorHeartbeat Creates an optional heartbeat to show progress in a simulation
+*/
 class SimulatorHeartbeat : public Action {
 public:
+    /*
+	Create a new heartbeat object for the simulation core to show progress
+    */
     SimulatorHeartbeat( Config* cfg, int this_rank, Simulation* sim, TimeConverter* period);
     ~SimulatorHeartbeat();
 
