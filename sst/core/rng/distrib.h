@@ -18,8 +18,9 @@ namespace SST {
 namespace RNG {
 
 /**
-	\class SSTRandomDistribution declares the base class of statistical distributions in SST.
-*/
+ * \class SSTRandomDistribution
+ * Base class of statistical distributions in SST.
+ */
 class SSTRandomDistribution {
 
 	public:

@@ -27,17 +27,26 @@ class SyncQueue;
 class Link;
 class TimeConverter;
 
+/**
+ * \class Sync
+ * Sync objects are used to synchronize between MPI ranks in a simulation.
+ * This is an internal class, and not a public-facing API.
+ */
 class Sync : public Action {
 public:
+    /** Create a new Sync object which fires with a specified period */
     Sync(TimeConverter* period);
     ~Sync();
 
+    /** Register a Link which this Sync Object is responsible for */
     SyncQueue* registerLink(int rank, LinkId_t link_id, Link* link);
     void execute(void);
 
+    /** Cause an exchange of Initialization Data to occur */
     int exchangeLinkInitData(int msg_count);
+    /** Finish link configuration */
     void finalizeLinkConfigurations();
-    
+
 private:
     typedef std::map<int, std::pair<SyncQueue*, std::vector<Activity*>* > > comm_map_t;
     typedef std::map<LinkId_t, Link*> link_map_t;

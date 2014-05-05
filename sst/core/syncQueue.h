@@ -21,6 +21,13 @@
 
 namespace SST {
 
+/**
+ * \class SyncQueue
+ *
+ * Internal API
+ *
+ * Activity Queue for use by Sync Objects
+ */
 class SyncQueue : public ActivityQueue {
 public:
     SyncQueue();
@@ -33,7 +40,9 @@ public:
     Activity* front();
 
     // Not part of the ActivityQueue interface
+    /** Clear elements from the queue */
     void clear();
+    /** Accessor method to the internal queue */
     std::vector<Activity*>* getVector();
     
 private:

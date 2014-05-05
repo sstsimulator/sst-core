@@ -135,6 +135,9 @@ protected:
     /** Link used for delivery */
     Link* delivery_link;
 
+    /**
+     * Generates an ID that is unique across ranks, components and events.
+     */
     id_type generateUniqueId();
 
 private:

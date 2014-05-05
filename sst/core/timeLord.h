@@ -36,9 +36,9 @@ class TimeLord {
     typedef std::map<std::string,TimeConverter*> StringToTCMap_t;
     
  public:
-  /** 
+  /**
       Create a new TimeConverter object using specified SI Units. For
-      example, "1 Ghz" (1 Gigahertz), "2.5 ns" (2.5 nanoseconds).  
+      example, "1 Ghz" (1 Gigahertz), "2.5 ns" (2.5 nanoseconds).
 
       @param ts String indicating the base unit for this object. The
       string should be a floating point number followed by a prefix,
@@ -48,17 +48,29 @@ class TimeLord {
       (mega), and 'G' (giga).
    */
     TimeConverter* getTimeConverter(std::string ts);
+    /**
+     * Create a new TimeConverter object using the specified units.
+     *
+     * @param ts UnitAlgebra object indicating the base unit for this object.
+     */
     TimeConverter* getTimeConverter(const UnitAlgebra& ts);
-    
+
+    /** Not a Public API.
+     * Returns the number of raw simulation cycles given by a specified time string
+     */
     SimTime_t getSimCycles(std::string timeString, std::string where);
+    /**
+     * Return the Time Base of the TimeLord
+     */
     UnitAlgebra getTimeBase() const { return timeBase; }
-    
+
+    /** Return a TimeConverter which represents Nanoseconds */
     TimeConverter* getNano() {return nano;}
+    /** Return a TimeConverter which represents Microseconds */
     TimeConverter* getMicro() {return micro;}
+    /** Return a TimeConverter which represents Milliseconds */
     TimeConverter* getMilli() {return milli;}
-    /* Used by power API to calculate time period in sec since last power query*/
-    // Time_t getSecFactor(){ return (Time_t)sec_factor;}
-    
+
  private:
     friend class SST::SimulationBase;
 

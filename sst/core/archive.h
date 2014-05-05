@@ -24,6 +24,11 @@
 namespace SST {
     class Simulation;
 
+    /**
+     * \class Archive
+     * Archives are used for checkpoint/restart.
+     * NOT a Public API.
+     */
     class Archive {
     public:
         /** Create a new Archive.

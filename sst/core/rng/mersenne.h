@@ -24,7 +24,7 @@
 
 namespace SST {
 namespace RNG {
-/*
+/**
 	\class MersenneRNG mersenne.h "sst/core/rng/mersenne.h"
 
 	Implements a Mersenne-based RNG for use in the SST core or components. The Mersenne

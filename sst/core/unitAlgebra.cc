@@ -28,7 +28,7 @@ using namespace std;
 using namespace SST;
 
 // Helper functions and data structures used only in this file
-void split(string input, string delims, vector<string>& tokens) {
+static void split(string input, string delims, vector<string>& tokens) {
     if ( input.length() == 0 ) return;
     int start = 0;
     int stop = 0;;
@@ -41,7 +41,7 @@ void split(string input, string delims, vector<string>& tokens) {
     } while (stop != string::npos);
 }
 
-map<string,sst_dec_float> si_unit_map =
+static map<string,sst_dec_float> si_unit_map =
     boost::assign::map_list_of
     ("a",sst_dec_float("1e-18"))
     ("f",sst_dec_float("1e-15"))

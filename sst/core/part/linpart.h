@@ -50,7 +50,9 @@ class SSTLinearPartition : public SST::Partition::SSTPartitioner {
 		void performPartition(ConfigGraph* graph);
 
 	protected:
+        /** Number of ranks in the simulation */
 		int rankcount;
+        /** Output object to print partitioning information */
 		Output* partOutput;
 
 };

@@ -21,6 +21,9 @@
 
 namespace SST {
 
+/**
+ * A link queue which is used for polling only.
+ */
 class PollingLinkQueue : public ActivityQueue {
 public:
     PollingLinkQueue();

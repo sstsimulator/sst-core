@@ -45,9 +45,12 @@ class TimeConverter {
 	return time/factor;
     }
 
+    /**
+     * Return the factor used for conversions with Core Time
+     */
     SimTime_t getFactor() {
 	return factor;
-    }    
+    }
     
  private:
     /**

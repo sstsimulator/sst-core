@@ -25,7 +25,8 @@ namespace SST {
 namespace Statistics {
 
 /**
-	\class Histogram is a holder of data grouped into pre-determined width bins.
+    \class Histogram
+	Holder of data grouped into pre-determined width bins.
 	\tparam HistoBinType is the type of the data held in each bin (i.e. what data type described the width of the bin)
 	\tparam HistoCountType is the count type of data held in each bin (i.e. what data type counts the number of items held in the bin itself)
 */
@@ -128,6 +129,9 @@ class Histogram {
 			return totalSummed;
 		}
 
+        /**
+         * Iterator over the histogram bins
+         */
 		typedef typename std::map<HistoBinType, HistoCountType>::iterator histo_itr;
 
 	private:

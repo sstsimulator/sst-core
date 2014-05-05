@@ -20,6 +20,9 @@
 
 namespace SST {
 
+/**
+ * Action which causes the Simulation to end
+ */
 class StopAction : public Action
 {
 private:
@@ -29,27 +32,30 @@ private:
     
 public:
     StopAction() {
-	setPriority(1);
-	print_message = false;
+        setPriority(1);
+        print_message = false;
     }
 
+    /** Create a new StopAction which includes a message to be printed when it fires
+     */
     StopAction(std::string msg) {
-	setPriority(1);
-	print_message = true;
-	message = msg;
+        setPriority(1);
+        print_message = true;
+        message = msg;
     }
 
     void execute() {
-	if ( print_message ) {
-	    std::cout << message << std::endl;
-	}
-	endSimulation();
+        if ( print_message ) {
+            std::cout << message << std::endl;
+        }
+        endSimulation();
     }
 
     void print(const std::string &header, Output &out) const {
         out.output("%s StopAction to be delivered at %" PRIu64 "\n", header.c_str(), getDeliveryTime());
     }
 
+private:
     friend class boost::serialization::access;
     template<class Archive>
     void

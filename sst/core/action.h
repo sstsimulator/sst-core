@@ -20,6 +20,9 @@
 
 namespace SST {
 
+/**
+ * An Action is a schedulable Activity which is not an Event.
+ */
 class Action : public Activity {
 public:
     Action() {}
