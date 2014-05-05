@@ -213,9 +213,17 @@ Config::parseCmdLine(int argc, char* argv[]) {
     }
 
     if ( var_map->count( "help" ) ) {
-	cout << "Usage: " << run_name << " [options] sdl-file" << endl;
-        cout << *visNoConfigDesc;
-        cout << *mainDesc << endl;
+#ifdef HAVE_MPI
+	int this_rank = 0;
+	MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
+	if(this_rank == 0) {
+#endif
+		cout << "Usage: " << run_name << " [options] sdl-file" << endl;
+	        cout << *visNoConfigDesc;
+	        cout << *mainDesc << endl;
+#ifdef HAVE_MPI
+	}
+#endif
         return 1;
     }
 
