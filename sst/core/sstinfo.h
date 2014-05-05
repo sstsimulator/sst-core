@@ -381,6 +381,9 @@ public:
     /** Return the Description of the Module. */
     const char*           getDesc() {return m_elm->description;}
 
+    /** Return what class the Module provides. */
+    const char*           getProvides() { return m_elm->provides;}
+
     /** Return a Parameter Info Object. 
      * @param index The index of the Parameter.
      */

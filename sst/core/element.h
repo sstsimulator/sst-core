@@ -96,6 +96,7 @@ struct ElementInfoModule {
     moduleAllocate alloc;							/*!< Pointer to a function to do a default initialization of the module. */
     moduleAllocateWithComponent alloc_with_comp;	/*!< Pointer to a function to initialize a module instance, passing a Component as an argument. */
     const ElementInfoParam *params;					/*!< List of parameters which are used by this module. */
+    const char *provides;                           /*!< Name of SuperClass which for this module can be used. */
 };
 
 /** Describes a Partitioner

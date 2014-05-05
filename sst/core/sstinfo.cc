@@ -1016,7 +1016,7 @@ void SSTInfoElement_EventInfo::generateEventInfoXMLData(int Index, TiXmlNode* XM
 
 void SSTInfoElement_ModuleInfo::outputModuleInfo(int index)
 {
-    fprintf(stdout, "      MODULE %d = %s (%s)\n", index, getName(), getDesc());
+    fprintf(stdout, "      MODULE %d = %s (%s) {%s}\n", index, getName(), getDesc(), getProvides());
 
     // Print out the Parameter Info
     fprintf(stdout, "         NUM PARAMETERS = %ld\n", m_ParamArray.size());
@@ -1034,6 +1034,7 @@ void SSTInfoElement_ModuleInfo::generateModuleInfoXMLData(int Index, TiXmlNode* 
 	XMLModuleElement->SetAttribute("Index", Index);
 	XMLModuleElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
 	XMLModuleElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
+	XMLModuleElement->SetAttribute("Provides", (NULL == getProvides()) ? "" : getProvides());
 	
 	// Get the Num Parameters and Display an XML comment about them
     sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
