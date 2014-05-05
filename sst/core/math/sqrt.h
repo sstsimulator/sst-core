@@ -20,7 +20,7 @@ namespace Math {
 
 // Implements uint32_t square root based on algorithm from:
 // Reference: http://en.wikipedia.org/wiki/Methods_of_computing_square_roots
-static uint32_t square_root(const uint32_t input) {
+static inline uint32_t square_root(const uint32_t input) {
 
     uint32_t op  = input;
     uint32_t res = 0;
