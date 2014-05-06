@@ -157,7 +157,7 @@ SSTZoltanPartition::SSTZoltanPartition(int verbosity) {
 
 	partOutput = new Output("SSTZoltanPartition ", verbosity, 0, SST::Output::STDOUT);
 
-	partOutput->verbose(CALL_INFO, 1, 0, "Initializing Zoltan interface...\n");
+	partOutput->verbose(CALL_INFO, 1, 0, "Initializing Zoltan interface on rank %d out of %d\n", rank, rankcount);
 	
 	// Get Zoltan ready to partition for us
 	initZoltan();
@@ -170,18 +170,20 @@ void SSTZoltanPartition::initZoltan() {
 	int argc = 1;
 	char* argv[1];
 	argv[0] = "sstsim.x";
-	
+
 	int z_rc = Zoltan_Initialize(argc, argv, &zolt_ver);
-	
+
 	if(ZOLTAN_OK != z_rc) {
 		partOutput->fatal(CALL_INFO, -1, "Error initializing the Zoltan interface to SST (return code = %d)\n", z_rc);
 	} else {
 		partOutput->verbose(CALL_INFO, 1, 0, "Zoltan interface was initialized successfully.\n");
 	}
-	
+
 	partOutput->verbose(CALL_INFO, 1, 0, "Creating Zoltan configuration...\n");
 	zolt_config = Zoltan_Create(MPI_COMM_WORLD);
-	
+
+	partOutput->verbose(CALL_INFO, 1, 0, "Created Zoltan configuration, setting parameters...\n");
+
 	// Parameters advised in the Zoltan examples
 	Zoltan_Set_Param(zolt_config, "DEBUG_LEVEL", "0");
   	Zoltan_Set_Param(zolt_config, "LB_METHOD", "GRAPH");
@@ -193,7 +195,7 @@ void SSTZoltanPartition::initZoltan() {
   	Zoltan_Set_Param(zolt_config, "PHG_EDGE_SIZE_THRESHOLD", ".35");
   	Zoltan_Set_Param(zolt_config, "OBJ_WEIGHT_DIM", "1");
 
-	partOutput->verbose(CALL_INFO, 2, 0, "Completed initialization of Zoltan interface.\n");
+	partOutput->verbose(CALL_INFO, 1, 0, "Completed initialization of Zoltan interface.\n");
 }
 
 SSTZoltanPartition::~SSTZoltanPartition() {
@@ -203,7 +205,7 @@ SSTZoltanPartition::~SSTZoltanPartition() {
 void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
 	assert(rankcount > 0);
 	
-	partOutput->verbose(CALL_INFO, 2, 0, "Preparing partitionning...\n");
+	partOutput->verbose(CALL_INFO, 1, 0, "# Preparing partitionning...\n");
 	
 	// Register the call backs for this class
   	Zoltan_Set_Num_Obj_Fn(zolt_config, sst_zoltan_count_vertices, graph);
@@ -227,7 +229,7 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
   	int* export_ranks;
   	int* export_part;
   	
-  	partOutput->verbose(CALL_INFO, 2, 0, "Calling Zoltan partition...\n");
+  	partOutput->verbose(CALL_INFO, 1, 0, "# Calling Zoltan partition...\n");
   	
   	int zolt_rc = Zoltan_LB_Partition(zolt_config, /* input (all remaining fields are output) */
         &part_changed,        /* 1 if partitioning was changed, 0 otherwise */ 
@@ -245,9 +247,9 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
         &export_part);  /* Partition to which each vertex will belong */
 
   	if (zolt_rc != ZOLTAN_OK){
-		partOutput->fatal(CALL_INFO, -1, "Error using Zoltan, partition could not be formed correctly.\n");
+		partOutput->fatal(CALL_INFO, -1, "# Error using Zoltan, partition could not be formed correctly.\n");
   	} else {
-  		partOutput->verbose(CALL_INFO, 1, 0, "Zoltan partition returned successfully.\n");
+  		partOutput->verbose(CALL_INFO, 1, 0, "# Zoltan partition returned successfully.\n");
   	}
   	
   	//printf("Rank %d gets %d components to export and %d components to import\n", rank, num_vertices_export,

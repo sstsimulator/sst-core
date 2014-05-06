@@ -175,9 +175,26 @@ main(int argc, char *argv[])
 			// Set all components to be instanced on rank 0 (the only
 			// one that exists)
 			graph->setComponentRanks(0);
-		}
-		// Need to worry about partitioning for parallel jobs
-		else if ( rank == 0 || cfg.all_parse ) {
+		} else if ( cfg.partitioner == "zoltan" ) {
+#ifdef HAVE_ZOLTAN
+//				if(cfg.verbose && rank == 0) {
+					sim_output->output("# Partitionning using Zoltan...\n");
+//				}
+
+				SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
+				zolt_part->performPartition(graph);
+
+				broadcast(world, *graph, 0);
+				delete zolt_part;
+
+//				if(cfg.verbose && rank == 0) {
+					sim_output->output("# Partitionning is completed.\n");
+//				}
+#else
+				sim_output->fatal(CALL_INFO, -1, "Zoltan support is not available. Configure did not find the Zoltan library.\n");
+#endif
+		} else if ( rank == 0 || cfg.all_parse ) {
+			// Perform partitionning for parallel jobs, not using Zoltan
 			double start_graph_gen = sst_get_cpu_time();
 
 			if ( cfg.generator != "NONE" ) {
@@ -253,24 +270,6 @@ main(int argc, char *argv[])
 				if(cfg.verbose && rank == 0) {
 					sim_output->output("# Partitionning process is completed\n");
 				}
-			} else if ( cfg.partitioner == "zoltan" ) {
-#ifdef HAVE_ZOLTAN
-				if(cfg.verbose && rank == 0) {
-					sim_output->output("# Partitionning using Zoltan...\n");
-				}
-
-				SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
-				zolt_part->performPartition(graph);
-
-				broadcast(world, *graph, 0);
-				delete zolt_part;
-
-				if(cfg.verbose && rank == 0) {
-					sim_output->output("# Partitionning is completed.\n");
-				}
-#else
-				sim_output->fatal(CALL_INFO, -1, "Zoltan support is not available. Configure did not find the Zoltan library.\n");
-#endif
 			} else {
 				if(rank == 0) {
 					sim_output->output("# Partition scheme was not specified using: %s\n", cfg.partitioner.c_str());

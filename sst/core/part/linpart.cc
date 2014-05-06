@@ -41,9 +41,6 @@ void SSTLinearPartition::performPartition(ConfigGraph* graph) {
 		compItr != compMap.end();
 		compItr++) {
 
-		partOutput->verbose(CALL_INFO, 1, 0, "> Allocating component: %lu to rank: %d\n",
-			compItr->id, currentAllocatingRank);
-
 		compItr->rank = currentAllocatingRank;
 		componentsOnCurrentRank++;
 
