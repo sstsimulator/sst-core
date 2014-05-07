@@ -40,7 +40,7 @@ MarsagliaRNG::MarsagliaRNG() {
 /*
 	Restart with a new set of seeds
 */
-void    restart(unsigned int new_z, unsigned int new_w) {
+void MarsagliaRNG::restart(unsigned int new_z, unsigned int new_w) {
 	m_z = new_z;
 	m_w = new_w;
 }
