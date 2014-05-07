@@ -57,6 +57,13 @@ class MarsagliaRNG : public SSTRandom {
         MarsagliaRNG();
 
 	/**
+		Restart the random number generator with new seeds
+		@param[in] new_z A new Z-seed
+		@param[in] new_w A new W-seed
+	*/
+	void	restart(unsigned int new_z, unsigned int new_w);
+
+	/**
 		Generates the next random number as a double in the range 0 to 1.
 	*/
 	double   nextUniform();

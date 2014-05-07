@@ -38,6 +38,14 @@ MarsagliaRNG::MarsagliaRNG() {
 }
 
 /*
+	Restart with a new set of seeds
+*/
+void    restart(unsigned int new_z, unsigned int new_w) {
+	m_z = new_z;
+	m_w = new_w;
+}
+
+/*
 	Generates a new unsigned integer using the Marsaglia multiple-with-carry method
 */
 unsigned int MarsagliaRNG::generateNext() {
