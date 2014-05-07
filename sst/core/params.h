@@ -431,7 +431,7 @@ public:
      */
     void verifyParam(const key_type &k) const {
         // If there are no explicitly allowed keys in the top set, allow everything
-        if ( allowedKeys.empty() || allowedKeys.back().empty() ) return;
+        if ( allowedKeys.empty() ) return; //|| allowedKeys.back().empty() ) return;
 
         for ( std::vector<KeySet_t>::const_reverse_iterator ri = allowedKeys.rbegin() ; ri != allowedKeys.rend() ; ++ri ) {
             if ( ri->find(k) != ri->end() ) return;
