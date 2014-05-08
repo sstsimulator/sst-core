@@ -89,20 +89,28 @@ private:
     struct ComponentInfo {
         const ElementInfoComponent* component;
         Params::KeySet_t params;
+        std::vector<std::string> ports;
 
         ComponentInfo() {}
 
-        ComponentInfo(const ElementInfoComponent *component,
-                      Params::KeySet_t params) : component(component), params(params)
-        { }
+        ComponentInfo(const ElementInfoComponent *component, Params::KeySet_t params) :
+            component(component), params(params)
+        {
+            const ElementInfoPort *p = component->ports;
+            while ( NULL != p && NULL != p->name ) {
+                ports.push_back(p->name);
+                p++;
+            }
+        }
 
-        ComponentInfo(const ComponentInfo& old) : component(old.component), params(old.params)
+        ComponentInfo(const ComponentInfo& old) : component(old.component), params(old.params), ports(old.ports)
         { }
 
         ComponentInfo& operator=(const ComponentInfo& old)
         {
             component = old.component;
             params = old.params;
+            ports = old.ports;
             return *this;
         }
     };

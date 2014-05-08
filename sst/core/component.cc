@@ -142,6 +142,7 @@ Component::configureLink(std::string name, Event::HandlerBase* handler)
 void
 Component::addSelfLink(std::string name)
 {
+    myLinks->addSelfPort(name);
     if ( myLinks->getLink(name) != NULL ) {
         printf("Attempting to add self link with duplicate name: %s\n",name.c_str());
 	abort();

@@ -20,11 +20,13 @@
 #include <set>
 #include <stdio.h>
 
+#include "sst/core/simulation.h"
 #include "sst/core/component.h"
 #include "sst/core/debug.h"
 #include "sst/core/element.h"
 #include "sst/core/introspector.h"
 #include "sst/core/params.h"
+#include "sst/core/linkMap.h"
 
 
 namespace SST {
@@ -67,6 +69,9 @@ Factory::CreateComponent(ComponentId_t id,
     }
 
     const ComponentInfo ci = eii->second;
+
+    LinkMap *lm = Simulation::getSimulation()->getComponentLinkMap(id);
+    lm->setAllowedPorts(&ci.ports);
 
     params.pushAllowedKeys(ci.params);
     Component *ret = ci.component->alloc(id, params);
@@ -261,6 +266,7 @@ Params::KeySet_t Factory::create_params_set(const ElementInfoParam *params)
 
     return retset;
 }
+
 
 
 bool Factory::hasLibrary(std::string elemlib)

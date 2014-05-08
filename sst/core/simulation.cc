@@ -177,131 +177,131 @@ Simulation::getNextActivityTime()
 int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 {
     if ( num_ranks > 1 ) {
-	// Find the minimum latency across a partition
-	SimTime_t min_part = 0xffffffffl;
-	for( ConfigLinkMap_t::iterator iter = graph.links.begin();
-	     iter != graph.links.end(); ++iter )
-	{
-	    ConfigLink &clink = (*iter).second;
-	    int rank[2];
-	    rank[0] = graph.comps[clink.component[0]].rank;
-	    rank[1] = graph.comps[clink.component[1]].rank;
-	    if ( rank[0] == rank[1] ) continue;
-	    if ( clink.getMinLatency() < min_part ) {
-		min_part = clink.getMinLatency();
-	    }	
-	}
-	
-	sync = new Sync( minPartTC = minPartToTC(min_part) );
+        // Find the minimum latency across a partition
+        SimTime_t min_part = 0xffffffffl;
+        for( ConfigLinkMap_t::iterator iter = graph.links.begin();
+                iter != graph.links.end(); ++iter )
+        {
+            ConfigLink &clink = (*iter).second;
+            int rank[2];
+            rank[0] = graph.comps[clink.component[0]].rank;
+            rank[1] = graph.comps[clink.component[1]].rank;
+            if ( rank[0] == rank[1] ) continue;
+            if ( clink.getMinLatency() < min_part ) {
+                min_part = clink.getMinLatency();
+            }
+        }
+
+        sync = new Sync( minPartTC = minPartToTC(min_part) );
     }
-    
+
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
     for( ConfigLinkMap_t::iterator iter = graph.links.begin();
-                            iter != graph.links.end(); ++iter )
+            iter != graph.links.end(); ++iter )
     {
         ConfigLink &clink = (*iter).second;
         int rank[2];
         rank[0] = graph.comps[clink.component[0]].rank;
         rank[1] = graph.comps[clink.component[1]].rank;
 
-	if ( rank[0] != myRank && rank[1] != myRank ) {
-	    // Nothing to be done
+        if ( rank[0] != myRank && rank[1] != myRank ) {
+            // Nothing to be done
             continue;
-	}	
-        else if ( rank[0] == rank[1] ) { 
-	    // Create a LinkPair to represent this link
-	    LinkPair lp(clink.id);
+        }
+        else if ( rank[0] == rank[1] ) {
+            // Create a LinkPair to represent this link
+            LinkPair lp(clink.id);
 
-	    lp.getLeft()->setLatency(clink.latency[0]);
-	    lp.getRight()->setLatency(clink.latency[1]);
+            lp.getLeft()->setLatency(clink.latency[0]);
+            lp.getRight()->setLatency(clink.latency[1]);
 
-	    // Add this link to the appropriate LinkMap
-	    std::map<ComponentId_t,LinkMap*>::iterator it;
-	    // it = component_links.find(clink.component[0]->id);
-	    it = component_links.find(clink.component[0]);
-	    if ( it == component_links.end() ) {
-		LinkMap* lm = new LinkMap();
-		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-		// ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[0]->id,lm));
-		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[0],lm));
- 		it = ret_val.first;
-	    }
- 	    it->second->insertLink(clink.port[0],lp.getLeft());
+            // Add this link to the appropriate LinkMap
+            std::map<ComponentId_t,LinkMap*>::iterator it;
+            // it = component_links.find(clink.component[0]->id);
+            it = component_links.find(clink.component[0]);
+            if ( it == component_links.end() ) {
+                LinkMap* lm = new LinkMap();
+                std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
+                // ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[0]->id,lm));
+                ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[0],lm));
+                it = ret_val.first;
+            }
+            it->second->insertLink(clink.port[0],lp.getLeft());
 
-	    // it = component_links.find(clink.component[1]->id);
-	    it = component_links.find(clink.component[1]);
-	    if ( it == component_links.end() ) {
-		LinkMap* lm = new LinkMap();
-		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-		// ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[1]->id,lm));
-		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[1],lm));
- 		it = ret_val.first;
-	    }
- 	    it->second->insertLink(clink.port[1],lp.getRight());
+            // it = component_links.find(clink.component[1]->id);
+            it = component_links.find(clink.component[1]);
+            if ( it == component_links.end() ) {
+                LinkMap* lm = new LinkMap();
+                std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
+                // ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[1]->id,lm));
+                ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[1],lm));
+                it = ret_val.first;
+            }
+            it->second->insertLink(clink.port[1],lp.getRight());
 
-	}
-	else {
-	    int local, remote;
-	    if ( rank[0] == myRank ) {
-		local = 0;
-		remote = 1;
-	    }
-	    else {
-		local = 1;
-		remote = 0;
-	    }
+        }
+        else {
+            int local, remote;
+            if ( rank[0] == myRank ) {
+                local = 0;
+                remote = 1;
+            }
+            else {
+                local = 1;
+                remote = 0;
+            }
 
-	    // Create a LinkPair to represent this link
-	    LinkPair lp(clink.id);
-	    
-	    lp.getLeft()->setLatency(clink.latency[local]);
-	    lp.getRight()->setLatency(0);
-	    lp.getRight()->setDefaultTimeBase(minPartToTC(1));
-            
+            // Create a LinkPair to represent this link
+            LinkPair lp(clink.id);
 
-	    // Add this link to the appropriate LinkMap for the local component
-	    std::map<ComponentId_t,LinkMap*>::iterator it;
-	    it = component_links.find(clink.component[local]);
-	    if ( it == component_links.end() ) {
-		LinkMap* lm = new LinkMap();
-		std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-		ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[local],lm));
- 		it = ret_val.first;
-	    }
- 	    it->second->insertLink(clink.port[local],lp.getLeft());
+            lp.getLeft()->setLatency(clink.latency[local]);
+            lp.getRight()->setLatency(0);
+            lp.getRight()->setDefaultTimeBase(minPartToTC(1));
 
-	    // For the remote side, register with sync object
-	    SyncQueue* sync_q = sync->registerLink(rank[remote],clink.id,lp.getRight());
-	    // lp.getRight()->recvQueue = sync_q;
-	    lp.getRight()->configuredQueue = sync_q;
-	    lp.getRight()->initQueue = sync_q;
+
+            // Add this link to the appropriate LinkMap for the local component
+            std::map<ComponentId_t,LinkMap*>::iterator it;
+            it = component_links.find(clink.component[local]);
+            if ( it == component_links.end() ) {
+                LinkMap* lm = new LinkMap();
+                std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
+                ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[local],lm));
+                it = ret_val.first;
+            }
+            it->second->insertLink(clink.port[local],lp.getLeft());
+
+            // For the remote side, register with sync object
+            SyncQueue* sync_q = sync->registerLink(rank[remote],clink.id,lp.getRight());
+            // lp.getRight()->recvQueue = sync_q;
+            lp.getRight()->configuredQueue = sync_q;
+            lp.getRight()->initQueue = sync_q;
         }
 
     }
-	// Done with that edge, delete it.
+    // Done with that edge, delete it.
     graph.links.clear();
 
     // Now, build all the components
     for ( ConfigComponentMap_t::iterator iter = graph.comps.begin();
-                            iter != graph.comps.end(); ++iter )
+            iter != graph.comps.end(); ++iter )
     {
-	ConfigComponent* ccomp = &(*iter);
+        ConfigComponent* ccomp = &(*iter);
 
         if (ccomp->isIntrospector) {
-	    Introspector* tmp;
+            Introspector* tmp;
 
             // _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
-	    // 	     name.c_str(), sdl_c->type().c_str(), (int)id );
-            
+            // 	     name.c_str(), sdl_c->type().c_str(), (int)id );
+
             tmp = createIntrospector( ccomp->type, ccomp->params );
             introMap[ccomp->name] = tmp;
         }
-	else if ( ccomp->rank == myRank ) {
+        else if ( ccomp->rank == myRank ) {
             Component* tmp;
-//             _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
-// 		     name.c_str(), sdl_c->type().c_str(), (int)id );
+            //             _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
+            // 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
             // Check to make sure there is a LinkMap for this component
             std::map<ComponentId_t,LinkMap*>::iterator it;
@@ -312,15 +312,15 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
                 component_links[ccomp->id] = lm;
             }
 
-			compIdMap[ccomp->id] = ccomp->name;
+            compIdMap[ccomp->id] = ccomp->name;
             tmp = createComponent( ccomp->id, ccomp->type,
-                                   ccomp->params );
+                    ccomp->params );
             compMap[ccomp->name] = tmp;
 
         }
     } // end for all vertex    
-	// Done with verticies, delete them;
-	graph.comps.clear();
+    // Done with verticies, delete them;
+    graph.comps.clear();
     return 0;
 }
 
