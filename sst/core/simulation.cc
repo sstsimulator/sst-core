@@ -117,7 +117,7 @@ Simulation::createSimulation(Config *config, int my_rank, int num_ranks)
 
 
 Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
-    SimulationBase(cfg), timeVortex(NULL), minPartTC( NULL ), sync(NULL), currentSimCycle(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks), init_msg_count(0), init_phase(0), lastRecvdSignal(0)
+    SimulationBase(cfg), timeVortex(NULL), minPartTC( NULL ), sync(NULL), currentSimCycle(0), currentPriority(0), endSim(false), my_rank(my_rank), num_ranks(num_ranks), init_msg_count(0), init_phase(0), lastRecvdSignal(0)
 {
 //     eQueue = new EventQueue_t;
     sim_output.init("SSTCore", cfg->getVerboseLevel(), 0, Output::STDOUT);
@@ -167,7 +167,13 @@ Simulation::requireEvent(std::string name)
 {
     factory->RequireEvent(name);
 }
-
+    
+SimTime_t
+Simulation::getNextActivityTime()
+{
+    return timeVortex->front()->getDeliveryTime();
+}
+    
 int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 {
     if ( num_ranks > 1 ) {
@@ -382,7 +388,8 @@ void Simulation::run() {
             lastRecvdSignal = 0;
         }
         currentSimCycle = timeVortex->front()->getDeliveryTime();
-
+        currentPriority = timeVortex->front()->getPriority();
+        
         current_activity = timeVortex->pop();
         // current_activity->print("",out);
         current_activity->execute();
@@ -408,6 +415,12 @@ SimTime_t
 Simulation::getCurrentSimCycle() const
 {
     return currentSimCycle; 
+}
+
+int
+Simulation::getCurrentPriority() const
+{
+    return currentPriority; 
 }
 
 
@@ -462,23 +475,23 @@ TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* 
     TimeConverter* tcFreq = timeLord->getTimeConverter(freq);
 
     if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
-	_SIM_DBG( "\n" );
-	Clock* ce = new Clock( tcFreq );
-	clockMap[ tcFreq->getFactor() ] = ce; 
-
-	ce->setDeliveryTime( currentSimCycle + tcFreq->getFactor() );
-	timeVortex->insert( ce );
+        _SIM_DBG( "\n" );
+        Clock* ce = new Clock( tcFreq );
+        clockMap[ tcFreq->getFactor() ] = ce; 
+        
+        // ce->setDeliveryTime( currentSimCycle + tcFreq->getFactor() );
+        // timeVortex->insert( ce );
+        ce->schedule();
     }
     clockMap[ tcFreq->getFactor() ]->registerHandler( handler );
-    return tcFreq;
-    
+    return tcFreq;    
 }
 
 Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* handler )
 {
     if ( clockMap.find( tc->getFactor() ) == clockMap.end() ) {
-	Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-	out.fatal(CALL_INFO, 1, "Tried to reregister with a clock that was not previously registered, exiting...\n");
+        Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
+        out.fatal(CALL_INFO, 1, "Tried to reregister with a clock that was not previously registered, exiting...\n");
     }
     clockMap[ tc->getFactor() ]->registerHandler( handler );
     return clockMap[tc->getFactor()]->getNextCycle();

@@ -135,6 +135,8 @@ public:
 
     /** Return the current simulation time as a cycle count*/
     SimTime_t getCurrentSimCycle() const;
+    /** Return the current priority */
+    int getCurrentPriority() const;
     /** Return the elapsed simulation time as a time */
     UnitAlgebra getElapsedSimTime() const;
     /** Get this instance's parallel rank */
@@ -227,6 +229,8 @@ public:
      */
     void requireEvent(std::string name);
 
+    SimTime_t getNextActivityTime();
+    
 private:
     friend class Link;
     friend class Action;
@@ -253,6 +257,7 @@ private:
     IntroMap_t       introMap;
     clockMap_t       clockMap;
     SimTime_t        currentSimCycle;
+    int              currentPriority;
     Exit*            m_exit;
     SimulatorHeartbeat*	m_heartbeat;
     bool             endSim;

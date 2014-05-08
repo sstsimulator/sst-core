@@ -104,6 +104,7 @@ public:
         }
     };
 
+    void schedule();
 
     /** Return the time of the next clock tick */
     Cycle_t getNextCycle();
@@ -123,7 +124,8 @@ private:
 /*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */
     typedef std::vector<Clock::HandlerBase*> HandlerMap_t;
     typedef std::vector<Clock::HandlerBase*> StaticHandlerMap_t;
-    
+
+
     Clock() { }
 
     void execute( void );
@@ -133,6 +135,7 @@ private:
     HandlerMap_t       handlerMap;
     StaticHandlerMap_t staticHandlerMap;
     SimTime_t          next;
+    bool               scheduled;
     
     friend class boost::serialization::access;
     template<class Archive>
@@ -143,6 +146,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(period);
         ar & BOOST_SERIALIZATION_NVP(handlerMap);
         ar & BOOST_SERIALIZATION_NVP(staticHandlerMap);
+        ar & BOOST_SERIALIZATION_NVP(scheduled);
     }
 };
 
