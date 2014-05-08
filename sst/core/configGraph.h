@@ -227,7 +227,7 @@ public:
      */
     void dumpToFile(std::string filePath, Config* cfg, bool asDot);
     /** Escape names to be safe to parse in Python */
-    std::string makeNamePythonSafe(const std::string name);
+    std::string makeNamePythonSafe(const std::string name, const std::string namePrefix);
     /** Escape to make safe, strings */
     static std::string escapeString(const std::string value);
 

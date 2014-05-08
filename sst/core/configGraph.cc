@@ -290,14 +290,14 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 		for(comp_itr = comps.begin(); comp_itr != comps.end(); comp_itr++) {
 
 			fprintf(dumpFile, "%s = sst.Component(\"%s\", \"%s\")\n",
-					makeNamePythonSafe(comp_itr->name).c_str(),
+					makeNamePythonSafe(comp_itr->name, "comp_").c_str(),
 					escapeString(comp_itr->name).c_str(),
 					comp_itr->type.c_str());
 
 			param_itr = comp_itr->params.begin();
 
 			if(param_itr != comp_itr->params.end()) {
-				fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(comp_itr->name).c_str());
+				fprintf(dumpFile, "%s.addParams({\n", makeNamePythonSafe(comp_itr->name, "comp_").c_str());
 				fprintf(dumpFile, "      \"%s\" : \"\"\"%s\"\"\"", escapeString(Params::getParamName(param_itr->first)).c_str(), escapeString(param_itr->second.c_str()).c_str());
 				param_itr++;
 
@@ -319,13 +319,13 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 			ConfigComponent* link_right = &comps[link_itr->second.component[1]];
 
 			fprintf(dumpFile, "%s = sst.Link(\"%s\")\n",
-					makeNamePythonSafe(link_itr->second.name).c_str(), makeNamePythonSafe(link_itr->second.name).c_str());
+					makeNamePythonSafe(link_itr->second.name, "link_").c_str(), makeNamePythonSafe(link_itr->second.name, "link_").c_str());
 			fprintf(dumpFile, "%s.connect( (%s, \"%s\", \"%" PRIu64 "ps\"), (%s, \"%s\", \"%" PRIu64 "ps\") )\n",
-					makeNamePythonSafe(link_itr->second.name).c_str(),
-					makeNamePythonSafe(link_left->name).c_str(),
+					makeNamePythonSafe(link_itr->second.name, "link_").c_str(),
+					makeNamePythonSafe(link_left->name, "comp_").c_str(),
 					escapeString(link_itr->second.port[0]).c_str(),
 					*link_itr->second.latency,
-					makeNamePythonSafe(link_right->name).c_str(),
+					makeNamePythonSafe(link_right->name, "comp_").c_str(),
 					escapeString(link_itr->second.port[1]).c_str(),
 					*link_itr->second.latency );
 		}
@@ -368,7 +368,7 @@ std::string ConfigGraph::escapeString(const std::string value) {
 	return escaped;
 }
 
-std::string ConfigGraph::makeNamePythonSafe(const std::string name) {
+std::string ConfigGraph::makeNamePythonSafe(const std::string name, const std::string namePrefix) {
 	const uint32_t name_length = (uint32_t) name.size();
 	char* safe_name = (char*) malloc(sizeof(char) * (name_length + 1));
 	strcpy(safe_name, name.c_str());
@@ -393,10 +393,10 @@ std::string ConfigGraph::makeNamePythonSafe(const std::string name) {
 	if(name_length > 0 && isdigit(safe_name[0])) {
 		std::string safe_name_str = safe_name;
 		std::string safe_name_prefix = "s_";
-		return safe_name_prefix + safe_name_str;
+		return namePrefix + safe_name_prefix + safe_name_str;
 	} else {
 		std::string safe_name_str = safe_name;
-		return safe_name_str;
+		return namePrefix + safe_name_str;
 	}
 }
 
