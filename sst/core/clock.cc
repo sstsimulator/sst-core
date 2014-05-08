@@ -126,7 +126,6 @@ Clock::schedule()
 
     sim->insertActivity(next, this);
     scheduled = true;
-    std::cout << "Scheduling clock with period: " << period->getFactor() << ", at time " << next << std::endl;
 }
 
 
