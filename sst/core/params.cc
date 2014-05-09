@@ -21,4 +21,4 @@
 std::map<std::string, uint32_t> SST::Params::keyMap;
 std::vector<std::string> SST::Params::keyMapReverse;
 uint32_t SST::Params::nextKeyID;
-bool SST::Params::verify_enabled = false;
+bool SST::Params::g_verify_enabled = false;

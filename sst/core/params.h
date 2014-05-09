@@ -95,7 +95,8 @@ public:
     typedef std::map<uint32_t, std::string>::const_reverse_iterator const_reverse_iterator; /*!< Const Reverse Iterator type */
     typedef std::set<key_type, KeyCompare> KeySet_t; /*!< Type of a set of keys */
 
-    static void enableVerify() { verify_enabled = true; };
+    void enableVerify(bool enable) { verify_enabled = enable; };
+    static void enableVerify() { g_verify_enabled = true; };
 
     // pretend like we're a map
     /** Returns a read/write iterator that points to the first pair in the
@@ -147,14 +148,14 @@ public:
 
 
     /** Create a new, empty Params */
-    Params() : data() { }
+    Params() : data(), verify_enabled(true) { }
 
     /** Create a new, empty Params with specified key comparison functor */
-    Params(const key_compare& comp) : data(comp) { }
+    Params(const key_compare& comp) : data(comp), verify_enabled(true) { }
 
 
     /** Create a copy of a Params object */
-    Params(const Params& old) : data(old.data) { }
+    Params(const Params& old) : data(old.data), allowedKeys(old.allowedKeys), verify_enabled(old.verify_enabled) { }
 
     virtual ~Params() { }
 
@@ -165,7 +166,12 @@ public:
      *  All the elements of @a x are copied, but unlike the copy constructor,
      *  the allocator object is not copied.
      */
-    Params& operator=(const Params& old) { data = old.data; return *this; }
+    Params& operator=(const Params& old) {
+        data = old.data;
+        verify_enabled = old.verify_enabled;
+        allowedKeys = old.allowedKeys;
+        return *this;
+    }
 
     /**
      *  @brief Attempts to insert a std::pair into the %map.
@@ -393,6 +399,7 @@ public:
      */
     Params find_prefix_params(std::string prefix) const {
         Params ret;
+        ret.enableVerify(false);
         for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
             std::string key = keyMapReverse[i->first].substr(0, prefix.length());
             if (key == prefix) {
@@ -400,6 +407,8 @@ public:
             }
         }
         ret.allowedKeys = allowedKeys;
+        ret.enableVerify(verify_enabled);
+
         return ret;
     }
 
@@ -432,7 +441,7 @@ public:
      * @return    True if the key is considered allowed
      */
     void verifyParam(const key_type &k) const {
-        if ( !verify_enabled ) return;
+        if ( !g_verify_enabled || !verify_enabled ) return;
 
         for ( std::vector<KeySet_t>::const_reverse_iterator ri = allowedKeys.rbegin() ; ri != allowedKeys.rend() ; ++ri ) {
             if ( ri->find(k) != ri->end() ) return;
@@ -456,7 +465,8 @@ public:
 private:
     std::map<uint32_t, std::string> data;
     std::vector<KeySet_t> allowedKeys;
-    static bool verify_enabled;
+    bool verify_enabled;
+    static bool g_verify_enabled;
 
     uint32_t getKey(const std::string &str) const
     {
