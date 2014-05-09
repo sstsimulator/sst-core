@@ -95,6 +95,8 @@ public:
     typedef std::map<uint32_t, std::string>::const_reverse_iterator const_reverse_iterator; /*!< Const Reverse Iterator type */
     typedef std::set<key_type, KeyCompare> KeySet_t; /*!< Type of a set of keys */
 
+    static void enableVerify() { verify_enabled = true; };
+
     // pretend like we're a map
     /** Returns a read/write iterator that points to the first pair in the
      *  Params.
@@ -430,8 +432,7 @@ public:
      * @return    True if the key is considered allowed
      */
     void verifyParam(const key_type &k) const {
-        // If there are no explicitly allowed keys in the top set, allow everything
-        if ( allowedKeys.empty() ) return; //|| allowedKeys.back().empty() ) return;
+        if ( !verify_enabled ) return;
 
         for ( std::vector<KeySet_t>::const_reverse_iterator ri = allowedKeys.rbegin() ; ri != allowedKeys.rend() ; ++ri ) {
             if ( ri->find(k) != ri->end() ) return;
@@ -455,6 +456,7 @@ public:
 private:
     std::map<uint32_t, std::string> data;
     std::vector<KeySet_t> allowedKeys;
+    static bool verify_enabled;
 
     uint32_t getKey(const std::string &str) const
     {

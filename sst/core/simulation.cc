@@ -176,6 +176,9 @@ Simulation::getNextActivityTime()
     
 int Simulation::performWireUp( ConfigGraph& graph, int myRank )
 {
+    // Params objects should now start verifying parameters
+    Params::enableVerify();
+
     if ( num_ranks > 1 ) {
         // Find the minimum latency across a partition
         SimTime_t min_part = 0xffffffffl;
