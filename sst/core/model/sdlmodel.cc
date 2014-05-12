@@ -163,7 +163,7 @@ namespace SST {
 				break;
 			case TiXmlNode::TINYXML_ELEMENT:
 				if(get_node_text(pParent)){
-					(*params)[pParent->Value()]=resolveEnvVars(get_node_text(pParent));
+                    params->insert(std::make_pair(pParent->Value(), resolveEnvVars(get_node_text(pParent))));
 				}
 				break;
 			case TiXmlNode::TINYXML_TEXT:
