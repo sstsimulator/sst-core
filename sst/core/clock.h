@@ -104,6 +104,10 @@ public:
         }
     };
 
+    /**
+     * Activates this clock object, by inserting into the simulation's
+     * timeVortex for future execution.
+     */
     void schedule();
 
     /** Return the time of the next clock tick */

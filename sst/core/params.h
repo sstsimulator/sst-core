@@ -95,7 +95,18 @@ public:
     typedef std::map<uint32_t, std::string>::const_reverse_iterator const_reverse_iterator; /*!< Const Reverse Iterator type */
     typedef std::set<key_type, KeyCompare> KeySet_t; /*!< Type of a set of keys */
 
+    /**
+     * Enable or disable parameter verification on an instance
+     * of Params.  Useful when generating a new set of Params to
+     * pass off to a module.
+     */
     void enableVerify(bool enable) { verify_enabled = enable; };
+
+    /**
+     * Enable, on a global scale, parameter verification.  Used
+     * after construction of the config graph so that warnings are
+     * not generated during construction.
+     */
     static void enableVerify() { g_verify_enabled = true; };
 
     // pretend like we're a map

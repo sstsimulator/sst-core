@@ -229,6 +229,10 @@ public:
      */
     void requireEvent(std::string name);
 
+    /**
+     * Returns the time of the next item to be executed
+     * that is in the TImeVortex of the Simulation
+     */
     SimTime_t getNextActivityTime();
     
 private:
