@@ -177,6 +177,7 @@ dotests() {
         # because gem5 is not enabled in them.
         ${SST_TEST_SUITES}/testSuite_M5.sh
         ${SST_TEST_SUITES}/testSuite_openMP.sh
+        ${SST_TEST_SUITES}/testSuite_diropenMP.sh
         ${SST_TEST_SUITES}/testSuite_stream.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
         ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
