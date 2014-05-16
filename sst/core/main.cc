@@ -145,7 +145,7 @@ main(int argc, char *argv[])
 		// Get the memory before we create the graph
 		const uint64_t pre_graph_create_rss = maxGlobalMemSize();
 
-		ConfigGraph* graph;
+		ConfigGraph* graph = NULL;
 
 		if ( size == 1 ) {
 			double start_graph_gen = sst_get_cpu_time();
@@ -177,21 +177,62 @@ main(int argc, char *argv[])
 			graph->setComponentRanks(0);
 		} else if ( cfg.partitioner == "zoltan" ) {
 #ifdef HAVE_ZOLTAN
-//				if(cfg.verbose && rank == 0) {
+			double start_graph_gen = sst_get_cpu_time();
+
+			if ( rank == 0 ) {
+
+				if ( cfg.generator != "NONE" ) {
+					graph = new ConfigGraph();
+					generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
+					func(graph,cfg.generator_options, size);
+				}
+				else {
+					graph = modelGen->createConfigGraph();
+				}
+
+				if ( rank == 0 ) {
+					// Check config graph to see if there are structural errors.
+					if ( graph->checkForStructuralErrors() ) {
+						sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
+					}
+				}
+			}
+
+			double end_graph_gen = sst_get_cpu_time();
+
+			if(cfg.verbose && (rank == 0)) {
+        			sim_output->output("# ------------------------------------------------------------\n");
+				sim_output->output("# Graph construction took %f seconds.\n",
+					(end_graph_gen - start_graph_gen));
+			}
+
+			if(cfg.verbose && rank == 0) {
 					sim_output->output("# Partitionning using Zoltan...\n");
-//				}
+			}
 
-				SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
-				zolt_part->performPartition(graph);
+			SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
+			zolt_part->performPartition(graph);
+#ifdef HAVE_MPI
+			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting configuration graph and parameter structures.\n");
 
-				broadcast(world, *graph, 0);
-				delete zolt_part;
+			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting configuration graph ... \n");
+			broadcast(world, *graph, 0);
 
-//				if(cfg.verbose && rank == 0) {
-					sim_output->output("# Partitionning is completed.\n");
-//				}
+			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting parameters map ... \n");
+			broadcast(world, Params::keyMap, 0);
+
+			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting parameter reverse map ... \n");
+			broadcast(world, Params::keyMapReverse, 0);
+
+			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting next key ID ...\n");
+			broadcast(world, Params::nextKeyID, 0);
+#endif
+			delete zolt_part;
+
+			sim_output->output("# Graph construction took %f seconds.\n",
+				(end_graph_gen - start_graph_gen));
 #else
-				sim_output->fatal(CALL_INFO, -1, "Zoltan support is not available. Configure did not find the Zoltan library.\n");
+			sim_output->fatal(CALL_INFO, -1, "Zoltan support is not available. Configure did not find the Zoltan library.\n");
 #endif
 		} else if ( rank == 0 || cfg.all_parse ) {
 			// Perform partitionning for parallel jobs, not using Zoltan
