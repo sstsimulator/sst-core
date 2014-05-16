@@ -55,7 +55,6 @@ class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 	protected:
 		void initZoltan();
 		int rankcount;
-		Output* partOutput;
 		struct Zoltan_Struct * zolt_config;
 		int rank;
 
