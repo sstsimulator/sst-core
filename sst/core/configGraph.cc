@@ -324,10 +324,10 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 					makeNamePythonSafe(link_itr->second.name, "link_").c_str(),
 					makeNamePythonSafe(link_left->name, "comp_").c_str(),
 					escapeString(link_itr->second.port[0]).c_str(),
-					*link_itr->second.latency,
+					link_itr->second.latency[0],
 					makeNamePythonSafe(link_right->name, "comp_").c_str(),
 					escapeString(link_itr->second.port[1]).c_str(),
-					*link_itr->second.latency );
+					link_itr->second.latency[1] );
 		}
 
 		fprintf(dumpFile, "# End of generated output.\n");
