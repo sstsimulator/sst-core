@@ -102,7 +102,7 @@ dotests() {
     rm -Rf ${SST_TEST_INPUTS_TEMP}
     mkdir -p ${SST_TEST_INPUTS_TEMP}
 
-    if [ $1 == *sstmainline_config_xml2python* ]
+    if [[ $1 == *sstmainline_config_xml2python* ]]
     then
         . test/utilities/GeneratePythonFromXML
     fi
