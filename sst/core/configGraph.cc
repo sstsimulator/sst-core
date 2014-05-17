@@ -393,10 +393,28 @@ std::string ConfigGraph::makeNamePythonSafe(const std::string name, const std::s
 	if(name_length > 0 && isdigit(safe_name[0])) {
 		std::string safe_name_str = safe_name;
 		std::string safe_name_prefix = "s_";
-		return namePrefix + safe_name_prefix + safe_name_str;
+
+		if(safe_name_str.size() > namePrefix.size()) {
+			if(safe_name_str.substr(0, namePrefix.size()) == namePrefix) {
+				return safe_name_prefix + safe_name_str;
+			} else {
+				return namePrefix + safe_name_prefix + safe_name_str;
+			}
+		} else {
+			return namePrefix + safe_name_prefix + safe_name_str;
+		}
 	} else {
 		std::string safe_name_str = safe_name;
-		return namePrefix + safe_name_str;
+
+		if(safe_name_str.size() > namePrefix.size()) {
+			if(safe_name_str.substr(0, namePrefix.size()) == namePrefix) {
+				return safe_name_str;
+			} else {
+				return namePrefix + safe_name_str;
+			}
+		} else {
+			return namePrefix + safe_name_str;
+		}
 	}
 }
 
