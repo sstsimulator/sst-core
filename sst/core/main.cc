@@ -61,6 +61,72 @@ sigHandlerPrintStatus(int signal)
     Simulation::setSignal(signal);
 }
 
+static void dump_partition(SST::Output* sim_output, Config& cfg, ConfigGraph* graph,
+	const int rank, const int size) {
+	
+	///////////////////////////////////////////////////////////////////////	
+	// If the user asks us to dump the partionned graph.
+	if(cfg.dump_component_graph_file != "" && rank == 0) {
+		if(cfg.verbose) {
+			sim_output->verbose(CALL_INFO, 2, 0,
+				"# Dumping partitionned component graph to %s\n",
+				cfg.dump_component_graph_file.c_str());
+		}
+
+		ofstream graph_file(cfg.dump_component_graph_file.c_str());
+		ConfigComponentMap_t& component_map = graph->getComponentMap();
+
+		for(int i = 0; i < size; i++) {
+			graph_file << "Rank: " << i << " Component List:" << std::endl;
+
+			for (ConfigComponentMap_t::const_iterator j = component_map.begin() ; j != component_map.end() ; ++j) {
+				if(j->rank == i) {
+					graph_file << "   " << j->name << " (ID=" << j->id << ")" << std::endl;
+					graph_file << "      -> type      " << j->type << std::endl;
+					graph_file << "      -> weight    " << j->weight << std::endl;
+					graph_file << "      -> linkcount " << j->links.size() << std::endl;
+					graph_file << "      -> rank      " << j->rank << std::endl;
+				}
+			}
+		}
+
+		graph_file.close();
+
+		if(cfg.verbose) {
+			sim_output->verbose(CALL_INFO, 2, 0,
+				"# Dump of partition graph is complete.\n");
+		}
+	}
+}
+
+static void do_graph_wireup(SST::Output* sim_output, ConfigGraph* graph, 
+	SST::Simulation* sim, SST::Config& cfg, const int size, const int rank) {
+	
+		if ( !graph->checkRanks( size ) ) {
+			if ( rank == 0 ) {
+				sim_output->fatal(CALL_INFO, 1,
+					"ERROR: Bad partitionning; partition included unknown ranks.\n");
+			}
+		}
+		else {
+			if ( !graph->containsComponentInRank( rank ) ) {
+				sim_output->output("WARNING: No components are assigned to rank: %d\n", 
+					rank);
+			}
+		}
+
+
+		// User asked us to dump the config graph to a file
+		if(cfg.dump_config_graph != "") {
+			graph->dumpToFile(cfg.dump_config_graph, &cfg, false);
+		}
+		if(cfg.output_dot != "") {
+			graph->dumpToFile(cfg.output_dot, &cfg, true);
+		}
+
+		sim->performWireUp( *graph, rank );
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -178,26 +244,20 @@ main(int argc, char *argv[])
 		} else if ( cfg.partitioner == "zoltan" ) {
 #ifdef HAVE_ZOLTAN
 			double start_graph_gen = sst_get_cpu_time();
+			graph = new ConfigGraph();
 
 			if ( rank == 0 ) {
-
 				if ( cfg.generator != "NONE" ) {
-					graph = new ConfigGraph();
 					generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
 					func(graph,cfg.generator_options, size);
-				}
-				else {
+				} else {
 					graph = modelGen->createConfigGraph();
 				}
 
-				if ( rank == 0 ) {
-					// Check config graph to see if there are structural errors.
-					if ( graph->checkForStructuralErrors() ) {
-						sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
-					}
+				// Check config graph to see if there are structural errors.
+				if ( graph->checkForStructuralErrors() ) {
+					sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
 				}
-			} else {
-				graph = new ConfigGraph();
 			}
 
 			double end_graph_gen = sst_get_cpu_time();
@@ -214,21 +274,7 @@ main(int argc, char *argv[])
 
 			SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
 			zolt_part->performPartition(graph);
-#ifdef HAVE_MPI
-			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting configuration graph and parameter structures.\n");
 
-			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting configuration graph ... \n");
-			broadcast(world, *graph, 0);
-
-			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting parameters map ... \n");
-			broadcast(world, Params::keyMap, 0);
-
-			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting parameter reverse map ... \n");
-			broadcast(world, Params::keyMapReverse, 0);
-
-			sim_output->verbose(CALL_INFO, 1, 0, "# Broadcasting next key ID ...\n");
-			broadcast(world, Params::nextKeyID, 0);
-#endif
 			delete zolt_part;
 
 			sim_output->output("# Graph construction took %f seconds.\n",
@@ -341,46 +387,17 @@ main(int argc, char *argv[])
 			sim_output->output("# ------------------------------------------------------------\n");
 		}
 
+		// Delete the model generator
         	delete modelGen;
         	modelGen = NULL;
 
-		///////////////////////////////////////////////////////////////////////	
-		// If the user asks us to dump the partionned graph.
-		if(cfg.dump_component_graph_file != "" && rank == 0) {
-			if(cfg.verbose) {
-				sim_output->verbose(CALL_INFO, 2, 0,
-					"# Dumping partitionned component graph to %s\n",
-					cfg.dump_component_graph_file.c_str());
-			}
-
-			ofstream graph_file(cfg.dump_component_graph_file.c_str());
-			ConfigComponentMap_t& component_map = graph->getComponentMap();
-
-			for(int i = 0; i < size; i++) {
-				graph_file << "Rank: " << i << " Component List:" << std::endl;
-
-				for (ConfigComponentMap_t::const_iterator j = component_map.begin() ; j != component_map.end() ; ++j) {
-					if(j->rank == i) {
-						graph_file << "   " << j->name << " (ID=" << j->id << ")" << std::endl;
-						graph_file << "      -> type      " << j->type << std::endl;
-						graph_file << "      -> weight    " << j->weight << std::endl;
-						graph_file << "      -> linkcount " << j->links.size() << std::endl;
-					}
-				}
-			}
-
-			graph_file.close();
-
-			if(cfg.verbose) {
-				sim_output->verbose(CALL_INFO, 2, 0,
-					"# Dump of partition graph is complete.\n");
-			}
-		}
+		// Output the partition information is user requests it
+		dump_partition(sim_output, cfg, graph, rank, size);
 
 		///////////////////////////////////////////////////////////////////////
 		// Broadcast the data structures if only rank 0 built the
 		// graph
-		if ( !cfg.all_parse ) {
+		if ( (cfg.partitioner == "zoltan") || (!cfg.all_parse) ) {
 #ifdef HAVE_MPI
 			broadcast(world, *graph, 0);
 			broadcast(world, Params::keyMap, 0);
@@ -389,29 +406,9 @@ main(int argc, char *argv[])
 #endif
 		}
 
-		if ( !graph->checkRanks( size ) ) {
-			if ( rank == 0 ) {
-				sim_output->fatal(CALL_INFO, 1,
-					"ERROR: Bad partitionning; partition included unknown ranks.\n");
-			}
-		}
-		else {
-			if ( !graph->containsComponentInRank( rank ) ) {
-				sim_output->output("WARNING: No components are assigned to rank: %d\n", 
-					rank);
-			}
-		}
+		// Perform the wireup
+		do_graph_wireup(sim_output, graph, sim, cfg, size, rank);
 
-
-		// User asked us to dump the config graph to a file
-		if(cfg.dump_config_graph != "") {
-			graph->dumpToFile(cfg.dump_config_graph, &cfg, false);
-		}
-		if(cfg.output_dot != "") {
-			graph->dumpToFile(cfg.output_dot, &cfg, true);
-		}
-
-		sim->performWireUp( *graph, rank );
 		delete graph;
 	}
 

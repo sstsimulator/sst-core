@@ -217,6 +217,8 @@ SSTZoltanPartition::~SSTZoltanPartition() {
 }
 
 void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
+
+
 	if(0 == rank) {
 		assert(NULL != graph);
 	}
@@ -271,6 +273,11 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
 
   	partOutput->verbose(CALL_INFO, 1, 0, "Assigning components to ranks based on Zoltan output...\n");
 
+	uint64_t rank_assignments[rankcount];
+	for(uint32_t i = 0; i < rankcount; ++i) {
+		rank_assignments[i] = 0;
+	}
+
 	// Go over what we have to export, set the component to the appropriate rank
 	if(0 == rank) {
 	  	ConfigComponentMap_t config_map = graph->getComponentMap();
@@ -279,13 +286,24 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
 			config_map_itr->rank = 0;
 		}
 
+		partOutput->verbose(CALL_INFO, 1, 0, "Rank 0 will export %d configuration graph vertices.\n", num_vertices_export);
+
 		// Go over what we have to export, set the component to the appropriate rank
   		for(int i = 0; i < num_vertices_export; ++i) {
+			partOutput->verbose(CALL_INFO, 1, 0, "Setting component: %d to rank %d\n", export_global_ids[i], export_ranks[i]);
   			config_map[export_global_ids[i]].rank = export_ranks[i];
+			rank_assignments[export_ranks[i]]++;
   		}
   	}
 
   	partOutput->verbose(CALL_INFO, 1, 0, "Assignment is complete.\n");
+
+	if(0 == rank) {
+		partOutput->verbose(CALL_INFO, 1, 0, "Exporting components for load balance:\n");
+		for(uint32_t i = 1; i < rankcount; ++i) {
+			partOutput->verbose(CALL_INFO, 1, 0, "Export to rank %" PRIu32 " (assigned %" PRIu64 " components).\n", i, rank_assignments[i]);
+		}
+	}
 
   	partOutput->verbose(CALL_INFO, 1, 0, "Freeing Zoltan data structures...\n");
   	Zoltan_LB_Free_Part(&import_global_ids, &import_local_ids,

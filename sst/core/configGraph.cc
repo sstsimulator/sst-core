@@ -203,7 +203,7 @@ ConfigGraph::addComponent(std::string name, std::string type, float weight, int 
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type)
 {
-	comps.push_back(ConfigComponent(comps.size(), name, type, 0.0f, 0, false));
+	comps.push_back(ConfigComponent(comps.size(), name, type, 1.0f, 0, false));
     return comps.back().id;
 }
 
