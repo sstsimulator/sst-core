@@ -196,6 +196,8 @@ main(int argc, char *argv[])
 						sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
 					}
 				}
+			} else {
+				graph = new ConfigGraph();
 			}
 
 			double end_graph_gen = sst_get_cpu_time();
