@@ -280,7 +280,7 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
 
 	// Go over what we have to export, set the component to the appropriate rank
 	if(0 == rank) {
-	  	ConfigComponentMap_t config_map = graph->getComponentMap();
+	  	ConfigComponentMap_t& config_map = graph->getComponentMap();
 		ConfigComponentMap_t::iterator config_map_itr;
 		for(config_map_itr = config_map.begin(); config_map_itr != config_map.end(); config_map_itr++) {
 			config_map_itr->rank = 0;
