@@ -290,7 +290,6 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
 
 		// Go over what we have to export, set the component to the appropriate rank
   		for(int i = 0; i < num_vertices_export; ++i) {
-			partOutput->verbose(CALL_INFO, 1, 0, "Setting component: %d to rank %d\n", export_global_ids[i], export_ranks[i]);
   			config_map[export_global_ids[i]].rank = export_ranks[i];
 			rank_assignments[export_ranks[i]]++;
   		}
