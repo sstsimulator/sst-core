@@ -11,7 +11,12 @@
 
 
 #include <sst_config.h>
+#ifdef HAVE_PYTHON
+#include <Python.h>
+#endif
+
 #include "sst/core/serialization.h"
+
 
 #ifdef HAVE_MPI
 #include <boost/mpi.hpp>
@@ -46,10 +51,6 @@
 #include <sst/core/memuse.h>
 
 #include <sys/resource.h>
-
-#ifdef HAVE_PYTHON
-#include <Python.h>
-#endif
 
 using namespace SST::Core;
 using namespace std;

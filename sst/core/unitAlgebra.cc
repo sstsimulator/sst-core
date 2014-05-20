@@ -30,8 +30,8 @@ using namespace SST;
 // Helper functions and data structures used only in this file
 static void split(string input, string delims, vector<string>& tokens) {
     if ( input.length() == 0 ) return;
-    int start = 0;
-    int stop = 0;;
+    size_t start = 0;
+    size_t stop = 0;;
     vector<string> ret;
     
     do {
@@ -214,7 +214,7 @@ Units::Units(std::string units, sst_dec_float& multiplier)
     string s_numerator;
     string s_denominator;
     
-    int slash_index = units.find_first_of('/');
+    size_t slash_index = units.find_first_of('/');
 
     s_numerator = units.substr(0,slash_index);
     if ( slash_index != string::npos ) s_denominator = units.substr(slash_index+1);

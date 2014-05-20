@@ -12,6 +12,8 @@
 // distribution.
 
 #include <sst/sst_config.h>
+#ifdef HAVE_PYTHON
+#include <Python.h>
 
 #include <string.h>
 #include <sstream>
@@ -21,8 +23,6 @@
 #include <sst/core/element.h>
 #include <sst/core/factory.h>
 #include <sst/core/component.h>
-
-#ifdef HAVE_PYTHON
 
 static SSTPythonModelDefinition *gModel = NULL;
 
