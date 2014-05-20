@@ -31,12 +31,13 @@
 #include <sst/core/introspector.h>
 #include <sst/core/linkMap.h>
 #include <sst/core/linkPair.h>
+#include <sst/core/output.h>
 #include <sst/core/stopAction.h>
 #include <sst/core/sync.h>
 #include <sst/core/syncQueue.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/timeVortex.h>
-#include <sst/core/output.h>
+#include <sst/core/unitAlgebra.h>
 
 #define SST_SIMTIME_MAX  0xffffffffffffffff
 
@@ -384,6 +385,7 @@ void Simulation::run() {
     sa->setDeliveryTime(SST_SIMTIME_MAX);
     timeVortex->insert(sa);
 
+    Activity* last;
     // Output out("",5,0xffffffff,Output::STDOUT);
     while( LIKELY( ! endSim ) ) {
         if ( UNLIKELY( 0 != lastRecvdSignal ) ) {
@@ -394,11 +396,9 @@ void Simulation::run() {
         currentPriority = timeVortex->front()->getPriority();
         
         current_activity = timeVortex->pop();
-        // current_activity->print("",out);
+        // current_activity->print("->",sim_output);
         current_activity->execute();
-        // if ( currentSimCycle > 100000 ) break;
     }
-
 
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
@@ -488,6 +488,20 @@ TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* 
     }
     clockMap[ tcFreq->getFactor() ]->registerHandler( handler );
     return tcFreq;    
+}
+
+TimeConverter* Simulation::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler)
+{
+    TimeConverter* tcFreq = timeLord->getTimeConverter(freq);
+    
+    if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
+        Clock* ce = new Clock( tcFreq );
+        clockMap[ tcFreq->getFactor() ] = ce; 
+
+        ce->schedule();
+    }
+    clockMap[ tcFreq->getFactor() ]->registerHandler( handler );
+    return tcFreq;
 }
 
 Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* handler )

@@ -35,10 +35,10 @@ Clock::Clock( TimeConverter* period ) :
 Clock::~Clock()
 {
     // Delete all the handlers
-    for ( HandlerMap_t::iterator it = handlerMap.begin(); it != handlerMap.end(); ++it ) {
+    for ( StaticHandlerMap_t::iterator it = handlerMap.begin(); it != handlerMap.end(); ++it ) {
         delete *it;
     }
-    handlerMap.clear();
+    staticHandlerMap.clear();
 }
 
 
@@ -46,7 +46,9 @@ bool Clock::registerHandler( Clock::HandlerBase* handler )
 {
     _CLE_DBG("handler %p\n",handler);
     staticHandlerMap.push_back( handler );	
-    if ( !scheduled ) schedule();
+    if ( !scheduled ) {
+        schedule();
+    }
     return 0;
 }
 
@@ -81,8 +83,9 @@ void Clock::execute( void ) {
     Simulation *sim = Simulation::getSimulation();
     
     if ( handlerMap.empty() && staticHandlerMap.empty() ) {
-        scheduled = false;
-        return;
+        // std::cout << "Not rescheduling clock" << std::endl;
+        // scheduled = false;
+        // return;
     } 
     
     // Derive the current cycle from the core time
@@ -124,10 +127,19 @@ Clock::schedule()
         }
     }
 
+    // std::cout << "Scheduling clock " << period->getFactor() << " at cycle " << next << " current cycle is " << sim->getCurrentSimCycle() << std::endl;
     sim->insertActivity(next, this);
     scheduled = true;
 }
 
+void
+Clock::print(const std::string& header, Output &out) const
+{
+    out.output("%s Clock Activity with period %" PRIu64 " to be delivered at %" PRIu64
+               " with priority %d, with %d items on clock list\n",
+               header.c_str(), period->getFactor(), getDeliveryTime(), getPriority(),
+               (int)staticHandlerMap.size());
+}
 
 } // namespace SST
 

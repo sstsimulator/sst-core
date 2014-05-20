@@ -30,7 +30,8 @@ class LinkMap;
 class Module;
 class Params;
 class TimeConverter;
-
+class UnitAlgebra;
+ 
 #define _COMP_DBG( fmt, args...) __DBG( DBG_COMP, Component, fmt, ## args )
 
 /**
@@ -134,6 +135,8 @@ public:
     */
     TimeConverter* registerClock( std::string freq, Clock::HandlerBase* handler,
                                   bool regAll = true);
+    TimeConverter* registerClock( const UnitAlgebra& freq, Clock::HandlerBase* handler, 
+                                  bool regAll = true);
     /** Removes a clock handler from the component */
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
 
@@ -154,6 +157,9 @@ public:
     */
     TimeConverter* registerTimeBase( std::string base, bool regAll = true);
 
+    TimeConverter* getTimeConverter( const std::string& base );
+    TimeConverter* getTimeConverter( const UnitAlgebra& base );
+    
     /** return the time since the simulation began in units specified by
         the parameter.
         @param tc TimeConverter specificing the units */

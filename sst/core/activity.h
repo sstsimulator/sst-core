@@ -27,7 +27,7 @@ namespace SST {
 /** Base class for all Activities in the SST Event Queue */
 class Activity {
 public:
-  Activity() {}
+    Activity() {}
     virtual ~Activity() {}
 
     /** Function which will be called when the time for this Activity comes to pass. */

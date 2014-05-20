@@ -336,8 +336,8 @@ UnitAlgebra::trim(std::string str)
     return str.substr(front_index,back_index-front_index+1);
 }
 
-
-UnitAlgebra::UnitAlgebra(std::string val)
+void
+UnitAlgebra::init(std::string val)
 {
     //Trim off all whitespace on front and back
     string parse = trim(val);
@@ -367,6 +367,12 @@ UnitAlgebra::UnitAlgebra(std::string val)
     }
     
     value *= multiplier;
+}
+    
+
+UnitAlgebra::UnitAlgebra(std::string val)
+{
+    init(val);
 }
 
 void
@@ -410,6 +416,13 @@ UnitAlgebra::toStringBestSI() const
     }
     s << (found ? temp : value) << " " << si << unit.toString();
     return s.str();
+}
+
+UnitAlgebra&
+UnitAlgebra::operator= (const std::string& v)
+{
+    init(v);
+    return *this;
 }
 
 UnitAlgebra&

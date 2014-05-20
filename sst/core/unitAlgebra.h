@@ -57,7 +57,6 @@ private:
     // Used in constructor to incrementally build up unit from string
     void addUnit(std::string, sst_dec_float& multiplier, bool invert);
 
-
 public:
     // Static data members and functions
     /** Create a new Base Unit type */
@@ -103,7 +102,8 @@ private:
     sst_dec_float value;
 
     static std::string trim(std::string str);
-
+    void init(std::string val);
+        
 public:
     UnitAlgebra() {}
     /**
@@ -137,6 +137,8 @@ public:
      */
     std::string toStringBestSI() const;
 
+    UnitAlgebra& operator= (const std::string& v);
+    
     /** Multiply by an argument; */
     UnitAlgebra& operator*= (const UnitAlgebra& v);
     /** Multiply by an argument; */

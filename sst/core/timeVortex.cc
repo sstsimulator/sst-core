@@ -16,6 +16,9 @@
 #include <sst/core/timeVortex.h>
 #include <sst/core/output.h>
 
+#include <sst/core/clock.h>
+#include <sst/core/simulation.h>
+
 namespace SST {
 
 TimeVortex::TimeVortex() : ActivityQueue(), insertOrder(0) {}
@@ -28,7 +31,6 @@ TimeVortex::~TimeVortex()
         delete it;
         data.pop();
     }
-
 }
 
 bool TimeVortex::empty()

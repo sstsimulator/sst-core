@@ -46,7 +46,8 @@ class Sync;
 class TimeConverter;
 class TimeLord;
 class TimeVortex;
-
+class UnitAlgebra;
+    
 typedef std::map<std::string, Introspector* > IntroMap_t;
 typedef std::map<std::string, Component* > CompMap_t;
 typedef std::map<ComponentId_t, std::string > CompIdMap_t;
@@ -145,6 +146,7 @@ public:
     int getNumRanks() const {return num_ranks;}
     /** Register a handler to be called on a set frequency */
     TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);
+    TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler);
     /** Remove a clock handler from the list of active clock handlers */
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
     /** Reactivate an existing clock and handler.

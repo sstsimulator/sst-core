@@ -12,6 +12,7 @@
 #include <sst_config.h>
 #include "sst/core/serialization.h"
 #include "sst/core/component.h"
+#include "sst/core/unitAlgebra.h"
 
 #include <boost/foreach.hpp>
 #include <string>
@@ -25,6 +26,7 @@
 #include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
+#include "sst/core/unitAlgebra.h"
 
 namespace SST {
 
@@ -49,6 +51,25 @@ Component::~Component()
 }
 
 TimeConverter* Component::registerClock( std::string freq, Clock::HandlerBase* handler, bool regAll) {
+    TimeConverter* tc = Simulation::getSimulation()->registerClock(freq,handler);
+    
+    // if regAll is true set tc as the default for the component and
+    // for all the links
+    if ( regAll ) {
+        if (NULL != myLinks) {
+            std::pair<std::string,Link*> p;
+            BOOST_FOREACH( p, myLinks->getLinkMap() ) {
+                if ( NULL == p.second->getDefaultTimeBase() ) {
+                    p.second->setDefaultTimeBase(tc);
+                }
+            }
+        }
+	defaultTimeBase = tc;
+    }
+    return tc;
+}
+
+TimeConverter* Component::registerClock( const UnitAlgebra& freq, Clock::HandlerBase* handler, bool regAll) {
     TimeConverter* tc = Simulation::getSimulation()->registerClock(freq,handler);
     
     // if regAll is true set tc as the default for the component and
@@ -98,6 +119,19 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
     return tc;
 }
 
+TimeConverter*
+Component::getTimeConverter( const std::string& base )
+{
+    return Simulation::getSimulation()->getTimeLord()->getTimeConverter(base);
+}
+    
+TimeConverter*
+Component::getTimeConverter( const UnitAlgebra& base )
+{
+    return Simulation::getSimulation()->getTimeLord()->getTimeConverter(base);
+}
+
+    
 bool
 Component::isPortConnected(const std::string &name) const
 {
@@ -112,7 +146,7 @@ Component::configureLink(std::string name, TimeConverter* time_base, Event::Hand
     
     // If no functor, this is a polling link
     if ( handler == NULL ) {
-	tmp->setPolling();
+        tmp->setPolling();
     }
     tmp->setFunctor(handler);
     tmp->setDefaultTimeBase(time_base);

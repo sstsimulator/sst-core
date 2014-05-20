@@ -118,11 +118,7 @@ public:
     /** Remove a handler from the list of handlers to be called on the clock tick */
     bool unregisterHandler( Clock::HandlerBase* handler, bool& empty );
 
-    void print(const std::string& header, Output &out) const {
-        out.output("%s Clock Activity to be delivered at %" PRIu64 " with priority %d, "
-                   "with %d items on clock list\n",
-                   header.c_str(), getDeliveryTime(), getPriority(), (int)staticHandlerMap.size());
-    }
+    void print(const std::string& header, Output &out) const;
     
 private:
 /*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */
