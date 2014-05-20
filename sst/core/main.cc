@@ -497,6 +497,12 @@ main(int argc, char *argv[])
     const uint64_t global_pf      = globalPageFaults();
 
     if ( rank == 0 && cfg.verbose ) {
+	char ua_buffer[256];
+	sprintf(ua_buffer, "%" PRIu64 "KB", local_max_rss);
+	UnitAlgebra max_rss_ua(ua_buffer);
+
+	sprintf(ua_buffer, "%" PRIu64 "KB", global_max_rss);
+	UnitAlgebra global_rss_ua(ua_buffer);
 
 	sim_output->output("\n");
 	sim_output->output("#\n");
@@ -508,10 +514,10 @@ main(int argc, char *argv[])
 	sim_output->output("# Simulated time:                  %s\n", simulated_time.toStringBestSI().c_str());
 	sim_output->output("#\n");
 	sim_output->output("# Simulation Resource Information:\n");
-	sim_output->output("# Max Resident Set Size:           %" PRIu64 " KB\n",
-		local_max_rss);
-	sim_output->output("# Approx. Global Max RSS Size:     %" PRIu64 " KB\n",
-		global_max_rss);
+	sim_output->output("# Max Resident Set Size:           %s\n",
+		max_rss_ua.toStringBestSI().c_str());
+	sim_output->output("# Approx. Global Max RSS Size:     %s\n",
+		global_rss_ua.toStringBestSI().c_str());
 	sim_output->output("# Max Local Page Faults:           %" PRIu64 " faults\n",
 		local_max_pf);
 	sim_output->output("# Global Page Faults:              %" PRIu64 " faults\n",
