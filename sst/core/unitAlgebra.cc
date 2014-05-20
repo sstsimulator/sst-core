@@ -183,8 +183,8 @@ Units::addUnit(std::string units, sst_dec_float& multiplier, bool invert)
         return;
     }
     else {
-        cout << "Invalid unit type: " << type << endl;
-        exit(1);
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Invalid unit type: %s\n",type.c_str());
     }        
 }
 
