@@ -19,6 +19,7 @@
 
 // System Headers
 #include <errno.h>
+#include <execinfo.h>
 
 // Core Headers
 #include "sst/core/simulation.h"
@@ -184,6 +185,20 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
     // Flush the outputs    
     std::fflush(stderr);
     flush();
+
+    // Back trace so we know where this happened.
+    const int backtrace_max_count = 64;
+    void* backtrace_elements[backtrace_max_count];
+    char** backtrace_names;
+    size_t backtrace_count = backtrace(backtrace_elements, backtrace_max_count);
+    backtrace_names = backtrace_symbols(backtrace_elements, backtrace_max_count);
+
+    printf("SST Fatal Backtrace Information:\n");
+    for(size_t i = 0; i < backtrace_count; ++i) {
+	printf("%5" PRIu64 " : %s\n", (uint64_t) i, backtrace_names[i]);
+    }
+
+    free(backtrace_names);
 
 #ifdef HAVE_MPI
     // If MPI exists, abort
