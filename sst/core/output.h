@@ -340,6 +340,9 @@ private:
     void setTargetOutput(output_location_t location);
     void openSSTTargetFile() const;
     void closeSSTTargetFile();
+    std::string getMPIProcName() const;
+    int getMPIWorldRank() const;
+    int getMPIWorldSize() const;
     std::string buildPrefixString(uint32_t line,
                                   const std::string& file,
                                   const std::string& func) const;
@@ -356,9 +359,6 @@ private:
     uint32_t          m_verboseLevel;
     uint32_t          m_verboseMask;
     output_location_t m_targetLoc;
-    int               m_MPIWorldSize;
-    int               m_MPIWorldRank;
-    std::string       m_MPIProcName;
 
     // m_targetOutputRef is a pointer to a FILE* object.  This is because
     // the actual FILE* object (m_sstFileHandle) is not created on construction,

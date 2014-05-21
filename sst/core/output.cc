@@ -43,7 +43,7 @@ Output::Output(const std::string& prefix, uint32_t verbose_level,
     m_objInitialized = false;
 
     init(prefix, verbose_level, verbose_mask, location);
-} 
+}
 
 
 Output::Output()
@@ -55,11 +55,7 @@ Output::Output()
     m_verboseLevel = 0;
     m_verboseMask  = 0;;
     m_targetLoc    = NONE;
-    m_MPIProcName  = "";      
-    m_MPIWorldSize = 0;
-    m_MPIWorldRank = 0;
-
-} 
+}
 
 
 void Output::init(const std::string& prefix, uint32_t verbose_level,  
@@ -67,22 +63,14 @@ void Output::init(const std::string& prefix, uint32_t verbose_level,
 {
     // Only initialize if the object has not yet been initialized.
     if (false == m_objInitialized) {
-        
+
         // Set Member Variables
         m_outputPrefix = prefix;
         m_verboseLevel = verbose_level;
         m_verboseMask  = verbose_mask;
-        
-        setTargetOutput(location);    
-        
-#ifdef HAVE_MPI
-        // Get the MPI Info
-        m_MPIProcName  = boost::mpi::environment::processor_name();      
-        boost::mpi::communicator MPIWorld;
-        m_MPIWorldSize = MPIWorld.size();
-        m_MPIWorldRank = MPIWorld.rank();
-#endif
-    
+
+        setTargetOutput(location);
+
         m_objInitialized = true;
     }
 }
@@ -272,8 +260,8 @@ void Output::openSSTTargetFile() const
             tempFileName = m_sstFileName;
             
             // Append the rank to file name if MPI_COMM_WORLD is GT 1
-            if (m_MPIWorldSize > 1){
-                sprintf(tempBuf, "%d", m_MPIWorldRank);
+            if (getMPIWorldSize() > 1){
+                sprintf(tempBuf, "%d", getMPIWorldRank());
                 tempFileName += tempBuf;
             }
             
@@ -345,19 +333,19 @@ std::string Output::buildPrefixString(uint32_t line, const std::string& file, co
                 startindex = findindex + 2;
                 break;
             case 'r' :
-                if (1 == m_MPIWorldSize){
+                if (1 == getMPIWorldSize()){
                     rtnstring += "";
                 } else {
-                    sprintf(tempBuf, "%d", m_MPIWorldRank);
+                    sprintf(tempBuf, "%d", getMPIWorldRank());
                     rtnstring += tempBuf;
                 }
                 startindex = findindex + 2;
                 break;
             case 'R' :
-                if (1 == m_MPIWorldSize){
+                if (1 == getMPIWorldSize()){
                     rtnstring += "0";
                 } else {
-                    sprintf(tempBuf, "%d", m_MPIWorldRank);
+                    sprintf(tempBuf, "%d", getMPIWorldRank());
                     rtnstring += tempBuf;
                 }
                 startindex = findindex + 2;
@@ -415,15 +403,38 @@ void Output::outputprintf(const char* format, va_list arg) const
 }
 
 
+int Output::getMPIWorldSize() const {
+#ifdef HAVE_MPI
+    boost::mpi::communicator MPIWorld;
+    return MPIWorld.size();
+#endif
+    return 0;
+}
+
+
+int Output::getMPIWorldRank() const {
+#ifdef HAVE_MPI
+    boost::mpi::communicator MPIWorld;
+    return MPIWorld.rank();
+#endif
+    return 0;
+}
+
+
+std::string Output::getMPIProcName() const {
+#ifdef HAVE_MPI
+    return boost::mpi::environment::processor_name();
+#endif
+    return "";
+}
+
+
 template<class Archive> void Output::serialize(Archive& ar, const unsigned int version) {
     ar & BOOST_SERIALIZATION_NVP(m_objInitialized);
     ar & BOOST_SERIALIZATION_NVP(m_outputPrefix);
     ar & BOOST_SERIALIZATION_NVP(m_verboseLevel);
     ar & BOOST_SERIALIZATION_NVP(m_verboseMask);
     ar & BOOST_SERIALIZATION_NVP(m_targetLoc);
-    ar & BOOST_SERIALIZATION_NVP(m_MPIWorldSize);
-    ar & BOOST_SERIALIZATION_NVP(m_MPIWorldRank);
-    ar & BOOST_SERIALIZATION_NVP(m_MPIProcName);
 }
 
 
