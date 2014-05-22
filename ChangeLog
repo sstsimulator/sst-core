@@ -1,3 +1,50 @@
+2014-5-22
+* Release V4.0.0
+The changes in V4.0.0 of the Micro version of the Structural Simulation Toolkit (SST) are divided by area: general, the core, and integrated components.
+ 
+General 
+- SST inputs can be provided as python or xml scripts, except for Gem5. There is a new option to convert xml to python. This enhancement was the primary motivator for increasing the high order digit in the version number. Note that we plan to deprecate xml support in 2016 or so.
+- The executable name changed from sst.x to sst, which loads sstsim.x. The sst binary automatically configures many of the ENV variables before calling sstsim.x.
+- SST can now generate a configuration graph in dot (graphviz) format. 
+- There is increased support for external Element Libraries (ie, pkg-config file).
+- A new tool, SST Workbench, is provided. This GUI is a drag and drop interface that will generate input decks for the selected components. A binary is available as a separate download for Linux and Mac.
+- The source code tarball is now created using make dist. This is a first step towards providing interim tarballs from the trunk that have passed all nightly tests.
+ 
+Core 
+- All SST core classes have complete Doxygen information. See the latest doxygen output from the trunk ?here or for the 4.0.0 dxoygen look ?here.
+- A unit algebra feature is available from the core. 
+- There is a limited API for statistics gathering and analysis. 
+- There is a new Output class for use by the core and any components. 
+
+Elements 
+- All released Element Libraries have their ElementInfo structures fully populated.
+- Support for the Zoltan partitioning library has been re-introduced. 
+- Element library declarations have been expanded to include Parameters and Ports.
+- MemHierarchy is updated with intra-node directory-base coherency and with MESI protocols.
+- There are additional scheduler models for cooling-power and joint cooling-power/performance allocation using GLPK.
+
+The following external components are used. All are optional except the 
+BOOST and MPI libraries. Other versions may work, but these have been 
+tested with this release.
+- Boost 1.54.0 (V1.53.0 is now the minimum requirement) 
+- OpenMPI 1.8 
+- GLPK 4.54 
+- HybridSim 2.0.0 
+- NVRAMSim 2.0.0 
+- Gem5 tag 4.0.0 from ?https://code.google.com/p/sst-gem5-devel.devel/ which was a fork of gem5-stable at change set 8642:549b72de8f72 back on Dec 15 2011
+- QEMU 0.12.3 
+- QSim 0.2.1 
+- Zoltan 3.8 
+
+Deprecated with this release are:
+- cpu_data (test driver) 
+- cpu_power (test driver)
+- introspector_cpu (support directory)
+- introspector_cpuTemperature (support directory)
+- palacios
+- portals4 
+- power (technology interface directory)
+
 2013-05-08
 * Release V3.0.0
 This release of SST/Micro introduces a number of new features and changes.

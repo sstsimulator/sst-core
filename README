@@ -1,11 +1,13 @@
 *************************************************************************
 *
 * This is the micro-level Structural Simulator Toolkit (SST)
-* For the latest information, see http://www.sst-simulator.org
 *
 * Copyright (c) 2009-2014, Sandia Corporation (See LICENSE file)
 *
 *************************************************************************
+
+For the latest information, see the WIKI at https://www.sst-simulator.org
+For overview information, see http://sst.sandia.gov.
  
 The Structural Simulation Toolkit (SST) explores innovations 
 in highly concurrent systems where the ISA, microarchitecture, 
@@ -18,19 +20,3 @@ a higher level of performance and the ability to look at large systems.
 The framework has been successfully used to model concepts ranging from 
 processing in memory to conventional processors connected by conventional 
 network interfaces. 
- 
-The following external components are used. All are optional except the 
-BOOST and MPI libraries.
-Boost 1.54.0
-DRAMSim2 2.2.2
-GEM5 tag V3.1.0 from https://code.google.com/p/sst-gem5-devel.devel which was 
- a fork of gem5-stable at change set 8642:549b72de8f72 back on Dec 15 2011
-OpenMPI 1.7.2
-QEMU 0.12.3
-QSim 0.2.1
-
-Power models have autrophied somewhat and are in the process of being restored.
-
-Deprecated with this release:
-Zesto
-Support for External components: SST/Macro, MacSim, Mpich2, and OMNeT++.

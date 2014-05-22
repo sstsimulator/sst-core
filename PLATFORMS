@@ -1,11 +1,9 @@
-SST and the supported models are built and tested nightly for the following
-OS/compiler combinations:
-1. Ubunto 12.04 LTS (64-bit) with gcc v4.6.3
-2. MacOS 10.7.4 (lion) with LLVM i686-apple-darwin11-llvm-g++-4.2.1
-3. MacOS 10.8.3 (mountain lion) with LLVM i686-apple-darwin11-llvm-g++-4.2.1
-4. CentOS 6.2 with gcc V4.4.6
-5. TOSS 2.0 -0rc4.ch5 with RHEL 6.4 (Santiago) with gcc 4.4.7 
-   (see http://code.google.com/p/chaos-release/wiki/CHAOS_Description)
+Release V4.0.0 (core and elements) has been built and tested with the following OS/compiler combinations.
+- Ubuntu 12.04 LTS (64-bit) with gcc v4.6.3 (We would have liked to upgrade to 14.04, but there are a number of gcc v4.8.2 compiler issues to resolve still.)
+- MacOS 10.8.5 (Mountain Lion) with MacPorts gcc 4.6 required for the entire build.
+- MacOS 10.9.2 (Mavericks) with default LLVM (v5.x) from Xcode. If Gem5 is required, use MacPorts gcc 4.6 for the entire build.
+- CentOS 6.5 with gcc V4.4.7 
+- TOSS 2.1.1-3.ch5.1.1 with RHEL 6.4 (Santiago) with gcc v4.4.7 
 
 Note: SST is only supported on 64-bit platforms.
 
