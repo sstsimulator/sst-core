@@ -562,5 +562,7 @@ UnitAlgebra::getRoundedValue() const
 //     return os;
 // }
 //
-BOOST_CLASS_EXPORT(Units)
+
+BOOST_CLASS_EXPORT(SST::Units)
+
 BOOST_CLASS_EXPORT(UnitAlgebra)

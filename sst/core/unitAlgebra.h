@@ -22,6 +22,7 @@
 #include <vector>
 
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#include <boost/version.hpp>
 
 namespace SST {
 
@@ -114,6 +115,27 @@ private:
     void init(std::string val);
 
 	friend class boost::serialization::access;
+#if BOOST_VERSION < 105500
+    /* cpp_dec_float in Boost 1.54 and earlier doesn't serialize automatically */
+    template<class Archive>
+    void save(Archive &ar, const unsigned int version ) const
+    {
+		ar & BOOST_SERIALIZATION_NVP(unit);
+        std::string s = value.str(40, std::ios_base::fixed);
+		ar & BOOST_SERIALIZATION_NVP(s);
+    }
+
+    template<class Archive>
+    void load(Archive &ar, const unsigned int version )
+    {
+		ar & BOOST_SERIALIZATION_NVP(unit);
+        std::string s;
+		ar & BOOST_SERIALIZATION_NVP(s);
+        value = sst_dec_float(s);
+    }
+
+    BOOST_SERIALIZATION_SPLIT_MEMBER()
+#else
 	template<class Archive>
 	void
 	serialize(Archive & ar, const unsigned int version )
@@ -121,6 +143,7 @@ private:
 		ar & BOOST_SERIALIZATION_NVP(unit);
 		ar & BOOST_SERIALIZATION_NVP(value);
 	}
+#endif
 public:
     UnitAlgebra() {}
     /**
