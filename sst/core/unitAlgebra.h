@@ -81,7 +81,7 @@ public:
      */
     Units(std::string units, sst_dec_float& multiplier);
     Units() {}
-    ~Units() {}
+    virtual ~Units() {}
 
     /** Assignment operator */
     Units& operator= (const Units& v);
@@ -162,7 +162,7 @@ public:
      \endcode
      */
     UnitAlgebra(std::string val);
-    ~UnitAlgebra();
+    virtual ~UnitAlgebra();
 
     /** Print to an ostream the value */
     void print(std::ostream& stream);
@@ -274,5 +274,8 @@ inline std::ostream& operator<< (std::ostream& os, const Units& r)
 }
 
 } // namespace SST
+
+BOOST_CLASS_EXPORT_KEY(SST::Units)
+BOOST_CLASS_EXPORT_KEY(SST::UnitAlgebra)
 
 #endif //SST_CORE_TIMELORD_H
