@@ -1,4 +1,4 @@
-2014-5-22
+2014-5-22 Sue Kelly
 * Release V4.0.0
 The changes in V4.0.0 of the Micro version of the Structural Simulation Toolkit (SST) are divided by area: general, the core, and integrated components.
  
@@ -44,6 +44,97 @@ Deprecated with this release are:
 - palacios
 - portals4 
 - power (technology interface directory)
+
+A number of issues were resolved by fixes in this release. The full
+description of each issue can be found on the SST wiki at 
+http://www.sst-simulator.org/report.
+111 openmp Suite disabled on for with "USE_SST_DEVICE".
+112 The "Nightly tests" should not be used to measure health of VMs
+113 Compile Error in MemHierarchy for type incompatibility
+114 SST's GEM5 doesn't build with the updated Xcode5 (command line tools - Sept 2013)
+115 Conflict with DramSim when attempting to integrate HybridSim / NVDIMMSim
+116 clang template-depth and Boost
+117 Python scripts require PYTHONPATH to be set manually.
+118 Flag --enable-debug does not properly enable the debug functions in the Output class
+119 Crash when calling Output with verbose.
+120 Outpupt::fatal requires output_level and output_bits parameters; could fail to send message
+121 Segmentation Fault in memController Running LULESH Miniapp
+122 Assertion called by memHierarchy Running Sorting Micro-benchmark
+123 Output debug function does not compile correctly (GCC 4.6.4)
+124 state that proxy must be designated for macports to work behind firewalls
+125 when python install fails while running "sudo port install scons"
+126 Place BOOST instructions in 3.1.1 wiki page; do NOT make users go looking for a another wiki page
+127 command-line test for each package install
+128 Possible link Issue (or lack of warning?)
+129 Delay caused by Gem5 while reading long files
+130 DRAMSim installation guide section of the wiki needs to be updated
+131 Automake is Not Included in Required Dependencies
+132 Inconsistent SST Dependency Information
+133 SST fails to build with --disable-mpi when mpi.h cannot be found.
+134 __STDC_FORMAT_MACROS redefinition warnings
+135 can't find the micro-sst installation file
+136 Intermittent assertion fail:  SST::M5::BarrierAction::BarrierAction(int): Assertion `rc == 0' failed.
+138 Components include source files from other element libraries
+140 Build fails on OSX looking for SST-3.1.pc
+141 autogen.sh fails on RH 6.5 (Santiago) system
+142 libpatterns fails to build with --disable-mpi
+143 SST fails to link with latest OpenMPI release
+144 Allow SST to pass ConfigGraph to Python for script based graph partitioning
+145 MemHierarchy should build without warnings
+146 Directory Ctrl does not support MESI yet (work in progress)
+148 Missing symbols in new MemHierarachy
+149 MemHierarchy Test files/examples no longer work
+150 Nightly Builds don't check distribution
+151 Nightly Builds don't check distribution
+152 Nightly Builds don't check distribution
+153 SST fails with empty config xml tag
+155 Cache Error Using Ariel
+156 sstinfo isn't environment-wrapped
+157 Merlin - Issue with number of VCs
+158 Issue with DirectoryController interleaved addressing
+160 Caches require 64 byte linesize
+161 sstinfo segfaults
+162 sst verbose option requires optional parameter
+163 "Profiling timer expired" intermittent error
+164 sst verbose option Seg Faults on MacOS
+165 Unable to kill SST simulations with Ctrl+C since wrapping executables were introduced
+166 SST doesn't throw error when different components have same name
+196 No nightly Doxygen for trunk
+198 MemHierarchy fails to build
+199 SST Info needs to allow components to specify parameter sets in the same way as link sets
+200 SST fails to compile (due to r6821?)
+201 For Mac OSX without MacPorts Autogen Fails
+203 Clang test disabled pending availablity of  MacOS 10.9 builder
+204 QSim test fails
+205 SST test failures are not reproducible across environments
+206 SS_router should not use SST::Log
+208 Need at test for Ember
+210 Need a test for SimpleDistribComponent
+213 sst "--run-mode init" option fails on iris Component test.
+216 m5C does not support NACKs
+217 Qsim and MacSim lack support for NACKs
+219 memHierarchy has catch statements within handling of Event
+220 SST Ember Runs with Memory Pools enabled causes Seg-Fault
+221 Not all source files have Sandia Copyright Header
+222 Ariel and Prospero need NACKs
+223 Create a generic read/write interface to MemHierarchy
+224 NVRAMSim and HybridSim compilation problems
+226 MemHierarchy optimization: Add InvX support
+227 MemHierarchy latency for coherency-related transactions is inaccurate
+228 Add doxygen documentation to memHierarchy
+229 sst boostrap failes when no --prefix was given to ./configure
+231 Component Configuration Changes break Zoltan Interface
+232 Recent changes have broken patterns test.
+235 Four memHierarchy nightly test fail on all platforms
+237 MemHierarchy migration guide
+254 Build instructions for HybridSim and NVDIMMSim
+257 Conversion by SST from xml to python input file fails for 2 memHierarchy sdl cases
+259 Anomolous difference in Prospero test between XML input and Python input
+261 SST allows simulation using Components with missing "required" parameters
+262 SST xml to python conversion is not faithful with latency in links.
+264 Cassini StridePrefetcher doesn't work with MemHierarhcy
+265 Cassini needs to use MemHierarchyInterface
+266 zoltan test using embernightly fails on Boost/C++ exception
 
 2013-05-08
 * Release V3.0.0

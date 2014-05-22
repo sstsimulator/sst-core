@@ -1,4 +1,22 @@
-See http://www.sst-simulator.org/report
-As of this release, the latest issue is 110. Open issues 
-12, 14, 33, 38, 54, 58, 62, 71, 82-85, 88, 91, 92, 98,
-100, 103, 104, 106-110 apply to this release.
+See http://www.sst-simulator.org/report to query the issue tracking system.
+
+As of this release, the latest issue is 266. The following 
+open defect tickets apply to this release.
+
+ 62 Elements should not make MPI calls
+ 88 Gem5 / SST timing issue
+ 91 Problem with installing gem5 for ARM architecture
+ 98 Can't I build gem5 in sst fast mode?
+100 sst-gem5 not compliant with latest C++ standard, won't build with gcc 4.8.1
+147 MemHierarchy does not pass tests when configured to use ZCache-style arrays, MRU replacement policy
+207 m5C should migrate to SST::Output from internal logigng
+209 Need a test for oberon
+214 SVN information wiki page references Google Code
+225 SST Broadcasts a ConfigGraph Greater than 2GB
+233 Ariel uses deprecated tmpnam(3)
+236 sst  "run-mode init" option fails on Sirius Zodiac Trace test case.
+253 Ember needs to have additional Motifs in the overnight testing process
+256 Add Common Error Cases to FAQ
+258 How to Run SST wiki page is out of date
+260 XML to Python disregards Program Option Timebase
+263 Ariel launches pin when run-mode=init
