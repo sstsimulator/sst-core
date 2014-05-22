@@ -59,8 +59,29 @@ for elemlib in $elemlib_m4_list ; do
   echo "m4_include($elemlib)" >> config/sst_m4_config_include.m4
 done
 
-echo "Generating configure files ..."
-if test $major_version -lt 2 ; then
+OPSYS=`uname`
+OSSYSVER=`uname -r`
+
+echo "Generating configure files..."
+if test "$OPSYS" = "Darwin" -a "$OSSYSVER" = "12.3.0"; then
+  echo " - Using Libtool generation for Mountain Lion"
+
+  rm -rf libltdl sst/core/libltdl
+  ${libtool}ize --automake --copy --ltdl
+  if test -d libltdl; then
+    echo " - Moving libltdl to sst/core/"
+    mv libltdl sst/core
+  fi
+  if test ! -d sst/core/libltdl ; then
+    echo "libltdl doesn't exist.  Aborting."
+    exit 1
+  fi
+  aclocal -I config
+  autoheader
+  autoconf
+  automake --foreign --add-missing --include-deps
+
+elif test $major_version -lt 2 ; then
   echo " - Using Libtool pre-2.0"
 
   rm -rf libltdl sst/core/libltdl
