@@ -57,6 +57,15 @@ private:
     // Used in constructor to incrementally build up unit from string
     void addUnit(std::string, sst_dec_float& multiplier, bool invert);
 
+	friend class boost::serialization::access;
+	template<class Archive>
+	void
+	serialize(Archive & ar, const unsigned int version )
+	{
+		ar & BOOST_SERIALIZATION_NVP(numerator);
+		ar & BOOST_SERIALIZATION_NVP(denominator);
+	}
+
 public:
     // Static data members and functions
     /** Create a new Base Unit type */
@@ -103,7 +112,15 @@ private:
 
     static std::string trim(std::string str);
     void init(std::string val);
-        
+
+	friend class boost::serialization::access;
+	template<class Archive>
+	void
+	serialize(Archive & ar, const unsigned int version )
+	{
+		ar & BOOST_SERIALIZATION_NVP(unit);
+		ar & BOOST_SERIALIZATION_NVP(value);
+	}
 public:
     UnitAlgebra() {}
     /**

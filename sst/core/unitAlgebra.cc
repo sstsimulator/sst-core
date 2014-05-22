@@ -561,3 +561,6 @@ UnitAlgebra::getRoundedValue() const
 //     os << r.toString();
 //     return os;
 // }
+//
+BOOST_CLASS_EXPORT(Units)
+BOOST_CLASS_EXPORT(UnitAlgebra)
