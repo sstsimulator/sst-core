@@ -385,8 +385,6 @@ void Simulation::run() {
     sa->setDeliveryTime(SST_SIMTIME_MAX);
     timeVortex->insert(sa);
 
-    Activity* last;
-    // Output out("",5,0xffffffff,Output::STDOUT);
     while( LIKELY( ! endSim ) ) {
         if ( UNLIKELY( 0 != lastRecvdSignal ) ) {
             printStatus(lastRecvdSignal == SIGUSR2);
@@ -394,9 +392,7 @@ void Simulation::run() {
         }
         currentSimCycle = timeVortex->front()->getDeliveryTime();
         currentPriority = timeVortex->front()->getPriority();
-        
         current_activity = timeVortex->pop();
-        // current_activity->print("->",sim_output);
         current_activity->execute();
     }
 
