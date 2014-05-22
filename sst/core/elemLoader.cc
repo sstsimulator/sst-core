@@ -34,6 +34,8 @@
 #include <unistd.h>
 #endif
 
+#include <stdio.h>
+
 /* This needs to happen before lt_dlinit() and sets up the preload
    libraries properly.  The macro declares an extern symbol, so if we
    do this in the sst namespace, the symbol is namespaced and then not
