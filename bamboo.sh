@@ -411,6 +411,7 @@ ZOLTAN_HOME=/home/jpvandy/Zoltan_v3.8/BUILD_DIR
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g none -m none -i none -o none -h none -s none -q 0.2.1 -M none"
+
             setConvenienceVars "$depsStr"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
             configStr="$baseoptions  --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
@@ -459,7 +460,7 @@ ZOLTAN_HOME=/home/jpvandy/Zoltan_v3.8/BUILD_DIR
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g none -m none -i none -o none -h none -s none -q none"
             setConvenienceVars "$depsStr"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM $miscEnv"
+            configStr="$baseoptions ${MTNLION_FLAG} --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM $miscEnv"
             ;;
         sstmainline_config_macosx_static) 
             #-----------------------------------------------------------------
@@ -1061,8 +1062,22 @@ else
                 macosVersionFull=`sw_vers -productVersion`
                 macosVersion=${macosVersionFull%.*}
 
-                # Make sure that Mac uses the "new" autotools and can find other utils
-                PATH=$HOME/tools/autotools/bin:/opt/openmpi/bin:/opt/local/bin:/usr/bin:$HOME/bin:/usr/local/bin:$PATH; export PATH
+                if [[ $macosVersion = "10.8" && $compiler = "clang-503.0.40" ]]
+                then
+                    # Mountain Lion + clang PATH                    
+                    PATH="$HOME/Documents/GNUTools/Automake/1.14.1/bin:$HOME/Documents/GNUTools/Autoconf/2.69.0/bin:$HOME/Documents/GNUTools/Libtool/2.4.2/bin:$HOME/Documents/wget-1.15/bin:$PATH"
+                    export PATH
+
+                    # Mountain Lion requires this extra flag passed to SST ./configure
+                    # Mavericks does not require this.
+                    MTNLION_FLAG="--disable-cxx11"
+                    export MTNLION_FLAG
+                else
+                    # macports or hybrid clang/macports
+                    PATH="/opt/local/bin:/usr/local/bin:$PATH"
+                    export PATH
+                fi
+
 
                 # Point to aclocal per instructions from sourceforge on MacOSX installation
                 export ACLOCAL_FLAGS="-I/opt/local/share/aclocal $ACLOCAL_FLAGS"
@@ -1330,9 +1345,6 @@ else
                                     module unload mpi
                                     module unload boost
 
-                                    # make sure that Xcode 5.1 executables are used
-                                    module load toolset/xcode-5.1
-
                                     # load MPI
                                     case $2 in
                                         ompi_default|openmpi-1.8)
@@ -1361,6 +1373,51 @@ else
                                             echo "Third argument was $3"
                                             echo "Loading boost/Boost 1.50"
                                             module load boost/boost-1.54.0_ompi-1.8_clang-503.0.38 2>catch.err
+                                            if [ -s catch.err ] 
+                                            then
+                                                cat catch.err
+                                                exit 0
+                                            fi
+                                            ;;
+                                    esac
+                                    export CC=`which clang`
+                                    export CXX=`which clang++`
+                                    module list
+                                    ;;
+
+                                clang-503.0.40)
+                                    # Use Boost and MPI built with CLANG from Xcode 5.1
+                                    module unload mpi
+                                    module unload boost
+
+                                    # load MPI
+                                    case $2 in
+                                        ompi_default|openmpi-1.8)
+                                            echo "OpenMPI 1.8 (openmpi-1.8) selected"
+                                            module add mpi/openmpi-1.8_clang-503.0.40
+                                            ;;
+                                        *)
+                                            echo "Default MPI option, loading mpi/openmpi-1.8"
+                                            module load mpi/openmpi-1.8_clang-503.0.40 2>catch.err
+                                            if [ -s catch.err ] 
+                                            then
+                                                cat catch.err
+                                                exit 0
+                                            fi
+                                            ;;
+                                    esac
+                                                        
+                                    # load corresponding Boost
+                                    case $3 in
+                                        boost_default|boost-1.54)
+                                            echo "Boost 1.54 selected"
+                                            module add boost/boost-1.54.0_ompi-1.8_clang-503.0.40
+                                            ;;
+                                        *)
+                                            echo "bamboo.sh: \"Default\" Boost selected"
+                                            echo "Third argument was $3"
+                                            echo "Loading boost/Boost 1.50"
+                                            module load boost/boost-1.54.0_ompi-1.8_clang-503.0.40 2>catch.err
                                             if [ -s catch.err ] 
                                             then
                                                 cat catch.err
@@ -1439,9 +1496,6 @@ else
                                     # Use Boost and MPI built with CLANG from Xcode 5.1
                                     module unload mpi
                                     module unload boost
-
-                                    # make sure that Xcode 5.1 executables are used
-                                    module load toolset/xcode-5.1
 
                                     # load MPI
                                     case $2 in
