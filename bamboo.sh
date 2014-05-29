@@ -1080,6 +1080,20 @@ else
                 export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
                 echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
 
+                # Load other modules that were built with the default compiler
+                if [ $compiler = "default" ]
+                then
+                    # GNU Linear Programming Kit (GLPK)
+                    echo "bamboo.sh: Load GLPK"
+                    module load glpk/glpk-4.54
+                    # System C
+                    echo "bamboo.sh: Load System C"
+                    module load systemc/systemc-2.3.0
+                    # Other misc
+                    echo "bamboo.sh: Load libphx"
+                    module load libphx/libphx-2014-MAY-08
+                fi
+
 #                # load OMNet++
 #                module unload omnet++
 #                module load omnet++/omnet++-4.1_no-mpi 2>__std.err__
@@ -1337,6 +1351,17 @@ else
                                     module unload mpi
                                     module unload boost
 
+                                    # Load gcc-4.6.4 specific modules
+                                    # GNU Linear Programming Kit (GLPK)
+                                    echo "bamboo.sh: Load GLPK"
+                                    module load glpk/glpk-4.54_gcc-4.6.4
+                                    # System C
+                                    echo "bamboo.sh: Load System C"
+                                    module load systemc/systemc-2.3.0_gcc-4.6.4
+                                    # Other misc
+                                    echo "bamboo.sh: Load libphx"
+                                    module load libphx/libphx-2014-MAY-08_gcc-4.6.4
+
                                     # load MPI
                                     case $2 in
                                         ompi_default|openmpi-1.8)
@@ -1381,6 +1406,17 @@ else
                                     # Use Boost and MPI built with CLANG from Xcode 5.1
                                     module unload mpi
                                     module unload boost
+
+                                    # Load other modules for clang-503.0.38
+                                    # GNU Linear Programming Kit (GLPK)
+                                    echo "bamboo.sh: Load GLPK"
+                                    module load glpk/glpk-4.54_clang-503.0.38
+                                    # System C
+                                    echo "bamboo.sh: Load System C"
+                                    module load systemc/systemc-2.3.0_clang-503.0.38
+                                    # Other misc
+                                    echo "bamboo.sh: Load libphx"
+                                    module load libphx/libphx-2014-MAY-08_clang-503.0.38
 
                                     # load MPI
                                     case $2 in
@@ -1489,6 +1525,17 @@ else
                                     module unload mpi
                                     module unload boost
 
+                                    # Load gcc-4.6.4 specific modules
+                                    # GNU Linear Programming Kit (GLPK)
+                                    echo "bamboo.sh: Load GLPK"
+                                    module load glpk/glpk-4.54_gcc-4.6.4
+                                    # System C
+                                    echo "bamboo.sh: Load System C"
+                                    module load systemc/systemc-2.3.0_gcc-4.6.4
+                                    # Other misc
+                                    echo "bamboo.sh: Load libphx"
+                                    module load libphx/libphx-2014-MAY-08_gcc-4.6.4
+
                                     # load MPI
                                     case $2 in
                                         ompi_default|openmpi-1.8)
@@ -1533,6 +1580,17 @@ else
                                     # Use Boost and MPI built with CLANG from Xcode 5.1
                                     module unload mpi
                                     module unload boost
+
+                                    # Load other modules for clang-503.0.38
+                                    # GNU Linear Programming Kit (GLPK)
+                                    echo "bamboo.sh: Load GLPK"
+                                    module load glpk/glpk-4.54_clang-503.0.38
+                                    # System C
+                                    echo "bamboo.sh: Load System C"
+                                    module load systemc/systemc-2.3.0_clang-503.0.38
+                                    # Other misc
+                                    echo "bamboo.sh: Load libphx"
+                                    module load libphx/libphx-2014-MAY-08_clang-503.0.38
 
                                     # load MPI
                                     case $2 in
