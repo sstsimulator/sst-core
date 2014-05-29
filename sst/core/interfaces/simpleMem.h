@@ -75,11 +75,11 @@ public:
         dataVec data;       /*!< Payload data (for Write, or ReadResp) */
         flags_t flags;      /*!< Flags associated with this request or response */
         id_t id;            /*!< Unique ID to identify responses with requests */
-
+        uint32_t groupId;   /* Group Id.  Used to maintain group-based stats in MH */
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, dataVec &data, flags_t flags = 0) :
-            cmd(cmd), addr(addr), size(size), data(data), flags(flags)
+            cmd(cmd), addr(addr), size(size), data(data), flags(flags), groupId(0)
         {
             // TODO:  If we support threading in the future, this should be made atomic
             id = main_id++;
@@ -87,10 +87,19 @@ public:
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, flags_t flags = 0) :
-            cmd(cmd), addr(addr), size(size), flags(flags)
+            cmd(cmd), addr(addr), size(size), flags(flags), groupId(0)
         {
             // TODO:  If we support threading in the future, this should be made atomic
             id = main_id++;
+        }
+        
+        
+        /**
+         * Set Stats Group Id 
+         */
+        void setGroupId(uint32_t _groupId)
+        {
+            groupId = _groupId;
         }
 
         /**
