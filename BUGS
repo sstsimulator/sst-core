@@ -10,7 +10,6 @@ open defect tickets apply to this release.
 100 sst-gem5 not compliant with latest C++ standard, won't build with gcc 4.8.1
 147 MemHierarchy does not pass tests when configured to use ZCache-style arrays, MRU replacement policy
 207 m5C should migrate to SST::Output from internal logigng
-?209 Need a test for oberon
 225 SST Broadcasts a ConfigGraph Greater than 2GB
 233 Ariel uses deprecated tmpnam(3)
 236 sst  "run-mode init" option fails on Sirius Zodiac Trace test case.
