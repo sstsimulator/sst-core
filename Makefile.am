@@ -13,7 +13,8 @@ EXTRA_DIST = \
 	LICENSE \
 	PLATFORMS \
 	README \
-	VERSION
+	VERSION \
+	deps/patches/qsim-0.2.1-fileOpenCheck.patch
 
 SUBDIRS = \
 	sst \
