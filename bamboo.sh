@@ -126,7 +126,9 @@ dotests() {
     #
     if [ $1 == "sstmainline_config_openmp" ]
     then
-        ${SST_TEST_SUITES}/testSuite_openMP.sh
+##########################################################
+        export SST_SWEEP_OPENMP=dynamic
+        ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
         return
     fi
 
@@ -135,7 +137,7 @@ dotests() {
     #
     if [ $1 == "sstmainline_config_diropenmp" ]
     then
-        ${SST_TEST_SUITES}/testSuite_diropenMP.sh
+        ${SST_TEST_SUITES}/testSuite_dirSweep.sh
         return
     fi
 
