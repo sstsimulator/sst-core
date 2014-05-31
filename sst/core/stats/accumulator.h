@@ -10,8 +10,8 @@
 // distribution.
 
 
-#ifndef _H_SST_CORE_ONLINE_STATS
-#define _H_SST_CORE_ONLINE_STATS
+#ifndef _H_SST_CORE_STATS_ACCUMULATOR
+#define _H_SST_CORE_STATS_ACCUMULATOR
 
 #include <sst/core/stats/basestats.h>
 
@@ -19,7 +19,7 @@ namespace SST {
 namespace Statistics {
 
 /**
-	\class OnlineStatistic
+	\class Accumulator
 
 	Allows the online gathering of statistical information about a single quantity. The basic 
 	statistics are captured online removing the need to keep a copy of the values of interest.
@@ -27,14 +27,14 @@ namespace Statistics {
 	@tparam NumberBase A template for the basic numerical type of values
 */
 <template typename NumberBase>
-class OnlineStatistic : public SST::Statistics::BaseStatistic {
+class Accumulator : public SST::Statistics::BaseStatistic {
 
 	public:
 		/**
-			Create a new OnlineStatistic class with initial values set to a zero count,
+			Create a new Accumulator class with initial values set to a zero count,
 			zero sum statistic of interest.
 		*/
-		OnlineStatistic() {
+		Accumulator() {
 			count = 0;
 			sum = 0;
 			sum_sq = 0;
