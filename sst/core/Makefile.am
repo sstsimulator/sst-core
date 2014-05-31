@@ -77,7 +77,7 @@ nobase_dist_sst_HEADERS = \
 	rng/constant.h \
 	stats/basestats.h \
 	stats/statfuncs.h \
-	stats/onlinestats.h \
+	stats/accumulator.h \
 	stats/histo/histo.h \
 	cputimer.h
 
