@@ -23,6 +23,8 @@ namespace SST {
 namespace RNG {
 
 /**
+	\class SSTExponentialDistribution expon.h "sst/core/rng/expon.h"
+
 	Creates an exponential distribution for use within SST. This distribution is the same across
 	platforms and compilers.
 */

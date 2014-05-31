@@ -22,6 +22,8 @@ namespace SST {
 namespace RNG {
 
 /**
+	\class SSTConstantDistribution constant.h "sst/core/rng/constant.h"
+
 	Implements a distribution which always returns a constant value (provided by the user). This
 	can be used in situations where the user may not want to apply a distribution.
 */

@@ -23,6 +23,8 @@ namespace SST {
 namespace RNG {
 
 /**
+	\class SSTGaussianDistribution gaussian.h "sst/core/rng/gaussian.h"
+
 	Creates a Gaussian (normal) distribution for which to sample
 */
 class SSTGaussianDistribution : public SSTRandomDistribution {
