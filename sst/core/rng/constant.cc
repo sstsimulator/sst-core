@@ -13,7 +13,9 @@
 #include <sst_config.h>
 #include "constant.h"
 
-SSTConstantDistribution::SSTConstantDistribution(double v) {
+SSTConstantDistribution::SSTConstantDistribution(double v) :
+	SSTRandomDistribution() {
+
 	mean = v;
 }
 

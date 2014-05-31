@@ -30,6 +30,16 @@ class SSTRandomDistribution {
 		*/
 		virtual double getNextDouble() = 0;
 
+		/** 
+			Destroys the distribution
+		*/
+		~SSTRandomDistribution() {};
+
+		/**
+			Creates the base (abstract) class of a distribution
+		*/
+		SSTRandomDistribution() {};
+
 };
 
 }

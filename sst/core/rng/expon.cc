@@ -13,12 +13,16 @@
 #include <sst_config.h>
 #include "expon.h"
 
-SSTExponentialDistribution::SSTExponentialDistribution(double mn) {
+SSTExponentialDistribution::SSTExponentialDistribution(double mn) :
+	SSTRandomDistribution() {
+
 	lambda = mn;
 	baseDistrib = new MersenneRNG();
 }
 
-SSTExponentialDistribution::SSTExponentialDistribution(double mn, SSTRandom* baseDist) {
+SSTExponentialDistribution::SSTExponentialDistribution(double mn, SSTRandom* baseDist) :
+	SSTRandomDistribution() {
+
 	lambda = mn;
 	baseDistrib = baseDist;
 }

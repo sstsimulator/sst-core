@@ -13,7 +13,9 @@
 #include <sst_config.h>
 #include "gaussian.h"
 
-SSTGaussianDistribution::SSTGaussianDistribution(double mn, double sd) {
+SSTGaussianDistribution::SSTGaussianDistribution(double mn, double sd) :
+	SSTRandomDistribution() {
+
 	mean = mn;
 	stddev = sd;
 
@@ -22,7 +24,9 @@ SSTGaussianDistribution::SSTGaussianDistribution(double mn, double sd) {
 	usePair = false;
 }
 
-SSTGaussianDistribution::SSTGaussianDistribution(double mn, double sd, SSTRandom* baseRNG) {
+SSTGaussianDistribution::SSTGaussianDistribution(double mn, double sd, SSTRandom* baseRNG) :
+	SSTRandomDistribution() {
+
 	mean = mn;
 	stddev = sd;
 
