@@ -57,6 +57,11 @@ class SSTRandom {
 	*/
         virtual int32_t  generateNextInt32() = 0;
 
+	/**
+		Destroys the random number generator
+	*/
+	virtual ~SSTRandom() { }
+
 };
 
 } //namespace RNG

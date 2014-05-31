@@ -33,7 +33,7 @@ class SSTRandomDistribution {
 		/** 
 			Destroys the distribution
 		*/
-		~SSTRandomDistribution() {};
+		virtual ~SSTRandomDistribution() {};
 
 		/**
 			Creates the base (abstract) class of a distribution
