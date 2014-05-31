@@ -18,6 +18,7 @@ SSTExponentialDistribution::SSTExponentialDistribution(double mn) :
 
 	lambda = mn;
 	baseDistrib = new MersenneRNG();
+	deleteDistrib = true;
 }
 
 SSTExponentialDistribution::SSTExponentialDistribution(double mn, SSTRandom* baseDist) :
@@ -25,6 +26,13 @@ SSTExponentialDistribution::SSTExponentialDistribution(double mn, SSTRandom* bas
 
 	lambda = mn;
 	baseDistrib = baseDist;
+	deleteDistrib = false;
+}
+
+SSTExponentialDistribution::~SSTExponentialDistribution() {
+	if(deleteDistrib) {
+		delete baseDistrib;
+	}
 }
 
 double SSTExponentialDistribution::getNextDouble() {

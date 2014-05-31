@@ -43,6 +43,11 @@ class SSTExponentialDistribution : public SSTRandomDistribution {
 		SSTExponentialDistribution(double lambda, SSTRandom* baseDist);
 
 		/**
+			Destroys the exponential distribution
+		*/
+		~SSTExponentialDistribution();
+
+		/**
 			Gets the next (random) double value in the distribution
 			\return The next random double from the distribution
 		*/
@@ -63,6 +68,11 @@ class SSTExponentialDistribution : public SSTRandomDistribution {
 			Sets the base random number generator for the distribution.
 		*/
 		SSTRandom* baseDistrib;
+
+		/**
+			Controls whether the base distribution should be deleted when this class is destructed.
+		*/
+		bool deleteDistrib;
 
 };
 

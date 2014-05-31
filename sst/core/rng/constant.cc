@@ -19,6 +19,10 @@ SSTConstantDistribution::SSTConstantDistribution(double v) :
 	mean = v;
 }
 
+SSTConstantDistribution::~SSTConstantDistribution() {
+
+}
+
 double SSTConstantDistribution::getNextDouble() {
 	return mean;
 }

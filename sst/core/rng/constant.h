@@ -35,6 +35,11 @@ class SSTConstantDistribution : public SSTRandomDistribution {
 		SSTConstantDistribution(double mean);
 
 		/**
+			Destroys the constant distribution
+		*/
+		~SSTConstantDistribution();
+
+		/**
 			Gets the next double for the distribution, in this case it will return the constant
 			value specified by the user
 			\return Constant value specified by the user when creating the class

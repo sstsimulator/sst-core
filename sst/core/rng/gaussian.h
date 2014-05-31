@@ -44,6 +44,11 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
 		SSTGaussianDistribution(double mean, double stddev, SSTRandom* baseRNG);
 
 		/**
+			Destroys the Gaussian distribution.
+		*/
+		~SSTGaussianDistribution();
+
+		/**
 			Gets the next double value in the distributon
 			\return The next double value of the distribution (in this case a Gaussian distribution)
 		*/
@@ -82,6 +87,11 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
 			Random numbers for the distribution are read in pairs, this tells the code to use the second of the pair
 		*/
 		bool usePair;
+
+		/**
+			Controls whether the destructor deletes the distribution (we need to ensure we do this IF we created the distribution)
+		*/
+		bool deleteDistrib;
 };
 
 }

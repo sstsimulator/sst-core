@@ -22,6 +22,7 @@ SSTGaussianDistribution::SSTGaussianDistribution(double mn, double sd) :
 	baseDistrib = new MersenneRNG();
 	unusedPair = 0;
 	usePair = false;
+	deleteDistrib = true;
 }
 
 SSTGaussianDistribution::SSTGaussianDistribution(double mn, double sd, SSTRandom* baseRNG) :
@@ -33,6 +34,13 @@ SSTGaussianDistribution::SSTGaussianDistribution(double mn, double sd, SSTRandom
 	baseDistrib = baseRNG;
 	unusedPair = 0;
 	usePair = false;
+	deleteDistrib = false;
+}
+
+SSTGaussianDistribution::~SSTGaussianDistribution() {
+	if(deleteDistrib) {
+		delete baseDistrib;
+	}
 }
 
 /*
