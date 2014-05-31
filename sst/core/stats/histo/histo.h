@@ -15,6 +15,7 @@
 
 #include <sst_config.h>
 #include <sst/core/output.h>
+#include <sst/core/stats/basestats.h>
 
 #include <stdint.h>
 #include <map>
@@ -31,13 +32,30 @@ namespace Statistics {
 	\tparam HistoCountType is the count type of data held in each bin (i.e. what data type counts the number of items held in the bin itself)
 */
 template<class HistoBinType, class HistoCountType>
-class Histogram {
+class Histogram : public SST::Statistics::BaseStatistic {
 	public:
 		/**
 			Creates a new bin with a specific bin width
 			\param binW The width of the bin
 		*/
-		Histogram(HistoBinType binW) {
+		Histogram(const std::string name, HistoBinType binW) :
+			BaseStatistic(name) {
+
+			totalSummed = 0;
+			itemCount = 0;
+			binWidth = binW;
+			minVal = 0;
+			maxVal = 0;
+		}
+
+		/**
+			Creates a new bin with a specific bin width
+			\param[binW] The width of the bin
+			\param[name] Pointer to a name of the histogram variable (this is a description for the statistic engine to use in output)
+		*/
+		Histogram(const char* name, HistoBinType binW) :
+			BaseStatistic(name) {
+
 			totalSummed = 0;
 			itemCount = 0;
 			binWidth = binW;

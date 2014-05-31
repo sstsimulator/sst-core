@@ -13,6 +13,8 @@
 #ifndef _H_SST_CORE_ONLINE_STATS
 #define _H_SST_CORE_ONLINE_STATS
 
+#include <sst/core/stats/basestats.h>
+
 namespace SST {
 namespace Statistics {
 
@@ -25,7 +27,7 @@ namespace Statistics {
 	@tparam NumberBase A template for the basic numerical type of values
 */
 <template typename NumberBase>
-class OnlineStatistic {
+class OnlineStatistic : public SST::Statistics::BaseStatistic {
 
 	public:
 		/**
