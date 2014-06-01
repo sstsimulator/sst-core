@@ -842,7 +842,7 @@ ls -ltr | tail -5
 echo   " This is the non dist test path     +++++++++++++++++++++++++++++++++++++++++++++++"
     echo "bamboo.sh: making SST"
     # build SST
-    make -j2 all
+    make -j4 all
     retval=$?
     if [ $retval -ne 0 ]
     then
@@ -875,7 +875,7 @@ echo   " This is the non dist test path     ++++++++++++++++++++++++++++++++++++
     echo "SSTBUILD INFO============================================================"
 
     # install SST
-    make -j2 install
+    make -j4 install
     retval=$?
     if [ $retval -ne 0 ]
     then
