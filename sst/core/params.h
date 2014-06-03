@@ -12,6 +12,7 @@
 #ifndef SST_CORE_PARAM_H
 #define SST_CORE_PARAM_H
 
+#include <sst/sst_config.h>
 #include <sst/core/serialization.h>
 
 #include <iostream>
@@ -457,7 +458,10 @@ public:
         for ( std::vector<KeySet_t>::const_reverse_iterator ri = allowedKeys.rbegin() ; ri != allowedKeys.rend() ; ++ri ) {
             if ( ri->find(k) != ri->end() ) return;
         }
+
+#ifdef USE_PARAM_WARNINGS
         std::cerr << "Warning:  Parameter \"" << k << "\" is undocumented." << std::endl;
+#endif
     }
 
 
