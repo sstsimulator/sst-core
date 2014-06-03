@@ -12,6 +12,7 @@
 #ifndef SST_CORE_LINKMAP_H
 #define SST_CORE_LINKMAP_H
 
+#include <sst/sst_config.h>
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 
@@ -125,7 +126,9 @@ public:
     /** Returns a Link pointer for a given name */
     Link* getLink(std::string name) {
         if ( !checkPort(name) ) {
+#ifdef USE_PARAM_WARNINGS
             std::cerr << "Warning:  Using undocumented port '" << name << "'." << std::endl;
+#endif
         }
         std::map<std::string,Link*>::iterator it = linkMap.find(name);
         if ( it == linkMap.end() ) return NULL;
