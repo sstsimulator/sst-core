@@ -242,16 +242,16 @@ dotests() {
     fi
 
 
-    ## run only on HardWare
-    
-    if [ $HOST == "sst-test" ] || [ $HOST == "johnslion" ] ; then
-        echo " $HOST: Running the Wall Clock timing test"
-        ${SST_TEST_SUITES}/testSuite_simpleClocker.sh
-    else
-        echo " $HOST: Not Running the Wall Clock timing test"
-    fi
-
-    ## run above only on HardWare
+###     ## run only on HardWare
+###     
+###     if [ $HOST == "sst-test" ] || [ $HOST == "johnslion" ] ; then
+###         echo " $HOST: Running the Wall Clock timing test"
+###         ${SST_TEST_SUITES}/testSuite_simpleClocker.sh
+###     else
+###         echo " $HOST: Not Running the Wall Clock timing test"
+###     fi
+### 
+###     ## run above only on HardWare
     
     if [ $1 = "gem5_no_dramsim_config" ]
     then
