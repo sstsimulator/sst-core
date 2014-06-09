@@ -404,6 +404,9 @@ main(int argc, char *argv[])
 			broadcast(world, Params::keyMap, 0);
 			broadcast(world, Params::keyMapReverse, 0);
 			broadcast(world, Params::nextKeyID, 0);
+			if ( size > 1 && !cfg.all_parse ) {
+			    broadcast(world, cfg, 0);
+			}
 #endif
 		}
 
