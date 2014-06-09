@@ -173,7 +173,6 @@ dotests() {
     fi
 
 
-    ${SST_TEST_SUITES}/testSuite_zoltan.sh
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
@@ -225,6 +224,8 @@ dotests() {
     if [ $1 != "sstmainline_config_no_mpi" ] ; then
         #  patterns requires MPI in order to build
         ${SST_TEST_SUITES}/testSuite_patterns.sh
+        #  Zoltan test requires MPI to execute.
+        ${SST_TEST_SUITES}/testSuite_zoltan.sh
     fi
     ${SST_TEST_SUITES}/testSuite_scheduler.sh
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
