@@ -1,6 +1,6 @@
 See http://www.sst-simulator.org/report to query the issue tracking system.
 
-As of this release, the latest issue is 272. The following 
+As of this release, the latest issue is 277. The following 
 open defect tickets apply to this release.
 
  62 Elements should not make MPI calls
@@ -18,3 +18,6 @@ open defect tickets apply to this release.
 260 XML to Python disregards Program Option Timebase
 263 Ariel launches pin when run-mode=init
 269 The openMP test, atomicShort, takes two or three times as long to run as previously.
+274 L2 Associativity not being swept (stuck at 4)
+276 sst bootstrap doesn't set paths for all libs
+277 OMBBarrier Test Fails (1 out of 1152 test cases)

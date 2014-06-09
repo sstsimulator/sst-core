@@ -136,6 +136,10 @@ http://www.sst-simulator.org/report.
 264 Cassini StridePrefetcher doesn't work with MemHierarhcy
 265 Cassini needs to use MemHierarchyInterface
 266 zoltan test using embernightly fails on Boost/C++ exception
+267 MemHierarchyInterface reorders memory requests
+268 Sirius Zodiac Trace test is failing on Nightly on all platforms
+271 Multiple failures in memHierarchy sweep test
+
 
 2013-05-08
 * Release V3.0.0
