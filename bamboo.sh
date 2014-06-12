@@ -163,6 +163,8 @@ dotests() {
     if [ $1 == "sstmainline_config_linux_with_ariel" ]
     then
          ${SST_TEST_SUITES}/testSuite_Ariel.sh
+    else
+         ${SST_TEST_SUITES}/testSuite_scheduler.sh
     fi
 
     #
@@ -217,17 +219,20 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_diropenMP.sh
         ${SST_TEST_SUITES}/testSuite_stream.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
-        ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
-        ${SST_TEST_SUITES}/testSuite_dirSweep.sh
+        if [ $1 != "sstmainline_config_linux_with_ariel" ] ; then
+            ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
+            ${SST_TEST_SUITES}/testSuite_dirSweep.sh
+        fi
     fi
 
     if [ $1 != "sstmainline_config_no_mpi" ] ; then
         #  patterns requires MPI in order to build
         ${SST_TEST_SUITES}/testSuite_patterns.sh
         #  Zoltan test requires MPI to execute.
-        ${SST_TEST_SUITES}/testSuite_zoltan.sh
+        if [ $1 != "sstmainline_config_linux_with_ariel" ] ; then
+            ${SST_TEST_SUITES}/testSuite_zoltan.sh
+        fi
     fi
-    ${SST_TEST_SUITES}/testSuite_scheduler.sh
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
     ${SST_TEST_SUITES}/testSuite_prospero.sh
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
