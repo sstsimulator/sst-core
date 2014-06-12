@@ -296,7 +296,7 @@ setConvenienceVars() {
     echo "endfile-------"
     echo "setConvenienceVars() : exported variables"
     export | egrep SST_DEPS_
-    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST --without-zoltan"
+    baseoptions="--disable-silent-rules --prefix=$SST_INSTALL --with-boost=$SST_DEPS_INSTALL_BOOST"
     echo "setConvenienceVars() : baseoptions = $baseoptions"
 }
 
