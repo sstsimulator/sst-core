@@ -1722,20 +1722,29 @@ then
         if [ $buildtype == "sst_config_dist_test" ] ; then  
              echo "Setting up to build from the tar created by make dist"
              echo "---   PWD  `pwd`"           ## Original trunk
+             Package=`ls| grep 'sst-.*tar.gz' | awk -F'.tar' '{print $1}'`
+echo  PACKAGE is $Package
+             tarName=${Package}.tar.gz
+             ls $tarFile
+             if [ $? != 0 ] ; then
+                 ls
+                 echo Can NOT find Tar File $Package .tar.gz
+                 exit 1
+             fi
              mkdir $SST_ROOT/distTestDir
              cd $SST_ROOT/distTestDir
-             mv $SST_ROOT/sst-trunk.tar.gz .
+             mv $SST_ROOT/$tarName .
              if [ $? -ne 0 ] ; then
-                  echo "Move failed  \$SST_ROOT/sst-trunk.tar.gz to ."
+                  echo "Move failed  \$SST_ROOT/$tarName to ."
                   exit 1
              fi
-             echo "   Untar the created file, sst-trunk.tar.gz"
-             tar xzf sst-trunk.tar.gz
+             echo "   Untar the created file, $tarName"
+             tar xzf $tarName
              if [ $? -ne 0 ] ; then
-                  echo "Untar of sst-trunk.tar.gz failed"
+                  echo "Untar of $tarName failed"
                   exit 1
              fi
-             mv sst-trunk trunk
+             mv $Package trunk
              echo "Move in items not in the trunk, that are need for the bamboo build and test"
              cp  $SST_ROOT/bamboo.sh trunk
              cp -r $SST_ROOT/deps trunk          ## the deps scripts
