@@ -31,6 +31,10 @@ void update_env_var(const char* name, const int verbose) {
         new_env_size += (strlen(LIBPHX_LIBDIR) + 2) + sizeof(char) * 1;
 #endif
 
+#ifdef HAVE_GLPK
+        new_env_size += (strlen(GLPK_LIBDIR) + 2) + sizeof(char) * 1;
+#endif
+
         // Add 2 characters, we need one for the path seperator and one of the NULL?
         new_env_size += sizeof(char) * 2;
 
@@ -61,6 +65,13 @@ void update_env_var(const char* name, const int verbose) {
         sprintf(temp_phx_copy, "%s", updated_environment);
         sprintf(updated_environment, "%s:%s", temp_phx_copy, LIBPHX_LIBDIR);
         free(temp_phx_copy);
+#endif
+
+#ifdef HAVE_GLPK
+        char* temp_glpk_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
+        sprintf(temp_glpk_copy, "%s", updated_environment);
+        sprintf(updated_environment, "%s:%s", temp_glpk_copy, GLPK_LIBDIR);
+        free(temp_glpk_copy);
 #endif
 
         // Override the exiting LD_LIBRARY_PATH with our updated variable
