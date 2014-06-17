@@ -35,6 +35,10 @@ void update_env_var(const char* name, const int verbose) {
         new_env_size += (strlen(GLPK_LIBDIR) + 2) + sizeof(char) * 1;
 #endif
 
+#ifdef HAVE_HYBRIDSIM
+        new_env_size += (strlen(HYBRIDSIM_LIBDIR) + 2) + sizeof(char) * 1;
+#endif
+
         // Add 2 characters, we need one for the path seperator and one of the NULL?
         new_env_size += sizeof(char) * 2;
 
@@ -72,6 +76,13 @@ void update_env_var(const char* name, const int verbose) {
         sprintf(temp_glpk_copy, "%s", updated_environment);
         sprintf(updated_environment, "%s:%s", temp_glpk_copy, GLPK_LIBDIR);
         free(temp_glpk_copy);
+#endif
+
+#ifdef HAVE_HYBRIDSIM
+        char* temp_hybridsim_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
+        sprintf(temp_hybridsim_copy, "%s", updated_environment);
+        sprintf(updated_environment, "%s:%s", temp_hybridsim_copy, HYBRIDSIM_LIBDIR);
+        free(temp_hybridsim_copy);
 #endif
 
         // Override the exiting LD_LIBRARY_PATH with our updated variable
