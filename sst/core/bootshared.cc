@@ -39,6 +39,10 @@ void update_env_var(const char* name, const int verbose) {
         new_env_size += (strlen(HYBRIDSIM_LIBDIR) + 2) + sizeof(char) * 1;
 #endif
 
+#ifdef HAVE_QSIM
+        new_env_size += (strlen(QSIM_LIBDIR) + 2) + sizeof(char) * 1;
+#endif
+
         // Add 2 characters, we need one for the path seperator and one of the NULL?
         new_env_size += sizeof(char) * 2;
 
@@ -83,6 +87,13 @@ void update_env_var(const char* name, const int verbose) {
         sprintf(temp_hybridsim_copy, "%s", updated_environment);
         sprintf(updated_environment, "%s:%s", temp_hybridsim_copy, HYBRIDSIM_LIBDIR);
         free(temp_hybridsim_copy);
+#endif
+
+#ifdef HAVE_QSIM
+        char* temp_qsim_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
+        sprintf(temp_qsim_copy, "%s", updated_environment);
+        sprintf(updated_environment, "%s:%s", temp_qsim_copy, QSIM_LIBDIR);
+        free(temp_qsim_copy);
 #endif
 
         // Override the exiting LD_LIBRARY_PATH with our updated variable
