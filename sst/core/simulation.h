@@ -23,6 +23,8 @@
 #include "sst/core/output.h"
 #include "sst/core/clock.h"
 #include "sst/core/unitAlgebra.h"
+#include "sst/core/config.h"
+
 //#include "sst/core/sdl.h"
 //#include "sst/core/component.h"
 //#include "sst/core/params.h"
@@ -33,7 +35,7 @@ namespace SST {
 
 class Activity;
 class Component;
-class Config;
+//class Config;
 class ConfigGraph;
 class Exit;
 class Factory;
@@ -134,6 +136,8 @@ public:
     /** Return the base simulation Output class instance */
     Output& getSimulationOutput() { return sim_output; };
 
+    /** Get the run mode of the simulation (e.g. init, run, both etc) */
+    Config::Mode_t getSimulationMode() const;
     /** Return the current simulation time as a cycle count*/
     SimTime_t getCurrentSimCycle() const;
     /** Return the current priority */
@@ -254,6 +258,7 @@ private:
     TimeVortex* getTimeVortex() const { return timeVortex; }
     void endSimulation(void) { endSim = true; }
 
+    Config::Mode_t   runMode;
     TimeVortex*      timeVortex;
     TimeConverter*   minPartTC;
     Activity*        current_activity;

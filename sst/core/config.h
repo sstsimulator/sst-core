@@ -98,6 +98,10 @@ public:
         return UNKNOWN;
     }
 
+    Mode_t getRunMode() {
+	return runMode;
+    }
+
     /** Print to stdout the current configuration */
 	void print() {
 		std::cout << "debugFile = " << debugFile << std::endl;
