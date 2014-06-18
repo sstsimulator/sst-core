@@ -21,6 +21,10 @@ void Action::endSimulation() {
     Simulation::getSimulation()->endSimulation();
 }
 
+void Action::endSimulation(SimTime_t end) {
+    Simulation::getSimulation()->endSimulation(end);
+}
+
 } // namespace SST
 
 BOOST_CLASS_EXPORT_IMPLEMENT(SST::Action);

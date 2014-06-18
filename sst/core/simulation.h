@@ -44,7 +44,7 @@ class SimulatorHeartbeat;
 class Introspector;
 class LinkMap;
 class Params;
-class Sync;
+class SyncBase;
 class TimeConverter;
 class TimeLord;
 class TimeVortex;
@@ -104,7 +104,7 @@ private:
 class Simulation : public SimulationBase {
 public:
     typedef std::map<SimTime_t, Clock*> clockMap_t;    /*!< Map of times to clocks */
-    typedef std::map< unsigned int, Sync* > SyncMap_t; /*!< Map of times to Sync Objects */
+    // typedef std::map< unsigned int, Sync* > SyncMap_t; /*!< Map of times to Sync Objects */
 
     ~Simulation();
 
@@ -140,10 +140,14 @@ public:
     Config::Mode_t getSimulationMode() const { return runMode; };
     /** Return the current simulation time as a cycle count*/
     SimTime_t getCurrentSimCycle() const;
+    /** Return the end simulation time as a cycle count*/
+    SimTime_t getEndSimCycle() const;
     /** Return the current priority */
     int getCurrentPriority() const;
     /** Return the elapsed simulation time as a time */
     UnitAlgebra getElapsedSimTime() const;
+    /** Return the end simulation time as a time */
+    UnitAlgebra getFinalSimTime() const;
     /** Get this instance's parallel rank */
     int getRank() const {return my_rank;}
     /** Get the number of parallel ranks in the simulation */
@@ -257,17 +261,20 @@ private:
 
     TimeVortex* getTimeVortex() const { return timeVortex; }
     void endSimulation(void) { endSim = true; }
+    void endSimulation(SimTime_t end) { endSimCycle = end; endSim = true; }
 
+    
     Config::Mode_t   runMode;
     TimeVortex*      timeVortex;
     TimeConverter*   minPartTC;
     Activity*        current_activity;
-    Sync*            sync;
+    SyncBase*        sync;
     CompMap_t        compMap;
     CompIdMap_t      compIdMap;
     IntroMap_t       introMap;
     clockMap_t       clockMap;
     SimTime_t        currentSimCycle;
+    SimTime_t        endSimCycle;
     int              currentPriority;
     Exit*            m_exit;
     SimulatorHeartbeat*	m_heartbeat;

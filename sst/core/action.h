@@ -37,6 +37,7 @@ public:
 protected:
     /** Called to signal to the Simulation object to end the simulation */
     void endSimulation();
+    void endSimulation(SimTime_t end);
 
 private:
      friend class boost::serialization::access;

@@ -55,19 +55,22 @@ public:
     /** Decrement Reference Count for a given Component ID */
     bool refDec( ComponentId_t );
 
+    void execute(void);
+    void check();
+    
 private:
     Exit() { } // for serialization only
     Exit(const Exit&);           // Don't implement
     void operator=(Exit const&); // Don't implement
 
 //     bool handler( Event* );
-    void execute(void);
     
 //     EventHandler< Exit, bool, Event* >* m_functor;
     unsigned int    m_refCount;
     TimeConverter*  m_period;
     std::set<ComponentId_t> m_idSet;
-
+    SimTime_t end_time;
+    
     bool single_rank;
     
     friend class boost::serialization::access;

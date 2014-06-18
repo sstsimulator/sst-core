@@ -84,8 +84,8 @@ void Clock::execute( void ) {
     
     if ( handlerMap.empty() && staticHandlerMap.empty() ) {
         // std::cout << "Not rescheduling clock" << std::endl;
-        // scheduled = false;
-        // return;
+        scheduled = false;
+        return;
     } 
     
     // Derive the current cycle from the core time

@@ -26,7 +26,7 @@ class TimeConverter;
 class LinkPair;
 class Simulation;
 class ActivityQueue;
-class Sync;
+class SyncBase;
 
 class UnitAlgebra;
  
@@ -37,7 +37,7 @@ public:
 
     friend class LinkPair;
     friend class Simulation;
-    friend class Sync;
+    friend class SyncBase;
     
     /** Create a new link with a given ID */
     Link(LinkId_t id);

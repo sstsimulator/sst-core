@@ -275,7 +275,8 @@ inline std::ostream& operator<< (std::ostream& os, const Units& r)
 
 } // namespace SST
 
+
 BOOST_CLASS_EXPORT_KEY(SST::Units)
 BOOST_CLASS_EXPORT_KEY(SST::UnitAlgebra)
 
-#endif //SST_CORE_TIMELORD_H
+#endif //SST_CORE_UNITALGEBRA_H

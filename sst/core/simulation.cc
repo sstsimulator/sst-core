@@ -124,6 +124,7 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
     minPartTC( NULL ),
     sync(NULL),
     currentSimCycle(0),
+    endSimCycle(0),
     currentPriority(0),
     endSim(false),
     my_rank(my_rank),
@@ -208,7 +209,9 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
             }
         }
 
-        sync = new Sync( minPartTC = minPartToTC(min_part) );
+        sync = new Sync();
+        sync->setExit(m_exit);
+        sync->setMaxPeriod( minPartTC = minPartToTC(min_part) );
     }
 
     // We will go through all the links and create LinkPairs for each
@@ -289,7 +292,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
             it->second->insertLink(clink.port[local],lp.getLeft());
 
             // For the remote side, register with sync object
-            SyncQueue* sync_q = sync->registerLink(rank[remote],clink.id,lp.getRight());
+            ActivityQueue* sync_q = sync->registerLink(rank[remote],clink.id,lp.getRight());
             // lp.getRight()->recvQueue = sync_q;
             lp.getRight()->configuredQueue = sync_q;
             lp.getRight()->initQueue = sync_q;
@@ -374,6 +377,8 @@ void Simulation::initialize() {
 void Simulation::run() {  
     _SIM_DBG( "RUN\n" );
 
+    // Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
+    
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
     {
@@ -405,6 +410,7 @@ void Simulation::run() {
         currentSimCycle = timeVortex->front()->getDeliveryTime();
         currentPriority = timeVortex->front()->getPriority();
         current_activity = timeVortex->pop();
+        // current_activity->print("",tmp_debug);
         current_activity->execute();
     }
 
@@ -426,6 +432,12 @@ SimTime_t
 Simulation::getCurrentSimCycle() const
 {
     return currentSimCycle; 
+}
+
+SimTime_t
+Simulation::getEndSimCycle() const
+{
+    return endSimCycle; 
 }
 
 int
@@ -456,6 +468,11 @@ Simulation::getCurrentPriority() const
 UnitAlgebra Simulation::getElapsedSimTime() const
 {
     return timeLord->getTimeBase() * getCurrentSimCycle();
+}
+
+UnitAlgebra Simulation::getFinalSimTime() const
+{
+    return timeLord->getTimeBase() * getEndSimCycle();
 }
 
 void Simulation::setSignal(int signal)

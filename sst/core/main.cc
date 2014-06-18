@@ -477,7 +477,7 @@ main(int argc, char *argv[])
         sim->initialize();
         sim->run();
 
-        simulated_time = sim->getElapsedSimTime();
+        simulated_time = sim->getFinalSimTime();
     }
 
     end_run = sst_get_cpu_time();
