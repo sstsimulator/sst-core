@@ -61,9 +61,11 @@ class Accumulator : public SST::Statistics::BaseStatistic {
 			@param value New value to be presented
 		*/
 		void add(NumberBase value) {
-			sum += value;
-			sum_sq += (value * value);
-			count++;
+			if(enabled) {
+				sum += value;
+				sum_sq += (value * value);
+				count++;
+			}
 		}
 
 		/**
@@ -72,12 +74,14 @@ class Accumulator : public SST::Statistics::BaseStatistic {
 			@param length The length of the array being presented
 		*/
 		void add(NumberBase* values, uint32_t length) {
-			for(uint32_t i = 0; i < length; ++i) {
-				sum += values[i];
-				sum_sq += (values[i] * values[i]);
-			}
+			if(enabled) {
+				for(uint32_t i = 0; i < length; ++i) {
+					sum += values[i];
+					sum_sq += (values[i] * values[i]);
+				}
 
-			count += (uint64_t) length;
+				count += (uint64_t) length;
+			}
 		}
 
 		/**

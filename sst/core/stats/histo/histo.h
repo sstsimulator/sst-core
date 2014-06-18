@@ -68,24 +68,26 @@ class Histogram : public SST::Statistics::BaseStatistic {
 			to hold the value then a new bin is created.
 		*/
 		void add(HistoBinType value) {
-			HistoBinType bin_start = binWidth * (value / binWidth);
-			histo_itr bin_itr = bins.find(bin_start);
+			if(enabled) {
+				HistoBinType bin_start = binWidth * (value / binWidth);
+				histo_itr bin_itr = bins.find(bin_start);
 
-			if(bin_itr == bins.end()) {
-				bins.insert(std::pair<HistoBinType, HistoCountType>(bin_start, (HistoCountType) 1));
-			} else {
-				bin_itr->second++;
-			}
+				if(bin_itr == bins.end()) {
+					bins.insert(std::pair<HistoBinType, HistoCountType>(bin_start, (HistoCountType) 1));
+				} else {
+					bin_itr->second++;
+				}
 
-			itemCount++;
-			totalSummed += value;
+				itemCount++;
+				totalSummed += value;
 
-			if(1 == itemCount) {
-				minVal = bin_start;
-				maxVal = bin_start;
-			} else {
-				minVal = (minVal < bin_start) ? minVal : bin_start;
-				maxVal = (maxVal > bin_start) ? maxVal : bin_start;
+				if(1 == itemCount) {
+					minVal = bin_start;
+					maxVal = bin_start;
+				} else {
+					minVal = (minVal < bin_start) ? minVal : bin_start;
+					maxVal = (maxVal > bin_start) ? maxVal : bin_start;
+				}
 			}
 		}
 
@@ -147,9 +149,9 @@ class Histogram : public SST::Statistics::BaseStatistic {
 			return totalSummed;
 		}
 
-        /**
-         * Iterator over the histogram bins
-         */
+        	/**
+         	* 	Iterator over the histogram bins
+         	*/
 		typedef typename std::map<HistoBinType, HistoCountType>::iterator histo_itr;
 
 	private:
