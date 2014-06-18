@@ -137,7 +137,7 @@ public:
     Output& getSimulationOutput() { return sim_output; };
 
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
-    Config::Mode_t getSimulationMode() const;
+    Config::Mode_t getSimulationMode() const { return runMode; };
     /** Return the current simulation time as a cycle count*/
     SimTime_t getCurrentSimCycle() const;
     /** Return the current priority */
