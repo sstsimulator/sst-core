@@ -62,8 +62,8 @@ public:
          */
         typedef enum {
             F_UNCACHED  = 1<<1,     /*!< This request should not be cached */
-            F_EXCLUSIVE = 1<<2,     /*!< This is an EXCLUSIVE request.  Nobody else should have a copy of this data. */
-            F_LOCKED    = 1<<3,     /*!< This request should be locked.  A LOCKED read should be soon followed by a LOCKED write (to unlock) */
+            F_LOCKED    = 1<<2,     /*!< This request should be locked.  A LOCKED read should be soon followed by a LOCKED write (to unlock) */
+            F_LLSC      = 1<<3,
         } Flags;
 
         /** Type of the payload or data */
