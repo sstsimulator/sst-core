@@ -230,7 +230,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
 	verbose = var_map->count( "verbose" );
 
     if ( var_map->count( "version" ) ) {
-        cout << "SST Release Version " PACKAGE_VERSION << endl;
+        cout << "SST Release Version (" PACKAGE_VERSION << ", " SST_SVN_REVISION ")" << endl;
         return 1;
     }
 
