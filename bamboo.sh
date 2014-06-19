@@ -217,10 +217,10 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_diropenMP.sh
         ${SST_TEST_SUITES}/testSuite_stream.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
-        if [ $1 != "sstmainline_config_linux_with_ariel" -a $1 != "sstmainline_config_xml2python" ] ; then
-            ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
-            ${SST_TEST_SUITES}/testSuite_dirSweep.sh
-        fi
+#        if [ $1 != "sstmainline_config_linux_with_ariel" -a $1 != "sstmainline_config_xml2python" ] ; then
+#            ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
+#            ${SST_TEST_SUITES}/testSuite_dirSweep.sh
+#        fi
     fi
 
     if [ $1 != "sstmainline_config_no_mpi" ] ; then
