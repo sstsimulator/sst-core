@@ -33,7 +33,6 @@ namespace SST {
 int Vertex::count = 0;
 int Edge::count = 0;
 
-
 void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
     os << "  type = " << type << std::endl;
@@ -191,20 +190,22 @@ ConfigGraph::checkForStructuralErrors()
 }
 
 
-
-
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type, float weight, int rank)
 {
-	comps.push_back(ConfigComponent(comps.size(), name, type, weight, rank, false));
-    return comps.back().id;
+	// comps.push_back(ConfigComponent(comps.size(), name, type, weight, rank, false));
+    // return comps.back().id;
+	comps.push_back(ConfigComponent(nextCompID, name, type, weight, rank, false));
+    return nextCompID++;
 }
 
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type)
 {
-	comps.push_back(ConfigComponent(comps.size(), name, type, 1.0f, 0, false));
-    return comps.back().id;
+	// comps.push_back(ConfigComponent(comps.size(), name, type, 1.0f, 0, false));
+    // return comps.back().id;
+	comps.push_back(ConfigComponent(nextCompID, name, type, 1.0f, 0, false));
+    return nextCompID++;
 }
 
 void
@@ -237,7 +238,7 @@ ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string 
 }
 
 void
-ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, string latency_str)
+ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, string latency_str, bool no_cut)
 {
 	if ( links.find(link_name) == links.end() ) {
         links[link_name] = ConfigLink(links.size(), link_name);
@@ -255,7 +256,8 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 	link.component[index] = comp_id;
 	link.port[index] = port;
 	link.latency[index] = latency;
-
+    link.no_cut = link.no_cut | no_cut;
+    
 	comps[comp_id].links.push_back(&link);
 }
 
@@ -421,9 +423,121 @@ std::string ConfigGraph::makeNamePythonSafe(const std::string name, const std::s
 ComponentId_t
 ConfigGraph::addIntrospector(string name, string type)
 {
-	comps.push_back(ConfigComponent(comps.size(), name, type, 0.0f, 0, true));
-    return comps.back().id;
+	// comps.push_back(ConfigComponent(comps.size(), name, type, 0.0f, 0, true));
+    // return comps.back().id;
+	comps.push_back(ConfigComponent(nextCompID, name, type, 0.0f, 0, true));
+    return nextCompID++;
 
 }
+
+
+
+void
+ConfigComponentMap::push_back(const ConfigComponent& val) {
+    // First look to see if it goes on the end.  If not, then find
+    // where it goes.
+    if ( data.size() == 0 ) {
+        data.push_back(val);
+        return;
+    }
+    if ( val.id > data[data.size()-1].id ) {
+        data.push_back(val);
+        return;
+    }
+
+    // Didn't belong at end, call regular insert
+    insert(val);
+}
+
+
+void
+ConfigComponentMap::insert(const ConfigComponent& val) {
+    int index = binary_search_insert(val.id);
+    vector<ConfigComponent>::iterator it = data.begin();
+    it += index;
+    data.insert(it, val);
+}
+
+int
+ConfigComponentMap::binary_search_insert(ComponentId_t id) const
+{
+    // For insert, we've found the right place when id < n && id >
+    // n-1.  We then insert at n.
+
+    int size = data.size();
+
+    // Check to see if it goes top or bottom
+    if ( size == 0 ) return 0;
+    if ( id < data[0].id ) return 0;
+    if ( id > data[size-1].id ) return size;
+
+    int bottom = 0;
+    int top = size - 1;
+    int middle;
+
+    while ( bottom <= top ) {
+        middle = bottom + (top - bottom) / 2;
+        if ( id < data[middle].id ) {
+            // May be the right place, need to see if id is greater
+            // than the one before the current middle.  If so, then we
+            // have the right place.
+            if ( id > data[middle-1].id ) return middle;
+            else {
+                top = middle - 1;
+            }
+        }
+        else {
+            bottom = middle + 1;
+        }
+    }
+}
+
+int
+ConfigComponentMap::binary_search_find(ComponentId_t id) const
+{
+    int bottom = 0;
+    int top = data.size();
+    int middle;
+
+    while (bottom <= top) {
+        middle = bottom + ( top - bottom ) / 2;
+        if ( id == data[middle].id ) return middle;
+        else if ( id < data[middle].id ) top = middle - 1;
+        else bottom = middle + 1;
+    }
+    return -1;
+}
+
+ConfigComponent&
+ConfigComponentMap::operator[] (ComponentId_t id)
+{
+    int index = binary_search_find(id);
+    if ( index == -1 ) {
+        // Need to error out
+    }
+    return data[index];
+}
+
+const ConfigComponent&
+ConfigComponentMap::operator[] (ComponentId_t id) const
+{
+    int index = binary_search_find(id);
+    if ( index == -1 ) {
+        // Need to error out
+    }
+    return data[index];
+}
+
+void
+ConfigComponentMap::clear()
+{
+    data.clear();
+}
+
+// size_t
+// ConfigComponentMap::size()
+// {
+//     return data.size();
+// }
 
 } // namespace SST

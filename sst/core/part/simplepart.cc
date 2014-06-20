@@ -181,13 +181,15 @@ namespace SST {
 		if(world_size == 1) {
 			for(ConfigComponentMap_t::iterator compItr = component_map.begin();
 				compItr != component_map.end();
-				compItr++) {
+				++compItr) {
 
 				compItr->rank = 0;
 			}
 		} else {
-			const int A_size = component_map.size() % 2 == 1 ? (component_map.size() / 2) + 1 : (component_map.size() / 2);
-			const int B_size = component_map.size() / 2;
+			// const int A_size = component_map.size() % 2 == 1 ? (component_map.size() / 2) + 1 : (component_map.size() / 2);
+			// const int B_size = component_map.size() / 2;
+			const int A_size = graph->getNumComponents() % 2 == 1 ? (graph->getNumComponents() / 2) + 1 : (graph->getNumComponents() / 2);
+			const int B_size = graph->getNumComponents() / 2;
 
 			ComponentId_t setA[A_size];
 			ComponentId_t setB[B_size];
@@ -198,9 +200,14 @@ namespace SST {
 
 			map<ComponentId_t, map<ComponentId_t, SimTime_t>*> timeTable;
 
-			size_t nComp = component_map.size();
-			for(size_t theComponent = 0 ; theComponent < nComp ; theComponent++ ) {
+			// size_t nComp = component_map.size();
+			// for(size_t theComponent = 0 ; theComponent < nComp ; theComponent++ ) {
+			for( ConfigComponentMap_t::iterator compItr = component_map.begin();
+                 compItr != component_map.end();
+                 ++compItr) {
 
+                ComponentId_t theComponent = (*compItr).id;
+                
 				map<ComponentId_t, SimTime_t>* compConnectMap = new map<ComponentId_t, SimTime_t>();
 				timeTable[theComponent] = compConnectMap;
 
@@ -210,7 +217,8 @@ namespace SST {
 					setB[indexB++] = theComponent;
 				}
 
-				vector<ConfigLink*> component_links = component_map[theComponent].links;
+				// vector<ConfigLink*> component_links = component_map[theComponent].links;
+				vector<ConfigLink*> component_links = (*compItr).links;
 
 				for(vector<ConfigLink*>::const_iterator linkItr = component_links.begin();
 					linkItr != component_links.end();

@@ -24,7 +24,8 @@ void SSTLinearPartition::performPartition(ConfigGraph* graph) {
 
 	ConfigComponentMap_t& compMap = graph->getComponentMap();
 
-	const int componentCount = compMap.size();
+	// const int componentCount = compMap.size();
+	const int componentCount = graph->getNumComponents();
 	const int componentRemainder = componentCount % rankcount;
 	const int componentPerRank = componentCount / rankcount;
 

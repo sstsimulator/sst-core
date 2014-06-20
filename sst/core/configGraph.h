@@ -29,7 +29,7 @@ class Simulation;
 
 class Config;
 class ConfigLink;
-
+    
 /** Represents the configuration of a generic component */
 class ConfigComponent {
 public:
@@ -69,16 +69,15 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
-	ar & BOOST_SERIALIZATION_NVP(id);
-	ar & BOOST_SERIALIZATION_NVP(name);
-	ar & BOOST_SERIALIZATION_NVP(type);
-	ar & BOOST_SERIALIZATION_NVP(weight);
-	ar & BOOST_SERIALIZATION_NVP(rank);
-	ar & BOOST_SERIALIZATION_NVP(links);
-	ar & BOOST_SERIALIZATION_NVP(params);
-	ar & BOOST_SERIALIZATION_NVP(isIntrospector);
+        ar & BOOST_SERIALIZATION_NVP(id);
+        ar & BOOST_SERIALIZATION_NVP(name);
+        ar & BOOST_SERIALIZATION_NVP(type);
+        ar & BOOST_SERIALIZATION_NVP(weight);
+        ar & BOOST_SERIALIZATION_NVP(rank);
+        ar & BOOST_SERIALIZATION_NVP(links);
+        ar & BOOST_SERIALIZATION_NVP(params);
+        ar & BOOST_SERIALIZATION_NVP(isIntrospector);
     }
-
 
 };
 
@@ -91,7 +90,8 @@ public:
     std::string      port[2];       /*!< Names of the connected ports */
     SimTime_t        latency[2];    /*!< Latency from each side */
     int              current_ref;   /*!< Number of components currently referring to this Link */
-
+    bool             no_cut;        /*!< If set to true, partitioner will not make a cut through this Link */
+    
     /** Return the minimum latency of this link (from both sides) */
     SimTime_t getMinLatency() {
         if ( latency[0] < latency[1] ) return latency[0];
@@ -122,7 +122,8 @@ public:
 private:
     friend class ConfigGraph;
     ConfigLink(LinkId_t id) :
-        id(id)
+        id(id),
+        no_cut(false)
     {
         current_ref = 0;
 
@@ -132,7 +133,8 @@ private:
     }
 
     ConfigLink(LinkId_t id, const std::string &n) :
-        id(id)
+        id(id),
+        no_cut(false)
     {
         current_ref = 0;
         name = n;
@@ -160,11 +162,51 @@ private:
 
 };
 
+class ConfigGraph;
+    
+class ConfigComponentMap {
 
+private:
+    std::vector<ConfigComponent> data;
+    int binary_search_insert(ComponentId_t id) const;
+    int binary_search_find(ComponentId_t id) const;
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_NVP(data);
+    }
+
+    friend class ConfigGraph;
+    
+public:
+    typedef std::vector<ConfigComponent>::iterator iterator;
+    typedef std::vector<ConfigComponent>::const_iterator const_iterator;
+    
+    // Essentially insert with a hint to look at end first.  This is
+    // just here for backward compatibility for now.  Will be replaced
+    // with insert() onced things stabilize.
+    void push_back(const ConfigComponent& val);  
+    void insert(const ConfigComponent& val);
+    iterator begin() { return data.begin(); }
+    iterator end() { return data.end(); }
+    const_iterator begin() const { return data.begin(); }
+    const_iterator end() const { return data.end(); }
+
+    ConfigComponent& operator[] (ComponentId_t id);
+    const ConfigComponent& operator[] (ComponentId_t id) const;
+    void clear();
+    // size_t size();
+    
+};
+    
 /** Map names to Links */
 typedef std::map<std::string,ConfigLink> ConfigLinkMap_t;
 /** Map IDs to Components */
-typedef std::vector<ConfigComponent> ConfigComponentMap_t;
+// typedef std::vector<ConfigComponent> ConfigComponentMap_t;
+typedef ConfigComponentMap ConfigComponentMap_t;
 /** Map names to Parameter Sets: XML only */
 typedef std::map<std::string,Params*> ParamsMap_t;
 /** Map names to variable values:  XML only */
@@ -184,6 +226,10 @@ public:
 		}
 	}
 
+    ConfigGraph() {nextCompID = 0; }
+
+    size_t getNumComponents() { return comps.data.size(); }
+    
     /** Generate Dot-style output of the configuration graph */
 	void genDot(std::ostream &os, const std::string &name) const;
 
@@ -212,7 +258,7 @@ public:
     void addParameter(ComponentId_t comp_id, std::string key, std::string value, bool overwrite = false);
 
     /** Add a Link to a Component on a given Port */
-    void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str);
+    void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str, bool no_cut = false);
 
     /** Create a new Introspector */
     ComponentId_t addIntrospector(std::string name, std::string type);
@@ -248,6 +294,7 @@ private:
     ConfigLinkMap_t      links;
     ConfigComponentMap_t comps;
 
+    ComponentId_t  nextCompID;
 
     friend class boost::serialization::access;
     template<class Archive>
