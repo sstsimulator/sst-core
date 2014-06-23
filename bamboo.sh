@@ -501,10 +501,10 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g none -m none -i none -o none -h none -s none -q none"
+            depsStr="-k none -d 2.2.2 -p none -z 3.8  -b 1.50 -g none -m none -i none -o none -h none -s none -q none"
             setConvenienceVars "$depsStr"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
-            configStr="$baseoptions ${MTNLION_FLAG} --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-glpk=${GLPK_HOME} $miscEnv"
+            configStr="$baseoptions ${MTNLION_FLAG} --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN  $miscEnv"
             ;;
         sstmainline_config_macosx_static) 
             #-----------------------------------------------------------------
