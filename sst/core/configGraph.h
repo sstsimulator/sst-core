@@ -198,7 +198,7 @@ public:
     ConfigComponent& operator[] (ComponentId_t id);
     const ConfigComponent& operator[] (ComponentId_t id) const;
     void clear();
-    // size_t size();
+    size_t size();
     
 };
     

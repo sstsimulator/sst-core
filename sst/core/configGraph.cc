@@ -534,10 +534,10 @@ ConfigComponentMap::clear()
     data.clear();
 }
 
-// size_t
-// ConfigComponentMap::size()
-// {
-//     return data.size();
-// }
+size_t
+ConfigComponentMap::size()
+{
+    return data.size();
+}
 
 } // namespace SST
