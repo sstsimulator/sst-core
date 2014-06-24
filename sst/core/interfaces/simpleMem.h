@@ -61,9 +61,10 @@ public:
          * Flags to specify conditions on a Request
          */
         typedef enum {
-            F_UNCACHED  = 1<<1,     /*!< This request should not be cached */
-            F_LOCKED    = 1<<2,     /*!< This request should be locked.  A LOCKED read should be soon followed by a LOCKED write (to unlock) */
-            F_LLSC      = 1<<3,
+            F_UNCACHED      = 1<<1,     /*!< This request should not be cached */
+            F_LOCKED        = 1<<2,     /*!< This request should be locked.  A LOCKED read should be soon followed by a LOCKED write (to unlock) */
+            F_LLSC          = 1<<3,
+            F_LLSC_RESP     = 1<<4
         } Flags;
 
         /** Type of the payload or data */
