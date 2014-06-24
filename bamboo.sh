@@ -478,9 +478,9 @@ getconfig() {
             # sstmainline_config_clang_core_only
             #     This option used for configuring SST with no deps to build the core with clang
             #-----------------------------------------------------------------
-            depsStr="-k none -d 2.2.2 -p none -z none -b none -g none -m none -i none -o none -h none -s none -q none -M none"
+            depsStr="-k none -d 2.2.2 -p none -z none -b none -g none -m none -i none -o none -h none -s none -q none -M none -N default"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM"
             ;;
         sstmainline_config_macosx) 
             #-----------------------------------------------------------------
@@ -489,10 +489,10 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -z 3.8"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -z 3.8 -N default"
             setConvenienceVars "$depsStr"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN $miscEnv"
             ;;
         sstmainline_config_macosx_no_gem5) 
             #-----------------------------------------------------------------
@@ -502,9 +502,9 @@ getconfig() {
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -z 3.8  -b 1.50 -g none -m none -i none -o none -h none -s none -q none"
-            setConvenienceVars "$depsStr"
+            setConvenienceVars "$depsStr -N default"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
-            configStr="$baseoptions ${MTNLION_FLAG} --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN  $miscEnv"
+            configStr="$baseoptions ${MTNLION_FLAG} --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN  $miscEnv"
             ;;
         sstmainline_config_macosx_static) 
             #-----------------------------------------------------------------
@@ -513,10 +513,10 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -z 3.8"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -z 3.8 -N default"
             setConvenienceVars "$depsStr"
 #            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO --enable-static --disable-shared $miscEnv"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-glpk=${GLPK_HOME} --enable-static --disable-shared --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN $miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-glpk=${GLPK_HOME} --enable-static --disable-shared --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN $miscEnv"
             ;;
         sstmainline_config_static_macro_devel) 
             #-----------------------------------------------------------------
