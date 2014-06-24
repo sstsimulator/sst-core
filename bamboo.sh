@@ -153,7 +153,7 @@ dotests() {
     then
         # Only run if the OS *isn't* Darwin (MacOS)
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
-        ${SST_TEST_SUITES}/testSuite_hybridsim.sh
+#       ${SST_TEST_SUITES}/testSuite_hybridsim.sh
     fi
     #
     #   Only run if configured for ariel
@@ -173,6 +173,7 @@ dotests() {
     fi
 
 
+    ${SST_TEST_SUITES}/testSuite_hybridsim.sh
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
