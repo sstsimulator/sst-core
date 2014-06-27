@@ -228,7 +228,8 @@ dotests() {
         #  patterns requires MPI in order to build
         ${SST_TEST_SUITES}/testSuite_patterns.sh
         #  Zoltan test requires MPI to execute.
-        if [ $1 != "sstmainline_config_linux_with_ariel" ] ; then
+        #  sstmainline_config_no_gem5 deliberately omits Zoltan, so must skip test.
+        if [ $1 != "sstmainline_config_linux_with_ariel" -a $1 != "sstmainline_config_no_gem5" ] ; then
             ${SST_TEST_SUITES}/testSuite_zoltan.sh
         fi
     fi
