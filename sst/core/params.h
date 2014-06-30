@@ -463,7 +463,7 @@ public:
 
 #ifdef USE_PARAM_WARNINGS
         SST::Output outXX("ParamWarning: ", 0, 0, Output::STDERR);
-        outXX.fatal(CALL_INFO, 1, "Warning: Parameter \"%s\" is undocumented.\n", k.c_str());
+        outXX.output(CALL_INFO, "Warning: Parameter \"%s\" is undocumented.\n", k.c_str());
 #endif
     }
 
