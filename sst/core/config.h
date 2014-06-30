@@ -77,12 +77,9 @@ public:
     std::string     dump_config_graph;  /*!< File to dump configuration graph */
     std::string     output_dot;         /*!< File to dump dot output */
     std::string     output_directory;   /*!< Output directory to dump all files to */
-#ifdef HAVE_PYTHON
     std::string     model_options;      /*!< Options to pass to Python Model generator */
-#endif
     std::string     dump_component_graph_file; /*!< File to dump component graph */
 
-    bool            all_parse;          /*!< Should all ranks parse input, or just rank 0 */
     uint32_t        verbose;            /*!< Verbosity */
 	bool			no_env_config;      /*!< Bypass compile-time environmental configuration */
 
@@ -119,9 +116,7 @@ public:
 		std::cout << "dump_config_graph = " << dump_config_graph << std::endl;
 		std::cout << "no_env_config = " << no_env_config << std::endl;
 		std::cout << "output_directory = " << output_directory << std::endl;
-#ifdef HAVE_PYTHON
 		std::cout << "model_options = " << model_options << std::endl;
-#endif
 	}
 
     /** Return the library search path */
@@ -172,9 +167,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(dump_component_graph_file);
         ar & BOOST_SERIALIZATION_NVP(dump_config_graph);
         ar & BOOST_SERIALIZATION_NVP(no_env_config);
-#ifdef HAVE_PYTHON
         ar & BOOST_SERIALIZATION_NVP(model_options);
-#endif
     }
 
     int rank;

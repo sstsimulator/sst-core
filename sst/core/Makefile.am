@@ -145,7 +145,8 @@ sstsim_x_SOURCES = \
 
 sstinfo_x_SOURCES = \
 	sstinfo.cc \
-	$(sst_core_sources)
+	$(sst_core_sources) \
+	$(sst_xml_sources)
 
 sstsim_x_LDADD = \
 	$(LIBLTDL) \

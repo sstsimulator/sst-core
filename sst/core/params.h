@@ -1,10 +1,10 @@
 // Copyright 2009-2014 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
-// 
+//
 // Copyright (c) 2009-2014, Sandia Corporation
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -14,6 +14,8 @@
 
 #include <sst/sst_config.h>
 #include <sst/core/serialization.h>
+
+#include <sst/core/output.h>
 
 #include <iostream>
 #include <map>
@@ -101,7 +103,7 @@ public:
      * of Params.  Useful when generating a new set of Params to
      * pass off to a module.
      */
-    void enableVerify(bool enable) { verify_enabled = enable; };
+    bool enableVerify(bool enable) { bool old = verify_enabled; verify_enabled = enable; return old; }
 
     /**
      * Enable, on a global scale, parameter verification.  Used
@@ -460,7 +462,8 @@ public:
         }
 
 #ifdef USE_PARAM_WARNINGS
-        std::cerr << "Warning:  Parameter \"" << k << "\" is undocumented." << std::endl;
+        SST::Output outXX("ParamWarning: ", 0, 0, Output::STDERR);
+        outXX.fatal(CALL_INFO, 1, "Warning: Parameter \"%s\" is undocumented.\n", k.c_str());
 #endif
     }
 

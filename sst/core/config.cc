@@ -66,7 +66,6 @@ Config::Config( int my_rank, int world_size )
 #ifdef HAVE_PYTHON
     model_options = "";
 #endif
-    all_parse   = false;
     verbose     = 0;
     no_env_config = false;
     
@@ -130,8 +129,6 @@ Config::Config( int my_rank, int world_size )
 				"Set time for heart beats to be published (these are approximate timings published by the core to update on progress), default is every 10000 simulated seconds")
         ("timebase", po::value< string >(&timeBase), 
                                 "sets the base time step of the simulation (default: 1ps)")
-        ("all-parse", po::value< bool >(&all_parse)->default_value(false), 
-                                "determine whether all ranks parse the sdl file, or only rank 0 [ true | false (default)].  All-parse true is generally faster for XML, but requires more memory.  Can cause failures with Python-based configuration")
 #ifdef HAVE_ZOLTAN
         ("partitioner", po::value< string >(&partitioner),
 	 "partitioner to be used <zoltan | self | simple | rrobin | linear | lib.partitioner_name> (option ignored for serial jobs)" )

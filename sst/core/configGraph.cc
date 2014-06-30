@@ -223,18 +223,22 @@ ConfigGraph::setComponentWeight(ComponentId_t comp_id, float weight)
 void
 ConfigGraph::addParams(ComponentId_t comp_id, Params& p)
 {
+    bool bk = comps[comp_id].params.enableVerify(false);
     comps[comp_id].params.insert(p.begin(),p.end());
+    comps[comp_id].params.enableVerify(bk);
 }
 
 void
 ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string value, bool overwrite)
 {
+    bool bk = comps[comp_id].params.enableVerify(false);
 	if ( overwrite ) {
 		comps[comp_id].params[key] = value;
 	}
 	else {
 		comps[comp_id].params.insert(pair<string,string>(key,value));
 	}
+    comps[comp_id].params.enableVerify(bk);
 }
 
 void

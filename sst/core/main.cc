@@ -46,7 +46,6 @@
 #endif
 
 #include <sst/core/model/sstmodel.h>
-#include <sst/core/model/sdlmodel.h>
 #include <sst/core/model/pymodel.h>
 #include <sst/core/memuse.h>
 
@@ -154,45 +153,29 @@ main(int argc, char *argv[])
         return -1;
     }
 
-    // In fast build mode, everyone builds the entire graph structure
-    // (saving the slow broadcast).  In non-fast, only rank 0 will
-    // parse the sdl and build the graph.  It is then broadcast.  In
-    // single rank mode, the option is ignored.
     SSTModelDescription* modelGen = 0;
 
     if ( cfg.sdlfile != "NONE" ) {
-	string file_ext = "";
+        string file_ext = "";
 
-	if(cfg.sdlfile.size() > 3) {
-		file_ext = cfg.sdlfile.substr(cfg.sdlfile.size() - 3);
+        if(cfg.sdlfile.size() > 3) {
+            file_ext = cfg.sdlfile.substr(cfg.sdlfile.size() - 3);
 
-		if(file_ext == "xml" || file_ext == "sdl") {
-			if ( cfg.all_parse || rank == 0 ) {
-			    // Create the sdl parser
-			    modelGen = new SSTSDLModelDefinition(cfg.sdlfile);
-			    string config_string = ((SSTSDLModelDefinition*) modelGen)->getSDLConfigString();
-			    cfg.parseConfigFile(config_string);
-			    // cfg.print();
-			}
-			// If this is a parallel job, we need to broadcast the configuration
-			if ( size > 1 && !cfg.all_parse ) {
-#ifdef HAVE_MPI
-			    broadcast(world, cfg, 0);
-#endif
-			}
-		}
-#ifdef HAVE_PYTHON
-		else if(file_ext == ".py") {
-			modelGen = new SSTPythonModelDefinition(cfg.sdlfile, cfg.verbose, &cfg);
-		}
-#endif
-		else {
-			std::cerr << "Unsupported SDL file type: " << file_ext << std::endl;
-			return -1;
-		}
-	} else {
-		return -1;
-	}
+            if(file_ext == "xml" || file_ext == "sdl") {
+                cfg.model_options = cfg.sdlfile;
+                cfg.sdlfile = SST_INSTALL_PREFIX "/libexec/xmlToPython.py";
+                file_ext = ".py";
+            }
+            if(file_ext == ".py") {
+                modelGen = new SSTPythonModelDefinition(cfg.sdlfile, cfg.verbose, &cfg);
+            }
+            else {
+                std::cerr << "Unsupported SDL file type: " << file_ext << std::endl;
+                return -1;
+            }
+        } else {
+            return -1;
+        }
 
     }
 
@@ -283,7 +266,7 @@ main(int argc, char *argv[])
 #else
 			sim_output->fatal(CALL_INFO, -1, "Zoltan support is not available. Configure did not find the Zoltan library.\n");
 #endif
-		} else if ( rank == 0 || cfg.all_parse ) {
+		} else if ( rank == 0 ) {
 			// Perform partitionning for parallel jobs, not using Zoltan
 			double start_graph_gen = sst_get_cpu_time();
 
@@ -398,13 +381,13 @@ main(int argc, char *argv[])
 		///////////////////////////////////////////////////////////////////////
 		// Broadcast the data structures if only rank 0 built the
 		// graph
-		if ( (cfg.partitioner == "zoltan") || (!cfg.all_parse) ) {
+		if ( (cfg.partitioner == "zoltan") ) {
 #ifdef HAVE_MPI
 			broadcast(world, *graph, 0);
 			broadcast(world, Params::keyMap, 0);
 			broadcast(world, Params::keyMapReverse, 0);
 			broadcast(world, Params::nextKeyID, 0);
-			if ( size > 1 && !cfg.all_parse ) {
+			if ( size > 1 ) {
 			    broadcast(world, cfg, 0);
 			}
 #endif
