@@ -24,7 +24,7 @@ sstLinks = dict()
 # Some regular expressions
 sdlRE = re.compile("<sdl([^/]*?)/>")
 commentRE = re.compile("<!--.*?-->", re.DOTALL)
-eqRE = re.compile("=([^\"\'][^\\s/>]*)")  # This one is suspect
+eqRE = re.compile("(<[^>]+?\w+)=([^\"\'][^\\s/>]*)")  # This one is suspect
 namespaceRE = re.compile("<\s*((\w+):\w+)")
 
 envVarRE = re.compile("\\${(.*?)}", re.DOTALL)
@@ -76,7 +76,7 @@ def processVars(varNode):
 def processConfig(cfg):
     for line in cfg.text.strip().splitlines():
         var, val = line.split('=')
-        sst.setProgramOption(var, processString(val[1:-1])) # strip quotes
+        sst.setProgramOption(var, processString(val)) # strip quotes
 
 
 
@@ -148,7 +148,9 @@ with open(xmlFile, 'r') as f:
     # Perform manipulations
     data = sdlRE.sub("<sdl\\1 >", data)
     data = commentRE.sub("", data)
-    data = eqRE.sub("=\"\\1\"", data)
+    count = 1
+    while count > 0:
+        (data, count) = eqRE.subn(r'\1="\2"', data)
     data = namespaceRE.sub("<\\1 xmlns:\\2=\"\\2\"", data)
     data = data.strip()
 
