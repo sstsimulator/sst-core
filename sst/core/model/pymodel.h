@@ -64,7 +64,7 @@ class SSTPythonModelDefinition : public SSTModelDescription {
         void addParameter(ComponentId_t id, const char *name, const char *value) const { graph->addParameter(id, name, value, true); }
         void setComponentRank(ComponentId_t id, int rank) const { graph->setComponentRank(id, rank); }
         void setComponentWeight(ComponentId_t id, float weight) const { graph->setComponentWeight(id, weight); }
-        void addLink(ComponentId_t id, const char *name, const char *port, const char *latency) const {graph->addLink(id, name, port, latency); }
+        void addLink(ComponentId_t id, const char *name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, name, port, latency, no_cut); }
 
         void pushNamePrefix(const char *name);
         void popNamePrefix(void);

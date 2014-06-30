@@ -41,6 +41,8 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     char *name;
+    bool no_cut;
+    char *latency;
 } LinkPy_t;
 
 
@@ -61,6 +63,7 @@ static PyObject* compGetFullName(PyObject *self, PyObject *args);
 static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds);
 static void linkDealloc(LinkPy_t *self);
 static PyObject* linkConnect(PyObject* self, PyObject *args);
+static PyObject* linkSetNoCut(PyObject* self, PyObject *args);
 
 
 static PyObject* mlFindModule(PyObject *self, PyObject *args);
@@ -136,6 +139,9 @@ static PyMethodDef linkMethods[] = {
     {   "connect",
         linkConnect, METH_VARARGS,
         "Connects two components to a Link"},
+    {   "setNoCut",
+        linkSetNoCut, METH_NOARGS,
+        "Specifies that this link should not be partitioned across"},
     {   NULL, NULL, 0, NULL }
 };
 
@@ -335,16 +341,20 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 {
     ComponentId_t id = ((ComponentPy_t*)self)->id;
 
-    PyObject *plink;
-    char *port, *lat;
+    PyObject *plink = NULL;
+    char *port = NULL, *lat = NULL;
 
-    if ( !PyArg_ParseTuple(args, "O!ss", &LinkType, &plink, &port, &lat) )
+
+    if ( !PyArg_ParseTuple(args, "O!s|s", &LinkType, &plink, &port, &lat) ) {
         return NULL;
-
+    }
     LinkPy_t* link = (LinkPy_t*)plink;
+    if ( NULL == lat ) lat = link->latency;
+    if ( NULL == lat ) return NULL;
+
 
 	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %lu to Link %s\n", id, link->name);
-    gModel->addLink(id, link->name, port, lat);
+    gModel->addLink(id, link->name, port, lat, link->no_cut);
 
     return PyInt_FromLong(0);
 }
@@ -359,10 +369,12 @@ static PyObject* compGetFullName(PyObject *self, PyObject *args)
 
 static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds)
 {
-    char *name;
-    if ( !PyArg_ParseTuple(args, "s", &name) ) return -1;
+    char *name = NULL, *lat = NULL;
+    if ( !PyArg_ParseTuple(args, "s|s", &name, &lat) ) return -1;
 
     self->name = gModel->addNamePrefix(name);
+    self->no_cut = false;
+    self->latency = lat ? strdup(lat) : NULL;
 	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
 
     return 0;
@@ -371,6 +383,7 @@ static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds)
 static void linkDealloc(LinkPy_t *self)
 {
     if ( self->name ) free(self->name);
+    if ( self->latency ) free(self->latency);
     self->ob_type->tp_free((PyObject*)self);
 }
 
@@ -386,26 +399,45 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
 
     PyObject *c0, *c1;
     char *port0, *port1;
-    char *lat0, *lat1;
+    char *lat0 = NULL, *lat1 = NULL;
 
-    if ( !PyArg_ParseTuple(t0, "O!ss",
+    LinkPy_t *link = (LinkPy_t*)self;
+
+    if ( !PyArg_ParseTuple(t0, "O!s|s",
                 &ComponentType, &c0, &port0, &lat0) )
         return NULL;
-    if ( !PyArg_ParseTuple(t1, "O!ss",
+    if ( NULL == lat0 )
+        lat0 = link->latency;
+
+    if ( !PyArg_ParseTuple(t1, "O!s|s",
                 &ComponentType, &c1, &port1, &lat1) )
         return NULL;
+    if ( NULL == lat1 )
+        lat1 = link->latency;
 
+    if ( NULL == lat0 || NULL == lat1 ) {
+        gModel->getOutput()->fatal(CALL_INFO, 1, "No Latency specified for link %s\n", link->name);
+        return NULL;
+    }
+
+	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Connecting components %lu and %lu to Link %s (lat: %p %p)\n",
+			((ComponentPy_t*)c0)->id, ((ComponentPy_t*)c1)->id, ((LinkPy_t*)self)->name, lat0, lat1);
     gModel->addLink(((ComponentPy_t*)c0)->id,
-            ((LinkPy_t*)self)->name,
-            port0, lat0);
+            link->name, port0, lat0, link->no_cut);
     gModel->addLink(((ComponentPy_t*)c1)->id,
-            ((LinkPy_t*)self)->name,
-            port1, lat1);
+            link->name, port1, lat1, link->no_cut);
 
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Connecting components %lu and %lu to Link %s\n",
-			((ComponentPy_t*)c0)->id, ((ComponentPy_t*)c1)->id, ((LinkPy_t*)self)->name);
 
     return PyInt_FromLong(0);
+}
+
+
+static PyObject* linkSetNoCut(PyObject* self, PyObject *args)
+{
+    LinkPy_t *link = (LinkPy_t*)self;
+    bool prev = link->no_cut;
+    link->no_cut = true;
+    return PyBool_FromLong(prev ? 1 : 0);
 }
 
 
