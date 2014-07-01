@@ -11,3 +11,4 @@ sst_core_sources += \
 	model/pymodel.cc
 
 libexec_SCRIPTS = model/xmlToPython.py
+EXTRA_DIST += model/xmlToPython.py
