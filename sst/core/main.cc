@@ -381,16 +381,12 @@ main(int argc, char *argv[])
 		///////////////////////////////////////////////////////////////////////
 		// Broadcast the data structures if only rank 0 built the
 		// graph
-		if ( (cfg.partitioner == "zoltan") ) {
-#ifdef HAVE_MPI
-			broadcast(world, *graph, 0);
-			broadcast(world, Params::keyMap, 0);
-			broadcast(world, Params::keyMapReverse, 0);
-			broadcast(world, Params::nextKeyID, 0);
-			if ( size > 1 ) {
-			    broadcast(world, cfg, 0);
-			}
-#endif
+        if ( size > 1 ) {
+            broadcast(world, *graph, 0);
+            broadcast(world, Params::keyMap, 0);
+            broadcast(world, Params::keyMapReverse, 0);
+            broadcast(world, Params::nextKeyID, 0);
+            broadcast(world, cfg, 0);
 		}
 
 		// Perform the wireup
