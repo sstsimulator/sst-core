@@ -12,7 +12,6 @@
 #ifndef SST_CORE_LINKMAP_H
 #define SST_CORE_LINKMAP_H
 
-#include <sst/sst_config.h>
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 

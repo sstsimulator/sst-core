@@ -13,7 +13,6 @@
 #ifndef _H_SST_CORE_STATS_HISTO
 #define _H_SST_CORE_STATS_HISTO
 
-#include <sst_config.h>
 #include <sst/core/output.h>
 #include <sst/core/stats/basestats.h>
 

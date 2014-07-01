@@ -13,8 +13,6 @@
 #ifndef _H_SST_CORE_MATH_SQRT
 #define _H_SST_CORE_MATH_SQRT
 
-#include <sst_config.h>
-
 namespace SST {
 namespace Math {
 
