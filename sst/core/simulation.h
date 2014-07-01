@@ -125,7 +125,7 @@ public:
     void printStatus(bool fullStatus);
 
     /** Converts a ConfigGraph graph into actual set of links and components */
-    int performWireUp( ConfigGraph& graph, int myRank );
+    int performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_part );
 
     /** Set cycle count, which, if reached, will cause the simulation to halt. */
     void setStopAtCycle( Config* cfg );

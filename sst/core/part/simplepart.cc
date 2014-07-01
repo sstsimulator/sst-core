@@ -218,14 +218,17 @@ namespace SST {
 				}
 
 				// vector<ConfigLink*> component_links = component_map[theComponent].links;
-				vector<ConfigLink*> component_links = (*compItr).links;
+				// vector<ConfigLink*> component_links = (*compItr).links;
+				vector<string> component_links = (*compItr).links;
+                ConfigLinkMap_t& linkMap = graph->getLinkMap();
 
-				for(vector<ConfigLink*>::const_iterator linkItr = component_links.begin();
+				for(vector<string>::const_iterator linkItr = component_links.begin();
 					linkItr != component_links.end();
 					linkItr++) {
 
-					ConfigLink* theLink = (*linkItr);
-					compConnectMap->insert( pair<ComponentId_t, SimTime_t>(theLink->component[1], theLink->getMinLatency()) );
+					// ConfigLink* theLink = (*linkItr);
+					ConfigLink& theLink = linkMap[*linkItr];
+					compConnectMap->insert( pair<ComponentId_t, SimTime_t>(theLink.component[1], theLink.getMinLatency()) );
 				}
 			}
 

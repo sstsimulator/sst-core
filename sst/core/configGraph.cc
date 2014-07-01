@@ -30,9 +30,6 @@ namespace SST {
 
 #define _GRAPH_DBG( fmt, args...) __DBG( DBG_GRAPH, Graph, fmt, ## args )
 
-int Vertex::count = 0;
-int Edge::count = 0;
-
 void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
     os << "  type = " << type << std::endl;
@@ -40,9 +37,9 @@ void ConfigComponent::print(std::ostream &os) const {
     os << "  rank = " << rank << std::endl;
     os << "  isIntrospector = " << isIntrospector << std::endl;
     os << "  Links:" << std::endl;
-    for (size_t i = 0 ; i != links.size() ; ++i) {
-        links[i]->print(os);
-    }
+    // for (size_t i = 0 ; i != links.size() ; ++i) {
+    //     links[i]->print(os);
+    // }
 
     os << "  Params:" << std::endl;
     params.print_all_params(os);
@@ -52,16 +49,42 @@ void ConfigComponent::print(std::ostream &os) const {
 void ConfigComponent::genDot(std::ostream &os) const {
     os  << id
         << " [label=\"{" << name << "\\n" << type << " | {";
-    for ( std::vector<ConfigLink*>::const_iterator i = links.begin() ; i != links.end() ; ++i ) {
-        // Choose which side of the link we're on
-        int p = ((*i)->component[0] == id) ? 0 : 1;
-        os << " <" << (*i)->port[p] << "> " << (*i)->port[p];
-        if ( i+1 != links.end() ) os << " |";
-    }
+    // for ( std::vector<ConfigLink*>::const_iterator i = links.begin() ; i != links.end() ; ++i ) {
+    //     // Choose which side of the link we're on
+    //     int p = ((*i)->component[0] == id) ? 0 : 1;
+    //     os << " <" << (*i)->port[p] << "> " << (*i)->port[p];
+    //     if ( i+1 != links.end() ) os << " |";
+    // }
     os << " } }\"];\n";
 }
 
-
+ConfigComponent
+ConfigComponent::cloneWithoutLinks() const
+{
+    ConfigComponent ret;
+    ret.id = id;
+    ret.name = name;
+    ret.type = type;
+    ret.weight = weight;
+    ret.rank = rank;
+    ret.params = params;
+    ret.isIntrospector = isIntrospector;
+    return ret;
+}
+    
+ConfigComponent
+ConfigComponent::cloneWithoutLinksOrParams() const
+{
+    ConfigComponent ret;
+    ret.id = id;
+    ret.name = name;
+    ret.type = type;
+    ret.weight = weight;
+    ret.rank = rank;
+    ret.isIntrospector = isIntrospector;
+    return ret;
+}
+    
 void
 ConfigGraph::setComponentRanks(int rank)
 {
@@ -92,7 +115,9 @@ ConfigGraph::checkRanks(int ranks)
                             iter != comps.end(); ++iter )
     {
         int rank = iter->rank;
-        if ( rank < 0 || rank >= ranks ) return false;
+        if ( rank < 0 || rank >= ranks ) {
+            return false;
+        }
     }
     return true;
 }
@@ -128,7 +153,7 @@ void ConfigGraph::genDot(std::ostream &os, const std::string &name) const {
 
     for (ConfigLinkMap_t::const_iterator i = links.begin() ; i != links.end() ; ++i) {
         os << "\t";
-        i->second.genDot(os);
+        i->genDot(os);
     }
     os << "\n}\n";
 }
@@ -147,17 +172,17 @@ ConfigGraph::checkForStructuralErrors()
     for( ConfigLinkMap_t::iterator iter = links.begin();
          iter != links.end(); ++iter )
     {
-        ConfigLink* clink = &((*iter).second);
+        ConfigLink& clink = *iter;
         // This one should never happen since the slots are
         // initialized in order, but just in case...
-        if ( clink->component[0] == ULONG_MAX ) {
-            output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
-                   comps[clink->component[1]].name.c_str());
+        if ( clink.component[0] == ULONG_MAX ) {
+            output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink.name.c_str(),
+                   comps[clink.component[1]].name.c_str());
             found_error = true;
         }
-        if ( clink->component[1] == ULONG_MAX ) {
-            output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink->name.c_str(),
-                   comps[clink->component[0]].name.c_str());
+        if ( clink.component[1] == ULONG_MAX ) {
+            output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink.name.c_str(),
+                   comps[clink.component[0]].name.c_str());
             found_error = true;
         }
     }
@@ -244,8 +269,10 @@ ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string 
 void
 ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, string latency_str, bool no_cut)
 {
-	if ( links.find(link_name) == links.end() ) {
-        links[link_name] = ConfigLink(links.size(), link_name);
+	// if ( links.find(link_name) == links.end() ) {
+	if ( !links.contains(link_name) ) {
+        // links[link_name] = ConfigLink(links.size(), link_name);
+        links.insert(ConfigLink(links.size(), link_name));
 	}
 	ConfigLink &link = links[link_name];
     if ( link.current_ref >= 2 ) {
@@ -262,7 +289,8 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 	link.latency[index] = latency;
     link.no_cut = link.no_cut | no_cut;
     
-	comps[comp_id].links.push_back(&link);
+	// comps[comp_id].links.push_back(&link);
+	comps[comp_id].links.push_back(link_name);
 }
 
 void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot) {
@@ -321,19 +349,19 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 
 		ConfigLinkMap_t::iterator link_itr;
 		for(link_itr = links.begin(); link_itr != links.end(); link_itr++) {
-			ConfigComponent* link_left  = &comps[link_itr->second.component[0]];
-			ConfigComponent* link_right = &comps[link_itr->second.component[1]];
+			ConfigComponent* link_left  = &comps[link_itr->component[0]];
+			ConfigComponent* link_right = &comps[link_itr->component[1]];
 
 			fprintf(dumpFile, "%s = sst.Link(\"%s\")\n",
-					makeNamePythonSafe(link_itr->second.name, "link_").c_str(), makeNamePythonSafe(link_itr->second.name, "link_").c_str());
+					makeNamePythonSafe(link_itr->name, "link_").c_str(), makeNamePythonSafe(link_itr->name, "link_").c_str());
 			fprintf(dumpFile, "%s.connect( (%s, \"%s\", \"%" PRIu64 "ps\"), (%s, \"%s\", \"%" PRIu64 "ps\") )\n",
-					makeNamePythonSafe(link_itr->second.name, "link_").c_str(),
+					makeNamePythonSafe(link_itr->name, "link_").c_str(),
 					makeNamePythonSafe(link_left->name, "comp_").c_str(),
-					escapeString(link_itr->second.port[0]).c_str(),
-					link_itr->second.latency[0],
+					escapeString(link_itr->port[0]).c_str(),
+					link_itr->latency[0],
 					makeNamePythonSafe(link_right->name, "comp_").c_str(),
-					escapeString(link_itr->second.port[1]).c_str(),
-					link_itr->second.latency[1] );
+					escapeString(link_itr->port[1]).c_str(),
+					link_itr->latency[1] );
 		}
 
 		fprintf(dumpFile, "# End of generated output.\n");
@@ -427,121 +455,96 @@ std::string ConfigGraph::makeNamePythonSafe(const std::string name, const std::s
 ComponentId_t
 ConfigGraph::addIntrospector(string name, string type)
 {
-	// comps.push_back(ConfigComponent(comps.size(), name, type, 0.0f, 0, true));
-    // return comps.back().id;
 	comps.push_back(ConfigComponent(nextCompID, name, type, 0.0f, 0, true));
     return nextCompID++;
 
 }
 
 
-
-void
-ConfigComponentMap::push_back(const ConfigComponent& val) {
-    // First look to see if it goes on the end.  If not, then find
-    // where it goes.
-    if ( data.size() == 0 ) {
-        data.push_back(val);
-        return;
-    }
-    if ( val.id > data[data.size()-1].id ) {
-        data.push_back(val);
-        return;
-    }
-
-    // Didn't belong at end, call regular insert
-    insert(val);
-}
-
-
-void
-ConfigComponentMap::insert(const ConfigComponent& val) {
-    int index = binary_search_insert(val.id);
-    vector<ConfigComponent>::iterator it = data.begin();
-    it += index;
-    data.insert(it, val);
-}
-
-int
-ConfigComponentMap::binary_search_insert(ComponentId_t id) const
+ConfigGraph*
+ConfigGraph::getSubGraph(int start_rank, int end_rank)
 {
-    // For insert, we've found the right place when id < n && id >
-    // n-1.  We then insert at n.
+    ConfigGraph* graph = new ConfigGraph();
+    
+    // Look through all the links.  Add any link that has either side
+    // hooked to a component in the specified rank, then put both
+    // components in the graph as well.
+    for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
+        ConfigLink& link = *it;
 
-    int size = data.size();
+        const ConfigComponent& comp0 = comps[link.component[0]];
+        const ConfigComponent& comp1 = comps[link.component[1]];
 
-    // Check to see if it goes top or bottom
-    if ( size == 0 ) return 0;
-    if ( id < data[0].id ) return 0;
-    if ( id > data[size-1].id ) return size;
-
-    int bottom = 0;
-    int top = size - 1;
-    int middle;
-
-    while ( bottom <= top ) {
-        middle = bottom + (top - bottom) / 2;
-        if ( id < data[middle].id ) {
-            // May be the right place, need to see if id is greater
-            // than the one before the current middle.  If so, then we
-            // have the right place.
-            if ( id > data[middle-1].id ) return middle;
-            else {
-                top = middle - 1;
+        bool comp0_in_ranks = comp0.rank >= start_rank && comp0.rank <= end_rank;
+        bool comp1_in_ranks = comp1.rank >= start_rank && comp1.rank <= end_rank;
+        
+        // if ( comp0.rank == rank || comp1.rank == rank ) {
+        if ( comp0_in_ranks || comp1_in_ranks ) {
+            // Clone the link and add to new lin k map
+            // graph->links[link.name] = ConfigLink(link);  // Will make a copy into map
+            graph->links.insert(ConfigLink(link));  // Will make a copy into map
+            ConfigLink& new_link = graph->links[link.name];
+            
+            // Now add the components to the component map.  If the
+            // component is already in the map, add it if not.  Then
+            // we just need to add the link to the component.  Remote
+            // components will only end up with the links that touch
+            // the requested rank.
+            if ( !graph->comps.contains(comp0.id) ) {
+                if (comp0_in_ranks) graph->comps.insert(comp0.cloneWithoutLinks());
+                else graph->comps.insert(comp0.cloneWithoutLinksOrParams());
             }
+            if ( !graph->comps.contains(comp1.id) ) {
+                if (comp1_in_ranks) graph->comps.insert(comp1.cloneWithoutLinks());
+                else graph->comps.insert(comp1.cloneWithoutLinksOrParams());
+            }
+            graph->comps[comp0.id].links.push_back(new_link.name);
+            graph->comps[comp1.id].links.push_back(new_link.name);            
         }
-        else {
-            bottom = middle + 1;
+    }
+    return graph;
+}
+
+ConfigGraph*
+ConfigGraph::getSubGraph(std::set<int> rank_set)
+{
+    ConfigGraph* graph = new ConfigGraph();
+    
+    // Look through all the links.  Add any link that has either side
+    // hooked to a component in the specified rank, then put both
+    // components in the graph as well.
+    for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
+        const ConfigLink& link = *it;
+
+        const ConfigComponent& comp0 = comps[link.component[0]];
+        const ConfigComponent& comp1 = comps[link.component[1]];
+
+        bool comp0_in_ranks = (rank_set.find(comp0.rank) != rank_set.end());
+        bool comp1_in_ranks = (rank_set.find(comp1.rank) != rank_set.end());
+        
+        // if ( comp0.rank == rank || comp1.rank == rank ) {
+        if ( comp0_in_ranks || comp1_in_ranks ) {
+            // Clone the link and add to new lin k map
+            graph->links.insert(ConfigLink(link));  // Will make a copy into map
+
+            // Now add the components to the component map.  If the
+            // component is already in the map, add it if not.  Then
+            // we just need to add the link to the component.  Remote
+            // components will only end up with the links that touch
+            // the requested rank.
+            if ( !graph->comps.contains(comp0.id) ) {
+                if (comp0_in_ranks) graph->comps.insert(comp0.cloneWithoutLinks());
+                else graph->comps.insert(comp0.cloneWithoutLinksOrParams());
+            }
+            if ( !graph->comps.contains(comp1.id) ) {
+                if (comp1_in_ranks) graph->comps.insert(comp1.cloneWithoutLinks());
+                else graph->comps.insert(comp1.cloneWithoutLinksOrParams());
+            }
+            graph->comps[comp0.id].links.push_back(link.name);
+            graph->comps[comp1.id].links.push_back(link.name);            
         }
     }
-}
-
-int
-ConfigComponentMap::binary_search_find(ComponentId_t id) const
-{
-    int bottom = 0;
-    int top = data.size();
-    int middle;
-
-    while (bottom <= top) {
-        middle = bottom + ( top - bottom ) / 2;
-        if ( id == data[middle].id ) return middle;
-        else if ( id < data[middle].id ) top = middle - 1;
-        else bottom = middle + 1;
-    }
-    return -1;
-}
-
-ConfigComponent&
-ConfigComponentMap::operator[] (ComponentId_t id)
-{
-    int index = binary_search_find(id);
-    if ( index == -1 ) {
-        // Need to error out
-    }
-    return data[index];
-}
-
-const ConfigComponent&
-ConfigComponentMap::operator[] (ComponentId_t id) const
-{
-    int index = binary_search_find(id);
-    if ( index == -1 ) {
-        // Need to error out
-    }
-    return data[index];
-}
-
-void
-ConfigComponentMap::clear()
-{
-    data.clear();
-}
-
-size_t
-ConfigComponentMap::size()
-{
-    return data.size();
+    return graph;    
 }
 
 } // namespace SST

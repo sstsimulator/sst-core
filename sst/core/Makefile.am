@@ -34,7 +34,6 @@ nobase_dist_sst_HEADERS = \
 	event.h \
 	exit.h \
 	factory.h \
-	graph.h \
         heartbeat.h \
 	initQueue.h \
 	introspectAction.h \
@@ -51,6 +50,7 @@ nobase_dist_sst_HEADERS = \
 	pollingLinkQueue.h \
 	simulation.h \
 	serialization.h \
+	sparseVectorMap.h \
 	sst_types.h \
 	sstinfo.h \
 	stopAction.h \

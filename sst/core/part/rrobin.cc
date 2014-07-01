@@ -30,13 +30,14 @@ using namespace std;
 namespace SST {
 
 	void rrobin_partition(ConfigGraph* graph, int world_size) {
-		ConfigComponentMap_t compMap = graph->getComponentMap();
+        std::cout << "Round robin partitioning" << std::endl;
+		ConfigComponentMap_t& compMap = graph->getComponentMap();
 		int counter = 0;
 		
 		for(ConfigComponentMap_t::iterator compItr = compMap.begin();
 			compItr != compMap.end();
 			compItr++) {
-			
+
 			compItr->rank = (counter % world_size);
 			counter++;
 		}

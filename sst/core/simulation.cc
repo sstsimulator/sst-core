@@ -188,27 +188,12 @@ Simulation::getNextActivityTime()
     return timeVortex->front()->getDeliveryTime();
 }
     
-int Simulation::performWireUp( ConfigGraph& graph, int myRank )
+    int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_part )
 {
     // Params objects should now start verifying parameters
     Params::enableVerify();
 
     if ( num_ranks > 1 ) {
-        // Find the minimum latency across a partition
-        SimTime_t min_part = 0xffffffffl;
-        for( ConfigLinkMap_t::iterator iter = graph.links.begin();
-                iter != graph.links.end(); ++iter )
-        {
-            ConfigLink &clink = (*iter).second;
-            int rank[2];
-            rank[0] = graph.comps[clink.component[0]].rank;
-            rank[1] = graph.comps[clink.component[1]].rank;
-            if ( rank[0] == rank[1] ) continue;
-            if ( clink.getMinLatency() < min_part ) {
-                min_part = clink.getMinLatency();
-            }
-        }
-
         sync = new Sync();
         sync->setExit(m_exit);
         sync->setMaxPeriod( minPartTC = minPartToTC(min_part) );
@@ -220,7 +205,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank )
     for( ConfigLinkMap_t::iterator iter = graph.links.begin();
             iter != graph.links.end(); ++iter )
     {
-        ConfigLink &clink = (*iter).second;
+        ConfigLink &clink = *iter;
         int rank[2];
         rank[0] = graph.comps[clink.component[0]].rank;
         rank[1] = graph.comps[clink.component[1]].rank;

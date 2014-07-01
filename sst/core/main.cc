@@ -100,31 +100,24 @@ static void dump_partition(SST::Output* sim_output, Config& cfg, ConfigGraph* gr
 }
 
 static void do_graph_wireup(SST::Output* sim_output, ConfigGraph* graph, 
-	SST::Simulation* sim, SST::Config& cfg, const int size, const int rank) {
+                            SST::Simulation* sim, SST::Config& cfg, const int size, const int rank,
+                            SimTime_t min_part) {
 	
-		if ( !graph->checkRanks( size ) ) {
-			if ( rank == 0 ) {
-				sim_output->fatal(CALL_INFO, 1,
-					"ERROR: Bad partitionning; partition included unknown ranks.\n");
-			}
-		}
-		else {
-			if ( !graph->containsComponentInRank( rank ) ) {
-				sim_output->output("WARNING: No components are assigned to rank: %d\n", 
-					rank);
-			}
-		}
+    if ( !graph->containsComponentInRank( rank ) ) {
+        sim_output->output("WARNING: No components are assigned to rank: %d\n", 
+                           rank);
+    }
+	
 
-
-		// User asked us to dump the config graph to a file
-		if(cfg.dump_config_graph != "") {
-			graph->dumpToFile(cfg.dump_config_graph, &cfg, false);
-		}
-		if(cfg.output_dot != "") {
-			graph->dumpToFile(cfg.output_dot, &cfg, true);
-		}
-
-		sim->performWireUp( *graph, rank );
+    // User asked us to dump the config graph to a file
+    if(cfg.dump_config_graph != "") {
+        graph->dumpToFile(cfg.dump_config_graph, &cfg, false);
+    }
+    if(cfg.output_dot != "") {
+        graph->dumpToFile(cfg.output_dot, &cfg, true);
+    }
+    
+    sim->performWireUp( *graph, rank, min_part );
 }
 
 int
@@ -188,7 +181,6 @@ main(int argc, char *argv[])
     DebugInit( rank, size );
 
 	if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) {
-		// Now we have a config graph, create the simulation and configure signal handlers
 		sim = Simulation::createSimulation(&cfg, rank, size);
 		sim_output = &(Simulation::getSimulation()->getSimulationOutput());
 
@@ -327,7 +319,7 @@ main(int argc, char *argv[])
 				}
 
 				rrobin_partition(graph, size);
-
+                
 				if(cfg.verbose && rank == 0) {
 					sim_output->output("# Partitionning process is completed.\n");
 				}
@@ -378,6 +370,41 @@ main(int argc, char *argv[])
 		// Output the partition information is user requests it
 		dump_partition(sim_output, cfg, graph, rank, size);
 
+        // Check the partitioning to make sure it is sane
+        if ( rank == 0 ) {
+            if ( !graph->checkRanks( size ) ) {
+				sim_output->fatal(CALL_INFO, 1,
+                                  "ERROR: Bad partitionning; partition included unknown ranks.\n");
+			}
+		}
+
+        // Check the graph for the minimum latency crossing a partition boundary
+        SimTime_t min_part = 0xffffffffffffffffl;
+        if ( size > 1 ) {
+            if ( rank == 0 ) {
+                ConfigComponentMap_t comps = graph->getComponentMap();
+                ConfigLinkMap_t links = graph->getLinkMap();
+                // Find the minimum latency across a partition
+                for( ConfigLinkMap_t::iterator iter = links.begin();
+                     iter != links.end(); ++iter ) {
+                    ConfigLink &clink = *iter;
+                    int rank[2];
+                    rank[0] = comps[clink.component[0]].rank;
+                    rank[1] = comps[clink.component[1]].rank;
+                    if ( rank[0] == rank[1] ) continue;
+                    if ( clink.getMinLatency() < min_part ) {
+                        min_part = clink.getMinLatency();
+                    }
+                }
+            }
+#ifdef HAVE_MPI
+            broadcast(world, min_part, 0);
+#endif
+        }
+            
+        
+#if 1
+#ifdef HAVE_MPI
 		///////////////////////////////////////////////////////////////////////
 		// Broadcast the data structures if only rank 0 built the
 		// graph
@@ -388,9 +415,110 @@ main(int argc, char *argv[])
             broadcast(world, Params::nextKeyID, 0);
             broadcast(world, cfg, 0);
 		}
+#endif
+#endif
 
+#if 0
+        
+        if ( size > 1 ) {
+#ifdef HAVE_MPI
+			broadcast(world, Params::keyMap, 0);
+			broadcast(world, Params::keyMapReverse, 0);
+			broadcast(world, Params::nextKeyID, 0);
+            broadcast(world, cfg, 0);
+
+            ConfigGraph* sub;
+            if ( rank == 0 ) {
+                for ( int i = 0; i < size; i++ ) {
+                    // cout << "Create subgraph" << endl;
+                    sub = graph->getSubGraph(i,i);
+                    // cout << "done" << endl;
+                    world.send(i, 0, *sub);
+                    // cout << "here 1" << endl;
+                    delete sub;
+                    // cout << "here 2" << endl;
+                }
+            }
+            else {
+                world.recv(0, 0, *graph);
+            }
+            world.barrier();
+#endif
+		}
+#endif
+        
+
+        
+#if 0        
+#ifdef HAVE_MPI
+		if ( size > 1 ) {
+            
+            broadcast(world, Params::keyMap, 0);
+            broadcast(world, Params::keyMapReverse, 0);
+            broadcast(world, Params::nextKeyID, 0);
+            broadcast(world, cfg, 0);
+
+            std::set<int> my_ranks;
+            std::set<int> your_ranks;
+
+            // boost::mpi::communicator comm;
+            std::vector<boost::mpi::request> pending_requests;
+
+            if ( 0 == rank ) {
+                // Split the rank space in half
+                for ( int i = 0; i < size/2; i++ ) {
+                    my_ranks.insert(i);
+                }
+                
+                for ( int i = size/2; i < size; i++ ) {
+                    your_ranks.insert(i);
+                }
+
+                // Need to send the your_ranks set and the proper
+                // subgraph for further distribution                
+                ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                int dest = *your_ranks.begin();
+                pending_requests.push_back(world.isend(dest, 0, your_ranks));
+                pending_requests.push_back(world.isend(dest, 0, *your_graph));
+                boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
+                pending_requests.clear();
+                your_ranks.clear();
+                // delete your_graph;
+            }
+            else {
+                world.recv(boost::mpi::any_source, 0, my_ranks);
+                world.recv(boost::mpi::any_source, 0, *graph);
+            }
+
+            while ( my_ranks.size() != 1 ) {
+                // This means I have more data to pass on to other ranks
+                std::set<int>::iterator mid = my_ranks.begin();
+                for ( int i = 0; i < my_ranks.size() / 2; i++ ) {
+                    ++mid;
+                }
+                your_ranks.insert(mid,my_ranks.end());
+                my_ranks.erase(mid,my_ranks.end());
+
+                ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                int dest = *your_ranks.begin();
+
+                pending_requests.push_back(world.isend(dest, 0, your_ranks));
+                pending_requests.push_back(world.isend(dest, 0, *your_graph));
+                boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
+                pending_requests.clear();
+                your_ranks.clear();
+                delete your_graph;
+            }
+
+            if ( *my_ranks.begin() != rank) cout << "ERROR" << endl;
+                  
+        }
+#endif
+#endif
+        
+        
 		// Perform the wireup
-		do_graph_wireup(sim_output, graph, sim, cfg, size, rank);
+		do_graph_wireup(sim_output, graph, sim, cfg, size, rank, min_part);
 
 		delete graph;
 	}

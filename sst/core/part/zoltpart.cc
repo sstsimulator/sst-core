@@ -89,7 +89,7 @@ static void sst_zoltan_get_num_edges_list(void *data, int sizeGID, int sizeLID, 
 			ConfigLinkMap_t::iterator map_itr;
 
 			for(map_itr = link_map.begin(); map_itr != link_map.end(); map_itr++) {
-				if(map_itr->second.component[0] == (ComponentId_t) i) {
+				if(map_itr->component[0] == (ComponentId_t) i) {
 					this_comp_links++;
 				}
 			}
@@ -143,8 +143,8 @@ static void sst_zoltan_get_edge_list(void *data, int sizeGID, int sizeLID,
 					fprintf(stderr, "Error: Zoltan partition scheme failed. More links from a component than anticipated.\n");
 				}
 
-				if(map_itr->second.component[0] == (ComponentId_t) i) {
-					next_nbor_entry[0] = (int) map_itr->second.component[1];
+				if(map_itr->component[0] == (ComponentId_t) i) {
+					next_nbor_entry[0] = (int) map_itr->component[1];
 					next_proc_entry[0] = (int) 0;
 
 					next_proc_entry++;

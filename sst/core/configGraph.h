@@ -20,8 +20,10 @@
 #include <vector>
 #include <map>
 
-#include "sst/core/graph.h"
+#include "sst/core/sparseVectorMap.h"
 #include "sst/core/params.h"
+
+// #include "sst/core/simulation.h"
 
 namespace SST {
 
@@ -38,16 +40,23 @@ public:
     std::string              type;              /*!< Type of this component */
     float                    weight;            /*!< Parititoning weight for this component */
     int                      rank;              /*!< Parallel Rank for this component */
-    std::vector<ConfigLink*> links;             /*!< List of links connected */
+    // std::vector<ConfigLink*> links;             /*!< List of links connected */
+    std::vector<std::string> links;             /*!< List of links connected */
     Params                   params;            /*!< Set of Parameters */
     bool                     isIntrospector;    /*!< Is this an Introspector? */
 
+    inline const ComponentId_t& key()const { return id; }
+    
     /** Print Component information */
     void print(std::ostream &os) const;
 
     /** Generate Dot information for this Component */
 	void genDot(std::ostream &os) const;
 
+    ConfigComponent cloneWithoutLinks() const;
+    ConfigComponent cloneWithoutLinksOrParams() const;
+    
+    ~ConfigComponent() {}
 private:
 
     friend class ConfigGraph;
@@ -62,7 +71,6 @@ private:
     { }
 
     ConfigComponent() {}
-
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -91,9 +99,11 @@ public:
     SimTime_t        latency[2];    /*!< Latency from each side */
     int              current_ref;   /*!< Number of components currently referring to this Link */
     bool             no_cut;        /*!< If set to true, partitioner will not make a cut through this Link */
+
+    inline const std::string& key() const { return name; }
     
     /** Return the minimum latency of this link (from both sides) */
-    SimTime_t getMinLatency() {
+    SimTime_t getMinLatency() const {
         if ( latency[0] < latency[1] ) return latency[0];
         return latency[1];
     }
@@ -151,62 +161,22 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
-	ar & BOOST_SERIALIZATION_NVP(id);
-	ar & BOOST_SERIALIZATION_NVP(name);
-	ar & BOOST_SERIALIZATION_NVP(component);
-	ar & BOOST_SERIALIZATION_NVP(port);
-	ar & BOOST_SERIALIZATION_NVP(latency);
-	ar & BOOST_SERIALIZATION_NVP(current_ref);
+        ar & BOOST_SERIALIZATION_NVP(id);
+        ar & BOOST_SERIALIZATION_NVP(name);
+        ar & BOOST_SERIALIZATION_NVP(component);
+        ar & BOOST_SERIALIZATION_NVP(port);
+        ar & BOOST_SERIALIZATION_NVP(latency);
+        ar & BOOST_SERIALIZATION_NVP(current_ref);
     }
 
 
 };
 
-class ConfigGraph;
-    
-class ConfigComponentMap {
-
-private:
-    std::vector<ConfigComponent> data;
-    int binary_search_insert(ComponentId_t id) const;
-    int binary_search_find(ComponentId_t id) const;
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(data);
-    }
-
-    friend class ConfigGraph;
-    
-public:
-    typedef std::vector<ConfigComponent>::iterator iterator;
-    typedef std::vector<ConfigComponent>::const_iterator const_iterator;
-    
-    // Essentially insert with a hint to look at end first.  This is
-    // just here for backward compatibility for now.  Will be replaced
-    // with insert() onced things stabilize.
-    void push_back(const ConfigComponent& val);  
-    void insert(const ConfigComponent& val);
-    iterator begin() { return data.begin(); }
-    iterator end() { return data.end(); }
-    const_iterator begin() const { return data.begin(); }
-    const_iterator end() const { return data.end(); }
-
-    ConfigComponent& operator[] (ComponentId_t id);
-    const ConfigComponent& operator[] (ComponentId_t id) const;
-    void clear();
-    size_t size();
-    
-};
-    
 /** Map names to Links */
-typedef std::map<std::string,ConfigLink> ConfigLinkMap_t;
+// typedef std::map<std::string,ConfigLink> ConfigLinkMap_t;
+typedef SparseVectorMap<ConfigLink,std::string> ConfigLinkMap_t;
 /** Map IDs to Components */
-// typedef std::vector<ConfigComponent> ConfigComponentMap_t;
-typedef ConfigComponentMap ConfigComponentMap_t;
+typedef SparseVectorMap<ConfigComponent,ComponentId_t> ConfigComponentMap_t;
 /** Map names to Parameter Sets: XML only */
 typedef std::map<std::string,Params*> ParamsMap_t;
 /** Map names to variable values:  XML only */
@@ -226,7 +196,11 @@ public:
 		}
 	}
 
-    ConfigGraph() {nextCompID = 0; }
+    ConfigGraph() {
+        links.clear();
+        comps.clear();
+        nextCompID = 0;
+    }
 
     size_t getNumComponents() { return comps.data.size(); }
     
@@ -287,6 +261,9 @@ public:
         return links;
     }
 
+    ConfigGraph* getSubGraph(int start_rank, int end_rank);
+    ConfigGraph* getSubGraph(std::set<int> rank_set);
+    
 private:
     friend class Simulation;
     friend class SSTSDLModelDefinition;
@@ -301,8 +278,11 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
 	{
+        // std::cout <<Simulation::getSimulation()->getRank() << ": serializing links" << std::endl;
 		ar & BOOST_SERIALIZATION_NVP(links);
+        // std::cout << "serializing comps" << std::endl;
 		ar & BOOST_SERIALIZATION_NVP(comps);
+        // std::cout << "done serializing" << std::endl;
 	}
 
 

@@ -1,0 +1,161 @@
+// -*- c++ -*-
+
+// Copyright 2009-2014 Sandia Corporation. Under the terms
+// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// Government retains certain rights in this software.
+// 
+// Copyright (c) 2009-2014, Sandia Corporation
+// All rights reserved.
+// 
+// This file is part of the SST software package. For license
+// information, see the LICENSE file in the top level directory of the
+// distribution.
+
+#ifndef SST_CORE_SPARSEVECTORMAP_H
+#define SST_CORE_SPARSEVECTORMAP_H
+
+#include "sst/core/sst_types.h"
+#include <sst/core/serialization.h>
+
+#include <vector>
+
+namespace SST {
+
+    
+template <typename T, typename id_argT>
+class SparseVectorMap {
+private:
+    std::vector<T> data;
+    int binary_search_insert(id_argT id) const
+    {
+        // For insert, we've found the right place when id < n && id >
+        // n-1.  We then insert at n.
+
+        int size = data.size();
+
+        // Check to see if it goes top or bottom
+        if ( size == 0 ) return 0;
+        if ( id < data[0].key() ) return 0;
+        if ( id > data[size-1].key() ) return size;
+        
+        int bottom = 0;
+        int top = size - 1;
+        int middle;
+
+        while ( bottom <= top ) {
+            middle = bottom + (top - bottom) / 2;
+            if ( id == data[middle].key() ) return -1;  // Already in map
+            if ( id < data[middle].key() ) {
+                // May be the right place, need to see if id is greater
+                // than the one before the current middle.  If so, then we
+                // have the right place.
+                if ( id > data[middle-1].key() ) return middle;
+                else {
+                    top = middle - 1;
+                }
+            }
+            else {
+                bottom = middle + 1;
+            }
+        }
+    }
+    
+    int binary_search_find(id_argT id) const
+    {
+        int bottom = 0;
+        int top = data.size() - 1;
+        int middle;
+        
+        if ( data.size() == 0 ) return -1;
+        while (bottom <= top) {
+            middle = bottom + ( top - bottom ) / 2;
+            if ( id == data[middle].key() ) return middle;
+            else if ( id < data[middle].key() ) top = middle - 1;
+            else bottom = middle + 1;
+        }
+        return -1;
+    }
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_NVP(data);
+    }
+
+    friend class ConfigGraph;
+    
+public:
+    typedef typename std::vector<T>::iterator iterator;
+    typedef typename std::vector<T>::const_iterator const_iterator;
+    
+    // Essentially insert with a hint to look at end first.  This is
+    // just here for backward compatibility for now.  Will be replaced
+    // with insert() onced things stabilize.
+    void push_back(const T& val)
+    {
+        // First look to see if it goes on the end.  If not, then find
+        // where it goes.
+        if ( data.size() == 0 ) {
+            data.push_back(val);
+            return;
+        }
+        if ( val.key() > data[data.size()-1].key() ) {
+            data.push_back(val);
+            return;
+        }
+
+        // Didn't belong at end, call regular insert
+        insert(val);   
+    }
+    
+    void insert(const T& val)
+    {
+        int index = binary_search_insert(val.key());
+        if ( index == -1 ) return;  // already in the map
+        iterator it = data.begin();
+        it += index;
+        data.insert(it, val);
+    }
+    
+    iterator begin() { return data.begin(); }
+    iterator end() { return data.end(); }
+
+    const_iterator begin() const { return data.begin(); }
+    const_iterator end() const { return data.end(); }
+
+    bool contains(id_argT id)
+    {
+        if ( binary_search_find(id) == -1 ) return false;
+        return true;
+    }
+    
+    T& operator[] (id_argT id)
+    {
+        int index = binary_search_find(id);
+        if ( index == -1 ) {
+            // Need to error out
+        }
+        return data[index]; 
+    }
+    
+    const T& operator[] (id_argT id) const
+    {
+        int index = binary_search_find(id);
+        if ( index == -1 ) {
+            // Need to error out
+        }
+        return data[index];
+    }
+    
+    void clear() { data.clear(); }
+    size_t size() { return data.size(); }
+
+};
+
+
+ 
+} // namespace SST
+
+#endif // SST_CORE_CONFIGGRAPH_H
