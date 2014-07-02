@@ -33,7 +33,7 @@ class SSTPartitioner
          * Result of this function is that every ConfigComponent in
          * graph has a Rank applied to it.
          */
-		virtual void performPartition(ConfigGraph* graph) = 0;
+		virtual void performPartition(PartitionGraph* graph) = 0;
 };
 
 }

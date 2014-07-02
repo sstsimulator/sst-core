@@ -249,8 +249,11 @@ main(int argc, char *argv[])
 			}
 
 			SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
-			zolt_part->performPartition(graph);
-
+            PartitionGraph* pgraph = graph->getPartitionGraph();
+			zolt_part->performPartition(pgraph);
+            graph->annotateRanks(pgraph);
+            delete pgraph;
+            
 			delete zolt_part;
 
 			sim_output->output("# Graph construction took %f seconds.\n",
@@ -302,49 +305,63 @@ main(int argc, char *argv[])
 				if(rank == 0) {
 					sim_output->output("# SST will use a self-guided partition scheme.\n");
 				}
-			} else if ( cfg.partitioner == "simple" ) {
-				if(cfg.verbose && rank == 0) {
-					sim_output->output("# Performing a simple partition...\n");
-				}
-
-				simple_partition(graph, size);
-
-				if(cfg.verbose && rank == 0) {
-					sim_output->output("# Partitionning process is completed\n");
-				}
-			} else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
-				// perform a basic round robin partition
-				if(cfg.verbose && rank == 0) {
-					sim_output->output("# Performing a round-robin partition...\n");
-				}
-
-				rrobin_partition(graph, size);
-                
-				if(cfg.verbose && rank == 0) {
-					sim_output->output("# Partitionning process is completed.\n");
-				}
-			} else if ( cfg.partitioner == "linear" ) {
-				if(cfg.verbose && rank == 0) {
-					sim_output->output("# Partitionning using a linear scheme...\n");
-				}
-
-				SSTLinearPartition* linear = new SSTLinearPartition(size, cfg.verbose);
-				linear->performPartition(graph);
-				delete linear;
-
-				if(cfg.verbose && rank == 0) {
-					sim_output->output("# Partitionning process is completed\n");
-				}
-			} else {
-				if(rank == 0) {
-					sim_output->output("# Partition scheme was not specified using: %s\n", cfg.partitioner.c_str());
-				}
-
-				partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
-				func(graph,size);
 			}
+            else {
+                PartitionGraph* pgraph = graph->getPartitionGraph();
 
-			double end_part = sst_get_cpu_time();
+                if ( cfg.partitioner == "simple" ) {
+                    if(cfg.verbose && rank == 0) {
+                        sim_output->output("# Performing a simple partition...\n");
+                    }
+                    
+                    simple_partition(pgraph, size);
+                    
+                    if(cfg.verbose && rank == 0) {
+                        sim_output->output("# Partitionning process is completed\n");
+                    }
+                } else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
+                    // perform a basic round robin partition
+                    if (cfg.verbose && rank == 0) {
+                        sim_output->output("# Performing a round-robin partition...\n");
+                    }
+                    
+                    rrobin_partition(pgraph, size);
+                
+                    if(cfg.verbose && rank == 0) {
+                        sim_output->output("# Partitionning process is completed.\n");
+                    }
+                } else if ( cfg.partitioner == "linear" ) {
+                    if(cfg.verbose && rank == 0) {
+                        sim_output->output("# Partitionning using a linear scheme...\n");
+                    }
+
+                    SSTLinearPartition* linear = new SSTLinearPartition(size, cfg.verbose);
+                    linear->performPartition(pgraph);
+                    delete linear;
+
+                    if(cfg.verbose && rank == 0) {
+                        sim_output->output("# Partitionning process is completed\n");
+                    }
+                } else {
+                    if(rank == 0) {
+                        sim_output->output("# Partition scheme was not specified using: %s\n", cfg.partitioner.c_str());
+                    }
+                    
+                    partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
+                    func(graph,size);
+                    // Temporary hack: Since we are still using
+                    // ConfigGraph for this partitioner, we need to
+                    // keep partition graph from overwriting the
+                    // ConfigGraph.  We will simply delete pgraph and
+                    // create an empty one.
+                    delete pgraph;
+                    pgraph = new PartitionGraph();
+                }
+                graph->annotateRanks(pgraph);
+                delete pgraph;
+            }
+
+            double end_part = sst_get_cpu_time();
 
 			if(cfg.verbose && (rank == 0)) {
 				std::cout << "# Graph partitionning took " <<

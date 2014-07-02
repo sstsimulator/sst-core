@@ -29,12 +29,12 @@ using namespace std;
 
 namespace SST {
 
-	void rrobin_partition(ConfigGraph* graph, int world_size) {
+	void rrobin_partition(PartitionGraph* graph, int world_size) {
         std::cout << "Round robin partitioning" << std::endl;
-		ConfigComponentMap_t& compMap = graph->getComponentMap();
+		PartitionComponentMap_t& compMap = graph->getComponentMap();
 		int counter = 0;
 		
-		for(ConfigComponentMap_t::iterator compItr = compMap.begin();
+		for(PartitionComponentMap_t::iterator compItr = compMap.begin();
 			compItr != compMap.end();
 			compItr++) {
 

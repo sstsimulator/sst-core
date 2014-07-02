@@ -11,11 +11,11 @@
 #ifndef SST_CORE_PART_RROBIN_H
 #define SST_CORE_PART_RROBIN_H
 namespace SST {
-class ConfigGraph;
+class PartitionGraph;
 	/**
 		Implements the round robin partitioning scheme for
 		SST.
 	*/
-	void rrobin_partition(ConfigGraph* graph, int world_size);
+	void rrobin_partition(PartitionGraph* graph, int world_size);
 } //namespace SST
 #endif //SST_CORE_PART_RROBIN_H

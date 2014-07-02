@@ -27,6 +27,7 @@
 namespace SST {
 class Component;
 class ConfigGraph;
+class PartitionGraph;
 class Introspector;
 class Module;
 class Params;

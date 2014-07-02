@@ -19,10 +19,10 @@ SSTLinearPartition::SSTLinearPartition(int mpiranks, int verbosity) {
 	partOutput = new Output("LinearPartition ", verbosity, 0, SST::Output::STDOUT);
 }
 
-void SSTLinearPartition::performPartition(ConfigGraph* graph) {
+void SSTLinearPartition::performPartition(PartitionGraph* graph) {
 	assert(rankcount > 0);
 
-	ConfigComponentMap_t& compMap = graph->getComponentMap();
+	PartitionComponentMap_t& compMap = graph->getComponentMap();
 
 	// const int componentCount = compMap.size();
 	const int componentCount = graph->getNumComponents();
@@ -38,7 +38,7 @@ void SSTLinearPartition::performPartition(ConfigGraph* graph) {
 	int currentAllocatingRank = 0;
 	int componentsOnCurrentRank = 0;
 
-	for(ConfigComponentMap_t::iterator compItr = compMap.begin();
+	for(PartitionComponentMap_t::iterator compItr = compMap.begin();
 		compItr != compMap.end();
 		compItr++) {
 

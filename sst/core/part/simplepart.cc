@@ -80,7 +80,7 @@ namespace SST {
 	}
 
 	// Perform one step of the recursive algorithm to partition the graph
-	void simple_partition_step(ConfigComponentMap_t& component_map,
+	void simple_partition_step(PartitionComponentMap_t& component_map,
 			ComponentId_t* setA, const int lengthA, int rankA,
 			ComponentId_t* setB, const int lengthB, int rankB,
 			map<ComponentId_t, map<ComponentId_t, SimTime_t>*> timeTable,
@@ -174,12 +174,12 @@ namespace SST {
 		}
 	}
 
-	void simple_partition(ConfigGraph* graph, int world_size) {
-		ConfigComponentMap_t& component_map = graph->getComponentMap();
+	void simple_partition(PartitionGraph* graph, int world_size) {
+		PartitionComponentMap_t& component_map = graph->getComponentMap();
 
 
 		if(world_size == 1) {
-			for(ConfigComponentMap_t::iterator compItr = component_map.begin();
+			for(PartitionComponentMap_t::iterator compItr = component_map.begin();
 				compItr != component_map.end();
 				++compItr) {
 
@@ -202,7 +202,7 @@ namespace SST {
 
 			// size_t nComp = component_map.size();
 			// for(size_t theComponent = 0 ; theComponent < nComp ; theComponent++ ) {
-			for( ConfigComponentMap_t::iterator compItr = component_map.begin();
+			for( PartitionComponentMap_t::iterator compItr = component_map.begin();
                  compItr != component_map.end();
                  ++compItr) {
 
@@ -217,17 +217,17 @@ namespace SST {
 					setB[indexB++] = theComponent;
 				}
 
-				// vector<ConfigLink*> component_links = component_map[theComponent].links;
-				// vector<ConfigLink*> component_links = (*compItr).links;
-				vector<string> component_links = (*compItr).links;
-                ConfigLinkMap_t& linkMap = graph->getLinkMap();
+				// vector<string> component_links = (*compItr).links;
+				LinkIdMap_t component_links = (*compItr).links;
+                
+                PartitionLinkMap_t& linkMap = graph->getLinkMap();
 
-				for(vector<string>::const_iterator linkItr = component_links.begin();
+				for(LinkIdMap_t::const_iterator linkItr = component_links.begin();
 					linkItr != component_links.end();
 					linkItr++) {
 
 					// ConfigLink* theLink = (*linkItr);
-					ConfigLink& theLink = linkMap[*linkItr];
+					PartitionLink& theLink = linkMap[*linkItr];
 					compConnectMap->insert( pair<ComponentId_t, SimTime_t>(theLink.component[1], theLink.getMinLatency()) );
 				}
 			}

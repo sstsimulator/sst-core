@@ -22,6 +22,8 @@ using namespace SST::Partition;
 namespace SST {
 namespace Partition {
 
+
+    
 /**
 Performs a linear partition scheme of an SST simulation configuration. In this
 scheme a list of components (supplied as a graph) are grouped by slicing the list
@@ -47,7 +49,7 @@ class SSTLinearPartition : public SST::Partition::SSTPartitioner {
 			Performs a partition of an SST simulation configuration
 			\param graph The simulation configuration to partition
 		*/
-		void performPartition(ConfigGraph* graph);
+		void performPartition(PartitionGraph* graph);
 
 	protected:
         /** Number of ranks in the simulation */

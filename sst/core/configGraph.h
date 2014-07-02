@@ -174,15 +174,16 @@ private:
 
 /** Map names to Links */
 // typedef std::map<std::string,ConfigLink> ConfigLinkMap_t;
-typedef SparseVectorMap<ConfigLink,std::string> ConfigLinkMap_t;
+typedef SparseVectorMap<std::string,ConfigLink> ConfigLinkMap_t;
 /** Map IDs to Components */
-typedef SparseVectorMap<ConfigComponent,ComponentId_t> ConfigComponentMap_t;
+typedef SparseVectorMap<ComponentId_t,ConfigComponent> ConfigComponentMap_t;
 /** Map names to Parameter Sets: XML only */
 typedef std::map<std::string,Params*> ParamsMap_t;
 /** Map names to variable values:  XML only */
 typedef std::map<std::string,std::string> VariableMap_t;
 
-
+class PartitionGraph;
+    
 /** A Configuration Graph
  *  A graph representing Components and Links
  */
@@ -263,6 +264,9 @@ public:
 
     ConfigGraph* getSubGraph(int start_rank, int end_rank);
     ConfigGraph* getSubGraph(std::set<int> rank_set);
+
+    PartitionGraph* getPartitionGraph();
+    void annotateRanks(PartitionGraph* graph);
     
 private:
     friend class Simulation;
@@ -288,7 +292,73 @@ private:
 
 };
 
- 
+typedef SparseVectorMap<ComponentId_t> ComponentIdMap_t;
+typedef std::vector<LinkId_t> LinkIdMap_t;
+    
+class PartitionComponent {
+public:
+    ComponentId_t             id;
+    float                     weight;
+    int                       rank;
+    LinkIdMap_t               links;
+
+    ComponentIdMap_t          group;
+
+    PartitionComponent(const ConfigComponent& cc) {
+        id = cc.id;
+        weight = cc.weight;
+        rank = cc.rank;
+    }
+
+    inline const ComponentId_t key() const { return id; }
+
+};
+
+class PartitionLink {
+public:
+    LinkId_t                  id;
+    ComponentId_t             component[2];
+    SimTime_t                 latency[2];
+    bool                      no_cut;
+
+    PartitionLink(const ConfigLink& cl) {
+        id = cl.id;
+        component[0] = cl.component[0];
+        component[1] = cl.component[1];
+        latency[0] = cl.latency[0];
+        latency[1] = cl.latency[1];
+        no_cut = cl.no_cut;
+    }
+
+    inline const LinkId_t key() const { return id; }
+
+    /** Return the minimum latency of this link (from both sides) */
+    SimTime_t getMinLatency() const {
+        if ( latency[0] < latency[1] ) return latency[0];
+        return latency[1];    }
+    
+};
+
+typedef SparseVectorMap<ComponentId_t,PartitionComponent> PartitionComponentMap_t;
+typedef SparseVectorMap<LinkId_t,PartitionLink> PartitionLinkMap_t;
+
+class PartitionGraph {
+private:
+    PartitionComponentMap_t comps;
+    PartitionLinkMap_t      links;
+
+public:
+    PartitionComponentMap_t& getComponentMap() {
+        return comps;
+    }
+    PartitionLinkMap_t& getLinkMap() {
+        return links;
+    }
+
+    size_t getNumComponents() { return comps.size(); }
+
+};
+
 } // namespace SST
 
 #endif // SST_CORE_CONFIGGRAPH_H

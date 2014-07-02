@@ -25,8 +25,8 @@ static int sst_zoltan_count_vertices(void* data, int* ierr) {
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
 	if(0 == rank) {
-		ConfigGraph* c_graph = (ConfigGraph*) data;
-		partOutput->verbose(CALL_INFO, 1, 0, "SST queried by Zoltan for config graph vertices, found %" PRIu64 " in configuration graph\n",
+		PartitionGraph* c_graph = (PartitionGraph*) data;
+		partOutput->verbose(CALL_INFO, 1, 0, "SST queried by Zoltan for partition graph vertices, found %" PRIu64 " in partition graph\n",
 			(uint64_t) c_graph->getComponentMap().size());
 
 		return c_graph->getComponentMap().size();
@@ -45,11 +45,11 @@ static void sst_zoltan_get_vertex_list(void* data, int sizeGID, int sizeLID,
 	if(0 == rank) {
 		partOutput->verbose(CALL_INFO, 1, 0, "SST is queried by Zoltan for the graph vertex list, traversing graph to add to Zoltan...\n");
 
-		ConfigGraph* c_graph = (ConfigGraph*) data;
+		PartitionGraph* c_graph = (PartitionGraph*) data;
 		int localID = 0;
 		int next_entry = 0;
 
-		for(ConfigComponentMap_t::iterator comp_itr = c_graph->getComponentMap().begin();
+		for(PartitionComponentMap_t::iterator comp_itr = c_graph->getComponentMap().begin();
 			comp_itr != c_graph->getComponentMap().end(); comp_itr++) {
 			globalIDs[next_entry] = (int) comp_itr->id;
 			localIDs[next_entry] = localID++;
@@ -60,7 +60,7 @@ static void sst_zoltan_get_vertex_list(void* data, int sizeGID, int sizeLID,
 
 		*ierr = ZOLTAN_OK;
 
-		partOutput->verbose(CALL_INFO, 1, 0, "Completed traversing configuration graph, vertices returned to Zoltan.\n");
+		partOutput->verbose(CALL_INFO, 1, 0, "Completed traversing partition graph, vertices returned to Zoltan.\n");
 		return;
 	} else {
 		return;
@@ -77,8 +77,8 @@ static void sst_zoltan_get_num_edges_list(void *data, int sizeGID, int sizeLID, 
  	if(0 == rank) {
 		partOutput->verbose(CALL_INFO, 1, 0, "SST queried by Zoltan for the number of edges in the graph, these will be calculated...\n");
 
-		ConfigGraph* c_graph = (ConfigGraph*) data;
-		ConfigLinkMap_t& link_map = c_graph->getLinkMap();
+		PartitionGraph* c_graph = (PartitionGraph*) data;
+		PartitionLinkMap_t& link_map = c_graph->getLinkMap();
 
 		// Cycle over all of the "objects" which are components
 		// Then cycle over our link map, if we find this component is on the left of
@@ -86,7 +86,7 @@ static void sst_zoltan_get_num_edges_list(void *data, int sizeGID, int sizeLID, 
 		// Finally let Zoltan know how many links the component has
 		for(int i = 0; i < num_obj; ++i) {
 			int this_comp_links = 0;
-			ConfigLinkMap_t::iterator map_itr;
+			PartitionLinkMap_t::iterator map_itr;
 
 			for(map_itr = link_map.begin(); map_itr != link_map.end(); map_itr++) {
 				if(map_itr->component[0] == (ComponentId_t) i) {
@@ -97,7 +97,7 @@ static void sst_zoltan_get_num_edges_list(void *data, int sizeGID, int sizeLID, 
 			numEdges[i] = this_comp_links;
 		}
 
-		partOutput->verbose(CALL_INFO, 1, 0, "Completed counting edges in the SST config graph.\n");
+		partOutput->verbose(CALL_INFO, 1, 0, "Completed counting edges in the SST partition graph.\n");
 
 		*ierr = ZOLTAN_OK;
 		return;
@@ -116,10 +116,10 @@ static void sst_zoltan_get_edge_list(void *data, int sizeGID, int sizeLID,
     MPI_Comm_rank(MPI_COMM_WORLD, & rank);
 
     if(0 == rank) {
-		partOutput->verbose(CALL_INFO, 1, 0, "SST is queried by Zoltan to obtain the configuration graph edge list.\n");
+		partOutput->verbose(CALL_INFO, 1, 0, "SST is queried by Zoltan to obtain the partition graph edge list.\n");
 
-	    	ConfigGraph* c_graph = (ConfigGraph*) data;
-		ConfigLinkMap_t& link_map = c_graph->getLinkMap();
+        PartitionGraph* c_graph = (PartitionGraph*) data;
+		PartitionLinkMap_t& link_map = c_graph->getLinkMap();
 
 		if(num_obj != (int) c_graph->getComponentMap().size()) {
 			fprintf(stderr, "Zoltan did not request edges for the correct number of vertices.\n");
@@ -133,7 +133,7 @@ static void sst_zoltan_get_edge_list(void *data, int sizeGID, int sizeLID,
 
 		for(int i = 0; i < num_obj; ++i) {
 			int this_comp_links = num_edges[i];
-			ConfigLinkMap_t::iterator map_itr;
+			PartitionLinkMap_t::iterator map_itr;
 
 			for(map_itr = link_map.begin(); map_itr != link_map.end(); map_itr++) {
 				if(this_comp_links < 0) {
@@ -216,7 +216,7 @@ SSTZoltanPartition::~SSTZoltanPartition() {
 	delete partOutput;
 }
 
-void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
+void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
 
 
 	if(0 == rank) {
@@ -280,13 +280,13 @@ void SSTZoltanPartition::performPartition(ConfigGraph* graph) {
 
 	// Go over what we have to export, set the component to the appropriate rank
 	if(0 == rank) {
-	  	ConfigComponentMap_t& config_map = graph->getComponentMap();
-		ConfigComponentMap_t::iterator config_map_itr;
+	  	PartitionComponentMap_t& config_map = graph->getComponentMap();
+		PartitionComponentMap_t::iterator config_map_itr;
 		for(config_map_itr = config_map.begin(); config_map_itr != config_map.end(); config_map_itr++) {
 			config_map_itr->rank = 0;
 		}
 
-		partOutput->verbose(CALL_INFO, 1, 0, "Rank 0 will export %d configuration graph vertices.\n", num_vertices_export);
+		partOutput->verbose(CALL_INFO, 1, 0, "Rank 0 will export %d partition graph vertices.\n", num_vertices_export);
 
 		// Go over what we have to export, set the component to the appropriate rank
   		for(int i = 0; i < num_vertices_export; ++i) {

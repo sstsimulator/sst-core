@@ -547,4 +547,41 @@ ConfigGraph::getSubGraph(std::set<int> rank_set)
     return graph;    
 }
 
+PartitionGraph*
+ConfigGraph::getPartitionGraph()
+{
+    PartitionGraph* graph = new PartitionGraph();
+
+    PartitionComponentMap_t& pcomps = graph->getComponentMap();
+    PartitionLinkMap_t& plinks = graph->getLinkMap();
+    
+    for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
+        const ConfigLink& link = *it;
+        
+        const ConfigComponent& comp0 = comps[link.component[0]];
+        const ConfigComponent& comp1 = comps[link.component[1]];
+
+        plinks.insert(PartitionLink(link));
+
+        if ( !pcomps.contains(comp0.id ) ) pcomps.insert(PartitionComponent(comp0));
+        if ( !pcomps.contains(comp1.id ) ) pcomps.insert(PartitionComponent(comp1));
+
+        pcomps[comp0.id].links.push_back(link.id);
+        pcomps[comp1.id].links.push_back(link.id);                                     
+    }
+    return graph;    
+}
+
+void
+ConfigGraph::annotateRanks(PartitionGraph* graph)
+{
+    PartitionComponentMap_t pcomps = graph->getComponentMap();
+
+    for ( PartitionComponentMap_t::iterator it = pcomps.begin(); it != pcomps.end(); ++it ) {
+        const PartitionComponent& comp = *it;
+
+        comps[comp.id].rank = comp.rank;
+    }
+}
+    
 } // namespace SST

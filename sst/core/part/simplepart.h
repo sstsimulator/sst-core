@@ -11,14 +11,14 @@
 #ifndef SST_CORE_PART_SIMPLEPART_H
 #define SST_CORE_PART_SIMPLEPART_H
 namespace SST {
-  class ConfigGraph;
+  class PartitionGraph;
 	/**
 		Implements the "simple" partitioner which uses latency
 		information in the SST component configuration to perform
 		approximate load balancing of components over MPI ranks. Note
 		that this scheme does run if SST is run in serial.
 	*/
-	void simple_partition(ConfigGraph* graph, int world_size);
+	void simple_partition(PartitionGraph* graph, int world_size);
 
 } //namespace SST
 #endif //SST_CORE_PART_SIMPLERPART_H

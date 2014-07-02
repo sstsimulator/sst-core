@@ -45,12 +45,12 @@ class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 		~SSTZoltanPartition();
 
 		/**
-			Performs a partition of an SST configuration graph. Components in the graph
+			Performs a partition of an SST partition graph. Components in the graph
 			have their setRank() attribute set based on the partition scheme computed
 			by Zoltan.
-			\param graph An SST configuration graph
+			\param graph An SST partition graph
 		*/
-		void performPartition(ConfigGraph* graph);
+		void performPartition(PartitionGraph* graph);
 
 	protected:
 		void initZoltan();
