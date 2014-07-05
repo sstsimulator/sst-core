@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <map>
+#include <set>
 
 #include "sst/core/sparseVectorMap.h"
 #include "sst/core/params.h"
@@ -30,65 +31,7 @@ namespace SST {
 class Simulation;
 
 class Config;
-class ConfigLink;
     
-/** Represents the configuration of a generic component */
-class ConfigComponent {
-public:
-    ComponentId_t            id;                /*!< Unique ID of this component */
-    std::string              name;              /*!< Name of this component */
-    std::string              type;              /*!< Type of this component */
-    float                    weight;            /*!< Parititoning weight for this component */
-    int                      rank;              /*!< Parallel Rank for this component */
-    // std::vector<ConfigLink*> links;             /*!< List of links connected */
-    std::vector<std::string> links;             /*!< List of links connected */
-    Params                   params;            /*!< Set of Parameters */
-    bool                     isIntrospector;    /*!< Is this an Introspector? */
-
-    inline const ComponentId_t& key()const { return id; }
-    
-    /** Print Component information */
-    void print(std::ostream &os) const;
-
-    /** Generate Dot information for this Component */
-	void genDot(std::ostream &os) const;
-
-    ConfigComponent cloneWithoutLinks() const;
-    ConfigComponent cloneWithoutLinksOrParams() const;
-    
-    ~ConfigComponent() {}
-private:
-
-    friend class ConfigGraph;
-    /** Create a new Component */
-    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, int rank, bool isIntrospector) :
-        id(id),
-        name(name),
-        type(type),
-        weight(weight),
-        rank(rank),
-        isIntrospector(isIntrospector)
-    { }
-
-    ConfigComponent() {}
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(id);
-        ar & BOOST_SERIALIZATION_NVP(name);
-        ar & BOOST_SERIALIZATION_NVP(type);
-        ar & BOOST_SERIALIZATION_NVP(weight);
-        ar & BOOST_SERIALIZATION_NVP(rank);
-        ar & BOOST_SERIALIZATION_NVP(links);
-        ar & BOOST_SERIALIZATION_NVP(params);
-        ar & BOOST_SERIALIZATION_NVP(isIntrospector);
-    }
-
-};
-
 /** Represents the configuration of a generic Link */
 class ConfigLink {
 public:
@@ -100,7 +43,8 @@ public:
     int              current_ref;   /*!< Number of components currently referring to this Link */
     bool             no_cut;        /*!< If set to true, partitioner will not make a cut through this Link */
 
-    inline const std::string& key() const { return name; }
+    // inline const std::string& key() const { return name; }
+    inline LinkId_t key() const { return id; }
     
     /** Return the minimum latency of this link (from both sides) */
     SimTime_t getMinLatency() const {
@@ -172,9 +116,68 @@ private:
 
 };
 
+typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
+
+/** Represents the configuration of a generic component */
+class ConfigComponent {
+public:
+    ComponentId_t            id;                /*!< Unique ID of this component */
+    std::string              name;              /*!< Name of this component */
+    std::string              type;              /*!< Type of this component */
+    float                    weight;            /*!< Parititoning weight for this component */
+    int                      rank;              /*!< Parallel Rank for this component */
+    std::vector<LinkId_t>    links;             /*!< List of links connected */
+    Params                   params;            /*!< Set of Parameters */
+    bool                     isIntrospector;    /*!< Is this an Introspector? */
+
+    inline const ComponentId_t& key()const { return id; }
+    
+    /** Print Component information */
+    void print(std::ostream &os) const;
+
+    /** Generate Dot information for this Component */
+	void genDot(std::ostream &os, const ConfigLinkMap_t& links) const;
+
+    ConfigComponent cloneWithoutLinks() const;
+    ConfigComponent cloneWithoutLinksOrParams() const;
+    
+    ~ConfigComponent() {}
+private:
+
+    friend class ConfigGraph;
+    /** Create a new Component */
+    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, int rank, bool isIntrospector) :
+        id(id),
+        name(name),
+        type(type),
+        weight(weight),
+        rank(rank),
+        isIntrospector(isIntrospector)
+    { }
+
+    ConfigComponent() {}
+
+    friend class boost::serialization::access;
+    template<class Archive>
+    void
+    serialize(Archive & ar, const unsigned int version )
+    {
+        ar & BOOST_SERIALIZATION_NVP(id);
+        ar & BOOST_SERIALIZATION_NVP(name);
+        ar & BOOST_SERIALIZATION_NVP(type);
+        ar & BOOST_SERIALIZATION_NVP(weight);
+        ar & BOOST_SERIALIZATION_NVP(rank);
+        ar & BOOST_SERIALIZATION_NVP(links);
+        ar & BOOST_SERIALIZATION_NVP(params);
+        ar & BOOST_SERIALIZATION_NVP(isIntrospector);
+    }
+
+};
+
+
 /** Map names to Links */
 // typedef std::map<std::string,ConfigLink> ConfigLinkMap_t;
-typedef SparseVectorMap<std::string,ConfigLink> ConfigLinkMap_t;
+// typedef SparseVectorMap<std::string,ConfigLink> ConfigLinkMap_t;
 /** Map IDs to Components */
 typedef SparseVectorMap<ComponentId_t,ConfigComponent> ConfigComponentMap_t;
 /** Map names to Parameter Sets: XML only */
@@ -263,7 +266,7 @@ public:
     }
 
     ConfigGraph* getSubGraph(int start_rank, int end_rank);
-    ConfigGraph* getSubGraph(std::set<int> rank_set);
+    ConfigGraph* getSubGraph(const std::set<int>& rank_set);
 
     PartitionGraph* getPartitionGraph();
     void annotateRanks(PartitionGraph* graph);
@@ -275,6 +278,9 @@ private:
     ConfigLinkMap_t      links;
     ConfigComponentMap_t comps;
 
+    // temporary as a test
+    std::map<std::string,LinkId_t> link_names;
+    
     ComponentId_t  nextCompID;
 
     friend class boost::serialization::access;

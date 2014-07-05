@@ -200,7 +200,7 @@ main(int argc, char *argv[])
 			else {
 				graph = modelGen->createConfigGraph();
 			}
-
+            
 			double end_graph_gen = sst_get_cpu_time();
 
 			if(cfg.verbose && (rank == 0)) {
@@ -418,7 +418,20 @@ main(int argc, char *argv[])
             broadcast(world, min_part, 0);
 #endif
         }
-            
+
+        // Just some performance test code...
+        // if ( rank == 0 )  {
+        //     PartitionGraph* pgraph = graph->getPartitionGraph();
+
+        //     SSTLinearPartition* linear = new SSTLinearPartition(2, cfg.verbose);
+        //     linear->performPartition(pgraph);
+        //     delete linear;
+        //     graph->annotateRanks(pgraph);
+        //     delete pgraph;
+
+        //     cout << "Getting subgraph" << endl;
+        //     graph->getSubGraph(0,0);
+        // }
         
 #if 1
 #ifdef HAVE_MPI
@@ -493,7 +506,10 @@ main(int argc, char *argv[])
 
                 // Need to send the your_ranks set and the proper
                 // subgraph for further distribution                
+                // double start = sst_get_cpu_time();
                 ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                // double end = sst_get_cpu_time();
+                // cout << (end-start) << " seconds" << endl;
                 int dest = *your_ranks.begin();
                 pending_requests.push_back(world.isend(dest, 0, your_ranks));
                 pending_requests.push_back(world.isend(dest, 0, *your_graph));
@@ -516,7 +532,10 @@ main(int argc, char *argv[])
                 your_ranks.insert(mid,my_ranks.end());
                 my_ranks.erase(mid,my_ranks.end());
 
+                // double start = sst_get_cpu_time();
                 ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+                // double end = sst_get_cpu_time();
+                // cout << (end-start) << " seconds" << endl;
                 int dest = *your_ranks.begin();
 
                 pending_requests.push_back(world.isend(dest, 0, your_ranks));
@@ -532,7 +551,6 @@ main(int argc, char *argv[])
         }
 #endif
 #endif
-        
         
 		// Perform the wireup
 		do_graph_wireup(sim_output, graph, sim, cfg, size, rank, min_part);

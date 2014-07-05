@@ -401,9 +401,9 @@ public:
     }
 
     /** Print all key/value parameter pairs to specified ostream */
-    void print_all_params(std::ostream &os) const {
+    void print_all_params(std::ostream &os, std::string prefix = "") const {
         for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
-            os << "key=" << keyMapReverse[i->first] << ", value=" << i->second << std::endl;
+            os << prefix << "key=" << keyMapReverse[i->first] << ", value=" << i->second << std::endl;
         }
     }
 

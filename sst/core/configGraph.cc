@@ -22,7 +22,6 @@
 #include <sst/core/simulation.h>
 
 #include <string.h>
-#include <set>
 
 using namespace std;
 
@@ -37,18 +36,28 @@ void ConfigComponent::print(std::ostream &os) const {
     os << "  rank = " << rank << std::endl;
     os << "  isIntrospector = " << isIntrospector << std::endl;
     os << "  Links:" << std::endl;
-    // for (size_t i = 0 ; i != links.size() ; ++i) {
-    //     links[i]->print(os);
-    // }
-
+    for (size_t i = 0 ; i != links.size() ; ++i) {
+        os << "    " << links[i];
+    }
+    os << std::endl;
     os << "  Params:" << std::endl;
-    params.print_all_params(os);
+    params.print_all_params(os, "    ");
 
 }
 
-void ConfigComponent::genDot(std::ostream &os) const {
+void ConfigComponent::genDot(std::ostream &os, const ConfigLinkMap_t& link_map) const {
     os  << id
         << " [label=\"{" << name << "\\n" << type << " | {";
+    
+    for ( std::vector<LinkId_t>::const_iterator i = links.begin(); i != links.end() ; ++i ) {
+        // Choose which side of the link we're on
+        const ConfigLink& link = link_map[*i];
+
+        int p = (link.component[0] == id) ? 0 : 1;
+        os << " <" << link.port[p] << "> " << link.port[p];
+        if ( i+1 != links.end() ) os << " |";        
+    }
+
     // for ( std::vector<ConfigLink*>::const_iterator i = links.begin() ; i != links.end() ; ++i ) {
     //     // Choose which side of the link we're on
     //     int p = ((*i)->component[0] == id) ? 0 : 1;
@@ -93,7 +102,6 @@ ConfigGraph::setComponentRanks(int rank)
     {
         iter->rank = rank;
     }
-
 }
 
 bool
@@ -138,7 +146,7 @@ void ConfigGraph::genDot(std::ostream &os, const std::string &name) const {
 			for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
 				if ( i->rank == r ) {
 					os << "\t\t";
-					i->genDot(os);
+					i->genDot(os,links);
 				}
 			}
 			os << "\t}\n\n";
@@ -146,7 +154,7 @@ void ConfigGraph::genDot(std::ostream &os, const std::string &name) const {
 	} else {
         for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
             os << "\t";
-            i->genDot(os);
+            i->genDot(os,links);
         }
 	}
 
@@ -218,8 +226,6 @@ ConfigGraph::checkForStructuralErrors()
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type, float weight, int rank)
 {
-	// comps.push_back(ConfigComponent(comps.size(), name, type, weight, rank, false));
-    // return comps.back().id;
 	comps.push_back(ConfigComponent(nextCompID, name, type, weight, rank, false));
     return nextCompID++;
 }
@@ -227,8 +233,6 @@ ConfigGraph::addComponent(std::string name, std::string type, float weight, int 
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type)
 {
-	// comps.push_back(ConfigComponent(comps.size(), name, type, 1.0f, 0, false));
-    // return comps.back().id;
 	comps.push_back(ConfigComponent(nextCompID, name, type, 1.0f, 0, false));
     return nextCompID++;
 }
@@ -269,12 +273,12 @@ ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string 
 void
 ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, string latency_str, bool no_cut)
 {
-	// if ( links.find(link_name) == links.end() ) {
-	if ( !links.contains(link_name) ) {
-        // links[link_name] = ConfigLink(links.size(), link_name);
-        links.insert(ConfigLink(links.size(), link_name));
-	}
-	ConfigLink &link = links[link_name];
+	if ( link_names.find(link_name) == link_names.end() ) {
+        LinkId_t id = links.size();
+        link_names[link_name] = id;
+        links.insert(ConfigLink(id, link_name));
+    }
+	ConfigLink &link = links[link_names[link_name]];
     if ( link.current_ref >= 2 ) {
         cout << "ERROR: Parsing SDL file: Link " << link_name << " referenced more than two times" << endl;
         exit(1);
@@ -289,8 +293,7 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 	link.latency[index] = latency;
     link.no_cut = link.no_cut | no_cut;
     
-	// comps[comp_id].links.push_back(&link);
-	comps[comp_id].links.push_back(link_name);
+	comps[comp_id].links.push_back(link.id);
 }
 
 void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot) {
@@ -464,55 +467,47 @@ ConfigGraph::addIntrospector(string name, string type)
 ConfigGraph*
 ConfigGraph::getSubGraph(int start_rank, int end_rank)
 {
-    ConfigGraph* graph = new ConfigGraph();
-    
-    // Look through all the links.  Add any link that has either side
-    // hooked to a component in the specified rank, then put both
-    // components in the graph as well.
-    for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
-        ConfigLink& link = *it;
-
-        const ConfigComponent& comp0 = comps[link.component[0]];
-        const ConfigComponent& comp1 = comps[link.component[1]];
-
-        bool comp0_in_ranks = comp0.rank >= start_rank && comp0.rank <= end_rank;
-        bool comp1_in_ranks = comp1.rank >= start_rank && comp1.rank <= end_rank;
-        
-        // if ( comp0.rank == rank || comp1.rank == rank ) {
-        if ( comp0_in_ranks || comp1_in_ranks ) {
-            // Clone the link and add to new lin k map
-            // graph->links[link.name] = ConfigLink(link);  // Will make a copy into map
-            graph->links.insert(ConfigLink(link));  // Will make a copy into map
-            ConfigLink& new_link = graph->links[link.name];
-            
-            // Now add the components to the component map.  If the
-            // component is already in the map, add it if not.  Then
-            // we just need to add the link to the component.  Remote
-            // components will only end up with the links that touch
-            // the requested rank.
-            if ( !graph->comps.contains(comp0.id) ) {
-                if (comp0_in_ranks) graph->comps.insert(comp0.cloneWithoutLinks());
-                else graph->comps.insert(comp0.cloneWithoutLinksOrParams());
-            }
-            if ( !graph->comps.contains(comp1.id) ) {
-                if (comp1_in_ranks) graph->comps.insert(comp1.cloneWithoutLinks());
-                else graph->comps.insert(comp1.cloneWithoutLinksOrParams());
-            }
-            graph->comps[comp0.id].links.push_back(new_link.name);
-            graph->comps[comp1.id].links.push_back(new_link.name);            
-        }
+    set<int> rank_set;
+    for ( int i = start_rank; i <= end_rank; i++ ) {
+        rank_set.insert(i);
     }
-    return graph;
+    return getSubGraph(rank_set);
 }
 
 ConfigGraph*
-ConfigGraph::getSubGraph(std::set<int> rank_set)
+ConfigGraph::getSubGraph(const std::set<int>& rank_set)
 {
     ConfigGraph* graph = new ConfigGraph();
     
+    // SparseVectorMap is a extremely slow at random inserts, so make
+    // sure things go in in order into both comps and links, then tie
+    // it all together.
+    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it) {
+        const ConfigComponent& comp = *it;
+
+        if ( rank_set.find(comp.rank) != rank_set.end() ) {
+            graph->comps.push_back(comp.cloneWithoutLinks());
+        }
+        else {
+            // See if the other side of any of component's links is in
+            // set, if so, add to graph
+            for ( LinkIdMap_t::const_iterator link_it = comp.links.begin();
+                  link_it != comp.links.end(); ++link_it ) {
+                const ConfigLink& link = links[*link_it];
+                ComponentId_t remote = link.component[0] == comp.id ?
+                    link.component[1] : link.component[0];
+                if ( rank_set.find(comps[remote].rank) != rank_set.end() ) {
+                    graph->comps.push_back(comp.cloneWithoutLinksOrParams());
+                    break;
+                }
+            }
+            
+        }
+    }
+
     // Look through all the links.  Add any link that has either side
-    // hooked to a component in the specified rank, then put both
-    // components in the graph as well.
+    // hooked to a component in the specified rank set.  Then add link
+    // to components (which are already in the graph)
     for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
         const ConfigLink& link = *it;
 
@@ -522,26 +517,12 @@ ConfigGraph::getSubGraph(std::set<int> rank_set)
         bool comp0_in_ranks = (rank_set.find(comp0.rank) != rank_set.end());
         bool comp1_in_ranks = (rank_set.find(comp1.rank) != rank_set.end());
         
-        // if ( comp0.rank == rank || comp1.rank == rank ) {
         if ( comp0_in_ranks || comp1_in_ranks ) {
             // Clone the link and add to new lin k map
             graph->links.insert(ConfigLink(link));  // Will make a copy into map
 
-            // Now add the components to the component map.  If the
-            // component is already in the map, add it if not.  Then
-            // we just need to add the link to the component.  Remote
-            // components will only end up with the links that touch
-            // the requested rank.
-            if ( !graph->comps.contains(comp0.id) ) {
-                if (comp0_in_ranks) graph->comps.insert(comp0.cloneWithoutLinks());
-                else graph->comps.insert(comp0.cloneWithoutLinksOrParams());
-            }
-            if ( !graph->comps.contains(comp1.id) ) {
-                if (comp1_in_ranks) graph->comps.insert(comp1.cloneWithoutLinks());
-                else graph->comps.insert(comp1.cloneWithoutLinksOrParams());
-            }
-            graph->comps[comp0.id].links.push_back(link.name);
-            graph->comps[comp1.id].links.push_back(link.name);            
+            graph->comps[comp0.id].links.push_back(link.id);
+            graph->comps[comp1.id].links.push_back(link.id);
         }
     }
     return graph;    
@@ -555,6 +536,16 @@ ConfigGraph::getPartitionGraph()
     PartitionComponentMap_t& pcomps = graph->getComponentMap();
     PartitionLinkMap_t& plinks = graph->getLinkMap();
     
+    // SparseVectorMap is slow for random inserts, so make sure we
+    // insert both components and links in order of ID, which is the
+    // key for the SparseVectorMap
+    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
+        const ConfigComponent& comp = *it;
+
+        pcomps.insert(PartitionComponent(comp));
+    }
+    
+
     for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
         const ConfigLink& link = *it;
         
@@ -562,9 +553,6 @@ ConfigGraph::getPartitionGraph()
         const ConfigComponent& comp1 = comps[link.component[1]];
 
         plinks.insert(PartitionLink(link));
-
-        if ( !pcomps.contains(comp0.id ) ) pcomps.insert(PartitionComponent(comp0));
-        if ( !pcomps.contains(comp1.id ) ) pcomps.insert(PartitionComponent(comp1));
 
         pcomps[comp0.id].links.push_back(link.id);
         pcomps[comp1.id].links.push_back(link.id);                                     

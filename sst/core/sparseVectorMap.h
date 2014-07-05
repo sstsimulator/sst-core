@@ -105,7 +105,7 @@ public:
             data.push_back(val);
             return;
         }
-
+        
         // Didn't belong at end, call regular insert
         insert(val);   
     }
