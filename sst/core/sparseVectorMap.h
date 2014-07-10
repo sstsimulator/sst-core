@@ -58,8 +58,10 @@ private:
                 bottom = middle + 1;
             }
         }
+        /* Shouldn't be reached */
+        return -1;
     }
-    
+
     int binary_search_find(keyT id) const
     {
         int bottom = 0;
