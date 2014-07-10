@@ -16,6 +16,7 @@
 
 #include <sst/core/output.h>
 
+#include <inttypes.h>
 #include <iostream>
 #include <map>
 #include <stack>
