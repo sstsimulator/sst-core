@@ -195,3 +195,7 @@ sstinfo_x_LDFLAGS = \
 include tinyxml/Makefile.inc
 include part/Makefile.inc
 include model/Makefile.inc
+
+if USE_LIBZ
+sstsim_x_LDADD += -lz
+endif
