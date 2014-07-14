@@ -68,6 +68,8 @@ nobase_dist_sst_HEADERS = \
 	interfaces/TestEvent.h \
 	interfaces/stringEvent.h \
 	interfaces/simpleMem.h \
+	interprocess/circularBuffer.h \
+	interprocess/ipctunnel.h \
 	rng/sstrand.h \
 	rng/marsaglia.h \
 	rng/mersenne.h \
