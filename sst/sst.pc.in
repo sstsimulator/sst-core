@@ -8,4 +8,4 @@ Description: Structural Simulation Toolkit
 Version: @PACKAGE_VERSION@
 URL: http://www.sst-simulator.org/
 Libs: -L${libdir}/sst -L${libdir} -Wl,-undefined -Wl,dynamic_lookup
-Cflags: -DHAVE_CONFIG_H -I${includedir} -I${includedir}/sst @MPI_CPPFLAGS@
+Cflags: -DHAVE_CONFIG_H -I${includedir} -I${includedir}/sst @MPI_CPPFLAGS@ @BOOST_CPPFLAGS@
