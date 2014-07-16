@@ -260,7 +260,7 @@ private:
                                      Params params );
 
     TimeVortex* getTimeVortex() const { return timeVortex; }
-    void endSimulation(void) { endSim = true; }
+    void endSimulation(void) { endSimCycle = currentSimCycle; endSim = true; }
     void endSimulation(SimTime_t end) { endSimCycle = end; endSim = true; }
 
     
