@@ -127,10 +127,10 @@ def build(root):
     graph = root.find("sst")
 
 
-    if None != paramSets:
-        processParamSets(paramSets)
     if None != vars:
         processVars(vars)
+    if None != paramSets:
+        processParamSets(paramSets)
     if None != timebase:
         sst.setProgramOption('timebase', timebase.text.strip())
     if None != cfg:
