@@ -10,6 +10,7 @@
 #include <sst/core/interprocess/circularBuffer.h>
 
 #include <boost/interprocess/managed_shared_memory.hpp>
+#include <boost/interprocess/managed_xsi_shared_memory.hpp>
 
 
 namespace SST {
@@ -30,12 +31,27 @@ class IPCTunnel {
     typedef SST::Core::Interprocess::CircularBuffer<
             MsgType,
             boost::interprocess::allocator<MsgType,
-                boost::interprocess::managed_shared_memory::segment_manager> >
+                boost::interprocess::managed_xsi_shared_memory::segment_manager> >
         CircBuff_t;
 
     struct InternalSharedData {
         size_t numBuffers;
     };
+
+    void remove_old_shared_memory() {
+        try {
+            boost::interprocess::xsi_shared_memory xsi(boost::interprocess::open_only, xkey);
+            boost::interprocess::xsi_shared_memory::remove(xsi.get_shmid());
+        } catch (boost::interprocess::interprocess_exception & e) {
+            if ( e.get_error_code() != boost::interprocess::not_found_error )
+                throw ;
+        }
+    }
+
+    boost::interprocess::xsi_key get_xsi_key(const std::string &name) {
+        xkey = boost::interprocess::xsi_key(name.c_str(), 1);
+        return xkey;
+    }
 
 public:
     /**
@@ -45,15 +61,15 @@ public:
      * @param bufferSize How large each core's buffer should be
      */
     IPCTunnel(const std::string &region_name, size_t numBuffers,
-            size_t bufferSize) :
-        regionName(region_name)
+            size_t bufferSize)
     {
+        get_xsi_key(region_name);
         /* Remove any lingering mappings */
-        boost::interprocess::shared_memory_object::remove(regionName.c_str());
+        remove_old_shared_memory();
 
-        shm = boost::interprocess::managed_shared_memory(
-                boost::interprocess::create_only,
-                regionName.c_str(), calculateShmemSize(numBuffers, bufferSize));
+        shm = boost::interprocess::managed_xsi_shared_memory(
+                boost::interprocess::create_only, xkey,
+                calculateShmemSize(numBuffers, bufferSize));
 
         /* Construct our private buffer first.  Used for our communications */
         isd = shm.construct<InternalSharedData>("InternalShared")();
@@ -76,11 +92,11 @@ public:
      * Access an existing Tunnel
      * @param region_name Name of the shared-memory region to access
      */
-    IPCTunnel(const std::string &region_name) :
-        regionName(region_name),
-        shm(boost::interprocess::managed_shared_memory(
-                    boost::interprocess::open_only, regionName.c_str()))
+    IPCTunnel(const std::string &region_name)
     {
+        get_xsi_key(region_name);
+        shm = boost::interprocess::managed_xsi_shared_memory(
+                    boost::interprocess::open_only, xkey);
         isd = shm.find<InternalSharedData>("InternalShared").first;
         sharedData = shm.find<ShareDataType>("Shared Data").first;
 
@@ -97,7 +113,7 @@ public:
      */
     virtual ~IPCTunnel()
     {
-        boost::interprocess::shared_memory_object::remove(regionName.c_str());
+        remove_old_shared_memory();
     }
 
 
@@ -141,8 +157,8 @@ protected:
     ShareDataType *sharedData;
 
 private:
-    std::string regionName;
-    boost::interprocess::managed_shared_memory shm;
+    boost::interprocess::xsi_key xkey;
+    boost::interprocess::managed_xsi_shared_memory shm;
     InternalSharedData *isd;
     std::vector<CircBuff_t* > circBuffs;
 
