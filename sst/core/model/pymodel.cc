@@ -766,7 +766,7 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
     FILE *fp = fopen(scriptName.c_str(), "r");
     if ( !fp ) {
         output->fatal(CALL_INFO, -1,
-                "Unable to open python script %s", scriptName.c_str());
+                "Unable to open python script %s\n", scriptName.c_str());
     }
     int createReturn = PyRun_AnyFileEx(fp, scriptName.c_str(), 1);
 
