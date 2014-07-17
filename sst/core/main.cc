@@ -249,9 +249,18 @@ main(int argc, char *argv[])
 			}
 
 			SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
-            PartitionGraph* pgraph = graph->getPartitionGraph();
+            PartitionGraph* pgraph;
+            if ( rank == 0 ) {
+                pgraph = graph->getCollapsedPartitionGraph();
+            }
+            else {
+                pgraph = new PartitionGraph();
+            }
+            
 			zolt_part->performPartition(pgraph);
-            graph->annotateRanks(pgraph);
+            if ( rank == 0 ) {
+                graph->annotateRanks(pgraph);
+            }
             delete pgraph;
             
 			delete zolt_part;

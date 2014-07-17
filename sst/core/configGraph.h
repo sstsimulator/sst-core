@@ -31,6 +31,9 @@ namespace SST {
 class Simulation;
 
 class Config;
+
+typedef SparseVectorMap<ComponentId_t> ComponentIdMap_t;
+typedef std::vector<LinkId_t> LinkIdMap_t;
     
 /** Represents the configuration of a generic Link */
 class ConfigLink {
@@ -269,7 +272,9 @@ public:
     ConfigGraph* getSubGraph(const std::set<int>& rank_set);
 
     PartitionGraph* getPartitionGraph();
+    PartitionGraph* getCollapsedPartitionGraph();
     void annotateRanks(PartitionGraph* graph);
+    void getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group);
     
 private:
     friend class Simulation;
@@ -298,8 +303,6 @@ private:
 
 };
 
-typedef SparseVectorMap<ComponentId_t> ComponentIdMap_t;
-typedef std::vector<LinkId_t> LinkIdMap_t;
     
 class PartitionComponent {
 public:
@@ -315,6 +318,15 @@ public:
         weight = cc.weight;
         rank = cc.rank;
     }
+
+    PartitionComponent(LinkId_t id) :
+        id(id),
+        weight(0),
+        rank(-1)
+    {}
+    
+    // PartitionComponent(ComponentId_t id, ConfigGraph* graph, const ComponentIdMap_t& group);
+    void print(std::ostream &os, const PartitionGraph* graph) const;
 
     inline const ComponentId_t key() const { return id; }
 
@@ -343,6 +355,14 @@ public:
         if ( latency[0] < latency[1] ) return latency[0];
         return latency[1];    }
     
+    /** Print the Link information */
+    void print(std::ostream &os) const {
+        os << "    Link " << id << std::endl;
+        os << "      component[0] = " << component[0] << std::endl;
+        os << "      latency[0] = " << latency[0] << std::endl;
+        os << "      component[1] = " << component[1] << std::endl;
+        os << "      latency[1] = " << latency[1] << std::endl;
+    }
 };
 
 typedef SparseVectorMap<ComponentId_t,PartitionComponent> PartitionComponentMap_t;
@@ -354,11 +374,23 @@ private:
     PartitionLinkMap_t      links;
 
 public:
+    /** Print the configuration graph */
+	void print(std::ostream &os) const {
+		os << "Printing graph" << std::endl;
+		for (PartitionComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+			i->print(os,this);
+		}
+	}
+
     PartitionComponentMap_t& getComponentMap() {
         return comps;
     }
     PartitionLinkMap_t& getLinkMap() {
         return links;
+    }
+
+    const PartitionLink& getLink(LinkId_t id) const {
+        return links[id];
     }
 
     size_t getNumComponents() { return comps.size(); }

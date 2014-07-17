@@ -560,16 +560,135 @@ ConfigGraph::getPartitionGraph()
     return graph;    
 }
 
+PartitionGraph*
+ConfigGraph::getCollapsedPartitionGraph()
+{
+    PartitionGraph* graph = new PartitionGraph();
+
+    SparseVectorMap<LinkId_t> deleted_links;
+    
+    PartitionComponentMap_t& pcomps = graph->getComponentMap();
+    PartitionLinkMap_t& plinks = graph->getLinkMap();
+    
+    // SparseVectorMap is slow for random inserts, so make sure we
+    // insert both components and links in order of ID, which is the
+    // key for the SparseVectorMap in both cases
+    ComponentIdMap_t group;
+    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
+        const ConfigComponent& comp = *it;
+
+        // Get the no-cut group for this component
+        group.clear();
+        getConnectedNoCutComps(it->id,group);
+
+
+        // Check to see if this has already been put in map.  Do this
+        // by seeing if the first item in the connected componets is
+        // the current ID.  If not, then it's already in the list.
+        if ( *group.begin() == comp.id ) {
+            ComponentId_t id = pcomps.size();
+            pcomps.insert(PartitionComponent(id));
+            PartitionComponent& pcomp = pcomps[id];
+
+            // Iterate over the group and add the weights and add any
+            // links that connect outside the group
+            for ( ComponentIdMap_t::const_iterator i = group.begin(); i != group.end(); ++i ) {
+                const ConfigComponent& comp = comps[*i];
+                // Compute the new weight
+                pcomp.weight += comp.weight;
+                pcomp.group.insert(comp.id);
+                
+                // Walk through all the links and insert the ones that connect
+                // outside the group
+                for ( LinkIdMap_t::const_iterator link_it = comp.links.begin();
+                      link_it != comp.links.end(); ++link_it ) {
+
+                    const ConfigLink& link = links[*link_it];
+                    
+                    if ( !group.contains(link.component[0]) || !group.contains(link.component[1] ) ) {
+                        pcomp.links.push_back(link.id);
+                    }
+                    else {
+                        deleted_links.insert(link.id);
+                    }
+                }
+            }
+        }
+    }
+
+    // Now add all but the deleted links to the partition graph
+    for ( ConfigLinkMap_t::iterator i = links.begin(); i != links.end(); ++i ) {
+        if ( !deleted_links.contains(i->id) ) plinks.push_back(*i);
+    }
+
+    // Just need to fix up the component fields for the links.  Do
+    // this by walking through the components and checking each of it
+    // links to see if it points to something in the group.  If so,
+    // chsnge ID to point to super group.
+    for ( PartitionComponentMap_t::iterator i = pcomps.begin(); i != pcomps.end(); ++i ) {
+        PartitionComponent& pcomp = *i;
+        for ( LinkIdMap_t::iterator j = pcomp.links.begin(); j != pcomp.links.end(); ++j ) {
+            PartitionLink& plink = plinks[*j];
+            if ( pcomp.group.contains(plink.component[0]) ) plink.component[0] = pcomp.id;
+            if ( pcomp.group.contains(plink.component[1]) ) plink.component[1] = pcomp.id;
+        }
+    }
+
+    return graph;    
+}
+
 void
 ConfigGraph::annotateRanks(PartitionGraph* graph)
 {
-    PartitionComponentMap_t pcomps = graph->getComponentMap();
+    PartitionComponentMap_t& pcomps = graph->getComponentMap();
 
     for ( PartitionComponentMap_t::iterator it = pcomps.begin(); it != pcomps.end(); ++it ) {
         const PartitionComponent& comp = *it;
 
-        comps[comp.id].rank = comp.rank;
+        for ( ComponentIdMap_t::const_iterator c_iter = comp.group.begin();
+              c_iter != comp.group.end(); ++ c_iter ) {
+            comps[*c_iter].rank = comp.rank;
+        }
     }
 }
+
+void
+ConfigGraph::getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group)
+{
+    // We'll do this as a simple recursive depth first search
+    group.insert(start);
     
+    // First, get the component
+    ConfigComponent& comp = comps[start];
+
+    for ( vector<LinkId_t>::iterator it = comp.links.begin(); it != comp.links.end(); ++it ) {
+        ConfigLink& link = links[*it];
+
+        // If this is a no_cut link, need to follow it to next
+        // component if next component is not already in group
+        if ( link.no_cut ) {
+            ComponentId_t id = (link.component[0] == start ? link.component[1] : link.component[0]);
+            if ( !group.contains(id) ) {
+                getConnectedNoCutComps(id,group);
+            }
+        }
+    }
+}
+
+void
+PartitionComponent::print(std::ostream &os, const PartitionGraph* graph) const
+{
+    os << "Component " << id << "  ( ";
+    for ( ComponentIdMap_t::const_iterator git = group.begin(); git != group.end(); ++git ) {
+        os << *git << " ";
+    }
+    os << ")" << endl;
+    os << "  weight = " << weight << std::endl;
+    os << "  rank = " << rank << std::endl;
+    os << "  Links:" << std::endl;
+    for ( LinkIdMap_t::const_iterator it = links.begin(); it != links.end(); ++it ) {
+        graph->getLink(*it).print(os);
+    }
+}
+
 } // namespace SST

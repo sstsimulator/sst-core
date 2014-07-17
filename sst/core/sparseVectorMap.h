@@ -127,7 +127,7 @@ public:
     const_iterator begin() const { return data.begin(); }
     const_iterator end() const { return data.end(); }
 
-    bool contains(keyT id)
+    bool contains(keyT id) const
     {
         if ( binary_search_find(id) == -1 ) return false;
         return true;
