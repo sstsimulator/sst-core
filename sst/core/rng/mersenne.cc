@@ -107,3 +107,7 @@ int32_t  MersenneRNG::generateNextInt32() {
 
 	return (int32_t) (next * ((int32_t) MERSENNE_INT32_MAX));
 }
+
+MersenneRNG::~MersenneRNG() {
+	free(numbers);
+}

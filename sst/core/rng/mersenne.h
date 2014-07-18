@@ -72,6 +72,11 @@ class MersenneRNG : public SSTRandom {
 	*/
         int32_t  generateNextInt32();
 
+	/**
+		Destructor for Mersenne
+	*/
+	~MersenneRNG();
+
     private:
 	/**
 		Generates the next batch of random numbers
