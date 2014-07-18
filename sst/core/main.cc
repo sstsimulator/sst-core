@@ -316,7 +316,7 @@ main(int argc, char *argv[])
 				}
 			}
             else {
-                PartitionGraph* pgraph = graph->getPartitionGraph();
+                PartitionGraph* pgraph = graph->getCollapsedPartitionGraph();
 
                 if ( cfg.partitioner == "simple" ) {
                     if(cfg.verbose && rank == 0) {
