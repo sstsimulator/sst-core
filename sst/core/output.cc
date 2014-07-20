@@ -385,6 +385,7 @@ void Output::outputprintf(uint32_t line, const std::string &file,
     if (NONE != m_targetLoc) {
         newFmt = buildPrefixString(line, file, func) + format;
         std::vfprintf(*m_targetOutputRef, newFmt.c_str(), arg);
+        if ( FILE == m_targetLoc) fflush(*m_targetOutputRef);
     }
 }
 
@@ -399,6 +400,7 @@ void Output::outputprintf(const char* format, va_list arg) const
     // Check to make sure output location is not NONE
     if (NONE != m_targetLoc) {
         std::vfprintf(*m_targetOutputRef, format, arg);
+        if ( FILE == m_targetLoc) fflush(*m_targetOutputRef);
     }
 }
 
