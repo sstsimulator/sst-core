@@ -163,6 +163,27 @@ Simulation::Simulation()
     // serialization only, so everything will be restored.  I think.
 }
 
+
+void Simulation::emergencyShutdown(int sig)
+{
+    sim_output.output("EMERGENCY SHUTDOWN!\n");
+    signal(sig, SIG_DFL); // Restore default handler
+
+    if ( sig == SIGINT ) {
+        for ( CompMap_t::iterator iter = compMap.begin(); iter != compMap.end(); ++iter ) {
+            (*iter).second->finish();
+        }
+    }
+    for ( CompMap_t::iterator iter = compMap.begin(); iter != compMap.end(); ++iter ) {
+        (*iter).second->emergencyShutdown();
+    }
+    sim_output.output("EMERGENCY SHUTDOWN COMPLETE!\n");
+	sim_output.output("# Simulated time:                  %s\n", getElapsedSimTime().toStringBestSI().c_str());
+
+    exit(1);
+}
+
+
 Component*
 Simulation::createComponent( ComponentId_t id, std::string name, 
                              Params params )
@@ -462,7 +483,15 @@ UnitAlgebra Simulation::getFinalSimTime() const
 
 void Simulation::setSignal(int signal)
 {
-    instance->lastRecvdSignal = signal;
+    switch ( signal ) {
+    case SIGINT:
+    case SIGTERM:
+        instance->emergencyShutdown(signal);
+        break;
+    default:
+        instance->lastRecvdSignal = signal;
+        break;
+    }
 }
 
 void Simulation::printStatus(bool fullStatus)

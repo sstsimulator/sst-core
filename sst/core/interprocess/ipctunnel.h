@@ -116,6 +116,13 @@ public:
         remove_old_shared_memory();
     }
 
+    /**
+     * Shutdown
+     */
+    void shutdown()
+    {
+        remove_old_shared_memory();
+    }
 
     /** return a pointer to the ShareDataType region */
     ShareDataType* getSharedData() { return sharedData; }

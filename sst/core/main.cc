@@ -56,7 +56,7 @@ using namespace std;
 using namespace SST;
 
 static void
-sigHandlerPrintStatus(int signal)
+SimulationSigHandler(int signal)
 {
     Simulation::setSignal(signal);
 }
@@ -581,10 +581,10 @@ main(int argc, char *argv[])
     // char simulated_time_prefix = ' ';
     UnitAlgebra simulated_time;
 
-    signal(SIGUSR1, sigHandlerPrintStatus);
-    signal(SIGUSR2, sigHandlerPrintStatus);
-    // libpython appears to be replacing the signal handler for SIGINT.  Let's restore it to SIG_DFL
-    signal(SIGINT, SIG_DFL);
+    signal(SIGUSR1, SimulationSigHandler);
+    signal(SIGUSR2, SimulationSigHandler);
+    signal(SIGINT, SimulationSigHandler);
+    signal(SIGTERM, SimulationSigHandler);
 
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) {
         if ( cfg.archive ) {

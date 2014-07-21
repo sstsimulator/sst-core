@@ -49,6 +49,11 @@ public:
     Component( ComponentId_t id );
     virtual ~Component();
 
+    /** Called when SIGINT or SIGTERM has been seen.
+     * Allows components opportunity to clean up external state.
+     */
+    virtual void emergencyShutdown(void) {}
+
     /** Returns unique component ID */
     inline ComponentId_t getId() const { return id; }
 

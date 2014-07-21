@@ -254,6 +254,11 @@ private:
     Simulation(Simulation const&);     // Don't Implement
     void operator=(Simulation const&); // Don't implement
 	
+    /** Emergency Shutdown
+     * Called when a SIGINT or SIGTERM has been seen
+     */
+    void emergencyShutdown(int signal);
+
     Component* createComponent(ComponentId_t id, std::string name, 
                                Params params);
     Introspector* createIntrospector(std::string name, 
