@@ -98,6 +98,14 @@ void update_env_var(const char* name, const int verbose) {
 
         // Override the exiting LD_LIBRARY_PATH with our updated variable
         setenv(name, updated_environment, 1);
+
+	// Set the SST_ROOT information
+#ifdef SST_INSTALL_PREFIX
+	// If SST_ROOT not previous set, then we will provide our own
+	if(NULL == getenv("SST_ROOT")) {
+		setenv("SST_ROOT", SST_INSTALL_PREFIX, 1);
+	}
+#endif
 }
 
 void boot_sst_configure_env(const int verbose) {
