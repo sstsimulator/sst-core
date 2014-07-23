@@ -135,6 +135,7 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
 {
 //     eQueue = new EventQueue_t;
     sim_output.init("SSTCore", cfg->getVerboseLevel(), 0, Output::STDOUT);
+    output_directory = "";
 
     timeVortex = new TimeVortex;
     m_exit = new Exit( this, timeLord->getTimeConverter("100ns"), num_ranks == 1 );
@@ -587,6 +588,8 @@ Simulation::serialize(Archive & ar, const unsigned int version)
 {
     printf("begin Simulation::serialize\n");
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SimulationBase);
+
+    ar & BOOST_SERIALIZATION_NVP(output_directory);
 
     printf("  - Simulation::timeVortex\n");
     ar & BOOST_SERIALIZATION_NVP(timeVortex);

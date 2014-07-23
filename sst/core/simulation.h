@@ -233,6 +233,22 @@ public:
         }
     }
 
+    /**
+	Set the output directory for this simulation
+	@param outDir Path of directory to place simulation outputs in
+    */
+    void setOutputDirectory(std::string& outDir) {
+	output_directory = outDir;
+    }
+
+    /**
+	Returns the output directory of the simulation
+	@return Directory in which simulation outputs are placed
+    */
+    std::string& getOutputDirectory() {
+	return output_directory;
+    }
+
     /** Signifies that an event type is required for this simulation
      *  Causes to Factory to verify that the required event type can be found.
      *  @param name fully qualified libraryName.EventName
@@ -291,6 +307,7 @@ private:
     volatile sig_atomic_t lastRecvdSignal;
     std::map<ComponentId_t,LinkMap*> component_links;
     Output           sim_output;
+    std::string      output_directory;
 
     static Simulation *instance;
 
