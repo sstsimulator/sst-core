@@ -16,6 +16,7 @@ EXTRA_DIST = \
 	VERSION \
 	deps/patches/qsim-0.2.1-fileOpenCheck.patch \
 	tools/ariel/fesimple/fesimple.cc \
+	tools/ariel/fesimple/fesimple_r.cc \
 	tools/ariel/fesimple/Makefile \
 	tools/ariel/fesimple/examples/multicore.py \
 	tools/ariel/fesimple/examples/stream/Makefile \
