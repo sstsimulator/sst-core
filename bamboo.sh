@@ -112,6 +112,12 @@ dotests() {
     # DO NOT pass args to the test suite, it confuses
     # shunit. Use an environment variable instead.
 
+    # if running ALL and VaultSim and Ariel
+    if [ $1 == "sstmainline_config_all" ] ; then 
+         ${SST_TEST_SUITES}/testSuite_VaultSim.sh
+         ${SST_TEST_SUITES}/testSuite_Ariel.sh
+    fi
+
     #
     #  Run only Streams test only
     #
@@ -247,12 +253,6 @@ dotests() {
         if [ $HOST == "sst-test" ] ; then
             ${SST_TEST_SUITES}/testSuite_VaultSim.sh
         fi
-    fi
-
-    # if running ALL and VaultSim and Ariel
-    if [ $1 == "sstmainline_config_all" ] ; then 
-         ${SST_TEST_SUITES}/testSuite_VaultSim.sh
-         ${SST_TEST_SUITES}/testSuite_Ariel.sh
     fi
 
 ###     ## run only on HardWare
