@@ -249,6 +249,11 @@ dotests() {
         fi
     fi
 
+    # if running ALL and VaultSim and Ariel
+    if [ $1 == "sstmainline_config_all" ] ; then 
+         ${SST_TEST_SUITES}/testSuite_VaultSim.sh
+         ${SST_TEST_SUITES}/testSuite_Ariel.sh
+    fi
 
 ###     ## run only on HardWare
 ###     
@@ -397,6 +402,17 @@ getconfig() {
             depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -M none -N default -z 3.8"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM  $miscEnv --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN"
+            ;;
+        sstmainline_config_all) 
+            #-----------------------------------------------------------------
+            # sstmainline_config
+            #     This option used for configuring SST with supported stabledevel deps
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default -z 3.8"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-libphx=$LIBPHX_HOME/src --with-pin=$SST_DEPS_INSTALL_INTEL_PIN $miscEnv"
             ;;
         sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp) 
             #-----------------------------------------------------------------
@@ -931,7 +947,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sst_config_dist_test|documentation|sstmainline_configA|sstmainline_config_VaultSim|sstmainline_configZ|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp) 
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sst_config_dist_test|documentation|sstmainline_configA|sstmainline_config_VaultSim|sstmainline_configZ|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_all) 
             #   Save Parameters $2, $3 and $4 in case they are need later
             SST_DIST_MPI=$2
             SST_DIST_BOOST=$3
@@ -1770,7 +1786,7 @@ ls
             echo SST_DEPS_USER_DIR= $SST_DEPS_USER_DIR
                      ##  Here is the bamboo invocation within bamboo
             echo "         INVOKE bamboo for the build from the dist tar"
-            ./bamboo.sh sstmainline_config $SST_DIST_MPI $SST_DIST_BOOST $SST_DIST_PARAM4
+            ./bamboo.sh sstmainline_config_all $SST_DIST_MPI $SST_DIST_BOOST $SST_DIST_PARAM4
             retval=$?
             echo "         Returned from bamboo.sh $retval"
             if [ $retval != 0 ] ; then
