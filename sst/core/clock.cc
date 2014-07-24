@@ -35,7 +35,7 @@ Clock::Clock( TimeConverter* period ) :
 Clock::~Clock()
 {
     // Delete all the handlers
-    for ( StaticHandlerMap_t::iterator it = handlerMap.begin(); it != handlerMap.end(); ++it ) {
+    for ( StaticHandlerMap_t::iterator it = staticHandlerMap.begin(); it != staticHandlerMap.end(); ++it ) {
         delete *it;
     }
     staticHandlerMap.clear();
@@ -57,17 +57,17 @@ bool Clock::unregisterHandler( Clock::HandlerBase* handler, bool& empty )
 {
     _CLE_DBG("handler %p\n",handler);
 
-    HandlerMap_t::iterator iter = handlerMap.begin();
+    StaticHandlerMap_t::iterator iter = staticHandlerMap.begin();
 
-    for ( ; iter != handlerMap.end(); iter++ ) {
+    for ( ; iter != staticHandlerMap.end(); iter++ ) {
         if ( *iter == handler ) {
             _CLE_DBG("erase handler %p\n",handler);
-            handlerMap.erase( iter );
+            staticHandlerMap.erase( iter );
             break;
         }
     }
   
-    empty = handlerMap.empty();
+    empty = staticHandlerMap.empty();
     
     return 0;
 }
@@ -82,7 +82,7 @@ Clock::getNextCycle()
 void Clock::execute( void ) {
     Simulation *sim = Simulation::getSimulation();
     
-    if ( handlerMap.empty() && staticHandlerMap.empty() ) {
+    if ( staticHandlerMap.empty() ) {
         // std::cout << "Not rescheduling clock" << std::endl;
         scheduled = false;
         return;

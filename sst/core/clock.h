@@ -122,7 +122,6 @@ public:
     
 private:
 /*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */
-    typedef std::vector<Clock::HandlerBase*> HandlerMap_t;
     typedef std::vector<Clock::HandlerBase*> StaticHandlerMap_t;
 
 
@@ -132,7 +131,6 @@ private:
 
     Cycle_t            currentCycle;
     TimeConverter*     period;
-    HandlerMap_t       handlerMap;
     StaticHandlerMap_t staticHandlerMap;
     SimTime_t          next;
     bool               scheduled;
@@ -144,7 +142,6 @@ private:
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
         ar & BOOST_SERIALIZATION_NVP(currentCycle);
         ar & BOOST_SERIALIZATION_NVP(period);
-        ar & BOOST_SERIALIZATION_NVP(handlerMap);
         ar & BOOST_SERIALIZATION_NVP(staticHandlerMap);
         ar & BOOST_SERIALIZATION_NVP(scheduled);
     }
