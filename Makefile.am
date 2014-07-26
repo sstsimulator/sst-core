@@ -21,6 +21,7 @@ EXTRA_DIST = \
 	tools/ariel/fesimple/examples/multicore.py \
 	tools/ariel/fesimple/examples/stream/Makefile \
 	tools/ariel/fesimple/examples/stream/runstream.py \
+	tools/ariel/fesimple/examples/stream/memHstream.py \
 	tools/ariel/fesimple/examples/stream/stream.c
 
 SUBDIRS = \
