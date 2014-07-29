@@ -706,7 +706,10 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file
 			if(in_string) {
 				temp += " ";
 			} else {
-				argv_vector.push_back(temp);
+				if(! (temp == "")) {
+					argv_vector.push_back(temp);
+				}
+
 				temp = "";
 			}
 		} else {
@@ -719,7 +722,9 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file
 		if(in_string) {
 			// this maybe en error?
 		} else {
-			argv_vector.push_back(temp);
+			if(! (temp == "") ) {
+				argv_vector.push_back(temp);
+			}
 		}
 	}
 
