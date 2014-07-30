@@ -264,7 +264,8 @@ public:
 private:
     friend class Link;
     friend class Action;
-    
+    friend class Output;
+
     Simulation(); // Don't call.  Only rational way to serialize
     Simulation(Config* config, int my_rank, int num_ranks);
     Simulation(Simulation const&);     // Don't Implement

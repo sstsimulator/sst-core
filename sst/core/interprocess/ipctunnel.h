@@ -38,14 +38,17 @@ class IPCTunnel {
         size_t numBuffers;
     };
 
-    void remove_old_shared_memory() {
+    bool remove_old_shared_memory() {
+        bool removed = false;
         try {
             boost::interprocess::xsi_shared_memory xsi(boost::interprocess::open_only, xkey);
             boost::interprocess::xsi_shared_memory::remove(xsi.get_shmid());
+            removed = true;
         } catch (boost::interprocess::interprocess_exception & e) {
             if ( e.get_error_code() != boost::interprocess::not_found_error )
                 throw ;
         }
+        return removed;
     }
 
     boost::interprocess::xsi_key get_xsi_key(const std::string &name) {
@@ -119,9 +122,14 @@ public:
     /**
      * Shutdown
      */
-    void shutdown()
+    void shutdown(bool all = false)
     {
-        remove_old_shared_memory();
+        if ( all ) {
+            while (remove_old_shared_memory() );
+        } else {
+            remove_old_shared_memory();
+        }
+
     }
 
     /** return a pointer to the ShareDataType region */

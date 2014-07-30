@@ -188,6 +188,8 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
     free(backtrace_names);
 
+    Simulation::getSimulation()->emergencyShutdown(-1);
+
 #ifdef HAVE_MPI
     // If MPI exists, abort
     boost::mpi::environment::abort(exit_code);      

@@ -165,21 +165,28 @@ Simulation::Simulation()
 }
 
 
+/** If sig == -1, be quite about shutdown */
 void Simulation::emergencyShutdown(int sig)
 {
-    sim_output.output("EMERGENCY SHUTDOWN!\n");
-    signal(sig, SIG_DFL); // Restore default handler
+    if ( sig != -1 ) {
+        sim_output.output("EMERGENCY SHUTDOWN!\n");
+        signal(sig, SIG_DFL); // Restore default handler
+    }
 
     if ( sig == SIGINT ) {
         for ( CompMap_t::iterator iter = compMap.begin(); iter != compMap.end(); ++iter ) {
             (*iter).second->finish();
         }
     }
+
     for ( CompMap_t::iterator iter = compMap.begin(); iter != compMap.end(); ++iter ) {
         (*iter).second->emergencyShutdown();
     }
-    sim_output.output("EMERGENCY SHUTDOWN COMPLETE!\n");
-	sim_output.output("# Simulated time:                  %s\n", getElapsedSimTime().toStringBestSI().c_str());
+
+    if ( sig != -1 ) {
+        sim_output.output("EMERGENCY SHUTDOWN COMPLETE!\n");
+        sim_output.output("# Simulated time:                  %s\n", getElapsedSimTime().toStringBestSI().c_str());
+    }
 
     exit(1);
 }
