@@ -62,10 +62,7 @@ public:
     /** Print the current configuration to stdout */
     void Print();
 
-    bool            archive;            /*!< If an archive method or file has been set */
     std::string     debugFile;          /*!< File to which debug information should be written */
-    std::string     archiveType;        /*!< Type of Archive (bin, xml, text) */
-    std::string     archiveFile;        /*!< File for Archival work */
     Mode_t          runMode;            /*!< Run Mode (Init, Both, Run-only) */
     std::string     sdlfile;            /*!< Graph generation file */
     std::string     stopAtCycle;        /*!< When to stop the simulation */
@@ -102,9 +99,6 @@ public:
     /** Print to stdout the current configuration */
 	void print() {
 		std::cout << "debugFile = " << debugFile << std::endl;
-		std::cout << "archive = " << archive << std::endl;
-		std::cout << "archiveType = " << archiveType << std::endl;
-		std::cout << "archiveFile = " << archiveFile << std::endl;
 		std::cout << "runMode = " << runMode << std::endl;
 		std::cout << "libpath = " << getLibPath() << std::endl;
 		std::cout << "sdlfile = " << sdlfile << std::endl;
@@ -151,25 +145,22 @@ private:
     void
     serialize(Archive & ar, const unsigned int version )
     {
-	ar & BOOST_SERIALIZATION_NVP(debugFile);
-	ar & BOOST_SERIALIZATION_NVP(archive);
-	ar & BOOST_SERIALIZATION_NVP(archiveType);
-	ar & BOOST_SERIALIZATION_NVP(archiveFile);
-	ar & BOOST_SERIALIZATION_NVP(runMode);
-	ar & BOOST_SERIALIZATION_NVP(libpath);
-	ar & BOOST_SERIALIZATION_NVP(addlLibPath);
-	ar & BOOST_SERIALIZATION_NVP(sdlfile);
-	ar & BOOST_SERIALIZATION_NVP(stopAtCycle);
-	ar & BOOST_SERIALIZATION_NVP(timeBase);
-	ar & BOOST_SERIALIZATION_NVP(partitioner);
-	ar & BOOST_SERIALIZATION_NVP(generator);
-	ar & BOOST_SERIALIZATION_NVP(generator_options);
+        ar & BOOST_SERIALIZATION_NVP(debugFile);
+        ar & BOOST_SERIALIZATION_NVP(runMode);
+        ar & BOOST_SERIALIZATION_NVP(libpath);
+        ar & BOOST_SERIALIZATION_NVP(addlLibPath);
+        ar & BOOST_SERIALIZATION_NVP(sdlfile);
+        ar & BOOST_SERIALIZATION_NVP(stopAtCycle);
+        ar & BOOST_SERIALIZATION_NVP(timeBase);
+        ar & BOOST_SERIALIZATION_NVP(partitioner);
+        ar & BOOST_SERIALIZATION_NVP(generator);
+        ar & BOOST_SERIALIZATION_NVP(generator_options);
         ar & BOOST_SERIALIZATION_NVP(dump_component_graph_file);
         ar & BOOST_SERIALIZATION_NVP(dump_config_graph);
         ar & BOOST_SERIALIZATION_NVP(no_env_config);
         ar & BOOST_SERIALIZATION_NVP(model_options);
     }
-
+    
     int rank;
 	int numRanks;
 

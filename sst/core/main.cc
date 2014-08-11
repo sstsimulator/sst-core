@@ -172,8 +172,6 @@ main(int argc, char *argv[])
 
     }
 
-    Archive archive(cfg.archiveType, cfg.archiveFile);
-
     double start = sst_get_cpu_time();
     double end_build, start_run, end_run;
 
@@ -587,11 +585,6 @@ main(int argc, char *argv[])
     signal(SIGTERM, SimulationSigHandler);
 
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) {
-        if ( cfg.archive ) {
-            sim = archive.loadSimulation();
-            printf("# Finished reading serialization file\n");
-        }
-
         if ( cfg.verbose ) {
             printf("# Starting main event loop\n");
 

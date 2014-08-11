@@ -43,9 +43,6 @@ Config::Config( int my_rank, int world_size )
     rank        = my_rank;
 	numRanks    = world_size;
     debugFile   = "/dev/null";
-    archive     = false;
-    archiveType = "bin";
-    archiveFile = "sst_checkpoint";
     runMode     = BOTH;
     libpath     = SST_ELEMLIB_DIR;
     addlLibPath = "";
@@ -103,20 +100,16 @@ Config::Config( int my_rank, int world_size )
     mainDesc->add_options()
         ("debug", po::value< vector<string> >()->multitoken(), 
 #ifdef HAVE_ZOLTAN
-                "{ all | cache | queue | archive | clock | sync | link |\
+                "{ all | cache | queue | clock | sync | link |\
                  linkmap | linkc2m | linkc2c | linkc2s | comp | factory |\
                  stop | compevent | sim | clockevent | sdl | graph | zolt }")
 #else
-                "{ all | cache | queue | archive | clock | sync | link |\
+                "{ all | cache | queue  | clock | sync | link |\
                  linkmap | linkc2m | linkc2c | linkc2s | comp | factory |\
                  stop | compevent | sim | clockevent | sdl | graph }")
 #endif
         ("debug-file", po::value <string> ( &debugFile ),
                                 "file where debug output will go")
-        ("archive-type", po::value< string >( &archiveType ), 
-                                "archive type [ xml | text | bin ]")
-        ("archive-file", po::value< string >( &archiveFile ), 
-                                "archive file name")
         ("lib-path", po::value< string >( &libpath ),
                                 "component library path (overwrites default)")
         ("add-lib-path", po::value< string >( &addlLibPath ),
@@ -237,13 +230,6 @@ Config::parseCmdLine(int argc, char* argv[]) {
 	return -1;
     }
 
-    if ( var_map->count( "archive-type" ) ) {
-	archiveType = (*var_map)[ "archive-type" ].as< string >(); 
-	archive = true;
-    }
-    if ( var_map->count( "archive-file" ) ) {
-	archive = true;
-    }
 
     // get the absolute path to the sdl file 
     if ( sdlfile != "NONE" ) {
@@ -281,14 +267,6 @@ Config::parseConfigFile(string config_string)
         po::store( po::parse_config_file( ifs, config_options), *var_map);
         po::notify( *var_map );
 
-        if ( var_map->count( "archive-type" ) ) {
-            archiveType = (*var_map)[ "archive-type" ].as< string >();
-            archive = true;
-        }
-        if ( var_map->count( "archive-file" ) ) {
-            archive = true;
-        }
-
         if ( var_map->count("run-mode") ) {
             runMode = Config::setRunMode( (*var_map)[ "run-mode" ].as< string >() );
             if ( runMode == Config::UNKNOWN ) {
@@ -309,11 +287,11 @@ Config::parseConfigFile(string config_string)
         return -1;
     }
 
-    if ( runMode == RUN && ! archive ) {
-        cerr << "ERROR: you specified \"--run-mode run\" without an archive";
-        cerr << "\n";
-        return -1;
-    }
+    // if ( runMode == RUN && ! archive ) {
+    //     cerr << "ERROR: you specified \"--run-mode run\" without an archive";
+    //     cerr << "\n";
+    //     return -1;
+    // }
 
 #define BUF_LEN PATH_MAX
     char buf[BUF_LEN];
@@ -324,10 +302,6 @@ Config::parseConfigFile(string config_string)
     std::string cwd = buf;
 
     cwd.append("/");
-
-    // create a unique archive file name for each rank
-    sprintf(buf,".%d",rank);
-    archiveFile.append( buf );
 
     return 0;
 }
