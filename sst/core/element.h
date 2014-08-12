@@ -17,6 +17,9 @@
 //#include <sst/core/component.h>
 //#include <sst/core/params.h>
 
+#include <stdio.h>
+#include <string>
+
 // Component Category Definitions
 #define COMPONENT_CATEGORY_UNCATEGORIZED 0x00
 #define COMPONENT_CATEGORY_PROCESSOR      0x01
