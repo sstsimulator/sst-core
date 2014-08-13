@@ -19,5 +19,5 @@ bool SSTSinglePartition::initialized = SSTPartitioner::addPartitioner("single",&
 SSTSinglePartition::SSTSinglePartition() {}
 
 void SSTSinglePartition::performPartition(ConfigGraph* graph) {
-    return;
+    graph->setComponentRanks(0);
 }
