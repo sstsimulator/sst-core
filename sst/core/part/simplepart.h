@@ -10,15 +10,35 @@
 // distribution.
 #ifndef SST_CORE_PART_SIMPLEPART_H
 #define SST_CORE_PART_SIMPLEPART_H
-namespace SST {
-  class PartitionGraph;
-	/**
-		Implements the "simple" partitioner which uses latency
-		information in the SST component configuration to perform
-		approximate load balancing of components over MPI ranks. Note
-		that this scheme does run if SST is run in serial.
-	*/
-	void simple_partition(PartitionGraph* graph, int world_size);
 
+#include "sst/core/part/sstpart.h"
+
+namespace SST {
+namespace Partition{
+    
+class SimplePartitioner : public SST::Partition::SSTPartitioner {
+
+private:
+    int world_size;
+    static bool initialized;
+    
+public:
+    
+    SimplePartitioner(int total_ranks);
+    SimplePartitioner();
+    ~SimplePartitioner() {}
+
+    void performPartition(PartitionGraph* graph);
+
+    bool requiresConfigGraph() { return false; }
+    bool spawnOnAllRanks() { return false; }
+
+    static SSTPartitioner* allocate(int total_ranks, int my_rank, int verbosity) {
+        return new SimplePartitioner(total_ranks);
+    }
+
+};
+
+} // namespace partition
 } //namespace SST
 #endif //SST_CORE_PART_SIMPLERPART_H

@@ -3,6 +3,10 @@
 #
 
 sst_core_sources += \
+	part/selfpart.cc \
+	part/selfpart.h \
+	part/singlepart.cc \
+	part/singlepart.h \
 	part/simplepart.cc \
 	part/simplepart.h \
 	part/rrobin.cc \

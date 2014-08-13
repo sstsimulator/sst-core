@@ -13,9 +13,44 @@
 #include <sst_config.h>
 #include <sst/core/part/sstpart.h>
 
+
 using namespace SST;
 using namespace SST::Partition;
 
-SSTPartitioner::SSTPartitioner() {
+//std::map<std::string, SSTPartitioner::partitionerAlloc> SSTPartitioner::partitioner_allocs;
+//std::map<std::string, std::string> SSTPartitioner::partitioner_descriptions;
 
+
+SSTPartitioner::SSTPartitioner() {
+}
+
+bool
+SSTPartitioner::addPartitioner(const std::string name, const SSTPartitioner::partitionerAlloc alloc, const std::string description)
+{
+    partitioner_allocs()[name] = alloc;
+    partitioner_descriptions()[name] = description;
+    return true;
+}
+
+SSTPartitioner*
+SSTPartitioner::getPartitioner(std::string name, int total_ranks, int my_rank, int verbosity)
+{
+    if ( partitioner_allocs().find(name) == partitioner_allocs().end() ) return NULL;
+    partitionerAlloc alloc = partitioner_allocs()[name];
+    return (*alloc)(total_ranks, my_rank, verbosity);
+    
+}
+
+std::map<std::string, SSTPartitioner::partitionerAlloc>&
+SSTPartitioner::partitioner_allocs()
+{
+    static std::map<std::string, SSTPartitioner::partitionerAlloc> cache;
+    return cache;
+}
+
+std::map<std::string, std::string>&
+SSTPartitioner::partitioner_descriptions()
+{
+    static std::map<std::string, std::string> cache;
+    return cache;
 }

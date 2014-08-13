@@ -34,16 +34,9 @@
 #include <sst/core/debug.h>
 #include <sst/core/factory.h>
 #include <sst/core/simulation.h>
-
-#include <sst/core/part/simplepart.h>
-#include <sst/core/part/rrobin.h>
-#include <sst/core/part/linpart.h>
+#include <sst/core/part/sstpart.h>
 
 #include <sst/core/cputimer.h>
-
-#ifdef HAVE_ZOLTAN
-#include <sst/core/part/zoltpart.h>
-#endif
 
 #include <sst/core/model/sstmodel.h>
 #include <sst/core/model/pymodel.h>
@@ -52,6 +45,7 @@
 #include <sys/resource.h>
 
 using namespace SST::Core;
+using namespace SST::Partition;
 using namespace std;
 using namespace SST;
 
@@ -185,68 +179,59 @@ main(int argc, char *argv[])
 		// Get the memory before we create the graph
 		const uint64_t pre_graph_create_rss = maxGlobalMemSize();
 
+        
+        ////// Start ConfigGraph Creation //////
 		ConfigGraph* graph = NULL;
 
-		if ( size == 1 ) {
-			double start_graph_gen = sst_get_cpu_time();
-
-			if ( cfg.generator != "NONE" ) {
-				generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
-				graph = new ConfigGraph();
-				func(graph,cfg.generator_options,size);
-			}
-			else {
-				graph = modelGen->createConfigGraph();
-			}
+        double start_graph_gen = sst_get_cpu_time();
+        graph = new ConfigGraph();
+        
+        // Only rank 0 will populate the graph
+        if ( rank == 0 ) {
+            if ( cfg.generator != "NONE" ) {
+                generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
+                func(graph,cfg.generator_options, size);
+            } else {
+                graph = modelGen->createConfigGraph();
+            }
             
-			double end_graph_gen = sst_get_cpu_time();
+            // Check config graph to see if there are structural errors.
+            if ( graph->checkForStructuralErrors() ) {
+                sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
+            }                
+        }
 
-			if(cfg.verbose && (rank == 0)) {
-				sim_output->output("# ------------------------------------------------------------\n");
-				sim_output->output("# Graph construction took %f seconds\n",
-					(end_graph_gen - start_graph_gen));
-			}
-
-			// Check config graph to see if there are structural errors.
-			if ( graph->checkForStructuralErrors() ) {
-				sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
-			}
-
-			// Set all components to be instanced on rank 0 (the only
-			// one that exists)
-			graph->setComponentRanks(0);
-		} else if ( cfg.partitioner == "zoltan" ) {
-#ifdef HAVE_ZOLTAN
-			double start_graph_gen = sst_get_cpu_time();
-			graph = new ConfigGraph();
-
-			if ( rank == 0 ) {
-				if ( cfg.generator != "NONE" ) {
-					generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
-					func(graph,cfg.generator_options, size);
-				} else {
-					graph = modelGen->createConfigGraph();
-				}
-
-				// Check config graph to see if there are structural errors.
-				if ( graph->checkForStructuralErrors() ) {
-					sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
-				}
-			}
-
-			double end_graph_gen = sst_get_cpu_time();
-
-			if(cfg.verbose && (rank == 0)) {
-        			sim_output->output("# ------------------------------------------------------------\n");
-				sim_output->output("# Graph construction took %f seconds.\n",
-					(end_graph_gen - start_graph_gen));
-			}
-
-			if(cfg.verbose && rank == 0) {
-					sim_output->output("# Partitionning using Zoltan...\n");
-			}
-
-			SSTZoltanPartition* zolt_part = new SSTZoltanPartition(cfg.verbose);
+		// Delete the model generator
+        delete modelGen;
+        modelGen = NULL;
+        
+        double end_graph_gen = sst_get_cpu_time();
+        
+        if ( cfg.verbose && (rank == 0) ) {
+            sim_output->output("# ------------------------------------------------------------\n");
+            sim_output->output("# Graph construction took %f seconds.\n",
+                               (end_graph_gen - start_graph_gen));
+        }
+        ////// End ConfigGraph Creation //////
+        
+        ////// Start Partitioning //////
+        double start_part = sst_get_cpu_time();
+        
+        // If this is a serial job, just use the single partitioner,
+        // but the same code path
+        if ( size == 1 ) cfg.partitioner = "single";
+        SSTPartitioner* partitioner = SSTPartitioner::getPartitioner(cfg.partitioner, size, rank, cfg.verbose);
+        if ( partitioner == NULL ) {
+            // Not a built in partitioner, see if this is a
+            // partitioner contained in an element library.
+            partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
+            partitioner = func(size, rank, cfg.verbose);
+        }
+        
+        if ( partitioner->requiresConfigGraph() ) {
+            partitioner->performPartition(graph);
+        }
+        else {
             PartitionGraph* pgraph;
             if ( rank == 0 ) {
                 pgraph = graph->getCollapsedPartitionGraph();
@@ -255,129 +240,31 @@ main(int argc, char *argv[])
                 pgraph = new PartitionGraph();
             }
             
-			zolt_part->performPartition(pgraph);
-            if ( rank == 0 ) {
-                graph->annotateRanks(pgraph);
-            }
-            delete pgraph;
-            
-			delete zolt_part;
-
-			sim_output->output("# Graph construction took %f seconds.\n",
-				(end_graph_gen - start_graph_gen));
-#else
-			sim_output->fatal(CALL_INFO, -1, "Zoltan support is not available. Configure did not find the Zoltan library.\n");
-#endif
-		} else if ( rank == 0 ) {
-			// Perform partitionning for parallel jobs, not using Zoltan
-			double start_graph_gen = sst_get_cpu_time();
-
-			if ( cfg.generator != "NONE" ) {
-				graph = new ConfigGraph();
-				generateFunction func = sim->getFactory()->GetGenerator(cfg.generator);
-				func(graph,cfg.generator_options, size);
-			}
-			else {
-				graph = modelGen->createConfigGraph();
-			}
-
-			if ( rank == 0 ) {
-				// Check config graph to see if there are structural errors.
-				if ( graph->checkForStructuralErrors() ) {
-					sim_output->fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
-				}
-			}
-
-			double end_graph_gen = sst_get_cpu_time();
-
-			if(cfg.verbose && (rank == 0)) {
-        			sim_output->output("# ------------------------------------------------------------\n");
-				sim_output->output("# Graph construction took %f seconds.\n",
-					(end_graph_gen - start_graph_gen));
-			}
-
-			double start_part = sst_get_cpu_time();
-
-			// Do the partitioning.
-			if ( cfg.partitioner != "self" ) {
-				// If partitioning not specified by sdl or generator,
-				// set all component ranks to -1 so it's easier to
-				// detect some types of partitioning errors
-				graph->setComponentRanks(-1);
-			}
-
-			if ( cfg.partitioner == "self" ) {
-				// For now, do nothing.  Eventually we need to
-				// have a checker for the partitioning.
-				if(rank == 0) {
-					sim_output->output("# SST will use a self-guided partition scheme.\n");
-				}
-			}
-            else {
-                PartitionGraph* pgraph = graph->getCollapsedPartitionGraph();
-
-                if ( cfg.partitioner == "simple" ) {
-                    if(cfg.verbose && rank == 0) {
-                        sim_output->output("# Performing a simple partition...\n");
-                    }
-                    
-                    simple_partition(pgraph, size);
-                    
-                    if(cfg.verbose && rank == 0) {
-                        sim_output->output("# Partitionning process is completed\n");
-                    }
-                } else if ( cfg.partitioner == "rrobin" || cfg.partitioner == "roundrobin" ) {
-                    // perform a basic round robin partition
-                    if (cfg.verbose && rank == 0) {
-                        sim_output->output("# Performing a round-robin partition...\n");
-                    }
-                    
-                    rrobin_partition(pgraph, size);
+            if ( rank == 0 || partitioner->spawnOnAllRanks() ) {
+                partitioner->performPartition(pgraph);
                 
-                    if(cfg.verbose && rank == 0) {
-                        sim_output->output("# Partitionning process is completed.\n");
-                    }
-                } else if ( cfg.partitioner == "linear" ) {
-                    if(cfg.verbose && rank == 0) {
-                        sim_output->output("# Partitionning using a linear scheme...\n");
-                    }
-
-                    SSTLinearPartition* linear = new SSTLinearPartition(size, cfg.verbose);
-                    linear->performPartition(pgraph);
-                    delete linear;
-
-                    if(cfg.verbose && rank == 0) {
-                        sim_output->output("# Partitionning process is completed\n");
-                    }
-                } else {
-                    if(rank == 0) {
-                        sim_output->output("# Partition scheme was not specified using: %s\n", cfg.partitioner.c_str());
-                    }
-                    
-                    partitionFunction func = sim->getFactory()->GetPartitioner(cfg.partitioner);
-                    func(graph,size);
-                    // Temporary hack: Since we are still using
-                    // ConfigGraph for this partitioner, we need to
-                    // keep partition graph from overwriting the
-                    // ConfigGraph.  We will simply delete pgraph and
-                    // create an empty one.
-                    delete pgraph;
-                    pgraph = new PartitionGraph();
-                }
-                graph->annotateRanks(pgraph);
-                delete pgraph;
+                if ( rank == 0 ) graph->annotateRanks(pgraph);
             }
+            
+            delete pgraph;
+        }
+        
+        delete partitioner;
 
-            double end_part = sst_get_cpu_time();
-
-			if(cfg.verbose && (rank == 0)) {
-				std::cout << "# Graph partitionning took " <<
-					(end_part - start_part) << " seconds." << std::endl;
+        // Check the partitioning to make sure it is sane
+        if ( rank == 0 ) {
+            if ( !graph->checkRanks( size ) ) {
+				sim_output->fatal(CALL_INFO, 1,
+                                  "ERROR: Bad partitionning; partition included unknown ranks.\n");
 			}
 		}
-		else {
-			graph = new ConfigGraph();
-		}
+        double end_part = sst_get_cpu_time();
+        
+        if(cfg.verbose && (rank == 0)) {
+            std::cout << "# Graph partitionning took " <<
+                (end_part - start_part) << " seconds." << std::endl;
+        }
+        ////// End Partitioning //////
 
 		const uint64_t post_graph_create_rss = maxGlobalMemSize();
 
@@ -387,24 +274,12 @@ main(int argc, char *argv[])
 			sim_output->output("# ------------------------------------------------------------\n");
 		}
 
-		// Delete the model generator
-        	delete modelGen;
-        	modelGen = NULL;
+        // Output the partition information is user requests it
+        dump_partition(sim_output, cfg, graph, rank, size);
 
-		// Output the partition information is user requests it
-		dump_partition(sim_output, cfg, graph, rank, size);
-
-        // Check the partitioning to make sure it is sane
-        if ( rank == 0 ) {
-            if ( !graph->checkRanks( size ) ) {
-				sim_output->fatal(CALL_INFO, 1,
-                                  "ERROR: Bad partitionning; partition included unknown ranks.\n");
-			}
-		}
-
-        // Check the graph for the minimum latency crossing a partition boundary
         SimTime_t min_part = 0xffffffffffffffffl;
         if ( size > 1 ) {
+            // Check the graph for the minimum latency crossing a partition boundary
             if ( rank == 0 ) {
                 ConfigComponentMap_t comps = graph->getComponentMap();
                 ConfigLinkMap_t links = graph->getLinkMap();
@@ -422,29 +297,15 @@ main(int argc, char *argv[])
                 }
             }
 #ifdef HAVE_MPI
+
             broadcast(world, min_part, 0);
 #endif
         }
-
-        // Just some performance test code...
-        // if ( rank == 0 )  {
-        //     PartitionGraph* pgraph = graph->getPartitionGraph();
-
-        //     SSTLinearPartition* linear = new SSTLinearPartition(2, cfg.verbose);
-        //     linear->performPartition(pgraph);
-        //     delete linear;
-        //     graph->annotateRanks(pgraph);
-        //     delete pgraph;
-
-        //     cout << "Getting subgraph" << endl;
-        //     graph->getSubGraph(0,0);
-        // }
-        
 #if 1
 #ifdef HAVE_MPI
-		///////////////////////////////////////////////////////////////////////
-		// Broadcast the data structures if only rank 0 built the
-		// graph
+            ///////////////////////////////////////////////////////////////////////
+            // Broadcast the data structures if only rank 0 built the
+            // graph
         if ( size > 1 ) {
             broadcast(world, *graph, 0);
             broadcast(world, Params::keyMap, 0);

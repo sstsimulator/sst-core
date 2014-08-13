@@ -16,21 +16,28 @@
 #include <string>
 #include <vector>
 #include <map>
-//#include <set>
 #include <stdlib.h>
 
-//#include <boost/mpi.hpp>
-
 #include "sst/core/configGraph.h"
-//#include "sst/core/graph.h"
-//#include "sst/core/sdl.h"
-//#include "sst/core/sst_types.h"
 
 using namespace std;
 
 namespace SST {
+namespace Partition {
 
-	inline int pow2(int step) {
+    bool SimplePartitioner::initialized = SSTPartitioner::addPartitioner("simple",&SimplePartitioner::allocate,"Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.");
+
+    SimplePartitioner::SimplePartitioner(int total_ranks) :
+        SSTPartitioner(),
+        world_size(total_ranks)
+    {}
+
+    SimplePartitioner::SimplePartitioner() :
+        SSTPartitioner(),
+        world_size(1)
+    {}
+    
+    inline int pow2(int step) {
 		int value = 1;
 
 		for(int i = 0; i < step; i++) {
@@ -174,7 +181,8 @@ namespace SST {
 		}
 	}
 
-	void simple_partition(PartitionGraph* graph, int world_size) {
+    void
+    SimplePartitioner::performPartition(PartitionGraph* graph) {
 		PartitionComponentMap_t& component_map = graph->getComponentMap();
 
 
@@ -235,4 +243,5 @@ namespace SST {
 			simple_partition_step(component_map, setA, A_size, 0, setB, B_size, 1, timeTable, world_size, 1);
 		}
 	}
-}
+} // namespace partition
+} // namespace SST

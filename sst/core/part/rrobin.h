@@ -10,12 +10,35 @@
 // distribution.
 #ifndef SST_CORE_PART_RROBIN_H
 #define SST_CORE_PART_RROBIN_H
+
+#include <sst/core/part/sstpart.h>
+
 namespace SST {
-class PartitionGraph;
-	/**
-		Implements the round robin partitioning scheme for
-		SST.
-	*/
-	void rrobin_partition(PartitionGraph* graph, int world_size);
+namespace Partition {
+
+class SSTRoundRobinPartition : public SST::Partition::SSTPartitioner {
+
+public:
+    SSTRoundRobinPartition(int world_size);
+    
+    /**
+       Performs a partition of an SST simulation configuration
+       \param graph The simulation configuration to partition
+    */
+	void performPartition(PartitionGraph* graph);
+
+    bool requiresConfigGraph() { return false; }
+    bool spawnOnAllRanks() { return false; }
+    
+    static SSTPartitioner* allocate(int total_ranks, int my_rank, int verbosity) {
+        return new SSTRoundRobinPartition(total_ranks);
+    }        
+        
+private:
+    int world_size;
+    static bool initialized;
+};
+
+} // namespace Partition
 } //namespace SST
 #endif //SST_CORE_PART_RROBIN_H

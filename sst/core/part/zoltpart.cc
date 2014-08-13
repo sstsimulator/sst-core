@@ -17,6 +17,8 @@
 using namespace std;
 using namespace SST;
 
+bool SSTZoltanPartition::initialized = SSTPartitioner::addPartitioner("zoltan", &SSTZoltanPartition::allocate, "zoltan parallel partitioner");
+
 static SST::Output* partOutput;
 
 extern "C" {

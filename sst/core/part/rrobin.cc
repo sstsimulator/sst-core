@@ -28,19 +28,29 @@
 using namespace std;
 
 namespace SST {
+namespace Partition {
 
-	void rrobin_partition(PartitionGraph* graph, int world_size) {
-        std::cout << "Round robin partitioning" << std::endl;
-		PartitionComponentMap_t& compMap = graph->getComponentMap();
-		int counter = 0;
-		
-		for(PartitionComponentMap_t::iterator compItr = compMap.begin();
-			compItr != compMap.end();
-			compItr++) {
+bool SSTRoundRobinPartition::initialized = SSTPartitioner::addPartitioner("roundrobin",&SSTRoundRobinPartition::allocate, "Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.");
 
-			compItr->rank = (counter % world_size);
-			counter++;
-		}
-	}
-
+SSTRoundRobinPartition::SSTRoundRobinPartition(int mpiranks) :
+    SSTPartitioner(),
+    world_size(mpiranks)
+{
 }
+
+void SSTRoundRobinPartition::performPartition(PartitionGraph* graph) {
+    std::cout << "Round robin partitioning" << std::endl;
+    PartitionComponentMap_t& compMap = graph->getComponentMap();
+    int counter = 0;
+	
+    for(PartitionComponentMap_t::iterator compItr = compMap.begin();
+        compItr != compMap.end();
+        compItr++) {
+        
+        compItr->rank = (counter % world_size);
+        counter++;
+    }
+}
+    
+} // namespace Partition
+} // namespace SST

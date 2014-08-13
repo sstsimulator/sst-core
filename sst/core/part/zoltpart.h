@@ -52,12 +52,21 @@ class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 		*/
 		void performPartition(PartitionGraph* graph);
 
+        bool requiresConfigGraph() { return false; }
+
+        bool spawnOnAllRanks() { return true; }
+        
+        static SSTPartitioner* allocate(int total_ranks, int my_rank, int verbosity) {
+            return new SSTZoltanPartition(verbosity);
+        }
+        
 	protected:
 		void initZoltan();
 		int rankcount;
 		struct Zoltan_Struct * zolt_config;
 		int rank;
 
+        static bool initialized;
 };
 
 }

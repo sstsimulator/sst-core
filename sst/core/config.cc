@@ -13,6 +13,7 @@
 #include <sst_config.h>
 #include "sst/core/serialization.h"
 #include "sst/core/config.h"
+#include "sst/core/part/sstpart.h"
 
 #include <errno.h>
 #include <iostream>
@@ -50,12 +51,11 @@ Config::Config( int my_rank, int world_size )
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
     heartbeatPeriod = "N";
-// #ifdef HAVE_ZOLTAN
-//     partitioner = "zoltan";
-// #else
-//     partitioner = "single";
-// #endif
+#if HAVE_MPI
     partitioner = "linear";
+#else
+    partitioner = "single";
+#endif
     generator   = "NONE";
     generator_options   = "";
     dump_component_graph_file = "";
@@ -95,7 +95,21 @@ Config::Config( int my_rank, int world_size )
 
     posDesc = new po::positional_options_description();
     posDesc->add("sdl-file", 1);
-    
+
+    // Build the string for the partitioner help
+    string part_desc;
+    part_desc.append("partitioner to be used < ");
+    map<string,string> desc = SST::Partition::SSTPartitioner::getDescriptionMap();
+    string prefix = "";
+    for ( map<string,string>::const_iterator it = desc.begin(); it != desc.end() ; ++it ) {
+        part_desc.append(prefix).append(it->first);
+        prefix = " | ";
+    }
+    part_desc.append(" | lib.partitioner_name >\nDescriptions:");
+    for ( map<string,string>::const_iterator it = desc.begin(); it != desc.end() ; ++it ) {
+        part_desc.append("\n-  ").append(it->first).append(": ").append(it->second);
+    }
+    part_desc.append("\n-  lib.partitioner_name: Partitioner found in element library 'lib' with name 'partitioner_name'");
     mainDesc = new po::options_description( "" );
     mainDesc->add_options()
         ("debug", po::value< vector<string> >()->multitoken(), 
@@ -122,12 +136,9 @@ Config::Config( int my_rank, int world_size )
 				"Set time for heart beats to be published (these are approximate timings published by the core to update on progress), default is every 10000 simulated seconds")
         ("timebase", po::value< string >(&timeBase), 
                                 "sets the base time step of the simulation (default: 1ps)")
-#ifdef HAVE_ZOLTAN
+#if HAVE_MPI
         ("partitioner", po::value< string >(&partitioner),
-	 "partitioner to be used <zoltan | self | simple | rrobin | linear | lib.partitioner_name> (option ignored for serial jobs)" )
-#else
-        ("partitioner", po::value< string >(&partitioner),
-         "partitioner to be used <self | simple | rrobin | linear | lib.partitioner_name> (option ignored for serial jobs)")
+         part_desc.c_str())
 #endif
         ("generator", po::value< string >(&generator),
          "generator to be used to build simulation <lib.generator_name>")

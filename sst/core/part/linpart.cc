@@ -14,6 +14,8 @@
 
 using namespace std;
 
+bool SSTLinearPartition::initialized = SSTPartitioner::addPartitioner("linear",&SSTLinearPartition::allocate, "Partitions components by dividing Component ID space into roughly equal portions.  Components with sequential IDs will be placed close together.");
+
 SSTLinearPartition::SSTLinearPartition(int mpiranks, int verbosity) {
 	rankcount = mpiranks;
 	partOutput = new Output("LinearPartition ", verbosity, 0, SST::Output::STDOUT);

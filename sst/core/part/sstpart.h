@@ -15,6 +15,8 @@
 
 #include <sst/core/configGraph.h>
 
+#include <map>
+
 namespace SST {
 namespace Partition {
 
@@ -23,17 +25,51 @@ namespace Partition {
  */
 class SSTPartitioner
 {
-	public:
-		SSTPartitioner();
-		virtual ~SSTPartitioner() {};
-        /** Function to be overriden by subclasses
-         *
-         * Performs the partitioning of the Graph
-         *
-         * Result of this function is that every ConfigComponent in
-         * graph has a Rank applied to it.
-         */
-		virtual void performPartition(PartitionGraph* graph) = 0;
+
+public:
+
+    typedef SSTPartitioner* (*partitionerAlloc)(int total_ranks, int my_rank, int verbosity);
+private:
+    static std::map<std::string, SSTPartitioner::partitionerAlloc>& partitioner_allocs();
+    static std::map<std::string, std::string>& partitioner_descriptions();
+    
+public:
+
+    SSTPartitioner();
+    virtual ~SSTPartitioner() {};
+    
+    static bool addPartitioner(const std::string name, const SSTPartitioner::partitionerAlloc alloc, const std::string description);
+    static SSTPartitioner* getPartitioner(std::string name, int total_ranks, int my_rank, int verbosity);
+
+    static const std::map<std::string, std::string>& getDescriptionMap() { return partitioner_descriptions(); }
+
+    
+    /** Function to be overriden by subclasses
+     *
+     * Performs the partitioning of the Graph using the PartitionGraph object.
+     *
+     * Result of this function is that every ConfigComponent in
+     * graph has a Rank applied to it.
+     */
+    virtual void performPartition(PartitionGraph* graph) {}
+
+    /** Function to be overriden by subclasses
+     *
+     * Performs the partitioning of the Graph using the ConfigGraph
+     * object.  The consequence of using ConfigGraphs is that no-cut
+     * links are not supported.
+     *
+     * Result of this function is that every ConfigComponent in
+     * graph has a Rank applied to it.
+     */
+    virtual void performPartition(ConfigGraph* graph) {}
+    
+    virtual bool requiresConfigGraph() { return false; }
+    
+    virtual bool spawnOnAllRanks() { return false; }
+    // virtual bool supportsPartialPartitionInput() { return false; }
+
+
 };
 
 }

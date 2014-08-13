@@ -34,13 +34,16 @@ class PartitionGraph;
 class Introspector;
 class Module;
 class Params;
-
+namespace Partition {
+    class SSTPartitioner;
+}
+ 
 typedef Component* (*componentAllocate)(ComponentId_t, Params&);
 typedef Introspector* (*introspectorAllocate)(Params&);
 typedef void (*eventInitialize)(void);
 typedef Module* (*moduleAllocate)(Params&);
 typedef Module* (*moduleAllocateWithComponent)(Component*, Params&);
-typedef void (*partitionFunction)(ConfigGraph*,int);
+typedef SST::Partition::SSTPartitioner* (*partitionFunction)(int, int, int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
 typedef void* (*genPythonModuleFunction)(void);
 

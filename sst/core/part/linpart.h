@@ -51,12 +51,20 @@ class SSTLinearPartition : public SST::Partition::SSTPartitioner {
 		*/
 		void performPartition(PartitionGraph* graph);
 
+        bool requiresConfigGraph() { return false; }
+        bool spawnOnAllRanks() { return false; }
+
+        static SSTPartitioner* allocate(int total_ranks, int my_rank, int verbosity) {
+            return new SSTLinearPartition(total_ranks, verbosity);
+    }
+        
 	protected:
         /** Number of ranks in the simulation */
 		int rankcount;
         /** Output object to print partitioning information */
 		Output* partOutput;
 
+        static bool initialized;
 };
 
 }
