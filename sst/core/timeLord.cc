@@ -90,11 +90,14 @@ TimeLord::TimeLord(std::string timeBaseString) :
 TimeLord::~TimeLord() {
     // Delete all the TimeConverter objects
     std::map<ComponentId_t,LinkMap*>::iterator it;
+std::cerr << "       TimeLord desconstructor start loop" << std::endl;
     for ( TimeConverterMap_t::iterator it = tcMap.begin(); it != tcMap.end(); ++it ) {
 	delete it->second;
     }
+std::cerr << "  Finished loop" << std::endl;
     tcMap.clear();
 
+std::cerr << "  next is Cache " << std::endl;
     // Clear the contents of the cache
     parseCache.clear();
     
