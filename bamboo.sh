@@ -466,7 +466,7 @@ getconfig() {
             touch $SST_ROOT/sst/elements/patterns/.ignore
             ;;
 
-        sstmainline_config_gem5_gcc_4.6.4) 
+        sstmainline_config_gem5_gcc_4_6_4) 
             #-----------------------------------------------------------------
             # sstmainline_config
             #     This option used for configuring SST, forcing gem5 to be built with gcc-4.6.4
@@ -953,7 +953,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sst_config_dist_test|documentation|sstmainline_configA|sstmainline_config_VaultSim|sstmainline_configZ|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_all|sstmainline_config_gem5_gcc_4.6.4)
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sst_config_dist_test|documentation|sstmainline_configA|sstmainline_config_VaultSim|sstmainline_configZ|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_all|sstmainline_config_gem5_gcc_4_6_4)
             #   Save Parameters $2, $3 and $4 in case they are need later
             SST_DIST_MPI=$2
             SST_DIST_BOOST=$3
