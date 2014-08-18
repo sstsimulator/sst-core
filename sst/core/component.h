@@ -168,21 +168,21 @@ public:
     /** return the time since the simulation began in units specified by
         the parameter.
         @param tc TimeConverter specificing the units */
-    SimTime_t getCurrentSimTime(TimeConverter *tc);
+    SimTime_t getCurrentSimTime(TimeConverter *tc) const;
     /** return the time since the simulation began in the default timebase */
-    inline SimTime_t getCurrentSimTime() { 
-        return getCurrentSimTime(defaultTimeBase); 
+    inline SimTime_t getCurrentSimTime()  const{
+        return getCurrentSimTime(defaultTimeBase);
     }
     /** return the time since the simulation began in timebase specified
         @param base Timebase frequency in SI Units */
     SimTime_t getCurrentSimTime(std::string base);
 
     /** Utility function to return the time since the simulation began in nanoseconds */ 
-    SimTime_t getCurrentSimTimeNano();
+    SimTime_t getCurrentSimTimeNano() const;
     /** Utility function to return the time since the simulation began in microseconds */ 
-    SimTime_t getCurrentSimTimeMicro();
+    SimTime_t getCurrentSimTimeMicro() const;
     /** Utility function to return the time since the simulation began in milliseconds */ 
-    SimTime_t getCurrentSimTimeMilli();
+    SimTime_t getCurrentSimTimeMilli() const;
 
     /** Register that the simulation should not end until this
         component says it is OK to. Calling this function (generally

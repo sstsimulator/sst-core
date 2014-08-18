@@ -224,7 +224,7 @@ Link* Component::selfLink( std::string name, Event::HandlerBase* handler )
     return link;
 }
     
-SimTime_t Component::getCurrentSimTime(TimeConverter *tc) {
+SimTime_t Component::getCurrentSimTime(TimeConverter *tc) const {
     return tc->convertFromCoreTime(Simulation::getSimulation()->getCurrentSimCycle());
 }
 
@@ -233,15 +233,15 @@ SimTime_t Component::getCurrentSimTime(std::string base) {
 
 }
     
-SimTime_t Component::getCurrentSimTimeNano() {
+SimTime_t Component::getCurrentSimTimeNano() const {
     return getCurrentSimTime(Simulation::getSimulation()->getTimeLord()->getNano());
 }
 
-SimTime_t Component::getCurrentSimTimeMicro() {
+SimTime_t Component::getCurrentSimTimeMicro() const {
     return getCurrentSimTime(Simulation::getSimulation()->getTimeLord()->getMicro());
 }
 
-SimTime_t Component::getCurrentSimTimeMilli() {
+SimTime_t Component::getCurrentSimTimeMilli() const {
     return getCurrentSimTime(Simulation::getSimulation()->getTimeLord()->getMilli());
 }
 
