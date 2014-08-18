@@ -478,7 +478,6 @@ getconfig() {
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} $miscEnv"
             ;;
 
-        sstmainline_configA) 
         sstmainline_config_gcc_4_8_1) 
             #-----------------------------------------------------------------
             # sstmainline_config_gcc_4_8_1
