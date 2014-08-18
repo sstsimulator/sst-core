@@ -83,6 +83,9 @@ public:
     /** Checks to see if library exists and can be loaded */
     bool hasLibrary(std::string elemlib);
 
+    void getLoadedLibraryNames(std::set<std::string>& lib_names);
+    void loadUnloadedLibraries(const std::set<std::string>& lib_names);
+    
 private:
     friend class SST::SimulationBase;
 

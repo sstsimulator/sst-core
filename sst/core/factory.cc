@@ -275,6 +275,24 @@ bool Factory::hasLibrary(std::string elemlib)
 }
 
 
+void Factory::getLoadedLibraryNames(std::set<std::string>& lib_names)
+{
+    for ( eli_map_t::const_iterator i = loaded_libraries.begin();
+          i != loaded_libraries.end(); ++i)
+        {
+            lib_names.insert(i->first);
+        }
+}
+
+void Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
+{
+    for ( std::set<std::string>::const_iterator i = lib_names.begin();
+          i != lib_names.end(); ++i )
+        {
+            findLibrary(*i);
+        }
+}
+    
 const ElementLibraryInfo*
 Factory::findLibrary(std::string elemlib, bool showErrors)
 {
