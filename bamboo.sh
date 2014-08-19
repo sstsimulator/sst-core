@@ -187,8 +187,8 @@ dotests() {
 
 
     ${SST_TEST_SUITES}/testSuite_portals.sh
-    # jwilso: running simpleComponent test here temporarily
     ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
+    ${SST_TEST_SUITES}/testSuite_simpleTracer.sh
 
     ${SST_TEST_SUITES}/testSuite_iris.sh
 
