@@ -118,9 +118,9 @@ dotests() {
     fi
        
 
-    # if running ALL and VaultSim and Ariel
+    # if running ALL add VaultSim and Ariel
     if [ $1 == "sstmainline_config_all" ] ; then 
-         ${SST_TEST_SUITES}/testSuite_VaultSim.sh
+##         ${SST_TEST_SUITES}/testSuite_VaultSim.sh
          ${SST_TEST_SUITES}/testSuite_Ariel.sh
     fi
 
