@@ -185,6 +185,7 @@ dotests() {
     fi
 
 
+    ${SST_TEST_SUITES}/testSuite_macsim.sh
     ${SST_TEST_SUITES}/testSuite_hybridsim.sh
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
