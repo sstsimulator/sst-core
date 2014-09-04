@@ -167,6 +167,18 @@ public:
 
         pool->free(ptr8);
     }
+    void operator delete(void* ptr, std::size_t sz){
+        /* 1) Decrement pointer
+         * 2) Determine Pool ID
+         * 3) Return to pool
+         */
+        uint32_t *ptr8 = ((uint32_t*)ptr) - 1;
+        uint32_t poolID = *ptr8;
+        Core::MemPool* pool = memPools[poolID].second;
+
+        pool->free(ptr8);
+    };
+    
 #endif
 
 protected:

@@ -1086,6 +1086,11 @@ else
                         module unload boost
                         module load boost/${desiredBoost}
                         ;;
+                    boost-1.56)
+                        echo "bamboo.sh: Boost 1.56 selected"
+                        module unload boost
+                        module load boost/${desiredBoost}
+                        ;;
                     myBoost)
                         if [ $2 == "openmpi-1.8" ] ; then
                             export BOOST_HOME=/home/jpvandy/local/packages/boost/boost-1.54.0_ompi-1.8_mine
@@ -1431,11 +1436,15 @@ else
                                             echo "Boost 1.54 selected"
                                             module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
                                             ;;
+                                        boost_default|boost-1.56)
+                                            echo "Boost 1.56 selected"
+                                            module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
+                                            ;;
                                         *)
                                             echo "bamboo.sh: \"Default\" Boost selected"
                                             echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.50"
-                                            module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4 2>catch.err
+                                            echo "Loading boost/Boost 1.56"
+                                            module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4 2>catch.err
                                             if [ -s catch.err ] 
                                             then
                                                 cat catch.err
@@ -1490,11 +1499,15 @@ else
                                             echo "Boost 1.54 selected"
                                             module add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
                                             ;;
+                                        boost_default|boost-1.56)
+                                            echo "Boost 1.56 selected"
+                                            module add boost/boost-1.56.0_ompi-1.8_clang-503.0.38
+                                            ;;
                                         *)
                                             echo "bamboo.sh: \"Default\" Boost selected"
                                             echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.50"
-                                            module load boost/boost-1.54.0_ompi-1.8_clang-503.0.38 2>catch.err
+                                            echo "Loading boost/Boost 1.56"
+                                            module load boost/boost-1.56.0_ompi-1.8_clang-503.0.38 2>catch.err
                                             if [ -s catch.err ] 
                                             then
                                                 cat catch.err
@@ -1535,11 +1548,15 @@ else
                                             echo "Boost 1.54 selected"
                                             module add boost/boost-1.54.0_ompi-1.8_clang-503.0.40
                                             ;;
+                                        boost_default|boost-1.56)
+                                            echo "Boost 1.56 selected"
+                                            module add boost/boost-1.56.0_ompi-1.8_clang-503.0.40
+                                            ;;
                                         *)
                                             echo "bamboo.sh: \"Default\" Boost selected"
                                             echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.50"
-                                            module load boost/boost-1.54.0_ompi-1.8_clang-503.0.40 2>catch.err
+                                            echo "Loading boost/Boost 1.56"
+                                            module load boost/boost-1.56.0_ompi-1.8_clang-503.0.40 2>catch.err
                                             if [ -s catch.err ] 
                                             then
                                                 cat catch.err
@@ -1611,11 +1628,15 @@ else
                                             echo "Boost 1.54 selected"
                                             module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
                                             ;;
+                                        boost_default|boost-1.56)
+                                            echo "Boost 1.56 selected"
+                                            module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
+                                            ;;
                                         *)
                                             echo "bamboo.sh: \"Default\" Boost selected"
                                             echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.50"
-                                            module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4 2>catch.err
+                                            echo "Loading boost/Boost 1.56"
+                                            module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4 2>catch.err
                                             if [ -s catch.err ] 
                                             then
                                                 cat catch.err
@@ -1670,11 +1691,15 @@ else
                                             echo "Boost 1.54 selected"
                                             module add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
                                             ;;
+                                        boost_default|boost-1.56)
+                                            echo "Boost 1.56 selected"
+                                            module add boost/boost-1.56.0_ompi-1.8_clang-503.0.38
+                                            ;;
                                         *)
                                             echo "bamboo.sh: \"Default\" Boost selected"
                                             echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.50"
-                                            module load boost/boost-1.54.0_ompi-1.8_clang-503.0.38 2>catch.err
+                                            echo "Loading boost/Boost 1.56"
+                                            module load boost/boost-1.56.0_ompi-1.8_clang-503.0.38 2>catch.err
                                             if [ -s catch.err ] 
                                             then
                                                 cat catch.err
@@ -1693,7 +1718,7 @@ else
                                     module unload boost
                                     module unload mpi
                                     module add mpi/openmpi-1.8_gcc-4.6.4
-                                    module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
+                                    module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
                                     module list
                                     ;;  
 ################################################################################
