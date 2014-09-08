@@ -34,7 +34,9 @@ class Accumulator : public SST::Statistics::BaseStatistic {
 			Create a new Accumulator class with initial values set to a zero count,
 			zero sum statistic of interest.
 		*/
-		Accumulator() {
+		Accumulator(char* name) :
+			BaseStatistic(name) {
+
 			count = 0;
 			sum = 0;
 			sum_sq = 0;
