@@ -116,6 +116,11 @@ Factory::CreateIntrospector(std::string type,
 Module*
 Factory::CreateModule(std::string type, Params& params)
 {
+    if("" == type) {
+	Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,
+		-1, "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
+    }
+
     std::string elemlib, elem;
     boost::tie(elemlib, elem) = parseLoadName(type);
 
@@ -126,7 +131,7 @@ Factory::CreateModule(std::string type, Params& params)
 
     // now look for module
     std::string tmp = elemlib + "." + elem;
-    eim_map_t::iterator eim = 
+    eim_map_t::iterator eim =
         found_modules.find(tmp);
     if (eim == found_modules.end()) {
         _abort(Factory,"can't find requested module %s.\n ", tmp.c_str());
