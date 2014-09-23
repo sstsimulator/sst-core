@@ -227,6 +227,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_merlin.sh
     ${SST_TEST_SUITES}/testSuite_embernightly.sh
     ${SST_TEST_SUITES}/testSuite_simpleDistrib.sh
+    ${SST_TEST_SUITES}/testSuite_SweepEmber.sh
 
     if [ $1 != "sstmainline_config_gcc_4_8_1" -a $1 != "sstmainline_config_no_gem5" -a $1 != "sstmainline_config_no_mpi" -a $1 != "sstmainline_config_macosx_no_gem5" ]
     then
