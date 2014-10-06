@@ -32,6 +32,6 @@ int main(int argc, char* argv[]) {
 	if(config_env) {
 		boot_sst_configure_env(verbose);
 	}
-	
-	boot_sst_executable("sstsim.x", verbose, argv);
+
+	boot_sst_executable("sstsim.x", verbose, argv, argc);
 }

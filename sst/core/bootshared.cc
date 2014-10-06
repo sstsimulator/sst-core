@@ -124,7 +124,7 @@ void boot_sst_configure_env(const int verbose) {
         update_env_var("DYLD_LIBRARY_PATH", verbose);
 }
 
-void boot_sst_executable(const char* binary, const int verbose, char* argv[]) {
+void boot_sst_executable(const char* binary, const int verbose, char* argv[], const int argc) {
 	char* real_binary_path = (char*) malloc(sizeof(char) * PATH_MAX);
 
 	if(strcmp(SST_INSTALL_PREFIX, "NONE") == 0) {

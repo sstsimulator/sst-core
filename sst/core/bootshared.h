@@ -21,5 +21,5 @@ extern char** environ;
 
 void update_env_var(const char* name, const int verbose);
 void boot_sst_configure_env(const int verbose);
-void boot_sst_executable(const char* binary, const int verbose, char* argv[]);
+void boot_sst_executable(const char* binary, const int verbose, char* argv[], const int argc);
 
