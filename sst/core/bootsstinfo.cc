@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	if(config_env) {
-		boot_sst_configure_env(verbose);
+		boot_sst_configure_env(verbose, argv, argc);
 	}
 
 	boot_sst_executable("sstinfo.x", verbose, argv, argc);

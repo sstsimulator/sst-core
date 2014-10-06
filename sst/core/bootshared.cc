@@ -14,7 +14,7 @@
 #include "bootshared.h"
 #include <limits.h>
 
-void update_env_var(const char* name, const int verbose) {
+void update_env_var(const char* name, const int verbose, char* argv[], const int argc) {
         char* current_ld_path = getenv(name);
         size_t new_env_size = strlen(BOOST_LIBDIR) + 1;
         new_env_size += (NULL == current_ld_path) ? 0 : strlen(current_ld_path);
@@ -119,9 +119,9 @@ void update_env_var(const char* name, const int verbose) {
 #endif
 }
 
-void boot_sst_configure_env(const int verbose) {
-	update_env_var("LD_LIBRARY_PATH", verbose);
-        update_env_var("DYLD_LIBRARY_PATH", verbose);
+void boot_sst_configure_env(const int verbose, char* argv[], const int argc) {
+	update_env_var("LD_LIBRARY_PATH", verbose, argv, argc);
+        update_env_var("DYLD_LIBRARY_PATH", verbose, argv, argc);
 }
 
 void boot_sst_executable(const char* binary, const int verbose, char* argv[], const int argc) {
