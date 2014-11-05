@@ -275,8 +275,10 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
 #
 #      Temporarily disabling the Prospero test  -- see issue #328
-    echo ' ' ; echo " Prospero test disabled -- see Issue #328" ; echo ' '
-#    ${SST_TEST_SUITES}/testSuite_prospero.sh
+#    echo ' ' ; echo " Prospero test disabled -- see Issue #328" ; echo ' '
+    echo ' ' ; echo " Prospero test Re-enabled -- November 5th" ; echo ' '
+      
+    ${SST_TEST_SUITES}/testSuite_prospero.sh
 #
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
     ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
