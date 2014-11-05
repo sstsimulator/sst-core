@@ -21,10 +21,18 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
 
 #ifdef HAVE_DRAMSIM
         new_env_size += (strlen(DRAMSIM_LIBDIR) + 2) + sizeof(char) * 1;
+
+	if(NULL == getenv("SST_DEP_DRAMSIM_ROOT")) {
+		setenv("SST_DEP_DRAMSIM_ROOT", DRAMSIM_LIBDIR, 1);
+	}
 #endif
 
 #ifdef HAVE_M5
         new_env_size += (strlen(M5_LIBDIR) + 2) + sizeof(char) * 1;
+
+	if(NULL == getenv("SST_DEP_M5_ROOT")) {
+		setenv("SST_DEP_M5_ROOT", DRAMSIM_LIBDIR, 1);
+	}
 #endif
 
 #ifdef HAVE_LIBPHX
@@ -37,10 +45,18 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
 
 #ifdef HAVE_HYBRIDSIM
         new_env_size += (strlen(HYBRIDSIM_LIBDIR) + 2) + sizeof(char) * 1;
+
+	if(NULL == getenv("SST_DEP_HYBRIDSIM_ROOT")) {
+		setenv("SST_DEP_HYBRIDSIM_ROOT", DRAMSIM_LIBDIR, 1);
+	}
 #endif
 
 #ifdef HAVE_QSIM
         new_env_size += (strlen(QSIM_LIBDIR) + 2) + sizeof(char) * 1;
+
+	if(NULL == getenv("SST_DEP_QSIM_ROOT")) {
+		setenv("SST_DEP_QSIM_ROOT", DRAMSIM_LIBDIR, 1);
+	}
 #endif
 
 #ifdef HAVE_METIS
