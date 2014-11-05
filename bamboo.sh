@@ -1843,7 +1843,7 @@ echo  PACKAGE is $Package
              ls sst/elements
              echo ' '
              ln -s ../../test              ## the subtree of tests
-ls
+             ls -l
              echo SST_INSTALL_DEPS =  $SST_INSTALL_DEPS
                 ## pristine is not at the same relative depth on Jenkins as it is for me.
             echo "  Find pristine"
