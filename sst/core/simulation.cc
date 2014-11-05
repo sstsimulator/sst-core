@@ -170,6 +170,8 @@ void Simulation::emergencyShutdown(int sig)
 {
     if ( sig != -1 ) {
         sim_output.output("EMERGENCY SHUTDOWN!\n");
+        sim_output.output("# Simulated time:                  %s\n", getElapsedSimTime().toStringBestSI().c_str());
+
         signal(sig, SIG_DFL); // Restore default handler
     }
 
