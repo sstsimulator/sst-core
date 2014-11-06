@@ -278,14 +278,16 @@ dotests() {
 #    echo ' ' ; echo " Prospero test disabled -- see Issue #328" ; echo ' '
     echo ' ' ; echo " Prospero test Re-enabled -- November 5th" ; echo ' '
       
-    ${SST_TEST_SUITES}/testSuite_prospero.sh
+    HOST=`uname -n | awk -F. '{print $1}'`
+
+    if [ $HOST == "sst-test" ] ; then
+        ${SST_TEST_SUITES}/testSuite_prospero.sh
+    fi
 #
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
     ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
     ${SST_TEST_SUITES}/testSuite_messageGenerator.sh
     ${SST_TEST_SUITES}/testSuite_VaultSim.sh
-
-    HOST=`uname -n | awk -F. '{print $1}'`
 
     # for now, only run VaultSim test on these special configurations
     if [ $1 == "sstmainline_configA" ] || [ $1 == "sstmainline_config_VaultSim" ] ; then
