@@ -62,12 +62,6 @@ class SSTPoissonDistribution : public SSTRandomDistribution {
 		double getLambda();
 
 	protected:
-		/*
-			Calculates a log factorial
-			\return Log factorial of n
-		*/
-		double logFac(const int n);
-
 		/**
 			Sets the lambda of the Poisson distribution.
 		*/

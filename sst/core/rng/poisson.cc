@@ -36,32 +36,16 @@ SSTPoissonDistribution::~SSTPoissonDistribution() {
 }
 
 double SSTPoissonDistribution::getNextDouble() {
-	const double c      = 0.767 - 3.36 / lambda;
-	const double beta   = SST_POISSON_PI / sqrt(3.0 * lambda);
-	const double alpha  = beta * lambda;
-	const double k      = log(c) - lambda - log(beta);
+	const double L = exp(-lambda);
+	      double p = 1.0;
+	      int k = 0;
 
-	while(true) {
-		const double u = baseDistrib->nextUniform();
-		const double x = (alpha - log( ( 1.0 - u ) / u )) / beta;
-		const int    n = (int) floor(x + 0.5);
-		if(n < 0) continue;
+	do {
+		k++;
+		p *= baseDistrib->nextUniform();
+	} while(p > L);
 
-		const double v     = baseDistrib->nextUniform();
-		const double y     = alpha - beta * x;
-		const double temp  = 1.0 + exp(y);
-		const double lhs   = y + log(v / (temp * temp));
-		const double rhs   = k + n * log(lambda) - logFac(n);
-
-		if(lhs <= rhs) {
-			return n;
-		}
-	}
-}
-
-double SSTPoissonDistribution::logFac(const int n) {
-	const double x = n + 1;
-	return (x - 0.5)*log(x) - x + 0.5 * log(2 * SST_POISSON_PI + 1.0 / (12.0 * x));
+	return k - 1;
 }
 
 double SSTPoissonDistribution::getLambda() {
