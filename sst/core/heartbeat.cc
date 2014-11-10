@@ -45,7 +45,7 @@ void SimulatorHeartbeat::execute( void )
     const double now = sst_get_cpu_time();
 
     sim->getSimulationOutput().output("# Simulation Heartbeat: Simulated Time %s (Real CPU time since last period %.5f seconds)\n",
-	sim->getElapsedSimTime().toString().c_str(), (now - lastTime) );
+	sim->getElapsedSimTime().toStringBestSI().c_str(), (now - lastTime) );
 
     lastTime = now;
     SimTime_t next = sim->getCurrentSimCycle() +
