@@ -13,6 +13,8 @@
 #include <sst_config.h>
 #include "poisson.h"
 
+using namespace SST::RNG;
+
 static const double SST_POISSON_PI = 3.14159265358979323846;
 
 SSTPoissonDistribution::SSTPoissonDistribution(const double mn) :
