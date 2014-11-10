@@ -31,7 +31,7 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
         new_env_size += (strlen(M5_LIBDIR) + 2) + sizeof(char) * 1;
 
 	if(NULL == getenv("SST_DEP_M5_ROOT")) {
-		setenv("SST_DEP_M5_ROOT", DRAMSIM_LIBDIR, 1);
+		setenv("SST_DEP_M5_ROOT", M5_LIBDIR, 1);
 	}
 #endif
 
@@ -47,7 +47,7 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
         new_env_size += (strlen(HYBRIDSIM_LIBDIR) + 2) + sizeof(char) * 1;
 
 	if(NULL == getenv("SST_DEP_HYBRIDSIM_ROOT")) {
-		setenv("SST_DEP_HYBRIDSIM_ROOT", DRAMSIM_LIBDIR, 1);
+		setenv("SST_DEP_HYBRIDSIM_ROOT", HYBRIDSIM_LIBDIR, 1);
 	}
 #endif
 
@@ -55,7 +55,7 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
         new_env_size += (strlen(QSIM_LIBDIR) + 2) + sizeof(char) * 1;
 
 	if(NULL == getenv("SST_DEP_QSIM_ROOT")) {
-		setenv("SST_DEP_QSIM_ROOT", DRAMSIM_LIBDIR, 1);
+		setenv("SST_DEP_QSIM_ROOT", QSIM_LIBDIR, 1);
 	}
 #endif
 
