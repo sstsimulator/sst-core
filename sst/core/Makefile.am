@@ -72,6 +72,7 @@ nobase_dist_sst_HEADERS = \
 	interprocess/ipctunnel.h \
 	rng/sstrand.h \
 	rng/marsaglia.h \
+	rng/poisson.h \
 	rng/mersenne.h \
 	rng/distrib.h \
 	rng/gaussian.h \
@@ -121,6 +122,7 @@ sst_core_sources = \
 	interfaces/simpleMem.cc \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
+	rng/poisson.cc \
 	rng/mersenne.cc \
 	rng/distrib.cc \
 	rng/gaussian.cc \
