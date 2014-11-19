@@ -281,8 +281,11 @@ dotests() {
     HOST=`uname -n | awk -F. '{print $1}'`
 
     if [ $HOST == "sst-test" ] ; then
+        export SST_BUILD_PROSPERO_TRACE_FILE=1
         ${SST_TEST_SUITES}/testSuite_prospero.sh
+        unset SST_BUILD_PROSPERO_TRACE_FILE
     fi
+    ${SST_TEST_SUITES}/testSuite_prospero.sh
 #
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
     ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
