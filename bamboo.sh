@@ -283,8 +283,8 @@ dotests() {
     if [ $HOST == "sst-test" ] ; then
         export SST_BUILD_PROSPERO_TRACE_FILE=1
         pushd ${SST_TEST_SUITES}
-          ln -s ${SST_TEST_SUITES}/testSuite_prospero.sh testSuite_prospero_tar.sh
-          ${SST_TEST_SUITES}/testSuite_prospero_tar.sh
+          ln -s ${SST_TEST_SUITES}/testSuite_prospero.sh testSuite_prospero_pin.sh
+          ${SST_TEST_SUITES}/testSuite_prospero_pin.sh
           unset SST_BUILD_PROSPERO_TRACE_FILE
         popd
     fi
