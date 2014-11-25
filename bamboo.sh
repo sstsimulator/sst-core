@@ -256,7 +256,10 @@ dotests() {
 
         # These also fail in gem5 with CentOS 6.6 (libgomp-4.4.7-11 vs libgomp-4.4.7-4)  
         CentOS_version=`cat /etc/centos-release`
-        if [ ${CentOS_version} != "CentOS release 6.6 (Final)" ] ; then
+        echo " CentOS Version is ${CentOS_version}"
+        if [ "${CentOS_version}" == "CentOS release 6.6 (Final)" ] ; then
+           echo " This is CentOS 6.6,  omit running OpenMP tests.  Gem-5 is \"defunct\""
+        else
            ${SST_TEST_SUITES}/testSuite_openMP.sh
            ${SST_TEST_SUITES}/testSuite_diropenMP.sh
            ${SST_TEST_SUITES}/testSuite_stream.sh
