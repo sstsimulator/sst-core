@@ -252,15 +252,16 @@ dotests() {
         # Don't run gem5 dependent test suites in these configurations
         # because gem5 is not enabled in them.
         ${SST_TEST_SUITES}/testSuite_M5.sh
-        ${SST_TEST_SUITES}/testSuite_openMP.sh
-        ${SST_TEST_SUITES}/testSuite_diropenMP.sh
-        ${SST_TEST_SUITES}/testSuite_stream.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
-        ${SST_TEST_SUITES}/testSuite_noncacheable_openMP.sh
-#        if [ $1 != "sstmainline_config_linux_with_ariel" -a $1 != "sstmainline_config_xml2python" ] ; then
-#            ${SST_TEST_SUITES}/testSuite_Sweep_openMP.sh
-#            ${SST_TEST_SUITES}/testSuite_dirSweep.sh
-#        fi
+
+        # These also fail in gem5 with CentOS 6.6 (libgomp-4.4.7-11 vs libgomp-4.4.7-4)  
+        CentOS_version=`cat /etc/centos-release`
+        if [ ${CentOS_version} != "CentOS release 6.6 (Final)" ] ; then
+           ${SST_TEST_SUITES}/testSuite_openMP.sh
+           ${SST_TEST_SUITES}/testSuite_diropenMP.sh
+           ${SST_TEST_SUITES}/testSuite_stream.sh
+           ${SST_TEST_SUITES}/testSuite_noncacheable_openMP.sh
+        fi
     fi
 
     if [ $1 != "sstmainline_config_no_mpi" ] ; then
