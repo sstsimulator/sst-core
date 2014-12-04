@@ -229,6 +229,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_portals.sh
     ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
     ${SST_TEST_SUITES}/testSuite_simpleTracer.sh
+    ${SST_TEST_SUITES}/testSuite_miranda.sh
 
     ${SST_TEST_SUITES}/testSuite_iris.sh
 
