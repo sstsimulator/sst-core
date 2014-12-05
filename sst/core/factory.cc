@@ -45,7 +45,6 @@ Factory::~Factory()
     delete loader;
 }
 
-
 Component*
 Factory::CreateComponent(ComponentId_t id, 
                          std::string type, 
@@ -124,26 +123,43 @@ Factory::CreateModule(std::string type, Params& params)
     std::string elemlib, elem;
     boost::tie(elemlib, elem) = parseLoadName(type);
 
-    // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    if("sst" == elemlib) {
+	return CreateCoreModule(elem, params);
+    } else {
+   	// ensure library is already loaded...
+    	if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        	findLibrary(elemlib);
+    	}
 
-    // now look for module
-    std::string tmp = elemlib + "." + elem;
-    eim_map_t::iterator eim =
+    	// now look for module
+    	std::string tmp = elemlib + "." + elem;
+    	eim_map_t::iterator eim =
         found_modules.find(tmp);
-    if (eim == found_modules.end()) {
-        _abort(Factory,"can't find requested module %s.\n ", tmp.c_str());
-        return NULL;
+
+	if (eim == found_modules.end()) {
+        	_abort(Factory,"can't find requested module %s.\n ", tmp.c_str());
+        	return NULL;
+    	}
+
+    	const ModuleInfo mi = eim->second;
+
+    	params.pushAllowedKeys(mi.params);
+    	Module *ret = mi.module->alloc(params);
+    	params.popAllowedKeys();
+    	return ret;
     }
+}
 
-    const ModuleInfo mi = eim->second;
+Module*
+Factory::CreateCoreModule(std::string type, Params& params) {
+    _abort(Factory, "can't find requested core module %s\n", type.c_str());
+    return NULL;
+}
 
-    params.pushAllowedKeys(mi.params);
-    Module *ret = mi.module->alloc(params);
-    params.popAllowedKeys();
-    return ret;
+Module*
+Factory::CreateCoreModuleWithComponent(std::string type, Component* comp, Params& params) {
+    _abort(Factory, "can't find requested core module %s when loading with component\n", type.c_str());
+    return NULL;
 }
 
 
@@ -152,6 +168,10 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
 {
     std::string elemlib, elem;
     boost::tie(elemlib, elem) = parseLoadName(type);
+
+    if("sst" == elemlib) {
+	return CreateCoreModuleWithComponent(elem, comp, params);
+    } else {
 
     // ensure library is already loaded...
     if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
@@ -173,6 +193,7 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
     Module *ret = mi.module->alloc_with_comp(comp, params);
     params.popAllowedKeys();
     return ret;
+    }
 }
 
 

@@ -68,6 +68,18 @@ public:
      */
     Module* CreateModuleWithComponent(std::string type, Component* comp, Params& params);
 
+    /** Instantiate a new Module from within the SST core
+     * @param type - Name of the module to load (just modulename, not element.modulename)
+     * @param params - Parameters to pass to the module at constructor time
+     */
+    Module* CreateCoreModule(std::string type, Params& params);
+
+    /** Instantiate a new Module from within the SST core
+     * @param type - Name of the module to load (just modulename, not element.modulename)
+     * @param params - Parameters to pass to the module at constructor time
+     */
+    Module* CreateCoreModuleWithComponent(std::string type, Component* comp, Params& params);
+
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */
