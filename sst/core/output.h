@@ -229,12 +229,13 @@ public:
                  const char* format, ...)
         __attribute__ ((format (printf, 8, 9)))
     {
-	const std::string normalPrefix = m_outputPrefix;
-        m_outputPrefix = tempPrefix;
 
         va_list arg;
 
         if (true == m_objInitialized && NONE != m_targetLoc ) {
+    	    const std::string normalPrefix = m_outputPrefix;
+            m_outputPrefix = tempPrefix;
+
             // First check to see if we are allowed to send output based upon the
             // verbose_mask and verbose_level checks
             if (((output_bits & ~m_verboseMask) == 0) &&
@@ -244,9 +245,9 @@ public:
                 outputprintf(line, file, func, format, arg);
                 va_end(arg);
             }
-        }
 
-        m_outputPrefix = normalPrefix;
+            m_outputPrefix = normalPrefix;
+        }
     }
 
     /** Output the debug message with formatting as specified by the format
