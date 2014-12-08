@@ -129,7 +129,7 @@ class Histogram : public SST::Statistics::BaseStatistic {
 			Get the largest possible value represented by this histogram (i.e. the highest value in any of items bins rounded above to the size of the bin)
 		*/
 		HistoBinType getBinEnd() {
-			return maxVal;
+			return maxVal + binWidth;
 		}
 
 		/**
