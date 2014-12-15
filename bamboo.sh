@@ -525,6 +525,9 @@ getconfig() {
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv --disable-mpi"
                       #The following is wrong way to do it, but patterns shouldn't need MPI to build!
             touch $SST_ROOT/sst/elements/patterns/.ignore
+                      #  The Dec. 12 ember change makes ember require MPI to build
+            touch $SST_ROOT/sst/elements/ember/.ignore
+
             ;;
 
         sstmainline_config_gem5_gcc_4_6_4) 
