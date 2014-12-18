@@ -193,6 +193,11 @@ dotests() {
         # Only run if the OS *isn't* Darwin (MacOS)
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
 #       ${SST_TEST_SUITES}/testSuite_hybridsim.sh
+    elif [ $1 == "sstmainline_config_macosx_static" -a $macosVersion == "10.9" ]
+    then
+    #   Run an extra pass of the mcOpteron test
+        ln -s ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh ${SST_TEST_SUITES}/testSuite_sst_mcopteron2.sh
+        ${SST_TEST_SUITES}/testSuite_sst_mcopteron2.sh
     fi
     #
     #   Only run if configured for ariel
