@@ -1069,7 +1069,7 @@ else
                 echo "CHECK:  \$4: ${4}"
                 echo "CHECK:  \$desiredMPI: ${desiredMPI}"
                 echo "CHECK:  \$desiredBoost: ${desiredBoost}"
-                gcc --v 2>&1 | grep ^g
+                gcc --version 2>&1 | grep ^g
 
                 # load MPI
                 case $2 in
