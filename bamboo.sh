@@ -1070,6 +1070,7 @@ else
                 echo "CHECK:  \$desiredMPI: ${desiredMPI}"
                 echo "CHECK:  \$desiredBoost: ${desiredBoost}"
                 gcc --version 2>&1 | grep ^g
+                python --version
 
                 # load MPI
                 case $2 in
