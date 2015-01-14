@@ -7,7 +7,7 @@
 
 namespace SST {
 
-static st::string to_string(int val) {
+static std::string to_string(int val) {
 #ifdef HAVE_STDCXX_0X
 	return std::to_string(val);
 #else
