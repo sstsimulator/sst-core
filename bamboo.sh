@@ -188,6 +188,35 @@ dotests() {
         return
     fi
 
+    #
+    #   Run short list for FAST
+    #
+    if [ $1 == "sstmainline_config_fast" ]
+    then
+        ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
+        ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
+        ${SST_TEST_SUITES}/testSuite_embernightly.sh
+        ${SST_TEST_SUITES}/testSuite_hybridsim.sh
+        ${SST_TEST_SUITES}/testSuite_iris.sh
+        ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
+        ${SST_TEST_SUITES}/testSuite_merlin.sh
+        ${SST_TEST_SUITES}/testSuite_messageGenerator.sh
+        ${SST_TEST_SUITES}/testSuite_miranda.sh
+        ${SST_TEST_SUITES}/testSuite_portals.sh
+        ${SST_TEST_SUITES}/testSuite_prospero.sh
+        ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
+        ${SST_TEST_SUITES}/testSuite_scheduler.sh
+        ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
+        ${SST_TEST_SUITES}/testSuite_simpleDistrib.sh
+        ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
+        ${SST_TEST_SUITES}/testSuite_simpleTracer.sh
+        ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
+        ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
+        ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
+        ${SST_TEST_SUITES}/testSuite_VaultSim.sh
+        return
+     fi
+
     if [ $kernel != "Darwin" ]
     then
         # Only run if the OS *isn't* Darwin (MacOS)
@@ -518,7 +547,7 @@ getconfig() {
             configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} --with-chdl=$SST_DEPS_INSTALL_CHDL $miscEnv"
             ;;
 
-        sstmainline_config_no_mpi) 
+        sstmainline_config_no_mpi|sstmainline_config_fast) 
             #-----------------------------------------------------------------
             # sstmainline_config
             #     This option used for configuring SST with supported stabledevel deps
@@ -1018,7 +1047,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sst_config_dist_test|documentation|sstmainline_configA|sstmainline_config_VaultSim|sstmainline_configZ|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_diropenmpB|sstmainline_config_dirnoncacheable|sstmainline_config_diropenmpI|sstmainline_config_all|sstmainline_config_gem5_gcc_4_6_4)
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sst_config_dist_test|documentation|sstmainline_configA|sstmainline_config_VaultSim|sstmainline_configZ|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_diropenmpB|sstmainline_config_dirnoncacheable|sstmainline_config_diropenmpI|sstmainline_config_all|sstmainline_config_gem5_gcc_4_6_4|sstmainline_config_fast)
             #   Save Parameters $2, $3 and $4 in case they are need later
             SST_DIST_MPI=$2
             SST_DIST_BOOST=$3
