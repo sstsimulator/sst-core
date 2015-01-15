@@ -17,76 +17,52 @@
 
 namespace SST {
 
-static std::string to_string(double val) {
-#ifdef HAVE_STDCXX_0Y
-	return std::to_string(val);
-#else
+inline std::string to_string(double val) {
 	char buffer[32];
     sprintf(buffer, "%f", val);
     
     std::string buffer_str(buffer);
     return buffer_str;
-#endif
 };
 
-static std::string to_string(float val) {
-#ifdef HAVE_STDCXX_0Y
-	return std::to_string(val);
-#else
-        char buffer[32];
-        sprintf(buffer, "%f", val);
+inline std::string to_string(float val) {
+    char buffer[32];
+    sprintf(buffer, "%f", val);
 
-        std::string buffer_str(buffer);
-        return buffer_str;
-#endif
+    std::string buffer_str(buffer);
+    return buffer_str;
 };
 
-static std::string to_string(int32_t val) {
-#ifdef HAVE_STDCXX_0Y
-	return std::to_string(val);
-#else
+inline std::string to_string(int32_t val) {
     char buffer[32];
     sprintf(buffer, "%" PRId32, val);
     
     std::string buffer_str(buffer);
     return buffer_str;
-#endif
 };
 
-static std::string to_string(int64_t val) {
-#ifdef HAVE_STDCXX_0Y
-	return std::to_string(val);
-#else
+inline std::string to_string(int64_t val) {
     char buffer[32];
     sprintf(buffer, "%" PRId64, val);
     
     std::string buffer_str(buffer);
     return buffer_str;
-#endif
 };
 
-static std::string to_string(uint32_t val) {
-#ifdef HAVE_STDCXX_0Y
-	return std::to_string(val);
-#else
+inline std::string to_string(uint32_t val) {
     char buffer[32];
     sprintf(buffer, "%" PRIu32, val);
     
     std::string buffer_str(buffer);
     return buffer_str;
-#endif
 };
 
-static std::string to_string(uint64_t val) {
-#ifdef HAVE_STDCXX_0Y
-	return std::to_string(val);
-#else
+inline std::string to_string(uint64_t val) {
     char buffer[32];
     sprintf(buffer, "%" PRIu64, val);
     
     std::string buffer_str(buffer);
     return buffer_str;
-#endif
 };
 
 }
