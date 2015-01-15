@@ -30,8 +30,12 @@
 #include <boost/serialization/split_member.hpp>
 #include <boost/serialization/type_info_implementation.hpp>
 #include <boost/serialization/extended_type_info_no_rtti.hpp>
+
 #ifdef HAVE_MPI
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <boost/mpi.hpp>
+#pragma GCC diagnostic pop
 #endif
 
 #include "sst/core/serialization/types.h"

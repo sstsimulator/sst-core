@@ -16,6 +16,12 @@
 #error "Include only one serialization/ header file"
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+
 #if SST_WANT_POLYMORPHIC_ARCHIVE
 #include <boost/archive/polymorphic_iarchive.hpp>
 #include <boost/archive/polymorphic_oarchive.hpp>
@@ -31,6 +37,9 @@
 #ifdef HAVE_MPI
 #include <boost/mpi.hpp>
 #endif
+
+#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
 #include "sst/core/serialization/types.h"
 

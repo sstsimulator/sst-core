@@ -21,12 +21,14 @@
 #include <map>
 #include <vector>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-register"
 #include <boost/multiprecision/cpp_dec_float.hpp>
+#pragma clang diagnostic pop
+
 #include <boost/version.hpp>
 
 namespace SST {
-
-
 
 typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<40,boost::int16_t> > sst_dec_float;
 

@@ -27,8 +27,12 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/split_member.hpp>
+
 #ifdef HAVE_MPI
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <boost/mpi.hpp>
+#pragma GCC diagnostic pop
 #endif
 
 #include "sst/core/serialization/types.h"
