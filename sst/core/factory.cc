@@ -28,10 +28,14 @@
 #include "sst/core/params.h"
 #include "sst/core/linkMap.h"
 
+// Statistic Output Objects
+#include <sst/core/statapi/statoutputconsole.h>  
+#include <sst/core/statapi/statoutputtxt.h>  
+#include <sst/core/statapi/statoutputcsv.h>  
+
+using namespace SST::Statistics;
 
 namespace SST {
-
-
 
 Factory::Factory(std::string searchPaths) :
     searchPaths(searchPaths)
@@ -51,6 +55,7 @@ Factory::CreateComponent(ComponentId_t id,
                          Params& params)
 {
     std::string elemlib, elem;
+    
     boost::tie(elemlib, elem) = parseLoadName(type);
 
     // ensure library is already loaded...
@@ -72,16 +77,106 @@ Factory::CreateComponent(ComponentId_t id,
     LinkMap *lm = Simulation::getSimulation()->getComponentLinkMap(id);
     lm->setAllowedPorts(&ci.ports);
 
+    loadingComponentType = type;    
     params.pushAllowedKeys(ci.params);
     Component *ret = ci.component->alloc(id, params);
     params.popAllowedKeys();
+    loadingComponentType = "";
 
     if (NULL == ret) return ret;
 
     ret->type = type;
+    
     return ret;
 }
 
+StatisticOutput* 
+Factory::CreateStatisticOutput(std::string& statOutputName, Params& statOutputParams)
+{
+    Module*           tempModule;
+    StatisticOutput*  rtnStatOut = NULL;
+    
+    // Load the Statistic Output as a module first;  This allows 
+    // us to provide StatisticOutputs as part of a element
+    tempModule = CreateModule(statOutputName, statOutputParams);
+    if (NULL != tempModule) {
+        // Dynamic Cast the Module into a Statistic Output, if the module is not
+        // a StatisticOutput, then return NULL
+        rtnStatOut = dynamic_cast<StatisticOutput*>(tempModule);
+    }
+    
+    return rtnStatOut;
+}
+
+bool 
+Factory::DoesComponentInfoStatisticExist(std::string& type, std::string& statisticName)
+{
+    std::string compTypeToLoad = type;
+    if (true == type.empty()) { 
+        compTypeToLoad = loadingComponentType;
+    }
+    
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // now look for component
+    std::string tmp = elemlib + "." + elem;
+    eic_map_t::iterator eii = found_components.find(tmp);
+    if (eii == found_components.end()) {
+        _abort(Factory,"can't find requested component %s.\n ", tmp.c_str());
+        return false;
+    }
+
+    const ComponentInfo ci = eii->second;
+
+    // See if the statistic exists
+    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+        if (statisticName == ci.statNames[x]) {
+            return true;
+        }
+    }
+    return false;
+}
+
+uint8_t 
+Factory::GetComponentInfoStatisticEnableLevel(std::string& type, std::string& statisticName)
+{
+    std::string compTypeToLoad = type;
+    if (true == type.empty()) { 
+        compTypeToLoad = loadingComponentType;
+    }
+    
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // now look for component
+    std::string tmp = elemlib + "." + elem;
+    eic_map_t::iterator eii = found_components.find(tmp);
+    if (eii == found_components.end()) {
+        _abort(Factory,"can't find requested component %s.\n ", tmp.c_str());
+        return 0;
+    }
+
+    const ComponentInfo ci = eii->second;
+
+    // See if the statistic exists, if so return the enable level
+    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+        if (statisticName == ci.statNames[x]) {
+            return ci.statEnableLevels[x];
+        }
+    }
+    return 0;
+}
 
 Introspector*
 Factory::CreateIntrospector(std::string type, 
@@ -150,10 +245,38 @@ Factory::CreateModule(std::string type, Params& params)
     }
 }
 
+Module* 
+Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
+{
+    // Names of sst.xxx Statistic Output Modules
+    if ("statOutputCSV" == type) {
+        return new StatisticOutputCSV(params);
+    }
+    if ("statOutputTXT" == type) {
+        return new StatisticOutputTxt(params);
+    }
+    if ("statOutputConsole" == type) {
+        return new StatisticOutputConsole(params);
+    }
+    return NULL;
+}
+
 Module*
 Factory::CreateCoreModule(std::string type, Params& params) {
-    _abort(Factory, "can't find requested core module %s\n", type.c_str());
-    return NULL;
+    // Try to load the core modules    
+    Module* rtnModule = NULL;
+
+    if (NULL == rtnModule) {
+        rtnModule = LoadCoreModule_StatisticOutputs(type, params);
+    }
+    
+    // Try to load other core modules here...
+    
+    // Did we succeed in loading a core module? 
+    if (NULL == rtnModule) {
+        _abort(Factory, "can't find requested core module %s\n", type.c_str());
+    }
+    return rtnModule;
 }
 
 Module*

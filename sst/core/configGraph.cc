@@ -42,7 +42,10 @@ void ConfigComponent::print(std::ostream &os) const {
     os << std::endl;
     os << "  Params:" << std::endl;
     params.print_all_params(os, "    ");
-
+    os << "  Statistics:" << std::endl;
+    for (size_t x = 0 ; x != enabledStatistics.size() ; ++x) {
+        os << "    " << enabledStatistics[x] << " at " << statisticRates[x];
+    }
 }
 
 void ConfigComponent::genDot(std::ostream &os, const ConfigLinkMap_t& link_map) const {
@@ -78,6 +81,8 @@ ConfigComponent::cloneWithoutLinks() const
     ret.rank = rank;
     ret.params = params;
     ret.isIntrospector = isIntrospector;
+    ret.enabledStatistics = enabledStatistics;
+    ret.statisticRates = statisticRates;
     return ret;
 }
     
@@ -91,6 +96,8 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.weight = weight;
     ret.rank = rank;
     ret.isIntrospector = isIntrospector;
+    ret.enabledStatistics = enabledStatistics;
+    ret.statisticRates = statisticRates;
     return ret;
 }
     
@@ -270,6 +277,91 @@ ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string 
     comps[comp_id].params.enableVerify(bk);
 }
 
+void 
+ConfigGraph::enableComponentStatistic(ComponentId_t comp_id, string statisticName, string collectionRate)
+{
+    string      rate;    
+    UnitAlgebra rateTest;
+    Output      out = Simulation::getSimulation()->getSimulationOutput();
+
+    // Check for an empty string on the collection rate 
+    if (true == collectionRate.empty()) {
+        rateTest = UnitAlgebra("0ns");
+        rate = "0ns";
+    } else {    
+        rateTest = UnitAlgebra(collectionRate);
+        rate = collectionRate;
+    }
+
+    // Check the Collection Rate
+    if (!((true == rateTest.hasUnits("s"))     || 
+          (true == rateTest.hasUnits("hz"))    ||
+          (true == rateTest.hasUnits("event")) ||
+          (0 == rateTest.getValue())))
+    {
+        // collectionRate is a unit type we dont recognize 
+        out.fatal(CALL_INFO, -1, " ERROR: Component %s; Statistic %s - Collection Rate = %s not valid; exiting...\n", comps[comp_id].name.c_str(), statisticName.c_str(), collectionRate.c_str());
+    }
+    
+    // Check for Enable All Statistics
+    if (statisticName == "--ALL--") {
+        // Clear the vector and Force the "--ALL--" to be on the top of the list
+        comps[comp_id].enabledStatistics.clear();
+        comps[comp_id].statisticRates.clear();
+    }
+    // Add to end of the vector
+    comps[comp_id].enabledStatistics.push_back(statisticName);
+    comps[comp_id].statisticRates.push_back(rate);
+}
+
+void 
+ConfigGraph::enableStatisticForComponentName(string ComponentName, string statisticName, string collectionRate)
+{
+    bool found;
+    
+    // Search all the components for a matching name
+    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
+        // Check to see if the names match or All components are selected
+        found = ((ComponentName == iter->name) || (ComponentName == "--ALL--"));
+        if (true == found) {
+            enableComponentStatistic(iter->id, statisticName, collectionRate);
+        }
+    }
+}
+
+void 
+ConfigGraph::enableStatisticForComponentType(string ComponentType, string statisticName, string collectionRate)
+{
+    bool found;
+    
+    // Search all the components for a matching type
+    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
+        // Check to see if the types match or All components are selected
+        found = ((ComponentType == iter->type) || (ComponentType == "--ALL--"));
+        if (true == found) {
+            enableComponentStatistic(iter->id, statisticName, collectionRate);
+        }
+    }
+}
+
+void 
+ConfigGraph::setStatisticOutput(const char* name)
+{
+    statOutputName = name;
+}
+
+void 
+ConfigGraph::addStatisticOutputParameter(const char* param, const char* value)
+{
+    statOutputParams[param] = value;
+}
+
+void 
+ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
+{
+    statLoadLevel = loadLevel;
+}
+
 void
 ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, string latency_str, bool no_cut)
 {
@@ -317,12 +409,25 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 
 		ConfigComponentMap_t::iterator comp_itr;
 		Params::iterator param_itr;
+		std::vector<std::string>::iterator stat_itr;
 
 		fprintf(dumpFile, "# Automatically generated SST Python input\n");
 		fprintf(dumpFile, "import sst\n\n");
 		fprintf(dumpFile, "# Define SST core options\n");
 		fprintf(dumpFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase.c_str());
 		fprintf(dumpFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n\n", cfg->stopAtCycle.c_str());
+
+		// Dump the Statistic Output Settings
+		fprintf(dumpFile, "# Define the statistic load level and output settings\n");
+		fprintf(dumpFile, "sst.setStatisticLoadLevel(%d)\n", statLoadLevel);
+		fprintf(dumpFile, "sst.setStatisticOutput(\"%s\")\n", statOutputName.c_str());
+        for(param_itr = statOutputParams.begin(); param_itr != statOutputParams.end(); param_itr++) {
+            fprintf(dumpFile, "sst.setStatisticOutputOption(\"%s\", \"%s\")\n", 
+                    escapeString(Params::getParamName(param_itr->first)).c_str(),
+                    escapeString(param_itr->second).c_str());
+        }
+        fprintf(dumpFile, "\n");
+		
 		fprintf(dumpFile, "# Define the simulation components\n");
 		for(comp_itr = comps.begin(); comp_itr != comps.end(); comp_itr++) {
 
@@ -346,6 +451,21 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 
 				fprintf(dumpFile, "\n})\n");
 			}
+			
+//			// Dump the Component Statistics
+//			stat_itr = comp_itr->enabledStatistics.begin();
+//
+//			if(stat_itr != comp_itr->enabledStatistics.end()) {
+//				fprintf(dumpFile, "%s.addStatistics([\n", makeNamePythonSafe(comp_itr->name, "comp_").c_str());
+//				fprintf(dumpFile, "      \"%s\"", escapeString(*stat_itr).c_str());
+//				stat_itr++;
+//
+//				for(; stat_itr != comp_itr->enabledStatistics.end(); stat_itr++) {
+//					fprintf(dumpFile, ",\n      \"%s\"", escapeString(*stat_itr).c_str());
+//				}
+//
+//				fprintf(dumpFile, "\n])\n");
+//			}
 		}
 
 		fprintf(dumpFile, "\n\n# Define the simulation links\n");

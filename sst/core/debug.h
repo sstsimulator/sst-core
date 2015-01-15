@@ -53,6 +53,7 @@ extern int DebugSetFile( const std::string& filename );
 #define DBG_EXIT       (1<<20)
 #define DBG_MEMORY     (1<<21)
 #define DBG_NETWORK    (1<<22)
+#define DBG_ONESHOT    (1<<23)
 #define DBG_ALL        (DBG_ANY | \
 			DBG_CACHE| \
 			DBG_QUEUE| \
@@ -76,6 +77,7 @@ extern int DebugSetFile( const std::string& filename );
 			DBG_EXIT| \
 			DBG_MEMORY| \
 			DBG_NETWORK| \
+			DBG_ONESHOT| \
                         0)
 
 #define __DBG( flag, name, fmt, args...) \

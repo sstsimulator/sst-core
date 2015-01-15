@@ -22,12 +22,17 @@
 
 #include "sst/core/output.h"
 #include "sst/core/clock.h"
+#include "sst/core/oneshot.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/config.h"
+#include <sst/core/statapi/statengine.h>
+#include <sst/core/statapi/statoutput.h>
 
 //#include "sst/core/sdl.h"
 //#include "sst/core/component.h"
 //#include "sst/core/params.h"
+
+using namespace SST::Statistics;
 
 namespace SST {
 
@@ -69,6 +74,10 @@ public:
     Factory* getFactory(void) const { return factory; }
     /** Return the TimeLord associated with this Simulation */
     TimeLord* getTimeLord(void) const { return timeLord; }
+    /** Return the Statistic Output associated with this Simulation */
+    StatisticOutput* getStatisticsOutput(void) const { return statisticsOutput; }
+    /** Return the Statistic Processing Engine associated with this Simulation */
+    StatisticProcessingEngine* getStatisticsProcessingEngine(void) const { return statisticsEngine; }
 
 protected:
     /** Constructor
@@ -87,6 +96,10 @@ protected:
     Factory *factory;
     /** TimeLord of the simulation */
     TimeLord *timeLord;
+    /** Statistics Output of the simulation */
+    StatisticOutput* statisticsOutput;
+    /** Statistics Timing Engine of the simulation */
+    StatisticProcessingEngine* statisticsEngine;
 
 private:
     SimulationBase(SimulationBase const&); // Don't Implement
@@ -103,7 +116,11 @@ private:
  */
 class Simulation : public SimulationBase {
 public:
-    typedef std::map<SimTime_t, Clock*> clockMap_t;    /*!< Map of times to clocks */
+    typedef std::map<SimTime_t, Clock*>   clockMap_t;              /*!< Map of times to clocks */
+    typedef std::map<SimTime_t, OneShot*> oneShotMap_t;            /*!< Map of times to OneShots */
+    typedef std::vector<std::string>      statList_t;              /*!< List of Statistics */
+    typedef std::map<ComponentId_t, statList_t*> statEnableMap_t;  /*!< Map of Statistics that are requested to be enabled for a component defined in configGraph */
+    typedef std::map<ComponentId_t, statList_t*> statRateMap_t;    /*!< Map of Statistic rates for a component defined in configGraph */
     // typedef std::map< unsigned int, Sync* > SyncMap_t; /*!< Map of times to Sync Objects */
 
     ~Simulation();
@@ -164,6 +181,13 @@ public:
     /** Returns the next Cycle that the TImeConverter would fire. */
     Cycle_t getNextClockCycle(TimeConverter* tc);
 
+    /** Register a OneShot event to be called after a time delay
+        Note: OneShot cannot be canceled, and will always callback after
+              the timedelay.
+    */
+    TimeConverter* registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler);
+    TimeConverter* registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
+    
     /** Insert an activity to fire at a specified time */
     void insertActivity(SimTime_t time, Activity* ev);
 
@@ -220,6 +244,30 @@ public:
 		}
     }
 
+    statList_t* getComponentStatisticEnableList(const ComponentId_t &id) const
+    {
+		statEnableMap_t::const_iterator i = statisticEnableMap.find(id);
+		if (i != statisticEnableMap.end()) {
+			return i->second;
+		} else {
+            printf("Simulation::getComponentStatisticEnableList() couldn't find component with id = %lu\n", id);
+            exit(1);
+		}
+        return NULL; 
+    }
+    
+    statList_t* getComponentStatisticRateList(const ComponentId_t &id) const
+    {
+		statRateMap_t::const_iterator i = statisticRateMap.find(id);
+		if (i != statisticRateMap.end()) {
+			return i->second;
+		} else {
+            printf("Simulation::getComponentStatisticRateList() couldn't find component with id = %lu\n", id);
+            exit(1);
+		}
+        return NULL; 
+    }
+    
     /** Returns the Introspector with the given name */
     Introspector* getIntrospector(const std::string &name) const
     {
@@ -295,6 +343,9 @@ private:
     CompIdMap_t      compIdMap;
     IntroMap_t       introMap;
     clockMap_t       clockMap;
+    statEnableMap_t  statisticEnableMap;
+    statRateMap_t    statisticRateMap;
+    oneShotMap_t     oneShotMap;    
     SimTime_t        currentSimCycle;
     SimTime_t        endSimCycle;
     int              currentPriority;

@@ -59,6 +59,27 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg);
 static PyObject* compAddLink(PyObject *self, PyObject *args);
 static PyObject* compGetFullName(PyObject *self, PyObject *args);
 
+static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args);
+static PyObject* compEnableAllStatisticsWithRate(PyObject *self, PyObject *args);
+static PyObject* compEnableStatistics(PyObject *self, PyObject *args);
+static PyObject* compEnableStatisticsWithRate(PyObject *self, PyObject *args);
+
+static PyObject* setStatisticOutput(PyObject *self, PyObject *args);
+static PyObject* setStatisticLoadLevel(PyObject *self, PyObject *args);
+static PyObject* setStatisticOutputOption(PyObject *self, PyObject *args);
+static PyObject* setStatisticOutputOptions(PyObject *self, PyObject *args);
+
+static PyObject* enableAllStatisticsForAllComponents(PyObject *self, PyObject *args);
+static PyObject* enableAllStatisticsWithRateForAllComponents(PyObject *self, PyObject *args);
+static PyObject* enableAllStatisticsForComponentName(PyObject *self, PyObject *args);
+static PyObject* enableAllStatisticsWithRateForComponentName(PyObject *self, PyObject *args);
+static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *args);
+static PyObject* enableAllStatisticsWithRateForComponentType(PyObject *self, PyObject *args);
+static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args);
+static PyObject* enableStatisticWithRateForComponentName(PyObject *self, PyObject *args);
+static PyObject* enableStatisticForComponentType(PyObject *self, PyObject *args);
+static PyObject* enableStatisticWithRateForComponentType(PyObject *self, PyObject *args);
+
 
 static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds);
 static void linkDealloc(LinkPy_t *self);
@@ -89,6 +110,18 @@ static PyMethodDef componentMethods[] = {
 	{	"getFullName",
 		compGetFullName, METH_NOARGS,
 		"Returns the full name, after any prefix, of the component."},
+    {   "enableAllStatistics",
+        compEnableAllStatistics, METH_NOARGS,
+        "Enable all Statistics in the component with output occurring at end of simulation"},
+    {   "enableAllStatisticsWithRate",
+        compEnableAllStatisticsWithRate, METH_VARARGS,
+        "Enable all Statistics in the component with output occurring at defined rate"},
+    {   "enableStatistics",
+        compEnableStatistics, METH_O,
+        "Enables Multiple Statistics in the component with output occurring at end of simulation [stat1, stat2]"},
+    {   "enableStatisticsWithRate",
+        compEnableStatisticsWithRate, METH_O,
+        "Enables Multiple Statistics in the component with output occurring at defined rate {stat1, stat2}"},
     {   NULL, NULL, 0, NULL }
 };
 
@@ -366,6 +399,80 @@ static PyObject* compGetFullName(PyObject *self, PyObject *args)
 }
 
 
+static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
+{
+    ComponentId_t id = ((ComponentPy_t*)self)->id;
+    gModel->enableComponentStatistic(id, "--ALL--", "0");
+    
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* compEnableAllStatisticsWithRate(PyObject *self, PyObject *args)
+{
+    ComponentId_t id = ((ComponentPy_t*)self)->id;
+    char*         rate; 
+
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "s", &rate);
+
+    if ( argOK ) {
+        gModel->enableComponentStatistic(id, "--ALL--", rate);
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
+{
+    ComponentId_t id = ((ComponentPy_t*)self)->id;
+
+    if ( !PyList_Check(args) ) {
+        return NULL;
+    }
+
+    Py_ssize_t numStats = PyList_Size(args);
+    PyObject*  name;
+    long       count = 0;
+
+    for (uint32_t x = 0; x < numStats; x++) {
+        name = PyList_GetItem(args, x);
+        PyObject* nstr = PyObject_CallMethod(name, (char*)"__str__", NULL);
+
+        gModel->enableComponentStatistic(id, PyString_AsString(nstr), "0");
+        
+        Py_XDECREF(nstr);
+        count++;
+    }
+    return PyInt_FromLong(count);
+}
+
+
+static PyObject* compEnableStatisticsWithRate(PyObject *self, PyObject *args)
+{
+    ComponentId_t id = ((ComponentPy_t*)self)->id;
+    char*         name;
+    char*         rate;
+    Py_ssize_t    pos = 0;
+    PyObject*     pyname;
+    PyObject*     pyrate;
+    long          count = 0;
+
+    if ( !PyDict_Check(args) ) {
+        return NULL;
+    }
+
+    while ( PyDict_Next(args, &pos, &pyname, &pyrate) ) {
+        name = PyString_AsString(pyname);
+        rate = PyString_AsString(pyrate);
+        gModel->enableComponentStatistic(id, name, rate);
+        count++;
+    }
+    return PyInt_FromLong(count);
+}
+
 
 static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds)
 {
@@ -588,6 +695,232 @@ static PyObject* exitsst(PyObject* self, PyObject* args)
 }
 
 
+static PyObject* setStatisticOutput(PyObject* self, PyObject* args)
+{
+    char* statOutputName; 
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "s", &statOutputName);
+
+    if ( argOK ) {
+        gModel->setStatisticOutput(statOutputName);
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* setStatisticLoadLevel(PyObject*self, PyObject* arg)
+{
+    PyErr_Clear();
+    uint8_t loadLevel = PyInt_AsLong(arg); 
+    if ( PyErr_Occurred() ) {
+        PyErr_Print();
+        exit(-1);
+    }
+
+    gModel->setStatisticLoadLevel(loadLevel);
+
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* setStatisticOutputOption(PyObject* self, PyObject* args)
+{
+    char* param;
+    char* value;
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "ss", &param, &value);
+
+    if ( argOK ) {
+        gModel->addStatisticOutputParameter(param, value);
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* setStatisticOutputOptions(PyObject* self, PyObject* args)
+{
+    char* param;
+    char* value;
+
+    if ( !PyDict_Check(args) ) {
+        return NULL;
+    }
+    Py_ssize_t pos = 0;
+    PyObject *key, *val;
+    long count = 0;
+    while ( PyDict_Next(args, &pos, &key, &val) ) {
+        param = PyString_AsString(key);
+        value = PyString_AsString(val);
+        gModel->addStatisticOutputParameter(param, value);
+        count++;
+    }
+    return PyInt_FromLong(count);
+}
+
+
+static PyObject* enableAllStatisticsForAllComponents(PyObject* self, PyObject* args)
+{
+    gModel->enableStatisticForComponentName("--ALL--", "--ALL--", "0");
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* enableAllStatisticsWithRateForAllComponents(PyObject* self, PyObject* args)
+{
+    char* statRate; 
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "s", &statRate);
+
+    if ( argOK ) {
+        gModel->enableStatisticForComponentName("--ALL--", "--ALL--", statRate);
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* enableAllStatisticsForComponentName(PyObject *self, PyObject *args)
+{
+    char* compName;
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "s", &compName);
+
+    if ( argOK ) {
+        gModel->enableStatisticForComponentName(compName, "--ALL--", "0");
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* enableAllStatisticsWithRateForComponentName(PyObject *self, PyObject *args)
+{
+    char* compName;
+    char* statRate;
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "ss", &compName, &statRate);
+
+    if ( argOK ) {
+        gModel->enableStatisticForComponentName(compName, "--ALL--", statRate);
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *args)
+{
+    char* compType;
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "s", &compType);
+
+    if ( argOK ) {
+        gModel->enableStatisticForComponentType(compType, "--ALL--", "0");
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* enableAllStatisticsWithRateForComponentType(PyObject *self, PyObject *args)
+{
+    char* compType;
+    char* statRate;
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "ss", &compType, &statRate);
+
+    if ( argOK ) {
+        gModel->enableStatisticForComponentType(compType, "--ALL--", statRate);
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args)
+{
+    char* compName;
+    char* statName;
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "ss", &compName, &statName);
+
+    if ( argOK ) {
+        gModel->enableStatisticForComponentName(compName, statName, "0");
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* enableStatisticWithRateForComponentName(PyObject *self, PyObject *args)
+{
+    char* compName;
+    char* statName;
+    char* statRate;
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "sss", &compName, &statName, &statRate);
+
+    if ( argOK ) {
+        gModel->enableStatisticForComponentName(compName, statName, statRate);
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* enableStatisticForComponentType(PyObject *self, PyObject *args)
+{
+    char* compType;
+    char* statName;
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "ss", &compType, &statName);
+
+    if ( argOK ) {
+        gModel->enableStatisticForComponentType(compType, statName, "0");
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
+
+
+static PyObject* enableStatisticWithRateForComponentType(PyObject *self, PyObject *args)
+{
+    char* compType;
+    char* statName;
+    char* statRate;
+    
+    PyErr_Clear();
+    int argOK = PyArg_ParseTuple(args, "sss", &compType, &statName, &statRate);
+
+    if ( argOK ) {
+        gModel->enableStatisticForComponentType(compType, statName, statRate);
+    } else {
+        return NULL;
+    }
+    return PyInt_FromLong(0);
+}
 
 static PyMethodDef sstModuleMethods[] = {
     {   "setProgramOption",
@@ -608,6 +941,48 @@ static PyMethodDef sstModuleMethods[] = {
     {   "exit",
         exitsst, METH_NOARGS,
         "Exits SST - indicates the script wanted to exit." },
+    {   "setStatisticOutput",
+        setStatisticOutput, METH_VARARGS,
+        "Sets the Statistic Output - default is console output." },
+    {   "setStatisticLoadLevel",
+        setStatisticLoadLevel, METH_O,
+        "Sets the Statistic Load Level (0 - 10) - default is 0 (disabled)." },
+    {   "setStatisticOutputOption",
+        setStatisticOutputOption, METH_VARARGS,
+        "Sets a single Statistic output option (form: setStatisticOutputOption(name, value))"},
+    {   "setStatisticOutputOptions",
+        setStatisticOutputOptions, METH_O,
+        "Sets multiple Statistic output options from a dict."},
+    {   "enableAllStatisticsForAllComponents",
+        enableAllStatisticsForAllComponents, METH_NOARGS,
+        "Enables all statistics on all components with output at end of simuation."},
+    {   "enableAllStatisticsWithRateForAllComponents",
+        enableAllStatisticsWithRateForAllComponents, METH_VARARGS,
+        "Enables all statistics on all components with output occurring at defined rate."},
+    {   "enableAllStatisticsForComponentName",
+        enableAllStatisticsForComponentName, METH_VARARGS,
+        "Enables all statistics on a component with output occurring at defined rate."},
+    {   "enableAllStatisticsWithRateForComponentName",
+        enableAllStatisticsWithRateForComponentName, METH_VARARGS,
+        "Enables all statistics on a component with output occurring at defined rate."},
+    {   "enableAllStatisticsForComponentType",
+        enableAllStatisticsForComponentType, METH_VARARGS,
+        "Enables all statistics on all components of component type with output occurring at defined rate."},
+    {   "enableAllStatisticsWithRateForComponentType",
+        enableAllStatisticsWithRateForComponentType, METH_VARARGS,
+        "Enables all statistics on all components of component type with output occurring at defined rate."},
+    {   "enableStatisticForComponentName",
+        enableStatisticForComponentName, METH_VARARGS,
+        "Enables a single statistic on a component with output occurring at defined rate."},
+    {   "enableStatisticWithRateForComponentName",
+        enableStatisticWithRateForComponentName, METH_VARARGS,
+        "Enables a single statistic on a component with output occurring at defined rate."},
+    {   "enableStatisticForComponentType",
+        enableStatisticForComponentType, METH_VARARGS,
+        "Enables a single statistic on all components of component type with output occurring at defined rate."},
+    {   "enableStatisticWithRateForComponentType",
+        enableStatisticWithRateForComponentType, METH_VARARGS,
+        "Enables a single statistic on all components of component type with output occurring at defined rate."},
     {   NULL, NULL, 0, NULL }
 };
 

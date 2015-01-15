@@ -21,6 +21,9 @@
 #include <sst/core/params.h>
 #include <sst/core/elemLoader.h>
 #include <sst/core/element.h>
+#include <sst/core/statapi/statoutput.h>
+
+using namespace SST::Statistics;
 
 namespace SST {
 
@@ -42,6 +45,7 @@ public:
      */
     Component* CreateComponent(ComponentId_t id, std::string componentname,
                                Params& params);
+    
     /** Attempt to create a new Introspector instantiation
      * @param introspectorname - The fully qualified elementlibname.introspectorname type of introspector
      * @param params - The params to pass to the introspectors's constructor
@@ -97,14 +101,39 @@ public:
 
     void getLoadedLibraryNames(std::set<std::string>& lib_names);
     void loadUnloadedLibraries(const std::set<std::string>& lib_names);
+
+    /** Attempt to create a new Statistic Output instantiation
+     * @param statOutputName - The name of the Statistic Output to create
+     * @param statOutputParams - The params to pass to the statistic output's constructor
+     * @return Newly created Statistic Output
+     */
+    StatisticOutput* CreateStatisticOutput(std::string& statOutputName, Params& statOutputParams);
+
+    /** Detirmine if a statistic is defined in a components ElementInfoStatistic
+     * @param componentname - The name of the component
+     * @param statisticName - The name of the statistic 
+     * @return True if the statistic is defined in the component's ElementInfoStatistic
+     */
+    bool DoesComponentInfoStatisticExist(std::string& type, std::string& statisticName);
+
+    /** Get the enable level of a statistic defined in the component's ElementInfoStatistic
+     * @param componentname - The name of the component
+     * @param statisticName - The name of the statistic 
+     * @return The Enable Level of the statistic from the ElementInfoStatistic
+     */
+    uint8_t GetComponentInfoStatisticEnableLevel(std::string& type, std::string& statisticName);
     
 private:
+    Module* LoadCoreModule_StatisticOutputs(std::string& type, Params& params);
+    
     friend class SST::SimulationBase;
 
     struct ComponentInfo {
         const ElementInfoComponent* component;
         Params::KeySet_t params;
         std::vector<std::string> ports;
+        std::vector<std::string> statNames;
+        std::vector<uint8_t>     statEnableLevels;
 
         ComponentInfo() {}
 
@@ -116,9 +145,17 @@ private:
                 ports.push_back(p->name);
                 p++;
             }
+
+            const ElementInfoStatistic *s = component->stats;
+            while ( NULL != s && NULL != s->name ) {
+                statNames.push_back(s->name);
+                statEnableLevels.push_back(s->enableLevel);
+                s++;
+            }
         }
 
-        ComponentInfo(const ComponentInfo& old) : component(old.component), params(old.params), ports(old.ports)
+        ComponentInfo(const ComponentInfo& old) : component(old.component), params(old.params), ports(old.ports), 
+                                                  statNames(old.statNames), statEnableLevels(old.statEnableLevels)
         { }
 
         ComponentInfo& operator=(const ComponentInfo& old)
@@ -126,6 +163,8 @@ private:
             component = old.component;
             params = old.params;
             ports = old.ports;
+            statNames = old.statNames;
+            statEnableLevels = old.statEnableLevels;
             return *this;
         }
     };
@@ -204,6 +243,7 @@ private:
     eig_map_t found_generators;
     std::string searchPaths;
     ElemLoader *loader;
+    std::string loadingComponentType;
 
     std::pair<std::string, std::string> parseLoadName(const std::string& wholename);
 

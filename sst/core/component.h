@@ -16,12 +16,20 @@
 #include <sst/core/serialization.h>
 
 #include <map>
+#include <string>
 
 #include <sst/core/clock.h>
+#include <sst/core/oneshot.h>
 #include <sst/core/event.h>
 //#include <sst/core/params.h>
 //#include <sst/core/link.h>
 //#include <sst/core/timeConverter.h>
+#include "sst/core/simulation.h"
+#include "sst/core/unitAlgebra.h"
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/statapi/statnull.h"
+
+using namespace SST::Statistics;
 
 namespace SST {
 
@@ -152,6 +160,16 @@ public:
     /** Returns the next Cycle that the TimeConverter would fire */
     Cycle_t getNextClockCycle(TimeConverter *freq);
 
+    /** Registers a OneShot event for this component.
+        Note: OneShot cannot be canceled, and will always callback after
+          the timedelay.  
+        @param timeDelay Time delay for the OneShot in SI units
+        @param handler Pointer to OneShot::HandlerBase which is to be invoked
+        at the specified interval
+    */
+    TimeConverter* registerOneShot( std::string timeDelay, OneShot::HandlerBase* handler);
+    TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
+
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
         components which do not have a clock, but would like a default
@@ -183,6 +201,27 @@ public:
     SimTime_t getCurrentSimTimeMicro() const;
     /** Utility function to return the time since the simulation began in milliseconds */ 
     SimTime_t getCurrentSimTimeMilli() const;
+
+
+    /** Registers a statistic.  
+        If Statistic is allowed to run (controlled by Python runtime parameters), 
+        then the statistic passed in will be returned. If not allowed to run,
+        then a NullStatistic will be returned.  In either case, the returned 
+        value should be used for all future Statistic calls.  The Collection
+        Rate is set by Python runtime parameters.  If set to 0 or not provided, 
+        the statistic will output only at end of sim (if enabled).  
+        @param statistic Pointer to a derived Statistic object with type T
+        @return Either the supplied statistic or a NullStatistic depending upon
+        runtime settings.
+    */
+    template <typename T>
+    Statistic<T>* registerStatistic(Statistic<T>* statistic)
+    {
+        // NOTE: Templated Code for implementation of Statistic Registration
+        // is in the componentregisterstat_impl.h file.  This was done
+        // to avoid code bloat in the .h file.  
+        #include "sst/core/statapi/componentregisterstat_impl.h"
+    }
 
     /** Register that the simulation should not end until this
         component says it is OK to. Calling this function (generally
@@ -279,6 +318,11 @@ protected:
 private:
 
     void addSelfLink(std::string name);
+
+    // Does the statisticName exist in the ElementInfoStatistic 
+    bool doesComponentInfoStatisticExist(std::string statisticName);
+    // Return the EnableLevel for the statisticName from the ElementInfoStatistic 
+    uint8_t getComponentInfoStatisticEnableLevel(std::string statisticName);
 
     /** Unique ID */
     ComponentId_t   id;

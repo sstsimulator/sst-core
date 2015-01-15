@@ -32,14 +32,14 @@ private:
     
 public:
     StopAction() {
-        setPriority(1);
+        setPriority(STOPACTIONPRIORITY);
         print_message = false;
     }
 
     /** Create a new StopAction which includes a message to be printed when it fires
      */
     StopAction(std::string msg) {
-        setPriority(1);
+        setPriority(STOPACTIONPRIORITY);
         print_message = true;
         message = msg;
     }

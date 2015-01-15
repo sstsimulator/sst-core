@@ -25,7 +25,7 @@ public:
     IntrospectAction(Event::HandlerBase* handler) : Action(),
 	m_handler( handler ) 
     {
-	setPriority(30);
+	setPriority(INTROSPECTPRIORITY);
     }
     virtual ~IntrospectAction(){}
 

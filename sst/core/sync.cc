@@ -32,7 +32,7 @@ namespace SST {
         max_period = period;
         Simulation *sim = Simulation::getSimulation();
         SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
-        setPriority(25);
+        setPriority(SYNCPRIORITY);
         sim->insertActivity( next, this );        
     }
     
@@ -71,7 +71,7 @@ namespace SST {
     //     this->period = period;
     //     Simulation *sim = Simulation::getSimulation();
     //     SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
-    //     setPriority(25);
+    //     setPriority(SYNCPRIORITY);
     //     sim->insertActivity( next, this );
     // }
 

@@ -35,7 +35,7 @@ public:
 
 
     Event() : Activity() {
-        setPriority(50);
+        setPriority(EVENTPRIORITY);
     }
     virtual ~Event() = 0;
 

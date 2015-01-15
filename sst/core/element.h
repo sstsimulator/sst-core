@@ -21,7 +21,7 @@
 #include <string>
 
 // Component Category Definitions
-#define COMPONENT_CATEGORY_UNCATEGORIZED 0x00
+#define COMPONENT_CATEGORY_UNCATEGORIZED  0x00
 #define COMPONENT_CATEGORY_PROCESSOR      0x01
 #define COMPONENT_CATEGORY_MEMORY         0x02
 #define COMPONENT_CATEGORY_NETWORK        0x04
@@ -46,6 +46,14 @@ typedef Module* (*moduleAllocateWithComponent)(Component*, Params&);
 typedef SST::Partition::SSTPartitioner* (*partitionFunction)(int, int, int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
 typedef void* (*genPythonModuleFunction)(void);
+
+/** Describes Statistics used by a Component.
+ */
+struct ElementInfoStatistic {
+    const char *name;			/*!< Name of the Statistic */
+    const char *description;	/*!< Brief description of the Statistic */
+    const uint8_t enableLevel;	/*!< Level to meet to enable statistic 0 = disabled */
+};
 
 /** Describes Parameters to a Component.
  */
@@ -72,7 +80,8 @@ struct ElementInfoComponent {
     componentAllocate alloc;			/*!< Pointer to function to allocate a new instance of this component. */
     const ElementInfoParam *params;		/*!< List of parameters for which this component expects to look. */
     const ElementInfoPort *ports;		/*!< List of ports that this component uses. */
-    uint32_t category;					/*!< Bit-mask of categories in which this component fits. */
+    uint32_t category;	   		        /*!< Bit-mask of categories in which this component fits. */
+    const ElementInfoStatistic *stats;	/*!< List of statistics that this component uses. */
 };
 
 /** Describes an Introspector

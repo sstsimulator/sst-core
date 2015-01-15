@@ -159,8 +159,8 @@ public:
      UNITGROUP  := UNIT(-UNIT)*
      UNIT       := (SIPREFIX)?(BASEUNIT|COMPUNIT)
      SIPREFIX   := {a,f,p,n,u,m,[kKMGTPE]i?}
-     BASEUNIT   := {s,B,b}
-     COMPUNIT   := {Hz,hz,Bps,bps}
+     BASEUNIT   := {s,B,b,events}
+     COMPUNIT   := {Hz,hz,Bps,bps,event}
      \endcode
      */
     UnitAlgebra(std::string val);

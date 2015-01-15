@@ -62,6 +62,9 @@ class SSTPythonModelDefinition : public SSTModelDescription {
 		Output* getOutput() const { return output; }
         ComponentId_t addComponent(const char *name, const char *type) const { return graph->addComponent(name, type); }
         void addParameter(ComponentId_t id, const char *name, const char *value) const { graph->addParameter(id, name, value, true); }
+        void enableComponentStatistic(ComponentId_t compid, const char* statname, const char* rate) const { graph->enableComponentStatistic(compid, statname, rate); }
+        void enableStatisticForComponentName(const char*  compname, const char*  statname, const char*  rate) const { graph->enableStatisticForComponentName(compname, statname, rate); }
+        void enableStatisticForComponentType(const char*  comptype, const char*  statname, const char*  rate) const  { graph->enableStatisticForComponentType(comptype, statname, rate); }
         void setComponentRank(ComponentId_t id, int rank) const { graph->setComponentRank(id, rank); }
         void setComponentWeight(ComponentId_t id, float weight) const { graph->setComponentWeight(id, weight); }
         void addLink(ComponentId_t id, const char *name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, name, port, latency, no_cut); }
@@ -70,6 +73,9 @@ class SSTPythonModelDefinition : public SSTModelDescription {
         void popNamePrefix(void);
         char* addNamePrefix(const char *name) const;
 
+        void setStatisticOutput(const char* Name) { graph->setStatisticOutput(Name); }
+        void addStatisticOutputParameter(const char* param, const char* value) { graph->addStatisticOutputParameter(param, value); }
+        void setStatisticLoadLevel(uint8_t loadLevel) { graph->setStatisticLoadLevel(loadLevel); }
 };
 
 }

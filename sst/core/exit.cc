@@ -34,7 +34,7 @@ Exit::Exit( Simulation* sim, TimeConverter* period, bool single_rank ) :
 {
     _EXIT_DBG("\n");
     
-    setPriority(99);
+    setPriority(EXITPRIORITY);
     // if (!single_rank) sim->insertActivity( period->getFactor(), this );
 }
 

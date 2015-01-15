@@ -34,7 +34,7 @@ nobase_dist_sst_HEADERS = \
 	event.h \
 	exit.h \
 	factory.h \
-        heartbeat.h \
+    heartbeat.h \
 	initQueue.h \
 	introspectAction.h \
 	introspector.h \
@@ -43,8 +43,9 @@ nobase_dist_sst_HEADERS = \
 	linkMap.h \
 	linkPair.h \
 	mempool.h \
-        memuse.h \
+    memuse.h \
 	module.h \
+	oneshot.h \
 	output.h \
 	params.h \
 	pollingLinkQueue.h \
@@ -82,6 +83,15 @@ nobase_dist_sst_HEADERS = \
 	stats/statfuncs.h \
 	stats/accumulator.h \
 	stats/histo/histo.h \
+	statapi/statengine.h \
+	statapi/statoutput.h \
+	statapi/statoutputconsole.h \
+	statapi/statoutputtxt.h \
+	statapi/statoutputcsv.h \
+	statapi/statbase.h \
+	statapi/stathistogram.h \
+	statapi/stataccumulator.h \
+	statapi/statnull.h \
 	cputimer.h
 
 nobase_nodist_sst_HEADERS = \
@@ -100,13 +110,14 @@ sst_core_sources = \
 	exit.cc \
 	export.cc \
 	factory.cc \
-        heartbeat.cc \
+    heartbeat.cc \
 	initQueue.cc \
 	introspectAction.cc \
 	introspector.cc \
 	introspectedComponent.cc \
 	link.cc \
-        memuse.cc \
+    memuse.cc \
+	oneshot.cc \
 	output.cc \
 	params.cc \
 	pollingLinkQueue.cc \
@@ -128,6 +139,12 @@ sst_core_sources = \
 	rng/gaussian.cc \
 	rng/expon.cc \
 	rng/constant.cc \
+	statapi/statengine.cc \
+	statapi/statoutput.cc \
+	statapi/statoutputconsole.cc \
+	statapi/statoutputtxt.cc \
+	statapi/statoutputcsv.cc \
+	statapi/statbase.cc \
 	cputimer.cc
 
 bin_PROGRAMS = sst sstinfo

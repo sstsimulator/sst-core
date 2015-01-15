@@ -41,12 +41,18 @@
 
 #define SST_SIMTIME_MAX  0xffffffffffffffff
 
+using namespace SST::Statistics;
+
 namespace SST { 
 
 SimulationBase::SimulationBase(Config *config)
 {
     factory = new Factory(config->getLibPath());
     timeLord = new TimeLord(config->timeBase);
+    
+    // Create the Statistic Processing Engine
+    statisticsEngine = new StatisticProcessingEngine();
+    statisticsOutput = NULL; 
 }
 
 SimulationBase::~SimulationBase()
@@ -54,6 +60,11 @@ SimulationBase::~SimulationBase()
     //    delete factory;
     delete timeLord;
     
+    // Delete the Statistic Objects
+    if (NULL != statisticsOutput) {
+        delete statisticsOutput;
+    }
+    delete statisticsEngine;
 }
 
 TimeConverter* SimulationBase::minPartToTC(SimTime_t cycles) const {
@@ -69,9 +80,12 @@ SimulationBase::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(factory);
     printf("  - SimulationBase::timeLord\n");
     ar & BOOST_SERIALIZATION_NVP(timeLord);
+    printf("  - SimulationBase::statisticsOutput\n");
+    ar & BOOST_SERIALIZATION_NVP(statisticsOutput);
+    printf("  - SimulationBase::statisticsEngine\n");
+    ar & BOOST_SERIALIZATION_NVP(statisticsEngine);
     printf("end SimulationBase::serialize\n");
 }
-
 
 Simulation* Simulation::instance = NULL;
 
@@ -98,6 +112,8 @@ Simulation::~Simulation()
     // Clocks already got deleted by timeVortex, simply clear the clockMap
     clockMap.clear();
     
+    // OneShots already got deleted by timeVortex, simply clear the onsShotMap
+    oneShotMap.clear();
     
     // Delete any remaining links.  This should never happen now, but
     // when we add an API to have components build subcomponents, user
@@ -219,8 +235,30 @@ Simulation::getNextActivityTime()
     return timeVortex->front()->getDeliveryTime();
 }
     
-    int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_part )
+int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_part )
 {
+    // Create the Statistics Output
+    statisticsOutput = factory->CreateStatisticOutput(graph.getStatOutput(), graph.getStatOutputParams());
+    if (NULL == statisticsOutput) {
+        sim_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", graph.getStatOutput().c_str());
+    }
+    
+    if (false == statisticsOutput->checkOutputParameters()) {
+        // If checkOutputParameters() fail, Tell the user how to use them and abort simulation
+        sim_output.output("Statistic Output (%s) :\n", statisticsOutput->getStatisticOutputName().c_str());
+        statisticsOutput->printUsage();
+        sim_output.output("\n");
+
+        sim_output.output("Statistic Output Parameters Provided:\n");
+        for (Params::iterator it = graph.getStatOutputParams().begin(); it != graph.getStatOutputParams().end(); ++it ) {
+            printf("  %s = %s\n", Params::getParamName(it->first).c_str(), it->second.c_str());
+        }
+        sim_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
+    }
+    
+    // Set the Statistics Load Level into the Statistic Output 
+    statisticsOutput->setStatisticLoadLevel(graph.getStatLoadLevel());
+    
     // Params objects should now start verifying parameters
     Params::enableVerify();
 
@@ -347,15 +385,26 @@ Simulation::getNextActivityTime()
                 component_links[ccomp->id] = lm;
             }
 
+            // Save off what statistics can be enabled before instantiating the component
+            // This allows the component to register its statistics in its constructor.
+            statisticEnableMap[ccomp->id] = &(ccomp->enabledStatistics);
+            statisticRateMap[ccomp->id] = &(ccomp->statisticRates);
+            
             compIdMap[ccomp->id] = ccomp->name;
             tmp = createComponent( ccomp->id, ccomp->type,
                     ccomp->params );
             compMap[ccomp->name] = tmp;
-
+            
+            // After component is created, clear out the statisticEnableMap so 
+            // we dont eat up lots of memory
+            statisticEnableMap.erase(ccomp->id);
+            statisticRateMap.erase(ccomp->id);
         }
     } // end for all vertex    
     // Done with verticies, delete them;
     graph.comps.clear();
+    statisticEnableMap.clear();
+    statisticRateMap.clear();
     return 0;
 }
 
@@ -418,6 +467,9 @@ void Simulation::run() {
     sa->setDeliveryTime(SST_SIMTIME_MAX);
     timeVortex->insert(sa);
 
+    // Tell the Statistics Output that the simulation is starting
+    statisticsOutput->startOfSimulation();
+    
     while( LIKELY( ! endSim ) ) {
         if ( UNLIKELY( 0 != lastRecvdSignal ) ) {
             printStatus(lastRecvdSignal == SIGUSR2);
@@ -430,6 +482,10 @@ void Simulation::run() {
         current_activity->execute();
     }
 
+    // Tell the Statistics Engine and Output that the simulation is finished 
+    statisticsEngine->endOfSimulation();
+    statisticsOutput->endOfSimulation();
+    
     for( CompMap_t::iterator iter = compMap.begin();
                             iter != compMap.end(); ++iter )
     {
@@ -584,12 +640,34 @@ void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler)
     }
 }
 
+TimeConverter* Simulation::registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler)
+{
+    return registerOneShot(UnitAlgebra(timeDelay), handler);
+}
+
+TimeConverter* Simulation::registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler)
+{
+    TimeConverter* tcTimeDelay = timeLord->getTimeConverter(timeDelay);
+
+    // Search the oneShot map for a oneShot with the associated timeDelay factor
+    if (oneShotMap.find(tcTimeDelay->getFactor()) == oneShotMap.end()) {
+        // OneShot with the specific timeDelay not found, 
+        // create a new one and add it to the map of OneShots
+        OneShot* ose = new OneShot(tcTimeDelay);
+        oneShotMap[tcTimeDelay->getFactor()] = ose; 
+    }
+    
+    // Add the handler to the OneShots list of handlers, Also the
+    // registerHandler will schedule the oneShot to fire in the future
+    oneShotMap[tcTimeDelay->getFactor()]->registerHandler(handler);
+    return tcTimeDelay;
+}
+
 void Simulation::insertActivity(SimTime_t time, Activity* ev) {
     ev->setDeliveryTime(time);
     timeVortex->insert(ev);
 
 }
-
 
 template<class Archive>
 void
@@ -613,6 +691,8 @@ Simulation::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(introMap);
     printf("  - Simulation::clockMap\n");
     ar & BOOST_SERIALIZATION_NVP(clockMap);
+    printf("  - Simulation::oneShotMap\n");
+    ar & BOOST_SERIALIZATION_NVP(oneShotMap);
     printf("  - Simulation::currentSimCycle\n");
     ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
     printf("  - Simulation::m_exit\n");

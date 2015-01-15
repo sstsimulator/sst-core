@@ -22,13 +22,13 @@
     
 namespace SST {
 
-Clock::Clock( TimeConverter* period ) :
+Clock::Clock( TimeConverter* period, int priority ) :
     Action(),
     currentCycle( 0 ),
     period( period ),
     scheduled( false )
 {
-    setPriority(40);
+    setPriority(priority);
 } 
 
 
@@ -105,7 +105,7 @@ void Clock::execute( void ) {
     next = sim->getCurrentSimCycle() + period->getFactor();
     _CLE_DBG( "all called next %lu\n", (unsigned long) next );
     sim->insertActivity( next, this );
-    
+
     return;
 }
 

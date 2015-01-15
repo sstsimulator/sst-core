@@ -22,6 +22,19 @@
 #include <cstring>
 #include <errno.h>
 
+// Default Priority Settings
+#define STOPACTIONPRIORITY     01
+#define SYNCPRIORITY           25
+#define INTROSPECTPRIORITY     30
+#define CLOCKPRIORITY          40
+#define EVENTPRIORITY          50
+#define MEMEVENTPRIORITY       50
+#define BARRIERPRIORITY        75
+#define ONESHOTPRIORITY        80
+#define STATISTICCLOCKPRIORITY 85
+#define FINALEVENTPRIORITY     98
+#define EXITPRIORITY           99
+
 namespace SST {
 
 /** Base class for all Activities in the SST Event Queue */

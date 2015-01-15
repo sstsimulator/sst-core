@@ -38,7 +38,7 @@ class Clock : public Action
 public:
 
     /** Create a new clock with a specified period */
-    Clock( TimeConverter* period );
+    Clock( TimeConverter* period, int priority = CLOCKPRIORITY);
     ~Clock();
 
     /** Functor classes for Clock handling */

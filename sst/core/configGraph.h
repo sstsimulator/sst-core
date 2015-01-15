@@ -23,8 +23,11 @@
 
 #include "sst/core/sparseVectorMap.h"
 #include "sst/core/params.h"
+#include "sst/core/statapi/statoutput.h"
 
 // #include "sst/core/simulation.h"
+
+using namespace SST::Statistics;
 
 namespace SST {
 
@@ -34,7 +37,7 @@ class Config;
 
 typedef SparseVectorMap<ComponentId_t> ComponentIdMap_t;
 typedef std::vector<LinkId_t> LinkIdMap_t;
-    
+
 /** Represents the configuration of a generic Link */
 class ConfigLink {
 public:
@@ -132,6 +135,8 @@ public:
     std::vector<LinkId_t>    links;             /*!< List of links connected */
     Params                   params;            /*!< Set of Parameters */
     bool                     isIntrospector;    /*!< Is this an Introspector? */
+    std::vector<std::string> enabledStatistics; /*!< List of statistics to be enabled */
+    std::vector<std::string> statisticRates;    /*!< List of rates for enabled statistics */
 
     inline const ComponentId_t& key()const { return id; }
     
@@ -173,6 +178,8 @@ private:
         ar & BOOST_SERIALIZATION_NVP(links);
         ar & BOOST_SERIALIZATION_NVP(params);
         ar & BOOST_SERIALIZATION_NVP(isIntrospector);
+        ar & BOOST_SERIALIZATION_NVP(enabledStatistics);
+        ar & BOOST_SERIALIZATION_NVP(statisticRates);
     }
 
 };
@@ -207,6 +214,9 @@ public:
         links.clear();
         comps.clear();
         nextCompID = 0;
+        // Init the statistic output settings
+        statOutputName = STATISTICSDEFAULTOUTPUTNAME;
+        statLoadLevel = STATISTICSDEFAULTLOADLEVEL;
     }
 
     size_t getNumComponents() { return comps.data.size(); }
@@ -238,6 +248,24 @@ public:
     /** Add a single parameter to a component */
     void addParameter(ComponentId_t comp_id, std::string key, std::string value, bool overwrite = false);
 
+    /** Enable a Statistics assigned to a component */
+    void enableComponentStatistic(ComponentId_t comp_id, std::string statisticName, std::string collectionRate);
+    void enableStatisticForComponentName(std::string ComponentName, std::string statisticName, std::string collectionRate);
+    void enableStatisticForComponentType(std::string ComponentType, std::string statisticName, std::string collectionRate);
+    
+    /** Set the statistic ouput module */
+    void setStatisticOutput(const char* name);
+    
+    /** Add parameter to the statistic output module */
+    void addStatisticOutputParameter(const char* param, const char* value);
+
+    /** Set the statistic system load level */
+    void setStatisticLoadLevel(uint8_t loadLevel);
+
+    std::string& getStatOutput() {return statOutputName;}
+    Params&      getStatOutputParams() {return statOutputParams;}
+    long         getStatLoadLevel() {return statLoadLevel;}
+    
     /** Add a Link to a Component on a given Port */
     void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str, bool no_cut = false);
 
@@ -287,6 +315,10 @@ private:
     std::map<std::string,LinkId_t> link_names;
     
     ComponentId_t  nextCompID;
+    
+    std::string statOutputName;
+    Params      statOutputParams;
+    uint8_t     statLoadLevel;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -298,6 +330,9 @@ private:
         // std::cout << "serializing comps" << std::endl;
 		ar & BOOST_SERIALIZATION_NVP(comps);
         // std::cout << "done serializing" << std::endl;
+		ar & BOOST_SERIALIZATION_NVP(statOutputName);
+		ar & BOOST_SERIALIZATION_NVP(statOutputParams);
+		ar & BOOST_SERIALIZATION_NVP(statLoadLevel);
 	}
 
 

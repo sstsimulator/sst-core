@@ -81,6 +81,7 @@ Units::initialize()
     registerBaseUnit("s");
     registerBaseUnit("B");
     registerBaseUnit("b");
+    registerBaseUnit("events");
     
     registerCompoundUnit("Hz","1/s");
     // Yes, I know it's wrong, but other people don't always realize
@@ -88,6 +89,7 @@ Units::initialize()
     registerCompoundUnit("hz","1/s");
     registerCompoundUnit("Bps","B/s");
     registerCompoundUnit("bps","b/s");
+    registerCompoundUnit("event","events");
 
     return true;
 }
@@ -363,7 +365,7 @@ UnitAlgebra::init(std::string val)
     }
     catch (runtime_error e) {
         Output abort = Simulation::getSimulation()->getSimulationOutput();
-        abort.fatal(CALL_INFO,1,"Error: invalud number string: %s\n",number.c_str());
+        abort.fatal(CALL_INFO,1,"Error: invalid number string: %s\n",number.c_str());
     }
     
     value *= multiplier;

@@ -28,6 +28,8 @@
 #include "sst/core/timeLord.h"
 #include "sst/core/unitAlgebra.h"
 
+using namespace SST::Statistics;
+
 namespace SST {
 
 Component::Component(ComponentId_t id) :
@@ -98,6 +100,14 @@ Cycle_t Component::getNextClockCycle( TimeConverter* freq ) {
 
 void Component::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
     Simulation::getSimulation()->unregisterClock(tc,handler);
+}
+
+TimeConverter* Component::registerOneShot( std::string timeDelay, OneShot::HandlerBase* handler) {
+    return Simulation::getSimulation()->registerOneShot(timeDelay, handler);
+}
+
+TimeConverter* Component::registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler) {
+    return Simulation::getSimulation()->registerOneShot(timeDelay, handler);
 }
 
 TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
@@ -285,7 +295,16 @@ Component::loadModuleWithComponent(std::string type, Component* comp, Params& pa
     return Simulation::getSimulation()->getFactory()->CreateModuleWithComponent(type,comp,params);
 }
 
-    
+bool Component::doesComponentInfoStatisticExist(std::string statisticName)
+{
+    return Simulation::getSimulation()->getFactory()->DoesComponentInfoStatisticExist(type, statisticName);
+}
+
+uint8_t Component::getComponentInfoStatisticEnableLevel(std::string statisticName)
+{
+    return Simulation::getSimulation()->getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
+}
+
 template<class Archive>
 void
 Component::serialize(Archive& ar, const unsigned int version) {
