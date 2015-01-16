@@ -92,6 +92,7 @@ nobase_dist_sst_HEADERS = \
 	statapi/stathistogram.h \
 	statapi/stataccumulator.h \
 	statapi/statnull.h \
+	statapi/componentregisterstat_impl.h \
 	cputimer.h
 
 nobase_nodist_sst_HEADERS = \
