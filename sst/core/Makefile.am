@@ -55,6 +55,7 @@ nobase_dist_sst_HEADERS = \
 	sst_types.h \
 	sstinfo.h \
 	stopAction.h \
+	stringize.h \
 	sync.h \
 	syncQueue.h \
 	timeConverter.h \
