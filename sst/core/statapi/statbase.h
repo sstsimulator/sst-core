@@ -44,7 +44,9 @@ public:
     // Constructors:
     StatisticBase(Component* comp, std::string statName);
     StatisticBase(Component* comp, char* statName);
-
+    // Destructor
+    ~StatisticBase() {}
+    
     /** Enable Statistic for collections */
     void enable() {m_statEnabled = true;}
     /** Disable Statistic for collections */
@@ -223,6 +225,8 @@ public:
         StatisticBase(comp, statName)
     {
     }
+
+    virtual ~Statistic(){}
     
     // The main method to add data to the statistic 
     void addData(T data)

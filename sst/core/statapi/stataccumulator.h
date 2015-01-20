@@ -66,6 +66,8 @@ public:
         m_sum_sq = 0;
         this->setCollectionCount(0);
     }
+    
+    ~AccumulatorStatistic() {}
 
     /**
         Provides the sum of the values presented so far.

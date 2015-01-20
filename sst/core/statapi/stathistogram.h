@@ -60,7 +60,9 @@ public:
     {
         initProperties(MinValue, MaxValue, binWidth, includeOutOfBounds);
     }
-
+    
+    ~HistogramStatistic() {}
+    
     /**
         Count how many bins are active in this histogram
     */

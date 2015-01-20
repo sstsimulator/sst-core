@@ -31,6 +31,8 @@ public:
         m_isOK = isOK;
     }
     
+    ~NullStatistic(){};
+    
     void addData_impl(T data)
     {
         // Do Nothing
@@ -51,12 +53,12 @@ public:
         // Do Nothing
     }
     
-    bool isReady() 
+    bool isReady() const
     {
         return m_isOK;
     }
 
-    bool isNullStatistic()
+    bool isNullStatistic() const
     {
         return true;
     }
