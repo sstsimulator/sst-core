@@ -299,10 +299,13 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_memHierarchy_bin.sh
 
         # These also fail in gem5 with CentOS 6.6 (libgomp-4.4.7-11 vs libgomp-4.4.7-4)  
+        #         Also fail on current (Jan 21, 2015) TOSS VM
         CentOS_version=`cat /etc/centos-release`
         echo " CentOS Version is ${CentOS_version}"
         if [ "${CentOS_version}" == "CentOS release 6.6 (Final)" ] ; then
            echo " This is CentOS 6.6,  omit running OpenMP tests.  Gem-5 is \"defunct\""
+        elif [ "${HOST_OS_DISTRIB}" == "toss" ] ; then
+           echo " This is TOSS,  omit running OpenMP tests.  Gem-5 is \"defunct\""
         else
            ${SST_TEST_SUITES}/testSuite_openMP.sh
            ${SST_TEST_SUITES}/testSuite_diropenMP.sh
