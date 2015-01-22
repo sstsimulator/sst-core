@@ -304,7 +304,7 @@ dotests() {
         echo " CentOS Version is ${CentOS_version}"
         if [ "${CentOS_version}" == "CentOS release 6.6 (Final)" ] ; then
            echo " This is CentOS 6.6,  omit running OpenMP tests.  Gem-5 is \"defunct\""
-        elif [ "${HOST_OS_DISTRIB}" == "toss" ] ; then
+        elif [ "${SST_TEST_HOST_OS_DISTRIB}" == "toss" ] ; then
            echo " This is TOSS,  omit running OpenMP tests.  Gem-5 is \"defunct\""
         else
            ${SST_TEST_SUITES}/testSuite_openMP.sh
