@@ -165,7 +165,7 @@ public:
         m_Fields.push_back(statOutput->registerField<HistoBinType>("TotalNumBins"));  
         m_Fields.push_back(statOutput->registerField<HistoBinType>("NumActiveBins"));  
         m_Fields.push_back(statOutput->registerField<uint64_t>    ("NumItemsCollected"));
-        m_Fields.push_back(statOutput->registerField<HistoBinType>("SumSqr"));
+        m_Fields.push_back(statOutput->registerField<HistoBinType>("SumSQ"));
         m_Fields.push_back(statOutput->registerField<HistoBinType>("Sum"));
         
         // Do we need to register additional fields for the end of Sim
