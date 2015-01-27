@@ -141,6 +141,14 @@ public:
         return m_totalSummed;
     }
 
+    /**
+	Sum up every squared value entered into the Histogram.
+	\return The sum of all values added after squaring into the Histogram
+    */
+    HistoBinType getValuesSquaredSummed() {
+	return m_totalSummedSqr;
+    }
+
     void clearStatisticData()
     {
         m_totalSummed = 0;
@@ -156,7 +164,9 @@ public:
         m_Fields.push_back(statOutput->registerField<HistoBinType>("BinWidth"));  
         m_Fields.push_back(statOutput->registerField<HistoBinType>("TotalNumBins"));  
         m_Fields.push_back(statOutput->registerField<HistoBinType>("NumActiveBins"));  
-        m_Fields.push_back(statOutput->registerField<uint64_t>    ("NumItemsCollected"));  
+        m_Fields.push_back(statOutput->registerField<uint64_t>    ("NumItemsCollected"));
+        m_Fields.push_back(statOutput->registerField<HistoBinType>("SumSqr"));
+        m_Fields.push_back(statOutput->registerField<HistoBinType>("Sum"));
         
         // Do we need to register additional fields for the end of Sim
 //        if (true == m_DumpBinsAtEndOfSim) {
@@ -170,11 +180,13 @@ public:
     {
         uint64_t x = 0;
         statOutput->outputField(m_Fields[x++], getBinsMinValue());
-        statOutput->outputField(m_Fields[x++], getBinsMaxValue());  
-        statOutput->outputField(m_Fields[x++], getBinWidth());  
-        statOutput->outputField(m_Fields[x++], getNumBins());  
-        statOutput->outputField(m_Fields[x++], getActiveBinCount());  
+        statOutput->outputField(m_Fields[x++], getBinsMaxValue());
+        statOutput->outputField(m_Fields[x++], getBinWidth());
+        statOutput->outputField(m_Fields[x++], getNumBins());
+        statOutput->outputField(m_Fields[x++], getActiveBinCount());
         statOutput->outputField(m_Fields[x++], getItemCount());
+        statOutput->outputField(m_Fields[x++], getValuesSummed());
+        statOutput->outputField(m_Fields[x++], getValuesSquaredSummed());
 /*
         // Perform end of sim Bin Dump if requested
         if ((true == m_DumpBinsAtEndOfSim) && (true == EndOfSimFlag)) {
@@ -219,6 +231,8 @@ protected:
             if (true == m_includeOutOfBounds) {
               // Add the "Below Min" value to the total summation 
               m_totalSummed += value;
+              m_totalSummedSqr += value * value;
+
               binValue = m_minValue; // Force the system to count this value
             } else {
                 // Dont add this value
@@ -230,6 +244,8 @@ protected:
                 if (true == m_includeOutOfBounds) {
                     // Add the "Above Max" value to the total summation 
                     m_totalSummed += value;
+                    m_totalSummedSqr += value * value;
+
                     binValue = m_maxValue; // Force the system to count this value
                 } else {
                     // Dont add this value
@@ -238,6 +254,7 @@ protected:
             } else {
               // Add the "in limits" value to the total summation 
               m_totalSummed += value;
+              m_totalSummedSqr += value;
               binValue = value;
           }
         }
@@ -273,6 +290,7 @@ private:
     {    
         m_binWidth = binWidth;
         m_includeOutOfBounds = includeOutOfBounds;
+        m_totalSummedSqr = 0;
         m_totalSummed = 0;
         m_minValue = MinValue;
         m_maxValue = MaxValue;
@@ -316,6 +334,12 @@ private:
     std::vector<uint64_t> m_Fields;
     bool                  m_includeOutOfBounds;
 
+    /**
+	The sum of values added to the Histogram squared. Allows calculation of derivative statistic
+	values such as variance.
+    */
+    HistoBinType m_totalSummedSqr;
+
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
@@ -325,6 +349,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(m_maxValue); 
         ar & BOOST_SERIALIZATION_NVP(m_binWidth); 
         ar & BOOST_SERIALIZATION_NVP(m_totalSummed);
+        ar & BOOST_SERIALIZATION_NVP(m_totalSummedSqr);
         ar & BOOST_SERIALIZATION_NVP(m_binsMap);
         ar & BOOST_SERIALIZATION_NVP(m_Fields);
         ar & BOOST_SERIALIZATION_NVP(m_includeOutOfBounds);
