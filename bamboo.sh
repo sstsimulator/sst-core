@@ -953,27 +953,27 @@ dobuild() {
         echo "--------------------dump of config.log--------------------"
         return $retval
     fi
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo ' '    
-echo       Configure complete without error
-echo ' '    
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    echo ' '    
+    echo       Configure complete without error
+    echo ' '    
+    echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
 
 
-echo "at this time \$buildtype is $buildtype"
+    echo "at this time \$buildtype is $buildtype"
 
     if [ $buildtype == "sst_config_dist_test" ] ; then
         make dist
         retval=$?
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-echo ' '    
-echo       make dist is done
-echo ' '    
-echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
-ls -ltr | tail -5
+        echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+        echo ' '    
+        echo       make dist is done
+        echo ' '    
+        echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+        ls -ltr | tail -5
         return $retval        ##   This is in dobuild
     fi
-echo   " This is the non dist test path     +++++++++++++++++++++++++++++++++++++++++++++++"
+    echo   " This is the non dist test path     +++++++++++++++++++++++++++++++++++++++++++++++"
     echo "bamboo.sh: making SST"
     # build SST
     make -j4 all
@@ -1891,7 +1891,7 @@ then
              echo "Setting up to build from the tar created by make dist"
              echo "---   PWD  `pwd`"           ## Original trunk
              Package=`ls| grep 'sst-.*tar.gz' | awk -F'.tar' '{print $1}'`
-echo  PACKAGE is $Package
+             echo  PACKAGE is $Package
              tarName=${Package}.tar.gz
              ls $tarFile
              if [ $? != 0 ] ; then
@@ -1924,58 +1924,48 @@ echo  PACKAGE is $Package
              ls -l
              echo SST_INSTALL_DEPS =  $SST_INSTALL_DEPS
                 ## pristine is not at the same relative depth on Jenkins as it is for me.
-            echo "  Find pristine"
-            if [ $SST_BASE == "/home/jwilso" ] ; then
-                PRISTINE="/home/jwilso/sstDeps/src/pristine"
-            else 
-                find $SST_BASE -name pristine
-                PRISTINE=`find $SST_BASE -name pristine`
-            fi
-            echo "\$PRISTINE = $PRISTINE"
-            ls $PRISTINE/*
-            if [[ $? != 0 ]] ; then
-                echo " Failed to find pristine "
-                exit 1
-            fi
-            export SST_BASE=$SST_ROOT
-            export SST_DEPS_USER_DIR=$SST_ROOT
-            export SST_DEPS_USER_MODE=1
-            export SST_INSTALL_DEPS=$SST_BASE/local
-            mkdir -p ../../sstDeps/src
-            pushd ../../sstDeps/src
-            ln -s $PRISTINE .
-            ls -l pristine
-            popd
-            echo SST_DEPS_USER_DIR= $SST_DEPS_USER_DIR
-                     ##  Here is the bamboo invocation within bamboo
-            echo "         INVOKE bamboo for the build from the dist tar"
-            ./bamboo.sh sstmainline_config_all $SST_DIST_MPI $SST_DIST_BOOST $SST_DIST_PARAM4
-            retval=$?
-            echo "         Returned from bamboo.sh $retval"
-            if [ $retval != 0 ] ; then
-                echo "bamboo build reports failure  retval = $reval"
-                exit 1
-            fi
-##                    echo PWD `pwd`
-##                    echo "ls ../.. is:"
-##                    ls ../..
-##                    echo "\$1 is $1"
-##              
-##                    echo  "             Invoke dotests"
-##              echo  "Why is this done here outside of (the second) bamboo.sh?"
-##              echo  "     Are there not environment variable issues?"
-##                    dotests sstmainline_config
-##              echo  "                       The End    (for now)   "
+             echo "  Find pristine"
+             if [ $SST_BASE == "/home/jwilso" ] ; then
+                 PRISTINE="/home/jwilso/sstDeps/src/pristine"
+             else 
+                 find $SST_BASE -name pristine
+                 PRISTINE=`find $SST_BASE -name pristine`
+             fi
+             echo "\$PRISTINE = $PRISTINE"
+             ls $PRISTINE/*
+             if [[ $? != 0 ]] ; then
+                 echo " Failed to find pristine "
+                 exit 1
+             fi
+             export SST_BASE=$SST_ROOT
+             export SST_DEPS_USER_DIR=$SST_ROOT
+             export SST_DEPS_USER_MODE=1
+             export SST_INSTALL_DEPS=$SST_BASE/local
+             mkdir -p ../../sstDeps/src
+             pushd ../../sstDeps/src
+             ln -s $PRISTINE .
+             ls -l pristine
+             popd
+             echo SST_DEPS_USER_DIR= $SST_DEPS_USER_DIR
+                      ##  Here is the bamboo invocation within bamboo
+             echo "         INVOKE bamboo for the build from the dist tar"
+             ./bamboo.sh sstmainline_config_all $SST_DIST_MPI $SST_DIST_BOOST $SST_DIST_PARAM4
+             retval=$?
+             echo "         Returned from bamboo.sh $retval"
+             if [ $retval != 0 ] ; then
+                 echo "bamboo build reports failure  retval = $reval"
+                 exit 1
+             fi
              exit 0                  #  Normal Exit for make dist
         else          #  not make dist
-##    ---  These are probably temporary, but let's line them up properly anyway
+            #    ---  These are probably temporary, but let's line them up properly anyway
             pwd
             echo "            CHECK ENVIRONMENT VARIABLES "
             env | grep SST
             echo "            End of SST Environs"
             pwd
             ls
-##    ---
+            #    ---
             if [ -d "test" ] ; then
                 echo " \"test\" is a directory"
                 echo " ############################  ENTER dotests ################## "
