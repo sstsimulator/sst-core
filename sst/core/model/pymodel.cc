@@ -1167,6 +1167,11 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
 
     output->verbose(CALL_INFO, 1, 0, "Construction of config graph with Python is complete.\n");
 
+    if(NULL != PyErr_Occurred()) {
+        PyErr_Print();
+	output->fatal(CALL_INFO, -1, "Error occured handling the creation of the component graph in Python.\n");
+    }
+
     return graph;
 }
 
