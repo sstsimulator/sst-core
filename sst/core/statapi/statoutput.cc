@@ -30,7 +30,7 @@ StatisticFieldInfo::StatisticFieldInfo(const char* statName, const char* fieldNa
     
 bool StatisticFieldInfo::operator==(StatisticFieldInfo& FieldInfo1) 
 {
-    return ( (getStatName()  == FieldInfo1.getStatName())  &&
+    return ( /*(getStatName()  == FieldInfo1.getStatName())  &&*/
              (getFieldName() == FieldInfo1.getFieldName()) &&
              (getFieldType() == FieldInfo1.getFieldType()) );
 }
