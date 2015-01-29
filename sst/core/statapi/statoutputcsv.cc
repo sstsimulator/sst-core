@@ -146,9 +146,7 @@ void StatisticOutputCSV::startOfSimulation()
         
         while (it_v != getFieldInfoArray().end()) {
             statField = *it_v;
-//            outputBuffer = statField->getStatName();
-//            outputBuffer += ".";
-            outputBuffer += statField->getFieldName();
+            outputBuffer = statField->getFieldName();
             outputBuffer += ".";
             outputBuffer += getFieldTypeShortName(statField->getFieldType());
             
