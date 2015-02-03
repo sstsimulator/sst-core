@@ -315,18 +315,22 @@ dotests() {
 
         # These also fail in gem5 with CentOS 6.6 (libgomp-4.4.7-11 vs libgomp-4.4.7-4)  
         #         Also fail on current (Jan 21, 2015) TOSS VM
-        CentOS_version=`cat /etc/centos-release`
-        echo " CentOS Version is ${CentOS_version}"
-        if [ "${CentOS_version}" == "CentOS release 6.6 (Final)" ] ; then
-           echo " This is CentOS 6.6,  omit running OpenMP tests.  Gem-5 is \"defunct\""
-        elif [ "${SST_TEST_HOST_OS_DISTRIB}" == "toss" ] ; then
-           echo " This is TOSS,  omit running OpenMP tests.  Gem-5 is \"defunct\""
-        else
+#################################  February 3rd
+#   remove the TOSS and CentOS 6.6 exclusion
+#        Tests have been converted to use prebuilt binaries.
+#
+#        CentOS_version=`cat /etc/centos-release`
+#        echo " CentOS Version is ${CentOS_version}"
+#        if [ "${CentOS_version}" == "CentOS release 6.6 (Final)" ] ; then
+#           echo " This is CentOS 6.6,  omit running OpenMP tests.  Gem-5 is \"defunct\""
+#        elif [ "${SST_TEST_HOST_OS_DISTRIB}" == "toss" ] ; then
+#           echo " This is TOSS,  omit running OpenMP tests.  Gem-5 is \"defunct\""
+#        else
            ${SST_TEST_SUITES}/testSuite_openMP.sh
            ${SST_TEST_SUITES}/testSuite_diropenMP.sh
            ${SST_TEST_SUITES}/testSuite_stream.sh
            ${SST_TEST_SUITES}/testSuite_noncacheable_openMP.sh
-        fi
+#        fi
     fi
 
     if [ $1 != "sstmainline_config_no_mpi" ] ; then
