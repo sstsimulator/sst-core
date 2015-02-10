@@ -21,16 +21,33 @@
 namespace SST {
 namespace Statistics {
 
+// NOTE: When calling base class members of classes derived from 
+//       a templated base class.  The user must use "this->" in 
+//       order to call base class members (to avoid a compilier 
+//       error) because they are "nondependant named" and the 
+//       templated base class is a "dependant named".  The 
+//       compilier will not look in dependant named base classes 
+//       when looking up independant names.
+// See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
+
+/**
+	\class NullStatistic
+
+	An empty statistic place holder.
+
+	@tparam T A template for holding the main data type of this statistic
+*/
+
 template <typename T>
 class NullStatistic : public Statistic<T>
 {
 public:    
-    NullStatistic(Component* comp, const char* statName, bool isOK) :
-		Statistic<T>(comp, statName)
+    NullStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) 
+		: Statistic<T>(comp, statName, statSubId, statParams)
     {
-        m_isOK = isOK;
+        this->setStatisticTypeName("NULL");
     }
-    
+
     ~NullStatistic(){};
     
     void addData_impl(T data)
@@ -55,7 +72,7 @@ public:
     
     bool isReady() const
     {
-        return m_isOK;
+        return true;
     }
 
     bool isNullStatistic() const
@@ -64,14 +81,11 @@ public:
     }
 
 private:
-    bool m_isOK;
-
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Statistic<T>);
-        ar & BOOST_SERIALIZATION_NVP(m_isOK);
     }
 };
 

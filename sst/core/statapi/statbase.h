@@ -14,6 +14,7 @@
 
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
+#include <sst/core/oneshot.h>
 
 namespace SST {
 class Component; 
@@ -30,7 +31,7 @@ class StatisticOutput;
 	output files.
 */
 
-class StatisticBase 
+class StatisticBase
 {
 public:  
     /** Statistic collection mode */ 
@@ -39,14 +40,19 @@ public:
     /** Construct a StatisticBase
       * @param comp - Pointer to the parent constructor.
       * @param statName - Name of the statistic to be registered.  This name must
-      * match the name in the ElementInfoStatistic.
+      * match the name in the ElementInfoStatisticEnable.
+      * @param statSubId - Additional name of the statistic 
+      * @param statParams - The parameters for this statistic
       */
     // Constructors:
-    StatisticBase(Component* comp, std::string statName);
-    StatisticBase(Component* comp, char* statName);
+    StatisticBase(Component* comp, std::string& statName, std::string& statSubId, Params& statParams);
+
     // Destructor
     ~StatisticBase() {}
     
+    /** Return the Statistic Parameters */
+    Params& getParams() {return m_statParams;}
+
     /** Enable Statistic for collections */
     void enable() {m_statEnabled = true;}
     /** Disable Statistic for collections */
@@ -82,13 +88,24 @@ public:
     /** Set the Registered Collection Mode */
     void setRegisteredCollectionMode(StatMode_t mode) {m_registeredCollectionMode = mode;} 
 
+    /** Construct a full name of the statistic */
+    static std::string buildStatisticFullName(const char* compName, const char* statName, const char* statSubId);
+    static std::string buildStatisticFullName(const std::string& compName, const std::string& statName, const std::string& statSubId);
+
+    /** Set an optional Statistic Type Name */
+    void setStatisticTypeName(const char* typeName) {m_statTypeName = typeName;}
+    
     // Get Data
     /** Return the Component Name */
     const std::string& getCompName() const;
     /** Return the Statistic Name */
     inline const std::string& getStatName() const {return m_statName;}
-    /** Return the full Component.Statistic Name */
-    inline const std::string& getFullStatName() const {return m_fullName;}      // Return compname.statname
+    /** Return the Statistic SubId */
+    inline const std::string& getStatSubId() const {return m_statSubId;}
+    /** Return the full Statistic name of Component.StatName.SubId */
+    inline const std::string& getFullStatName() const {return m_statFullName;}      // Return compName.statName.subId
+    /** Return the Statistic type name */
+    inline const std::string& getStatTypeName() const {return m_statTypeName;}    
     /** Return a pointer to the parent Component */
     Component*   getComponent() const {return m_component;}
     /** Return the enable status of the Statistic */
@@ -155,6 +172,9 @@ public:
     
 private:
     // Support Routines
+    void initializeStatName(const char* compName, const char* statName, const char* statSubId);
+    void initializeStatName(const std::string& compName, const std::string& statName, const std::string& statSubId);
+
     void initializeProperties();
     void checkEventForOutput();
 
@@ -168,7 +188,10 @@ protected:
 private:
     Component*            m_component;
     std::string           m_statName;
-    std::string           m_fullName;
+    std::string           m_statSubId;
+    std::string           m_statFullName;
+    std::string           m_statTypeName;    
+    Params                m_statParams;
     StatMode_t            m_registeredCollectionMode;
     uint64_t              m_currentCollectionCount;
     uint64_t              m_collectionCountLimit;
@@ -192,7 +215,9 @@ private:
     {
         ar & BOOST_SERIALIZATION_NVP(m_component);
         ar & BOOST_SERIALIZATION_NVP(m_statName);
-        ar & BOOST_SERIALIZATION_NVP(m_fullName);
+        ar & BOOST_SERIALIZATION_NVP(m_statSubId);
+        ar & BOOST_SERIALIZATION_NVP(m_statFullName);
+        ar & BOOST_SERIALIZATION_NVP(m_statTypeName);
         ar & BOOST_SERIALIZATION_NVP(m_registeredCollectionMode);
         ar & BOOST_SERIALIZATION_NVP(m_currentCollectionCount);
         ar & BOOST_SERIALIZATION_NVP(m_collectionCountLimit);
@@ -212,23 +237,36 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
+/**
+    \class Statistic
+
+	Forms the template defined base class for statistics gathering within SST. 
+
+	@tparam T A template for the basic numerical data stored by this Statistic
+*/
+
 template <typename T>
 class Statistic : public StatisticBase
 {
 public:    
-    Statistic(Component* comp, std::string statName) :
-        StatisticBase(comp, statName)
+    /** Construct a Statistic
+      * @param comp - Pointer to the parent constructor.
+      * @param statName - Name of the statistic to be registered.  This name must
+      * match the name in the ElementInfoStatisticEnable.
+      * @param statSubId - Additional name of the statistic 
+      * @param statParams - The parameters for this statistic
+      */
+    Statistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) :
+        StatisticBase(comp, statName, statSubId, statParams)
     {
     }
         
-    Statistic(Component* comp, const char* statName) :
-        StatisticBase(comp, statName)
-    {
-    }
-
     virtual ~Statistic(){}
     
     // The main method to add data to the statistic 
+    /** Add data to the Statistic
+      * This will call the addData_impl() routine in the derived Statistic.
+     */
     void addData(T data)
     {
         // Call the Derived Statistic's implemenation 

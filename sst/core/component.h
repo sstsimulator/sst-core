@@ -27,7 +27,6 @@
 #include "sst/core/simulation.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/statapi/statbase.h"
-#include "sst/core/statapi/statnull.h"
 
 using namespace SST::Statistics;
 
@@ -202,20 +201,24 @@ public:
     /** Utility function to return the time since the simulation began in milliseconds */ 
     SimTime_t getCurrentSimTimeMilli() const;
 
-
     /** Registers a statistic.  
         If Statistic is allowed to run (controlled by Python runtime parameters), 
-        then the statistic passed in will be returned. If not allowed to run,
+        then a statistic will be created and returned. If not allowed to run,
         then a NullStatistic will be returned.  In either case, the returned 
-        value should be used for all future Statistic calls.  The Collection
-        Rate is set by Python runtime parameters.  If set to 0 or not provided, 
-        the statistic will output only at end of sim (if enabled).  
-        @param statistic Pointer to a derived Statistic object with type T
-        @return Either the supplied statistic or a NullStatistic depending upon
-        runtime settings.
+        value should be used for all future Statistic calls.  The type of 
+        Statistic and the Collection Rate is set by Python runtime parameters.
+        If no type is defined, then an Accumulator Statistic will be provided 
+        by default.  If rate set to 0 or not provided, then the statistic will 
+        output results only at end of sim (if output is enabled).  
+        @param statName Primary name of the statistic.  This name must match the 
+               defined ElementInfoStatisticEnable in the component, and must also 
+               be enabled in the Python input file.
+        @param statSubId An additional sub name for the statistic 
+        @return Either a created statistic of desired type or a NullStatistic 
+                depending upon runtime settings.
     */
     template <typename T>
-    Statistic<T>* registerStatistic(Statistic<T>* statistic)
+    Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
     {
         // NOTE: Templated Code for implementation of Statistic Registration
         // is in the componentregisterstat_impl.h file.  This was done
@@ -223,6 +226,12 @@ public:
         #include "sst/core/statapi/componentregisterstat_impl.h"
     }
 
+    template <typename T>
+    Statistic<T>* registerStatistic(const char* statName, const char* statSubId = "")
+    {   
+        return registerStatistic<T>(std::string(statName), std::string(statSubId));
+    }
+    
     /** Register that the simulation should not end until this
         component says it is OK to. Calling this function (generally
         done in Component::setup() or in component constructor)
@@ -319,9 +328,9 @@ private:
 
     void addSelfLink(std::string name);
 
-    // Does the statisticName exist in the ElementInfoStatistic 
+    // Does the statisticName exist in the ElementInfoStatisticEnable 
     bool doesComponentInfoStatisticExist(std::string statisticName);
-    // Return the EnableLevel for the statisticName from the ElementInfoStatistic 
+    // Return the EnableLevel for the statisticName from the ElementInfoStatisticEnable 
     uint8_t getComponentInfoStatisticEnableLevel(std::string statisticName);
 
     /** Unique ID */

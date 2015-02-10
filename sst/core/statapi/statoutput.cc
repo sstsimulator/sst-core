@@ -101,7 +101,7 @@ StatisticOutput::fieldHandle_t StatisticOutput::generateFileHandle(StatisticFiel
     return FieldInfo->getFieldHandle();
 }
 
-//// Routines to Manipulate Fields
+//// Routines to Manipulate Fields (For Future Support)
 //void StatisticOutput::setFieldHierarchy(fieldHandle_t fieldHandle, uint32_t Level, fieldHandle_t parent) 
 //{
 //}
@@ -114,12 +114,12 @@ StatisticFieldInfo* StatisticOutput::getRegisteredField(fieldHandle_t fieldHandl
     return NULL;
 }
 
-void StatisticOutput::startOutputEntries(const char* componentName, const char* statisticName)
+void StatisticOutput::startOutputEntries(StatisticBase* statistic)
 {
-    m_currentFieldCompName = componentName;
-    m_currentFieldStatName = statisticName;
+    m_currentFieldCompName = statistic->getCompName();
+    m_currentFieldStatName = statistic->getStatName();
     // Call the Derived class method
-    implStartOutputEntries(componentName, statisticName);
+    implStartOutputEntries(statistic);
 }
 
 void StatisticOutput::stopOutputEntries()

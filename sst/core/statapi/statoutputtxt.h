@@ -55,17 +55,15 @@ protected:
     /** Implementation function for the start of output.
      * This will be called by the Statistic Processing Engine to indicate that  
      * a Statistic is about to send data to the Statistic Output for processing.
-     * @param componentName - The name of the component performing the output
-     * @param statisticName - The name of the statistic releated to the component performing the output
+     * @param statistic - Pointer to the statistic object than the output can 
+     * retrieve data from.
      */
-    void implStartOutputEntries(const char* componentName, const char* statisticName); 
+    void implStartOutputEntries(StatisticBase* statistic); 
     
     /** Implementation function for the end of output.
      * This will be called by the Statistic Processing Engine to indicate that  
      * a Statistic is finished sendind data to the Statistic Output for processing.
      * The Statisic Output can perform any output related functions here.
-     * @param componentName - The name of the component performing the output
-     * @param statisticName - The name of the statistic releated to the component performing the output
      */
     void implStopOutputEntries(); 
 

@@ -297,7 +297,7 @@ Component::loadModuleWithComponent(std::string type, Component* comp, Params& pa
 
 bool Component::doesComponentInfoStatisticExist(std::string statisticName)
 {
-    return Simulation::getSimulation()->getFactory()->DoesComponentInfoStatisticExist(type, statisticName);
+    return Simulation::getSimulation()->getFactory()->DoesComponentInfoStatisticEnableNameExist(type, statisticName);
 }
 
 uint8_t Component::getComponentInfoStatisticEnableLevel(std::string statisticName)

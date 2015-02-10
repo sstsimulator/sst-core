@@ -31,36 +31,37 @@ namespace Statistics {
 // See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
 
 /**
-    \class Histogram
+    \class HistogramStatistic
 	Holder of data grouped into pre-determined width bins.
 	\tparam HistoBinType is the type of the data held in each bin (i.e. what data type described the width of the bin)
-	\tparam HistoCountType is the count type of data held in each bin (i.e. what data type counts the number of items held in the bin itself)
 */
-template<class HistoBinType, class HistoCountType>
+#define HistoCountType uint64_t
+
+template<class HistoBinType>
 class HistogramStatistic : public Statistic<HistoBinType> 
 {
 public:
-    /**
-        Creates a new bin with a specific bin width
-        \param binW The width of the bin
-    */
-    HistogramStatistic(Component* comp, std::string statName, HistoBinType MinValue, HistoBinType MaxValue, HistoBinType binWidth, bool includeOutOfBounds = false) :
-        Statistic<HistoBinType>(comp, statName) 
+    HistogramStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams)
+		: Statistic<HistoBinType>(comp, statName, statSubId, statParams)
     {
-        initProperties(MinValue, MaxValue, binWidth, includeOutOfBounds);
+        // Identify what keys are Allowed in the parameters
+        Params::KeySet_t allowedKeySet;
+        allowedKeySet.insert("minvalue");
+        allowedKeySet.insert("maxvalue");
+        allowedKeySet.insert("binwidth");
+        allowedKeySet.insert("includeoutofbounds");
+        statParams.pushAllowedKeys(allowedKeySet);
+        
+        // Process the Parameters
+        HistoBinType minValue = statParams.find_integer("minvalue", 0);
+        HistoBinType maxValue = statParams.find_integer("maxvalue", 500000000);
+        HistoBinType binWidth = statParams.find_integer("binwidth", 500000000);
+        bool         includeOutOfBounds = statParams.find_integer("includeoutofbounds", 0);
+        
+        initProperties(minValue, maxValue, binWidth, includeOutOfBounds);
+        this->setStatisticTypeName("Histogram");
     }
 
-    /**
-        Creates a new bin with a specific bin width
-        \param[binW] The width of the bin
-        \param[name] Pointer to a name of the histogram variable (this is a description for the statistic engine to use in output)
-    */
-    HistogramStatistic(Component* comp, const char* statName, HistoBinType MinValue, HistoBinType MaxValue, HistoBinType binWidth, bool includeOutOfBounds = false) :
-        Statistic<HistoBinType>(comp, statName) 
-    {
-        initProperties(MinValue, MaxValue, binWidth, includeOutOfBounds);
-    }
-    
     ~HistogramStatistic() {}
     
     /**
@@ -167,13 +168,6 @@ public:
         m_Fields.push_back(statOutput->registerField<uint64_t>    ("NumItemsCollected"));
         m_Fields.push_back(statOutput->registerField<HistoBinType>("SumSQ"));
         m_Fields.push_back(statOutput->registerField<HistoBinType>("Sum"));
-        
-        // Do we need to register additional fields for the end of Sim
-//        if (true == m_DumpBinsAtEndOfSim) {
-//            m_Fields[4] = statOutput->registerField<HistoBinType>  ("BinDumpStartValue");
-//            m_Fields[5] = statOutput->registerField<HistoBinType>  ("BinDumpEndValue");
-//            m_Fields[6] = statOutput->registerField<HistoCountType>("BinDumpNumEntries");
-//        }
     }
     
     void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag)
@@ -187,34 +181,6 @@ public:
         statOutput->outputField(m_Fields[x++], getItemCount());
         statOutput->outputField(m_Fields[x++], getValuesSummed());
         statOutput->outputField(m_Fields[x++], getValuesSquaredSummed());
-/*
-        // Perform end of sim Bin Dump if requested
-        if ((true == m_DumpBinsAtEndOfSim) && (true == EndOfSimFlag)) {
-                
-            for(HistoBinType x = getBinStart(); x <= getBinEnd() && NotOverflowDetect; x += getBinWidth()) {
-                // Check for OverFlow
-                if ((MaxNumValue - getBinWidth()) < x) {
-                    NotOverflowDetect = false;
-                }
-                
-                if (getBinCountByBinStart(x) > 0) {
-                    statOutput->outputField(m_Fields[0], getBinStart());
-                    statOutput->outputField(m_Fields[1], getBinEnd());  
-                    statOutput->outputField(m_Fields[2], getBinWidth());  
-                    statOutput->outputField(m_Fields[3], getItemCount());
-
-                    statOutput->outputField(m_Fields[4], x);
-                    statOutput->outputField(m_Fields[5], NotOverflowDetect ? x + getBinWidth() : MaxNumValue);
-                    statOutput->outputField(m_Fields[6], getBinCountByBinStart(x));
-                }
-            }
-        } else {
-            statOutput->outputField(m_Fields[0], getBinStart());
-            statOutput->outputField(m_Fields[1], getBinEnd());  
-            statOutput->outputField(m_Fields[2], getBinWidth());  
-            statOutput->outputField(m_Fields[3], getItemCount());
-        }
-*/
     }
 
 protected:    

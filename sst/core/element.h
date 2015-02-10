@@ -49,8 +49,8 @@ typedef void* (*genPythonModuleFunction)(void);
 
 /** Describes Statistics used by a Component.
  */
-struct ElementInfoStatistic {
-    const char *name;			/*!< Name of the Statistic */
+struct ElementInfoStatisticEnable {
+    const char *name;			/*!< Name of the Statistic to be Enabled */
     const char *description;	/*!< Brief description of the Statistic */
     const uint8_t enableLevel;	/*!< Level to meet to enable statistic 0 = disabled */
 };
@@ -81,7 +81,7 @@ struct ElementInfoComponent {
     const ElementInfoParam *params;		/*!< List of parameters for which this component expects to look. */
     const ElementInfoPort *ports;		/*!< List of ports that this component uses. */
     uint32_t category;	   		        /*!< Bit-mask of categories in which this component fits. */
-    const ElementInfoStatistic *stats;	/*!< List of statistics that this component uses. */
+    const ElementInfoStatisticEnable *stats;	/*!< List of statistic Names that this component wants enabled. */
 };
 
 /** Describes an Introspector

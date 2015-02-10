@@ -88,10 +88,48 @@ public:
      * @param name - Fully qualified elementlibname.partitioner type name
      */
     partitionFunction GetPartitioner(std::string name);
+
     /** Return generator function
      * @param name - Fully qualified elementlibname.generator type name
      */
     generateFunction GetGenerator(std::string name);
+
+//    /** Instatiate a new StatisticBase Object
+//     * @param type - Fully qualified elementlibname.statisticname type
+//     * @param params - Parameters to pass to the Statistics's constructor
+//     */
+//    StatisticBase* CreateStatisticBase(std::string type, Params& params);
+//    
+//    /** Instatiate a new Statistic
+//     * @param type - Fully qualified elementlibname.statisticname type
+//     * @param params - Parameters to pass to the Statistics's constructor
+//     */
+//    template <typename T>
+//    Statistic<T>* CreateStatistic(std::string type, Params& params)
+//    {
+//        StatisticBase *statbase = CreateStatisticBase(type,params);
+//        // Now cast it to an actual Templated Statistic 
+//        Statistic<T> *ret = dynamic_cast<Statistic<T>*>(statbase);
+//        return ret;
+//    }
+    
+//Module* 
+//Factory::LoadCoreModule_Statistics(std::string& type, Params& params)
+//{
+//    // Names of sst.xxx Statistic Modules
+//    if ("AccumulatorStatistic" == type) {
+//        return new AccumulatorStatistic(params);
+//    }
+//    if ("HistogramStatistic" == type) {
+//        return new HistogramStatistic(params);
+//    }
+//    if ("NullStatistic" == type) {
+//        return new NullStatistic(params);
+//    }
+//    return NULL;
+//}
+    
+    
     /** Return Python Module creation function
      * @param name - Fully qualified elementlibname.pythonModName type name
      */
@@ -103,23 +141,23 @@ public:
     void loadUnloadedLibraries(const std::set<std::string>& lib_names);
 
     /** Attempt to create a new Statistic Output instantiation
-     * @param statOutputName - The name of the Statistic Output to create
+     * @param statOutputType - The name of the Statistic Output to create (Module Name)
      * @param statOutputParams - The params to pass to the statistic output's constructor
      * @return Newly created Statistic Output
      */
-    StatisticOutput* CreateStatisticOutput(std::string& statOutputName, Params& statOutputParams);
+    StatisticOutput* CreateStatisticOutput(std::string& statOutputType, Params& statOutputParams);
 
-    /** Detirmine if a statistic is defined in a components ElementInfoStatistic
+    /** Detirmine if a statistic is defined in a components ElementInfoStatisticEnable
      * @param componentname - The name of the component
      * @param statisticName - The name of the statistic 
-     * @return True if the statistic is defined in the component's ElementInfoStatistic
+     * @return True if the statistic is defined in the component's ElementInfoStatisticEnable
      */
-    bool DoesComponentInfoStatisticExist(std::string& type, std::string& statisticName);
+    bool DoesComponentInfoStatisticEnableNameExist(std::string& type, std::string& statisticName);
 
-    /** Get the enable level of a statistic defined in the component's ElementInfoStatistic
+    /** Get the enable level of a statistic defined in the component's ElementInfoStatisticEnable
      * @param componentname - The name of the component
      * @param statisticName - The name of the statistic 
-     * @return The Enable Level of the statistic from the ElementInfoStatistic
+     * @return The Enable Level of the statistic from the ElementInfoStatisticEnable
      */
     uint8_t GetComponentInfoStatisticEnableLevel(std::string& type, std::string& statisticName);
     
@@ -130,10 +168,10 @@ private:
 
     struct ComponentInfo {
         const ElementInfoComponent* component;
-        Params::KeySet_t params;
-        std::vector<std::string> ports;
-        std::vector<std::string> statNames;
-        std::vector<uint8_t>     statEnableLevels;
+        Params::KeySet_t            params;
+        std::vector<std::string>    ports;
+        std::vector<std::string>    statEnableNames;
+        std::vector<uint8_t>        statEnableLevels;
 
         ComponentInfo() {}
 
@@ -146,16 +184,16 @@ private:
                 p++;
             }
 
-            const ElementInfoStatistic *s = component->stats;
+            const ElementInfoStatisticEnable *s = component->stats;
             while ( NULL != s && NULL != s->name ) {
-                statNames.push_back(s->name);
+                statEnableNames.push_back(s->name);
                 statEnableLevels.push_back(s->enableLevel);
                 s++;
             }
         }
 
         ComponentInfo(const ComponentInfo& old) : component(old.component), params(old.params), ports(old.ports), 
-                                                  statNames(old.statNames), statEnableLevels(old.statEnableLevels)
+                                                  statEnableNames(old.statEnableNames), statEnableLevels(old.statEnableLevels)
         { }
 
         ComponentInfo& operator=(const ComponentInfo& old)
@@ -163,7 +201,7 @@ private:
             component = old.component;
             params = old.params;
             ports = old.ports;
-            statNames = old.statNames;
+            statEnableNames = old.statEnableNames;
             statEnableLevels = old.statEnableLevels;
             return *this;
         }

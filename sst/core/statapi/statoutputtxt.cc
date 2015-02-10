@@ -44,18 +44,18 @@ bool StatisticOutputTxt::checkOutputParameters()
     if (true == foundKey) {
         return false;
     }
-    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.csv", foundKey);
-    topHeaderFlag = getOutputParameters().find_string("outputtopheader", "0", foundKey);
-    inlineHeaderFlag = getOutputParameters().find_string("outputinlineheader", "1", foundKey);
-    simTimeFlag = getOutputParameters().find_string("outputsimtime", "1", foundKey);
-    rankFlag = getOutputParameters().find_string("outputrank", "1", foundKey);
+    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.csv");
+    topHeaderFlag = getOutputParameters().find_string("outputtopheader", "0");
+    inlineHeaderFlag = getOutputParameters().find_string("outputinlineheader", "1");
+    simTimeFlag = getOutputParameters().find_string("outputsimtime", "1");
+    rankFlag = getOutputParameters().find_string("outputrank", "1");
     m_outputTopHeader = ("1" == topHeaderFlag);
     m_outputInlineHeader = ("1" == inlineHeaderFlag);
     m_outputSimTime = ("1" == simTimeFlag);
     m_outputRank = ("1" == rankFlag);
 
     // Get the parameters
-    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.txt", foundKey);
+    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.txt");
     
     // Perform some checking on the parameters
     if (0 == m_FilePath.length()) { 
@@ -152,16 +152,16 @@ void StatisticOutputTxt::endOfSimulation()
     fclose(m_hFile);
 }
 
-void StatisticOutputTxt::implStartOutputEntries(const char* componentName, const char* statisticName) 
+void StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic) 
 {
     char buffer[256];
 
     // Starting Output
     m_outputBuffer.clear();
-    
-    m_outputBuffer += componentName;
-    m_outputBuffer += ".";
-    m_outputBuffer += statisticName;
+
+    m_outputBuffer += statistic->getFullStatName();
+    m_outputBuffer += " : ";
+    m_outputBuffer += statistic->getStatTypeName();
     m_outputBuffer += " : ";
     if (true == m_outputSimTime) {
         // Add the Simulation Time to the front

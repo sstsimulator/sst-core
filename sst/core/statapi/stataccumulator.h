@@ -31,7 +31,7 @@ namespace Statistics {
 // See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
 
 /**
-	\class Accumulator
+	\class AccumulatorStatistic
 
 	Allows the online gathering of statistical information about a single quantity. The basic 
 	statistics are captured online removing the need to keep a copy of the values of interest.
@@ -47,26 +47,15 @@ public:
         Create a new Accumulator class with initial values set to a zero count,
         zero sum statistic of interest.
     */
-    AccumulatorStatistic(Component* comp, std::string statName) :
-        Statistic<NumberBase>(comp, statName) 
+    AccumulatorStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) 
+		: Statistic<NumberBase>(comp, statName, statSubId, statParams)
     {
         m_sum = 0;
         m_sum_sq = 0;
         this->setCollectionCount(0);
+        this->setStatisticTypeName("Accumulator");
     }
-    
-    /**
-        Create a new Accumulator class with initial values set to a zero count,
-        zero sum statistic of interest.
-    */
-    AccumulatorStatistic(Component* comp, const char* statName) :
-        Statistic<NumberBase>(comp, statName) 
-    {
-        m_sum = 0;
-        m_sum_sq = 0;
-        this->setCollectionCount(0);
-    }
-    
+
     ~AccumulatorStatistic() {}
 
     /**

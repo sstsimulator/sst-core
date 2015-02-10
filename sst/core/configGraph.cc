@@ -44,7 +44,9 @@ void ConfigComponent::print(std::ostream &os) const {
     params.print_all_params(os, "    ");
     os << "  Statistics:" << std::endl;
     for (size_t x = 0 ; x != enabledStatistics.size() ; ++x) {
-        os << "    " << enabledStatistics[x] << " at " << statisticRates[x];
+        os << "    " << enabledStatistics[x] << std::endl;
+        os << "      Params:" << std::endl;
+        enabledStatParams[x].print_all_params(os, "      ");
     }
 }
 
@@ -82,7 +84,6 @@ ConfigComponent::cloneWithoutLinks() const
     ret.params = params;
     ret.isIntrospector = isIntrospector;
     ret.enabledStatistics = enabledStatistics;
-    ret.statisticRates = statisticRates;
     return ret;
 }
     
@@ -97,7 +98,6 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.rank = rank;
     ret.isIntrospector = isIntrospector;
     ret.enabledStatistics = enabledStatistics;
-    ret.statisticRates = statisticRates;
     return ret;
 }
     
@@ -278,73 +278,6 @@ ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string 
 }
 
 void 
-ConfigGraph::enableComponentStatistic(ComponentId_t comp_id, string statisticName, string collectionRate)
-{
-    string      rate;    
-    UnitAlgebra rateTest;
-    Output      out = Simulation::getSimulation()->getSimulationOutput();
-
-    // Check for an empty string on the collection rate 
-    if (true == collectionRate.empty()) {
-        rateTest = UnitAlgebra("0ns");
-        rate = "0ns";
-    } else {    
-        rateTest = UnitAlgebra(collectionRate);
-        rate = collectionRate;
-    }
-
-    // Check the Collection Rate
-    if (!((true == rateTest.hasUnits("s"))     || 
-          (true == rateTest.hasUnits("hz"))    ||
-          (true == rateTest.hasUnits("event")) ||
-          (0 == rateTest.getValue())))
-    {
-        // collectionRate is a unit type we dont recognize 
-        out.fatal(CALL_INFO, -1, " ERROR: Component %s; Statistic %s - Collection Rate = %s not valid; exiting...\n", comps[comp_id].name.c_str(), statisticName.c_str(), collectionRate.c_str());
-    }
-    
-    // Check for Enable All Statistics
-    if (statisticName == "--ALL--") {
-        // Clear the vector and Force the "--ALL--" to be on the top of the list
-        comps[comp_id].enabledStatistics.clear();
-        comps[comp_id].statisticRates.clear();
-    }
-    // Add to end of the vector
-    comps[comp_id].enabledStatistics.push_back(statisticName);
-    comps[comp_id].statisticRates.push_back(rate);
-}
-
-void 
-ConfigGraph::enableStatisticForComponentName(string ComponentName, string statisticName, string collectionRate)
-{
-    bool found;
-    
-    // Search all the components for a matching name
-    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
-        // Check to see if the names match or All components are selected
-        found = ((ComponentName == iter->name) || (ComponentName == "--ALL--"));
-        if (true == found) {
-            enableComponentStatistic(iter->id, statisticName, collectionRate);
-        }
-    }
-}
-
-void 
-ConfigGraph::enableStatisticForComponentType(string ComponentType, string statisticName, string collectionRate)
-{
-    bool found;
-    
-    // Search all the components for a matching type
-    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
-        // Check to see if the types match or All components are selected
-        found = ((ComponentType == iter->type) || (ComponentType == "--ALL--"));
-        if (true == found) {
-            enableComponentStatistic(iter->id, statisticName, collectionRate);
-        }
-    }
-}
-
-void 
 ConfigGraph::setStatisticOutput(const char* name)
 {
     statOutputName = name;
@@ -360,6 +293,123 @@ void
 ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
 {
     statLoadLevel = loadLevel;
+}
+
+void 
+ConfigGraph::enableComponentStatistic(ComponentId_t comp_id, string statisticName)
+{
+    // NOTE: For every statistic in the enabledStatistics List, there must be
+    //       a coresponding params entry in enabledStatParams list.  The two
+    //       lists will always be the same size.  
+    
+    // Check for Enable All Statistics
+    if (statisticName == STATALLFLAG) {
+        // Force the STATALLFLAG to always be on the bottom of the list.
+        // First check to see if anything is in the vector, if vector is empty, 
+        // a STATALLFLAG flag will be added to the vector
+        if (false == comps[comp_id].enabledStatistics.empty()) {
+            // The vector is populated, so see if the STATALLFLAG 
+            // already exists if it does, we are done
+            if (STATALLFLAG != comps[comp_id].enabledStatistics.back()) {
+                // Add a STATALLFLAG to end of the vector
+                comps[comp_id].enabledStatistics.push_back(STATALLFLAG);
+                comps[comp_id].enabledStatParams.push_back(Params());
+            }
+        } else {
+            // Add a STATALLFLAG to end of the vector
+            comps[comp_id].enabledStatistics.push_back(STATALLFLAG);
+            comps[comp_id].enabledStatParams.push_back(Params());
+        }
+    } else {
+        // Check to see if the stat is already in the list
+        for (std::vector<std::string>::iterator iter = comps[comp_id].enabledStatistics.begin(); iter != comps[comp_id].enabledStatistics.end(); ++iter) {
+            if (statisticName == *iter) {
+                // We found the name already in the enabledStatistics list, do nothing
+                return;                
+            }
+        }
+        
+        // statisticName not in list, so add statistic and params to top of the vectors
+        comps[comp_id].enabledStatistics.insert(comps[comp_id].enabledStatistics.begin(), statisticName);
+        comps[comp_id].enabledStatParams.insert(comps[comp_id].enabledStatParams.begin(), Params());
+    }
+}
+
+void 
+ConfigGraph::enableStatisticForComponentName(string ComponentName, string statisticName)
+{
+    bool found;
+    
+    // Search all the components for a matching name
+    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
+        // Check to see if the names match or All components are selected
+        found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
+        if (true == found) {
+            enableComponentStatistic(iter->id, statisticName);
+        }
+    }
+}
+
+void 
+ConfigGraph::enableStatisticForComponentType(string ComponentType, string statisticName)
+{
+    bool found;
+    
+    // Search all the components for a matching type
+    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
+        // Check to see if the types match or All components are selected
+        found = ((ComponentType == iter->type) || (ComponentType == STATALLFLAG));
+        if (true == found) {
+            enableComponentStatistic(iter->id, statisticName);
+        }
+    }
+}
+
+void 
+ConfigGraph::addComponentStatisticParameter(ComponentId_t comp_id, string statisticName, const char* param, const char* value)
+{
+    // NOTE: For every statistic in the enabledStatistics List, there must be
+    //       a coresponding params entry in enabledStatParams list.  The two
+    //       lists will always be the same size.  
+    
+    // Scan the enabledStatistics list for the statistic name
+    for (size_t x = 0; x < comps[comp_id].enabledStatistics.size(); x++) {
+        // Check to see if the names match.  NOTE this also works for the STATALLFLAG
+        if (statisticName == comps[comp_id].enabledStatistics.at(x)) {
+            // Add/set the parameter
+            comps[comp_id].enabledStatParams.at(x)[param] = value;
+        }
+    }
+}
+
+void 
+ConfigGraph::addStatisticParameterForComponentName(string ComponentName, string statisticName, const char* param, const char* value)
+{
+    bool found;
+    
+    // Search all the components for a matching name
+    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
+        // Check to see if the names match or All components are selected
+        found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
+        if (true == found) {
+            addComponentStatisticParameter(iter->id, statisticName, param, value);
+        }
+    }
+}
+
+void 
+ConfigGraph::addStatisticParameterForComponentType(string ComponentType, string statisticName, const char* param, const char* value)
+{
+    bool found;
+    
+    // Search all the components for a matching type
+    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
+        // Check to see if the types match or All components are selected
+        found = ((ComponentType == iter->type) || (ComponentType == STATALLFLAG));
+        if (true == found) {
+            addComponentStatisticParameter(iter->id, statisticName, param, value);
+        }
+    }
 }
 
 void
@@ -409,8 +459,8 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 
 		ConfigComponentMap_t::iterator comp_itr;
 		Params::iterator param_itr;
-		std::vector<std::string>::iterator stat_itr;
-
+		uint32_t statIndex;
+		
 		fprintf(dumpFile, "# Automatically generated SST Python input\n");
 		fprintf(dumpFile, "import sst\n\n");
 		fprintf(dumpFile, "# Define SST core options\n");
@@ -451,23 +501,35 @@ void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot
 
 				fprintf(dumpFile, "\n})\n");
 			}
-			
-//			// Dump the Component Statistics
-//			stat_itr = comp_itr->enabledStatistics.begin();
-//
-//			if(stat_itr != comp_itr->enabledStatistics.end()) {
-//				fprintf(dumpFile, "%s.addStatistics([\n", makeNamePythonSafe(comp_itr->name, "comp_").c_str());
-//				fprintf(dumpFile, "      \"%s\"", escapeString(*stat_itr).c_str());
-//				stat_itr++;
-//
-//				for(; stat_itr != comp_itr->enabledStatistics.end(); stat_itr++) {
-//					fprintf(dumpFile, ",\n      \"%s\"", escapeString(*stat_itr).c_str());
-//				}
-//
-//				fprintf(dumpFile, "\n])\n");
-//			}
 		}
+		
+        // Dump the Component Statistics
+        fprintf(dumpFile, "\n\n# Define the component statistics\n");
 
+		for(comp_itr = comps.begin(); comp_itr != comps.end(); comp_itr++) {
+			for(statIndex = 0; statIndex < comp_itr->enabledStatistics.size(); statIndex++) {
+			    // Output the Enable Statistic with its name 
+				fprintf(dumpFile, "%s.enableStatistics([\"%s\"]", makeNamePythonSafe(comp_itr->name, "comp_").c_str(), 
+				                                                  escapeString(comp_itr->enabledStatistics[statIndex]).c_str());
+			    // Output the Statistic parameters 
+			    if (0 != comp_itr->enabledStatParams[statIndex].size()) {
+			        fprintf(dumpFile, ", {\n");
+
+                    param_itr = comp_itr->enabledStatParams[statIndex].begin();
+        
+                    for (; param_itr != comp_itr->enabledStatParams[statIndex].end(); param_itr++) {
+			            if (param_itr != comp_itr->enabledStatParams[statIndex].begin()) {
+			                fprintf(dumpFile, ",\n");
+			            }
+			            fprintf(dumpFile, "      \"%s\" : \"%s\"", escapeString(Params::getParamName(param_itr->first)).c_str(), escapeString(param_itr->second.c_str()).c_str());
+                    }
+			        fprintf(dumpFile, "\n}");
+                }
+				// Close out the statistic data
+				fprintf(dumpFile, ")\n");
+			}
+		}
+		
 		fprintf(dumpFile, "\n\n# Define the simulation links\n");
 
 		ConfigLinkMap_t::iterator link_itr;

@@ -29,7 +29,7 @@ StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters)
 bool StatisticOutputConsole::checkOutputParameters()
 {
     bool foundKey;
-
+    
     // Look for Help Param
     getOutputParameters().find_string("help", "1", foundKey);
     if (true == foundKey) {
@@ -54,14 +54,13 @@ void StatisticOutputConsole::endOfSimulation()
 {
 }
 
-void StatisticOutputConsole::implStartOutputEntries(const char* componentName, const char* statisticName) 
+void StatisticOutputConsole::implStartOutputEntries(StatisticBase* statistic) 
 {
     // Starting Output
     m_OutputBuffer.clear();
-    
-    m_OutputBuffer += componentName;
-    m_OutputBuffer += ".";
-    m_OutputBuffer += statisticName;
+    m_OutputBuffer += statistic->getFullStatName();
+    m_OutputBuffer += " : ";
+    m_OutputBuffer += statistic->getStatTypeName();
     m_OutputBuffer += " : ";
 }
 

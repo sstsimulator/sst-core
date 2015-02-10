@@ -127,16 +127,16 @@ typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 /** Represents the configuration of a generic component */
 class ConfigComponent {
 public:
-    ComponentId_t            id;                /*!< Unique ID of this component */
-    std::string              name;              /*!< Name of this component */
-    std::string              type;              /*!< Type of this component */
-    float                    weight;            /*!< Parititoning weight for this component */
-    int                      rank;              /*!< Parallel Rank for this component */
-    std::vector<LinkId_t>    links;             /*!< List of links connected */
-    Params                   params;            /*!< Set of Parameters */
-    bool                     isIntrospector;    /*!< Is this an Introspector? */
-    std::vector<std::string> enabledStatistics; /*!< List of statistics to be enabled */
-    std::vector<std::string> statisticRates;    /*!< List of rates for enabled statistics */
+    ComponentId_t                 id;                /*!< Unique ID of this component */
+    std::string                   name;              /*!< Name of this component */
+    std::string                   type;              /*!< Type of this component */
+    float                         weight;            /*!< Parititoning weight for this component */
+    int                           rank;              /*!< Parallel Rank for this component */
+    std::vector<LinkId_t>         links;             /*!< List of links connected */
+    Params                        params;            /*!< Set of Parameters */
+    bool                          isIntrospector;    /*!< Is this an Introspector? */
+    std::vector<std::string>      enabledStatistics; /*!< List of statistics to be enabled */
+    std::vector<Params>           enabledStatParams; /*!< List of parameters for enabled statistics */
 
     inline const ComponentId_t& key()const { return id; }
     
@@ -179,7 +179,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(params);
         ar & BOOST_SERIALIZATION_NVP(isIntrospector);
         ar & BOOST_SERIALIZATION_NVP(enabledStatistics);
-        ar & BOOST_SERIALIZATION_NVP(statisticRates);
+        ar & BOOST_SERIALIZATION_NVP(enabledStatParams);
     }
 
 };
@@ -248,11 +248,6 @@ public:
     /** Add a single parameter to a component */
     void addParameter(ComponentId_t comp_id, std::string key, std::string value, bool overwrite = false);
 
-    /** Enable a Statistics assigned to a component */
-    void enableComponentStatistic(ComponentId_t comp_id, std::string statisticName, std::string collectionRate);
-    void enableStatisticForComponentName(std::string ComponentName, std::string statisticName, std::string collectionRate);
-    void enableStatisticForComponentType(std::string ComponentType, std::string statisticName, std::string collectionRate);
-    
     /** Set the statistic ouput module */
     void setStatisticOutput(const char* name);
     
@@ -262,6 +257,16 @@ public:
     /** Set the statistic system load level */
     void setStatisticLoadLevel(uint8_t loadLevel);
 
+    /** Enable a Statistics assigned to a component */
+    void enableComponentStatistic(ComponentId_t comp_id, std::string statisticName);
+    void enableStatisticForComponentName(std::string ComponentName, std::string statisticName);
+    void enableStatisticForComponentType(std::string ComponentType, std::string statisticName);
+
+    /** Add Parameters for a Statistic */
+    void addComponentStatisticParameter(ComponentId_t comp_id, std::string statisticName, const char* param, const char* value);
+    void addStatisticParameterForComponentName(std::string ComponentName, std::string statisticName, const char* param, const char* value);
+    void addStatisticParameterForComponentType(std::string ComponentType, std::string statisticName, const char* param, const char* value);
+    
     std::string& getStatOutput() {return statOutputName;}
     Params&      getStatOutputParams() {return statOutputParams;}
     long         getStatLoadLevel() {return statLoadLevel;}

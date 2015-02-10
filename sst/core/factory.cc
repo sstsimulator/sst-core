@@ -91,14 +91,14 @@ Factory::CreateComponent(ComponentId_t id,
 }
 
 StatisticOutput* 
-Factory::CreateStatisticOutput(std::string& statOutputName, Params& statOutputParams)
+Factory::CreateStatisticOutput(std::string& statOutputType, Params& statOutputParams)
 {
     Module*           tempModule;
     StatisticOutput*  rtnStatOut = NULL;
     
     // Load the Statistic Output as a module first;  This allows 
     // us to provide StatisticOutputs as part of a element
-    tempModule = CreateModule(statOutputName, statOutputParams);
+    tempModule = CreateModule(statOutputType, statOutputParams);
     if (NULL != tempModule) {
         // Dynamic Cast the Module into a Statistic Output, if the module is not
         // a StatisticOutput, then return NULL
@@ -109,7 +109,7 @@ Factory::CreateStatisticOutput(std::string& statOutputName, Params& statOutputPa
 }
 
 bool 
-Factory::DoesComponentInfoStatisticExist(std::string& type, std::string& statisticName)
+Factory::DoesComponentInfoStatisticEnableNameExist(std::string& type, std::string& statisticName)
 {
     std::string compTypeToLoad = type;
     if (true == type.empty()) { 
@@ -135,8 +135,8 @@ Factory::DoesComponentInfoStatisticExist(std::string& type, std::string& statist
     const ComponentInfo ci = eii->second;
 
     // See if the statistic exists
-    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-        if (statisticName == ci.statNames[x]) {
+    for (uint32_t x = 0; x <  ci.statEnableNames.size(); x++) {
+        if (statisticName == ci.statEnableNames[x]) {
             return true;
         }
     }
@@ -170,8 +170,8 @@ Factory::GetComponentInfoStatisticEnableLevel(std::string& type, std::string& st
     const ComponentInfo ci = eii->second;
 
     // See if the statistic exists, if so return the enable level
-    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-        if (statisticName == ci.statNames[x]) {
+    for (uint32_t x = 0; x <  ci.statEnableNames.size(); x++) {
+        if (statisticName == ci.statEnableNames[x]) {
             return ci.statEnableLevels[x];
         }
     }
@@ -249,13 +249,13 @@ Module*
 Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 {
     // Names of sst.xxx Statistic Output Modules
-    if ("statOutputCSV" == type) {
+    if (0 == strcasecmp("statoutputcsv", type.c_str())) {
         return new StatisticOutputCSV(params);
     }
-    if ("statOutputTXT" == type) {
+    if (0 == strcasecmp("statoutputtxt", type.c_str())) {
         return new StatisticOutputTxt(params);
     }
-    if ("statOutputConsole" == type) {
+    if (0 == strcasecmp("statoutputconsole", type.c_str())) {
         return new StatisticOutputConsole(params);
     }
     return NULL;
@@ -266,6 +266,7 @@ Factory::CreateCoreModule(std::string type, Params& params) {
     // Try to load the core modules    
     Module* rtnModule = NULL;
 
+    // Check each type of Core Module to load them
     if (NULL == rtnModule) {
         rtnModule = LoadCoreModule_StatisticOutputs(type, params);
     }

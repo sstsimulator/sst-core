@@ -388,7 +388,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             // Save off what statistics can be enabled before instantiating the component
             // This allows the component to register its statistics in its constructor.
             statisticEnableMap[ccomp->id] = &(ccomp->enabledStatistics);
-            statisticRateMap[ccomp->id] = &(ccomp->statisticRates);
+            statisticParamsMap[ccomp->id] = &(ccomp->enabledStatParams);
             
             compIdMap[ccomp->id] = ccomp->name;
             tmp = createComponent( ccomp->id, ccomp->type,
@@ -398,13 +398,13 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             // After component is created, clear out the statisticEnableMap so 
             // we dont eat up lots of memory
             statisticEnableMap.erase(ccomp->id);
-            statisticRateMap.erase(ccomp->id);
+            statisticParamsMap.erase(ccomp->id);
         }
     } // end for all vertex    
     // Done with verticies, delete them;
     graph.comps.clear();
     statisticEnableMap.clear();
-    statisticRateMap.clear();
+    statisticParamsMap.clear();
     return 0;
 }
 

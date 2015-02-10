@@ -27,6 +27,10 @@
 #include "sst/core/config.h"
 #include <sst/core/statapi/statengine.h>
 #include <sst/core/statapi/statoutput.h>
+#include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/statnull.h>
+#include <sst/core/statapi/stataccumulator.h>
+#include <sst/core/statapi/stathistogram.h>
 
 //#include "sst/core/sdl.h"
 //#include "sst/core/component.h"
@@ -37,6 +41,7 @@ using namespace SST::Statistics;
 namespace SST {
 
 #define _SIM_DBG( fmt, args...) __DBG( DBG_SIM, Sim, fmt, ## args )
+#define STATALLFLAG "--ALLSTATS--"
 
 class Activity;
 class Component;
@@ -118,9 +123,10 @@ class Simulation : public SimulationBase {
 public:
     typedef std::map<SimTime_t, Clock*>   clockMap_t;              /*!< Map of times to clocks */
     typedef std::map<SimTime_t, OneShot*> oneShotMap_t;            /*!< Map of times to OneShots */
-    typedef std::vector<std::string>      statList_t;              /*!< List of Statistics */
-    typedef std::map<ComponentId_t, statList_t*> statEnableMap_t;  /*!< Map of Statistics that are requested to be enabled for a component defined in configGraph */
-    typedef std::map<ComponentId_t, statList_t*> statRateMap_t;    /*!< Map of Statistic rates for a component defined in configGraph */
+    typedef std::vector<std::string>      statEnableList_t;        /*!< List of Enabled Statistics */
+    typedef std::vector<Params>           statParamsList_t;        /*!< List of Enabled Statistics Parameters */
+    typedef std::map<ComponentId_t, statEnableList_t*> statEnableMap_t;  /*!< Map of Statistics that are requested to be enabled for a component defined in configGraph */
+    typedef std::map<ComponentId_t, statParamsList_t*> statParamsMap_t;  /*!< Map of Statistic Params for a component defined in configGraph */
     // typedef std::map< unsigned int, Sync* > SyncMap_t; /*!< Map of times to Sync Objects */
 
     ~Simulation();
@@ -244,7 +250,7 @@ public:
 		}
     }
 
-    statList_t* getComponentStatisticEnableList(const ComponentId_t &id) const
+    statEnableList_t* getComponentStatisticEnableList(const ComponentId_t &id) const
     {
 		statEnableMap_t::const_iterator i = statisticEnableMap.find(id);
 		if (i != statisticEnableMap.end()) {
@@ -256,16 +262,43 @@ public:
         return NULL; 
     }
     
-    statList_t* getComponentStatisticRateList(const ComponentId_t &id) const
+    statParamsList_t* getComponentStatisticParamsList(const ComponentId_t &id) const
     {
-		statRateMap_t::const_iterator i = statisticRateMap.find(id);
-		if (i != statisticRateMap.end()) {
+		statParamsMap_t::const_iterator i = statisticParamsMap.find(id);
+		if (i != statisticParamsMap.end()) {
 			return i->second;
 		} else {
-            printf("Simulation::getComponentStatisticRateList() couldn't find component with id = %lu\n", id);
+            printf("Simulation::getComponentStatisticParamsList() couldn't find component with id = %lu\n", id);
             exit(1);
 		}
         return NULL; 
+    }
+    
+    template <typename T>
+    Statistic<T>* CreateStatistic(Component* comp, std::string& type, std::string& statName, std::string& statSubId, Params& params)
+    {
+        // Load one of the SST Core provided Statistics
+        // NOTE: This happens here (in simulation) instead of the factory because 
+        //       it is a templated method.  The Component::registerStatistic<T>() 
+        //       must be defined in the component.h however the the Factory is 
+        //       not available from the Simulation::::getSimulation() because
+        //       Factory is only defined via a forwarded definition.  Basically
+        //       we have to go through some twists and jumps to make this work.        
+
+        // Names of sst.xxx Statistics
+        if (0 == strcasecmp("sst.nullstatistic", type.c_str())) {
+            return new NullStatistic<T>(comp, statName, statSubId, params);
+        }
+        if (0 == strcasecmp("sst.accumulatorstatistic", type.c_str())) {
+            return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
+        }
+        if (0 == strcasecmp("sst.histogramstatistic", type.c_str())) {
+            return new HistogramStatistic<T>(comp, statName, statSubId, params);
+        }
+        // We did not find this statistic
+        printf("ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
+
+        return NULL;
     }
     
     /** Returns the Introspector with the given name */
@@ -344,7 +377,7 @@ private:
     IntroMap_t       introMap;
     clockMap_t       clockMap;
     statEnableMap_t  statisticEnableMap;
-    statRateMap_t    statisticRateMap;
+    statParamsMap_t  statisticParamsMap;
     oneShotMap_t     oneShotMap;    
     SimTime_t        currentSimCycle;
     SimTime_t        endSimCycle;

@@ -16,6 +16,7 @@
 #include <sst/core/serialization.h>
 #include <sst/core/module.h>
 #include <sst/core/params.h>
+#include <sst/core/statapi/statbase.h>
 
 // Default Settings for Statistic Output and Load Level
 #define STATISTICSDEFAULTOUTPUTNAME "sst.statOutputConsole"
@@ -34,6 +35,11 @@ template <typename T> struct is_type_same<T,T> { static const bool value = true;
 
 ////////////////////////////////////////////////////////////////////////////////
     
+/**
+    \class StatisticFieldInfo
+
+	The class for representing Statistic Output Fields  
+*/
 class StatisticFieldInfo
 {
 public:
@@ -100,16 +106,16 @@ private:
 
 	Forms the base class for statistics output generation within the SST core. 
 	Statistics are gathered by the statistic objects and then processed sent to 
-	the output object either periodically or by event and/or also at the end of
-	the simuation.  A single statistic output will be created by the simuation 
-	(per node) and will collect the data per its design.
+	the derived output object either periodically or by event and/or also at 
+	the end of the simuation.  A single statistic output will be created by the 
+	simuation (per node) and will collect the data per its design.
 */
 class StatisticOutput : public Module
 {
 public:    
-    typedef StatisticFieldInfo::fieldType_t fieldType_t;  
+    typedef StatisticFieldInfo::fieldType_t   fieldType_t;  
     typedef StatisticFieldInfo::fieldHandle_t fieldHandle_t;
-    typedef std::vector<StatisticFieldInfo*> FieldInfoArray_t;                          
+    typedef std::vector<StatisticFieldInfo*>  FieldInfoArray_t;                          
 
 public:    
     /** Construct a base StatisticOutput
@@ -118,7 +124,7 @@ public:
     StatisticOutput(Params& outputParameters);
     ~StatisticOutput();
 
-    /** Return the StatisticsOutput name */
+    /** Return the Statistic Output name */
     std::string& getStatisticOutputName() {return m_statOutputName;}
     
     /** Return the statistics load level for the system */
@@ -227,6 +233,10 @@ public:
     void outputField(fieldHandle_t fieldHandle, double data);
     void outputField(fieldHandle_t fieldHandle, const char* data);
     
+    /** Output field data.  
+     * @param type - The field type to get name of.
+     * @return String name of the field type.
+     */
     const char* getFieldTypeShortName(fieldType_t type);
     
 protected:    
@@ -256,7 +266,7 @@ protected:
     // Start / Stop of output
     /** Indicate to Statistic Output that a statistic is about to send data to be output
       * Allows object to perform any initialization before output. */ 
-    virtual void implStartOutputEntries(const char* componentName, const char* statisticName) = 0;
+    virtual void implStartOutputEntries(StatisticBase* statistic) = 0;
 
     /** Indicate to Statistic Output that a statistic is finished sending data to be output
       * Allows object to perform any cleanup. */ 
@@ -282,7 +292,7 @@ private:
     void setStatisticLoadLevel(uint8_t loadLevel) {m_statLoadLevel = loadLevel;}
     
     // Start / Stop of output
-    void startOutputEntries(const char* componentName, const char* statisticName);
+    void startOutputEntries(StatisticBase* statistic);
     void stopOutputEntries();
     
     // Other support functions

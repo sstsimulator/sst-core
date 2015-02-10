@@ -30,7 +30,7 @@ StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters)
 
 bool StatisticOutputCSV::checkOutputParameters()
 {
-    bool        foundKey;
+    bool foundKey;
     std::string topHeaderFlag;
     std::string simTimeFlag;
     std::string rankFlag;
@@ -45,11 +45,11 @@ bool StatisticOutputCSV::checkOutputParameters()
     }
 
     // Get the parameters
-    m_Separator = getOutputParameters().find_string("separator", ", ", foundKey);
-    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.csv", foundKey);
-    topHeaderFlag = getOutputParameters().find_string("outputtopheader", "1", foundKey);
-    simTimeFlag = getOutputParameters().find_string("outputsimtime", "1", foundKey);
-    rankFlag = getOutputParameters().find_string("outputrank", "1", foundKey);
+    m_Separator = getOutputParameters().find_string("separator", ", ");
+    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.csv");
+    topHeaderFlag = getOutputParameters().find_string("outputtopheader", "1");
+    simTimeFlag = getOutputParameters().find_string("outputsimtime", "1");
+    rankFlag = getOutputParameters().find_string("outputrank", "1");
     m_outputTopHeader = ("1" == topHeaderFlag);
     m_outputSimTime = ("1" == simTimeFlag);
     m_outputRank = ("1" == rankFlag);
@@ -127,6 +127,14 @@ void StatisticOutputCSV::startOfSimulation()
         outputBuffer += m_Separator;
         fprintf(m_hFile, "%s", outputBuffer.c_str());
 
+        outputBuffer = "StatisticSubId";
+        outputBuffer += m_Separator;
+        fprintf(m_hFile, "%s", outputBuffer.c_str());
+
+        outputBuffer = "StatisticType";
+        outputBuffer += m_Separator;
+        fprintf(m_hFile, "%s", outputBuffer.c_str());
+
         if (true == m_outputSimTime) {
             // Add a Simulation Time Header to the front
             outputBuffer = "SimTime";
@@ -169,11 +177,13 @@ void StatisticOutputCSV::endOfSimulation()
     fclose(m_hFile);
 }
 
-void StatisticOutputCSV::implStartOutputEntries(const char* componentName, const char* statisticName) 
+void StatisticOutputCSV::implStartOutputEntries(StatisticBase* statistic) 
 {
     // Save the current Component and Statistic Names for when we stop output and send to file
-    m_currentComponentName = componentName;
-    m_currentStatisticName = statisticName;
+    m_currentComponentName = statistic->getCompName();
+    m_currentStatisticName = statistic->getStatName();
+    m_currentStatisticSubId = statistic->getStatSubId();
+    m_currentStatisticType = statistic->getStatTypeName();
     
     // Starting Output, Initialize the Buffers 
     for (uint32_t x = 0; x < getFieldInfoArray().size(); x++) {
@@ -190,6 +200,10 @@ void StatisticOutputCSV::implStopOutputEntries()
     fprintf(m_hFile, "%s", m_currentComponentName.c_str());
     fprintf(m_hFile, "%s", m_Separator.c_str());
     fprintf(m_hFile, "%s", m_currentStatisticName.c_str());
+    fprintf(m_hFile, "%s", m_Separator.c_str());
+    fprintf(m_hFile, "%s", m_currentStatisticSubId.c_str());
+    fprintf(m_hFile, "%s", m_Separator.c_str());
+    fprintf(m_hFile, "%s", m_currentStatisticType.c_str());
     fprintf(m_hFile, "%s", m_Separator.c_str());
     
     // Done with Output, Send a line of data to the file

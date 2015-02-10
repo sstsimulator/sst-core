@@ -18,19 +18,13 @@
 namespace SST {
 namespace Statistics {
     
-StatisticBase::StatisticBase(Component* comp, std::string statName)
+StatisticBase::StatisticBase(Component* comp, std::string& statName, std::string& statSubId, Params& statParams)
 {
-    m_statName  = statName;
-    m_component = comp;
-
-    initializeProperties();
-}
-
-StatisticBase::StatisticBase(Component* comp, char* statName)
-{
-    m_statName  = statName;
-    m_component = comp;
-
+    m_statName   = statName;
+    m_statSubId  = statSubId;
+    m_component  = comp;
+    m_statParams = statParams;
+    
     initializeProperties();
 }
 
@@ -62,10 +56,27 @@ void StatisticBase::setCollectionCountLimit(uint64_t newLimit)
     checkEventForOutput();
 }  
 
+std::string StatisticBase::buildStatisticFullName(const char* compName, const char* statName, const char* statSubId)
+{
+    return buildStatisticFullName(std::string(compName), std::string(statName), std::string(statSubId));
+}
+
+std::string StatisticBase::buildStatisticFullName(const std::string& compName, const std::string& statName, const std::string& statSubId)
+{
+    std::string statFullNameRtn;
+    
+    statFullNameRtn = compName + ".";
+    statFullNameRtn += statName;
+    if (statSubId != "") {
+        statFullNameRtn += ".";
+        statFullNameRtn += statSubId;
+    }
+    return statFullNameRtn;
+}
+
 void StatisticBase::initializeProperties() 
 {
-    m_fullName = getCompName() + ".";
-    m_fullName += m_statName;
+    m_statFullName = buildStatisticFullName(getCompName(), m_statName, m_statSubId);
     m_registeredCollectionMode = STAT_MODE_UNDEFINED;
     m_statEnabled = true;
     m_outputEnabled = true;
@@ -96,7 +107,6 @@ bool StatisticBase::operator==(StatisticBase& checkStat)
 {
     return (getFullStatName()  == checkStat.getFullStatName());
 }
-
 
 void StatisticBase::delayOutput(const char* delayTime)
 {

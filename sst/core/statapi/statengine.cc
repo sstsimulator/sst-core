@@ -70,8 +70,7 @@ void StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool
     if (false == stat->isOutputEnabled()) {
         return;
     }
-    
-    statOutput->startOutputEntries(stat->getCompName().c_str(), stat->getStatName().c_str());
+    statOutput->startOutputEntries(stat);
     stat->outputStatisticData(statOutput, endOfSimFlag);
     statOutput->stopOutputEntries();
     
@@ -93,11 +92,6 @@ void StatisticProcessingEngine::endOfSimulation()
     StatArray_t*     statArray;
     StatisticBase*   stat;
 
-//    printf("***********************************************************\n");
-//    printf("***********************************************************\n");
-//    printf("***********************************************************\n");
-//    printf("DEBUG - StatisticProcessingEngine:endOfSimulation() - entry\n");
-
     // Output the Event based Statistics
     for (StatArray_t::iterator it_v = m_EventStatisticArray.begin(); it_v != m_EventStatisticArray.end(); it_v++) {
         stat = *it_v;
@@ -105,8 +99,6 @@ void StatisticProcessingEngine::endOfSimulation()
         // Check to see if the Statistic is to output at end of sim
         if (true == stat->getFlagOutputAtEndOfSim()) {
         
-//            printf("DEBUG - StatisticProcessingEngine:endOfSimulation() - Processing Event Statistic = %s\n", stat->getFullStatName().c_str());
-
             // Perform the output
            performStatisticOutput(stat, true);
         }
@@ -123,8 +115,6 @@ void StatisticProcessingEngine::endOfSimulation()
             // Check to see if the Statistic is to output at end of sim
             if (true == stat->getFlagOutputAtEndOfSim()) {
             
-//                printf("DEBUG - StatisticProcessingEngine:endOfSimulation() - Processing Periodic Statistic = %s\n", stat->getFullStatName().c_str());
-
                 // Perform the output
                performStatisticOutput(stat, true);
             }
