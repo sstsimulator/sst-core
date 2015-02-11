@@ -175,10 +175,11 @@
         }
         
         // Instantiate the Statistic here defined by the type here
+        statTypeParam = "sst.NullStatistic";
         statistic = Simulation::getSimulation()->CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             statGood = false;
-            printf("ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
+            printf("ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
             exit(1);
         }
     }
