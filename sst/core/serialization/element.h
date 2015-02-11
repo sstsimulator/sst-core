@@ -16,8 +16,10 @@
 #error "Include only one serialization/ header file"
 #endif
 
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#endif
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -39,7 +41,9 @@
 #endif
 
 #pragma clang diagnostic pop
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic pop
+#endif
 
 #include "sst/core/serialization/types.h"
 
