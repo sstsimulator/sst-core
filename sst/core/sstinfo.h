@@ -197,6 +197,62 @@ void PopulatePorts(const ElementInfoPort* ptrPorts, std::vector<SSTInfoElement_P
 }
 
 /**
+ * The SSTInfo representation of ElementInfoPort object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoPort objects. 
+ */
+class SSTInfoElement_StatisticEnableInfo {
+public:
+    /** Create a new SSTInfoElement_StatisticEnableInfo object.
+     * @param elstaten Pointer to an ElementInfoStatisticEnable object.
+     */
+    SSTInfoElement_StatisticEnableInfo(const ElementInfoStatisticEnable* elstaten)
+    {
+        // Save the Object
+        m_elstaten = elstaten;
+    }
+
+    /** Return the Name of the StatisticEnable. */
+    const char* getName() {return m_elstaten->name;}
+
+    /** Return the Description of the StatisticEnable. */
+    const char* getDesc() {return m_elstaten->description;}
+
+    /** Return the enable level of the StatisticEnable. */
+    const uint8_t getEnableLevel() {return m_elstaten->enableLevel;}
+    
+    /** Output the StatisticEnable Information. 
+     * @param Index The Index of the StatisticEnable.
+     */
+    void outputStatisticEnableInfo(int Index);
+
+    /** Create the formatted XML data of the StatisticEnable.
+     * @param Index The Index of the StatisticEnable.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
+    void generateStatisticeEnableXMLData(int Index, TiXmlNode* XMLParentElement);
+
+private:    
+    const ElementInfoStatisticEnable*   m_elstaten;
+};
+    
+void PopulateStatisticEnables(const ElementInfoStatisticEnable* ptrStatEns, std::vector<SSTInfoElement_StatisticEnableInfo*>* ptrStatEnArray)
+{
+    // Populate the StatisticEnables Array
+    if (NULL != ptrStatEns) {
+        while (NULL != ptrStatEns->name) {
+            // Create a new SSTInfoElement_StatisticEnable and add it to the m_StatisticEnableArray
+            SSTInfoElement_StatisticEnableInfo* ptrStatEnInfo = new SSTInfoElement_StatisticEnableInfo(ptrStatEns);
+            ptrStatEnArray->push_back(ptrStatEnInfo);
+
+            // If the name is NULL, we have reached the last item
+            ptrStatEns++;  // Get the next structure item
+        }
+    }
+}
+
+/**
  * The SSTInfo representation of ElementInfoComponent object.
  *
  * This class is used internally by SSTInfo to load and process  
@@ -209,8 +265,9 @@ public:
      */
     SSTInfoElement_ComponentInfo(const ElementInfoComponent* elc)
     {
-        const ElementInfoParam* ptrParams;
-        const ElementInfoPort*  ptrPorts;
+        const ElementInfoParam*            ptrParams;
+        const ElementInfoPort*             ptrPorts;
+        const ElementInfoStatisticEnable*  ptrStatEns;
         
         // Save the Object
         m_elc = elc;
@@ -222,6 +279,9 @@ public:
         PopulatePorts(ptrPorts, &m_PortArray);
         
         buildCategoryString();        
+
+        ptrStatEns = elc->stats;  // Pointer to the Stats Structure Array
+        PopulateStatisticEnables(ptrStatEns, &m_StatisticEnableArray);
     }
     
     /** Return the Name of the Component. */
@@ -239,6 +299,11 @@ public:
      * @param index The index of the Port.
      */
     SSTInfoElement_PortInfo*  getPortInfo(int index) {return m_PortArray[index];}
+
+    /** Return a Statistic Enable Info Object. 
+     * @param index The index of the Statistic Enable.
+     */
+    SSTInfoElement_StatisticEnableInfo*  getStatisticEnableInfo(int index) {return m_StatisticEnableArray[index];}
 
     /** Return the Category value of the Component. */
     uint32_t              getCategoryValue() {return m_elc->category;}
@@ -260,10 +325,11 @@ public:
 private:    
     void buildCategoryString();
     
-    const ElementInfoComponent*        m_elc;
-    std::vector<SSTInfoElement_ParamInfo*> m_ParamArray;
-    std::vector<SSTInfoElement_PortInfo*>  m_PortArray;
-    std::string                        m_CategoryString;
+    const ElementInfoComponent*                       m_elc;
+    std::vector<SSTInfoElement_ParamInfo*>            m_ParamArray;
+    std::vector<SSTInfoElement_PortInfo*>             m_PortArray;
+    std::vector<SSTInfoElement_StatisticEnableInfo*>  m_StatisticEnableArray;
+    std::string                                       m_CategoryString;
 };
 
 /**

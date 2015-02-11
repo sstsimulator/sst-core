@@ -875,6 +875,23 @@ const char* SSTInfoElement_PortInfo::getValidEvent(unsigned int index)
    return NULL;
 }
 
+void SSTInfoElement_StatisticEnableInfo::outputStatisticEnableInfo(int index)
+{
+    fprintf(stdout, "            STATISTIC ENABLE %d = %s (%s) Enable Level = %d\n", index, getName(), getDesc(), getEnableLevel());
+}
+
+void SSTInfoElement_StatisticEnableInfo::generateStatisticeEnableXMLData(int Index, TiXmlNode* XMLParentElement)
+{
+    // Build the Element to Represent the Parameter
+	TiXmlElement* XMLStatEnElement = new TiXmlElement("StatisticEnable");
+	XMLStatEnElement->SetAttribute("Index", Index);
+	XMLStatEnElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLStatEnElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
+	XMLStatEnElement->SetAttribute("EnableLevel", getEnableLevel());
+
+    // Add this Parameter Element to the Parent Element
+    XMLParentElement->LinkEndChild(XMLStatEnElement);
+}
 
 void SSTInfoElement_ComponentInfo::outputComponentInfo(int index)
 {
@@ -891,6 +908,12 @@ void SSTInfoElement_ComponentInfo::outputComponentInfo(int index)
     fprintf(stdout, "         NUM PORTS = %ld\n", m_PortArray.size());
     for (unsigned int x = 0; x < m_PortArray.size(); x++) {
         getPortInfo(x)->outputPortInfo(x);
+    }
+
+    // Print out the Port Info
+    fprintf(stdout, "         NUM STATISTIC ENABLES = %ld\n", m_StatisticEnableArray.size());
+    for (unsigned int x = 0; x < m_StatisticEnableArray.size(); x++) {
+        getStatisticEnableInfo(x)->outputStatisticEnableInfo(x);
     }
 }
 
@@ -921,6 +944,15 @@ void SSTInfoElement_ComponentInfo::generateComponentInfoXMLData(int Index, TiXml
 	
     for (unsigned int x = 0; x < m_PortArray.size(); x++) {
         getPortInfo(x)->generatePortInfoXMLData(x, XMLComponentElement);
+    }
+
+	// Get the Num Statistic Enables and Display an XML comment about them
+    sprintf(Comment, "NUM STATISTIC ENABLES = %ld", m_StatisticEnableArray.size());
+    TiXmlComment* XMLStatEnComment = new TiXmlComment(Comment);
+    XMLComponentElement->LinkEndChild(XMLStatEnComment);
+	
+    for (unsigned int x = 0; x < m_StatisticEnableArray.size(); x++) {
+        getStatisticEnableInfo(x)->generateStatisticeEnableXMLData(x, XMLComponentElement);
     }
 
     // Add this Element to the Parent Element
