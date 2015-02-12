@@ -897,6 +897,851 @@ getconfig() {
 
 
 #-------------------------------------------------------------------------
+# Function: linuxSetBoostMpi
+# Description:
+#   Purpose: Performs selection and loading of Bost and MPI modules
+#            for MacOS
+#   Input:
+#   Output:
+#   Return value:
+linuxSetBoostMPI() {
+
+   # For some reason, .bashrc is not being run prior to
+   # this script. Kludge initialization of modules.
+   if [ -f /etc/profile.modules ]
+   then
+       . /etc/profile.modules
+   fi
+
+
+   # build MPI and Boost selectors
+   if [[ "$2" =~ openmpi.* ]]
+   then
+       # since Boost flavor labeled with "ompi" not "openmpi"
+       mpiStr="ompi-"$(expr "$2" : '.*openmpi-\([0-9]\(\.[0-9][0-9]*\)*\)')
+   else
+       mpiStr=${2}
+   fi
+
+   if [ $compiler = "default" ]
+   then
+       desiredMPI="${2}"
+       desiredBoost="${3}.0_${mpiStr}"
+       module unload swig/swig-2.0.9
+   else
+       desiredMPI="${2}_${4}"
+       desiredBoost="${3}.0_${mpiStr}_${4}"
+       # load non-default compiler
+       if   [[ "$4" =~ gcc.* ]]
+       then
+           module load gcc/${4}
+           module load swig/swig-2.0.9
+           echo "LOADED gcc/${4} compiler"
+       elif [[ "$4" =~ intel.* ]]
+       then
+           module load intel/${4}
+       fi
+   fi
+   echo "CHECK:  \$2: ${2}"
+   echo "CHECK:  \$3: ${3}"
+   echo "CHECK:  \$4: ${4}"
+   echo "CHECK:  \$desiredMPI: ${desiredMPI}"
+   echo "CHECK:  \$desiredBoost: ${desiredBoost}"
+   gcc --version 2>&1 | grep ^g
+   python --version
+
+   # load MPI
+   case $2 in
+       mpich2_stable|mpich2-1.4.1p1)
+           echo "MPICH2 stable (mpich2-1.4.1p1) selected"
+           module unload mpi # unload any default to avoid conflict error
+           module load mpi/${desiredMPI}
+           ;;
+       openmpi-1.7.2)
+           echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
+           module unload mpi # unload any default to avoid conflict error
+           module load mpi/${desiredMPI}
+           ;;
+       ompi_1.6_stable|openmpi-1.6)
+           echo "OpenMPI stable (openmpi-1.6) selected"
+           module unload mpi # unload any default to avoid conflict error
+           module load mpi/${desiredMPI}
+           ;;
+       openmpi-1.4.4)
+           echo "OpenMPI (openmpi-1.4.4) selected"
+           module unload mpi # unload any default to avoid conflict error
+           module load mpi/${desiredMPI}
+           ;;
+       openmpi-1.8)
+           echo "OpenMPI (openmpi-1.8) selected"
+           module unload mpi # unload any default to avoid conflict error
+           module load mpi/${desiredMPI}
+           ;;
+       none)
+           echo "MPI requested as \"none\".    No MPI loaded"
+           module unload mpi # unload any default 
+           ;;
+       *)
+           echo "Default MPI option, loading mpi/${desiredMPI}"
+           module unload mpi # unload any default to avoid conflict error
+           module load mpi/${desiredMPI} 2>catch.err
+           if [ -s catch.err ] 
+           then
+               cat catch.err
+               exit 1
+           fi
+           ;;
+   esac
+
+   # load corresponding Boost
+   case $3 in
+       boost-1.43)
+           echo "bamboo.sh: Boost 1.43 selected"
+           module unload boost
+           module load boost/${desiredBoost}
+           ;;
+       boost-1.48)
+           echo "bamboo.sh: Boost 1.48 selected"
+           module unload boost
+           module load boost/${desiredBoost}
+           ;;
+       boost-1.50)
+           echo "bamboo.sh: Boost 1.50 selected"
+           module unload boost
+           module load boost/${desiredBoost}
+           ;;
+       boost-1.54)
+           echo "bamboo.sh: Boost 1.54 selected"
+           module unload boost
+           module load boost/${desiredBoost}
+           ;;
+       boost-1.56)
+           echo "bamboo.sh: Boost 1.56 selected"
+           module unload boost
+           module load boost/${desiredBoost}
+           ;;
+       myBoost)
+           if [ $2 == "openmpi-1.8" ] ; then
+               export BOOST_HOME=/home/jpvandy/local/packages/boost/boost-1.54.0_ompi-1.8_mine
+               export BOOST_LIBS=/home/jpvandy/local/packages/boost/boost-1.54.0_ompi-1.8_mine/lib
+               export BOOST_INCLUDE=/home/jpvandy/local/packages/boost/boost-1.54.0_ompi-1.8_mine/include
+           else
+               export BOOST_LIBS=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0/lib
+               export BOOST_HOME=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0
+               export BOOST_INCLUDE=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0/include
+           fi
+           ;; 
+       noMpiBoost)
+           export BOOST_LIBS=/home/jpvandy/local/packages/boost-1.54_no-mpi/lib
+           export BOOST_HOME=/home/jpvandy/local/packages/boost-1.54_no-mpi
+           export BOOST_INCLUDE=/home/jpvandy/local/packages/boost-1.54_no-mpi/include
+           export LD_LIBRARY_PATH=$BOOST_LIBS:$LD_LIBRARY_PATH
+           ;;
+       *)
+           echo "bamboo.sh: \"Default\" Boost selected"
+           echo "Third argument was $3"
+           echo "Loading boost/${desiredBoost}"
+           module unload boost
+           module load boost/${desiredBoost} 2>catch.err
+           if [ -s catch.err ] 
+           then
+               cat catch.err
+               exit 1
+           fi
+           ;;
+   esac
+   echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
+   export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
+   echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
+
+   # Load other modules that were built with the default compiler
+   if [ $compiler = "default" ]
+   then
+       # GNU Linear Programming Kit (GLPK)
+       echo "bamboo.sh: Load GLPK"
+       module load glpk/glpk-4.54
+       # System C
+       echo "bamboo.sh: Load System C"
+       module load systemc/systemc-2.3.0
+       # METIS 5.1.0
+       echo "bamboo.sh: Load METIS 5.1.0"
+       module load metis/metis-5.1.0
+       # Other misc
+       echo "bamboo.sh: Load libphx"
+       module load libphx/libphx-2014-MAY-08
+   fi
+}
+
+#-------------------------------------------------------------------------
+# Function: darwinSetBoostMpi
+# Description:
+#   Purpose: Performs selection and loading of Bost and MPI modules
+#            for MacOS
+#   Input:
+#   Output:
+#   Return value:
+darwinSetBoostMPI() {
+    # Obtain Mac OS version (works only on MacOS!!!)
+    macosVersionFull=`sw_vers -productVersion`
+    macosVersion=${macosVersionFull%.*}
+
+    if [[ $macosVersion = "10.8" && $compiler = "clang-503.0.40" ]]
+    then
+        # Mountain Lion + clang PATH                    
+        PATH="$HOME/Documents/GNUTools/Automake/1.14.1/bin:$HOME/Documents/GNUTools/Autoconf/2.69.0/bin:$HOME/Documents/GNUTools/Libtool/2.4.2/bin:$HOME/Documents/wget-1.15/bin:$PATH"
+        export PATH
+
+        # Mountain Lion requires this extra flag passed to SST ./configure
+        # Mavericks does not require this.
+        MTNLION_FLAG="--disable-cxx11"
+        export MTNLION_FLAG
+    else
+        # macports or hybrid clang/macports
+        PATH="/opt/local/bin:/usr/local/bin:$PATH"
+        export PATH
+    fi
+
+
+    # Point to aclocal per instructions from sourceforge on MacOSX installation
+    export ACLOCAL_FLAGS="-I/opt/local/share/aclocal $ACLOCAL_FLAGS"
+    echo $ACLOCAL_FLAGS
+
+    # Initialize modules for Jenkins (taken from $HOME/.bashrc on Mac)
+    if [ -f /etc/profile.modules ]
+    then
+        . /etc/profile.modules
+        echo "bamboo.sh: loaded /etc/profile.modules. Available modules"
+        module avail
+        # put any module loads here
+        echo "bamboo.sh: Loading Modules for MacOSX"
+        # Do things specific to the MacOS version
+        case $macosVersion in
+            10.6) # Snow Leopard
+                # use modules Boost, built-in MPI, default compiler
+                module unload boost
+                module add boost/boost-1.50.0
+                module list
+                ;;
+            10.7) # Lion
+                # use modules Boost and MPI, default compiler (gcc)
+                module unload mpi
+                module unload boost
+
+#              // Lion used to be hardcoded to this configuration, now changed.                            
+#              module add mpi/openmpi-1.4.4_gcc-4.2.1
+#              module add boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1
+
+                #Check for Illegal configurations of Boost and MPI
+                if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
+                      ( $2 = "openmpi-1.7.2" &&  $3 = "boost-1.50" )    || \
+                      ( $2 = "openmpi-1.4.4" &&  $3 = "boost-1.54" )    || \
+                      ( $2 = "ompi_default"  &&  $3 = "boost-1.54" ) ]]
+                then
+                    echo "ERROR: Invalid configuration of $2 and $3 These two modules cannot be combined"
+                    exit 0
+                fi
+               
+                # load MPI
+                case $2 in
+                    openmpi-1.7.2)
+                        echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
+                        module add mpi/openmpi-1.7.2_gcc-4.2.1
+                        ;;
+                    ompi_default|openmpi-1.4.4)
+                        echo "OpenMPI 1.4.4 (Default) (openmpi-1.4.4) selected"
+                        module add mpi/openmpi-1.4.4_gcc-4.2.1
+                        ;;
+                    *)
+                        echo "Default MPI option, loading mpi/openmpi-1.4.4"
+                        module load mpi/openmpi-1.4.4_gcc-4.2.1 2>catch.err
+                        if [ -s catch.err ] 
+                        then
+                            cat catch.err
+                            exit 0
+                        fi
+                        ;;
+                esac
+                                    
+                # load corresponding Boost
+                case $3 in
+                    boost-1.54)
+                        echo "Boost 1.54 selected"
+                        module add boost/boost-1.54.0_ompi-1.7.2_gcc-4.2.1
+                        ;;
+                    boost_default|boost-1.50)
+                        echo "Boost 1.50 (Default) selected"
+                        module add boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1
+                        ;;
+                    *)
+                        echo "bamboo.sh: \"Default\" Boost selected"
+                        echo "Third argument was $3"
+                        echo "Loading boost/Boost 1.50"
+                        module load boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1 2>catch.err
+                        if [ -s catch.err ] 
+                        then
+                            cat catch.err
+                            exit 0
+                        fi
+                        ;;
+                esac
+                export CC=`which gcc`
+                export CXX=`which g++`
+                module list
+                ;;
+            10.8) # Mountain Lion
+                # Depending on specified compiler, load Boost and MPI
+                case $compiler in
+                    gcc-4.2.1)
+                        # Use Selected Boost and MPI built with GCC
+                        module unload mpi
+                        module unload boost
+
+                       #Check for Illegal configurations of Boost and MPI
+                        if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
+                              ( $2 = "openmpi-1.7.2" &&  $3 = "boost-1.50" )    || \
+                              ( $2 = "openmpi-1.6.3" &&  $3 = "boost-1.54" )    || \
+                              ( $2 = "ompi_default"  &&  $3 = "boost-1.54" ) ]]
+                        then
+                            echo "ERROR: Invalid configuration of $2 and $3 These two modules cannot be combined"
+                            exit 0
+                        fi
+                       
+                        # load MPI
+                        case $2 in
+                            openmpi-1.7.2)
+                                echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
+                                module add mpi/openmpi-1.7.2_gcc-4.2.1
+                                ;;
+                            ompi_default|openmpi-1.6.3)
+                                echo "OpenMPI 1.6.3 (Default) (openmpi-1.6.3) selected"
+                                module add mpi/openmpi-1.6.3_gcc-4.2.1
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.6.3"
+                                module load mpi/openmpi-1.6.3_gcc-4.2.1 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                                            
+                        # load corresponding Boost
+                        case $3 in
+                            boost-1.54)
+                                echo "Boost 1.54 selected"
+                                module add boost/boost-1.54.0_ompi-1.7.2_gcc-4.2.1
+                                ;;
+                            boost_default|boost-1.50)
+                                echo "Boost 1.50 (Default) selected"
+                                module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.50"
+                                module load boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which gcc`
+                        export CXX=`which g++`
+                        module list
+                        ;;
+                        
+                        
+                    clang-425.0.27)
+                        # Use Boost and MPI built with CLANG
+                        module unload mpi
+                        module unload boost
+
+                       #Check for Illegal configurations of Boost and MPI
+                        if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
+                              ( $2 = "openmpi-1.7.2" &&  $3 = "boost-1.50" )    || \
+                              ( $2 = "openmpi-1.6.3" &&  $3 = "boost-1.54" )    || \
+                              ( $2 = "ompi_default"  &&  $3 = "boost-1.54" ) ]]
+                        then
+                            echo "ERROR: Invalid configuration of $2 and $3 These two modules cannot be combined"
+                            exit 0
+                        fi
+
+                        # load MPI
+                        case $2 in
+                            openmpi-1.7.2)
+                                echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
+                                module add mpi/openmpi-1.7.2_clang-425.0.27
+                                ;;
+                            ompi_default|openmpi-1.6.3)
+                                echo "OpenMPI 1.6.3 (Default) (openmpi-1.6.3) selected"
+                                module add mpi/openmpi-1.6.3_clang-425.0.27
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.6.3"
+                                module load mpi/openmpi-1.6.3_clang-425.0.27 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                                            
+                        # load corresponding Boost
+                        case $3 in
+                            boost-1.54)
+                                echo "Boost 1.54 selected"
+                                module add boost/boost-1.54.0_ompi-1.7.2_clang-425.0.27
+                                ;;
+                            boost_default|boost-1.50)
+                                echo "Boost 1.50 (Default) selected"
+                                module add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.50"
+                                module load boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which clang`
+                        export CXX=`which clang++`
+                        module list
+                        ;;
+###
+                    gcc-4.6.4)
+                        # Use Selected Boost and MPI built with MacPorts GCC 4.6.4
+                        module unload mpi
+                        module unload boost
+
+                        # Load gcc-4.6.4 specific modules
+                        # GNU Linear Programming Kit (GLPK)
+                        echo "bamboo.sh: Load GLPK"
+                        module load glpk/glpk-4.54_gcc-4.6.4
+                        # System C
+                        echo "bamboo.sh: Load System C"
+                        module load systemc/systemc-2.3.0_gcc-4.6.4
+                        # METIS 5.1.0
+                        echo "bamboo.sh: Load METIS 5.1.0"
+                        module load metis/metis-5.1.0_gcc-4.6.4
+                        # Other misc
+                        echo "bamboo.sh: Load libphx"
+                        module load libphx/libphx-2014-MAY-08_gcc-4.6.4
+
+                        # load MPI
+                        case $2 in
+                            ompi_default|openmpi-1.8)
+                                echo "OpenMPI 1.8 (openmpi-1.8) selected"
+                                module add mpi/openmpi-1.8_gcc-4.6.4
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.8"
+                                module load mpi/openmpi-1.8_gcc-4.6.4 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+
+                        # load corresponding Boost
+                        case $3 in
+                            boost_default|boost-1.54)
+                                echo "Boost 1.54 selected"
+                                module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
+                                ;;
+                            boost_default|boost-1.56)
+                                echo "Boost 1.56 selected"
+                                module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.56"
+                                module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which gcc`
+                        export CXX=`which g++`
+                        module list
+                        ;;
+                        
+                    clang-503.0.38)
+                        # Use Boost and MPI built with CLANG from Xcode 5.1
+                        module unload mpi
+                        module unload boost
+
+                        # Load other modules for clang-503.0.38
+                        # GNU Linear Programming Kit (GLPK)
+                        echo "bamboo.sh: Load GLPK"
+                        module load glpk/glpk-4.54_clang-503.0.38
+                        # System C
+                        echo "bamboo.sh: Load System C"
+                        module load systemc/systemc-2.3.0_clang-503.0.38
+                        # METIS 5.1.0
+                        echo "bamboo.sh: Load METIS 5.1.0"
+                        module load metis/metis-5.1.0_clang-503.0.38
+                        # Other misc
+                        echo "bamboo.sh: Load libphx"
+                        module load libphx/libphx-2014-MAY-08_clang-503.0.38
+
+                        # load MPI
+                        case $2 in
+                            ompi_default|openmpi-1.8)
+                                echo "OpenMPI 1.8 (openmpi-1.8) selected"
+                                module add mpi/openmpi-1.8_clang-503.0.38
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.8"
+                                module load mpi/openmpi-1.8_clang-503.0.38 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                                            
+                        # load corresponding Boost
+                        case $3 in
+                            boost_default|boost-1.54)
+                                echo "Boost 1.54 selected"
+                                module add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
+                                ;;
+                            boost_default|boost-1.56)
+                                echo "Boost 1.56 selected"
+                                module add boost/boost-1.56.0_ompi-1.8_clang-503.0.38
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.56"
+                                module load boost/boost-1.56.0_ompi-1.8_clang-503.0.38 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which clang`
+                        export CXX=`which clang++`
+                        module list
+                        ;;
+
+                    clang-503.0.40)
+                        # Use Boost and MPI built with CLANG from Xcode 5.1
+                        module unload mpi
+                        module unload boost
+
+                        # load MPI
+                        case $2 in
+                            ompi_default|openmpi-1.8)
+                                echo "OpenMPI 1.8 (openmpi-1.8) selected"
+                                module add mpi/openmpi-1.8_clang-503.0.40
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.8"
+                                module load mpi/openmpi-1.8_clang-503.0.40 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                                            
+                        # load corresponding Boost
+                        case $3 in
+                            boost_default|boost-1.54)
+                                echo "Boost 1.54 selected"
+                                module add boost/boost-1.54.0_ompi-1.8_clang-503.0.40
+                                ;;
+                            boost_default|boost-1.56)
+                                echo "Boost 1.56 selected"
+                                module add boost/boost-1.56.0_ompi-1.8_clang-503.0.40
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.56"
+                                module load boost/boost-1.56.0_ompi-1.8_clang-503.0.40 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which clang`
+                        export CXX=`which clang++`
+                        module list
+                        ;;
+
+###
+                    *)
+                        # unknown compiler, use default
+                        echo "bamboo.sh: Unknown compiler selection. Assuming gcc."
+                        module unload boost
+                        module unload mpi
+                        module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                        module add mpi/openmpi-1.6.3_gcc-4.2.1
+                        module list
+                        ;;  
+                esac
+                ;;
+
+################################################################################
+            10.9) # Mavericks
+                # Depending on specified compiler, load Boost and MPI
+                case $compiler in
+                    gcc-4.6.4)
+                        # Use Selected Boost and MPI built with MacPorts GCC 4.6.4
+                        module unload mpi
+                        module unload boost
+
+                        # Load gcc-4.6.4 specific modules
+                        # GNU Linear Programming Kit (GLPK)
+                        echo "bamboo.sh: Load GLPK"
+                        module load glpk/glpk-4.54_gcc-4.6.4
+                        # System C
+                        echo "bamboo.sh: Load System C"
+                        module load systemc/systemc-2.3.0_gcc-4.6.4
+                        # METIS 5.1.0
+                        echo "bamboo.sh: Load METIS 5.1.0"
+                        module load metis/metis-5.1.0_gcc-4.6.4
+                        # Other misc
+                        echo "bamboo.sh: Load libphx"
+                        module load libphx/libphx-2014-MAY-08_gcc-4.6.4
+
+                        # load MPI
+                        case $2 in
+                            ompi_default|openmpi-1.8)
+                                echo "OpenMPI 1.8 (openmpi-1.8) selected"
+                                module add mpi/openmpi-1.8_gcc-4.6.4
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.8"
+                                module load mpi/openmpi-1.8_gcc-4.6.4 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+
+                        # load corresponding Boost
+                        case $3 in
+                            boost_default|boost-1.54)
+                                echo "Boost 1.54 selected"
+                                module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
+                                ;;
+                            boost_default|boost-1.56)
+                                echo "Boost 1.56 selected"
+                                module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.56"
+                                module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which gcc`
+                        export CXX=`which g++`
+                        module list
+                        ;;
+                        
+                    clang-503.0.38)
+                        # Use Boost and MPI built with CLANG from Xcode 5.1
+                        module unload mpi
+                        module unload boost
+
+                        # Load other modules for clang-503.0.38
+                        # GNU Linear Programming Kit (GLPK)
+                        echo "bamboo.sh: Load GLPK"
+                        module load glpk/glpk-4.54_clang-503.0.38
+                        # System C
+                        echo "bamboo.sh: Load System C"
+                        module load systemc/systemc-2.3.0_clang-503.0.38
+                        # METIS 5.1.0
+                        echo "bamboo.sh: Load METIS 5.1.0"
+                        module load metis/metis-5.1.0_clang-503.0.38
+                        # Other misc
+                        echo "bamboo.sh: Load libphx"
+                        module load libphx/libphx-2014-MAY-08_clang-503.0.38
+
+                        # load MPI
+                        case $2 in
+                            ompi_default|openmpi-1.8)
+                                echo "OpenMPI 1.8 (openmpi-1.8) selected"
+                                module add mpi/openmpi-1.8_clang-503.0.38
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.8"
+                                module load mpi/openmpi-1.8_clang-503.0.38 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                                            
+                        # load corresponding Boost
+                        case $3 in
+                            boost_default|boost-1.54)
+                                echo "Boost 1.54 selected"
+                                module add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
+                                ;;
+                            boost_default|boost-1.56)
+                                echo "Boost 1.56 selected"
+                                module add boost/boost-1.56.0_ompi-1.8_clang-503.0.38
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.56"
+                                module load boost/boost-1.56.0_ompi-1.8_clang-503.0.38 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which clang`
+                        export CXX=`which clang++`
+                        module list
+                        ;;
+
+                    *)
+                        # unknown compiler, use default
+                        echo "bamboo.sh: Unknown compiler selection. Assuming gcc."
+                        module unload boost
+                        module unload mpi
+                        module add mpi/openmpi-1.8_gcc-4.6.4
+                        module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
+                        module list
+                        ;;  
+################################################################################
+                esac
+                ;;
+            *) # unknown
+                echo "bamboo.sh: Unknown Mac OS version."
+                ;;
+        esac
+
+        echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
+        export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
+
+    fi
+
+    echo "bamboo.sh: MacOS build."
+    echo "bamboo.sh:   MPI = $2, Boost = $3"
+}
+
+#-------------------------------------------------------------------------
+# Function: setUPforMakeDisttest
+# Description:
+#   Purpose: Unpack the make-dist tar and set the environment for testing 
+#          
+#   Input:
+#   Output:
+#   Return value:
+setUPforMakeDisttest() {
+     echo "Setting up to build from the tar created by make dist"
+     echo "---   PWD  `pwd`"           ## Original trunk
+     Package=`ls| grep 'sst-.*tar.gz' | awk -F'.tar' '{print $1}'`
+     echo  PACKAGE is $Package
+     tarName=${Package}.tar.gz
+     ls $tarFile
+     if [ $? != 0 ] ; then
+         ls
+         echo Can NOT find Tar File $Package .tar.gz
+         exit 1
+     fi
+     mkdir $SST_ROOT/distTestDir
+     cd $SST_ROOT/distTestDir
+     mv $SST_ROOT/$tarName .
+     if [ $? -ne 0 ] ; then
+          echo "Move failed  \$SST_ROOT/$tarName to ."
+          exit 1
+     fi
+     echo "   Untar the created file, $tarName"
+     tar xzf $tarName
+     if [ $? -ne 0 ] ; then
+          echo "Untar of $tarName failed"
+          exit 1
+     fi
+     mv $Package trunk
+     echo "Move in items not in the trunk, that are need for the bamboo build and test"
+     cp  $SST_ROOT/bamboo.sh trunk
+     cp -r $SST_ROOT/deps trunk          ## the deps scripts
+     cd trunk
+     echo "                   List the directories in sst/elements"
+     ls sst/elements
+     echo ' '
+     ln -s ../../test              ## the subtree of tests
+     ls -l
+     echo SST_INSTALL_DEPS =  $SST_INSTALL_DEPS
+        ## pristine is not at the same relative depth on Jenkins as it is for me.
+     echo "  Find pristine"
+     if [ $SST_BASE == "/home/jwilso" ] ; then
+         PRISTINE="/home/jwilso/sstDeps/src/pristine"
+     else 
+         find $SST_BASE -name pristine
+         PRISTINE=`find $SST_BASE -name pristine`
+     fi
+     echo "\$PRISTINE = $PRISTINE"
+     ls $PRISTINE/*
+     if [[ $? != 0 ]] ; then
+         echo " Failed to find pristine "
+         exit 1
+     fi
+     export SST_BASE=$SST_ROOT
+     export SST_DEPS_USER_DIR=$SST_ROOT
+     export SST_DEPS_USER_MODE=1
+     export SST_INSTALL_DEPS=$SST_BASE/local
+     mkdir -p ../../sstDeps/src
+     pushd ../../sstDeps/src
+     ln -s $PRISTINE .
+     ls -l pristine
+     popd
+     echo SST_DEPS_USER_DIR= $SST_DEPS_USER_DIR
+              ##  Here is the bamboo invocation within bamboo
+     echo "         INVOKE bamboo for the build from the dist tar"
+     ./bamboo.sh sstmainline_config_all $SST_DIST_MPI $SST_DIST_BOOST $SST_DIST_PARAM4
+     retval=$?
+     echo "         Returned from bamboo.sh $retval"
+     if [ $retval != 0 ] ; then
+         echo "bamboo build reports failure  retval = $reval"
+         exit 1
+     fi
+}
+
+#-------------------------------------------------------------------------
 # Function: dobuild
 # Description:
 #   Purpose: Performs the actual build
@@ -1105,766 +1950,11 @@ else
             # Configure MPI, Boost, and Compiler (Linux only)
             if [ $kernel != "Darwin" ]
             then
-
-                # For some reason, .bashrc is not being run prior to
-                # this script. Kludge initialization of modules.
-                if [ -f /etc/profile.modules ]
-                then
-                    . /etc/profile.modules
-                fi
-
-
-                # build MPI and Boost selectors
-                if [[ "$2" =~ openmpi.* ]]
-                then
-                    # since Boost flavor labeled with "ompi" not "openmpi"
-                    mpiStr="ompi-"$(expr "$2" : '.*openmpi-\([0-9]\(\.[0-9][0-9]*\)*\)')
-                else
-                    mpiStr=${2}
-                fi
-
-                if [ $compiler = "default" ]
-                then
-                    desiredMPI="${2}"
-                    desiredBoost="${3}.0_${mpiStr}"
-                    module unload swig/swig-2.0.9
-                else
-                    desiredMPI="${2}_${4}"
-                    desiredBoost="${3}.0_${mpiStr}_${4}"
-                    # load non-default compiler
-                    if   [[ "$4" =~ gcc.* ]]
-                    then
-                        module load gcc/${4}
-                        module load swig/swig-2.0.9
-                        echo "LOADED gcc/${4} compiler"
-                    elif [[ "$4" =~ intel.* ]]
-                    then
-                        module load intel/${4}
-                    fi
-                fi
-                echo "CHECK:  \$2: ${2}"
-                echo "CHECK:  \$3: ${3}"
-                echo "CHECK:  \$4: ${4}"
-                echo "CHECK:  \$desiredMPI: ${desiredMPI}"
-                echo "CHECK:  \$desiredBoost: ${desiredBoost}"
-                gcc --version 2>&1 | grep ^g
-                python --version
-
-                # load MPI
-                case $2 in
-                    mpich2_stable|mpich2-1.4.1p1)
-                        echo "MPICH2 stable (mpich2-1.4.1p1) selected"
-                        module unload mpi # unload any default to avoid conflict error
-                        module load mpi/${desiredMPI}
-                        ;;
-                    openmpi-1.7.2)
-                        echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
-                        module unload mpi # unload any default to avoid conflict error
-                        module load mpi/${desiredMPI}
-                        ;;
-                    ompi_1.6_stable|openmpi-1.6)
-                        echo "OpenMPI stable (openmpi-1.6) selected"
-                        module unload mpi # unload any default to avoid conflict error
-                        module load mpi/${desiredMPI}
-                        ;;
-                    openmpi-1.4.4)
-                        echo "OpenMPI (openmpi-1.4.4) selected"
-                        module unload mpi # unload any default to avoid conflict error
-                        module load mpi/${desiredMPI}
-                        ;;
-                    openmpi-1.8)
-                        echo "OpenMPI (openmpi-1.8) selected"
-                        module unload mpi # unload any default to avoid conflict error
-                        module load mpi/${desiredMPI}
-                        ;;
-                    none)
-                        echo "MPI requested as \"none\".    No MPI loaded"
-                        module unload mpi # unload any default 
-                        ;;
-                    *)
-                        echo "Default MPI option, loading mpi/${desiredMPI}"
-                        module unload mpi # unload any default to avoid conflict error
-                        module load mpi/${desiredMPI} 2>catch.err
-                        if [ -s catch.err ] 
-                        then
-                            cat catch.err
-                            exit 1
-                        fi
-                        ;;
-                esac
-
-                # load corresponding Boost
-                case $3 in
-                    boost-1.43)
-                        echo "bamboo.sh: Boost 1.43 selected"
-                        module unload boost
-                        module load boost/${desiredBoost}
-                        ;;
-                    boost-1.48)
-                        echo "bamboo.sh: Boost 1.48 selected"
-                        module unload boost
-                        module load boost/${desiredBoost}
-                        ;;
-                    boost-1.50)
-                        echo "bamboo.sh: Boost 1.50 selected"
-                        module unload boost
-                        module load boost/${desiredBoost}
-                        ;;
-                    boost-1.54)
-                        echo "bamboo.sh: Boost 1.54 selected"
-                        module unload boost
-                        module load boost/${desiredBoost}
-                        ;;
-                    boost-1.56)
-                        echo "bamboo.sh: Boost 1.56 selected"
-                        module unload boost
-                        module load boost/${desiredBoost}
-                        ;;
-                    myBoost)
-                        if [ $2 == "openmpi-1.8" ] ; then
-                            export BOOST_HOME=/home/jpvandy/local/packages/boost/boost-1.54.0_ompi-1.8_mine
-                            export BOOST_LIBS=/home/jpvandy/local/packages/boost/boost-1.54.0_ompi-1.8_mine/lib
-                            export BOOST_INCLUDE=/home/jpvandy/local/packages/boost/boost-1.54.0_ompi-1.8_mine/include
-                        else
-                            export BOOST_LIBS=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0/lib
-                            export BOOST_HOME=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0
-                            export BOOST_INCLUDE=/home/jpvandy/User-Build-Oct14/local/module-pkgs/boost/boost-1.54.0/include
-                        fi
-                        ;; 
-                    noMpiBoost)
-                        export BOOST_LIBS=/home/jpvandy/local/packages/boost-1.54_no-mpi/lib
-                        export BOOST_HOME=/home/jpvandy/local/packages/boost-1.54_no-mpi
-                        export BOOST_INCLUDE=/home/jpvandy/local/packages/boost-1.54_no-mpi/include
-                        export LD_LIBRARY_PATH=$BOOST_LIBS:$LD_LIBRARY_PATH
-                        ;;
-                    *)
-                        echo "bamboo.sh: \"Default\" Boost selected"
-                        echo "Third argument was $3"
-                        echo "Loading boost/${desiredBoost}"
-                        module unload boost
-                        module load boost/${desiredBoost} 2>catch.err
-                        if [ -s catch.err ] 
-                        then
-                            cat catch.err
-                            exit 1
-                        fi
-                        ;;
-                esac
-                echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
-                export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
-                echo "bamboo.sh: SST_DEPS_INSTALL_BOOST=${SST_DEPS_INSTALL_BOOST}"
-
-                # Load other modules that were built with the default compiler
-                if [ $compiler = "default" ]
-                then
-                    # GNU Linear Programming Kit (GLPK)
-                    echo "bamboo.sh: Load GLPK"
-                    module load glpk/glpk-4.54
-                    # System C
-                    echo "bamboo.sh: Load System C"
-                    module load systemc/systemc-2.3.0
-                    # METIS 5.1.0
-                    echo "bamboo.sh: Load METIS 5.1.0"
-                    module load metis/metis-5.1.0
-                    # Other misc
-                    echo "bamboo.sh: Load libphx"
-                    module load libphx/libphx-2014-MAY-08
-                fi
-
-#                # load OMNet++
-#                module unload omnet++
-#                module load omnet++/omnet++-4.1_no-mpi 2>__std.err__
-#
-#                cat __std.err__
-#                if [[ "`cat __std.err__`" == *ERROR* ]]
-#                then
-#                     echo Load of omnet module failed
-#                     exit
-#                fi
-#                echo "bamboo.sh: OMNET_HOME=${OMNET_HOME}"
-#                export SST_DEPS_INSTALL_OMNET=${OMNET_HOME}
-#                echo "bamboo.sh: SST_DEPS_INSTALL_OMNET=${SST_DEPS_INSTALL_OMNET}"
+                linuxSetBoostMPI $1 $2 $3 $4 
 
             else  # kernel is "Darwin", so this is MacOS
-                # Obtain Mac OS version (works only on MacOS!!!)
-                macosVersionFull=`sw_vers -productVersion`
-                macosVersion=${macosVersionFull%.*}
 
-                if [[ $macosVersion = "10.8" && $compiler = "clang-503.0.40" ]]
-                then
-                    # Mountain Lion + clang PATH                    
-                    PATH="$HOME/Documents/GNUTools/Automake/1.14.1/bin:$HOME/Documents/GNUTools/Autoconf/2.69.0/bin:$HOME/Documents/GNUTools/Libtool/2.4.2/bin:$HOME/Documents/wget-1.15/bin:$PATH"
-                    export PATH
-
-                    # Mountain Lion requires this extra flag passed to SST ./configure
-                    # Mavericks does not require this.
-                    MTNLION_FLAG="--disable-cxx11"
-                    export MTNLION_FLAG
-                else
-                    # macports or hybrid clang/macports
-                    PATH="/opt/local/bin:/usr/local/bin:$PATH"
-                    export PATH
-                fi
-
-
-                # Point to aclocal per instructions from sourceforge on MacOSX installation
-                export ACLOCAL_FLAGS="-I/opt/local/share/aclocal $ACLOCAL_FLAGS"
-                echo $ACLOCAL_FLAGS
-
-                # Initialize modules for Jenkins (taken from $HOME/.bashrc on Mac)
-                if [ -f /etc/profile.modules ]
-                then
-                    . /etc/profile.modules
-                    echo "bamboo.sh: loaded /etc/profile.modules. Available modules"
-                    module avail
-                    # put any module loads here
-                    echo "bamboo.sh: Loading Modules for MacOSX"
-                    # Do things specific to the MacOS version
-                    case $macosVersion in
-                        10.6) # Snow Leopard
-                            # use modules Boost, built-in MPI, default compiler
-                            module unload boost
-                            module add boost/boost-1.50.0
-                            module list
-                            ;;
-                        10.7) # Lion
-                            # use modules Boost and MPI, default compiler (gcc)
-                            module unload mpi
-                            module unload boost
-
-#                           // Lion used to be hardcoded to this configuration, now changed.                            
-#                           module add mpi/openmpi-1.4.4_gcc-4.2.1
-#                           module add boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1
-
-                            #Check for Illegal configurations of Boost and MPI
-                            if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
-                                  ( $2 = "openmpi-1.7.2" &&  $3 = "boost-1.50" )    || \
-                                  ( $2 = "openmpi-1.4.4" &&  $3 = "boost-1.54" )    || \
-                                  ( $2 = "ompi_default"  &&  $3 = "boost-1.54" ) ]]
-                            then
-                                echo "ERROR: Invalid configuration of $2 and $3 These two modules cannot be combined"
-                                exit 0
-                            fi
-                           
-                            # load MPI
-                            case $2 in
-                                openmpi-1.7.2)
-                                    echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
-                                    module add mpi/openmpi-1.7.2_gcc-4.2.1
-                                    ;;
-                                ompi_default|openmpi-1.4.4)
-                                    echo "OpenMPI 1.4.4 (Default) (openmpi-1.4.4) selected"
-                                    module add mpi/openmpi-1.4.4_gcc-4.2.1
-                                    ;;
-                                *)
-                                    echo "Default MPI option, loading mpi/openmpi-1.4.4"
-                                    module load mpi/openmpi-1.4.4_gcc-4.2.1 2>catch.err
-                                    if [ -s catch.err ] 
-                                    then
-                                        cat catch.err
-                                        exit 0
-                                    fi
-                                    ;;
-                            esac
-                                                
-                            # load corresponding Boost
-                            case $3 in
-                                boost-1.54)
-                                    echo "Boost 1.54 selected"
-                                    module add boost/boost-1.54.0_ompi-1.7.2_gcc-4.2.1
-                                    ;;
-                                boost_default|boost-1.50)
-                                    echo "Boost 1.50 (Default) selected"
-                                    module add boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1
-                                    ;;
-                                *)
-                                    echo "bamboo.sh: \"Default\" Boost selected"
-                                    echo "Third argument was $3"
-                                    echo "Loading boost/Boost 1.50"
-                                    module load boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1 2>catch.err
-                                    if [ -s catch.err ] 
-                                    then
-                                        cat catch.err
-                                        exit 0
-                                    fi
-                                    ;;
-                            esac
-                            export CC=`which gcc`
-                            export CXX=`which g++`
-                            module list
-                            ;;
-                        10.8) # Mountain Lion
-                            # Depending on specified compiler, load Boost and MPI
-                            case $compiler in
-                                gcc-4.2.1)
-                                    # Use Selected Boost and MPI built with GCC
-                                    module unload mpi
-                                    module unload boost
-
-                                   #Check for Illegal configurations of Boost and MPI
-                                    if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
-                                          ( $2 = "openmpi-1.7.2" &&  $3 = "boost-1.50" )    || \
-                                          ( $2 = "openmpi-1.6.3" &&  $3 = "boost-1.54" )    || \
-                                          ( $2 = "ompi_default"  &&  $3 = "boost-1.54" ) ]]
-                                    then
-                                        echo "ERROR: Invalid configuration of $2 and $3 These two modules cannot be combined"
-                                        exit 0
-                                    fi
-                                   
-                                    # load MPI
-                                    case $2 in
-                                        openmpi-1.7.2)
-                                            echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
-                                            module add mpi/openmpi-1.7.2_gcc-4.2.1
-                                            ;;
-                                        ompi_default|openmpi-1.6.3)
-                                            echo "OpenMPI 1.6.3 (Default) (openmpi-1.6.3) selected"
-                                            module add mpi/openmpi-1.6.3_gcc-4.2.1
-                                            ;;
-                                        *)
-                                            echo "Default MPI option, loading mpi/openmpi-1.6.3"
-                                            module load mpi/openmpi-1.6.3_gcc-4.2.1 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                                        
-                                    # load corresponding Boost
-                                    case $3 in
-                                        boost-1.54)
-                                            echo "Boost 1.54 selected"
-                                            module add boost/boost-1.54.0_ompi-1.7.2_gcc-4.2.1
-                                            ;;
-                                        boost_default|boost-1.50)
-                                            echo "Boost 1.50 (Default) selected"
-                                            module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
-                                            ;;
-                                        *)
-                                            echo "bamboo.sh: \"Default\" Boost selected"
-                                            echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.50"
-                                            module load boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                    export CC=`which gcc`
-                                    export CXX=`which g++`
-                                    module list
-                                    ;;
-                                    
-                                    
-                                clang-425.0.27)
-                                    # Use Boost and MPI built with CLANG
-                                    module unload mpi
-                                    module unload boost
-
-                                   #Check for Illegal configurations of Boost and MPI
-                                    if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
-                                          ( $2 = "openmpi-1.7.2" &&  $3 = "boost-1.50" )    || \
-                                          ( $2 = "openmpi-1.6.3" &&  $3 = "boost-1.54" )    || \
-                                          ( $2 = "ompi_default"  &&  $3 = "boost-1.54" ) ]]
-                                    then
-                                        echo "ERROR: Invalid configuration of $2 and $3 These two modules cannot be combined"
-                                        exit 0
-                                    fi
-
-                                    # load MPI
-                                    case $2 in
-                                        openmpi-1.7.2)
-                                            echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
-                                            module add mpi/openmpi-1.7.2_clang-425.0.27
-                                            ;;
-                                        ompi_default|openmpi-1.6.3)
-                                            echo "OpenMPI 1.6.3 (Default) (openmpi-1.6.3) selected"
-                                            module add mpi/openmpi-1.6.3_clang-425.0.27
-                                            ;;
-                                        *)
-                                            echo "Default MPI option, loading mpi/openmpi-1.6.3"
-                                            module load mpi/openmpi-1.6.3_clang-425.0.27 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                                        
-                                    # load corresponding Boost
-                                    case $3 in
-                                        boost-1.54)
-                                            echo "Boost 1.54 selected"
-                                            module add boost/boost-1.54.0_ompi-1.7.2_clang-425.0.27
-                                            ;;
-                                        boost_default|boost-1.50)
-                                            echo "Boost 1.50 (Default) selected"
-                                            module add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
-                                            ;;
-                                        *)
-                                            echo "bamboo.sh: \"Default\" Boost selected"
-                                            echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.50"
-                                            module load boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                    export CC=`which clang`
-                                    export CXX=`which clang++`
-                                    module list
-                                    ;;
-###
-                                gcc-4.6.4)
-                                    # Use Selected Boost and MPI built with MacPorts GCC 4.6.4
-                                    module unload mpi
-                                    module unload boost
-
-                                    # Load gcc-4.6.4 specific modules
-                                    # GNU Linear Programming Kit (GLPK)
-                                    echo "bamboo.sh: Load GLPK"
-                                    module load glpk/glpk-4.54_gcc-4.6.4
-                                    # System C
-                                    echo "bamboo.sh: Load System C"
-                                    module load systemc/systemc-2.3.0_gcc-4.6.4
-                                    # METIS 5.1.0
-                                    echo "bamboo.sh: Load METIS 5.1.0"
-                                    module load metis/metis-5.1.0_gcc-4.6.4
-                                    # Other misc
-                                    echo "bamboo.sh: Load libphx"
-                                    module load libphx/libphx-2014-MAY-08_gcc-4.6.4
-
-                                    # load MPI
-                                    case $2 in
-                                        ompi_default|openmpi-1.8)
-                                            echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                            module add mpi/openmpi-1.8_gcc-4.6.4
-                                            ;;
-                                        *)
-                                            echo "Default MPI option, loading mpi/openmpi-1.8"
-                                            module load mpi/openmpi-1.8_gcc-4.6.4 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-
-                                    # load corresponding Boost
-                                    case $3 in
-                                        boost_default|boost-1.54)
-                                            echo "Boost 1.54 selected"
-                                            module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
-                                            ;;
-                                        boost_default|boost-1.56)
-                                            echo "Boost 1.56 selected"
-                                            module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
-                                            ;;
-                                        *)
-                                            echo "bamboo.sh: \"Default\" Boost selected"
-                                            echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.56"
-                                            module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                    export CC=`which gcc`
-                                    export CXX=`which g++`
-                                    module list
-                                    ;;
-                                    
-                                clang-503.0.38)
-                                    # Use Boost and MPI built with CLANG from Xcode 5.1
-                                    module unload mpi
-                                    module unload boost
-
-                                    # Load other modules for clang-503.0.38
-                                    # GNU Linear Programming Kit (GLPK)
-                                    echo "bamboo.sh: Load GLPK"
-                                    module load glpk/glpk-4.54_clang-503.0.38
-                                    # System C
-                                    echo "bamboo.sh: Load System C"
-                                    module load systemc/systemc-2.3.0_clang-503.0.38
-                                    # METIS 5.1.0
-                                    echo "bamboo.sh: Load METIS 5.1.0"
-                                    module load metis/metis-5.1.0_clang-503.0.38
-                                    # Other misc
-                                    echo "bamboo.sh: Load libphx"
-                                    module load libphx/libphx-2014-MAY-08_clang-503.0.38
-
-                                    # load MPI
-                                    case $2 in
-                                        ompi_default|openmpi-1.8)
-                                            echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                            module add mpi/openmpi-1.8_clang-503.0.38
-                                            ;;
-                                        *)
-                                            echo "Default MPI option, loading mpi/openmpi-1.8"
-                                            module load mpi/openmpi-1.8_clang-503.0.38 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                                        
-                                    # load corresponding Boost
-                                    case $3 in
-                                        boost_default|boost-1.54)
-                                            echo "Boost 1.54 selected"
-                                            module add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
-                                            ;;
-                                        boost_default|boost-1.56)
-                                            echo "Boost 1.56 selected"
-                                            module add boost/boost-1.56.0_ompi-1.8_clang-503.0.38
-                                            ;;
-                                        *)
-                                            echo "bamboo.sh: \"Default\" Boost selected"
-                                            echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.56"
-                                            module load boost/boost-1.56.0_ompi-1.8_clang-503.0.38 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                    export CC=`which clang`
-                                    export CXX=`which clang++`
-                                    module list
-                                    ;;
-
-                                clang-503.0.40)
-                                    # Use Boost and MPI built with CLANG from Xcode 5.1
-                                    module unload mpi
-                                    module unload boost
-
-                                    # load MPI
-                                    case $2 in
-                                        ompi_default|openmpi-1.8)
-                                            echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                            module add mpi/openmpi-1.8_clang-503.0.40
-                                            ;;
-                                        *)
-                                            echo "Default MPI option, loading mpi/openmpi-1.8"
-                                            module load mpi/openmpi-1.8_clang-503.0.40 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                                        
-                                    # load corresponding Boost
-                                    case $3 in
-                                        boost_default|boost-1.54)
-                                            echo "Boost 1.54 selected"
-                                            module add boost/boost-1.54.0_ompi-1.8_clang-503.0.40
-                                            ;;
-                                        boost_default|boost-1.56)
-                                            echo "Boost 1.56 selected"
-                                            module add boost/boost-1.56.0_ompi-1.8_clang-503.0.40
-                                            ;;
-                                        *)
-                                            echo "bamboo.sh: \"Default\" Boost selected"
-                                            echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.56"
-                                            module load boost/boost-1.56.0_ompi-1.8_clang-503.0.40 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                    export CC=`which clang`
-                                    export CXX=`which clang++`
-                                    module list
-                                    ;;
-
-###
-                                *)
-                                    # unknown compiler, use default
-                                    echo "bamboo.sh: Unknown compiler selection. Assuming gcc."
-                                    module unload boost
-                                    module unload mpi
-                                    module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
-                                    module add mpi/openmpi-1.6.3_gcc-4.2.1
-                                    module list
-                                    ;;  
-                            esac
-                            ;;
-
-################################################################################
-                        10.9) # Mavericks
-                            # Depending on specified compiler, load Boost and MPI
-                            case $compiler in
-                                gcc-4.6.4)
-                                    # Use Selected Boost and MPI built with MacPorts GCC 4.6.4
-                                    module unload mpi
-                                    module unload boost
-
-                                    # Load gcc-4.6.4 specific modules
-                                    # GNU Linear Programming Kit (GLPK)
-                                    echo "bamboo.sh: Load GLPK"
-                                    module load glpk/glpk-4.54_gcc-4.6.4
-                                    # System C
-                                    echo "bamboo.sh: Load System C"
-                                    module load systemc/systemc-2.3.0_gcc-4.6.4
-                                    # METIS 5.1.0
-                                    echo "bamboo.sh: Load METIS 5.1.0"
-                                    module load metis/metis-5.1.0_gcc-4.6.4
-                                    # Other misc
-                                    echo "bamboo.sh: Load libphx"
-                                    module load libphx/libphx-2014-MAY-08_gcc-4.6.4
-
-                                    # load MPI
-                                    case $2 in
-                                        ompi_default|openmpi-1.8)
-                                            echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                            module add mpi/openmpi-1.8_gcc-4.6.4
-                                            ;;
-                                        *)
-                                            echo "Default MPI option, loading mpi/openmpi-1.8"
-                                            module load mpi/openmpi-1.8_gcc-4.6.4 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-
-                                    # load corresponding Boost
-                                    case $3 in
-                                        boost_default|boost-1.54)
-                                            echo "Boost 1.54 selected"
-                                            module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
-                                            ;;
-                                        boost_default|boost-1.56)
-                                            echo "Boost 1.56 selected"
-                                            module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
-                                            ;;
-                                        *)
-                                            echo "bamboo.sh: \"Default\" Boost selected"
-                                            echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.56"
-                                            module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                    export CC=`which gcc`
-                                    export CXX=`which g++`
-                                    module list
-                                    ;;
-                                    
-                                clang-503.0.38)
-                                    # Use Boost and MPI built with CLANG from Xcode 5.1
-                                    module unload mpi
-                                    module unload boost
-
-                                    # Load other modules for clang-503.0.38
-                                    # GNU Linear Programming Kit (GLPK)
-                                    echo "bamboo.sh: Load GLPK"
-                                    module load glpk/glpk-4.54_clang-503.0.38
-                                    # System C
-                                    echo "bamboo.sh: Load System C"
-                                    module load systemc/systemc-2.3.0_clang-503.0.38
-                                    # METIS 5.1.0
-                                    echo "bamboo.sh: Load METIS 5.1.0"
-                                    module load metis/metis-5.1.0_clang-503.0.38
-                                    # Other misc
-                                    echo "bamboo.sh: Load libphx"
-                                    module load libphx/libphx-2014-MAY-08_clang-503.0.38
-
-                                    # load MPI
-                                    case $2 in
-                                        ompi_default|openmpi-1.8)
-                                            echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                            module add mpi/openmpi-1.8_clang-503.0.38
-                                            ;;
-                                        *)
-                                            echo "Default MPI option, loading mpi/openmpi-1.8"
-                                            module load mpi/openmpi-1.8_clang-503.0.38 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                                        
-                                    # load corresponding Boost
-                                    case $3 in
-                                        boost_default|boost-1.54)
-                                            echo "Boost 1.54 selected"
-                                            module add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
-                                            ;;
-                                        boost_default|boost-1.56)
-                                            echo "Boost 1.56 selected"
-                                            module add boost/boost-1.56.0_ompi-1.8_clang-503.0.38
-                                            ;;
-                                        *)
-                                            echo "bamboo.sh: \"Default\" Boost selected"
-                                            echo "Third argument was $3"
-                                            echo "Loading boost/Boost 1.56"
-                                            module load boost/boost-1.56.0_ompi-1.8_clang-503.0.38 2>catch.err
-                                            if [ -s catch.err ] 
-                                            then
-                                                cat catch.err
-                                                exit 0
-                                            fi
-                                            ;;
-                                    esac
-                                    export CC=`which clang`
-                                    export CXX=`which clang++`
-                                    module list
-                                    ;;
-
-                                *)
-                                    # unknown compiler, use default
-                                    echo "bamboo.sh: Unknown compiler selection. Assuming gcc."
-                                    module unload boost
-                                    module unload mpi
-                                    module add mpi/openmpi-1.8_gcc-4.6.4
-                                    module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
-                                    module list
-                                    ;;  
-################################################################################
-                            esac
-                            ;;
-                        *) # unknown
-                            echo "bamboo.sh: Unknown Mac OS version."
-                            ;;
-                    esac
-
-                    echo "bamboo.sh: BOOST_HOME=${BOOST_HOME}"
-                    export SST_DEPS_INSTALL_BOOST=${BOOST_HOME}
-
-                fi
-
-                echo "bamboo.sh: MacOS build."
-                echo "bamboo.sh:   MPI = $2, Boost = $3"
+                darwinSetBoostMPI $1 $2 $3 $4
             fi
 
             # if Intel PIN module is available, load it
@@ -1919,74 +2009,7 @@ then
         # as a convenience. SST binaries must be generated before testing.
 
         if [ $buildtype == "sst_config_dist_test" ] ; then  
-             echo "Setting up to build from the tar created by make dist"
-             echo "---   PWD  `pwd`"           ## Original trunk
-             Package=`ls| grep 'sst-.*tar.gz' | awk -F'.tar' '{print $1}'`
-             echo  PACKAGE is $Package
-             tarName=${Package}.tar.gz
-             ls $tarFile
-             if [ $? != 0 ] ; then
-                 ls
-                 echo Can NOT find Tar File $Package .tar.gz
-                 exit 1
-             fi
-             mkdir $SST_ROOT/distTestDir
-             cd $SST_ROOT/distTestDir
-             mv $SST_ROOT/$tarName .
-             if [ $? -ne 0 ] ; then
-                  echo "Move failed  \$SST_ROOT/$tarName to ."
-                  exit 1
-             fi
-             echo "   Untar the created file, $tarName"
-             tar xzf $tarName
-             if [ $? -ne 0 ] ; then
-                  echo "Untar of $tarName failed"
-                  exit 1
-             fi
-             mv $Package trunk
-             echo "Move in items not in the trunk, that are need for the bamboo build and test"
-             cp  $SST_ROOT/bamboo.sh trunk
-             cp -r $SST_ROOT/deps trunk          ## the deps scripts
-             cd trunk
-             echo "                   List the directories in sst/elements"
-             ls sst/elements
-             echo ' '
-             ln -s ../../test              ## the subtree of tests
-             ls -l
-             echo SST_INSTALL_DEPS =  $SST_INSTALL_DEPS
-                ## pristine is not at the same relative depth on Jenkins as it is for me.
-             echo "  Find pristine"
-             if [ $SST_BASE == "/home/jwilso" ] ; then
-                 PRISTINE="/home/jwilso/sstDeps/src/pristine"
-             else 
-                 find $SST_BASE -name pristine
-                 PRISTINE=`find $SST_BASE -name pristine`
-             fi
-             echo "\$PRISTINE = $PRISTINE"
-             ls $PRISTINE/*
-             if [[ $? != 0 ]] ; then
-                 echo " Failed to find pristine "
-                 exit 1
-             fi
-             export SST_BASE=$SST_ROOT
-             export SST_DEPS_USER_DIR=$SST_ROOT
-             export SST_DEPS_USER_MODE=1
-             export SST_INSTALL_DEPS=$SST_BASE/local
-             mkdir -p ../../sstDeps/src
-             pushd ../../sstDeps/src
-             ln -s $PRISTINE .
-             ls -l pristine
-             popd
-             echo SST_DEPS_USER_DIR= $SST_DEPS_USER_DIR
-                      ##  Here is the bamboo invocation within bamboo
-             echo "         INVOKE bamboo for the build from the dist tar"
-             ./bamboo.sh sstmainline_config_all $SST_DIST_MPI $SST_DIST_BOOST $SST_DIST_PARAM4
-             retval=$?
-             echo "         Returned from bamboo.sh $retval"
-             if [ $retval != 0 ] ; then
-                 echo "bamboo build reports failure  retval = $reval"
-                 exit 1
-             fi
+             setUPforMakeDisttest $1 $2 $3 $4
              exit 0                  #  Normal Exit for make dist
         else          #  not make dist
             #    ---  These are probably temporary, but let's line them up properly anyway
