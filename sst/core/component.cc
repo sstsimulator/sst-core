@@ -177,7 +177,7 @@ Component::configureLink(std::string name, Event::HandlerBase* handler)
     
     // If no functor, this is a polling link
     if ( handler == NULL ) {
-	tmp->setPolling();
+        tmp->setPolling();
     }
     tmp->setFunctor(handler);
     return tmp;    

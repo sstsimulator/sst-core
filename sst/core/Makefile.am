@@ -34,7 +34,7 @@ nobase_dist_sst_HEADERS = \
 	event.h \
 	exit.h \
 	factory.h \
-    heartbeat.h \
+	heartbeat.h \
 	initQueue.h \
 	introspectAction.h \
 	introspector.h \
@@ -43,7 +43,7 @@ nobase_dist_sst_HEADERS = \
 	linkMap.h \
 	linkPair.h \
 	mempool.h \
-    memuse.h \
+	memuse.h \
 	module.h \
 	oneshot.h \
 	output.h \
@@ -56,6 +56,7 @@ nobase_dist_sst_HEADERS = \
 	sstinfo.h \
 	stopAction.h \
 	stringize.h \
+	subcomponent.h \
 	sync.h \
 	syncQueue.h \
 	timeConverter.h \
@@ -124,6 +125,7 @@ sst_core_sources = \
 	params.cc \
 	pollingLinkQueue.cc \
 	simulation.cc \
+	subcomponent.cc \
 	sync.cc \
 	syncQueue.cc \
 	timeLord.cc \
