@@ -34,7 +34,8 @@ class PartitionGraph;
 class Introspector;
 class Module;
 class Params;
-namespace Partition {
+ class SubComponent;
+ namespace Partition {
     class SSTPartitioner;
 }
  
@@ -43,6 +44,7 @@ typedef Introspector* (*introspectorAllocate)(Params&);
 typedef void (*eventInitialize)(void);
 typedef Module* (*moduleAllocate)(Params&);
 typedef Module* (*moduleAllocateWithComponent)(Component*, Params&);
+typedef SubComponent* (*subcomponentAllocate)(Component*, Params&);
 typedef SST::Partition::SSTPartitioner* (*partitionFunction)(int, int, int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
 typedef void* (*genPythonModuleFunction)(void);
@@ -115,6 +117,16 @@ struct ElementInfoModule {
     const char *provides;                           /*!< Name of SuperClass which for this module can be used. */
 };
 
+struct ElementInfoSubComponent {
+    const char *name;								/*!< Name of the subcomponent. */
+    const char *description;						/*!< Brief description of the subcomponent. */
+    void (*printHelp)(FILE *output);				/*!< Pointer to a function that will print additional documentation about the subcomponent (optional) */
+    subcomponentAllocate alloc;	                    /*!< Pointer to a function to initialize a subcomponent instance, passing a Component as an argument. */
+    const ElementInfoParam *params;					/*!< List of parameters which are used by this subcomponent. */
+    const ElementInfoStatisticEnable *stats;        /*!< List of statistics supplied by this subcomponent. */
+    const char *provides;                           /*!< Name of SuperClass which for this subcomponent can be used. */
+};
+
 /** Describes a Partitioner
  */
 struct ElementInfoPartitioner {
@@ -142,9 +154,10 @@ struct ElementLibraryInfo {
     const struct ElementInfoEvent* events;					/*!< List of Events exported by the library. */
     const struct ElementInfoIntrospector* introspectors;	/*!< List of Introspectors provided by the library. */
     const struct ElementInfoModule* modules;				/*!< List of Modules provided by the library. */
+    const struct ElementInfoSubComponent* subcomponents;    /*!< List of SubComponents provided by the library. */
     const struct ElementInfoPartitioner* partitioners;		/*!< List of Partitioners provided by the library. */
-    const struct ElementInfoGenerator* generators;			/*!< List of Generators provided by the library. */
     genPythonModuleFunction pythonModuleGenerator;			/*!< Pointer to Function to generate a Python Module for use in Configurations */
+    const struct ElementInfoGenerator* generators;			/*!< List of Generators provided by the library. */
 };
 } //namespace SST
 

@@ -84,6 +84,13 @@ public:
      */
     Module* CreateCoreModuleWithComponent(std::string type, Component* comp, Params& params);
 
+    /** Instatiate a new Module
+     * @param type - Fully qualified elementlibname.modulename type
+     * @param comp - Component instance to pass to the SubComponent's constructor
+     * @param params - Parameters to pass to the SubComponent's constructor
+     */
+    SubComponent* CreateSubComponent(std::string type, Component* comp, Params& params);
+
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */
@@ -250,11 +257,33 @@ private:
         }
     };
 
+    struct SubComponentInfo {
+        const ElementInfoSubComponent* subcomponent;
+        Params::KeySet_t params;
+
+        SubComponentInfo() {}
+
+        SubComponentInfo(const ElementInfoSubComponent *subcomponent,
+                         Params::KeySet_t params) : subcomponent(subcomponent), params(params)
+        { }
+
+        SubComponentInfo(const SubComponentInfo& old) : subcomponent(old.subcomponent), params(old.params)
+        { }
+
+        SubComponentInfo& operator=(const SubComponentInfo& old)
+        {
+            subcomponent = old.subcomponent;
+            params = old.params;
+            return *this;
+        }
+    };
+
     typedef std::map<std::string, const ElementLibraryInfo*> eli_map_t;
     typedef std::map<std::string, ComponentInfo> eic_map_t;
     typedef std::map<std::string, const ElementInfoEvent*> eie_map_t;
     typedef std::map<std::string, IntrospectorInfo> eii_map_t;
     typedef std::map<std::string, ModuleInfo> eim_map_t;
+    typedef std::map<std::string, SubComponentInfo> eis_map_t;
     typedef std::map<std::string, const ElementInfoPartitioner*> eip_map_t;
     typedef std::map<std::string, const ElementInfoGenerator*> eig_map_t;
 
@@ -277,6 +306,7 @@ private:
     eii_map_t found_introspectors;
     eie_map_t found_events;
     eim_map_t found_modules;
+    eis_map_t found_subcomponents;
     eip_map_t found_partitioners;
     eig_map_t found_generators;
     std::string searchPaths;

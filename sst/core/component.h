@@ -36,6 +36,7 @@ class Link;
 class LinkMap;
 class Module;
 class Params;
+class SubComponent;
 class TimeConverter;
 class UnitAlgebra;
  
@@ -299,6 +300,7 @@ public:
      * @return handle to new instance of module, or NULL on failure.
      */
     Module* loadModule(std::string type, Params& params);
+
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName
      * @param comp Pointer to component to pass to Module's constructor
@@ -307,6 +309,13 @@ public:
      */
     Module* loadModuleWithComponent(std::string type, Component* comp, Params& params);
     
+    /** Loads a SubComponent from an element Library
+     * @param type Fully Qualified library.moduleName
+     * @param comp Pointer to component to pass to SuComponent's constructor
+     * @param params Parameters the module should use for configuration
+     * @return handle to new instance of SubComponent, or NULL on failure.
+     */
+    SubComponent* loadSubComponent(std::string type, Component* comp, Params& params);
     
 protected:
     Component(); // For serialization only

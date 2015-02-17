@@ -294,7 +294,7 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
     boost::tie(elemlib, elem) = parseLoadName(type);
 
     if("sst" == elemlib) {
-	return CreateCoreModuleWithComponent(elem, comp, params);
+        return CreateCoreModuleWithComponent(elem, comp, params);
     } else {
 
     // ensure library is already loaded...
@@ -318,6 +318,39 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
     params.popAllowedKeys();
     return ret;
     }
+}
+
+
+SubComponent*
+Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
+{
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(type);
+
+    // if("sst" == elemlib) {
+    //     return CreateCoreModuleWithComponent(elem, comp, params);
+    // } else {
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // now look for module
+    std::string tmp = elemlib + "." + elem;
+    eis_map_t::iterator eis = 
+        found_subcomponents.find(tmp);
+    if (eis == found_subcomponents.end()) {
+        _abort(Factory,"can't find requested subcomponent %s.\n ", tmp.c_str());
+        return NULL;
+    }
+
+    const SubComponentInfo si = eis->second;
+
+    params.pushAllowedKeys(si.params);
+    SubComponent* ret = si.subcomponent->alloc(comp, params);
+    params.popAllowedKeys();
+    return ret;
 }
 
 
@@ -490,6 +523,15 @@ Factory::findLibrary(std::string elemlib, bool showErrors)
             std::string tmp = elemlib + "." + eim->name;
             found_modules[tmp] = ModuleInfo(eim, create_params_set(eim->params));
             eim++;
+        }
+    }
+
+    if (NULL != eli->subcomponents ) {
+        const ElementInfoSubComponent *eis = eli->subcomponents;
+        while (NULL != eis->name) {
+            std::string tmp = elemlib + "." + eis->name;
+            found_subcomponents[tmp] = SubComponentInfo(eis, create_params_set(eis->params));
+            eis++;
         }
     }
 

@@ -295,6 +295,12 @@ Component::loadModuleWithComponent(std::string type, Component* comp, Params& pa
     return Simulation::getSimulation()->getFactory()->CreateModuleWithComponent(type,comp,params);
 }
 
+SubComponent*
+Component::loadSubComponent(std::string type, Component* comp, Params& params)
+{
+    return Simulation::getSimulation()->getFactory()->CreateSubComponent(type,comp,params);
+}
+    
 bool Component::doesComponentInfoStatisticExist(std::string statisticName)
 {
     return Simulation::getSimulation()->getFactory()->DoesComponentInfoStatisticEnableNameExist(type, statisticName);
