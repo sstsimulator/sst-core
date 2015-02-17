@@ -911,6 +911,8 @@ linuxSetBoostMPI() {
    if [ -f /etc/profile.modules ]
    then
        . /etc/profile.modules
+       echo "bamboo.sh: loaded /etc/profile.modules. Available modules"
+       module avail
    fi
 
 
