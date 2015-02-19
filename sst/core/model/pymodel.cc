@@ -15,6 +15,10 @@
 #ifdef HAVE_PYTHON
 #include <Python.h>
 
+#ifdef HAVE_MPI
+#include <mpi.h>
+#endif
+
 #include <string.h>
 #include <sstream>
 
@@ -76,10 +80,8 @@ static void linkDealloc(LinkPy_t *self);
 static PyObject* linkConnect(PyObject* self, PyObject *args);
 static PyObject* linkSetNoCut(PyObject* self, PyObject *args);
 
-
 static PyObject* mlFindModule(PyObject *self, PyObject *args);
 static PyObject* mlLoadModule(PyObject *self, PyObject *args);
-
 
 static PyMethodDef componentMethods[] = {
     {   "addParam",
@@ -705,6 +707,13 @@ static PyObject* exitsst(PyObject* self, PyObject* args)
     return NULL;
 }
 
+static PyObject* getSSTMPIWorldSize(PyObject* self, PyObject* args) {
+    int ranks = 1;
+#ifdef HAVE_MPI
+    MPI_Comm_size(MPI_COMM_WORLD, &ranks);
+#endif
+    return PyInt_FromLong(ranks);
+}
 
 static PyObject* setStatisticOutput(PyObject* self, PyObject* args)
 {
@@ -940,6 +949,9 @@ static PyMethodDef sstModuleMethods[] = {
     {   "exit",
         exitsst, METH_NOARGS,
         "Exits SST - indicates the script wanted to exit." },
+    {   "getMPIRankCount",
+	getSSTMPIWorldSize, METH_NOARGS,
+	"Gets the number of MPI ranks currently being used to run SST" }, 
     {   "setStatisticOutput",
         setStatisticOutput, METH_VARARGS,
         "Sets the Statistic Output - default is console output." },
