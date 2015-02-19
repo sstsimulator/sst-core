@@ -207,9 +207,10 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
         ${SST_TEST_SUITES}/testSuite_scheduler.sh
         ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
-        ${SST_TEST_SUITES}/testSuite_simpleDistrib.sh
-        ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
-        ${SST_TEST_SUITES}/testSuite_simpleTracer.sh
+        ${SST_TEST_SUITES}/testSuite_simpleDistribComponent.sh
+        ${SST_TEST_SUITES}/testSuite_simpleRNGComponent.sh
+        ${SST_TEST_SUITES}/testSuite_simpleStatisticsComponent.sh
+        ${SST_TEST_SUITES}/testSuite_simpleTracerComponent.sh
         ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
         ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
         ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
@@ -277,7 +278,7 @@ dotests() {
 
     ${SST_TEST_SUITES}/testSuite_portals.sh
     ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
-    ${SST_TEST_SUITES}/testSuite_simpleTracer.sh
+    ${SST_TEST_SUITES}/testSuite_simpleTracerComponent.sh
     ${SST_TEST_SUITES}/testSuite_miranda.sh
 
     ${SST_TEST_SUITES}/testSuite_iris.sh
@@ -303,7 +304,7 @@ dotests() {
     # etc.
     ${SST_TEST_SUITES}/testSuite_merlin.sh
     ${SST_TEST_SUITES}/testSuite_embernightly.sh
-    ${SST_TEST_SUITES}/testSuite_simpleDistrib.sh
+    ${SST_TEST_SUITES}/testSuite_simpleDistribComponent.sh
     ${SST_TEST_SUITES}/testSuite_SweepEmber.sh
 
     if [ $1 != "sstmainline_config_gcc_4_8_1" -a $1 != "sstmainline_config_no_gem5" -a $1 != "sstmainline_config_no_mpi" -a $1 != "sstmainline_config_macosx_no_gem5" ]
@@ -342,7 +343,8 @@ dotests() {
             ${SST_TEST_SUITES}/testSuite_zoltan.sh
         fi
     fi
-    ${SST_TEST_SUITES}/testSuite_simpleRNG.sh
+    ${SST_TEST_SUITES}/testSuite_simpleRNGComponent.sh
+    ${SST_TEST_SUITES}/testSuite_simpleStatisticsComponent.sh
 #
 #      Temporarily disabling the Prospero test  -- see issue #328
 #    echo ' ' ; echo " Prospero test disabled -- see Issue #328" ; echo ' '
@@ -376,7 +378,7 @@ dotests() {
 ###     
 ###     if [ $HOST == "sst-test" ] || [ $HOST == "johnslion" ] ; then
 ###         echo " $HOST: Running the Wall Clock timing test"
-###         ${SST_TEST_SUITES}/testSuite_simpleClocker.sh
+###         ${SST_TEST_SUITES}/testSuite_simpleClockerComponent.sh
 ###     else
 ###         echo " $HOST: Not Running the Wall Clock timing test"
 ###     fi
