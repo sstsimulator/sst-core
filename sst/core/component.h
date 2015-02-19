@@ -219,12 +219,31 @@ public:
                 depending upon runtime settings.
     */
     template <typename T>
-    Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
+    Statistic<T>* registerStatisticCore(std::string statName, std::string statSubId = "")
     {
         // NOTE: Templated Code for implementation of Statistic Registration
         // is in the componentregisterstat_impl.h file.  This was done
         // to avoid code bloat in the .h file.  
         #include "sst/core/statapi/componentregisterstat_impl.h"
+    }
+    
+    template <typename T>
+    Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
+    {
+        // // NOTE: Templated Code for implementation of Statistic Registration
+        // // is in the componentregisterstat_impl.h file.  This was done
+        // // to avoid code bloat in the .h file.  
+        // #include "sst/core/statapi/componentregisterstat_impl.h"
+
+        // Verify here that name of the stat is one of the registered
+        // names of the component's ElementInfoStatisticEnable.  
+        if (false == doesComponentInfoStatisticExist(statName)) {
+            printf("Error: Statistic %s name %s is not found in ElementInfoStatisticEnable, exiting...\n",
+                   StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId).c_str(),
+                   statName.c_str());
+            exit(1);
+        }
+        return registerStatisticCore<T>(statName, statSubId);
     }
 
     template <typename T>
@@ -335,6 +354,8 @@ protected:
 
 private:
 
+    friend class SubComponent;
+
     void addSelfLink(std::string name);
 
     // Does the statisticName exist in the ElementInfoStatisticEnable 
@@ -346,7 +367,8 @@ private:
     ComponentId_t   id;
 	std::string name;
     LinkMap* myLinks;
-
+    std::string currentlyLoadingSubModule;
+    
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive& ar, const unsigned int version);

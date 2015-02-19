@@ -34,6 +34,7 @@ namespace SST {
 SubComponent::SubComponent(Component* parent) :
     parent(parent)
 {
+    type = parent->currentlyLoadingSubModule;
 }
 
     SubComponent::SubComponent() : 
@@ -80,6 +81,13 @@ SubComponent::configureSelfLink( std::string name, Event::HandlerBase* handler)
 {
     return parent->configureSelfLink(name,handler);
 }
+
+bool
+SubComponent::doesSubComponentInfoStatisticExist(std::string statisticName)
+{
+    return Simulation::getSimulation()->getFactory()->DoesSubComponentInfoStatisticEnableNameExist(type, statisticName);
+}
+
 
 TimeConverter* SubComponent::registerClock( std::string freq, Clock::HandlerBase* handler) {
     return parent->registerClock(freq,handler,false);

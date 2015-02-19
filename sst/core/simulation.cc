@@ -120,7 +120,7 @@ Simulation::~Simulation()
     // error could cause LinkMaps to be left.
     std::map<ComponentId_t,LinkMap*>::iterator it;
     for ( it = component_links.begin(); it != component_links.end(); ++it ) {
-	delete it->second;
+        delete it->second;
     }
     component_links.clear();
 }

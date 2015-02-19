@@ -86,6 +86,22 @@ protected:
      */
     Link* configureSelfLink( std::string name, Event::HandlerBase* handler = NULL);
 
+    bool doesSubComponentInfoStatisticExist(std::string statisticName);
+
+    template <typename T>
+    Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
+    {
+        // Verify here that name of the stat is one of the registered
+        // names of the component's ElementInfoStatisticEnable.  
+        if (false == doesSubComponentInfoStatisticExist(statName)) {
+            printf("Error: Statistic %s name %s is not found in ElementInfoStatisticEnable, exiting...\n",
+                   StatisticBase::buildStatisticFullName(parent->getName().c_str(), statName, statSubId).
+                   c_str(),
+                   statName.c_str());
+            exit(1);
+        }
+        return parent->registerStatisticCore<T>(statName, statSubId);
+    }
 
     /** Registers a clock for this component.
         @param freq Frequency for the clock in SI units

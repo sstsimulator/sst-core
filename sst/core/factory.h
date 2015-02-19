@@ -154,12 +154,19 @@ public:
      */
     StatisticOutput* CreateStatisticOutput(std::string& statOutputType, Params& statOutputParams);
 
-    /** Detirmine if a statistic is defined in a components ElementInfoStatisticEnable
-     * @param componentname - The name of the component
+    /** Determine if a statistic is defined in a components ElementInfoStatisticEnable
+     * @param type - The name of the component
      * @param statisticName - The name of the statistic 
      * @return True if the statistic is defined in the component's ElementInfoStatisticEnable
      */
     bool DoesComponentInfoStatisticEnableNameExist(std::string& type, std::string& statisticName);
+
+    /** Determine if a statistic is defined in a subcomponents ElementInfoStatisticEnable
+     * @param type - The name of the subcomponent
+     * @param statisticName - The name of the statistic 
+     * @return True if the statistic is defined in the component's ElementInfoStatisticEnable
+     */
+    bool DoesSubComponentInfoStatisticEnableNameExist(std::string& type, std::string& statisticName);
 
     /** Get the enable level of a statistic defined in the component's ElementInfoStatisticEnable
      * @param componentname - The name of the component
@@ -260,20 +267,31 @@ private:
     struct SubComponentInfo {
         const ElementInfoSubComponent* subcomponent;
         Params::KeySet_t params;
+        std::vector<std::string>  statEnableNames;
+        std::vector<uint8_t>      statEnableLevels;
 
         SubComponentInfo() {}
 
         SubComponentInfo(const ElementInfoSubComponent *subcomponent,
                          Params::KeySet_t params) : subcomponent(subcomponent), params(params)
-        { }
+        {
+            const ElementInfoStatisticEnable *s = subcomponent->stats;
+            while ( NULL != s && NULL != s->name ) {
+                statEnableNames.push_back(s->name);
+                statEnableLevels.push_back(s->enableLevel);
+                s++;
+            }
+        }
 
-        SubComponentInfo(const SubComponentInfo& old) : subcomponent(old.subcomponent), params(old.params)
+    SubComponentInfo(const SubComponentInfo& old) : subcomponent(old.subcomponent), params(old.params), statEnableNames(old.statEnableNames), statEnableLevels(old.statEnableLevels)
         { }
 
         SubComponentInfo& operator=(const SubComponentInfo& old)
         {
             subcomponent = old.subcomponent;
             params = old.params;
+            statEnableNames = old.statEnableNames;
+            statEnableLevels = old.statEnableLevels;
             return *this;
         }
     };

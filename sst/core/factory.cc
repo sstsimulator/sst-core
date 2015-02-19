@@ -143,6 +143,41 @@ Factory::DoesComponentInfoStatisticEnableNameExist(std::string& type, std::strin
     return false;
 }
 
+bool 
+Factory::DoesSubComponentInfoStatisticEnableNameExist(std::string& type, std::string& statisticName)
+{
+    std::string compTypeToLoad = type;
+    if (true == type.empty()) { 
+        compTypeToLoad = loadingComponentType;
+    }
+    
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // now look for subcomponent
+    std::string tmp = elemlib + "." + elem;
+    eis_map_t::iterator eii = found_subcomponents.find(tmp);
+    if (eii == found_subcomponents.end()) {
+        _abort(Factory,"can't find requested subcomponent %s.\n ", tmp.c_str());
+        return false;
+    }
+
+    const SubComponentInfo ci = eii->second;
+
+    // See if the statistic exists
+    for (uint32_t x = 0; x <  ci.statEnableNames.size(); x++) {
+        if (statisticName == ci.statEnableNames[x]) {
+            return true;
+        }
+    }
+    return false;
+}
+
 uint8_t 
 Factory::GetComponentInfoStatisticEnableLevel(std::string& type, std::string& statisticName)
 {

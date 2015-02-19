@@ -33,13 +33,14 @@ using namespace SST::Statistics;
 namespace SST {
 
 Component::Component(ComponentId_t id) :
-     defaultTimeBase(NULL), id( id)
+    defaultTimeBase(NULL), id( id)
 {
     myLinks = Simulation::getSimulation()->getComponentLinkMap(id);
 	const CompIdMap_t& map = Simulation::getSimulation()->getComponentIdMap();
 	CompIdMap_t::const_iterator i = map.find(id);
 	if ( i != map.end() ) name = i->second;
     _COMP_DBG( "new\n" );
+    currentlyLoadingSubModule = "";
 }
 
 Component::Component() 
@@ -298,7 +299,10 @@ Component::loadModuleWithComponent(std::string type, Component* comp, Params& pa
 SubComponent*
 Component::loadSubComponent(std::string type, Component* comp, Params& params)
 {
-    return Simulation::getSimulation()->getFactory()->CreateSubComponent(type,comp,params);
+    currentlyLoadingSubModule = type;
+    SubComponent* ret = Simulation::getSimulation()->getFactory()->CreateSubComponent(type,comp,params);
+    currentlyLoadingSubModule = "";
+    return ret;
 }
     
 bool Component::doesComponentInfoStatisticExist(std::string statisticName)
