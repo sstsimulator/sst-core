@@ -48,8 +48,8 @@ public:
     StatisticBase(Component* comp, std::string& statName, std::string& statSubId, Params& statParams);
 
     // Destructor
-    ~StatisticBase() {}
-    
+    virtual ~StatisticBase() {}
+
     /** Return the Statistic Parameters */
     Params& getParams() {return m_statParams;}
 
@@ -57,7 +57,7 @@ public:
     void enable() {m_statEnabled = true;}
     /** Disable Statistic for collections */
     void disable() {m_statEnabled = false;}
-                 
+
     // Handling of Collection Counts
     /** Increment current collection count */
     virtual void incrementCollectionCount();  
