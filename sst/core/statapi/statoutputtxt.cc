@@ -302,24 +302,6 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, double data)
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, const char* data)
-{
-    char buffer[256];
-    StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
-
-    if (NULL != FieldInfo) {
-        const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
-
-        if (true == m_outputInlineHeader) {
-            sprintf(buffer, "%s.%s = %s", FieldInfo->getFieldName().c_str(), typeName, data);
-        } else {
-            sprintf(buffer, "%s", data);
-        }
-        m_outputBuffer += buffer;
-        m_outputBuffer += "; ";
-    }
-}
-    
 } //namespace Statistics
 } //namespace SST
 

@@ -44,8 +44,8 @@ class StatisticFieldInfo
 {
 public:
     /** Supported Field Types */
-    enum fieldType_t {UNDEFINED, UINT32, UINT64, INT32, INT64, FLOAT, DOUBLE, STR};
-    typedef int32_t fieldHandle_t;
+    enum fieldType_t {UNDEFINED, UINT32, UINT64, INT32, INT64, FLOAT, DOUBLE};
+    typedef uint32_t fieldHandle_t;
 
 public:
     /** Construct a StatisticFieldInfo
@@ -144,7 +144,7 @@ public:
      *       handle.
      */
     // Field Registration
-    // ONLY SUPPORTED TYPES ARE int32_t, uint32_t, int64_t, uint64_t, float, double, const char*
+    // ONLY SUPPORTED TYPES ARE int32_t, uint32_t, int64_t, uint64_t, float, double
     template<typename T>
     fieldHandle_t registerField(const char* fieldName)
     {
@@ -154,7 +154,6 @@ public:
         if (is_type_same<T, uint64_t   >::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::UINT64));}
         if (is_type_same<T, float      >::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::FLOAT)); }
         if (is_type_same<T, double     >::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::DOUBLE));}
-        if (is_type_same<T, const char*>::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::STR));   }
 
         //TODO: IF WE GET THERE, GENERATE AN ERROR AS THIS IS AN UNSUPPORTED TYPE 
         return -1;
@@ -181,7 +180,7 @@ public:
      * @return Pointer to the registered field info.
      */
     // Get Registerd Fields
-    // ONLY SUPPORTED TYPES ARE int32_t, uint32_t, int64_t, uint64_t, float, double, const char*
+    // ONLY SUPPORTED TYPES ARE int32_t, uint32_t, int64_t, uint64_t, float, double
     template<typename T>
     StatisticFieldInfo* getRegisteredField(const char* statisticName, const char* fieldName)
     {
@@ -196,7 +195,6 @@ public:
         if (is_type_same<T, uint64_t   >::value) {FieldType = StatisticFieldInfo::UINT64;}
         if (is_type_same<T, float      >::value) {FieldType = StatisticFieldInfo::FLOAT; }
         if (is_type_same<T, double     >::value) {FieldType = StatisticFieldInfo::DOUBLE;}
-        if (is_type_same<T, const char*>::value) {FieldType = StatisticFieldInfo::STR;   }
         
         NewStatFieldInfo = new StatisticFieldInfo(statisticName, fieldName, FieldType);
     
@@ -231,7 +229,6 @@ public:
     void outputField(fieldHandle_t fieldHandle, uint64_t data);  
     void outputField(fieldHandle_t fieldHandle, float data);  
     void outputField(fieldHandle_t fieldHandle, double data);
-    void outputField(fieldHandle_t fieldHandle, const char* data);
     
     /** Output field data.  
      * @param type - The field type to get name of.
@@ -281,7 +278,6 @@ protected:
     virtual void implOutputField(fieldHandle_t fieldHandle, uint64_t data) = 0;  
     virtual void implOutputField(fieldHandle_t fieldHandle, float data) = 0;  
     virtual void implOutputField(fieldHandle_t fieldHandle, double data) = 0;
-    virtual void implOutputField(fieldHandle_t fieldHandle, const char* data) = 0;
 
 private:    
     // Start / Stop of register Fields

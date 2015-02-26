@@ -42,22 +42,33 @@ namespace Statistics {
 template <typename NumberBase>
 class AccumulatorStatistic : public Statistic<NumberBase> 
 {
-public:
-    /**
-        Create a new Accumulator class with initial values set to a zero count,
-        zero sum statistic of interest.
-    */
+private:
+    friend class SST::Simulation;
+
     AccumulatorStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) 
 		: Statistic<NumberBase>(comp, statName, statSubId, statParams)
     {
         m_sum = 0;
         m_sum_sq = 0;
-        this->setCollectionCount(0);
+
+        // Set the Name of this Statistic
         this->setStatisticTypeName("Accumulator");
     }
 
     ~AccumulatorStatistic() {}
 
+protected:    
+    /**
+        Present a new value to the class to be included in the statistics.
+        @param value New value to be presented
+    */
+    void addData_impl(NumberBase value) 
+    {
+        m_sum += value;
+        m_sum_sq += (value * value);
+    }
+    
+private:    
     /**
         Provides the sum of the values presented so far.
         @return The sum of values presented to the class so far.
@@ -77,26 +88,12 @@ public:
     }
 
     /**
-        Present an array of values to the class to be included in the statistics.
-        @param values The array of values to be added to the statistics collection
-        @param length The length of the array being presented
-    */
-    void addData(NumberBase* values, uint32_t length) 
-    {
-        if(true == this->isEnabled()) {
-            for(uint32_t i = 0; i < length; ++i) {
-                addData(values[i]);
-            }
-        }
-    }
-
-    /**
         Get the arithmetic mean of the values presented so far
         @return The arithmetic mean of the values presented so far.
     */
     NumberBase getArithmeticMean() 
     {
-        uint64_t count = this->getCollectionCount();
+        uint64_t count = getCount();
         return (count > 0) ? (m_sum / (NumberBase) count) : 0;
     }
 
@@ -106,7 +103,7 @@ public:
     */
     NumberBase getVariance() 
     {
-        uint64_t count = this->getCollectionCount();
+        uint64_t count = getCount();
         return (count > 0) ? (m_sum_sq * count) - (m_sum * m_sum) : 0;
     }
 
@@ -127,7 +124,7 @@ public:
     {
         return this->getCollectionCount();
     }
-
+    
     void clearStatisticData()
     {
         m_sum = 0;
@@ -147,17 +144,6 @@ public:
         statOutput->outputField(Field1, m_sum);
         statOutput->outputField(Field2, m_sum_sq);  
         statOutput->outputField(Field3, getCount());  
-    }
-    
-protected:    
-    /**
-        Present a new value to the class to be included in the statistics.
-        @param value New value to be presented
-    */
-    void addData_impl(NumberBase value) 
-    {
-        m_sum += value;
-        m_sum_sq += (value * value);
     }
     
     bool isStatModeSupported(StatisticBase::StatMode_t mode) const 
@@ -189,6 +175,6 @@ private:
 } //namespace Statistics
 } //namespace SST
 
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::AccumulatorStatistic<uint32_t>)
+//BOOST_CLASS_EXPORT_KEY(SST::Statistics::AccumulatorStatistic<uint32_t>)
 
 #endif

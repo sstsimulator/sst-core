@@ -148,19 +148,6 @@ void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, double d
     }
 }
 
-void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, const char* data)
-{
-    char buffer[256];
-    StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
-
-    if (NULL != FieldInfo) {
-        const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
-        sprintf(buffer, "%s.%s = %s", FieldInfo->getFieldName().c_str(), typeName, data);
-        m_OutputBuffer += buffer;
-        m_OutputBuffer += "; ";
-    }
-}
-    
 } //namespace Statistics
 } //namespace SST
 

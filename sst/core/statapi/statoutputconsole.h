@@ -80,7 +80,6 @@ protected:
     void implOutputField(fieldHandle_t fieldHandle, uint64_t data); 
     void implOutputField(fieldHandle_t fieldHandle, float data);
     void implOutputField(fieldHandle_t fieldHandle, double data);
-    void implOutputField(fieldHandle_t fieldHandle, const char* data);
 
 protected: 
     StatisticOutputConsole() {;} // For serialization

@@ -166,12 +166,6 @@ void StatisticOutput::outputField(fieldHandle_t fieldHandle, double data)
     implOutputField(fieldHandle, data);
 }
 
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, const char* data)
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
 const char* StatisticOutput::getFieldTypeShortName(fieldType_t type)
 {
     switch (type) {
@@ -181,7 +175,6 @@ const char* StatisticOutput::getFieldTypeShortName(fieldType_t type)
         case StatisticFieldInfo::UINT64 : return "u64"; break;
         case StatisticFieldInfo::FLOAT  : return "f32"; break;
         case StatisticFieldInfo::DOUBLE : return "f64"; break;
-        case StatisticFieldInfo::STR    : return "s"; break;
         default: return "INVALID"; break;    
     }
 }

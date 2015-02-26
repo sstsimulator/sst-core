@@ -296,6 +296,6 @@ private:
 } //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::Statistics::StatisticBase)
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::Statistic<uint32_t>)
+//BOOST_CLASS_EXPORT_KEY(SST::Statistics::Statistic<uint32_t>)
 
 #endif

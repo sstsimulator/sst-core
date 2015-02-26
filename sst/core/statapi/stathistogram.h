@@ -33,58 +33,112 @@ namespace Statistics {
 /**
     \class HistogramStatistic
 	Holder of data grouped into pre-determined width bins.
-	\tparam HistoBinType is the type of the data held in each bin (i.e. what data type described the width of the bin)
+	\tparam BinDataType is the type of the data held in each bin (i.e. what data type described the width of the bin)
 */
-#define HistoCountType uint64_t
+#define CountType   uint64_t
+#define NumBinsType uint32_t
 
-template<class HistoBinType>
-class HistogramStatistic : public Statistic<HistoBinType> 
+template<class BinDataType>
+class HistogramStatistic : public Statistic<BinDataType> 
 {
-public:
+private:
+    friend class SST::Simulation;
+    
     HistogramStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams)
-		: Statistic<HistoBinType>(comp, statName, statSubId, statParams)
+		: Statistic<BinDataType>(comp, statName, statSubId, statParams)
     {
         // Identify what keys are Allowed in the parameters
         Params::KeySet_t allowedKeySet;
         allowedKeySet.insert("minvalue");
-        allowedKeySet.insert("maxvalue");
         allowedKeySet.insert("binwidth");
+        allowedKeySet.insert("numbins");
+        allowedKeySet.insert("dumpbinsonoutput");
         allowedKeySet.insert("includeoutofbounds");
         statParams.pushAllowedKeys(allowedKeySet);
         
         // Process the Parameters
-        HistoBinType minValue = statParams.find_integer("minvalue", 0);
-        HistoBinType maxValue = statParams.find_integer("maxvalue", 500000000);
-        HistoBinType binWidth = statParams.find_integer("binwidth", 500000000);
-        bool         includeOutOfBounds = statParams.find_integer("includeoutofbounds", 0);
+        m_minValue = statParams.find_integer("minvalue", 0);
+        m_binWidth = statParams.find_integer("binwidth", 5000);
+        m_numBins = statParams.find_integer("numbins", 100);
+        m_dumpBinsOnOutput = statParams.find_integer("dumpbinsonoutput", 1);
+        m_includeOutOfBounds = statParams.find_integer("includeoutofbounds", 1);
         
-        initProperties(minValue, maxValue, binWidth, includeOutOfBounds);
+        // Initialize other properties
+        m_totalSummed = 0;
+        m_totalSummedSqr = 0;
+        m_OOBMinCount = 0;
+        m_OOBMaxCount = 0;
+        m_itemsBinnedCount = 0;
+        this->setCollectionCount(0);
+
+        // Set the Name of this Statistic
         this->setStatisticTypeName("Histogram");
     }
 
     ~HistogramStatistic() {}
-    
+
+protected:    
     /**
-        Count how many bins are active in this histogram
+        Adds a new value to the histogram. The correct bin is identified and then incremented. If no bin can be found
+        to hold the value then a new bin is created.
     */
-    HistoCountType getActiveBinCount() 
+    void addData_impl(BinDataType value) 
+    {
+        // Check to see if the value is above or below the min/max values
+        if (value < getBinsMinValue()) {   
+            m_OOBMinCount++;
+            return; 
+        }
+        if (value > getBinsMaxValue()) {
+            m_OOBMaxCount++;
+            return; 
+        } 
+
+        // This value is to be binned...
+        // Add the "in limits" value to the total summation's 
+        m_totalSummed += value;
+        m_totalSummedSqr += (value * value);
+        
+        // Increment the Binned count (note this <= to the Statistics added Item Count)
+        m_itemsBinnedCount++;
+        
+        // Figure out what the starting bin is and find it in the map
+        // To support signed and unsigned values along with floating point types,
+        // the calculation to find the bin_start value must be done in floating point
+        // then converted to BinDataType
+        double calc1 = (double)value / (double)m_binWidth;  
+        double calc2 = floor(calc1);             // Find the floor of the value
+        double calc3 = m_binWidth * calc2;
+        BinDataType  bin_start = (BinDataType)calc3;
+//      printf("DEBUG: value = %d, junk1 = %f, calc2 = %f, calc3 = %f : bin_start = %d, item count = %ld, \n", value, calc1, calc2, calc3, bin_start, getStatCollectionCount());        
+
+        HistoMapItr_t bin_itr = m_binsMap.find(bin_start);
+        
+        // Was the bin found?
+        if(bin_itr == m_binsMap.end()) {
+            // No, Create the bin and set a value of 1 to it
+            m_binsMap.insert(std::pair<BinDataType, CountType>(bin_start, (CountType) 1));
+        } else {
+            // Yes, Increment the specific bin's count
+            bin_itr->second++;
+        }
+    }
+
+private:    
+    /** Count how many bins are active in this histogram */
+    NumBinsType getActiveBinCount() 
     {
         return m_binsMap.size();
     }
 
-    /**
-        Count how many bins are available
-    */
-    HistoBinType getNumBins() 
+    /** Count how many bins are available */
+    NumBinsType getNumBins() 
     {
-        // Note: the maxValue is inclusive
-        return ((m_maxValue - m_minValue) + 1) / m_binWidth;
+        return m_numBins;
     }
 
-    /**
-        Get the width of a bin in this histogram
-    */
-    HistoBinType getBinWidth() 
+    /** Get the width of a bin in this histogram */
+    NumBinsType getBinWidth() 
     {
         return m_binWidth;
     }
@@ -93,7 +147,7 @@ public:
         Get the count of items in the bin by the start value (e.g. give me the count of items in the bin which begins at value X).
         \return The count of items in the bin else 0.
     */
-    HistoCountType getBinCountByBinStart(HistoBinType binStartValue) 
+    CountType getBinCountByBinStart(BinDataType binStartValue) 
     {
         // Find the Bin Start Value in the Bin Map
         HistoMapItr_t bin_itr = m_binsMap.find(binStartValue);
@@ -101,7 +155,7 @@ public:
         // Check to see if the Start Value was found
         if(bin_itr == m_binsMap.end()) {
             // No, return no count for this bin
-            return (HistoCountType) 0;
+            return (CountType) 0;
         } else {
             // Yes, return the bin count
             return m_binsMap[binStartValue];
@@ -111,7 +165,7 @@ public:
     /**
         Get the smallest start value of a bin in this histogram (i.e. the minimum value possibly represented by this histogram)
     */
-    HistoBinType getBinsMinValue() 
+    BinDataType getBinsMinValue() 
     {
         return m_minValue;
     }
@@ -119,25 +173,37 @@ public:
     /**
         Get the largest possible value represented by this histogram (i.e. the highest value in any of items bins rounded above to the size of the bin)
     */
-    HistoBinType getBinsMaxValue() 
+    BinDataType getBinsMaxValue() 
     {
-        return m_maxValue;
+        // Compute the max value based on the width * num bins offset by minvalue
+        return (m_binWidth * m_numBins) + m_minValue - 1;
+    }
+
+    /**
+        Get the total number of items collected by the statistic
+        \return The number of items that have been added to the statistic
+    */
+    uint64_t getStatCollectionCount() 
+    {
+        // Get the number of items added (but not necessarily binned) to this statistic
+        return this->getCollectionCount();
     }
 
     /**
         Get the total number of items contained in all bins
         \return The number of items contained in all bins
     */
-    uint64_t getItemCount() 
+    CountType getItemsBinnedCount() 
     {
-        return this->getCollectionCount();
+        // Get the number of items added to this statistic that were binned.
+        return m_itemsBinnedCount;
     }
 
     /**
         Sum up every item presented for storage in the histogram
         \return The sum of all values added into the histogram
     */
-    HistoBinType getValuesSummed() 
+    BinDataType getValuesSummed() 
     {
         return m_totalSummed;
     }
@@ -146,13 +212,17 @@ public:
 	Sum up every squared value entered into the Histogram.
 	\return The sum of all values added after squaring into the Histogram
     */
-    HistoBinType getValuesSquaredSummed() {
-	return m_totalSummedSqr;
+    BinDataType getValuesSquaredSummed() {
+        return m_totalSummedSqr;
     }
 
     void clearStatisticData()
     {
         m_totalSummed = 0;
+        m_totalSummedSqr = 0;
+        m_OOBMinCount = 0;
+        m_OOBMaxCount = 0;
+        m_itemsBinnedCount = 0;
         m_binsMap.clear();
         this->setCollectionCount(0);
     }
@@ -160,86 +230,67 @@ public:
     void registerOutputFields(StatisticOutput* statOutput)
     {
         // Check to see if we have registered the Startup Fields        
-        m_Fields.push_back(statOutput->registerField<HistoBinType>("MinValue"));
-        m_Fields.push_back(statOutput->registerField<HistoBinType>("MaxValue"));  
-        m_Fields.push_back(statOutput->registerField<HistoBinType>("BinWidth"));  
-        m_Fields.push_back(statOutput->registerField<HistoBinType>("TotalNumBins"));  
-        m_Fields.push_back(statOutput->registerField<HistoBinType>("NumActiveBins"));  
-        m_Fields.push_back(statOutput->registerField<uint64_t>    ("NumItemsCollected"));
-        m_Fields.push_back(statOutput->registerField<HistoBinType>("SumSQ"));
-        m_Fields.push_back(statOutput->registerField<HistoBinType>("Sum"));
+        m_Fields.push_back(statOutput->registerField<BinDataType>("BinsMinValue"));
+        m_Fields.push_back(statOutput->registerField<BinDataType>("BinsMaxValue"));  
+        m_Fields.push_back(statOutput->registerField<NumBinsType>("BinWidth"));  
+        m_Fields.push_back(statOutput->registerField<NumBinsType>("TotalNumBins"));  
+        m_Fields.push_back(statOutput->registerField<BinDataType>("Sum"));
+        m_Fields.push_back(statOutput->registerField<BinDataType>("SumSQ"));
+        m_Fields.push_back(statOutput->registerField<NumBinsType>("NumActiveBins"));  
+        m_Fields.push_back(statOutput->registerField<CountType>  ("NumItemsCollected"));
+        m_Fields.push_back(statOutput->registerField<CountType>  ("NumItemsBinned"));
+
+        if (true == m_includeOutOfBounds) {
+                m_Fields.push_back(statOutput->registerField<CountType>("NumOutOfBounds-MinValue"));
+                m_Fields.push_back(statOutput->registerField<CountType>("NumOutOfBounds-MaxValue"));
+        }
+
+        // Do we also need to dump the bin counts on output
+        if (true == m_dumpBinsOnOutput) {
+            BinDataType binLL;
+            BinDataType binUL;
+            
+            for (uint32_t y = 0; y < getNumBins(); y++) {
+                // Figure out the upper and lower values for this bin
+                binLL = (y * getBinWidth()) + getBinsMinValue();
+                binUL = binLL + getBinWidth() - 1;
+                // Build the string name for this bin and add it as a field
+                std::stringstream ss;
+                ss << "Bin" << y << ":" << binLL << "-" << binUL;
+                m_Fields.push_back(statOutput->registerField<CountType>(ss.str().c_str()));
+            }
+        }
     }
-    
+
     void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag)
     {
-        uint64_t x = 0;
+        uint32_t x = 0;
         statOutput->outputField(m_Fields[x++], getBinsMinValue());
         statOutput->outputField(m_Fields[x++], getBinsMaxValue());
         statOutput->outputField(m_Fields[x++], getBinWidth());
         statOutput->outputField(m_Fields[x++], getNumBins());
-        statOutput->outputField(m_Fields[x++], getActiveBinCount());
-        statOutput->outputField(m_Fields[x++], getItemCount());
         statOutput->outputField(m_Fields[x++], getValuesSummed());
         statOutput->outputField(m_Fields[x++], getValuesSquaredSummed());
-    }
+        statOutput->outputField(m_Fields[x++], getActiveBinCount());
+        statOutput->outputField(m_Fields[x++], getStatCollectionCount());
+        statOutput->outputField(m_Fields[x++], getItemsBinnedCount());
+        
+        if (true == m_includeOutOfBounds) {
+            statOutput->outputField(m_Fields[x++], m_OOBMinCount);
+            statOutput->outputField(m_Fields[x++], m_OOBMaxCount);
+        }
 
-protected:    
-    /**
-        Adds a new value to the histogram. The correct bin is identified and then incremented. If no bin can be found
-        to hold the value then a new bin is created.
-    */
-    void addData_impl(HistoBinType value) 
-    {
-        HistoBinType binValue;
-
-        // Check to see if the value is above or below the min/max values
-        if (value < m_minValue) {
-            if (true == m_includeOutOfBounds) {
-              // Add the "Below Min" value to the total summation 
-              m_totalSummed += value;
-              m_totalSummedSqr += value * value;
-
-              binValue = m_minValue; // Force the system to count this value
-            } else {
-                // Dont add this value
-                return;
+        // Do we also need to dump the bin counts on output
+        if (true == m_dumpBinsOnOutput) {
+            BinDataType currentBinValue = getBinsMinValue();
+            for (uint32_t y = 0; y < getNumBins(); y++) {
+                statOutput->outputField(m_Fields[x++], getBinCountByBinStart(currentBinValue));
+                // Increment the currentBinValue to get the next bin
+                currentBinValue += getBinWidth();
             }
-            
-        } else {
-            if (value > m_maxValue) {
-                if (true == m_includeOutOfBounds) {
-                    // Add the "Above Max" value to the total summation 
-                    m_totalSummed += value;
-                    m_totalSummedSqr += value * value;
-
-                    binValue = m_maxValue; // Force the system to count this value
-                } else {
-                    // Dont add this value
-                    return;
-                }
-            } else {
-              // Add the "in limits" value to the total summation 
-              m_totalSummed += value;
-              m_totalSummedSqr += value;
-              binValue = value;
-          }
-        }
-        
-        
-        // Figure out what the starting bin is and find it in the map
-        HistoBinType bin_start = m_binWidth * (binValue / m_binWidth);
-        HistoMapItr_t bin_itr = m_binsMap.find(bin_start);
-
-        // Was the bin found?
-        if(bin_itr == m_binsMap.end()) {
-            // No, so add a value of 1 to this bin
-            m_binsMap.insert(std::pair<HistoBinType, HistoCountType>(bin_start, (HistoCountType) 1));
-        } else {
-            // Yes, Increment the bin count
-            bin_itr->second++;
         }
     }
-    
+
     bool isStatModeSupported(StatisticBase::StatMode_t mode) const 
     {
         if (mode == StatisticBase::STAT_MODE_COUNT) {
@@ -252,72 +303,61 @@ protected:
     }
     
 private:
-    void initProperties(HistoBinType MinValue, HistoBinType MaxValue, HistoBinType binWidth, bool includeOutOfBounds) 
-    {    
-        m_binWidth = binWidth;
-        m_includeOutOfBounds = includeOutOfBounds;
-        m_totalSummedSqr = 0;
-        m_totalSummed = 0;
-        m_minValue = MinValue;
-        m_maxValue = MaxValue;
-    }
-    
-private:
-    /**
-    * 	Bin Map Definition
-    */
-    typedef std::map<HistoBinType, HistoCountType> HistoMap_t;
-    /**
-    * 	Iterator over the histogram bins
-    */
+    // Bin Map Definition
+    typedef std::map<BinDataType, CountType> HistoMap_t;
+
+    // Iterator over the histogram bins 
     typedef typename HistoMap_t::iterator HistoMapItr_t;
 
+    // The minimum value in the Histogram 
+    BinDataType m_minValue;
 
-    /**
-        The minimum value in the Histogram
-    */
-    HistoBinType m_minValue;
-    /**
-        The maximum bin-value of the Histrogram (i.e. the maximum value rounded up)
-    */
-    HistoBinType m_maxValue;
-    /**
-        The width of a Histogram bin
-    */
-    HistoBinType m_binWidth;
+    // The width of each Histogram bin
+    NumBinsType m_binWidth;
     
-    /**
-        The sum of all values added into the Histogram, this is calculated and the sum of all values presented
-        to be entered into the Histogram not with bin-width multiplied by the (max-min)/2 of the bin.
-    */
-    HistoBinType m_totalSummed;
+    // The number of bins to be supported 
+    NumBinsType m_numBins;
 
-    /**
-        A map of the the bin starts to the bin counts
-    */
-    HistoMap_t            m_binsMap;
+    // Out of bounds bins 
+    CountType m_OOBMinCount;
+    CountType m_OOBMaxCount;
+
+    // Count of Items that have binned, (Different than item count as some 
+    // items may be out of bounds and not binned)
+    CountType m_itemsBinnedCount;
+
+    // The sum of all values added into the Histogram, this is calculated and the sum of all values presented
+    // to be entered into the Histogram not with bin-width multiplied by the (max-min)/2 of the bin. 
+    BinDataType m_totalSummed;
+
+    // The sum of values added to the Histogram squared. Allows calculation of derivative statistic
+	// values such as variance. 
+    BinDataType m_totalSummedSqr;
+
+    // A map of the the bin starts to the bin counts 
+    HistoMap_t m_binsMap;
     
-    std::vector<uint64_t> m_Fields;
+    // Support 
+    std::vector<uint32_t> m_Fields;
+    bool                  m_dumpBinsOnOutput;
     bool                  m_includeOutOfBounds;
-
-    /**
-	The sum of values added to the Histogram squared. Allows calculation of derivative statistic
-	values such as variance.
-    */
-    HistoBinType m_totalSummedSqr;
 
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version)
     {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Statistic<HistoBinType>);
+        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Statistic<BinDataType>);
         ar & BOOST_SERIALIZATION_NVP(m_minValue);
-        ar & BOOST_SERIALIZATION_NVP(m_maxValue); 
         ar & BOOST_SERIALIZATION_NVP(m_binWidth); 
+        ar & BOOST_SERIALIZATION_NVP(m_numBins); 
+        ar & BOOST_SERIALIZATION_NVP(m_OOBMinCount); 
+        ar & BOOST_SERIALIZATION_NVP(m_OOBMaxCount); 
+        ar & BOOST_SERIALIZATION_NVP(m_itemsBinnedCount); 
         ar & BOOST_SERIALIZATION_NVP(m_totalSummed);
         ar & BOOST_SERIALIZATION_NVP(m_totalSummedSqr);
         ar & BOOST_SERIALIZATION_NVP(m_binsMap);
         ar & BOOST_SERIALIZATION_NVP(m_Fields);
+        ar & BOOST_SERIALIZATION_NVP(m_dumpBinsOnOutput);
         ar & BOOST_SERIALIZATION_NVP(m_includeOutOfBounds);
     }
 };

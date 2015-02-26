@@ -41,26 +41,31 @@ namespace Statistics {
 template <typename T>
 class NullStatistic : public Statistic<T>
 {
-public:    
+private:    
+    friend class SST::Simulation;
+    
     NullStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) 
 		: Statistic<T>(comp, statName, statSubId, statParams)
     {
+        // Set the Name of this Statistic
         this->setStatisticTypeName("NULL");
     }
 
     ~NullStatistic(){};
-    
+
+protected:    
     void addData_impl(T data)
+    {
+        // Do Nothing
+    }
+
+private:    
+    void clearStatisticData()
     {
         // Do Nothing
     }
     
     void registerOutputFields(StatisticOutput* statOutput)
-    {
-        // Do Nothing
-    }
-    
-    void clearStatisticData()
     {
         // Do Nothing
     }
@@ -92,6 +97,6 @@ private:
 } //namespace Statistics
 } //namespace SST
 
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::NullStatistic<uint32_t>)
+//BOOST_CLASS_EXPORT_KEY(SST::Statistics::NullStatistic<uint32_t>)
 
 #endif

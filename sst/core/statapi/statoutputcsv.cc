@@ -219,7 +219,7 @@ void StatisticOutputCSV::implStopOutputEntries()
         fprintf(m_hFile, "%d", Simulation::getSimulation()->getRank());
         fprintf(m_hFile, "%s", m_Separator.c_str());
     }
-
+    
     x = 0;
     while (x < m_OutputBufferArray.size()) {
         fprintf(m_hFile, "%s", m_OutputBufferArray[x].c_str());
@@ -270,13 +270,6 @@ void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, double data)
 {
     char buffer[256];
     sprintf(buffer, "%f", data);
-    m_OutputBufferArray[fieldHandle] = buffer;
-}
-
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, const char* data)
-{
-    char buffer[256];
-    sprintf(buffer, "%s", data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
