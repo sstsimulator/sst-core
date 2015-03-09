@@ -210,7 +210,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_simpleDistribComponent.sh
         ${SST_TEST_SUITES}/testSuite_simpleRNGComponent.sh
         ${SST_TEST_SUITES}/testSuite_simpleStatisticsComponent.sh
-        ${SST_TEST_SUITES}/testSuite_simpleTracerComponent.sh
+        ${SST_TEST_SUITES}/testSuite_tracerComponent.sh
         ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
         ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
         ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
@@ -278,7 +278,7 @@ dotests() {
 
     ${SST_TEST_SUITES}/testSuite_portals.sh
     ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
-    ${SST_TEST_SUITES}/testSuite_simpleTracerComponent.sh
+    ${SST_TEST_SUITES}/testSuite_tracerComponent.sh
     ${SST_TEST_SUITES}/testSuite_miranda.sh
 
     ${SST_TEST_SUITES}/testSuite_iris.sh
