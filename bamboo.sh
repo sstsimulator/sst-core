@@ -200,7 +200,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_iris.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
         ${SST_TEST_SUITES}/testSuite_merlin.sh
-        ${SST_TEST_SUITES}/testSuite_messageGenerator.sh
+        ${SST_TEST_SUITES}/testSuite_simpleMessageGeneratorComponent.sh
         ${SST_TEST_SUITES}/testSuite_miranda.sh
         ${SST_TEST_SUITES}/testSuite_portals.sh
         ${SST_TEST_SUITES}/testSuite_prospero.sh
@@ -364,7 +364,7 @@ dotests() {
 #
     ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
     ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
-    ${SST_TEST_SUITES}/testSuite_messageGenerator.sh
+    ${SST_TEST_SUITES}/testSuite_simpleMessageGeneratorComponent.sh
     ${SST_TEST_SUITES}/testSuite_VaultSim.sh
 
     # for now, only run VaultSim test on these special configurations
