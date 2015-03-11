@@ -41,8 +41,8 @@ public:
     virtual void finish( ) { }
 
 protected:
-    /* Component* const parent; */
-    Component* parent;
+    Component* const parent;
+    // Component* parent;
 
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.

@@ -71,6 +71,7 @@ nobase_dist_sst_HEADERS = \
 	interfaces/TestEvent.h \
 	interfaces/stringEvent.h \
 	interfaces/simpleMem.h \
+	interfaces/simpleNetwork.h \
 	interprocess/circularBuffer.h \
 	interprocess/ipctunnel.h \
 	rng/sstrand.h \
@@ -113,13 +114,13 @@ sst_core_sources = \
 	exit.cc \
 	export.cc \
 	factory.cc \
-    heartbeat.cc \
+	heartbeat.cc \
 	initQueue.cc \
 	introspectAction.cc \
 	introspector.cc \
 	introspectedComponent.cc \
 	link.cc \
-    memuse.cc \
+	memuse.cc \
 	oneshot.cc \
 	output.cc \
 	params.cc \
@@ -135,6 +136,7 @@ sst_core_sources = \
 	interfaces/stringEvent.cc \
 	interfaces/TestEvent.cc \
 	interfaces/simpleMem.cc \
+	interfaces/simpleNetwork.cc \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
 	rng/poisson.cc \

@@ -42,6 +42,9 @@ public:
     /** Cause this event to fire */
     void execute(void);
 
+    /** Clones the event in for the case of a broadcast */
+    virtual Event* clone();
+    
     /** Sets the link id used for delivery.  For use by SST Core only */
     inline void setDeliveryLink(LinkId_t id, Link *link) {
         link_id = id;

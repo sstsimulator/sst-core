@@ -31,6 +31,11 @@ void Event::execute(void)
     delivery_link->deliverEvent(this);
 }
 
+Event* Event::clone() {
+    Simulation::getSimulation()->getSimulationOutput().
+        fatal(CALL_INFO,1,"Called clone() on an Event that doesn't"
+              " implement it.");            
+}
 
 Event::id_type Event::generateUniqueId()
 {
