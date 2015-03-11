@@ -59,6 +59,10 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
 	}
 #endif
 
+#ifdef HAVE_MICRON_HMCSIM
+        new_env_size += (strlen(MICRON_HMCSIM_LIBDIR) + 2) + sizeof(char) * 1;
+#endif
+
 #ifdef HAVE_METIS
         new_env_size += (strlen(METIS_LIBDIR) + 2) + sizeof(char) * 1;
 #endif
@@ -121,6 +125,13 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
         sprintf(temp_metis_copy, "%s", updated_environment);
         sprintf(updated_environment, "%s:%s", temp_metis_copy, METIS_LIBDIR);
         free(temp_metis_copy);
+#endif
+
+#ifdef HAVE_MICRON_HMCSIM
+        char* temp_micron_hmcsim_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
+        sprintf(temp_micron_hmcsim_copy, "%s", updated_environment);
+        sprintf(updated_environment, "%s:%s", temp_micron_hmcsim_copy, MICRON_HMCSIM_LIBDIR);
+        free(temp_micron_hmcsim_copy);
 #endif
 
         // Override the exiting LD_LIBRARY_PATH with our updated variable
