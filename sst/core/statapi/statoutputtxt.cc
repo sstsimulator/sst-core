@@ -44,7 +44,7 @@ bool StatisticOutputTxt::checkOutputParameters()
     if (true == foundKey) {
         return false;
     }
-    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.csv");
+    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.txt");
     topHeaderFlag = getOutputParameters().find_string("outputtopheader", "0");
     inlineHeaderFlag = getOutputParameters().find_string("outputinlineheader", "1");
     simTimeFlag = getOutputParameters().find_string("outputsimtime", "1");
