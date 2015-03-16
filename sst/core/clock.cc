@@ -1,8 +1,8 @@
-// Copyright 2009-2014 Sandia Corporation. Under the terms
+// Copyright 2009-2015 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2014, Sandia Corporation
+// Copyright (c) 2009-2015, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -93,7 +93,7 @@ void Clock::execute( void ) {
     currentCycle++;
     
     StaticHandlerMap_t::iterator sop_iter,start_iter,stop_iter;
-    //bool group = false;	//Scoggin(Jan23,2014) fix unused varialble warning in build
+    //bool group = false;	//Scoggin(Jan23,2015) fix unused varialble warning in build
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
     	Clock::HandlerBase* handler = *sop_iter;
     	if ( (*handler)(currentCycle) ) sop_iter = staticHandlerMap.erase(sop_iter);
