@@ -35,6 +35,7 @@ Event* Event::clone() {
     Simulation::getSimulation()->getSimulationOutput().
         fatal(CALL_INFO,1,"Called clone() on an Event that doesn't"
               " implement it.");            
+    return NULL;  // Never reached, but gets rid of compiler warning
 }
 
 Event::id_type Event::generateUniqueId()
