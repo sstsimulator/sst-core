@@ -2101,8 +2101,13 @@ else
             module avail 2>&1 >/dev/null | egrep -q "pin-2.13-61206-gcc.4.4.7-linux"
             if [ $? == 0 ] 
             then
-                echo "Loading Intel PIN environment module"
-                module load pin/pin-2.13-61206-gcc.4.4.7-linux
+            # if the 2.13 module is available, use 2.14 instead.
+
+                export SST_DEPS_INSTALL_INTEL_PIN=/home/jpvandy/pin-2.14-71313-gcc.4.4.7-linux 
+                export INTEL_PIN_DIRECTORY=/home/jpvandy/pin-2.14-71313-gcc.4.4.7-linux 
+                echo "using Intel PIN environment module  pin-2.14-71313-gcc.4.4.7-linux"
+                ## echo "Loading Intel PIN environment module"
+                ## module load pin/pin-2.13-61206-gcc.4.4.7-linux
             else
                 echo "Intel PIN environment module not found on this host."
             fi
