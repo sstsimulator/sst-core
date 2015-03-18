@@ -115,9 +115,6 @@ public:
      */
     class NetworkInspector : public SubComponent {
 
-    protected:
-        std::string id;
-    
     public:
         NetworkInspector(Component* parent) :
             SubComponent(parent)
