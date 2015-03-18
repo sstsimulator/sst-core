@@ -28,17 +28,6 @@ class Link;
     
 namespace Interfaces {
     
-class NetworkInspector : public SubComponent {
-public:
-    NetworkInspector(Component* parent) :
-        SubComponent(parent)
-    {}
-
-    virtual ~NetworkInspector() {}
-
-    virtual void inspectNetworkData(Event* ev) = 0;
-};
-
     
 /**
  * Generic network interface
@@ -119,6 +108,34 @@ public:
             ar & BOOST_SERIALIZATION_NVP(tail);
             ar & BOOST_SERIALIZATION_NVP(payload);
         }
+    };
+
+    /**
+       Class used to inspect network requests going through the network.
+     */
+    class NetworkInspector : public SubComponent {
+
+    protected:
+        std::string id;
+    
+    public:
+        NetworkInspector(Component* parent) :
+            SubComponent(parent)
+        {}
+
+        virtual ~NetworkInspector() {}
+
+        virtual void inspectNetworkData(Request* req) = 0;
+
+        /**
+         *  The ID uniquely identifies the component in which this
+         *  subcomponent is instantiated.  It does not uniquely define
+         *  this particular NetworkInspector, and all NetworkInspectors
+         *  instantiated in the smae component will get the same ID.  If
+         *  registering statistics, the ID is intended to be used as the
+         *  subfield of the statistic.
+         */
+        virtual void initialize(std::string id) = 0;
     };
 
     /** Functor classes for handling of callbacks */
