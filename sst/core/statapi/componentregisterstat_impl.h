@@ -40,7 +40,7 @@
     // // Verify here that name of the stat is one of the registered
     // // names of the component's ElementInfoStatisticEnable.  
     // if (false == doesComponentInfoStatisticExist(statName)) {
-    //     printf("Error: Statistic %s name %s is not found in ElementInfoStatisticEnable, exiting...\n", fullStatName.c_str(), statName.c_str());
+    //     fprintf(stderr, "Error: Statistic %s name %s is not found in ElementInfoStatisticEnable, exiting...\n", fullStatName.c_str(), statName.c_str());
     //     exit(1);
     // }
 
@@ -100,7 +100,7 @@
             statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
         } else {
             // collectionRate is a unit type we dont recognize 
-            printf("ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
+            fprintf(stderr, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
             exit(1);
         }
     }
@@ -109,7 +109,7 @@
         // Instantiate the Statistic here defined by the type here
         statistic = Simulation::getSimulation()->CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
-            printf("ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
+            fprintf(stderr, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
             exit(1);
         }
 
@@ -179,7 +179,7 @@
         statistic = Simulation::getSimulation()->CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             statGood = false;
-            printf("ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
+            fprintf(stderr, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
             exit(1);
         }
     }

@@ -206,7 +206,7 @@ bool StatisticProcessingEngine::isStatisticPreviouslyRegistered(StatisticBase* s
         TestStat = *it_v;
 
         if (*TestStat == *stat) {
-            Output out("Rank@R - StatisticProcessingEngine - ", 0, 0, Output::STDERR);
+            Output out("Rank@R - StatisticProcessingEngine - ", 0, 0, Output::STDOUT);
             out.output(CALL_INFO, "Warning: Statistic %s has been previously registered as an Event Based Statistic, providing a NullStatistic instead...\n", stat->getFullStatName().c_str());
             
             return true;
@@ -223,7 +223,7 @@ bool StatisticProcessingEngine::isStatisticPreviouslyRegistered(StatisticBase* s
             TestStat = *it_v;
     
             if (*TestStat == *stat) {
-                Output out("Rank@R - StatisticProcessingEngine - ", 0, 0, Output::STDERR);
+                Output out("Rank@R - StatisticProcessingEngine - ", 0, 0, Output::STDOUT);
                 out.output(CALL_INFO, "Warning: Statistic %s has been previously registered as a Periodic Based Statistic, providing a NullStatistic instead...\n", stat->getFullStatName().c_str());
                 return true;
             }
