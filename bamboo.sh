@@ -2097,17 +2097,17 @@ else
                 darwinSetBoostMPI $1 $2 $3 $4
             fi
 
-            # if Intel PIN module is available, load it
-            module avail 2>&1 >/dev/null | egrep -q "pin-2.13-61206-gcc.4.4.7-linux"
+            # if Intel PIN module is available, load 2.14 version
+            module avail 2>&1 >/dev/null | egrep -q "pin/pin"
             if [ $? == 0 ] 
             then
-            # if the 2.13 module is available, use 2.14 instead.
+            # if `pin module is available, use 2.14.
 
-                export SST_DEPS_INSTALL_INTEL_PIN=/home/jpvandy/pin-2.14-71313-gcc.4.4.7-linux 
-                export INTEL_PIN_DIRECTORY=/home/jpvandy/pin-2.14-71313-gcc.4.4.7-linux 
+##                export SST_DEPS_INSTALL_INTEL_PIN=/home/jpvandy/pin-2.14-71313-gcc.4.4.7-linux 
+##                export INTEL_PIN_DIRECTORY=/home/jpvandy/pin-2.14-71313-gcc.4.4.7-linux 
                 echo "using Intel PIN environment module  pin-2.14-71313-gcc.4.4.7-linux"
-                ## echo "Loading Intel PIN environment module"
-                ## module load pin/pin-2.13-61206-gcc.4.4.7-linux
+                echo "Loading Intel PIN environment module"
+                module load pin/pin-2.14-71313-gcc.4.4.7-linux
             else
                 echo "Intel PIN environment module not found on this host."
             fi
