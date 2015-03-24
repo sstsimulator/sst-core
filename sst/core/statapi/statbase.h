@@ -40,7 +40,7 @@ public:
     /** Construct a StatisticBase
       * @param comp - Pointer to the parent constructor.
       * @param statName - Name of the statistic to be registered.  This name must
-      * match the name in the ElementInfoStatisticEnable.
+      * match the name in the ElementInfoStatistic.
       * @param statSubId - Additional name of the statistic 
       * @param statParams - The parameters for this statistic
       */
@@ -252,7 +252,7 @@ public:
     /** Construct a Statistic
       * @param comp - Pointer to the parent constructor.
       * @param statName - Name of the statistic to be registered.  This name must
-      * match the name in the ElementInfoStatisticEnable.
+      * match the name in the ElementInfoStatistic.
       * @param statSubId - Additional name of the statistic 
       * @param statParams - The parameters for this statistic
       */

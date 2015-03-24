@@ -154,24 +154,24 @@ public:
      */
     StatisticOutput* CreateStatisticOutput(std::string& statOutputType, Params& statOutputParams);
 
-    /** Determine if a statistic is defined in a components ElementInfoStatisticEnable
+    /** Determine if a statistic is defined in a components ElementInfoStatistic
      * @param type - The name of the component
      * @param statisticName - The name of the statistic 
-     * @return True if the statistic is defined in the component's ElementInfoStatisticEnable
+     * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
     bool DoesComponentInfoStatisticEnableNameExist(std::string& type, std::string& statisticName);
 
-    /** Determine if a statistic is defined in a subcomponents ElementInfoStatisticEnable
+    /** Determine if a statistic is defined in a subcomponents ElementInfoStatistic
      * @param type - The name of the subcomponent
      * @param statisticName - The name of the statistic 
-     * @return True if the statistic is defined in the component's ElementInfoStatisticEnable
+     * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
     bool DoesSubComponentInfoStatisticEnableNameExist(std::string& type, std::string& statisticName);
 
-    /** Get the enable level of a statistic defined in the component's ElementInfoStatisticEnable
+    /** Get the enable level of a statistic defined in the component's ElementInfoStatistic
      * @param componentname - The name of the component
      * @param statisticName - The name of the statistic 
-     * @return The Enable Level of the statistic from the ElementInfoStatisticEnable
+     * @return The Enable Level of the statistic from the ElementInfoStatistic
      */
     uint8_t GetComponentInfoStatisticEnableLevel(std::string& type, std::string& statisticName);
     
@@ -198,7 +198,7 @@ private:
                 p++;
             }
 
-            const ElementInfoStatisticEnable *s = component->stats;
+            const ElementInfoStatistic *s = component->stats;
             while ( NULL != s && NULL != s->name ) {
                 statEnableNames.push_back(s->name);
                 statEnableLevels.push_back(s->enableLevel);
@@ -275,7 +275,7 @@ private:
         SubComponentInfo(const ElementInfoSubComponent *subcomponent,
                          Params::KeySet_t params) : subcomponent(subcomponent), params(params)
         {
-            const ElementInfoStatisticEnable *s = subcomponent->stats;
+            const ElementInfoStatistic *s = subcomponent->stats;
             while ( NULL != s && NULL != s->name ) {
                 statEnableNames.push_back(s->name);
                 statEnableLevels.push_back(s->enableLevel);

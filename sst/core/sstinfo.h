@@ -202,52 +202,52 @@ void PopulatePorts(const ElementInfoPort* ptrPorts, std::vector<SSTInfoElement_P
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoPort objects. 
  */
-class SSTInfoElement_StatisticEnableInfo {
+class SSTInfoElement_StatisticInfo {
 public:
-    /** Create a new SSTInfoElement_StatisticEnableInfo object.
-     * @param elstaten Pointer to an ElementInfoStatisticEnable object.
+    /** Create a new SSTInfoElement_StatisticInfo object.
+     * @param elstat Pointer to an ElementInfoStatistic object.
      */
-    SSTInfoElement_StatisticEnableInfo(const ElementInfoStatisticEnable* elstaten)
+    SSTInfoElement_StatisticInfo(const ElementInfoStatistic* elstat)
     {
         // Save the Object
-        m_elstaten = elstaten;
+        m_elstat = elstat;
     }
 
-    /** Return the Name of the StatisticEnable. */
-    const char* getName() {return m_elstaten->name;}
+    /** Return the Name of the Statistic. */
+    const char* getName() {return m_elstat->name;}
 
-    /** Return the Description of the StatisticEnable. */
-    const char* getDesc() {return m_elstaten->description;}
+    /** Return the Description of the Statistic. */
+    const char* getDesc() {return m_elstat->description;}
 
-    /** Return the enable level of the StatisticEnable. */
-    const uint8_t getEnableLevel() {return m_elstaten->enableLevel;}
+    /** Return the enable level of the Statistic. */
+    const uint8_t getEnableLevel() {return m_elstat->enableLevel;}
     
-    /** Output the StatisticEnable Information. 
-     * @param Index The Index of the StatisticEnable.
+    /** Output the Statistic Information. 
+     * @param Index The Index of the Statistic.
      */
-    void outputStatisticEnableInfo(int Index);
+    void outputStatisticInfo(int Index);
 
-    /** Create the formatted XML data of the StatisticEnable.
-     * @param Index The Index of the StatisticEnable.
+    /** Create the formatted XML data of the Statistic.
+     * @param Index The Index of the Statistic.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generateStatisticeEnableXMLData(int Index, TiXmlNode* XMLParentElement);
+    void generateStatisticXMLData(int Index, TiXmlNode* XMLParentElement);
 
 private:    
-    const ElementInfoStatisticEnable*   m_elstaten;
+    const ElementInfoStatistic*   m_elstat;
 };
     
-void PopulateStatisticEnables(const ElementInfoStatisticEnable* ptrStatEns, std::vector<SSTInfoElement_StatisticEnableInfo*>* ptrStatEnArray)
+void PopulateStatistic(const ElementInfoStatistic* ptrStats, std::vector<SSTInfoElement_StatisticInfo*>* ptrStatArray)
 {
-    // Populate the StatisticEnables Array
-    if (NULL != ptrStatEns) {
-        while (NULL != ptrStatEns->name) {
-            // Create a new SSTInfoElement_StatisticEnable and add it to the m_StatisticEnableArray
-            SSTInfoElement_StatisticEnableInfo* ptrStatEnInfo = new SSTInfoElement_StatisticEnableInfo(ptrStatEns);
-            ptrStatEnArray->push_back(ptrStatEnInfo);
+    // Populate the Statistics Array
+    if (NULL != ptrStats) {
+        while (NULL != ptrStats->name) {
+            // Create a new SSTInfoElement_Statistic and add it to the m_StatisticArray
+            SSTInfoElement_StatisticInfo* ptrStatInfo = new SSTInfoElement_StatisticInfo(ptrStats);
+            ptrStatArray->push_back(ptrStatInfo);
 
             // If the name is NULL, we have reached the last item
-            ptrStatEns++;  // Get the next structure item
+            ptrStats++;  // Get the next structure item
         }
     }
 }
@@ -267,7 +267,7 @@ public:
     {
         const ElementInfoParam*            ptrParams;
         const ElementInfoPort*             ptrPorts;
-        const ElementInfoStatisticEnable*  ptrStatEns;
+        const ElementInfoStatistic*        ptrStats;
         
         // Save the Object
         m_elc = elc;
@@ -280,15 +280,15 @@ public:
         
         buildCategoryString();        
 
-        ptrStatEns = elc->stats;  // Pointer to the Stats Structure Array
-        PopulateStatisticEnables(ptrStatEns, &m_StatisticEnableArray);
+        ptrStats = elc->stats;  // Pointer to the Stats Structure Array
+        PopulateStatistic(ptrStats, &m_StatisticArray);
     }
     
     /** Return the Name of the Component. */
-    const char*           getName() {return m_elc->name;}
+    const char* getName() {return m_elc->name;}
 
     /** Return the Description of the Component. */
-    const char*           getDesc() {return m_elc->description;}
+    const char* getDesc() {return m_elc->description;}
 
     /** Return a Parameter Info Object. 
      * @param index The index of the Parameter.
@@ -303,7 +303,7 @@ public:
     /** Return a Statistic Enable Info Object. 
      * @param index The index of the Statistic Enable.
      */
-    SSTInfoElement_StatisticEnableInfo*  getStatisticEnableInfo(int index) {return m_StatisticEnableArray[index];}
+    SSTInfoElement_StatisticInfo*  getStatisticInfo(int index) {return m_StatisticArray[index];}
 
     /** Return the Category value of the Component. */
     uint32_t              getCategoryValue() {return m_elc->category;}
@@ -328,7 +328,7 @@ private:
     const ElementInfoComponent*                       m_elc;
     std::vector<SSTInfoElement_ParamInfo*>            m_ParamArray;
     std::vector<SSTInfoElement_PortInfo*>             m_PortArray;
-    std::vector<SSTInfoElement_StatisticEnableInfo*>  m_StatisticEnableArray;
+    std::vector<SSTInfoElement_StatisticInfo*>        m_StatisticArray;
     std::string                                       m_CategoryString;
 };
 

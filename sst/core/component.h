@@ -212,7 +212,7 @@ public:
         by default.  If rate set to 0 or not provided, then the statistic will 
         output results only at end of sim (if output is enabled).  
         @param statName Primary name of the statistic.  This name must match the 
-               defined ElementInfoStatisticEnable in the component, and must also 
+               defined ElementInfoStatistic in the component, and must also 
                be enabled in the Python input file.
         @param statSubId An additional sub name for the statistic 
         @return Either a created statistic of desired type or a NullStatistic 
@@ -236,9 +236,9 @@ public:
         // #include "sst/core/statapi/componentregisterstat_impl.h"
 
         // Verify here that name of the stat is one of the registered
-        // names of the component's ElementInfoStatisticEnable.  
+        // names of the component's ElementInfoStatistic.  
         if (false == doesComponentInfoStatisticExist(statName)) {
-            printf("Error: Statistic %s name %s is not found in ElementInfoStatisticEnable, exiting...\n",
+            printf("Error: Statistic %s name %s is not found in ElementInfoStatistic, exiting...\n",
                    StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId).c_str(),
                    statName.c_str());
             exit(1);
@@ -358,9 +358,9 @@ private:
 
     void addSelfLink(std::string name);
 
-    // Does the statisticName exist in the ElementInfoStatisticEnable 
+    // Does the statisticName exist in the ElementInfoStatistic 
     bool doesComponentInfoStatisticExist(std::string statisticName);
-    // Return the EnableLevel for the statisticName from the ElementInfoStatisticEnable 
+    // Return the EnableLevel for the statisticName from the ElementInfoStatistic 
     uint8_t getComponentInfoStatisticEnableLevel(std::string statisticName);
 
     /** Unique ID */

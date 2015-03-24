@@ -38,9 +38,9 @@
     fullStatName = StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId);
 
     // // Verify here that name of the stat is one of the registered
-    // // names of the component's ElementInfoStatisticEnable.  
+    // // names of the component's ElementInfoStatistic.  
     // if (false == doesComponentInfoStatisticExist(statName)) {
-    //     fprintf(stderr, "Error: Statistic %s name %s is not found in ElementInfoStatisticEnable, exiting...\n", fullStatName.c_str(), statName.c_str());
+    //     fprintf(stderr, "Error: Statistic %s name %s is not found in ElementInfoStatistic, exiting...\n", fullStatName.c_str(), statName.c_str());
     //     exit(1);
     // }
 
@@ -137,7 +137,7 @@
             out.verbose(CALL_INFO, 1, 0, " Warning: Statistic Load Level = 0 (all statistics disabled); statistic %s is disabled...\n", fullStatName.c_str());
             statGood = false;
         // } else if (0 == enableLevel) {
-        //     out.verbose(CALL_INFO, 1, 0, " Warning: Statistic %s Enable Level = %d, statistic is disabled by the ElementInfoStatisticEnable...\n", fullStatName.c_str(), enableLevel);
+        //     out.verbose(CALL_INFO, 1, 0, " Warning: Statistic %s Enable Level = %d, statistic is disabled by the ElementInfoStatistic...\n", fullStatName.c_str(), enableLevel);
         //     statGood = false;
         } else if (enableLevel > loadLevel) {
             out.verbose(CALL_INFO, 1, 0, " Warning: Load Level %d is too low to enable Statistic %s with Enable Level %d, statistic will not be enabled...\n", loadLevel, fullStatName.c_str(), enableLevel);

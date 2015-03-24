@@ -92,9 +92,9 @@ protected:
     Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
     {
         // Verify here that name of the stat is one of the registered
-        // names of the component's ElementInfoStatisticEnable.  
+        // names of the component's ElementInfoStatistic.  
         if (false == doesSubComponentInfoStatisticExist(statName)) {
-            printf("Error: Statistic %s name %s is not found in ElementInfoStatisticEnable, exiting...\n",
+            printf("Error: Statistic %s name %s is not found in ElementInfoStatistic, exiting...\n",
                    StatisticBase::buildStatisticFullName(parent->getName().c_str(), statName, statSubId).
                    c_str(),
                    statName.c_str());
