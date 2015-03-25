@@ -485,7 +485,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M 2.0.4 -N default -z 3.8 -c default"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M 2.1.0 -N default -z 3.8 -c default"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME}  --with-chdl=$SST_DEPS_INSTALL_CHDL $miscEnv"
             ;;
@@ -529,7 +529,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M 2.0.4 -N default -z 3.8 -c default"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M 2.1.0 -N default -z 3.8 -c default"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-libphx=$LIBPHX_HOME/src --with-pin=$SST_DEPS_INSTALL_INTEL_PIN --with-metis=${METIS_HOME}  --with-chdl=$SST_DEPS_INSTALL_CHDL$miscEnv"
             ;;
@@ -615,7 +615,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M 2.0.4 -N default -z 3.8"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M 2.1.0 -N default -z 3.8"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --enable-static --disable-shared --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} $miscEnv"
             ;;
@@ -650,7 +650,7 @@ getconfig() {
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -z 3.8 -N default -M 2.0.4"
+            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -z 3.8 -N default -M 2.1.0"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} $miscEnv"
             ;;
