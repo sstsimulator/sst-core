@@ -17,7 +17,15 @@
 #endif
 
 #if SST_WANT_POLYMORPHIC_ARCHIVE
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#endif
+#pragma GCC diagnostic ignored "-Wuninitialized"
 #include <boost/archive/polymorphic_iarchive.hpp>
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+
 #include <boost/archive/polymorphic_oarchive.hpp>
 #else
 #include <boost/archive/binary_iarchive.hpp>
@@ -32,10 +40,14 @@
 #include <boost/serialization/extended_type_info_no_rtti.hpp>
 
 #ifdef HAVE_MPI
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic push
+#endif
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include <boost/mpi.hpp>
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic pop
+#endif
 #endif
 
 #include "sst/core/serialization/types.h"

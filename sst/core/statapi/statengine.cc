@@ -236,6 +236,6 @@ bool StatisticProcessingEngine::isStatisticPreviouslyRegistered(StatisticBase* s
 } //namespace Statistics
 } //namespace SST
 
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticProcessingEngine);
+//BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticProcessingEngine);
 
 

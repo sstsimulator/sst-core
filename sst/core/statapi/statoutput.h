@@ -45,7 +45,7 @@ class StatisticFieldInfo
 public:
     /** Supported Field Types */
     enum fieldType_t {UNDEFINED, UINT32, UINT64, INT32, INT64, FLOAT, DOUBLE};
-    typedef uint32_t fieldHandle_t;
+    typedef int32_t fieldHandle_t;
 
 public:
     /** Construct a StatisticFieldInfo

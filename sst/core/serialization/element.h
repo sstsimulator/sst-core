@@ -18,6 +18,8 @@
 
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic push
+#endif
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
 #endif
 
@@ -25,7 +27,14 @@
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 
 #if SST_WANT_POLYMORPHIC_ARCHIVE
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#endif
+#pragma GCC diagnostic ignored "-Wuninitialized"
 #include <boost/archive/polymorphic_iarchive.hpp>
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
 #include <boost/archive/polymorphic_oarchive.hpp>
 #else
 #include <boost/archive/binary_iarchive.hpp>
