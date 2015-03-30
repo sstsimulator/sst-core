@@ -183,7 +183,7 @@ const char* StatisticOutput::getFieldTypeShortName(fieldType_t type)
 } //namespace Statistics
 } //namespace SST
 
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticFieldInfo);
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticOutput);
+//BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticFieldInfo);
+//BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticOutput);
 
 

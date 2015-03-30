@@ -490,7 +490,7 @@ main(int argc, char *argv[])
             gather(world, lib_names, all_lib_names, 0);
 
             if ( rank == 0 ) {
-                for ( int i = 0; i < all_lib_names.size(); i++ ) {
+                for ( unsigned int i = 0; i < all_lib_names.size(); i++ ) {
                     for ( set<string>::const_iterator iter = all_lib_names[i].begin();
                           iter != all_lib_names[i].end(); ++iter )
                         {
