@@ -14,10 +14,6 @@
 #include "sst/core/serialization.h"
 #include "sst/core/heartbeat.h"
 
-#ifdef HAVE_MPI
-#include <boost/mpi.hpp>
-#endif
-
 #include <sst/core/debug.h>
 #include "sst/core/component.h"
 #include "sst/core/simulation.h"

@@ -116,7 +116,8 @@ public:
     /** Result value of the reduction operation in Introspector::collectInt().*/
     uint64_t value;
     /** Data vector that holds data collected from all introspectors by Introspector::collectInt().*/
-    std::vector<uint64_t> arrayvalue;
+    /* std::vector<uint64_t> arrayvalue; */
+    uint64_t* arrayvalue;
 
     /** Registers a clock for this component.
         @param freq Frequency for the clock in SI units

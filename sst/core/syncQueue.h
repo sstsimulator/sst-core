@@ -12,7 +12,7 @@
 #ifndef SST_CORE_SYNCQUEUE_H
 #define SST_CORE_SYNCQUEUE_H
 
-#include <sst/core/serialization.h>
+//#include <sst/core/serialization.h>
 
 #include <cstdio> // For printf
 #include <vector>
@@ -30,6 +30,13 @@ namespace SST {
  */
 class SyncQueue : public ActivityQueue {
 public:
+
+    struct Header {
+        uint32_t mode;
+        uint32_t count;
+        uint32_t buffer_size;
+    };
+    
     SyncQueue();
     ~SyncQueue();
 
@@ -43,24 +50,15 @@ public:
     /** Clear elements from the queue */
     void clear();
     /** Accessor method to the internal queue */
-    std::vector<Activity*>* getVector();
+    char* getData();
     
 private:
-    std::vector<Activity*> data;
+    std::vector<char> buffer;
+    std::vector<Activity*> activities;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        printf("begin SyncQueue::serialize\n");
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
-        printf("  - SyncQueue::data\n");
-        ar & BOOST_SERIALIZATION_NVP(data);
-        printf("end SyncQueue::serialize\n");
-    }
 };
 
+ 
 } //namespace SST
 
 BOOST_CLASS_EXPORT_KEY(SST::SyncQueue)

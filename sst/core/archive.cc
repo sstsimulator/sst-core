@@ -28,17 +28,6 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/split_member.hpp>
 
-#ifdef HAVE_MPI
-#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#pragma GCC diagnostic push
-#endif
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include <boost/mpi.hpp>
-#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#pragma GCC diagnostic pop
-#endif
-#endif
-
 #include "sst/core/serialization/types.h"
 
 #include <iostream>
@@ -53,6 +42,7 @@ using namespace SST;
 Archive::Archive(std::string ttype, std::string filename) :
     filename(filename)
 {
+#if 0
 #if SST_WANT_POLYMORPHIC_ARCHIVE
     if (ttype.compare("xml") &&
         ttype.compare("text") &&
@@ -70,7 +60,9 @@ Archive::Archive(std::string ttype, std::string filename) :
     }
     type = "bin";
 #endif
-}
+#endif
+    
+}    
 
 
 Archive::~Archive()
@@ -81,9 +73,10 @@ Archive::~Archive()
 void
 Archive::saveSimulation(Simulation* simulation)
 {
+#if 0
     std::string savename = filename + "." + type;
     std::ofstream ofs(savename.c_str());
-
+               
 #if SST_WANT_POLYMORPHIC_ARCHIVE
     if (type == "xml") {
         boost::archive::polymorphic_xml_oarchive oa(ofs);
@@ -105,12 +98,14 @@ Archive::saveSimulation(Simulation* simulation)
         abort();
     }
 #endif
+#endif
 }
 
 
 Simulation* 
 Archive::loadSimulation(void)
 {
+#if 0
     std::string loadname = filename + "." + type;
     std::ifstream ifs(loadname.c_str());
     Simulation* simulation;
@@ -136,6 +131,10 @@ Archive::loadSimulation(void)
         abort();
     }
 #endif
-
+    
     return simulation;
+#else
+    return NULL;
+#endif
+
 }

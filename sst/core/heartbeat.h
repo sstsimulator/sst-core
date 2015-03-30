@@ -18,9 +18,9 @@
 #include <sst/core/config.h>
 #include <sst/core/cputimer.h>
 
-#ifdef HAVE_MPI
-#include <boost/mpi.hpp>
-#endif
+/* #ifdef HAVE_MPI */
+/* #include <boost/mpi.hpp> */
+/* #endif */
 
 #include <set>
 

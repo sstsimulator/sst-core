@@ -25,7 +25,7 @@
 #include "sst/core/simulation.h"
 
 #ifdef HAVE_MPI
-#include <boost/mpi.hpp>
+#include <mpi.h>
 #endif
 
     
@@ -192,7 +192,8 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
 #ifdef HAVE_MPI
     // If MPI exists, abort
-    boost::mpi::environment::abort(exit_code);      
+    // boost::mpi::environment::abort(exit_code);      
+    MPI_Abort(MPI_COMM_WORLD, exit_code);
 #else
     exit(1);
 #endif
@@ -408,29 +409,29 @@ void Output::outputprintf(const char* format, va_list arg) const
 
 
 int Output::getMPIWorldSize() const {
+    int ranks = 1;
 #ifdef HAVE_MPI
-    boost::mpi::communicator MPIWorld;
-    return MPIWorld.size();
+    MPI_Comm_size(MPI_COMM_WORLD, &ranks);
 #endif
-    return 0;
+    return ranks;
 }
 
 
 int Output::getMPIWorldRank() const {
+    int rank = 0;
 #ifdef HAVE_MPI
-    boost::mpi::communicator MPIWorld;
-    return MPIWorld.rank();
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #endif
-    return 0;
+    return rank;
 }
 
 
-std::string Output::getMPIProcName() const {
-#ifdef HAVE_MPI
-    return boost::mpi::environment::processor_name();
-#endif
-    return "";
-}
+// std::string Output::getMPIProcName() const {
+// #ifdef HAVE_MPI
+//     return boost::mpi::environment::processor_name();
+// #endif
+//     return "";
+// }
 
 
 template<class Archive> void Output::serialize(Archive& ar, const unsigned int version) {

@@ -263,7 +263,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
     Params::enableVerify();
 
     if ( num_ranks > 1 ) {
-        sync = new Sync();
+        sync = new SyncD();
         sync->setExit(m_exit);
         sync->setMaxPeriod( minPartTC = minPartToTC(min_part) );
     }

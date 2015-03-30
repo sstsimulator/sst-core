@@ -45,9 +45,9 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/split_member.hpp>
-#ifdef HAVE_MPI
-#include <boost/mpi.hpp>
-#endif
+/* #ifdef HAVE_MPI */
+/* #include <boost/mpi.hpp> */
+/* #endif */
 
 #pragma clang diagnostic pop
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))

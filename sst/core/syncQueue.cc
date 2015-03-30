@@ -14,58 +14,105 @@
 #include "sst/core/serialization.h"
 #include <sst/core/syncQueue.h>
 
+#include <boost/archive/polymorphic_binary_iarchive.hpp>
+#include <boost/archive/polymorphic_binary_oarchive.hpp>
+#include <boost/serialization/vector.hpp>
+
 #include <sst/core/event.h>
+
+#include <boost/iostreams/stream_buffer.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
+
+#include "sst/core/simulation.h"
 
 namespace SST {
 
-    SyncQueue::SyncQueue() : ActivityQueue() {}
 
-    SyncQueue::~SyncQueue() {}
+SyncQueue::SyncQueue() :
+    ActivityQueue()
+{
+}
+
+SyncQueue::~SyncQueue()
+{
+}
     
-    bool SyncQueue::empty()
-    {
-	return data.empty();
+bool
+SyncQueue::empty()
+{
+	return activities.empty();
+}
+
+int
+SyncQueue::size()
+{
+    return activities.size();
+}
+    
+void
+SyncQueue::insert(Activity* activity)
+{
+    activities.push_back(activity);
+}
+
+Activity*
+SyncQueue::pop()
+{
+    // NEED TO FATAL
+	// if ( data.size() == 0 ) return NULL;
+	// std::vector<Activity*>::iterator it = data.begin();
+	// Activity* ret_val = (*it);
+	// data.erase(it);
+	// return ret_val;
+    return NULL;
+}
+
+Activity*
+SyncQueue::front()
+{
+    // NEED TO FATAL
+	return NULL;
+}
+
+void
+SyncQueue::clear()
+{
+    activities.clear();
+}
+
+char*
+SyncQueue::getData()
+{
+    buffer.clear();
+
+    // Reserve space for the header information
+    for ( int i = 0; i < sizeof(SyncQueue::Header); i++ ) {
+        buffer.push_back(0);
+    }
+
+    boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
+    boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
+    boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header || boost::archive:: no_tracking);
+
+    oa << activities;
+    output_stream.flush();
+    
+    for ( int i = 0; i < activities.size(); i++ ) {
+        delete activities[i];
+    }
+    activities.clear();
+
+    SyncQueue::Header hdr;
+    hdr.buffer_size = buffer.size();
+
+    char* hdr_bytes = reinterpret_cast<char*>(&hdr);
+    for ( int i = 0; i < sizeof(SyncQueue::Header); i++ ) {
+        buffer[i] = hdr_bytes[i];
     }
     
-    int SyncQueue::size()
-    {
-	return data.size();
-    }
-    
-    void SyncQueue::insert(Activity* activity)
-    {
-	data.push_back(activity);
-	// static_cast<Event*>(activity)->setRemoteEvent();
-    }
-    
-    Activity* SyncQueue::pop()
-    {
-	if ( data.size() == 0 ) return NULL;
-	std::vector<Activity*>::iterator it = data.begin();
-	Activity* ret_val = (*it);
-	data.erase(it);
-	return ret_val;
-    }
-
-    Activity* SyncQueue::front()
-    {
-	return data.front();
-    }
-
-    void SyncQueue::clear()
-    {
-	// Need to delete the event
-	for ( unsigned int i = 0; i < data.size(); i++ ) {
-	    delete data[i];
-	}
-	data.clear();
-    }
-
-    std::vector<Activity*>* SyncQueue::getVector()
-    {
-	return &data;
-    }
-
+    return buffer.data();
+ }
 } // namespace SST
 
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::SyncQueue)
+// BOOST_CLASS_EXPORT_IMPLEMENT(SST::SyncQueue)

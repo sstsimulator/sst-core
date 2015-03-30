@@ -30,7 +30,7 @@
    elements), so that posed a problem.  Checkpointing pays no
    attention to this define, so it doesn't break those */
 #if SST_BOOST_MPI_STD_STRING_BROKEN
-BOOST_IS_MPI_DATATYPE(std::string)
+//BOOST_IS_MPI_DATATYPE(std::string)
 #endif
 
 #endif

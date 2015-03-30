@@ -384,7 +384,7 @@ private:
     void setTargetOutput(output_location_t location);
     void openSSTTargetFile() const;
     void closeSSTTargetFile();
-    std::string getMPIProcName() const;
+    // std::string getMPIProcName() const;
     int getMPIWorldRank() const;
     int getMPIWorldSize() const;
     std::string buildPrefixString(uint32_t line,

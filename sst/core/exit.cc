@@ -15,7 +15,7 @@
 #include "sst/core/exit.h"
 
 #ifdef HAVE_MPI
-#include <boost/mpi.hpp>
+#include <mpi.h>
 #endif
 
 #include <sst/core/debug.h>
@@ -133,8 +133,9 @@ void Exit::check( void )
     int out;
 
 #ifdef HAVE_MPI
-    boost::mpi::communicator world; 
-    all_reduce( world, &value, 1, &out, std::plus<int>() );  
+    // boost::mpi::communicator world;
+    // all_reduce( world, &value, 1, &out, std::plus<int>() );  
+    MPI_Allreduce( &value, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );  
 #else
     out = value;
 #endif
@@ -146,7 +147,8 @@ void Exit::check( void )
 #ifdef HAVE_MPI
         // Do an all_reduce to get the end_time
         SimTime_t end_value;
-        all_reduce( world, &end_time, 1, &end_value, boost::mpi::maximum<SimTime_t>() );
+        // all_reduce( world, &end_time, 1, &end_value, boost::mpi::maximum<SimTime_t>() );
+        MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
         end_time = end_value;
 #endif
         endSimulation(end_time);

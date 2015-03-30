@@ -19,6 +19,8 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
+#include <mpi.h>
+
 #include "sst/core/build_info.h"
 #include "sst/core/debug.h"
 #include "sst/core/output.h"

@@ -19,8 +19,7 @@
 
 
 #ifdef HAVE_MPI
-#include <boost/mpi.hpp>
-#include <boost/mpi/timer.hpp>
+#include <mpi.h>
 #endif
 
 #include <iomanip>
@@ -43,6 +42,14 @@
 #include <sst/core/memuse.h>
 
 #include <sys/resource.h>
+
+#include <boost/archive/polymorphic_binary_iarchive.hpp>
+#include <boost/archive/polymorphic_binary_oarchive.hpp>
+#include <boost/serialization/vector.hpp>
+
+#include <boost/iostreams/stream_buffer.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
 
 using namespace SST::Core;
 using namespace SST::Partition;
@@ -114,15 +121,99 @@ static void do_graph_wireup(SST::Output* sim_output, ConfigGraph* graph,
     sim->performWireUp( *graph, rank, min_part );
 }
 
+template <typename dataType>
+void broadcast(dataType& data, int root) {
+    int rank;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    if ( root == rank ) {
+        // Serialize the data
+        vector<char> buffer;
+
+        boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
+        boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
+        boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header);
+
+        oa << data;
+        output_stream.flush();
+
+        // Now broadcast the size of the data
+        int size = buffer.size();
+        MPI_Bcast(&size, 1, MPI_INT, root, MPI_COMM_WORLD);
+
+        // Now broadcast the data
+        MPI_Bcast(buffer.data(), buffer.size(), MPI_BYTE, root, MPI_COMM_WORLD);
+    }
+    else {
+        // Get the size of the broadcast
+        int size = 0;
+        MPI_Bcast(&size, 1, MPI_INT, root, MPI_COMM_WORLD);
+
+        // Now get the data
+        char* buffer = new char[size];
+        MPI_Bcast(buffer, size, MPI_BYTE, root, MPI_COMM_WORLD);
+
+        // Now deserialize data
+        boost::iostreams::basic_array_source<char> source(buffer,size);
+        boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
+        boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
+
+        ia >> data;
+    }
+}
+
+template <typename dataType>
+void send(int dest, int tag, dataType& data) {
+    // Serialize the data
+    vector<char> buffer;
+
+    boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
+    boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
+    boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header);
+
+    oa << data;
+    output_stream.flush();
+
+    // Now send the data.  Send size first, then payload
+    int size = buffer.size();
+    MPI_Send(&size, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
+    MPI_Send(buffer.data(), size, MPI_BYTE, dest, tag, MPI_COMM_WORLD);
+}
+
+template <typename dataType>
+void recv(int src, int tag, dataType& data) {
+    // Get the size of the broadcast
+    int size = 0;
+    MPI_Status status;
+    MPI_Recv(&size, 1, MPI_INT, src, tag, MPI_COMM_WORLD, &status);
+    
+    // Now get the data
+    char* buffer = new char[size];
+    MPI_Recv(buffer, size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
+    
+    // Now deserialize data
+    boost::iostreams::basic_array_source<char> source(buffer,size);
+    boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
+    boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
+    
+    ia >> data;
+}
+
 int
 main(int argc, char *argv[])
 {
 
 #ifdef HAVE_MPI
-    boost::mpi::environment* mpiEnv = new boost::mpi::environment(argc,argv);
-    boost::mpi::communicator world;
-    const int rank = world.rank();
-    const int size = world.size();
+    // boost::mpi::environment* mpiEnv = new boost::mpi::environment(argc,argv);
+    // boost::mpi::communicator world;
+    MPI_Init(&argc, &argv);
+    
+    int myrank = 0;
+    int mysize = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    MPI_Comm_size(MPI_COMM_WORLD, &mysize);
+
+    const int rank = myrank;
+    const int size = mysize;
 #else
     const int rank = 0;
     const int size = 1;
@@ -135,7 +226,7 @@ main(int argc, char *argv[])
     // All ranks parse the command line
     if ( cfg.parseCmdLine(argc, argv) ) {
 #ifdef HAVE_MPI
-	delete mpiEnv;
+        // delete mpiEnv;
 #endif
         return -1;
     }
@@ -298,20 +389,26 @@ main(int argc, char *argv[])
             }
 #ifdef HAVE_MPI
 
-            broadcast(world, min_part, 0);
+            // broadcast(world, min_part, 0);
+            broadcast(min_part, 0);
 #endif
         }
-#if 1
+#if 0
 #ifdef HAVE_MPI
             ///////////////////////////////////////////////////////////////////////
             // Broadcast the data structures if only rank 0 built the
             // graph
         if ( size > 1 ) {
-            broadcast(world, *graph, 0);
-            broadcast(world, Params::keyMap, 0);
-            broadcast(world, Params::keyMapReverse, 0);
-            broadcast(world, Params::nextKeyID, 0);
-            broadcast(world, cfg, 0);
+            //            broadcast(world, *graph, 0);
+            // broadcast(world, Params::keyMap, 0);
+            // broadcast(world, Params::keyMapReverse, 0);
+            // broadcast(world, Params::nextKeyID, 0);
+            // broadcast(world, cfg, 0);
+            broadcast(*graph, 0);
+            broadcast(Params::keyMap, 0);
+            broadcast(Params::keyMapReverse, 0);
+            broadcast(Params::nextKeyID, 0);
+            broadcast(cfg, 0);
 		}
 #endif
 #endif
@@ -320,10 +417,14 @@ main(int argc, char *argv[])
         
         if ( size > 1 ) {
 #ifdef HAVE_MPI
-			broadcast(world, Params::keyMap, 0);
-			broadcast(world, Params::keyMapReverse, 0);
-			broadcast(world, Params::nextKeyID, 0);
-            broadcast(world, cfg, 0);
+			// broadcast(world, Params::keyMap, 0);
+			// broadcast(world, Params::keyMapReverse, 0);
+			// broadcast(world, Params::nextKeyID, 0);
+            // broadcast(world, cfg, 0);
+			broadcast(Params::keyMap, 0);
+			broadcast(Params::keyMapReverse, 0);
+			broadcast(Params::nextKeyID, 0);
+            broadcast(cfg, 0);
 
             ConfigGraph* sub;
             if ( rank == 0 ) {
@@ -331,36 +432,43 @@ main(int argc, char *argv[])
                     // cout << "Create subgraph" << endl;
                     sub = graph->getSubGraph(i,i);
                     // cout << "done" << endl;
-                    world.send(i, 0, *sub);
+                    // world.send(i, 0, *sub);
+                    send(i, 0, *sub);
                     // cout << "here 1" << endl;
                     delete sub;
                     // cout << "here 2" << endl;
                 }
             }
             else {
-                world.recv(0, 0, *graph);
+                // world.recv(0, 0, *graph);
+                recv(0, 0, *graph);
             }
-            world.barrier();
+            // world.barrier();
+            MPI_Barrier(MPI_COMM_WORLD);
 #endif
 		}
 #endif
         
 
         
-#if 0        
+#if 1        
 #ifdef HAVE_MPI
 		if ( size > 1 ) {
             
-            broadcast(world, Params::keyMap, 0);
-            broadcast(world, Params::keyMapReverse, 0);
-            broadcast(world, Params::nextKeyID, 0);
-            broadcast(world, cfg, 0);
+            // broadcast(world, Params::keyMap, 0);
+            // broadcast(world, Params::keyMapReverse, 0);
+            // broadcast(world, Params::nextKeyID, 0);
+            // broadcast(world, cfg, 0);
+            broadcast(Params::keyMap, 0);
+            broadcast(Params::keyMapReverse, 0);
+            broadcast(Params::nextKeyID, 0);
+            broadcast(cfg, 0);
 
             std::set<int> my_ranks;
             std::set<int> your_ranks;
 
             // boost::mpi::communicator comm;
-            std::vector<boost::mpi::request> pending_requests;
+            // std::vector<boost::mpi::request> pending_requests;
 
             if ( 0 == rank ) {
                 // Split the rank space in half
@@ -379,16 +487,20 @@ main(int argc, char *argv[])
                 // double end = sst_get_cpu_time();
                 // cout << (end-start) << " seconds" << endl;
                 int dest = *your_ranks.begin();
-                pending_requests.push_back(world.isend(dest, 0, your_ranks));
-                pending_requests.push_back(world.isend(dest, 0, *your_graph));
-                boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
-                pending_requests.clear();
+                // pending_requests.push_back(world.isend(dest, 0, your_ranks));
+                // pending_requests.push_back(world.isend(dest, 0, *your_graph));
+                // boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
+                // pending_requests.clear();
+                send(dest, 0, your_ranks);
+                send(dest, 0, *your_graph);
                 your_ranks.clear();
                 // delete your_graph;
             }
             else {
-                world.recv(boost::mpi::any_source, 0, my_ranks);
-                world.recv(boost::mpi::any_source, 0, *graph);
+                // world.recv(boost::mpi::any_source, 0, my_ranks);
+                // world.recv(boost::mpi::any_source, 0, *graph);
+                recv(MPI_ANY_SOURCE, 0, my_ranks);
+                recv(MPI_ANY_SOURCE, 0, *graph);
             }
 
             while ( my_ranks.size() != 1 ) {
@@ -406,10 +518,12 @@ main(int argc, char *argv[])
                 // cout << (end-start) << " seconds" << endl;
                 int dest = *your_ranks.begin();
 
-                pending_requests.push_back(world.isend(dest, 0, your_ranks));
-                pending_requests.push_back(world.isend(dest, 0, *your_graph));
-                boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
-                pending_requests.clear();
+                // pending_requests.push_back(world.isend(dest, 0, your_ranks));
+                // pending_requests.push_back(world.isend(dest, 0, *your_graph));
+                // boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
+                // pending_requests.clear();
+                send(dest, 0, your_ranks);
+                send(dest, 0, *your_graph);
                 your_ranks.clear();
                 delete your_graph;
             }
@@ -432,7 +546,8 @@ main(int argc, char *argv[])
 
     double max_build_time = build_time;
 #ifdef HAVE_MPI
-    all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
+    // all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
+    MPI_Allreduce( &build_time, &max_build_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
 #endif
 
     start_run = sst_get_cpu_time();
@@ -484,25 +599,30 @@ main(int argc, char *argv[])
 #if HAVE_MPI
         if ( size > 1 ) {
             set<string> lib_names;
+            set<string> other_lib_names;
             Simulation::getSimulation()->getFactory()->getLoadedLibraryNames(lib_names);
-            vector<set<string> > all_lib_names;
-            
-            gather(world, lib_names, all_lib_names, 0);
+            // vector<set<string> > all_lib_names;
 
-            if ( rank == 0 ) {
-                for ( unsigned int i = 0; i < all_lib_names.size(); i++ ) {
-                    for ( set<string>::const_iterator iter = all_lib_names[i].begin();
-                          iter != all_lib_names[i].end(); ++iter )
-                        {
-                            lib_names.insert(*iter);
-                        }
-                }
-            }
-            else {
+            // Send my lib_names to the next lowest rank
+            // gather(world, lib_names, all_lib_names, 0);
+            if ( rank == size - 1 ) {
+                send(rank - 1, 0, lib_names);
                 lib_names.clear();
             }
+            else {
+                recv(rank + 1, 0, other_lib_names);
+                for ( set<string>::const_iterator iter = other_lib_names.begin();
+                      iter != other_lib_names.end(); ++iter ) {
+                    lib_names.insert(*iter);
+                }
+                if ( rank != 0 ) {
+                    send(rank - 1, 0, lib_names);
+                    lib_names.clear();
+                }
+            }
 
-            broadcast(world, lib_names, 0);
+            // broadcast(world, lib_names, 0);
+            broadcast(lib_names, 0);
             Simulation::getSimulation()->getFactory()->loadUnloadedLibraries(lib_names);
         }
 #endif
@@ -520,8 +640,10 @@ main(int argc, char *argv[])
     double max_run_time, max_total_time;
 
 #ifdef HAVE_MPI
-    all_reduce(world, &run_time, 1, &max_run_time, boost::mpi::maximum<double>() );
-    all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
+    // all_reduce(world, &run_time, 1, &max_run_time, boost::mpi::maximum<double>() );
+    // all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
+    MPI_Allreduce(&run_time, &max_run_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+    MPI_Allreduce(&total_time, &max_total_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
 #else
     max_run_time = run_time;
     max_total_time = total_time;
@@ -576,7 +698,8 @@ main(int argc, char *argv[])
     delete sim;
 
 #ifdef HAVE_MPI
-    delete mpiEnv;
+    // delete mpiEnv;
+    MPI_Finalize();
 #endif
 
     return 0;
