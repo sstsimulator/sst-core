@@ -197,10 +197,12 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
         ${SST_TEST_SUITES}/testSuite_embernightly.sh
         ${SST_TEST_SUITES}/testSuite_hybridsim.sh
+        ${SST_TEST_SUITES}/testSuite_iris.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
         ${SST_TEST_SUITES}/testSuite_merlin.sh
         ${SST_TEST_SUITES}/testSuite_simpleMessageGeneratorComponent.sh
         ${SST_TEST_SUITES}/testSuite_miranda.sh
+        ${SST_TEST_SUITES}/testSuite_portals.sh
         ${SST_TEST_SUITES}/testSuite_prospero.sh
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
         ${SST_TEST_SUITES}/testSuite_scheduler.sh
@@ -274,10 +276,12 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
 
 
+    ${SST_TEST_SUITES}/testSuite_portals.sh
     ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
     ${SST_TEST_SUITES}/testSuite_cacheTracer.sh
     ${SST_TEST_SUITES}/testSuite_miranda.sh
 
+    ${SST_TEST_SUITES}/testSuite_iris.sh
 
     # if [[ $BOOST_HOME == *boost*1.50* ]]
     # then
@@ -333,10 +337,6 @@ dotests() {
     if [ $1 != "sstmainline_config_no_mpi" ] ; then
         #  patterns requires MPI in order to build
         ${SST_TEST_SUITES}/testSuite_patterns.sh
-        #  portals4 requires mpi
-        ${SST_TEST_SUITES}/testSuite_portals.sh
-        # iris requires portals4, which requires mpi
-        ${SST_TEST_SUITES}/testSuite_iris.sh
         #  Zoltan test requires MPI to execute.
         #  sstmainline_config_no_gem5 deliberately omits Zoltan, so must skip test.
         if [ $1 != "sstmainline_config_linux_with_ariel" -a $1 != "sstmainline_config_no_gem5" ] ; then
@@ -583,8 +583,6 @@ getconfig() {
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv --disable-mpi"
                       #The following is wrong way to do it, but patterns shouldn't need MPI to build!
             touch $SST_ROOT/sst/elements/patterns/.ignore
-                      # portals4 requires MPI to build
-            touch $SST_ROOT/sst/elements/portals4_sm/.ignore
             ;;
 
         sstmainline_config_gem5_gcc_4_6_4) 
