@@ -26,11 +26,11 @@
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
-//#if defined(__clang__)
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wc++11-extensions"
-//#endif
+#endif
 
 #if SST_WANT_POLYMORPHIC_ARCHIVE
 #include <boost/archive/polymorphic_iarchive.hpp>
@@ -48,9 +48,9 @@
 #include <boost/serialization/type_info_implementation.hpp>
 #include <boost/serialization/extended_type_info_no_rtti.hpp>
 
-//#if defined(__clang__)
+#if defined(__clang__)
 #pragma clang diagnostic pop
-//#endif
+#endif
 
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic pop
