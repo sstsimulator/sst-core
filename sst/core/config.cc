@@ -19,7 +19,9 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
+#ifdef HAVE_MPI
 #include <mpi.h>
+#endif
 
 #include "sst/core/build_info.h"
 #include "sst/core/debug.h"

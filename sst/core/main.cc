@@ -121,9 +121,10 @@ static void do_graph_wireup(SST::Output* sim_output, ConfigGraph* graph,
     sim->performWireUp( *graph, rank, min_part );
 }
 
+#ifdef HAVE_MPI
 template <typename dataType>
 void broadcast(dataType& data, int root) {
-    int rank;
+    int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     if ( root == rank ) {
         // Serialize the data
@@ -197,6 +198,7 @@ void recv(int src, int tag, dataType& data) {
     
     ia >> data;
 }
+#endif
 
 int
 main(int argc, char *argv[])

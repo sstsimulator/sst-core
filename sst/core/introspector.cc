@@ -29,8 +29,10 @@ namespace SST {
 
 Introspector::Introspector()
 {
-    int size;
+    int size = 1;
+#ifdef HAVE_MPI
     MPI_Comm_size(MPI_COMM_WORLD, &size);
+#endif
     arrayvalue = new uint64_t[size];
 }
 
