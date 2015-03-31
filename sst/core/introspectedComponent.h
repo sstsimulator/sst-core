@@ -27,7 +27,16 @@
 #include <boost/numeric/interval.hpp>
 #undef __USE_ISOC99
 #else
+
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#endif
 #include <boost/numeric/interval.hpp>
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+#pragma GCC diagnostic pop
+#endif
+
 #endif
 #include <boost/io/ios_state.hpp>
 #include <boost/any.hpp>

@@ -21,10 +21,16 @@
 #include <map>
 #include <vector>
 
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-register"
+#endif
+
 #include <boost/multiprecision/cpp_dec_float.hpp>
+
+#if defined(__clang__)
 #pragma clang diagnostic pop
+#endif
 
 #include <boost/version.hpp>
 

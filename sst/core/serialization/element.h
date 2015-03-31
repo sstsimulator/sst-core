@@ -18,23 +18,22 @@
 
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuninitialized"
 #endif
+
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
 #pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 #endif
 
+#if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#pragma clang diagnostic ignored "-Wc++11-extensions"
+#endif
 
 #if SST_WANT_POLYMORPHIC_ARCHIVE
-#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#pragma GCC diagnostic push
-#endif
-#pragma GCC diagnostic ignored "-Wuninitialized"
 #include <boost/archive/polymorphic_iarchive.hpp>
-#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#pragma GCC diagnostic pop
-#endif
 #include <boost/archive/polymorphic_oarchive.hpp>
 #else
 #include <boost/archive/binary_iarchive.hpp>
@@ -45,14 +44,19 @@
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/split_member.hpp>
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+
 /* #ifdef HAVE_MPI */
 /* #include <boost/mpi.hpp> */
 /* #endif */
 
-#pragma clang diagnostic pop
-#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#pragma GCC diagnostic pop
-#endif
 
 #include "sst/core/serialization/types.h"
 
