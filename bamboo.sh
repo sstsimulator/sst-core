@@ -1041,6 +1041,12 @@ linuxSetBoostMPI() {
            export BOOST_INCLUDE=/home/jpvandy/local/packages/boost-1.54_no-mpi/include
            export LD_LIBRARY_PATH=$BOOST_LIBS:$LD_LIBRARY_PATH
            ;;
+       noMpiBoost-1.56)
+           export BOOST_LIBS=/home/jpvandy/local/packages/boost-1.56_no-mpi/lib
+           export BOOST_HOME=/home/jpvandy/local/packages/boost-1.56_no-mpi
+           export BOOST_INCLUDE=/home/jpvandy/local/packages/boost-1.56_no-mpi/include
+           export LD_LIBRARY_PATH=$BOOST_LIBS:$LD_LIBRARY_PATH
+           ;;
        *)
            echo "bamboo.sh: \"Default\" Boost selected"
            echo "Third argument was $3"
