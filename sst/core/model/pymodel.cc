@@ -1030,9 +1030,17 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     // Add our built in methods to the Python engine
     PyObject *module = Py_InitModule("sst", sstModuleMethods);
 
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
     Py_INCREF(&ComponentType);
     Py_INCREF(&LinkType);
     Py_INCREF(&ModuleLoaderType);
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#pragma GCC diagnostic pop
+#endif
+    
     PyModule_AddObject(module, "Link", (PyObject*)&LinkType);
     PyModule_AddObject(module, "Component", (PyObject*)&ComponentType);
 

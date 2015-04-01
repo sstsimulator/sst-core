@@ -101,7 +101,7 @@ elif test $major_version -lt 2 ; then
 
 else
   echo " - Using Libtool 2.0 or higher"
-  autoreconf --install --symlink --warnings=gnu,obsolete,override,portability,no-obsolete
+  autoreconf --install --force --symlink --warnings=gnu,obsolete,override,portability,no-obsolete
   if test $? != 0 ; then
     echo "It appears that configure file generation failed.  Sorry :(."
     exit 1
