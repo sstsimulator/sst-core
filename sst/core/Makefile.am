@@ -34,6 +34,7 @@ nobase_dist_sst_HEADERS = \
 	event.h \
 	exit.h \
 	factory.h \
+	handler.h \
 	heartbeat.h \
 	initQueue.h \
 	introspectAction.h \
