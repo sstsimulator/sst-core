@@ -16,6 +16,7 @@
 #include <sst/core/serialization.h>
 
 #include <sst/core/activity.h>
+#include <sst/core/handler.h>
 
 namespace SST {
 
@@ -32,6 +33,10 @@ public:
     typedef std::pair<uint64_t, int> id_type;
     /** Constatn, default value for id_types */
     static const id_type NO_ID;
+
+    /// Functor classes for Event handling (from hanlder.h)
+    using HandlerBase = SST::HandlerBase<Event*, void>;
+    template<typename classT, typename argT = void> using Handler = SST::Handler<Event*, void, classT, argT>;
 
 
     Event() : Activity() {
@@ -65,68 +70,6 @@ public:
     inline LinkId_t getLinkId(void) const { return link_id; }
 
 
-    /// Functor classes for Event handling
-    class HandlerBase {
-    public:
-        /** Handler function */
-        virtual void operator()(Event*) = 0;
-        virtual ~HandlerBase() {}
-    };
-
-
-    /**
-     * Event Handler class with user-data argument
-     */
-    template <typename classT, typename argT = void>
-    class Handler : public HandlerBase {
-    private:
-        typedef void (classT::*PtrMember)(Event*, argT);
-        classT* object;
-        const PtrMember member;
-        argT data;
-
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         * @param data - Additional argument to pass to handler
-         */
-        Handler( classT* const object, PtrMember member, argT data ) :
-            object(object),
-            member(member),
-            data(data)
-        {}
-
-        void operator()(Event* event) {
-            (object->*member)(event,data);
-        }
-    };
-
-
-    /**
-     * Event Handler class with no user-data.
-     */
-    template <typename classT>
-    class Handler<classT, void> : public HandlerBase {
-        private:
-            typedef void (classT::*PtrMember)(Event*);
-            const PtrMember member;
-            classT* object;
-
-        public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         */
-            Handler( classT* const object, PtrMember member ) :
-                member(member),
-                object(object)
-            {}
-
-            void operator()(Event* event) {
-                (object->*member)(event);
-            }
-        };
 
     /** Virtual function to "pretty-print" this event.  Should be implemented by subclasses. */
     virtual void print(const std::string& header, Output &out) const {
