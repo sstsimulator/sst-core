@@ -34,13 +34,6 @@ class OneShot : public Action
 public:
     /////////////////////////////////////////////////
 
-#if 0
-    // Functor classes for Clock handling (derived from handler.h)
-    using HandlerBase = SST::HandlerBase<Cvoid, void>;
-    template<typename classT, typename argT = void> using Handler = SST::Handler<void, void, classT, argT>;
-
-#else
-
     /** Functor classes for OneShot handling */
     class HandlerBase {
     public:
@@ -113,8 +106,7 @@ public:
             (object->*member)();
         }
     };
-#endif
-    
+
     /////////////////////////////////////////////////
 
     /** Create a new One Shot for a specified time that will callback the 
