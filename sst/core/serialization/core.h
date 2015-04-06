@@ -19,6 +19,7 @@
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
+#pragma GCC diagnostic ignored "-Wsign-compare"  // IGNORES Sign Compare WARNING IN boost include/boost/mpl/print.hpp line 61
 #endif
 
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
@@ -30,6 +31,7 @@
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
 #pragma clang diagnostic ignored "-Wc++11-extensions"
+#pragma clang diagnostic ignored "-Wdivision-by-zero"  // IGNORES Divide By Zero WARNING IN boost include/boost/mpl/print.hpp line 50 
 #endif
 
 #if SST_WANT_POLYMORPHIC_ARCHIVE

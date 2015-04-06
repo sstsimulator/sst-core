@@ -165,8 +165,8 @@ namespace SST {
             char* buffer = i->second.rbuf;
 
             SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(buffer);
-            int count = hdr->count;
-            int size = hdr->buffer_size;
+//            int count = hdr->count;
+            unsigned int size = hdr->buffer_size;
             int mode = hdr->mode;
 
             if ( mode == 1 ) {
@@ -187,7 +187,7 @@ namespace SST {
 
             std::vector<Activity*> activities;
             ia >> activities;
-            for ( int j = 0; j < activities.size(); j++ ) {
+            for ( unsigned int j = 0; j < activities.size(); j++ ) {
 
                 Event* ev = static_cast<Event*>(activities[j]);
                 link_map_t::iterator link = link_map.find(ev->getLinkId());
@@ -300,8 +300,8 @@ namespace SST {
             char* buffer = i->second.rbuf;
 
             SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(buffer);
-            int count = hdr->count;
-            int size = hdr->buffer_size;
+//            int count = hdr->count;
+            unsigned int size = hdr->buffer_size;
             int mode = hdr->mode;
 
             if ( mode == 1 ) {
@@ -321,7 +321,7 @@ namespace SST {
 
             std::vector<Activity*> activities;
             ia >> activities;
-            for ( int j = 0; j < activities.size(); j++ ) {
+            for ( unsigned int j = 0; j < activities.size(); j++ ) {
 
                 Event* ev = static_cast<Event*>(activities[j]);
                 link_map_t::iterator link = link_map.find(ev->getLinkId());

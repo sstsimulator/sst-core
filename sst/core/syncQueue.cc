@@ -87,7 +87,7 @@ SyncQueue::getData()
     buffer.clear();
 
     // Reserve space for the header information
-    for ( int i = 0; i < sizeof(SyncQueue::Header); i++ ) {
+    for ( unsigned int i = 0; i < sizeof(SyncQueue::Header); i++ ) {
         buffer.push_back(0);
     }
 
@@ -98,7 +98,7 @@ SyncQueue::getData()
     oa << activities;
     output_stream.flush();
     
-    for ( int i = 0; i < activities.size(); i++ ) {
+    for ( unsigned int i = 0; i < activities.size(); i++ ) {
         delete activities[i];
     }
     activities.clear();
@@ -107,7 +107,7 @@ SyncQueue::getData()
     hdr.buffer_size = buffer.size();
 
     char* hdr_bytes = reinterpret_cast<char*>(&hdr);
-    for ( int i = 0; i < sizeof(SyncQueue::Header); i++ ) {
+    for ( unsigned int i = 0; i < sizeof(SyncQueue::Header); i++ ) {
         buffer[i] = hdr_bytes[i];
     }
     

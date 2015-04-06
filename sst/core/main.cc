@@ -508,7 +508,7 @@ main(int argc, char *argv[])
             while ( my_ranks.size() != 1 ) {
                 // This means I have more data to pass on to other ranks
                 std::set<int>::iterator mid = my_ranks.begin();
-                for ( int i = 0; i < my_ranks.size() / 2; i++ ) {
+                for ( unsigned int i = 0; i < my_ranks.size() / 2; i++ ) {
                     ++mid;
                 }
                 your_ranks.insert(mid,my_ranks.end());
