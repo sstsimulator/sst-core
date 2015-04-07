@@ -77,10 +77,13 @@ public:
         flags_t flags;      /*!< Flags associated with this request or response */
         id_t id;            /*!< Unique ID to identify responses with requests */
         uint32_t groupId;   /* Group Id.  Used to maintain group-based stats in MH */
+	Addr instrPtr;      /*!< Instruction pointer associated with the operation */
+        Addr virtualAddr;  /*!< Virtual address associated with the operation */
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, dataVec &data, flags_t flags = 0) :
-            cmd(cmd), addr(addr), size(size), data(data), flags(flags), groupId(0)
+            cmd(cmd), addr(addr), size(size), data(data), flags(flags), groupId(0),
+		instrPtr(0), virtualAddr(0)
         {
             // TODO:  If we support threading in the future, this should be made atomic
             id = main_id++;
@@ -88,15 +91,15 @@ public:
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, flags_t flags = 0) :
-            cmd(cmd), addr(addr), size(size), flags(flags), groupId(0)
+            cmd(cmd), addr(addr), size(size), flags(flags), groupId(0),
+		instrPtr(0), virtualAddr(0)
         {
             // TODO:  If we support threading in the future, this should be made atomic
             id = main_id++;
         }
-        
-        
+
         /**
-         * Set Stats Group Id 
+         * Set Stats Group Id
          */
         void setGroupId(uint32_t _groupId)
         {
@@ -121,6 +124,34 @@ public:
                 data[i] = data_in[i];
             }
         }
+
+	/**
+	* Set the virtual address associated with the operation
+	*/
+  	void setVirtualAddress(const Addr newVA) {
+		virtualAddr = newVA;
+	}
+
+	/**
+	* Get the virtual address associated with the operation
+	*/
+	uint64_t getVirtualAddress() {
+		return (uint64_t) virtualAddr;
+	}
+
+	/*
+	* Sets the instruction pointer associated with the operation
+	*/
+	void setInstructionPointer(const Addr newIP) {
+		instrPtr = newIP;
+	}
+
+	/**
+	* Sets the instruction pointer associated with the operation
+	*/
+	Addr getInstructionPointer() {
+		return instrPtr;
+	}
 
     private:
         static id_t main_id;
