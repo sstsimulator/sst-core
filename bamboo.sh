@@ -955,6 +955,21 @@ linuxSetBoostMPI() {
            module load intel/${4}
        fi
    fi
+   
+   # Check to see if we are loading Boost 1.56 or greater, if so, we no longer
+   # need to include mpi, so change the desiredBoost name as appropriate
+   case $3 in
+       boost-1.56) 
+           echo "Choosing nompi version of boost for Boost 1.56 and greater"
+           if [ $compiler = "default" ]
+           then
+               desiredBoost="${3}.0-nompi"
+           else
+               desiredBoost="${3}.0-nompi_${4}"
+           fi  
+           ;;
+   esac
+   
    echo "CHECK:  \$2: ${2}"
    echo "CHECK:  \$3: ${3}"
    echo "CHECK:  \$4: ${4}"
@@ -1381,13 +1396,13 @@ darwinSetBoostMPI() {
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
+                                module add boost/boost-1.56.0-nompi_gcc-4.6.4
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4 2>catch.err
+                                module add boost/boost-1.56.0-nompi_gcc-4.6.4 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1444,13 +1459,13 @@ darwinSetBoostMPI() {
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0_ompi-1.8_clang-503.0.38
+                                module add boost/boost-1.56.0-nompi_clang-503.0.38
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0_ompi-1.8_clang-503.0.38 2>catch.err
+                                module load boost/boost-1.56.0-nompi_clang-503.0.38 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1493,13 +1508,13 @@ darwinSetBoostMPI() {
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0_ompi-1.8_clang-503.0.40
+                                module add boost/boost-1.56.0-nompi_clang-503.0.40
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0_ompi-1.8_clang-503.0.40 2>catch.err
+                                module load boost/boost-1.56.0-nompi_clang-503.0.40 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1573,13 +1588,13 @@ darwinSetBoostMPI() {
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
+                                module add boost/boost-1.56.0-nompi_gcc-4.6.4
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4 2>catch.err
+                                module add boost/boost-1.56.0-nompi_gcc-4.6.4 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1636,13 +1651,13 @@ darwinSetBoostMPI() {
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0_ompi-1.8_clang-503.0.38
+                                module add boost/boost-1.56.0-nompi_clang-503.0.38
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0_ompi-1.8_clang-503.0.38 2>catch.err
+                                module load boost/boost-1.56.0-nompi_clang-503.0.38 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1695,13 +1710,13 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0_ompi-1.8_clang-600.0.57
+                                module add boost/boost-1.56.0-nompi_clang-600.0.57
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0_ompi-1.8_clang-600.0.57 2>catch.err
+                                module load boost/boost-1.56.0-nompi_clang-600.0.57 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1721,7 +1736,7 @@ darwinSetBoostMPI() {
                         module unload boost
                         module unload mpi
                         module add mpi/openmpi-1.8_gcc-4.6.4
-                        module add boost/boost-1.56.0_ompi-1.8_gcc-4.6.4
+                        module add boost/boost-1.56.0-nompi_gcc-4.6.4
                         module list
                         ;;  
                 esac
@@ -1770,13 +1785,13 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0_ompi-1.8_clang-600.0.57
+                                module add boost/boost-1.56.0-nompi_clang-600.0.57
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0_ompi-1.8_clang-600.0.57 2>catch.err
+                                module load boost/boost-1.56.0-nompi_clang-600.0.57 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1795,7 +1810,7 @@ darwinSetBoostMPI() {
                         module unload boost
                         module unload mpi
                         module add mpi/openmpi-1.8_clang-600.0.57
-                        module add boost/boost-1.56.0_ompi-1.8_600.0.57
+                        module add boost/boost-1.56.0-nompi_600.0.57
                         module list
                         ;;  
                 esac
