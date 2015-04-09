@@ -185,7 +185,7 @@ void SSTZoltanPartition::initZoltan() {
 	float zolt_ver = 0;
 	int argc = 1;
 	char* argv[1];
-	argv[0] = "sstsim.x";
+	argv[0] = (char*)"sstsim.x";
 
 	int z_rc = Zoltan_Initialize(argc, argv, &zolt_ver);
 
@@ -276,7 +276,7 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
   	partOutput->verbose(CALL_INFO, 1, 0, "Assigning components to ranks based on Zoltan output...\n");
 
 	uint64_t rank_assignments[rankcount];
-	for(uint32_t i = 0; i < rankcount; ++i) {
+	for(int i = 0; i < rankcount; ++i) {
 		rank_assignments[i] = 0;
 	}
 
@@ -301,7 +301,7 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
 
 	if(0 == rank) {
 		partOutput->verbose(CALL_INFO, 1, 0, "Exporting components for load balance:\n");
-		for(uint32_t i = 1; i < rankcount; ++i) {
+		for(int i = 1; i < rankcount; ++i) {
 			partOutput->verbose(CALL_INFO, 1, 0, "Export to rank %" PRIu32 " (assigned %" PRIu64 " components).\n", i, rank_assignments[i]);
 		}
 	}
