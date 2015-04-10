@@ -19,8 +19,15 @@
 #include <sst/core/part/sstpart.h>
 #include <sst/core/output.h>
 
+// SST and ZOLTANÕs configurations are conflicting on the HAVE_MPI definition.  
+// So temporarily shut down SSTÕs HAVE_MPI, then allow ZOLTANÕs HAVE_MPI to 
+//be defined, then reset SSTÕs HAVE_MPI.
+#ifdef HAVE_MPI 
+#undef HAVE_MPI  
 #include <zoltan.h>
 #include <mpi.h>
+#define HAVE_MPI
+#endif
 
 using namespace SST;
 using namespace SST::Partition;
