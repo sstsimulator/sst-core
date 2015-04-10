@@ -52,8 +52,9 @@ typedef void* (*genPythonModuleFunction)(void);
 /** Describes Statistics used by a Component.
  */
 struct ElementInfoStatistic {
-    const char *name;			/*!< Name of the Statistic to be Enabled */
-    const char *description;	/*!< Brief description of the Statistic */
+    const char* name;		/*!< Name of the Statistic to be Enabled */
+    const char* description;	/*!< Brief description of the Statistic */
+    const char* units;          /*!< Units associated with this Statistic value */
     const uint8_t enableLevel;	/*!< Level to meet to enable statistic 0 = disabled */
 };
 
