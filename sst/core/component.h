@@ -362,6 +362,8 @@ private:
     bool doesComponentInfoStatisticExist(std::string statisticName);
     // Return the EnableLevel for the statisticName from the ElementInfoStatistic 
     uint8_t getComponentInfoStatisticEnableLevel(std::string statisticName);
+    // Return the Units for the statisticName from the ElementInfoStatistic 
+    std::string getComponentInfoStatisticUnits(std::string statisticName);
 
     /** Unique ID */
     ComponentId_t   id;

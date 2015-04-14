@@ -219,6 +219,9 @@ public:
     /** Return the Description of the Statistic. */
     const char* getDesc() {return m_elstat->description;}
 
+    /** Return the Units of the Statistic. */
+    const char* getUnits() {return m_elstat->units;}
+
     /** Return the enable level of the Statistic. */
     const uint8_t getEnableLevel() {return m_elstat->enableLevel;}
     

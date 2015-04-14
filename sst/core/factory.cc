@@ -109,7 +109,7 @@ Factory::CreateStatisticOutput(std::string& statOutputType, Params& statOutputPa
 }
 
 bool 
-Factory::DoesComponentInfoStatisticEnableNameExist(std::string& type, std::string& statisticName)
+Factory::DoesComponentInfoStatisticNameExist(std::string& type, std::string& statisticName)
 {
     std::string compTypeToLoad = type;
     if (true == type.empty()) { 
@@ -135,8 +135,8 @@ Factory::DoesComponentInfoStatisticEnableNameExist(std::string& type, std::strin
     const ComponentInfo ci = eii->second;
 
     // See if the statistic exists
-    for (uint32_t x = 0; x <  ci.statEnableNames.size(); x++) {
-        if (statisticName == ci.statEnableNames[x]) {
+    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+        if (statisticName == ci.statNames[x]) {
             return true;
         }
     }
@@ -144,7 +144,7 @@ Factory::DoesComponentInfoStatisticEnableNameExist(std::string& type, std::strin
 }
 
 bool 
-Factory::DoesSubComponentInfoStatisticEnableNameExist(std::string& type, std::string& statisticName)
+Factory::DoesSubComponentInfoStatisticNameExist(std::string& type, std::string& statisticName)
 {
     std::string compTypeToLoad = type;
     if (true == type.empty()) { 
@@ -170,8 +170,8 @@ Factory::DoesSubComponentInfoStatisticEnableNameExist(std::string& type, std::st
     const SubComponentInfo ci = eii->second;
 
     // See if the statistic exists
-    for (uint32_t x = 0; x <  ci.statEnableNames.size(); x++) {
-        if (statisticName == ci.statEnableNames[x]) {
+    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+        if (statisticName == ci.statNames[x]) {
             return true;
         }
     }
@@ -205,9 +205,44 @@ Factory::GetComponentInfoStatisticEnableLevel(std::string& type, std::string& st
     const ComponentInfo ci = eii->second;
 
     // See if the statistic exists, if so return the enable level
-    for (uint32_t x = 0; x <  ci.statEnableNames.size(); x++) {
-        if (statisticName == ci.statEnableNames[x]) {
+    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+        if (statisticName == ci.statNames[x]) {
             return ci.statEnableLevels[x];
+        }
+    }
+    return 0;
+}
+
+std::string 
+Factory::GetComponentInfoStatisticUnits(std::string& type, std::string& statisticName)
+{
+    std::string compTypeToLoad = type;
+    if (true == type.empty()) { 
+        compTypeToLoad = loadingComponentType;
+    }
+    
+    std::string elemlib, elem;
+    boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // now look for component
+    std::string tmp = elemlib + "." + elem;
+    eic_map_t::iterator eii = found_components.find(tmp);
+    if (eii == found_components.end()) {
+        _abort(Factory,"can't find requested component %s.\n ", tmp.c_str());
+        return 0;
+    }
+
+    const ComponentInfo ci = eii->second;
+
+    // See if the statistic exists, if so return the enable level
+    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+        if (statisticName == ci.statNames[x]) {
+            return ci.statUnits[x];
         }
     }
     return 0;

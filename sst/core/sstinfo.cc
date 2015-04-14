@@ -877,7 +877,7 @@ const char* SSTInfoElement_PortInfo::getValidEvent(unsigned int index)
 
 void SSTInfoElement_StatisticInfo::outputStatisticInfo(int index)
 {
-    fprintf(stdout, "            STATISTIC %d = %s (%s) Enable Level = %d\n", index, getName(), getDesc(), getEnableLevel());
+    fprintf(stdout, "            STATISTIC %d = %s (%s) Units = %s; Enable Level = %d\n", index, getName(), getDesc(), getUnits(), getEnableLevel());
 }
 
 void SSTInfoElement_StatisticInfo::generateStatisticXMLData(int Index, TiXmlNode* XMLParentElement)
@@ -887,6 +887,7 @@ void SSTInfoElement_StatisticInfo::generateStatisticXMLData(int Index, TiXmlNode
 	XMLStatElement->SetAttribute("Index", Index);
 	XMLStatElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
 	XMLStatElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
+	XMLStatElement->SetAttribute("Units", (NULL == getUnits()) ? "" : getUnits());
 	XMLStatElement->SetAttribute("EnableLevel", getEnableLevel());
 
     // Add this Parameter Element to the Parent Element

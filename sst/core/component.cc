@@ -307,12 +307,17 @@ Component::loadSubComponent(std::string type, Component* comp, Params& params)
     
 bool Component::doesComponentInfoStatisticExist(std::string statisticName)
 {
-    return Simulation::getSimulation()->getFactory()->DoesComponentInfoStatisticEnableNameExist(type, statisticName);
+    return Simulation::getSimulation()->getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
 }
 
 uint8_t Component::getComponentInfoStatisticEnableLevel(std::string statisticName)
 {
     return Simulation::getSimulation()->getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
+}
+
+std::string Component::getComponentInfoStatisticUnits(std::string statisticName)
+{
+    return Simulation::getSimulation()->getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
 }
 
 template<class Archive>
