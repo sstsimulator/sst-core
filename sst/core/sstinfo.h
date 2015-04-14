@@ -475,6 +475,65 @@ private:
 };
 
 /**
+ * The SSTInfo representation of ElementInfoSubComponent object.
+ *
+ * This class is used internally by SSTInfo to load and process  
+ * ElementInfoSubComponent objects. 
+ */
+class SSTInfoElement_SubComponentInfo {
+public:
+    /** Create a new SSTInfoElement_SubComponentInfo object.
+     * @param elsc Pointer to an ElementInfoComponent object.
+     */
+    SSTInfoElement_SubComponentInfo(const ElementInfoSubComponent* elsc)
+    {
+        const ElementInfoParam*            ptrParams;
+        const ElementInfoStatistic*        ptrStats;
+        
+        // Save the Object
+        m_elsc = elsc;
+
+        ptrParams = elsc->params;  // Pointer to the Params Structure Array
+        PopulateParams(ptrParams, &m_ParamArray);        
+
+        ptrStats = elsc->stats;  // Pointer to the Stats Structure Array
+        PopulateStatistic(ptrStats, &m_StatisticArray);
+    }
+    
+    /** Return the Name of the SubComponent. */
+    const char* getName() {return m_elsc->name;}
+
+    /** Return the Description of the SubComponent. */
+    const char* getDesc() {return m_elsc->description;}
+
+    /** Return a Parameter Info Object. 
+     * @param index The index of the Parameter.
+     */
+    SSTInfoElement_ParamInfo* getParamInfo(int index) {return m_ParamArray[index];}
+
+    /** Return a Statistic Enable Info Object. 
+     * @param index The index of the Statistic Enable.
+     */
+    SSTInfoElement_StatisticInfo*  getStatisticInfo(int index) {return m_StatisticArray[index];}
+
+    /** Output the SubComponent Information. 
+     * @param Index The Index of the SubComponent.
+     */
+    void outputSubComponentInfo(int Index);
+    
+    /** Create the formatted XML data of the Component.
+     * @param Index The Index of the Component.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
+    void generateSubComponentInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
+    
+private:    
+    const ElementInfoSubComponent*                    m_elsc;
+    std::vector<SSTInfoElement_ParamInfo*>            m_ParamArray;
+    std::vector<SSTInfoElement_StatisticInfo*>        m_StatisticArray;
+};
+
+/**
  * The SSTInfo representation of ElementInfoPartitioner object.
  *
  * This class is used internally by SSTInfo to load and process  
@@ -587,6 +646,9 @@ public:
     /** Return the number of Modules within the Library. */
     int         getNumberOfLibraryModules()       {return m_ModuleArray.size();}
 
+    /** Return the number of SubComponents within the Library. */
+    int         getNumberOfLibrarySubComponents()    {return m_SubComponentArray.size();}
+
     /** Return the number of Partitioners within the Library. */
     int         getNumberOfLibraryPartitioners()  {return m_PartitionerArray.size();}
 
@@ -616,6 +678,11 @@ public:
      */
     SSTInfoElement_ModuleInfo*       getInfoModule(int Index)       {return m_ModuleArray[Index];}
 
+    /** Return a specific SSTInfoElement_SubComponentInfo object. 
+     * @param Index The index of the object.
+     */
+    SSTInfoElement_SubComponentInfo*    getInfoSubComponent(int Index)    {return m_SubComponentArray[Index];}
+
     /** Return a specific SSTInfoElement_PartitionerInfo object. 
      * @param Index The index of the object.
      */
@@ -643,6 +710,7 @@ private:
     void addInfoIntrospector(const ElementInfoIntrospector* eii) {m_IntrospectorArray.push_back(new SSTInfoElement_IntrospectorInfo(eii));}
     void addInfoEvent(const ElementInfoEvent* eie) {m_EventArray.push_back(new SSTInfoElement_EventInfo(eie));}
     void addInfoModule(const ElementInfoModule* eim) {m_ModuleArray.push_back(new SSTInfoElement_ModuleInfo(eim));}
+    void addInfoSubComponent(const ElementInfoSubComponent* eisc) {m_SubComponentArray.push_back(new SSTInfoElement_SubComponentInfo(eisc));}
     void addInfoPartitioner(const ElementInfoPartitioner* eip) {m_PartitionerArray.push_back(new SSTInfoElement_PartitionerInfo(eip));}
     void addInfoGenerator(const ElementInfoGenerator* eig) {m_GeneratorArray.push_back(new SSTInfoElement_GeneratorInfo(eig));}
     
@@ -651,6 +719,7 @@ private:
     std::vector<SSTInfoElement_IntrospectorInfo*> m_IntrospectorArray;
     std::vector<SSTInfoElement_EventInfo*>        m_EventArray;
     std::vector<SSTInfoElement_ModuleInfo*>       m_ModuleArray;
+    std::vector<SSTInfoElement_SubComponentInfo*> m_SubComponentArray;
     std::vector<SSTInfoElement_PartitionerInfo*>  m_PartitionerArray;
     std::vector<SSTInfoElement_GeneratorInfo*>    m_GeneratorArray;
 

@@ -539,6 +539,7 @@ void SSTInfoElement_LibraryInfo::populateLibraryInfo()
     const ElementInfoIntrospector* eii;
     const ElementInfoEvent*        eie;
     const ElementInfoModule*       eim;
+    const ElementInfoSubComponent* eisc;
     const ElementInfoPartitioner*  eip;
     const ElementInfoGenerator*    eig;
          
@@ -586,6 +587,17 @@ void SSTInfoElement_LibraryInfo::populateLibraryInfo()
         }
     }
 
+    // Are there any SubComponents
+    if (NULL != m_eli->subcomponents) {
+        // Get a pointer to the array
+        eisc = m_eli->subcomponents;
+        // If the name is NULL, we have reached the last item
+        while (NULL != eisc->name) {
+            addInfoSubComponent(eisc);
+            eisc++;  // Get the next item
+        }
+    }
+
     // Are there any Partitioners
     if (NULL != m_eli->partitioners) {
         // Get a pointer to the array
@@ -618,6 +630,7 @@ void SSTInfoElement_LibraryInfo::outputLibraryInfo(int LibIndex)
     SSTInfoElement_IntrospectorInfo* eii;
     SSTInfoElement_EventInfo*        eie;
     SSTInfoElement_ModuleInfo*       eim;
+    SSTInfoElement_SubComponentInfo* eisc;
     SSTInfoElement_PartitionerInfo*  eip;
     SSTInfoElement_GeneratorInfo*    eig;
     bool                         enableFullElementOutput = true;
@@ -665,6 +678,13 @@ void SSTInfoElement_LibraryInfo::outputLibraryInfo(int LibIndex)
             eim->outputModuleInfo(x);
         }
     
+        numObjects = getNumberOfLibrarySubComponents();
+        fprintf(stdout, "   NUM SUBCOMPONENTS = %d\n", numObjects);
+        for (x = 0; x < numObjects; x++) {
+            eisc = getInfoSubComponent(x);
+            eisc->outputSubComponentInfo(x);
+        }
+        
         numObjects = getNumberOfLibraryPartitioners();  
         fprintf(stdout, "   NUM PARTITIONERS  = %d\n", numObjects);
         for (x = 0; x < numObjects; x++) {
@@ -709,6 +729,7 @@ void SSTInfoElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlN
     SSTInfoElement_IntrospectorInfo* eii;
     SSTInfoElement_EventInfo*        eie;
     SSTInfoElement_ModuleInfo*       eim;
+//    SSTInfoElement_SubComponentInfo* eisc;
     SSTInfoElement_PartitionerInfo*  eip;
     SSTInfoElement_GeneratorInfo*    eig;
     char                         Comment[256];
@@ -756,6 +777,17 @@ void SSTInfoElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlN
         eim->generateModuleInfoXMLData(x, XMLLibraryElement);
     }
 
+// TODO: Dump SubComponent info to XML.  Turned off for 5.0 since SSTWorkbench
+//       chokes if format is changed.  
+//    numObjects = getNumberOfLibrarySubComponents();
+//    sprintf(Comment, "NUM SUBCOMPONENTS = %d", numObjects);
+//    TiXmlComment* XMLLibSubComponentsComment = new TiXmlComment(Comment);
+//    XMLLibraryElement->LinkEndChild(XMLLibSubComponentsComment);
+//    for (x = 0; x < numObjects; x++) {
+//        eisc = getInfoSubComponent(x);
+//        eisc->generateSubComponentInfoXMLData(x, XMLLibraryElement);
+//    }
+    
     numObjects = getNumberOfLibraryPartitioners();  
 	sprintf(Comment, "NUM PARTITIONERS = %d", numObjects);
 	TiXmlComment* XMLLibPartitionersComment = new TiXmlComment(Comment);
@@ -877,21 +909,23 @@ const char* SSTInfoElement_PortInfo::getValidEvent(unsigned int index)
 
 void SSTInfoElement_StatisticInfo::outputStatisticInfo(int index)
 {
-    fprintf(stdout, "            STATISTIC %d = %s (%s) Units = %s; Enable Level = %d\n", index, getName(), getDesc(), getUnits(), getEnableLevel());
+    fprintf(stdout, "            STATISTIC %d = %s [%s] (%s) Enable Level = %d\n", index, getName(), getUnits(), getDesc(), getEnableLevel());
 }
 
 void SSTInfoElement_StatisticInfo::generateStatisticXMLData(int Index, TiXmlNode* XMLParentElement)
 {
-    // Build the Element to Represent the Parameter
-	TiXmlElement* XMLStatElement = new TiXmlElement("Statistic");
-	XMLStatElement->SetAttribute("Index", Index);
-	XMLStatElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
-	XMLStatElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
-	XMLStatElement->SetAttribute("Units", (NULL == getUnits()) ? "" : getUnits());
-	XMLStatElement->SetAttribute("EnableLevel", getEnableLevel());
-
-    // Add this Parameter Element to the Parent Element
-    XMLParentElement->LinkEndChild(XMLStatElement);
+// TODO: Dump Statistic info to XML.  Turned off for 5.0 since SSTWorkbench
+//       chokes if format is changed.  
+//    // Build the Element to Represent the Parameter
+//    TiXmlElement* XMLStatElement = new TiXmlElement("Statistic");
+//    XMLStatElement->SetAttribute("Index", Index);
+//    XMLStatElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+//    XMLStatElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
+//    XMLStatElement->SetAttribute("Units", (NULL == getUnits()) ? "" : getUnits());
+//    XMLStatElement->SetAttribute("EnableLevel", getEnableLevel());
+//
+//    // Add this Parameter Element to the Parent Element
+//    XMLParentElement->LinkEndChild(XMLStatElement);
 }
 
 void SSTInfoElement_ComponentInfo::outputComponentInfo(int index)
@@ -1080,6 +1114,56 @@ void SSTInfoElement_ModuleInfo::generateModuleInfoXMLData(int Index, TiXmlNode* 
 
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLModuleElement);
+}
+
+void SSTInfoElement_SubComponentInfo::outputSubComponentInfo(int index)
+{
+    // Print out the Component Info
+    fprintf(stdout, "      SUBCOMPONENT %d = %s (%s)\n", index, getName(), getDesc());
+
+    // Print out the Parameter Info
+    fprintf(stdout, "         NUM PARAMETERS = %ld\n", m_ParamArray.size());
+    for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
+        getParamInfo(x)->outputParameterInfo(x);
+    }
+
+    // Print out the Port Info
+    fprintf(stdout, "         NUM STATISTICS = %ld\n", m_StatisticArray.size());
+    for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
+        getStatisticInfo(x)->outputStatisticInfo(x);
+    }
+}
+
+void SSTInfoElement_SubComponentInfo::generateSubComponentInfoXMLData(int Index, TiXmlNode* XMLParentElement)
+{
+    char Comment[256];
+
+    // Build the Element to Represent the Component
+	TiXmlElement* XMLSubComponentElement = new TiXmlElement("SubComponent");
+	XMLSubComponentElement->SetAttribute("Index", Index);
+	XMLSubComponentElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
+	XMLSubComponentElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
+
+	// Get the Num Parameters and Display an XML comment about them
+    sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
+    TiXmlComment* XMLParamsComment = new TiXmlComment(Comment);
+    XMLSubComponentElement->LinkEndChild(XMLParamsComment);
+	
+    for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
+        getParamInfo(x)->generateParameterInfoXMLData(x, XMLSubComponentElement);
+    }
+
+	// Get the Num Statistics and Display an XML comment about them
+    sprintf(Comment, "NUM STATISTICS = %ld", m_StatisticArray.size());
+    TiXmlComment* XMLStatComment = new TiXmlComment(Comment);
+    XMLSubComponentElement->LinkEndChild(XMLStatComment);
+	
+    for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
+        getStatisticInfo(x)->generateStatisticXMLData(x, XMLSubComponentElement);
+    }
+
+    // Add this Element to the Parent Element
+    XMLParentElement->LinkEndChild(XMLSubComponentElement);
 }
 
 void SSTInfoElement_PartitionerInfo::outputPartitionerInfo(int index)
