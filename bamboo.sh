@@ -202,6 +202,7 @@ dotests() {
     #
     if [ $1 == "sstmainline_config_fast" -o $1 == "sstmainline_config_fast_static" ]
     then
+        ${SST_TEST_SUITES}/testSuite_BadPort.sh
         ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
         ${SST_TEST_SUITES}/testSuite_check_maxrss.sh
         ${SST_TEST_SUITES}/testSuite_embernightly.sh
