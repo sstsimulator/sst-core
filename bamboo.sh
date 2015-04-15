@@ -1804,6 +1804,66 @@ darwinSetBoostMPI() {
                         module list
                         ;;
 
+                    clang-602.0.49)
+                        # Use Boost and MPI built with CLANG from Xcode 6.3
+                        module unload mpi
+                        module unload boost
+
+                        # Load other modules for clang-602.0.49
+                        # GNU Linear Programming Kit (GLPK)
+                        echo "bamboo.sh: Load GLPK"
+                        module load glpk/glpk-4.54_clang-602.0.49
+                        # # System C
+                        # echo "bamboo.sh: Load System C"
+                        # module load systemc/systemc-2.3.0_clang-602.0.49
+                        # METIS 5.1.0
+                        echo "bamboo.sh: Load METIS 5.1.0"
+                        module load metis/metis-5.1.0_clang-602.0.49
+                        # Other misc
+                        echo "bamboo.sh: Load libphx"
+                        module load libphx/libphx-2014-MAY-08_clang-602.0.49
+
+                        # load MPI
+                        case $2 in
+                            ompi_default|openmpi-1.8)
+                                echo "OpenMPI 1.8 (openmpi-1.8) selected"
+                                module add mpi/openmpi-1.8_clang-602.0.49
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.8"
+                                module load mpi/openmpi-1.8_clang-602.0.49 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                                            
+                        # load corresponding Boost
+                        case $3 in
+                            boost_default|boost-1.56)
+                                echo "Boost 1.56 selected"
+                                module add boost/boost-1.56.0-nompi_clang-602.0.49
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.56"
+                                module load boost/boost-1.56.0-nompi_clang-602.0.49 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which clang`
+                        export CXX=`which clang++`
+                        module list
+                        ;;
+
+
                     *)
                         # unknown compiler, use default
                         echo "bamboo.sh: Unknown compiler selection. Assuming clang."
