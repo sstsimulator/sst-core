@@ -1960,6 +1960,18 @@ setUPforMakeDisttest() {
      ln -s $PRISTINE .
      ls -l pristine
      popd
+     echo "           ------ verify the file removal"
+     pwd
+     ls
+     #       Why did we copy bamboo.sh and deps, but link test ????
+     echo "  Why did we copy bamboo.sh and deps, but link test ????"?
+     pushd ../../       # Back to orginal trunk
+     ls | awk '{print "rm -rf " $1}' | grep -v -e distTestDir -e test > rm-extra
+     . ./rm-extra
+     ls
+     popd
+     echo "               extra Files removed ------------  "
+
      echo SST_DEPS_USER_DIR= $SST_DEPS_USER_DIR
               ##  Here is the bamboo invocation within bamboo
      echo "         INVOKE bamboo for the build from the dist tar"
