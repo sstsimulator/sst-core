@@ -1966,7 +1966,7 @@ setUPforMakeDisttest() {
      #       Why did we copy bamboo.sh and deps, but link test ????
      echo "  Why did we copy bamboo.sh and deps, but link test ????"?
      pushd ../../       # Back to orginal trunk
-     ls | awk '{print "rm -rf " $1}' | grep -v -e distTestDir -e test > rm-extra
+     ls | awk '{print "rm -rf " $1}' | grep -v -d deps -e distTestDir -e test > rm-extra
      . ./rm-extra
      ls
      popd
