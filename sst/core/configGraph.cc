@@ -192,12 +192,12 @@ ConfigGraph::checkForStructuralErrors()
         // This one should never happen since the slots are
         // initialized in order, but just in case...
         if ( clink.component[0] == ULONG_MAX ) {
-            output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink.name.c_str(),
+            output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",clink.name.c_str(),
                    comps[clink.component[1]].name.c_str());
             found_error = true;
         }
         if ( clink.component[1] == ULONG_MAX ) {
-            output.output("Found dangling link: %s.  It is connected on one side to component %s.\n",clink.name.c_str(),
+            output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",clink.name.c_str(),
                    comps[clink.component[0]].name.c_str());
             found_error = true;
         }
@@ -218,7 +218,7 @@ ConfigGraph::checkForStructuralErrors()
         }
         else {
             found_error = true;
-            output.output("Found duplicate component nane: %s\n",ccomp->name.c_str());
+            output.output("WARNING:  Found duplicate component nane: %s\n",ccomp->name.c_str());
             count--;
             if ( count == 0 ) {
                 output.output("Maximum name clashes reached, no more checks will be made.\n");
@@ -244,7 +244,7 @@ ConfigGraph::checkForStructuralErrors()
                     if (!Component::isPortValidForComponent(ccomp->type, link.port[j]) ) {
                         // For now this is not a fatal error
                         // found_error = true;
-                        output.output("Attempling to connect to undocumented port: %s, "
+                        output.output("WARNING:  Attempling to connect to undocumented port: %s, "
                                       "in component %s of type %s.  The most likely "
                                       "outcome is a segfault.\n", link.port[j].c_str(),
                                       ccomp->name.c_str(), ccomp->type.c_str());
