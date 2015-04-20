@@ -17,6 +17,7 @@
 #include <fstream>
 #include <boost/format.hpp>
 
+#include <sst/core/component.h>
 #include <sst/core/config.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/simulation.h>
@@ -225,6 +226,52 @@ ConfigGraph::checkForStructuralErrors()
             }
         }
     }
+
+#if 1
+    // Check to see if all the port names are valid
+    count = 10;
+    for ( ConfigComponentMap_t::iterator iter = comps.begin();
+          iter != comps.end(); ++iter )
+    {
+        ConfigComponent* ccomp = &(*iter);
+
+        bool found = false;
+        for ( int i = 0; i < ccomp->links.size(); i++ ) {
+            for ( int j = 0; j < 2; j++ ) {
+                const ConfigLink& link = links[ccomp->links[i]];
+                if ( link.component[j] == ccomp->id ) {
+                    // If port is not found, print a warning
+                    if (!Component::isPortValidForComponent(ccomp->type, link.port[j]) ) {
+                        // For now this is not a fatal error
+                        // found_error = true;
+                        output.output("Attempling to connect to undocumented port: %s, "
+                                      "in component %s of type %s.  The most likely "
+                                      "outcome is a segfault.\n", link.port[j].c_str(),
+                                      ccomp->name.c_str(), ccomp->type.c_str());
+                        count--;
+                    }
+                }
+            }
+        }
+        if ( count <= 0 ) {
+            output.output("Maximum bad port names reached, no more checks will be made.\n");
+            break;
+        }
+
+        // if ( name_set.find(ccomp->name) == name_set.end() ) {
+        //     name_set.insert(ccomp->name);
+        // }
+        // else {
+        //     found_error = true;
+        //     output.output("Found duplicate component nane: %s\n",ccomp->name.c_str());
+        //     count--;
+        //     if ( count == 0 ) {
+        //         output.output("Maximum name clashes reached, no more checks will be made.\n");
+        //         break;
+        //     }
+        // }
+    }
+#endif
     
     return found_error;
 }

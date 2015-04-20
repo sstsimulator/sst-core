@@ -56,6 +56,59 @@ Component::~Component()
     delete myLinks;
 }
 
+bool checkPort(const char *def, const char *offered)
+{
+    const char * x = def;
+    const char * y = offered;
+    
+    /* Special case.  Name of '*' matches everything */
+    if ( *x == '*' && *(x+1) == '\0' ) return true;
+    
+    do {
+        if ( *x == '%' && (*(x+1) == '(' || *(x+1) == 'd') ) {
+            // We have a %d or %(var)d to eat
+            x++;
+            if ( *x == '(' ) {
+                while ( *x && (*x != ')') ) x++;
+                x++;  /* *x should now == 'd' */
+            }
+            if ( *x != 'd') /* Malformed string.  Fail all the things */
+                return false;
+            x++; /* Finish eating the variable */
+            /* Now, eat the corresponding digits of y */
+            while ( *y && isdigit(*y) ) y++;
+        }
+        if ( *x != *y ) return false;
+        if ( *x == '\0' ) return true;
+        x++;
+        y++;
+    } while ( *x && *y );
+    if ( *x != *y ) return false; // aka, both NULL
+    return true;
+}
+    
+    
+bool
+Component::isPortValidForComponent(const std::string& comp_name, const std::string& port_name) {
+    const std::vector<std::string>* allowedPorts = Simulation::getSimulation()->getComponentAllowedPorts(comp_name);
+
+    const char *x = port_name.c_str();
+    bool found = false;
+    if ( NULL != allowedPorts ) {
+        for ( std::vector<std::string>::const_iterator i = allowedPorts->begin() ; i != allowedPorts->end() ; ++i ) {
+            /* Compare name with stored name, which may have wildcards */
+            if ( checkPort(i->c_str(), x) ) {
+                found = true;
+                break;
+            }
+        }
+    }
+        
+    return found;
+    
+}
+
+
 TimeConverter* Component::registerClock( std::string freq, Clock::HandlerBase* handler, bool regAll) {
     TimeConverter* tc = Simulation::getSimulation()->registerClock(freq,handler);
     
@@ -155,6 +208,11 @@ Component::isPortConnected(const std::string &name) const
 Link*
 Component::configureLink(std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
+    if ( !isPortValidForComponent(type,name) && !myLinks->isSelfPort(name) ) {
+#ifdef USE_PARAM_WARNINGS
+            std::cerr << "Warning:  Using undocumented port '" << name << "'." << std::endl;
+#endif
+    }
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
     
@@ -176,6 +234,11 @@ Component::configureLink(std::string name, std::string time_base, Event::Handler
 Link*
 Component::configureLink(std::string name, Event::HandlerBase* handler)
 {
+    if ( !isPortValidForComponent(type,name) && !myLinks->isSelfPort(name) ) {
+#ifdef USE_PARAM_WARNINGS
+            std::cerr << "Warning:  Using undocumented port '" << name << "'." << std::endl;
+#endif
+    }
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
     

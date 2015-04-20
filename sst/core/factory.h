@@ -37,6 +37,14 @@ class SimulationBase;
  */
 class Factory {
 public:
+
+    /** Get a list of allowed ports for a given component type.
+     * @param type - Name of component in lib.name format
+     * @return Vector of allowed port names 
+     */
+    const std::vector<std::string>* GetComponentAllowedPorts(std::string type);
+
+
     /** Attempt to create a new Component instantiation
      * @param id - The unique ID of the component instantiation
      * @param componentname - The fully qualified elementlibname.componentname type of component

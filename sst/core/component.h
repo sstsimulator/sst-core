@@ -48,6 +48,9 @@ class UnitAlgebra;
  */
 class Component {
 public:
+
+    static bool isPortValidForComponent(const std::string& comp_name, const std::string& port_name);
+    
     /* Deprecated typedef */
 //    typedef Params Params_t;
 

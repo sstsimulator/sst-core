@@ -232,20 +232,12 @@ public:
         }
     }
 
-#if 0
-    /** Clears the linkMap for a given Component ID */
-    void removeComponentLinkMap(ComponentId_t id) {
-        // std::map<ComponentId_t,LinkMap*>::iterator i = component_links.find(id);
-        // if (i == component_links.end()) {
-        CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-        if (i == compInfoMap.end()) {
-            return;
-        } else {
-            component_links.erase(i);
-        }
-    }
-#endif
-    
+    /** Get a list of allowed ports for a given component type.
+     * @param type - Name of component in lib.name format
+     * @return Vector of allowed port names 
+     */
+    const std::vector<std::string>* getComponentAllowedPorts(std::string type);
+        
     /** Returns reference to the Component Map */
     const CompMap_t& getComponentMap(void) const { return compMap; }
     /** Returns reference to the Component ID Map */

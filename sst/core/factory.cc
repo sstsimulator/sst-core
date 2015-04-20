@@ -49,6 +49,31 @@ Factory::~Factory()
     delete loader;
 }
 
+const std::vector<std::string>*
+Factory::GetComponentAllowedPorts(std::string type) {
+    std::string elemlib, elem;
+    
+    boost::tie(elemlib, elem) = parseLoadName(type);
+
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+
+    // now look for component
+    std::string tmp = elemlib + "." + elem;
+    eic_map_t::iterator eii = 
+        found_components.find(tmp);
+    if (eii == found_components.end()) {
+        _abort(Factory,"can't find requested component %s.\n ", tmp.c_str());
+        return NULL;
+    }
+
+    const ComponentInfo& ci = eii->second;
+
+    return &ci.ports;
+}
+
 Component*
 Factory::CreateComponent(ComponentId_t id, 
                          std::string type, 
@@ -76,6 +101,7 @@ Factory::CreateComponent(ComponentId_t id,
 
     LinkMap *lm = Simulation::getSimulation()->getComponentLinkMap(id);
     lm->setAllowedPorts(&ci.ports);
+    // lm->setAllowedPorts(GetComponentAllowedPorts(type));
 
     loadingComponentType = type;    
     params.pushAllowedKeys(ci.params);

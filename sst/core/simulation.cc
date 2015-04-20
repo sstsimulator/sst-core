@@ -123,6 +123,15 @@ Simulation::~Simulation()
     //     delete it->second;
     // }
     // component_links.clear();
+
+    // Delete the links    
+    // for ( CompInfoMap_t::iterator it = compInfoMap.begin(); it != compInfoMap.end(); ++it ) {
+    //     std::map<std::string,Link*>& map = it->second.link_map->getLinkMap();
+    //     std::map<std::string,Link*>::iterator map_it;
+    //     for ( map_it = map.begin(); map_it != map.end(); ++map_it ) {
+    //         delete map_it->second;
+    //     }
+    // }
 }
 
 Simulation*
@@ -670,6 +679,11 @@ void Simulation::insertActivity(SimTime_t time, Activity* ev) {
 
 }
 
+const std::vector<std::string>*
+Simulation::getComponentAllowedPorts(std::string type) {
+    return factory->GetComponentAllowedPorts(type);
+}
+    
 template<class Archive>
 void
 Simulation::serialize(Archive & ar, const unsigned int version)
