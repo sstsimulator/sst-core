@@ -115,14 +115,14 @@ Simulation::~Simulation()
     // OneShots already got deleted by timeVortex, simply clear the onsShotMap
     oneShotMap.clear();
     
-    // Delete any remaining links.  This should never happen now, but
-    // when we add an API to have components build subcomponents, user
-    // error could cause LinkMaps to be left.
-    std::map<ComponentId_t,LinkMap*>::iterator it;
-    for ( it = component_links.begin(); it != component_links.end(); ++it ) {
-        delete it->second;
-    }
-    component_links.clear();
+    // // Delete any remaining links.  This should never happen now, but
+    // // when we add an API to have components build subcomponents, user
+    // // error could cause LinkMaps to be left.
+    // std::map<ComponentId_t,LinkMap*>::iterator it;
+    // for ( it = component_links.begin(); it != component_links.end(); ++it ) {
+    //     delete it->second;
+    // }
+    // component_links.clear();
 }
 
 Simulation*
@@ -268,6 +268,19 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
         sync->setMaxPeriod( minPartTC = minPartToTC(min_part) );
     }
 
+    // First, go through all the components that are in this rank and
+    // create the ComponentInfo object for it
+    // Now, build all the components
+    for ( ConfigComponentMap_t::iterator iter = graph.comps.begin();
+            iter != graph.comps.end(); ++iter )
+    {
+        ConfigComponent* ccomp = &(*iter);
+        if ( ccomp->rank == myRank ) {
+            compInfoMap[ccomp->id] = ComponentInfo(ccomp->name, ccomp->type, new LinkMap());
+        }
+    }
+    
+    
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
@@ -291,28 +304,22 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             lp.getRight()->setLatency(clink.latency[1]);
 
             // Add this link to the appropriate LinkMap
-            std::map<ComponentId_t,LinkMap*>::iterator it;
-            // it = component_links.find(clink.component[0]->id);
-            it = component_links.find(clink.component[0]);
-            if ( it == component_links.end() ) {
-                LinkMap* lm = new LinkMap();
-                std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-                // ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[0]->id,lm));
-                ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[0],lm));
-                it = ret_val.first;
+            CompInfoMap_t::iterator it;
+            // it = component_links.find(clink.component[0]);
+            it = compInfoMap.find(clink.component[0]);
+            if ( it == compInfoMap.end() ) {
+                // This shouldn't happen and is an error
+                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
             }
-            it->second->insertLink(clink.port[0],lp.getLeft());
+            it->second.link_map->insertLink(clink.port[0],lp.getLeft());
 
             // it = component_links.find(clink.component[1]->id);
-            it = component_links.find(clink.component[1]);
-            if ( it == component_links.end() ) {
-                LinkMap* lm = new LinkMap();
-                std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-                // ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[1]->id,lm));
-                ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[1],lm));
-                it = ret_val.first;
+            it = compInfoMap.find(clink.component[1]);
+            if ( it == compInfoMap.end() ) {
+                // This shouldn't happen and is an error
+                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
             }
-            it->second->insertLink(clink.port[1],lp.getRight());
+            it->second.link_map->insertLink(clink.port[1],lp.getRight());
 
         }
         else {
@@ -335,15 +342,13 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
 
 
             // Add this link to the appropriate LinkMap for the local component
-            std::map<ComponentId_t,LinkMap*>::iterator it;
-            it = component_links.find(clink.component[local]);
-            if ( it == component_links.end() ) {
-                LinkMap* lm = new LinkMap();
-                std::pair<std::map<ComponentId_t,LinkMap*>::iterator,bool> ret_val;
-                ret_val = component_links.insert(std::pair<ComponentId_t,LinkMap*>(clink.component[local],lm));
-                it = ret_val.first;
+            CompInfoMap_t::iterator it;
+            it = compInfoMap.find(clink.component[local]);
+            if ( it == compInfoMap.end() ) {
+                // This shouldn't happen and is an error
+                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
             }
-            it->second->insertLink(clink.port[local],lp.getLeft());
+            it->second.link_map->insertLink(clink.port[local],lp.getLeft());
 
             // For the remote side, register with sync object
             ActivityQueue* sync_q = sync->registerLink(rank[remote],clink.id,lp.getRight());
@@ -376,13 +381,9 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             //             _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
             // 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
-            // Check to make sure there is a LinkMap for this component
-            std::map<ComponentId_t,LinkMap*>::iterator it;
-            it = component_links.find(ccomp->id);
-            if ( it == component_links.end() ) {
+            // Check to make sure there are any entries in the component's LinkMap
+            if ( compInfoMap[ccomp->id].link_map->empty() ) {
                 printf("WARNING: Building component \"%s\" with no links assigned.\n",ccomp->name.c_str());
-                LinkMap* lm = new LinkMap();
-                component_links[ccomp->id] = lm;
             }
 
             // Save off what statistics can be enabled before instantiating the component
@@ -390,7 +391,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             statisticEnableMap[ccomp->id] = &(ccomp->enabledStatistics);
             statisticParamsMap[ccomp->id] = &(ccomp->enabledStatParams);
             
-            compIdMap[ccomp->id] = ccomp->name;
+            // compIdMap[ccomp->id] = ccomp->name;
             tmp = createComponent( ccomp->id, ccomp->type,
                     ccomp->params );
             compMap[ccomp->name] = tmp;
@@ -428,11 +429,11 @@ void Simulation::initialize() {
     } while ( !done);
 
     // Walk through all the links and call finalizeConfiguration
-    for ( std::map<ComponentId_t,LinkMap*>::iterator i = component_links.begin(); i != component_links.end(); ++i) {
-	std::map<std::string,Link*>& map = (*i).second->getLinkMap();
-	for ( std::map<std::string,Link*>::iterator j = map.begin(); j != map.end(); ++j ) {
-	    (*j).second->finalizeConfiguration();
-	}
+    for ( CompInfoMap_t::iterator i = compInfoMap.begin(); i != compInfoMap.end(); ++i) {
+        std::map<std::string,Link*>& map = (*i).second.link_map->getLinkMap();
+        for ( std::map<std::string,Link*>::iterator j = map.begin(); j != map.end(); ++j ) {
+            (*j).second->finalizeConfiguration();
+        }
     }
     if ( num_ranks > 1 ) {
 	sync->finalizeLinkConfigurations();
@@ -704,8 +705,8 @@ Simulation::serialize(Archive & ar, const unsigned int version)
     printf("  - Simulation::num_ranks\n");
     ar & BOOST_SERIALIZATION_NVP(num_ranks);
 
-    printf("  - Simulation::component_links\n");
-    ar & BOOST_SERIALIZATION_NVP(component_links);
+    // printf("  - Simulation::compInfoMap\n");
+    // ar & BOOST_SERIALIZATION_NVP(compInfoMap);
 
     printf("end Simulation::serialize\n");
 }

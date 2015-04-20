@@ -60,9 +60,29 @@ class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
     
+struct ComponentInfo {
+    std::string name;
+    std::string type;
+    LinkMap* link_map;
+
+    ComponentInfo(std::string name, std::string type, LinkMap* link_map) :
+        name(name),
+        type(type),
+        link_map(link_map)
+    {}
+
+    ComponentInfo() :
+        name(""),
+        type(""),
+        link_map(NULL)
+    {}
+    
+};
+    
 typedef std::map<std::string, Introspector* > IntroMap_t;
 typedef std::map<std::string, Component* > CompMap_t;
-typedef std::map<ComponentId_t, std::string > CompIdMap_t;
+// typedef std::map<ComponentId_t, std::string > CompIdMap_t;
+typedef std::map<ComponentId_t, ComponentInfo> CompInfoMap_t;
 
 /** The Factory and TimeLord objects both should only be associated
     with a simulation object and never created on their own.  To
@@ -202,28 +222,35 @@ public:
 
     /** Return pointer to map of links for a given component id */
     LinkMap* getComponentLinkMap(ComponentId_t id) const {
-        std::map<ComponentId_t,LinkMap*>::const_iterator i = component_links.find(id);
-        if (i == component_links.end()) {
+        // std::map<ComponentId_t,LinkMap*>::const_iterator i = component_links.find(id);
+        // if (i == component_links.end()) {
+        CompInfoMap_t::const_iterator i = compInfoMap.find(id);
+        if (i == compInfoMap.end()) {
             return NULL;
         } else {
-            return i->second;
+            return i->second.link_map;
         }
     }
 
+#if 0
     /** Clears the linkMap for a given Component ID */
     void removeComponentLinkMap(ComponentId_t id) {
-        std::map<ComponentId_t,LinkMap*>::iterator i = component_links.find(id);
-        if (i == component_links.end()) {
+        // std::map<ComponentId_t,LinkMap*>::iterator i = component_links.find(id);
+        // if (i == component_links.end()) {
+        CompInfoMap_t::const_iterator i = compInfoMap.find(id);
+        if (i == compInfoMap.end()) {
             return;
         } else {
             component_links.erase(i);
         }
     }
-
+#endif
+    
     /** Returns reference to the Component Map */
     const CompMap_t& getComponentMap(void) const { return compMap; }
     /** Returns reference to the Component ID Map */
-    const CompIdMap_t& getComponentIdMap(void) const { return compIdMap; }
+    // const CompIdMap_t& getComponentIdMap(void) const { return compIdMap; }
+    const CompInfoMap_t& getComponentInfoMap(void) const { return compInfoMap; }
 
     /** Returns the component with a given name */
     Component* getComponent(const std::string &name) const
@@ -241,9 +268,10 @@ public:
     /** returns the component with the given ID */
     Component* getComponent(const ComponentId_t &id) const
     {
-		CompIdMap_t::const_iterator i = compIdMap.find(id);
-		if (i != compIdMap.end()) {
-			return getComponent(i->second);
+		// CompIdMap_t::const_iterator i = compIdMap.find(id);
+		CompInfoMap_t::const_iterator i = compInfoMap.find(id);
+		if (i != compInfoMap.end()) {
+			return getComponent(i->second.name);
 		} else {
             printf("Simulation::getComponent() couldn't find component with id = %lu\n", id);
             exit(1);
@@ -373,7 +401,8 @@ private:
     Activity*        current_activity;
     SyncBase*        sync;
     CompMap_t        compMap;
-    CompIdMap_t      compIdMap;
+    // CompIdMap_t      compIdMap;
+    CompInfoMap_t    compInfoMap;
     IntroMap_t       introMap;
     clockMap_t       clockMap;
     statEnableMap_t  statisticEnableMap;
@@ -390,7 +419,7 @@ private:
     int              init_msg_count;
     unsigned int     init_phase;
     volatile sig_atomic_t lastRecvdSignal;
-    std::map<ComponentId_t,LinkMap*> component_links;
+    // std::map<ComponentId_t,LinkMap*> component_links;
     Output           sim_output;
     std::string      output_directory;
 

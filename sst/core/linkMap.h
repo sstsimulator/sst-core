@@ -134,6 +134,14 @@ public:
         else return it->second;
     }
 
+    /**
+       Checks to see if LinkMap is empty.
+       @return True if Link map is empty, false otherwise
+    */
+    bool empty() {
+        return linkMap.empty();
+    }
+    
     // FIXME: Cludge for now, fix later.  Need to make LinkMap look
     // like a regular map instead.
     /** Return a reference to the internal map */

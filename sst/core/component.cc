@@ -36,9 +36,12 @@ Component::Component(ComponentId_t id) :
     defaultTimeBase(NULL), id( id)
 {
     myLinks = Simulation::getSimulation()->getComponentLinkMap(id);
-	const CompIdMap_t& map = Simulation::getSimulation()->getComponentIdMap();
-	CompIdMap_t::const_iterator i = map.find(id);
-	if ( i != map.end() ) name = i->second;
+	const CompInfoMap_t& map = Simulation::getSimulation()->getComponentInfoMap();
+	CompInfoMap_t::const_iterator i = map.find(id);
+	if ( i != map.end() ) {
+        name = i->second.name;
+        type = i->second.type;
+    }
     _COMP_DBG( "new\n" );
     currentlyLoadingSubModule = "";
 }
@@ -49,7 +52,7 @@ Component::Component()
 
 Component::~Component() 
 {
-    Simulation::getSimulation()->removeComponentLinkMap(id);
+    // Simulation::getSimulation()->removeComponentLinkMap(id);
     delete myLinks;
 }
 
