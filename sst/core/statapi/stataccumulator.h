@@ -135,8 +135,8 @@ private:
     void registerOutputFields(StatisticOutput* statOutput)
     {
         Field1 = statOutput->registerField<NumberBase>("Sum");
-        Field2 = statOutput->registerField<NumberBase>("SumSQ");  
-        Field3 = statOutput->registerField<uint64_t>  ("CollectionCount");  
+        Field2 = statOutput->registerField<NumberBase>("SumSQ");
+        Field3 = statOutput->registerField<uint64_t>  ("Count");
     }
     
     void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag)
