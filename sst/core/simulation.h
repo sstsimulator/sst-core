@@ -31,6 +31,7 @@
 #include <sst/core/statapi/statnull.h>
 #include <sst/core/statapi/stataccumulator.h>
 #include <sst/core/statapi/stathistogram.h>
+#include <sst/core/statapi/statuniquecount.h>
 
 //#include "sst/core/sdl.h"
 //#include "sst/core/component.h"
@@ -309,12 +310,19 @@ public:
         if (0 == strcasecmp("sst.nullstatistic", type.c_str())) {
             return new NullStatistic<T>(comp, statName, statSubId, params);
         }
+
         if (0 == strcasecmp("sst.accumulatorstatistic", type.c_str())) {
             return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
         }
+
         if (0 == strcasecmp("sst.histogramstatistic", type.c_str())) {
             return new HistogramStatistic<T>(comp, statName, statSubId, params);
         }
+
+	if(0 == strcasecmp("sst.uniquecountstatistic", type.c_str())) {
+	    return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
+	}
+
         // We did not find this statistic
         printf("ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
 
