@@ -89,6 +89,7 @@ nobase_dist_sst_HEADERS = \
 	statapi/statengine.h \
 	statapi/statoutput.h \
 	statapi/statoutputconsole.h \
+	statapi/statuniquecount.h \
 	statapi/statoutputtxt.h \
 	statapi/statoutputcsv.h \
 	statapi/statbase.h \
@@ -139,11 +140,11 @@ sst_core_sources = \
 	interfaces/simpleNetwork.cc \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
-	rng/poisson.cc \
 	rng/mersenne.cc \
 	rng/distrib.cc \
 	rng/gaussian.cc \
 	rng/expon.cc \
+	rng/poisson.cc \
 	rng/constant.cc \
 	statapi/statengine.cc \
 	statapi/statoutput.cc \
