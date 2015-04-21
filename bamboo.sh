@@ -352,6 +352,7 @@ dotests() {
         #  sstmainline_config_no_gem5 deliberately omits Zoltan, so must skip test.
         if [ $1 != "sstmainline_config_linux_with_ariel" -a $1 != "sstmainline_config_no_gem5" ] ; then
             ${SST_TEST_SUITES}/testSuite_zoltan.sh
+            ${SST_TEST_SUITES}/testSuite_partitioner.sh
         fi
     fi
     ${SST_TEST_SUITES}/testSuite_simpleRNGComponent.sh
