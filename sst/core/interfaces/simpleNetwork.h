@@ -98,18 +98,9 @@ public:
         friend class boost::serialization::access;
         template<class Archive>
         void
-        serialize(Archive & ar, const unsigned int version )
-        {
-            ar & BOOST_SERIALIZATION_NVP(dest);
-            ar & BOOST_SERIALIZATION_NVP(src);
-            ar & BOOST_SERIALIZATION_NVP(vn);
-            ar & BOOST_SERIALIZATION_NVP(size_in_bits);
-            ar & BOOST_SERIALIZATION_NVP(head);
-            ar & BOOST_SERIALIZATION_NVP(tail);
-            ar & BOOST_SERIALIZATION_NVP(payload);
-        }
-    };
+        serialize(Archive & ar, const unsigned int version );
 
+    };
     /**
        Class used to inspect network requests going through the network.
      */
@@ -318,5 +309,7 @@ public:
 
 }
 }
+
+BOOST_CLASS_EXPORT_KEY(SST::Interfaces::SimpleNetwork::Request);
 
 #endif

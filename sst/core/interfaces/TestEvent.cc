@@ -32,4 +32,4 @@ TestEvent::~TestEvent()
     }
 }
 
-BOOST_CLASS_EXPORT(TestEvent)
+BOOST_CLASS_EXPORT(SST::Interfaces::TestEvent)

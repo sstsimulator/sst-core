@@ -18,4 +18,4 @@
 using namespace SST;
 using namespace SST::Interfaces;
 
-BOOST_CLASS_EXPORT(StringEvent)
+BOOST_CLASS_EXPORT(SST::Interfaces::StringEvent)
