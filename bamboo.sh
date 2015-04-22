@@ -318,7 +318,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_simpleDistribComponent.sh
     ${SST_TEST_SUITES}/testSuite_SweepEmber.sh
 
-    if [ $1 != "sstmainline_config_gcc_4_8_1" -a $1 != "sstmainline_config_no_mpi" ] && [[ $1 != "no_gem5" ]] 
+    if [ $1 != "sstmainline_config_gcc_4_8_1" -a $1 != "sstmainline_config_no_mpi" ] && [[ $1 != *no_gem5* ]] 
     then
         # Don't run gem5 dependent test suites in these configurations
         # because gem5 is not enabled in them.
