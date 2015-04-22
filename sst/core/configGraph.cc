@@ -235,8 +235,8 @@ ConfigGraph::checkForStructuralErrors()
     {
         ConfigComponent* ccomp = &(*iter);
 
-        bool found = false;
-        for ( int i = 0; i < ccomp->links.size(); i++ ) {
+//        bool found = false;
+        for ( unsigned int i = 0; i < ccomp->links.size(); i++ ) {
             for ( int j = 0; j < 2; j++ ) {
                 const ConfigLink& link = links[ccomp->links[i]];
                 if ( link.component[j] == ccomp->id ) {
