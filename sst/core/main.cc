@@ -40,6 +40,7 @@
 #include <sst/core/model/sstmodel.h>
 #include <sst/core/model/pymodel.h>
 #include <sst/core/memuse.h>
+#include <sst/core/iouse.h>
 
 #include <sys/resource.h>
 
@@ -651,10 +652,12 @@ main(int argc, char *argv[])
     max_total_time = total_time;
 #endif
 
-    const uint64_t local_max_rss  = maxLocalMemSize();
-    const uint64_t global_max_rss = maxGlobalMemSize();
-    const uint64_t local_max_pf   = maxLocalPageFaults();
-    const uint64_t global_pf      = globalPageFaults();
+    const uint64_t local_max_rss     = maxLocalMemSize();
+    const uint64_t global_max_rss    = maxGlobalMemSize();
+    const uint64_t local_max_pf      = maxLocalPageFaults();
+    const uint64_t global_pf         = globalPageFaults();
+    const uint64_t global_max_io_in  = maxInputOperations();
+    const uint64_t global_max_io_out = maxOutputOperations();
 
     if ( rank == 0 && cfg.verbose ) {
 	char ua_buffer[256];
@@ -682,6 +685,10 @@ main(int argc, char *argv[])
 		local_max_pf);
 	sim_output->output("# Global Page Faults:              %" PRIu64 " faults\n",
 		global_pf);
+	sim_output->output("# Max Output Blocks:               %" PRIu64 " blocks\n",
+		global_max_io_in);
+	sim_output->output("# Max Input Blocks:                %" PRIu64 " blocks\n",
+		global_max_io_out);
         sim_output->output("# ------------------------------------------------------------\n");
 	sim_output->output("#\n");
 	sim_output->output("\n");

@@ -44,6 +44,7 @@ nobase_dist_sst_HEADERS = \
 	linkPair.h \
 	mempool.h \
 	memuse.h \
+	iouse.h \
 	module.h \
 	oneshot.h \
 	output.h \
@@ -122,6 +123,7 @@ sst_core_sources = \
 	introspectedComponent.cc \
 	link.cc \
 	memuse.cc \
+	iouse.cc \
 	oneshot.cc \
 	output.cc \
 	params.cc \
