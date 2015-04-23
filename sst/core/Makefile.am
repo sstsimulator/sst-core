@@ -123,7 +123,6 @@ sst_core_sources = \
 	introspectedComponent.cc \
 	link.cc \
 	memuse.cc \
-	iouse.cc \
 	oneshot.cc \
 	output.cc \
 	params.cc \
@@ -154,7 +153,9 @@ sst_core_sources = \
 	statapi/statoutputtxt.cc \
 	statapi/statoutputcsv.cc \
 	statapi/statbase.cc \
-	cputimer.cc
+	cputimer.cc \
+	iouse.cc
+
 
 bin_PROGRAMS = sst sstinfo
 libexec_PROGRAMS = sstsim.x sstinfo.x
