@@ -33,33 +33,55 @@ class SSTExponentialDistribution : public SSTRandomDistribution {
 	public:
 		/**
 			Creates an exponential distribution with a specific lambda
-			\param lambda The lambda of the exponential distribution
+			\param mn The lambda of the exponential distribution
 		*/
-		SSTExponentialDistribution(double lambda);
+    SSTExponentialDistribution(const double mn)  :
+    SSTRandomDistribution() {
+        
+        lambda = mn;
+        baseDistrib = new MersenneRNG();
+        deleteDistrib = true;
+    }
 
 		/**
 			Creates an exponential distribution with a specific lambda and a base random number generator
-			\param lambda The lambda of the exponential distribution
+			\param mn The lambda of the exponential distribution
 			\param baseDist The base random number generator to take the distribution from.
 		*/
-		SSTExponentialDistribution(double lambda, SSTRandom* baseDist);
+    SSTExponentialDistribution(const double mn, SSTRandom* baseDist)  :
+    SSTRandomDistribution() {
+        
+        lambda = mn;
+        baseDistrib = baseDist;
+        deleteDistrib = false;
+    }
 
 		/**
 			Destroys the exponential distribution
 		*/
-		~SSTExponentialDistribution();
+    ~SSTExponentialDistribution() {
+        if(deleteDistrib) {
+            delete baseDistrib;
+        }
+    }
 
 		/**
 			Gets the next (random) double value in the distribution
 			\return The next random double from the distribution
 		*/
-		virtual double getNextDouble();
+    double getNextDouble()  {
+        const double next = baseDistrib->nextUniform();
+        return log(1 - next) / ( -1 * lambda );
+    }
 
 		/**
 			Gets the lambda with which the distribution was created
 			\return The lambda which the user created the distribution with
 		*/
-		double getLambda();
+    double getLambda()  {
+        return lambda;
+    }
+    
 
 	protected:
 		/**

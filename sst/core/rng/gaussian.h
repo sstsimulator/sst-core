@@ -32,41 +32,96 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
 	public:
 		/**
 			Creates a new distribution with a predefined random number generator with a specified mean and standard deviation.
-			\param mean The mean of the Gaussian distribution
-			\param stddev The standard deviation of the Gaussian distribution
+			\param mn The mean of the Gaussian distribution
+			\param sd The standard deviation of the Gaussian distribution
 		*/
-		SSTGaussianDistribution(double mean, double stddev);
+    SSTGaussianDistribution(double mn, double sd)  :
+    SSTRandomDistribution() {
+        
+        mean = mn;
+        stddev = sd;
+        
+        baseDistrib = new MersenneRNG();
+        unusedPair = 0;
+        usePair = false;
+        deleteDistrib = true;
+    }
 
 		/**
 			Creates a new distribution with a predefined random number generator with a specified mean and standard deviation.
-			\param mean The mean of the Gaussian distribution
-			\param stddev The standard deviation of the Gaussian distribution
+			\param mn The mean of the Gaussian distribution
+			\param sd The standard deviation of the Gaussian distribution
 			\param baseRNG The random number generator as the base of the distribution
 		*/
-		SSTGaussianDistribution(double mean, double stddev, SSTRandom* baseRNG);
+    SSTGaussianDistribution(double mn, double sd, SSTRandom* baseRNG)  :
+    SSTRandomDistribution() {
+        
+        mean = mn;
+        stddev = sd;
+        
+        baseDistrib = baseRNG;
+        unusedPair = 0;
+        usePair = false;
+        deleteDistrib = false;
+    }
 
 		/**
 			Destroys the Gaussian distribution.
 		*/
-		~SSTGaussianDistribution();
+    ~SSTGaussianDistribution()  {
+        if(deleteDistrib) {
+            delete baseDistrib;
+        }
+    }
 
 		/**
 			Gets the next double value in the distributon
 			\return The next double value of the distribution (in this case a Gaussian distribution)
 		*/
-		virtual double getNextDouble();
+    double getNextDouble()  {
+        if(usePair) {
+            usePair = false;
+            return unusedPair;
+        } else {
+            double gauss_u, gauss_v, sq_sum;
+            
+            do {
+                gauss_u = baseDistrib->nextUniform();
+                gauss_v = baseDistrib->nextUniform();
+                sq_sum = (gauss_u * gauss_u) + (gauss_v * gauss_v);
+            } while(sq_sum >= 1 || sq_sum == 0);
+            
+            if(baseDistrib->nextUniform() < 0.5) {
+                gauss_u *= -1.0;
+            }
+            
+            if(baseDistrib->nextUniform() < 0.5) {
+                gauss_v *= -1.0;
+            }
+            
+            double multipler = sqrt(-2.0 * log(sq_sum) / sq_sum);
+            unusedPair = mean + stddev * gauss_v * multipler;
+            usePair = true;
+            
+            return mean + stddev * gauss_u * multipler;
+        }
+    }
 
 		/**
 			Gets the mean of the distribution
 			\return The mean of the Guassian distribution
 		*/
-		double getMean();
+    double getMean()  {
+        return mean;
+    }
 
 		/**
 			Gets the standard deviation of the distribution
 			\return The standard deviation of the Gaussian distribution
 		*/
-		double getStandardDev();
+    double getStandardDev()  {
+        return stddev;
+    }
 
 	protected:
 		/**

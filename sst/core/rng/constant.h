@@ -32,27 +32,36 @@ class SSTConstantDistribution : public SSTRandomDistribution {
 	public:
 		/**
 			Creates a constant distribution which returns a constant value.
-			\param mean Is the constant value the user wants returned by the distribution
+			\param v Is the constant value the user wants returned by the distribution
 		*/
-		SSTConstantDistribution(double mean);
+    SSTConstantDistribution(double v) :
+    SSTRandomDistribution() {
+        mean = v;
+    }
 
 		/**
 			Destroys the constant distribution
 		*/
-		~SSTConstantDistribution();
+    ~SSTConstantDistribution() {
+        
+    }
 
 		/**
 			Gets the next double for the distribution, in this case it will return the constant
 			value specified by the user
 			\return Constant value specified by the user when creating the class
 		*/
-		double getNextDouble();
+    double getNextDouble() {
+        return mean;
+    }
 
 		/**
 			Gets the constant value for the distribution
 			\return Constant value specified by the user when creating the class
 		*/
-		double getMean();
+    double getMean() {
+        return mean;
+    }
 
 	protected:
 		/**

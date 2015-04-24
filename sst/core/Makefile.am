@@ -142,11 +142,6 @@ sst_core_sources = \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
-	rng/distrib.cc \
-	rng/gaussian.cc \
-	rng/expon.cc \
-	rng/poisson.cc \
-	rng/constant.cc \
 	statapi/statengine.cc \
 	statapi/statoutput.cc \
 	statapi/statoutputconsole.cc \

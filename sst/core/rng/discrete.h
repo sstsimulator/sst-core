@@ -36,6 +36,7 @@ class SSTDiscreteDistribution : public SSTRandomDistribution {
 			\param lambda The lambda of the exponential distribution
 		*/
     SSTDiscreteDistribution(const double* probs, const uint32_t probsCount) :
+        SSTRandomDistribution(), 
         probCount(probsCount) {
             
         probabilities = (double*) malloc(sizeof(double) * probsCount);
