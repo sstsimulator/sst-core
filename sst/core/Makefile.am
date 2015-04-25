@@ -79,6 +79,7 @@ nobase_dist_sst_HEADERS = \
 	rng/marsaglia.h \
 	rng/poisson.h \
 	rng/mersenne.h \
+	rng/xorshift.h \
 	rng/distrib.h \
 	rng/gaussian.h \
 	rng/expon.h \
@@ -142,6 +143,7 @@ sst_core_sources = \
 	rng/sstrand.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
+	rng/xorshift.cc \
 	statapi/statengine.cc \
 	statapi/statoutput.cc \
 	statapi/statoutputconsole.cc \
