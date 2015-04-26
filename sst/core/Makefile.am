@@ -81,6 +81,7 @@ nobase_dist_sst_HEADERS = \
 	rng/mersenne.h \
 	rng/xorshift.h \
 	rng/distrib.h \
+	rng/discrete.h \
 	rng/gaussian.h \
 	rng/expon.h \
 	rng/constant.h \
