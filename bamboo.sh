@@ -257,7 +257,7 @@ dotests() {
     #
     #   Only run if configured for ariel
     #
-    if [ $1 == "sstmainline_config_linux_with_ariel" ]
+    if [[ $1 == sstmainline_config_linux_with_ariel* ]]
     then
          ${SST_TEST_SUITES}/testSuite_Ariel.sh
     else
