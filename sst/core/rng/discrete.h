@@ -36,10 +36,17 @@ class SSTDiscreteDistribution : public SSTRandomDistribution {
 			\param lambda The lambda of the exponential distribution
 		*/
     SSTDiscreteDistribution(const double* probs, const uint32_t probsCount) :
-        SSTRandomDistribution(), 
+        SSTRandomDistribution(),
         probCount(probsCount) {
-            
+
         probabilities = (double*) malloc(sizeof(double) * probsCount);
+	double prob_sum = 0;
+
+	for(uint32_t i = 0; i < probsCount; i++) {
+		probabilities[i] = prob_sum;
+		prob_sum += probs[i];
+	}
+
             baseDistrib = new MersenneRNG();
             deleteDistrib = true;
     }
@@ -53,6 +60,13 @@ class SSTDiscreteDistribution : public SSTRandomDistribution {
         probCount(probsCount) {
         
         probabilities = (double*) malloc(sizeof(double) * probsCount);
+	double prob_sum = 0;
+
+	for(uint32_t i = 0; i < probsCount; i++) {
+		probabilities[i] = prob_sum;
+		prob_sum += probs[i];
+	}
+
         baseDistrib = baseDist;
             deleteDistrib = false;
     }
@@ -74,15 +88,15 @@ class SSTDiscreteDistribution : public SSTRandomDistribution {
 		*/
     double getNextDouble() {
         const double nextD = baseDistrib->nextUniform();
-        
+
         uint32_t index = 0;
-        
+
         for(; index < probCount; index++) {
-            if(nextD < probabilities[index]) {
+            if(probabilities[index] >= nextD) {
                 break;
             }
         }
-        
+
         return (double) index;
     }
 
