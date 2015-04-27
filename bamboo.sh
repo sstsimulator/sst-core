@@ -350,7 +350,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_patterns.sh
         #  Zoltan test requires MPI to execute.
         #  sstmainline_config_no_gem5 deliberately omits Zoltan, so must skip test.
-        if [ $1 != "sstmainline_config_linux_with_ariel" -a $1 != "sstmainline_config_no_gem5" ] ; then
+        if [ $1 != "sstmainline_config_linux_with_ariel" ] ; then
             ${SST_TEST_SUITES}/testSuite_zoltan.sh
             ${SST_TEST_SUITES}/testSuite_partitioner.sh
         fi
