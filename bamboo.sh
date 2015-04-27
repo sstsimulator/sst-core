@@ -1141,6 +1141,17 @@ linuxSetBoostMPI() {
        # Other misc
        echo "bamboo.sh: Load libphx"
        module load libphx/libphx-2014-MAY-08
+
+   else # otherwise try to load compiler-specific tool variant
+       # GNU Linear Programming Kit (GLPK)
+       echo "bamboo.sh: Load GLPK (gcc 4.6.4 variant)"
+       module load glpk/glpk-4.54_${compiler}
+       # METIS 5.1.0
+       echo "bamboo.sh: Load METIS 5.1.0 (gcc 4.6.4 variant)"
+       module load metis/metis-5.1.0_${compiler}
+       # Other misc
+       echo "bamboo.sh: Load libphx (gcc 4.6.4 variant)"
+       module load libphx/libphx-2014-MAY-08_${compiler}
    fi
 }
 
