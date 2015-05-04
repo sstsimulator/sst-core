@@ -95,6 +95,7 @@ nobase_dist_sst_HEADERS = \
 	statapi/statuniquecount.h \
 	statapi/statoutputtxt.h \
 	statapi/statoutputcsv.h \
+	statapi/statoutputcsvgz.h \
 	statapi/statbase.h \
 	statapi/stathistogram.h \
 	statapi/stataccumulator.h \
@@ -150,6 +151,7 @@ sst_core_sources = \
 	statapi/statoutputconsole.cc \
 	statapi/statoutputtxt.cc \
 	statapi/statoutputcsv.cc \
+	statapi/statoutputcsvgz.cc \
 	statapi/statbase.cc \
 	cputimer.cc \
 	iouse.cc
@@ -225,4 +227,5 @@ include model/Makefile.inc
 
 if USE_LIBZ
 sstsim_x_LDADD += -lz
+sstinfo_x_LDADD += -lz
 endif

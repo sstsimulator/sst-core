@@ -33,6 +33,10 @@
 #include <sst/core/statapi/statoutputtxt.h>  
 #include <sst/core/statapi/statoutputcsv.h>  
 
+#ifdef HAVE_LIBZ
+#include <sst/core/statapi/statoutputcsvgz.h>
+#endif
+
 using namespace SST::Statistics;
 
 namespace SST {
@@ -348,12 +352,23 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
     if (0 == strcasecmp("statoutputcsv", type.c_str())) {
         return new StatisticOutputCSV(params);
     }
+
+    if (0 == strcasecmp("statoutputcsvgz", type.c_str())) {
+#ifdef HAVE_LIBZ
+	return new StatisticOutputCompressedCSV(params);
+#else
+	_abort(Factory, "Statistics output requested compressed CSV but SST does not have LIBZ compiled.\n");
+#endif
+    }
+
     if (0 == strcasecmp("statoutputtxt", type.c_str())) {
         return new StatisticOutputTxt(params);
     }
+
     if (0 == strcasecmp("statoutputconsole", type.c_str())) {
         return new StatisticOutputConsole(params);
     }
+
     return NULL;
 }
 
