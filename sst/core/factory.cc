@@ -29,12 +29,13 @@
 #include "sst/core/linkMap.h"
 
 // Statistic Output Objects
-#include <sst/core/statapi/statoutputconsole.h>  
-#include <sst/core/statapi/statoutputtxt.h>  
-#include <sst/core/statapi/statoutputcsv.h>  
+#include <sst/core/statapi/statoutputconsole.h>
+#include <sst/core/statapi/statoutputtxt.h>
+#include <sst/core/statapi/statoutputcsv.h>
 
 #ifdef HAVE_LIBZ
 #include <sst/core/statapi/statoutputcsvgz.h>
+#include <sst/core/statapi/statoutputtxtgz.h>
 #endif
 
 using namespace SST::Statistics;
@@ -358,6 +359,14 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 	return new StatisticOutputCompressedCSV(params);
 #else
 	_abort(Factory, "Statistics output requested compressed CSV but SST does not have LIBZ compiled.\n");
+#endif
+    }
+
+    if (0 == strcasecmp("statoutputtxtgz", type.c_str())) {
+#ifdef HAVE_LIBZ
+	return new StatisticOutputCompressedTxt(params);
+#else
+	_abort(Factory, "Statistics output requested compressed TXT but SST does not have LIBZ compiled.\n");
 #endif
     }
 

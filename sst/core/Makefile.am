@@ -94,6 +94,7 @@ nobase_dist_sst_HEADERS = \
 	statapi/statoutputconsole.h \
 	statapi/statuniquecount.h \
 	statapi/statoutputtxt.h \
+	statapi/statoutputtxtgz.h \
 	statapi/statoutputcsv.h \
 	statapi/statoutputcsvgz.h \
 	statapi/statbase.h \
@@ -150,6 +151,7 @@ sst_core_sources = \
 	statapi/statoutput.cc \
 	statapi/statoutputconsole.cc \
 	statapi/statoutputtxt.cc \
+	statapi/statoutputtxtgz.cc \
 	statapi/statoutputcsv.cc \
 	statapi/statoutputcsvgz.cc \
 	statapi/statbase.cc \
