@@ -51,6 +51,14 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
 	}
 #endif
 
+#ifdef HAVE_NVDIMMSIM
+        new_env_size += (strlen(NVDIMMSIM_LIBDIR) + 2) + sizeof(char) * 1;
+
+	if(NULL == getenv("SST_DEP_NVDIMMSIM_ROOT")) {
+		setenv("SST_DEP_NVDIMMSIM_ROOT", NVDIMMSIM_LIBDIR, 1);
+	}
+#endif
+
 #ifdef HAVE_QSIM
         new_env_size += (strlen(QSIM_LIBDIR) + 2) + sizeof(char) * 1;
 
@@ -122,6 +130,13 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
         sprintf(temp_hybridsim_copy, "%s", updated_environment);
         sprintf(updated_environment, "%s:%s", temp_hybridsim_copy, HYBRIDSIM_LIBDIR);
         free(temp_hybridsim_copy);
+#endif
+
+#ifdef HAVE_NVDIMMSIM
+        char* temp_nvdimmsim_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
+        sprintf(temp_nvdimmsim_copy, "%s", updated_environment);
+        sprintf(updated_environment, "%s:%s", temp_nvdimmsim_copy, NVDIMMSIM_LIBDIR);
+        free(temp_nvdimmsim_copy);
 #endif
 
 #ifdef HAVE_QSIM
