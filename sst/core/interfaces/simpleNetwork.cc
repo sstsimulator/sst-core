@@ -30,6 +30,8 @@ void SimpleNetwork::Request::serialize(Archive & ar, const unsigned int version 
     ar & BOOST_SERIALIZATION_NVP(head);
     ar & BOOST_SERIALIZATION_NVP(tail);
     ar & BOOST_SERIALIZATION_NVP(payload);
+    ar & BOOST_SERIALIZATION_NVP(trace);
+    ar & BOOST_SERIALIZATION_NVP(traceID);
     // std::cout << "Request::serialize exit" << std::endl;
 }
 
