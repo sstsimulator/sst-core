@@ -90,6 +90,21 @@ dotests() {
     # are no residuals left over from the last build. The directories
     # initialized here are ephemeral, and not kept in CM/SVN.
 
+    #  Want to unset the environment variables that are set by
+    #  bamboo in the Jenkins SST build.
+    #  For the tests, they should come from the sst wrapper not from bamboo.sh!
+
+    NVDIMMSIM_SAVE=$SST_DEPS_INSTALL_NVDIMMSIM    ## Kludge for NVDimmSim
+    grep export $SST_BASE/SST_deps_env.sh | grep INSTALL | awk -F= '{print $1}' |awk '{print "unset " $2}' > unSetExports
+    cat unSetExports
+    . unSetExports
+    export LD_LIBRARY_PATH=$SAVE_LIBRARY_PATH
+##    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$NVDIMMSIM_SAVE     ## Kludge for NVDimmSim
+    export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH 
+    echo "     LD_LIBRARY_PATH includes:"
+    echo $LD_LIBRARY_PATH | sed 's/:/\n/g'
+    echo ' '`
+
     # Initialize directory to hold testOutputs
     rm -Rf ${SST_TEST_OUTPUTS}
     mkdir -p ${SST_TEST_OUTPUTS}
