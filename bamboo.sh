@@ -103,7 +103,7 @@ dotests() {
     export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH 
     echo "     LD_LIBRARY_PATH includes:"
     echo $LD_LIBRARY_PATH | sed 's/:/\n/g'
-    echo ' '`
+    echo ' '
 
     # Initialize directory to hold testOutputs
     rm -Rf ${SST_TEST_OUTPUTS}
