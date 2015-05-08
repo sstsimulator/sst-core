@@ -192,8 +192,18 @@ public:
         pool->free(ptr8);
     };
     
+    static uint64_t getMemPoolUsage() {
+        uint64_t count = 0;
+        for ( int i = 0; i < Activity::memPools.size(); i++ ) {
+            std::pair<size_t, Core::MemPool*> entry = Activity::memPools[i];
+            count += entry.second->getArenaSize();
+        }
+        return count;
+    }
+
 #endif
 
+    
 protected:
     /** Set the priority of the Activity */
     void setPriority(int priority) {

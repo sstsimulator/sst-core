@@ -10,7 +10,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 //
-
+#include <sst_config.h>
 #include "sst/core/interfaces/simpleMem.h"
 
 uint64_t SST::Interfaces::SimpleMem::Request::main_id = 0;

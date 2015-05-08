@@ -27,6 +27,7 @@
 #include <fstream>
 #include <signal.h>
 
+#include <sst/core/activity.h>
 #include <sst/core/archive.h>
 #include <sst/core/config.h>
 #include <sst/core/configGraph.h>
@@ -649,6 +650,8 @@ main(int argc, char *argv[])
     uint64_t local_sync_data_size = Simulation::getSimulation()->getSyncQueueDataSize();
     uint64_t global_max_sync_data_size, global_sync_data_size;
 
+    uint64_t mempool_size = Activity::getMemPoolUsage();
+    uint64_t max_mempool_size, global_mempool_size;
     
 #ifdef HAVE_MPI
     MPI_Allreduce(&run_time, &max_run_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
@@ -656,6 +659,8 @@ main(int argc, char *argv[])
     MPI_Allreduce(&local_max_tv_depth, &global_max_tv_depth, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&local_sync_data_size, &global_max_sync_data_size, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&local_sync_data_size, &global_sync_data_size, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
+    MPI_Allreduce(&mempool_size, &max_mempool_size, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
+    MPI_Allreduce(&mempool_size, &global_mempool_size, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
 #else
     max_run_time = run_time;
     max_total_time = total_time;
@@ -682,6 +687,12 @@ main(int argc, char *argv[])
 
         sprintf(ua_buffer, "%" PRIu64 "B", global_sync_data_size);
         UnitAlgebra global_sync_data_size_ua(ua_buffer);
+
+        sprintf(ua_buffer, "%" PRIu64 "B", max_mempool_size);
+        UnitAlgebra max_mempool_size_ua(ua_buffer);
+
+        sprintf(ua_buffer, "%" PRIu64 "B", global_mempool_size);
+        UnitAlgebra global_mempool_size_ua(ua_buffer);
         
         sim_output->output("\n");
         sim_output->output("#\n");
@@ -705,6 +716,12 @@ main(int argc, char *argv[])
                            global_max_io_in);
         sim_output->output("# Max Input Blocks:                %" PRIu64 " blocks\n",
                            global_max_io_out);
+        sim_output->output("# Max mempool usage:               %s\n",
+                           max_mempool_size_ua.toStringBestSI().c_str());
+        sim_output->output("# Global mempool usage:            %s\n",
+                           global_mempool_size_ua.toStringBestSI().c_str());
+        sim_output->output("# Max TimeVortex depth:            %" PRIu64 " entries\n",
+                           global_max_tv_depth);
         sim_output->output("# Max TimeVortex depth:            %" PRIu64 " entries\n",
                            global_max_tv_depth);
         sim_output->output("# Max Sync data size:              %s\n",

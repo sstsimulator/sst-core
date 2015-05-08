@@ -73,6 +73,8 @@ public:
     /** Counter:  Number times elements have been freed */
     uint64_t numFree;
 
+    size_t getArenaSize() const { return arenaSize; }
+    
 private:
 
 	bool allocPool()
