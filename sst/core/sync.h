@@ -56,6 +56,8 @@ public:
     virtual void setMaxPeriod(TimeConverter* period);
 
     void print(const std::string& header, Output &out) const;
+
+    virtual uint64_t getDataSize() const = 0;
     
 protected:
     Exit* exit;
@@ -88,6 +90,8 @@ public:
     int exchangeLinkInitData(int msg_count);
     /** Finish link configuration */
     void finalizeLinkConfigurations();
+
+    uint64_t getDataSize() const;
     
 private:
     struct comm_pair {

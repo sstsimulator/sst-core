@@ -33,6 +33,7 @@
 #include <sst/core/debug.h>
 #include <sst/core/factory.h>
 #include <sst/core/simulation.h>
+#include <sst/core/timeVortex.h>
 #include <sst/core/part/sstpart.h>
 
 #include <sst/core/cputimer.h>
@@ -639,59 +640,80 @@ main(int argc, char *argv[])
 
     double run_time = end_run - start_run;
     double total_time = end_run - start;
-
+    
     double max_run_time, max_total_time;
+    
+    uint64_t local_max_tv_depth = Simulation::getSimulation()->getTimeVortexMaxDepth();
+    uint64_t global_max_tv_depth;
+    
+    uint64_t local_sync_data_size = Simulation::getSimulation()->getSyncQueueDataSize();
+    uint64_t global_max_sync_data_size, global_sync_data_size;
 
+    
 #ifdef HAVE_MPI
-    // all_reduce(world, &run_time, 1, &max_run_time, boost::mpi::maximum<double>() );
-    // all_reduce(world, &total_time, 1, &max_total_time, boost::mpi::maximum<double>() );
     MPI_Allreduce(&run_time, &max_run_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&total_time, &max_total_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
+    MPI_Allreduce(&local_max_tv_depth, &global_max_tv_depth, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
+    MPI_Allreduce(&local_sync_data_size, &global_max_sync_data_size, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
+    MPI_Allreduce(&local_sync_data_size, &global_sync_data_size, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
 #else
     max_run_time = run_time;
     max_total_time = total_time;
 #endif
 
+        
     const uint64_t local_max_rss     = maxLocalMemSize();
     const uint64_t global_max_rss    = maxGlobalMemSize();
     const uint64_t local_max_pf      = maxLocalPageFaults();
     const uint64_t global_pf         = globalPageFaults();
     const uint64_t global_max_io_in  = maxInputOperations();
     const uint64_t global_max_io_out = maxOutputOperations();
-
+    
     if ( rank == 0 && cfg.verbose ) {
-	char ua_buffer[256];
-	sprintf(ua_buffer, "%" PRIu64 "KB", local_max_rss);
-	UnitAlgebra max_rss_ua(ua_buffer);
+	    char ua_buffer[256];
+        sprintf(ua_buffer, "%" PRIu64 "KB", local_max_rss);
+        UnitAlgebra max_rss_ua(ua_buffer);
+        
+        sprintf(ua_buffer, "%" PRIu64 "KB", global_max_rss);
+        UnitAlgebra global_rss_ua(ua_buffer);
 
-	sprintf(ua_buffer, "%" PRIu64 "KB", global_max_rss);
-	UnitAlgebra global_rss_ua(ua_buffer);
+        sprintf(ua_buffer, "%" PRIu64 "B", global_max_sync_data_size);
+        UnitAlgebra global_max_sync_data_size_ua(ua_buffer);
 
-	sim_output->output("\n");
-	sim_output->output("#\n");
+        sprintf(ua_buffer, "%" PRIu64 "B", global_sync_data_size);
+        UnitAlgebra global_sync_data_size_ua(ua_buffer);
+        
+        sim_output->output("\n");
+        sim_output->output("#\n");
         sim_output->output("# ------------------------------------------------------------\n");
-	sim_output->output("# Simulation Timing Information:\n");
-	sim_output->output("# Build time:                      %f seconds\n", max_build_time);
-	sim_output->output("# Simulation time:                 %f seconds\n", max_run_time);
-	sim_output->output("# Total time:                      %f seconds\n", max_total_time);
-	sim_output->output("# Simulated time:                  %s\n", simulated_time.toStringBestSI().c_str());
-	sim_output->output("#\n");
-	sim_output->output("# Simulation Resource Information:\n");
-	sim_output->output("# Max Resident Set Size:           %s\n",
-		max_rss_ua.toStringBestSI().c_str());
-	sim_output->output("# Approx. Global Max RSS Size:     %s\n",
-		global_rss_ua.toStringBestSI().c_str());
-	sim_output->output("# Max Local Page Faults:           %" PRIu64 " faults\n",
-		local_max_pf);
-	sim_output->output("# Global Page Faults:              %" PRIu64 " faults\n",
-		global_pf);
-	sim_output->output("# Max Output Blocks:               %" PRIu64 " blocks\n",
-		global_max_io_in);
-	sim_output->output("# Max Input Blocks:                %" PRIu64 " blocks\n",
-		global_max_io_out);
+        sim_output->output("# Simulation Timing Information:\n");
+        sim_output->output("# Build time:                      %f seconds\n", max_build_time);
+        sim_output->output("# Simulation time:                 %f seconds\n", max_run_time);
+        sim_output->output("# Total time:                      %f seconds\n", max_total_time);
+        sim_output->output("# Simulated time:                  %s\n", simulated_time.toStringBestSI().c_str());
+        sim_output->output("#\n");
+        sim_output->output("# Simulation Resource Information:\n");
+        sim_output->output("# Max Resident Set Size:           %s\n",
+                           max_rss_ua.toStringBestSI().c_str());
+        sim_output->output("# Approx. Global Max RSS Size:     %s\n",
+                           global_rss_ua.toStringBestSI().c_str());
+        sim_output->output("# Max Local Page Faults:           %" PRIu64 " faults\n",
+                           local_max_pf);
+        sim_output->output("# Global Page Faults:              %" PRIu64 " faults\n",
+                           global_pf);
+        sim_output->output("# Max Output Blocks:               %" PRIu64 " blocks\n",
+                           global_max_io_in);
+        sim_output->output("# Max Input Blocks:                %" PRIu64 " blocks\n",
+                           global_max_io_out);
+        sim_output->output("# Max TimeVortex depth:            %" PRIu64 " entries\n",
+                           global_max_tv_depth);
+        sim_output->output("# Max Sync data size:              %s\n",
+                           global_max_sync_data_size_ua.toStringBestSI().c_str());
+        sim_output->output("# Global Sync data size:           %s\n",
+                           global_sync_data_size_ua.toStringBestSI().c_str());
         sim_output->output("# ------------------------------------------------------------\n");
-	sim_output->output("#\n");
-	sim_output->output("\n");
+        sim_output->output("#\n");
+        sim_output->output("\n");
     }
 
 #ifdef HAVE_MPI

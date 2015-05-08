@@ -21,7 +21,12 @@
 
 namespace SST {
 
-TimeVortex::TimeVortex() : ActivityQueue(), insertOrder(0) {}
+TimeVortex::TimeVortex() :
+    ActivityQueue(),
+    insertOrder(0),
+    current_depth(0),
+    max_depth(0)
+{}
 
 TimeVortex::~TimeVortex()
 {
@@ -47,6 +52,10 @@ void TimeVortex::insert(Activity* activity)
 {
     activity->setQueueOrder(insertOrder++);
     data.push(activity);
+    current_depth++;
+    if ( current_depth > max_depth ) {
+        max_depth = current_depth;
+    }
 }
 
 Activity* TimeVortex::pop()
@@ -54,6 +63,7 @@ Activity* TimeVortex::pop()
     if ( data.empty() ) return NULL;
     Activity* ret_val = data.top();
     data.pop();
+    current_depth--;
     return ret_val;
 
 }

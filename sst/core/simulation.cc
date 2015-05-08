@@ -679,6 +679,16 @@ void Simulation::insertActivity(SimTime_t time, Activity* ev) {
 
 }
 
+uint64_t Simulation::getTimeVortexMaxDepth() const {
+    return timeVortex->getMaxDepth();
+}
+
+uint64_t Simulation::getSyncQueueDataSize() const {
+    if ( num_ranks == 1 ) return 0;
+    return sync->getDataSize();
+}
+
+    
 const std::vector<std::string>*
 Simulation::getComponentAllowedPorts(std::string type) {
     return factory->GetComponentAllowedPorts(type);

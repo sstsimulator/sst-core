@@ -42,11 +42,17 @@ public:
     /** Print the state of the TimeVortex */
     void print(Output &out) const;
 
+    uint64_t getCurrentDepth() const { return current_depth; }
+    uint64_t getMaxDepth() const { return max_depth; }
+    
 private:
     typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::pq_less_time_priority> dataType_t;
     dataType_t data;
     uint64_t insertOrder;
 
+    uint64_t current_depth;
+    uint64_t max_depth;
+    
     friend class boost::serialization::access;
     template<class Archive>
     void

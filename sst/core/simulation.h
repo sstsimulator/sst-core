@@ -221,6 +221,9 @@ public:
     /** Return the exit event */
     Exit* getExit() const { return m_exit; }
 
+    uint64_t getTimeVortexMaxDepth() const;
+    uint64_t getSyncQueueDataSize() const;
+
     /** Return pointer to map of links for a given component id */
     LinkMap* getComponentLinkMap(ComponentId_t id) const {
         // std::map<ComponentId_t,LinkMap*>::const_iterator i = component_links.find(id);

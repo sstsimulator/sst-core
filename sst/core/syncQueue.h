@@ -51,6 +51,10 @@ public:
     void clear();
     /** Accessor method to the internal queue */
     char* getData();
+
+    uint64_t getDataSize() {
+        return buffer.capacity() + (activities.capacity() * sizeof(Activity*));
+    }
     
 private:
     std::vector<char> buffer;
