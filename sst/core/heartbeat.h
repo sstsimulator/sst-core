@@ -48,9 +48,10 @@ private:
     SimulatorHeartbeat(const SimulatorHeartbeat&);
     void operator=(SimulatorHeartbeat const&);
     void execute(void);
+    int rank;
     TimeConverter*  m_period;
     double lastTime;
-
+    
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);

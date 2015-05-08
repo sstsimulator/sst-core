@@ -664,6 +664,11 @@ main(int argc, char *argv[])
 #else
     max_run_time = run_time;
     max_total_time = total_time;
+    global_max_tv_depth = local_max_tv_depth;
+    global_max_sync_data_size = 0;
+    global_max_sync_data_size = 0;
+    max_mempool_size = mempool_size;
+    global_mempool_size = mempool_size;
 #endif
 
         
@@ -720,8 +725,6 @@ main(int argc, char *argv[])
                            max_mempool_size_ua.toStringBestSI().c_str());
         sim_output->output("# Global mempool usage:            %s\n",
                            global_mempool_size_ua.toStringBestSI().c_str());
-        sim_output->output("# Max TimeVortex depth:            %" PRIu64 " entries\n",
-                           global_max_tv_depth);
         sim_output->output("# Max TimeVortex depth:            %" PRIu64 " entries\n",
                            global_max_tv_depth);
         sim_output->output("# Max Sync data size:              %s\n",
