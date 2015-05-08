@@ -429,6 +429,30 @@ dotests() {
 ###-END-DOTESTS
 
 #-------------------------------------------------------------------------
+# Function: ModuleEx
+# Description:
+#   Purpose:
+#       This funciton is a wrapper Around the moduleex.sh command which wraps the module 
+#       command used to load/unload  external dependancies.  All calls to module should be 
+#       redirected to this function.  If a failure is detected in the module command, it will be
+#       noted and this function will cause the bamboo script to exit with the error code.
+#   Input:
+#       $@: Variable number of parameters depending upon module command operation
+#   Output: Any output from the module command.
+#   Return value: 0 on success, On error, bamboo.sh will exit with the moduleex.sh error code.
+ModuleEx() {
+    # Call (via "source") the moduleex.sh script with the passed in parameters  
+    . $SST_ROOT/test/utilities/moduleex.sh $@
+    # Get the return value from the moduleex.sh
+    retval=$?
+    if [ $retval -ne 0 ] ; then
+        echo "ERROR: 'module' failed via script $SST_ROOT/test/utilities/moduleex.sh with retval= $retval; bamboo.sh exiting"
+        exit $retval
+    fi
+    return $retval  
+}
+
+#-------------------------------------------------------------------------
 # Function: setConvenienceVars
 # Description:
 #   Purpose:
@@ -976,7 +1000,7 @@ linuxSetBoostMPI() {
    then
        . /etc/profile.modules
        echo "bamboo.sh: loaded /etc/profile.modules. Available modules"
-       module avail
+       ModuleEx avail
    fi
 
 
@@ -993,19 +1017,19 @@ linuxSetBoostMPI() {
    then
        desiredMPI="${2}"
        desiredBoost="${3}.0_${mpiStr}"
-       module unload swig/swig-2.0.9
+       ModuleEx unload swig/swig-2.0.9
    else
        desiredMPI="${2}_${4}"
        desiredBoost="${3}.0_${mpiStr}_${4}"
        # load non-default compiler
        if   [[ "$4" =~ gcc.* ]]
        then
-           module load gcc/${4}
-           module load swig/swig-2.0.9
+           ModuleEx load gcc/${4}
+           ModuleEx load swig/swig-2.0.9
            echo "LOADED gcc/${4} compiler"
        elif [[ "$4" =~ intel.* ]]
        then
-           module load intel/${4}
+           ModuleEx load intel/${4}
        fi
    fi
    
@@ -1035,37 +1059,37 @@ linuxSetBoostMPI() {
    case $2 in
        mpich2_stable|mpich2-1.4.1p1)
            echo "MPICH2 stable (mpich2-1.4.1p1) selected"
-           module unload mpi # unload any default to avoid conflict error
-           module load mpi/${desiredMPI}
+           ModuleEx unload mpi # unload any default to avoid conflict error
+           ModuleEx load mpi/${desiredMPI}
            ;;
        openmpi-1.7.2)
            echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
-           module unload mpi # unload any default to avoid conflict error
-           module load mpi/${desiredMPI}
+           ModuleEx unload mpi # unload any default to avoid conflict error
+           ModuleEx load mpi/${desiredMPI}
            ;;
        ompi_1.6_stable|openmpi-1.6)
            echo "OpenMPI stable (openmpi-1.6) selected"
-           module unload mpi # unload any default to avoid conflict error
-           module load mpi/${desiredMPI}
+           ModuleEx unload mpi # unload any default to avoid conflict error
+           ModuleEx load mpi/${desiredMPI}
            ;;
        openmpi-1.4.4)
            echo "OpenMPI (openmpi-1.4.4) selected"
-           module unload mpi # unload any default to avoid conflict error
-           module load mpi/${desiredMPI}
+           ModuleEx unload mpi # unload any default to avoid conflict error
+           ModuleEx load mpi/${desiredMPI}
            ;;
        openmpi-1.8)
            echo "OpenMPI (openmpi-1.8) selected"
-           module unload mpi # unload any default to avoid conflict error
-           module load mpi/${desiredMPI}
+           ModuleEx unload mpi # unload any default to avoid conflict error
+           ModuleEx load mpi/${desiredMPI}
            ;;
        none)
            echo "MPI requested as \"none\".    No MPI loaded"
-           module unload mpi # unload any default 
+           ModuleEx unload mpi # unload any default 
            ;;
        *)
            echo "Default MPI option, loading mpi/${desiredMPI}"
-           module unload mpi # unload any default to avoid conflict error
-           module load mpi/${desiredMPI} 2>catch.err
+           ModuleEx unload mpi # unload any default to avoid conflict error
+           ModuleEx load mpi/${desiredMPI} 2>catch.err
            if [ -s catch.err ] 
            then
                cat catch.err
@@ -1078,28 +1102,28 @@ linuxSetBoostMPI() {
    case $3 in
        boost-1.43)
            echo "bamboo.sh: Boost 1.43 selected"
-           module unload boost
-           module load boost/${desiredBoost}
+           ModuleEx unload boost
+           ModuleEx load boost/${desiredBoost}
            ;;
        boost-1.48)
            echo "bamboo.sh: Boost 1.48 selected"
-           module unload boost
-           module load boost/${desiredBoost}
+           ModuleEx unload boost
+           ModuleEx load boost/${desiredBoost}
            ;;
        boost-1.50)
            echo "bamboo.sh: Boost 1.50 selected"
-           module unload boost
-           module load boost/${desiredBoost}
+           ModuleEx unload boost
+           ModuleEx load boost/${desiredBoost}
            ;;
        boost-1.54)
            echo "bamboo.sh: Boost 1.54 selected"
-           module unload boost
-           module load boost/${desiredBoost}
+           ModuleEx unload boost
+           ModuleEx load boost/${desiredBoost}
            ;;
        boost-1.56)
            echo "bamboo.sh: Boost 1.56 selected"
-           module unload boost
-           module load boost/${desiredBoost}
+           ModuleEx unload boost
+           ModuleEx load boost/${desiredBoost}
            ;;
        myBoost)
            if [ $2 == "openmpi-1.8" ] ; then
@@ -1128,8 +1152,8 @@ linuxSetBoostMPI() {
            echo "bamboo.sh: \"Default\" Boost selected"
            echo "Third argument was $3"
            echo "Loading boost/${desiredBoost}"
-           module unload boost
-           module load boost/${desiredBoost} 2>catch.err
+           ModuleEx unload boost
+           ModuleEx load boost/${desiredBoost} 2>catch.err
            if [ -s catch.err ] 
            then
                cat catch.err
@@ -1146,27 +1170,27 @@ linuxSetBoostMPI() {
    then
        # GNU Linear Programming Kit (GLPK)
        echo "bamboo.sh: Load GLPK"
-       module load glpk/glpk-4.54
+       ModuleEx load glpk/glpk-4.54
        # System C
-       echo "bamboo.sh: Load System C"
-       module load systemc/systemc-2.3.0
+#       echo "bamboo.sh: Load System C"
+#       ModuleEx load systemc/systemc-2.3.0
        # METIS 5.1.0
        echo "bamboo.sh: Load METIS 5.1.0"
-       module load metis/metis-5.1.0
+       ModuleEx load metis/metis-5.1.0
        # Other misc
-       echo "bamboo.sh: Load libphx"
-       module load libphx/libphx-2014-MAY-08
+#       echo "bamboo.sh: Load libphx"
+#       ModuleEx load libphx/libphx-2014-MAY-08
 
    else # otherwise try to load compiler-specific tool variant
        # GNU Linear Programming Kit (GLPK)
        echo "bamboo.sh: Load GLPK (gcc 4.6.4 variant)"
-       module load glpk/glpk-4.54_${compiler}
+       ModuleEx load glpk/glpk-4.54_${compiler}
        # METIS 5.1.0
        echo "bamboo.sh: Load METIS 5.1.0 (gcc 4.6.4 variant)"
-       module load metis/metis-5.1.0_${compiler}
+       ModuleEx load metis/metis-5.1.0_${compiler}
        # Other misc
-       echo "bamboo.sh: Load libphx (gcc 4.6.4 variant)"
-       module load libphx/libphx-2014-MAY-08_${compiler}
+#       echo "bamboo.sh: Load libphx (gcc 4.6.4 variant)"
+#       ModuleEx load libphx/libphx-2014-MAY-08_${compiler}
    fi
 }
 
@@ -1209,25 +1233,25 @@ darwinSetBoostMPI() {
     then
         . /etc/profile.modules
         echo "bamboo.sh: loaded /etc/profile.modules. Available modules"
-        module avail
+        ModuleEx avail
         # put any module loads here
         echo "bamboo.sh: Loading Modules for MacOSX"
         # Do things specific to the MacOS version
         case $macosVersion in
             10.6) # Snow Leopard
                 # use modules Boost, built-in MPI, default compiler
-                module unload boost
-                module add boost/boost-1.50.0
-                module list
+                ModuleEx unload boost
+                ModuleEx add boost/boost-1.50.0
+                ModuleEx list
                 ;;
             10.7) # Lion
                 # use modules Boost and MPI, default compiler (gcc)
-                module unload mpi
-                module unload boost
+                ModuleEx unload mpi
+                ModuleEx unload boost
 
 #              // Lion used to be hardcoded to this configuration, now changed.                            
-#              module add mpi/openmpi-1.4.4_gcc-4.2.1
-#              module add boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1
+#              ModuleEx add mpi/openmpi-1.4.4_gcc-4.2.1
+#              ModuleEx add boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1
 
                 #Check for Illegal configurations of Boost and MPI
                 if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
@@ -1243,15 +1267,15 @@ darwinSetBoostMPI() {
                 case $2 in
                     openmpi-1.7.2)
                         echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
-                        module add mpi/openmpi-1.7.2_gcc-4.2.1
+                        ModuleEx add mpi/openmpi-1.7.2_gcc-4.2.1
                         ;;
                     ompi_default|openmpi-1.4.4)
                         echo "OpenMPI 1.4.4 (Default) (openmpi-1.4.4) selected"
-                        module add mpi/openmpi-1.4.4_gcc-4.2.1
+                        ModuleEx add mpi/openmpi-1.4.4_gcc-4.2.1
                         ;;
                     *)
                         echo "Default MPI option, loading mpi/openmpi-1.4.4"
-                        module load mpi/openmpi-1.4.4_gcc-4.2.1 2>catch.err
+                        ModuleEx load mpi/openmpi-1.4.4_gcc-4.2.1 2>catch.err
                         if [ -s catch.err ] 
                         then
                             cat catch.err
@@ -1264,17 +1288,17 @@ darwinSetBoostMPI() {
                 case $3 in
                     boost-1.54)
                         echo "Boost 1.54 selected"
-                        module add boost/boost-1.54.0_ompi-1.7.2_gcc-4.2.1
+                        ModuleEx add boost/boost-1.54.0_ompi-1.7.2_gcc-4.2.1
                         ;;
                     boost_default|boost-1.50)
                         echo "Boost 1.50 (Default) selected"
-                        module add boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1
+                        ModuleEx add boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1
                         ;;
                     *)
                         echo "bamboo.sh: \"Default\" Boost selected"
                         echo "Third argument was $3"
                         echo "Loading boost/Boost 1.50"
-                        module load boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1 2>catch.err
+                        ModuleEx load boost/boost-1.50.0_ompi-1.4.4_gcc-4.2.1 2>catch.err
                         if [ -s catch.err ] 
                         then
                             cat catch.err
@@ -1284,15 +1308,15 @@ darwinSetBoostMPI() {
                 esac
                 export CC=`which gcc`
                 export CXX=`which g++`
-                module list
+                ModuleEx list
                 ;;
             10.8) # Mountain Lion
                 # Depending on specified compiler, load Boost and MPI
                 case $compiler in
                     gcc-4.2.1)
                         # Use Selected Boost and MPI built with GCC
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                        #Check for Illegal configurations of Boost and MPI
                         if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
@@ -1308,15 +1332,15 @@ darwinSetBoostMPI() {
                         case $2 in
                             openmpi-1.7.2)
                                 echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
-                                module add mpi/openmpi-1.7.2_gcc-4.2.1
+                                ModuleEx add mpi/openmpi-1.7.2_gcc-4.2.1
                                 ;;
                             ompi_default|openmpi-1.6.3)
                                 echo "OpenMPI 1.6.3 (Default) (openmpi-1.6.3) selected"
-                                module add mpi/openmpi-1.6.3_gcc-4.2.1
+                                ModuleEx add mpi/openmpi-1.6.3_gcc-4.2.1
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.6.3"
-                                module load mpi/openmpi-1.6.3_gcc-4.2.1 2>catch.err
+                                ModuleEx load mpi/openmpi-1.6.3_gcc-4.2.1 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1329,17 +1353,17 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost-1.54)
                                 echo "Boost 1.54 selected"
-                                module add boost/boost-1.54.0_ompi-1.7.2_gcc-4.2.1
+                                ModuleEx add boost/boost-1.54.0_ompi-1.7.2_gcc-4.2.1
                                 ;;
                             boost_default|boost-1.50)
                                 echo "Boost 1.50 (Default) selected"
-                                module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                                ModuleEx add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.50"
-                                module load boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1 2>catch.err
+                                ModuleEx load boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1349,14 +1373,14 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which gcc`
                         export CXX=`which g++`
-                        module list
+                        ModuleEx list
                         ;;
                         
                         
                     clang-425.0.27)
                         # Use Boost and MPI built with CLANG
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                        #Check for Illegal configurations of Boost and MPI
                         if [[ ( $2 = "openmpi-1.7.2" &&  $3 = "boost_default" ) || \
@@ -1372,15 +1396,15 @@ darwinSetBoostMPI() {
                         case $2 in
                             openmpi-1.7.2)
                                 echo "OpenMPI 1.7.2 (openmpi-1.7.2) selected"
-                                module add mpi/openmpi-1.7.2_clang-425.0.27
+                                ModuleEx add mpi/openmpi-1.7.2_clang-425.0.27
                                 ;;
                             ompi_default|openmpi-1.6.3)
                                 echo "OpenMPI 1.6.3 (Default) (openmpi-1.6.3) selected"
-                                module add mpi/openmpi-1.6.3_clang-425.0.27
+                                ModuleEx add mpi/openmpi-1.6.3_clang-425.0.27
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.6.3"
-                                module load mpi/openmpi-1.6.3_clang-425.0.27 2>catch.err
+                                ModuleEx load mpi/openmpi-1.6.3_clang-425.0.27 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1393,17 +1417,17 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost-1.54)
                                 echo "Boost 1.54 selected"
-                                module add boost/boost-1.54.0_ompi-1.7.2_clang-425.0.27
+                                ModuleEx add boost/boost-1.54.0_ompi-1.7.2_clang-425.0.27
                                 ;;
                             boost_default|boost-1.50)
                                 echo "Boost 1.50 (Default) selected"
-                                module add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
+                                ModuleEx add boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.50"
-                                module load boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27 2>catch.err
+                                ModuleEx load boost/boost-1.50.0_ompi-1.6.3_clang-425.0.27 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1413,37 +1437,37 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which clang`
                         export CXX=`which clang++`
-                        module list
+                        ModuleEx list
                         ;;
 ###
                     gcc-4.6.4)
                         # Use Selected Boost and MPI built with MacPorts GCC 4.6.4
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                         # Load gcc-4.6.4 specific modules
                         # GNU Linear Programming Kit (GLPK)
                         echo "bamboo.sh: Load GLPK"
-                        module load glpk/glpk-4.54_gcc-4.6.4
+                        ModuleEx load glpk/glpk-4.54_gcc-4.6.4
                         # System C
-                        echo "bamboo.sh: Load System C"
-                        module load systemc/systemc-2.3.0_gcc-4.6.4
+#                        echo "bamboo.sh: Load System C"
+#                        ModuleEx load systemc/systemc-2.3.0_gcc-4.6.4
                         # METIS 5.1.0
                         echo "bamboo.sh: Load METIS 5.1.0"
-                        module load metis/metis-5.1.0_gcc-4.6.4
+                        ModuleEx load metis/metis-5.1.0_gcc-4.6.4
                         # Other misc
-                        echo "bamboo.sh: Load libphx"
-                        module load libphx/libphx-2014-MAY-08_gcc-4.6.4
+#                        echo "bamboo.sh: Load libphx"
+#                        ModuleEx load libphx/libphx-2014-MAY-08_gcc-4.6.4
 
                         # load MPI
                         case $2 in
                             ompi_default|openmpi-1.8)
                                 echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                module add mpi/openmpi-1.8_gcc-4.6.4
+                                ModuleEx add mpi/openmpi-1.8_gcc-4.6.4
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.8"
-                                module load mpi/openmpi-1.8_gcc-4.6.4 2>catch.err
+                                ModuleEx load mpi/openmpi-1.8_gcc-4.6.4 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1456,17 +1480,17 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.54)
                                 echo "Boost 1.54 selected"
-                                module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
+                                ModuleEx add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0-nompi_gcc-4.6.4
+                                ModuleEx add boost/boost-1.56.0-nompi_gcc-4.6.4
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module add boost/boost-1.56.0-nompi_gcc-4.6.4 2>catch.err
+                                ModuleEx add boost/boost-1.56.0-nompi_gcc-4.6.4 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1476,37 +1500,37 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which gcc`
                         export CXX=`which g++`
-                        module list
+                        ModuleEx list
                         ;;
                         
                     clang-503.0.38)
                         # Use Boost and MPI built with CLANG from Xcode 5.1
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                         # Load other modules for clang-503.0.38
                         # GNU Linear Programming Kit (GLPK)
                         echo "bamboo.sh: Load GLPK"
-                        module load glpk/glpk-4.54_clang-503.0.38
+                        ModuleEx load glpk/glpk-4.54_clang-503.0.38
                         # System C
-                        echo "bamboo.sh: Load System C"
-                        module load systemc/systemc-2.3.0_clang-503.0.38
+#                        echo "bamboo.sh: Load System C"
+#                        ModuleEx load systemc/systemc-2.3.0_clang-503.0.38
                         # METIS 5.1.0
                         echo "bamboo.sh: Load METIS 5.1.0"
-                        module load metis/metis-5.1.0_clang-503.0.38
+                        ModuleEx load metis/metis-5.1.0_clang-503.0.38
                         # Other misc
-                        echo "bamboo.sh: Load libphx"
-                        module load libphx/libphx-2014-MAY-08_clang-503.0.38
+#                        echo "bamboo.sh: Load libphx"
+#                        ModuleEx load libphx/libphx-2014-MAY-08_clang-503.0.38
 
                         # load MPI
                         case $2 in
                             ompi_default|openmpi-1.8)
                                 echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                module add mpi/openmpi-1.8_clang-503.0.38
+                                ModuleEx add mpi/openmpi-1.8_clang-503.0.38
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.8"
-                                module load mpi/openmpi-1.8_clang-503.0.38 2>catch.err
+                                ModuleEx load mpi/openmpi-1.8_clang-503.0.38 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1519,17 +1543,17 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.54)
                                 echo "Boost 1.54 selected"
-                                module add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
+                                ModuleEx add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0-nompi_clang-503.0.38
+                                ModuleEx add boost/boost-1.56.0-nompi_clang-503.0.38
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0-nompi_clang-503.0.38 2>catch.err
+                                ModuleEx load boost/boost-1.56.0-nompi_clang-503.0.38 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1539,23 +1563,23 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which clang`
                         export CXX=`which clang++`
-                        module list
+                        ModuleEx list
                         ;;
 
                     clang-503.0.40)
                         # Use Boost and MPI built with CLANG from Xcode 5.1
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                         # load MPI
                         case $2 in
                             ompi_default|openmpi-1.8)
                                 echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                module add mpi/openmpi-1.8_clang-503.0.40
+                                ModuleEx add mpi/openmpi-1.8_clang-503.0.40
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.8"
-                                module load mpi/openmpi-1.8_clang-503.0.40 2>catch.err
+                                ModuleEx load mpi/openmpi-1.8_clang-503.0.40 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1568,17 +1592,17 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.54)
                                 echo "Boost 1.54 selected"
-                                module add boost/boost-1.54.0_ompi-1.8_clang-503.0.40
+                                ModuleEx add boost/boost-1.54.0_ompi-1.8_clang-503.0.40
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0-nompi_clang-503.0.40
+                                ModuleEx add boost/boost-1.56.0-nompi_clang-503.0.40
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0-nompi_clang-503.0.40 2>catch.err
+                                ModuleEx load boost/boost-1.56.0-nompi_clang-503.0.40 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1588,18 +1612,18 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which clang`
                         export CXX=`which clang++`
-                        module list
+                        ModuleEx list
                         ;;
 
 ###
                     *)
                         # unknown compiler, use default
                         echo "bamboo.sh: Unknown compiler selection. Assuming gcc."
-                        module unload boost
-                        module unload mpi
-                        module add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
-                        module add mpi/openmpi-1.6.3_gcc-4.2.1
-                        module list
+                        ModuleEx unload boost
+                        ModuleEx unload mpi
+                        ModuleEx add boost/boost-1.50.0_ompi-1.6.3_gcc-4.2.1
+                        ModuleEx add mpi/openmpi-1.6.3_gcc-4.2.1
+                        ModuleEx list
                         ;;  
                 esac
                 ;;
@@ -1610,32 +1634,32 @@ darwinSetBoostMPI() {
                 case $compiler in
                     gcc-4.6.4)
                         # Use Selected Boost and MPI built with MacPorts GCC 4.6.4
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                         # Load gcc-4.6.4 specific modules
                         # GNU Linear Programming Kit (GLPK)
                         echo "bamboo.sh: Load GLPK"
-                        module load glpk/glpk-4.54_gcc-4.6.4
+                        ModuleEx load glpk/glpk-4.54_gcc-4.6.4
                         # System C
-                        echo "bamboo.sh: Load System C"
-                        module load systemc/systemc-2.3.0_gcc-4.6.4
+#                        echo "bamboo.sh: Load System C"
+#                        ModuleEx load systemc/systemc-2.3.0_gcc-4.6.4
                         # METIS 5.1.0
                         echo "bamboo.sh: Load METIS 5.1.0"
-                        module load metis/metis-5.1.0_gcc-4.6.4
+                        ModuleEx load metis/metis-5.1.0_gcc-4.6.4
                         # Other misc
-                        echo "bamboo.sh: Load libphx"
-                        module load libphx/libphx-2014-MAY-08_gcc-4.6.4
+#                        echo "bamboo.sh: Load libphx"
+#                        ModuleEx load libphx/libphx-2014-MAY-08_gcc-4.6.4
 
                         # load MPI
                         case $2 in
                             ompi_default|openmpi-1.8)
                                 echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                module add mpi/openmpi-1.8_gcc-4.6.4
+                                ModuleEx add mpi/openmpi-1.8_gcc-4.6.4
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.8"
-                                module load mpi/openmpi-1.8_gcc-4.6.4 2>catch.err
+                                ModuleEx load mpi/openmpi-1.8_gcc-4.6.4 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1648,17 +1672,17 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.54)
                                 echo "Boost 1.54 selected"
-                                module add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
+                                ModuleEx add boost/boost-1.54.0_ompi-1.8_gcc-4.6.4
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0-nompi_gcc-4.6.4
+                                ModuleEx add boost/boost-1.56.0-nompi_gcc-4.6.4
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module add boost/boost-1.56.0-nompi_gcc-4.6.4 2>catch.err
+                                ModuleEx add boost/boost-1.56.0-nompi_gcc-4.6.4 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1668,37 +1692,37 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which gcc`
                         export CXX=`which g++`
-                        module list
+                        ModuleEx list
                         ;;
                         
                     clang-503.0.38)
                         # Use Boost and MPI built with CLANG from Xcode 5.1
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                         # Load other modules for clang-503.0.38
                         # GNU Linear Programming Kit (GLPK)
                         echo "bamboo.sh: Load GLPK"
-                        module load glpk/glpk-4.54_clang-503.0.38
+                        ModuleEx load glpk/glpk-4.54_clang-503.0.38
                         # System C
-                        echo "bamboo.sh: Load System C"
-                        module load systemc/systemc-2.3.0_clang-503.0.38
+#                        echo "bamboo.sh: Load System C"
+#                        ModuleEx load systemc/systemc-2.3.0_clang-503.0.38
                         # METIS 5.1.0
                         echo "bamboo.sh: Load METIS 5.1.0"
-                        module load metis/metis-5.1.0_clang-503.0.38
+                        ModuleEx load metis/metis-5.1.0_clang-503.0.38
                         # Other misc
-                        echo "bamboo.sh: Load libphx"
-                        module load libphx/libphx-2014-MAY-08_clang-503.0.38
+#                        echo "bamboo.sh: Load libphx"
+#                        ModuleEx load libphx/libphx-2014-MAY-08_clang-503.0.38
 
                         # load MPI
                         case $2 in
                             ompi_default|openmpi-1.8)
                                 echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                module add mpi/openmpi-1.8_clang-503.0.38
+                                ModuleEx add mpi/openmpi-1.8_clang-503.0.38
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.8"
-                                module load mpi/openmpi-1.8_clang-503.0.38 2>catch.err
+                                ModuleEx load mpi/openmpi-1.8_clang-503.0.38 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1711,17 +1735,17 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.54)
                                 echo "Boost 1.54 selected"
-                                module add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
+                                ModuleEx add boost/boost-1.54.0_ompi-1.8_clang-503.0.38
                                 ;;
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0-nompi_clang-503.0.38
+                                ModuleEx add boost/boost-1.56.0-nompi_clang-503.0.38
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0-nompi_clang-503.0.38 2>catch.err
+                                ModuleEx load boost/boost-1.56.0-nompi_clang-503.0.38 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1731,37 +1755,37 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which clang`
                         export CXX=`which clang++`
-                        module list
+                        ModuleEx list
                         ;;
 
                     clang-600.0.57)
                         # Use Boost and MPI built with CLANG from Xcode 5.1
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                         # Load other modules for clang-600.0.57
                         # GNU Linear Programming Kit (GLPK)
                         echo "bamboo.sh: Load GLPK"
-                        module load glpk/glpk-4.54_clang-600.0.57
+                        ModuleEx load glpk/glpk-4.54_clang-600.0.57
                         # System C
 #                         echo "bamboo.sh: Load System C"
-#                         module load systemc/systemc-2.3.0_clang-600.0.57
+#                         ModuleEx load systemc/systemc-2.3.0_clang-600.0.57
                         # METIS 5.1.0
                         echo "bamboo.sh: Load METIS 5.1.0"
-                        module load metis/metis-5.1.0_clang-600.0.57
+                        ModuleEx load metis/metis-5.1.0_clang-600.0.57
                         # Other misc
-                        echo "bamboo.sh: Load libphx"
-                        module load libphx/libphx-2014-MAY-08_clang-600.0.57
+#                        echo "bamboo.sh: Load libphx"
+#                        ModuleEx load libphx/libphx-2014-MAY-08_clang-600.0.57
 
                         # load MPI
                         case $2 in
                             ompi_default|openmpi-1.8)
                                 echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                module add mpi/openmpi-1.8_clang-600.0.57
+                                ModuleEx add mpi/openmpi-1.8_clang-600.0.57
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.8"
-                                module load mpi/openmpi-1.8_clang-600.0.57 2>catch.err
+                                ModuleEx load mpi/openmpi-1.8_clang-600.0.57 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1774,13 +1798,13 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0-nompi_clang-600.0.57
+                                ModuleEx add boost/boost-1.56.0-nompi_clang-600.0.57
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0-nompi_clang-600.0.57 2>catch.err
+                                ModuleEx load boost/boost-1.56.0-nompi_clang-600.0.57 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1790,18 +1814,18 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which clang`
                         export CXX=`which clang++`
-                        module list
+                        ModuleEx list
                         ;;
 
 
                     *)
                         # unknown compiler, use default
                         echo "bamboo.sh: Unknown compiler selection. Assuming gcc."
-                        module unload boost
-                        module unload mpi
-                        module add mpi/openmpi-1.8_gcc-4.6.4
-                        module add boost/boost-1.56.0-nompi_gcc-4.6.4
-                        module list
+                        ModuleEx unload boost
+                        ModuleEx unload mpi
+                        ModuleEx add mpi/openmpi-1.8_gcc-4.6.4
+                        ModuleEx add boost/boost-1.56.0-nompi_gcc-4.6.4
+                        ModuleEx list
                         ;;  
                 esac
                 ;;
@@ -1811,32 +1835,32 @@ darwinSetBoostMPI() {
                 case $compiler in
                     clang-600.0.57)
                         # Use Boost and MPI built with CLANG from Xcode 6.2
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                         # Load other modules for clang-600.0.57
                         # GNU Linear Programming Kit (GLPK)
                         echo "bamboo.sh: Load GLPK"
-                        module load glpk/glpk-4.54_clang-600.0.57
+                        ModuleEx load glpk/glpk-4.54_clang-600.0.57
                         # # System C
                         # echo "bamboo.sh: Load System C"
-                        # module load systemc/systemc-2.3.0_clang-600.0.57
+                        # ModuleEx load systemc/systemc-2.3.0_clang-600.0.57
                         # METIS 5.1.0
                         echo "bamboo.sh: Load METIS 5.1.0"
-                        module load metis/metis-5.1.0_clang-600.0.57
+                        ModuleEx load metis/metis-5.1.0_clang-600.0.57
                         # Other misc
-                        echo "bamboo.sh: Load libphx"
-                        module load libphx/libphx-2014-MAY-08_clang-600.0.57
+#                        echo "bamboo.sh: Load libphx"
+#                        ModuleEx load libphx/libphx-2014-MAY-08_clang-600.0.57
 
                         # load MPI
                         case $2 in
                             ompi_default|openmpi-1.8)
                                 echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                module add mpi/openmpi-1.8_clang-600.0.57
+                                ModuleEx add mpi/openmpi-1.8_clang-600.0.57
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.8"
-                                module load mpi/openmpi-1.8_clang-600.0.57 2>catch.err
+                                ModuleEx load mpi/openmpi-1.8_clang-600.0.57 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1849,13 +1873,13 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0-nompi_clang-600.0.57
+                                ModuleEx add boost/boost-1.56.0-nompi_clang-600.0.57
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0-nompi_clang-600.0.57 2>catch.err
+                                ModuleEx load boost/boost-1.56.0-nompi_clang-600.0.57 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1865,37 +1889,37 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which clang`
                         export CXX=`which clang++`
-                        module list
+                        ModuleEx list
                         ;;
 
                     clang-602.0.49)
                         # Use Boost and MPI built with CLANG from Xcode 6.3
-                        module unload mpi
-                        module unload boost
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
 
                         # Load other modules for clang-602.0.49
                         # GNU Linear Programming Kit (GLPK)
                         echo "bamboo.sh: Load GLPK"
-                        module load glpk/glpk-4.54_clang-602.0.49
+                        ModuleEx load glpk/glpk-4.54_clang-602.0.49
                         # # System C
                         # echo "bamboo.sh: Load System C"
-                        # module load systemc/systemc-2.3.0_clang-602.0.49
+                        # ModuleEx load systemc/systemc-2.3.0_clang-602.0.49
                         # METIS 5.1.0
                         echo "bamboo.sh: Load METIS 5.1.0"
-                        module load metis/metis-5.1.0_clang-602.0.49
+                        ModuleEx load metis/metis-5.1.0_clang-602.0.49
                         # Other misc
-                        echo "bamboo.sh: Load libphx"
-                        module load libphx/libphx-2014-MAY-08_clang-602.0.49
+#                        echo "bamboo.sh: Load libphx"
+#                        ModuleEx load libphx/libphx-2014-MAY-08_clang-602.0.49
 
                         # load MPI
                         case $2 in
                             ompi_default|openmpi-1.8)
                                 echo "OpenMPI 1.8 (openmpi-1.8) selected"
-                                module add mpi/openmpi-1.8_clang-602.0.49
+                                ModuleEx add mpi/openmpi-1.8_clang-602.0.49
                                 ;;
                             *)
                                 echo "Default MPI option, loading mpi/openmpi-1.8"
-                                module load mpi/openmpi-1.8_clang-602.0.49 2>catch.err
+                                ModuleEx load mpi/openmpi-1.8_clang-602.0.49 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1908,13 +1932,13 @@ darwinSetBoostMPI() {
                         case $3 in
                             boost_default|boost-1.56)
                                 echo "Boost 1.56 selected"
-                                module add boost/boost-1.56.0-nompi_clang-602.0.49
+                                ModuleEx add boost/boost-1.56.0-nompi_clang-602.0.49
                                 ;;
                             *)
                                 echo "bamboo.sh: \"Default\" Boost selected"
                                 echo "Third argument was $3"
                                 echo "Loading boost/Boost 1.56"
-                                module load boost/boost-1.56.0-nompi_clang-602.0.49 2>catch.err
+                                ModuleEx load boost/boost-1.56.0-nompi_clang-602.0.49 2>catch.err
                                 if [ -s catch.err ] 
                                 then
                                     cat catch.err
@@ -1924,18 +1948,18 @@ darwinSetBoostMPI() {
                         esac
                         export CC=`which clang`
                         export CXX=`which clang++`
-                        module list
+                        ModuleEx list
                         ;;
 
 
                     *)
                         # unknown compiler, use default
                         echo "bamboo.sh: Unknown compiler selection. Assuming clang."
-                        module unload boost
-                        module unload mpi
-                        module add mpi/openmpi-1.8_clang-600.0.57
-                        module add boost/boost-1.56.0-nompi_600.0.57
-                        module list
+                        ModuleEx unload boost
+                        ModuleEx unload mpi
+                        ModuleEx add mpi/openmpi-1.8_clang-600.0.57
+                        ModuleEx add boost/boost-1.56.0-nompi_600.0.57
+                        ModuleEx list
                         ;;  
                 esac
                 ;;
@@ -2110,8 +2134,8 @@ dobuild() {
     env | sort
     echo "--------------------PRE-BUILD ENVIRONMENT VARIABLE DUMP--------------------"
     echo "--------------------modules status--------------------"
-    module avail
-    module list
+    ModuleEx avail
+    ModuleEx list
     echo "--------------------modules status--------------------"
 
     # autogen to create ./configure
@@ -2203,7 +2227,6 @@ dobuild() {
 
 #=========================================================================
 # main
-
 # $1 = build type
 # $2 = MPI type
 # $3 = boost type
@@ -2265,7 +2288,7 @@ else
             fi
 
             # if Intel PIN module is available, load 2.14 version
-            module avail 2>&1 >/dev/null | egrep -q "pin/pin"
+            ModuleEx avail 2>&1 >/dev/null | egrep -q "pin/pin"
             if [ $? == 0 ] 
             then
             # if `pin module is available, use 2.14.
@@ -2274,13 +2297,13 @@ else
 ##                export INTEL_PIN_DIRECTORY=/home/jpvandy/pin-2.14-71313-gcc.4.4.7-linux 
                 echo "using Intel PIN environment module  pin-2.14-71313-gcc.4.4.7-linux"
                 echo "Loading Intel PIN environment module"
-                module load pin/pin-2.14-71313-gcc.4.4.7-linux
+                ModuleEx load pin/pin-2.14-71313-gcc.4.4.7-linux
             else
                 echo "Intel PIN environment module not found on this host."
             fi
 
             echo "bamboo.sh: LISTING LOADED MODULES"
-            module list
+            ModuleEx list
 
             # Build type given as argument to this script
             export SST_BUILD_TYPE=$1
