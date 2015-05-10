@@ -36,9 +36,8 @@ class SSTUniformDistribution : public SSTRandomDistribution {
 			\param probsCount Number of probability bins in this distribution
 		*/
         SSTUniformDistribution(const uint32_t probsCount) :
-        SSTRandomDistribution() {
-
-	probCount = (double) (probsCount);
+        SSTRandomDistribution(),
+	probCount(probsCount) {
 
         baseDistrib = new MersenneRNG();
         deleteDistrib = true;
@@ -51,9 +50,8 @@ class SSTUniformDistribution : public SSTRandomDistribution {
         \param baseDist The base random number generator to take the distribution from.
     */
     SSTUniformDistribution(const uint32_t probsCount, SSTRandom* baseDist) :
-	SSTRandomDistribution() {
-
-	probCount = (double) (probsCount);
+	SSTRandomDistribution(),
+	probCount(probsCount) {
 
         baseDistrib = baseDist;
         deleteDistrib = false;
@@ -74,11 +72,15 @@ class SSTUniformDistribution : public SSTRandomDistribution {
     */
     double getNextDouble() {
         const double nextD = baseDistrib->nextUniform();
-	const double probPerBin = 1.0 / probCount;
+	const double probPerBin = 1.0 / (double)(probCount);
 
-	const double bin = nextD / probPerBin;
+	for(uint32_t i = 0; i < probCount; ++i) {
+		if(nextD < ( ((double) i) * probPerBin )) {
+			return i;
+		}
+	}
 
-        return bin;
+	return probCount;
     }
 
 	protected:
@@ -95,7 +97,7 @@ class SSTUniformDistribution : public SSTRandomDistribution {
 		/**
 			Count of discrete probabilities
 		*/
-		double probCount;
+		uint32_t probCount;
 
 };
 
