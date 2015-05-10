@@ -2288,7 +2288,7 @@ else
             fi
 
             # if Intel PIN module is available, load 2.14 version
-            ModuleEx avail 2>&1 >/dev/null | egrep -q "pin/pin"
+            ModuleEx avail 2>&1 >/dev/null | egrep  "pin/pin"
             if [ $? == 0 ] 
             then
             # if `pin module is available, use 2.14.
