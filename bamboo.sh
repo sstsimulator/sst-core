@@ -20,6 +20,8 @@
 # Root of directory checked out, where this script should be found
 export SST_ROOT=`pwd`
 
+# Checkout the test directory
+svn checkout https://www.sst-simulator.org/svn/sst/sqe/test ./test
 #	This assumes a directory strucure
 #                     SST_BASE   (was $HOME)
 #           devel                sstDeps
