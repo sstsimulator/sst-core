@@ -22,6 +22,12 @@ export SST_ROOT=`pwd`
 
 # Checkout the test directory
 svn checkout https://www.sst-simulator.org/svn/sst/sqe/test ./test
+if [ $? != 0 ] 
+then
+    echo "Checkout of sqe/test FAILED"
+    exit 1
+fi
+
 #	This assumes a directory strucure
 #                     SST_BASE   (was $HOME)
 #           devel                sstDeps
@@ -92,17 +98,16 @@ dotests() {
     # are no residuals left over from the last build. The directories
     # initialized here are ephemeral, and not kept in CM/SVN.
 
-    #  Want to unset the environment variables that are set by
-    #  bamboo in the Jenkins SST build.
+    #  Want to remove the external environment variables that have been added
+    #  in bamboo to the LD_LIBRARY_PATH.
     #  For the tests, they should come from the sst wrapper not from bamboo.sh!
+    #    May 2015 - is believed only CHDL and hybridsim tests require the 
+    #               SST_DEPS_INSTAL_xxxx `external element environment variables.
 
-    NVDIMMSIM_SAVE=$SST_DEPS_INSTALL_NVDIMMSIM    ## Kludge for NVDimmSim
-    grep export $SST_BASE/SST_deps_env.sh | grep INSTALL | awk -F= '{print $1}' |awk '{print "unset " $2}' > unSetExports
-    cat unSetExports
-    . unSetExports
+    #       Recover library path
     export LD_LIBRARY_PATH=$SAVE_LIBRARY_PATH
-##    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$NVDIMMSIM_SAVE     ## Kludge for NVDimmSim
     export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH 
+
     echo "     LD_LIBRARY_PATH includes:"
     echo $LD_LIBRARY_PATH | sed 's/:/\n/g'
     echo ' '
@@ -584,7 +589,7 @@ getconfig() {
             miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M 2.1.0 -N default -z 3.8 -c default"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-libphx=$LIBPHX_HOME/src --with-pin=$SST_DEPS_INSTALL_INTEL_PIN --with-metis=${METIS_HOME}  --with-chdl=$SST_DEPS_INSTALL_CHDL$miscEnv"
+            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-libphx=$LIBPHX_HOME/src --with-pin=$SST_DEPS_INSTALL_INTEL_PIN --with-metis=${METIS_HOME}  --with-chdl=$SST_DEPS_INSTALL_CHDL $miscEnv"
             ;;
         sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_diropenmpB|sstmainline_config_diropenmpI|sstmainline_config_dirnoncacheable|sstmainline_config_dir3cache) 
             #-----------------------------------------------------------------
