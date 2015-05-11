@@ -1190,11 +1190,21 @@ linuxSetBoostMPI() {
 
    else # otherwise try to load compiler-specific tool variant
        # GNU Linear Programming Kit (GLPK)
-       echo "bamboo.sh: Load GLPK (gcc 4.6.4 variant)"
-       ModuleEx load glpk/glpk-4.54_${compiler}
+       ModuleEx avail | egrep -q "glpk/glpk-4.54_${compiler}"
+       if [ $? == 0 ] ; then
+           echo "bamboo.sh: Load GLPK (gcc ${compiler} variant)"
+           ModuleEx load glpk/glpk-4.54_${compiler}
+       else 
+           echo "bamboo.sh: module GLPK (gcc ${compiler} variant) Not Available"
+       fi
        # METIS 5.1.0
-       echo "bamboo.sh: Load METIS 5.1.0 (gcc 4.6.4 variant)"
-       ModuleEx load metis/metis-5.1.0_${compiler}
+       ModuleEx avail | egrep -q "metis/metis-5.1.0_${compiler}"
+       if [ $? == 0 ] ; then
+           echo "bamboo.sh: Load METIS 5.1.0 (gcc ${compiler} variant)"
+           ModuleEx load metis/metis-5.1.0_${compiler}
+       else
+           echo "bamboo.sh: module METIS 5.1.0 (gcc ${compiler} variant) Not Available"
+       fi
        # Other misc
 #       echo "bamboo.sh: Load libphx (gcc 4.6.4 variant)"
 #       ModuleEx load libphx/libphx-2014-MAY-08_${compiler}
