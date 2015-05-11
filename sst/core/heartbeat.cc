@@ -19,7 +19,9 @@
 #include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
 
+#ifdef HAVE_MPI
 #include <mpi.h>
+#endif
 
 namespace SST {
 
