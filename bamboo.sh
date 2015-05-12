@@ -21,7 +21,7 @@
 export SST_ROOT=`pwd`
 
 # Checkout the test directory
-svn checkout https://www.sst-simulator.org/svn/sst/sqe/test ./test
+svn checkout svn+ssh://hand.sandia.gov/home/jwilso/svnMirror/svn/sst/sqe/test ./test
 if [ $? != 0 ] 
 then
     echo "Checkout of sqe/test FAILED"
