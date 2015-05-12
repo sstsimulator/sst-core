@@ -21,7 +21,28 @@
 export SST_ROOT=`pwd`
 
 # Checkout the test directory
-svn checkout svn+ssh://hand.sandia.gov/home/jwilso/svnMirror/sst/sqe/test ./test
+##svn checkout svn+ssh://hand.sandia.gov/home/jwilso/svnMirror/sst/sqe/test ./test
+svn info
+
+#   SST_TEST_REPOSITORY_ROOT_URL
+
+if [[ ${SST_TEST_REPOSITORY_ROOT_URL:+isSet} == isSet ]] ; then
+   TEST_DIRECTORY_URL=$SST_TEST_REPOSITORY_ROOT_URL
+else
+   TEST_DIRECTORY_URL=`svn info | grep 'Repository Root' | awk '{print $3}'`
+
+echo "TEST_DIRECTORY_URL=" $TEST_DIRECTORY_URL
+
+echo " #############################################"
+echo "          KLUDGED TO sst-simulator.org"
+
+TEST_DIRECTORY_URL=https://www.sst-simulator.org/svn/sst
+
+echo " #############################################"
+fi
+
+svn co $TEST_DIRECTORY_URL/sqe/test  ./test
+
 if [ $? != 0 ] 
 then
     echo "Checkout of sqe/test FAILED"
