@@ -33,12 +33,6 @@ else
 
 echo "TEST_DIRECTORY_URL=" $TEST_DIRECTORY_URL
 
-echo " #############################################"
-echo "          KLUDGED TO sst-simulator.org"
-
-TEST_DIRECTORY_URL=https://www.sst-simulator.org/svn/sst
-
-echo " #############################################"
 fi
 
 svn co $TEST_DIRECTORY_URL/sqe/test  ./test
