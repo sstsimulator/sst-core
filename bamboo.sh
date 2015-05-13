@@ -24,10 +24,6 @@ export SST_ROOT=`pwd`
 #     on a make-dist    $SST_TEST_ROOT already set)
 if [[ ${SST_TEST_ROOT:+isSet} != isSet ]] ; then
     echo "PWD = `pwd`"
-    ls
-    rm -rf test
-   
-    env | grep SST_TEST
     svn info 
    
 #       environment variable:  SST_TEST_REPOSITORY_ROOT_URL
