@@ -24,14 +24,17 @@ export SST_ROOT=`pwd`
 #     on a make-dist    $SST_TEST_ROOT already set)
 if [[ ${SST_TEST_ROOT:+isSet} != isSet ]] ; then
     echo "PWD = `pwd`"
-    svn info 
    
 #       environment variable:  SST_TEST_REPOSITORY_ROOT_URL
    
     if [[ ${SST_TEST_REPOSITORY_ROOT_URL:+isSet} == isSet ]] ; then
        TEST_DIRECTORY_URL=$SST_TEST_REPOSITORY_ROOT_URL
     else
-       TEST_DIRECTORY_URL=`svn info | grep 'Repository Root' | awk '{print $3}'`
+##     I liked using "svn info" to do the following.  However svn on  
+##     later machines have an "svn info" incompatibility with the svn
+##     on hand.sandia.gov.
+
+       TEST_DIRECTORY_URL=`grep -e '/sst$' .svn/entries`
     fi
     
     echo " CHECKOUT:  svn co $TEST_DIRECTORY_URL/sqe/test  ./test"
