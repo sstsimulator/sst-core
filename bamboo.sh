@@ -20,29 +20,33 @@
 # Root of directory checked out, where this script should be found
 export SST_ROOT=`pwd`
 
-# Checkout the test directory
-##svn checkout svn+ssh://hand.sandia.gov/home/jwilso/svnMirror/sst/sqe/test ./test
-svn info
-
-#   SST_TEST_REPOSITORY_ROOT_URL
-
-if [[ ${SST_TEST_REPOSITORY_ROOT_URL:+isSet} == isSet ]] ; then
-   TEST_DIRECTORY_URL=$SST_TEST_REPOSITORY_ROOT_URL
-else
-   TEST_DIRECTORY_URL=`svn info | grep 'Repository Root' | awk '{print $3}'`
-
-echo "TEST_DIRECTORY_URL=" $TEST_DIRECTORY_URL
-
+# Checkout the test directory   (except when invoked the second time 
+#     on a make-dist    $SST_TEST_ROOT already set)
+if [[ ${SST_TEST_ROOT:+isSet} != isSet ]] ; then
+    echo "PWD = `pwd`"
+    ls
+    rm -rf test
+   
+    env | grep SST_TEST
+    svn info 
+   
+#       environment variable:  SST_TEST_REPOSITORY_ROOT_URL
+   
+    if [[ ${SST_TEST_REPOSITORY_ROOT_URL:+isSet} == isSet ]] ; then
+       TEST_DIRECTORY_URL=$SST_TEST_REPOSITORY_ROOT_URL
+    else
+       TEST_DIRECTORY_URL=`svn info | grep 'Repository Root' | awk '{print $3}'`
+    fi
+    
+    echo " CHECKOUT:  svn co $TEST_DIRECTORY_URL/sqe/test  ./test"
+    svn co $TEST_DIRECTORY_URL/sqe/test  ./test
+   
+    if [ $? != 0 ] 
+    then
+       echo "Bamboo.sh:  Checkout of sqe/test FAILED"
+       exit 1
+    fi
 fi
-
-svn co $TEST_DIRECTORY_URL/sqe/test  ./test
-
-if [ $? != 0 ] 
-then
-    echo "Checkout of sqe/test FAILED"
-    exit 1
-fi
-
 #	This assumes a directory strucure
 #                     SST_BASE   (was $HOME)
 #           devel                sstDeps
