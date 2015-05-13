@@ -33,27 +33,18 @@ using namespace SST::Statistics;
 namespace SST {
 
 Component::Component(ComponentId_t id) :
-    defaultTimeBase(NULL), id( id)
+    defaultTimeBase(NULL), id(id)//, my_info(Simulation::getSimulation()->getComponentInfoMap()[id])
 {
-    myLinks = Simulation::getSimulation()->getComponentLinkMap(id);
-	const CompInfoMap_t& map = Simulation::getSimulation()->getComponentInfoMap();
-	CompInfoMap_t::const_iterator i = map.find(id);
-	if ( i != map.end() ) {
-        name = i->second.name;
-        type = i->second.type;
-    }
-    _COMP_DBG( "new\n" );
+    my_info = Simulation::getSimulation()->getComponentInfo(id);
     currentlyLoadingSubModule = "";
 }
 
-Component::Component() 
+Component::Component()
 {
 }
 
 Component::~Component() 
 {
-    // Simulation::getSimulation()->removeComponentLinkMap(id);
-    delete myLinks;
 }
 
 bool checkPort(const char *def, const char *offered)
@@ -115,6 +106,7 @@ TimeConverter* Component::registerClock( std::string freq, Clock::HandlerBase* h
     // if regAll is true set tc as the default for the component and
     // for all the links
     if ( regAll ) {
+        LinkMap* myLinks = my_info->getLinkMap();
         if (NULL != myLinks) {
             std::pair<std::string,Link*> p;
             BOOST_FOREACH( p, myLinks->getLinkMap() ) {
@@ -134,6 +126,7 @@ TimeConverter* Component::registerClock( const UnitAlgebra& freq, Clock::Handler
     // if regAll is true set tc as the default for the component and
     // for all the links
     if ( regAll ) {
+        LinkMap* myLinks = my_info->getLinkMap();
         if (NULL != myLinks) {
             std::pair<std::string,Link*> p;
             BOOST_FOREACH( p, myLinks->getLinkMap() ) {
@@ -173,6 +166,7 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
     // if regAll is true set tc as the default for the component and
     // for all the links
     if ( regAll ) {
+        LinkMap* myLinks = my_info->getLinkMap();
         if (NULL != myLinks) {
             std::pair<std::string,Link*> p;
             BOOST_FOREACH( p, myLinks->getLinkMap() ) {
@@ -202,12 +196,14 @@ Component::getTimeConverter( const UnitAlgebra& base )
 bool
 Component::isPortConnected(const std::string &name) const
 {
-    return (myLinks->getLink(name) != NULL);
+    return (my_info->getLinkMap()->getLink(name) != NULL);
 }
 
 Link*
 Component::configureLink(std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
+    LinkMap* myLinks = my_info->getLinkMap();
+    const std::string& type = my_info->getType();
     if ( !isPortValidForComponent(type,name) && !myLinks->isSelfPort(name) ) {
 #ifdef USE_PARAM_WARNINGS
             std::cerr << "Warning:  Using undocumented port '" << name << "'." << std::endl;
@@ -234,6 +230,8 @@ Component::configureLink(std::string name, std::string time_base, Event::Handler
 Link*
 Component::configureLink(std::string name, Event::HandlerBase* handler)
 {
+    LinkMap* myLinks = my_info->getLinkMap();
+    const std::string& type = my_info->getType();
     if ( !isPortValidForComponent(type,name) && !myLinks->isSelfPort(name) ) {
 #ifdef USE_PARAM_WARNINGS
             std::cerr << "Warning:  Using undocumented port '" << name << "'." << std::endl;
@@ -253,6 +251,7 @@ Component::configureLink(std::string name, Event::HandlerBase* handler)
 void
 Component::addSelfLink(std::string name)
 {
+    LinkMap* myLinks = my_info->getLinkMap();
     myLinks->addSelfPort(name);
     if ( myLinks->getLink(name) != NULL ) {
         printf("Attempting to add self link with duplicate name: %s\n",name.c_str());
@@ -373,27 +372,30 @@ Component::loadSubComponent(std::string type, Component* comp, Params& params)
     
 bool Component::doesComponentInfoStatisticExist(std::string statisticName)
 {
+    const std::string& type = my_info->getType();
     return Simulation::getSimulation()->getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
 }
 
 uint8_t Component::getComponentInfoStatisticEnableLevel(std::string statisticName)
 {
+    const std::string& type = my_info->getType();
     return Simulation::getSimulation()->getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
 }
 
 std::string Component::getComponentInfoStatisticUnits(std::string statisticName)
 {
+    const std::string& type = my_info->getType();
     return Simulation::getSimulation()->getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
 }
 
 template<class Archive>
 void
 Component::serialize(Archive& ar, const unsigned int version) {
-    ar & BOOST_SERIALIZATION_NVP(type);
-    ar & BOOST_SERIALIZATION_NVP(id);
-    ar & BOOST_SERIALIZATION_NVP(name);
+    // ar & BOOST_SERIALIZATION_NVP(type);
+    // ar & BOOST_SERIALIZATION_NVP(id);
+    // ar & BOOST_SERIALIZATION_NVP(name);
     ar & BOOST_SERIALIZATION_NVP(defaultTimeBase);
-    ar & BOOST_SERIALIZATION_NVP(myLinks);
+    // ar & BOOST_SERIALIZATION_NVP(myLinks);
 }
     
 } // namespace SST

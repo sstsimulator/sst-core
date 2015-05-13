@@ -69,13 +69,15 @@ public:
     inline ComponentId_t getId() const { return id; }
 
 	/** Returns component Name */
-	inline const std::string& getName() const { return name; }
-
+	/* inline const std::string& getName() const { return name; } */
+	inline const std::string& getName() const { return my_info->getName(); }
+    
+    
     /** Component's type, set by the factory when the object is created.
         It is identical to the configuration string used to create the
         component. I.e. the XML "<component id="aFoo"><foo>..." would
         set component::type to "foo" */
-    std::string type;
+    /* std::string type; */
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
@@ -370,8 +372,10 @@ private:
 
     /** Unique ID */
     ComponentId_t   id;
-	std::string name;
-    LinkMap* myLinks;
+	/* std::string name; */
+    ComponentInfo* my_info;
+    
+    // LinkMap* myLinks;
     std::string currentlyLoadingSubModule;
     
     friend class boost::serialization::access;

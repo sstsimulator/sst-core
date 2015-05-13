@@ -167,28 +167,28 @@ public:
      * @param statisticName - The name of the statistic 
      * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
-    bool DoesComponentInfoStatisticNameExist(std::string& type, std::string& statisticName);
+    bool DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
 
     /** Determine if a statistic is defined in a subcomponents ElementInfoStatistic
      * @param type - The name of the subcomponent
      * @param statisticName - The name of the statistic 
      * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
-    bool DoesSubComponentInfoStatisticNameExist(std::string& type, std::string& statisticName);
+    bool DoesSubComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
 
     /** Get the enable level of a statistic defined in the component's ElementInfoStatistic
      * @param componentname - The name of the component
      * @param statisticName - The name of the statistic 
      * @return The Enable Level of the statistic from the ElementInfoStatistic
      */
-    uint8_t GetComponentInfoStatisticEnableLevel(std::string& type, std::string& statisticName);
+    uint8_t GetComponentInfoStatisticEnableLevel(const std::string& type, const std::string& statisticName);
     
     /** Get the units of a statistic defined in the component's ElementInfoStatistic
      * @param componentname - The name of the component
      * @param statisticName - The name of the statistic 
      * @return The units string of the statistic from the ElementInfoStatistic
      */
-    std::string GetComponentInfoStatisticUnits(std::string& type, std::string& statisticName);
+    std::string GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName);
 
 private:
     Module* LoadCoreModule_StatisticOutputs(std::string& type, Params& params);

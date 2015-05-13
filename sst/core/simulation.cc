@@ -98,10 +98,10 @@ Simulation::~Simulation()
     delete timeVortex;
 
     // Delete all the components
-    for ( CompMap_t::iterator it = compMap.begin(); it != compMap.end(); ++it ) {
-	delete it->second;
-    }
-    compMap.clear();
+    // for ( CompMap_t::iterator it = compMap.begin(); it != compMap.end(); ++it ) {
+	// delete it->second;
+    // }
+    // compMap.clear();
     
     // Delete all the introspectors
     for ( IntroMap_t::iterator it = introMap.begin(); it != introMap.end(); ++it ) {
@@ -201,13 +201,13 @@ void Simulation::emergencyShutdown(int sig)
     }
 
     if ( sig == SIGINT ) {
-        for ( CompMap_t::iterator iter = compMap.begin(); iter != compMap.end(); ++iter ) {
-            (*iter).second->finish();
+        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
+            (*iter)->getComponent()->finish();
         }
     }
 
-    for ( CompMap_t::iterator iter = compMap.begin(); iter != compMap.end(); ++iter ) {
-        (*iter).second->emergencyShutdown();
+    for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
+        (*iter)->getComponent()->emergencyShutdown();
     }
 
     if ( sig != -1 ) {
@@ -285,7 +285,8 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
     {
         ConfigComponent* ccomp = &(*iter);
         if ( ccomp->rank == myRank ) {
-            compInfoMap[ccomp->id] = ComponentInfo(ccomp->name, ccomp->type, new LinkMap());
+            // compInfoMap[ccomp->id] = ComponentInfo(ccomp->name, ccomp->type, new LinkMap());
+            compInfoMap.insert(new ComponentInfo(ccomp->id, ccomp->name, ccomp->type, new LinkMap()));
         }
     }
     
@@ -313,22 +314,19 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             lp.getRight()->setLatency(clink.latency[1]);
 
             // Add this link to the appropriate LinkMap
-            CompInfoMap_t::iterator it;
-            // it = component_links.find(clink.component[0]);
-            it = compInfoMap.find(clink.component[0]);
-            if ( it == compInfoMap.end() ) {
+            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[0]);
+            if ( cinfo == NULL ) {
                 // This shouldn't happen and is an error
                 sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
             }
-            it->second.link_map->insertLink(clink.port[0],lp.getLeft());
+            cinfo->getLinkMap()->insertLink(clink.port[0],lp.getLeft());
 
-            // it = component_links.find(clink.component[1]->id);
-            it = compInfoMap.find(clink.component[1]);
-            if ( it == compInfoMap.end() ) {
+            cinfo = compInfoMap.getByID(clink.component[1]);
+            if ( cinfo == NULL ) {
                 // This shouldn't happen and is an error
                 sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
             }
-            it->second.link_map->insertLink(clink.port[1],lp.getRight());
+            cinfo->getLinkMap()->insertLink(clink.port[1],lp.getRight());
 
         }
         else {
@@ -351,13 +349,12 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
 
 
             // Add this link to the appropriate LinkMap for the local component
-            CompInfoMap_t::iterator it;
-            it = compInfoMap.find(clink.component[local]);
-            if ( it == compInfoMap.end() ) {
+            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
+            if ( cinfo == NULL ) {
                 // This shouldn't happen and is an error
                 sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
             }
-            it->second.link_map->insertLink(clink.port[local],lp.getLeft());
+            cinfo->getLinkMap()->insertLink(clink.port[local],lp.getLeft());
 
             // For the remote side, register with sync object
             ActivityQueue* sync_q = sync->registerLink(rank[remote],clink.id,lp.getRight());
@@ -391,7 +388,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             // 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
             // Check to make sure there are any entries in the component's LinkMap
-            if ( compInfoMap[ccomp->id].link_map->empty() ) {
+            if ( compInfoMap.getByID(ccomp->id)->getLinkMap()->empty() ) {
                 printf("WARNING: Building component \"%s\" with no links assigned.\n",ccomp->name.c_str());
             }
 
@@ -403,7 +400,8 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             // compIdMap[ccomp->id] = ccomp->name;
             tmp = createComponent( ccomp->id, ccomp->type,
                     ccomp->params );
-            compMap[ccomp->name] = tmp;
+            // compMap[ccomp->name] = tmp;
+            compInfoMap.getByName(ccomp->name)->setComponent(tmp);
             
             // After component is created, clear out the statisticEnableMap so 
             // we dont eat up lots of memory
@@ -421,31 +419,31 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
 void Simulation::initialize() {
     bool done = false;
     do {
-	init_msg_count = 0;
-    	for ( CompMap_t::iterator iter = compMap.begin(); iter != compMap.end(); ++iter ) {
-    	    (*iter).second->init(init_phase);
-    	}
+        init_msg_count = 0;
+        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
+            (*iter)->getComponent()->init(init_phase);
+        }
 
-	// Exchange data for parallel jobs
-	if ( num_ranks > 1 ) {
-	    init_msg_count = sync->exchangeLinkInitData(init_msg_count);
-	}
+        // Exchange data for parallel jobs
+        if ( num_ranks > 1 ) {
+            init_msg_count = sync->exchangeLinkInitData(init_msg_count);
+        }
 
-	// We're done if no new messages were sent
-	if ( init_msg_count == 0 ) done = true;
+        // We're done if no new messages were sent
+        if ( init_msg_count == 0 ) done = true;
 
-	init_phase++;
+        init_phase++;
     } while ( !done);
 
     // Walk through all the links and call finalizeConfiguration
-    for ( CompInfoMap_t::iterator i = compInfoMap.begin(); i != compInfoMap.end(); ++i) {
-        std::map<std::string,Link*>& map = (*i).second.link_map->getLinkMap();
+    for ( auto i = compInfoMap.begin(); i != compInfoMap.end(); ++i) {
+        std::map<std::string,Link*>& map = (*i)->getLinkMap()->getLinkMap();
         for ( std::map<std::string,Link*>::iterator j = map.begin(); j != map.end(); ++j ) {
             (*j).second->finalizeConfiguration();
         }
     }
     if ( num_ranks > 1 ) {
-	sync->finalizeLinkConfigurations();
+        sync->finalizeLinkConfigurations();
     }
 }
 
@@ -454,11 +452,10 @@ void Simulation::run() {
 
     // Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
     
-    for( CompMap_t::iterator iter = compMap.begin();
-                            iter != compMap.end(); ++iter )
-    {
-      (*iter).second->setup();
+    for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
+        (*iter)->getComponent()->setup();
     }
+
     //for introspector
     for( IntroMap_t::iterator iter = introMap.begin();
                             iter != introMap.end(); ++iter )
@@ -466,7 +463,6 @@ void Simulation::run() {
       (*iter).second->setup();
     }
 
-    // Fix taken from Scott's change to mainline (SDH, Sep 27 12)
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.
     // In general, this shouldn't happen, especially for parallel
@@ -496,10 +492,9 @@ void Simulation::run() {
     statisticsEngine->endOfSimulation();
     statisticsOutput->endOfSimulation();
     
-    for( CompMap_t::iterator iter = compMap.begin();
-                            iter != compMap.end(); ++iter )
+    for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter )
     {
-      (*iter).second->finish();
+        (*iter)->getComponent()->finish();
     }
     //for introspector
     for( IntroMap_t::iterator iter = introMap.begin();
@@ -578,8 +573,8 @@ void Simulation::printStatus(bool fullStatus)
     if ( fullStatus ) {
         timeVortex->print(out);
         out.output("---- Components: ----\n");
-        for (CompMap_t::iterator iter = compMap.begin() ; iter != compMap.end() ; ++iter ) {
-            iter->second->printStatus(out);
+        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
+            (*iter)->getComponent()->printStatus(out);
         }
     }
 
@@ -709,8 +704,8 @@ Simulation::serialize(Archive & ar, const unsigned int version)
     printf("  - Simulation::sync (%p)\n", sync);
     ar & BOOST_SERIALIZATION_NVP(sync);
 
-    printf("  - Simulation::compMap\n");
-    ar & BOOST_SERIALIZATION_NVP(compMap);
+    // printf("  - Simulation::compMap\n");
+    // ar & BOOST_SERIALIZATION_NVP(compMap);
 
     printf("  - Simulation::introMap\n");
     ar & BOOST_SERIALIZATION_NVP(introMap);

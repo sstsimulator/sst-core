@@ -26,6 +26,7 @@ nobase_dist_sst_HEADERS = \
 	archive.h \
 	clock.h \
 	component.h \
+	componentInfo.h \
 	config.h \
 	configGraph.h \
 	debug.h \
@@ -113,6 +114,7 @@ sst_core_sources = \
 	archive.cc \
 	clock.cc \
 	component.cc \
+	componentInfo.cc \
 	config.cc \
 	configGraph.cc \
 	debug.cc \

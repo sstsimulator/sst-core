@@ -114,10 +114,8 @@ Factory::CreateComponent(ComponentId_t id,
     params.popAllowedKeys();
     loadingComponentType = "";
 
-    if (NULL == ret) return ret;
+    // if (NULL == ret) return ret;
 
-    ret->type = type;
-    
     return ret;
 }
 
@@ -140,7 +138,7 @@ Factory::CreateStatisticOutput(std::string& statOutputType, Params& statOutputPa
 }
 
 bool 
-Factory::DoesComponentInfoStatisticNameExist(std::string& type, std::string& statisticName)
+Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
     if (true == type.empty()) { 
@@ -175,7 +173,7 @@ Factory::DoesComponentInfoStatisticNameExist(std::string& type, std::string& sta
 }
 
 bool 
-Factory::DoesSubComponentInfoStatisticNameExist(std::string& type, std::string& statisticName)
+Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
     if (true == type.empty()) { 
@@ -210,7 +208,7 @@ Factory::DoesSubComponentInfoStatisticNameExist(std::string& type, std::string& 
 }
 
 uint8_t 
-Factory::GetComponentInfoStatisticEnableLevel(std::string& type, std::string& statisticName)
+Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
     if (true == type.empty()) { 
@@ -245,7 +243,7 @@ Factory::GetComponentInfoStatisticEnableLevel(std::string& type, std::string& st
 }
 
 std::string 
-Factory::GetComponentInfoStatisticUnits(std::string& type, std::string& statisticName)
+Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
     if (true == type.empty()) { 

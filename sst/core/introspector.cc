@@ -19,6 +19,7 @@
 #endif
 
 //#include "sst/core/exit.h"
+#include "sst/core/componentInfo.h"
 #include "sst/core/introspectAction.h"
 #include "sst/core/simulation.h"
 //#include "sst/core/timeLord.h"
@@ -46,11 +47,10 @@ Introspector::registerClock( std::string freq, Clock::HandlerBase* handler)
 
 std::list<IntrospectedComponent*> Introspector::getModelsByName(const std::string CompName)
 {
-    const CompMap_t &CompMap = Simulation::getSimulation()->getComponentMap();
-
-     CompMap_t::const_iterator i = CompMap.find(CompName);
-     if (i != CompMap.end()) {
-            MyCompList.push_back(dynamic_cast<IntrospectedComponent*>(i->second));
+    Component* comp = Simulation::getSimulation()->getComponent(CompName);
+    
+    if (comp != NULL) {
+            MyCompList.push_back(dynamic_cast<IntrospectedComponent*>(comp));
      } 
 
     return MyCompList;
@@ -59,18 +59,14 @@ std::list<IntrospectedComponent*> Introspector::getModelsByName(const std::strin
 
 std::list<IntrospectedComponent*> Introspector::getModelsByType(const std::string CompType)
 {
-    const CompMap_t &CompMap = Simulation::getSimulation()->getComponentMap();
+    const ComponentInfoMap& CompMap = Simulation::getSimulation()->getComponentInfoMap();
 
-    for( CompMap_t::const_iterator iter = CompMap.begin();
-    	                    iter != CompMap.end(); ++iter )
-    {
-	//printf("CompMap has %s with id = %lu\n", (*iter).second->type.c_str(), (*iter).second->Id());
+    for( auto iter = CompMap.begin(); iter != CompMap.end(); ++iter ) {
         if (CompType.empty() == true)
-	    MyCompList.push_back(dynamic_cast<IntrospectedComponent*>((*iter).second));   
-	else if ( (*iter).second->type.compare(CompType) == 0){
-	    //printf("Introspector will monitor ID %lu\n", (*iter).second->Id());
-	    MyCompList.push_back(dynamic_cast<IntrospectedComponent*>((*iter).second));
-	}
+            MyCompList.push_back(dynamic_cast<IntrospectedComponent*>((*iter)->getComponent()));   
+        else if ( (*iter)->getType().compare(CompType) == 0){
+            MyCompList.push_back(dynamic_cast<IntrospectedComponent*>((*iter)->getComponent()));
+        }
     }
     return MyCompList;
 }

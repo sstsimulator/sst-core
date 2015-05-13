@@ -33,6 +33,8 @@
 #include <sst/core/statapi/stathistogram.h>
 #include <sst/core/statapi/statuniquecount.h>
 
+#include <sst/core/componentInfo.h>
+
 //#include "sst/core/sdl.h"
 //#include "sst/core/component.h"
 //#include "sst/core/params.h"
@@ -61,29 +63,8 @@ class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
     
-struct ComponentInfo {
-    std::string name;
-    std::string type;
-    LinkMap* link_map;
-
-    ComponentInfo(std::string name, std::string type, LinkMap* link_map) :
-        name(name),
-        type(type),
-        link_map(link_map)
-    {}
-
-    ComponentInfo() :
-        name(""),
-        type(""),
-        link_map(NULL)
-    {}
-    
-};
     
 typedef std::map<std::string, Introspector* > IntroMap_t;
-typedef std::map<std::string, Component* > CompMap_t;
-// typedef std::map<ComponentId_t, std::string > CompIdMap_t;
-typedef std::map<ComponentId_t, ComponentInfo> CompInfoMap_t;
 
 /** The Factory and TimeLord objects both should only be associated
     with a simulation object and never created on their own.  To
@@ -226,13 +207,11 @@ public:
 
     /** Return pointer to map of links for a given component id */
     LinkMap* getComponentLinkMap(ComponentId_t id) const {
-        // std::map<ComponentId_t,LinkMap*>::const_iterator i = component_links.find(id);
-        // if (i == component_links.end()) {
-        CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-        if (i == compInfoMap.end()) {
+        ComponentInfo* info = compInfoMap.getByID(id);
+        if ( NULL == info ) {
             return NULL;
         } else {
-            return i->second.link_map;
+            return info->getLinkMap();
         }
     }
 
@@ -242,34 +221,59 @@ public:
      */
     const std::vector<std::string>* getComponentAllowedPorts(std::string type);
         
-    /** Returns reference to the Component Map */
-    const CompMap_t& getComponentMap(void) const { return compMap; }
-    /** Returns reference to the Component ID Map */
-    // const CompIdMap_t& getComponentIdMap(void) const { return compIdMap; }
-    const CompInfoMap_t& getComponentInfoMap(void) const { return compInfoMap; }
+    // /** Returns reference to the Component Map */
+    // const CompMap_t& getComponentMap(void) const { return compMap; }
+    // /** Returns reference to the Component ID Map */
+    // // const CompIdMap_t& getComponentIdMap(void) const { return compIdMap; }
+    const ComponentInfoMap& getComponentInfoMap(void) { return compInfoMap; }
 
+    
     /** Returns the component with a given name */
     Component* getComponent(const std::string &name) const
     {
-        CompMap_t::const_iterator i = compMap.find(name);
-        if (i != compMap.end()) {
-            return i->second;
+        ComponentInfo* i = compInfoMap.getByName(name);
+        if (NULL != i) {
+            return i->getComponent();
         } else {
             printf("Simulation::getComponent() couldn't find component with name = %s\n",
                    name.c_str()); 
             exit(1); 
         }
     }
-
+    
     /** returns the component with the given ID */
     Component* getComponent(const ComponentId_t &id) const
-    {
-		// CompIdMap_t::const_iterator i = compIdMap.find(id);
-		CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-		if (i != compInfoMap.end()) {
-			return getComponent(i->second.name);
+    {        
+		ComponentInfo* i = compInfoMap.getByID(id);
+		// CompInfoMap_t::const_iterator i = compInfoMap.find(id);
+		if ( NULL != i ) {
+			return i->getComponent();
 		} else {
             printf("Simulation::getComponent() couldn't find component with id = %lu\n", id);
+            exit(1);
+		}
+    }
+
+    ComponentInfo* getComponentInfo(const std::string& name) const
+    {
+        ComponentInfo* i = compInfoMap.getByName(name);
+        if (NULL != i) {
+            return i;
+        } else {
+            printf("Simulation::getComponentInfo() couldn't find component with name = %s\n",
+                   name.c_str()); 
+            exit(1); 
+        }
+    }
+    
+    ComponentInfo* getComponentInfo(const ComponentId_t &id) const
+    {        
+		ComponentInfo* i = compInfoMap.getByID(id);
+		// CompInfoMap_t::const_iterator i = compInfoMap.find(id);
+		if ( NULL != i ) {
+			return i;
+		} else {
+            printf("Simulation::getComponentInfo() couldn't find component with id = %lu\n", id);
             exit(1);
 		}
     }
@@ -403,9 +407,7 @@ private:
     TimeConverter*   minPartTC;
     Activity*        current_activity;
     SyncBase*        sync;
-    CompMap_t        compMap;
-    // CompIdMap_t      compIdMap;
-    CompInfoMap_t    compInfoMap;
+    ComponentInfoMap compInfoMap;
     IntroMap_t       introMap;
     clockMap_t       clockMap;
     statEnableMap_t  statisticEnableMap;

@@ -15,7 +15,7 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 
-#include <set>
+#include <unordered_set>
 
 #include <sst/core/action.h>
 
@@ -68,7 +68,7 @@ private:
 //     EventHandler< Exit, bool, Event* >* m_functor;
     unsigned int    m_refCount;
     TimeConverter*  m_period;
-    std::set<ComponentId_t> m_idSet;
+    std::unordered_set<ComponentId_t> m_idSet;
     SimTime_t end_time;
     
     bool single_rank;

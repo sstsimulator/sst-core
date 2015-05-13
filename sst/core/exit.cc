@@ -48,26 +48,26 @@ bool Exit::refInc( ComponentId_t id )
     _EXIT_DBG( "refCount=%d\n", m_refCount );
 
     if ( m_idSet.find( id ) != m_idSet.end() ) {
-	CompMap_t comp_map = Simulation::getSimulation()->getComponentMap();
-	bool found_in_map = false;
+        // CompMap_t comp_map = Simulation::getSimulation()->getComponentMap();
+        // bool found_in_map = false;
 
-	for(CompMap_t::iterator comp_map_itr = comp_map.begin();
-		comp_map_itr != comp_map.end();
-		++comp_map_itr) {
+        // for(CompMap_t::iterator comp_map_itr = comp_map.begin();
+        //     comp_map_itr != comp_map.end();
+        //     ++comp_map_itr) {
+            
+        //     if(comp_map_itr->second->getId() == id) {
+        //         found_in_map = true;
+        //         break;
+        //     }
+        // }
 
-		if(comp_map_itr->second->getId() == id) {
-			found_in_map = true;
-			break;
-		}
-	}
-
-	if(found_in_map) {
-		_DBG( Exit, "component (%s) multiple increment\n",
-                	Simulation::getSimulation()->getComponent(id)->getName().c_str() );
-	} else {
-		_DBG( Exit, "component in construction increments exit multiple times.\n" );
-	}
-
+        // if(found_in_map) {
+        //     _DBG( Exit, "component (%s) multiple increment\n",
+        //           Simulation::getSimulation()->getComponent(id)->getName().c_str() );
+        // } else {
+        //     _DBG( Exit, "component in construction increments exit multiple times.\n" );
+        // }
+        
         return true;
     }
 
@@ -175,7 +175,7 @@ Exit::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
     ar & BOOST_SERIALIZATION_NVP(m_refCount);
     ar & BOOST_SERIALIZATION_NVP(m_period);
-    ar & BOOST_SERIALIZATION_NVP(m_idSet);
+    // ar & BOOST_SERIALIZATION_NVP(m_idSet);
     ar & BOOST_SERIALIZATION_NVP(single_rank);
     printf("end Exit::serialize\n");
 }
