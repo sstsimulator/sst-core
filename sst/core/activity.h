@@ -192,13 +192,14 @@ public:
         pool->free(ptr8);
     };
     
-    static uint64_t getMemPoolUsage() {
-        uint64_t count = 0;
+    static void getMemPoolUsage(uint64_t& bytes, uint64_t& active_activities) {
+        bytes = 0;
+        active_activities = 0;
         for ( uint32_t i = 0; i < Activity::memPools.size(); i++ ) {
             std::pair<size_t, Core::MemPool*> entry = Activity::memPools[i];
-            count += entry.second->getArenaSize();
+            bytes += entry.second->getArenaSize();
+            active_activities += (entry.second->numAlloc - entry.second->numFree);
         }
-        return count;
     }
 
 #endif

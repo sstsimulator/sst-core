@@ -67,8 +67,10 @@ void SimulatorHeartbeat::execute( void )
     uint64_t local_sync_data_size = Simulation::getSimulation()->getSyncQueueDataSize();
     uint64_t global_max_sync_data_size, global_sync_data_size;
 
-    uint64_t mempool_size = Activity::getMemPoolUsage();
-    uint64_t max_mempool_size, global_mempool_size;
+    uint64_t mempool_size;
+    uint64_t active_activities;
+    Activity::getMemPoolUsage(mempool_size, active_activities);
+    uint64_t max_mempool_size, global_mempool_size, global_active_activities;
     
 #ifdef HAVE_MPI
     MPI_Allreduce(&local_max_tv_depth, &global_max_tv_depth, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
@@ -76,12 +78,14 @@ void SimulatorHeartbeat::execute( void )
     MPI_Allreduce(&local_sync_data_size, &global_sync_data_size, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
     MPI_Allreduce(&mempool_size, &max_mempool_size, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&mempool_size, &global_mempool_size, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
+    MPI_Allreduce(&active_activities, &global_active_activities, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
 #else
     global_max_tv_depth = local_max_tv_depth;
     global_max_sync_data_size = 0;
     global_max_sync_data_size = 0;
     max_mempool_size = mempool_size;
     global_mempool_size = mempool_size;
+    global_active_activities = active_activities;
 #endif
 
         
@@ -104,6 +108,8 @@ void SimulatorHeartbeat::execute( void )
                           max_mempool_size_ua.toStringBestSI().c_str());
         sim_output.output("\tGlobal mempool usage:            %s\n",
                           global_mempool_size_ua.toStringBestSI().c_str());
+        sim_output.output("\tGlobal active activities         %" PRIu64 " activities\n",
+                          global_active_activities);
         sim_output.output("\tMax TimeVortex depth:            %" PRIu64 " entries\n",
                           global_max_tv_depth);
         sim_output.output("\tMax Sync data size:              %s\n",
