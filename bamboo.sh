@@ -2101,9 +2101,14 @@ setUPforMakeDisttest() {
      retval=$?
      echo "         Returned from bamboo.sh $retval"
      if [ $retval != 0 ] ; then
-         echo "bamboo build reports failure  retval = $reval"
-         exit 1
-     fi
+       echo "Bamboo.sh:  Checkout of sqe/test FAILED from hand"
+       svn co https://www.sst-simulator.org/svn/sst/sqe/test
+       if [ $? != 0 ]
+       then
+          echo "Bamboo.sh:  Checkout of sqe/test FAILED from sst-simulator.org"
+          exit 1
+       fi
+    fi
 }
 
 #-------------------------------------------------------------------------
