@@ -68,6 +68,20 @@ public:
         ++numFree;
     }
 
+    /**
+       Approximates the current memory usage of the mempool. Some
+       overheads are not taken into account.
+     */
+    uint64_t getBytesMemUsed() {
+        uint64_t bytes_in_arenas = arenas.size() * arenaSize;
+        uint64_t bytes_in_free_list = freeList.size() * sizeof(void*);
+        return bytes_in_arenas + bytes_in_free_list;
+    }
+
+    uint64_t getUndeletedEntries() {
+        return numAlloc - numFree;
+    }
+    
     /** Counter:  Number of times elements have been allocated */
     uint64_t numAlloc;
     /** Counter:  Number times elements have been freed */

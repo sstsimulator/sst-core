@@ -197,8 +197,8 @@ public:
         active_activities = 0;
         for ( uint32_t i = 0; i < Activity::memPools.size(); i++ ) {
             std::pair<size_t, Core::MemPool*> entry = Activity::memPools[i];
-            bytes += entry.second->getArenaSize();
-            active_activities += (entry.second->numAlloc - entry.second->numFree);
+            bytes += entry.second->getBytesMemUsed();
+            active_activities += entry.second->getUndeletedEntries();
         }
     }
 
