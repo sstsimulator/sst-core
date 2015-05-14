@@ -42,8 +42,13 @@ if [[ ${SST_TEST_ROOT:+isSet} != isSet ]] ; then
    
     if [ $? != 0 ] 
     then
-       echo "Bamboo.sh:  Checkout of sqe/test FAILED"
-       exit 1
+       echo "Bamboo.sh:  Checkout of sqe/test FAILED from $TEST_DIRECTORY_URL"
+       svn co https://www.sst-simulator.org/svn/sst/sqe/test
+       if [ $? != 0 ]
+       then
+          echo "Bamboo.sh:  Checkout of sqe/test FAILED from sst-simulator.org"
+          exit 1
+       fi
     fi
 fi
 #	This assumes a directory strucure
@@ -2101,14 +2106,9 @@ setUPforMakeDisttest() {
      retval=$?
      echo "         Returned from bamboo.sh $retval"
      if [ $retval != 0 ] ; then
-       echo "Bamboo.sh:  Checkout of sqe/test FAILED from hand"
-       svn co https://www.sst-simulator.org/svn/sst/sqe/test
-       if [ $? != 0 ]
-       then
-          echo "Bamboo.sh:  Checkout of sqe/test FAILED from sst-simulator.org"
-          exit 1
-       fi
-    fi
+         echo "bamboo build reports failure  retval = $reval"
+         exit 1
+     fi
 }
 
 #-------------------------------------------------------------------------
