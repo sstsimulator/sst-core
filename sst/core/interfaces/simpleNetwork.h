@@ -44,6 +44,8 @@ public:
      * Represents both network sends and receives
      */
     class Request {
+
+
     public:
         nid_t  dest;          /*!< Node ID of destination */
         nid_t  src;           /*!< Node ID of source */
@@ -51,8 +53,43 @@ public:
         size_t size_in_bits;  /*!< Size of packet in bits */
         bool   head;          /*!< True if this is the head of a stream */
         bool   tail;          /*!< True if this is the tail of a steram */
+        
+    private:
         Event* payload;       /*!< Payload of the request */
         
+    public:
+
+        /**
+           Sets the payload field for this request
+           @param payload_in Event to set as payload.
+         */
+        inline void givePayload(Event *event) {
+            payload = event;
+        }
+        
+        /**
+           Returns the payload for the request.  This will also set
+           the payload to NULL, so the call will only return valid
+           data one time after each givePayload call.
+           @return Event that was set as payload of the request.
+        */
+        inline Event* takePayload() {
+            Event* ret = payload;
+            payload = NULL;
+            return ret;
+        }
+
+        /**
+           Returns the payload for the request for inspection.  This
+           call does not set the payload to NULL, so deleting the
+           reqeust will also delete the payload.  If the request is
+           going to be deleted, use takePayload instead.
+           @return Event that was set as payload of the request.
+        */
+        inline Event* inspectPayload() {
+            return payload;
+        }
+
         /**
          * Trace types
          */
@@ -76,6 +113,11 @@ public:
         {
         }
 
+        ~Request()
+        {
+            if ( payload != NULL ) delete payload;
+        }
+        
         inline Request* clone() {
             Request* req = new Request(*this);
             // Copy constructor only makes a shallow copy, need to
