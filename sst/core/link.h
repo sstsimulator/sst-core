@@ -119,6 +119,18 @@ public:
     /** Receive an event (if any) during the init() phase */
     Event* recvInitData();
 
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+    void setSendingComponentInfo(const std::string& comp_in, const std::string& type_in, const std::string& port_in) {
+        comp = comp_in;
+        ctype = type_in;
+        port = port_in;
+    }
+
+    const std::string& getSendingComponentName() { return comp; }
+    const std::string& getSendingComponentType() { return ctype; }
+    const std::string& getSendingPort() { return port; }
+
+#endif
     // UnitAlgebra getTotalInputLatency();
     // UnitAlgebra getTotalOutputLatency();
 
@@ -165,6 +177,12 @@ private:
     
     Type_t type;
     LinkId_t id;
+
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+    std::string comp;
+    std::string ctype;
+    std::string port;
+#endif
     
     //    friend class SST::Sync;
     

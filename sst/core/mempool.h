@@ -67,8 +67,8 @@ public:
         freeList.push_back(ptr);
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         *((uint32_t*)ptr) = 0xFFFFFFFF;
-        ++numFree;
 #endif
+        ++numFree;
     }
 
     /**

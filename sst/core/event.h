@@ -15,6 +15,8 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 
+#include <string>
+
 #include <sst/core/activity.h>
 
 namespace SST {
@@ -36,6 +38,10 @@ public:
 
     Event() : Activity() {
         setPriority(EVENTPRIORITY);
+#if __SST_DEBUG_EVENT_TRACKING__
+        first_comp = "";
+        last_comp = "";
+#endif
     }
     virtual ~Event() = 0;
 
@@ -134,6 +140,36 @@ public:
                 header.c_str(), getDeliveryTime(), getPriority());
     }
 
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+
+    virtual void printTrackingInfo(const std::string& header, Output &out) const {
+        out.output("%s Event first sent from: %s:%s (type: %s) and last received by %s:%s (type: %s)\n", header.c_str(),
+                   first_comp.c_str(),first_port.c_str(),first_type.c_str(),
+                   last_comp.c_str(),last_port.c_str(),last_type.c_str());
+    }
+
+    const std::string& getFirstComponentName() { return first_comp; }
+    const std::string& getFirstComponentType() { return first_type; }
+    const std::string& getFirstPort() { return first_port; }
+    const std::string& getLastComponentName() { return last_comp; }
+    const std::string& getLastComponentType() { return last_type; }
+    const std::string& getLastPort() { return last_port; }
+    
+    void addSendComponent(const std::string& comp, const std::string& type, const std::string& port) {
+        if ( first_comp == "" ) { 
+            first_comp = comp;
+            first_type = type;
+            first_port = port;
+        }
+    }
+    void addRecvComponent(const std::string& comp, const std::string& type, const std::string& port) {
+        last_comp = comp;
+        last_type = type;
+        last_port = port;
+    }
+
+#endif
+    
 protected:
     /** Link used for delivery */
     Link* delivery_link;
@@ -147,6 +183,15 @@ private:
     static uint64_t id_counter;
     LinkId_t link_id;
 
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+    std::string first_comp;
+    std::string first_type;
+    std::string first_port;
+    std::string last_comp;
+    std::string last_type;
+    std::string last_port;
+#endif
+    
     friend class boost::serialization::access;
     template<class Archive>
     void

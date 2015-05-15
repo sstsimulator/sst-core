@@ -218,6 +218,9 @@ Component::configureLink(std::string name, TimeConverter* time_base, Event::Hand
     }
     tmp->setFunctor(handler);
     tmp->setDefaultTimeBase(time_base);
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+    tmp->setSendingComponentInfo(my_info->getName(), my_info->getType(), name);
+#endif
     return tmp;    
 }
 
@@ -245,6 +248,9 @@ Component::configureLink(std::string name, Event::HandlerBase* handler)
         tmp->setPolling();
     }
     tmp->setFunctor(handler);
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+    tmp->setSendingComponentInfo(my_info->getName(), my_info->getType(), name);
+#endif
     return tmp;    
 }
 

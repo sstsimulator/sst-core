@@ -50,6 +50,14 @@ void Event::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
     // ar & BOOST_SERIALIZATION_NVP(delivery_link);
     ar & BOOST_SERIALIZATION_NVP(link_id);
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+    ar & BOOST_SERIALIZATION_NVP(first_comp);
+    ar & BOOST_SERIALIZATION_NVP(first_type);
+    ar & BOOST_SERIALIZATION_NVP(first_port);
+    ar & BOOST_SERIALIZATION_NVP(last_comp);
+    ar & BOOST_SERIALIZATION_NVP(last_type);
+    ar & BOOST_SERIALIZATION_NVP(last_port);
+#endif
 }
 
 void NullEvent::execute(void)

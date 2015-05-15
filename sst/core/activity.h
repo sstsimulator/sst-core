@@ -127,6 +127,11 @@ public:
                 header.c_str(), delivery_time, priority);
     }
 
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+    virtual void printTrackingInfo(const std::string& header, Output &out) const {
+    }
+#endif
+
     /** Set a new Queue order */
     void setQueueOrder(uint64_t order) {
         queue_order = order;
@@ -207,19 +212,18 @@ public:
     static void printUndeletedActivites(const std::string& header, Output &out) {
         for ( uint32_t i = 0; i < Activity::memPools.size(); i++ ) {
             std::pair<size_t, Core::MemPool*> entry = Activity::memPools[i];
-            out.output("Looking at mempool of size %lu\n", entry.first);
+            /* out.output("Looking at mempool of size %lu\n", entry.first); */
             const std::list<uint8_t*>& arenas = entry.second->getArenas();
             size_t arenaSize = entry.second->getArenaSize();
             size_t elemSize = entry.second->getElementSize();
             size_t nelem = arenaSize / elemSize;
             for ( auto iter = arenas.begin(); iter != arenas.end(); ++iter ) {
-                out.output("Getting arena of size %lu with element size of %lu (%lu elements)\n",
-                           arenaSize, elemSize, nelem);
                 for ( int j = 0; j < nelem; j++ ) {
                     uint32_t* ptr = (uint32_t*)((*iter) + (elemSize*j));
                     if ( *ptr != 0xFFFFFFFF ) {
                         Activity* act = (Activity*)(ptr + 1);
                         act->print(header, out);
+                        act->printTrackingInfo(header + "    ", out);
                     }
                 }
             }

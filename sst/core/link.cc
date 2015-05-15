@@ -119,7 +119,12 @@ void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {
     }
     event->setDeliveryTime(cycle);
     event->setDeliveryLink(id,pair_link);
-    
+
+#if __SST_DEBUG_EVENT_TRACKING__
+    event->addSendComponent(comp, ctype, port);
+    event->addRecvComponent(pair_link->comp, pair_link->ctype, pair_link->port);
+#endif
+        
     pair_link->recvQueue->insert( event );
 }
     
@@ -149,6 +154,10 @@ void Link::sendInitData(Event* init_data)
     init_data->setDeliveryLink(id,pair_link);
 
     pair_link->initQueue->insert(init_data);
+#if __SST_DEBUG_EVENT_TRACKING__
+    init_data->addSendComponent(comp,ctype,port);
+    init_data->addRecvComponent(pair_link->comp, pair_link->ctype, pair_link->port);
+#endif
 }
 
 void Link::sendInitData_sync(Event* init_data)

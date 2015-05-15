@@ -101,6 +101,9 @@ namespace SST {
         }
 	
         link_map[link_id] = link;
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+        link->setSendingComponentInfo("SYNC", "SYNC", "");
+#endif
         return queue;
     }
 

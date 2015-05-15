@@ -23,6 +23,7 @@ typedef uint64_t  SimTime_t;
 typedef double          Time_t;
 
 #define MAX_SIMTIME_T 0xFFFFFFFFFFFFFFFFl
+#define UNSET_COMPONENT_ID 0xFFFFFFFF
  
 typedef double watts;
 typedef double joules;
