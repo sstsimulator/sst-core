@@ -65,7 +65,10 @@ public:
     {
         // TODO:  Make sure this is in one of our arenas
         freeList.push_back(ptr);
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+        *((uint32_t*)ptr) = 0xFFFFFFFF;
         ++numFree;
+#endif
     }
 
     /**
@@ -88,6 +91,9 @@ public:
     uint64_t numFree;
 
     size_t getArenaSize() const { return arenaSize; }
+    size_t getElementSize() const { return elemSize; }
+
+    const std::list<uint8_t*>& getArenas() { return arenas; }
     
 private:
 
@@ -104,7 +110,12 @@ private:
         arenas.push_back(newPool);
         size_t nelem = arenaSize / elemSize;
         for ( size_t i = 0 ; i < nelem ; i++ ) {
-            freeList.push_back(newPool + (elemSize*i));
+            uint32_t* ptr = (uint32_t*)(newPool + (elemSize*i));
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+            *ptr = 0xFFFFFFFF;
+#endif
+            freeList.push_back(ptr);
+            // freeList.push_back(newPool + (elemSize*i));
         }
         return true;
     }

@@ -69,6 +69,10 @@ Config::Config( int my_rank, int world_size )
 #endif
     verbose     = 0;
     no_env_config = false;
+
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+    event_dump_file = "";
+#endif
     
     // Some config items can be initialized from either the command line or
     // the config file. The command line has precedence. We need to initialize
@@ -79,7 +83,7 @@ Config::Config( int my_rank, int world_size )
     visNoConfigDesc->add_options()
         ("help,h", "print help message")
         ("verbose,v", "print information about core runtimes")
-	("no-env-config", "disable SST automatic dynamic library environment configuration")
+        ("no-env-config", "disable SST automatic dynamic library environment configuration")
         ("version,V", "print SST Release Version")
     ;
 
@@ -151,17 +155,22 @@ Config::Config( int my_rank, int world_size )
         ("output-partition", po::value< string >(&dump_component_graph_file),
          "Dump the component partition to this file (default is not to dump information)")
         ("output-config", po::value< string >(&dump_config_graph),
-	 "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
-	("output-dot", po::value <string >(&output_dot),
-	 "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
-	("output-directory", po::value <string >(&output_directory),
-	 "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
+         "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
+        ("output-dot", po::value <string >(&output_dot),
+         "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
+        ("output-directory", po::value <string >(&output_directory),
+         "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
 #ifdef HAVE_PYTHON
         ("model-options", po::value< string >(&model_options),
-	 "Provide options to the SST Python scripting engine (default is to provide no script options)")
+         "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
-
-	;
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+#ifdef USE_MEMPOOL
+        ("output-undeleted-events", po::value<string>(&event_dump_file),
+         "Outputs information about all undeleted events to the specified file at end of simulation.  For now this will output to stdout, but a filename must be specified.  This will be fixed in a later version.")
+#endif
+#endif
+        ;
 
     var_map = new po::variables_map();
 }

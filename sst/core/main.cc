@@ -740,8 +740,17 @@ main(int argc, char *argv[])
         sim_output->output("# ------------------------------------------------------------\n");
         sim_output->output("#\n");
         sim_output->output("\n");
+
     }
 
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+#ifdef USE_MEMPOOL
+    if ( cfg.event_dump_file != "" && rank == 0 ) {
+        Activity::printUndeletedActivites("",*sim_output);
+    }
+#endif
+#endif
+    
 #ifdef HAVE_MPI
     if( 0 == rank ) {
 #endif
