@@ -17,6 +17,7 @@
 
 #include <cstddef>
 #include <cstdlib>
+#include <cstring>
 #include <stdint.h>
 #include <sys/mman.h>
 
