@@ -87,10 +87,16 @@ public:
                --debug runtime parameter, or to the file 'sst_output' if the
                --debug parameter is not defined.  If the size of MPI_COMM_WORLD
                is > 1, then the rank process will be appended to the file name.
+        @param localoutputfilename.  Send the output of this class to the 
+               file identified in localoutputfilename instead of the of the 
+               normal output file set by the run time parameter --debug-file.  
+               location parameter must be set to FILE.  This parameter is 
+               intended for special case debug purposes only.
     */
     // CONSTRUCTION / DESTRUCTION
     Output(const std::string& prefix, uint32_t verbose_level,
-           uint32_t verbose_mask, output_location_t location);
+           uint32_t verbose_mask, output_location_t location,
+           std::string localoutputfilename = "");
 
     /** Default Constructor.  User must call init() to properly initialize obj.
         Until init() is called, no output will occur.
@@ -130,10 +136,16 @@ public:
                --debug runtime parameter, or to the file 'sst_output' if the
                --debug parameter is not defined.  If the size of MPI_COMM_WORLD
                is > 1, then the rank process will be appended to the file name.
+        @param localoutputfilename.  Send the output of this class to the 
+               file identified in localoutputfilename instead of the of the 
+               normal output file set by the run time parameter --debug-file.  
+               location parameter must be set to FILE.  This parameter is 
+               intended for special case debug purposes only.
     */
     // INITIALIZATION
     void init(const std::string& prefix, uint32_t verbose_level,
-              uint32_t verbose_mask, output_location_t location);
+               uint32_t verbose_mask, output_location_t location,
+               std::string localoutputfilename = "");
 
     /** Output the message with formatting as specified by the format parameter.
         The output will be prepended with the expanded prefix set in the object.
@@ -413,11 +425,23 @@ private:
     // cannot be changed in the constructor or a call to setFileName().
     std::FILE**       m_targetOutputRef;
 
-    // Static Member Variables
-    static std::string m_sstFileName;
-    static std::FILE*  m_sstFileHandle;
-    static uint32_t    m_sstFileAccessCount;
+    // m_targetFileHandleRef, m_targetFileNameRef, and m_targetFileAccessCount
+    // are pointers to their assocted types.  These point to either the local 
+    // output file information or to the global simulation output file information.
+    std::FILE**        m_targetFileHandleRef;
+    std::string*       m_targetFileNameRef;
+    uint32_t*          m_targetFileAccessCountRef;
 
+    // Static Member Variables regarding the Global simulation file info
+    static std::string  m_sstGlobalSimFileName;
+    static std::FILE*   m_sstGlobalSimFileHandle;
+    static uint32_t     m_sstGlobalSimFileAccessCount;
+    
+    // File Member Variables regarding the local simulation file info
+    std::string  m_sstLocalFileName;
+    std::FILE*   m_sstLocalFileHandle;
+    uint32_t     m_sstLocalFileAccessCount;
+    
     // Serialization Methods
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive & ar, const unsigned int version);

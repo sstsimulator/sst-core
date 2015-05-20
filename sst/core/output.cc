@@ -32,17 +32,18 @@
 namespace SST {
 
 // Initialize The Static Member Variables     
-std::string Output::m_sstFileName = "";
-std::FILE*  Output::m_sstFileHandle = 0;
-uint32_t    Output::m_sstFileAccessCount = 0;
+std::string Output::m_sstGlobalSimFileName = "";
+std::FILE* Output::m_sstGlobalSimFileHandle = 0;
+uint32_t    Output::m_sstGlobalSimFileAccessCount = 0;
 
 
 Output::Output(const std::string& prefix, uint32_t verbose_level,   
-               uint32_t verbose_mask,output_location_t location)
+               uint32_t verbose_mask,output_location_t location, 
+               std::string localoutputfilename /*=""*/)
 {
     m_objInitialized = false;
 
-    init(prefix, verbose_level, verbose_mask, location);
+    init(prefix, verbose_level, verbose_mask, location, localoutputfilename);
 }
 
 
@@ -59,7 +60,8 @@ Output::Output()
 
 
 void Output::init(const std::string& prefix, uint32_t verbose_level,  
-                  uint32_t verbose_mask, output_location_t location)
+                  uint32_t verbose_mask, output_location_t location, 
+                  std::string localoutputfilename /*=""*/)
 {
     // Only initialize if the object has not yet been initialized.
     if (false == m_objInitialized) {
@@ -68,7 +70,13 @@ void Output::init(const std::string& prefix, uint32_t verbose_level,
         m_outputPrefix = prefix;
         m_verboseLevel = verbose_level;
         m_verboseMask  = verbose_mask;
-
+        m_sstLocalFileName = localoutputfilename;
+        m_sstLocalFileHandle = 0;
+        m_sstLocalFileAccessCount = 0;
+        m_targetFileHandleRef = 0;
+        m_targetFileNameRef = 0;
+        m_targetFileAccessCountRef = 0;
+    
         setTargetOutput(location);
 
         m_objInitialized = true;
@@ -158,9 +166,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
         va_start(arg2, format);
 
         // If the target output is a file, Make sure that the file is created and opened
-        if ((FILE == m_targetLoc) && (0 == m_sstFileHandle)) {
-            openSSTTargetFile();
-        }
+        openSSTTargetFile();
         
         // Check to make sure output location is not NONE
         if (NONE != m_targetLoc) {
@@ -217,10 +223,10 @@ void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
     }
     
     // Set the Filename, only if it has not yet been set.
-    if (0 == m_sstFileName.length()) {
-        m_sstFileName = filename;
+    if (0 == m_sstGlobalSimFileName.length()) {
+        m_sstGlobalSimFileName = filename;
     } else {
-        printf("ERROR: Output::setFileName() - Filename is already set to %s, and canot be changed.\n", m_sstFileName.c_str());
+        printf("ERROR: Output::setFileName() - Filename is already set to %s, and canot be changed.\n", m_sstGlobalSimFileName.c_str());
         exit(-1);
     }
 }
@@ -228,6 +234,7 @@ void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
 
 void Output::setTargetOutput(output_location_t location)
 {
+    // Set the Target location
     m_targetLoc = location;
     
     // Figure out where we need to send the output, we do this here rather
@@ -235,9 +242,22 @@ void Output::setTargetOutput(output_location_t location)
     // stdout, but will not output any value (checked in the output methods)
     switch (m_targetLoc) {
     case FILE:
-        m_targetOutputRef = &m_sstFileHandle;
-        // Increment the Access count for the file
-        m_sstFileAccessCount++;
+        // Decide if we are sending output to the System Output file or the local debug file
+        if (0 == m_sstLocalFileName.length()) {
+            // Set the references to the Global Simulation target file info
+            m_targetOutputRef          = &m_sstGlobalSimFileHandle;
+            m_targetFileHandleRef      = &m_sstGlobalSimFileHandle;
+            m_targetFileNameRef        = &m_sstGlobalSimFileName;
+            m_targetFileAccessCountRef = &m_sstGlobalSimFileAccessCount;
+        } else {
+            // Set the references to the Local output target file info
+            m_targetOutputRef          = &m_sstLocalFileHandle;
+            m_targetFileHandleRef      = &m_sstLocalFileHandle;
+            m_targetFileNameRef        = &m_sstLocalFileName;
+            m_targetFileAccessCountRef = &m_sstLocalFileAccessCount;
+        }
+        // Increment the Access count for the target output file 
+        (*m_targetFileAccessCountRef)++;
         break;
     case STDERR:
         m_targetOutputRef = &stderr;
@@ -256,26 +276,30 @@ void Output::openSSTTargetFile() const
     std::FILE*  handle;
     std::string tempFileName;
     char        tempBuf[256];
-    
+
     if (true == m_objInitialized) {
-        // Check to see if the File has not been opened.
-        if ((m_sstFileAccessCount > 0) && (0 == m_sstFileHandle)){
-            tempFileName = m_sstFileName;
-            
-            // Append the rank to file name if MPI_COMM_WORLD is GT 1
-            if (getMPIWorldSize() > 1){
-                sprintf(tempBuf, "%d", getMPIWorldRank());
-                tempFileName += tempBuf;
-            }
-            
-            // Now try to open the file
-            handle = fopen(tempFileName.c_str(), "w");
-            if (NULL != handle){
-                m_sstFileHandle = handle;
-            } else {
-                // We got an error of some sort
-                printf("ERROR: Output::openSSTTargetFile() - Problem opening File %s - %s\n", tempFileName.c_str(), strerror(errno));
-                exit(-1);
+        // If the target output is a file, See if the output file is created and opened
+        if ((FILE == m_targetLoc) && (0 == *m_targetFileHandleRef)) {
+  
+            // Check to see if the File has not been opened.
+            if ((*m_targetFileAccessCountRef > 0) && (0 == *m_targetFileHandleRef)) {
+                tempFileName = *m_targetFileNameRef;
+                
+                // Append the rank to file name if MPI_COMM_WORLD is GT 1
+                if (getMPIWorldSize() > 1) {
+                    sprintf(tempBuf, "%d", getMPIWorldRank());
+                    tempFileName += tempBuf;
+                }
+                
+                // Now try to open the file
+                handle = fopen(tempFileName.c_str(), "w");
+                if (NULL != handle){
+                    *m_targetFileHandleRef = handle;
+                } else {
+                    // We got an error of some sort
+                    printf("ERROR: Output::openSSTTargetFile() - Problem opening File %s - %s\n", tempFileName.c_str(), strerror(errno));
+                    exit(-1);
+                }
             }
         }
     }
@@ -284,17 +308,17 @@ void Output::openSSTTargetFile() const
 
 void Output::closeSSTTargetFile()
 {
-    if (true == m_objInitialized) {
+    if ((true == m_objInitialized) && (FILE == m_targetLoc)) {
         // Decrement the Access count for the file
-        if ((m_sstFileAccessCount > 0) && (FILE == m_targetLoc)){
-            m_sstFileAccessCount--; 
+        if (*m_targetFileAccessCountRef > 0) {
+            (*m_targetFileAccessCountRef)--; 
         }
-        
+
         // If the access count is zero, and the file has been opened, then close it
-        if ((0 == m_sstFileAccessCount) && 
-            (0 != m_sstFileHandle) &&
-            (FILE == m_targetLoc)){
-            fclose (m_sstFileHandle);
+        if ((0 == *m_targetFileAccessCountRef) && 
+            (0 != *m_targetFileHandleRef) &&
+            (FILE == m_targetLoc)) {
+            fclose (*m_targetFileHandleRef);
         }
     }
 }
@@ -380,9 +404,7 @@ void Output::outputprintf(uint32_t line, const std::string &file,
     std::string newFmt;
     
     // If the target output is a file, Make sure that the file is created and opened
-    if ((FILE == m_targetLoc) && (0 == m_sstFileHandle)) {
-        openSSTTargetFile();
-    }
+    openSSTTargetFile();
     
     // Check to make sure output location is not NONE
     if (NONE != m_targetLoc) {
@@ -396,9 +418,7 @@ void Output::outputprintf(uint32_t line, const std::string &file,
 void Output::outputprintf(const char* format, va_list arg) const
 {
     // If the target output is a file, Make sure that the file is created and opened
-    if ((FILE == m_targetLoc) && (0 == m_sstFileHandle)) {
-        openSSTTargetFile();
-    }
+    openSSTTargetFile();
     
     // Check to make sure output location is not NONE
     if (NONE != m_targetLoc) {
