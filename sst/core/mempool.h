@@ -65,9 +65,9 @@ public:
     {
         // TODO:  Make sure this is in one of our arenas
         freeList.push_back(ptr);
-#ifdef __SST_DEBUG_EVENT_TRACKING__
-        *((uint32_t*)ptr) = 0xFFFFFFFF;
-#endif
+// #ifdef __SST_DEBUG_EVENT_TRACKING__
+//         *((uint32_t*)ptr) = 0xFFFFFFFF;
+// #endif
         ++numFree;
     }
 
@@ -107,13 +107,14 @@ private:
             return false;
         }
 #endif
+        std::memset(newPool, 0xFF, arenaSize); 
         arenas.push_back(newPool);
         size_t nelem = arenaSize / elemSize;
         for ( size_t i = 0 ; i < nelem ; i++ ) {
             uint32_t* ptr = (uint32_t*)(newPool + (elemSize*i));
-#ifdef __SST_DEBUG_EVENT_TRACKING__
-            *ptr = 0xFFFFFFFF;
-#endif
+// #ifdef __SST_DEBUG_EVENT_TRACKING__
+//             *ptr = 0xFFFFFFFF;
+// #endif
             freeList.push_back(ptr);
             // freeList.push_back(newPool + (elemSize*i));
         }

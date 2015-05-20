@@ -177,10 +177,12 @@ public:
     {
         /* 1) Decrement pointer
          * 2) Determine Pool ID
+         * 2b) Set ID field to FFFFFFF to allow tracking
          * 3) Return to pool
          */
         uint32_t *ptr8 = ((uint32_t*)ptr) - 1;
         uint32_t poolID = *ptr8;
+        *ptr8 = 0xffffffff;
         Core::MemPool* pool = memPools[poolID].second;
 
         pool->free(ptr8);
@@ -206,13 +208,10 @@ public:
             active_activities += entry.second->getUndeletedEntries();
         }
     }
-
-#ifdef __SST_DEBUG_EVENT_TRACKING__    
     
-    static void printUndeletedActivites(const std::string& header, Output &out) {
+    static void printUndeletedActivites(const std::string& header, Output &out, SimTime_t before = MAX_SIMTIME_T) {
         for ( uint32_t i = 0; i < Activity::memPools.size(); i++ ) {
             std::pair<size_t, Core::MemPool*> entry = Activity::memPools[i];
-            /* out.output("Looking at mempool of size %lu\n", entry.first); */
             const std::list<uint8_t*>& arenas = entry.second->getArenas();
             size_t arenaSize = entry.second->getArenaSize();
             size_t elemSize = entry.second->getElementSize();
@@ -222,14 +221,17 @@ public:
                     uint32_t* ptr = (uint32_t*)((*iter) + (elemSize*j));
                     if ( *ptr != 0xFFFFFFFF ) {
                         Activity* act = (Activity*)(ptr + 1);
-                        act->print(header, out);
-                        act->printTrackingInfo(header + "    ", out);
+                        if ( act->delivery_time <= before ) {
+                            act->print(header, out);
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+                            act->printTrackingInfo(header + "    ", out);
+#endif
+                        }
                     }
                 }
             }
         }
     }
-#endif
     
 #endif
 

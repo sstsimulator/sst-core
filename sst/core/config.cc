@@ -164,11 +164,9 @@ Config::Config( int my_rank, int world_size )
         ("model-options", po::value< string >(&model_options),
          "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
-#ifdef __SST_DEBUG_EVENT_TRACKING__
 #ifdef USE_MEMPOOL
         ("output-undeleted-events", po::value<string>(&event_dump_file),
-         "Outputs information about all undeleted events to the specified file at end of simulation.  For now this will output to stdout, but a filename must be specified.  This will be fixed in a later version.")
-#endif
+         "Outputs information about all undeleted events to the specified file at end of simulation (STDOUT and STDERR can be used to output to console on stdout and stderr")
 #endif
         ;
 

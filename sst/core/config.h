@@ -79,11 +79,9 @@ public:
 
     uint32_t        verbose;            /*!< Verbosity */
 	bool			no_env_config;      /*!< Bypass compile-time environmental configuration */
-#ifdef __SST_DEBUG_EVENT_TRACKING__
 #ifdef USE_MEMPOOL
     std::string     event_dump_file;    /*!< File to dump undeleted events to */
 #endif
-#endif    
     /** Set the run-mode
      * @param mode - string "init" "run" "both"
      * @return the Mode_t corresponding

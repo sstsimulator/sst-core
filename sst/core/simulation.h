@@ -203,6 +203,7 @@ public:
     Exit* getExit() const { return m_exit; }
 
     uint64_t getTimeVortexMaxDepth() const;
+    uint64_t getTimeVortexCurrentDepth() const;
     uint64_t getSyncQueueDataSize() const;
 
     /** Return pointer to map of links for a given component id */

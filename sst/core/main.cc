@@ -646,6 +646,8 @@ main(int argc, char *argv[])
     
     uint64_t local_max_tv_depth = Simulation::getSimulation()->getTimeVortexMaxDepth();
     uint64_t global_max_tv_depth;
+    uint64_t local_current_tv_depth = Simulation::getSimulation()->getTimeVortexCurrentDepth();
+    uint64_t global_current_tv_depth;
     
     uint64_t local_sync_data_size = Simulation::getSimulation()->getSyncQueueDataSize();
     uint64_t global_max_sync_data_size, global_sync_data_size;
@@ -659,6 +661,7 @@ main(int argc, char *argv[])
     MPI_Allreduce(&run_time, &max_run_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&total_time, &max_total_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&local_max_tv_depth, &global_max_tv_depth, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
+    MPI_Allreduce(&local_current_tv_depth, &global_current_tv_depth, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
     MPI_Allreduce(&local_sync_data_size, &global_max_sync_data_size, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&local_sync_data_size, &global_sync_data_size, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
     MPI_Allreduce(&mempool_size, &max_mempool_size, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
@@ -668,6 +671,7 @@ main(int argc, char *argv[])
     max_run_time = run_time;
     max_total_time = total_time;
     global_max_tv_depth = local_max_tv_depth;
+    global_current_tv_depth = local_current_tv_depth;
     global_max_sync_data_size = 0;
     global_max_sync_data_size = 0;
     max_mempool_size = mempool_size;
@@ -731,6 +735,8 @@ main(int argc, char *argv[])
                            global_mempool_size_ua.toStringBestSI().c_str());
         sim_output->output("# Global active activities:        %" PRIu64 " activities\n",
                            global_active_activities);
+        sim_output->output("# Current global TimeVortex depth: %" PRIu64 " entries\n",
+                           global_current_tv_depth);
         sim_output->output("# Max TimeVortex depth:            %" PRIu64 " entries\n",
                            global_max_tv_depth);
         sim_output->output("# Max Sync data size:              %s\n",
@@ -743,12 +749,14 @@ main(int argc, char *argv[])
 
     }
 
-#ifdef __SST_DEBUG_EVENT_TRACKING__
 #ifdef USE_MEMPOOL
-    if ( cfg.event_dump_file != "" && rank == 0 ) {
-        Activity::printUndeletedActivites("",*sim_output);
+    if ( cfg.event_dump_file != ""  ) {
+        Output out("",0,0,Output::FILE, cfg.event_dump_file);
+        if ( cfg.event_dump_file == "STDOUT" || cfg.event_dump_file == "stdout" ) out.setOutputLocation(Output::STDOUT);
+        if ( cfg.event_dump_file == "STDERR" || cfg.event_dump_file == "stderr" ) out.setOutputLocation(Output::STDERR);
+        // Activity::printUndeletedActivites("",*sim_output, sim->getEndSimCycle());
+        Activity::printUndeletedActivites("",out, MAX_SIMTIME_T);
     }
-#endif
 #endif
     
 #ifdef HAVE_MPI

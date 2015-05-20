@@ -488,6 +488,8 @@ void Simulation::run() {
         current_activity->execute();
     }
 
+    if (num_ranks != 1 ) delete m_exit;
+
     // Tell the Statistics Engine and Output that the simulation is finished 
     statisticsEngine->endOfSimulation();
     statisticsOutput->endOfSimulation();
@@ -676,6 +678,10 @@ void Simulation::insertActivity(SimTime_t time, Activity* ev) {
 
 uint64_t Simulation::getTimeVortexMaxDepth() const {
     return timeVortex->getMaxDepth();
+}
+
+uint64_t Simulation::getTimeVortexCurrentDepth() const {
+    return timeVortex->getCurrentDepth();
 }
 
 uint64_t Simulation::getSyncQueueDataSize() const {

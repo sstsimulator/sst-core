@@ -57,6 +57,11 @@ public:
 
     void execute(void);
     void check();
+
+    void print(const std::string& header, Output &out) const {
+        out.output("%s Exit Action to be delivered at %" PRIu64 " with priority %d\n",
+                header.c_str(), getDeliveryTime(), getPriority());
+    }
     
 private:
     Exit() { } // for serialization only
