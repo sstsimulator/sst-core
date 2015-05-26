@@ -25,30 +25,35 @@ export SST_ROOT=`pwd`
 if [[ ${SST_TEST_ROOT:+isSet} != isSet ]] ; then
     echo "PWD = `pwd`"
    
+#   Another exception:   If a branch has an old style test directory 
+#      Skip this down load.
+    if [ ! -e ./test ] ; then
+
 #       environment variable:  SST_TEST_REPOSITORY_ROOT_URL
    
-    if [[ ${SST_TEST_REPOSITORY_ROOT_URL:+isSet} == isSet ]] ; then
-       TEST_DIRECTORY_URL=$SST_TEST_REPOSITORY_ROOT_URL
-    else
-##     I liked using "svn info" to do the following.  However svn on  
-##     later machines have an "svn info" incompatibility with the svn
-##     on hand.sandia.gov.
-
-       TEST_DIRECTORY_URL=`grep -e '/sst$' .svn/entries`
-    fi
+        if [[ ${SST_TEST_REPOSITORY_ROOT_URL:+isSet} == isSet ]] ; then
+           TEST_DIRECTORY_URL=$SST_TEST_REPOSITORY_ROOT_URL
+        else
+    ##     I liked using "svn info" to do the following.  However svn on  
+    ##     later machines have an "svn info" incompatibility with the svn
+    ##     on hand.sandia.gov.
     
-    echo " CHECKOUT:  svn co $TEST_DIRECTORY_URL/sqe/test  ./test"
-    svn co $TEST_DIRECTORY_URL/sqe/test  ./test
-   
-    if [ $? != 0 ] 
-    then
-       echo "Bamboo.sh:  Checkout of sqe/test FAILED from $TEST_DIRECTORY_URL"
-       svn co https://www.sst-simulator.org/svn/sst/sqe/test
-       if [ $? != 0 ]
-       then
-          echo "Bamboo.sh:  Checkout of sqe/test FAILED from sst-simulator.org"
-          exit 1
-       fi
+           TEST_DIRECTORY_URL=`grep -e '/sst$' .svn/entries`
+        fi
+        
+        echo " CHECKOUT:  svn co $TEST_DIRECTORY_URL/sqe/test  ./test"
+        svn co $TEST_DIRECTORY_URL/sqe/test  ./test
+       
+        if [ $? != 0 ] 
+        then
+           echo "Bamboo.sh:  Checkout of sqe/test FAILED from $TEST_DIRECTORY_URL"
+           svn co https://www.sst-simulator.org/svn/sst/sqe/test
+           if [ $? != 0 ]
+           then
+              echo "Bamboo.sh:  Checkout of sqe/test FAILED from sst-simulator.org"
+              exit 1
+           fi
+        fi
     fi
 fi
 #	This assumes a directory strucure
