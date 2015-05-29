@@ -34,11 +34,11 @@ namespace SST {
 SubComponent::SubComponent(Component* parent) :
     parent(parent)
 {
-    type = parent->currentlyLoadingSubModule;
+    type = parent->currentlyLoadingSubComponent;
 }
 
-    SubComponent::SubComponent() : 
-parent(NULL)
+SubComponent::SubComponent() : 
+    parent(NULL)
 {
 }
 
@@ -154,5 +154,25 @@ SimTime_t SubComponent::getCurrentSimTimeMicro() const {
 SimTime_t SubComponent::getCurrentSimTimeMilli() const {
     return getCurrentSimTime(Simulation::getSimulation()->getTimeLord()->getMilli());
 }
+
+Module*
+SubComponent::loadModule(std::string type, Params& params)
+{
+    return parent->loadModule(type,params);
+}
+
+Module*
+SubComponent::loadModuleWithComponent(std::string type, Params& params)
+{
+    return parent->loadModuleWithComponent(type,parent,params);
+
+}
+
+SubComponent*
+SubComponent::loadSubComponent(std::string type, Params& params)
+{
+    return parent->loadSubComponent(type,parent,params);
+}
+
 
 } // namespace SST

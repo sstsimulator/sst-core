@@ -36,7 +36,7 @@ Component::Component(ComponentId_t id) :
     defaultTimeBase(NULL), id(id)//, my_info(Simulation::getSimulation()->getComponentInfoMap()[id])
 {
     my_info = Simulation::getSimulation()->getComponentInfo(id);
-    currentlyLoadingSubModule = "";
+    currentlyLoadingSubComponent = "";
 }
 
 Component::Component()
@@ -370,9 +370,10 @@ Component::loadModuleWithComponent(std::string type, Component* comp, Params& pa
 SubComponent*
 Component::loadSubComponent(std::string type, Component* comp, Params& params)
 {
-    currentlyLoadingSubModule = type;
+    std::string oldLoadingSubCopmonent = currentlyLoadingSubComponent;
+    currentlyLoadingSubComponent = type;
     SubComponent* ret = Simulation::getSimulation()->getFactory()->CreateSubComponent(type,comp,params);
-    currentlyLoadingSubModule = "";
+    currentlyLoadingSubComponent = oldLoadingSubCopmonent;
     return ret;
 }
     

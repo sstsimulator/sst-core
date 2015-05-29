@@ -376,7 +376,7 @@ private:
     ComponentInfo* my_info;
     
     // LinkMap* myLinks;
-    std::string currentlyLoadingSubModule;
+    std::string currentlyLoadingSubComponent;
     
     friend class boost::serialization::access;
     template<class Archive>

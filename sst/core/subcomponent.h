@@ -154,11 +154,17 @@ protected:
     /** Utility function to return the time since the simulation began in milliseconds */ 
     SimTime_t getCurrentSimTimeMilli() const;
 
+    Module* loadModule(std::string type, Params& params);
+    Module* loadModuleWithComponent(std::string type, Params& params);
+    SubComponent* loadSubComponent(std::string type, Params& params);
+
+    
 private:
     /** Component's type, set by the factory when the object is created.
         It is identical to the configuration string used to create the
         component. I.e. the XML "<component id="aFoo"><foo>..." would
         set component::type to "foo" */
+    friend class Component;
     std::string type;
     SubComponent();
 //      friend class boost::serialization::access;
