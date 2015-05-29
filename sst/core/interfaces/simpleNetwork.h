@@ -113,7 +113,7 @@ public:
         {
         }
 
-        ~Request()
+        virtual ~Request()
         {
             if ( payload != NULL ) delete payload;
         }
