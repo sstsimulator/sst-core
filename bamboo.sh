@@ -671,6 +671,20 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} --with-chdl=$SST_DEPS_INSTALL_CHDL $miscEnv"
             ;;
+        sstmainline_config_no_gem5_wo_chdl) 
+            #-----------------------------------------------------------------
+            # sstmainline_config_no_gem5_wo_chdl
+            #     This option used for configuring SST with supported stabledevel deps
+            #     Some compilers (gcc 4.7, 4.8, intel 13.4) have problems building gem5,
+            #     so this option removes gem5 in order to evaluate the rest of the build
+            #     under those compilers. Omit chdl.   Breaks the build on Intel-13 6/1/15.
+            #-----------------------------------------------------------------
+            export | egrep SST_DEPS_
+            miscEnv="${mpi_environment}"
+            depsStr="-k none -d 2.2.2 -p none -b 1.50 -g none -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default -z 3.8 -c none"
+            setConvenienceVars "$depsStr"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} $miscEnv"
+            ;;
 
         sstmainline_config_no_mpi|sstmainline_config_fast) 
             #-----------------------------------------------------------------
