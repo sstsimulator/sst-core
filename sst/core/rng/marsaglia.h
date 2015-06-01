@@ -13,12 +13,10 @@
 #define SST_CORE_RNG_MARSAGLIA_H
 #include <sst/core/sst_types.h>
 
-//#include <iostream>
-//#include <fstream>
 #include <stdint.h>
 #include <sys/time.h>
 
-#include "sstrand.h"
+#include "sstrng.h"
 
 #define MARSAGLIA_UINT32_MAX 4294967295U
 #define MARSAGLIA_UINT64_MAX 18446744073709551615ULL

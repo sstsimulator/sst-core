@@ -11,5 +11,5 @@
 
 
 #include <sst_config.h>
-#include "sstrand.h"
+#include "sstrng.h"
 

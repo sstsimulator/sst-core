@@ -9,21 +9,16 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_RNG_SSTRAND_H
-#define SST_CORE_RNG_SSTRAND_H
-
-//#include <iostream>
-//#include <fstream>
+#ifndef SST_CORE_RNG_SSTRNG_H
+#define SST_CORE_RNG_SSTRNG_H
 
 #include <stdint.h>
-
-//using namespace std;
 
 namespace SST {
 namespace RNG {
 
 /**
-	\class SSTRandom sstrand.h "sst/core/rng/sstrand.h"
+	\class SSTRandom sstrng.h "sst/core/rng/sstrng.h"
 
 	Implements the base class for random number generators for the SST core. This does not
 	implement an actual RNG itself only the base class which describes the methods each
@@ -67,4 +62,4 @@ class SSTRandom {
 } //namespace RNG
 } //namespace SST
 
-#endif //SST_CORE_RNG_SSTRAND_H
+#endif //SST_CORE_RNG_SSTRNG_H
