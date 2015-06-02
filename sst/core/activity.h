@@ -217,7 +217,7 @@ public:
             size_t elemSize = entry.second->getElementSize();
             size_t nelem = arenaSize / elemSize;
             for ( auto iter = arenas.begin(); iter != arenas.end(); ++iter ) {
-                for ( int j = 0; j < nelem; j++ ) {
+                for ( size_t j = 0; j < nelem; j++ ) {
                     uint32_t* ptr = (uint32_t*)((*iter) + (elemSize*j));
                     if ( *ptr != 0xFFFFFFFF ) {
                         Activity* act = (Activity*)(ptr + 1);
