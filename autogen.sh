@@ -29,12 +29,12 @@ for elemlib_dir in sst/elements/* ; do
     elemlib=`basename "$elemlib_dir"`
     if test -f "$elemlib_dir/.ignore" -a ! -f "$elemlib_dir/.unignore" ; then
 #      echo " !- ignoring element library $elemlib"
-      ignored_list="$ignored_list$elemlib\n"
+      ignored_list="$ignored_list $elemlib"
     elif test -f "$elemlib_dir/.ignore" && \
          test -s $elemlib_dir/.unignore && \
          test -z "`grep $USER $elemlib_dir/.unignore`" ; then
 #      echo " !- ignoring element library $elemlib"
-      ignored_list="$ignored_list$elemlib\n"
+      ignored_list="$ignored_list $elemlib"
     else
       if test -z "$elemlib_list" ; then
         elemlib_list="$elemlib"
@@ -43,10 +43,10 @@ for elemlib_dir in sst/elements/* ; do
       fi
       if test -f "$elemlib_dir/configure.m4" ; then
 #        echo "  - including: $elemlib_dir/configure.m4"
-        added_m4_list="$added_m4_list$elemlib/config.m4\n"
+        added_m4_list="$added_m4_list $elemlib/config.m4"
         elemlib_m4_list="$elemlib_m4_list $elemlib_dir/configure.m4"
       else 
-        added_make_list="$added_make_list$elemlib\n"
+        added_make_list="$added_make_list $elemlib"
 #        echo "  - including element library: $elemlib_dir"
       fi
     fi
@@ -57,13 +57,16 @@ done
 echo
 echo "Included Element Libraries in sst/elements/"
 echo "========================================================="
-echo $added_make_list
+for i in $added_make_list ; do echo "    $i" ; done
+echo
 echo "Included config.m4 files in sst/elements/"
 echo "========================================================="
-echo $added_m4_list
+for i in $added_m4_list ; do echo "    $i" ; done
+echo
 echo "Ignored Element Libraries in sst/elements/"
 echo "========================================================="
-echo $ignored_list
+for i in $ignored_list ; do echo "    $i" ; done
+echo
 echo "========================================================="
 echo "========================================================="
 
