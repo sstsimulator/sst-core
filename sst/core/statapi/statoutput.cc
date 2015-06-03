@@ -30,11 +30,19 @@ StatisticFieldInfo::StatisticFieldInfo(const char* statName, const char* fieldNa
     
 bool StatisticFieldInfo::operator==(StatisticFieldInfo& FieldInfo1) 
 {
-    return ( /*(getStatName()  == FieldInfo1.getStatName())  &&*/
-             (getFieldName() == FieldInfo1.getFieldName()) &&
+    return ( (getFieldName() == FieldInfo1.getFieldName()) &&
              (getFieldType() == FieldInfo1.getFieldType()) );
 }
-    
+
+
+std::string StatisticFieldInfo::getFieldUniqueName() const
+{
+    std::string strRtn;
+    strRtn = getFieldName() + ".";
+    strRtn += std::to_string(getFieldType());
+    return strRtn;
+}
+
 ////////////////////////////////////////////////////////////////////////////////    
     
 StatisticOutput::StatisticOutput(Params& outputParameters)
@@ -72,20 +80,21 @@ StatisticFieldInfo* StatisticOutput::addFieldToLists(const char* fieldName, fiel
 
     // Create a new Instance of a StatisticFieldInfo
     NewStatFieldInfo = new StatisticFieldInfo(m_currentFieldStatName.c_str(), fieldName, fieldType);
-
-    // Now search the FieldInfoArray of type for a matching entry
-    for (FieldInfoArray_t::iterator it_v = m_outputFieldInfoArray.begin(); it_v != m_outputFieldInfoArray.end(); it_v++) {
-        ExistingStatFieldInfo = *it_v;
-        
-        // Check to see if the the New Stat Field matches any exisiting Stat Fields
-        if (*ExistingStatFieldInfo == *NewStatFieldInfo) {
-            // This field for this statistic has already been registered, so this cannot be registered
-            return ExistingStatFieldInfo;
-        }
-    }
     
-    // If we get here, then the New StatFieldInfo does not exist so add it
+    // Now search the FieldNameMap_t of type for a matching entry
+    FieldNameMap_t::const_iterator found = m_outputFieldNameMap.find(NewStatFieldInfo->getFieldUniqueName());
+    if (found != m_outputFieldNameMap.end()) {
+        // We found a map entry, now get the StatFieldInfo from the m_outputFieldInfoArray at the index given by the map
+        // and then delete the NewStatFieldInfo to prevent a leak
+        ExistingStatFieldInfo = m_outputFieldInfoArray[found->second];
+        delete NewStatFieldInfo;
+        return ExistingStatFieldInfo;
+    }
+
+    // If we get here, then the New StatFieldInfo does not exist so add it to both
+    // the Array and to the map
     m_outputFieldInfoArray.push_back(NewStatFieldInfo);
+    m_outputFieldNameMap[NewStatFieldInfo->getFieldUniqueName()] = m_outputFieldInfoArray.size() - 1;
     
     return NewStatFieldInfo;
 }

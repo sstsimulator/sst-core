@@ -17,6 +17,7 @@
 #include <sst/core/module.h>
 #include <sst/core/params.h>
 #include <sst/core/statapi/statbase.h>
+#include <unordered_map>
 
 // Default Settings for Statistic Output and Load Level
 #define STATISTICSDEFAULTOUTPUTNAME "sst.statOutputConsole"
@@ -61,10 +62,12 @@ public:
     /** Return the field name related to this field info */
     inline const std::string& getFieldName() const {return m_fieldName;}
     /** Return the field type related to this field info */
-    fieldType_t getFieldType() {return m_fieldType;}
+    fieldType_t getFieldType() const {return m_fieldType;}
+    /** Return the field type related to this field info */
+    std::string getFieldUniqueName() const;
     
     /** Compare two field info structures 
-     * @param fieldType - a FieldInfo to compare against.
+     * @param FieldInfo1 - a FieldInfo to compare against.
      * @return True if the Field Info structures are the same.
      */
     bool operator==(StatisticFieldInfo& FieldInfo1); 
@@ -116,6 +119,7 @@ public:
     typedef StatisticFieldInfo::fieldType_t   fieldType_t;  
     typedef StatisticFieldInfo::fieldHandle_t fieldHandle_t;
     typedef std::vector<StatisticFieldInfo*>  FieldInfoArray_t;                          
+    typedef std::unordered_map<std::string, fieldHandle_t>  FieldNameMap_t;                          
 
 public:    
     /** Construct a base StatisticOutput
@@ -197,18 +201,17 @@ public:
         if (is_type_same<T, double     >::value) {FieldType = StatisticFieldInfo::DOUBLE;}
         
         NewStatFieldInfo = new StatisticFieldInfo(statisticName, fieldName, FieldType);
-    
-        // Now search the FieldInfoArray of type for a matching entry
-        for (FieldInfoArray_t::iterator it_v = m_outputFieldInfoArray.begin(); it_v != m_outputFieldInfoArray.end(); it_v++) {
-            ExistingStatFieldInfo = *it_v;
-            
-            // The New Stat Field already exists, dont add it
-            if (*ExistingStatFieldInfo == *NewStatFieldInfo) {
-                delete NewStatFieldInfo;
-                return  ExistingStatFieldInfo;
-            }
+
+        // Now search the FieldNameMap_t of type for a matching entry
+        FieldNameMap_t::const_iterator found = m_outputFieldNameMap.find(NewStatFieldInfo->getFieldUniqueName());
+        if (found != m_outputFieldNameMap.end()) {
+            // We found a map entry, now get the StatFieldInfo from the m_outputFieldInfoArray at the index given by the map
+            // and then delete the NewStatFieldInfo to prevent a leak
+            ExistingStatFieldInfo = m_outputFieldInfoArray[found->second];
+            delete NewStatFieldInfo;
+            return ExistingStatFieldInfo;
         }
-    
+
         delete NewStatFieldInfo;
         return NULL;
     }    
@@ -303,6 +306,7 @@ private:
     std::string      m_statOutputName;
     Params           m_outputParameters;
     FieldInfoArray_t m_outputFieldInfoArray;
+    FieldNameMap_t   m_outputFieldNameMap;
     fieldHandle_t    m_highestFieldHandle;
     std::string      m_currentFieldCompName;
     std::string      m_currentFieldStatName;
