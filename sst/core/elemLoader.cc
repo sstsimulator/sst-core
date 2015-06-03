@@ -39,9 +39,14 @@
 /* This needs to happen before lt_dlinit() and sets up the preload
    libraries properly.  The macro declares an extern symbol, so if we
    do this in the sst namespace, the symbol is namespaced and then not
-   found in linking.  So have this short function here. */
+   found in linking.  So have this short function here.
+
+   Only do this when building with element libraries.
+   */
 static void preload_symbols(void) {
+#ifndef __SST_BUILD_CORE_ONLY__
     LTDL_SET_PRELOADED_SYMBOLS();
+#endif
 }
 
 namespace SST {
