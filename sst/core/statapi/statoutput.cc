@@ -14,8 +14,7 @@
 
 #include "sst/core/output.h"
 #include <sst/core/statapi/statoutput.h>
-
-//#include <map>
+#include <sst/core/stringize.h>
 
 namespace SST {
 namespace Statistics {
@@ -39,7 +38,7 @@ std::string StatisticFieldInfo::getFieldUniqueName() const
 {
     std::string strRtn;
     strRtn = getFieldName() + ".";
-    strRtn += std::to_string(getFieldType());
+    strRtn += SST::to_string(getFieldType());
     return strRtn;
 }
 
