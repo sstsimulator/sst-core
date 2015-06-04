@@ -126,10 +126,10 @@ public:
             return req;
         }
         
-        inline void setTraceID(int id) {traceID = id;}
-        inline void setTraceType(TraceType type) {trace = type;}
-        inline int getTraceID() {return traceID;}
-        inline TraceType getTraceType() {return trace;}
+        void setTraceID(int id) {traceID = id;}
+        void setTraceType(TraceType type) {trace = type;}
+        int getTraceID() {return traceID;}
+        TraceType getTraceType() {return trace;}
         
     protected:
         TraceType trace;
