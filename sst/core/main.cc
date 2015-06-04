@@ -178,21 +178,41 @@ void send(int dest, int tag, dataType& data) {
     output_stream.flush();
 
     // Now send the data.  Send size first, then payload
-    int size = buffer.size();
-    MPI_Send(&size, 1, MPI_INT, dest, tag, MPI_COMM_WORLD);
-    MPI_Send(buffer.data(), size, MPI_BYTE, dest, tag, MPI_COMM_WORLD);
+    // std::cout<< sizeof(buffer.size()) << std::endl;
+    int64_t size = buffer.size();
+    MPI_Send(&size, 1, MPI_INT64_T, dest, tag, MPI_COMM_WORLD);
+
+    int32_t fragment_size = 1000000000;
+    int64_t offset = 0;
+
+    while ( size >= fragment_size ) {
+        MPI_Send(buffer.data() + offset, fragment_size, MPI_BYTE, dest, tag, MPI_COMM_WORLD);
+        size -= fragment_size;
+        offset += fragment_size;
+    }
+    MPI_Send(buffer.data() + offset, size, MPI_BYTE, dest, tag, MPI_COMM_WORLD);
 }
 
 template <typename dataType>
 void recv(int src, int tag, dataType& data) {
     // Get the size of the broadcast
-    int size = 0;
+    int64_t size = 0;
     MPI_Status status;
-    MPI_Recv(&size, 1, MPI_INT, src, tag, MPI_COMM_WORLD, &status);
+    MPI_Recv(&size, 1, MPI_INT64_T, src, tag, MPI_COMM_WORLD, &status);
     
     // Now get the data
     char* buffer = new char[size];
-    MPI_Recv(buffer, size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
+    int64_t offset = 0;
+    int32_t fragment_size = 1000000000;
+    int64_t rem_size = size;
+
+    while ( rem_size >= fragment_size ) {
+        MPI_Recv(buffer + offset, fragment_size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
+        rem_size -= fragment_size;
+        offset += fragment_size;
+    }
+    MPI_Recv(buffer + offset, rem_size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
+    
     
     // Now deserialize data
     boost::iostreams::basic_array_source<char> source(buffer,size);
@@ -544,7 +564,7 @@ main(int argc, char *argv[])
 
 		delete graph;
 	}
-
+    
     end_build = sst_get_cpu_time();
     double build_time = end_build - start;
     // std::cout << "#  Build time: " << build_time << " s" << std::endl;
