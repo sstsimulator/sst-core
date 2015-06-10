@@ -59,6 +59,14 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
 	}
 #endif
 
+#ifdef HAVE_CHDL
+        new_env_size += (strlen(CHDL_LIBDIR) + 2) + sizeof(char) * 1;
+
+	if(NULL == getenv("SST_DEP_CHDL_ROOT")) {
+		setenv("SST_DEP_CHDL_ROOT", CHDL_LIBDIR, 1);
+	}
+#endif
+
 #ifdef HAVE_QSIM
         new_env_size += (strlen(QSIM_LIBDIR) + 2) + sizeof(char) * 1;
 
@@ -137,6 +145,13 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
         sprintf(temp_nvdimmsim_copy, "%s", updated_environment);
         sprintf(updated_environment, "%s:%s", temp_nvdimmsim_copy, NVDIMMSIM_LIBDIR);
         free(temp_nvdimmsim_copy);
+#endif
+
+#ifdef HAVE_CHDL
+        char* temp_chdl_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
+        sprintf(temp_chdl_copy, "%s", updated_environment);
+        sprintf(updated_environment, "%s:%s", temp_chdl_copy, CHDL_LIBDIR);
+        free(temp_chdl_copy);
 #endif
 
 #ifdef HAVE_QSIM
