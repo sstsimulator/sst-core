@@ -14,6 +14,7 @@
 
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
+#include <sst/core/params.h>
 #include <sst/core/oneshot.h>
 
 namespace SST {
