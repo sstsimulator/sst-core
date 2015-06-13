@@ -580,10 +580,15 @@ main(int argc, char *argv[])
     // char simulated_time_prefix = ' ';
     UnitAlgebra simulated_time;
 
-    signal(SIGUSR1, SimulationSigHandler);
-    signal(SIGUSR2, SimulationSigHandler);
-    signal(SIGINT, SimulationSigHandler);
-    signal(SIGTERM, SimulationSigHandler);
+    if(cfg.enable_sig_handling) {
+	    signal(SIGUSR1, SimulationSigHandler);
+	    signal(SIGUSR2, SimulationSigHandler);
+	    signal(SIGINT, SimulationSigHandler);
+	    signal(SIGTERM, SimulationSigHandler);
+    } else {
+	// Print out to say disabled?
+	printf("# Signal handlers are disabled by user input\n");
+    }
 
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) {
         if ( cfg.verbose ) {

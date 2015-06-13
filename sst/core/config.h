@@ -78,7 +78,8 @@ public:
     std::string     dump_component_graph_file; /*!< File to dump component graph */
 
     uint32_t        verbose;            /*!< Verbosity */
-	bool			no_env_config;      /*!< Bypass compile-time environmental configuration */
+	bool	    no_env_config;      /*!< Bypass compile-time environmental configuration */
+    bool            enable_sig_handling; /*!< Enable signal handling */
 #ifdef USE_MEMPOOL
     std::string     event_dump_file;    /*!< File to dump undeleted events to */
 #endif
@@ -113,6 +114,7 @@ public:
 		std::cout << "no_env_config = " << no_env_config << std::endl;
 		std::cout << "output_directory = " << output_directory << std::endl;
 		std::cout << "model_options = " << model_options << std::endl;
+		std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
 	}
 
     /** Return the library search path */
@@ -161,6 +163,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(dump_config_graph);
         ar & BOOST_SERIALIZATION_NVP(no_env_config);
         ar & BOOST_SERIALIZATION_NVP(model_options);
+	ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
     }
     
     int rank;

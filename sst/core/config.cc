@@ -69,6 +69,7 @@ Config::Config( int my_rank, int world_size )
 #endif
     verbose     = 0;
     no_env_config = false;
+    enable_sig_handling = true;
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     event_dump_file = "";
@@ -83,7 +84,8 @@ Config::Config( int my_rank, int world_size )
     visNoConfigDesc->add_options()
         ("help,h", "print help message")
         ("verbose,v", "print information about core runtimes")
-        ("no-env-config", "disable SST automatic dynamic library environment configuration")
+        ("disable-signal-handlers", "disable SST automatic dynamic library environment configuration")
+        ("no-sig-handlers", "disable SST signal handlers")
         ("version,V", "print SST Release Version")
     ;
 
@@ -239,7 +241,8 @@ Config::parseCmdLine(int argc, char* argv[]) {
         return 1;
     }
 
-	verbose = var_map->count( "verbose" );
+    verbose = var_map->count( "verbose" );
+    enable_sig_handling = (var_map->count("disable-signal-handlers") > 0) ? false : true;
 
     if ( var_map->count( "version" ) ) {
         cout << "SST Release Version (" PACKAGE_VERSION << ", " SST_SVN_REVISION ")" << endl;
