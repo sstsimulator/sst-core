@@ -285,12 +285,11 @@ main(int argc, char *argv[])
     double start = sst_get_cpu_time();
     double end_build, start_run, end_run;
 
-    if ( cfg.verbose ) printf("# main() My rank is %d, on %d nodes\n", rank, size);
-    DebugInit( rank, size );
-
 	if ( cfg.runMode == Config::INIT || cfg.runMode == Config::BOTH ) {
 		sim = Simulation::createSimulation(&cfg, rank, size);
 		sim_output = &(Simulation::getSimulation()->getSimulationOutput());
+
+		sim_output->verbose(CALL_INFO, 1, 0, "SST rank %d is now active on %d total ranks.\n", rank, size);
 
 		// Get the memory before we create the graph
 		const uint64_t pre_graph_create_rss = maxGlobalMemSize();
@@ -324,8 +323,8 @@ main(int argc, char *argv[])
         double end_graph_gen = sst_get_cpu_time();
         
         if ( cfg.verbose && (rank == 0) ) {
-            sim_output->output("# ------------------------------------------------------------\n");
-            sim_output->output("# Graph construction took %f seconds.\n",
+            sim_output->verbose(CALL_INFO, 1, 0, " ------------------------------------------------------------\n");
+            sim_output->verbose(CALL_INFO, 1, 0, " Graph construction took %f seconds.\n",
                                (end_graph_gen - start_graph_gen));
         }
         ////// End ConfigGraph Creation //////
@@ -375,19 +374,19 @@ main(int argc, char *argv[])
 			}
 		}
         double end_part = sst_get_cpu_time();
-        
-        if(cfg.verbose && (rank == 0)) {
-            std::cout << "# Graph partitionning took " <<
-                (end_part - start_part) << " seconds." << std::endl;
-        }
+
+	if(0 == rank) {
+		sim_output->verbose(CALL_INFO, 1, 0, "Graph partition took %f seconds\n",
+			(end_part - start_part));
+     	}
         ////// End Partitioning //////
 
 		const uint64_t post_graph_create_rss = maxGlobalMemSize();
 
-		if(cfg.verbose && (0 == rank) ){
-			sim_output->output("# Graph construction and partition raised RSS by %" PRIu64 " KB\n",
+		if(0 == rank){
+			sim_output->verbose(CALL_INFO, 1, 0, "Graph construction and partition raised RSS by %" PRIu64 " KB\n",
                         	(post_graph_create_rss - pre_graph_create_rss));
-			sim_output->output("# ------------------------------------------------------------\n");
+			sim_output->verbose(CALL_INFO, 1, 0, "------------------------------------------------------------\n");
 		}
 
         // Output the partition information is user requests it
@@ -553,8 +552,9 @@ main(int argc, char *argv[])
                 delete your_graph;
             }
 
-            if ( *my_ranks.begin() != rank) cout << "ERROR" << endl;
-                  
+	    if( *my_ranks.begin() != rank) {
+		sim_output->fatal(CALL_INFO, -1, "Error in distributing configuration graph\n");
+	    }
         }
 #endif
 #endif
@@ -581,45 +581,30 @@ main(int argc, char *argv[])
     UnitAlgebra simulated_time;
 
     if(cfg.enable_sig_handling) {
+	sim_output->verbose(CALL_INFO, 1, 0, "Signal handers will be registed for USR1, USR2, INT and TERM...\n");
 	    signal(SIGUSR1, SimulationSigHandler);
 	    signal(SIGUSR2, SimulationSigHandler);
 	    signal(SIGINT, SimulationSigHandler);
 	    signal(SIGTERM, SimulationSigHandler);
+	sim_output->verbose(CALL_INFO, 1, 0, "Signal handler registration is completed\n");
     } else {
 	// Print out to say disabled?
-	printf("# Signal handlers are disabled by user input\n");
+	sim_output->verbose(CALL_INFO, 1, 0, "Signal handlers are disabled by user input\n");
     }
 
     if ( cfg.runMode == Config::RUN || cfg.runMode == Config::BOTH ) {
         if ( cfg.verbose ) {
-            printf("# Starting main event loop\n");
+	    sim_output->verbose(CALL_INFO, 1, 0, "Starting main event loop...\n");
 
             time_t the_time = time(0);
             struct tm* now = localtime( &the_time );
 
-            std::cout << "# Start time: " <<
-                (now->tm_year + 1900) << "/" <<
-                (now->tm_mon+1) << "/";
-
-            if(now->tm_mday < 10) 
-                std::cout << "0";
-
-            std::cout << (now->tm_mday) << " at: ";
-
-            if(now->tm_hour < 10) 
-                std::cout << "0";
-
-            std::cout << (now->tm_hour) << ":";
-
-            if(now->tm_min < 10)
-                std::cout << "0";
-
-            std::cout << (now->tm_min)  << ":";
-
-            if(now->tm_sec < 10) 
-                std::cout << "0";
-
-            std::cout << (now->tm_sec) << std::endl;
+	    char* date_time_buffer = (char*) malloc(sizeof(char) * 256);
+	    sprintf(date_time_buffer, "%4d/%02d/%02d at %02d:%02d:%02d",
+		(now->tm_year + 1900), (now->tm_mon+1), now->tm_mday,
+		now->tm_hour, now->tm_min, now->tm_sec);
+	    sim_output->verbose(CALL_INFO, 2, 0, "Start time: %s\n", date_time_buffer);
+            free(date_time_buffer);
         }
 
         sim->setStopAtCycle(&cfg);
@@ -712,7 +697,7 @@ main(int argc, char *argv[])
     const uint64_t global_max_io_in  = maxInputOperations();
     const uint64_t global_max_io_out = maxOutputOperations();
     
-    if ( rank == 0 && cfg.verbose ) {
+    if ( rank == 0 ) {
 	    char ua_buffer[256];
         sprintf(ua_buffer, "%" PRIu64 "KB", local_max_rss);
         UnitAlgebra max_rss_ua(ua_buffer);
@@ -732,44 +717,44 @@ main(int argc, char *argv[])
         sprintf(ua_buffer, "%" PRIu64 "B", global_mempool_size);
         UnitAlgebra global_mempool_size_ua(ua_buffer);
         
-        sim_output->output("\n");
-        sim_output->output("#\n");
-        sim_output->output("# ------------------------------------------------------------\n");
-        sim_output->output("# Simulation Timing Information:\n");
-        sim_output->output("# Build time:                      %f seconds\n", max_build_time);
-        sim_output->output("# Simulation time:                 %f seconds\n", max_run_time);
-        sim_output->output("# Total time:                      %f seconds\n", max_total_time);
-        sim_output->output("# Simulated time:                  %s\n", simulated_time.toStringBestSI().c_str());
-        sim_output->output("#\n");
-        sim_output->output("# Simulation Resource Information:\n");
-        sim_output->output("# Max Resident Set Size:           %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "\n");
+        sim_output->verbose(CALL_INFO, 1, 0, "\n");
+        sim_output->verbose(CALL_INFO, 1, 0, " ------------------------------------------------------------\n");
+        sim_output->verbose(CALL_INFO, 1, 0, " Simulation Timing Information:\n");
+        sim_output->verbose(CALL_INFO, 1, 0, " Build time:                      %f seconds\n", max_build_time);
+        sim_output->verbose(CALL_INFO, 1, 0, " Simulation time:                 %f seconds\n", max_run_time);
+        sim_output->verbose(CALL_INFO, 1, 0, " Total time:                      %f seconds\n", max_total_time);
+        sim_output->verbose(CALL_INFO, 1, 0, " Simulated time:                  %s\n", simulated_time.toStringBestSI().c_str());
+        sim_output->verbose(CALL_INFO, 1, 0, "\n");
+        sim_output->verbose(CALL_INFO, 1, 0, " Simulation Resource Information:\n");
+        sim_output->verbose(CALL_INFO, 1, 0, " Max Resident Set Size:           %s\n",
                            max_rss_ua.toStringBestSI().c_str());
-        sim_output->output("# Approx. Global Max RSS Size:     %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Approx. Global Max RSS Size:     %s\n",
                            global_rss_ua.toStringBestSI().c_str());
-        sim_output->output("# Max Local Page Faults:           %" PRIu64 " faults\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Max Local Page Faults:           %" PRIu64 " faults\n",
                            local_max_pf);
-        sim_output->output("# Global Page Faults:              %" PRIu64 " faults\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Global Page Faults:              %" PRIu64 " faults\n",
                            global_pf);
-        sim_output->output("# Max Output Blocks:               %" PRIu64 " blocks\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Max Output Blocks:               %" PRIu64 " blocks\n",
                            global_max_io_in);
-        sim_output->output("# Max Input Blocks:                %" PRIu64 " blocks\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Max Input Blocks:                %" PRIu64 " blocks\n",
                            global_max_io_out);
-        sim_output->output("# Max mempool usage:               %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Max mempool usage:               %s\n",
                            max_mempool_size_ua.toStringBestSI().c_str());
-        sim_output->output("# Global mempool usage:            %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Global mempool usage:            %s\n",
                            global_mempool_size_ua.toStringBestSI().c_str());
-        sim_output->output("# Global active activities:        %" PRIu64 " activities\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Global active activities:        %" PRIu64 " activities\n",
                            global_active_activities);
-        sim_output->output("# Current global TimeVortex depth: %" PRIu64 " entries\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Current global TimeVortex depth: %" PRIu64 " entries\n",
                            global_current_tv_depth);
-        sim_output->output("# Max TimeVortex depth:            %" PRIu64 " entries\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Max TimeVortex depth:            %" PRIu64 " entries\n",
                            global_max_tv_depth);
-        sim_output->output("# Max Sync data size:              %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Max Sync data size:              %s\n",
                            global_max_sync_data_size_ua.toStringBestSI().c_str());
-        sim_output->output("# Global Sync data size:           %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, " Global Sync data size:           %s\n",
                            global_sync_data_size_ua.toStringBestSI().c_str());
-        sim_output->output("# ------------------------------------------------------------\n");
-        sim_output->output("#\n");
+        sim_output->verbose(CALL_INFO, 1, 0, " ------------------------------------------------------------\n");
+        sim_output->verbose(CALL_INFO, 1, 0, "\n");
         sim_output->output("\n");
 
     }
@@ -788,7 +773,7 @@ main(int argc, char *argv[])
     if( 0 == rank ) {
 #endif
     // Print out the simulation time regardless of verbosity.
-        std::cout << "Simulation is complete, simulated time: " << simulated_time.toStringBestSI() << std::endl;
+        sim_output->output("Simulation is complete, simulated time: %s\n", simulated_time.toStringBestSI().c_str());
 #ifdef HAVE_MPI
     }
 #endif
