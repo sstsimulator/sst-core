@@ -76,10 +76,12 @@ public:
     std::string     output_directory;   /*!< Output directory to dump all files to */
     std::string     model_options;      /*!< Options to pass to Python Model generator */
     std::string     dump_component_graph_file; /*!< File to dump component graph */
+    std::string     output_core_prefix;  /*!< Set the SST::Output prefix for the core */
 
     uint32_t        verbose;            /*!< Verbosity */
-	bool	    no_env_config;      /*!< Bypass compile-time environmental configuration */
+    bool	    no_env_config;      /*!< Bypass compile-time environmental configuration */
     bool            enable_sig_handling; /*!< Enable signal handling */
+
 #ifdef USE_MEMPOOL
     std::string     event_dump_file;    /*!< File to dump undeleted events to */
 #endif
@@ -115,6 +117,7 @@ public:
 		std::cout << "output_directory = " << output_directory << std::endl;
 		std::cout << "model_options = " << model_options << std::endl;
 		std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
+		std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
 	}
 
     /** Return the library search path */
@@ -164,6 +167,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(no_env_config);
         ar & BOOST_SERIALIZATION_NVP(model_options);
 	ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
+        ar & BOOST_SERIALIZATION_NVP(output_core_prefix);
     }
     
     int rank;

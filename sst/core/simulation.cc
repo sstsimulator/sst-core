@@ -159,7 +159,7 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
     lastRecvdSignal(0)
 {
 //     eQueue = new EventQueue_t;
-    sim_output.init("SSTCore", cfg->getVerboseLevel(), 0, Output::STDOUT);
+    sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
     output_directory = "";
 
     timeVortex = new TimeVortex;

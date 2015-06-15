@@ -72,7 +72,7 @@ static void dump_partition(SST::Output* sim_output, Config& cfg, ConfigGraph* gr
 	// If the user asks us to dump the partionned graph.
 	if(cfg.dump_component_graph_file != "" && rank == 0) {
 		if(cfg.verbose) {
-			sim_output->verbose(CALL_INFO, 2, 0,
+			sim_output->verbose(CALL_INFO, 1, 0,
 				"# Dumping partitionned component graph to %s\n",
 				cfg.dump_component_graph_file.c_str());
 		}
@@ -97,7 +97,7 @@ static void dump_partition(SST::Output* sim_output, Config& cfg, ConfigGraph* gr
 		graph_file.close();
 
 		if(cfg.verbose) {
-			sim_output->verbose(CALL_INFO, 2, 0,
+			sim_output->verbose(CALL_INFO, 1, 0,
 				"# Dump of partition graph is complete.\n");
 		}
 	}
@@ -323,8 +323,8 @@ main(int argc, char *argv[])
         double end_graph_gen = sst_get_cpu_time();
         
         if ( cfg.verbose && (rank == 0) ) {
-            sim_output->verbose(CALL_INFO, 1, 0, " ------------------------------------------------------------\n");
-            sim_output->verbose(CALL_INFO, 1, 0, " Graph construction took %f seconds.\n",
+            sim_output->verbose(CALL_INFO, 1, 0, "------------------------------------------------------------\n");
+            sim_output->verbose(CALL_INFO, 1, 0, "Graph construction took %f seconds.\n",
                                (end_graph_gen - start_graph_gen));
         }
         ////// End ConfigGraph Creation //////
@@ -582,10 +582,22 @@ main(int argc, char *argv[])
 
     if(cfg.enable_sig_handling) {
 	sim_output->verbose(CALL_INFO, 1, 0, "Signal handers will be registed for USR1, USR2, INT and TERM...\n");
-	    signal(SIGUSR1, SimulationSigHandler);
-	    signal(SIGUSR2, SimulationSigHandler);
-	    signal(SIGINT, SimulationSigHandler);
-	    signal(SIGTERM, SimulationSigHandler);
+	if(SIG_ERR == signal(SIGUSR1, SimulationSigHandler)) {
+		sim_output->fatal(CALL_INFO, -1, "Installation of SIGUSR1 signal handler failed.\n");
+	}
+
+	if(SIG_ERR == signal(SIGUSR2, SimulationSigHandler)) {
+		sim_output->fatal(CALL_INFO, -1, "Installation of SIGUSR2 signal handler failed\n");
+	}
+
+	if(SIG_ERR == signal(SIGINT, SimulationSigHandler)) {
+		sim_output->fatal(CALL_INFO, -1, "Installation of SIGINT signal handler failed\n");
+	}
+
+	if(SIG_ERR == signal(SIGTERM, SimulationSigHandler)) {
+		sim_output->fatal(CALL_INFO, -1, "Installation of SIGTERM signal handler failed\n");
+	}
+
 	sim_output->verbose(CALL_INFO, 1, 0, "Signal handler registration is completed\n");
     } else {
 	// Print out to say disabled?
@@ -603,7 +615,7 @@ main(int argc, char *argv[])
 	    sprintf(date_time_buffer, "%4d/%02d/%02d at %02d:%02d:%02d",
 		(now->tm_year + 1900), (now->tm_mon+1), now->tm_mday,
 		now->tm_hour, now->tm_min, now->tm_sec);
-	    sim_output->verbose(CALL_INFO, 2, 0, "Start time: %s\n", date_time_buffer);
+	    sim_output->verbose(CALL_INFO, 1, 0, "Start time: %s\n", date_time_buffer);
             free(date_time_buffer);
         }
 
@@ -719,41 +731,41 @@ main(int argc, char *argv[])
         
         sim_output->verbose(CALL_INFO, 1, 0, "\n");
         sim_output->verbose(CALL_INFO, 1, 0, "\n");
-        sim_output->verbose(CALL_INFO, 1, 0, " ------------------------------------------------------------\n");
-        sim_output->verbose(CALL_INFO, 1, 0, " Simulation Timing Information:\n");
-        sim_output->verbose(CALL_INFO, 1, 0, " Build time:                      %f seconds\n", max_build_time);
-        sim_output->verbose(CALL_INFO, 1, 0, " Simulation time:                 %f seconds\n", max_run_time);
-        sim_output->verbose(CALL_INFO, 1, 0, " Total time:                      %f seconds\n", max_total_time);
-        sim_output->verbose(CALL_INFO, 1, 0, " Simulated time:                  %s\n", simulated_time.toStringBestSI().c_str());
+        sim_output->verbose(CALL_INFO, 1, 0, "------------------------------------------------------------\n");
+        sim_output->verbose(CALL_INFO, 1, 0, "Simulation Timing Information:\n");
+        sim_output->verbose(CALL_INFO, 1, 0, "Build time:                      %f seconds\n", max_build_time);
+        sim_output->verbose(CALL_INFO, 1, 0, "Simulation time:                 %f seconds\n", max_run_time);
+        sim_output->verbose(CALL_INFO, 1, 0, "Total time:                      %f seconds\n", max_total_time);
+        sim_output->verbose(CALL_INFO, 1, 0, "Simulated time:                  %s\n", simulated_time.toStringBestSI().c_str());
         sim_output->verbose(CALL_INFO, 1, 0, "\n");
-        sim_output->verbose(CALL_INFO, 1, 0, " Simulation Resource Information:\n");
-        sim_output->verbose(CALL_INFO, 1, 0, " Max Resident Set Size:           %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Simulation Resource Information:\n");
+        sim_output->verbose(CALL_INFO, 1, 0, "Max Resident Set Size:           %s\n",
                            max_rss_ua.toStringBestSI().c_str());
-        sim_output->verbose(CALL_INFO, 1, 0, " Approx. Global Max RSS Size:     %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Approx. Global Max RSS Size:     %s\n",
                            global_rss_ua.toStringBestSI().c_str());
-        sim_output->verbose(CALL_INFO, 1, 0, " Max Local Page Faults:           %" PRIu64 " faults\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Max Local Page Faults:           %" PRIu64 " faults\n",
                            local_max_pf);
-        sim_output->verbose(CALL_INFO, 1, 0, " Global Page Faults:              %" PRIu64 " faults\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Global Page Faults:              %" PRIu64 " faults\n",
                            global_pf);
-        sim_output->verbose(CALL_INFO, 1, 0, " Max Output Blocks:               %" PRIu64 " blocks\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Max Output Blocks:               %" PRIu64 " blocks\n",
                            global_max_io_in);
-        sim_output->verbose(CALL_INFO, 1, 0, " Max Input Blocks:                %" PRIu64 " blocks\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Max Input Blocks:                %" PRIu64 " blocks\n",
                            global_max_io_out);
-        sim_output->verbose(CALL_INFO, 1, 0, " Max mempool usage:               %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Max mempool usage:               %s\n",
                            max_mempool_size_ua.toStringBestSI().c_str());
-        sim_output->verbose(CALL_INFO, 1, 0, " Global mempool usage:            %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Global mempool usage:            %s\n",
                            global_mempool_size_ua.toStringBestSI().c_str());
-        sim_output->verbose(CALL_INFO, 1, 0, " Global active activities:        %" PRIu64 " activities\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Global active activities:        %" PRIu64 " activities\n",
                            global_active_activities);
-        sim_output->verbose(CALL_INFO, 1, 0, " Current global TimeVortex depth: %" PRIu64 " entries\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Current global TimeVortex depth: %" PRIu64 " entries\n",
                            global_current_tv_depth);
-        sim_output->verbose(CALL_INFO, 1, 0, " Max TimeVortex depth:            %" PRIu64 " entries\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Max TimeVortex depth:            %" PRIu64 " entries\n",
                            global_max_tv_depth);
-        sim_output->verbose(CALL_INFO, 1, 0, " Max Sync data size:              %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Max Sync data size:              %s\n",
                            global_max_sync_data_size_ua.toStringBestSI().c_str());
-        sim_output->verbose(CALL_INFO, 1, 0, " Global Sync data size:           %s\n",
+        sim_output->verbose(CALL_INFO, 1, 0, "Global Sync data size:           %s\n",
                            global_sync_data_size_ua.toStringBestSI().c_str());
-        sim_output->verbose(CALL_INFO, 1, 0, " ------------------------------------------------------------\n");
+        sim_output->verbose(CALL_INFO, 1, 0, "------------------------------------------------------------\n");
         sim_output->verbose(CALL_INFO, 1, 0, "\n");
         sim_output->output("\n");
 

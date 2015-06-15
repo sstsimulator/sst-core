@@ -70,6 +70,7 @@ Config::Config( int my_rank, int world_size )
     verbose     = 0;
     no_env_config = false;
     enable_sig_handling = true;
+    output_core_prefix = "SST Core: ";
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     event_dump_file = "";
@@ -150,29 +151,34 @@ Config::Config( int my_rank, int world_size )
         ("partitioner", po::value< string >(&partitioner),
          part_desc.c_str())
 #endif
+
         ("generator", po::value< string >(&generator),
          "generator to be used to build simulation <lib.generator_name>")
         ("gen-options", po::value< string >(&generator_options),
          "options to be passed to generator function (must use quotes if whitespace is present)")
-        ("output-partition", po::value< string >(&dump_component_graph_file),
-         "Dump the component partition to this file (default is not to dump information)")
-        ("output-config", po::value< string >(&dump_config_graph),
-         "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
-        ("output-dot", po::value <string >(&output_dot),
-         "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
-        ("output-directory", po::value <string >(&output_directory),
-         "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
+
 #ifdef HAVE_PYTHON
         ("model-options", po::value< string >(&model_options),
          "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
+
+        ("output-config", po::value< string >(&dump_config_graph),
+         "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
+        ("output-directory", po::value <string >(&output_directory),
+         "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
+        ("output-dot", po::value <string >(&output_dot),
+         "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
+        ("output-partition", po::value< string >(&dump_component_graph_file),
+         "Dump the component partition to this file (default is not to dump information)")
+	("output-prefix-core", po::value< string >(&output_core_prefix),
+	 "Sets the SST::Output prefix for the core during execution")
 #ifdef USE_MEMPOOL
         ("output-undeleted-events", po::value<string>(&event_dump_file),
          "Outputs information about all undeleted events to the specified file at end of simulation (STDOUT and STDERR can be used to output to console on stdout and stderr")
 #endif
         ;
 
-    var_map = new po::variables_map();
+    	var_map = new po::variables_map();
 }
 
 uint32_t Config::getVerboseLevel() {
