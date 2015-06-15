@@ -46,6 +46,8 @@ nobase_dist_sst_HEADERS = \
 	mempool.h \
 	memuse.h \
 	iouse.h \
+	lookupTable.h \
+	lookupTableManager.h \
 	module.h \
 	oneshot.h \
 	output.h \
@@ -129,6 +131,8 @@ sst_core_sources = \
 	introspector.cc \
 	introspectedComponent.cc \
 	link.cc \
+	lookupTable.cc \
+	lookupTableManager.cc \
 	memuse.cc \
 	oneshot.cc \
 	output.cc \

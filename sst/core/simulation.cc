@@ -31,6 +31,7 @@
 #include <sst/core/introspector.h>
 #include <sst/core/linkMap.h>
 #include <sst/core/linkPair.h>
+#include <sst/core/lookupTableManager.h>
 #include <sst/core/output.h>
 #include <sst/core/stopAction.h>
 #include <sst/core/sync.h>
@@ -132,6 +133,8 @@ Simulation::~Simulation()
     //         delete map_it->second;
     //     }
     // }
+
+    delete lookupTableManager;
 }
 
 Simulation*
@@ -156,7 +159,8 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
     num_ranks(num_ranks),
     init_msg_count(0),
     init_phase(0),
-    lastRecvdSignal(0)
+    lastRecvdSignal(0),
+    lookupTableManager(new LookupTableManager())
 {
 //     eQueue = new EventQueue_t;
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);

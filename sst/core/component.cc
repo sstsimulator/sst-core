@@ -27,6 +27,8 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/unitAlgebra.h"
+#include "sst/core/lookupTable.h"
+#include "sst/core/lookupTableManager.h"
 
 using namespace SST::Statistics;
 
@@ -394,6 +396,16 @@ std::string Component::getComponentInfoStatisticUnits(std::string statisticName)
     const std::string& type = my_info->getType();
     return Simulation::getSimulation()->getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
 }
+
+
+
+void* Component::getLookupTable(const std::string &key, LookupTableBuilder* builder)
+{
+    LookupTableManager *mgr = Simulation::getSimulation()->getLookupTableManager();
+    return mgr->registerTable(key, builder);
+}
+
+
 
 template<class Archive>
 void

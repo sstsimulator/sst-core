@@ -39,6 +39,7 @@ class Params;
 class SubComponent;
 class TimeConverter;
 class UnitAlgebra;
+class LookupTableBuilder;
  
 #define _COMP_DBG( fmt, args...) __DBG( DBG_COMP, Component, fmt, ## args )
 
@@ -356,6 +357,10 @@ protected:
 
     /** Creates a new selfLink */
     Link* selfLink( std::string name, Event::HandlerBase* handler = NULL );
+
+
+    /** Find a lookup table */
+    void* getLookupTable(const std::string &key, LookupTableBuilder* builder);
 
 private:
 

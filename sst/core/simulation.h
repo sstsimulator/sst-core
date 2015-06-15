@@ -62,6 +62,7 @@ class TimeConverter;
 class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
+class LookupTableManager;
     
     
 typedef std::map<std::string, Introspector* > IntroMap_t;
@@ -377,7 +378,12 @@ public:
      * that is in the TImeVortex of the Simulation
      */
     SimTime_t getNextActivityTime();
-    
+
+    /**
+     * Returns the Simulation's LookupTableManager
+     */
+    LookupTableManager* getLookupTableManager() { return lookupTableManager; }
+
 private:
     friend class Link;
     friend class Action;
@@ -428,6 +434,7 @@ private:
     // std::map<ComponentId_t,LinkMap*> component_links;
     Output           sim_output;
     std::string      output_directory;
+    LookupTableManager *lookupTableManager;
 
     static Simulation *instance;
 
