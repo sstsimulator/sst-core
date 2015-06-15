@@ -1088,7 +1088,7 @@ linuxSetBoostMPI() {
    # Check to see if we are loading Boost 1.56 or greater, if so, we no longer
    # need to include mpi, so change the desiredBoost name as appropriate
    case $3 in
-       boost-1.56) 
+       boost-1.56|boost-1.58) 
            echo "Choosing nompi version of boost for Boost 1.56 and greater"
            if [ $compiler = "default" ]
            then
