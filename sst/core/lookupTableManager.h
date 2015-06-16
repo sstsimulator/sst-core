@@ -46,8 +46,8 @@ public:
     LookupTableManager() { }
 
     ~LookupTableManager() {
-        for ( auto &&entry : tables ) {
-            LookupTableInfo &table = entry.second;
+        for ( auto entry = tables.begin() ; entry != tables.end() ; entry++ ) {
+            LookupTableInfo &table = entry->second;
             table.shutdown();
         }
     }
