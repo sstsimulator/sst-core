@@ -403,7 +403,10 @@ private:
     }
 
     BOOST_SERIALIZATION_SPLIT_MEMBER()
-};    
+
+protected:
+   Output &out;
+};
 
 } // namespace SST
 

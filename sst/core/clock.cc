@@ -16,7 +16,6 @@
 #include <boost/foreach.hpp>
 
 //#include "sst/core/event.h"
-#include "sst/core/debug.h"
 #include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
     
@@ -44,7 +43,6 @@ Clock::~Clock()
 
 bool Clock::registerHandler( Clock::HandlerBase* handler )
 {
-    _CLE_DBG("handler %p\n",handler);
     staticHandlerMap.push_back( handler );	
     if ( !scheduled ) {
         schedule();
@@ -55,13 +53,11 @@ bool Clock::registerHandler( Clock::HandlerBase* handler )
 
 bool Clock::unregisterHandler( Clock::HandlerBase* handler, bool& empty )
 {
-    _CLE_DBG("handler %p\n",handler);
 
     StaticHandlerMap_t::iterator iter = staticHandlerMap.begin();
 
     for ( ; iter != staticHandlerMap.end(); iter++ ) {
         if ( *iter == handler ) {
-            _CLE_DBG("erase handler %p\n",handler);
             staticHandlerMap.erase( iter );
             break;
         }
@@ -103,7 +99,6 @@ void Clock::execute( void ) {
     }
     
     next = sim->getCurrentSimCycle() + period->getFactor();
-    _CLE_DBG( "all called next %lu\n", (unsigned long) next );
     sim->insertActivity( next, this );
 
     return;

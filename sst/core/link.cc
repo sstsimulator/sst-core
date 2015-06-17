@@ -17,7 +17,6 @@
 #include <utility>
 
 #include <sst/core/event.h>
-#include <sst/core/debug.h>
 #include <sst/core/initQueue.h>
 #include <sst/core/pollingLinkQueue.h>
 #include <sst/core/simulation.h>
@@ -106,13 +105,11 @@ void Link::addRecvLatency(SimTime_t cycles, TimeConverter* timebase) {
     
 void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {  
     if ( tc == NULL ) {
-        _abort(Link,"Cannot send an event on Link with NULL TimeConverter\n");
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Cannot send an event on Link with NULL TimeConverter\n");
     }
     
     Cycle_t cycle = Simulation::getSimulation()->getCurrentSimCycle() +
         tc->convertToCoreTime(delay) + latency;
-    
-    _LINK_DBG( "cycle=%lu\n", (unsigned long)cycle );
     
     if ( event == NULL ) {
         event = new NullEvent();

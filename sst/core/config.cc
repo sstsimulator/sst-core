@@ -24,7 +24,6 @@
 #endif
 
 #include "sst/core/build_info.h"
-#include "sst/core/debug.h"
 #include "sst/core/output.h"
 //#include "sst/core/sdl.h"
 
@@ -123,16 +122,6 @@ Config::Config( int my_rank, int world_size )
     part_desc.append("\n-  lib.partitioner_name: Partitioner found in element library 'lib' with name 'partitioner_name'");
     mainDesc = new po::options_description( "" );
     mainDesc->add_options()
-        ("debug", po::value< vector<string> >()->multitoken(), 
-#ifdef HAVE_ZOLTAN
-                "{ all | cache | queue | clock | sync | link |\
-                 linkmap | linkc2m | linkc2c | linkc2s | comp | factory |\
-                 stop | compevent | sim | clockevent | sdl | graph | zolt }")
-#else
-                "{ all | cache | queue  | clock | sync | link |\
-                 linkmap | linkc2m | linkc2c | linkc2s | comp | factory |\
-                 stop | compevent | sim | clockevent | sdl | graph }")
-#endif
         ("debug-file", po::value <string> ( &debugFile ),
                                 "file where debug output will go")
         ("lib-path", po::value< string >( &libpath ),
@@ -213,20 +202,8 @@ Config::parseCmdLine(int argc, char* argv[]) {
 	return -1;
     }
 
-    if ( var_map->count("debug") ) {
-        if ( DebugSetFlag( (*var_map)[ "debug" ].as< vector<string> >() ) ) {
-            return -1;
-        }
-    }
-
     if ( var_map->count("debug-file") ) {
         Output::setFileName(debugFile);
-
-        // Rename the debug file until the Output Class takes over
-        tempFileName = debugFile + "_DBG"; 
-        if ( DebugSetFile(tempFileName) ) {
-            return -1;
-        }
     }
     else {
         Output::setFileName(tempFileName);

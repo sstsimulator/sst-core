@@ -22,7 +22,6 @@
 
 #include "sst/core/simulation.h"
 #include "sst/core/component.h"
-#include "sst/core/debug.h"
 #include "sst/core/element.h"
 #include "sst/core/introspector.h"
 #include "sst/core/params.h"
@@ -43,7 +42,8 @@ using namespace SST::Statistics;
 namespace SST {
 
 Factory::Factory(std::string searchPaths) :
-    searchPaths(searchPaths)
+    searchPaths(searchPaths),
+    out(Simulation::getSimulation()->getSimulationOutput())
 {
     loader = new ElemLoader(searchPaths);
 }
@@ -70,7 +70,7 @@ Factory::GetComponentAllowedPorts(std::string type) {
     eic_map_t::iterator eii = 
         found_components.find(tmp);
     if (eii == found_components.end()) {
-        _abort(Factory,"can't find requested component %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return NULL;
     }
 
@@ -98,7 +98,7 @@ Factory::CreateComponent(ComponentId_t id,
     eic_map_t::iterator eii = 
         found_components.find(tmp);
     if (eii == found_components.end()) {
-        _abort(Factory,"can't find requested component %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return NULL;
     }
 
@@ -157,7 +157,7 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
     std::string tmp = elemlib + "." + elem;
     eic_map_t::iterator eii = found_components.find(tmp);
     if (eii == found_components.end()) {
-        _abort(Factory,"can't find requested component %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return false;
     }
 
@@ -192,7 +192,7 @@ Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const s
     std::string tmp = elemlib + "." + elem;
     eis_map_t::iterator eii = found_subcomponents.find(tmp);
     if (eii == found_subcomponents.end()) {
-        _abort(Factory,"can't find requested subcomponent %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", tmp.c_str());
         return false;
     }
 
@@ -227,7 +227,7 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     std::string tmp = elemlib + "." + elem;
     eic_map_t::iterator eii = found_components.find(tmp);
     if (eii == found_components.end()) {
-        _abort(Factory,"can't find requested component %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return 0;
     }
 
@@ -262,7 +262,7 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
     std::string tmp = elemlib + "." + elem;
     eic_map_t::iterator eii = found_components.find(tmp);
     if (eii == found_components.end()) {
-        _abort(Factory,"can't find requested component %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return 0;
     }
 
@@ -294,7 +294,7 @@ Factory::CreateIntrospector(std::string type,
     eii_map_t::iterator eii = 
         found_introspectors.find(tmp);
     if (eii == found_introspectors.end()) {
-        _abort(Factory,"can't find requested introspector %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested introspector %s.\n ", tmp.c_str());
         return NULL;
     }
 
@@ -331,7 +331,7 @@ Factory::CreateModule(std::string type, Params& params)
         found_modules.find(tmp);
 
 	if (eim == found_modules.end()) {
-        	_abort(Factory,"can't find requested module %s.\n ", tmp.c_str());
+        	out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", tmp.c_str());
         	return NULL;
     	}
 
@@ -356,7 +356,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 #ifdef HAVE_LIBZ
 	return new StatisticOutputCompressedCSV(params);
 #else
-	_abort(Factory, "Statistics output requested compressed CSV but SST does not have LIBZ compiled.\n");
+	out.fatal(CALL_INFO, -1, "Statistics output requested compressed CSV but SST does not have LIBZ compiled.\n");
 #endif
     }
 
@@ -364,7 +364,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 #ifdef HAVE_LIBZ
 	return new StatisticOutputCompressedTxt(params);
 #else
-	_abort(Factory, "Statistics output requested compressed TXT but SST does not have LIBZ compiled.\n");
+	out.fatal(CALL_INFO, -1, "Statistics output requested compressed TXT but SST does not have LIBZ compiled.\n");
 #endif
     }
 
@@ -393,14 +393,14 @@ Factory::CreateCoreModule(std::string type, Params& params) {
     
     // Did we succeed in loading a core module? 
     if (NULL == rtnModule) {
-        _abort(Factory, "can't find requested core module %s\n", type.c_str());
+        out.fatal(CALL_INFO, -1, "can't find requested core module %s\n", type.c_str());
     }
     return rtnModule;
 }
 
 Module*
 Factory::CreateCoreModuleWithComponent(std::string type, Component* comp, Params& params) {
-    _abort(Factory, "can't find requested core module %s when loading with component\n", type.c_str());
+    out.fatal(CALL_INFO, -1, "can't find requested core module %s when loading with component\n", type.c_str());
     return NULL;
 }
 
@@ -425,7 +425,7 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
     eim_map_t::iterator eim = 
         found_modules.find(tmp);
     if (eim == found_modules.end()) {
-        _abort(Factory,"can't find requested module %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", tmp.c_str());
         return NULL;
     }
 
@@ -459,7 +459,7 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
     eis_map_t::iterator eis = 
         found_subcomponents.find(tmp);
     if (eis == found_subcomponents.end()) {
-        _abort(Factory,"can't find requested subcomponent %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", tmp.c_str());
         return NULL;
     }
 
@@ -486,7 +486,7 @@ Factory::RequireEvent(std::string eventname)
     // initializer fires at library load time, so all we have to do is
     // make sure the event actually exists...
     if (found_events.find(eventname) == found_events.end()) {
-        _abort(Factory,"can't find event %s in %s\n ", eventname.c_str(),
+        out.fatal(CALL_INFO, -1,"can't find event %s in %s\n ", eventname.c_str(),
                searchPaths.c_str() );
     }
 }
@@ -507,7 +507,7 @@ Factory::GetPartitioner(std::string name)
     eip_map_t::iterator eii =
 	found_partitioners.find(tmp);
     if ( eii == found_partitioners.end() ) {
-        _abort(Factory,"Error: Unable to find requested partitioner %s, check --help for information on partitioners.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"Error: Unable to find requested partitioner %s, check --help for information on partitioners.\n ", tmp.c_str());
         return NULL;
     }
 
@@ -531,7 +531,7 @@ Factory::GetGenerator(std::string name)
     eig_map_t::iterator eii =
 	found_generators.find(tmp);
     if ( eii == found_generators.end() ) {
-        _abort(Factory,"can't find requested partitioner %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested partitioner %s.\n ", tmp.c_str());
         return NULL;
     }
 

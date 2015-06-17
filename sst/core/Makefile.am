@@ -29,7 +29,6 @@ nobase_dist_sst_HEADERS = \
 	componentInfo.h \
 	config.h \
 	configGraph.h \
-	debug.h \
 	element.h \
 	elemLoader.h \
 	event.h \
@@ -119,7 +118,6 @@ sst_core_sources = \
 	componentInfo.cc \
 	config.cc \
 	configGraph.cc \
-	debug.cc \
 	elemLoader.cc \
 	event.cc \
 	exit.cc \

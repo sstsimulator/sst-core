@@ -18,7 +18,6 @@
 #include <mpi.h>
 #endif
 
-#include <sst/core/debug.h>
 #include "sst/core/component.h"
 #include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
@@ -32,8 +31,6 @@ Exit::Exit( Simulation* sim, TimeConverter* period, bool single_rank ) :
     m_period( period ),
     single_rank(single_rank)	
 {
-    _EXIT_DBG("\n");
-    
     setPriority(EXITPRIORITY);
     // if (!single_rank) sim->insertActivity( period->getFactor(), this );
 }
@@ -45,8 +42,6 @@ Exit::~Exit()
     
 bool Exit::refInc( ComponentId_t id )
 {
-    _EXIT_DBG( "refCount=%d\n", m_refCount );
-
     if ( m_idSet.find( id ) != m_idSet.end() ) {
         // CompMap_t comp_map = Simulation::getSimulation()->getComponentMap();
         // bool found_in_map = false;
@@ -80,17 +75,15 @@ bool Exit::refInc( ComponentId_t id )
 
 bool Exit::refDec( ComponentId_t id )
 {
-    _EXIT_DBG("refCount=%d\n",m_refCount );
-
     if ( m_idSet.find( id ) == m_idSet.end() ) {
-        _DBG( Exit, "component (%s) multiple decrement\n",
+        Simulation::getSimulation()->getSimulationOutput().verbose(CALL_INFO, 1, 1, "component (%s) multiple decrement\n",
                 Simulation::getSimulation()->getComponent(id)->getName().c_str() );
         return true;
     } 
 
 
     if ( m_refCount == 0 ) {
-        _abort( Exit, "refCount is already 0\n" );
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "refCount is already 0\n" );
         return true;
     }
 
@@ -125,9 +118,6 @@ Exit::execute()
 // bool Exit::handler( Event* e )
 void Exit::check( void )
 {
-    Simulation *sim = Simulation::getSimulation();
-
-    _EXIT_DBG("%lu\n", (unsigned long) sim->getCurrentSimCycle());
 
     int value = ( m_refCount > 0 );
     int out;
@@ -139,8 +129,6 @@ void Exit::check( void )
 #else
     out = value;
 #endif
-
-    _EXIT_DBG("%d\n",out);
 
     // If out is 0, then it's time to end
     if ( !out ) {
@@ -160,6 +148,7 @@ void Exit::check( void )
     //     // there is no way to know if the Exit object is deleted in the
     //     // TimeVortex or not, so we just make sure it is always deleted
     //     // there.
+    //     Simulation *sim = Simulation::getSimulation();
     //     SimTime_t next = sim->getCurrentSimCycle() + 
     //         m_period->getFactor();
     //     sim->insertActivity( next, this );

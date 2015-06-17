@@ -17,7 +17,6 @@
 #include <boost/foreach.hpp>
 #include <string>
 
-#include "sst/core/debug.h"
 //#include "sst/core/event.h"
 #include "sst/core/exit.h"
 #include "sst/core/factory.h"

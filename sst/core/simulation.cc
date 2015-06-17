@@ -23,7 +23,6 @@
 #include <sst/core/config.h>
 #include <sst/core/configGraph.h>
 #include <sst/core/heartbeat.h>
-#include <sst/core/debug.h>
 //#include <sst/core/event.h>
 #include <sst/core/exit.h>
 #include <sst/core/factory.h>
@@ -452,7 +451,6 @@ void Simulation::initialize() {
 }
 
 void Simulation::run() {  
-    _SIM_DBG( "RUN\n" );
 
     // Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
     
@@ -594,7 +592,6 @@ TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* 
     TimeConverter* tcFreq = timeLord->getTimeConverter(freq);
 
     if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
-        _SIM_DBG( "\n" );
         Clock* ce = new Clock( tcFreq );
         clockMap[ tcFreq->getFactor() ] = ce; 
         
@@ -644,7 +641,6 @@ void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler)
 //     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
     
     if ( clockMap.find( tc->getFactor() ) != clockMap.end() ) {
-	_SIM_DBG( "\n" );
 	bool empty;
 	clockMap[ tc->getFactor() ]->unregisterHandler( handler, empty );
 	
