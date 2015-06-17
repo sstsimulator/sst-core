@@ -47,8 +47,13 @@ class SimpleLookupTableBuilder : public LookupTableBuilder {
 protected:
     std::string fname;
 public:
-    SimpleLookupTableBuilder(const std::string &filename) : LookupTableBuilder() {
+    /**
+     * @param filename - name of file to open
+     * @param size - optional argument.  Receives the size of the file.
+     */
+    SimpleLookupTableBuilder(const std::string &filename, size_t *size = NULL) : LookupTableBuilder() {
         fname = filename;
+        if ( size ) *size = getSize();
     }
 
     virtual size_t getSize();
