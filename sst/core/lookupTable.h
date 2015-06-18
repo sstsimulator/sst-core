@@ -20,7 +20,7 @@ namespace SST {
 class LookupTableBuilder {
 public:
     LookupTableBuilder() { }
-    ~LookupTableBuilder() { }
+    virtual ~LookupTableBuilder() { }
 
     /**
      * @return the size of the memory buffer desired
