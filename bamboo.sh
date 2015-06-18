@@ -267,6 +267,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
         ${SST_TEST_SUITES}/testSuite_scheduler.sh
         ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
+        ${SST_TEST_SUITES}/testSuite_simpleLookupTableComponent.sh
         ${SST_TEST_SUITES}/testSuite_simpleDistribComponent.sh
         ${SST_TEST_SUITES}/testSuite_simpleRNGComponent.sh
         ${SST_TEST_SUITES}/testSuite_simpleStatisticsComponent.sh
@@ -338,6 +339,7 @@ dotests() {
 
     ${SST_TEST_SUITES}/testSuite_portals.sh
     ${SST_TEST_SUITES}/testSuite_simpleComponent.sh
+    ${SST_TEST_SUITES}/testSuite_simpleLookupTableComponent.sh
     ${SST_TEST_SUITES}/testSuite_cacheTracer.sh
     ${SST_TEST_SUITES}/testSuite_miranda.sh
     ${SST_TEST_SUITES}/testSuite_BadPort.sh
