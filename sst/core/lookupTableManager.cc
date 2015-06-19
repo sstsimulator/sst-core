@@ -23,8 +23,6 @@
 #include <sst/core/lookupTable.h>
 
 
-
-
 namespace SST {
 
 void* LookupTableManager::registerTable(std::string key, LookupTableBuilder *builder)
@@ -81,7 +79,10 @@ int LookupTableManager::LookupTableInfo::build(LookupTableBuilder *builder)
 
 void LookupTableManager::LookupTableInfo::shutdown()
 {
-    if ( ptr ) free(ptr);
+    if ( ptr ) {
+        mprotect(ptr, realsize, PROT_READ|PROT_WRITE);
+        free(ptr);
+    }
     ptr = NULL;
     size = realsize = 0;
 }

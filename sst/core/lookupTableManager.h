@@ -50,6 +50,7 @@ public:
             LookupTableInfo &table = entry->second;
             table.shutdown();
         }
+        tables.clear();
     }
 
     /**
