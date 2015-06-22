@@ -259,6 +259,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_hybridsim.sh
         ${SST_TEST_SUITES}/testSuite_iris.sh
         ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
+        ${SST_TEST_SUITES}/testSuite_memHSieve.sh
         ${SST_TEST_SUITES}/testSuite_merlin.sh
         ${SST_TEST_SUITES}/testSuite_simpleMessageGeneratorComponent.sh
         ${SST_TEST_SUITES}/testSuite_miranda.sh
@@ -286,6 +287,7 @@ dotests() {
     if [ $1 == "sstmainline_config_memH_wo_openMP" ]
     then
         ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
+        ${SST_TEST_SUITES}/testSuite_memHSieve.sh
         ${SST_TEST_SUITES}/testSuite_hybridsim.sh
         ${SST_TEST_SUITES}/testSuite_miranda.sh
         ${SST_TEST_SUITES}/testSuite_cassini_prefetch.sh
@@ -333,6 +335,7 @@ dotests() {
     ${SST_TEST_SUITES}/testSuite_hybridsim.sh
     ${SST_TEST_SUITES}/testSuite_SiriusZodiacTrace.sh
     ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
+    ${SST_TEST_SUITES}/testSuite_memHSieve.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcopteron.sh
     ${SST_TEST_SUITES}/testSuite_sst_mcniagara.sh
 
