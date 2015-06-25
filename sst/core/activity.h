@@ -194,6 +194,7 @@ public:
          */
         uint32_t *ptr8 = ((uint32_t*)ptr) - 1;
         uint32_t poolID = *ptr8;
+        *ptr8 = 0xffffffff;
         Core::MemPool* pool = memPools[poolID].second;
 
         pool->free(ptr8);
