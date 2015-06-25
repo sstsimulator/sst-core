@@ -29,7 +29,8 @@ Exit::Exit( Simulation* sim, TimeConverter* period, bool single_rank ) :
 //     m_functor( new EventHandler<Exit,bool,Event*> (this,&Exit::handler ) ),
     m_refCount( 0 ),
     m_period( period ),
-    single_rank(single_rank)	
+    single_rank(single_rank),
+    end_time(0)
 {
     setPriority(EXITPRIORITY);
     // if (!single_rank) sim->insertActivity( period->getFactor(), this );
