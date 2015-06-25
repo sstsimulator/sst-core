@@ -85,7 +85,7 @@ Config::Config( int my_rank, int world_size )
         ("help,h", "print help message")
         ("verbose,v", "print information about core runtimes")
         ("disable-signal-handlers", "disable SST automatic dynamic library environment configuration")
-        ("no-sig-handlers", "disable SST signal handlers")
+        ("no-env-config", "disable SST environment configuration")
         ("version,V", "print SST Release Version")
     ;
 
