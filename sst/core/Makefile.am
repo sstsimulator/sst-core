@@ -94,6 +94,7 @@ nobase_dist_sst_HEADERS = \
 	stats/histo/histo.h \
 	statapi/statengine.h \
 	statapi/statoutput.h \
+	statapi/statfieldinfo.h \
 	statapi/statoutputconsole.h \
 	statapi/statuniquecount.h \
 	statapi/statoutputtxt.h \
@@ -154,6 +155,7 @@ sst_core_sources = \
 	rng/xorshift.cc \
 	statapi/statengine.cc \
 	statapi/statoutput.cc \
+	statapi/statfieldinfo.cc \
 	statapi/statoutputconsole.cc \
 	statapi/statoutputtxt.cc \
 	statapi/statoutputtxtgz.cc \

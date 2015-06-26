@@ -14,6 +14,7 @@
 
 #include <sst_config.h>
 #include <string>
+#include <inttypes.h>
 
 namespace SST {
 

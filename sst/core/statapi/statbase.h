@@ -16,13 +16,15 @@
 #include <sst/core/serialization.h>
 #include <sst/core/params.h>
 #include <sst/core/oneshot.h>
+#include <sst/core/statapi/statfieldinfo.h>
 
 namespace SST {
 class Component; 
-
+class SubComponent; 
 namespace Statistics {
 class StatisticOutput; 
-    
+class StatisticProcessingEngine;
+
 /**
     \class StatisticBase
 
@@ -38,34 +40,26 @@ public:
     /** Statistic collection mode */ 
     typedef enum {STAT_MODE_UNDEFINED, STAT_MODE_COUNT, STAT_MODE_PERIODIC} StatMode_t; 
     
-    /** Construct a StatisticBase
-      * @param comp - Pointer to the parent constructor.
-      * @param statName - Name of the statistic to be registered.  This name must
-      * match the name in the ElementInfoStatistic.
-      * @param statSubId - Additional name of the statistic 
-      * @param statParams - The parameters for this statistic
-      */
-    // Constructors:
-    StatisticBase(Component* comp, std::string& statName, std::string& statSubId, Params& statParams);
-
-    // Destructor
-    virtual ~StatisticBase() {}
-
-    /** Return the Statistic Parameters */
-    Params& getParams() {return m_statParams;}
-
+    // Enable/Disable of Statistic
     /** Enable Statistic for collections */
     void enable() {m_statEnabled = true;}
+    
     /** Disable Statistic for collections */
     void disable() {m_statEnabled = false;}
 
-    // Handling of Collection Counts
-    /** Increment current collection count */
-    virtual void incrementCollectionCount();  
-    /** Set the current collection count to a defined value */
-    virtual void setCollectionCount(uint64_t newCount);
+    // Handling of Collection Counts and Data
+    /** Inform the Statistic to clear its data */
+    virtual void clearStatisticData() {}      
+
     /** Set the current collection count to 0 */
     virtual void resetCollectionCount();
+    
+    /** Increment current collection count */
+    virtual void incrementCollectionCount();  
+    
+    /** Set the current collection count to a defined value */
+    virtual void setCollectionCount(uint64_t newCount);
+    
     /** Set the collection count limit to a defined value */
     virtual void setCollectionCountLimit(uint64_t newLimit);
 
@@ -85,44 +79,56 @@ public:
      *  If Set, the statistic will perform an output at the end of simulation.
      */
     void setFlagOutputAtEndOfSim(bool flag) {m_outputAtEndOfSim = flag;}
-
-    /** Set the Registered Collection Mode */
-    void setRegisteredCollectionMode(StatMode_t mode) {m_registeredCollectionMode = mode;} 
-
-    /** Construct a full name of the statistic */
-    static std::string buildStatisticFullName(const char* compName, const char* statName, const char* statSubId);
-    static std::string buildStatisticFullName(const std::string& compName, const std::string& statName, const std::string& statSubId);
-
-    /** Set an optional Statistic Type Name */
-    void setStatisticTypeName(const char* typeName) {m_statTypeName = typeName;}
     
-    // Get Data
+    // Get Data & Information on Statistic
     /** Return the Component Name */
     const std::string& getCompName() const;
+    
     /** Return the Statistic Name */
     inline const std::string& getStatName() const {return m_statName;}
+    
     /** Return the Statistic SubId */
     inline const std::string& getStatSubId() const {return m_statSubId;}
+    
     /** Return the full Statistic name of Component.StatName.SubId */
     inline const std::string& getFullStatName() const {return m_statFullName;}      // Return compName.statName.subId
+    
     /** Return the Statistic type name */
     inline const std::string& getStatTypeName() const {return m_statTypeName;}    
+    
+    /** Return the Statistic data type */
+    inline const StatisticFieldInfo::fieldType_t& getStatDataType() const {return m_statDataType;}    
+    
+    /** Return the Statistic data type */
+    inline const char* getStatDataTypeShortName() const {return StatisticFieldInfo::getFieldTypeShortName(m_statDataType);}
+    
+    /** Return the Statistic data type */
+    inline const char* getStatDataTypeFullName() const {return StatisticFieldInfo::getFieldTypeFullName(m_statDataType);} 
+    
     /** Return a pointer to the parent Component */
     Component*   getComponent() const {return m_component;}
+    
     /** Return the enable status of the Statistic */
     bool         isEnabled() const {return m_statEnabled;}
+    
     /** Return the enable status of the Statistic's ability to output data */
     bool         isOutputEnabled() const {return m_outputEnabled;}
+    
     /** Return the collection count limit */
     uint64_t     getCollectionCountLimit() const {return m_collectionCountLimit;}
+    
     /** Return the current collection count */
     uint64_t     getCollectionCount() const {return m_currentCollectionCount;}
+    
     /** Return the ResetCountOnOutput flag value */
     bool         getFlagResetCountOnOutput() const {return m_resetCountOnOutput;}
+    
     /** Return the ClearDataOnOutput flag value */
     bool         getFlagClearDataOnOutput() const {return m_clearDataOnOutput;}
+    
     /** Return the OutputAtEndOfSim flag value */
     bool         getFlagOutputAtEndOfSim() const {return m_outputAtEndOfSim;}
+    
     /** Return the collection mode that is registered */
     StatMode_t   getRegisteredCollectionMode() const {return m_registeredCollectionMode;} 
 
@@ -136,6 +142,48 @@ public:
      * @param delayTime - Value in UnitAlgebra format for delay (i.e. 10ns).
     */
     void delayCollection(const char* delayTime); 
+
+    // Status of Statistic
+    /** Indicate that the Statistic is Ready to be used */
+    virtual bool isReady() const {return true;}     
+
+    /** Indicate if the Statistic is a NullStatistic */
+    virtual bool isNullStatistic() const {return false;} 
+
+protected:  
+    friend class SST::Component;
+    friend class SST::SubComponent;
+    friend class SST::Statistics::StatisticProcessingEngine;
+    
+    /** Construct a StatisticBase
+      * @param comp - Pointer to the parent constructor.
+      * @param statName - Name of the statistic to be registered.  This name must
+      * match the name in the ElementInfoStatistic.
+      * @param statSubId - Additional name of the statistic 
+      * @param statParams - The parameters for this statistic
+      */
+    // Constructors:
+    StatisticBase(Component* comp, std::string& statName, std::string& statSubId, Params& statParams);
+
+    // Destructor
+    virtual ~StatisticBase() {}
+
+    /** Return the Statistic Parameters */
+    Params& getParams() {return m_statParams;}
+
+    /** Set the Statistic Data Type */
+    void setStatisticDataType(const StatisticFieldInfo::fieldType_t dataType) {m_statDataType = dataType;}
+
+    /** Set an optional Statistic Type Name */
+    void setStatisticTypeName(const char* typeName) {m_statTypeName = typeName;}
+    
+private:
+    /** Set the Registered Collection Mode */
+    void setRegisteredCollectionMode(StatMode_t mode) {m_registeredCollectionMode = mode;} 
+
+    /** Construct a full name of the statistic */
+    static std::string buildStatisticFullName(const char* compName, const char* statName, const char* statSubId);
+    static std::string buildStatisticFullName(const std::string& compName, const std::string& statName, const std::string& statSubId);
 
     // Required Virtual Methods:
     /** Called by the system to tell the Statistic to register its output fields.
@@ -151,16 +199,6 @@ public:
       */
     virtual void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag) = 0;
 
-    /** Inform the Statistic to clear its data */
-    virtual void clearStatisticData() {}      
-    
-    // Status of Statistic
-    /** Indicate that the Statistic is Ready to be used */
-    virtual bool isReady() const {return true;}     
-
-    /** Indicate if the Statistic is a NullStatistic */
-    virtual bool isNullStatistic() const {return false;} 
-
     /** Indicate if the Statistic Mode is supported.
       * This allows Statistics to suport STAT_MODE_COUNT and STAT_MODE_PERIODIC modes.
       * by default, both modes are supported.
@@ -170,8 +208,7 @@ public:
 
     /** Verify that the statistic names match */
     bool operator==(StatisticBase& checkStat); 
-    
-private:
+
     // Support Routines
     void initializeStatName(const char* compName, const char* statName, const char* statSubId);
     void initializeStatName(const std::string& compName, const std::string& statName, const std::string& statSubId);
@@ -183,7 +220,7 @@ private:
     void delayOutputExpiredHandler();                               // Enable Output in handler
     void delayCollectionExpiredHandler();                           // Enable Collection in Handler
 
-protected:     
+private:     
     StatisticBase(); // For serialization only
     
 private:
@@ -196,6 +233,7 @@ private:
     StatMode_t            m_registeredCollectionMode;
     uint64_t              m_currentCollectionCount;
     uint64_t              m_collectionCountLimit;
+    StatisticFieldInfo::fieldType_t m_statDataType;    
                           
     bool                  m_statEnabled;
     bool                  m_outputEnabled;
@@ -222,6 +260,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(m_registeredCollectionMode);
         ar & BOOST_SERIALIZATION_NVP(m_currentCollectionCount);
         ar & BOOST_SERIALIZATION_NVP(m_collectionCountLimit);
+        ar & BOOST_SERIALIZATION_NVP(m_statDataType);
         ar & BOOST_SERIALIZATION_NVP(m_statEnabled);
         ar & BOOST_SERIALIZATION_NVP(m_outputEnabled);
         ar & BOOST_SERIALIZATION_NVP(m_resetCountOnOutput);
@@ -249,21 +288,7 @@ private:
 template <typename T>
 class Statistic : public StatisticBase
 {
-public:    
-    /** Construct a Statistic
-      * @param comp - Pointer to the parent constructor.
-      * @param statName - Name of the statistic to be registered.  This name must
-      * match the name in the ElementInfoStatistic.
-      * @param statSubId - Additional name of the statistic 
-      * @param statParams - The parameters for this statistic
-      */
-    Statistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) :
-        StatisticBase(comp, statName, statSubId, statParams)
-    {
-    }
-        
-    virtual ~Statistic(){}
-    
+public:
     // The main method to add data to the statistic 
     /** Add data to the Statistic
       * This will call the addData_impl() routine in the derived Statistic.
@@ -277,8 +302,25 @@ public:
             incrementCollectionCount();
         }
     }
-
-protected:     
+    
+protected:    
+    friend class SST::Component;
+    /** Construct a Statistic
+      * @param comp - Pointer to the parent constructor.
+      * @param statName - Name of the statistic to be registered.  This name must
+      * match the name in the ElementInfoStatistic.
+      * @param statSubId - Additional name of the statistic 
+      * @param statParams - The parameters for this statistic
+      */
+    Statistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) :
+        StatisticBase(comp, statName, statSubId, statParams)
+    {
+        setStatisticDataType(StatisticFieldInfo::getFieldTypeFromTemplate<T>());
+    }
+        
+    virtual ~Statistic(){}
+    
+private:     
     Statistic(){}; // For serialization only
 
     // Required Templated Virtual Methods:

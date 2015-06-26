@@ -477,6 +477,7 @@ void Simulation::run() {
 
     // Tell the Statistics Output that the simulation is starting
     statisticsOutput->startOfSimulation();
+    statisticsEngine->startOfSimulation();
     
     while( LIKELY( ! endSim ) ) {
         if ( UNLIKELY( 0 != lastRecvdSignal ) ) {

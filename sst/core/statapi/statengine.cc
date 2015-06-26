@@ -23,66 +23,76 @@ namespace Statistics {
     
 StatisticProcessingEngine::StatisticProcessingEngine()
 {
+    m_SimulationStarted = false;
 }
 
 StatisticProcessingEngine::~StatisticProcessingEngine()
 {
+    StatArray_t*     statArray;
+    StatisticBase*   stat;
+
     // Clocks already got deleted by timeVortex, simply clear the clockMap
     m_ClockMap.clear();
+    
+    // Destroy all the Statistics that have been created
+    for (CompStatMap_t::iterator it_m = m_CompStatMap.begin(); it_m != m_CompStatMap.end(); it_m++) {
+        // Get the Array for this Map Item    
+        statArray = it_m->second;
+
+        // Walk the stat Array and delete each stat
+        for (StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++) {
+            stat = *it_v;
+            delete stat;
+        }
+    }
 }
 
 bool StatisticProcessingEngine::addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* stat)
 {
-    if (false == isStatisticPreviouslyRegistered(stat)) {
-        // Add the statistic to the Map of Periodic Based Statistics   
-        addStatisticClock(freq, stat);
-        return true;
-    }
-
-    return false;
+    // Add the statistic to the Map of Periodic Based Statistics   
+    addStatisticClock(freq, stat);
+    return true;
 }
 
 bool StatisticProcessingEngine::addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* stat)
 {
-    if (false == isStatisticPreviouslyRegistered(stat)) {
-
-        if (0 != count.getValue()) {         
-            // Set the Count Limit
-            stat->setCollectionCountLimit(count.getRoundedValue());
-        } else {
-            stat->setCollectionCountLimit(0); 
-        }
-        stat->setFlagResetCountOnOutput(true);
-        
-        // Add the statistic to the Array of Event Based Statistics    
-        m_EventStatisticArray.push_back(stat);
-        return true;
+    if (0 != count.getValue()) {         
+        // Set the Count Limit
+        stat->setCollectionCountLimit(count.getRoundedValue());
+    } else {
+        stat->setCollectionCountLimit(0); 
     }
-
-    return false;
+    stat->setFlagResetCountOnOutput(true);
+    
+    // Add the statistic to the Array of Event Based Statistics    
+    m_EventStatisticArray.push_back(stat);
+    return true;
 }
 
 void StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool endOfSimFlag /*=false*/)
 {
     StatisticOutput* statOutput = Simulation::getSimulation()->getStatisticsOutput();
 
-    // Is the Statistic Output Enabled?
-    if (false == stat->isOutputEnabled()) {
-        return;
-    }
-    statOutput->startOutputEntries(stat);
-    stat->outputStatisticData(statOutput, endOfSimFlag);
-    statOutput->stopOutputEntries();
-    
-    if (false == endOfSimFlag) {    
-        // Check to see if the Statistic Count needs to be reset
-        if (true == stat->getFlagResetCountOnOutput()) {
-            stat->resetCollectionCount();
+    // Has the simulation started?
+    if (true == m_SimulationStarted) {
+        // Is the Statistic Output Enabled?
+        if (false == stat->isOutputEnabled()) {
+            return;
         }
-
-        // Check to see if the Statistic Data needs to be cleared
-        if (true == stat->getFlagClearDataOnOutput()) {
-            stat->clearStatisticData();
+        statOutput->startOutputEntries(stat);
+        stat->outputStatisticData(statOutput, endOfSimFlag);
+        statOutput->stopOutputEntries();
+        
+        if (false == endOfSimFlag) {    
+            // Check to see if the Statistic Count needs to be reset
+            if (true == stat->getFlagResetCountOnOutput()) {
+                stat->resetCollectionCount();
+            }
+    
+            // Check to see if the Statistic Data needs to be cleared
+            if (true == stat->getFlagClearDataOnOutput()) {
+                stat->clearStatisticData();
+            }
         }
     }
 }
@@ -120,6 +130,11 @@ void StatisticProcessingEngine::endOfSimulation()
             }
         }
     }
+}
+
+void StatisticProcessingEngine::startOfSimulation()
+{
+    m_SimulationStarted = true;
 }
 
 TimeConverter* StatisticProcessingEngine::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority)
@@ -192,45 +207,52 @@ bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t CycleNum
     return false;
 }
 
-bool StatisticProcessingEngine::isStatisticPreviouslyRegistered(StatisticBase* stat)
+StatisticBase* StatisticProcessingEngine::isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType)
 {
     StatArray_t*        statArray;
     StatisticBase*      TestStat;
     
-    // Verity that the Statistic is not previously registered as a Event Based or 
-    // Periodic Based Statistic.  We test the names between stats to verity if they
-    // are the same.
+    // See if the map contains an entry for this Component ID
+    if (m_CompStatMap.find(compId) == m_CompStatMap.end() ) {
+        // Nope, this component ID has not been registered
+        return NULL;
+    }
     
-    // Verify that the Statistic does not already exist in the Event Based Statistic Array
-    for (StatArray_t::iterator it_v = m_EventStatisticArray.begin(); it_v != m_EventStatisticArray.end(); it_v++) {
+    // The CompStatMap has Component ID registered, get the array assocated with it    
+    statArray = m_CompStatMap[compId];
+    
+    // Look for the Statistic in this array 
+    for (StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++) {
         TestStat = *it_v;
 
-        if (*TestStat == *stat) {
-            Output out("Rank@R - StatisticProcessingEngine - ", 0, 0, Output::STDOUT);
-            out.output(CALL_INFO, "Warning: Statistic %s has been previously registered as an Event Based Statistic, providing a NullStatistic instead...\n", stat->getFullStatName().c_str());
-            
-            return true;
-        }
-    }
-
-    // Verify that the Statistic does not already exist in the Periodic Based Statistic Map
-    for (StatMap_t::iterator it_m = m_PeriodicStatisticMap.begin(); it_m != m_PeriodicStatisticMap.end(); it_m++) {
-        // Get the Array for this Map Item    
-        statArray = it_m->second;
-
-        // Verify that the Stat does not already exist in the Stat Array
-        for (StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++) {
-            TestStat = *it_v;
-    
-            if (*TestStat == *stat) {
-                Output out("Rank@R - StatisticProcessingEngine - ", 0, 0, Output::STDOUT);
-                out.output(CALL_INFO, "Warning: Statistic %s has been previously registered as a Periodic Based Statistic, providing a NullStatistic instead...\n", stat->getFullStatName().c_str());
-                return true;
-            }
+        if ((TestStat->getCompName() == compName) && 
+            (TestStat->getStatName() == statName) &&
+            (TestStat->getStatSubId() == statSubId) &&
+            (TestStat->getStatDataType() == fieldType)) {
+            return TestStat;
         }
     }
     
-    return false;    
+    // We did not find the stat in this component
+    return NULL;
+}
+
+void StatisticProcessingEngine::addStatisticToCompStatMap(const ComponentId_t& compId, StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType)
+{
+    StatArray_t*        statArray;
+    
+    // See if the map contains an entry for this Component ID
+    if (m_CompStatMap.find(compId) == m_CompStatMap.end() ) {
+        // Nope, Create a new Array of Statistics and relate it to the map
+        statArray = new std::vector<StatisticBase*>(); 
+        m_CompStatMap[compId] = statArray; 
+    }
+        
+    // The CompStatMap has Component ID registered, get the array assocated with it    
+    statArray = m_CompStatMap[compId];
+
+    // Add the statistic to the lists of statistics registered to this component   
+    statArray->push_back(Stat);
 }
 
 } //namespace Statistics

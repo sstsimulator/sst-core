@@ -19,29 +19,6 @@
 namespace SST {
 namespace Statistics {
 
-StatisticFieldInfo::StatisticFieldInfo(const char* statName, const char* fieldName, fieldType_t fieldType)
-{
-    m_statName  = statName; 
-    m_fieldName = fieldName; 
-    m_fieldType = fieldType;
-    m_fieldHandle = -1;
-}
-    
-bool StatisticFieldInfo::operator==(StatisticFieldInfo& FieldInfo1) 
-{
-    return ( (getFieldName() == FieldInfo1.getFieldName()) &&
-             (getFieldType() == FieldInfo1.getFieldType()) );
-}
-
-
-std::string StatisticFieldInfo::getFieldUniqueName() const
-{
-    std::string strRtn;
-    strRtn = getFieldName() + ".";
-    strRtn += SST::to_string(getFieldType());
-    return strRtn;
-}
-
 ////////////////////////////////////////////////////////////////////////////////    
     
 StatisticOutput::StatisticOutput(Params& outputParameters)
@@ -176,22 +153,12 @@ void StatisticOutput::outputField(fieldHandle_t fieldHandle, double data)
 
 const char* StatisticOutput::getFieldTypeShortName(fieldType_t type)
 {
-    switch (type) {
-        case StatisticFieldInfo::INT32  : return "i32"; break;
-        case StatisticFieldInfo::UINT32 : return "u32"; break;
-        case StatisticFieldInfo::INT64  : return "i64"; break;
-        case StatisticFieldInfo::UINT64 : return "u64"; break;
-        case StatisticFieldInfo::FLOAT  : return "f32"; break;
-        case StatisticFieldInfo::DOUBLE : return "f64"; break;
-        default: return "INVALID"; break;    
-    }
+    return StatisticFieldInfo::getFieldTypeShortName(type);
 }
-
 
 } //namespace Statistics
 } //namespace SST
 
-//BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticFieldInfo);
 //BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticOutput);
 
 

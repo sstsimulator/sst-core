@@ -16,6 +16,7 @@
 #include <sst/core/serialization.h>
 #include <sst/core/module.h>
 #include <sst/core/params.h>
+#include <sst/core/statapi/statfieldinfo.h>
 #include <sst/core/statapi/statbase.h>
 #include <unordered_map>
 
@@ -30,80 +31,7 @@ namespace Statistics {
 class StatisticProcessingEngine;
 
 ////////////////////////////////////////////////////////////////////////////////
-// Quick Support structures for checking type (Can's use std::is_same as it is only available in C++11)
-template <typename, typename> struct is_type_same { static const bool value = false;};
-template <typename T> struct is_type_same<T,T> { static const bool value = true;};    
-
-////////////////////////////////////////////////////////////////////////////////
     
-/**
-    \class StatisticFieldInfo
-
-	The class for representing Statistic Output Fields  
-*/
-class StatisticFieldInfo
-{
-public:
-    /** Supported Field Types */
-    enum fieldType_t {UNDEFINED, UINT32, UINT64, INT32, INT64, FLOAT, DOUBLE};
-    typedef int32_t fieldHandle_t;
-
-public:
-    /** Construct a StatisticFieldInfo
-     * @param statName - Name of the statistic registering this field.
-     * @param fieldName - Name of the Field to be assigned.
-     * @param fieldType - Data type of the field.
-     */
-    StatisticFieldInfo(const char* statName, const char* fieldName, fieldType_t fieldType);
-   
-    // Get Field Data
-    /** Return the statistic name related to this field info */
-    inline const std::string& getStatName() const {return m_statName;}
-    /** Return the field name related to this field info */
-    inline const std::string& getFieldName() const {return m_fieldName;}
-    /** Return the field type related to this field info */
-    fieldType_t getFieldType() const {return m_fieldType;}
-    /** Return the field type related to this field info */
-    std::string getFieldUniqueName() const;
-    
-    /** Compare two field info structures 
-     * @param FieldInfo1 - a FieldInfo to compare against.
-     * @return True if the Field Info structures are the same.
-     */
-    bool operator==(StatisticFieldInfo& FieldInfo1); 
-    
-    /** Set the field handle 
-     * @param handle - The assigned field handle for this FieldInfo
-     */
-    void setFieldHandle(fieldHandle_t handle) {m_fieldHandle = handle;}
-
-    /** Get the field handle 
-     * @return The assigned field handle.
-     */
-    fieldHandle_t getFieldHandle() {return m_fieldHandle;}
-
-protected:
-    StatisticFieldInfo(){}; // For serialization only
-    
-private:   
-    std::string   m_statName; 
-    std::string   m_fieldName; 
-    fieldType_t   m_fieldType;
-    fieldHandle_t m_fieldHandle;
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_NVP(m_statName); 
-        ar & BOOST_SERIALIZATION_NVP(m_fieldName); 
-        ar & BOOST_SERIALIZATION_NVP(m_fieldType);
-        ar & BOOST_SERIALIZATION_NVP(m_fieldHandle);
-    }
-};
-    
-////////////////////////////////////////////////////////////////////////////////
-
 /**
     \class StatisticOutput
 
@@ -329,7 +257,6 @@ private:
 } //namespace Statistics
 } //namespace SST
 
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::StatisticFieldInfo)
 BOOST_CLASS_EXPORT_KEY(SST::Statistics::StatisticOutput)
 
 #endif

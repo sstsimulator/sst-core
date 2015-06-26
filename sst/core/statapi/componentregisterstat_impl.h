@@ -31,8 +31,14 @@
     Params                          statParams;
     std::string                     statRateParam;
     std::string                     statTypeParam;
-
     Statistic<T>*                   statistic = NULL;    
+    
+    // Check to see if the Statistic is previously registered with the Statistics Engine
+    StatisticBase* prevStat = Simulation::getSimulation()->getStatisticsProcessingEngine()->isStatisticRegisteredWithEngine<T>(getName(), getId(), statName, statSubId);
+    if (NULL != prevStat) {
+        // Dynamic cast the base stat to the expected type
+        return dynamic_cast<Statistic<T>*>(prevStat);
+    }
     
     // Build a name to report errors against
     fullStatName = StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId);
@@ -183,7 +189,9 @@
             exit(1);
         }
     }
-        
+
+    // Register the new Statistic with the Statistic Engine
+    Simulation::getSimulation()->getStatisticsProcessingEngine()->registerStatisticWithEngine<T>(getId(), statistic);
     return statistic;
 //}
 
