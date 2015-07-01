@@ -28,9 +28,13 @@
     Simulation::statParamsList_t*   statParamsList;
     Output                          out = Simulation::getSimulation()->getSimulationOutput();
     UnitAlgebra                     collectionRate;
+    UnitAlgebra                     startAtTime;
+    UnitAlgebra                     stopAtTime;
     Params                          statParams;
     std::string                     statRateParam;
     std::string                     statTypeParam;
+    std::string                     statStartAtTimeParam;
+    std::string                     statStopAtTimeParam;
     Statistic<T>*                   statistic = NULL;    
     
     // Check to see if the Statistic is previously registered with the Statistics Engine
@@ -43,6 +47,13 @@
     // Build a name to report errors against
     fullStatName = StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId);
 
+    // Make sure that the wireup has not been completed
+    if (true == Simulation::getSimulation()->isWireUpFinished()) {
+        // We cannot register statistics AFTER the wireup (after all components have been created) 
+        fprintf(stderr, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
+        exit(1);
+    }
+    
     // // Verify here that name of the stat is one of the registered
     // // names of the component's ElementInfoStatistic.  
     // if (false == doesComponentInfoStatisticExist(statName)) {
@@ -66,19 +77,31 @@
             Params::KeySet_t allowedKeySet;
             allowedKeySet.insert("type");
             allowedKeySet.insert("rate");
+            allowedKeySet.insert("startat");
+            allowedKeySet.insert("stopat");
             statParamsList->at(x).pushAllowedKeys(allowedKeySet);
 
             // We found an acceptible name... Now check its critical Parameters
             // Note: If parameter not found, defaults will be provided
             statTypeParam = statParamsList->at(x).find_string("type", "sst.AccumulatorStatistic");
             statRateParam = statParamsList->at(x).find_string("rate", "0ns");
+            statStartAtTimeParam = statParamsList->at(x).find_string("startat", "0ns");
+            statStopAtTimeParam = statParamsList->at(x).find_string("stopat", "0ns");
 
-            // Check for an empty string on the collection rate 
+            // Check for an empty string on the collection rate and start/stop times 
             if (true == statRateParam.empty()) {
                 statRateParam = "0ns";
             }
+            if (true == statStartAtTimeParam.empty()) {
+                statStartAtTimeParam = "0ns";
+            }
+            if (true == statStopAtTimeParam.empty()) {
+                statStopAtTimeParam = "0ns";
+            }
             
             collectionRate = UnitAlgebra(statRateParam); 
+            startAtTime = UnitAlgebra(statStartAtTimeParam);
+            stopAtTime = UnitAlgebra(statStopAtTimeParam);
             statParams = statParamsList->at(x);
             nameFound = true;
             break;
@@ -107,6 +130,13 @@
         } else {
             // collectionRate is a unit type we dont recognize 
             fprintf(stderr, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
+            exit(1);
+        }
+        
+        // Check the startat and stopat is in units of seconds
+        if ((true != startAtTime.hasUnits("s")) || (true != stopAtTime.hasUnits("s"))) {
+            // startat or stopat has a unit type we dont allow 
+            fprintf(stderr, "ERROR: Statistic %s - param startat = %s; stopat = %s must both be in units of seconds; exiting...\n", fullStatName.c_str(), startAtTime.toString().c_str(), stopAtTime.toString().c_str());
             exit(1);
         }
     }
@@ -174,6 +204,10 @@
         statOutput->startRegisterFields(statistic->getCompName().c_str(), statistic->getStatName().c_str());
         statistic->registerOutputFields(statOutput);
         statOutput->stopRegisterFields();
+
+        // Set the start / stop times for the stat
+        Simulation::getSimulation()->getStatisticsProcessingEngine()->setStatisticStartTime(startAtTime, statistic);
+        Simulation::getSimulation()->getStatisticsProcessingEngine()->setStatisticStopTime(stopAtTime, statistic);
     } else {
         // Delete the original statistic (if created), and return a NULL statistic instead
         if (NULL != statistic) {

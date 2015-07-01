@@ -383,6 +383,11 @@ public:
      * Returns the Simulation's LookupTableManager
      */
     LookupTableManager* getLookupTableManager() { return lookupTableManager; }
+    
+    /** 
+    * Returns true when the Wireup is finished.
+    */
+    bool isWireUpFinished() {return wireUpFinished; }
 
 private:
     friend class Link;
@@ -435,6 +440,7 @@ private:
     Output           sim_output;
     std::string      output_directory;
     LookupTableManager *lookupTableManager;
+    bool             wireUpFinished;
 
     static Simulation *instance;
 

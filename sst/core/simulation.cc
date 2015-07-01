@@ -159,7 +159,8 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
     init_msg_count(0),
     init_phase(0),
     lastRecvdSignal(0),
-    lookupTableManager(new LookupTableManager())
+    lookupTableManager(new LookupTableManager()),
+    wireUpFinished(false)
 {
 //     eQueue = new EventQueue_t;
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
@@ -416,6 +417,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
     graph.comps.clear();
     statisticEnableMap.clear();
     statisticParamsMap.clear();
+    wireUpFinished = true;
     return 0;
 }
 

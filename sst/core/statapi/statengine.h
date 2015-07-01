@@ -50,6 +50,8 @@ private:
    
     bool addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
     bool addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
+    void setStatisticStartTime(const UnitAlgebra& startTime, StatisticBase* Stat);
+    void setStatisticStopTime(const UnitAlgebra& stopTime, StatisticBase* Stat);
 
     void endOfSimulation();
     void startOfSimulation();
@@ -85,7 +87,11 @@ private:
 private:
     void addStatisticClock(const UnitAlgebra& freq, StatisticBase* Stat);
     TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority);
+    TimeConverter* registerStartOneShot(const UnitAlgebra& startTime, OneShot::HandlerBase* handler, int priority);
+    TimeConverter* registerStopOneShot(const UnitAlgebra& stopTime, OneShot::HandlerBase* handler, int priority);
     bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor); 
+    void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor); 
+    void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor); 
     StatisticBase* isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType);
     void addStatisticToCompStatMap(const ComponentId_t& compId, StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
     
@@ -93,11 +99,16 @@ private:
     typedef std::vector<StatisticBase*>           StatArray_t;       /*!< Array of Statistics */
     typedef std::map<SimTime_t, StatArray_t*>     StatMap_t;         /*!< Map of simtimes to Statistic Arrays */
     typedef std::map<SimTime_t, Clock*>           ClockMap_t;        /*!< Map of simtimes to clocks */
+    typedef std::map<SimTime_t, OneShot*>         OneShotMap_t;      /*!< Map of times to OneShots */
     typedef std::map<ComponentId_t, StatArray_t*> CompStatMap_t;     /*!< Map of ComponentId's to StatInfo Arrays */
                                               
     StatArray_t                               m_EventStatisticArray;  /*!< Array of Event Based Statistics */
     StatMap_t                                 m_PeriodicStatisticMap; /*!< Map of Array's of Periodic Based Statistics */
+    StatMap_t                                 m_StartTimeMap;         /*!< Map of Array's of Statistics that are started at a sim time */
+    StatMap_t                                 m_StopTimeMap;          /*!< Map of Array's of Statistics that are stopped at a sim time */
     ClockMap_t                                m_ClockMap;             /*!< Map of Clocks */
+    OneShotMap_t                              m_StartTimeOneShotMap;  /*!< Map of OneShots for the Statistics start time */
+    OneShotMap_t                              m_StopTimeOneShotMap;   /*!< Map of OneShots for the Statistics stop time */
     CompStatMap_t                             m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */  
     bool                                      m_SimulationStarted;    /*!< Flag showing if Simulation has started */
     
@@ -108,7 +119,11 @@ private:
     {
         ar & BOOST_SERIALIZATION_NVP(m_EventStatisticArray);
         ar & BOOST_SERIALIZATION_NVP(m_PeriodicStatisticMap);
+        ar & BOOST_SERIALIZATION_NVP(m_StartTimeMap);
+        ar & BOOST_SERIALIZATION_NVP(m_StopTimeMap);
         ar & BOOST_SERIALIZATION_NVP(m_ClockMap);
+        ar & BOOST_SERIALIZATION_NVP(m_StartTimeOneShotMap);
+        ar & BOOST_SERIALIZATION_NVP(m_StopTimeOneShotMap);
         ar & BOOST_SERIALIZATION_NVP(m_CompStatMap);
         ar & BOOST_SERIALIZATION_NVP(m_SimulationStarted);
     }
