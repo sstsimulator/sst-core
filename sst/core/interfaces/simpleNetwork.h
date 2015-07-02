@@ -15,6 +15,7 @@
 #define CORE_INTERFACES_SIMPLENETWORK_H_
 
 #include <string>
+#include <unordered_map>
 
 #include <sst/core/sst_types.h>
 #include <sst/core/subcomponent.h>
@@ -38,7 +39,7 @@ public:
     /** All Addresses can be 64-bit */
     typedef uint64_t nid_t;
 
-    static const nid_t INIT_BROADCAST_ADDR = 0xffffffffffffffffl;
+    static const nid_t INIT_BROADCAST_ADDR;
     
     /**
      * Represents both network sends and receives
@@ -230,6 +231,53 @@ public:
         }
     };
 
+    /**
+       Class to hold network mappings.  Assumes a dense, linear
+       mapping of nid_t's to a dense or sparse set of nid_t's.
+     */
+    class Mapping {
+    private:
+        friend class boost::serialization::access;
+        template<class Archive>
+        void
+        serialize(Archive & ar, const unsigned int version );
+
+        friend class SimpleNetwork;
+        std::vector<nid_t>* data;
+
+    public:
+        nid_t operator[](nid_t from) const;
+        void bind(std::string name);
+        
+    };
+
+    /**
+       Adds a mapping to the table.  The "from" entries must be a set
+       of nid_t's that are between 0 and N, where N is the total
+       number of entries in the map.  The "to" entries can be sparse.
+       If a "from" nid is added to the same table more than once, the
+       "to" nid must match or the call will fatal.  Mapping entries
+       can be added through the end of the init phase of simulation,
+       after that a call to this function will cause a fatal.
+     */
+    static void addMappingEntry(std::string mapName, nid_t from, nid_t to);
+
+    /**
+       Exchange data across ranks
+     */
+    static void exchangeMappingData();
+    
+private:
+    static std::map<std::string,std::vector<nid_t> > network_maps;
+
+    /**
+       Gets the mapping vector for the specified name.  These mappings aren't
+       guarenteed to be complete until just before the setup phase of
+       simulation.
+     */
+    static std::vector<nid_t>* getMappingVector(std::string mapName);
+    
+public:
     
     /** Constructor, designed to be used via 'loadSubComponent'. */
     SimpleNetwork(SST::Component *comp) :

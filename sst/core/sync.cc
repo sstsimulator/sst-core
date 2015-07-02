@@ -255,7 +255,6 @@ namespace SST {
         // tmp_debug.output(CALL_INFO,"  my_time: %" PRIu64 ", min_time: %" PRIu64 "\n",input, min_time);
         
         SimTime_t next = min_time + max_period->getFactor();
-        // std::cout << next << std::endl;
         sim->insertActivity( next, this );
 #endif
     }

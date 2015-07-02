@@ -48,6 +48,7 @@ nobase_dist_sst_HEADERS = \
 	lookupTable.h \
 	lookupTableManager.h \
 	module.h \
+	objectComms.h \
 	oneshot.h \
 	output.h \
 	params.h \
@@ -149,6 +150,7 @@ sst_core_sources = \
 	interfaces/TestEvent.cc \
 	interfaces/simpleMem.cc \
 	interfaces/simpleNetwork.cc \
+	interfaces/simpleNetworkExports.cc \
 	rng/sstrng.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
