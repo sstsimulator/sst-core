@@ -41,7 +41,7 @@ if [[ ${SST_TEST_ROOT:+isSet} != isSet ]] ; then
            TEST_DIRECTORY_URL=`grep -e '/sst$' .svn/entries`
         fi
         
-        echo " CHECKOUT:  svn co $TEST_DIRECTORY_URL/sqe/test  ./test"
+        echo "bamboo.sh - CHECKOUT:  svn co $TEST_DIRECTORY_URL/sqe/test  ./test"
         svn co $TEST_DIRECTORY_URL/sqe/test  ./test
        
         if [ $? != 0 ] 
@@ -1023,15 +1023,23 @@ getconfig() {
    
   ## perhaps do no more here
             ;;
-        default|*)
+        default)
             #-----------------------------------------------------------------
             # default
-            #     If you've made a mistake in specifying your build config,
-            #     do the default build. But this is probably not what you want!
+            #     Do the default build. But this is probably not what you want!
             #-----------------------------------------------------------------
             depsStr="$defaultDeps"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM"
+            ;;
+
+        *)
+            #-----------------------------------------------------------------
+            #  Unrecognized Project,  This is an error in the bamboo code
+            #-----------------------------------------------------------------
+            echo ' ' ; echo "Unrecognized Project,  This is an error in the bamboo code"
+            echo " UNRECOGNIZED:   ${1}"
+            exit 1            
             ;;
     esac
 
