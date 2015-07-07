@@ -26,8 +26,7 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/unitAlgebra.h"
-#include "sst/core/lookupTable.h"
-#include "sst/core/lookupTableManager.h"
+#include "sst/core/sharedRegion.h"
 
 using namespace SST::Statistics;
 
@@ -398,10 +397,17 @@ std::string Component::getComponentInfoStatisticUnits(std::string statisticName)
 
 
 
-void* Component::getLookupTable(const std::string &key, LookupTableBuilder* builder)
+SharedRegion* Component::getLocalSharedRegion(const std::string &key, size_t size)
 {
-    LookupTableManager *mgr = Simulation::getSimulation()->getLookupTableManager();
-    return mgr->registerTable(key, builder);
+    SharedRegionManager *mgr = Simulation::getSimulation()->getSharedRegionManager();
+    return mgr->getLocalSharedRegion(key, size);
+}
+
+
+SharedRegion* Component::getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger)
+{
+    SharedRegionManager *mgr = Simulation::getSimulation()->getSharedRegionManager();
+    return mgr->getGlobalSharedRegion(key, size, merger);
 }
 
 

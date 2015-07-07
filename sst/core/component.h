@@ -39,8 +39,9 @@ class Params;
 class SubComponent;
 class TimeConverter;
 class UnitAlgebra;
-class LookupTableBuilder;
- 
+class SharedRegion;
+class SharedRegionMerger;
+
 #define _COMP_DBG( fmt, args...) __DBG( DBG_COMP, Component, fmt, ## args )
 
 /**
@@ -360,7 +361,8 @@ protected:
 
 
     /** Find a lookup table */
-    void* getLookupTable(const std::string &key, LookupTableBuilder* builder);
+    SharedRegion* getLocalSharedRegion(const std::string &key, size_t size);
+    SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL);
 
 private:
 

@@ -45,8 +45,6 @@ nobase_dist_sst_HEADERS = \
 	mempool.h \
 	memuse.h \
 	iouse.h \
-	lookupTable.h \
-	lookupTableManager.h \
 	module.h \
 	objectComms.h \
 	oneshot.h \
@@ -63,6 +61,8 @@ nobase_dist_sst_HEADERS = \
 	subcomponent.h \
 	sync.h \
 	syncQueue.h \
+	sharedRegion.h \
+	sharedRegionImpl.h \
 	timeConverter.h \
 	timeLord.h \
 	timeVortex.h \
@@ -131,8 +131,6 @@ sst_core_sources = \
 	introspector.cc \
 	introspectedComponent.cc \
 	link.cc \
-	lookupTable.cc \
-	lookupTableManager.cc \
 	memuse.cc \
 	oneshot.cc \
 	output.cc \
@@ -142,6 +140,7 @@ sst_core_sources = \
 	subcomponent.cc \
 	sync.cc \
 	syncQueue.cc \
+	sharedRegion.cc \
 	timeLord.cc \
 	timeVortex.cc \
 	uninitializedQueue.cc \

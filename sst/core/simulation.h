@@ -25,6 +25,7 @@
 #include "sst/core/oneshot.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/config.h"
+#include <sst/core/sharedRegionImpl.h>
 #include <sst/core/statapi/statengine.h>
 #include <sst/core/statapi/statoutput.h>
 #include <sst/core/statapi/statbase.h>
@@ -62,9 +63,8 @@ class TimeConverter;
 class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
-class LookupTableManager;
-    
-    
+
+
 typedef std::map<std::string, Introspector* > IntroMap_t;
 
 /** The Factory and TimeLord objects both should only be associated
@@ -380,9 +380,9 @@ public:
     SimTime_t getNextActivityTime();
 
     /**
-     * Returns the Simulation's LookupTableManager
+     * Returns the Simulation's SharedRegionManager
      */
-    LookupTableManager* getLookupTableManager() { return lookupTableManager; }
+    SharedRegionManager* getSharedRegionManager() { return sharedRegionManager; }
     
     /** 
     * Returns true when the Wireup is finished.
@@ -439,7 +439,7 @@ private:
     // std::map<ComponentId_t,LinkMap*> component_links;
     Output           sim_output;
     std::string      output_directory;
-    LookupTableManager *lookupTableManager;
+    SharedRegionManagerImpl *sharedRegionManager;
     bool             wireUpFinished;
 
     static Simulation *instance;

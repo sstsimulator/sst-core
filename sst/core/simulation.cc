@@ -30,7 +30,7 @@
 #include <sst/core/introspector.h>
 #include <sst/core/linkMap.h>
 #include <sst/core/linkPair.h>
-#include <sst/core/lookupTableManager.h>
+#include <sst/core/sharedRegionImpl.h>
 #include <sst/core/output.h>
 #include <sst/core/stopAction.h>
 #include <sst/core/sync.h>
@@ -133,7 +133,7 @@ Simulation::~Simulation()
     //     }
     // }
 
-    delete lookupTableManager;
+    delete sharedRegionManager;
 }
 
 Simulation*
@@ -159,7 +159,7 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
     init_msg_count(0),
     init_phase(0),
     lastRecvdSignal(0),
-    lookupTableManager(new LookupTableManager()),
+    sharedRegionManager(new SharedRegionManagerImpl()),
     wireUpFinished(false)
 {
 //     eQueue = new EventQueue_t;
@@ -423,6 +423,8 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
 
 void Simulation::initialize() {
     bool done = false;
+    sharedRegionManager->updateState();
+
     do {
         init_msg_count = 0;
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
@@ -436,6 +438,8 @@ void Simulation::initialize() {
 
         // We're done if no new messages were sent
         if ( init_msg_count == 0 ) done = true;
+
+        sharedRegionManager->updateState();
 
         init_phase++;
     } while ( !done);
@@ -466,6 +470,8 @@ void Simulation::run() {
     {
       (*iter).second->setup();
     }
+
+    sharedRegionManager->updateState();
 
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.
