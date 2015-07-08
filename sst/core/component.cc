@@ -399,14 +399,14 @@ std::string Component::getComponentInfoStatisticUnits(std::string statisticName)
 
 SharedRegion* Component::getLocalSharedRegion(const std::string &key, size_t size)
 {
-    SharedRegionManager *mgr = Simulation::getSimulation()->getSharedRegionManager();
+    SharedRegionManager *mgr = Simulation::getSharedRegionManager();
     return mgr->getLocalSharedRegion(key, size);
 }
 
 
 SharedRegion* Component::getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger)
 {
-    SharedRegionManager *mgr = Simulation::getSimulation()->getSharedRegionManager();
+    SharedRegionManager *mgr = Simulation::getSharedRegionManager();
     return mgr->getGlobalSharedRegion(key, size, merger);
 }
 

@@ -87,6 +87,7 @@ SimulationBase::serialize(Archive & ar, const unsigned int version)
     printf("end SimulationBase::serialize\n");
 }
 
+SharedRegionManager* Simulation::sharedRegionManager = new SharedRegionManagerImpl();
 Simulation* Simulation::instance = NULL;
 
 Simulation::~Simulation()
@@ -133,7 +134,6 @@ Simulation::~Simulation()
     //     }
     // }
 
-    delete sharedRegionManager;
 }
 
 Simulation*
@@ -159,7 +159,6 @@ Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
     init_msg_count(0),
     init_phase(0),
     lastRecvdSignal(0),
-    sharedRegionManager(new SharedRegionManagerImpl()),
     wireUpFinished(false)
 {
 //     eQueue = new EventQueue_t;

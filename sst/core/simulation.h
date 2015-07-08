@@ -25,7 +25,7 @@
 #include "sst/core/oneshot.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/config.h"
-#include <sst/core/sharedRegionImpl.h>
+#include <sst/core/sharedRegion.h>
 #include <sst/core/statapi/statengine.h>
 #include <sst/core/statapi/statoutput.h>
 #include <sst/core/statapi/statbase.h>
@@ -382,7 +382,7 @@ public:
     /**
      * Returns the Simulation's SharedRegionManager
      */
-    SharedRegionManager* getSharedRegionManager() { return sharedRegionManager; }
+    static SharedRegionManager* getSharedRegionManager() { return sharedRegionManager; }
     
     /** 
     * Returns true when the Wireup is finished.
@@ -439,7 +439,7 @@ private:
     // std::map<ComponentId_t,LinkMap*> component_links;
     Output           sim_output;
     std::string      output_directory;
-    SharedRegionManagerImpl *sharedRegionManager;
+    static SharedRegionManager* sharedRegionManager;
     bool             wireUpFinished;
 
     static Simulation *instance;
