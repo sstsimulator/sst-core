@@ -28,24 +28,53 @@ class SharedRegion;
  */
 class SharedRegionMerger {
 public:
+
+    struct ChangeSet {
+        size_t offset;
+        size_t length;
+        const uint8_t *data;
+
+        ChangeSet(size_t offset, size_t length, const uint8_t *data = NULL) : offset(offset), length(length), data(data)
+        { }
+    };
+
     virtual ~SharedRegionMerger() { }
+
     /**
      * Merge the data from 'newData' into 'target'
      * @return True on success, False on failure
      */
-    virtual bool operator()(void *target, size_t target_size, const void *newData, size_t newData_size) = 0;
+    virtual bool operator()(uint8_t *target, const uint8_t *newData, size_t size);
+    virtual bool operator()(uint8_t *target, size_t size, const std::vector<ChangeSet> changeSets);
 };
 
 
+class SharedRegionInitializedMerger : public SharedRegionMerger {
+    uint8_t defVal;
+public:
+    SharedRegionInitializedMerger(uint8_t defaultValue) {
+        defVal = defaultValue;
+    }
+
+    bool operator()(uint8_t *target, const uint8_t *newData, size_t size);
+
+};
+
 
 class SharedRegionManager {
+protected:
+    friend class SharedRegion;
+
+    virtual void modifyRegion(SharedRegion *sr, size_t offset, size_t length, const void *data) = 0;
+
 public:
-    virtual SharedRegion* getLocalSharedRegion(const std::string &key, size_t size) = 0;
-    virtual SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL) = 0;
+    virtual SharedRegion* getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte = 0) = 0;
+    virtual SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL, uint8_t initByte = 0) = 0;
 
     virtual void publishRegion(SharedRegion*) = 0;
     virtual bool isRegionReady(const SharedRegion*) = 0;
     virtual void shutdownSharedRegion(SharedRegion*) = 0;
+
 
     virtual void updateState(bool finalize) = 0;
 };
@@ -91,6 +120,17 @@ public:
      * @return True if the region is ready to use (all sharers have called publish()).
      */
     bool isReady() const { return manager->isRegionReady(this); }
+
+
+    /**
+     * Before the region has published, apply a modification. (Copy this data in)
+     */
+    void modifyRegion(size_t offset, size_t length, const void *data)
+    { manager->modifyRegion(this, offset, length, data); }
+
+    template<typename T>
+    void modifyArray(size_t offset, const T &data)
+    { manager->modifyRegion(this, offset*sizeof(T), sizeof(T), &data); }
 
     /**
      * @return a void* pointer to the shared memory region

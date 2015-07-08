@@ -25,6 +25,31 @@
 
 namespace SST {
 
+bool SharedRegionMerger::operator()(uint8_t *target, const uint8_t *newData, size_t size)
+{
+    return false;
+}
+
+
+bool SharedRegionMerger::operator()(uint8_t *target, size_t size, const std::vector<ChangeSet> changeSets)
+{
+    for ( auto &&i = changeSets.begin() ; i != changeSets.end() ; ++i ) {
+        if ( i->offset + i->length > size ) return false;
+        memcpy(&target[i->offset], i->data, i->length);
+    }
+    return true;
+}
+
+
+
+bool SharedRegionInitializedMerger::operator()(uint8_t *target, const uint8_t *newData, size_t size)
+{
+    for ( size_t i = 0; i < size ; i++ ) {
+        target[i] = (newData[i] != defVal) ? newData[i] : target[i];
+    }
+    return true;
+}
+
 
 RegionInfo::~RegionInfo(void)
 {
@@ -45,7 +70,7 @@ RegionInfo::~RegionInfo(void)
 }
 
 
-bool RegionInfo::initialize(const std::string &key, size_t size, SharedRegionMerger *mergeObj)
+bool RegionInfo::initialize(const std::string &key, size_t size, uint8_t initByte, SharedRegionMerger *mergeObj)
 {
     if ( initialized ) return true;
 
@@ -59,6 +84,7 @@ bool RegionInfo::initialize(const std::string &key, size_t size, SharedRegionMer
         errno = ret;
         return false;
     }
+    memset(memory, initByte, realSize);
 
     myKey = key;
     shareCount = 0;
@@ -93,6 +119,13 @@ void RegionInfo::removeSharer(SharedRegionImpl *sri)
     }
 }
 
+void RegionInfo::modifyRegion(size_t offset, size_t length, const void *data)
+{
+    uint8_t *ptr = static_cast<uint8_t*>(memory);
+    memcpy(ptr + offset, data, length);
+
+    changesets.emplace_back(offset, length, ptr + offset);
+}
 
 
 void RegionInfo::publish(void)
@@ -139,33 +172,43 @@ SharedRegionManagerImpl::~SharedRegionManagerImpl()
 
 
 
-SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string &key, size_t size)
+SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte)
 {
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
         if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Mismatched Sizes!\n");
     } else {
-        if ( false == ri.initialize(key, size, NULL) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Shared Region Initialized Failed!\n");
+        if ( false == ri.initialize(key, size, initByte, NULL) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Shared Region Initialized Failed!\n");
     }
     return ri.addSharer(this);
 }
 
 
-SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger)
+SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger, uint8_t initByte)
 {
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
         if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Mismatched Sizes!\n");
     } else {
-        if ( false == ri.initialize(key, size, merger) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Shared Region Initialized Failed!\n");
+        if ( false == ri.initialize(key, size, initByte, merger) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Shared Region Initialized Failed!\n");
     }
     return ri.addSharer(this);
 }
 
+
+void SharedRegionManagerImpl::modifyRegion(SharedRegion *sr, size_t offset, size_t length, const void *data)
+{
+    SharedRegionImpl *sri = static_cast<SharedRegionImpl*>(sr);
+    RegionInfo *ri = sri->getRegion();
+    ri->modifyRegion(offset, length, data);
+}
 
 
 void SharedRegionManagerImpl::updateState(bool finalize)
 {
+
+    /* TODO:  MPI work */
+
     for ( auto &&rii = regions.begin() ; rii != regions.end() ; ++rii ) {
         RegionInfo &ri = rii->second;
         ri.updateState(finalize);

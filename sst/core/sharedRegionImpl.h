@@ -36,6 +36,8 @@ class RegionInfo {
 
     std::vector<SharedRegionImpl*> sharers;
 
+    std::vector<SharedRegionMerger::ChangeSet> changesets;
+
     std::set<int> ranks;
     SharedRegionMerger *merger; // If null, no multi-rank merging
     bool initialized;
@@ -47,11 +49,12 @@ public:
         initialized(false), ready(false)
     { }
     ~RegionInfo();
-    bool initialize(const std::string &key, size_t size, SharedRegionMerger *mergeObj);
+    bool initialize(const std::string &key, size_t size, uint8_t initByte, SharedRegionMerger *mergeObj);
     bool isInitialized() const { return initialized; }
     bool isReady() const { return ready; }
     SharedRegionImpl* addSharer(SharedRegionManager *manager);
     void removeSharer(SharedRegionImpl *sri);
+    void modifyRegion(size_t offset, size_t length, const void *data);
     void publish();
     void updateState(bool finalize);
     const std::string& getKey() const { return myKey; }
@@ -81,12 +84,15 @@ class SharedRegionManagerImpl : public SharedRegionManager {
 
     std::map<std::string, RegionInfo> regions;
 
+protected:
+    void modifyRegion(SharedRegion *sr, size_t offset, size_t length, const void *data);
+
 public:
     SharedRegionManagerImpl();
     ~SharedRegionManagerImpl();
 
-    virtual SharedRegion* getLocalSharedRegion(const std::string &key, size_t size);
-    virtual SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL);
+    virtual SharedRegion* getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte = 0);
+    virtual SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL, uint8_t initByte = 0);
 
     virtual void publishRegion(SharedRegion*);
     virtual bool isRegionReady(const SharedRegion*);
