@@ -422,7 +422,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
 
 void Simulation::initialize() {
     bool done = false;
-    sharedRegionManager->updateState();
+    sharedRegionManager->updateState(false);
 
     do {
         init_msg_count = 0;
@@ -438,7 +438,7 @@ void Simulation::initialize() {
         // We're done if no new messages were sent
         if ( init_msg_count == 0 ) done = true;
 
-        sharedRegionManager->updateState();
+        sharedRegionManager->updateState(false);
 
         init_phase++;
     } while ( !done);
@@ -470,7 +470,8 @@ void Simulation::run() {
       (*iter).second->setup();
     }
 
-    sharedRegionManager->updateState();
+    /* Enforce finalization of shared regions */
+    sharedRegionManager->updateState(true);
 
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.

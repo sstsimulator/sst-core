@@ -53,7 +53,7 @@ public:
     SharedRegionImpl* addSharer(SharedRegionManager *manager);
     void removeSharer(SharedRegionImpl *sri);
     void publish();
-    void updateState();
+    void updateState(bool finalize);
     const std::string& getKey() const { return myKey; }
     void* getMemory() const { return memory; }
     size_t getSize() const { return apparentSize; }
@@ -92,7 +92,7 @@ public:
     virtual bool isRegionReady(const SharedRegion*);
     virtual void shutdownSharedRegion(SharedRegion*);
 
-    void updateState();
+    void updateState(bool finalize);
 };
 
 

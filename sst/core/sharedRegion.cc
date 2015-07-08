@@ -101,12 +101,19 @@ void RegionInfo::publish(void)
 }
 
 
-void RegionInfo::updateState(void)
+void RegionInfo::updateState(bool finalize)
 {
     if ( !initialized ) return;
     if ( ready ) return;
 
     /* TODO:  Sync across ranks if necessary */
+
+    if ( finalize ) {
+        Output &out = Simulation::getSimulation()->getSimulationOutput();
+        out.output(CALL_INFO, "WARNING:  SharedRegion [%s] was not fully published!  Forcing finalization.\n", myKey.c_str());
+        // Force below check to pass
+        publishCount = shareCount;
+    }
 
     if ( shareCount == publishCount ) {
         mprotect(memory, realSize, PROT_READ);
@@ -157,11 +164,11 @@ SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string &
 
 
 
-void SharedRegionManagerImpl::updateState()
+void SharedRegionManagerImpl::updateState(bool finalize)
 {
     for ( auto &&rii = regions.begin() ; rii != regions.end() ; ++rii ) {
         RegionInfo &ri = rii->second;
-        ri.updateState();
+        ri.updateState(finalize);
     }
 }
 
