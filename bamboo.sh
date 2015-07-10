@@ -272,6 +272,7 @@ dotests() {
         ${SST_TEST_SUITES}/testSuite_merlin.sh
         ${SST_TEST_SUITES}/testSuite_simpleMessageGeneratorComponent.sh
         ${SST_TEST_SUITES}/testSuite_miranda.sh
+        ${SST_TEST_SUITES}/testSuite_partitioner.sh
         ${SST_TEST_SUITES}/testSuite_portals.sh
         ${SST_TEST_SUITES}/testSuite_prospero.sh
         ${SST_TEST_SUITES}/testSuite_qsimComponent.sh
