@@ -35,8 +35,8 @@ public:
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version );
 
-        ChangeSet() { }
     public:
+        ChangeSet() { } /* Should be private.  For some reason, clang is ignoring the friend declaration */
         size_t offset;
         size_t length;
         const uint8_t *data;
