@@ -192,8 +192,13 @@ void all_gather(const dataType& data, std::vector<dataType> &out_data) {
 
 
     size_t sendSize = buffer.size();
-    int allSizes[world] = {0};
-    int displ[world] = {0};
+    int allSizes[world];
+    int displ[world];
+
+    for(int i = 0; i < world; i++) {
+	allSizes[i] = 0;
+	displ[i] = 0;
+    }
 
     MPI_Allgather(&sendSize, sizeof(int), MPI_BYTE,
             &allSizes, sizeof(int), MPI_BYTE, MPI_COMM_WORLD);
