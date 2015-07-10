@@ -29,13 +29,20 @@ class SharedRegion;
 class SharedRegionMerger {
 public:
 
-    struct ChangeSet {
+    class ChangeSet {
+    private:
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version );
+
+        ChangeSet() { }
+    public:
         size_t offset;
         size_t length;
         const uint8_t *data;
 
-        ChangeSet(size_t offset, size_t length, const uint8_t *data = NULL) : offset(offset), length(length), data(data)
-        { }
+        ChangeSet(size_t offset, size_t length, const uint8_t *data = NULL) : offset(offset), length(length), data(data) { }
+
     };
 
     virtual ~SharedRegionMerger() { }
@@ -44,8 +51,8 @@ public:
      * Merge the data from 'newData' into 'target'
      * @return True on success, False on failure
      */
-    virtual bool operator()(uint8_t *target, const uint8_t *newData, size_t size);
-    virtual bool operator()(uint8_t *target, size_t size, const std::vector<ChangeSet> changeSets);
+    virtual bool merge(uint8_t *target, const uint8_t *newData, size_t size);
+    virtual bool merge(uint8_t *target, size_t size, const std::vector<ChangeSet> &changeSets);
 };
 
 
@@ -56,7 +63,7 @@ public:
         defVal = defaultValue;
     }
 
-    bool operator()(uint8_t *target, const uint8_t *newData, size_t size);
+    bool merge(uint8_t *target, const uint8_t *newData, size_t size);
 
 };
 
@@ -66,6 +73,8 @@ protected:
     friend class SharedRegion;
 
     virtual void modifyRegion(SharedRegion *sr, size_t offset, size_t length, const void *data) = 0;
+    virtual void* getMemory(SharedRegion* sr) = 0;
+    virtual const void* getConstPtr(const SharedRegion* sr) const = 0;
 
 public:
     virtual SharedRegion* getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte = 0) = 0;
@@ -86,12 +95,11 @@ private:
     SharedRegionManager *manager;
     size_t id;
     size_t size;
-    void *memory;
 
 protected:
     SharedRegion(SharedRegionManager *manager, size_t id,
-            size_t size, void *memory) : manager(manager), id(id),
-        size(size), memory(memory)
+            size_t size) : manager(manager), id(id),
+        size(size)
     { }
 
 public:
@@ -136,14 +144,14 @@ public:
      * @return a void* pointer to the shared memory region
      * This pointer is only valid to write to before a call to publish()
      */
-    void* getRawPtr() { return memory; }
+    void* getRawPtr() { return manager->getMemory(this); }
 
     /**
      * @return a const pointer to the shared memory region
      */
     template<typename T>
     T getPtr() const {
-        return static_cast<T>(memory);
+        return static_cast<T>(manager->getConstPtr(this));
     }
 };
 

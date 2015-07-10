@@ -25,7 +25,72 @@ namespace SST {
 
 class SharedRegionImpl;
 
+
 class RegionInfo {
+public:
+    class RegionMergeInfo {
+
+    protected:
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version );
+
+        RegionMergeInfo() {}
+        int rank;
+        std::string key;
+
+    public:
+        RegionMergeInfo(int rank, const std::string &key) : rank(rank), key(key) { }
+        virtual ~RegionMergeInfo() { }
+
+        virtual bool merge(RegionInfo *ri) { return true; }
+        const std::string& getKey() const { return key; }
+    };
+
+
+    class BulkMergeInfo : public RegionMergeInfo {
+    protected:
+        BulkMergeInfo() : RegionMergeInfo() {}
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version );
+
+        size_t length;
+        void *data;
+
+    public:
+        BulkMergeInfo(int rank, const std::string &key, void *data, size_t length) : RegionMergeInfo(rank, key),
+            length(length), data(data)
+        { }
+
+        bool merge(RegionInfo *ri) {
+            bool ret = ri->getMerger()->merge((uint8_t*)ri->getMemory(), (const uint8_t*)data, length);
+            free(data);
+            return ret;
+        }
+    };
+
+    class ChangeSetMergeInfo : public RegionMergeInfo {
+    protected:
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version );
+
+        ChangeSetMergeInfo() : RegionMergeInfo() {}
+
+        std::vector<SharedRegionMerger::ChangeSet> changeSets;
+    public:
+        ChangeSetMergeInfo(int rank, const std::string & key,
+                std::vector<SharedRegionMerger::ChangeSet> & changeSets) : RegionMergeInfo(rank, key),
+            changeSets(changeSets)
+        { }
+        bool merge(RegionInfo *ri) {
+            return ri->getMerger()->merge((uint8_t*)ri->getMemory(), ri->getSize(), changeSets);
+        }
+    };
+
+
+private:
     std::string myKey;
     size_t realSize;
     size_t apparentSize;
@@ -36,31 +101,45 @@ class RegionInfo {
 
     std::vector<SharedRegionImpl*> sharers;
 
+    SharedRegionMerger *merger; // If null, no multi-rank merging
     std::vector<SharedRegionMerger::ChangeSet> changesets;
 
-    std::set<int> ranks;
-    SharedRegionMerger *merger; // If null, no multi-rank merging
+    bool didBulk;
     bool initialized;
     bool ready;
+
 
 public:
     RegionInfo() : realSize(0), apparentSize(0), memory(NULL),
         shareCount(0), publishCount(0), merger(NULL),
-        initialized(false), ready(false)
+        didBulk(false), initialized(false), ready(false)
     { }
     ~RegionInfo();
     bool initialize(const std::string &key, size_t size, uint8_t initByte, SharedRegionMerger *mergeObj);
     bool isInitialized() const { return initialized; }
     bool isReady() const { return ready; }
+
     SharedRegionImpl* addSharer(SharedRegionManager *manager);
     void removeSharer(SharedRegionImpl *sri);
+
+
     void modifyRegion(size_t offset, size_t length, const void *data);
     void publish();
+
     void updateState(bool finalize);
+
     const std::string& getKey() const { return myKey; }
-    void* getMemory() const { return memory; }
+    void* getMemory() { didBulk = true; return memory; }
+    const void* getConstPtr() const { return memory; }
     size_t getSize() const { return apparentSize; }
     size_t getNumSharers() const { return shareCount; }
+
+    bool shouldMerge() const { return (NULL != merger); }
+    SharedRegionMerger* getMerger() { return merger; }
+    /** Returns the size of the data to be transferred */
+    RegionMergeInfo* getMergeInfo();
+
+    void setProtected(bool readOnly);
 };
 
 
@@ -69,8 +148,8 @@ class SharedRegionImpl : public SharedRegion {
     RegionInfo *region;
 public:
     SharedRegionImpl(SharedRegionManager *manager, size_t id,
-            size_t size, RegionInfo *region) : SharedRegion(manager, id,
-                size, region->getMemory()), published(false), region(region)
+            size_t size, RegionInfo *region) : SharedRegion(manager, id, size),
+        published(false), region(region)
     { }
 
     bool isPublished() const { return published; }
@@ -82,10 +161,18 @@ public:
 
 class SharedRegionManagerImpl : public SharedRegionManager {
 
+    struct CommInfo_t {
+        RegionInfo *region;
+        std::vector<int> tgtRanks;
+        std::vector<char> sendBuffer;
+    };
+
     std::map<std::string, RegionInfo> regions;
 
 protected:
     void modifyRegion(SharedRegion *sr, size_t offset, size_t length, const void *data);
+    void* getMemory(SharedRegion *sr);
+    const void* getConstPtr(const SharedRegion *sr) const;
 
 public:
     SharedRegionManagerImpl();

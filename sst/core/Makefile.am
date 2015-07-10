@@ -120,6 +120,7 @@ sst_core_sources = \
 	componentInfo.cc \
 	config.cc \
 	configGraph.cc \
+	boostExports.cc \
 	elemLoader.cc \
 	event.cc \
 	exit.cc \

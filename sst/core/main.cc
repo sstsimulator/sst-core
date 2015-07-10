@@ -311,7 +311,7 @@ main(int argc, char *argv[])
 #ifdef HAVE_MPI
 
             // broadcast(world, min_part, 0);
-            broadcast(min_part, 0);
+            Comms::broadcast(min_part, 0);
 #endif
         }
 #if 0
@@ -380,10 +380,10 @@ main(int argc, char *argv[])
             // broadcast(world, Params::keyMapReverse, 0);
             // broadcast(world, Params::nextKeyID, 0);
             // broadcast(world, cfg, 0);
-            broadcast(Params::keyMap, 0);
-            broadcast(Params::keyMapReverse, 0);
-            broadcast(Params::nextKeyID, 0);
-            broadcast(cfg, 0);
+            Comms::broadcast(Params::keyMap, 0);
+            Comms::broadcast(Params::keyMapReverse, 0);
+            Comms::broadcast(Params::nextKeyID, 0);
+            Comms::broadcast(cfg, 0);
 
             std::set<int> my_ranks;
             std::set<int> your_ranks;
@@ -412,16 +412,16 @@ main(int argc, char *argv[])
                 // pending_requests.push_back(world.isend(dest, 0, *your_graph));
                 // boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
                 // pending_requests.clear();
-                send(dest, 0, your_ranks);
-                send(dest, 0, *your_graph);
+                Comms::send(dest, 0, your_ranks);
+                Comms::send(dest, 0, *your_graph);
                 your_ranks.clear();
                 // delete your_graph;
             }
             else {
                 // world.recv(boost::mpi::any_source, 0, my_ranks);
                 // world.recv(boost::mpi::any_source, 0, *graph);
-                recv(MPI_ANY_SOURCE, 0, my_ranks);
-                recv(MPI_ANY_SOURCE, 0, *graph);
+                Comms::recv(MPI_ANY_SOURCE, 0, my_ranks);
+                Comms::recv(MPI_ANY_SOURCE, 0, *graph);
             }
 
             while ( my_ranks.size() != 1 ) {
@@ -443,8 +443,8 @@ main(int argc, char *argv[])
                 // pending_requests.push_back(world.isend(dest, 0, *your_graph));
                 // boost::mpi::wait_all(pending_requests.begin(), pending_requests.end());
                 // pending_requests.clear();
-                send(dest, 0, your_ranks);
-                send(dest, 0, *your_graph);
+                Comms::send(dest, 0, your_ranks);
+                Comms::send(dest, 0, *your_graph);
                 your_ranks.clear();
                 delete your_graph;
             }
@@ -530,23 +530,23 @@ main(int argc, char *argv[])
             // Send my lib_names to the next lowest rank
             // gather(world, lib_names, all_lib_names, 0);
             if ( rank == size - 1 ) {
-                send(rank - 1, 0, lib_names);
+                Comms::send(rank - 1, 0, lib_names);
                 lib_names.clear();
             }
             else {
-                recv(rank + 1, 0, other_lib_names);
+                Comms::recv(rank + 1, 0, other_lib_names);
                 for ( set<string>::const_iterator iter = other_lib_names.begin();
                       iter != other_lib_names.end(); ++iter ) {
                     lib_names.insert(*iter);
                 }
                 if ( rank != 0 ) {
-                    send(rank - 1, 0, lib_names);
+                    Comms::send(rank - 1, 0, lib_names);
                     lib_names.clear();
                 }
             }
 
             // broadcast(world, lib_names, 0);
-            broadcast(lib_names, 0);
+            Comms::broadcast(lib_names, 0);
             Simulation::getSimulation()->getFactory()->loadUnloadedLibraries(lib_names);
         }
 #endif

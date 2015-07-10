@@ -25,7 +25,6 @@
 #include "sst/core/oneshot.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/config.h"
-#include <sst/core/sharedRegion.h>
 #include <sst/core/statapi/statengine.h>
 #include <sst/core/statapi/statoutput.h>
 #include <sst/core/statapi/statbase.h>
@@ -63,6 +62,7 @@ class TimeConverter;
 class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
+class SharedRegionManager;
 
 
 typedef std::map<std::string, Introspector* > IntroMap_t;

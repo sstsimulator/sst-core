@@ -70,12 +70,12 @@ void SST::Interfaces::SimpleNetwork::exchangeMappingData() {
 
         // Send all mappings to next lowest rank
         if ( rank == num_ranks - 1 ) {
-            SST::send(rank  - 1, 0, network_maps);
+            SST::Comms::send(rank  - 1, 0, network_maps);
             network_maps.clear();
         }
         else {
             map<string,vector<SimpleNetwork::nid_t> > maps;
-            SST::recv(rank + 1, 0, maps);
+            SST::Comms::recv(rank + 1, 0, maps);
 
             // Now loop through all the Mapping objects and combine
             // them, then send to next lower rank. Easiest to just put
@@ -97,7 +97,7 @@ void SST::Interfaces::SimpleNetwork::exchangeMappingData() {
                     if ( vec.size() < my_vec.size() ) {
                         vec.resize(my_vec.size(), SimpleNetwork::INIT_BROADCAST_ADDR);
                     }
-                    for ( int i = 0; i < vec.size(); i++ ) {
+                    for ( size_t i = 0; i < vec.size(); i++ ) {
                         if ( vec[i] == SimpleNetwork::INIT_BROADCAST_ADDR ) {
                             vec[i] = my_vec[i];
                         }
@@ -113,7 +113,7 @@ void SST::Interfaces::SimpleNetwork::exchangeMappingData() {
             
             // Send it on to next rank down
             if ( rank != 0 ) {
-                SST::send(rank - 1, 0, maps);
+                SST::Comms::send(rank - 1, 0, maps);
                 network_maps.clear();
             }
             else {
@@ -122,7 +122,7 @@ void SST::Interfaces::SimpleNetwork::exchangeMappingData() {
             }
 
         }
-        broadcast(network_maps, 0);
+        SST::Comms::broadcast(network_maps, 0);
 
     }
 #endif
