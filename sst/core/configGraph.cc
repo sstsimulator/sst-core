@@ -24,6 +24,10 @@
 
 #include <string.h>
 
+#ifdef HAVE_MPI
+#include <mpi.h>
+#endif
+
 using namespace std;
 
 namespace SST {
@@ -486,6 +490,14 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 }
 
 void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot) {
+#ifdef HAVE_MPI
+	int rank = 0;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+	if(rank > 0) {
+		return;
+	}
+#endif
 	if ( asDot ) {
 		// Attempt to determine graph name
 		std::string graphName = filePath;
