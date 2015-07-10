@@ -181,24 +181,15 @@ void all_gather(const dataType& data, std::vector<dataType> &out_data) {
     MPI_Comm_size(MPI_COMM_WORLD, &world);
 
     // Serialize the data
-    std::vector<char> buffer;
-
-    boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
-    boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
-    boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header);
-
-    oa << data;
-    output_stream.flush();
+    std::vector<char> buffer = Comms::serialize(data);
 
 
     size_t sendSize = buffer.size();
     int allSizes[world];
     int displ[world];
 
-    for(int i = 0; i < world; i++) {
-	allSizes[i] = 0;
-	displ[i] = 0;
-    }
+    memset(allSizes, '\0', world * sizeof(int));
+    memset(displ, '\0', world * sizeof(int));
 
     MPI_Allgather(&sendSize, sizeof(int), MPI_BYTE,
             &allSizes, sizeof(int), MPI_BYTE, MPI_COMM_WORLD);
@@ -217,11 +208,7 @@ void all_gather(const dataType& data, std::vector<dataType> &out_data) {
 
     out_data.resize(world);
     for ( int i = 0 ; i < world ; i++ ) {
-        boost::iostreams::basic_array_source<char> source(&bigBuff[displ[i]],allSizes[i]);
-        boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-        boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
-
-        ia >> out_data[i];
+        Comms::deserialize(&bigBuff[displ[i]], allSizes[i], out_data[i]);
     }
 
     delete bigBuff;
