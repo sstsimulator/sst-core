@@ -10,6 +10,8 @@
 // distribution.
 
 #include <sst_config.h>
+
+#include <sst/core/configGraph.h>
 #include <sst/core/part/singlepart.h>
 
 using namespace std;
@@ -18,6 +20,12 @@ bool SSTSinglePartition::initialized = SSTPartitioner::addPartitioner("single",&
 
 SSTSinglePartition::SSTSinglePartition() {}
 
-void SSTSinglePartition::performPartition(ConfigGraph* graph) {
-    graph->setComponentRanks(0);
+void SSTSinglePartition::performPartition(PartitionGraph* graph) {
+
+	PartitionComponentMap_t& compMap = graph->getComponentMap();
+
+	for(auto compItr = compMap.begin(); compItr != compMap.end(); compItr++) {
+		compItr->rank = 0;
+	}
+
 }

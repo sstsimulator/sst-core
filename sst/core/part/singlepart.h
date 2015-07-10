@@ -39,7 +39,7 @@ class SSTSinglePartition : public SST::Partition::SSTPartitioner {
 			Performs a partition of an SST simulation configuration
 			\param graph The simulation configuration to partition
 		*/
-		void performPartition(ConfigGraph* graph);
+		void performPartition(PartitionGraph* graph);
 
         bool requiresConfigGraph() { return true; }
         bool spawnOnAllRanks() { return false; }
