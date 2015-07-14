@@ -97,7 +97,10 @@ void SST::Interfaces::SimpleNetwork::exchangeMappingData() {
                     if ( vec.size() < my_vec.size() ) {
                         vec.resize(my_vec.size(), SimpleNetwork::INIT_BROADCAST_ADDR);
                     }
-                    for ( size_t i = 0; i < vec.size(); i++ ) {
+
+                    size_t num_to_copy = vec.size() < my_vec.size() ? vec.size() : my_vec.size();
+                    
+                    for ( size_t i = 0; i < num_to_copy; i++ ) {
                         if ( vec[i] == SimpleNetwork::INIT_BROADCAST_ADDR ) {
                             vec[i] = my_vec[i];
                         }
