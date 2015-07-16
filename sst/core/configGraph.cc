@@ -89,6 +89,7 @@ ConfigComponent::cloneWithoutLinks() const
     ret.params = params;
     ret.isIntrospector = isIntrospector;
     ret.enabledStatistics = enabledStatistics;
+    ret.enabledStatParams = enabledStatParams;
     return ret;
 }
     
@@ -103,6 +104,7 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.rank = rank;
     ret.isIntrospector = isIntrospector;
     ret.enabledStatistics = enabledStatistics;
+    ret.enabledStatParams = enabledStatParams;
     return ret;
 }
     
@@ -332,6 +334,12 @@ void
 ConfigGraph::setStatisticOutput(const char* name)
 {
     statOutputName = name;
+}
+
+void
+ConfigGraph::setStatisticOutputParams(Params& p)
+{
+    statOutputParams = p;
 }
 
 void 
@@ -766,6 +774,12 @@ ConfigGraph::getSubGraph(const std::set<int>& rank_set)
             graph->comps[comp1.id].links.push_back(link.id);
         }
     }
+
+    // Copy the statistic configuration to the sub-graph
+    graph->setStatisticOutput(this->statOutputName.c_str());
+    graph->setStatisticOutputParams(this->getStatOutputParams());
+    graph->setStatisticLoadLevel(this->getStatLoadLevel());
+
     return graph;    
 }
 

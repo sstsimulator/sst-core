@@ -254,6 +254,9 @@ public:
     /** Add parameter to the statistic output module */
     void addStatisticOutputParameter(const char* param, const char* value);
 
+    /** Set a set of parameter to the statistic output module */
+    void setStatisticOutputParams(Params& p);
+
     /** Set the statistic system load level */
     void setStatisticLoadLevel(uint8_t loadLevel);
 
