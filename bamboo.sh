@@ -140,12 +140,6 @@ echo " #####################################################"
    echo "parameter \$2 is $2  "
 echo " #####################################################"
 
-    if [[ $2 == *intel* ]] ; then
-        ModuleEx load gcc/gcc-4.8.1
-echo " #############   Loaded Module   #####################"
-         
-    fi
-
     #       Recover library path
     export LD_LIBRARY_PATH=$SAVE_LIBRARY_PATH
     export DYLD_LIBRARY_PATH=$LD_LIBRARY_PATH 
@@ -711,22 +705,22 @@ getconfig() {
             miscEnv="${mpi_environment}"
             depsStr="-k none -d 2.2.2 -p none -b 1.50 -g none -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default -z 3.8 -c none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} $miscEnv CXXFLAGS=-gxx-name=/usr/local/module-pkgs/gcc/4.8.1/bin/g++ CFLAGS=-gcc-name=/usr/local/module-pkgs/gcc/4.8.1/bin/gcc"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} $miscEnv $IntelExtraConfigStr"
             ;;
 
-        sstmainline_config_fast_intel_build) 
+        sstmainline_config_fast_intel_build_no_gem5) 
             #-----------------------------------------------------------------
             # sstmainline_config_no_gem5_wo_chdl
             #     This option used for configuring SST with supported stabledevel deps
             #     Some compilers (gcc 4.7, 4.8, intel 13.4) have problems building gem5,
             #     so this option removes gem5 in order to evaluate the rest of the build
-            #     under those compilers. Omit chdl.  
+            #     under those compilers. Omit chdl.  CXXFLAGS=-gxx-name=/usr/local/module-pkgs/gcc/4.8.1/bin/g++ CFLAGS=-gcc-name=/usr/local/module-pkgs/gcc/4.8.1/bin/gcc"
             #-----------------------------------------------------------------
             export | egrep SST_DEPS_
             miscEnv="${mpi_environment}"
             depsStr="-k none -d none -p none  -g none -m none -i none -o none -h none -s none -q none -M none  -z none -c none"
             setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} $miscEnv CXXFLAGS=-gxx-name=/usr/local/module-pkgs/gcc/4.8.1/bin/g++ CFLAGS=-gcc-name=/usr/local/module-pkgs/gcc/4.8.1/bin/gcc"
+            configStr="$baseoptions --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME} $miscEnv $IntelExtraConfigStr"
             ModuleEx unload metis
             ;;
 
@@ -1089,7 +1083,7 @@ getconfig() {
 
 
 #-------------------------------------------------------------------------
-# Function: linuxSetBoostMpi
+# Function: linuxSetBoostMPI
 # Description:
 #   Purpose: Performs selection and loading of Bost and MPI modules
 #            for MacOS
@@ -1134,9 +1128,13 @@ linuxSetBoostMPI() {
        elif [[ "$4" =~ intel.* ]]
        then
            ModuleEx load intel/${4}
+           if [[ "$4" == *intel-15* ]] ; then
+               ModuleEx load gcc/gcc-4.8.1
+               IntelExtraConfigStr="CXXFLAGS=-gxx-name=`which g++` CFLAGS=-gcc-name=`which gcc`"
+           fi
+
        fi
    fi
-   
    # Check to see if we are loading Boost 1.56 or greater, if so, we no longer
    # need to include mpi, so change the desiredBoost name as appropriate
    case $3 in
@@ -1297,11 +1295,11 @@ linuxSetBoostMPI() {
        # METIS 5.1.0
        ModuleEx avail | egrep -q "metis/metis-5.1.0_${compiler}"
        if [ $? == 0 ] ; then
-if [[ ${compiler} != *intel* ]] ; then
+if [[ ${compiler} != *intel-15* ]] ; then
            echo "bamboo.sh: Load METIS 5.1.0 (gcc ${compiler} variant)"
            ModuleEx load metis/metis-5.1.0_${compiler}
 echo ' ####################################################################### '
-  echo "              DO NOT LOAD METIS FOR Intel Compiler "
+  echo "              DO NOT LOAD METIS FOR Intel 15  Compiler "
 echo ' ####################################################################### '
 fi
        else
@@ -1314,7 +1312,7 @@ fi
 }
 
 #-------------------------------------------------------------------------
-# Function: darwinSetBoostMpi
+# Function: darwinSetBoostMPI
 # Description:
 #   Purpose: Performs selection and loading of Bost and MPI modules
 #            for MacOS
@@ -2396,7 +2394,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_linux_with_ariel_no_gem5|sstmainline_config_no_gem5|sstmainline_config_no_gem5_intel_gcc_4_8_1|sstmainline_config_fast_intel_build|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_static_no_gem5|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_macosx_static_no_gem5|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sst_config_dist_test|sst_config_make_dist_no_gem5|documentation|sstmainline_configA|sstmainline_config_VaultSim|sstmainline_configZ|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_diropenmpB|sstmainline_config_dirnoncacheable|sstmainline_config_diropenmpI|sstmainline_config_dir3cache|sstmainline_config_all|sstmainline_config_gem5_gcc_4_6_4|sstmainline_config_fast|sstmainline_config_fast_static|sstmainline_config_memH_wo_openMP)
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_linux_with_ariel_no_gem5|sstmainline_config_no_gem5|sstmainline_config_no_gem5_intel_gcc_4_8_1|sstmainline_config_fast_intel_build_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_static_no_gem5|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_macosx_static_no_gem5|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sst_config_dist_test|sst_config_make_dist_no_gem5|documentation|sstmainline_configA|sstmainline_config_VaultSim|sstmainline_configZ|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_diropenmpB|sstmainline_config_dirnoncacheable|sstmainline_config_diropenmpI|sstmainline_config_dir3cache|sstmainline_config_all|sstmainline_config_gem5_gcc_4_6_4|sstmainline_config_fast|sstmainline_config_fast_static|sstmainline_config_memH_wo_openMP)
             #   Save Parameters $2, $3 and $4 in case they are need later
             SST_DIST_MPI=$2
             SST_DIST_BOOST=$3
