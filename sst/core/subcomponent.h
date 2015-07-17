@@ -158,6 +158,11 @@ protected:
     Module* loadModuleWithComponent(std::string type, Params& params);
     SubComponent* loadSubComponent(std::string type, Params& params);
 
+
+    /** Find a lookup table */
+    SharedRegion* getLocalSharedRegion(const std::string &key, size_t size);
+    SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL);
+
     
 private:
     /** Component's type, set by the factory when the object is created.

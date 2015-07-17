@@ -174,5 +174,18 @@ SubComponent::loadSubComponent(std::string type, Params& params)
     return parent->loadSubComponent(type,parent,params);
 }
 
+SharedRegion*
+SubComponent::getLocalSharedRegion(const std::string &key, size_t size)
+{
+    return parent->getLocalSharedRegion(key,size);
+}
+
+SharedRegion*
+SubComponent::getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger)
+{
+    return parent->getGlobalSharedRegion(key, size, merger);
+}
+
+
 
 } // namespace SST
