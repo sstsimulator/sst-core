@@ -13,7 +13,7 @@
 #ifndef SST_CORE_OBJECTCOMMS_H
 #define SST_CORE_OBJECTCOMMS_H
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -97,7 +97,7 @@ void deserialize(char *buffer, int blen, dataType &tgt)
 
 
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 template <typename dataType>
 void broadcast(dataType& data, int root) {
     int rank = 0;

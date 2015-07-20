@@ -12,10 +12,10 @@
 // distribution.
 
 #include <sst/sst_config.h>
-#ifdef HAVE_PYTHON
+#ifdef SST_CONFIG_HAVE_PYTHON
 #include <Python.h>
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -709,7 +709,7 @@ static PyObject* exitsst(PyObject* self, PyObject* args)
 
 static PyObject* getSSTMPIWorldSize(PyObject* self, PyObject* args) {
     int ranks = 1;
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     MPI_Comm_size(MPI_COMM_WORLD, &ranks);
 #endif
     return PyInt_FromLong(ranks);

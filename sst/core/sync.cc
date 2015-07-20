@@ -24,7 +24,7 @@
 #include <boost/iostreams/stream_buffer.hpp>
 #include <boost/iostreams/stream.hpp>
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -129,7 +129,7 @@ namespace SST {
     SyncD::execute(void)
     {
         // static Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
         // std::vector<boost::mpi::request> pending_requests;
 
         //Maximum number of outstanding requests is 3 times the number
@@ -262,7 +262,7 @@ namespace SST {
     int
     SyncD::exchangeLinkInitData(int msg_count)
     {
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 
         //Maximum number of outstanding requests is 3 times the number
         // of ranks I communicate with (1 recv, 2 sends per rank)

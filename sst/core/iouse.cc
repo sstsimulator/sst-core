@@ -15,7 +15,7 @@
 #include "sst/core/iouse.h"
 
 #include <sys/resource.h>
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -29,7 +29,7 @@ uint64_t SST::Core::maxInputOperations() {
     uint64_t local_max_io_in = sim_ruse.ru_inblock;
     uint64_t global_max_io_in = local_max_io_in;
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     MPI_Allreduce(&local_max_io_in, &global_max_io_in, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
 #endif
 
@@ -43,7 +43,7 @@ uint64_t SST::Core::maxOutputOperations() {
     uint64_t local_max_io_out = sim_ruse.ru_oublock;
     uint64_t global_max_io_out = local_max_io_out;
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     MPI_Allreduce(&local_max_io_out, &global_max_io_out, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
 #endif
 

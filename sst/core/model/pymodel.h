@@ -17,7 +17,7 @@
 
 // This only works if we have Python defined from configure, otherwise this is
 // a compile time error.
-#ifdef HAVE_PYTHON
+#ifdef SST_CONFIG_HAVE_PYTHON
 
 #include <map>
 #include <string>

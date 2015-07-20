@@ -61,7 +61,7 @@
 #include "sst/core/serialization/types.h"
 
 #if SST_WANT_POLYMORPHIC_ARCHIVE
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #define SST_BOOST_SERIALIZATION_INSTANTIATE(func)                       \
     template void                                                       \
     func<boost::archive::polymorphic_iarchive>(                         \

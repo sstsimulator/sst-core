@@ -53,7 +53,7 @@
 #pragma GCC diagnostic pop
 #endif
 
-/* #ifdef HAVE_MPI */
+/* #ifdef SST_CONFIG_HAVE_MPI */
 /* #include <boost/mpi.hpp> */
 /* #endif */
 

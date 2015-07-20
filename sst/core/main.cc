@@ -11,14 +11,14 @@
 
 
 #include <sst_config.h>
-#ifdef HAVE_PYTHON
+#ifdef SST_CONFIG_HAVE_PYTHON
 #include <Python.h>
 #endif
 
 #include "sst/core/serialization.h"
 
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -124,7 +124,7 @@ int
 main(int argc, char *argv[])
 {
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     // boost::mpi::environment* mpiEnv = new boost::mpi::environment(argc,argv);
     // boost::mpi::communicator world;
     MPI_Init(&argc, &argv);
@@ -147,7 +147,7 @@ main(int argc, char *argv[])
 
     // All ranks parse the command line
     if ( cfg.parseCmdLine(argc, argv) ) {
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
         // delete mpiEnv;
 #endif
         return -1;
@@ -308,14 +308,14 @@ main(int argc, char *argv[])
                     }
                 }
             }
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 
             // broadcast(world, min_part, 0);
             Comms::broadcast(min_part, 0);
 #endif
         }
 #if 0
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
             ///////////////////////////////////////////////////////////////////////
             // Broadcast the data structures if only rank 0 built the
             // graph
@@ -337,7 +337,7 @@ main(int argc, char *argv[])
 #if 0
         
         if ( size > 1 ) {
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 			// broadcast(world, Params::keyMap, 0);
 			// broadcast(world, Params::keyMapReverse, 0);
 			// broadcast(world, Params::nextKeyID, 0);
@@ -373,7 +373,7 @@ main(int argc, char *argv[])
 
         
 #if 1        
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 		if ( size > 1 ) {
             
             // broadcast(world, Params::keyMap, 0);
@@ -467,7 +467,7 @@ main(int argc, char *argv[])
     // std::cout << "#  Build time: " << build_time << " s" << std::endl;
 
     double max_build_time = build_time;
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     // all_reduce(world, &build_time, 1, &max_build_time, boost::mpi::maximum<double>() );
     MPI_Allreduce( &build_time, &max_build_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
 #endif
@@ -520,7 +520,7 @@ main(int argc, char *argv[])
 
         // If we are a parallel job, need to makes sure that all used
         // libraries are loaded on all ranks.
-#if HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
         if ( size > 1 ) {
             set<string> lib_names;
             set<string> other_lib_names;
@@ -578,7 +578,7 @@ main(int argc, char *argv[])
     Activity::getMemPoolUsage(mempool_size, active_activities);
     uint64_t max_mempool_size, global_mempool_size, global_active_activities;
     
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     MPI_Allreduce(&run_time, &max_run_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&total_time, &max_total_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&local_max_tv_depth, &global_max_tv_depth, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
@@ -680,19 +680,19 @@ main(int argc, char *argv[])
     }
 #endif
     
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     if( 0 == rank ) {
 #endif
     // Print out the simulation time regardless of verbosity.
         sim_output->output("Simulation is complete, simulated time: %s\n", simulated_time.toStringBestSI().c_str());
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     }
 #endif
 
     // Delete the simulation object
     delete sim;
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     // delete mpiEnv;
     MPI_Finalize();
 #endif

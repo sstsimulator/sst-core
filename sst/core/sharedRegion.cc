@@ -244,7 +244,7 @@ void SharedRegionManagerImpl::updateState(bool finalize)
 {
 
     if ( finalize ) {
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
         int myRank = Simulation::getSimulation()->getRank();
         if ( Simulation::getSimulation()->getNumRanks() > 1 ) {
 

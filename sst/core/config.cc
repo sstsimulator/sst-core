@@ -19,7 +19,7 @@
 #include <iostream>
 #include <boost/program_options.hpp>
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -54,7 +54,7 @@ Config::Config( int my_rank, int world_size )
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
     heartbeatPeriod = "N";
-#if HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     partitioner = "linear";
 #else
     partitioner = "single";
@@ -63,7 +63,7 @@ Config::Config( int my_rank, int world_size )
     generator_options   = "";
     dump_component_graph_file = "";
     output_directory = "";
-#ifdef HAVE_PYTHON
+#ifdef SST_CONFIG_HAVE_PYTHON
     model_options = "";
 #endif
     verbose     = 0;
@@ -136,7 +136,7 @@ Config::Config( int my_rank, int world_size )
 				"Set time for heart beats to be published (these are approximate timings published by the core to update on progress), default is every 10000 simulated seconds")
         ("timebase", po::value< string >(&timeBase), 
                                 "sets the base time step of the simulation (default: 1ps)")
-#if HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
         ("partitioner", po::value< string >(&partitioner),
          part_desc.c_str())
 #endif
@@ -146,7 +146,7 @@ Config::Config( int my_rank, int world_size )
         ("gen-options", po::value< string >(&generator_options),
          "options to be passed to generator function (must use quotes if whitespace is present)")
 
-#ifdef HAVE_PYTHON
+#ifdef SST_CONFIG_HAVE_PYTHON
         ("model-options", po::value< string >(&model_options),
          "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
@@ -210,7 +210,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
     }
 
     if ( var_map->count( "help" ) ) {
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 	int this_rank = 0;
 	MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
 	if(this_rank == 0) {
@@ -218,7 +218,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
 		cout << "Usage: " << run_name << " [options] config-file" << endl;
 	        cout << *visNoConfigDesc;
 	        cout << *mainDesc << endl;
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 	}
 #endif
         return 1;

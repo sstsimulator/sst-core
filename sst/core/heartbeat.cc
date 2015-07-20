@@ -18,7 +18,7 @@
 #include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -71,7 +71,7 @@ void SimulatorHeartbeat::execute( void )
     Activity::getMemPoolUsage(mempool_size, active_activities);
     uint64_t max_mempool_size, global_mempool_size, global_active_activities;
     
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     MPI_Allreduce(&local_max_tv_depth, &global_max_tv_depth, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&local_sync_data_size, &global_max_sync_data_size, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&local_sync_data_size, &global_sync_data_size, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );

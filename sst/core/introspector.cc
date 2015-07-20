@@ -14,7 +14,7 @@
 #include "sst/core/introspector.h"
 
 //#include <boost/foreach.hpp>
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -31,7 +31,7 @@ namespace SST {
 Introspector::Introspector()
 {
     int size = 1;
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 #endif
     arrayvalue = new uint64_t[size];
@@ -76,7 +76,7 @@ std::list<IntrospectedComponent*> Introspector::getModelsByType(const std::strin
 void
 Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operation op, int rank)
 {
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     // boost::mpi::communicator world; 
     int my_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);

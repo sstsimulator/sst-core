@@ -14,7 +14,7 @@
 #include "sst/core/serialization.h"
 #include "sst/core/exit.h"
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -123,7 +123,7 @@ void Exit::check( void )
     int value = ( m_refCount > 0 );
     int out;
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     // boost::mpi::communicator world;
     // all_reduce( world, &value, 1, &out, std::plus<int>() );  
     MPI_Allreduce( &value, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );  
@@ -133,7 +133,7 @@ void Exit::check( void )
 
     // If out is 0, then it's time to end
     if ( !out ) {
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
         // Do an all_reduce to get the end_time
         SimTime_t end_value;
         // all_reduce( world, &end_time, 1, &end_value, boost::mpi::maximum<SimTime_t>() );

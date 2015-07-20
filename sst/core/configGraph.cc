@@ -24,7 +24,7 @@
 
 #include <string.h>
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -498,7 +498,7 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 }
 
 void ConfigGraph::dumpToFile(const std::string filePath, Config* cfg, bool asDot) {
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 	int rank = 0;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 

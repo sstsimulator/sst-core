@@ -24,7 +24,7 @@
 // Core Headers
 #include "sst/core/simulation.h"
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
 
@@ -196,7 +196,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
     Simulation::getSimulation()->emergencyShutdown(-1);
 
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     // If MPI exists, abort
     // boost::mpi::environment::abort(exit_code);      
     MPI_Abort(MPI_COMM_WORLD, exit_code);
@@ -430,7 +430,7 @@ void Output::outputprintf(const char* format, va_list arg) const
 
 int Output::getMPIWorldSize() const {
     int ranks = 1;
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     MPI_Comm_size(MPI_COMM_WORLD, &ranks);
 #endif
     return ranks;
@@ -439,7 +439,7 @@ int Output::getMPIWorldSize() const {
 
 int Output::getMPIWorldRank() const {
     int rank = 0;
-#ifdef HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #endif
     return rank;
@@ -447,7 +447,7 @@ int Output::getMPIWorldRank() const {
 
 
 // std::string Output::getMPIProcName() const {
-// #ifdef HAVE_MPI
+// #ifdef SST_CONFIG_HAVE_MPI
 //     return boost::mpi::environment::processor_name();
 // #endif
 //     return "";

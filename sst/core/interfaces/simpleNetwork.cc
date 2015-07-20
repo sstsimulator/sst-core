@@ -63,7 +63,7 @@ vector<SimpleNetwork::nid_t>* SimpleNetwork::getMappingVector(string mapName) {
 }
 
 void SST::Interfaces::SimpleNetwork::exchangeMappingData() {
-#if HAVE_MPI
+#if SST_CONFIG_HAVE_MPI
     int rank = Simulation::getSimulation()->getRank();
     int num_ranks = Simulation::getSimulation()->getNumRanks();
     if ( num_ranks > 1 ) {
