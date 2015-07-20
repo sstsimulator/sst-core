@@ -182,7 +182,7 @@ echo " #####################################################"
          echo \$SST_TEST_SUITES = $SST_TEST_SUITES
          echo "all() {" > files.for.all
          
-         ls testSuite_* | grep -v -e macro -e Sweep > Suite.list
+         ls testSuite_* | grep -v -e macro -e dir.*Sweep -e Sweep_openMP > Suite.list
          sed  s\%^%\${SST_TEST_SUITES}/% Suite.list >> files.for.all
          echo "}" >> files.for.all
          . files.for.all
