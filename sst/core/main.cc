@@ -52,6 +52,7 @@
 #include <sst/core/configGraphOutput.h>
 #include <sst/core/cfgoutput/pythonConfigOutput.h>
 #include <sst/core/cfgoutput/dotConfigOutput.h>
+#include <sst/core/cfgoutput/xmlConfigOutput.h>
 
 using namespace SST::Core;
 using namespace SST::Partition;
@@ -121,6 +122,11 @@ static void do_graph_wireup(SST::Output* sim_output, ConfigGraph* graph,
     // user asked us to dump the config graph in dot graph format
     if(cfg.output_dot != "") {
 	graphOutputs.push_back( new DotConfigGraphOutput(cfg.output_dot.c_str()) );
+    }
+
+    // User asked us to dump the config graph in XML format (for energy experiments)
+    if(cfg.output_xml != "") {
+	graphOutputs.push_back( new XMLConfigGraphOutput(cfg.output_xml.c_str()) );
     }
 
     for(auto i = 0; i < graphOutputs.size(); i++) {

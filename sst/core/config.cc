@@ -165,6 +165,8 @@ Config::Config( int my_rank, int world_size )
         ("output-undeleted-events", po::value<string>(&event_dump_file),
          "Outputs information about all undeleted events to the specified file at end of simulation (STDOUT and STDERR can be used to output to console on stdout and stderr")
 #endif
+        ("output-xml", po::value< string >(&output_xml),
+         "Dump the SST component and link configuration graph to this file (as an XML file), empty string (default) is not to dump anything.")
         ;
 
     	var_map = new po::variables_map();

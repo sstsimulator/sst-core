@@ -73,6 +73,7 @@ public:
     std::string     generator_options;  /*!< Options to pass to the generator */
     std::string     output_config_graph;  /*!< File to dump configuration graph */
     std::string     output_dot;         /*!< File to dump dot output */
+    std::string     output_xml;         /*!< File to dump XML output */
     std::string     output_directory;   /*!< Output directory to dump all files to */
     std::string     model_options;      /*!< Options to pass to Python Model generator */
     std::string     dump_component_graph_file; /*!< File to dump component graph */
@@ -113,6 +114,7 @@ public:
 		std::cout << "generator = " << generator << std::endl;
 		std::cout << "gen_options = " << generator_options << std::endl;
 		std::cout << "output_config_graph = " << output_config_graph << std::endl;
+		std::cout << "output_xml = " << output_xml << std::endl;
 		std::cout << "no_env_config = " << no_env_config << std::endl;
 		std::cout << "output_directory = " << output_directory << std::endl;
 		std::cout << "model_options = " << model_options << std::endl;
@@ -164,6 +166,7 @@ private:
         ar & BOOST_SERIALIZATION_NVP(generator_options);
         ar & BOOST_SERIALIZATION_NVP(dump_component_graph_file);
         ar & BOOST_SERIALIZATION_NVP(output_config_graph);
+	ar & BOOST_SERIALIZATION_NVP(output_xml);
         ar & BOOST_SERIALIZATION_NVP(no_env_config);
         ar & BOOST_SERIALIZATION_NVP(model_options);
 	ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
