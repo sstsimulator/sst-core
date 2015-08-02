@@ -29,6 +29,9 @@ nobase_dist_sst_HEADERS = \
 	componentInfo.h \
 	config.h \
 	configGraph.h \
+	configGraphOutput.h \
+	cfgoutput/pythonConfigOutput.h \
+	cfgoutput/dotConfigOutput.h \
 	element.h \
 	elemLoader.h \
 	event.h \
@@ -120,6 +123,8 @@ sst_core_sources = \
 	componentInfo.cc \
 	config.cc \
 	configGraph.cc \
+	cfgoutput/pythonConfigOutput.cc \
+	cfgoutput/dotConfigOutput.cc \\
 	boostExports.cc \
 	elemLoader.cc \
 	event.cc \

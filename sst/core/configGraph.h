@@ -69,14 +69,6 @@ public:
         os << "  latency[1] = " << latency[1] << std::endl;
     }
 
-    /** Generate Dot-style Link information */
-	void genDot(std::ostream &os) const {
-		os << component[0] << ":\"" << port[0] << "\""
-            << " -- " << component[1] << ":" << port[1]
-            << " [label=\"" << name << "\"] ;\n";
-	}
-
-
     /* Do not use.  For serialization only */
     ConfigLink() {}
 private:
@@ -142,9 +134,6 @@ public:
     
     /** Print Component information */
     void print(std::ostream &os) const;
-
-    /** Generate Dot information for this Component */
-	void genDot(std::ostream &os, const ConfigLinkMap_t& links) const;
 
     ConfigComponent cloneWithoutLinks() const;
     ConfigComponent cloneWithoutLinksOrParams() const;
@@ -221,9 +210,6 @@ public:
 
     size_t getNumComponents() { return comps.data.size(); }
     
-    /** Generate Dot-style output of the configuration graph */
-	void genDot(std::ostream &os, const std::string &name) const;
-
     /** Helper function to set all the ranks to the same value */
     void setComponentRanks(int rank);
     /** Checks to see if rank contains at least one component */
@@ -282,17 +268,6 @@ public:
 
     /** Check the graph for Structural errors */
     bool checkForStructuralErrors();
-
-    /** Dump the configuration to a file
-     * @param filePath - Name of File to write
-     * @param cfg - Configuration options
-     * @param asDot - if True, write as a Dot-style graph
-     */
-    void dumpToFile(std::string filePath, Config* cfg, bool asDot);
-    /** Escape names to be safe to parse in Python */
-    std::string makeNamePythonSafe(const std::string name, const std::string namePrefix);
-    /** Escape to make safe, strings */
-    static std::string escapeString(const std::string value);
 
     // Temporary until we have a better API
     /** Return the map of components */

@@ -151,7 +151,7 @@ Config::Config( int my_rank, int world_size )
          "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
 
-        ("output-config", po::value< string >(&dump_config_graph),
+        ("output-config", po::value< string >(&output_config_graph),
          "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
         ("output-directory", po::value <string >(&output_directory),
          "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")

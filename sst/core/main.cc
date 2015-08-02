@@ -44,10 +44,14 @@
 #include <sst/core/iouse.h>
 
 #include <sys/resource.h>
-
 #include <sst/core/interfaces/simpleNetwork.h>
 
 #include <sst/core/objectComms.h>
+
+// Configuration Graph Generation Options
+#include <sst/core/configGraphOutput.h>
+#include <sst/core/cfgoutput/pythonConfigOutput.h>
+#include <sst/core/cfgoutput/dotConfigOutput.h>
 
 using namespace SST::Core;
 using namespace SST::Partition;
@@ -101,21 +105,29 @@ static void dump_partition(SST::Output* sim_output, Config& cfg, ConfigGraph* gr
 static void do_graph_wireup(SST::Output* sim_output, ConfigGraph* graph, 
                             SST::Simulation* sim, SST::Config& cfg, const int size, const int rank,
                             SimTime_t min_part) {
-	
+
     if ( !graph->containsComponentInRank( rank ) ) {
         sim_output->output("WARNING: No components are assigned to rank: %d\n", 
                            rank);
     }
-	
 
-    // User asked us to dump the config graph to a file
-    if(cfg.dump_config_graph != "") {
-        graph->dumpToFile(cfg.dump_config_graph, &cfg, false);
+    std::vector<ConfigGraphOutput*> graphOutputs;
+
+    // User asked us to dump the config graph to a file in Python
+    if(cfg.output_config_graph != "") {
+	graphOutputs.push_back( new PythonConfigGraphOutput(cfg.output_config_graph.c_str()) );
     }
+
+    // user asked us to dump the config graph in dot graph format
     if(cfg.output_dot != "") {
-        graph->dumpToFile(cfg.output_dot, &cfg, true);
+	graphOutputs.push_back( new DotConfigGraphOutput(cfg.output_dot.c_str()) );
     }
-    
+
+    for(auto i = 0; i < graphOutputs.size(); i++) {
+	graphOutputs[i]->generate(&cfg, graph);
+	delete graphOutputs[i];
+    }
+
     sim->performWireUp( *graph, rank, min_part );
 }
 
