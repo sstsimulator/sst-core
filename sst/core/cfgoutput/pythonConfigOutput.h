@@ -1,4 +1,8 @@
 
+#ifndef _H_SST_CORE_CONFIG_OUTPUT_PYTHON
+#define _H_SST_CORE_CONFIG_OUTPUT_PYTHON
+
+#include <sst/core/configGraph.h>
 #include <sst/core/configGraphOutput.h>
 
 namespace SST {
@@ -20,3 +24,5 @@ protected:
 
 }
 }
+
+#endif
