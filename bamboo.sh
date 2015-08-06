@@ -334,17 +334,9 @@ echo " #####################################################"
          ${SST_TEST_SUITES}/testSuite_scheduler.sh
     fi
 
-    #
-    #    Only if configured for Zoltan
-    #
-    if [ $1 == "sstmainline_configZ" ] ; then
-         ${SST_TEST_SUITES}/testSuite_zoltan.sh
-    fi
-
     #  
     #    Only if macsim was requested
     #
-
     if [ -d ${SST_ROOT}/sst/elements/macsimComponent ] ; then
          ${SST_TEST_SUITES}/testSuite_macsim.sh
     fi
@@ -455,13 +447,6 @@ echo " #####################################################"
     ${SST_TEST_SUITES}/testSuite_simpleMessageGeneratorComponent.sh
     ${SST_TEST_SUITES}/testSuite_VaultSim.sh
 
-    # for now, only run VaultSim test on these special configurations
-    if [ $1 == "sstmainline_configA" ] || [ $1 == "sstmainline_config_VaultSim" ] ; then
-        if [ $HOST == "sst-test" ] ; then
-            ${SST_TEST_SUITES}/testSuite_VaultSim.sh
-        fi
-    fi
-
 ###     ## run only on HardWare
 ###     
 ###     if [ $HOST == "sst-test" ] || [ $HOST == "johnslion" ] ; then
@@ -473,12 +458,6 @@ echo " #####################################################"
 ### 
 ###     ## run above only on HardWare
     
-    if [ $1 = "gem5_no_dramsim_config" ]
-    then
-        # placeholder for tests requiring gem5 with no dramsim
-        :  #noop
-    fi
-
 
     # Purge SST installation
     if [[ ${SST_RETAIN_BIN:+isSet} != isSet ]]
@@ -601,17 +580,6 @@ getconfig() {
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --with-glpk=${GLPK_HOME} --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN --with-metis=${METIS_HOME}  --with-chdl=$SST_DEPS_INSTALL_CHDL $miscEnv"
             ;;
-        sstmainline_configA) 
-            #-----------------------------------------------------------------
-            # sstmainline_configA -- temporary for testing with VaultSim
-            #    This one should go away  
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv --with-libphx=/home/jpvandy/Apr14/libphx/src"
-            ;;
         sstmainline_config_VaultSim) 
             #-----------------------------------------------------------------
             # sstmainline_config    -- temporary for testing with VaultSim
@@ -622,17 +590,6 @@ getconfig() {
             depsStr="-k none -d 2.2.2 -p none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q 0.2.1 -M none -N default -z 3.8"
             setConvenienceVars "$depsStr"
             configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv --with-libphx=$LIBPHX_HOME/src --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN"
-            ;;
-        sstmainline_configZ) 
-            #-----------------------------------------------------------------
-            # sstmainline_config    -- temporary for testing Zoltan
-            #    This one should be refined or incorporated into something else with dir changed.
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -M none -N default -z 3.8"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM  $miscEnv --with-zoltan=$SST_DEPS_INSTALL_ZOLTAN"
             ;;
         sstmainline_config_all) 
             #-----------------------------------------------------------------
@@ -927,139 +884,12 @@ getconfig() {
 
         # ====================================================================
         # ====                                                            ====
-        # ====  3.1.x build configurations start here                     ====
-        # ====                                                            ====
-        # ====================================================================
-        sst3.1_config) 
-            #-----------------------------------------------------------------
-            # sst3.1_config
-            #     This option used for configuring SST with supported deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0 -m none -i none -o none -h none -s none -q 0.2.1 -M none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
-            ;;
-
-        sst3.1_config_with_sstdevice) 
-            #-----------------------------------------------------------------
-            # sst3.1_config_with_sstdevice
-            #     This option used for configuring SST with supported deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0-with-sstdevice -m none -i none -o none -h none -s none -q 0.2.1 -M none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
-            ;;
-
-        sst3.1_config_static) 
-            #-----------------------------------------------------------------
-            # sst3.1_config_static
-            #     This option used for configuring SST with supported deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0 -m none -i none -o none -h none -s none -q 0.2.1 -M none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-qsim=$SST_DEPS_INSTALL_QSIM --enable-static --disable-shared $miscEnv"
-            ;;
-
-        sst3.1_config_macosx) 
-            #-----------------------------------------------------------------
-            # sst3.1_config_macosx
-            #     This option used for configuring SST with supported deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0 -m none -i none -o none -h none -s none -q none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM $miscEnv"
-            ;;
-
-        sst3.1_config_macosx_static) 
-            #-----------------------------------------------------------------
-            # sst3.1_config_macosx_static
-            #     This option used for configuring SST with supported deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.1.0 -m none -i none -o none -h none -s none -q none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --enable-static --disable-shared $miscEnv"
-            ;;
-        sstmainline_config_memH_only) 
-            #-----------------------------------------------------------------
-            # sstmainline_config
-            #     This option used for Quick test of opemMP and memHierarchy
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -g stabledevel -m none -i none -o none -h none -s none -q none -M none -N default"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-nvdimmsim=$SST_DEPS_INSTALL_NVDIMMSIM --with-hybridsim=$SST_DEPS_INSTALL_HYBRIDSIM $miscEnv"
-            ;;
- 
-        # ====================================================================
-        # ====                                                            ====
-        # ====  Older 3.0.x build configurations start here  ====
-        # ====                                                            ====
-        # ====================================================================
-        sst3.0_config) 
-            #-----------------------------------------------------------------
-            # sst3.0_config
-            #     This option used for configuring SST with supported 3.0 deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.0.0 -m none -i none -o none -h none -s 2.4.0 -q SST-3.0 -M none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --enable-phoenixsim --with-omnetpp=$SST_DEPS_INSTALL_OMNET --with-qsim=$SST_DEPS_INSTALL_QSIM $miscEnv"
-            ;;
-        sst3.0_config_macosx) 
-            #-----------------------------------------------------------------
-            # sst3.0_config_macosx
-            #     This option used for configuring SST with supported 3.0 deps
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d 2.2.2 -p none -z none -b 1.50 -g SST-3.0.0 -m none -i none -o none -h none -s 2.4.0 -q none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-dramsim=$SST_DEPS_INSTALL_DRAMSIM --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO $miscEnv"
-            ;;
-        # ====================================================================
-        # ====                                                            ====
         # ====  Experimental/exploratory build configurations start here  ====
         # ====                                                            ====
         # ====================================================================
-        non_std_sst2.2_config) 
+        sstmainline_config_dist_test|sstmainline_config_make_dist_no_gem5)
             #-----------------------------------------------------------------
-            # non_std_sst2.2_config
-            #     This option used for configuring SST with supported 2.2 deps
-            #           Using not standard configuration
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment} CFLAGS=$python_inc_dir CXXFLAGS=$python_inc_dir"
-            depsStr="-k none -d r4b00b22 -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s 2.3.0 -q none -M default"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST --with-gem5-build=opt --with-sstmacro=$SST_DEPS_INSTALL_SSTMACRO  --with-omnetpp=$SST_DEPS_INSTALL_OMNET"
-            ;;
-        gem5_no_dramsim_config) 
-            #-----------------------------------------------------------------
-            # gem5_no_dramsim_config
-            #     This option used for configuring SST with gem5, but without
-            #     dramsim enabled
-            #-----------------------------------------------------------------
-            export | egrep SST_DEPS_
-            miscEnv="${mpi_environment}"
-            depsStr="-k none -d none -p none -z none -b 1.50 -g stabledevel -m none -i none -o none -h none -s none -q none -M none"
-            setConvenienceVars "$depsStr"
-            configStr="$baseoptions --with-gem5=$SST_DEPS_INSTALL_GEM5SST $miscEnv"
-            ;;
-        sst_config_dist_test|sst_config_make_dist_no_gem5)
-            #-----------------------------------------------------------------
-            # sst_config_dist_test
+            # sstmainline_config_dist_test
             #      Do a "make dist"  (creating a tar file.)
             #      Then,  untar the created tar-file.
             #      Invoke bamboo.sh, (this file), to build sst from the tar.  
@@ -2193,7 +2023,7 @@ setUPforMakeDisttest() {
      echo "               extra Files removed ------------  "
 
      echo SST_DEPS_USER_DIR= $SST_DEPS_USER_DIR
-     if [ $buildtype == "sst_config_dist_test" ] ; then
+     if [ $buildtype == "sstmainline_config_dist_test" ] ; then
          distProject="sstmainline_config_all"
      else
          distProject="sstmainline_config_no_gem5"
@@ -2410,7 +2240,7 @@ else
     echo "bamboo.sh: KERNEL = $kernel"
 
     case $1 in
-        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_linux_with_ariel_no_gem5|sstmainline_config_no_gem5|sstmainline_config_no_gem5_intel_gcc_4_8_1|sstmainline_config_no_gem5_intel_gcc_4_8_1_with_c|sstmainline_config_fast_intel_build_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_static_no_gem5|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_macosx_static_no_gem5|sstmainline_config_static_macro_devel|sst3.0_config|sst3.0_config_macosx|sst3.1_config|sst3.1_config_with_sstdevice|sst3.1_config_static|sst3.1_config_macosx|sst3.1_config_macosx_static|non_std_sst2.2_config|gem5_no_dramsim_config|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sst_config_dist_test|sst_config_make_dist_no_gem5|documentation|sstmainline_configA|sstmainline_config_VaultSim|sstmainline_configZ|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_diropenmpB|sstmainline_config_dirnoncacheable|sstmainline_config_diropenmpI|sstmainline_config_dir3cache|sstmainline_config_all|sstmainline_config_gem5_gcc_4_6_4|sstmainline_config_fast|sstmainline_config_fast_static|sstmainline_config_memH_wo_openMP)
+        default|sstmainline_config|sstmainline_config_linux_with_ariel|sstmainline_config_linux_with_ariel_no_gem5|sstmainline_config_no_gem5|sstmainline_config_no_gem5_intel_gcc_4_8_1|sstmainline_config_no_gem5_intel_gcc_4_8_1_with_c|sstmainline_config_fast_intel_build_no_gem5|sstmainline_config_no_mpi|sstmainline_config_gcc_4_8_1|sstmainline_config_static|sstmainline_config_static_no_gem5|sstmainline_config_clang_core_only|sstmainline_config_macosx|sstmainline_config_macosx_no_gem5|sstmainline_config_macosx_static|sstmainline_config_macosx_static_no_gem5|sstmainline_config_static_macro_devel|sstmainline_sstmacro_xconfig|sstmainline_config_xml2python|sstmainline_config_xml2python_static|sstmainline_config_memH_only|sstmainline_config_dist_test|sstmainline_config_make_dist_no_gem5|documentation|sstmainline_config_VaultSim|sstmainline_config_stream|sstmainline_config_openmp|sstmainline_config_diropenmp|sstmainline_config_diropenmpB|sstmainline_config_dirnoncacheable|sstmainline_config_diropenmpI|sstmainline_config_dir3cache|sstmainline_config_all|sstmainline_config_gem5_gcc_4_6_4|sstmainline_config_fast|sstmainline_config_fast_static|sstmainline_config_memH_wo_openMP)
             #   Save Parameters $2, $3 and $4 in case they are need later
             SST_DIST_MPI=$2
             SST_DIST_BOOST=$3
@@ -2500,7 +2330,7 @@ then
                 echo " ############################  ENTER dotests ################## "
                 dotests $1 $4
             fi
-        fi               #   End of sst_config_dist_test  conditional
+        fi               #   End of sstmainline_config_dist_test  conditional
     fi
 fi
 
