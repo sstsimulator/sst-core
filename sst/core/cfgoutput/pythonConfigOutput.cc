@@ -39,7 +39,7 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 		char* pyCompName = makePythonSafeWithPrefix(comp_itr->name.c_str(), "comp_");
 		char* esCompName = makeEscapeSafe(comp_itr->name.c_str());
 
-		fprintf(outputFile, "%s = sst.Component(\n%s\", \"%s\")\n",
+		fprintf(outputFile, "%s = sst.Component(\"%s\", \"%s\")\n",
 			pyCompName, esCompName, comp_itr->type.c_str());
 
 		auto params_itr = comp_itr->params.begin();
