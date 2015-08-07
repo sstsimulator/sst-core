@@ -105,13 +105,11 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 				}
 			}
 
-			fprintf(outputFile, "\n}");
+			fprintf(outputFile, "\n})\n");
 
 			free(pyCompName);
 			free(esStatName);
 		}
-
-		fprintf(outputFile, ")\n");
 	}
 
 	// Dump the SST Simulation Link Information
