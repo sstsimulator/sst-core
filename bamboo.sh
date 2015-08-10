@@ -163,6 +163,9 @@ echo " #####################################################"
     if [[ $1 == *sstmainline_config_test_output_config* ]]
     then
         ./test/utilities/Build-output-config-check
+        pwd
+        ls -l run.for.output.config
+        chmod +x run.for.output.config
         run.for.output.config
         return
     fi
