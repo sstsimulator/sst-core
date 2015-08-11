@@ -75,7 +75,7 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 	fprintf(outputFile, "\n\n#Define the SST Component Statistics Information\n");
 
 	for(auto comp_itr = compMap.begin(); comp_itr != compMap.end(); comp_itr++) {
-		for(auto statIndex = 0; statIndex < comp_itr->enabledStatistics.size(); statIndex++) {
+		for(size_t statIndex = 0; statIndex < comp_itr->enabledStatistics.size(); statIndex++) {
 			char* pyCompName = makePythonSafeWithPrefix(comp_itr->name.c_str(), "comp_");
 			char* esStatName = makeEscapeSafe(comp_itr->enabledStatistics[statIndex].c_str());
 
@@ -191,7 +191,7 @@ void PythonConfigGraphOutput::makeBufferPythonSafe(char* buffer)
 
 	const auto length = strlen(buffer);
 
-	for(auto i = 0; i < length; i++) {
+	for(size_t i = 0; i < length; i++) {
                 switch(buffer[i]) {
                 case '.':
                         buffer[i] = '_'; break;
@@ -210,7 +210,7 @@ bool PythonConfigGraphOutput::strncmp(const char* a, const char* b,
 
 	bool matched = true;
 
-	for(auto i = 0; i < n; i++) {
+	for(size_t i = 0; i < n; i++) {
 		if(a[i] != b[i]) {
 			matched = false;
 			break;
@@ -225,7 +225,7 @@ char* PythonConfigGraphOutput::makeEscapeSafe(const std::string input) const {
 	std::string escapedInput = "";
 	auto inputLength = input.size();
 
-	for(auto i = 0; i < inputLength; i++) {
+	for(size_t i = 0; i < inputLength; i++) {
 		const char nextChar = input.at(i);
 
 		switch(nextChar) {

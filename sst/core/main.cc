@@ -129,7 +129,7 @@ static void do_graph_wireup(SST::Output* sim_output, ConfigGraph* graph,
 	graphOutputs.push_back( new XMLConfigGraphOutput(cfg.output_xml.c_str()) );
     }
 
-    for(auto i = 0; i < graphOutputs.size(); i++) {
+    for(size_t i = 0; i < graphOutputs.size(); i++) {
 	graphOutputs[i]->generate(&cfg, graph);
 	delete graphOutputs[i];
     }

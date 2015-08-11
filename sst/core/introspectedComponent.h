@@ -24,7 +24,14 @@
 // Boost interval sometimes doesn't detect the correct method for
 // manipulating FP rounting on MacOS
 #define __USE_ISOC99 1
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-local-typedefs"
+#endif
 #include <boost/numeric/interval.hpp>
+#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8))
+#pragma GCC diagnostic pop
+#endif
 #undef __USE_ISOC99
 #else
 
