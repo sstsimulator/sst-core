@@ -20,6 +20,8 @@ protected:
 	void makeBufferPythonSafe(char* buffer) const;
 	char* makeEscapeSafe(const std::string input) const;
 	bool strncmp(const char* a, const char* b, const size_t n) const;
+	bool isMultiLine(const char* check) const;
+	bool isMultiLine(const std::string check) const;
 };
 
 }

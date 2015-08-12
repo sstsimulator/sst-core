@@ -26,12 +26,7 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 	fprintf(outputFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n\n",
 		cfg->stopAtCycle.c_str());
 
-	// Output statistics options
-	fprintf(outputFile, "# Define SST Statistics Options:\n");
-	//fprintf(outputFile, "sst.setStatisticLoadLevel(%d)\n", 
-
 	// Output the graph
-	fprintf(outputFile, "\n\n");
 	fprintf(outputFile, "# Define the SST Components:\n");
 
 	auto compMap = graph->getComponentMap();
@@ -49,7 +44,12 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 			char* esValue     = makeEscapeSafe(params_itr->second.c_str());
 
 			fprintf(outputFile, "%s.addParams({\n", pyCompName);
-			fprintf(outputFile, "     \"%s\" : \"\"\"%s\"\"\"", esParamName, esValue);
+
+			if(isMultiLine(esValue)) {
+				fprintf(outputFile, "     \"%s\" : \"\"\"%s\"\"\"", esParamName, esValue);
+			} else {
+				fprintf(outputFile, "     \"%s\" : \"%s\"", esParamName, esValue);
+			}
 
 			free(esParamName);
 			free(esValue);
@@ -60,8 +60,13 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 				char* esParamName = makeEscapeSafe(Params::getParamName(params_itr->first).c_str());
 				char* esValue     = makeEscapeSafe(params_itr->second.c_str());
 
-				fprintf(outputFile, ",\n     \"%s\" : \"\"\"%s\"\"\"",
-					esParamName, esValue);
+				if(isMultiLine(esValue)) {
+					fprintf(outputFile, ",\n     \"%s\" : \"\"\"%s\"\"\"",
+						esParamName, esValue);
+				} else {
+					fprintf(outputFile, ",\n     \"%s\" : \"%s\"",
+						esParamName, esValue);
+				}
 
 				free(esParamName);
 				free(esValue);
@@ -72,8 +77,16 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 	}
 
 	// Dump the Component Statistics
-	fprintf(outputFile, "\n\n#Define the SST Component Statistics Information\n");
+	fprintf(outputFile, "\n\n# Define the SST Component Statistics Information\n");
+	// Output statistics options
+	fprintf(outputFile, "# Define SST Statistics Options:\n");
 
+	if( 0 != graph->getStatLoadLevel() ) {
+		fprintf(outputFile, "sst.setStatisticLoadLevel(%" PRIu64 ")\n",
+			(uint64_t) graph->getStatLoadLevel());
+	}
+
+	fprintf(outputFile, "\n# Define Component Statistics Information:\n");
 	for(auto comp_itr = compMap.begin(); comp_itr != compMap.end(); comp_itr++) {
 		for(size_t statIndex = 0; statIndex < comp_itr->enabledStatistics.size(); statIndex++) {
 			char* pyCompName = makePythonSafeWithPrefix(comp_itr->name.c_str(), "comp_");
@@ -145,6 +158,33 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 	}
 
 	fprintf(outputFile, "# End of generated output.\n\n");
+}
+
+bool PythonConfigGraphOutput::isMultiLine(const std::string check) const {
+	bool isMultiLine = false;
+
+	for(int i = 0; i < check.size(); i++) {
+		if(check.at(i) == '\n' || check.at(i) == '\r' || check.at(i) == '\f') {
+			isMultiLine = true;
+			break;
+		}
+	}
+
+	return isMultiLine;
+}
+
+bool PythonConfigGraphOutput::isMultiLine(const char* check) const {
+	const int checkLen = strlen(check);
+	bool isMultiLine = false;
+
+	for(int i = 0; i < checkLen; i++) {
+		if(check[i] == '\n' || check[i] == '\f' || check[i] == '\r') {
+			isMultiLine = true;
+			break;
+		}
+	}
+
+	return isMultiLine;
 }
 
 char* PythonConfigGraphOutput::makePythonSafeWithPrefix(const std::string name,
