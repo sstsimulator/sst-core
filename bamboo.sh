@@ -2273,8 +2273,17 @@ else
 ##                export SST_DEPS_INSTALL_INTEL_PIN=/home/jpvandy/pin-2.14-71313-gcc.4.4.7-linux 
 ##                export INTEL_PIN_DIRECTORY=/home/jpvandy/pin-2.14-71313-gcc.4.4.7-linux 
                 echo "using Intel PIN environment module  pin-2.14-71313-gcc.4.4.7-linux"
-                echo "Loading Intel PIN environment module"
-                ModuleEx load pin/pin-2.14-71313-gcc.4.4.7-linux
+                #    Compiler is $4
+                if [[ "$4" != gcc-5* ]] ; then
+                   echo "Loading Intel PIN environment module"
+                   ModuleEx load pin/pin-2.14-71313-gcc.4.4.7-linux
+                else 
+                   echo " ################################################################"
+                   echo " #"
+                   echo " #  pin-2.14-71313-gcc.4.4.7-linux is incompatible with gcc-5.x"
+                   echo " #"
+                   echo " ################################################################"
+                fi
             else
                 echo "Intel PIN environment module not found on this host."
             fi
