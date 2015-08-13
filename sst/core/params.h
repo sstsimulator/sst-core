@@ -328,7 +328,7 @@ public:
      * @param default_value - Default value to return if parameter isn't found
      * @param found - set to true if the the parameter was found
      */
-    long find_integer(const key_type &k, long default_value, bool &found) const {
+    int64_t find_integer(const key_type &k, long default_value, bool &found) const {
         verifyParam(k);
         const_iterator i = data.find(getKey(k));
         if (i == data.end()) {
@@ -344,7 +344,7 @@ public:
      * @param k - Parameter name
      * @param default_value - Default value to return if parameter isn't found
      */
-    long find_integer(const key_type &k, long default_value = -1) const {
+    int64_t find_integer(const key_type &k, long default_value = -1) const {
         bool tmp;
         return find_integer(k, default_value, tmp);
     }
