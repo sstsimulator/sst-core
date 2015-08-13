@@ -37,7 +37,7 @@ class SimpleNetwork : public SubComponent {
 
 public:
     /** All Addresses can be 64-bit */
-    typedef uint64_t nid_t;
+    typedef int64_t nid_t;
 
     static const nid_t INIT_BROADCAST_ADDR;
     
@@ -384,7 +384,7 @@ public:
      * network is initialized.
      * @return Endpoint ID
      */
-    virtual int getEndpointID() const = 0;
+    virtual nid_t getEndpointID() const = 0;
 
     /**
      * Returns the final BW of the link managed by the simpleNetwork

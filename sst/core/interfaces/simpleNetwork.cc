@@ -26,7 +26,7 @@ const SimpleNetwork::nid_t SimpleNetwork::INIT_BROADCAST_ADDR = 0xffffffffffffff
 map<string, vector<SimpleNetwork::nid_t> > SimpleNetwork::network_maps;
 
 SimpleNetwork::nid_t SimpleNetwork::Mapping::operator[](SimpleNetwork::nid_t from) const {
-    if ( from > data->size() ) {
+    if ( from > (SimpleNetwork::nid_t)data->size() ) {
         // fatal
     }
     return (*data)[from];
@@ -42,7 +42,7 @@ void SimpleNetwork::addMappingEntry(string mapName, nid_t from, nid_t to) {
     }
     
     vector<SimpleNetwork::nid_t>& map = network_maps[mapName];
-    if ( map.size() < (from + 1) ) {
+    if ( (SimpleNetwork::nid_t)map.size() < (from + 1) ) {
         map.resize(from + 1, SimpleNetwork::INIT_BROADCAST_ADDR);
     }
     if ( map[from] == SimpleNetwork::INIT_BROADCAST_ADDR ) {
