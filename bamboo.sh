@@ -1921,6 +1921,124 @@ darwinSetBoostMPI() {
                         ModuleEx list
                         ;;
 
+                    clang-602.0.53)
+                        # Use Boost and MPI built with CLANG from Xcode 6.3
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
+
+                        # Load other modules for clang-602.0.53
+                        # GNU Linear Programming Kit (GLPK)
+                        echo "bamboo.sh: Load GLPK"
+                        ModuleEx load glpk/glpk-4.54_clang-602.0.53
+                        # # System C
+                        # echo "bamboo.sh: Load System C"
+                        # ModuleEx load systemc/systemc-2.3.0_clang-602.0.53
+                        # METIS 5.1.0
+                        echo "bamboo.sh: Load METIS 5.1.0"
+                        ModuleEx load metis/metis-5.1.0_clang-602.0.53
+                        # Other misc
+#                        echo "bamboo.sh: Load libphx"
+#                        ModuleEx load libphx/libphx-2014-MAY-08_clang-602.0.53
+
+                        # load MPI
+                        case $2 in
+                            ompi_default|openmpi-1.8)
+                                echo "OpenMPI 1.8 (openmpi-1.8) selected"
+                                ModuleEx add mpi/openmpi-1.8_clang-602.0.53
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.8"
+                                ModuleEx load mpi/openmpi-1.8_clang-602.0.53 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                                            
+                        # load corresponding Boost
+                        case $3 in
+                            boost_default|boost-1.56)
+                                echo "Boost 1.56 selected"
+                                ModuleEx add boost/boost-1.56.0-nompi_clang-602.0.53
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.56"
+                                ModuleEx load boost/boost-1.56.0-nompi_clang-602.0.53 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which clang`
+                        export CXX=`which clang++`
+                        ModuleEx list
+                        ;;
+
+                    clang-700.0.65)
+                        # Use Boost and MPI built with CLANG from Xcode 6.3
+                        ModuleEx unload mpi
+                        ModuleEx unload boost
+
+                        # Load other modules for clang-700.0.65
+                        # GNU Linear Programming Kit (GLPK)
+                        echo "bamboo.sh: Load GLPK"
+                        ModuleEx load glpk/glpk-4.54_clang-700.0.65
+                        # # System C
+                        # echo "bamboo.sh: Load System C"
+                        # ModuleEx load systemc/systemc-2.3.0_clang-700.0.65
+                        # METIS 5.1.0
+                        echo "bamboo.sh: Load METIS 5.1.0"
+                        ModuleEx load metis/metis-5.1.0_clang-700.0.65
+                        # Other misc
+#                        echo "bamboo.sh: Load libphx"
+#                        ModuleEx load libphx/libphx-2014-MAY-08_clang-700.0.65
+
+                        # load MPI
+                        case $2 in
+                            ompi_default|openmpi-1.8)
+                                echo "OpenMPI 1.8 (openmpi-1.8) selected"
+                                ModuleEx add mpi/openmpi-1.8_clang-700.0.65
+                                ;;
+                            *)
+                                echo "Default MPI option, loading mpi/openmpi-1.8"
+                                ModuleEx load mpi/openmpi-1.8_clang-700.0.65 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                                            
+                        # load corresponding Boost
+                        case $3 in
+                            boost_default|boost-1.56)
+                                echo "Boost 1.56 selected"
+                                ModuleEx add boost/boost-1.56.0-nompi_clang-700.0.65
+                                ;;
+                            *)
+                                echo "bamboo.sh: \"Default\" Boost selected"
+                                echo "Third argument was $3"
+                                echo "Loading boost/Boost 1.56"
+                                ModuleEx load boost/boost-1.56.0-nompi_clang-700.0.65 2>catch.err
+                                if [ -s catch.err ] 
+                                then
+                                    cat catch.err
+                                    exit 0
+                                fi
+                                ;;
+                        esac
+                        export CC=`which clang`
+                        export CXX=`which clang++`
+                        ModuleEx list
+                        ;;
+
 
                     *)
                         # unknown compiler, use default
