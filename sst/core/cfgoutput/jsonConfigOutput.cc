@@ -1,6 +1,13 @@
 
 #include <sst_config.h>
+
+#include <sst/core/config.h>
+#include <sst/core/configGraph.h>
 #include <sst/core/configGraphOutput.h>
+#include <sst/core/params.h>
+
+#include <map>
+
 #include "JSONConfigOutput.h"
 
 using namespace SST::Core;
