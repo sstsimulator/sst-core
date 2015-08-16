@@ -53,6 +53,7 @@
 #include <sst/core/cfgoutput/pythonConfigOutput.h>
 #include <sst/core/cfgoutput/dotConfigOutput.h>
 #include <sst/core/cfgoutput/xmlConfigOutput.h>
+#include <sst/core/cfgoutput/jsonConfigOutput.h>
 
 using namespace SST::Core;
 using namespace SST::Partition;
@@ -127,6 +128,11 @@ static void do_graph_wireup(SST::Output* sim_output, ConfigGraph* graph,
     // User asked us to dump the config graph in XML format (for energy experiments)
     if(cfg.output_xml != "") {
 	graphOutputs.push_back( new XMLConfigGraphOutput(cfg.output_xml.c_str()) );
+    }
+
+    // User asked us to dump the config graph in JSON format (for OCCAM experiments)
+    if(cfg.output_json != "") {
+	graphOutputs.push_back( new XMLConfigGraphOutput(cfg.output_json.c_str()) );
     }
 
     for(size_t i = 0; i < graphOutputs.size(); i++) {

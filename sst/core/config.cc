@@ -167,6 +167,8 @@ Config::Config( int my_rank, int world_size )
 #endif
         ("output-xml", po::value< string >(&output_xml),
          "Dump the SST component and link configuration graph to this file (as an XML file), empty string (default) is not to dump anything.")
+        ("output-json", po::value< string >(&output_json),
+         "Dump the SST component and link configuration graph to this file (as an JSON file), empty string (default) is not to dump anything.")
         ;
 
     	var_map = new po::variables_map();

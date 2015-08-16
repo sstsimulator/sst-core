@@ -33,6 +33,7 @@ nobase_dist_sst_HEADERS = \
 	cfgoutput/pythonConfigOutput.h \
 	cfgoutput/dotConfigOutput.h \
 	cfgoutput/xmlConfigOutput.h \
+	cfgoutput/jsonConfigOutput.h \
 	element.h \
 	elemLoader.h \
 	event.h \
@@ -127,6 +128,7 @@ sst_core_sources = \
 	cfgoutput/pythonConfigOutput.cc \
 	cfgoutput/dotConfigOutput.cc \
 	cfgoutput/xmlConfigOutput.cc \
+	cfgoutput/jsonConfigOutput.cc \
 	boostExports.cc \
 	elemLoader.cc \
 	event.cc \
