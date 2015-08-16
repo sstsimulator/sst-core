@@ -132,7 +132,7 @@ static void do_graph_wireup(SST::Output* sim_output, ConfigGraph* graph,
 
     // User asked us to dump the config graph in JSON format (for OCCAM experiments)
     if(cfg.output_json != "") {
-	graphOutputs.push_back( new XMLConfigGraphOutput(cfg.output_json.c_str()) );
+	graphOutputs.push_back( new JSONConfigGraphOutput(cfg.output_json.c_str()) );
     }
 
     for(size_t i = 0; i < graphOutputs.size(); i++) {
