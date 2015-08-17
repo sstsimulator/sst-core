@@ -5,10 +5,9 @@
 #include <sst/core/configGraph.h>
 #include <sst/core/configGraphOutput.h>
 #include <sst/core/params.h>
+#include <sst/core/cfgoutput/JSONConfigOutput.h>
 
 #include <map>
-
-#include "JSONConfigOutput.h"
 
 using namespace SST::Core;
 
