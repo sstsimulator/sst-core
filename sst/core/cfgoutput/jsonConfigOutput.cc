@@ -5,7 +5,7 @@
 #include <sst/core/configGraph.h>
 #include <sst/core/configGraphOutput.h>
 #include <sst/core/params.h>
-#include <sst/core/cfgoutput/JSONConfigOutput.h>
+#include <sst/core/cfgoutput/jsonConfigOutput.h>
 
 #include <map>
 
