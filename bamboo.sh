@@ -169,6 +169,14 @@ echo " #####################################################"
         return
     fi
 
+    #   Enable the --output-config option in (most) tests
+    #      (activated by Environment Variable)
+
+    if [[ ${SST_TEST_OUTPUT_CONFIG:+isSet} == isSet ]] ; then
+        echo ' '; echo "Generating \"--output-config\" test" ; echo ' '
+        ./test/utilities/GenerateOutputConfigTest
+    fi
+
     # Run test suites
 
     # DO NOT pass args to the test suite, it confuses
