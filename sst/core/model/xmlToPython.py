@@ -88,11 +88,12 @@ def buildComp(compNode):
     # Process Parameters
     paramsNode = compNode.find("params")
     params = dict()
-    if "include" in paramsNode.attrib:
-        for paramInc in paramsNode.attrib['include'].split(','):
-            params.update(sstParams[processString(paramInc)])
-    for p in paramsNode:
-        params[getParamName(p)] = processString(p.text.strip())
+    if paramsNode != None:
+        if "include" in paramsNode.attrib:
+            for paramInc in paramsNode.attrib['include'].split(','):
+                params.update(sstParams[processString(paramInc)])
+        for p in paramsNode:
+            params[getParamName(p)] = processString(p.text.strip())
 
     comp.addParams(params)
 
