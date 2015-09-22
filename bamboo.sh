@@ -318,6 +318,12 @@ echo " #####################################################"
 
     if [ $1 == "sstmainline_config_memH_wo_openMP" ]
     then
+        if [[ $SST_ROOT == *Ariel* ]] ; then
+            pushd ${SST_TEST_SUITES}
+            ln -s ${SST_TEST_SUITES}/testSuite_Ariel.sh testSuite_Ariel_extra.sh
+            ${SST_TEST_SUITES}/testSuite_Ariel_extra.sh
+            popd
+        fi 
         ${SST_TEST_SUITES}/testSuite_memHierarchy_sdl.sh
         ${SST_TEST_SUITES}/testSuite_memHSieve.sh
         ${SST_TEST_SUITES}/testSuite_hybridsim.sh
