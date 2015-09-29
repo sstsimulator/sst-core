@@ -22,6 +22,9 @@
 
 #include <sst/core/simulation.h>
 #include <sst/core/unitAlgebra.h>
+#include <sst/core/threadsafe.h>
+
+extern int main(int argc, char **argv);
 
 namespace SST {
 
@@ -72,24 +75,29 @@ class TimeLord {
     TimeConverter* getMilli() {return milli;}
 
  private:
-    friend class SST::SimulationBase;
+    friend class SST::Simulation;
+    friend int ::main(int argc, char **argv);
+
+    void init(std::string timeBaseString);
 
     // Needed by the simulator to turn minPart back into a
     // TimeConverter object.
     TimeConverter *getTimeConverter(SimTime_t simCycles);
 
-    TimeLord(std::string timeBaseString);
+    TimeLord() : initialized(false) { }
     ~TimeLord();
 
-    TimeLord() { }                      // For serialization
     TimeLord(TimeLord const&);          // Don't Implement
     void operator=(TimeLord const&);    // Don't Implement
-    
+
+    bool initialized;
+    std::recursive_mutex slock;
+
     // Variables that need to be saved when serialized
     std::string timeBaseString;
     TimeConverterMap_t tcMap;
     UnitAlgebra timeBase;
-    
+
     // double sec_factor;
     StringToTCMap_t parseCache;
 

@@ -91,7 +91,7 @@ static PyMethodDef componentMethods[] = {
         compAddParams, METH_O,
         "Adds Multiple Parameters from a dict"},
     {   "setRank",
-        compSetRank, METH_O,
+        compSetRank, METH_VARARGS,
         "Sets which rank on which this component should sit"},
     {   "setWeight",
         compSetWeight, METH_O,
@@ -322,18 +322,26 @@ static PyObject* compAddParams(PyObject *self, PyObject *args)
 }
 
 
-static PyObject* compSetRank(PyObject *self, PyObject *arg)
+static PyObject* compSetRank(PyObject *self, PyObject *args)
 {
     ComponentId_t id = ((ComponentPy_t*)self)->id;
 
     PyErr_Clear();
-    long rank = PyInt_AsLong(arg);
-    if ( PyErr_Occurred() ) {
-        PyErr_Print();
-        exit(-1);
+    // long rank = PyInt_AsLong(arg);
+    // if ( PyErr_Occurred() ) {
+    //     PyErr_Print();
+    //     exit(-1);
+    // }
+
+    unsigned long rank = (unsigned long)-1;
+    unsigned long thread = (unsigned long)0;
+
+    if ( !PyArg_ParseTuple(args, "k|k", &rank, &thread) ) {
+        return NULL;
     }
 
-    gModel->setComponentRank(id, rank);
+    
+    gModel->setComponentRank(id, rank, thread);
 
     return PyInt_FromLong(0);
 }
@@ -572,13 +580,14 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
         // We know how to handle only sst.<module>
         // Check for the existence of a library
         char *modName = name+4;
-        if ( Simulation::getSimulation()->getFactory()->hasLibrary(modName) ) {
-            genPythonModuleFunction func = Simulation::getSimulation()->getFactory()->getPythonModule(modName);
+        if ( Factory::getFactory()->hasLibrary(modName) ) {
+            genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
             if ( func ) {
                 Py_INCREF(self);
                 return self;
-	    }
+            }
         }
+        
     }
 
     Py_RETURN_NONE;
@@ -602,7 +611,7 @@ static PyObject* mlLoadModule(PyObject *self, PyObject *args)
     char *modName = name+4; // sst.<modName>
 
     //fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
-    genPythonModuleFunction func = Simulation::getSimulation()->getFactory()->getPythonModule(modName);
+    genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
     PyObject* mod = NULL;
     if ( !func ) {
         mod = Py_InitModule(name, emptyModMethods);
@@ -669,9 +678,9 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
 
     const char *runModeStr = "UNKNOWN";
     switch (cfg->runMode) {
-        case Config::INIT: runModeStr = "init"; break;
-        case Config::RUN: runModeStr = "run"; break;
-        case Config::BOTH: runModeStr = "both"; break;
+        case Simulation::INIT: runModeStr = "init"; break;
+        case Simulation::RUN: runModeStr = "run"; break;
+        case Simulation::BOTH: runModeStr = "both"; break;
         default: break;
     }
     PyDict_SetItem(dict, PyString_FromString("run-mode"), PyString_FromString(runModeStr));
@@ -1167,6 +1176,7 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
 
 
     output->verbose(CALL_INFO, 1, 0, "Configuration will now parse parameters.\n");
+
     config->parseConfigFile(getConfigString());
 
     output->verbose(CALL_INFO, 1, 0, "Construction of config graph with Python is complete.\n");

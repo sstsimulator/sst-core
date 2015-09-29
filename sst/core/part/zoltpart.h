@@ -48,7 +48,7 @@ class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 			Create a Zoltan-based partition scheme
 			\param verbosity Verbosity level with which messages and information are generated
 		*/
-		SSTZoltanPartition(int verbosity);
+		SSTZoltanPartition(RankInfo world_size, RankInfo my_rank, int verbosity);
 		~SSTZoltanPartition();
 
 		/**
@@ -63,15 +63,15 @@ class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 
         bool spawnOnAllRanks() { return true; }
         
-        static SSTPartitioner* allocate(int total_ranks, int my_rank, int verbosity) {
-            return new SSTZoltanPartition(verbosity);
+        static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
+            return new SSTZoltanPartition(total_ranks, my_rank, verbosity);
         }
         
 	protected:
 		void initZoltan();
-		int rankcount;
+		RankInfo rankcount;
 		struct Zoltan_Struct * zolt_config;
-		int rank;
+		RankInfo rank;
 
         static bool initialized;
 };

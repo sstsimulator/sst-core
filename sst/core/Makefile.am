@@ -56,6 +56,9 @@ nobase_dist_sst_HEADERS = \
 	output.h \
 	params.h \
 	pollingLinkQueue.h \
+	rankInfo.h \
+	rankSync.h \
+	rankSyncSerialSkip.h \
 	simulation.h \
 	serialization.h \
 	sparseVectorMap.h \
@@ -65,7 +68,12 @@ nobase_dist_sst_HEADERS = \
 	stringize.h \
 	subcomponent.h \
 	sync.h \
+	syncBase.h \
+	syncManager.h \
 	syncQueue.h \
+	threadSync.h \
+	threadSyncSimpleSkip.h \
+	threadSyncQueue.h \
 	sharedRegion.h \
 	sharedRegionImpl.h \
 	timeConverter.h \
@@ -112,6 +120,7 @@ nobase_dist_sst_HEADERS = \
 	statapi/stataccumulator.h \
 	statapi/statnull.h \
 	statapi/componentregisterstat_impl.h \
+	threadsafe.h \
 	cputimer.h
 
 nobase_nodist_sst_HEADERS = \
@@ -146,10 +155,17 @@ sst_core_sources = \
 	output.cc \
 	params.cc \
 	pollingLinkQueue.cc \
+	rankInfo.cc \
+	rankSync.cc \
+	rankSyncSerialSkip.cc \
 	simulation.cc \
 	subcomponent.cc \
 	sync.cc \
+	syncBase.cc \
+	syncManager.cc \
 	syncQueue.cc \
+	threadSync.cc \
+	threadSyncSimpleSkip.cc \
 	sharedRegion.cc \
 	timeLord.cc \
 	timeVortex.cc \
@@ -230,7 +246,7 @@ sstinfo_x_LDADD = \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
 	-lm
-	
+
 sstinfo_x_LDFLAGS = \
 	$(BOOST_LDFLAGS) \
 	$(PARMETIS_LDFLAGS) \

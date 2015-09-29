@@ -20,21 +20,21 @@ void DotConfigGraphOutput::generate(const Config* cfg,
 	fprintf(outputFile, "graph \"sst_simulation\" {\n");
 	fprintf(outputFile, "\tnode [shape=record] ;\n");
 
-	int maxRank = 0;
+	uint32_t maxRank = 0;
 	const auto compMap = graph->getComponentMap();
 	const auto linkMap = graph->getLinkMap();
 
 	// Find the maximum rank which is marked for the graph partitioning
 	for(auto compItr = compMap.begin(); compItr != compMap.end(); compItr++) {
-		maxRank = (compItr->rank > maxRank) ? compItr->rank : maxRank;
+		maxRank = (compItr->rank.rank > maxRank) ? compItr->rank.rank : maxRank;
 	}
 
 	if( maxRank > 0 ) {
-		for( int r = 0; r <= maxRank; r++ ) {
-			fprintf(outputFile, "subgraph cluster %d {\n", r);
+		for( uint32_t r = 0; r <= maxRank; r++ ) {
+			fprintf(outputFile, "subgraph cluster %u {\n", r);
 
 			for(auto compItr = compMap.begin(); compItr != compMap.end(); compItr++) {
-				if( compItr->rank == r ) {
+				if( compItr->rank.rank == r ) {
 					fprintf(outputFile, "\t\t");
 					generateDot( *compItr, linkMap );
 				}

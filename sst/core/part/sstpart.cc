@@ -33,7 +33,7 @@ SSTPartitioner::addPartitioner(const std::string name, const SSTPartitioner::par
 }
 
 SSTPartitioner*
-SSTPartitioner::getPartitioner(std::string name, int total_ranks, int my_rank, int verbosity)
+SSTPartitioner::getPartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity)
 {
     if ( partitioner_allocs().find(name) == partitioner_allocs().end() ) return NULL;
     partitionerAlloc alloc = partitioner_allocs()[name];

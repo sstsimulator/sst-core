@@ -68,6 +68,7 @@ static map<string,sst_dec_float> si_unit_map =
 
 // Class Units
 
+std::recursive_mutex Units::unit_lock;
 map<string,Units::unit_id_t> Units::valid_base_units;
 map<string,pair<Units,sst_dec_float> > Units::valid_compound_units;
 map<Units::unit_id_t,string> Units::unit_strings;
@@ -121,6 +122,7 @@ Units::reduce()
 void
 Units::addUnit(std::string units, sst_dec_float& multiplier, bool invert)
 {
+    std::lock_guard<std::recursive_mutex> lock(unit_lock);
     // Check to see if the unit matches one of the registered unit
     // names.  If not, check for SI units and strip them, then check
     // again.
@@ -193,6 +195,7 @@ Units::addUnit(std::string units, sst_dec_float& multiplier, bool invert)
 void
 Units::registerBaseUnit(string u)
 {
+    std::lock_guard<std::recursive_mutex> lock(unit_lock);
     if ( valid_base_units.find(u) != valid_base_units.end() ) return;
     valid_base_units[u] = count;
     unit_strings[count] = u;
@@ -203,6 +206,7 @@ Units::registerBaseUnit(string u)
 void
 Units::registerCompoundUnit(string u, string v)
 {
+    std::lock_guard<std::recursive_mutex> lock(unit_lock);
     if ( valid_compound_units.find(u) != valid_compound_units.end() ) return;
     sst_dec_float multiplier = 1;
     Units unit(v,multiplier);
@@ -294,6 +298,7 @@ Units::invert()
 string
 Units::toString() const
 {
+    std::lock_guard<std::recursive_mutex> lock(unit_lock);
     if ( numerator.size() == 0 && denominator.size() == 0 ) return "";
     
     // Special case Hz
@@ -444,7 +449,7 @@ UnitAlgebra::operator/= (const UnitAlgebra& v)
 }
 
 bool
-UnitAlgebra::operator> (const UnitAlgebra& v)
+UnitAlgebra::operator> (const UnitAlgebra& v) const
 {
     if ( unit != v.unit ) {
         Output abort = Simulation::getSimulation()->getSimulationOutput();
@@ -456,7 +461,7 @@ UnitAlgebra::operator> (const UnitAlgebra& v)
 }
 
 bool
-UnitAlgebra::operator>= (const UnitAlgebra& v)
+UnitAlgebra::operator>= (const UnitAlgebra& v) const
 {
     if ( unit != v.unit ) {
         Output abort = Simulation::getSimulation()->getSimulationOutput();
@@ -468,7 +473,7 @@ UnitAlgebra::operator>= (const UnitAlgebra& v)
 }
 
 bool
-UnitAlgebra::operator< (const UnitAlgebra& v)
+UnitAlgebra::operator< (const UnitAlgebra& v) const
 {
     if ( unit != v.unit ) {
         Output abort = Simulation::getSimulation()->getSimulationOutput();
@@ -480,7 +485,7 @@ UnitAlgebra::operator< (const UnitAlgebra& v)
 }
 
 bool
-UnitAlgebra::operator<= (const UnitAlgebra& v)
+UnitAlgebra::operator<= (const UnitAlgebra& v) const
 {
     if ( unit != v.unit ) {
         Output abort = Simulation::getSimulation()->getSimulationOutput();

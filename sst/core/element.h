@@ -34,18 +34,19 @@ class PartitionGraph;
 class Introspector;
 class Module;
 class Params;
- class SubComponent;
- namespace Partition {
+class SubComponent;
+namespace Partition {
     class SSTPartitioner;
 }
- 
+class RankInfo;
+
 typedef Component* (*componentAllocate)(ComponentId_t, Params&);
 typedef Introspector* (*introspectorAllocate)(Params&);
 typedef void (*eventInitialize)(void);
 typedef Module* (*moduleAllocate)(Params&);
 typedef Module* (*moduleAllocateWithComponent)(Component*, Params&);
 typedef SubComponent* (*subcomponentAllocate)(Component*, Params&);
-typedef SST::Partition::SSTPartitioner* (*partitionFunction)(int, int, int);
+typedef SST::Partition::SSTPartitioner* (*partitionFunction)(RankInfo, RankInfo, int);
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
 typedef void* (*genPythonModuleFunction)(void);
 

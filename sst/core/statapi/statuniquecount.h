@@ -33,7 +33,7 @@ template <typename T>
 class UniqueCountStatistic : public Statistic<T>
 {
 private:
-    friend class SST::Simulation;
+    friend class SST::Component;
 
     UniqueCountStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams)
 		: Statistic<T>(comp, statName, statSubId, statParams)

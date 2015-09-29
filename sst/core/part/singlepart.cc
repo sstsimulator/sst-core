@@ -18,6 +18,8 @@ using namespace std;
 
 bool SSTSinglePartition::initialized = SSTPartitioner::addPartitioner("single",&SSTSinglePartition::allocate, "Allocates all components to rank 0.  Automatically selected for serial jobs.");
 
+using namespace SST::Partition;
+
 SSTSinglePartition::SSTSinglePartition() {}
 
 void SSTSinglePartition::performPartition(PartitionGraph* graph) {
@@ -25,7 +27,7 @@ void SSTSinglePartition::performPartition(PartitionGraph* graph) {
 	PartitionComponentMap_t& compMap = graph->getComponentMap();
 
 	for(auto compItr = compMap.begin(); compItr != compMap.end(); compItr++) {
-		compItr->rank = 0;
+		compItr->rank = RankInfo(0,0);
 	}
 
 }

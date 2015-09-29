@@ -15,6 +15,7 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 
+#include <atomic>
 #include <string>
 
 #include <sst/core/activity.h>
@@ -180,7 +181,7 @@ protected:
     id_type generateUniqueId();
 
 private:
-    static uint64_t id_counter;
+    static std::atomic<uint64_t> id_counter;
     LinkId_t link_id;
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__

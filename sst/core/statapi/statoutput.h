@@ -20,13 +20,17 @@
 #include <sst/core/statapi/statbase.h>
 #include <unordered_map>
 
+#include <mutex>
+
 // Default Settings for Statistic Output and Load Level
 #define STATISTICSDEFAULTOUTPUTNAME "sst.statOutputConsole"
 #define STATISTICSDEFAULTLOADLEVEL 0
 
+extern int main(int argc, char **argv);
+
 namespace SST {
-class Component;    
-class Simulation;    
+class Component;
+class Simulation;
 namespace Statistics {
 class StatisticProcessingEngine;
 
@@ -168,6 +172,7 @@ public:
     const char* getFieldTypeShortName(fieldType_t type);
     
 protected:    
+    friend int ::main(int argc, char **argv);
     friend class SST::Component;
     friend class SST::Simulation;
     friend class SST::Statistics::StatisticProcessingEngine;
@@ -226,10 +231,14 @@ private:
     StatisticFieldInfo* addFieldToLists(const char* fieldName, fieldType_t fieldType);
     fieldHandle_t generateFileHandle(StatisticFieldInfo* FieldInfo);
 
+
 protected:     
     StatisticOutput() {;} // For serialization only
     void setStatisticOutputName(std::string name) {m_statOutputName = name;}
-    
+
+    void lock() { m_lock.lock(); }
+    void unlock() { m_lock.unlock(); }
+
 private:
     std::string      m_statOutputName;
     Params           m_outputParameters;
@@ -239,6 +248,7 @@ private:
     std::string      m_currentFieldCompName;
     std::string      m_currentFieldStatName;
     uint8_t          m_statLoadLevel;
+    std::recursive_mutex  m_lock;
 
     friend class boost::serialization::access;
     template<class Archive>

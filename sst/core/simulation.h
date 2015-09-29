@@ -18,28 +18,23 @@
 #include <sst/core/serialization.h>
 
 #include <signal.h>
+#include <atomic>
 #include <iostream>
+#include <thread>
 
-#include "sst/core/output.h"
-#include "sst/core/clock.h"
-#include "sst/core/oneshot.h"
-#include "sst/core/unitAlgebra.h"
-#include "sst/core/config.h"
-#include <sst/core/statapi/statengine.h>
-#include <sst/core/statapi/statoutput.h>
-#include <sst/core/statapi/statbase.h>
-#include <sst/core/statapi/statnull.h>
-#include <sst/core/statapi/stataccumulator.h>
-#include <sst/core/statapi/stathistogram.h>
-#include <sst/core/statapi/statuniquecount.h>
+#include <unordered_map>
+
+#include <sst/core/output.h>
+#include <sst/core/clock.h>
+#include <sst/core/oneshot.h>
+#include <sst/core/unitAlgebra.h>
+#include <sst/core/rankInfo.h>
 
 #include <sst/core/componentInfo.h>
 
-//#include "sst/core/sdl.h"
-//#include "sst/core/component.h"
-//#include "sst/core/params.h"
+/* Forward declare for Friendship */
+extern int main(int argc, char **argv);
 
-using namespace SST::Statistics;
 
 namespace SST {
 
@@ -48,7 +43,7 @@ namespace SST {
 
 class Activity;
 class Component;
-//class Config;
+class Config;
 class ConfigGraph;
 class Exit;
 class Factory;
@@ -58,72 +53,36 @@ class Introspector;
 class LinkMap;
 class Params;
 class SyncBase;
+class SyncManager;
+class ThreadSync;
 class TimeConverter;
 class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
 class SharedRegionManager;
+namespace Statistics {
+    class StatisticOutput;
+    class StatisticProcessingEngine;
+}
 
 
 typedef std::map<std::string, Introspector* > IntroMap_t;
 
-/** The Factory and TimeLord objects both should only be associated
-    with a simulation object and never created on their own.  To
-    accomplish this, create a base class of Simluation which is
-    friended by both Factory and TimeLord.  The friendship is not
-    inherited by the Simulation class, limiting the exposure of
-    internal information to the 20 line object below and it is
-    impossible to create either a Factory or a timeLord without a
-    simulation object.
- */
-class SimulationBase {
-public:
-    /** Return the Factory associated with this Simulation */
-    Factory* getFactory(void) const { return factory; }
-    /** Return the TimeLord associated with this Simulation */
-    TimeLord* getTimeLord(void) const { return timeLord; }
-    /** Return the Statistic Output associated with this Simulation */
-    StatisticOutput* getStatisticsOutput(void) const { return statisticsOutput; }
-    /** Return the Statistic Processing Engine associated with this Simulation */
-    StatisticProcessingEngine* getStatisticsProcessingEngine(void) const { return statisticsEngine; }
-
-protected:
-    /** Constructor
-     * @param config - Configuration to use for this simulation
-     */
-    SimulationBase(Config* config);
-    SimulationBase() { } // Don't call - here for serialization
-    virtual ~SimulationBase();
-
-    /** Get a handle to a TimeConverter
-     * @param cycles Frequency which is the base of the TimeConverter
-     */
-    TimeConverter* minPartToTC(SimTime_t cycles) const;
-
-    /** Factory used to generate the simulation components */
-    Factory *factory;
-    /** TimeLord of the simulation */
-    TimeLord *timeLord;
-    /** Statistics Output of the simulation */
-    StatisticOutput* statisticsOutput;
-    /** Statistics Timing Engine of the simulation */
-    StatisticProcessingEngine* statisticsEngine;
-
-private:
-    SimulationBase(SimulationBase const&); // Don't Implement
-    void operator=(SimulationBase const&); // Don't implement
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-};
 
 /**
  * Main control class for a SST Simulation.
  * Provides base features for managing the simulation
  */
-class Simulation : public SimulationBase {
+class Simulation {
 public:
+    /** Type of Run Modes */
+    typedef enum {
+        UNKNOWN,    /*!< Unknown mode - Invalid for running */
+        INIT,       /*!< Initialize-only.  Useful for debugging initialization and graph generation */
+        RUN,        /*!< Run-only.  Useful when restoring from a checkpoint */
+        BOTH        /*!< Default.  Both initialize and Run the simulation */
+    } Mode_t;
+
     typedef std::map<SimTime_t, Clock*>   clockMap_t;              /*!< Map of times to clocks */
     typedef std::map<SimTime_t, OneShot*> oneShotMap_t;            /*!< Map of times to OneShots */
     typedef std::vector<std::string>      statEnableList_t;        /*!< List of Enabled Statistics */
@@ -139,9 +98,13 @@ public:
      * @param my_rank - Parallel Rank of this simulation object
      * @param num_ranks - How many Ranks are in the simulation
      */
-    static Simulation *createSimulation(Config *config, int my_rank, int num_ranks);
+    static Simulation *createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks);
+    /**
+     * Used to signify the end of simulation.  Cleans up any existing Simulation Objects
+     */
+    static void shutdown();
     /** Return a pointer to the singleton instance of the Simulation */
-    static Simulation *getSimulation() { return instance; }
+    static Simulation *getSimulation() { return instanceMap.at(std::this_thread::get_id()); }
     /** Sets an internal flag for signaling the simulation.  Used internally */
     static void setSignal(int signal);
     /** Causes the current status of the simulation to be printed to stderr.
@@ -150,22 +113,27 @@ public:
      */
     void printStatus(bool fullStatus);
 
+    /** Processes the ConfigGraph to pull out any need information
+     * about relationships among the threads
+     */
+    void processGraphInfo( ConfigGraph& graph, const RankInfo &myRank, SimTime_t min_part );
+
     /** Converts a ConfigGraph graph into actual set of links and components */
-    int performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_part );
+    int performWireUp( ConfigGraph& graph, const RankInfo &myRank, SimTime_t min_part );
 
     /** Set cycle count, which, if reached, will cause the simulation to halt. */
     void setStopAtCycle( Config* cfg );
     /** Perform the init() phase of simulation */
     void initialize();
     /** Perform the setup() and run phases of the simulation. */
+    void setup();
     void run();
-    /** Return the base simulation Output class instance */
-    Output& getSimulationOutput() { return sim_output; };
+    void finish();
 
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
-    Config::Mode_t getSimulationMode() const { return runMode; };
+    Mode_t getSimulationMode() const { return runMode; };
     /** Return the current simulation time as a cycle count*/
-    SimTime_t getCurrentSimCycle() const;
+    const SimTime_t& getCurrentSimCycle() const;
     /** Return the end simulation time as a cycle count*/
     SimTime_t getEndSimCycle() const;
     /** Return the current priority */
@@ -175,9 +143,9 @@ public:
     /** Return the end simulation time as a time */
     UnitAlgebra getFinalSimTime() const;
     /** Get this instance's parallel rank */
-    int getRank() const {return my_rank;}
+    RankInfo getRank() const {return my_rank;}
     /** Get the number of parallel ranks in the simulation */
-    int getNumRanks() const {return num_ranks;}
+    RankInfo getNumRanks() const {return num_ranks;}
     /** Register a handler to be called on a set frequency */
     TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);
     TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler);
@@ -203,9 +171,25 @@ public:
     /** Return the exit event */
     Exit* getExit() const { return m_exit; }
 
+    const std::vector<SimTime_t>& getInterThreadLatencies() { return interThreadLatencies; }
+    static TimeConverter* getMinPartTC() { return minPartTC; }
+
+    /** Return the TimeLord associated with this Simulation */
+    static TimeLord* getTimeLord(void) { return &timeLord; }
+    /** Return the base simulation Output class instance */
+    static Output& getSimulationOutput() { return sim_output; };
+
+    static Statistics::StatisticOutput* getStatisticsOutput() { return statisticsOutput; }
+    static void signalStatisticsBegin();
+    static void signalStatisticsEnd();
+
     uint64_t getTimeVortexMaxDepth() const;
     uint64_t getTimeVortexCurrentDepth() const;
     uint64_t getSyncQueueDataSize() const;
+
+
+    /** Return the Statistic Processing Engine associated with this Simulation */
+    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const { return statisticsEngine; }
 
     /** Return pointer to map of links for a given component id */
     LinkMap* getComponentLinkMap(ComponentId_t id) const {
@@ -217,12 +201,7 @@ public:
         }
     }
 
-    /** Get a list of allowed ports for a given component type.
-     * @param type - Name of component in lib.name format
-     * @return Vector of allowed port names 
-     */
-    const std::vector<std::string>* getComponentAllowedPorts(std::string type);
-        
+
     // /** Returns reference to the Component Map */
     // const CompMap_t& getComponentMap(void) const { return compMap; }
     // /** Returns reference to the Component ID Map */
@@ -303,41 +282,8 @@ public:
 		}
         return NULL; 
     }
-    
-    template <typename T>
-    Statistic<T>* CreateStatistic(Component* comp, std::string& type, std::string& statName, std::string& statSubId, Params& params)
-    {
-        // Load one of the SST Core provided Statistics
-        // NOTE: This happens here (in simulation) instead of the factory because 
-        //       it is a templated method.  The Component::registerStatistic<T>() 
-        //       must be defined in the component.h however the the Factory is 
-        //       not available from the Simulation::::getSimulation() because
-        //       Factory is only defined via a forwarded definition.  Basically
-        //       we have to go through some twists and jumps to make this work.        
 
-        // Names of sst.xxx Statistics
-        if (0 == strcasecmp("sst.nullstatistic", type.c_str())) {
-            return new NullStatistic<T>(comp, statName, statSubId, params);
-        }
 
-        if (0 == strcasecmp("sst.accumulatorstatistic", type.c_str())) {
-            return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if (0 == strcasecmp("sst.histogramstatistic", type.c_str())) {
-            return new HistogramStatistic<T>(comp, statName, statSubId, params);
-        }
-
-	if(0 == strcasecmp("sst.uniquecountstatistic", type.c_str())) {
-	    return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
-	}
-
-        // We did not find this statistic
-        printf("ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
-
-        return NULL;
-    }
-    
     /** Returns the Introspector with the given name */
     Introspector* getIntrospector(const std::string &name) const
     {
@@ -377,8 +323,14 @@ public:
      * Returns the time of the next item to be executed
      * that is in the TImeVortex of the Simulation
      */
-    SimTime_t getNextActivityTime();
+    SimTime_t getNextActivityTime() const;
 
+    /**
+     *  Gets the minimum next activity time across all TimeVortices in
+     *  the Rank
+     */
+    static SimTime_t getLocalMinimumNextActivityTime();
+    
     /**
      * Returns the Simulation's SharedRegionManager
      */
@@ -393,56 +345,103 @@ private:
     friend class Link;
     friend class Action;
     friend class Output;
+    // To enable main to set up globals
+    friend int ::main(int argc, char **argv);
 
     Simulation(); // Don't call.  Only rational way to serialize
-    Simulation(Config* config, int my_rank, int num_ranks);
+    Simulation(Config* config, RankInfo my_rank, RankInfo num_ranks);
     Simulation(Simulation const&);     // Don't Implement
     void operator=(Simulation const&); // Don't implement
-	
+
+
+    /** Get a handle to a TimeConverter
+     * @param cycles Frequency which is the base of the TimeConverter
+     */
+    TimeConverter* minPartToTC(SimTime_t cycles) const;
+    static Core::ThreadSafe::Barrier& getThreadBarrier() { return barrier; }
+
+    /** Factory used to generate the simulation components */
+    static Factory *factory;
+    /** TimeLord of the simulation */
+    static TimeLord timeLord;
+    /** Statistics Output of the simulation */
+    static Statistics::StatisticOutput* statisticsOutput;
+    /** Output */
+    static Output sim_output;
+    static Core::ThreadSafe::Barrier barrier;
+    static std::mutex simulationMutex;
+
+
+
+    Component* createComponent(ComponentId_t id, std::string &name, 
+                               Params &params);
+    Introspector* createIntrospector(std::string &name, 
+                                     Params &params );
+
+    TimeVortex* getTimeVortex() const { return timeVortex; }
+
     /** Emergency Shutdown
      * Called when a SIGINT or SIGTERM has been seen
      */
-    void emergencyShutdown(int signal);
+    static void emergencyShutdown();
+    /** Normal Shutdown
+     */
+    void endSimulation(void) { endSimulation(currentSimCycle); }
+    void endSimulation(SimTime_t end) {
+        shutdown_mode = SHUTDOWN_CLEAN;
+        // For now, only thread 0 will do anything
+        if ( my_rank.thread != 0 ) return;
+        // Need to notify all threads
+        for ( auto && instance : instanceVec ) {
+            instance->endSimCycle = end;
+            instance->endSim = true;
+        }
+    }
 
-    Component* createComponent(ComponentId_t id, std::string name, 
-                               Params params);
-    Introspector* createIntrospector(std::string name, 
-                                     Params params );
+    typedef enum {
+        SHUTDOWN_CLEAN,     /* Normal shutdown */
+        SHUTDOWN_SIGNAL,    /* SIGINT or SIGTERM received */
+        SHUTDOWN_EMERGENCY, /* emergencyShutdown() called */
+    } ShutdownMode_t;
 
-    TimeVortex* getTimeVortex() const { return timeVortex; }
-    void endSimulation(void) { endSimCycle = currentSimCycle; endSim = true; }
-    void endSimulation(SimTime_t end) { endSimCycle = end; endSim = true; }
-
+    friend class SyncManager;
     
-    Config::Mode_t   runMode;
+    Mode_t   runMode;
     TimeVortex*      timeVortex;
-    TimeConverter*   minPartTC;
+    TimeConverter*   threadMinPartTC;
     Activity*        current_activity;
-    SyncBase*        sync;
+    static SyncBase* sync;
+    static TimeConverter*   minPartTC;
+    std::vector<SimTime_t> interThreadLatencies;
+    SyncManager*     syncManager;
+    ThreadSync*      threadSync;
     ComponentInfoMap compInfoMap;
     IntroMap_t       introMap;
     clockMap_t       clockMap;
     statEnableMap_t  statisticEnableMap;
     statParamsMap_t  statisticParamsMap;
-    oneShotMap_t     oneShotMap;    
+    oneShotMap_t     oneShotMap;
     SimTime_t        currentSimCycle;
     SimTime_t        endSimCycle;
     int              currentPriority;
-    Exit*            m_exit;
+    static Exit*     m_exit;
     SimulatorHeartbeat*	m_heartbeat;
     bool             endSim;
-    int              my_rank;
-    int              num_ranks;
-    int              init_msg_count;
+    RankInfo         my_rank;
+    RankInfo         num_ranks;
+    static std::atomic<int>       init_msg_count;
     unsigned int     init_phase;
     volatile sig_atomic_t lastRecvdSignal;
+    ShutdownMode_t   shutdown_mode;
     // std::map<ComponentId_t,LinkMap*> component_links;
-    Output           sim_output;
     std::string      output_directory;
     static SharedRegionManager* sharedRegionManager;
     bool             wireUpFinished;
+    /** Statistics Timing Engine of the simulation */
+    Statistics::StatisticProcessingEngine* statisticsEngine;
 
-    static Simulation *instance;
+    static std::unordered_map<std::thread::id, Simulation*> instanceMap;
+    static std::vector<Simulation*> instanceVec;
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -461,13 +460,32 @@ private:
                                     const unsigned int file_version)
     {
         ::new(t)Simulation();
-        Simulation::instance = t;
+        Simulation::instanceMap[std::this_thread::get_id()] = t;
     }
+
+    friend void wait_my_turn_start();
+    friend void wait_my_turn_end();
+
 };
+
+// Function to allow for easy serialization of threads while debugging
+// code.  Can only be used when you can guarantee all threads will be
+// taking the same code path.  If you can't guarantee that, then use a
+// spinlock to make sure only one person is in a given region at a
+// time.  ONLY FOR DEBUG USE.
+void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
+
+// Uses Simulation's barrier
+void wait_my_turn_start();
+
+void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
+
+// Uses Simulation's barrier
+void wait_my_turn_end();
+
 
 } // namespace SST
 
-BOOST_CLASS_EXPORT_KEY(SST::SimulationBase)
 BOOST_CLASS_EXPORT_KEY(SST::Simulation)
 
 #endif //SST_CORE_SIMULATION_H

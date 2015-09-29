@@ -21,7 +21,7 @@ namespace Statistics {
 StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) 
     : StatisticOutput (outputParameters)
 {
-    Output out = Simulation::getSimulation()->getSimulationOutput();
+    Output out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputConsole enabled...\n");
     setStatisticOutputName("StatisticOutputConsole");
 }

@@ -21,6 +21,8 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
+#include "sst/core/threadsafe.h"
+
 namespace SST {
 namespace Core {
 
@@ -29,6 +31,28 @@ namespace Core {
  */
 class MemPool
 {
+    template <typename LOCK_t>
+    class FreeList {
+        LOCK_t mtx;
+        std::vector<void*> list;
+    public:
+        inline void insert(void *ptr) {
+            std::lock_guard<LOCK_t> lock(mtx);
+            list.push_back(ptr);
+        }
+
+        inline void* try_remove() {
+            std::lock_guard<LOCK_t> lock(mtx);
+            if ( list.empty() ) return NULL;
+            void *p = list.back();
+            list.pop_back();
+            return p;
+        }
+
+        size_t size() const { return list.size(); }
+    };
+
+
 public:
     /** Create a new Memory Pool.
      * @param elementSize - Size of each Element
@@ -36,7 +60,8 @@ public:
      */
 	MemPool(size_t elementSize, size_t initialSize=(2<<20)) :
         numAlloc(0), numFree(0),
-        elemSize(elementSize), arenaSize(initialSize)
+        elemSize(elementSize), arenaSize(initialSize),
+        allocating(false)
     {
         allocPool();
     }
@@ -49,25 +74,26 @@ public:
     }
 
     /** Allocate a new element from the memory pool */
-	void* malloc()
+	inline void* malloc()
     {
-        if ( freeList.empty() ) {
+        void *ret = freeList.try_remove();
+        while ( !ret ) {
             bool ok = allocPool();
             if ( !ok ) return NULL;
+            _mm_pause();
+            ret = freeList.try_remove();
         }
-        void *ret = freeList.back();
-        freeList.pop_back();
         ++numAlloc;
         return ret;
     }
 
     /** Return an element to the memory pool */
-	void free(void *ptr)
+	inline void free(void *ptr)
     {
         // TODO:  Make sure this is in one of our arenas
-        freeList.push_back(ptr);
+        freeList.insert(ptr);
 // #ifdef __SST_DEBUG_EVENT_TRACKING__
-//         *((uint32_t*)ptr) = 0xFFFFFFFF;
+//         *((uint64_t*)ptr) = 0xFFFFFFFFFFFFFFFF;
 // #endif
         ++numFree;
     }
@@ -87,9 +113,9 @@ public:
     }
     
     /** Counter:  Number of times elements have been allocated */
-    uint64_t numAlloc;
+    std::atomic<uint64_t> numAlloc;
     /** Counter:  Number times elements have been freed */
-    uint64_t numFree;
+    std::atomic<uint64_t> numFree;
 
     size_t getArenaSize() const { return arenaSize; }
     size_t getElementSize() const { return elemSize; }
@@ -100,32 +126,36 @@ private:
 
 	bool allocPool()
     {
-#if 0
-        uint8_t *newPool = (uint8_t*)::malloc(arenaSize);
-#else
+        /* If already in progress, return */
+        if ( allocating.exchange(1, std::memory_order_acquire) ) {
+            return true;
+        }
+
         uint8_t *newPool = (uint8_t*)mmap(0, arenaSize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
         if ( MAP_FAILED == newPool ) {
+            allocating.store(0, std::memory_order_release);
             return false;
         }
-#endif
         std::memset(newPool, 0xFF, arenaSize); 
         arenas.push_back(newPool);
         size_t nelem = arenaSize / elemSize;
         for ( size_t i = 0 ; i < nelem ; i++ ) {
-            uint32_t* ptr = (uint32_t*)(newPool + (elemSize*i));
+            uint64_t* ptr = (uint64_t*)(newPool + (elemSize*i));
 // #ifdef __SST_DEBUG_EVENT_TRACKING__
-//             *ptr = 0xFFFFFFFF;
+//             *ptr = 0xFFFFFFFFFFFFFFFF;
 // #endif
-            freeList.push_back(ptr);
+            freeList.insert(ptr);
             // freeList.push_back(newPool + (elemSize*i));
         }
+        allocating.store(0, std::memory_order_release);
         return true;
     }
 
 	size_t elemSize;
 	size_t arenaSize;
 
-	std::deque<void*> freeList;
+    std::atomic<unsigned int> allocating;
+	FreeList<ThreadSafe::Spinlock> freeList;
 	std::list<uint8_t*> arenas;
 
 };

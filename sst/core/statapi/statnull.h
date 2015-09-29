@@ -16,6 +16,7 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 
+#include <sst/core/component.h>
 #include <sst/core/statapi/statbase.h>
 
 namespace SST {
@@ -42,7 +43,7 @@ template <typename T>
 class NullStatistic : public Statistic<T>
 {
 private:    
-    friend class SST::Simulation;
+    friend class SST::Component;
     
     NullStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) 
 		: Statistic<T>(comp, statName, statSubId, statParams)

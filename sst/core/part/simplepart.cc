@@ -27,14 +27,14 @@ namespace Partition {
 
     bool SimplePartitioner::initialized = SSTPartitioner::addPartitioner("simple",&SimplePartitioner::allocate,"Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.");
 
-    SimplePartitioner::SimplePartitioner(int total_ranks) :
+    SimplePartitioner::SimplePartitioner(RankInfo total_ranks) :
         SSTPartitioner(),
         world_size(total_ranks)
     {}
 
     SimplePartitioner::SimplePartitioner() :
         SSTPartitioner(),
-        world_size(1)
+        world_size(RankInfo(1,1))
     {}
     
     inline int pow2(int step) {
@@ -117,11 +117,11 @@ namespace Partition {
 		/////////////////////////////////////////////////////////////////////////////////////
 		// Sub-divide and repeat
 		for(int i = 0; i < lengthA; i++) {
-			component_map[setA[i]].rank = rankA;
+			component_map[setA[i]].rank = RankInfo(rankA, 0);
 		}
 
 		for(int i = 0; i < lengthB; i++) {
-			component_map[setB[i]].rank = rankB;
+			component_map[setB[i]].rank = RankInfo(rankB, 0);
 		}
 
 		const int A1_rank = rankA;
@@ -186,12 +186,12 @@ namespace Partition {
 		PartitionComponentMap_t& component_map = graph->getComponentMap();
 
 
-		if(world_size == 1) {
+		if(world_size.rank == 1) {
 			for(PartitionComponentMap_t::iterator compItr = component_map.begin();
 				compItr != component_map.end();
 				++compItr) {
 
-				compItr->rank = 0;
+				compItr->rank = RankInfo(0,0);
 			}
 		} else {
 			// const int A_size = component_map.size() % 2 == 1 ? (component_map.size() / 2) + 1 : (component_map.size() / 2);
@@ -240,7 +240,7 @@ namespace Partition {
 				}
 			}
 
-			simple_partition_step(component_map, setA, A_size, 0, setB, B_size, 1, timeTable, world_size, 1);
+			simple_partition_step(component_map, setA, A_size, 0, setB, B_size, 1, timeTable, world_size.rank, 1);
 		}
 	}
 } // namespace partition

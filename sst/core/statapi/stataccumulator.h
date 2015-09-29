@@ -43,7 +43,7 @@ template <typename NumberBase>
 class AccumulatorStatistic : public Statistic<NumberBase> 
 {
 private:
-    friend class SST::Simulation;
+    friend class SST::Component;
 
     AccumulatorStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) 
 		: Statistic<NumberBase>(comp, statName, statSubId, statParams)

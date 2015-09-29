@@ -68,7 +68,9 @@ void SimulatorHeartbeat::execute( void )
 
     uint64_t mempool_size;
     uint64_t active_activities;
+#ifdef USE_MEMPOOL
     Activity::getMemPoolUsage(mempool_size, active_activities);
+#endif
     uint64_t max_mempool_size, global_mempool_size, global_active_activities;
     
 #ifdef SST_CONFIG_HAVE_MPI

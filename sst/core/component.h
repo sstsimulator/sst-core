@@ -24,6 +24,12 @@
 //#include <sst/core/params.h>
 //#include <sst/core/link.h>
 //#include <sst/core/timeConverter.h>
+#include <sst/core/statapi/statoutput.h>
+#include <sst/core/statapi/statengine.h>
+#include <sst/core/statapi/statnull.h>
+#include <sst/core/statapi/stataccumulator.h>
+#include <sst/core/statapi/stathistogram.h>
+#include <sst/core/statapi/statuniquecount.h>
 #include "sst/core/simulation.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/statapi/statbase.h"
@@ -364,6 +370,9 @@ protected:
     SharedRegion* getLocalSharedRegion(const std::string &key, size_t size);
     SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL);
 
+    /* Get the Simulation */
+    Simulation* getSimulation() const { return sim; }
+
 private:
 
     friend class SubComponent;
@@ -381,9 +390,49 @@ private:
     ComponentId_t   id;
 	/* std::string name; */
     ComponentInfo* my_info;
-    
+    Simulation *sim;
+
     // LinkMap* myLinks;
     std::string currentlyLoadingSubComponent;
+
+
+
+    template <typename T>
+    Statistic<T>* CreateStatistic(Component* comp, std::string& type, std::string& statName, std::string& statSubId, Params& params)
+    {
+        // Load one of the SST Core provided Statistics
+        // NOTE: This happens here (in simulation) instead of the factory because 
+        //       it is a templated method.  The Component::registerStatistic<T>() 
+        //       must be defined in the component.h however the the Factory is 
+        //       not available from the Simulation::::getSimulation() because
+        //       Factory is only defined via a forwarded definition.  Basically
+        //       we have to go through some twists and jumps to make this work.        
+
+        // Names of sst.xxx Statistics
+        if (0 == strcasecmp("sst.nullstatistic", type.c_str())) {
+            return new NullStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        if (0 == strcasecmp("sst.accumulatorstatistic", type.c_str())) {
+            return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        if (0 == strcasecmp("sst.histogramstatistic", type.c_str())) {
+            return new HistogramStatistic<T>(comp, statName, statSubId, params);
+        }
+
+	if(0 == strcasecmp("sst.uniquecountstatistic", type.c_str())) {
+	    return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
+	}
+
+        // We did not find this statistic
+        printf("ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
+
+        return NULL;
+    }
+
+
+
     
     friend class boost::serialization::access;
     template<class Archive>

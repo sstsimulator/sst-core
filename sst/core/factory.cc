@@ -41,10 +41,14 @@ using namespace SST::Statistics;
 
 namespace SST {
 
+Factory* Factory::instance = NULL;
+
 Factory::Factory(std::string searchPaths) :
     searchPaths(searchPaths),
-    out(Simulation::getSimulation()->getSimulationOutput())
+    out(Output::getDefaultObject())
 {
+    if ( instance ) out.fatal(CALL_INFO, -1, "Already initialized a factory.\n");
+    instance = this;
     loader = new ElemLoader(searchPaths);
 }
 
@@ -81,7 +85,7 @@ Factory::GetComponentAllowedPorts(std::string type) {
 
 Component*
 Factory::CreateComponent(ComponentId_t id, 
-                         std::string type, 
+                         std::string &type, 
                          Params& params)
 {
     std::string elemlib, elem;
@@ -89,14 +93,14 @@ Factory::CreateComponent(ComponentId_t id,
     boost::tie(elemlib, elem) = parseLoadName(type);
 
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    requireLibrary(elemlib);
 
     // now look for component
     std::string tmp = elemlib + "." + elem;
-    eic_map_t::iterator eii = 
-        found_components.find(tmp);
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    eic_map_t::iterator eii = found_components.find(tmp);
     if (eii == found_components.end()) {
         out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return NULL;
@@ -120,14 +124,14 @@ Factory::CreateComponent(ComponentId_t id,
 }
 
 StatisticOutput* 
-Factory::CreateStatisticOutput(std::string& statOutputType, Params& statOutputParams)
+Factory::CreateStatisticOutput(const std::string& statOutputType, const Params& statOutputParams)
 {
     Module*           tempModule;
     StatisticOutput*  rtnStatOut = NULL;
     
     // Load the Statistic Output as a module first;  This allows 
     // us to provide StatisticOutputs as part of a element
-    tempModule = CreateModule(statOutputType, statOutputParams);
+    tempModule = CreateModule(statOutputType, const_cast<Params&>(statOutputParams));
     if (NULL != tempModule) {
         // Dynamic Cast the Module into a Statistic Output, if the module is not
         // a StatisticOutput, then return NULL
@@ -149,12 +153,13 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
     boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    requireLibrary(elemlib);
 
     // now look for component
     std::string tmp = elemlib + "." + elem;
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
     eic_map_t::iterator eii = found_components.find(tmp);
     if (eii == found_components.end()) {
         out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
@@ -184,12 +189,13 @@ Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const s
     boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    requireLibrary(elemlib);
 
     // now look for subcomponent
     std::string tmp = elemlib + "." + elem;
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
     eis_map_t::iterator eii = found_subcomponents.find(tmp);
     if (eii == found_subcomponents.end()) {
         out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", tmp.c_str());
@@ -219,12 +225,13 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    requireLibrary(elemlib);
 
     // now look for component
     std::string tmp = elemlib + "." + elem;
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
     eic_map_t::iterator eii = found_components.find(tmp);
     if (eii == found_components.end()) {
         out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
@@ -278,21 +285,21 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
 }
 
 Introspector*
-Factory::CreateIntrospector(std::string type, 
+Factory::CreateIntrospector(std::string &type, 
                             Params& params)
 {
     std::string elemlib, elem;
     boost::tie(elemlib, elem) = parseLoadName(type);
 
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    requireLibrary(elemlib);
 
     // now look for component
     std::string tmp = elemlib + "." + elem;
-    eii_map_t::iterator eii = 
-        found_introspectors.find(tmp);
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    eii_map_t::iterator eii = found_introspectors.find(tmp);
     if (eii == found_introspectors.end()) {
         out.fatal(CALL_INFO, -1,"can't find requested introspector %s.\n ", tmp.c_str());
         return NULL;
@@ -310,37 +317,35 @@ Module*
 Factory::CreateModule(std::string type, Params& params)
 {
     if("" == type) {
-	Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,
-		-1, "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,
+                -1, "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
     }
 
     std::string elemlib, elem;
     boost::tie(elemlib, elem) = parseLoadName(type);
 
     if("sst" == elemlib) {
-	return CreateCoreModule(elem, params);
+        return CreateCoreModule(elem, params);
     } else {
-   	// ensure library is already loaded...
-    	if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        	findLibrary(elemlib);
-    	}
+        // ensure library is already loaded...
+        requireLibrary(elemlib);
 
-    	// now look for module
-    	std::string tmp = elemlib + "." + elem;
-    	eim_map_t::iterator eim =
-        found_modules.find(tmp);
+        // now look for module
+        std::string tmp = elemlib + "." + elem;
 
-	if (eim == found_modules.end()) {
-        	out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", tmp.c_str());
-        	return NULL;
-    	}
+        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+        eim_map_t::iterator eim = found_modules.find(tmp);
+        if (eim == found_modules.end()) {
+            out.fatal(CALL_INFO, -1, "can't find requested module %s.\n ", tmp.c_str());
+            return NULL;
+        }
 
-    	const ModuleInfo mi = eim->second;
+        const ModuleInfo mi = eim->second;
 
-    	params.pushAllowedKeys(mi.params);
-    	Module *ret = mi.module->alloc(params);
-    	params.popAllowedKeys();
-    	return ret;
+        params.pushAllowedKeys(mi.params);
+        Module *ret = mi.module->alloc(params);
+        params.popAllowedKeys();
+        return ret;
     }
 }
 
@@ -415,26 +420,26 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
         return CreateCoreModuleWithComponent(elem, comp, params);
     } else {
 
-    // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+        // ensure library is already loaded...
+        requireLibrary(elemlib);
 
-    // now look for module
-    std::string tmp = elemlib + "." + elem;
-    eim_map_t::iterator eim = 
-        found_modules.find(tmp);
-    if (eim == found_modules.end()) {
-        out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", tmp.c_str());
-        return NULL;
-    }
+        // now look for module
+        std::string tmp = elemlib + "." + elem;
 
-    const ModuleInfo mi = eim->second;
+        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
-    params.pushAllowedKeys(mi.params);
-    Module *ret = mi.module->alloc_with_comp(comp, params);
-    params.popAllowedKeys();
-    return ret;
+        eim_map_t::iterator eim = found_modules.find(tmp);
+        if (eim == found_modules.end()) {
+            out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", tmp.c_str());
+            return NULL;
+        }
+
+        const ModuleInfo mi = eim->second;
+
+        params.pushAllowedKeys(mi.params);
+        Module *ret = mi.module->alloc_with_comp(comp, params);
+        params.popAllowedKeys();
+        return ret;
     }
 }
 
@@ -450,14 +455,14 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
     // } else {
 
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    requireLibrary(elemlib);
 
     // now look for module
     std::string tmp = elemlib + "." + elem;
-    eis_map_t::iterator eis = 
-        found_subcomponents.find(tmp);
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    eis_map_t::iterator eis = found_subcomponents.find(tmp);
     if (eis == found_subcomponents.end()) {
         out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", tmp.c_str());
         return NULL;
@@ -479,9 +484,9 @@ Factory::RequireEvent(std::string eventname)
     boost::tie(elemlib, elem) = parseLoadName(eventname);
 
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    requireLibrary(elemlib);
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
     // initializer fires at library load time, so all we have to do is
     // make sure the event actually exists...
@@ -498,14 +503,12 @@ Factory::GetPartitioner(std::string name)
     boost::tie(elemlib, elem) = parseLoadName(name);
 
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    requireLibrary(elemlib);
 
     // Look for the partitioner
     std::string tmp = elemlib + "." + elem;
-    eip_map_t::iterator eii =
-	found_partitioners.find(tmp);
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    eip_map_t::iterator eii = found_partitioners.find(tmp);
     if ( eii == found_partitioners.end() ) {
         out.fatal(CALL_INFO, -1,"Error: Unable to find requested partitioner %s, check --help for information on partitioners.\n ", tmp.c_str());
         return NULL;
@@ -522,14 +525,13 @@ Factory::GetGenerator(std::string name)
     boost::tie(elemlib, elem) = parseLoadName(name);
 
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    requireLibrary(elemlib);
 
     // Look for the generator
     std::string tmp = elemlib + "." + elem;
-    eig_map_t::iterator eii =
-	found_generators.find(tmp);
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    eig_map_t::iterator eii = found_generators.find(tmp);
     if ( eii == found_generators.end() ) {
         out.fatal(CALL_INFO, -1,"can't find requested partitioner %s.\n ", tmp.c_str());
         return NULL;
@@ -576,6 +578,12 @@ bool Factory::hasLibrary(std::string elemlib)
 }
 
 
+void Factory::requireLibrary(std::string &elemlib)
+{
+    (void)findLibrary(elemlib, true);
+}
+
+
 void Factory::getLoadedLibraryNames(std::set<std::string>& lib_names)
 {
     for ( eli_map_t::const_iterator i = loaded_libraries.begin();
@@ -598,9 +606,11 @@ const ElementLibraryInfo*
 Factory::findLibrary(std::string elemlib, bool showErrors)
 {
     const ElementLibraryInfo *eli = NULL;
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
     eli_map_t::iterator elii = loaded_libraries.find(elemlib);
     if (elii != loaded_libraries.end()) return elii->second;
+
 
     eli = loader->loadLibrary(elemlib, showErrors);
     if (NULL == eli) return NULL;

@@ -32,13 +32,20 @@ using namespace std;
 
 namespace SST {
 
-#define _GRAPH_DBG( fmt, args...) __DBG( DBG_GRAPH, Graph, fmt, ## args )
+
+void ConfigLink::updateLatencies(TimeLord *timeLord)
+{
+    latency[0] = timeLord->getSimCycles(latency_str[0], __FUNCTION__);
+    latency[1] = timeLord->getSimCycles(latency_str[1], __FUNCTION__);
+}
+
 
 void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
     os << "  type = " << type << std::endl;
     os << "  weight = " << weight << std::endl;
-    os << "  rank = " << rank << std::endl;
+    os << "  rank = " << rank.rank << std::endl;
+    os << "  thread = " << rank.thread << std::endl;
     os << "  isIntrospector = " << isIntrospector << std::endl;
     os << "  Links:" << std::endl;
     for (size_t i = 0 ; i != links.size() ; ++i) {
@@ -87,7 +94,7 @@ ConfigComponent::cloneWithoutLinksOrParams() const
 }
     
 void
-ConfigGraph::setComponentRanks(int rank)
+ConfigGraph::setComponentRanks(RankInfo rank)
 {
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
@@ -97,7 +104,7 @@ ConfigGraph::setComponentRanks(int rank)
 }
 
 bool
-ConfigGraph::containsComponentInRank(int rank)
+ConfigGraph::containsComponentInRank(RankInfo rank)
 {
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
@@ -109,24 +116,35 @@ ConfigGraph::containsComponentInRank(int rank)
 }
 
 bool
-ConfigGraph::checkRanks(int ranks)
+ConfigGraph::checkRanks(RankInfo ranks)
 {
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
     {
-        int rank = iter->rank;
-        if ( rank < 0 || rank >= ranks ) {
+        if ( !iter->rank.isAssigned() || !ranks.inRange(iter->rank) ) {
+            fprintf(stderr, "Bad rank: %u %u\n", iter->rank.rank, iter->rank.thread);
             return false;
         }
     }
     return true;
 }
 
+void
+ConfigGraph::postCreationCleanup()
+{
+    TimeLord *timeLord = Simulation::getTimeLord();
+    for ( ConfigLink &link : getLinkMap() ) {
+        link.updateLatencies(timeLord);
+    }
+
+}
+
+
 bool
 ConfigGraph::checkForStructuralErrors()
 {
     // Output object for error messages
-    Output output = Simulation::getSimulation()->getSimulationOutput();
+    Output &output = Output::getDefaultObject();
     
     // Check to make sure there are no dangling links.  A dangling
     // link is found by looking though the links in the graph and
@@ -225,7 +243,7 @@ ConfigGraph::checkForStructuralErrors()
 
 
 ComponentId_t
-ConfigGraph::addComponent(std::string name, std::string type, float weight, int rank)
+ConfigGraph::addComponent(std::string name, std::string type, float weight, RankInfo rank)
 {
 	comps.push_back(ConfigComponent(nextCompID, name, type, weight, rank, false));
     return nextCompID++;
@@ -234,12 +252,12 @@ ConfigGraph::addComponent(std::string name, std::string type, float weight, int 
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type)
 {
-	comps.push_back(ConfigComponent(nextCompID, name, type, 1.0f, 0, false));
+	comps.push_back(ConfigComponent(nextCompID, name, type, 1.0f, RankInfo(), false));
     return nextCompID++;
 }
 
 void
-ConfigGraph::setComponentRank(ComponentId_t comp_id, int rank)
+ConfigGraph::setComponentRank(ComponentId_t comp_id, RankInfo rank)
 {
     comps[comp_id].rank = rank;
 }
@@ -278,7 +296,7 @@ ConfigGraph::setStatisticOutput(const char* name)
 }
 
 void
-ConfigGraph::setStatisticOutputParams(Params& p)
+ConfigGraph::setStatisticOutputParams(const Params& p)
 {
     statOutputParams = p;
 }
@@ -427,12 +445,11 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
     }
 
 	// Convert the latency string to a number
-	SimTime_t latency = Simulation::getSimulation()->getTimeLord()->getSimCycles(latency_str, "ConfigGraph::addLink");
 
 	int index = link.current_ref++;
 	link.component[index] = comp_id;
 	link.port[index] = port;
-	link.latency[index] = latency;
+    link.latency_str[index] = latency_str;
     link.no_cut = link.no_cut | no_cut;
     
 	comps[comp_id].links.push_back(link.id);
@@ -440,24 +457,24 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 ComponentId_t
 ConfigGraph::addIntrospector(string name, string type)
 {
-	comps.push_back(ConfigComponent(nextCompID, name, type, 0.0f, 0, true));
+	comps.push_back(ConfigComponent(nextCompID, name, type, 0.0f, RankInfo(0, 0), true));
     return nextCompID++;
 
 }
 
 
 ConfigGraph*
-ConfigGraph::getSubGraph(int start_rank, int end_rank)
+ConfigGraph::getSubGraph(uint32_t start_rank, uint32_t end_rank)
 {
-    set<int> rank_set;
-    for ( int i = start_rank; i <= end_rank; i++ ) {
+    set<uint32_t> rank_set;
+    for ( uint32_t i = start_rank; i <= end_rank; i++ ) {
         rank_set.insert(i);
     }
     return getSubGraph(rank_set);
 }
 
 ConfigGraph*
-ConfigGraph::getSubGraph(const std::set<int>& rank_set)
+ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
 {
     ConfigGraph* graph = new ConfigGraph();
     
@@ -467,7 +484,7 @@ ConfigGraph::getSubGraph(const std::set<int>& rank_set)
     for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it) {
         const ConfigComponent& comp = *it;
 
-        if ( rank_set.find(comp.rank) != rank_set.end() ) {
+        if ( rank_set.find(comp.rank.rank) != rank_set.end() ) {
             graph->comps.push_back(comp.cloneWithoutLinks());
         }
         else {
@@ -478,7 +495,7 @@ ConfigGraph::getSubGraph(const std::set<int>& rank_set)
                 const ConfigLink& link = links[*link_it];
                 ComponentId_t remote = link.component[0] == comp.id ?
                     link.component[1] : link.component[0];
-                if ( rank_set.find(comps[remote].rank) != rank_set.end() ) {
+                if ( rank_set.find(comps[remote].rank.rank) != rank_set.end() ) {
                     graph->comps.push_back(comp.cloneWithoutLinksOrParams());
                     break;
                 }
@@ -496,8 +513,8 @@ ConfigGraph::getSubGraph(const std::set<int>& rank_set)
         const ConfigComponent& comp0 = comps[link.component[0]];
         const ConfigComponent& comp1 = comps[link.component[1]];
 
-        bool comp0_in_ranks = (rank_set.find(comp0.rank) != rank_set.end());
-        bool comp1_in_ranks = (rank_set.find(comp1.rank) != rank_set.end());
+        bool comp0_in_ranks = (rank_set.find(comp0.rank.rank) != rank_set.end());
+        bool comp1_in_ranks = (rank_set.find(comp1.rank.rank) != rank_set.end());
         
         if ( comp0_in_ranks || comp1_in_ranks ) {
             // Clone the link and add to new lin k map
@@ -672,7 +689,8 @@ PartitionComponent::print(std::ostream &os, const PartitionGraph* graph) const
     }
     os << ")" << endl;
     os << "  weight = " << weight << std::endl;
-    os << "  rank = " << rank << std::endl;
+    os << "  rank = " << rank.rank << std::endl;
+    os << "  thread = " << rank.thread << std::endl;
     os << "  Links:" << std::endl;
     for ( LinkIdMap_t::const_iterator it = links.begin(); it != links.end(); ++it ) {
         graph->getLink(*it).print(os);
@@ -680,3 +698,4 @@ PartitionComponent::print(std::ostream &os, const PartitionGraph* graph) const
 }
 
 } // namespace SST
+

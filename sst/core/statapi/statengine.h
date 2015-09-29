@@ -15,10 +15,10 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 #include <sst/core/statapi/statfieldinfo.h>
+#include <sst/core/unitAlgebra.h>
 
 namespace SST {
 class Component;
-class SimulationBase;
 class Simulation;
 namespace Statistics {
     
@@ -42,7 +42,6 @@ public:
 
 private:
     friend class SST::Component;
-    friend class SST::SimulationBase;
     friend class SST::Simulation;
 
     StatisticProcessingEngine();

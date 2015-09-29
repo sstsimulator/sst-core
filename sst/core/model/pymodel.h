@@ -26,6 +26,7 @@
 
 #include <sst/core/model/sstmodel.h>
 #include <sst/core/config.h>
+#include <sst/core/rankInfo.h>
 #include <sst/core/output.h>
 #include <Python.h>
 
@@ -67,7 +68,7 @@ class SSTPythonModelDefinition : public SSTModelDescription {
         ComponentId_t addComponent(const char *name, const char *type) const { return graph->addComponent(name, type); }
         void addParameter(ComponentId_t id, const char *name, const char *value) const { graph->addParameter(id, name, value, true); }
 
-        void setComponentRank(ComponentId_t id, int rank) const { graph->setComponentRank(id, rank); }
+        void setComponentRank(ComponentId_t id, uint32_t rank, uint32_t thread) const { graph->setComponentRank(id, RankInfo(rank, thread)); }
         void setComponentWeight(ComponentId_t id, float weight) const { graph->setComponentWeight(id, weight); }
         void addLink(ComponentId_t id, const char *name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, name, port, latency, no_cut); }
 

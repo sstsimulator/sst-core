@@ -25,7 +25,7 @@ StatisticOutputCompressedTxt::StatisticOutputCompressedTxt(Params& outputParamet
     : StatisticOutput (outputParameters)
 {
     // Announce this output object's name
-    Output out = Simulation::getSimulation()->getSimulationOutput();
+    Output out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputCompressedTxt enabled...\n");
     setStatisticOutputName("StatisticOutputCompressedTxt");
 }
@@ -88,8 +88,8 @@ void StatisticOutputCompressedTxt::startOfSimulation()
     FieldInfoArray_t::iterator it_v;
     
     // Set Filename with Rank if Num Ranks > 1
-    if (1 < Simulation::getSimulation()->getNumRanks()) {
-        int rank = Simulation::getSimulation()->getRank();
+    if (1 < Simulation::getSimulation()->getNumRanks().rank) {
+        int rank = Simulation::getSimulation()->getRank().rank;
         std::string rankstr = "_" + SST::to_string(rank);
         
         // Search for any extension        
@@ -180,9 +180,9 @@ void StatisticOutputCompressedTxt::implStartOutputEntries(StatisticBase* statist
     if (true == m_outputRank) {
         // Add the Rank to the front
         if (true == m_outputInlineHeader) {
-            sprintf(buffer, "Rank = %d", Simulation::getSimulation()->getRank());
+            sprintf(buffer, "Rank = %d", Simulation::getSimulation()->getRank().rank);
         } else {
-            sprintf(buffer, "%d", Simulation::getSimulation()->getRank());
+            sprintf(buffer, "%d", Simulation::getSimulation()->getRank().rank);
         }
 
         m_outputBuffer += buffer;

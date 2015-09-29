@@ -64,8 +64,8 @@ vector<SimpleNetwork::nid_t>* SimpleNetwork::getMappingVector(string mapName) {
 
 void SST::Interfaces::SimpleNetwork::exchangeMappingData() {
 #if SST_CONFIG_HAVE_MPI
-    int rank = Simulation::getSimulation()->getRank();
-    int num_ranks = Simulation::getSimulation()->getNumRanks();
+    int rank = Simulation::getSimulation()->getRank().rank;
+    int num_ranks = Simulation::getSimulation()->getNumRanks().rank;
     if ( num_ranks > 1 ) {
 
         // Send all mappings to next lowest rank

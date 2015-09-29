@@ -14,6 +14,8 @@
 
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
+#include <sst/core/simulation.h>
+#include <sst/core/rankInfo.h>
 
 #include <string>
 
@@ -33,19 +35,12 @@ namespace SST {
  */
 class Config {
 public:
-    /** Type of Run Modes */
-    typedef enum {
-        UNKNOWN,    /*!< Unknown mode - Invalid for running */
-        INIT,       /*!< Initialize-only.  Useful for debugging initialization and graph generation */
-        RUN,        /*!< Run-only.  Useful when restoring from a checkpoint */
-        BOTH        /*!< Default.  Both initialize and Run the simulation */
-    } Mode_t;
 
     /** Create a new Config object.
      * @param my_rank - parallel rank of this instance
      * @param world_size - number of parallel ranks in the simulation
      */
-    Config(int my_rank, int world_size);
+    Config(RankInfo world_size);
     ~Config();
 
     /** Parse command-line arguments to update configuration values */
@@ -63,7 +58,7 @@ public:
     void Print();
 
     std::string     debugFile;          /*!< File to which debug information should be written */
-    Mode_t          runMode;            /*!< Run Mode (Init, Both, Run-only) */
+    Simulation::Mode_t          runMode;            /*!< Run Mode (Init, Both, Run-only) */
     std::string     sdlfile;            /*!< Graph generation file */
     std::string     stopAtCycle;        /*!< When to stop the simulation */
     std::string     heartbeatPeriod;    /*!< Sets the heartbeat period for the simulation */
@@ -80,6 +75,7 @@ public:
     std::string     dump_component_graph_file; /*!< File to dump component graph */
     std::string     output_core_prefix;  /*!< Set the SST::Output prefix for the core */
 
+    RankInfo        world_size;         /*!< Number of ranks, threads which should be invoked per rank */
     uint32_t        verbose;            /*!< Verbosity */
     bool	    no_env_config;      /*!< Bypass compile-time environmental configuration */
     bool            enable_sig_handling; /*!< Enable signal handling */
@@ -91,16 +87,16 @@ public:
      * @param mode - string "init" "run" "both"
      * @return the Mode_t corresponding
      */
-    inline Mode_t setRunMode( std::string mode )
+    inline Simulation::Mode_t setRunMode( std::string mode )
     {
-        if( ! mode.compare( "init" ) ) return INIT;
-        if( ! mode.compare( "run" ) ) return RUN;
-        if( ! mode.compare( "both" ) ) return BOTH;
-        return UNKNOWN;
+        if( ! mode.compare( "init" ) ) return Simulation::INIT;
+        if( ! mode.compare( "run" ) ) return Simulation::RUN;
+        if( ! mode.compare( "both" ) ) return Simulation::BOTH;
+        return Simulation::UNKNOWN;
     }
 
-    Mode_t getRunMode() {
-	return runMode;
+    Simulation::Mode_t getRunMode() {
+        return runMode;
     }
 
     /** Print to stdout the current configuration */
@@ -120,6 +116,7 @@ public:
 		std::cout << "output_directory = " << output_directory << std::endl;
 		std::cout << "output_json = " << output_json << std::endl;
 		std::cout << "model_options = " << model_options << std::endl;
+        std::cout << "num_threads = " << world_size.thread << std::endl;
 		std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
 		std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
 	}
@@ -135,10 +132,9 @@ public:
         return libpath;
     }
 
-    /** Return the current Parallel Rank */
-	int getRank() const { return rank; }
-    /** Return the number of parallel ranks in the simulation */
-	int getNumRanks() const { return numRanks; }
+
+    uint32_t getNumRanks() { return world_size.rank; }
+    uint32_t getNumThreads() { return world_size.thread; }
 
 private:
     boost::program_options::options_description* visNoConfigDesc;
@@ -172,7 +168,8 @@ private:
 	ar & BOOST_SERIALIZATION_NVP(output_json);
         ar & BOOST_SERIALIZATION_NVP(no_env_config);
         ar & BOOST_SERIALIZATION_NVP(model_options);
-	ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
+        ar & BOOST_SERIALIZATION_NVP(world_size);
+	    ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
         ar & BOOST_SERIALIZATION_NVP(output_core_prefix);
     }
     

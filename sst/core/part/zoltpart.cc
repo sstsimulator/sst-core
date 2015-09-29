@@ -166,14 +166,16 @@ static void sst_zoltan_get_edge_list(void *data, int sizeGID, int sizeLID,
 }
 }
 
-SSTZoltanPartition::SSTZoltanPartition(int verbosity) {
+SSTZoltanPartition::SSTZoltanPartition(RankInfo world_size, RankInfo my_rank, int verbosity) {
 	// Get info for MPI.
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &rankcount);
+	//MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	//MPI_Comm_size(MPI_COMM_WORLD, &rankcount);
+    rank = my_rank;
+    rankcount = world_size;
 
 	partOutput = new Output("SST::Core::ZoltanPart[@p:@l on Rank @R] ", verbosity, 0, SST::Output::STDOUT);
 
-	partOutput->verbose(CALL_INFO, 1, 0, "Initializing Zoltan interface on rank %d out of %d\n", rank, rankcount);
+	partOutput->verbose(CALL_INFO, 1, 0, "Initializing Zoltan interface on rank %d out of %d\n", rank.rank, rankcount.rank);
 
 	// Get Zoltan ready to partition for us
 	initZoltan();
@@ -221,10 +223,10 @@ SSTZoltanPartition::~SSTZoltanPartition() {
 void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
 
 
-	if(0 == rank) {
+	if(0 == rank.rank) {
 		assert(NULL != graph);
 	}
-	assert(rankcount > 0);
+	assert(rankcount.rank > 0);
 	
 	partOutput->verbose(CALL_INFO, 1, 0, "# Preparing partitionning...\n");
 	
@@ -275,33 +277,33 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
 
   	partOutput->verbose(CALL_INFO, 1, 0, "Assigning components to ranks based on Zoltan output...\n");
 
-	uint64_t rank_assignments[rankcount];
-	for(int i = 0; i < rankcount; ++i) {
+	uint64_t rank_assignments[rankcount.rank];
+	for(int i = 0; i < rankcount.rank; ++i) {
 		rank_assignments[i] = 0;
 	}
 
 	// Go over what we have to export, set the component to the appropriate rank
-	if(0 == rank) {
+	if(0 == rank.rank) {
 	  	PartitionComponentMap_t& config_map = graph->getComponentMap();
 		PartitionComponentMap_t::iterator config_map_itr;
 		for(config_map_itr = config_map.begin(); config_map_itr != config_map.end(); config_map_itr++) {
-			config_map_itr->rank = 0;
+			config_map_itr->rank = RankInfo(0,0);
 		}
 
 		partOutput->verbose(CALL_INFO, 1, 0, "Rank 0 will export %d partition graph vertices.\n", num_vertices_export);
 
 		// Go over what we have to export, set the component to the appropriate rank
   		for(int i = 0; i < num_vertices_export; ++i) {
-  			config_map[export_global_ids[i]].rank = export_ranks[i];
+  			config_map[export_global_ids[i]].rank = RankInfo(export_ranks[i], 0);
 			rank_assignments[export_ranks[i]]++;
   		}
   	}
 
   	partOutput->verbose(CALL_INFO, 1, 0, "Assignment is complete.\n");
 
-	if(0 == rank) {
+	if(0 == rank.rank) {
 		partOutput->verbose(CALL_INFO, 1, 0, "Exporting components for load balance:\n");
-		for(int i = 1; i < rankcount; ++i) {
+		for(int i = 1; i < rankcount.rank; ++i) {
 			partOutput->verbose(CALL_INFO, 1, 0, "Export to rank %" PRIu32 " (assigned %" PRIu64 " components).\n", i, rank_assignments[i]);
 		}
 	}

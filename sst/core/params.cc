@@ -20,5 +20,6 @@
 
 std::map<std::string, uint32_t> SST::Params::keyMap;
 std::vector<std::string> SST::Params::keyMapReverse;
+SST::Core::ThreadSafe::Spinlock SST::Params::keyLock;
 uint32_t SST::Params::nextKeyID;
 bool SST::Params::g_verify_enabled = false;

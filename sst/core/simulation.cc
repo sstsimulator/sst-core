@@ -33,8 +33,12 @@
 #include <sst/core/sharedRegionImpl.h>
 #include <sst/core/output.h>
 #include <sst/core/stopAction.h>
+#include <sst/core/stringize.h>
+#include <sst/core/rankSync.h>
 #include <sst/core/sync.h>
+#include <sst/core/syncManager.h>
 #include <sst/core/syncQueue.h>
+#include <sst/core/threadSync.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/timeVortex.h>
 #include <sst/core/unitAlgebra.h>
@@ -43,60 +47,37 @@
 
 using namespace SST::Statistics;
 
-namespace SST { 
+namespace SST {
 
-SimulationBase::SimulationBase(Config *config)
-{
-    factory = new Factory(config->getLibPath());
-    timeLord = new TimeLord(config->timeBase);
-    
-    // Create the Statistic Processing Engine
-    statisticsEngine = new StatisticProcessingEngine();
-    statisticsOutput = NULL; 
+
+
+TimeConverter* Simulation::minPartToTC(SimTime_t cycles) const {
+    return getTimeLord()->getTimeConverter(cycles);
 }
 
-SimulationBase::~SimulationBase()
-{
-    //    delete factory;
-    delete timeLord;
-    
-    // Delete the Statistic Objects
-    if (NULL != statisticsOutput) {
-        delete statisticsOutput;
-    }
-    delete statisticsEngine;
+void Simulation::signalStatisticsBegin() {
+    statisticsOutput->startOfSimulation();
 }
 
-TimeConverter* SimulationBase::minPartToTC(SimTime_t cycles) const {
-    return timeLord->getTimeConverter(cycles);
+
+void Simulation::signalStatisticsEnd() {
+    statisticsOutput->endOfSimulation();
 }
 
-template<class Archive>
-void
-SimulationBase::serialize(Archive & ar, const unsigned int version)
-{
-    printf("begin SimulationBase::serialize\n");
-    printf("  - SimulationBase::factory\n");
-    ar & BOOST_SERIALIZATION_NVP(factory);
-    printf("  - SimulationBase::timeLord\n");
-    ar & BOOST_SERIALIZATION_NVP(timeLord);
-    printf("  - SimulationBase::statisticsOutput\n");
-    ar & BOOST_SERIALIZATION_NVP(statisticsOutput);
-    printf("  - SimulationBase::statisticsEngine\n");
-    ar & BOOST_SERIALIZATION_NVP(statisticsEngine);
-    printf("end SimulationBase::serialize\n");
-}
 
-SharedRegionManager* Simulation::sharedRegionManager = new SharedRegionManagerImpl();
-Simulation* Simulation::instance = NULL;
 
 Simulation::~Simulation()
 {
     // Clean up as best we can
 
+    // Delete the Statistic Objects
+    delete statisticsEngine;
+
     // Delete the timeVortex first.  This will delete all events left
     // in the queue, as well as the Sync, Exit and Clock objects.
     delete timeVortex;
+
+    if ( sync && (my_rank.thread == 0) ) delete sync;
 
     // Delete all the components
     // for ( CompMap_t::iterator it = compMap.begin(); it != compMap.end(); ++it ) {
@@ -106,7 +87,7 @@ Simulation::~Simulation()
     
     // Delete all the introspectors
     for ( IntroMap_t::iterator it = introMap.begin(); it != introMap.end(); ++it ) {
-	delete it->second;
+        delete it->second;
     }
     introMap.clear();
 
@@ -137,50 +118,68 @@ Simulation::~Simulation()
 }
 
 Simulation*
-Simulation::createSimulation(Config *config, int my_rank, int num_ranks)
+Simulation::createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks)
 {
-    instance = new Simulation(config,my_rank,num_ranks);
+    std::thread::id tid = std::this_thread::get_id();
+    Simulation* instance = new Simulation(config, my_rank, num_ranks);
+
+    std::lock_guard<std::mutex> lock(simulationMutex);
+    instanceMap[tid] = instance;
+    instanceVec.resize(num_ranks.thread);
+    instanceVec[my_rank.thread] = instance;
     return instance;
 }
 
 
-Simulation::Simulation( Config* cfg, int my_rank, int num_ranks ) :
-    SimulationBase(cfg),
+void Simulation::shutdown()
+{
+    instanceMap.clear();
+}
+
+
+
+Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
     runMode(cfg->runMode),
     timeVortex(NULL),
-    minPartTC( NULL ),
-    sync(NULL),
+    threadSync(NULL),
     currentSimCycle(0),
     endSimCycle(0),
     currentPriority(0),
     endSim(false),
     my_rank(my_rank),
     num_ranks(num_ranks),
-    init_msg_count(0),
     init_phase(0),
     lastRecvdSignal(0),
+    shutdown_mode(SHUTDOWN_CLEAN),
     wireUpFinished(false)
 {
-//     eQueue = new EventQueue_t;
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
     output_directory = "";
 
-    timeVortex = new TimeVortex;
-    m_exit = new Exit( this, timeLord->getTimeConverter("100ns"), num_ranks == 1 );
+    // Create the Statistic Processing Engine
+    statisticsEngine = new StatisticProcessingEngine();
 
-    if(strcmp(cfg->heartbeatPeriod.c_str(), "N") != 0) {
+    timeVortex = new TimeVortex;
+    if( my_rank.thread == 0 ) {
+        m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), num_ranks.rank == 1 );
+    }
+
+    if(strcmp(cfg->heartbeatPeriod.c_str(), "N") != 0 && my_rank.thread == 0) {
         sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeatPeriod.c_str());
-    	m_heartbeat = new SimulatorHeartbeat(cfg, my_rank, this, timeLord->getTimeConverter(cfg->heartbeatPeriod) );
+    	m_heartbeat = new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeatPeriod) );
+    }
+
+    // Need to create the thread sync if there is more than one thread
+    if ( num_ranks.thread > 1 ) {
+        threadSync = new ThreadSync(num_ranks.thread, this);
     }
 }
 
 void
 Simulation::setStopAtCycle( Config* cfg )
 {
-    SimTime_t stopAt = timeLord->getSimCycles(cfg->stopAtCycle,"StopAction configure");
+    SimTime_t stopAt = timeLord.getSimCycles(cfg->stopAtCycle,"StopAction configure");
     if ( stopAt != 0 ) {
-	printf("Inserting stop event at cycle %s, %" PRIu64 "\n",
-	       cfg->stopAtCycle.c_str(), stopAt);
 	StopAction* sa = new StopAction();
 	sa->setDeliveryTime(stopAt);
 	timeVortex->insert(sa);
@@ -193,44 +192,15 @@ Simulation::Simulation()
 }
 
 
-/** If sig == -1, be quite about shutdown */
-void Simulation::emergencyShutdown(int sig)
-{
-    if ( sig != -1 ) {
-        sim_output.output("EMERGENCY SHUTDOWN!\n");
-        sim_output.output("# Simulated time:                  %s\n", getElapsedSimTime().toStringBestSI().c_str());
-
-        signal(sig, SIG_DFL); // Restore default handler
-    }
-
-    if ( sig == SIGINT ) {
-        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-            (*iter)->getComponent()->finish();
-        }
-    }
-
-    for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-        (*iter)->getComponent()->emergencyShutdown();
-    }
-
-    if ( sig != -1 ) {
-        sim_output.output("EMERGENCY SHUTDOWN COMPLETE!\n");
-        sim_output.output("# Simulated time:                  %s\n", getElapsedSimTime().toStringBestSI().c_str());
-    }
-
-    exit(1);
-}
-
-
 Component*
-Simulation::createComponent( ComponentId_t id, std::string name, 
-                             Params params )
+Simulation::createComponent( ComponentId_t id, std::string &name, 
+                             Params &params )
 {
     return factory->CreateComponent(id, name, params);
 }
 
 Introspector*
-Simulation::createIntrospector(std::string name, Params params )
+Simulation::createIntrospector(std::string &name, Params &params )
 {
     return factory->CreateIntrospector(name, params);
 }
@@ -242,44 +212,146 @@ Simulation::requireEvent(std::string name)
 }
     
 SimTime_t
-Simulation::getNextActivityTime()
+Simulation::getNextActivityTime() const
 {
     return timeVortex->front()->getDeliveryTime();
 }
-    
-int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_part )
-{
-    // Create the Statistics Output
-    statisticsOutput = factory->CreateStatisticOutput(graph.getStatOutput(), graph.getStatOutputParams());
-    if (NULL == statisticsOutput) {
-        sim_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", graph.getStatOutput().c_str());
-    }
-    
-    if (false == statisticsOutput->checkOutputParameters()) {
-        // If checkOutputParameters() fail, Tell the user how to use them and abort simulation
-        sim_output.output("Statistic Output (%s) :\n", statisticsOutput->getStatisticOutputName().c_str());
-        statisticsOutput->printUsage();
-        sim_output.output("\n");
 
-        sim_output.output("Statistic Output Parameters Provided:\n");
-        for (Params::iterator it = graph.getStatOutputParams().begin(); it != graph.getStatOutputParams().end(); ++it ) {
-            printf("  %s = %s\n", Params::getParamName(it->first).c_str(), it->second.c_str());
+SimTime_t
+Simulation::getLocalMinimumNextActivityTime()
+{
+    SimTime_t ret = MAX_SIMTIME_T;
+    for ( auto && instance : instanceVec ) {
+        SimTime_t next = instance->getNextActivityTime();
+        if ( next < ret ) {
+            ret = next;
         }
-        sim_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
     }
+
+    return ret;
+}
+
+void
+Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part )
+{
+    // Set minPartTC (only thread 0 will do this)
+    if ( my_rank.thread == 0 ) {
+        minPartTC = minPartToTC(min_part);
+    }
+
+    // Get the minimum latencies for links between the various threads
     
-    // Set the Statistics Load Level into the Statistic Output 
-    statisticsOutput->setStatisticLoadLevel(graph.getStatLoadLevel());
+    interThreadLatencies.resize(num_ranks.thread);
+    for ( int i = 0; i < interThreadLatencies.size(); i++ ) {
+        interThreadLatencies[i] = MAX_SIMTIME_T;
+    }
+
+    if ( num_ranks.thread > 1 ) {
+        // Need to determine the lookahead for the thread synchronization
+        ConfigComponentMap_t comps = graph.getComponentMap();
+        ConfigLinkMap_t links = graph.getLinkMap();
+        // Find the minimum latency across a partition
+        for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
+            ConfigLink &clink = *iter;
+            RankInfo rank[2];
+            rank[0] = comps[clink.component[0]].rank;
+            rank[1] = comps[clink.component[1]].rank;
+            // We only care about links that are on the same rank, but
+            // different threads
+            if ( rank[0] == rank[1] ) continue;
+            if ( rank[0].rank != rank[1].rank ) continue;
+            // Keep track of minimum latency for each other thread
+            // separately
+            if ( rank[0].thread == my_rank.thread) { 
+                if ( clink.getMinLatency() < interThreadLatencies[rank[1].thread] ) {
+                    interThreadLatencies[rank[1].thread] = clink.getMinLatency();
+                }
+            }
+            else if ( rank[1].thread == my_rank.thread ) {
+                if ( clink.getMinLatency() < interThreadLatencies[rank[0].thread] ) {
+                    interThreadLatencies[rank[0].thread] = clink.getMinLatency();
+                }
+            }
+        }
+    }
+    // Create the SyncManager for this rank.  It gets created even if
+    // we are single rank/single thread because it also manages the
+    // Exit and Heartbeat actions.
+    syncManager = new SyncManager(my_rank, num_ranks, barrier, minPartTC = minPartToTC(min_part), interThreadLatencies);
+}
     
+int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part )
+{
+    // TraceFunction trace(CALL_INFO_LONG);    
+    
+    // Create the Statistics Output
+
     // Params objects should now start verifying parameters
     Params::enableVerify();
 
-    if ( num_ranks > 1 ) {
-        sync = new SyncD();
-        sync->setExit(m_exit);
-        sync->setMaxPeriod( minPartTC = minPartToTC(min_part) );
+    // Need to create the sync objects.  There are two versions, one
+    // that synchronizes between threads and one that synchronizes
+    // between MPI ranks.
+
+#if 0    
+    if ( num_ranks.rank > 1 ) {        
+        // For now, we are doing performWireUp serially, if this ever
+        // changes, then need to serialize the creation of the sync
+        // objects.
+        if ( my_rank.thread == 0 ) {
+            sync = new SyncD(barrier);
+            sync->setExit(m_exit);
+            sync->setMaxPeriod( minPartTC = minPartToTC(min_part) );
+            // Action* ms = sync->getMasterAction();
+            // insertActivity(minPartTC->getFactor(), ms);
+        }
+        else {
+            Action* ss = sync->getSlaveAction();
+            // insertActivity(minPartTC->getFactor(), ss);
+        }
+        
+        
     }
 
+    // Need to determine the lookahead for the thread synchronization
+
+    if ( num_ranks.thread > 1 ) {
+        // Need to determine the lookahead for the thread synchronization
+        SimTime_t look_ahead = 0xffffffffffffffffl;
+        ConfigComponentMap_t comps = graph.getComponentMap();
+        ConfigLinkMap_t links = graph.getLinkMap();
+        // Find the minimum latency across a partition
+        for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
+            ConfigLink &clink = *iter;
+            RankInfo rank[2];
+            rank[0] = comps[clink.component[0]].rank;
+            rank[1] = comps[clink.component[1]].rank;
+            // We only care about links that are on the same rank, but
+            // different threads
+            if ( rank[0] == rank[1] ) continue;
+            if ( rank[0].rank != rank[1].rank ) continue;
+            if ( clink.getMinLatency() < look_ahead ) {
+                look_ahead = clink.getMinLatency();
+            }
+        }
+
+
+        // Fix for case that probably doesn't matter in practice, but
+        // does come up during some specific testing.  If there are no
+        // links that cross the boundary and we're a single rank job,
+        // we need to put in a sync interval to look for the exit
+        // conditions being met.
+        if ( look_ahead == MAX_SIMTIME_T ) {
+            std::cout << "No links cross thread boundary" << std::endl;
+        }
+        if ( look_ahead == MAX_SIMTIME_T && num_ranks.rank == 1) {
+            // std::cout << "No links cross thread boundary" << std::endl;
+            look_ahead = timeLord.getSimCycles("1us","");
+        }
+        threadSync->setMaxPeriod( threadMinPartTC = minPartToTC(look_ahead) );
+    }
+#endif
+    
     // First, go through all the components that are in this rank and
     // create the ComponentInfo object for it
     // Now, build all the components
@@ -301,7 +373,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             iter != graph.links.end(); ++iter )
     {
         ConfigLink &clink = *iter;
-        int rank[2];
+        RankInfo rank[2];
         rank[0] = graph.comps[clink.component[0]].rank;
         rank[1] = graph.comps[clink.component[1]].rank;
 
@@ -309,6 +381,7 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             // Nothing to be done
             continue;
         }
+        // Same rank, same thread
         else if ( rank[0] == rank[1] ) {
             // Create a LinkPair to represent this link
             LinkPair lp(clink.id);
@@ -332,6 +405,90 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             cinfo->getLinkMap()->insertLink(clink.port[1],lp.getRight());
 
         }
+        // If the components are not in the same thread, then the
+        // SyncManager will handle things
+        else {
+            int local, remote;
+            if ( rank[0] == myRank ) {
+                local = 0;
+                remote = 1;
+            }
+            else {
+                local = 1;
+                remote = 0;
+            }
+
+            // Create a LinkPair to represent this link
+            LinkPair lp(clink.id);
+
+            lp.getLeft()->setLatency(clink.latency[local]);
+            lp.getRight()->setLatency(0);
+            lp.getRight()->setDefaultTimeBase(minPartToTC(1));
+
+            // Add this link to the appropriate LinkMap for the local component
+            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
+            if ( cinfo == NULL ) {
+                // This shouldn't happen and is an error
+                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
+            }
+            cinfo->getLinkMap()->insertLink(clink.port[local],lp.getLeft());
+
+            // Need to register with both of the syncs (the ones for
+            // both local and remote thread)
+
+            // For local, just register link with threadSync object so
+            // it can map link_id to link*
+            ActivityQueue* sync_q = syncManager->registerLink(rank[remote],rank[local],clink.id,lp.getRight());
+
+            lp.getRight()->configuredQueue = sync_q;
+            lp.getRight()->initQueue = sync_q;
+        }
+
+/*        
+        // Same rank, different thread
+        else if ( rank[0].rank == rank[1].rank ) {
+            // This is same MPI rank, different thread
+            int local, remote;
+            if ( rank[0] == myRank ) {
+                local = 0;
+                remote = 1;
+            }
+            else {
+                local = 1;
+                remote = 0;
+            }
+
+            // Create a LinkPair to represent this link
+            LinkPair lp(clink.id);
+
+            lp.getLeft()->setLatency(clink.latency[local]);
+            lp.getRight()->setLatency(0);
+            lp.getRight()->setDefaultTimeBase(minPartToTC(1));
+
+
+            // Add this link to the appropriate LinkMap for the local component
+            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
+            if ( cinfo == NULL ) {
+                // This shouldn't happen and is an error
+                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
+            }
+            cinfo->getLinkMap()->insertLink(clink.port[local],lp.getLeft());
+
+            // Need to register with both of the syncs (the ones for
+            // both local and remote thread)
+
+            // For local, just register link with threadSync object so
+            // it can map link_id to link*
+            threadSync->registerLink(clink.id, lp.getRight());
+
+            // Fpor remote thread, I get the proper queue and finish
+            // setting up the right link
+            ActivityQueue* sync_q = instanceVec[rank[remote].thread]->threadSync->getQueueForThread(rank[local].thread);
+            
+            lp.getRight()->configuredQueue = sync_q;
+            lp.getRight()->initQueue = sync_q;
+        }
+        // Different rank
         else {
             int local, remote;
             if ( rank[0] == myRank ) {
@@ -360,19 +517,19 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
             cinfo->getLinkMap()->insertLink(clink.port[local],lp.getLeft());
 
             // For the remote side, register with sync object
-            ActivityQueue* sync_q = sync->registerLink(rank[remote],clink.id,lp.getRight());
+            ActivityQueue* sync_q = sync->registerLink(rank[remote],rank[local],clink.id,lp.getRight());
             // lp.getRight()->recvQueue = sync_q;
             lp.getRight()->configuredQueue = sync_q;
             lp.getRight()->initQueue = sync_q;
         }
-
+*/
     }
+
     // Done with that edge, delete it.
-    graph.links.clear();
+//    graph.links.clear();
 
     // Now, build all the components
-    for ( ConfigComponentMap_t::iterator iter = graph.comps.begin();
-            iter != graph.comps.end(); ++iter )
+    for ( auto iter = graph.comps.begin(); iter != graph.comps.end(); ++iter )
     {
         ConfigComponent* ccomp = &(*iter);
 
@@ -413,32 +570,39 @@ int Simulation::performWireUp( ConfigGraph& graph, int myRank, SimTime_t min_par
         }
     } // end for all vertex    
     // Done with verticies, delete them;
+    /*  TODO:  THREADING:  Clear only once everybody is done.
     graph.comps.clear();
     statisticEnableMap.clear();
     statisticParamsMap.clear();
+    */
     wireUpFinished = true;
+    // std::cout << "Done with performWireUp" << std::endl;
     return 0;
 }
 
 void Simulation::initialize() {
+    // TraceFunction trace(CALL_INFO_LONG);    
     bool done = false;
-    sharedRegionManager->updateState(false);
+    barrier.wait();
+    if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
 
     do {
-        init_msg_count = 0;
+
+        barrier.wait();
+        if ( my_rank.thread == 0 ) init_msg_count = 0;
+        barrier.wait();
+        
+        
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
             (*iter)->getComponent()->init(init_phase);
         }
 
-        // Exchange data for parallel jobs
-        if ( num_ranks > 1 ) {
-            init_msg_count = sync->exchangeLinkInitData(init_msg_count);
-        }
-
+        barrier.wait();
+        syncManager->exchangeLinkInitData(init_msg_count);
+        barrier.wait();
         // We're done if no new messages were sent
         if ( init_msg_count == 0 ) done = true;
-
-        sharedRegionManager->updateState(false);
+        if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
 
         init_phase++;
     } while ( !done);
@@ -450,18 +614,31 @@ void Simulation::initialize() {
             (*j).second->finalizeConfiguration();
         }
     }
-    if ( num_ranks > 1 ) {
+#if 0
+    if ( num_ranks.rank > 1 && my_rank.thread == 0 ) {
         sync->finalizeLinkConfigurations();
     }
+
+    if ( num_ranks.thread > 1 ) {
+        threadSync->finalizeLinkConfigurations();
+    }
+#endif
+    syncManager->finalizeLinkConfigurations();
+
 }
 
-void Simulation::run() {  
+void Simulation::setup() {  
 
+    // TraceFunction(CALL_INFO_LONG);    
     // Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
+
+    barrier.wait();
     
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
         (*iter)->getComponent()->setup();
     }
+
+    barrier.wait();
 
     //for introspector
     for( IntroMap_t::iterator iter = introMap.begin();
@@ -470,8 +647,14 @@ void Simulation::run() {
       (*iter).second->setup();
     }
 
+    barrier.wait();
     /* Enforce finalization of shared regions */
-    sharedRegionManager->updateState(true);
+    if ( my_rank.thread == 0 ) sharedRegionManager->updateState(true);
+
+}
+
+void Simulation::run() {
+    // TraceFunction(CALL_INFO_LONG);    
 
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.
@@ -483,28 +666,77 @@ void Simulation::run() {
     sa->setDeliveryTime(SST_SIMTIME_MAX);
     timeVortex->insert(sa);
 
-    // Tell the Statistics Output that the simulation is starting
-    statisticsOutput->startOfSimulation();
+    // Tell the Statistics Engine that the simulation is beginning
     statisticsEngine->startOfSimulation();
-    
+
+    // wait_my_turn_start(barrier, my_rank.thread, num_ranks.thread);
+    // sim_output.output("%d: Start main event loop\n",my_rank.thread);
+    std::string header = SST::to_string(my_rank.rank);
+    header += ", ";
+    header += SST::to_string(my_rank.thread);
+    header += ":  ";
+    // wait_my_turn_end(barrier, my_rank.thread, num_ranks.thread);
     while( LIKELY( ! endSim ) ) {
-        if ( UNLIKELY( 0 != lastRecvdSignal ) ) {
-            printStatus(lastRecvdSignal == SIGUSR2);
-            lastRecvdSignal = 0;
-        }
         currentSimCycle = timeVortex->front()->getDeliveryTime();
         currentPriority = timeVortex->front()->getPriority();
         current_activity = timeVortex->pop();
-        // current_activity->print("",tmp_debug);
+        // current_activity->print(header, sim_output);
         current_activity->execute();
+
+
+        if ( UNLIKELY( 0 != lastRecvdSignal ) ) {
+            switch ( lastRecvdSignal ) {
+            case SIGUSR1: printStatus(false); break;
+            case SIGUSR2: printStatus(true); break;
+            case SIGINT:
+            case SIGTERM:
+                ThreadSync::disable();
+                shutdown_mode = SHUTDOWN_SIGNAL;
+                sim_output.output("EMERGENCY SHUTDOWN (%u,%u)!\n",
+                        my_rank.rank, my_rank.thread);
+                sim_output.output("# Simulated time:                  %s\n",
+                        getElapsedSimTime().toStringBestSI().c_str());
+                endSim = true;
+                break;
+            default: break;
+            }
+            lastRecvdSignal = 0;
+        }
+    }
+    /* We shouldn't need to do this, but to be safe... */
+    ThreadSync::disable();
+
+    // fprintf(stderr, "thread %u waiting on runLoop finish barrier\n", my_rank.thread);
+    barrier.wait();  // TODO<- Is this needed?
+    // fprintf(stderr, "thread %u released from runLoop finish barrier\n", my_rank.thread);
+    if (num_ranks.rank != 1 && num_ranks.thread == 0) delete m_exit;
+
+
+    // Tell the Statistics Engine that the simulation is ending
+    statisticsEngine->endOfSimulation();
+}
+
+
+void Simulation::emergencyShutdown()
+{
+    std::lock_guard<std::mutex> lock(simulationMutex);
+
+    for ( auto && instance : instanceVec ) {
+        instance->shutdown_mode = SHUTDOWN_EMERGENCY;
+        instance->endSim = true;
+        //// Function not available with gcc 4.6
+        //atomic_thread_fence(std::memory_order_acquire);
+        for ( auto && iter : instance->compInfoMap ) {
+            if ( iter->getComponent() )
+                iter->getComponent()->emergencyShutdown();
+        }
     }
 
-    if (num_ranks != 1 ) delete m_exit;
+}
 
-    // Tell the Statistics Engine and Output that the simulation is finished 
-    statisticsEngine->endOfSimulation();
-    statisticsOutput->endOfSimulation();
-    
+
+void Simulation::finish() {
+
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter )
     {
         (*iter)->getComponent()->finish();
@@ -516,9 +748,21 @@ void Simulation::run() {
       (*iter).second->finish();
     }
 
+    switch ( shutdown_mode ) {
+    case SHUTDOWN_CLEAN:
+        break;
+    case SHUTDOWN_SIGNAL:
+    case SHUTDOWN_EMERGENCY:
+        for ( auto && iter : compInfoMap ) {
+            iter->getComponent()->emergencyShutdown();
+        }
+        sim_output.output("EMERGENCY SHUTDOWN Complete (%u,%u)!\n",
+                my_rank.rank, my_rank.thread);
+    }
+
 }
 
-SimTime_t
+const SimTime_t&
 Simulation::getCurrentSimCycle() const
 {
     return currentSimCycle; 
@@ -557,25 +801,18 @@ Simulation::getCurrentPriority() const
 
 UnitAlgebra Simulation::getElapsedSimTime() const
 {
-    return timeLord->getTimeBase() * getCurrentSimCycle();
+    return timeLord.getTimeBase() * getCurrentSimCycle();
 }
 
 UnitAlgebra Simulation::getFinalSimTime() const
 {
-    return timeLord->getTimeBase() * getEndSimCycle();
+    return timeLord.getTimeBase() * getEndSimCycle();
 }
 
 void Simulation::setSignal(int signal)
 {
-    switch ( signal ) {
-    case SIGINT:
-    case SIGTERM:
-        instance->emergencyShutdown(signal);
-        break;
-    default:
+    for ( auto &instance : instanceVec )
         instance->lastRecvdSignal = signal;
-        break;
-    }
 }
 
 void Simulation::printStatus(bool fullStatus)
@@ -598,7 +835,7 @@ TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* 
 {
 //     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
     
-    TimeConverter* tcFreq = timeLord->getTimeConverter(freq);
+    TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
 
     if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
         Clock* ce = new Clock( tcFreq );
@@ -614,7 +851,7 @@ TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* 
 
 TimeConverter* Simulation::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler)
 {
-    TimeConverter* tcFreq = timeLord->getTimeConverter(freq);
+    TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
     
     if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
         Clock* ce = new Clock( tcFreq );
@@ -663,7 +900,7 @@ TimeConverter* Simulation::registerOneShot(std::string timeDelay, OneShot::Handl
 
 TimeConverter* Simulation::registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler)
 {
-    TimeConverter* tcTimeDelay = timeLord->getTimeConverter(timeDelay);
+    TimeConverter* tcTimeDelay = timeLord.getTimeConverter(timeDelay);
 
     // Search the oneShot map for a oneShot with the associated timeDelay factor
     if (oneShotMap.find(tcTimeDelay->getFactor()) == oneShotMap.end()) {
@@ -694,22 +931,16 @@ uint64_t Simulation::getTimeVortexCurrentDepth() const {
 }
 
 uint64_t Simulation::getSyncQueueDataSize() const {
-    if ( num_ranks == 1 ) return 0;
+    if ( num_ranks.rank == 1 || my_rank.thread > 0 ) return 0;
     return sync->getDataSize();
 }
 
-    
-const std::vector<std::string>*
-Simulation::getComponentAllowedPorts(std::string type) {
-    return factory->GetComponentAllowedPorts(type);
-}
     
 template<class Archive>
 void
 Simulation::serialize(Archive & ar, const unsigned int version)
 {
     printf("begin Simulation::serialize\n");
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SimulationBase);
 
     ar & BOOST_SERIALIZATION_NVP(output_directory);
 
@@ -738,6 +969,8 @@ Simulation::serialize(Archive & ar, const unsigned int version)
     ar & BOOST_SERIALIZATION_NVP(my_rank);
     printf("  - Simulation::num_ranks\n");
     ar & BOOST_SERIALIZATION_NVP(num_ranks);
+    printf("  - Simulation::statisticsEngine\n");
+    ar & BOOST_SERIALIZATION_NVP(statisticsEngine);
 
     // printf("  - Simulation::compInfoMap\n");
     // ar & BOOST_SERIALIZATION_NVP(compInfoMap);
@@ -745,11 +978,68 @@ Simulation::serialize(Archive & ar, const unsigned int version)
     printf("end Simulation::serialize\n");
 }
 
+
+// Function to allow for easy serialization of threads while debugging
+// code
+void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads) {
+    // Everyone barriers
+    barrier.wait();
+    // Now barrier until it's my turn
+    for ( int i = 0; i < thread; i++ ) {
+        barrier.wait();
+    }
+}
+
+// Uses Simulation's barrier
+void wait_my_turn_start() {
+    Core::ThreadSafe::Barrier& barrier = Simulation::getThreadBarrier();
+    int thread = Simulation::getSimulation()->my_rank.thread;
+    int total_threads = Simulation::getSimulation()->num_ranks.thread;
+    wait_my_turn_start(barrier, thread, total_threads);
+}
+
+void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads) {
+
+    // Wait for all the threads after me to finish
+    for ( int i = thread; i < total_threads; i++ ) {
+        barrier.wait();
+    }
+    // All barrier
+    barrier.wait();
+}
+
+// Uses Simulation's barrier
+void wait_my_turn_end() {
+    Core::ThreadSafe::Barrier& barrier = Simulation::getThreadBarrier();
+    int thread = Simulation::getSimulation()->my_rank.thread;
+    int total_threads = Simulation::getSimulation()->num_ranks.thread;
+    wait_my_turn_end(barrier, thread, total_threads);
+}
+
+
+/* Define statics */
+Factory* Simulation::factory;
+TimeLord Simulation::timeLord;
+Statistics::StatisticOutput* Simulation::statisticsOutput;
+Output Simulation::sim_output;
+Core::ThreadSafe::Barrier Simulation::barrier;
+std::mutex Simulation::simulationMutex;
+TimeConverter* Simulation::minPartTC = NULL;
+SyncBase* Simulation::sync = NULL;
+
+
+
+/* Define statics (Simulation) */
+SharedRegionManager* Simulation::sharedRegionManager = new SharedRegionManagerImpl();
+std::unordered_map<std::thread::id, Simulation*> Simulation::instanceMap;
+std::vector<Simulation*> Simulation::instanceVec;
+std::atomic<int> Simulation::init_msg_count;
+Exit* Simulation::m_exit;
+
+
 } // namespace SST
 
 
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SimulationBase::serialize)
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Simulation::serialize)
 
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::SimulationBase)
 BOOST_CLASS_EXPORT_IMPLEMENT(SST::Simulation)

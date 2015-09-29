@@ -53,7 +53,8 @@ public:
         id(id),
         name(name),
         type(type),
-        link_map(link_map)
+        link_map(link_map),
+        component(NULL)
     {}
 
     ~ComponentInfo();

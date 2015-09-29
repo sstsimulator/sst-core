@@ -14,12 +14,14 @@
 #define SST_CORE_PART_LINEAR
 
 #include <sst/core/part/sstpart.h>
-#include <sst/core/output.h>
 
 using namespace SST;
 using namespace SST::Partition;
 
 namespace SST {
+
+class Output;
+
 namespace Partition {
 
 
@@ -43,7 +45,7 @@ class SSTLinearPartition : public SST::Partition::SSTPartitioner {
 			\param mpiRankCount Number of MPI ranks in the simulation
 			\param verbosity The level of information to output
 		*/
-		SSTLinearPartition(int mpiRankCount, int verbosity);
+		SSTLinearPartition(RankInfo rankCount, int verbosity);
 
 		/**
 			Performs a partition of an SST simulation configuration
@@ -54,13 +56,13 @@ class SSTLinearPartition : public SST::Partition::SSTPartitioner {
         bool requiresConfigGraph() { return false; }
         bool spawnOnAllRanks() { return false; }
 
-        static SSTPartitioner* allocate(int total_ranks, int my_rank, int verbosity) {
+        static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
             return new SSTLinearPartition(total_ranks, verbosity);
     }
         
 	protected:
         /** Number of ranks in the simulation */
-		int rankcount;
+		RankInfo rankcount;
         /** Output object to print partitioning information */
 		Output* partOutput;
 

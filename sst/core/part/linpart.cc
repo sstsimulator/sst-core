@@ -11,34 +11,40 @@
 
 #include <sst_config.h>
 #include <sst/core/part/linpart.h>
+#include <sst/core/output.h>
 
 using namespace std;
 
 bool SSTLinearPartition::initialized = SSTPartitioner::addPartitioner("linear",&SSTLinearPartition::allocate, "Partitions components by dividing Component ID space into roughly equal portions.  Components with sequential IDs will be placed close together.");
 
-SSTLinearPartition::SSTLinearPartition(int mpiranks, int verbosity) {
+SSTLinearPartition::SSTLinearPartition(RankInfo mpiranks, int verbosity) {
 	rankcount = mpiranks;
 	partOutput = new Output("LinearPartition ", verbosity, 0, SST::Output::STDOUT);
 }
 
 void SSTLinearPartition::performPartition(PartitionGraph* graph) {
-	assert(rankcount > 0);
+	assert(rankcount.rank > 0);
 
 	PartitionComponentMap_t& compMap = graph->getComponentMap();
 
+    uint32_t tot_ranks = rankcount.rank * rankcount.thread;
+
 	// const int componentCount = compMap.size();
-	const int componentCount = graph->getNumComponents();
-	const int componentRemainder = componentCount % rankcount;
-	const int componentPerRank = componentCount / rankcount;
+	const size_t componentCount = graph->getNumComponents();
+	size_t componentRemainder = componentCount % tot_ranks;
+	const size_t componentPerRank = componentCount / tot_ranks;
 
 	partOutput->verbose(CALL_INFO, 1, 0, "Performing a linear partition scheme for simulation model.\n");
 	partOutput->verbose(CALL_INFO, 1, 0, "Expected linear scheme:\n");
-	partOutput->verbose(CALL_INFO, 1, 0, "- Component Count:                  %10d\n", componentCount);
-	partOutput->verbose(CALL_INFO, 1, 0, "- Approx. Components per Rank:      %10d\n", componentPerRank);
-	partOutput->verbose(CALL_INFO, 1, 0, "- Remainder (non-balanced dist.):   %10d\n", componentRemainder);
+	partOutput->verbose(CALL_INFO, 1, 0, "- Component Count:                  %10zu\n", componentCount);
+	partOutput->verbose(CALL_INFO, 1, 0, "- Approx. Components per Rank:      %10zu\n", componentPerRank);
+	partOutput->verbose(CALL_INFO, 1, 0, "- Remainder (non-balanced dist.):   %10zu\n", componentRemainder);
 
-	int currentAllocatingRank = 0;
-	int componentsOnCurrentRank = 0;
+	RankInfo currentAllocatingRank(0, 0);
+	size_t componentsOnCurrentRank = 0;
+
+    /* Special case: Fewer components than ranks: */
+    if ( 0 == componentPerRank ) componentRemainder = 0;
 
 	for(PartitionComponentMap_t::iterator compItr = compMap.begin();
 		compItr != compMap.end();
@@ -47,17 +53,25 @@ void SSTLinearPartition::performPartition(PartitionGraph* graph) {
 		compItr->rank = currentAllocatingRank;
 		componentsOnCurrentRank++;
 
-		if(currentAllocatingRank < componentRemainder) {
-			if(componentsOnCurrentRank == (componentPerRank + 1)) {
-				componentsOnCurrentRank = 0;
-				currentAllocatingRank++;
-			}
-		} else {
-			if(componentsOnCurrentRank == componentPerRank) {
-				componentsOnCurrentRank = 0;
-				currentAllocatingRank++;
-			}
-		}
+
+        if(componentsOnCurrentRank >= componentPerRank) {
+            /* Work off the remainder, by adding one more to this rank */
+            if ( componentRemainder > 0 ) {
+                --componentRemainder;
+                ++compItr;
+                compItr->rank = currentAllocatingRank;
+            }
+
+            /* Advance our currentAllocatingRank */
+            currentAllocatingRank.thread++;
+            if ( currentAllocatingRank.thread == rankcount.thread ) {
+                currentAllocatingRank.thread = 0;
+                currentAllocatingRank.rank++;
+            }
+
+            /* Reset the count */
+            componentsOnCurrentRank = 0;
+        }
 	}
 
 	partOutput->verbose(CALL_INFO, 1, 0, "Linear partition scheme completed.\n");

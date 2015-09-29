@@ -13,77 +13,24 @@
 #define SST_CORE_SYNCD_H
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization.h>
+#include <sst/core/syncBase.h>
+#include <sst/core/threadsafe.h>
 
 #include <map>
-
-#include "sst/core/action.h"
 
 namespace SST {
 
 class SyncQueue;
-    
-
-class ActivityQueue;
-class Link;
-class TimeConverter;
-class Exit;
-class Event;
-    
-/**
- * \class SyncBase
- * SyncBase defines the API for Sync objects, which
- * are used to synchronize between MPI ranks in a simulation.  This is
- * an internal class, and not a public-facing API.
- */
-class SyncBase : public Action {
-public:
-    /** Create a new Sync object which fires with a specified period */
-    SyncBase() {}
-    ~SyncBase() {}
-
-    /** Register a Link which this Sync Object is responsible for */
-    virtual ActivityQueue* registerLink(int rank, LinkId_t link_id, Link* link) = 0;
-
-    // void execute(void);
-
-    /** Cause an exchange of Initialization Data to occur */
-    virtual int exchangeLinkInitData(int msg_count) = 0;
-    /** Finish link configuration */
-    virtual void finalizeLinkConfigurations() = 0;
-
-    virtual void setExit(Exit* ex) { exit = ex; }
-    virtual void setMaxPeriod(TimeConverter* period);
-
-    void print(const std::string& header, Output &out) const;
-
-    virtual uint64_t getDataSize() const = 0;
-    
-protected:
-    Exit* exit;
-    TimeConverter* max_period;
-
-    void sendInitData_sync(Link* link, Event* init_data);
-    void finalizeConfiguration(Link* link);
-    
-
-private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-};
-
-
 
 class SyncD : public SyncBase {
 public:
     /** Create a new Sync object which fires with a specified period */
     // Sync(TimeConverter* period);
-    SyncD();
-    ~SyncD();
-
+    SyncD(Core::ThreadSafe::Barrier& barrier);
+    virtual ~SyncD();
+    
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(int rank, LinkId_t link_id, Link* link);
+    ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link);
     void execute(void);
 
     /** Cause an exchange of Initialization Data to occur */
@@ -93,6 +40,9 @@ public:
 
     uint64_t getDataSize() const;
     
+    Action* getSlaveAction();
+    Action* getMasterAction();
+
 private:
     struct comm_pair {
         SyncQueue* squeue; // SyncQueue
@@ -109,12 +59,17 @@ private:
     comm_map_t comm_map;
     link_map_t link_map;
 
+    double mpiWaitTime;
+    double deserializeTime;
+
+    Core::ThreadSafe::Barrier& barrier;
+
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version);
 };
-} // namespace SST
 
-BOOST_CLASS_EXPORT_KEY(SST::SyncBase)
+
+} // namespace SST
 
 #endif // SST_CORE_SYNC_H

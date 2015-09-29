@@ -47,14 +47,17 @@ public:
      * pointers" rule.  However, it still needs to follow the "classes
      * shouldn't contain pointers back to Simulation" rule.
      */
-    Exit( Simulation* sim, TimeConverter* period, bool single_rank );
+    Exit(int num_threads, TimeConverter* period, bool single_rank );
     ~Exit();
 
     /** Increment Reference Count for a given Component ID */
-    bool refInc( ComponentId_t );
+    bool refInc( ComponentId_t, uint32_t thread );
     /** Decrement Reference Count for a given Component ID */
-    bool refDec( ComponentId_t );
+    bool refDec( ComponentId_t, uint32_t thread );
 
+    unsigned int getRefCount();
+    SimTime_t getEndTime() { return end_time; }
+    
     void execute(void);
     void check();
 
@@ -71,10 +74,14 @@ private:
 //     bool handler( Event* );
     
 //     EventHandler< Exit, bool, Event* >* m_functor;
+    int num_threads;
     unsigned int    m_refCount;
+    unsigned int*   m_thread_counts;
     TimeConverter*  m_period;
     std::unordered_set<ComponentId_t> m_idSet;
     SimTime_t end_time;
+
+    Core::ThreadSafe::Spinlock slock;
     
     bool single_rank;
     

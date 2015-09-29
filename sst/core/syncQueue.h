@@ -19,6 +19,8 @@
 
 #include <sst/core/activityQueue.h>
 
+#include <sst/core/threadsafe.h>
+
 namespace SST {
 
 /**
@@ -59,7 +61,8 @@ public:
 private:
     std::vector<char> buffer;
     std::vector<Activity*> activities;
-    
+
+    Core::ThreadSafe::Spinlock slock;
 };
 
  

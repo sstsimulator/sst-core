@@ -19,11 +19,14 @@
 #include <sst/core/output.h>
 #include <sst/core/mempool.h>
 
+#include <unordered_map>
+
 #include <cstring>
 #include <errno.h>
 
 // Default Priority Settings
 #define STOPACTIONPRIORITY     01
+#define THREADSYNCPRIORITY     20
 #define SYNCPRIORITY           25
 #define INTROSPECTPRIORITY     30
 #define CLOCKPRIORITY          40
@@ -34,6 +37,9 @@
 #define STATISTICCLOCKPRIORITY 85
 #define FINALEVENTPRIORITY     98
 #define EXITPRIORITY           99
+
+extern int main(int argc, char **argv);
+
 
 namespace SST {
 
@@ -146,28 +152,30 @@ public:
          * 2) Alloc item from pool
          * 3) Append PoolID to item, increment pointer
          */
-        size_t poolSize = memPools.size();
         Core::MemPool *pool = NULL;
-        uint32_t poolID = 0;
-        for ( uint32_t i = 0 ; i < poolSize ; i++ ) {
-            if ( memPools[i].first == size ) {
-                pool = memPools[i].second;
-                poolID = i;
+        size_t nPools = memPools.size();
+        std::thread::id tid = std::this_thread::get_id();
+        for ( size_t i = 0 ; i < nPools ; i++ ) {
+            PoolInfo_t &p = memPools[i];
+            if ( p.tid == tid && p.size == size ) {
+                pool = p.pool;
                 break;
             }
         }
         if ( NULL == pool ) {
-            // MemPool size is element size + our poolID
-            pool = new Core::MemPool(size+sizeof(uint32_t));
-            memPools.push_back(std::make_pair(size, pool));
-            poolID = memPools.size() - 1;
+            /* Still can't find it, alloc a new one */
+            pool = new Core::MemPool(size+sizeof(PoolData_t));
+
+            std::lock_guard<std::mutex> lock(poolMutex);
+            memPools.emplace_back(tid, size, pool);
         }
-        uint32_t *ptr = (uint32_t*)pool->malloc();
+
+        PoolData_t *ptr = (PoolData_t*)pool->malloc();
         if ( !ptr ) {
             fprintf(stderr, "Memory Pool failed to allocate a new object.  Error: %s\n", strerror(errno));
             return NULL;
         }
-        *ptr = poolID;
+        *ptr = pool;
         return (void*)(ptr+1);
     }
 
@@ -176,51 +184,48 @@ public:
 	void operator delete(void* ptr)
     {
         /* 1) Decrement pointer
-         * 2) Determine Pool ID
-         * 2b) Set ID field to FFFFFFF to allow tracking
+         * 2) Determine Pool Pointer
+         * 2b) Set Pointer field to NULL to allow tracking
          * 3) Return to pool
          */
-        uint32_t *ptr8 = ((uint32_t*)ptr) - 1;
-        uint32_t poolID = *ptr8;
-        *ptr8 = 0xffffffff;
-        Core::MemPool* pool = memPools[poolID].second;
+        PoolData_t *ptr8 = ((PoolData_t*)ptr) - 1;
+        Core::MemPool* pool = *ptr8;
+        *ptr8 = NULL;
 
         pool->free(ptr8);
     }
     void operator delete(void* ptr, std::size_t sz){
         /* 1) Decrement pointer
-         * 2) Determine Pool ID
+         * 2) Determine Pool Pointer
+         * 2b) Set Pointer field to NULL to allow tracking
          * 3) Return to pool
          */
-        uint32_t *ptr8 = ((uint32_t*)ptr) - 1;
-        uint32_t poolID = *ptr8;
-        *ptr8 = 0xffffffff;
-        Core::MemPool* pool = memPools[poolID].second;
+        PoolData_t *ptr8 = ((PoolData_t*)ptr) - 1;
+        Core::MemPool* pool = *ptr8;
+        *ptr8 = NULL;
 
         pool->free(ptr8);
     };
-    
+
     static void getMemPoolUsage(uint64_t& bytes, uint64_t& active_activities) {
         bytes = 0;
         active_activities = 0;
-        for ( uint32_t i = 0; i < Activity::memPools.size(); i++ ) {
-            std::pair<size_t, Core::MemPool*> entry = Activity::memPools[i];
-            bytes += entry.second->getBytesMemUsed();
-            active_activities += entry.second->getUndeletedEntries();
+        for ( auto && entry : Activity::memPools ) {
+            bytes += entry.pool->getBytesMemUsed();
+            active_activities += entry.pool->getUndeletedEntries();
         }
     }
     
     static void printUndeletedActivites(const std::string& header, Output &out, SimTime_t before = MAX_SIMTIME_T) {
-        for ( uint32_t i = 0; i < Activity::memPools.size(); i++ ) {
-            std::pair<size_t, Core::MemPool*> entry = Activity::memPools[i];
-            const std::list<uint8_t*>& arenas = entry.second->getArenas();
-            size_t arenaSize = entry.second->getArenaSize();
-            size_t elemSize = entry.second->getElementSize();
+        for ( auto && entry : Activity::memPools ) {
+            const std::list<uint8_t*>& arenas = entry.pool->getArenas();
+            size_t arenaSize = entry.pool->getArenaSize();
+            size_t elemSize = entry.pool->getElementSize();
             size_t nelem = arenaSize / elemSize;
             for ( auto iter = arenas.begin(); iter != arenas.end(); ++iter ) {
                 for ( size_t j = 0; j < nelem; j++ ) {
-                    uint32_t* ptr = (uint32_t*)((*iter) + (elemSize*j));
-                    if ( *ptr != 0xFFFFFFFF ) {
+                    PoolData_t* ptr = (PoolData_t*)((*iter) + (elemSize*j));
+                    if ( *ptr != NULL ) {
                         Activity* act = (Activity*)(ptr + 1);
                         if ( act->delivery_time <= before ) {
                             act->print(header, out);
@@ -249,7 +254,18 @@ private:
     SimTime_t delivery_time;
     int       priority;
 #ifdef USE_MEMPOOL
-	static std::vector<std::pair<size_t, Core::MemPool*> > memPools;
+    friend int ::main(int argc, char **argv);
+    /* Defined in event.cc */
+    typedef Core::MemPool* PoolData_t;
+    struct PoolInfo_t {
+        std::thread::id tid;
+        size_t size;
+        Core::MemPool *pool;
+        PoolInfo_t(std::thread::id tid, size_t size, Core::MemPool *pool) : tid(tid), size(size), pool(pool)
+        { }
+    };
+    static std::mutex poolMutex;
+	static std::vector<PoolInfo_t> memPools;
 #endif
 
     friend class boost::serialization::access;

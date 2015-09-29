@@ -26,8 +26,14 @@
 #endif
 #include <inttypes.h>
 #include <cstdio>
+#include <thread>
+#include <unordered_map>
 
 #include <sst/core/serialization.h>
+
+#include <sst/core/rankInfo.h>
+
+extern int main(int argc, char **argv);
 
 namespace SST {
 
@@ -70,6 +76,16 @@ public:
                   MPI_COMM_WORLD size is 1.
                - \@R MPI rank of the calling process.  Will be 0 if
                   MPI_COMM_WORLD size is 1.
+               - \@i Thread Id of the calling process.  Will be empty if
+                  number of threads is 1.
+               - \@I Thread Id of the calling process.  Will be 0 if
+                  number of threads is 1.
+               - \@x Rank information of the calling process.  Will be empty if
+                  number of MPI ranks and number of threads are both 1
+                  Same as [\@r:\@i]
+               - \@X Rank information of the calling process.  Will be [0.0] if
+                  number of MPI ranks and number of threads are both 1
+                  Same as [\@R:\@I]
                - \@t Simulation time.  Will be the raw simulaton cycle time
                   retrieved from the SST Core.
         @param verbose_level Debugging output level.  Calls to debug(),
@@ -119,6 +135,16 @@ public:
                   MPI_COMM_WORLD size is 1.
                - \@R MPI rank of the calling process.  Will be 0 if
                   MPI_COMM_WORLD size is 1.
+               - \@i Thread Id of the calling process.  Will be empty if
+                  number of threads is 1.
+               - \@I Thread Id of the calling process.  Will be 0 if
+                  number of threads is 1.
+               - \@x Rank information of the calling process.  Will be empty if
+                  number of MPI ranks and number of threads are both 1
+                  Same as [\@r:\@i]
+               - \@X Rank information of the calling process.  Will be [0.0] if
+                  number of MPI ranks and number of threads are both 1
+                  Same as [\@R:\@I]
                - \@t Simulation time.  Will be the raw simulaton cycle time
                   retrieved from the SST Core.
         @param verbose_level Debugging output level.  Calls to debug(),
@@ -322,6 +348,7 @@ public:
                const char* format, ...)    const
                   __attribute__ ((format (printf, 6, 7))) ;
 
+
     // GET / SET METHODS
 
     /** Sets object prefix
@@ -337,6 +364,16 @@ public:
                   MPI_COMM_WORLD size is 1.
                - \@R MPI rank of the calling process.  Will be 0 if
                   MPI_COMM_WORLD size is 1.
+               - \@i Thread Id of the calling process.  Will be empty if
+                  number of threads is 1.
+               - \@I Thread Id of the calling process.  Will be 0 if
+                  number of threads is 1.
+               - \@x Rank information of the calling process.  Will be empty if
+                  number of MPI ranks and number of threads are both 1
+                  Same as [\@r:\@i]
+               - \@X Rank information of the calling process.  Will be [0.0] if
+                  number of MPI ranks and number of threads are both 1
+                  Same as [\@R:\@I]
                - \@t Simulation time.  Will be the raw simulaton cycle time
                   retrieved from the SST Core.
     */
@@ -391,6 +428,8 @@ public:
      */
     static void setFileName(const std::string& filename);
 
+    static Output& getDefaultObject() { return m_defaultObject; }
+
 private:
     // Support Methods
     void setTargetOutput(output_location_t location);
@@ -399,6 +438,8 @@ private:
     // std::string getMPIProcName() const;
     int getMPIWorldRank() const;
     int getMPIWorldSize() const;
+    uint32_t getNumThreads() const;
+    uint32_t getThreadRank() const;
     std::string buildPrefixString(uint32_t line,
                                   const std::string& file,
                                   const std::string& func) const;
@@ -409,12 +450,35 @@ private:
                       va_list arg) const;
     void outputprintf(const char *format, va_list arg) const;
 
+    friend int ::main(int argc, char **argv);
+    static Output& setDefaultObject(const std::string& prefix, uint32_t verbose_level,
+               uint32_t verbose_mask, output_location_t location,
+               std::string localoutputfilename = "")
+    {
+        m_defaultObject.init(prefix, verbose_level, verbose_mask, location, localoutputfilename);
+        return getDefaultObject();
+    }
+
+    static void setWorldSize(const RankInfo &ri, int mpiRank)
+    {
+        m_worldSize = ri;
+        m_mpiRank = mpiRank;
+    }
+
+    static void setThreadID(std::thread::id mach, uint32_t user)
+    {
+        m_threadMap.insert(std::make_pair(mach, user));
+    }
+
+
     // Internal Member Variables
     bool              m_objInitialized;
     std::string       m_outputPrefix;
     uint32_t          m_verboseLevel;
     uint32_t          m_verboseMask;
     output_location_t m_targetLoc;
+
+    static Output     m_defaultObject;
 
     // m_targetOutputRef is a pointer to a FILE* object.  This is because
     // the actual FILE* object (m_sstFileHandle) is not created on construction,
@@ -441,11 +505,33 @@ private:
     std::string  m_sstLocalFileName;
     std::FILE*   m_sstLocalFileHandle;
     uint32_t     m_sstLocalFileAccessCount;
+
+    static std::unordered_map<std::thread::id, uint32_t> m_threadMap;
+    static RankInfo m_worldSize;
+    static int m_mpiRank;
     
     // Serialization Methods
     friend class boost::serialization::access;
     template<class Archive> void serialize(Archive & ar, const unsigned int version);
 };
+
+// Class to easily trace function enter and exit
+class TraceFunction {
+public:
+    TraceFunction(uint32_t line, const char* file, const char* func);
+    ~TraceFunction();
+
+    Output& getOutput() {return output;}
+    
+private:
+    Output output;
+    uint32_t line;
+    std::string file;
+    std::string function;
+    uint32_t rank;
+    uint32_t thread;
+};
+
 
 } // namespace SST
 

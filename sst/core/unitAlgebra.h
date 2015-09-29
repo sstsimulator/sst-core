@@ -20,6 +20,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <mutex>
 
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -50,6 +51,7 @@ class Units {
 private:
 
     // Static data members and functions
+    static std::recursive_mutex unit_lock;
     static std::map<std::string,unit_id_t> valid_base_units;
     static std::map<std::string,std::pair<Units,sst_dec_float> > valid_compound_units;
     static std::map<unit_id_t,std::string> unit_strings;
@@ -206,13 +208,13 @@ public:
     }
 
     /** Compare if this object is greater than the argument */
-    bool operator> (const UnitAlgebra& v);
+    bool operator> (const UnitAlgebra& v) const;
     /** Compare if this object is greater than, or equal to, the argument */
-    bool operator>= (const UnitAlgebra& v);
+    bool operator>= (const UnitAlgebra& v) const;
     /** Compare if this object is less than the argument */
-    bool operator< (const UnitAlgebra& v);
+    bool operator< (const UnitAlgebra& v) const;
     /** Compare if this object is less than, or equal to, the argument */
-    bool operator<= (const UnitAlgebra& v);
+    bool operator<= (const UnitAlgebra& v) const;
     /** Apply a reciprocal operation to the object */
     UnitAlgebra& invert();
 

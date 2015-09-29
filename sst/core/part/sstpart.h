@@ -14,6 +14,7 @@
 #define SST_CORE_PART_BASE
 
 #include <sst/core/configGraph.h>
+#include <sst/core/rankInfo.h>
 
 #include <map>
 
@@ -28,7 +29,7 @@ class SSTPartitioner
 
 public:
 
-    typedef SSTPartitioner* (*partitionerAlloc)(int total_ranks, int my_rank, int verbosity);
+    typedef SSTPartitioner* (*partitionerAlloc)(RankInfo total_ranks, RankInfo my_rank, int verbosity);
 private:
     static std::map<std::string, SSTPartitioner::partitionerAlloc>& partitioner_allocs();
     static std::map<std::string, std::string>& partitioner_descriptions();
@@ -39,7 +40,7 @@ public:
     virtual ~SSTPartitioner() {};
     
     static bool addPartitioner(const std::string name, const SSTPartitioner::partitionerAlloc alloc, const std::string description);
-    static SSTPartitioner* getPartitioner(std::string name, int total_ranks, int my_rank, int verbosity);
+    static SSTPartitioner* getPartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
 
     static const std::map<std::string, std::string>& getDescriptionMap() { return partitioner_descriptions(); }
 

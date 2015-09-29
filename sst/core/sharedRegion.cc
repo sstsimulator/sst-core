@@ -160,7 +160,7 @@ void RegionInfo::updateState(bool finalize)
 
 RegionInfo::RegionMergeInfo* RegionInfo::getMergeInfo()
 {
-    int rank = Simulation::getSimulation()->getRank();
+    int rank = Simulation::getSimulation()->getRank().rank;
     if ( didBulk ) {
         return new BulkMergeInfo(rank, myKey, memory, apparentSize);
     } else if ( !changesets.empty() ) {
@@ -193,6 +193,7 @@ SharedRegionManagerImpl::~SharedRegionManagerImpl()
 
 SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte)
 {
+    std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
         if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Mismatched Sizes!\n");
@@ -205,6 +206,7 @@ SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string &k
 
 SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger, uint8_t initByte)
 {
+    std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
         if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Mismatched Sizes!\n");
@@ -217,6 +219,7 @@ SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string &
 
 void SharedRegionManagerImpl::modifyRegion(SharedRegion *sr, size_t offset, size_t length, const void *data)
 {
+    std::lock_guard<std::mutex> lock(mtx);
     SharedRegionImpl *sri = static_cast<SharedRegionImpl*>(sr);
     RegionInfo *ri = sri->getRegion();
     ri->modifyRegion(offset, length, data);
@@ -239,14 +242,14 @@ const void* SharedRegionManagerImpl::getConstPtr(const SharedRegion *sr) const
 }
 
 
-
 void SharedRegionManagerImpl::updateState(bool finalize)
 {
+    std::lock_guard<std::mutex> lock(mtx);
 
     if ( finalize ) {
 #ifdef SST_CONFIG_HAVE_MPI
-        int myRank = Simulation::getSimulation()->getRank();
-        if ( Simulation::getSimulation()->getNumRanks() > 1 ) {
+        int myRank = Simulation::getSimulation()->getRank().rank;
+        if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) {
 
             std::map<std::string, CommInfo_t> commInfo;
 
@@ -323,7 +326,7 @@ void SharedRegionManagerImpl::updateState(bool finalize)
 
                     RegionInfo::RegionMergeInfo *rmi = Comms::deserialize<RegionInfo::RegionMergeInfo>(receives[index]);
 
-                    RegionInfo &ri = regions[rmi->getKey()];
+                    RegionInfo& ri = regions[rmi->getKey()];
                     ri.setProtected(false);
                     rmi->merge(&ri);
 
@@ -349,6 +352,7 @@ void SharedRegionManagerImpl::updateState(bool finalize)
 
 void SharedRegionManagerImpl::publishRegion(SharedRegion *sr)
 {
+    std::lock_guard<std::mutex> lock(mtx);
     SharedRegionImpl *sri = static_cast<SharedRegionImpl*>(sr);
     if ( !sri->isPublished() ) {
         RegionInfo *ri = sri->getRegion();
@@ -367,6 +371,7 @@ bool SharedRegionManagerImpl::isRegionReady(const SharedRegion *sr)
 
 void SharedRegionManagerImpl::shutdownSharedRegion(SharedRegion *sr)
 {
+    std::lock_guard<std::mutex> lock(mtx);
     SharedRegionImpl *sri = static_cast<SharedRegionImpl*>(sr);
     RegionInfo *ri = sri->getRegion();
     ri->removeSharer(sri);  // sri is now deleted

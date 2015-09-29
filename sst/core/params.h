@@ -22,6 +22,9 @@
 #include <stack>
 #include <stdlib.h>
 #include <utility>
+#include <sst/core/threadsafe.h>
+
+int main(int argc, char *argv[]);
 
 namespace SST {
 
@@ -488,6 +491,7 @@ private:
 
     uint32_t getKey(const std::string &str) const
     {
+        std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(keyLock);
         std::map<std::string, uint32_t>::iterator i = keyMap.find(str);
         if ( i == keyMap.end() ) {
             return (uint32_t)-1;
@@ -497,6 +501,7 @@ private:
 
     uint32_t getKey(const std::string &str)
     {
+        std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(keyLock);
         std::map<std::string, uint32_t>::iterator i = keyMap.find(str);
         if ( i == keyMap.end() ) {
             uint32_t id = nextKeyID++;
@@ -516,12 +521,12 @@ private:
     }
 
 
-public:
-	/** NOT FOR PUBLIC USE **/
+    /* Friend main() because it broadcasts the maps */
+    friend int ::main(int argc, char *argv[]);
+
     static std::map<std::string, uint32_t> keyMap;
-	/** NOT FOR PUBLIC USE **/
     static std::vector<std::string> keyMapReverse;
-	/** NOT FOR PUBLIC USE **/
+    static SST::Core::ThreadSafe::Spinlock keyLock;
     static uint32_t nextKeyID;
 
 

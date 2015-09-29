@@ -24,6 +24,7 @@
 #include "sst/core/sparseVectorMap.h"
 #include "sst/core/params.h"
 #include "sst/core/statapi/statoutput.h"
+#include "sst/core/rankInfo.h"
 
 // #include "sst/core/simulation.h"
 
@@ -31,12 +32,16 @@ using namespace SST::Statistics;
 
 namespace SST {
 
+
 class Simulation;
 
 class Config;
+class TimeLord;
 
 typedef SparseVectorMap<ComponentId_t> ComponentIdMap_t;
 typedef std::vector<LinkId_t> LinkIdMap_t;
+
+
 
 /** Represents the configuration of a generic Link */
 class ConfigLink {
@@ -46,6 +51,7 @@ public:
     ComponentId_t    component[2];  /*!< IDs of the connected components */
     std::string      port[2];       /*!< Names of the connected ports */
     SimTime_t        latency[2];    /*!< Latency from each side */
+    std::string      latency_str[2];/*!< Temp string holding latency */
     int              current_ref;   /*!< Number of components currently referring to this Link */
     bool             no_cut;        /*!< If set to true, partitioner will not make a cut through this Link */
 
@@ -96,6 +102,7 @@ private:
         component[1] = ULONG_MAX;
     }
 
+    void updateLatencies(TimeLord*);
 
 
     friend class boost::serialization::access;
@@ -123,7 +130,7 @@ public:
     std::string                   name;              /*!< Name of this component */
     std::string                   type;              /*!< Type of this component */
     float                         weight;            /*!< Parititoning weight for this component */
-    int                           rank;              /*!< Parallel Rank for this component */
+    RankInfo                      rank;              /*!< Parallel Rank for this component */
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
     bool                          isIntrospector;    /*!< Is this an Introspector? */
@@ -143,7 +150,7 @@ private:
 
     friend class ConfigGraph;
     /** Create a new Component */
-    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, int rank, bool isIntrospector) :
+    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank, bool isIntrospector) :
         id(id),
         name(name),
         type(type),
@@ -211,21 +218,21 @@ public:
     size_t getNumComponents() { return comps.data.size(); }
     
     /** Helper function to set all the ranks to the same value */
-    void setComponentRanks(int rank);
+    void setComponentRanks(RankInfo rank);
     /** Checks to see if rank contains at least one component */
-    bool containsComponentInRank(int rank);
+    bool containsComponentInRank(RankInfo rank);
     /** Verify that all components have valid Ranks assigned */
-    bool checkRanks(int ranks);
+    bool checkRanks(RankInfo ranks);
 
 
     // API for programatic initialization
     /** Create a new component with weight and rank */
-    ComponentId_t addComponent(std::string name, std::string type, float weight, int rank);
+    ComponentId_t addComponent(std::string name, std::string type, float weight, RankInfo rank);
     /** Create a new component */
     ComponentId_t addComponent(std::string name, std::string type);
 
     /** Set on which rank a Component will exist (partitioning) */
-    void setComponentRank(ComponentId_t comp_id, int rank);
+    void setComponentRank(ComponentId_t comp_id, RankInfo rank);
     /** Set the weight of a Component (partitioning) */
     void setComponentWeight(ComponentId_t comp_id, float weight);
 
@@ -241,7 +248,7 @@ public:
     void addStatisticOutputParameter(const char* param, const char* value);
 
     /** Set a set of parameter to the statistic output module */
-    void setStatisticOutputParams(Params& p);
+    void setStatisticOutputParams(const Params& p);
 
     /** Set the statistic system load level */
     void setStatisticLoadLevel(uint8_t loadLevel);
@@ -256,15 +263,18 @@ public:
     void addStatisticParameterForComponentName(std::string ComponentName, std::string statisticName, const char* param, const char* value);
     void addStatisticParameterForComponentType(std::string ComponentType, std::string statisticName, const char* param, const char* value);
     
-    std::string& getStatOutput() {return statOutputName;}
-    Params&      getStatOutputParams() {return statOutputParams;}
-    long         getStatLoadLevel() {return statLoadLevel;}
+    const std::string& getStatOutput() const {return statOutputName;}
+    const Params&      getStatOutputParams() const {return statOutputParams;}
+    long               getStatLoadLevel() const {return statLoadLevel;}
     
     /** Add a Link to a Component on a given Port */
     void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str, bool no_cut = false);
 
     /** Create a new Introspector */
     ComponentId_t addIntrospector(std::string name, std::string type);
+
+    /** Perform any post-creation cleanup processes */
+    void postCreationCleanup();
 
     /** Check the graph for Structural errors */
     bool checkForStructuralErrors();
@@ -279,8 +289,8 @@ public:
         return links;
     }
 
-    ConfigGraph* getSubGraph(int start_rank, int end_rank);
-    ConfigGraph* getSubGraph(const std::set<int>& rank_set);
+    ConfigGraph* getSubGraph(uint32_t start_rank, uint32_t end_rank);
+    ConfigGraph* getSubGraph(const std::set<uint32_t>& rank_set);
 
     PartitionGraph* getPartitionGraph();
     PartitionGraph* getCollapsedPartitionGraph();
@@ -326,7 +336,7 @@ class PartitionComponent {
 public:
     ComponentId_t             id;
     float                     weight;
-    int                       rank;
+    RankInfo                  rank;
     LinkIdMap_t               links;
 
     ComponentIdMap_t          group;
@@ -340,7 +350,7 @@ public:
     PartitionComponent(LinkId_t id) :
         id(id),
         weight(0),
-        rank(-1)
+        rank(RankInfo(RankInfo::UNASSIGNED, 0))
     {}
     
     // PartitionComponent(ComponentId_t id, ConfigGraph* graph, const ComponentIdMap_t& group);

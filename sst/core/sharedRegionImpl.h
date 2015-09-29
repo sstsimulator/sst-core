@@ -18,6 +18,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <mutex>
 
 #include <sst/core/sharedRegion.h>
 
@@ -168,6 +169,7 @@ class SharedRegionManagerImpl : public SharedRegionManager {
     };
 
     std::map<std::string, RegionInfo> regions;
+    std::mutex mtx;
 
 protected:
     void modifyRegion(SharedRegion *sr, size_t offset, size_t length, const void *data);

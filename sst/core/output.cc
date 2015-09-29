@@ -32,9 +32,14 @@
 namespace SST {
 
 // Initialize The Static Member Variables     
+Output      Output::m_defaultObject;
 std::string Output::m_sstGlobalSimFileName = "";
-std::FILE* Output::m_sstGlobalSimFileHandle = 0;
+std::FILE*  Output::m_sstGlobalSimFileHandle = 0;
 uint32_t    Output::m_sstGlobalSimFileAccessCount = 0;
+
+std::unordered_map<std::thread::id, uint32_t> Output::m_threadMap;
+RankInfo Output::m_worldSize;
+int Output::m_mpiRank = 0;
 
 
 Output::Output(const std::string& prefix, uint32_t verbose_level,   
@@ -194,7 +199,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
     free(backtrace_names);
 
-    Simulation::getSimulation()->emergencyShutdown(-1);
+    Simulation::emergencyShutdown();
 
 #ifdef SST_CONFIG_HAVE_MPI
     // If MPI exists, abort
@@ -377,6 +382,32 @@ std::string Output::buildPrefixString(uint32_t line, const std::string& file, co
                 }
                 startindex = findindex + 2;
                 break;
+            case 'i':
+                if ( 1 == getNumThreads()) {
+                    rtnstring += "";
+                } else {
+                    sprintf(tempBuf, "%u", getThreadRank());
+                    rtnstring += tempBuf;
+                }
+                startindex = findindex + 2;
+                break;
+            case 'I':
+                sprintf(tempBuf, "%u", getThreadRank());
+                rtnstring += tempBuf;
+                startindex = findindex + 2;
+                break;
+            case 'x':
+                if ( getMPIWorldSize() != 1 || getNumThreads() != 1 ) {
+                    sprintf(tempBuf, "[%d:%u]", getMPIWorldRank(), getThreadRank());
+                    rtnstring += tempBuf;
+                }
+                startindex = findindex + 2;
+                break;
+            case 'X':
+                sprintf(tempBuf, "[%d:%u]", getMPIWorldRank(), getThreadRank());
+                rtnstring += tempBuf;
+                startindex = findindex + 2;
+                break;
             case 't' :
                 sprintf(tempBuf, "%" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
                 rtnstring += tempBuf;
@@ -429,20 +460,20 @@ void Output::outputprintf(const char* format, va_list arg) const
 
 
 int Output::getMPIWorldSize() const {
-    int ranks = 1;
-#ifdef SST_CONFIG_HAVE_MPI
-    MPI_Comm_size(MPI_COMM_WORLD, &ranks);
-#endif
-    return ranks;
+    return m_worldSize.rank;
 }
 
 
 int Output::getMPIWorldRank() const {
-    int rank = 0;
-#ifdef SST_CONFIG_HAVE_MPI
-    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-#endif
-    return rank;
+    return m_mpiRank;
+}
+
+uint32_t Output::getNumThreads() const {
+    return m_worldSize.thread;
+}
+
+uint32_t Output::getThreadRank() const {
+    return m_threadMap[std::this_thread::get_id()];
 }
 
 
@@ -461,6 +492,21 @@ template<class Archive> void Output::serialize(Archive& ar, const unsigned int v
     ar & BOOST_SERIALIZATION_NVP(m_verboseMask);
     ar & BOOST_SERIALIZATION_NVP(m_targetLoc);
 }
+
+TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func) {
+    output.init("@R, @I (@t): " /*prefix*/, 0, 0, Output::STDOUT);               
+    this->line = line;
+    this->file.append(file);
+    function.append(func);
+    rank = Simulation::getSimulation()->getRank().rank;
+    thread = Simulation::getSimulation()->getRank().thread;
+    output.output(line,file,func,"%s enter function\n",function.c_str());
+}
+
+TraceFunction::~TraceFunction() {
+    output.output(line, file.c_str(), function.c_str(), "%s exit function\n",function.c_str());
+}
+
 
 
 } // namespace SST

@@ -143,7 +143,7 @@
 
     if (true == statGood) {
         // Instantiate the Statistic here defined by the type here
-        statistic = Simulation::getSimulation()->CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
+        statistic = CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             fprintf(stderr, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
             exit(1);
@@ -168,7 +168,7 @@
         // Check the Statistics Enable Level vs the system Load Level to decide
         // if this statistic can be used.
         uint8_t enableLevel = getComponentInfoStatisticEnableLevel(statistic->getStatName());
-        uint8_t loadLevel = Simulation::getSimulation()->getStatisticsOutput()->getStatisticLoadLevel();
+        uint8_t loadLevel = Simulation::getStatisticsOutput()->getStatisticLoadLevel();
         if (0 == loadLevel) {
             out.verbose(CALL_INFO, 1, 0, " Warning: Statistic Load Level = 0 (all statistics disabled); statistic %s is disabled...\n", fullStatName.c_str());
             statGood = false;
@@ -216,7 +216,7 @@
         
         // Instantiate the Statistic here defined by the type here
         statTypeParam = "sst.NullStatistic";
-        statistic = Simulation::getSimulation()->CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
+        statistic = CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             statGood = false;
             fprintf(stderr, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());

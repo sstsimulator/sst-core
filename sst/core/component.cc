@@ -35,7 +35,8 @@ namespace SST {
 Component::Component(ComponentId_t id) :
     defaultTimeBase(NULL), id(id)//, my_info(Simulation::getSimulation()->getComponentInfoMap()[id])
 {
-    my_info = Simulation::getSimulation()->getComponentInfo(id);
+    sim = Simulation::getSimulation();
+    my_info = sim->getComponentInfo(id);
     currentlyLoadingSubComponent = "";
 }
 
@@ -81,7 +82,7 @@ bool checkPort(const char *def, const char *offered)
     
 bool
 Component::isPortValidForComponent(const std::string& comp_name, const std::string& port_name) {
-    const std::vector<std::string>* allowedPorts = Simulation::getSimulation()->getComponentAllowedPorts(comp_name);
+    const std::vector<std::string>* allowedPorts = Factory::getFactory()->GetComponentAllowedPorts(comp_name);
 
     const char *x = port_name.c_str();
     bool found = false;
@@ -101,7 +102,7 @@ Component::isPortValidForComponent(const std::string& comp_name, const std::stri
 
 
 TimeConverter* Component::registerClock( std::string freq, Clock::HandlerBase* handler, bool regAll) {
-    TimeConverter* tc = Simulation::getSimulation()->registerClock(freq,handler);
+    TimeConverter* tc = getSimulation()->registerClock(freq,handler);
     
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -121,7 +122,7 @@ TimeConverter* Component::registerClock( std::string freq, Clock::HandlerBase* h
 }
 
 TimeConverter* Component::registerClock( const UnitAlgebra& freq, Clock::HandlerBase* handler, bool regAll) {
-    TimeConverter* tc = Simulation::getSimulation()->registerClock(freq,handler);
+    TimeConverter* tc = getSimulation()->registerClock(freq,handler);
     
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -141,27 +142,27 @@ TimeConverter* Component::registerClock( const UnitAlgebra& freq, Clock::Handler
 }
 
 Cycle_t Component::reregisterClock( TimeConverter* freq, Clock::HandlerBase* handler) {
-    return Simulation::getSimulation()->reregisterClock(freq,handler);
+    return getSimulation()->reregisterClock(freq,handler);
 }
 
 Cycle_t Component::getNextClockCycle( TimeConverter* freq ) {
-    return Simulation::getSimulation()->getNextClockCycle(freq);
+    return getSimulation()->getNextClockCycle(freq);
 }
 
 void Component::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
-    Simulation::getSimulation()->unregisterClock(tc,handler);
+    getSimulation()->unregisterClock(tc,handler);
 }
 
 TimeConverter* Component::registerOneShot( std::string timeDelay, OneShot::HandlerBase* handler) {
-    return Simulation::getSimulation()->registerOneShot(timeDelay, handler);
+    return getSimulation()->registerOneShot(timeDelay, handler);
 }
 
 TimeConverter* Component::registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler) {
-    return Simulation::getSimulation()->registerOneShot(timeDelay, handler);
+    return getSimulation()->registerOneShot(timeDelay, handler);
 }
 
 TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
-    TimeConverter* tc = Simulation::getSimulation()->getTimeLord()->getTimeConverter(base);
+    TimeConverter* tc = getSimulation()->getTimeLord()->getTimeConverter(base);
     
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -183,13 +184,13 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
 TimeConverter*
 Component::getTimeConverter( const std::string& base )
 {
-    return Simulation::getSimulation()->getTimeLord()->getTimeConverter(base);
+    return getSimulation()->getTimeLord()->getTimeConverter(base);
 }
     
 TimeConverter*
 Component::getTimeConverter( const UnitAlgebra& base )
 {
-    return Simulation::getSimulation()->getTimeLord()->getTimeConverter(base);
+    return getSimulation()->getTimeLord()->getTimeConverter(base);
 }
 
     
@@ -227,7 +228,7 @@ Component::configureLink(std::string name, TimeConverter* time_base, Event::Hand
 Link*
 Component::configureLink(std::string name, std::string time_base, Event::HandlerBase* handler)
 {
-    return configureLink(name,Simulation::getSimulation()->getTimeLord()->getTimeConverter(time_base),handler);
+    return configureLink(name,getSimulation()->getTimeLord()->getTimeConverter(time_base),handler);
 }
 
 Link*
@@ -307,34 +308,36 @@ Link* Component::selfLink( std::string name, Event::HandlerBase* handler )
 }
     
 SimTime_t Component::getCurrentSimTime(TimeConverter *tc) const {
-    return tc->convertFromCoreTime(Simulation::getSimulation()->getCurrentSimCycle());
+    return tc->convertFromCoreTime(getSimulation()->getCurrentSimCycle());
 }
 
 SimTime_t Component::getCurrentSimTime(std::string base) {
-    return getCurrentSimTime(Simulation::getSimulation()->getTimeLord()->getTimeConverter(base));
+    return getCurrentSimTime(getSimulation()->getTimeLord()->getTimeConverter(base));
 
 }
     
 SimTime_t Component::getCurrentSimTimeNano() const {
-    return getCurrentSimTime(Simulation::getSimulation()->getTimeLord()->getNano());
+    return getCurrentSimTime(getSimulation()->getTimeLord()->getNano());
 }
 
 SimTime_t Component::getCurrentSimTimeMicro() const {
-    return getCurrentSimTime(Simulation::getSimulation()->getTimeLord()->getMicro());
+    return getCurrentSimTime(getSimulation()->getTimeLord()->getMicro());
 }
 
 SimTime_t Component::getCurrentSimTimeMilli() const {
-    return getCurrentSimTime(Simulation::getSimulation()->getTimeLord()->getMilli());
+    return getCurrentSimTime(getSimulation()->getTimeLord()->getMilli());
 }
 
 bool Component::registerExit()
 {
-    return Simulation::getSimulation()->getExit()->refInc( getId() ); 
+    int thread = getSimulation()->getRank().thread;
+    return getSimulation()->getExit()->refInc( getId(), thread ); 
 }
 
 bool Component::unregisterExit()
 {
-    return Simulation::getSimulation()->getExit()->refDec( getId() ); 
+    int thread = getSimulation()->getRank().thread;
+    return getSimulation()->getExit()->refDec( getId(), thread ); 
 }
 
 void
@@ -346,25 +349,27 @@ Component::registerAsPrimaryComponent()
 void
 Component::primaryComponentDoNotEndSim()
 {
-    Simulation::getSimulation()->getExit()->refInc( getId() ); 
+    int thread = getSimulation()->getRank().thread;
+    getSimulation()->getExit()->refInc( getId(), thread );
 }
     
 void
 Component::primaryComponentOKToEndSim()
 {
-    Simulation::getSimulation()->getExit()->refDec( getId() ); 
+    int thread = getSimulation()->getRank().thread;
+    getSimulation()->getExit()->refDec( getId(), thread ); 
 }
 
 Module*
 Component::loadModule(std::string type, Params& params)
 {
-    return Simulation::getSimulation()->getFactory()->CreateModule(type,params);
+    return Factory::getFactory()->CreateModule(type,params);
 }
 
 Module*
 Component::loadModuleWithComponent(std::string type, Component* comp, Params& params)
 {
-    return Simulation::getSimulation()->getFactory()->CreateModuleWithComponent(type,comp,params);
+    return Factory::getFactory()->CreateModuleWithComponent(type,comp,params);
 }
 
 SubComponent*
@@ -372,7 +377,7 @@ Component::loadSubComponent(std::string type, Component* comp, Params& params)
 {
     std::string oldLoadingSubCopmonent = currentlyLoadingSubComponent;
     currentlyLoadingSubComponent = type;
-    SubComponent* ret = Simulation::getSimulation()->getFactory()->CreateSubComponent(type,comp,params);
+    SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
     currentlyLoadingSubComponent = oldLoadingSubCopmonent;
     return ret;
 }
@@ -380,19 +385,19 @@ Component::loadSubComponent(std::string type, Component* comp, Params& params)
 bool Component::doesComponentInfoStatisticExist(std::string statisticName)
 {
     const std::string& type = my_info->getType();
-    return Simulation::getSimulation()->getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
+    return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
 }
 
 uint8_t Component::getComponentInfoStatisticEnableLevel(std::string statisticName)
 {
     const std::string& type = my_info->getType();
-    return Simulation::getSimulation()->getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
+    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
 }
 
 std::string Component::getComponentInfoStatisticUnits(std::string statisticName)
 {
     const std::string& type = my_info->getType();
-    return Simulation::getSimulation()->getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
+    return Factory::getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
 }
 
 

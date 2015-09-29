@@ -74,6 +74,7 @@ Link::~Link() {
 }
 
 void Link::finalizeConfiguration() {
+    // TraceFunction trace (CALL_INFO_LONG);
     recvQueue = configuredQueue;
     configuredQueue = NULL;
     if ( initQueue != NULL ) {
@@ -82,6 +83,7 @@ void Link::finalizeConfiguration() {
 	}
     }
     initQueue = afterInitQueue;
+    // trace.getOutput().output(CALL_INFO,"id: %ld: recvQueue = %p, initQueue = %p\n",id,recvQueue,initQueue);
 }
 
 void Link::setPolling() {
@@ -104,6 +106,7 @@ void Link::addRecvLatency(SimTime_t cycles, TimeConverter* timebase) {
 }
     
 void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {  
+    // TraceFunction trace(CALL_INFO_LONG);
     if ( tc == NULL ) {
         Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Cannot send an event on Link with NULL TimeConverter\n");
     }
@@ -121,7 +124,8 @@ void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {
     event->addSendComponent(comp, ctype, port);
     event->addRecvComponent(pair_link->comp, pair_link->ctype, pair_link->port);
 #endif
-        
+
+    // trace.getOutput().output(CALL_INFO, "%p\n",pair_link->recvQueue);
     pair_link->recvQueue->insert( event );
 }
     
@@ -144,12 +148,12 @@ Event* Link::recv()
 void Link::sendInitData(Event* init_data)
 {
     if ( pair_link->initQueue == NULL ) {
-	pair_link->initQueue = new InitQueue();
+        pair_link->initQueue = new InitQueue();
     }
     Simulation::getSimulation()->init_msg_count++;
     init_data->setDeliveryTime(Simulation::getSimulation()->init_phase + 1);
     init_data->setDeliveryLink(id,pair_link);
-
+    
     pair_link->initQueue->insert(init_data);
 #if __SST_DEBUG_EVENT_TRACKING__
     init_data->addSendComponent(comp,ctype,port);
@@ -160,7 +164,7 @@ void Link::sendInitData(Event* init_data)
 void Link::sendInitData_sync(Event* init_data)
 {
     if ( pair_link->initQueue == NULL ) {
-	pair_link->initQueue = new InitQueue();
+        pair_link->initQueue = new InitQueue();
     }
     // init_data->setDeliveryLink(id,pair_link);
 

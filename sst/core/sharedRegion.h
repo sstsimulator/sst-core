@@ -84,7 +84,6 @@ public:
     virtual bool isRegionReady(const SharedRegion*) = 0;
     virtual void shutdownSharedRegion(SharedRegion*) = 0;
 
-
     virtual void updateState(bool finalize) = 0;
 };
 

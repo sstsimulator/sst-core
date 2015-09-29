@@ -20,7 +20,7 @@
 namespace SST {
 
 
-uint64_t SST::Event::id_counter = 0;
+std::atomic<uint64_t> SST::Event::id_counter(0);
 const SST::Event::id_type SST::Event::NO_ID = std::make_pair(0, -1);
 
 Event::~Event() {}
@@ -40,7 +40,7 @@ Event* Event::clone() {
 
 Event::id_type Event::generateUniqueId()
 {
-    return std::make_pair(id_counter++, Simulation::getSimulation()->getRank());
+    return std::make_pair(id_counter++, Simulation::getSimulation()->getRank().rank);
 }
 
 
@@ -75,7 +75,8 @@ void NullEvent::serialize(Archive & ar, const unsigned int version)
 
 
 #ifdef USE_MEMPOOL
-std::vector<std::pair<size_t, Core::MemPool*> > Activity::memPools;
+std::mutex Activity::poolMutex;
+std::vector<Activity::PoolInfo_t> Activity::memPools;
 #endif
 
 } // namespace SST

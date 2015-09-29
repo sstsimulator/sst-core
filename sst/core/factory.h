@@ -17,11 +17,15 @@
 
 #include <stdio.h>
 #include <boost/foreach.hpp>
+#include <mutex>
 
 #include <sst/core/params.h>
 #include <sst/core/elemLoader.h>
 #include <sst/core/element.h>
 #include <sst/core/statapi/statoutput.h>
+
+/* Forward declare for Friendship */
+extern int main(int argc, char **argv);
 
 using namespace SST::Statistics;
 
@@ -29,7 +33,6 @@ namespace SST {
 
 class Component;
 class Introspector;
-class SimulationBase;
 
 /**
  * Class for instantiating Components, Links and the like out
@@ -37,6 +40,8 @@ class SimulationBase;
  */
 class Factory {
 public:
+
+    static Factory* getFactory() { return instance; }
 
     /** Get a list of allowed ports for a given component type.
      * @param type - Name of component in lib.name format
@@ -51,7 +56,7 @@ public:
      * @param params - The params to pass to the component's constructor
      * @return Newly created component
      */
-    Component* CreateComponent(ComponentId_t id, std::string componentname,
+    Component* CreateComponent(ComponentId_t id, std::string &componentname,
                                Params& params);
     
     /** Attempt to create a new Introspector instantiation
@@ -59,7 +64,7 @@ public:
      * @param params - The params to pass to the introspectors's constructor
      * @return Newly created introspector
      */
-    Introspector* CreateIntrospector(std::string introspectorname,
+    Introspector* CreateIntrospector(std::string &introspectorname,
                                Params& params);
 
     /** Ensure that an element library containing the required event is loaded
@@ -151,6 +156,7 @@ public:
     genPythonModuleFunction getPythonModule(std::string name);
     /** Checks to see if library exists and can be loaded */
     bool hasLibrary(std::string elemlib);
+    void requireLibrary(std::string &elemlib);
 
     void getLoadedLibraryNames(std::set<std::string>& lib_names);
     void loadUnloadedLibraries(const std::set<std::string>& lib_names);
@@ -160,7 +166,7 @@ public:
      * @param statOutputParams - The params to pass to the statistic output's constructor
      * @return Newly created Statistic Output
      */
-    StatisticOutput* CreateStatisticOutput(std::string& statOutputType, Params& statOutputParams);
+    StatisticOutput* CreateStatisticOutput(const std::string& statOutputType, const Params& statOutputParams);
 
     /** Determine if a statistic is defined in a components ElementInfoStatistic
      * @param type - The name of the component
@@ -193,7 +199,7 @@ public:
 private:
     Module* LoadCoreModule_StatisticOutputs(std::string& type, Params& params);
     
-    friend class SST::SimulationBase;
+    friend int ::main(int argc, char **argv);
 
     struct ComponentInfo {
         const ElementInfoComponent* component;
@@ -333,6 +339,8 @@ private:
     Factory(Factory const&);        // Don't Implement
     void operator=(Factory const&); // Don't Implement
 
+    static Factory *instance;
+
     Params::KeySet_t create_params_set(const ElementInfoParam *params);
 
     // find library information for name
@@ -353,6 +361,8 @@ private:
     std::string loadingComponentType;
 
     std::pair<std::string, std::string> parseLoadName(const std::string& wholename);
+
+    std::recursive_mutex factoryMutex;
 
     friend class boost::serialization::access;
     template<class Archive>

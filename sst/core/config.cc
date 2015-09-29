@@ -42,23 +42,17 @@ Config::~Config() {
     delete var_map;
 }
     
-Config::Config( int my_rank, int world_size )
+Config::Config(RankInfo rankInfo)
 {
-    rank        = my_rank;
-	numRanks    = world_size;
     debugFile   = "/dev/null";
-    runMode     = BOTH;
+    runMode     = Simulation::BOTH;
     libpath     = SST_ELEMLIB_DIR;
     addlLibPath = "";
     sdlfile     = "NONE";
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
     heartbeatPeriod = "N";
-#ifdef SST_CONFIG_HAVE_MPI
     partitioner = "linear";
-#else
-    partitioner = "single";
-#endif
     generator   = "NONE";
     generator_options   = "";
     dump_component_graph_file = "";
@@ -67,9 +61,11 @@ Config::Config( int my_rank, int world_size )
     model_options = "";
 #endif
     verbose     = 0;
+    world_size.rank = rankInfo.rank;
+    world_size.thread = 1;
     no_env_config = false;
     enable_sig_handling = true;
-    output_core_prefix = "SST Core: ";
+    output_core_prefix = "@x SST Core: ";
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     event_dump_file = "";
@@ -145,18 +141,20 @@ Config::Config( int my_rank, int world_size )
          "generator to be used to build simulation <lib.generator_name>")
         ("gen-options", po::value< string >(&generator_options),
          "options to be passed to generator function (must use quotes if whitespace is present)")
-
-#ifdef SST_CONFIG_HAVE_PYTHON
-        ("model-options", po::value< string >(&model_options),
-         "Provide options to the SST Python scripting engine (default is to provide no script options)")
-#endif
-
         ("output-config", po::value< string >(&output_config_graph),
          "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
         ("output-directory", po::value <string >(&output_directory),
          "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
         ("output-dot", po::value <string >(&output_dot),
          "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
+        ("output-directory", po::value <string >(&output_directory),
+         "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
+    ("num_threads,n", po::value <uint32_t>(&world_size.thread),
+     "Number of parallel threads to use per rank.")
+#ifdef SST_CONFIG_HAVE_PYTHON
+        ("model-options", po::value< string >(&model_options),
+         "Provide options to the SST Python scripting engine (default is to provide no script options)")
+#endif
         ("output-partition", po::value< string >(&dump_component_graph_file),
          "Dump the component partition to this file (default is not to dump information)")
 	("output-prefix-core", po::value< string >(&output_core_prefix),
@@ -258,6 +256,11 @@ Config::parseCmdLine(int argc, char* argv[]) {
 	}
     }
 
+    if ( 0 == world_size.thread ) {
+        cerr << "ERROR: Must have at least 1 thread.\n";
+        return -1;
+    }
+
     return 0;
 }
 
@@ -281,7 +284,7 @@ Config::parseConfigFile(string config_string)
 
         if ( var_map->count("run-mode") ) {
             runMode = Config::setRunMode( (*var_map)[ "run-mode" ].as< string >() );
-            if ( runMode == Config::UNKNOWN ) {
+            if ( runMode == Simulation::UNKNOWN ) {
                 // this needs to be improved 
                 printf("ERROR: Unknown run mode %s\n", 
                         (*var_map)[ "run-mode" ].as< string >().c_str());

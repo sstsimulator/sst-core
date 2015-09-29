@@ -44,7 +44,7 @@ class SSTSinglePartition : public SST::Partition::SSTPartitioner {
         bool requiresConfigGraph() { return false; }
         bool spawnOnAllRanks() { return false; }
 
-        static SSTPartitioner* allocate(int total_ranks, int my_rank, int verbosity) {
+        static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
             return new SSTSinglePartition();
     }
         

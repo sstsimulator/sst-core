@@ -19,7 +19,7 @@ namespace Partition {
 class SSTRoundRobinPartition : public SST::Partition::SSTPartitioner {
 
 public:
-    SSTRoundRobinPartition(int world_size);
+    SSTRoundRobinPartition(RankInfo world_size);
     
     /**
        Performs a partition of an SST simulation configuration
@@ -30,12 +30,12 @@ public:
     bool requiresConfigGraph() { return false; }
     bool spawnOnAllRanks() { return false; }
     
-    static SSTPartitioner* allocate(int total_ranks, int my_rank, int verbosity) {
+    static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
         return new SSTRoundRobinPartition(total_ranks);
     }        
         
 private:
-    int world_size;
+    RankInfo world_size;
     static bool initialized;
 };
 

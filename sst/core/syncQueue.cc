@@ -26,8 +26,10 @@
 
 #include "sst/core/simulation.h"
 
+
 namespace SST {
 
+using namespace Core::ThreadSafe;
 
 SyncQueue::SyncQueue() :
     ActivityQueue()
@@ -41,18 +43,21 @@ SyncQueue::~SyncQueue()
 bool
 SyncQueue::empty()
 {
+    std::lock_guard<Spinlock> lock(slock);
 	return activities.empty();
 }
 
 int
 SyncQueue::size()
 {
+    std::lock_guard<Spinlock> lock(slock);
     return activities.size();
 }
     
 void
 SyncQueue::insert(Activity* activity)
 {
+    std::lock_guard<Spinlock> lock(slock);
     activities.push_back(activity);
 }
 
@@ -78,12 +83,14 @@ SyncQueue::front()
 void
 SyncQueue::clear()
 {
+    std::lock_guard<Spinlock> lock(slock);
     activities.clear();
 }
 
 char*
 SyncQueue::getData()
 {
+    std::lock_guard<Spinlock> lock(slock);
     buffer.clear();
 
     // Reserve space for the header information

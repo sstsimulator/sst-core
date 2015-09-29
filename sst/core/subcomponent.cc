@@ -85,7 +85,7 @@ SubComponent::configureSelfLink( std::string name, Event::HandlerBase* handler)
 bool
 SubComponent::doesSubComponentInfoStatisticExist(std::string statisticName)
 {
-    return Simulation::getSimulation()->getFactory()->DoesSubComponentInfoStatisticNameExist(type, statisticName);
+    return Factory::getFactory()->DoesSubComponentInfoStatisticNameExist(type, statisticName);
 }
 
 

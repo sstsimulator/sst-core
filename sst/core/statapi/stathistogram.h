@@ -42,7 +42,7 @@ template<class BinDataType>
 class HistogramStatistic : public Statistic<BinDataType> 
 {
 private:
-    friend class SST::Simulation;
+    friend class SST::Component;
     
     HistogramStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams)
 		: Statistic<BinDataType>(comp, statName, statSubId, statParams)

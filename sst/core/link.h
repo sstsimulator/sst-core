@@ -36,8 +36,12 @@ class Link {
 public:
 
     friend class LinkPair;
+    friend class NewRankSync;
+    friend class NewThreadSync;
     friend class Simulation;
     friend class SyncBase;
+    friend class ThreadSync;
+    friend class SyncManager;
     
     /** Create a new link with a given ID */
     Link(LinkId_t id);

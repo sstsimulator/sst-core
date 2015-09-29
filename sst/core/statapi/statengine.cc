@@ -17,6 +17,7 @@
 #include <sst/core/simulation.h>
 #include <sst/core/statapi/statbase.h>
 #include <sst/core/statapi/statengine.h>
+#include <sst/core/statapi/statoutput.h>
 
 namespace SST {
 namespace Statistics {
@@ -148,9 +149,11 @@ void StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool
         if (false == stat->isOutputEnabled()) {
             return;
         }
+        statOutput->lock();
         statOutput->startOutputEntries(stat);
         stat->outputStatisticData(statOutput, endOfSimFlag);
         statOutput->stopOutputEntries();
+        statOutput->unlock();
         
         if (false == endOfSimFlag) {    
             // Check to see if the Statistic Count needs to be reset

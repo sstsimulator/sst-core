@@ -23,7 +23,7 @@ StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters)
     : StatisticOutput (outputParameters)
 {
     // Announce this output object's name
-    Output out = Simulation::getSimulation()->getSimulationOutput();
+    Output &out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputCSV enabled...\n");
     setStatisticOutputName("StatisticOutputCSV");
 }
@@ -88,8 +88,8 @@ void StatisticOutputCSV::startOfSimulation()
     FieldInfoArray_t::iterator it_v;
     
     // Set Filename with Rank if Num Ranks > 1
-    if (1 < Simulation::getSimulation()->getNumRanks()) {
-        int rank = Simulation::getSimulation()->getRank();
+    if (1 < Simulation::getSimulation()->getNumRanks().rank) {
+        int rank = Simulation::getSimulation()->getRank().rank;
         std::string rankstr = "_" + SST::to_string(rank);
 
         // Search for any extension        
@@ -216,7 +216,7 @@ void StatisticOutputCSV::implStopOutputEntries()
     // Done with Output, Send a line of data to the file
     if (true == m_outputRank) {
         // Add the Simulation Time to the front
-        fprintf(m_hFile, "%d", Simulation::getSimulation()->getRank());
+        fprintf(m_hFile, "%d", Simulation::getSimulation()->getRank().rank);
         fprintf(m_hFile, "%s", m_Separator.c_str());
     }
     
