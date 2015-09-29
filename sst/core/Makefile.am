@@ -56,6 +56,7 @@ nobase_dist_sst_HEADERS = \
 	output.h \
 	params.h \
 	pollingLinkQueue.h \
+	profile.h \
 	rankInfo.h \
 	rankSync.h \
 	rankSyncSerialSkip.h \
