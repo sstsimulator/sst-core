@@ -822,10 +822,6 @@ main(int argc, char *argv[])
                 global_max_sync_data_size_ua.toStringBestSI().c_str());
         g_output.verbose(CALL_INFO, 1, 0, "Global Sync data size:           %s\n",
                 global_sync_data_size_ua.toStringBestSI().c_str());
-        g_output.verbose(CALL_INFO, 1, 0, "Max Sync data size:              %s\n",
-                global_max_sync_data_size_ua.toStringBestSI().c_str());
-        g_output.verbose(CALL_INFO, 1, 0, "Global Sync data size:           %s\n",
-                global_sync_data_size_ua.toStringBestSI().c_str());
         g_output.verbose(CALL_INFO, 1, 0, "------------------------------------------------------------\n");
         g_output.verbose(CALL_INFO, 1, 0, "\n");
         g_output.output("\n");
