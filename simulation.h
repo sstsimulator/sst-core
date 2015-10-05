@@ -369,6 +369,7 @@ private:
     /** Output */
     static Output sim_output;
     static Core::ThreadSafe::Barrier barrier;
+    static Core::ThreadSafe::Barrier exit_barrier;
     static std::mutex simulationMutex;
 
 
@@ -387,16 +388,7 @@ private:
     /** Normal Shutdown
      */
     void endSimulation(void) { endSimulation(currentSimCycle); }
-    void endSimulation(SimTime_t end) {
-        shutdown_mode = SHUTDOWN_CLEAN;
-        // For now, only thread 0 will do anything
-        if ( my_rank.thread != 0 ) return;
-        // Need to notify all threads
-        for ( auto && instance : instanceVec ) {
-            instance->endSimCycle = end;
-            instance->endSim = true;
-        }
-    }
+    void endSimulation(SimTime_t end); 
 
     typedef enum {
         SHUTDOWN_CLEAN,     /* Normal shutdown */

@@ -89,7 +89,7 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::
     }
 
     if ( num_ranks.thread > 1 ) {
-        threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, Simulation::getSimulation());
+        threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, rank.thread, Simulation::getSimulation());
     }
     else {
         threadSync = new EmptyThreadSync();
