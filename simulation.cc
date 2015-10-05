@@ -735,6 +735,23 @@ void Simulation::emergencyShutdown()
 }
 
 
+void Simulation::endSimulation(SimTime_t end)
+{
+    // shutdown_mode = SHUTDOWN_CLEAN;
+
+    // This is a collective operation across threads.  All threads
+    // must enter and set flag before any will exit.
+    // exit_barrier.wait();
+
+    endSimCycle = end;
+    endSim = true;
+
+    exit_barrier.wait();
+
+
+}
+    
+
 void Simulation::finish() {
 
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter )
@@ -1023,6 +1040,7 @@ TimeLord Simulation::timeLord;
 Statistics::StatisticOutput* Simulation::statisticsOutput;
 Output Simulation::sim_output;
 Core::ThreadSafe::Barrier Simulation::barrier;
+Core::ThreadSafe::Barrier Simulation::exit_barrier;
 std::mutex Simulation::simulationMutex;
 TimeConverter* Simulation::minPartTC = NULL;
 SyncBase* Simulation::sync = NULL;

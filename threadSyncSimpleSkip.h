@@ -34,7 +34,7 @@ class ThreadSyncQueue;
 class ThreadSyncSimpleSkip : public NewThreadSync {
 public:
     /** Create a new ThreadSync object */
-    ThreadSyncSimpleSkip(int num_threads, Simulation* sim);
+    ThreadSyncSimpleSkip(int num_threads, int thread, Simulation* sim);
     ~ThreadSyncSimpleSkip();
 
     void setMaxPeriod(TimeConverter* period);
@@ -61,6 +61,8 @@ private:
     std::unordered_map<LinkId_t, Link*> link_map;
     SimTime_t max_period;
     int num_threads;
+    int thread;
+    static SimTime_t localMinimumNextActivityTime;
     Simulation* sim;
     // static bool disabled;
     static Core::ThreadSafe::Barrier barrier;
