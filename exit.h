@@ -65,7 +65,11 @@ public:
         out.output("%s Exit Action to be delivered at %" PRIu64 " with priority %d\n",
                 header.c_str(), getDeliveryTime(), getPriority());
     }
-    
+
+    unsigned int getGlobalCount() {
+        return global_count;
+    }
+
 private:
     Exit() { } // for serialization only
     Exit(const Exit&);           // Don't implement
@@ -77,6 +81,7 @@ private:
     int num_threads;
     unsigned int    m_refCount;
     unsigned int*   m_thread_counts;
+    unsigned int    global_count;
     TimeConverter*  m_period;
     std::unordered_set<ComponentId_t> m_idSet;
     SimTime_t end_time;
