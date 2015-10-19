@@ -155,7 +155,9 @@ void Exit::check()
         MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
         end_time = end_value;
 #endif
-        // endSimulation(end_time);
+        if (single_rank) {
+            endSimulation(end_time);
+        }
     }
     // else {  
     //     // Reinsert into TimeVortex.  We do this even when ending so that
