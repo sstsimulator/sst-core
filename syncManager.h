@@ -114,6 +114,8 @@ public:
     /** Finish link configuration */
     void finalizeLinkConfigurations();
 
+    void print(const std::string& header, Output &out) const;
+
 private:
     enum sync_type_t { RANK, THREAD}; 
 

@@ -78,6 +78,9 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::
     next_threadSync(0)
 {
     // TraceFunction trace(CALL_INFO_LONG);    
+
+    sim = Simulation::getSimulation();
+
     if ( rank.thread == 0  ) {
         if ( num_ranks.rank > 1 ) {
             rankSync = new RankSyncSerialSkip(barrier, minPartTC);
@@ -88,16 +91,28 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::
         
     }
 
-    if ( num_ranks.thread > 1 ) {
+    // Need to check to see if there are any inter-thread
+    // dependencies.  If not, EmptyThreadSync, otherwise use one
+    // of the active threadsyncs.
+    bool interthread_deps = false;
+    const std::vector<SimTime_t>& deps = sim->getInterThreadLatencies();
+    for ( int i = 0; i < deps.size(); i++ ) {
+        if ( deps[i] != MAX_SIMTIME_T ) {
+            interthread_deps = true;
+            break;
+        }
+    }
+
+    if ( num_ranks.thread > 1 && interthread_deps ) {
         threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, rank.thread, Simulation::getSimulation());
     }
     else {
         threadSync = new EmptyThreadSync();
     }
 
-    sim = Simulation::getSimulation();
     exit = sim->getExit();
 
+    setPriority(SYNCPRIORITY);
 }
 
 
@@ -228,6 +243,8 @@ void
 SyncManager::computeNextInsert()
 {
     // TraceFunction trace(CALL_INFO_LONG);    
+    // trace.getOutput().output(CALL_INFO,"%" PRIu64 ", %" PRIu64 ", %" PRIu64 "\n",
+    //                          sim->getCurrentSimCycle(), rankSync->getNextSyncTime(), threadSync->getNextSyncTime());
     if ( rankSync->getNextSyncTime() <= threadSync->getNextSyncTime() ) {
         next_sync_type = RANK;
         sim->insertActivity(rankSync->getNextSyncTime(), this);
@@ -240,6 +257,13 @@ SyncManager::computeNextInsert()
     }
 }
 
+void
+SyncManager::print(const std::string& header, Output &out) const
+{
+    out.output("%s SyncManager to be delivered at %" PRIu64
+               " with priority %d\n",
+               header.c_str(), getDeliveryTime(), getPriority());
+}
 } // namespace SST
 
 
