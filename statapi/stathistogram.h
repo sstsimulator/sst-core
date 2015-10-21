@@ -252,7 +252,7 @@ private:
             
             for (uint32_t y = 0; y < getNumBins(); y++) {
                 // Figure out the upper and lower values for this bin
-                binLL = (y * getBinWidth()) + getBinsMinValue();
+	        binLL = (y * (uint64_t)getBinWidth()) + getBinsMinValue(); // Force full 64-bit multiply -mpf 10/8/15
                 binUL = binLL + getBinWidth() - 1;
                 // Build the string name for this bin and add it as a field
                 std::stringstream ss;
