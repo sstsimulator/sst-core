@@ -133,25 +133,36 @@ class BoundedQueue {
         T data;
     };
 
-    const size_t dsize;
+    bool initialized;
+    size_t dsize;
     cell_t *data;
     CACHE_ALIGNED(std::atomic<size_t>, rPtr);
     CACHE_ALIGNED(std::atomic<size_t>, wPtr);
 
 public:
-    BoundedQueue(size_t maxSize) : dsize(maxSize)
+    // BoundedQueue(size_t maxSize) : dsize(maxSize)
+    BoundedQueue(size_t maxSize) : initialized(false)
     {
+        initialize(maxSize);
+    }
+
+    BoundedQueue() : initialized(false) {}
+    
+    void initialize(size_t maxSize) {
+        if ( initialized ) return;
+        dsize = maxSize;
         data = new cell_t[dsize];
         for ( size_t i = 0 ; i < maxSize ; i++ )
             data[i].sequence.store(i);
         rPtr.store(0);
         wPtr.store(0);
-        fprintf(stderr, "%p  %p:  %ld\n", &rPtr, &wPtr, ((intptr_t)&wPtr - (intptr_t)&rPtr));
+        //fprintf(stderr, "%p  %p:  %ld\n", &rPtr, &wPtr, ((intptr_t)&wPtr - (intptr_t)&rPtr));
+        initialized = true;
     }
 
     ~BoundedQueue()
     {
-        delete [] data;
+        if ( initialized ) delete [] data;
     }
 
     size_t size() const
@@ -176,7 +187,7 @@ public:
                 if ( wPtr.compare_exchange_weak(pos, pos+1, std::memory_order_relaxed) )
                     break;
             } else if ( 0 > diff ) {
-                fprintf(stderr, "diff = %ld: %zu - %zu\n", diff, seq, pos);
+                // fprintf(stderr, "diff = %ld: %zu - %zu\n", diff, seq, pos);
                 return false;
             } else {
                 pos = wPtr.load(std::memory_order_relaxed);
@@ -209,6 +220,15 @@ public:
         return true;
     }
 
+    T remove() {
+        while(1) {
+            T res;
+            if ( try_remove(res) ) {
+                return res;
+            }
+            _mm_pause();
+        }
+    }
 };
 
 template<typename T>

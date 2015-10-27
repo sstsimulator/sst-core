@@ -20,6 +20,7 @@
 #include "sst/core/timeConverter.h"
 
 #include "sst/core/rankSyncSerialSkip.h"
+#include "sst/core/rankSyncParallelSkip.h"
 #include "sst/core/threadSyncSimpleSkip.h"
 
 namespace SST {
@@ -83,7 +84,12 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::
 
     if ( rank.thread == 0  ) {
         if ( num_ranks.rank > 1 ) {
-            rankSync = new RankSyncSerialSkip(barrier, minPartTC);
+            if ( num_ranks.thread == 1 ) {
+                rankSync = new RankSyncSerialSkip(/*num_ranks,*/ barrier, minPartTC);
+            }
+            else {
+                rankSync = new RankSyncParallelSkip(num_ranks, barrier, minPartTC);
+            }
         }
         else {
             rankSync = new EmptyRankSync();

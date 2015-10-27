@@ -234,6 +234,7 @@ Simulation::getLocalMinimumNextActivityTime()
 void
 Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part )
 {
+    // TraceFunction trace(CALL_INFO_LONG);    
     // Set minPartTC (only thread 0 will do this)
     if ( my_rank.thread == 0 ) {
         minPartTC = minPartToTC(min_part);
@@ -654,7 +655,7 @@ void Simulation::setup() {
 }
 
 void Simulation::run() {
-    // TraceFunction(CALL_INFO_LONG);    
+    // TraceFunction trace(CALL_INFO_LONG);
 
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.
