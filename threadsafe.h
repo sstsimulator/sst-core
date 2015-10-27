@@ -30,19 +30,16 @@ namespace SST {
 namespace Core {
 namespace ThreadSafe {
 
-#if defined(__clang__)
-#  define CACHE_ALIGNED(type, name) alignas(64) type name
-#elif defined(__GNUC__)
-#  if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8 ))
-#    define CACHE_ALIGNED(type, name) alignas(64) type name
-#  else
+#if defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__ < 8 ))
 #    define CACHE_ALIGNED(type, name) type name __attribute__((aligned(64)))
-#  endif
+#    define CACHE_ALIGNED_T
+#else
+#    define CACHE_ALIGNED(type, name) alignas(64) type name
+#    define CACHE_ALIGNED_T alignas(64)
 #endif
 
+
 class Barrier {
-    std::mutex mtx;
-    std::condition_variable cv;
     size_t origCount;
     std::atomic<bool> enabled;
     std::atomic<size_t> count, generation;
@@ -216,73 +213,64 @@ public:
 
 template<typename T>
 class UnboundedQueue {
-    Spinlock latch;
-    std::vector<T> data;
-    size_t dsize;
-    size_t page;
-    size_t rPtr;
-    size_t wPtr;
+    struct CACHE_ALIGNED_T Node {
+        std::atomic<Node*> next;
+        T data;
 
-    void resize(size_t nobj) {
-        size_t oldSize = dsize;
-        if ( oldSize < nobj ) {
-            size_t newSize = nobj;
-            size_t remain = nobj % page;
-            if ( remain ) {
-                newSize += (page - remain);
-            }
-            data.resize( newSize );
-            if ( oldSize ) {
-                rPtr = rPtr % oldSize;
-                wPtr = wPtr % oldSize;
-            }
-            dsize = newSize;
-        }
-    }
+        Node() : next(nullptr) { }
+    };
+
+    CACHE_ALIGNED(Node*, first);
+    CACHE_ALIGNED(Node*, last);
+    CACHE_ALIGNED(Spinlock, consumerLock);
+    CACHE_ALIGNED(Spinlock, producerLock);
 
 public:
-    UnboundedQueue() :
-        dsize(0), page(0), rPtr(0), wPtr(0)
-    {
-        page = 4096 / sizeof(T);
-        resize(page);
+    UnboundedQueue() {
+        /* 'first' is a dummy value */
+        first = last = new Node();
     }
 
-    size_t size() const
-    {
-        return (wPtr - rPtr);
-    }
-
-    bool empty() const
-    {
-        return (rPtr == wPtr);
-    }
-
-    void insert(T arg)
-    {
-        latch.lock();
-        size_t t = wPtr++;
-        size_t space = 1 + (t - rPtr);
-        t %= dsize;
-        if ( space >= dsize ) {
-            resize(space);
+    ~UnboundedQueue() {
+        while( first != nullptr ) {      // release the list
+            Node* tmp = first;
+            first = tmp->next;
+            delete tmp;
         }
-        data[t] = arg;
-        latch.unlock();
     }
 
-    T remove()
-    {
-        latch.lock();
-        size_t t = rPtr++;
-        size_t p = t % dsize;
-        latch.unlock();
-        while ( t >= wPtr ) _mm_pause();
-        return data[p];
+    void insert(const T& t) {
+        Node* tmp = new Node();
+        tmp->data = t;
+        std::lock_guard<Spinlock> lock(producerLock);
+        last->next = tmp;         // publish to consumers
+        last = tmp;               // swing last forward
+    }
+
+    bool try_remove( T& result) {
+        std::lock_guard<Spinlock> lock(consumerLock);
+        Node* theFirst = first;
+        Node* theNext = first->next;
+        if( theNext != nullptr ) {     // if queue is nonempty
+            result = theNext->data;    // take it out
+            first = theNext;           // swing first forward
+            delete theFirst;           // delete the old dummy
+            return true;
+        }
+        return false;
+    }
+
+    T remove() {
+        while(1) {
+            T res;
+            if ( try_remove(res) ) {
+                return res;
+            }
+            _mm_pause();
+        }
     }
 
 };
-
 
 }
 }
