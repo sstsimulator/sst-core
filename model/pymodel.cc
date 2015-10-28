@@ -1144,11 +1144,6 @@ SSTPythonModelDefinition::~SSTPythonModelDefinition() {
     gModel = NULL;
 
     if ( NULL != namePrefix ) free(namePrefix);
-
-    // Shut Python engine down, this consumes a fair amount of resources
-    // according to some guides so we may need to do this earlier (after
-    // model generation or be quick to free the model definition.
-    Py_Finalize();
 }
 
 
