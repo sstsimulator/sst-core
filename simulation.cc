@@ -258,20 +258,26 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
             RankInfo rank[2];
             rank[0] = comps[clink.component[0]].rank;
             rank[1] = comps[clink.component[1]].rank;
-            // We only care about links that are on the same rank, but
+            // We only care about links that are on my rank, but
             // different threads
-            // if ( rank[0] == rank[1] ) continue;
-            // if ( rank[0].rank != rank[1].rank ) continue;
-            if ( rank[0] == rank[1] || 
-                 rank[0].rank != rank[1].rank ) continue;
-            else {
-                if ( clink.getMinLatency() < interThreadMinLatency ) {
-                    interThreadMinLatency = clink.getMinLatency();
-                }
+
+            // Neither endpoint is on my rank
+            if ( rank[0].rank != my_rank.rank && rank[1].rank != my_rank.rank ) continue;
+            // Rank and thread are the same
+            if ( rank[0] == rank[1] ) continue;
+            // Different ranks, so doesn't affect interthread dependencies
+            if ( rank[0].rank != rank[1].rank ) continue;
+
+            // At this point, we know that both endpoints are on this
+            // rank, but on diffrent threads.  Therefore, they
+            // contribute to the interThreadMinLatency.
+            if ( clink.getMinLatency() < interThreadMinLatency ) {
+                interThreadMinLatency = clink.getMinLatency();
             }
 
-            // Keep track of minimum latency for each other thread
-            // separately
+            // No check only those latencies that directly impact this
+            // thread.  Keep track of minimum latency for each other
+            // thread separately
             if ( rank[0].thread == my_rank.thread) { 
                 if ( clink.getMinLatency() < interThreadLatencies[rank[1].thread] ) {
                     interThreadLatencies[rank[1].thread] = clink.getMinLatency();
