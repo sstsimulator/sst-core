@@ -18,6 +18,10 @@
 
 #include <map>
 
+#ifdef SST_CONFIG_HAVE_MPI
+#include <mpi.h>
+#endif   
+
 namespace SST {
 
 class SyncQueue;
@@ -65,6 +69,10 @@ private:
         char* rbuf; // receive buffer
         std::vector<Activity*> activity_vec;
         uint32_t local_size;
+        bool done;
+#ifdef SST_CONFIG_HAVE_MPI
+        MPI_Request req;
+#endif   
     };
     
     // typedef std::map<int, std::pair<SyncQueueC*, std::vector<char>* > > comm_map_t;

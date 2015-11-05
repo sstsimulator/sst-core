@@ -241,8 +241,11 @@ RankSyncParallelSkip::exchange_master(int thread)
     for (auto i = comm_recv_map.begin() ; i != comm_recv_map.end() ; ++i) {
         // Post all the receives
         int tag = 2 * i->second.local_thread;
+        i->second.done = false;
+        // MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE,
+        //           i->second.remote_rank, tag, MPI_COMM_WORLD, &rreqs[rreq_count++]);
         MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE,
-                  i->second.remote_rank, tag, MPI_COMM_WORLD, &rreqs[rreq_count++]);
+                  i->second.remote_rank, tag, MPI_COMM_WORLD, &i->second.req);
     }
 
     // Do all the sends, but if there are no sends to do, then help
@@ -282,15 +285,57 @@ RankSyncParallelSkip::exchange_master(int thread)
             _mm_pause();
         }
     }
+
+    // Do all the receives as they arrive
+    int receives_to_process = comm_recv_map.size();
+    while ( receives_to_process != 0 ) {
+        for (auto i = comm_recv_map.begin() ; i != comm_recv_map.end() ; ++i) {
+            if ( !i->second.done ) {
+                int flag;
+                MPI_Test(&i->second.req, &flag , MPI_STATUS_IGNORE);
+                if ( flag ) {
+                    receives_to_process--;
+                    i->second.done = true;
+
+                    // Get the buffer and deserialize all the events
+                    char* buffer = i->second.rbuf;
+        
+                    SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(buffer);
+                    unsigned int size = hdr->buffer_size;
+                    int mode = hdr->mode;
+        
+                    if ( mode == 1 ) {
+                        // May need to resize the buffer
+                        if ( size > i->second.local_size ) {
+                            delete[] i->second.rbuf;
+                            i->second.rbuf = new char[size];
+                            i->second.local_size = size;
+                        }
+                        MPI_Recv(i->second.rbuf, i->second.local_size, MPI_BYTE,
+                                 i->second.remote_rank, 2 * i->second.local_thread + 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+                        buffer = i->second.rbuf;
+                        
+                    }
+        
+                    // deserializeMessage(&(i->second));
+                    // std::vector<Activity*>& activities = i->second.activity_vec;
+
+                    deserialize_queue[i->second.local_thread].insert(&(i->second));
+                    
+                }
+            }
+        }
+    }
     
     // Wait for all sends and recvs to complete
-    Simulation* sim = Simulation::getSimulation();
-    SimTime_t current_cycle = sim->getCurrentSimCycle();
+    // Simulation* sim = Simulation::getSimulation();
+    // SimTime_t current_cycle = sim->getCurrentSimCycle();
     
-    auto waitStart = SST::Core::Profile::now();
-    MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
-    mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
+    // auto waitStart = SST::Core::Profile::now();
+    // MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
+    // mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
     
+/*
     for (auto i = comm_recv_map.begin() ; i != comm_recv_map.end() ; ++i) {
         // Get the buffer and deserialize all the events
         char* buffer = i->second.rbuf;
@@ -319,14 +364,14 @@ RankSyncParallelSkip::exchange_master(int thread)
         deserialize_queue[i->second.local_thread].insert(&(i->second));
         
     }
-
+*/
     // For now simply call exchange_slave() to deliver events
     exchange_slave(0);
 
     // Clear the SyncQueues used to send the data after all the sends have completed
-    waitStart = SST::Core::Profile::now();
+    // waitStart = SST::Core::Profile::now();
     MPI_Waitall(sreq_count, sreqs, MPI_STATUSES_IGNORE);
-    mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
+    // mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
     
     for (auto i = comm_send_map.begin() ; i != comm_send_map.end() ; ++i) {
         i->second.squeue->clear();
