@@ -141,6 +141,7 @@ void Simulation::shutdown()
 Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
     runMode(cfg->runMode),
     timeVortex(NULL),
+    interThreadMinLatency(MAX_SIMTIME_T),
     threadSync(NULL),
     currentSimCycle(0),
     endSimCycle(0),
@@ -246,7 +247,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
         interThreadLatencies[i] = MAX_SIMTIME_T;
     }
 
-    interThreadDependencies = false;
+    interThreadMinLatency = MAX_SIMTIME_T;
     if ( num_ranks.thread > 1 ) {
         // Need to determine the lookahead for the thread synchronization
         ConfigComponentMap_t comps = graph.getComponentMap();
@@ -263,7 +264,11 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
             // if ( rank[0].rank != rank[1].rank ) continue;
             if ( rank[0] == rank[1] || 
                  rank[0].rank != rank[1].rank ) continue;
-            else interThreadDependencies = true;
+            else {
+                if ( clink.getMinLatency() < interThreadMinLatency ) {
+                    interThreadMinLatency = clink.getMinLatency();
+                }
+            }
 
             // Keep track of minimum latency for each other thread
             // separately
