@@ -100,15 +100,7 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::
     // Need to check to see if there are any inter-thread
     // dependencies.  If not, EmptyThreadSync, otherwise use one
     // of the active threadsyncs.
-    bool interthread_deps = false;
-    const std::vector<SimTime_t>& deps = sim->getInterThreadLatencies();
-    for ( int i = 0; i < deps.size(); i++ ) {
-        if ( deps[i] != MAX_SIMTIME_T ) {
-            interthread_deps = true;
-            break;
-        }
-    }
-
+    bool interthread_deps = sim->getInterThreadDependencies();
     if ( num_ranks.thread > 1 && interthread_deps ) {
         threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, rank.thread, Simulation::getSimulation());
     }

@@ -241,12 +241,12 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
     }
 
     // Get the minimum latencies for links between the various threads
-    
     interThreadLatencies.resize(num_ranks.thread);
     for ( int i = 0; i < interThreadLatencies.size(); i++ ) {
         interThreadLatencies[i] = MAX_SIMTIME_T;
     }
 
+    interThreadDependencies = false;
     if ( num_ranks.thread > 1 ) {
         // Need to determine the lookahead for the thread synchronization
         ConfigComponentMap_t comps = graph.getComponentMap();
@@ -259,8 +259,12 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
             rank[1] = comps[clink.component[1]].rank;
             // We only care about links that are on the same rank, but
             // different threads
-            if ( rank[0] == rank[1] ) continue;
-            if ( rank[0].rank != rank[1].rank ) continue;
+            // if ( rank[0] == rank[1] ) continue;
+            // if ( rank[0].rank != rank[1].rank ) continue;
+            if ( rank[0] == rank[1] || 
+                 rank[0].rank != rank[1].rank ) continue;
+            else interThreadDependencies = true;
+
             // Keep track of minimum latency for each other thread
             // separately
             if ( rank[0].thread == my_rank.thread) { 
