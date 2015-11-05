@@ -185,7 +185,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
     // TraceFunction trace(CALL_INFO_LONG);
     int my_recv_count = recv_count[thread];
 
-    // Do nothing until there are events to be sent on this threads
+    // Do nothing until there are events to be sent on this thread's
     // links
     Simulation* sim = Simulation::getSimulation();
     SimTime_t current_cycle = sim->getCurrentSimCycle();
@@ -245,32 +245,42 @@ RankSyncParallelSkip::exchange_master(int thread)
                   i->second.remote_rank, tag, MPI_COMM_WORLD, &rreqs[rreq_count++]);
     }
 
-    // Do all the sends
+    // Do all the sends, but if there are no sends to do, then help
+    // with serialization
     int my_send_count = send_count;
     comm_send_pair* send;
     while ( my_send_count != 0 ) {
-        while ( !send_queue.try_remove(send) ) _mm_pause();
-        my_send_count--;
+        if ( send_queue.try_remove(send) ) {
+            my_send_count--;
     
-        char* send_buffer = send->sbuf;
-        // Cast to Header so we can get/fill in data
-        SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
-        int tag = 2 * send->to_rank.thread;
-        // Check to see if remote queue is big enough for data
-        if ( send->remote_size < hdr->buffer_size ) {
-            // not big enough, send message that will tell remote side to get larger buffer
-            hdr->mode = 1;
-            MPI_Isend(send_buffer, sizeof(SyncQueue::Header), MPI_BYTE,
+            char* send_buffer = send->sbuf;
+            // Cast to Header so we can get/fill in data
+            SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
+            int tag = 2 * send->to_rank.thread;
+            // Check to see if remote queue is big enough for data
+            if ( send->remote_size < hdr->buffer_size ) {
+                // not big enough, send message that will tell remote side to get larger buffer
+                hdr->mode = 1;
+                MPI_Isend(send_buffer, sizeof(SyncQueue::Header), MPI_BYTE,
+                          send->to_rank.rank/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
+                send->remote_size = hdr->buffer_size;
+                tag = 2 * send->to_rank.thread + 1;
+            }
+            else {
+                hdr->mode = 0;
+            }
+            MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE,
                       send->to_rank.rank/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
-            send->remote_size = hdr->buffer_size;
-            tag = 2 * send->to_rank.thread + 1;
+        }
+        else if ( serialize_queue.try_remove(send) ) {
+            // Serialize the events
+            send->sbuf = send->squeue->getData();
+            // Send back to master to do MPI send
+            send_queue.try_insert(send);
         }
         else {
-            hdr->mode = 0;
+            _mm_pause();
         }
-        MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE,
-                  send->to_rank.rank/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
-        
     }
     
     // Wait for all sends and recvs to complete
