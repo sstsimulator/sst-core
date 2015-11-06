@@ -54,7 +54,7 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, Core::ThreadSafe:
     for ( int i = 0; i < num_ranks.thread; i++ ) {
         recv_count[i] = 0;
     }
-    deserialize_queue = new SST::Core::ThreadSafe::UnboundedQueue<comm_recv_pair*>[num_ranks.thread];
+    link_send_queue = new SST::Core::ThreadSafe::UnboundedQueue<comm_recv_pair*>[num_ranks.thread];
 }
 
 RankSyncParallelSkip::~RankSyncParallelSkip()
@@ -75,7 +75,7 @@ RankSyncParallelSkip::~RankSyncParallelSkip()
     link_map.clear();
 
     delete[] recv_count;
-    delete[] deserialize_queue;
+    delete[] link_send_queue;
 
     if ( mpiWaitTime > 0.0 || deserializeTime > 0.0 )
         Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "RankSyncParallelSkip mpiWait: %lg sec  deserializeWait:  %lg sec\n", mpiWaitTime, deserializeTime);
@@ -126,6 +126,7 @@ RankSyncParallelSkip::finalizeLinkConfigurations() {
 
     // Set the size of the BoundedQueue that is the work queue for
     // serializations
+    deserialize_queue.initialize(comm_recv_map.size());
     serialize_queue.initialize(comm_send_map.size());
     send_queue.initialize(comm_send_map.size());
 }
@@ -189,27 +190,39 @@ RankSyncParallelSkip::exchange_slave(int thread)
     // links
     Simulation* sim = Simulation::getSimulation();
     SimTime_t current_cycle = sim->getCurrentSimCycle();
-    while ( my_recv_count != 0 ) {
-        // while ( deserialize_queue[thread].empty() ) _mm_pause();
-        comm_recv_pair* recv = deserialize_queue[thread].remove();        
-        my_recv_count--;
 
-        deserializeMessage(recv);
-        std::vector<Activity*>& activities = recv->activity_vec;
+    // Two things left to do.  Deserialize receives and send
+    // deserialized events on the proper link.  Will preferentially
+    // send first.
+    comm_recv_pair* recv;
+    while ( my_recv_count != 0 || remaining_deser.load() != 0 ) {
+        // Check to see if there are sends to be done.
+        if ( link_send_queue[thread].try_remove(recv) ) {
+
+            // comm_recv_pair* recv = link_send_queue[thread].remove();        
+            my_recv_count--;
+
+            std::vector<Activity*>& activities = recv->activity_vec;
         
-        for ( int i = 0; i < recv->activity_vec.size(); i++ ) {
-            Event* ev = static_cast<Event*>(recv->activity_vec[i]);
-            link_map_t::iterator link = link_map.find(ev->getLinkId());
-            if (link == link_map.end()) {
-                printf("Link not found in map!\n");
-                abort();
-            } else {
-                // Need to figure out what the "delay" is for this event.
-                SimTime_t delay = ev->getDeliveryTime() - current_cycle;
-                link->second->send(delay,ev);
+            for ( int i = 0; i < recv->activity_vec.size(); i++ ) {
+                Event* ev = static_cast<Event*>(recv->activity_vec[i]);
+                link_map_t::iterator link = link_map.find(ev->getLinkId());
+                if (link == link_map.end()) {
+                    printf("Link not found in map!\n");
+                    abort();
+                } else {
+                    // Need to figure out what the "delay" is for this event.
+                    SimTime_t delay = ev->getDeliveryTime() - current_cycle;
+                    link->second->send(delay,ev);
+                }
             }
+            recv->activity_vec.clear();
         }
-        recv->activity_vec.clear();
+        else if ( deserialize_queue.try_remove(recv) ) {
+            remaining_deser--;
+            deserializeMessage(recv);
+            link_send_queue[recv->local_thread].insert(recv);
+        }
     }
     barrier.wait();
     
@@ -236,12 +249,14 @@ RankSyncParallelSkip::exchange_master(int thread)
         serialize_queue.try_insert(&(i->second));
     }    
 
+    remaining_deser = comm_recv_map.size();
+    
     barrier.wait();
     
     for (auto i = comm_recv_map.begin() ; i != comm_recv_map.end() ; ++i) {
         // Post all the receives
         int tag = 2 * i->second.local_thread;
-        i->second.done = false;
+        i->second.recv_done = false;
         // MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE,
         //           i->second.remote_rank, tag, MPI_COMM_WORLD, &rreqs[rreq_count++]);
         MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE,
@@ -290,12 +305,12 @@ RankSyncParallelSkip::exchange_master(int thread)
     int receives_to_process = comm_recv_map.size();
     while ( receives_to_process != 0 ) {
         for (auto i = comm_recv_map.begin() ; i != comm_recv_map.end() ; ++i) {
-            if ( !i->second.done ) {
+            if ( !i->second.recv_done ) {
                 int flag;
                 MPI_Test(&i->second.req, &flag , MPI_STATUS_IGNORE);
                 if ( flag ) {
                     receives_to_process--;
-                    i->second.done = true;
+                    i->second.recv_done = true;
 
                     // Get the buffer and deserialize all the events
                     char* buffer = i->second.rbuf;
@@ -317,11 +332,8 @@ RankSyncParallelSkip::exchange_master(int thread)
                         
                     }
         
-                    // deserializeMessage(&(i->second));
-                    // std::vector<Activity*>& activities = i->second.activity_vec;
-
-                    deserialize_queue[i->second.local_thread].insert(&(i->second));
-                    
+                    // link_send_queue[i->second.local_thread].insert(&(i->second));
+                    deserialize_queue.try_insert(&(i->second));
                 }
             }
         }
@@ -361,7 +373,7 @@ RankSyncParallelSkip::exchange_master(int thread)
         // deserializeMessage(&(i->second));
         // std::vector<Activity*>& activities = i->second.activity_vec;
 
-        deserialize_queue[i->second.local_thread].insert(&(i->second));
+        link_send_queue[i->second.local_thread].insert(&(i->second));
         
     }
 */

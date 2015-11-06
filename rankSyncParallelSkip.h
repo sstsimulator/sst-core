@@ -69,7 +69,7 @@ private:
         char* rbuf; // receive buffer
         std::vector<Activity*> activity_vec;
         uint32_t local_size;
-        bool done;
+        bool recv_done;
 #ifdef SST_CONFIG_HAVE_MPI
         MPI_Request req;
 #endif   
@@ -90,7 +90,10 @@ private:
 
     int* recv_count;
     int send_count;
-    SST::Core::ThreadSafe::UnboundedQueue<comm_recv_pair*>* deserialize_queue;
+
+    std::atomic<int32_t> remaining_deser;
+    SST::Core::ThreadSafe::BoundedQueue<comm_recv_pair*> deserialize_queue;
+    SST::Core::ThreadSafe::UnboundedQueue<comm_recv_pair*>* link_send_queue;
     SST::Core::ThreadSafe::BoundedQueue<comm_send_pair*> serialize_queue;
     SST::Core::ThreadSafe::BoundedQueue<comm_send_pair*> send_queue;
     
