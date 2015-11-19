@@ -13,5 +13,5 @@
 #include <sst_config.h>
 #include "sst/core/interfaces/simpleMem.h"
 
-uint64_t SST::Interfaces::SimpleMem::Request::main_id = 0;
+std::atomic<uint64_t> SST::Interfaces::SimpleMem::Request::main_id(0);
 

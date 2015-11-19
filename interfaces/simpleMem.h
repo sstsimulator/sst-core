@@ -17,6 +17,7 @@
 #include <string>
 #include <utility>
 #include <map>
+#include <atomic>
 
 #include <sst/core/sst_types.h>
 #include <sst/core/module.h>
@@ -85,7 +86,6 @@ public:
             cmd(cmd), addr(addr), size(size), data(data), flags(flags), groupId(0),
 		instrPtr(0), virtualAddr(0)
         {
-            // TODO:  If we support threading in the future, this should be made atomic
             id = main_id++;
         }
 
@@ -94,7 +94,6 @@ public:
             cmd(cmd), addr(addr), size(size), flags(flags), groupId(0),
 		instrPtr(0), virtualAddr(0)
         {
-            // TODO:  If we support threading in the future, this should be made atomic
             id = main_id++;
         }
 
@@ -154,7 +153,7 @@ public:
 	}
 
     private:
-        static id_t main_id;
+        static std::atomic<id_t> main_id;
     };
 
     /** Functor classes for Clock handling */
