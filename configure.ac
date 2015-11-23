@@ -28,7 +28,7 @@ AC_CANONICAL_HOST
 AC_CACHE_SAVE
 AC_HEADER_TIME
 
-LT_CONFIG_LTDL_DIR([sst/core/libltdl])
+LT_CONFIG_LTDL_DIR([src/libltdl])
 LT_INIT([shared disable-static dlopen])
 LTDL_INIT([recursive])
 
