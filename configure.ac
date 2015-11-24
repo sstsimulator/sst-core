@@ -35,6 +35,7 @@ LTDL_INIT([recursive])
 AC_SUBST([LTDLINCL])
 AC_SUBST([LIBLTDL])
 
+SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 SST_CHECK_LIBZ()
 
 SST_CHECK_ZOLTAN([have_zoltan=1],[have_zoltan=0],[AC_MSG_ERROR([Zoltan requested but not found])])
