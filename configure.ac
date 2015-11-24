@@ -52,7 +52,7 @@ AC_SUBST([LTDLINCL])
 AC_SUBST([LIBLTDL])
 
 dnl Fix flags - seems to be only way to make libltdl play nice
-CPPFLAGS='-I$(top_builddir) -I$(top_srcdir)'" $CPPFLAGS"
+CPPFLAGS='-I$(top_builddir) -I$(top_srcdir) -I$(top_srcdir)/src'" $CPPFLAGS"
 
 AC_HEADER_TIME
 AC_CHECK_HEADERS([c_asm.h dlfcn.h intrinsics.h mach/mach_time.h sys/time.h sys/stat.h sys/types.h unistd.h])
@@ -68,8 +68,6 @@ AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],
 AM_CONDITIONAL([HAVE_ZOLTAN], [test "$have_zoltan" = 1])
 
 AC_CACHE_SAVE
-
-echo "WE ARE DONE WITH THE MAIN CONFIGURE NOW GENERATE THE OUTPUT .."
 
 AC_CONFIG_FILES([
   Makefile

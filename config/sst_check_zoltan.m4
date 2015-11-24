@@ -19,7 +19,7 @@ AC_DEFUN([SST_CHECK_ZOLTAN],
 
   AS_IF([test "$with_zoltan" = "no"], [sst_check_zoltan_happy="no"])
 
-  SST_CHECK_PARMETIS([ AC_DEFINE([HAVE_PARMETIS], [1], [Define if you have the ParMETIS library.])] )
+#  SST_CHECK_PARMETIS([ AC_DEFINE([HAVE_PARMETIS], [1], [Define if you have the ParMETIS library.])] )
 
 #  AS_IF([test "$sst_check_zoltan_happy" = "yes"], 
 #        [SST_CHECK_PARMETIS([AC_DEFINE([HAVE_PARMETIS], [1], [Define if you have the Parmetis library.])], [sst_check_zoltan_happy="no"])])

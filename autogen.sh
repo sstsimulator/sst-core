@@ -4,16 +4,16 @@ LIBTOOL=libtool
 LIBTOOLIZE=libtoolize
 
 # Delete the old libtool output
-rm -rf libltdl src/libltdl
+rm -rf libltdl src/sst/core/libltdl
 
 $LIBTOOLIZE --automake --copy --ltdl
 
 if test -d libltdl; then
 	echo "Moving libltdl to src .."
-	mv libltdl ./src/
+	mv libltdl ./src/sst/core
 fi
 
-if test ! -d src/libltdl ; then
+if test ! -d src/sst/core/libltdl ; then
     echo "libltdl doesn't exist.  Aborting."
     exit 1
 fi
