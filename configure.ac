@@ -35,6 +35,18 @@ LTDL_INIT([recursive])
 AC_SUBST([LTDLINCL])
 AC_SUBST([LIBLTDL])
 
+SST_CHECK_LIBZ()
+
+SST_CHECK_ZOLTAN([have_zoltan=1],[have_zoltan=0],[AC_MSG_ERROR([Zoltan requested but not found])])
+AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],
+	[Define if you have the Zoltan library.])])
+AM_CONDITIONAL([HAVE_ZOLTAN], [test "$have_zoltan" = 1])
+
+AC_CACHE_SAVE
+
+AC_HEADER_TIME
+AC_CHECK_HEADERS([c_asm.h dlfcn.h intrinsics.h mach/mach_time.h sys/time.h sys/stat.h sys/types.h unistd.h])
+
 AC_CACHE_SAVE
 
 AC_CONFIG_FILES([
