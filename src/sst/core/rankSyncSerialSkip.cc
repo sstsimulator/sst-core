@@ -1,0 +1,539 @@
+// Copyright 2009-2015 Sandia Corporation. Under the terms
+// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// Government retains certain rights in this software.
+// 
+// Copyright (c) 2009-2015, Sandia Corporation
+// All rights reserved.
+// 
+// This file is part of the SST software package. For license
+// information, see the LICENSE file in the top level directory of the
+// distribution.
+
+#include "sst_config.h"
+#include "sst/core/rankSyncSerialSkip.h"
+
+#include "sst/core/serialization.h"
+#include "sst/core/sync.h"
+
+#include "sst/core/event.h"
+#include "sst/core/exit.h"
+#include "sst/core/link.h"
+#include "sst/core/simulation.h"
+#include "sst/core/syncQueue.h"
+#include "sst/core/timeConverter.h"
+#include "sst/core/profile.h"
+
+#include <boost/archive/polymorphic_binary_iarchive.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+#include <boost/iostreams/stream.hpp>
+
+#ifdef SST_CONFIG_HAVE_MPI
+#include <mpi.h>
+#endif
+
+
+namespace SST {
+
+// Static Data Members
+SimTime_t RankSyncSerialSkip::myNextSyncTime = 0;
+
+#if 0
+/**
+   Class that implements the slave functionality for rank syncs.
+ */
+class SyncSlave : public Action {
+public:
+    SyncSlave(Core::ThreadSafe::Barrier&, TimeConverter* period);
+    virtual ~SyncSlave();
+    void execute();
+    void print(const std::string& header, Output &out) const;
+
+private:
+    Core::ThreadSafe::Barrier& barrier;
+    TimeConverter* period;
+    double totalWait;
+};
+
+SyncSlave::SyncSlave(Core::ThreadSafe::Barrier& barrier, TimeConverter* period) :
+    Action(),
+    barrier(barrier),
+    period(period),
+    totalWait(0.0)
+{
+    setPriority(SYNCPRIORITY);
+}
+
+SyncSlave::~SyncSlave()
+{
+    if ( totalWait > 0.0 )
+        Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "SyncSlave total Barrier wait time: %lg sec\n", totalWait);
+}
+
+void SyncSlave::execute() {
+    totalWait += barrier.wait();
+    totalWait += barrier.wait();
+    SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
+    Simulation::getSimulation()->insertActivity( next, this );
+}
+
+void
+SyncSlave::print(const std::string& header, Output &out) const
+{
+    out.output("%s SyncSlave with period %" PRIu64 " to be delivered at %" PRIu64
+               " with priority %d\n",
+               header.c_str(), period->getFactor(), getDeliveryTime(), getPriority());
+}
+
+/**
+   Class that implements the master functionality for rank syncs.
+ */
+class SyncMaster : public Action {
+public:
+    SyncMaster(RankSyncSerialSkip* sync, Core::ThreadSafe::Barrier&, TimeConverter* period);
+    virtual ~SyncMaster();
+    void execute();
+    void print(const std::string& header, Output &out) const;
+
+private:
+    RankSyncSerialSkip* sync;
+    Core::ThreadSafe::Barrier& barrier;
+    TimeConverter* period;
+    double totalWait;
+};
+
+SyncMaster::SyncMaster(RankSyncSerialSkip* sync, Core::ThreadSafe::Barrier& barrier, TimeConverter* period) :
+    Action(),
+    sync(sync),
+    barrier(barrier),
+    period(period),
+    totalWait(0.0)
+{
+    setPriority(SYNCPRIORITY);
+}
+
+SyncMaster::~SyncMaster()
+{
+    if ( totalWait > 0.0 )
+        Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "SyncSlave total Barrier wait time: %lg sec\n", totalWait);
+}
+
+
+void SyncMaster::execute() {
+    totalWait += barrier.wait();
+    sync->execute();
+    totalWait += barrier.wait();
+    SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
+    Simulation::getSimulation()->insertActivity( next, this );
+}
+
+void
+SyncMaster::print(const std::string& header, Output &out) const
+{
+    out.output("%s SyncMaster with period %" PRIu64 " to be delivered at %" PRIu64
+               " with priority %d\n",
+               header.c_str(), period->getFactor(), getDeliveryTime(), getPriority());
+}
+#endif
+
+///// RankSyncSerialSkip class /////
+
+#if 0
+Action*
+RankSyncSerialSkip::getSlaveAction()
+{
+    if ( max_period == NULL ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,1,"Call to getSlaveAction() before call to setMaxPeriod().  Exiting...\n");
+    }
+    return new SyncSlave(barrier,max_period);
+}
+
+Action*
+RankSyncSerialSkip::getMasterAction()
+{
+    if ( max_period == NULL ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,1,"Call to getMasterAction() before call to setMaxPeriod().  Exiting...\n");
+    }
+    return new SyncMaster(this,barrier,max_period);
+}
+#endif
+    
+RankSyncSerialSkip::RankSyncSerialSkip(Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC) :
+    NewRankSync(),
+    minPartTC(minPartTC),
+    mpiWaitTime(0.0),
+    deserializeTime(0.0),
+    barrier(barrier)
+{
+    max_period = Simulation::getSimulation()->getMinPartTC();
+    myNextSyncTime = max_period->getFactor();
+}
+
+RankSyncSerialSkip::~RankSyncSerialSkip()
+{
+    for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
+        delete i->second.squeue;
+    }
+    comm_map.clear();
+    
+    for (link_map_t::iterator i = link_map.begin() ; i != link_map.end() ; ++i) {
+        delete i->second;
+    }
+    link_map.clear();
+
+    if ( mpiWaitTime > 0.0 || deserializeTime > 0.0 )
+        Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "RankSyncSerialSkip mpiWait: %lg sec  deserializeWait:  %lg sec\n", mpiWaitTime, deserializeTime);
+}
+    
+ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link)
+{
+    // TraceFunction trace(CALL_INFO_LONG);
+    SyncQueue* queue;
+    if ( comm_map.count(to_rank.rank) == 0 ) {
+        queue = comm_map[to_rank.rank].squeue = new SyncQueue();
+        comm_map[to_rank.rank].rbuf = new char[4096];
+        comm_map[to_rank.rank].local_size = 4096;
+        comm_map[to_rank.rank].remote_size = 4096;
+    } else {
+        queue = comm_map[to_rank.rank].squeue;
+    }
+	
+    link_map[link_id] = link;
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+    link->setSendingComponentInfo("SYNC", "SYNC", "");
+#endif
+    // trace.getOutput().output(CALL_INFO,"queue = %p\n",queue);
+    return queue;
+}
+
+void
+RankSyncSerialSkip::finalizeLinkConfigurations() {
+    // TraceFunction trace(CALL_INFO_LONG);
+    for (link_map_t::iterator i = link_map.begin() ; i != link_map.end() ; ++i) {
+        // i->second->finalizeConfiguration();
+        finalizeConfiguration(i->second);
+    }
+}
+
+uint64_t
+RankSyncSerialSkip::getDataSize() const {
+    size_t count = 0;
+    for ( comm_map_t::const_iterator it = comm_map.begin();
+          it != comm_map.end(); ++it ) {
+        count += (it->second.squeue->getDataSize() + it->second.local_size);
+    }
+    return count;
+}
+
+void
+RankSyncSerialSkip::execute(int thread)
+{
+    if ( thread == 0 ) {
+        // totalWait += barrier.wait();
+        barrier.wait();
+        exchange();
+        // totalWait += barrier.wait();
+        barrier.wait();
+        // SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
+        // Simulation::getSimulation()->insertActivity( next, this );
+    }
+    else {
+        // totalWait += barrier.wait();
+        // totalWait += barrier.wait();
+        barrier.wait();
+        barrier.wait();
+        // SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
+        // Simulation::getSimulation()->insertActivity( next, this );
+    }
+}
+
+void
+RankSyncSerialSkip::exchange(void)
+{
+    // Simulation::getSimulation()->getSimulationOutput().output("Entering RankSyncSerialSkip::execute()\n");
+    // static Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
+#ifdef SST_CONFIG_HAVE_MPI
+    // std::vector<boost::mpi::request> pending_requests;
+    
+    //Maximum number of outstanding requests is 3 times the number
+    // of ranks I communicate with (1 recv, 2 sends per rank)
+    MPI_Request sreqs[2 * comm_map.size()];
+    MPI_Request rreqs[comm_map.size()];
+    int sreq_count = 0;
+    int rreq_count = 0;
+    
+    for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
+        
+        // Do all the sends
+        // Get the buffer from the syncQueue
+        char* send_buffer = i->second.squeue->getData();
+        // Cast to Header so we can get/fill in data
+        SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
+        // Simulation::getSimulation()->getSimulationOutput().output("Data size = %d\n", hdr->buffer_size);
+        int tag = 1;
+        // Check to see if remote queue is big enough for data
+        if ( i->second.remote_size < hdr->buffer_size ) {
+            // not big enough, send message that will tell remote side to get larger buffer
+            hdr->mode = 1;
+            MPI_Isend(send_buffer, sizeof(SyncQueue::Header), MPI_BYTE,
+                      i->first/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
+            i->second.remote_size = hdr->buffer_size;
+            tag = 2;
+        }
+        else {
+            hdr->mode = 0;
+        }
+        MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE,
+                  i->first/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
+        
+        // Post all the receives
+        MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE,
+                  i->first, 1, MPI_COMM_WORLD, &rreqs[rreq_count++]);
+    }
+    
+    // Wait for all sends and recvs to complete
+    Simulation* sim = Simulation::getSimulation();
+    SimTime_t current_cycle = sim->getCurrentSimCycle();
+    
+    auto waitStart = SST::Core::Profile::now();
+    MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
+    mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
+    
+    for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
+        // Get the buffer and deserialize all the events
+        char* buffer = i->second.rbuf;
+        
+        SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(buffer);
+//            int count = hdr->count;
+        unsigned int size = hdr->buffer_size;
+        int mode = hdr->mode;
+        
+        if ( mode == 1 ) {
+            // May need to resize the buffer
+            if ( size > i->second.local_size ) {
+                delete[] i->second.rbuf;
+                i->second.rbuf = new char[size];
+                i->second.local_size = size;
+            }
+            MPI_Recv(i->second.rbuf, i->second.local_size, MPI_BYTE,
+                     i->first, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            buffer = i->second.rbuf;
+        }
+        
+        auto deserialStart = SST::Core::Profile::now();
+        boost::iostreams::basic_array_source<char> source(&buffer[sizeof(SyncQueue::Header)],size-sizeof(SyncQueue::Header));
+        boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
+        boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header | boost::archive::no_tracking );
+        deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
+
+        std::vector<Activity*> activities;
+        ia >> activities;
+        for ( unsigned int j = 0; j < activities.size(); j++ ) {
+            
+            Event* ev = static_cast<Event*>(activities[j]);
+            link_map_t::iterator link = link_map.find(ev->getLinkId());
+            if (link == link_map.end()) {
+                printf("Link not found in map!\n");
+                abort();
+            } else {
+                // Need to figure out what the "delay" is for this event.
+                SimTime_t delay = ev->getDeliveryTime() - current_cycle;
+                link->second->send(delay,ev);
+            }
+        }
+        
+        // for ( int j = 0; j < count; j++ ) {
+        //     Event* ev;
+        //     ia >> ev;
+        
+        //     link_map_t::iterator link = link_map.find(ev->getLinkId());
+        //     if (link == link_map.end()) {
+        //         printf("Link not found in map!\n");
+        //         abort();
+        //     } else {
+        //         // Need to figure out what the "delay" is for this event.
+        //         SimTime_t delay = ev->getDeliveryTime() - current_cycle;
+        //         link->second->send(delay,ev);
+        //     }
+        // }
+    }
+
+    // Clear the SyncQueues used to send the data after all the sends have completed
+    waitStart = SST::Core::Profile::now();
+    MPI_Waitall(sreq_count, sreqs, MPI_STATUSES_IGNORE);
+    mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
+    
+    for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
+        i->second.squeue->clear();
+    }
+    
+    // If we have an Exit object, fire it to see if we need end simulation
+    // if ( exit != NULL ) exit->check();
+    
+    // Check to see when the next event is scheduled, then do an
+    // all_reduce with min operator and set next sync time to be
+    // min + max_period.
+
+    // Need to get the local minimum, then do a global minimum
+    // SimTime_t input = Simulation::getSimulation()->getNextActivityTime();
+    SimTime_t input = Simulation::getLocalMinimumNextActivityTime();
+    SimTime_t min_time;
+    MPI_Allreduce( &input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD );
+
+    myNextSyncTime = min_time + max_period->getFactor();
+    
+    // tmp_debug.output(CALL_INFO,"  my_time: %" PRIu64 ", min_time: %" PRIu64 "\n",input, min_time);
+    
+    // SimTime_t next = min_time + max_period->getFactor();
+    // sim->insertActivity( next, this );
+#endif
+}
+
+void
+RankSyncSerialSkip::exchangeLinkInitData(int thread, std::atomic<int>& msg_count)
+{
+    // TraceFunction trace(CALL_INFO_LONG);
+#ifdef SST_CONFIG_HAVE_MPI
+    if ( thread != 0 ) {
+        return;
+    }
+    //Maximum number of outstanding requests is 3 times the number
+    // of ranks I communicate with (1 recv, 2 sends per rank)
+    MPI_Request sreqs[2 * comm_map.size()];
+    MPI_Request rreqs[comm_map.size()];
+    int rreq_count = 0;
+    int sreq_count = 0;
+    
+    for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
+        
+        // Do all the sends
+        // Get the buffer from the syncQueue
+        char* send_buffer = i->second.squeue->getData();
+        // Cast to Header so we can get/fill in data
+        SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
+        int tag = 1;
+        // Check to see if remote queue is big enough for data
+        if ( i->second.remote_size < hdr->buffer_size ) {
+            // std::cout << i->second.remote_size << ", " << hdr->buffer_size << std::endl;
+            // not big enough, send message that will tell remote side to get larger buffer
+            hdr->mode = 1;
+            // std::cout << "MPI_Isend of header only to " << i->first << " with tag " << tag << std::endl;
+            MPI_Isend(send_buffer, sizeof(SyncQueue::Header), MPI_BYTE, i->first/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
+            i->second.remote_size = hdr->buffer_size;
+            tag = 2;
+        }
+        else {
+            hdr->mode = 0;
+        }
+        // std::cout << "MPI_Isend of whole buffer to " << i->first << " with tag " << tag << std::endl;
+        MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE, i->first/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
+        
+        // Post all the receives
+        MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->first, 1, MPI_COMM_WORLD, &rreqs[rreq_count++]);
+        
+    }
+    
+    // Wait for all recvs to complete
+    // std::cout << "Start waitall" << std::endl;
+    MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
+    // std::cout << "End waitall" << std::endl;
+    
+    
+    for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
+        
+        // Get the buffer and deserialize all the events
+        char* buffer = i->second.rbuf;
+        
+        SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(buffer);
+//            int count = hdr->count;
+        unsigned int size = hdr->buffer_size;
+        int mode = hdr->mode;
+        
+        if ( mode == 1 ) {
+            // May need to resize the buffer
+            if ( size > i->second.local_size ) {
+                delete[] i->second.rbuf;
+                i->second.rbuf = new char[size];
+                i->second.local_size = size;
+            }
+            MPI_Recv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->first, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            buffer = i->second.rbuf;
+        }
+        
+        boost::iostreams::basic_array_source<char> source(&buffer[sizeof(SyncQueue::Header)],size-sizeof(SyncQueue::Header));
+        boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
+        boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header | boost::archive::no_tracking );
+        
+        std::vector<Activity*> activities;
+        ia >> activities;
+        for ( unsigned int j = 0; j < activities.size(); j++ ) {
+            
+            Event* ev = static_cast<Event*>(activities[j]);
+            link_map_t::iterator link = link_map.find(ev->getLinkId());
+            if (link == link_map.end()) {
+                printf("Link not found in map!\n");
+                abort();
+            } else {
+                sendInitData_sync(link->second,ev);
+            }
+        }
+        
+        
+        // for ( int j = 0; j < count; j++ ) {
+        //     Event* ev;
+        //     ia >> ev;
+        
+        
+        //     link_map_t::iterator link = link_map.find(ev->getLinkId());
+        //     if (link == link_map.end()) {
+        //         printf("Link not found in map!\n");
+        //         abort();
+        //     } else {
+        //         sendInitData_sync(link->second,ev);
+        //     }
+        // }
+        
+        // Clear the receive vector
+        // tmp->clear();
+    }
+    
+    // Clear the SyncQueues used to send the data after all the sends have completed
+    MPI_Waitall(sreq_count, sreqs, MPI_STATUSES_IGNORE);
+    
+    for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
+        i->second.squeue->clear();
+    }
+    
+    // Do an allreduce to see if there were any messages sent
+    // boost::mpi::communicator world;
+    // int input = msg_count;
+    // int count;
+    // all_reduce( world, &input, 1, &count, std::plus<int>() );
+    // return count;
+    int input = msg_count;
+
+    int count;
+    MPI_Allreduce( &input, &count, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );
+    msg_count = count;
+#endif
+}
+
+template<class Archive>
+void
+RankSyncSerialSkip::serialize(Archive & ar, const unsigned int version)
+{
+    // printf("begin Sync::serialize\n");
+    // ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SyncBase);
+    // printf("  - Sync::period\n");
+    // // ar & BOOST_SERIALIZATION_NVP(period);
+    // printf("  - Sync::comm_map (%d)\n", (int) comm_map.size());
+    // ar & BOOST_SERIALIZATION_NVP(comm_map);
+    // printf("  - Sync::link_map (%d)\n", (int) link_map.size());
+    // ar & BOOST_SERIALIZATION_NVP(link_map);
+    // // don't serialize comm - let it be silently rebuilt at restart
+    // printf("end Sync::serialize\n");
+}
+
+
+} // namespace SST
+
+
