@@ -60,12 +60,15 @@ AC_CHECK_HEADERS([c_asm.h dlfcn.h intrinsics.h mach/mach_time.h sys/time.h sys/s
 AC_CACHE_SAVE
 
 SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
+SST_CHECK_BOOST([], [AC_MSG_ERROR([Could not find Boost, this is required for SST to build])])
 SST_CHECK_LIBZ()
 
 SST_CHECK_ZOLTAN([have_zoltan=1],[have_zoltan=0],[AC_MSG_ERROR([Zoltan requested but not found])])
 AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],
 	[Define if you have the Zoltan library.])])
 AM_CONDITIONAL([HAVE_ZOLTAN], [test "$have_zoltan" = 1])
+
+AC_DEFINE_UNQUOTED([SST_INSTALL_PREFIX], ["$prefix"], [Defines the location SST will be installed in])
 
 AC_CACHE_SAVE
 
