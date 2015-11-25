@@ -51,6 +51,14 @@ fi
 AC_SUBST([LTDLINCL])
 AC_SUBST([LIBLTDL])
 
+dnl Work out the C++ standard which we are going to use
+AX_CXX_COMPILE_STDCXX_1Y
+AX_CXX_COMPILE_STDCXX_0X
+
+AS_IF([test "x$found_cxx1y" = "xyes"],
+        [CXXFLAGS="$CXXFLAGS $SST_CXX1Y_FLAGS"],
+        [CXXFLAGS="$CXXFLAGS $SST_CXX0X_FLAGS"])
+
 dnl Fix flags - seems to be only way to make libltdl play nice
 CPPFLAGS='-I$(top_builddir) -I$(top_srcdir) -I$(top_srcdir)/src'" $CPPFLAGS"
 
@@ -61,7 +69,15 @@ AC_CACHE_SAVE
 
 SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 SST_CHECK_BOOST([], [AC_MSG_ERROR([Could not find Boost, this is required for SST to build])])
+
+SST_CHECK_BOOST_POLYMORPHIC_TYPE([uint64_t], [want_polymorphic=1], [want_polymorphic=0])
+SST_CHECK_BOOST_POLYMORPHIC_TYPE([long long], [], [want_polymorphic=0])
+AC_DEFINE_UNQUOTED([SST_WANT_POLYMORPHIC_ARCHIVE], [$want_polymorphic],
+  [defined to 1 if want boost polymorphic serialization archives])
+
+SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
 SST_CHECK_LIBZ()
+SST_CHECK_MEM_POOL()
 
 SST_CHECK_ZOLTAN([have_zoltan=1],[have_zoltan=0],[AC_MSG_ERROR([Zoltan requested but not found])])
 AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],

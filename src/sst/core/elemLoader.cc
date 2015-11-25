@@ -44,9 +44,11 @@
    Only do this when building with element libraries.
    */
 static void preload_symbols(void) {
-#ifndef __SST_BUILD_CORE_ONLY__
-    LTDL_SET_PRELOADED_SYMBOLS();
-#endif
+// README: This is only set if we are not building any elements
+// in the split up build this is now default so must always be called.
+//#ifndef __SST_BUILD_CORE_ONLY__
+//    LTDL_SET_PRELOADED_SYMBOLS();
+//#endif
 }
 
 namespace SST {

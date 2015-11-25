@@ -18,10 +18,12 @@ AC_DEFUN([SST_CHECK_BOOST], [
 		 CPPFLAGS="$BOOST_CPPFLAGS $CPPFLAGS"
 	    	 BOOST_LDFLAGS="-L$with_boost/lib"
 	         BOOST_LIBDIR="$with_boost/lib"
+		 BOOST_LIBS="-lboost_serialization -lboost_program_options"
 	         LDFLAGS="$BOOST_LDFLAGS $LDFLAGS"],
 		[BOOST_CPPFLAGS=
 		 BOOST_LDFLAGS=
 		 BOOST_LIBDIR=
+		 BOOST_LIBS=
   		])
 
 	WANT_BOOST_VERSION=105600
@@ -50,6 +52,7 @@ AC_DEFUN([SST_CHECK_BOOST], [
 	AC_SUBST([BOOST_CPPFLAGS])
 	AC_SUBST([BOOST_LDFLAGS])
 	AC_SUBST([BOOST_LIBDIR])
+	AC_SUBST([BOOST_LIBS])
 
 	AS_IF([test "$sst_check_boost_happy" = "yes"],
 		[AC_DEFINE([HAVE_BOOST], [1], [Set to 1 Boost was found])])

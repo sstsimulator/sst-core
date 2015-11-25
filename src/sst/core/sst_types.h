@@ -14,6 +14,8 @@
 
 //#include <sst_stdint.h>
 
+#include <cstdint>
+
 namespace SST {
 
 typedef unsigned long   ComponentId_t;

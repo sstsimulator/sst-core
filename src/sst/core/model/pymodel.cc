@@ -11,7 +11,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst/sst_config.h>
+#include "sst_config.h"
 #ifdef SST_CONFIG_HAVE_PYTHON
 #include <Python.h>
 
