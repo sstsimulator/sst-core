@@ -12,7 +12,7 @@
 #ifndef SST_CORE_SST_TYPES_H
 #define SST_CORE_SST_TYPES_H
 
-#include <sst_stdint.h>
+//#include <sst_stdint.h>
 
 namespace SST {
 

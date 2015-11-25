@@ -52,7 +52,9 @@ AC_DEFUN([SST_CHECK_BOOST], [
 	AC_SUBST([BOOST_LIBDIR])
 
 	AS_IF([test "$sst_check_boost_happy" = "yes"],
-		[AC_DEFINE([HAVE_BOOST], [1], [Set to 1 DRAMSim was found])])
+		[AC_DEFINE([HAVE_BOOST], [1], [Set to 1 Boost was found])])
+	AS_IF([test "$sst_check_boost_happy" = "yes"],
+		[AC_DEFINE_UNQUOTED([BOOST_LIBDIR], ["$BOOST_LIBDIR"], [Library directory where Boost can be found.])])
 	AS_IF([test "$sst_check_boost_happy" = "yes"], [$1], [$2])
 
 ])
