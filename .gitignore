@@ -17,3 +17,9 @@ sstsim.x
 sstinfo
 sstinfo.x
 build_info.h
+configure
+aclocal.m4
+autom4te.cache
+config.log
+config.status
+libtool
