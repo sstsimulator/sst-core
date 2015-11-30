@@ -1,4 +1,3 @@
-
 AC_DEFUN([SST_CHECK_BOOST], [
 
 	AC_ARG_WITH([boost], [AS_HELP_STRING([--with-boost@<:@=DIR@:>@],
@@ -18,7 +17,7 @@ AC_DEFUN([SST_CHECK_BOOST], [
 		 CPPFLAGS="$BOOST_CPPFLAGS $CPPFLAGS"
 	    	 BOOST_LDFLAGS="-L$with_boost/lib"
 	         BOOST_LIBDIR="$with_boost/lib"
-		 BOOST_LIBS="-lboost_serialization -lboost_program_options"
+		 BOOST_LIBS="-lboost_serialization"
 	         LDFLAGS="$BOOST_LDFLAGS $LDFLAGS"],
 		[BOOST_CPPFLAGS=
 		 BOOST_LDFLAGS=
@@ -27,6 +26,8 @@ AC_DEFUN([SST_CHECK_BOOST], [
   		])
 
 	WANT_BOOST_VERSION=105600
+
+	AC_MSG_CHECKING([Boost version is acceptable for SST])
 
 	AC_LANG_PUSH(C++)
 	AC_COMPILE_IFELSE(
@@ -41,8 +42,34 @@ AC_DEFUN([SST_CHECK_BOOST], [
 		],
                 [AC_MSG_RESULT([yes])],
 		[AC_MSG_RESULT([no])
-		 sst_check_boost_happy="no"]
+		 sst_check_boost_happy="no"
+		 AC_MSG_ERROR([Version of Boost supplied is too old or did not compile correctly.], [1])
+		]
 		)
+
+	AC_MSG_CHECKING([Boost program options library can be successfully used])
+
+dnl	Check whether the program options library can be compiled successfully
+	LIBS="$LIBS -lboost_program_options"
+	AC_COMPILE_IFELSE(
+		[AC_LANG_PROGRAM([[@%:@include <boost/program_options.hpp>
+			namespace po = boost::program_options;]],
+			[[
+				po::options_description example("Example Options");
+        			example.add_options()
+            			("help", "Compile Example")
+        			;
+			]])
+		],
+		[AC_MSG_RESULT([yes])
+		 BOOST_LIBS="$BOOST_LIBS -lboost_program_options"],
+                [AC_MSG_RESULT([no])
+                 sst_check_boost_happy="no"
+		 AC_MSG_ERROR([Boost Program Options cannot be successfully compiled.], [1])
+		]
+                )
+	LIBS="$LIBS_saved"
+
 	AC_LANG_POP(C++)
 
 	CPPFLAGS="$CPPFLAGS_saved"
