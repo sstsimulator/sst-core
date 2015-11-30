@@ -64,8 +64,25 @@ dnl	Check whether the program options library can be compiled successfully
 		[AC_MSG_RESULT([yes])
 		 BOOST_LIBS="$BOOST_LIBS -lboost_program_options"],
                 [AC_MSG_RESULT([no])
-                 sst_check_boost_happy="no"
-		 AC_MSG_ERROR([Boost Program Options cannot be successfully compiled.], [1])
+		 LIBS="$LIBS_saved -lboost_program_options-mt"
+		 AC_MSG_CHECKING([Boost program options (multithreaded) library can be successfully used])
+		 AC_COMPILE_IFELSE(
+			[AC_LANG_PROGRAM([[@%:@include <boost/program_options.hpp>
+				namespace po = boost::program_options;]],
+				[[
+					po::options_description example("Example Options");
+        				example.add_options()
+            				("help", "Compile Example")
+        				;
+				]])
+			],
+			[AC_MSG_RESULT([yes])
+		 	 BOOST_LIBS="$BOOST_LIBS -lboost_program_options-mt"],
+                	[AC_MSG_RESULT([no])
+                 	 sst_check_boost_happy="no"
+		 	 AC_MSG_ERROR([Boost Program Options cannot be successfully compiled.], [1])
+			]
+                	)
 		]
                 )
 	LIBS="$LIBS_saved"
