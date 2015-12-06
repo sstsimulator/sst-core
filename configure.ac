@@ -92,6 +92,7 @@ AC_CONFIG_FILES([
   Makefile
   src/Makefile
   src/sst/Makefile
+  src/sst/SST-${PACKAGE_VERSION}.pc:src/sst/sst.pc.in
   src/sst/core/Makefile
   src/sst/core/libltdl/Makefile
   src/sst/core/build_info.h

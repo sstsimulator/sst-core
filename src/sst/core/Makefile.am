@@ -194,7 +194,6 @@ sst_core_sources = \
 	cputimer.cc \
 	iouse.cc
 
-
 bin_PROGRAMS = sst sstinfo
 libexec_PROGRAMS = sstsim.x sstinfo.x
 
