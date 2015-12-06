@@ -1,6 +1,6 @@
 
 
-AC_INIT([SSTCore], [6.0], [sst-users@sst-simulator.org])
+AC_INIT([SSTCore], [6.0.0], [sst-users@sst-simulator.org])
 
 AC_PREREQ([2.59])
 
@@ -85,6 +85,34 @@ AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],
 AM_CONDITIONAL([HAVE_ZOLTAN], [test "$have_zoltan" = 1])
 
 AC_DEFINE_UNQUOTED([SST_INSTALL_PREFIX], ["$prefix"], [Defines the location SST will be installed in])
+
+AC_DEFINE_UNQUOTED([SST_CPPFLAGS], ["$CPPFLAGS"], [Defines the CPPFLAGS used to build SST])
+AC_DEFINE_UNQUOTED([SST_CFLAGS], ["$CFLAGS"], [Defines the CFLAGS used to build SST])
+AC_DEFINE_UNQUOTED([SST_CXXFLAGS], ["$CXXFLAGS"], [Defines the CXXFLAGS used to build SST])
+AC_DEFINE_UNQUOTED([SST_LDFLAGS], ["$LDFLAGS"], [Defines the LDFLAGS used to build SST])
+
+AC_DEFINE_UNQUOTED([SST_CC], ["$CC"], [Defines the C compiler used to build SST])
+AC_DEFINE_UNQUOTED([SST_CXX], ["$CXX"], [Defines the C++ compiler used to build SST])
+AC_DEFINE_UNQUOTED([SST_LD], ["$LD"], [Defines the linker used to build SST])
+AC_DEFINE_UNQUOTED([SST_MPICC], ["$MPICC"], [Defines the MPI C compiler used to build SST])
+AC_DEFINE_UNQUOTED([SST_MPICXX], ["$MPICXX"], [Defines the MPI C++ compilers used to build SST])
+
+AC_DEFINE_UNQUOTED([SST_CPP], ["$CPP"], [Defines the C preprocessor used to build SST])
+AC_DEFINE_UNQUOTED([SST_CXXCPP], ["$CXXCPP"], [Defines the C++ preprocessor used to build SST])
+
+AC_DEFINE_UNQUOTED([SST_PYTHON_CPPFLAGS], ["$PYTHON_CPPFLAGS"],
+	[Defines the CPPFLAGS needed to compile Python into SST])
+AC_DEFINE_UNQUOTED([SST_PYTHON_LDFLAGS], ["$PYTHON_LDFLAGS"],
+	[Defines the LDFLAGS needed to compile Python into SST])
+
+AC_DEFINE_UNQUOTED([SST_BOOST_CPPFLAGS], ["$BOOST_CPPFLAGS"],
+	[Defines the CPPFLAGS needed to compile Boost into SST])
+AC_DEFINE_UNQUOTED([SST_BOOST_LDFLAGS], ["$BOOST_LDFLAGS"],
+	[Defines the LDFLAGS needed to compile Boost into SST])
+AC_DEFINE_UNQUOTED([SST_BOOST_LIBS], ["$BOOST_LIBS"],
+	[Defines the LIBS needed to compile Boost into SST])
+AC_DEFINE_UNQUOTED([SST_BOOST_LIBDIR], ["$BOOST_LIBDIR"],
+	[Defines the LIBDIR needed to load dynamic libraries for Boost])
 
 AC_CACHE_SAVE
 
