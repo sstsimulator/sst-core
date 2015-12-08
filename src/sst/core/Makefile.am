@@ -194,7 +194,7 @@ sst_core_sources = \
 	cputimer.cc \
 	iouse.cc
 
-bin_PROGRAMS = sst sstinfo
+bin_PROGRAMS = sst sstinfo sst-config
 libexec_PROGRAMS = sstsim.x sstinfo.x
 
 sstinfo_SOURCES = \
@@ -206,6 +206,9 @@ sst_SOURCES = \
 	bootsst.cc \
 	bootshared.cc \
 	bootshared.h
+
+sst_config_SOURCES = \
+	sstconfig.cc
 
 sstsim_x_SOURCES = \
 	main.cc \
@@ -257,6 +260,6 @@ include part/Makefile.inc
 include model/Makefile.inc
 
 if USE_LIBZ
-sstsim_x_LDADD += -lz
-sstinfo_x_LDADD += -lz
+sstsim_x_LDADD += $(LIBZ_LIBS)
+sstinfo_x_LDADD += $(LIBZ_LIBS)
 endif
