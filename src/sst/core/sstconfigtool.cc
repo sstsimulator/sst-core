@@ -1,8 +1,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <unordered_map>
 #include <climits>
+#include <string>
+#include <map>
 
 #include "sst_config.h"
 
@@ -12,8 +13,23 @@ void print_usage() {
 	printf("======================================================\n");
 	printf("\n");
 	printf("SST Install Prefix:   %s\n", SST_INSTALL_PREFIX);
-	printf("Install Database:     %s/SST-%s.conf\n", SST_INSTALL_PREFIX, PACKAGE_VERSION);
+	printf("Install Database:     %s/etc/sst/SST-%s.conf\n", SST_INSTALL_PREFIX, PACKAGE_VERSION);
 	exit(1);
+}
+
+void readLine(FILE* config, char* buffer) {
+	int bufferIndex = 0;
+
+	while( ! feof(config) ) {
+		buffer[bufferIndex] = (char) fgetc(config);
+
+		if( buffer[bufferIndex] == '\n' || buffer[bufferIndex] == '\r') {
+			buffer[bufferIndex + 1] = '\0';
+			break;
+		}
+
+		bufferIndex++;
+	}
 }
 
 int main(int argc, char* argv[]) {
@@ -35,15 +51,17 @@ int main(int argc, char* argv[]) {
 		print_usage();
 	}
 
+	std::map<std::string, std::string> configParams;
+
 	if( 0 == strcmp(argv[1], "--prefix") ) {
 		printf("%s\n", SST_INSTALL_PREFIX);
 	} else if( 0 == strcmp(argv[1], "--version") ) {
 		printf("%s\n", PACKAGE_VERSION);
 	} else if (0 == strcmp(argv[1], "--database") ) {
-		printf("%s/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
+		printf("%s/etc/sst/SST-%s.conf\n", SST_INSTALL_PREFIX, PACKAGE_VERSION);
 	} else {
 		char* conf_file_path = (char*) malloc(sizeof(char) * PATH_MAX);
-		sprintf(conf_file_path, "%s/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
+		sprintf(conf_file_path, "%s/etc/sst/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
 
 		FILE* sst_conf_file = fopen(conf_file_path, "rt");
 		if(NULL == sst_conf_file) {
@@ -52,6 +70,72 @@ int main(int argc, char* argv[]) {
 			exit(-1);
 		}
 
+		char* lineBuffer    = (char*) malloc(sizeof(char) * 4096);
+		char* variableName  = (char*) malloc(sizeof(char) * 4096);
+		char* variableValue = (char*) malloc(sizeof(char) * 4096);
+
+		while( ! feof(sst_conf_file) ) {
+			readLine(sst_conf_file, lineBuffer);
+
+			variableName[0] = '\0';
+			variableValue[0] = '\0';
+
+			if(strcmp(lineBuffer, "") == 0) {
+				// Do nothing and move on
+			} else if(lineBuffer[0] == '#') {
+				// Comment line, do nothing move on
+			} else if(lineBuffer[0] == '[') {
+				// Section line, do nothing move on
+			} else {
+				const int lineLength = strlen(lineBuffer);
+				bool foundAssign = false;
+
+				for(int i = 0; i < lineLength; i++) {
+					if(lineBuffer[i] == '=') {
+						foundAssign = true;
+						break;
+					}
+				}
+
+				int variableIndex = 0;
+
+				if(foundAssign) {
+					foundAssign = false;
+
+					for(int i = 0; i < lineLength; i++) {
+						if(lineBuffer[variableIndex] != '\n' &&
+							lineBuffer[variableIndex] != '\r') {
+
+							if(foundAssign) {
+								variableValue[variableIndex] = lineBuffer[i];
+								variableIndex++;
+							} else {
+								if(lineBuffer[i] == '=') {
+									variableName[variableIndex] = '\0';
+									variableIndex = 0;
+									foundAssign = true;
+								} else {
+									variableName[variableIndex] = lineBuffer[i];
+									variableIndex++;
+								}
+							}
+						}
+					}
+
+					variableValue[variableIndex] = '\0';
+
+					std::string varNameStr(variableName);
+					std::string varValueStr(variableValue);
+
+					configParams.insert( std::pair<std::string, std::string>(varNameStr, varValueStr) );
+				} else {
+					printf("SST Config: Badly formed line [%s], no assignment found.\n",
+						lineBuffer);
+				}
+			}
+		}
+
+		free(lineBuffer);
 		free(conf_file_path);
 		fclose(sst_conf_file);
 
@@ -60,7 +144,15 @@ int main(int argc, char* argv[]) {
 			param++;
 			param++;
 
-			printf("Find: %s\n", param);
+			std::string paramStr(param);
+
+			auto configParamsVal = configParams.find(paramStr);
+
+			if(configParamsVal == configParams.end()) {
+				printf("\n");
+			} else {
+				printf("%s\n", configParamsVal->second.c_str());
+			}
 		} else {
 			fprintf(stderr, "Unknown parameter to find (%s), must start with --\n", argv[1]);
 			exit(-1);
