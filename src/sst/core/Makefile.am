@@ -208,7 +208,7 @@ sst_SOURCES = \
 	bootshared.h
 
 sst_config_SOURCES = \
-	sstconfig.cc
+	sstconfigtool.cc
 
 sstsim_x_SOURCES = \
 	main.cc \
