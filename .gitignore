@@ -8,7 +8,6 @@
 .deps/
 .dirstamp
 Makefile.in
-
 libltdl
 Makefile
 sst.x
