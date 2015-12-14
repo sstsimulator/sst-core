@@ -1,6 +1,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <unordered_map>
+#include <climits>
 
 #include "sst_config.h"
 
@@ -9,12 +11,17 @@ void print_usage() {
 	printf("SST %s Core Installation Configuration\n", PACKAGE_VERSION);
 	printf("======================================================\n");
 	printf("\n");
-	printf("SST Install Prefix: %s\n", SST_INSTALL_PREFIX);
+	printf("SST Install Prefix:   %s\n", SST_INSTALL_PREFIX);
+	printf("Install Database:     %s/SST-%s.conf\n", SST_INSTALL_PREFIX, PACKAGE_VERSION);
 	exit(1);
 }
 
 int main(int argc, char* argv[]) {
 	bool found_help = false;
+
+	if(argc == 1 || argc > 2) {
+		print_usage();
+	}
 
 	for(int i = 1; i < argc; i++) {
 		if(strcmp(argv[i], "--help") == 0 ||
@@ -28,15 +35,26 @@ int main(int argc, char* argv[]) {
 		print_usage();
 	}
 
-	if(argc > 2) {
-		print_usage();
-	}
-
 	if( 0 == strcmp(argv[1], "--prefix") ) {
 		printf("%s\n", SST_INSTALL_PREFIX);
 	} else if( 0 == strcmp(argv[1], "--version") ) {
 		printf("%s\n", PACKAGE_VERSION);
+	} else if (0 == strcmp(argv[1], "--database") ) {
+		printf("%s/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
 	} else {
+		char* conf_file_path = (char*) malloc(sizeof(char) * PATH_MAX);
+		sprintf(conf_file_path, "%s/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
+
+		FILE* sst_conf_file = fopen(conf_file_path, "rt");
+		if(NULL == sst_conf_file) {
+			fprintf(stderr, "Unable to open the SST configuration database: %s\n", conf_file_path);
+			fprintf(stderr, "Have you performed a build and install of SST?\n");
+			exit(-1);
+		}
+
+		free(conf_file_path);
+		fclose(sst_conf_file);
+
 		if( 0 == strncmp(argv[1], "--", 2) ) {
 			char* param = argv[1];
 			param++;
