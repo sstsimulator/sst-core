@@ -24,7 +24,7 @@ void readLine(FILE* config, char* buffer) {
 		buffer[bufferIndex] = (char) fgetc(config);
 
 		if( buffer[bufferIndex] == '\n' || buffer[bufferIndex] == '\r') {
-			buffer[bufferIndex + 1] = '\0';
+			buffer[bufferIndex] = '\0';
 			break;
 		}
 
