@@ -36,4 +36,5 @@ aclocal -I config
 autoheader
 autoconf
 automake --foreign --add-missing --include-deps
+autoreconf --force --install
 
