@@ -32,10 +32,82 @@ void readLine(FILE* config, char* buffer) {
 	}
 }
 
+void populateConfigMap(FILE* conf_file,
+	std::map<std::string, std::string>& confMap) {
+	
+	char* lineBuffer    = (char*) malloc(sizeof(char) * 4096);
+	char* variableName  = (char*) malloc(sizeof(char) * 4096);
+	char* variableValue = (char*) malloc(sizeof(char) * 4096);
+
+	while( ! feof(conf_file) ) {
+		readLine(conf_file, lineBuffer);
+
+		variableName[0] = '\0';
+		variableValue[0] = '\0';
+
+		if(strcmp(lineBuffer, "") == 0) {
+			// Do nothing and move on
+		} else if(lineBuffer[0] == '#') {
+			// Comment line, do nothing move on
+		} else if(lineBuffer[0] == '[') {
+			// Section line, do nothing move on
+		} else {
+			const int lineLength = strlen(lineBuffer);
+			bool foundAssign = false;
+
+			for(int i = 0; i < lineLength; i++) {
+				if(lineBuffer[i] == '=') {
+					foundAssign = true;
+					break;
+				}
+			}
+
+			int variableIndex = 0;
+
+			if(foundAssign) {
+				foundAssign = false;
+
+				for(int i = 0; i < lineLength; i++) {
+					if(lineBuffer[variableIndex] != '\n' &&
+						lineBuffer[variableIndex] != '\r') {
+
+						if(foundAssign) {
+							variableValue[variableIndex] = lineBuffer[i];
+							variableIndex++;
+						} else {
+							if(lineBuffer[i] == '=') {
+								variableName[variableIndex] = '\0';
+								variableIndex = 0;
+								foundAssign = true;
+							} else {
+								variableName[variableIndex] = lineBuffer[i];
+								variableIndex++;
+							}
+						}
+					}
+				}
+
+				variableValue[variableIndex] = '\0';
+
+				std::string varNameStr(variableName);
+				std::string varValueStr(variableValue);
+
+				confMap.insert( std::pair<std::string, std::string>(varNameStr, varValueStr) );
+			} else {
+				printf("SST Config: Badly formed line [%s], no assignment found.\n",
+					lineBuffer);
+			}
+		}
+	}
+	
+	free(lineBuffer);
+	
+}
+
 int main(int argc, char* argv[]) {
 	bool found_help = false;
 
-	if(argc == 1 || argc > 2) {
+	if(argc > 2) {
 		print_usage();
 	}
 
@@ -53,92 +125,45 @@ int main(int argc, char* argv[]) {
 
 	std::map<std::string, std::string> configParams;
 
-	if( 0 == strcmp(argv[1], "--prefix") ) {
+	char* conf_file_path = (char*) malloc(sizeof(char) * PATH_MAX);
+	sprintf(conf_file_path, "%s/etc/sst/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
+
+	FILE* sst_conf_file = fopen(conf_file_path, "rt");
+	if(NULL == sst_conf_file) {
+		fprintf(stderr, "Unable to open the SST configuration database: %s\n", conf_file_path);
+		fprintf(stderr, "Have you performed a build and install of SST?\n");
+		exit(-1);
+	}
+
+	// Populate the main SST installed configuration
+	populateConfigMap(sst_conf_file, configParams);
+
+	fclose(sst_conf_file);
+	
+	sprintf(conf_file_path, "~/.sst/sst-%s.conf", PACKAGE_VERSION);
+	FILE* sst_user_conf_file = fopen(conf_file_path, "rt");
+
+	// User configuration file may not exist, so if we can't open that's fine
+	if(NULL != sst_user_conf_file) {
+		populateConfigMap(sst_user_conf_file, configParams);
+		fclose(sst_user_conf_file);
+	}
+	
+	free(conf_file_path);
+
+	if( 1 == argc ) {
+		for(auto configItr = configParams.begin(); configItr != configParams.end();
+			configItr++) {
+			
+			printf("%30s %40s\n", configItr->first.c_str(), configItr->second.c_str());	
+		}
+	} else if( 0 == strcmp(argv[1], "--prefix") ) {
 		printf("%s\n", SST_INSTALL_PREFIX);
 	} else if( 0 == strcmp(argv[1], "--version") ) {
 		printf("%s\n", PACKAGE_VERSION);
 	} else if (0 == strcmp(argv[1], "--database") ) {
 		printf("%s/etc/sst/SST-%s.conf\n", SST_INSTALL_PREFIX, PACKAGE_VERSION);
 	} else {
-		char* conf_file_path = (char*) malloc(sizeof(char) * PATH_MAX);
-		sprintf(conf_file_path, "%s/etc/sst/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
-
-		FILE* sst_conf_file = fopen(conf_file_path, "rt");
-		if(NULL == sst_conf_file) {
-			fprintf(stderr, "Unable to open the SST configuration database: %s\n", conf_file_path);
-			fprintf(stderr, "Have you performed a build and install of SST?\n");
-			exit(-1);
-		}
-
-		char* lineBuffer    = (char*) malloc(sizeof(char) * 4096);
-		char* variableName  = (char*) malloc(sizeof(char) * 4096);
-		char* variableValue = (char*) malloc(sizeof(char) * 4096);
-
-		while( ! feof(sst_conf_file) ) {
-			readLine(sst_conf_file, lineBuffer);
-
-			variableName[0] = '\0';
-			variableValue[0] = '\0';
-
-			if(strcmp(lineBuffer, "") == 0) {
-				// Do nothing and move on
-			} else if(lineBuffer[0] == '#') {
-				// Comment line, do nothing move on
-			} else if(lineBuffer[0] == '[') {
-				// Section line, do nothing move on
-			} else {
-				const int lineLength = strlen(lineBuffer);
-				bool foundAssign = false;
-
-				for(int i = 0; i < lineLength; i++) {
-					if(lineBuffer[i] == '=') {
-						foundAssign = true;
-						break;
-					}
-				}
-
-				int variableIndex = 0;
-
-				if(foundAssign) {
-					foundAssign = false;
-
-					for(int i = 0; i < lineLength; i++) {
-						if(lineBuffer[variableIndex] != '\n' &&
-							lineBuffer[variableIndex] != '\r') {
-
-							if(foundAssign) {
-								variableValue[variableIndex] = lineBuffer[i];
-								variableIndex++;
-							} else {
-								if(lineBuffer[i] == '=') {
-									variableName[variableIndex] = '\0';
-									variableIndex = 0;
-									foundAssign = true;
-								} else {
-									variableName[variableIndex] = lineBuffer[i];
-									variableIndex++;
-								}
-							}
-						}
-					}
-
-					variableValue[variableIndex] = '\0';
-
-					std::string varNameStr(variableName);
-					std::string varValueStr(variableValue);
-
-					configParams.insert( std::pair<std::string, std::string>(varNameStr, varValueStr) );
-				} else {
-					printf("SST Config: Badly formed line [%s], no assignment found.\n",
-						lineBuffer);
-				}
-			}
-		}
-
-		free(lineBuffer);
-		free(conf_file_path);
-		fclose(sst_conf_file);
-
 		if( 0 == strncmp(argv[1], "--", 2) ) {
 			char* param = argv[1];
 			param++;
