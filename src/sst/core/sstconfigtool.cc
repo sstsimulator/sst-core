@@ -92,6 +92,10 @@ void populateConfigMap(FILE* conf_file,
 				std::string varNameStr(variableName);
 				std::string varValueStr(variableValue);
 
+				if(confMap.find(varNameStr) != confMap.end()) {
+					confMap.erase(varNameStr);
+				}
+
 				confMap.insert( std::pair<std::string, std::string>(varNameStr, varValueStr) );
 			} else {
 				printf("SST Config: Badly formed line [%s], no assignment found.\n",
@@ -139,23 +143,32 @@ int main(int argc, char* argv[]) {
 	populateConfigMap(sst_conf_file, configParams);
 
 	fclose(sst_conf_file);
-	
-	sprintf(conf_file_path, "~/.sst/sst-%s.conf", PACKAGE_VERSION);
+
+	const char* user_home = getenv("HOME");
+
+	if(NULL == user_home) {
+		sprintf(conf_file_path, "~/.sst/SST-%s.conf", PACKAGE_VERSION);
+	} else {
+		sprintf(conf_file_path, "%s/.sst/SST-%s.conf", user_home, PACKAGE_VERSION);
+	}
+
 	FILE* sst_user_conf_file = fopen(conf_file_path, "rt");
 
 	// User configuration file may not exist, so if we can't open that's fine
 	if(NULL != sst_user_conf_file) {
 		populateConfigMap(sst_user_conf_file, configParams);
 		fclose(sst_user_conf_file);
+	} else {
+		printf("CANNOT OPEN: %s\n", conf_file_path);
 	}
-	
+
 	free(conf_file_path);
 
 	if( 1 == argc ) {
 		for(auto configItr = configParams.begin(); configItr != configParams.end();
 			configItr++) {
-			
-			printf("%30s %40s\n", configItr->first.c_str(), configItr->second.c_str());	
+
+			printf("%30s %40s\n", configItr->first.c_str(), configItr->second.c_str());
 		}
 	} else if( 0 == strcmp(argv[1], "--prefix") ) {
 		printf("%s\n", SST_INSTALL_PREFIX);
