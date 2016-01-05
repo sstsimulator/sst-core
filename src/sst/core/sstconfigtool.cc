@@ -158,8 +158,6 @@ int main(int argc, char* argv[]) {
 	if(NULL != sst_user_conf_file) {
 		populateConfigMap(sst_user_conf_file, configParams);
 		fclose(sst_user_conf_file);
-	} else {
-		printf("CANNOT OPEN: %s\n", conf_file_path);
 	}
 
 	free(conf_file_path);
