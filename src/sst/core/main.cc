@@ -25,7 +25,7 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
-#include <cstdint>
+#include <cinttypes>
 #include <signal.h>
 
 #include <sst/core/activity.h>
