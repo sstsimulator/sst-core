@@ -17,8 +17,11 @@
 
 #include "sst/core/output.h"
 
+// C++ System Headers
+#include <cinttypes>
+#include <cerrno>
+
 // System Headers
-#include <errno.h>
 #include <execinfo.h>
 
 // Core Headers
@@ -28,10 +31,9 @@
 #include <mpi.h>
 #endif
 
-    
 namespace SST {
 
-// Initialize The Static Member Variables     
+// Initialize The Static Member Variables
 Output      Output::m_defaultObject;
 std::string Output::m_sstGlobalSimFileName = "";
 std::FILE*  Output::m_sstGlobalSimFileHandle = 0;
