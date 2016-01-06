@@ -6,7 +6,13 @@
 namespace SST {
 namespace Core {
 
-static void configReadLine(FILE* config, char* buffer) {
+static void configReadLine(FILE* config, char* buffer, const size_t bufferLen) {
+	// Empty the string
+	for(size_t i = 0; i < bufferLen; i++) {
+		buffer[i] = '\0';
+	}
+
+	// Start at index zero and move out from there
 	int bufferIndex = 0;
 
 	while( ! feof(config) ) {
@@ -23,18 +29,20 @@ static void configReadLine(FILE* config, char* buffer) {
 
 static void populateConfigMap(FILE* conf_file,
 	std::map<std::string, std::string>& confMap) {
-	
-	char* lineBuffer    = (char*) malloc(sizeof(char) * 4096);
-	char* variableName  = (char*) malloc(sizeof(char) * 4096);
-	char* variableValue = (char*) malloc(sizeof(char) * 4096);
+
+	const size_t bufferLength = 4096;
+
+	char* lineBuffer    = (char*) malloc(sizeof(char) * bufferLength);
+	char* variableName  = (char*) malloc(sizeof(char) * bufferLength);
+	char* variableValue = (char*) malloc(sizeof(char) * bufferLength);
 
 	while( ! feof(conf_file) ) {
-		configReadLine(conf_file, lineBuffer);
+		configReadLine(conf_file, lineBuffer, bufferLength);
 
 		variableName[0] = '\0';
 		variableValue[0] = '\0';
 
-		if(strcmp(lineBuffer, "") == 0) {
+		if(strlen(lineBuffer) == 0) {
 			// Do nothing and move on
 		} else if(lineBuffer[0] == '#') {
 			// Comment line, do nothing move on
@@ -87,14 +95,12 @@ static void populateConfigMap(FILE* conf_file,
 
 				confMap.insert( std::pair<std::string, std::string>(varNameStr, varValueStr) );
 			} else {
-				printf("SST Config: Badly formed line [%s], no assignment found.\n",
-					lineBuffer);
+				// No = in the line, so don't process it
 			}
 		}
 	}
-	
+
 	free(lineBuffer);
-	
 }
 
 }
