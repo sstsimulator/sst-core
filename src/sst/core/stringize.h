@@ -14,7 +14,7 @@
 
 #include <sst_config.h>
 #include <string>
-#include <inttypes.h>
+#include <cinttypes>
 
 namespace SST {
 
