@@ -11,172 +11,72 @@
 
 
 #include "sst_config.h"
-#include "bootshared.h"
+
 #include <limits.h>
+#include <map>
+#include <cstring>
+#include <string>
+
+#include "bootshared.h"
+#include "sstconfigreader.hpp"
 
 void update_env_var(const char* name, const int verbose, char* argv[], const int argc) {
-        char* current_ld_path = getenv(name);
-        size_t new_env_size = strlen(BOOST_LIBDIR) + 1;
-        new_env_size += (NULL == current_ld_path) ? 0 : strlen(current_ld_path);
+        char* current_ld_path  = getenv(name);
+	char* new_ld_path      = (char*) malloc(sizeof(char) * 32768);
+	char* new_ld_path_copy = (char*) malloc(sizeof(char) * 32768);
 
-#ifdef HAVE_DRAMSIM
-        new_env_size += (strlen(DRAMSIM_LIBDIR) + 2) + sizeof(char) * 1;
-
-	if(NULL == getenv("SST_DEP_DRAMSIM_ROOT")) {
-		setenv("SST_DEP_DRAMSIM_ROOT", DRAMSIM_LIBDIR, 1);
+	if(NULL != current_ld_path) {
+		sprintf(new_ld_path, "%s", current_ld_path);
 	}
-#endif
 
-#ifdef HAVE_M5
-        new_env_size += (strlen(M5_LIBDIR) + 2) + sizeof(char) * 1;
+	std::map<std::string, std::string> configMap;
+	char* systemConfig = (char*) malloc(sizeof(char) * PATH_MAX);
+	sprintf(systemConfig, "%s/etc/sst/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
+	FILE* systemConfigFile = fopen(systemConfig, "rt");
+	if(NULL == systemConfigFile) {
+		fprintf(stderr, "Unable to open system configuration file: %s, auto-config of environment not avaialble.\n",
+			systemConfig);
+		free(systemConfig);
+	} else {
+		SST::Core::populateConfigMap(systemConfigFile, configMap);
+		fclose(systemConfigFile);
+		free(systemConfig);
 
-	if(NULL == getenv("SST_DEP_M5_ROOT")) {
-		setenv("SST_DEP_M5_ROOT", M5_LIBDIR, 1);
+		char* userConfig = (char*) malloc(sizeof(char) * PATH_MAX);
+		char* userHome   = getenv("HOME");
+
+		if(NULL == userHome) {
+			sprintf(userConfig, "~/.sst/SST-%s.conf", PACKAGE_VERSION);
+		} else {
+			sprintf(userConfig, "%s/.sst/SST-%s.conf", userHome, PACKAGE_VERSION);
+		}
+
+		FILE* userConfigFile = fopen(userConfig, "rt");
+		if(NULL != userConfigFile) {
+			SST::Core::populateConfigMap(userConfigFile, configMap);
+			fclose(userConfigFile);
+		}
+
+		free(userConfig);
 	}
-#endif
 
-#ifdef HAVE_LIBPHX
-        new_env_size += (strlen(LIBPHX_LIBDIR) + 2) + sizeof(char) * 1;
-#endif
+	for(auto configItr = configMap.begin(); configItr != configMap.end(); configItr++) {
+		const std::string& paramName = configItr->first;
 
-#ifdef HAVE_GLPK
-        new_env_size += (strlen(GLPK_LIBDIR) + 2) + sizeof(char) * 1;
-#endif
+		if(paramName.size() > 6) {
+			const char* paramNameEnding = paramName.c_str();;
 
-#ifdef HAVE_HYBRIDSIM
-        new_env_size += (strlen(HYBRIDSIM_LIBDIR) + 2) + sizeof(char) * 1;
-
-	if(NULL == getenv("SST_DEP_HYBRIDSIM_ROOT")) {
-		setenv("SST_DEP_HYBRIDSIM_ROOT", HYBRIDSIM_LIBDIR, 1);
+			if(strcmp(&paramNameEnding[paramName.size() - 6], "LIBDIR") == 0) {
+				strcpy(new_ld_path_copy, new_ld_path);
+				sprintf(new_ld_path, "%s:%s", configItr->second.c_str(),
+					new_ld_path_copy);
+			}
+		}
 	}
-#endif
-
-#ifdef HAVE_NVDIMMSIM
-        new_env_size += (strlen(NVDIMMSIM_LIBDIR) + 2) + sizeof(char) * 1;
-
-	if(NULL == getenv("SST_DEP_NVDIMMSIM_ROOT")) {
-		setenv("SST_DEP_NVDIMMSIM_ROOT", NVDIMMSIM_LIBDIR, 1);
-	}
-#endif
-
-#ifdef HAVE_CHDL
-        new_env_size += (strlen(CHDL_LIBDIR) + 2) + sizeof(char) * 1;
-
-	if(NULL == getenv("SST_DEP_CHDL_ROOT")) {
-		setenv("SST_DEP_CHDL_ROOT", CHDL_LIBDIR, 1);
-	}
-#endif
-
-#ifdef HAVE_QSIM
-        new_env_size += (strlen(QSIM_LIBDIR) + 2) + sizeof(char) * 1;
-
-	if(NULL == getenv("SST_DEP_QSIM_ROOT")) {
-		setenv("SST_DEP_QSIM_ROOT", QSIM_LIBDIR, 1);
-	}
-#endif
-
-#ifdef HAVE_MICRON_HMCSIM
-        new_env_size += (strlen(MICRON_HMCSIM_LIBDIR) + 2) + sizeof(char) * 1;
-#endif
-
-#ifdef HAVE_METIS
-        new_env_size += (strlen(METIS_LIBDIR) + 2) + sizeof(char) * 1;
-#endif
-
-#ifdef HAVE_FDSIM
-        new_env_size += (strlen(FDSIM_LIBDIR) + 2) + sizeof(char) * 1;
-#endif
-
-        // Add 2 characters, we need one for the path seperator and one of the NULL?
-        new_env_size += sizeof(char) * 2;
-
-        char* updated_environment = (char*) malloc(sizeof(char) * new_env_size);
-
-        if(NULL == current_ld_path) {
-                sprintf(updated_environment, "%s", BOOST_LIBDIR);
-        } else {
-                sprintf(updated_environment, "%s:%s", current_ld_path, BOOST_LIBDIR);
-        }
-
-#ifdef HAVE_FDSIM
-        char* temp_fdsim_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_fdsim_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_fdsim_copy, FDSIM_LIBDIR);
-        free(temp_fdsim_copy);
-#endif
-
-#ifdef HAVE_DRAMSIM
-        char* temp_dram_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_dram_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_dram_copy, DRAMSIM_LIBDIR);
-        free(temp_dram_copy);
-#endif
-
-#ifdef HAVE_M5
-        char* temp_m5_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_m5_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_m5_copy, M5_LIBDIR);
-        free(temp_m5_copy);
-#endif
-
-#ifdef HAVE_LIBPHX
-        char* temp_phx_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_phx_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_phx_copy, LIBPHX_LIBDIR);
-        free(temp_phx_copy);
-#endif
-
-#ifdef HAVE_GLPK
-        char* temp_glpk_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_glpk_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_glpk_copy, GLPK_LIBDIR);
-        free(temp_glpk_copy);
-#endif
-
-#ifdef HAVE_HYBRIDSIM
-        char* temp_hybridsim_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_hybridsim_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_hybridsim_copy, HYBRIDSIM_LIBDIR);
-        free(temp_hybridsim_copy);
-#endif
-
-#ifdef HAVE_NVDIMMSIM
-        char* temp_nvdimmsim_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_nvdimmsim_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_nvdimmsim_copy, NVDIMMSIM_LIBDIR);
-        free(temp_nvdimmsim_copy);
-#endif
-
-#ifdef HAVE_CHDL
-        char* temp_chdl_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_chdl_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_chdl_copy, CHDL_LIBDIR);
-        free(temp_chdl_copy);
-#endif
-
-#ifdef HAVE_QSIM
-        char* temp_qsim_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_qsim_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_qsim_copy, QSIM_LIBDIR);
-        free(temp_qsim_copy);
-#endif
-
-#ifdef HAVE_METIS
-        char* temp_metis_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_metis_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_metis_copy, METIS_LIBDIR);
-        free(temp_metis_copy);
-#endif
-
-#ifdef HAVE_MICRON_HMCSIM
-        char* temp_micron_hmcsim_copy = (char*) malloc(sizeof(char) * (strlen(updated_environment) + 1));
-        sprintf(temp_micron_hmcsim_copy, "%s", updated_environment);
-        sprintf(updated_environment, "%s:%s", temp_micron_hmcsim_copy, MICRON_HMCSIM_LIBDIR);
-        free(temp_micron_hmcsim_copy);
-#endif
 
         // Override the exiting LD_LIBRARY_PATH with our updated variable
-        setenv(name, updated_environment, 1);
+        setenv(name, new_ld_path, 1);
+	free(new_ld_path_copy);
 
 	// Set the SST_ROOT information
 #ifdef SST_INSTALL_PREFIX
