@@ -194,7 +194,7 @@ sst_core_sources = \
 	cputimer.cc \
 	iouse.cc
 
-bin_PROGRAMS = sst sstinfo sst-config
+bin_PROGRAMS = sst sstinfo sst-config sst-register
 libexec_PROGRAMS = sstsim.x sstinfo.x
 
 sstinfo_SOURCES = \
@@ -209,6 +209,9 @@ sst_SOURCES = \
 
 sst_config_SOURCES = \
 	sstconfigtool.cc
+
+sst_register_SOURCES = \
+	sstregistertool.cc
 
 sstsim_x_SOURCES = \
 	main.cc \
