@@ -7,6 +7,7 @@
 #include <cctype>
 
 #include <limits.h>
+#include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -39,21 +40,64 @@ int main(int argc, char* argv[]) {
 		exit(-1);
 	}
 
+	const char* dependencyName = argv[1];
+	const size_t dependencyLen = strlen(dependencyName);
+
+
+	for(size_t i = 0; i < dependencyLen; i++) {
+		if( ! (isdigit(dependencyName[i]) || isalpha(dependencyName[i]) ) ) {
+			fprintf(stderr, "Error: non alpha-numeric at index %d in dependency %s\n",
+				(int) (i+1), dependencyName);
+			exit(-1);
+		}
+	}
+
 	if( 2 == argc ) {
 		// We are in the auto-register mode so need to query directory and the
 		// environment to decide if we can make progress
-	} else {
-		const char* dependencyName = argv[1];
-		const size_t dependencyLen = strlen(dependencyName);
+		char* working_directory = (char*) malloc(sizeof(char) * PATH_MAX);
+		getcwd(working_directory, PATH_MAX);
 
-		for(size_t i = 0; i < dependencyLen; i++) {
-			if( ! (isdigit(dependencyName[i]) || isalpha(dependencyName[i]) ) ) {
-				fprintf(stderr, "Error: non alpha-numeric at index %d in dependency %s\n",
-					(int) (i+1), dependencyName);
+		char* include_dir = (char*) malloc(sizeof(char) * PATH_MAX);
+		sprintf(include_dir, "%s/include", working_directory);
+
+		struct stat include_info;
+		stat(include_dir, &include_info);
+
+		if( S_ISDIR(include_info.st_mode) ) {
+			char* lib_dir = (char*) malloc(sizeof(char) * PATH_MAX);
+			sprintf(lib_dir, "%s/lib", working_directory);
+
+			struct stat lib_info;
+			stat(lib_dir, &lib_info);
+
+			if( S_ISDIR(lib_info.st_mode) ) {
+				printf("Auto-registration: \n");
+
+				char* reg_libval = (char*) malloc(sizeof(char) * (PATH_MAX + 2));
+				char* reg_incval = (char*) malloc(sizeof(char) * (PATH_MAX + 2));
+
+				sprintf(reg_incval, "-I%s", include_dir);
+
+				char* config_file_path = (char*) malloc(sizeof(char) * PATH_MAX);
+				sprintf(config_file_path, "%s/etc/sst/SST-%s.conf",
+					SST_INSTALL_PREFIX, PACKAGE_VERSION);
+				FILE* config_file = fopen(config_file_path, "a");
+
+				fprintf(config_file, "%s_CPPFLAGS=%s\n", dependencyName, reg_incval);
+				fprintf(config_file, "%s_LIBDIR=%s\n", dependencyName, lib_dir);
+				fprintf(config_file, "HAVE_%s=1\n", dependencyName);
+			} else {
+				fprintf(stderr, "Unable to find %s and check it is a directory, cannot auto-register.\n",
+					lib_dir);
 				exit(-1);
 			}
+		} else {
+			fprintf(stderr, "Unable to find %s and check it is a directory, cannot auto-register.\n",
+				include_dir);
+			exit(-1);
 		}
-
+	} else {
 		char* config_file_path = (char*) malloc(sizeof(char) * PATH_MAX);
 		int next_arg = 2;
 
