@@ -16,6 +16,7 @@
 #include <sst/core/serialization.h>
 
 #include <unordered_set>
+#include <cinttypes>
 
 #include <sst/core/action.h>
 

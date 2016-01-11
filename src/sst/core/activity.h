@@ -20,8 +20,9 @@
 #include <sst/core/mempool.h>
 
 #include <unordered_map>
-
+#include <cinttypes>
 #include <cstring>
+
 #include <errno.h>
 
 // Default Priority Settings

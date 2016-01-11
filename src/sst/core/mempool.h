@@ -18,7 +18,8 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
-#include <stdint.h>
+#include <cinttypes>
+#include <cstdint>
 #include <sys/mman.h>
 
 #include "sst/core/threadsafe.h"

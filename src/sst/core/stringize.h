@@ -13,6 +13,7 @@
 #define _H_SST_CORE_STRINGIZE
 
 #include <sst_config.h>
+
 #include <string>
 #include <cinttypes>
 

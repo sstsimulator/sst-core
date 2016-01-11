@@ -14,6 +14,8 @@
 
 #include <sst/core/serialization.h>
 
+#include <cinttypes>
+
 #include <sst/core/action.h>
 #include <sst/core/event.h>
 

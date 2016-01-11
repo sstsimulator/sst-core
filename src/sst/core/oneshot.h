@@ -16,6 +16,8 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 
+#include <cinttypes>
+
 #include <sst/core/action.h>
 
 #define _ONESHOT_DBG(fmt, args...)__DBG(DBG_ONESHOT, OneShot, fmt, ## args)
