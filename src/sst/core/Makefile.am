@@ -199,18 +199,22 @@ libexec_PROGRAMS = sstsim.x sstinfo.x
 
 sstinfo_SOURCES = \
 	bootsstinfo.cc \
+	sstconfigreader.cc \
 	bootshared.cc \
 	bootshared.h
 
 sst_SOURCES = \
 	bootsst.cc \
+	sstconfigreader.cc \
 	bootshared.cc \
 	bootshared.h
 
 sst_config_SOURCES = \
+	sstconfigreader.cc \
 	sstconfigtool.cc
 
 sst_register_SOURCES = \
+	sstconfigreader.cc \
 	sstregistertool.cc
 
 sstsim_x_SOURCES = \

@@ -39,39 +39,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	std::map<std::string, std::string> configParams;
-
-	char* conf_file_path = (char*) malloc(sizeof(char) * PATH_MAX);
-	sprintf(conf_file_path, "%s/etc/sst/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
-
-	FILE* sst_conf_file = fopen(conf_file_path, "rt");
-	if(NULL == sst_conf_file) {
-		fprintf(stderr, "Unable to open the SST configuration database: %s\n", conf_file_path);
-		fprintf(stderr, "Have you performed a build and install of SST?\n");
-		exit(-1);
-	}
-
-	// Populate the main SST installed configuration
-	SST::Core::populateConfigMap(sst_conf_file, configParams);
-
-	fclose(sst_conf_file);
-
-	const char* user_home = getenv("HOME");
-
-	if(NULL == user_home) {
-		sprintf(conf_file_path, "~/.sst/SST-%s.conf", PACKAGE_VERSION);
-	} else {
-		sprintf(conf_file_path, "%s/.sst/SST-%s.conf", user_home, PACKAGE_VERSION);
-	}
-
-	FILE* sst_user_conf_file = fopen(conf_file_path, "rt");
-
-	// User configuration file may not exist, so if we can't open that's fine
-	if(NULL != sst_user_conf_file) {
-		SST::Core::populateConfigMap(sst_user_conf_file, configParams);
-		fclose(sst_user_conf_file);
-	}
-
-	free(conf_file_path);
+	SST::Core::populateConfigMap(configParams);
 
 	if( 1 == argc ) {
 		for(auto configItr = configParams.begin(); configItr != configParams.end();
