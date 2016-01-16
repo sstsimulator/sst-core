@@ -119,9 +119,8 @@ void SST::Core::populateConfigMap(std::map<std::string, std::string>& confMap) {
 			sstConfFilePath);
 	} else {
 		populateConfigMapFromFile(sstConfFile, confMap);
+	  fclose(sstConfFile);
 	}
-	
-	fclose(sstConfFile);
 	
 	char* userHome = getenv("HOME");
 	
@@ -137,8 +136,7 @@ void SST::Core::populateConfigMap(std::map<std::string, std::string>& confMap) {
 		// Don't worry about this, not every user will have a file.
 	} else {
 		populateConfigMapFromFile(userConfFile, confMap);
+	  fclose(userConfFile);
 	}
-	
-	fclose(userConfFile);
 	free(sstConfFilePath);
 }
