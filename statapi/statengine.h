@@ -39,6 +39,13 @@ public:
       * @param EndOfSimFlag - Indicates that the output is occuring at the end of simulation.
       */
     void performStatisticOutput(StatisticBase* stat, bool endOfSimFlag = false);
+    
+    /** Called by the Components and Subcomponent to perform a global statistic Output.
+     * This routine will force ALL Components and Subcomponents to output their statistic information.
+     * This may lead to unexpected results if the statistic counts or data is reset on output.
+     * @param endOfSimFlag - Indicates that the output is occurring at the end of simulation.
+     */
+    void performGlobalStatisticOutput(bool endOfSimFlag = false);
 
 private:
     friend class SST::Component;
