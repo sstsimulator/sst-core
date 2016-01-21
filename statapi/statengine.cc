@@ -169,6 +169,28 @@ void StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool
     }
 }
 
+void StatisticProcessingEngine::performGlobalStatisticOutput(bool endOfSimFlag /*=false*/) 
+{
+    StatArray_t*    statArray;
+    StatisticBase*  stat;
+
+    // Output Event based statistics
+    for (StatArray_t::iterator it_v = m_EventStatisticArray.begin(); it_v != m_EventStatisticArray.end(); it_v++) {
+        stat = * it_v;
+        performStatisticOutput(stat, endOfSimFlag);
+    }
+
+    // Output Periodic based statistics 
+    for (StatMap_t::iterator it_m = m_PeriodicStatisticMap.begin(); it_m != m_PeriodicStatisticMap.end(); it_m++) {
+        statArray = it_m->second;
+
+        for (StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++) {
+            stat = *it_v;
+            performStatisticOutput(stat, endOfSimFlag);
+        }
+    }
+}
+
 void StatisticProcessingEngine::endOfSimulation()
 {
     StatArray_t*     statArray;
