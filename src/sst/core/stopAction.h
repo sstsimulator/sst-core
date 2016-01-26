@@ -15,6 +15,7 @@
 #include <sst/core/serialization.h>
 
 #include <iostream>
+#include <cinttypes>
 
 #include <sst/core/action.h>
 

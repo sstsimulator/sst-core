@@ -17,6 +17,7 @@
 
 #include <atomic>
 #include <string>
+#include <cinttypes>
 
 #include <sst/core/activity.h>
 

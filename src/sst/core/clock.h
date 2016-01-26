@@ -18,6 +18,7 @@
 //#include <deque>
 //#include <list>
 #include <vector>
+#include <cinttypes>
 
 #include <sst/core/action.h>
 //#include <sst/core/clockHandler.h>

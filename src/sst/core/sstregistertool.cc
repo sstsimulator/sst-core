@@ -5,8 +5,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
+#include <climits>
 
-#include <limits.h>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/types.h>

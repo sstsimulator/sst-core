@@ -12,7 +12,7 @@
 
 #include "sst_config.h"
 
-#include <limits.h>
+#include <climits>
 #include <map>
 #include <cstring>
 #include <string>
@@ -30,35 +30,7 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
 	}
 
 	std::map<std::string, std::string> configMap;
-	char* systemConfig = (char*) malloc(sizeof(char) * PATH_MAX);
-	sprintf(systemConfig, "%s/etc/sst/SST-%s.conf", SST_INSTALL_PREFIX, PACKAGE_VERSION);
-	FILE* systemConfigFile = fopen(systemConfig, "rt");
-	if(NULL == systemConfigFile) {
-		fprintf(stderr, "Unable to open system configuration file: %s, auto-config of environment not avaialble.\n",
-			systemConfig);
-		free(systemConfig);
-	} else {
-		SST::Core::populateConfigMap(systemConfigFile, configMap);
-		fclose(systemConfigFile);
-		free(systemConfig);
-
-		char* userConfig = (char*) malloc(sizeof(char) * PATH_MAX);
-		char* userHome   = getenv("HOME");
-
-		if(NULL == userHome) {
-			sprintf(userConfig, "~/.sst/SST-%s.conf", PACKAGE_VERSION);
-		} else {
-			sprintf(userConfig, "%s/.sst/SST-%s.conf", userHome, PACKAGE_VERSION);
-		}
-
-		FILE* userConfigFile = fopen(userConfig, "rt");
-		if(NULL != userConfigFile) {
-			SST::Core::populateConfigMap(userConfigFile, configMap);
-			fclose(userConfigFile);
-		}
-
-		free(userConfig);
-	}
+	SST::Core::populateConfigMap(configMap);
 
 	for(auto configItr = configMap.begin(); configItr != configMap.end(); configItr++) {
 		const std::string& paramName = configItr->first;
