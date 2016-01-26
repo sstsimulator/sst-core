@@ -671,8 +671,10 @@ main(int argc, char *argv[])
     Simulation::statisticsOutput = so;
     Simulation::sim_output = g_output;
     Simulation::barrier.resize(world_size.thread);
+    #ifdef USE_MEMPOOL
     /* Estimate that we won't have more than 128 sizes of events */
     Activity::memPools.reserve(world_size.thread * 128);
+    #endif
 
     std::vector<std::thread> threads(world_size.thread);
     std::vector<SimThreadInfo_t> threadInfo(world_size.thread);
