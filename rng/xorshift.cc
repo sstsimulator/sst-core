@@ -13,6 +13,7 @@
 
 #include "xorshift.h"
 #include <cstdlib>
+#include <cassert>
 
 using namespace SST;
 using namespace SST::RNG;
@@ -34,6 +35,8 @@ XORShiftRNG::XORShiftRNG() {
 	Seed the Mersenne and then make a group of numbers
 */
 XORShiftRNG::XORShiftRNG(unsigned int startSeed) {
+	assert(startSeed != 0);
+
 	seed(startSeed);
 }
 
