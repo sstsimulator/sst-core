@@ -38,15 +38,8 @@ MersenneRNG::MersenneRNG() {
 /*
 	Seed the Mersenne and then make a group of numbers
 */
-MersenneRNG::MersenneRNG(unsigned int seed) {
-	numbers = (uint32_t*) malloc(sizeof(uint32_t) * 624);
-	numbers[0] = (uint32_t) seed;
-	index = 0;
-
-	for(int i = 1 ; i < 624; i++) {
-		const uint32_t temp = ((uint32_t) 1812433253UL) * (numbers[i-1] ^ (numbers[i-1] >> 30)) + i;
-		numbers[i] = temp;
-	}
+MersenneRNG::MersenneRNG(unsigned int startSeed) {
+	seed(startSeed);
 }
 
 void MersenneRNG::generateNextBatch() {
@@ -106,6 +99,17 @@ int32_t  MersenneRNG::generateNextInt32() {
 	next = next * 2;
 
 	return (int32_t) (next * ((int32_t) MERSENNE_INT32_MAX));
+}
+
+void MersenneRNG::seed(uint64_t seed) {
+	numbers = (uint32_t*) malloc(sizeof(uint32_t) * 624);
+	numbers[0] = (uint32_t) seed;
+	index = 0;
+
+	for(int i = 1 ; i < 624; i++) {
+		const uint32_t temp = ((uint32_t) 1812433253UL) * (numbers[i-1] ^ (numbers[i-1] >> 30)) + i;
+		numbers[i] = temp;
+	}
 }
 
 MersenneRNG::~MersenneRNG() {

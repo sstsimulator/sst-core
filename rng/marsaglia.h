@@ -84,7 +84,12 @@ class MarsagliaRNG : public SSTRandom {
 	/**
 		Generates the next number as a signed 32-bit integer.
 	*/
-        int32_t   generateNextInt32();
+    int32_t   generateNextInt32();
+    
+    /**
+		Seed the XOR RNG
+	*/
+	void seed(uint64_t newSeed);
 
     private:
 	/**

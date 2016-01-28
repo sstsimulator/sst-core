@@ -33,11 +33,8 @@ XORShiftRNG::XORShiftRNG() {
 /*
 	Seed the Mersenne and then make a group of numbers
 */
-XORShiftRNG::XORShiftRNG(unsigned int seed) {
-	x = (uint32_t) seed;
-	y = 0;
-	w = 0;
-	z = 0;
+XORShiftRNG::XORShiftRNG(unsigned int startSeed) {
+	seed(startSeed);
 }
 
 /*
@@ -75,6 +72,13 @@ int32_t  XORShiftRNG::generateNextInt32() {
 	next = next * 2;
 
 	return (int32_t) (next * ((int32_t) XORSHIFT_INT32_MAX));
+}
+
+void XORShiftRNG::seed(uint64_t seed) {
+	x = (uint32_t) seed;
+	y = 0;
+	w = 0;
+	z = 0;
 }
 
 XORShiftRNG::~XORShiftRNG() {

@@ -87,6 +87,10 @@ int32_t  MarsagliaRNG::generateNextInt32() {
 	return (int32_t) (next * (int32_t) MARSAGLIA_INT32_MAX);
 }
 
+void MarsagliaRNG::seed(uint64_t newSeed) {
+	m_z = (unsigned int) newSeed;
+	m_w = (unsigned int) ((~newSeed) << 1);
+}
 
 uint32_t MarsagliaRNG::generateNextUInt32() {
 	return nextUniform() * MARSAGLIA_UINT32_MAX;
