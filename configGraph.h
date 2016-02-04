@@ -145,6 +145,7 @@ public:
     ConfigComponent cloneWithoutLinks() const;
     ConfigComponent cloneWithoutLinksOrParams() const;
     
+    ConfigComponent() {}
     ~ConfigComponent() {}
 private:
 
@@ -158,8 +159,6 @@ private:
         rank(rank),
         isIntrospector(isIntrospector)
     { }
-
-    ConfigComponent() {}
 
     friend class boost::serialization::access;
     template<class Archive>
