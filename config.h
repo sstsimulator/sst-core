@@ -50,6 +50,9 @@ public:
     /** Return the current Verbosity level */
     uint32_t getVerboseLevel();
 
+    /** Print the SST core timing information */
+    bool printTimingInfo();
+
     /** Set the cycle at which to stop the simulation */
     void setStopAt(std::string stopAtStr);
     /** Sets the default timebase of the simulation */
@@ -79,6 +82,7 @@ public:
     uint32_t        verbose;            /*!< Verbosity */
     bool	    no_env_config;      /*!< Bypass compile-time environmental configuration */
     bool            enable_sig_handling; /*!< Enable signal handling */
+    bool            print_timing;       /*!< Print SST timing information */
 
 #ifdef USE_MEMPOOL
     std::string     event_dump_file;    /*!< File to dump undeleted events to */
@@ -116,9 +120,10 @@ public:
 		std::cout << "output_directory = " << output_directory << std::endl;
 		std::cout << "output_json = " << output_json << std::endl;
 		std::cout << "model_options = " << model_options << std::endl;
-        std::cout << "num_threads = " << world_size.thread << std::endl;
+        	std::cout << "num_threads = " << world_size.thread << std::endl;
 		std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
 		std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
+      		std::cout << "print_timing=" << print_timing << std::endl;
 	}
 
     /** Return the library search path */

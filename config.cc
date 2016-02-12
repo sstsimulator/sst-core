@@ -66,6 +66,7 @@ Config::Config(RankInfo rankInfo)
     no_env_config = false;
     enable_sig_handling = true;
     output_core_prefix = "@x SST Core: ";
+    print_timing = false;
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     event_dump_file = "";
@@ -82,6 +83,7 @@ Config::Config(RankInfo rankInfo)
         ("verbose,v", "print information about core runtimes")
         ("disable-signal-handlers", "disable SST automatic dynamic library environment configuration")
         ("no-env-config", "disable SST environment configuration")
+        ("print-timing-info", "print SST timing information")
         ("version,V", "print SST Release Version")
     ;
 
@@ -170,6 +172,10 @@ Config::Config(RankInfo rankInfo)
         ;
 
     	var_map = new po::variables_map();
+}
+
+bool Config::printTimingInfo() {
+	return print_timing;
 }
 
 uint32_t Config::getVerboseLevel() {

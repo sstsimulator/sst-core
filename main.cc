@@ -768,7 +768,7 @@ main(int argc, char *argv[])
     const uint64_t global_max_io_in  = maxInputOperations();
     const uint64_t global_max_io_out = maxOutputOperations();
 
-    if ( myRank.rank == 0 && cfg.verbose ) {
+    if ( myRank.rank == 0 && ( cfg.verbose || cfg.printTimingInfo() ) ) {
         char ua_buffer[256];
         sprintf(ua_buffer, "%" PRIu64 "KB", local_max_rss);
         UnitAlgebra max_rss_ua(ua_buffer);
