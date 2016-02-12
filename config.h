@@ -174,8 +174,9 @@ private:
         ar & BOOST_SERIALIZATION_NVP(no_env_config);
         ar & BOOST_SERIALIZATION_NVP(model_options);
         ar & BOOST_SERIALIZATION_NVP(world_size);
-	    ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
+	ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
         ar & BOOST_SERIALIZATION_NVP(output_core_prefix);
+        ar & BOOST_SERIALIZATION_NVP(print_timing);
     }
     
     int rank;

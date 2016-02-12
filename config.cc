@@ -234,6 +234,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
 
     verbose = var_map->count( "verbose" );
     enable_sig_handling = (var_map->count("disable-signal-handlers") > 0) ? false : true;
+    print_timing = (var_map->count("print-timing-info") > 0);
 
     if ( var_map->count( "version" ) ) {
         cout << "SST Release Version (" PACKAGE_VERSION << ", " SST_SVN_REVISION ")" << endl;
