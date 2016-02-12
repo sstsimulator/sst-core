@@ -10,9 +10,10 @@
 // distribution.
 
 #include <sst_config.h>
-//#include "sstrand.h"
+
 #include "marsaglia.h"
 #include <cstdlib>
+#include <cstring>
 
 using namespace SST;
 using namespace SST::RNG;
@@ -66,33 +67,69 @@ double MarsagliaRNG::nextUniform() {
 
 
 uint64_t MarsagliaRNG::generateNextUInt64() {
-	return nextUniform() * MARSAGLIA_UINT64_MAX;
+	int64_t nextInt64 = generateNextInt64();
+	uint64_t returnUInt64 = 0;
+
+	char* returnUInt64Ptr = (char*) &returnUInt64;
+	const char* nextInt64Ptr = (const char*) &nextInt64;
+
+	for(int i = 0; i < sizeof(nextInt64); i++) {
+		returnUInt64Ptr[i] = nextInt64Ptr[i];
+	}
+
+	return returnUInt64;
 }
 
 int64_t  MarsagliaRNG::generateNextInt64() {
-	double next = nextUniform();
-	if(next > 0.5)
-		next = next * -0.5;
-	next = next * 2;
+	int64_t returnInt64 = 0;
+	int32_t lowerHalf = generateNextInt32();
+	int32_t upperHalf = generateNextInt32();
 
-	return (int64_t) (next * (int64_t) MARSAGLIA_INT64_MAX);
+	char* returnInt64Ptr = (char*) &returnInt64;
+	const char* lowerHalfPtr = (const char*) &lowerHalf;
+	const char* upperHalfPtr = (const char*) &upperHalf;
+
+	for(int i = 0; i < sizeof(lowerHalf); i++) {
+		returnInt64Ptr[i] = lowerHalfPtr[i];
+	}
+
+	for(int i = 0; i < sizeof(lowerHalf); i++) {
+		returnInt64Ptr[i+4] = upperHalfPtr[i];
+	}
+
+	return returnInt64;
 }
 
 int32_t  MarsagliaRNG::generateNextInt32() {
-	double next = nextUniform();
-	if(next > 0.5)
-		next = next * -0.5;
-	next = next * 2;
+	unsigned int nextRN = generateNext();
+	int32_t returnInt32 = 0;
 
-	return (int32_t) (next * (int32_t) MARSAGLIA_INT32_MAX);
+	char* returnInt32Ptr = (char*) &returnInt32;
+	const char* nextRNPtr = (const char*) &nextRN;
+
+	for(int i = 0; i < sizeof(returnInt32); i++) {
+		returnInt32Ptr[i] = nextRNPtr[i];
+	}
+
+	return returnInt32;
 }
 
 void MarsagliaRNG::seed(uint64_t newSeed) {
 	m_z = (unsigned int) newSeed;
-	m_w = (unsigned int) ((~newSeed) << 1);
+	m_w = (unsigned int) (((~newSeed) << 1) + 1);
 }
 
 uint32_t MarsagliaRNG::generateNextUInt32() {
-	return nextUniform() * MARSAGLIA_UINT32_MAX;
+	int32_t nextInt32 = generateNextInt32();
+	uint32_t returnUInt32 = 0;
+
+	char* returnUInt32Ptr = (char*) &returnUInt32;
+	const char* nextInt32Ptr = (const char*) &nextInt32;
+
+	for(int i = 0; i < sizeof(nextInt32); i++) {
+		returnUInt32Ptr[i] = nextInt32Ptr[i];
+	}
+
+	return returnUInt32;
 }
 
