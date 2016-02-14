@@ -114,6 +114,8 @@ AC_DEFINE_UNQUOTED([SST_BOOST_LIBS], ["$BOOST_LIBS"],
 AC_DEFINE_UNQUOTED([SST_BOOST_LIBDIR], ["$BOOST_LIBDIR"],
 	[Defines the LIBDIR needed to load dynamic libraries for Boost])
 
+AC_DEFINE([__STDC_FORMAT_MACROS], [1], [Defines that standard PRI macros should be enabled])
+
 AC_CACHE_SAVE
 
 AC_CONFIG_FILES([
