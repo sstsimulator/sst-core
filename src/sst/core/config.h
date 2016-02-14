@@ -16,6 +16,7 @@
 #include <sst/core/serialization.h>
 #include <sst/core/simulation.h>
 #include <sst/core/rankInfo.h>
+#include <sst/core/sstconfigreader.hpp>
 
 #include <string>
 
@@ -129,14 +130,36 @@ public:
     /** Return the library search path */
     std::string getLibPath(void) const {
         char *envpath = getenv("SST_LIB_PATH");
-        if ( !addlLibPath.empty() ) {
-            return addlLibPath + ":" + libpath;
-        } else if ( NULL != envpath ) {
-            return envpath;
-        }
-        return libpath;
-    }
 
+	// Get configuration options from the user config
+	std::map<std::string, std::string> configOptions;
+	SST::Core::populateConfigMap(configOptions);
+
+	std::string fullLibPath = libpath;
+
+	for(auto configItr = configOptions.begin(); configItr != configOptions.end();
+		configItr++) {
+
+		const std::string key = configItr->first;
+		const std::string value = configItr->second;
+
+		if("BOOST_LIBDIR" != key) {
+			if(key.size() > 6) {
+				if("LIBDIR" == key.substr(key.size() - 6)) {
+					fullLibPath.append(":");
+					fullLibPath.append(value);
+				}
+			}
+		}
+	}	
+
+	if(NULL != envpath) {
+		fullLibPath.clear();
+		fullLibPath.append(envpath);
+	}
+
+        return fullLibPath;
+    }
 
     uint32_t getNumRanks() { return world_size.rank; }
     uint32_t getNumThreads() { return world_size.thread; }

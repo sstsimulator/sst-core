@@ -128,6 +128,7 @@ nobase_nodist_sst_HEADERS = \
 	build_info.h
 
 sst_core_sources = \
+	sstconfigreader.cc \
 	action.cc \
 	archive.cc \
 	clock.cc \
@@ -199,22 +200,18 @@ libexec_PROGRAMS = sstsim.x sstinfo.x
 
 sstinfo_SOURCES = \
 	bootsstinfo.cc \
-	sstconfigreader.cc \
 	bootshared.cc \
 	bootshared.h
 
 sst_SOURCES = \
 	bootsst.cc \
-	sstconfigreader.cc \
 	bootshared.cc \
 	bootshared.h
 
 sst_config_SOURCES = \
-	sstconfigreader.cc \
 	sstconfigtool.cc
 
 sst_register_SOURCES = \
-	sstconfigreader.cc \
 	sstregistertool.cc
 
 sstsim_x_SOURCES = \

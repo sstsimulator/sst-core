@@ -46,7 +46,7 @@ Config::Config(RankInfo rankInfo)
 {
     debugFile   = "/dev/null";
     runMode     = Simulation::BOTH;
-    libpath     = SST_ELEMLIB_DIR;
+    libpath     = SST_INSTALL_PREFIX"/lib/sst";
     addlLibPath = "";
     sdlfile     = "NONE";
     stopAtCycle = "0 ns";
