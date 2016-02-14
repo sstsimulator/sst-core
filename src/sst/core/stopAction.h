@@ -18,6 +18,7 @@
 #include <cinttypes>
 
 #include <sst/core/action.h>
+#include <sst/core/output.h>
 
 namespace SST {
 
@@ -47,7 +48,7 @@ public:
 
     void execute() {
         if ( print_message ) {
-            std::cout << message << std::endl;
+            Output::getDefaultObject().output("%s\n", message.c_str());
         }
         endSimulation();
     }

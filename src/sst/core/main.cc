@@ -672,8 +672,10 @@ main(int argc, char *argv[])
     Simulation::statisticsOutput = so;
     Simulation::sim_output = g_output;
     Simulation::barrier.resize(world_size.thread);
+    #ifdef USE_MEMPOOL
     /* Estimate that we won't have more than 128 sizes of events */
     Activity::memPools.reserve(world_size.thread * 128);
+    #endif
 
     std::vector<std::thread> threads(world_size.thread);
     std::vector<SimThreadInfo_t> threadInfo(world_size.thread);
@@ -767,7 +769,7 @@ main(int argc, char *argv[])
     const uint64_t global_max_io_in  = maxInputOperations();
     const uint64_t global_max_io_out = maxOutputOperations();
 
-    if ( myRank.rank == 0 && cfg.verbose ) {
+    if ( myRank.rank == 0 && ( cfg.verbose || cfg.printTimingInfo() ) ) {
         char ua_buffer[256];
         sprintf(ua_buffer, "%" PRIu64 "KB", local_max_rss);
         UnitAlgebra max_rss_ua(ua_buffer);
@@ -787,45 +789,45 @@ main(int argc, char *argv[])
         sprintf(ua_buffer, "%" PRIu64 "B", global_mempool_size);
         UnitAlgebra global_mempool_size_ua(ua_buffer);
         
-        g_output.verbose(CALL_INFO, 1, 0, "\n");
-        g_output.verbose(CALL_INFO, 1, 0, "\n");
-        g_output.verbose(CALL_INFO, 1, 0, "------------------------------------------------------------\n");
-        g_output.verbose(CALL_INFO, 1, 0, "Simulation Timing Information:\n");
-        g_output.verbose(CALL_INFO, 1, 0, "Build time:                      %f seconds\n", max_build_time);
-        g_output.verbose(CALL_INFO, 1, 0, "Simulation time:                 %f seconds\n", max_run_time);
-        g_output.verbose(CALL_INFO, 1, 0, "Total time:                      %f seconds\n", max_total_time);
-        g_output.verbose(CALL_INFO, 1, 0, "Simulated time:                  %s\n", threadInfo[0].simulated_time.toStringBestSI().c_str());
-        g_output.verbose(CALL_INFO, 1, 0, "\n");
-        g_output.verbose(CALL_INFO, 1, 0, "Simulation Resource Information:\n");
-        g_output.verbose(CALL_INFO, 1, 0, "Max Resident Set Size:           %s\n",
-                max_rss_ua.toStringBestSI().c_str());
-        g_output.verbose(CALL_INFO, 1, 0, "Approx. Global Max RSS Size:     %s\n",
-                global_rss_ua.toStringBestSI().c_str());
-        g_output.verbose(CALL_INFO, 1, 0, "Max Local Page Faults:           %" PRIu64 " faults\n",
-                local_max_pf);
-        g_output.verbose(CALL_INFO, 1, 0, "Global Page Faults:              %" PRIu64 " faults\n",
-                global_pf);
-        g_output.verbose(CALL_INFO, 1, 0, "Max Output Blocks:               %" PRIu64 " blocks\n",
-                global_max_io_in);
-        g_output.verbose(CALL_INFO, 1, 0, "Max Input Blocks:                %" PRIu64 " blocks\n",
-                global_max_io_out);
-        g_output.verbose(CALL_INFO, 1, 0, "Max mempool usage:               %s\n",
-                max_mempool_size_ua.toStringBestSI().c_str());
-        g_output.verbose(CALL_INFO, 1, 0, "Global mempool usage:            %s\n",
-                global_mempool_size_ua.toStringBestSI().c_str());
-        g_output.verbose(CALL_INFO, 1, 0, "Global active activities:        %" PRIu64 " activities\n",
-                global_active_activities);
-        g_output.verbose(CALL_INFO, 1, 0, "Current global TimeVortex depth: %" PRIu64 " entries\n",
-                global_current_tv_depth);
-        g_output.verbose(CALL_INFO, 1, 0, "Max TimeVortex depth:            %" PRIu64 " entries\n",
-                global_max_tv_depth);
-        g_output.verbose(CALL_INFO, 1, 0, "Max Sync data size:              %s\n",
-                global_max_sync_data_size_ua.toStringBestSI().c_str());
-        g_output.verbose(CALL_INFO, 1, 0, "Global Sync data size:           %s\n",
-                global_sync_data_size_ua.toStringBestSI().c_str());
-        g_output.verbose(CALL_INFO, 1, 0, "------------------------------------------------------------\n");
-        g_output.verbose(CALL_INFO, 1, 0, "\n");
+        g_output.output( "\n");
         g_output.output("\n");
+        g_output.output( "------------------------------------------------------------\n");
+        g_output.output( "Simulation Timing Information:\n");
+        g_output.output( "Build time:                      %f seconds\n", max_build_time);
+        g_output.output( "Simulation time:                 %f seconds\n", max_run_time);
+        g_output.output( "Total time:                      %f seconds\n", max_total_time);
+        g_output.output( "Simulated time:                  %s\n", threadInfo[0].simulated_time.toStringBestSI().c_str());
+        g_output.output( "\n");
+        g_output.output( "Simulation Resource Information:\n");
+        g_output.output( "Max Resident Set Size:           %s\n",
+                max_rss_ua.toStringBestSI().c_str());
+        g_output.output( "Approx. Global Max RSS Size:     %s\n",
+                global_rss_ua.toStringBestSI().c_str());
+        g_output.output( "Max Local Page Faults:           %" PRIu64 " faults\n",
+                local_max_pf);
+        g_output.output( "Global Page Faults:              %" PRIu64 " faults\n",
+                global_pf);
+        g_output.output( "Max Output Blocks:               %" PRIu64 " blocks\n",
+                global_max_io_in);
+        g_output.output( "Max Input Blocks:                %" PRIu64 " blocks\n",
+                global_max_io_out);
+        g_output.output( "Max mempool usage:               %s\n",
+                max_mempool_size_ua.toStringBestSI().c_str());
+        g_output.output( "Global mempool usage:            %s\n",
+                global_mempool_size_ua.toStringBestSI().c_str());
+        g_output.output( "Global active activities:        %" PRIu64 " activities\n",
+                global_active_activities);
+        g_output.output( "Current global TimeVortex depth: %" PRIu64 " entries\n",
+                global_current_tv_depth);
+        g_output.output( "Max TimeVortex depth:            %" PRIu64 " entries\n",
+                global_max_tv_depth);
+        g_output.output( "Max Sync data size:              %s\n",
+                global_max_sync_data_size_ua.toStringBestSI().c_str());
+        g_output.output( "Global Sync data size:           %s\n",
+                global_sync_data_size_ua.toStringBestSI().c_str());
+        g_output.output( "------------------------------------------------------------\n");
+        g_output.output( "\n" );
+        g_output.output( "\n" );
 
     }
 

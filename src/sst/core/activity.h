@@ -78,22 +78,26 @@ public:
                 if ( lhs->priority == rhs->priority ) {
                     /* TODO:  Handle 64-bit wrap-around */
                     return lhs->queue_order > rhs->queue_order;
+                } else {
+               	    return lhs->priority > rhs->priority;
                 }
-                return lhs->priority > rhs->priority;
+            } else {
+            	return lhs->delivery_time > rhs->delivery_time;
             }
-            return lhs->delivery_time > rhs->delivery_time;
         }
 
         /** Compare based off references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) {
+        inline bool operator()(const Activity& lhs, const Activity& rhs) const {
             if ( lhs.delivery_time == rhs.delivery_time ) {
                 if ( lhs.priority == rhs.priority ) {
                     /* TODO:  Handle 64-bit wrap-around */
                     return lhs.queue_order > rhs.queue_order;
+                } else {
+                    return lhs.priority > rhs.priority;
                 }
-                return lhs.priority > rhs.priority;
+            } else {
+            	return lhs.delivery_time > rhs.delivery_time;
             }
-            return lhs.delivery_time > rhs.delivery_time;
         }
     };
 

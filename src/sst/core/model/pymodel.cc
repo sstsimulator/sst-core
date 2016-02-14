@@ -675,6 +675,7 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
     PyDict_SetItem(dict, PyString_FromString("output-config"), PyString_FromString(cfg->output_config_graph.c_str()));
     PyDict_SetItem(dict, PyString_FromString("output-dot"), PyString_FromString(cfg->output_dot.c_str()));
 	PyDict_SetItem(dict, PyString_FromString("numRanks"), PyLong_FromLong(cfg->getNumRanks()));
+	PyDict_SetItem(dict, PyString_FromString("numThreads"), PyLong_FromLong(cfg->getNumThreads()));
 
     const char *runModeStr = "UNKNOWN";
     switch (cfg->runMode) {

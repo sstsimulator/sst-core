@@ -13,6 +13,7 @@
 
 #include "xorshift.h"
 #include <cstdlib>
+#include <cassert>
 
 using namespace SST;
 using namespace SST::RNG;
@@ -33,11 +34,10 @@ XORShiftRNG::XORShiftRNG() {
 /*
 	Seed the Mersenne and then make a group of numbers
 */
-XORShiftRNG::XORShiftRNG(unsigned int seed) {
-	x = (uint32_t) seed;
-	y = 0;
-	w = 0;
-	z = 0;
+XORShiftRNG::XORShiftRNG(unsigned int startSeed) {
+	assert(startSeed != 0);
+
+	seed(startSeed);
 }
 
 /*
@@ -56,25 +56,58 @@ uint32_t XORShiftRNG::generateNextUInt32() {
 }
 
 uint64_t XORShiftRNG::generateNextUInt64() {
-	return nextUniform() * (uint64_t) XORSHIFT_UINT64_MAX;
+	uint64_t returnUInt64 = 0;
+	int64_t nextInt64 = generateNextInt64();
+
+	char* returnUInt64Ptr = (char*) &returnUInt64;
+	const char* nextInt64Ptr = (const char*) &nextInt64;
+
+	for(int i = 0; i < sizeof(nextInt64); i++) {
+		returnUInt64Ptr[i] = nextInt64Ptr[i];
+	}
+
+	return returnUInt64;
 }
 
 int64_t  XORShiftRNG::generateNextInt64() {
-	double next = nextUniform();
-	if(next > 0.5) 
-		next = next * -0.5;
-	next = next * 2;
+	int64_t returnInt64 = 0;
+	uint32_t lowerHalf = generateNextUInt32();
+	uint32_t upperHalf = generateNextUInt32();
 
-	return (int64_t) (next * ((int64_t) XORSHIFT_INT64_MAX));
+	char* returnInt64Ptr = (char*) &returnInt64;
+	const char* lowerHalfPtr = (const char*) &lowerHalf;
+	const char* upperHalfPtr = (const char*) &upperHalf;
+
+	for(int i = 0; i < sizeof(lowerHalf); i++) {
+		returnInt64Ptr[i] = lowerHalfPtr[i];
+	}
+
+	for(int i = 0; i < sizeof(lowerHalf); i++) {
+		returnInt64Ptr[i+4] = upperHalfPtr[i];
+	}
+
+	return returnInt64;
 }
 
 int32_t  XORShiftRNG::generateNextInt32() {
-	double next = nextUniform();
-	if(next > 0.5) 
-		next = next * -0.5;
-	next = next * 2;
+	int32_t returnInt32 = 0;
+	uint32_t nextUInt32 = generateNextUInt32();
 
-	return (int32_t) (next * ((int32_t) XORSHIFT_INT32_MAX));
+	char* returnInt32Ptr = (char*) &returnInt32;
+	const char* nextUInt32Ptr = (const char*) &nextUInt32;
+
+	for(int i = 0; i < sizeof(returnInt32); i++) {
+		returnInt32Ptr[i] = nextUInt32Ptr[i];
+	}
+
+	return returnInt32;
+}
+
+void XORShiftRNG::seed(uint64_t seed) {
+	x = (uint32_t) seed;
+	y = 0;
+	w = 0;
+	z = 0;
 }
 
 XORShiftRNG::~XORShiftRNG() {
