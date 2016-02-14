@@ -80,8 +80,8 @@ int main(int argc, char* argv[]) {
 				sprintf(reg_incval, "-I%s", include_dir);
 
 				char* config_file_path = (char*) malloc(sizeof(char) * PATH_MAX);
-				sprintf(config_file_path, "%s/etc/sst/SST-%s.conf",
-					SST_INSTALL_PREFIX, PACKAGE_VERSION);
+				sprintf(config_file_path, "%s/etc/sst/sstsimulator.conf",
+					SST_INSTALL_PREFIX);
 				FILE* config_file = fopen(config_file_path, "a");
 
 				fprintf(config_file, "%s_CPPFLAGS=%s\n", dependencyName, reg_incval);
@@ -103,18 +103,18 @@ int main(int argc, char* argv[]) {
 
 		// User is telling us what to do
 		if( 0 == strcmp(argv[next_arg], "--global") ) {
-			sprintf(config_file_path, "%s/etc/sst/SST-%s.conf",
-				SST_INSTALL_PREFIX, PACKAGE_VERSION);
+			sprintf(config_file_path, "%s/etc/sst/sstsimulator.conf",
+				SST_INSTALL_PREFIX);
 			next_arg++;
 		} else {
 			const char* user_home = getenv("HOME");
 			char* sst_home_directory = (char*) malloc(sizeof(char) * PATH_MAX);
 
 			if( NULL == user_home ) {
-				sprintf(config_file_path, "~/.sst/SST-%s.conf", PACKAGE_VERSION);
+				sprintf(config_file_path, "~/.sst/sstsimulator.conf");
 				sprintf(sst_home_directory, "~/.sst");
 			} else {
-				sprintf(config_file_path, "%s/.sst/SST-%s.conf", user_home, PACKAGE_VERSION);
+				sprintf(config_file_path, "%s/.sst/sstsimulator.conf", user_home);
 				sprintf(sst_home_directory, "%s/.sst", user_home);
 			}
 

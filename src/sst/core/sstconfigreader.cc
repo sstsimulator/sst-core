@@ -10,23 +10,29 @@
 #include <string>
 
 void SST::Core::configReadLine(FILE* config, char* buffer, const size_t bufferLen) {
-	// Empty the string
-	for(size_t i = 0; i < bufferLen; i++) {
-		buffer[i] = '\0';
-	}
+	buffer[0] = '\0';
 
 	// Start at index zero and move out from there
 	int bufferIndex = 0;
 
 	while( ! feof(config) ) {
-		buffer[bufferIndex] = (char) fgetc(config);
+		const int next = fgetc(config);
 
-		if( buffer[bufferIndex] == '\n' || buffer[bufferIndex] == '\r') {
+		if(EOF == next) {
 			buffer[bufferIndex] = '\0';
 			break;
-		}
+		} else {
+			const char nextChar = (char) next;
 
-		bufferIndex++;
+			if( '\n' == nextChar || '\r' == nextChar) {
+				buffer[bufferIndex] = '\0';
+				break;
+			} else {
+				buffer[bufferIndex] = nextChar;
+			}
+
+			bufferIndex++;
+		}
 	}
 }
 
@@ -109,8 +115,7 @@ void SST::Core::populateConfigMapFromFile(FILE* conf_file,
 void SST::Core::populateConfigMap(std::map<std::string, std::string>& confMap) {
 	
 	char* sstConfFilePath = (char*) malloc(sizeof(char) * PATH_MAX);
-	sprintf(sstConfFilePath, "%s/etc/sst/SST-%s.conf", SST_INSTALL_PREFIX,
-		PACKAGE_VERSION);
+	sprintf(sstConfFilePath, "%s/etc/sst/sstsimulator.conf", SST_INSTALL_PREFIX);
 		
 	FILE* sstConfFile = fopen(sstConfFilePath, "rt");
 	
@@ -125,9 +130,9 @@ void SST::Core::populateConfigMap(std::map<std::string, std::string>& confMap) {
 	char* userHome = getenv("HOME");
 	
 	if( NULL == userHome ) {
-		sprintf(sstConfFilePath, "~/.sst/SST-%s.conf", PACKAGE_VERSION);
+		sprintf(sstConfFilePath, "~/.sst/sstsimulator.conf");
 	} else {
-		sprintf(sstConfFilePath, "%s/.sst/SST-%s.conf", userHome, PACKAGE_VERSION);
+		sprintf(sstConfFilePath, "%s/.sst/sstsimulator.conf", userHome);
 	}
 	
 	FILE* userConfFile = fopen(sstConfFilePath, "rt");

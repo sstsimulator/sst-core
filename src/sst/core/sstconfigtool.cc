@@ -15,7 +15,7 @@ void print_usage() {
 	printf("======================================================\n");
 	printf("\n");
 	printf("SST Install Prefix:   %s\n", SST_INSTALL_PREFIX);
-	printf("Install Database:     %s/etc/sst/SST-%s.conf\n", SST_INSTALL_PREFIX, PACKAGE_VERSION);
+	printf("Install Database:     %s/etc/sst/sstsimulator.conf\n", SST_INSTALL_PREFIX);
 	exit(1);
 }
 
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
 	} else if( 0 == strcmp(argv[1], "--version") ) {
 		printf("%s\n", PACKAGE_VERSION);
 	} else if (0 == strcmp(argv[1], "--database") ) {
-		printf("%s/etc/sst/SST-%s.conf\n", SST_INSTALL_PREFIX, PACKAGE_VERSION);
+		printf("%s/etc/sst/sstsimulator.conf\n", SST_INSTALL_PREFIX);
 	} else {
 		if( 0 == strncmp(argv[1], "--", 2) ) {
 			char* param = argv[1];

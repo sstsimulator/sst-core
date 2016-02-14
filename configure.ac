@@ -120,7 +120,7 @@ AC_CACHE_SAVE
 
 AC_CONFIG_FILES([
   Makefile
-  src/sst/SST-${PACKAGE_VERSION}.conf:src/sst/sst.conf
+  src/sst/sstsimulator.conf:src/sst/sst.conf
   src/Makefile
   src/sst/Makefile
   src/sst/SST-${PACKAGE_VERSION}.pc:src/sst/sst.pc.in
