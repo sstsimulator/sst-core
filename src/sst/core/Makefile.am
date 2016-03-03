@@ -195,10 +195,10 @@ sst_core_sources = \
 	cputimer.cc \
 	iouse.cc
 
-bin_PROGRAMS = sst sstinfo sst-config sst-register
+bin_PROGRAMS = sst sst-info sst-config sst-register
 libexec_PROGRAMS = sstsim.x sstinfo.x
 
-sstinfo_SOURCES = \
+sst_info_SOURCES = \
 	bootsstinfo.cc \
 	bootshared.cc \
 	bootshared.h \
