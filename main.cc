@@ -351,17 +351,11 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
 
 }
 
-
-
-
-
-
-
-
 int
 main(int argc, char *argv[])
 {
 
+    
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Init(&argc, &argv);
 

@@ -170,6 +170,21 @@ public:
     }
 
 #endif
+
+    void serialize_order(SST::Core::Serialization::serializer &ser){
+        Activity::serialize_order(ser);
+        ser & link_id;
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+        ser & first_comp;
+        ser & first_type;
+        ser & first_port;
+        ser & last_comp;
+        ser & last_type;
+        ser & last_port;
+#endif
+
+    }    
+
     
 protected:
     /** Link used for delivery */
@@ -203,7 +218,7 @@ private:
 /**
  * Null Event.  Does nothing.
  */
-class NullEvent : public Event {
+class NullEvent : public Event, public SST::Core::Serialization::serializable_type<NullEvent> {
 public:
     NullEvent() : Event() {}
     ~NullEvent() {}
@@ -215,11 +230,16 @@ public:
                 header.c_str(), getDeliveryTime(), getPriority());
     }
 
+    
+
 private:
     friend class boost::serialization::access;
     template<class Archive>
     void
     serialize(Archive & ar, const unsigned int version );
+
+    ImplementSerializable(NullEvent)
+
 };
 } //namespace SST
 

@@ -16,6 +16,8 @@
 
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
+#include <sst/core/serialization/serializable.h>
+#include <sst/core/serialization/serializer.h>
 
 #include <string>
 #include <map>
@@ -49,7 +51,8 @@ class Units {
     typedef uint8_t unit_id_t;
 
 private:
-
+    friend class UnitAlgebra;
+    
     // Static data members and functions
     static std::recursive_mutex unit_lock;
     static std::map<std::string,unit_id_t> valid_base_units;
@@ -116,7 +119,8 @@ public:
  * Allows operations such as multiplying a frequency by 2.
  *
  */
-class UnitAlgebra {
+class UnitAlgebra : public SST::Core::Serialization::serializable,
+                       public SST::Core::Serialization::serializable_type<UnitAlgebra> {
 private:
     Units unit;
     sst_dec_float value;
@@ -227,6 +231,39 @@ public:
     /** Return the rounded value as a 64bit integer */
     int64_t getRoundedValue() const;
 
+    ImplementSerializable(UnitAlgebra)
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        // Do the unit
+        ser & unit.numerator;
+        ser & unit.denominator;
+
+        // For value, need to convert cpp_dec_float to string and
+        // reinit from string
+        switch(ser.mode()) {
+        case SST::Core::Serialization::serializer::SIZER:
+        case SST::Core::Serialization::serializer::PACK: {
+            std::string s = value.str(40, std::ios_base::fixed);
+            ser & s;
+        break;
+        }
+        case SST::Core::Serialization::serializer::UNPACK: {
+            std::string s;
+            ser & s;
+            value = sst_dec_float(s);
+            break;
+        }
+        }
+    }
+};
+
+template <>
+class SST::Core::Serialization::serialize <UnitAlgebra> {
+public:
+    void
+    operator()(UnitAlgebra& v, SST::Core::Serialization::serializer& ser) {
+        v.serialize_order(ser);
+    }
 };
 
 // template <typename T>

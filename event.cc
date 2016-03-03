@@ -79,8 +79,10 @@ std::mutex Activity::poolMutex;
 std::vector<Activity::PoolInfo_t> Activity::memPools;
 #endif
 
+
 } // namespace SST
 
+DeclareSerializable(SST::NullEvent)
 
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Event::serialize)
 SST_BOOST_SERIALIZATION_INSTANTIATE(SST::NullEvent::serialize)

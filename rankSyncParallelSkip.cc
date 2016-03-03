@@ -12,7 +12,7 @@
 #include "sst_config.h"
 #include "sst/core/rankSyncParallelSkip.h"
 
-#include "sst/core/serialization.h"
+#include "sst/core/serialization/serializer.h"
 #include "sst/core/sync.h"
 
 #include "sst/core/event.h"
@@ -22,10 +22,6 @@
 #include "sst/core/syncQueue.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/profile.h"
-
-#include <boost/archive/polymorphic_binary_iarchive.hpp>
-#include <boost/iostreams/stream_buffer.hpp>
-#include <boost/iostreams/stream.hpp>
 
 #ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
@@ -48,6 +44,7 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, Core::ThreadSafe:
     send_count(0),
     barrier(barrier)
 {
+    TraceFunction(CALL_INFO_LONG);
     max_period = Simulation::getSimulation()->getMinPartTC();
     myNextSyncTime = max_period->getFactor();
     recv_count = new int[num_ranks.thread];
@@ -489,13 +486,13 @@ RankSyncParallelSkip::exchangeLinkInitData(int thread, std::atomic<int>& msg_cou
                      i->second.remote_rank, 2 * i->second.local_thread + 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             buffer = i->second.rbuf;
         }
-        
-        boost::iostreams::basic_array_source<char> source(&buffer[sizeof(SyncQueue::Header)],size-sizeof(SyncQueue::Header));
-        boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-        boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header | boost::archive::no_tracking );
+
+        SST::Core::Serialization::serializer ser;
+        ser.start_unpacking(&buffer[sizeof(SyncQueue::Header)],size-sizeof(SyncQueue::Header));
         
         std::vector<Activity*> activities;
-        ia >> activities;
+        ser & activities;
+
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
             
             Event* ev = static_cast<Event*>(activities[j]);
@@ -556,13 +553,14 @@ RankSyncParallelSkip::deserializeMessage(comm_recv_pair* msg)
     unsigned int size = hdr->buffer_size;
     
     auto deserialStart = SST::Core::Profile::now();
-    boost::iostreams::basic_array_source<char> source(&buffer[sizeof(SyncQueue::Header)],size-sizeof(SyncQueue::Header));
-    boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-    boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header | boost::archive::no_tracking );
-    deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
+
+    SST::Core::Serialization::serializer ser;
     
-    // std::vector<Activity*> activities;
-    ia >> msg->activity_vec;
+    
+    ser.start_unpacking(&buffer[sizeof(SyncQueue::Header)],size-sizeof(SyncQueue::Header));
+    ser & msg->activity_vec;
+
+    deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
 }
     
 

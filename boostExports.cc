@@ -56,7 +56,8 @@ BOOST_CLASS_EXPORT(SST::RegionInfo::ChangeSetMergeInfo);
 
 
 template<class Archive>
-void SST::SharedRegionMerger::ChangeSet::serialize(Archive & ar, const unsigned int version )
+// void SST::SharedRegionMerger::ChangeSet::serialize(Archive & ar, const unsigned int version )
+void SST::ChangeSet::serialize(Archive & ar, const unsigned int version )
 {
     ar & BOOST_SERIALIZATION_NVP(offset);
     ar & BOOST_SERIALIZATION_NVP(length);
@@ -65,6 +66,8 @@ void SST::SharedRegionMerger::ChangeSet::serialize(Archive & ar, const unsigned 
     }
     ar & boost::serialization::make_binary_object((void*)data, length);
 }
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SharedRegionMerger::ChangeSet::serialize);
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::SharedRegionMerger::ChangeSet);
+// SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SharedRegionMerger::ChangeSet::serialize);
+SST_BOOST_SERIALIZATION_INSTANTIATE(SST::ChangeSet::serialize);
+// BOOST_CLASS_EXPORT_IMPLEMENT(SST::SharedRegionMerger::ChangeSet);
+BOOST_CLASS_EXPORT_IMPLEMENT(SST::ChangeSet);
 

@@ -21,6 +21,7 @@
 
 #include "sst/core/rankSyncSerialSkip.h"
 #include "sst/core/rankSyncParallelSkip.h"
+#include "sst/core/rankSyncParallelSkipNew.h"
 #include "sst/core/threadSyncSimpleSkip.h"
 
 namespace SST {

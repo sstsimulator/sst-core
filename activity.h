@@ -16,6 +16,8 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/serialization.h>
 
+#include <sst/core/serialization/serializable.h>
+
 #include <sst/core/output.h>
 #include <sst/core/mempool.h>
 
@@ -23,6 +25,8 @@
 
 #include <cstring>
 #include <errno.h>
+
+// #include <sst/core/serialization/serializable.h>
 
 // Default Priority Settings
 #define STOPACTIONPRIORITY     01
@@ -44,7 +48,7 @@ extern int main(int argc, char **argv);
 namespace SST {
 
 /** Base class for all Activities in the SST Event Queue */
-class Activity {
+class Activity : public SST::Core::Serialization::serializable {
 public:
     Activity() {}
     virtual ~Activity() {}
@@ -245,6 +249,11 @@ public:
     
 #endif
 
+    // /* Serializable interface methods */
+    // void serialize_order(serializer &ser);
+
+
+    
     
 protected:
     /** Set the priority of the Activity */
@@ -252,6 +261,14 @@ protected:
         this->priority = priority;
     }
 
+    // Function used by derived classes to serialize data members.
+    // This class is not serializable, becuase not all class that
+    // inherit from it need to be serializable.
+    void serialize_order(SST::Core::Serialization::serializer &ser){
+        ser & queue_order;
+        ser & delivery_time;
+        ser & priority;
+    }    
 
 private:
     uint64_t  queue_order;

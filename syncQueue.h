@@ -14,11 +14,9 @@
 
 //#include <sst/core/serialization.h>
 
-#include <cstdio> // For printf
 #include <vector>
 
 #include <sst/core/activityQueue.h>
-
 #include <sst/core/threadsafe.h>
 
 namespace SST {
@@ -55,11 +53,12 @@ public:
     char* getData();
 
     uint64_t getDataSize() {
-        return buffer.capacity() + (activities.capacity() * sizeof(Activity*));
+        return buf_size + (activities.capacity() * sizeof(Activity*));
     }
     
 private:
-    std::vector<char> buffer;
+    char* buffer;
+    int buf_size;
     std::vector<Activity*> activities;
 
     Core::ThreadSafe::Spinlock slock;
@@ -67,7 +66,5 @@ private:
 
  
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::SyncQueue)
 
 #endif // SST_CORE_SYNCQUEUE_H
