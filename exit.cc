@@ -133,7 +133,7 @@ Exit::execute()
 }
     
 // bool Exit::handler( Event* e )
-void Exit::check( void )
+void Exit::check()
 {
     int value = ( m_refCount > 0 );
     int out;
@@ -145,7 +145,7 @@ void Exit::check( void )
 #else
     out = value;
 #endif
-
+    global_count = out;
     // If out is 0, then it's time to end
     if ( !out ) {
 #ifdef SST_CONFIG_HAVE_MPI
@@ -155,7 +155,9 @@ void Exit::check( void )
         MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
         end_time = end_value;
 #endif
-        endSimulation(end_time);
+        if (single_rank) {
+            endSimulation(end_time);
+        }
     }
     // else {  
     //     // Reinsert into TimeVortex.  We do this even when ending so that

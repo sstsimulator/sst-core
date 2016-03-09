@@ -141,6 +141,7 @@ void Simulation::shutdown()
 Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
     runMode(cfg->runMode),
     timeVortex(NULL),
+    interThreadMinLatency(MAX_SIMTIME_T),
     threadSync(NULL),
     currentSimCycle(0),
     endSimCycle(0),
@@ -234,18 +235,19 @@ Simulation::getLocalMinimumNextActivityTime()
 void
 Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part )
 {
+    // TraceFunction trace(CALL_INFO_LONG);    
     // Set minPartTC (only thread 0 will do this)
     if ( my_rank.thread == 0 ) {
         minPartTC = minPartToTC(min_part);
     }
 
     // Get the minimum latencies for links between the various threads
-    
     interThreadLatencies.resize(num_ranks.thread);
     for ( int i = 0; i < interThreadLatencies.size(); i++ ) {
         interThreadLatencies[i] = MAX_SIMTIME_T;
     }
 
+    interThreadMinLatency = MAX_SIMTIME_T;
     if ( num_ranks.thread > 1 ) {
         // Need to determine the lookahead for the thread synchronization
         ConfigComponentMap_t comps = graph.getComponentMap();
@@ -256,12 +258,26 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
             RankInfo rank[2];
             rank[0] = comps[clink.component[0]].rank;
             rank[1] = comps[clink.component[1]].rank;
-            // We only care about links that are on the same rank, but
+            // We only care about links that are on my rank, but
             // different threads
+
+            // Neither endpoint is on my rank
+            if ( rank[0].rank != my_rank.rank && rank[1].rank != my_rank.rank ) continue;
+            // Rank and thread are the same
             if ( rank[0] == rank[1] ) continue;
+            // Different ranks, so doesn't affect interthread dependencies
             if ( rank[0].rank != rank[1].rank ) continue;
-            // Keep track of minimum latency for each other thread
-            // separately
+
+            // At this point, we know that both endpoints are on this
+            // rank, but on diffrent threads.  Therefore, they
+            // contribute to the interThreadMinLatency.
+            if ( clink.getMinLatency() < interThreadMinLatency ) {
+                interThreadMinLatency = clink.getMinLatency();
+            }
+
+            // No check only those latencies that directly impact this
+            // thread.  Keep track of minimum latency for each other
+            // thread separately
             if ( rank[0].thread == my_rank.thread) { 
                 if ( clink.getMinLatency() < interThreadLatencies[rank[1].thread] ) {
                     interThreadLatencies[rank[1].thread] = clink.getMinLatency();
@@ -654,7 +670,7 @@ void Simulation::setup() {
 }
 
 void Simulation::run() {
-    // TraceFunction(CALL_INFO_LONG);    
+    // TraceFunction trace(CALL_INFO_LONG);
 
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.

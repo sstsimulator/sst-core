@@ -59,6 +59,7 @@ nobase_dist_sst_HEADERS = \
 	profile.h \
 	rankInfo.h \
 	rankSync.h \
+	rankSyncParallelSkip.h \
 	rankSyncSerialSkip.h \
 	simulation.h \
 	serialization.h \
@@ -158,6 +159,7 @@ sst_core_sources = \
 	pollingLinkQueue.cc \
 	rankInfo.cc \
 	rankSync.cc \
+	rankSyncParallelSkip.cc \
 	rankSyncSerialSkip.cc \
 	simulation.cc \
 	subcomponent.cc \

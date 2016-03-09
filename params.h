@@ -18,6 +18,7 @@
 
 #include <inttypes.h>
 #include <iostream>
+#include <sstream>
 #include <map>
 #include <stack>
 #include <stdlib.h>
@@ -352,6 +353,34 @@ public:
         return find_integer(k, default_value, tmp);
     }
 
+    /** Find a Parameter value in the set, and return its value as a
+     * vector of integers.  The array of integers will be appended to
+     * the end of the vector.
+     *
+     * @param k - Parameter name
+     * @param vec - vector to append array items to
+     */
+    void find_integer_array(const key_type &k, std::vector<int64_t>& vec) const {
+        verifyParam(k);
+        const_iterator i = data.find(getKey(k));
+        if ( i == data.end()) {
+            return;
+        }
+        std::string value = i->second;
+        // String should start with [ and end with ], we need to cut
+        // these out
+        value = value.substr(0,value.size()-1);
+        value = value.substr(1);
+        
+        std::stringstream ss(value);
+        
+        while( ss.good() ) {
+            std::string substr;
+            getline( ss, substr, ',' );
+            vec.push_back(strtol(substr.c_str(), NULL, 0));
+        }
+    }
+
     /** Find a Parameter value in the set, and return its value as a double
      * @param k - Parameter name
      * @param default_value - Default value to return if parameter isn't found
@@ -378,6 +407,34 @@ public:
         return find_floating(k, default_value, tmp);
     }
 
+    /** Find a Parameter value in the set, and return its value as a
+     * vector of floats.  The array of floats will be appended to
+     * the end of the vector.
+     *
+     * @param k - Parameter name
+     * @param vec - vector to append array items to
+     */
+    void find_floating_array(const key_type &k, std::vector<double>& vec) const {
+        verifyParam(k);
+        const_iterator i = data.find(getKey(k));
+        if ( i == data.end()) {
+            return;
+        }
+        std::string value = i->second;
+        // String should start with [ and end with ], we need to cut
+        // these out
+        value = value.substr(0,value.size()-1);
+        value = value.substr(1);
+        
+        std::stringstream ss(value);
+        
+        while( ss.good() ) {
+            std::string substr;
+            getline( ss, substr, ',' );
+            vec.push_back(strtod(substr.c_str(), NULL));
+        }
+    }
+
     /** Find a Parameter value in the set, and return its value
      * @param k - Parameter name
      * @param default_value - Default value to return if parameter isn't found
@@ -402,6 +459,43 @@ public:
     std::string find_string(const key_type &k, std::string default_value = "") const {
         bool tmp;
         return find_string(k, default_value, tmp);
+    }
+
+    /** Find a Parameter value in the set, and return its value as a
+     * vector of strings.  The array of strings will be appended to
+     * the end of the vector.
+     *
+     * @param k - Parameter name
+     * @param vec - vector to append array items to
+     */
+    void find_string_array(const key_type &k, std::vector<std::string>& vec) const {
+        verifyParam(k);
+        const_iterator i = data.find(getKey(k));
+        if ( i == data.end()) {
+            return;
+        }
+        std::string value = i->second;
+        // String should start with [ and end with ], we need to cut
+        // these out
+        value = value.substr(0,value.size()-1);
+        value = value.substr(1);
+        
+        std::stringstream ss(value);
+        
+        while( ss.good() ) {
+            std::string substr;
+            getline( ss, substr, ',' );
+            // Trim any whitespace at front and back
+            int front_index = 0;
+            while ( isspace(substr[front_index]) ) front_index++;
+    
+            int back_index = substr.length() - 1;
+            while ( isspace(substr[back_index]) ) back_index--;
+    
+            substr = substr.substr(front_index,back_index-front_index+1);
+            
+            vec.push_back(substr);
+        }
     }
 
     /** Print all key/value parameter pairs to specified ostream */

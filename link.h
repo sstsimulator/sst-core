@@ -111,7 +111,7 @@ public:
     TimeConverter* getDefaultTimeBase();
 
     /** Causes an event to be delivered to the registered callback */
-    inline void deliverEvent(Event* event) {
+    inline void deliverEvent(Event* event) const {
         (*rFunctor)(event);
     }
 

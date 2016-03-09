@@ -172,6 +172,7 @@ public:
     Exit* getExit() const { return m_exit; }
 
     const std::vector<SimTime_t>& getInterThreadLatencies() { return interThreadLatencies; }
+    const SimTime_t getInterThreadMinLatency() { return interThreadMinLatency; }
     static TimeConverter* getMinPartTC() { return minPartTC; }
 
     /** Return the TimeLord associated with this Simulation */
@@ -405,6 +406,7 @@ private:
     static SyncBase* sync;
     static TimeConverter*   minPartTC;
     std::vector<SimTime_t> interThreadLatencies;
+    SimTime_t        interThreadMinLatency;
     SyncManager*     syncManager;
     ThreadSync*      threadSync;
     ComponentInfoMap compInfoMap;

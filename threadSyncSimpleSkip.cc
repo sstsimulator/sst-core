@@ -43,12 +43,7 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
     if ( sim->getNumRanks().rank > 1 ) single_rank = false;
     else single_rank = true;
 
-    const std::vector<SimTime_t>& vec = sim->getInterThreadLatencies();
-    SimTime_t min = vec[0];
-    for ( int i = 1; i < vec.size(); i++ ) {
-        if ( vec[i] < min ) min = vec[i];
-    }
-    max_period = min;
+    max_period = sim->getInterThreadMinLatency();
     nextSyncTime = max_period;
 }
 

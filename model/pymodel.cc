@@ -675,6 +675,7 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
     PyDict_SetItem(dict, PyString_FromString("output-config"), PyString_FromString(cfg->output_config_graph.c_str()));
     PyDict_SetItem(dict, PyString_FromString("output-dot"), PyString_FromString(cfg->output_dot.c_str()));
 	PyDict_SetItem(dict, PyString_FromString("numRanks"), PyLong_FromLong(cfg->getNumRanks()));
+	PyDict_SetItem(dict, PyString_FromString("numThreads"), PyLong_FromLong(cfg->getNumThreads()));
 
     const char *runModeStr = "UNKNOWN";
     switch (cfg->runMode) {
@@ -1144,11 +1145,6 @@ SSTPythonModelDefinition::~SSTPythonModelDefinition() {
     gModel = NULL;
 
     if ( NULL != namePrefix ) free(namePrefix);
-
-    // Shut Python engine down, this consumes a fair amount of resources
-    // according to some guides so we may need to do this earlier (after
-    // model generation or be quick to free the model definition.
-    Py_Finalize();
 }
 
 

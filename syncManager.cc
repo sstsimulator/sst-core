@@ -20,6 +20,7 @@
 #include "sst/core/timeConverter.h"
 
 #include "sst/core/rankSyncSerialSkip.h"
+#include "sst/core/rankSyncParallelSkip.h"
 #include "sst/core/threadSyncSimpleSkip.h"
 
 namespace SST {
@@ -78,9 +79,17 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::
     next_threadSync(0)
 {
     // TraceFunction trace(CALL_INFO_LONG);    
+
+    sim = Simulation::getSimulation();
+
     if ( rank.thread == 0  ) {
         if ( num_ranks.rank > 1 ) {
-            rankSync = new RankSyncSerialSkip(barrier, minPartTC);
+            if ( num_ranks.thread == 1 ) {
+                rankSync = new RankSyncSerialSkip(/*num_ranks,*/ barrier, minPartTC);
+            }
+            else {
+                rankSync = new RankSyncParallelSkip(num_ranks, barrier, minPartTC);
+            }
         }
         else {
             rankSync = new EmptyRankSync();
@@ -88,16 +97,20 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::
         
     }
 
-    if ( num_ranks.thread > 1 ) {
+    // Need to check to see if there are any inter-thread
+    // dependencies.  If not, EmptyThreadSync, otherwise use one
+    // of the active threadsyncs.
+    SimTime_t interthread_minlat = sim->getInterThreadMinLatency();
+    if ( num_ranks.thread > 1 && interthread_minlat != MAX_SIMTIME_T ) {
         threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, rank.thread, Simulation::getSimulation());
     }
     else {
         threadSync = new EmptyThreadSync();
     }
 
-    sim = Simulation::getSimulation();
     exit = sim->getExit();
 
+    setPriority(SYNCPRIORITY);
 }
 
 
@@ -173,6 +186,11 @@ SyncManager::execute(void)
         if ( exit != NULL && rank.thread == 0 ) exit->check();
 
         barrier.wait();
+
+        if ( exit->getGlobalCount() == 0 ) {
+            endSimulation(exit->getEndTime());
+        }
+
         break;
     case THREAD:
 
@@ -223,103 +241,27 @@ void
 SyncManager::computeNextInsert()
 {
     // TraceFunction trace(CALL_INFO_LONG);    
+    // trace.getOutput().output(CALL_INFO,"%" PRIu64 ", %" PRIu64 ", %" PRIu64 "\n",
+    //                          sim->getCurrentSimCycle(), rankSync->getNextSyncTime(), threadSync->getNextSyncTime());
     if ( rankSync->getNextSyncTime() <= threadSync->getNextSyncTime() ) {
         next_sync_type = RANK;
         sim->insertActivity(rankSync->getNextSyncTime(), this);
-        // sim->getSimulationOutput().output("Next insert at: %" PRIu64 " (rank)\n",rankSync->getNextSyncTime());
+        // sim->getSimulationOutput().output(CALL_INFO,"Next insert at: %" PRIu64 " (rank)\n",rankSync->getNextSyncTime());
     }
     else {
         next_sync_type = THREAD;
         sim->insertActivity(threadSync->getNextSyncTime(), this);
-        // sim->getSimulationOutput().output("Next insert at: %" PRIu64 " (thread)\n",threadSync->getNextSyncTime());
-    }
-}
-
-#if 0
-/*********************************************
- *  NewThreadSync
- ********************************************/
-
-void
-NewThreadSync::before()
-{
-    // TraceFunction trace(CALL_INFO_LONG);
-    // totalWaitTime += barrier.wait();
-    barrier.wait();
-    if ( disabled ) return;
-    // Empty all the queues and send events on the links
-    for ( int i = 0; i < queues.size(); i++ ) {
-        ThreadSyncQueue* queue = queues[i];
-        std::vector<Activity*>& vec = queue->getVector();
-        for ( int j = 0; j < vec.size(); j++ ) {
-            Event* ev = static_cast<Event*>(vec[j]);
-            auto link = link_map.find(ev->getLinkId());
-            if (link == link_map.end()) {
-                printf("Link not found in map!\n");
-                abort();
-            } else {
-                SimTime_t delay = ev->getDeliveryTime() - sim->getCurrentSimCycle();
-                link->second->send(delay,ev);
-            }
-        }
-        queue->clear();
-    }
-/*
-    Exit* exit = sim->getExit();
-    // std::cout << "NewThreadSync(" << Simulation::getSimulation()->getRank().thread << ")::ref_count = " << exit->getRefCount() << std::endl;
-    if ( single_rank && exit->getRefCount() == 0 ) {
-        endSimulation(exit->getEndTime());
-    }
-*/
-    // totalWaitTime += barrier.wait();
-    barrier.wait();
-
-    SimTime_t next = sim->getCurrentSimCycle() + max_period->getFactor();
-}
-
-void
-NewThreadSync::after()
-{
-}
-
-void
-NewThreadSync::execute()
-{
-    before();
-    after();
-}
-
-int
-NewThreadSync::exchangeLinkInitData(int msg_count)
-{
-    // Need to walk through all the queues and send the data to the
-    // correct links
-    for ( int i = 0; i < num_threads; i++ ) {
-        ThreadSyncQueue* queue = queues[i];
-        std::vector<Activity*>& vec = queue->getVector();
-        for ( int j = 0; j < vec.size(); j++ ) {
-            Event* ev = static_cast<Event*>(vec[j]);
-            auto link = link_map.find(ev->getLinkId());
-            if (link == link_map.end()) {
-                printf("Link not found in map!\n");
-                abort();
-            } else {
-//                link->second->sendInitData_sync(ev);
-            }
-        }
-        queue->clear();
+        // sim->getSimulationOutput().output(CALL_INFO,"Next insert at: %" PRIu64 " (thread)\n",threadSync->getNextSyncTime());
     }
 }
 
 void
-NewThreadSync::finalizeLinkConfigurations()
+SyncManager::print(const std::string& header, Output &out) const
 {
-    // TraceFunction(CALL_INFO_LONG);    
-    for (auto i = link_map.begin() ; i != link_map.end() ; ++i) {
-        // i->second->finalizeConfiguration();
-    }
+    out.output("%s SyncManager to be delivered at %" PRIu64
+               " with priority %d\n",
+               header.c_str(), getDeliveryTime(), getPriority());
 }
-#endif
 } // namespace SST
 
 

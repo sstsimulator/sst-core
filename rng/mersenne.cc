@@ -10,9 +10,11 @@
 // distribution.
 
 #include <sst_config.h>
-//#include "sstrand.h"
+
 #include "mersenne.h"
+
 #include <cstdlib>
+#include <cstring>
 
 using namespace SST;
 using namespace SST::RNG;
@@ -38,15 +40,8 @@ MersenneRNG::MersenneRNG() {
 /*
 	Seed the Mersenne and then make a group of numbers
 */
-MersenneRNG::MersenneRNG(unsigned int seed) {
-	numbers = (uint32_t*) malloc(sizeof(uint32_t) * 624);
-	numbers[0] = (uint32_t) seed;
-	index = 0;
-
-	for(int i = 1 ; i < 624; i++) {
-		const uint32_t temp = ((uint32_t) 1812433253UL) * (numbers[i-1] ^ (numbers[i-1] >> 30)) + i;
-		numbers[i] = temp;
-	}
+MersenneRNG::MersenneRNG(unsigned int startSeed) {
+	seed(startSeed);
 }
 
 void MersenneRNG::generateNextBatch() {
@@ -87,25 +82,52 @@ uint32_t MersenneRNG::generateNextUInt32() {
 }
 
 uint64_t MersenneRNG::generateNextUInt64() {
-	return nextUniform() * (uint64_t) MERSENNE_UINT64_MAX;
+	int64_t nextInt64 = generateNextInt64();
+	uint64_t returnUInt64 = 0;
+
+	std::memcpy(&returnUInt64, &nextInt64, sizeof(nextInt64));
+
+	return returnUInt64;
 }
 
 int64_t  MersenneRNG::generateNextInt64() {
-	double next = nextUniform();
-	if(next > 0.5) 
-		next = next * -0.5;
-	next = next * 2;
+	uint32_t lowerHalf = generateNextUInt32();
+	uint32_t upperHalf = generateNextUInt32();
+	int64_t returnNumber = 0;
 
-	return (int64_t) (next * ((int64_t) MERSENNE_INT64_MAX));
+	char* returnNumberPtr = (char*) &returnNumber;
+	const char* lowerHalfPtr = (const char*) &lowerHalf;
+	const char* upperHalfPtr = (const char*) &upperHalf;
+
+	for(int i = 0; i < sizeof(lowerHalf); i++) {
+		returnNumberPtr[i] = lowerHalfPtr[i];
+	}
+
+	for(int i = 0; i < sizeof(upperHalf); i++) {
+		returnNumberPtr[i + 4] = upperHalfPtr[i];
+	}
+
+	return returnNumber;
 }
 
 int32_t  MersenneRNG::generateNextInt32() {
-	double next = nextUniform();
-	if(next > 0.5) 
-		next = next * -0.5;
-	next = next * 2;
+	uint32_t next_uint32 = generateNextUInt32();
+	int32_t castReturn = 0;
 
-	return (int32_t) (next * ((int32_t) MERSENNE_INT32_MAX));
+	std::memcpy(&castReturn, &next_uint32, sizeof(next_uint32));
+
+	return castReturn;
+}
+
+void MersenneRNG::seed(uint64_t seed) {
+	numbers = (uint32_t*) malloc(sizeof(uint32_t) * 624);
+	numbers[0] = (uint32_t) seed;
+	index = 0;
+
+	for(int i = 1 ; i < 624; i++) {
+		const uint32_t temp = ((uint32_t) 1812433253UL) * (numbers[i-1] ^ (numbers[i-1] >> 30)) + i;
+		numbers[i] = temp;
+	}
 }
 
 MersenneRNG::~MersenneRNG() {
