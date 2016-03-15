@@ -122,7 +122,8 @@ nobase_dist_sst_HEADERS = \
 	statapi/statnull.h \
 	statapi/componentregisterstat_impl.h \
 	threadsafe.h \
-	cputimer.h
+	cputimer.h \
+	sst_config.h
 
 nobase_nodist_sst_HEADERS = \
 	build_info.h
