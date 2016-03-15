@@ -23,7 +23,7 @@ namespace Interfaces {
 /**  Test Event
  *   Useful for early-testing of components.
  */
-class TestEvent : public SST::Event {
+class TestEvent : public SST::Event, public SST::Core::Serialization::serializable_type<TestEvent> {
 public:
     TestEvent();
     ~TestEvent();
@@ -32,15 +32,13 @@ public:
     /** Prints a message to stdout when the message is deleted. */
     bool print_on_delete;
 
-private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
-        ar & BOOST_SERIALIZATION_NVP(count);
+public:   
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        Event::serialize_order(ser);
+        ser & count;
     }
+    
+    ImplementSerializable(TestEvent);     
 };
 
 } //namespace Interfaces
