@@ -13,6 +13,7 @@
 #define SST_CORE_SERIALIZATION_SERIALIZABLE_H
 
 #include <sst/core/serialization/serialize.h>
+#include <sst/core/output.h>
 //#include <sprockit/unordered.h>
 #include <unordered_map>
 #include <typeinfo>
@@ -59,47 +60,46 @@ class serializable_type
 
 };
 
-#define ImplementVirtualSerializable(obj) \
-    protected: \
-        obj(cxn_flag_t flag){}
+//#define ImplementVirtualSerializable(obj)     \
+//    protected:                                \
+//        obj(cxn_flag_t flag){}
 
 
-// #define NotSerializable(obj) \
-//  public: \
-//   static void \
-//   throw_exc(){ \
-//      spkt_throw_printf(sprockit::illformed_error, \
-//       "type %s should not be serialized", \
-//       #obj); \
-//   } \
-//   virtual void \
-//   serialize_order(sprockit::serializer& sst){ \
-//     throw_exc(); \
-//   } \
-//   virtual uint32_t \
-//   cls_id() const { \
-//     throw_exc(); \
-//     return -1; \
-//   } \
-//   static obj* \
-//   construct_deserialize_stub() { \
-//     throw_exc(); \
-//     return 0; \
-//   } \
-//   virtual std::string \
-//   serialization_name() const { \
-//     throw_exc(); \
-//     return ""; \
-//   } \
-//   virtual const char* \
-//   cls_name() const { \
-//     throw_exc(); \
-//     return ""; \
-//   } \
-//   virtual obj* \
-//   you_forgot_to_add_ImplementSerializable_to_this_class() { \
-//     return 0; \
-//   } \
+#define NotSerializable(obj) \
+ public:  \
+  static void \
+  throw_exc(){ \
+     Output ser_abort("", 5, -1, Output::STDERR); \
+     ser_abort.fatal(CALL_INFO_LONG, -1, "ERROR: type %s should not be serialized\n",#obj); \
+  } \
+  virtual void \
+  serialize_order(SST::Core::Serialization::serializer& sst){    \
+    throw_exc(); \
+  } \
+  virtual uint32_t \
+  cls_id() const { \
+    throw_exc(); \
+    return -1; \
+  } \
+  static obj* \
+  construct_deserialize_stub() { \
+    throw_exc(); \
+    return 0; \
+  } \
+  virtual std::string \
+  serialization_name() const { \
+    throw_exc(); \
+    return ""; \
+  } \
+  virtual const char* \
+  cls_name() const { \
+    throw_exc(); \
+    return ""; \
+  } \
+  virtual obj* \
+  you_forgot_to_add_ImplementSerializable_to_this_class() { \
+    return 0; \
+  }
 
 #define ImplementSerializableDefaultConstructor(obj)    \
  public: \

@@ -36,15 +36,6 @@ public:
                 header.c_str(), getDeliveryTime(), getPriority());
     }
 
-    // Actions are not serializable, but inherit from Activity, which
-    // is because events are serializable.  Implement the pure virtual
-    // functions here.
-    virtual const char* cls_name() const;
-
-    virtual void serialize_order(SST::Core::Serialization::serializer& ser);
-
-    virtual uint32_t cls_id() const;
-    
 
 protected:
     /** Called to signal to the Simulation object to end the simulation */
@@ -59,6 +50,8 @@ private:
      {
          ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
      }
+
+    NotSerializable(Action)
 };
 
 } //namespace SST

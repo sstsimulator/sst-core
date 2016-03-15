@@ -25,26 +25,6 @@ void Action::endSimulation(SimTime_t end) {
     Simulation::getSimulation()->endSimulation(end);
 }
 
-const char*
-Action::cls_name() const
-{
-    Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,-1,"Trying to serialize an Action.  This is not supported.\n");
-    return NULL;
-}
-
-void
-Action::serialize_order(SST::Core::Serialization::serializer& ser)
-{
-    Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,-1,"Trying to serialize an Action.  This is not supported.\n");
-}
-
-uint32_t
-Action::cls_id() const
-{
-    Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,-1,"Trying to serialize an Action.  This is not supported.\n");
-    return 0;
-}
-
 } // namespace SST
 
 BOOST_CLASS_EXPORT_IMPLEMENT(SST::Action);
