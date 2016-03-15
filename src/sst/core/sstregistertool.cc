@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
 
 
 	for(size_t i = 0; i < dependencyLen; i++) {
-		if( ! (isdigit(dependencyName[i]) || isalpha(dependencyName[i]) ) ) {
+		if( ! (isdigit(dependencyName[i]) || isalpha(dependencyName[i]) || dependencyName[i] == '_') ) {
 			fprintf(stderr, "Error: non alpha-numeric at index %d in dependency %s\n",
 				(int) (i+1), dependencyName);
 			exit(-1);
