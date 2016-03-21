@@ -257,14 +257,6 @@ public:
     }
 };
 
-template <>
-class SST::Core::Serialization::serialize <UnitAlgebra> {
-public:
-    void
-    operator()(UnitAlgebra& v, SST::Core::Serialization::serializer& ser) {
-        v.serialize_order(ser);
-    }
-};
 
 // template <typename T>
 // UnitAlgebra operator* (UnitAlgebra lhs, const T& rhs);
@@ -322,6 +314,21 @@ inline std::ostream& operator<< (std::ostream& os, const Units& r)
 
 } // namespace SST
 
+namespace SST {
+namespace Core {
+namespace Serialization {
+
+template <>
+class SST::Core::Serialization::serialize <UnitAlgebra> {
+public:
+    void
+    operator()(UnitAlgebra& v, SST::Core::Serialization::serializer& ser) {
+        v.serialize_order(ser);
+    }
+};
+}
+}
+}
 
 BOOST_CLASS_EXPORT_KEY(SST::Units)
 BOOST_CLASS_EXPORT_KEY(SST::UnitAlgebra)
