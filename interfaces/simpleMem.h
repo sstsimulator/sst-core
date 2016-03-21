@@ -76,22 +76,23 @@ public:
         size_t size;        /*!< Size of this request or response */
         dataVec data;       /*!< Payload data (for Write, or ReadResp) */
         flags_t flags;      /*!< Flags associated with this request or response */
+        flags_t memFlags;   /*!< Memory flags - ignored by caches except to be passed through with request to main memory */
         id_t id;            /*!< Unique ID to identify responses with requests */
         uint32_t groupId;   /* Group Id.  Used to maintain group-based stats in MH */
 	Addr instrPtr;      /*!< Instruction pointer associated with the operation */
-        Addr virtualAddr;  /*!< Virtual address associated with the operation */
+        Addr virtualAddr;   /*!< Virtual address associated with the operation */
 
         /** Constructor */
-        Request(Command cmd, Addr addr, size_t size, dataVec &data, flags_t flags = 0) :
-            cmd(cmd), addr(addr), size(size), data(data), flags(flags), groupId(0),
+        Request(Command cmd, Addr addr, size_t size, dataVec &data, flags_t flags = 0, flags_t memFlags = 0) :
+            cmd(cmd), addr(addr), size(size), data(data), flags(flags), memFlags(memFlags), groupId(0),
 		instrPtr(0), virtualAddr(0)
         {
             id = main_id++;
         }
 
         /** Constructor */
-        Request(Command cmd, Addr addr, size_t size, flags_t flags = 0) :
-            cmd(cmd), addr(addr), size(size), flags(flags), groupId(0),
+        Request(Command cmd, Addr addr, size_t size, flags_t flags = 0, flags_t memFlags = 0) :
+            cmd(cmd), addr(addr), size(size), flags(flags), memFlags(memFlags), groupId(0),
 		instrPtr(0), virtualAddr(0)
         {
             id = main_id++;
