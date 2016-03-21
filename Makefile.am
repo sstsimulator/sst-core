@@ -100,7 +100,6 @@ nobase_dist_sst_HEADERS = \
 	serialization/serialize_set.h \
 	serialization/serialize_sizer.h \
 	serialization/serialize_string.h \
-	serialization/serialize_unitalgebra.h \
 	serialization/serialize_unpacker.h \
 	serialization/serialize_vector.h \
 	serialization/serializer.h \
