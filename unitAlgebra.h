@@ -319,7 +319,7 @@ namespace Core {
 namespace Serialization {
 
 template <>
-class ::SST::Core::Serialization::serialize <::SST::UnitAlgebra> {
+class SST::Core::Serialization::serialize <SST::UnitAlgebra> {
 public:
     void
     operator()(UnitAlgebra& v, SST::Core::Serialization::serializer& ser) {
