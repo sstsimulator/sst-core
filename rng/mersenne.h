@@ -70,9 +70,9 @@ class MersenneRNG : public SSTRandom {
 	/**
 		Generates the next random number as a signed 32-bit integer
 	*/
-    int32_t  generateNextInt32();
-        
-    /**
+    	int32_t  generateNextInt32();
+
+    	/**
 		Seed the XOR RNG
 	*/
 	void seed(uint64_t newSeed);
@@ -86,12 +86,12 @@ class MersenneRNG : public SSTRandom {
 	/**
 		Generates the next batch of random numbers
 	*/
-    void  generateNextBatch();
+    	void  generateNextBatch();
 
 	/**
 		Stores the next set of random numbers
 	*/
-    uint32_t* numbers;
+    	uint32_t* numbers;
 
 	/**
 		Tells us what index of the random number list the next returnable number should come from
