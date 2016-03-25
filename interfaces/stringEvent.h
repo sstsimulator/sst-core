@@ -60,7 +60,7 @@ public:
         ser & str;
     }
     
-    ImplementSerializable(StringEvent);     
+    ImplementSerializable(SST::Interfaces::StringEvent);     
 };
 
 } //namespace Interfaces

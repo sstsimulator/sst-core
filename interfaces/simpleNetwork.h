@@ -151,7 +151,7 @@ public:
 
     private:
 
-        ImplementSerializable(Request)
+        ImplementSerializable(SST::Interfaces::SimpleNetwork::Request)
     };
     /**
        Class used to inspect network requests going through the network.

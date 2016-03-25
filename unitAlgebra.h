@@ -231,8 +231,6 @@ public:
     /** Return the rounded value as a 64bit integer */
     int64_t getRoundedValue() const;
 
-    ImplementSerializable(UnitAlgebra)
-
     void serialize_order(SST::Core::Serialization::serializer &ser) {
         // Do the unit
         ser & unit.numerator;
@@ -255,6 +253,7 @@ public:
         }
         }
     }
+    ImplementSerializable(SST::UnitAlgebra)
 };
 
 

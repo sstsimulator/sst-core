@@ -238,7 +238,7 @@ private:
     void
     serialize(Archive & ar, const unsigned int version );
 
-    ImplementSerializable(NullEvent)
+    ImplementSerializable(SST::NullEvent)
 
 };
 } //namespace SST

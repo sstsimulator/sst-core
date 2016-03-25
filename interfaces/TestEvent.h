@@ -38,7 +38,7 @@ public:
         ser & count;
     }
     
-    ImplementSerializable(TestEvent);     
+    ImplementSerializable(SST::Interfaces::TestEvent);     
 };
 
 } //namespace Interfaces
