@@ -655,8 +655,12 @@ main(int argc, char *argv[])
         g_output.output("\n");
 
         g_output.output("Statistic Output Parameters Provided:\n");
-        for (Params::const_iterator it = graph->getStatOutputParams().begin(); it != graph->getStatOutputParams().end(); ++it ) {
-            g_output.output("  %s = %s\n", Params::getParamName(it->first).c_str(), it->second.c_str());
+        // for (Params::const_iterator it = graph->getStatOutputParams().begin(); it != graph->getStatOutputParams().end(); ++it ) {
+        //     g_output.output("  %s = %s\n", Params::getParamName(it->first).c_str(), it->second.c_str());
+        // }
+        std::set<std::string> keys = graph->getStatOutputParams().getKeys();
+        for (auto it = keys.begin(); it != keys.end(); ++it ) {
+            g_output.output("  %s = %s\n", it->c_str(), graph->getStatOutputParams().find_string(*it).c_str());
         }
         g_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
     }

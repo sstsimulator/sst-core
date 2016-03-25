@@ -121,46 +121,46 @@ public:
      *  Params.
      *  Iteration is done in ascending order according to the keys.
      */
-    iterator begin() { return data.begin(); }
+    iterator begin() __attribute__ ((deprecated)) { return data.begin(); }
     /**  Returns a read/write iterator that points one past the last
      *  pair in the Params.  Iteration is done in ascending order
      *  according to the keys.
      */
-    iterator end() { return data.end(); }
+    iterator end() __attribute__ ((deprecated)) { return data.end(); }
     /** Returns a read-only (constant) iterator that points to the first pair
      *  in the Params.  Iteration is done in ascending order according to the
      *  keys.
      */
-    const_iterator begin() const { return data.begin(); }
+    const_iterator begin() const __attribute__ ((deprecated)) { return data.begin(); }
     /** Returns a read-only (constant) iterator that points one past the last
      *  pair in the Params.  Iteration is done in ascending order according to
      *  the keys.
      */
-    const_iterator end() const { return data.end(); }
+    const_iterator end() const __attribute__ ((deprecated)) { return data.end(); }
     /** Returns a read/write reverse iterator that points to the last pair in
      *  the Params.  Iteration is done in descending order according to the
      *  keys.
      */
-    reverse_iterator rbegin() { return data.rbegin(); }
+    reverse_iterator rbegin() __attribute__ ((deprecated)) { return data.rbegin(); }
     /** Returns a read/write reverse iterator that points to one before the
      *  first pair in the Params.  Iteration is done in descending order
      *  according to the keys.
      */
-    reverse_iterator rend() { return data.rend(); }
+    reverse_iterator rend() __attribute__ ((deprecated)) { return data.rend(); }
     /** Returns a read-only (constant) reverse iterator that points to the
      *  last pair in the Params.  Iteration is done in descending order
      *  according to the keys.
      */
-    const_reverse_iterator rbegin() const { return data.rbegin(); }
+    const_reverse_iterator rbegin() const __attribute__ ((deprecated)) { return data.rbegin(); }
     /** Returns a read-only (constant) reverse iterator that points to one
      *  before the first pair in the Params.  Iteration is done in descending
      *  order according to the keys.
      */
-    const_reverse_iterator rend() const { return data.rend(); }
+    const_reverse_iterator rend() const __attribute__ ((deprecated)) { return data.rend(); }
     /** Returns the size of the Params.  */
     size_type size() const { return data.size(); }
     /** Returns the maximum size of the Params.  */
-    size_type max_size() const { return data.max_size(); }
+    size_type max_size() const __attribute__ ((deprecated)) { return data.max_size(); }
     /** Returns true if the Params is empty.  (Thus begin() would equal end().) */
     bool empty() const { return data.empty(); }
 
@@ -207,7 +207,7 @@ public:
      *
      *  Insertion requires logarithmic time.
      */
-    std::pair<iterator, bool> insert(const value_type& x) {
+    std::pair<iterator, bool> insert(const value_type& x) __attribute__ ((deprecated)) {
         uint32_t id = getKey(x.first);
         return data.insert(std::make_pair(id, x.second));
     }
@@ -231,7 +231,7 @@ public:
      *
      *  Insertion requires logarithmic time (if the hint is not taken).
      */
-    iterator insert(iterator pos, const value_type& x) {
+    iterator insert(iterator pos, const value_type& x) __attribute__ ((deprecated)) {
         uint32_t id = getKey(x.first);
         return data.insert(pos, std::make_pair(id, x.second));
     }
@@ -244,7 +244,7 @@ public:
      *  Complexity similar to that of the range constructor.
      */
     template <class InputIterator>
-    void insert(InputIterator f, InputIterator l) {
+    void insert(InputIterator f, InputIterator l) __attribute__ ((deprecated)) {
         data.insert(f, l);
     }
 
@@ -258,7 +258,7 @@ public:
      *  the pointed-to memory is not touched in any way.  Managing
      *  the pointer is the user's responsibilty.
      */
-    void erase(iterator pos) {  data.erase(pos); }
+    void erase(iterator pos) __attribute__ ((deprecated)) {  data.erase(pos); }
     /**
      *  @brief Erases elements according to the provided key.
      *  @param  k  Key of element to be erased.
@@ -270,7 +270,7 @@ public:
      *  the element is itself a pointer, the pointed-to memory is not touched
      *  in any way.  Managing the pointer is the user's responsibilty.
      */
-    size_type erase(const key_type& k) { return data.erase(getKey(k)); }
+    size_type erase(const key_type& k) __attribute__ ((deprecated)) { return data.erase(getKey(k)); }
     /**
      *  Erases all elements in a %map.  Note that this function only
      *  erases the elements, and that if the elements themselves are
@@ -291,7 +291,7 @@ public:
      *  pointing to the sought after %pair.  If unsuccessful it returns the
      *  past-the-end ( @c end() ) iterator.
      */
-    iterator find(const key_type& k) { verifyParam(k); return data.find(getKey(k)); }
+    iterator find(const key_type& k) __attribute__ ((deprecated)) { verifyParam(k); return data.find(getKey(k)); }
     /**
      *  @brief Tries to locate an element in a %map.
      *  @param  k  Key of (key, value) %pair to be located.
@@ -303,7 +303,7 @@ public:
      *  iterator pointing to the sought after %pair. If unsuccessful it
      *  returns the past-the-end ( @c end() ) iterator.
      */
-    const_iterator find(const key_type& k) const { verifyParam(k); return data.find(getKey(k)); }
+    const_iterator find(const key_type& k) const __attribute__ ((deprecated)) { verifyParam(k); return data.find(getKey(k)); }
     /**
      *  @brief  Finds the number of elements with given key.
      *  @param  k  Key of (key, value) pairs to be located.
@@ -325,7 +325,7 @@ public:
      *
      *  Lookup requires logarithmic time.
      */
-    mapped_type& operator[](const key_type& k) { verifyParam(k); return data[getKey(k)]; }
+    mapped_type& operator[](const key_type& k) __attribute__ ((deprecated)) { verifyParam(k); return data[getKey(k)]; }
 
     /** Find a Parameter value in the set, and return its value as an integer
      * @param k - Parameter name
@@ -505,7 +505,33 @@ public:
         }
     }
 
-    /** Returns a new parameter object with parameters that match
+
+
+    /** Add a key value pair into the param object.
+     */
+    void insert(std::string key, std::string value, bool overwrite = true) {
+        if ( overwrite ) {
+            data[getKey(key)] = value;
+        }
+        else {
+            uint32_t id = getKey(key);
+            data.insert(std::make_pair(id, value));
+        }
+    }
+
+    void insert(const Params& params) {
+        data.insert(params.data.begin(), params.data.end());
+    }
+
+    std::set<std::string> getKeys() const {
+        std::set<std::string> ret;
+        for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
+            ret.insert(keyMapReverse[i->first]);
+        }
+        return ret;
+    }
+    
+     /** Returns a new parameter object with parameters that match
      * the specified prefix.
      */
     Params find_prefix_params(std::string prefix) const {
@@ -514,7 +540,8 @@ public:
         for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
             std::string key = keyMapReverse[i->first].substr(0, prefix.length());
             if (key == prefix) {
-                ret[keyMapReverse[i->first].substr(prefix.length())] = i->second;
+                // ret[keyMapReverse[i->first].substr(prefix.length())] = i->second;
+                ret.insert(keyMapReverse[i->first].substr(prefix.length()), i->second);
             }
         }
         ret.allowedKeys = allowedKeys;

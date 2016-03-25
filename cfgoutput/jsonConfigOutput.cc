@@ -54,20 +54,28 @@ void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigC
 	fprintf(outputFile, "%s    \"name\" : \"%s\",\n", indent.c_str(), comp.name.c_str());
 	fprintf(outputFile, "%s    \"type\" : \"%s\",\n", indent.c_str(), comp.type.c_str());
 
-	auto paramsItr = comp.params.begin();
+	// auto paramsItr = comp.params.begin();
+    auto keys = comp.params.getKeys();
+    auto paramsItr = keys.begin();
 
-	if(paramsItr != comp.params.end()) {
+	// if(paramsItr != comp.params.end()) {
+	if(paramsItr != keys.end()) {
 		fprintf(outputFile, "%s    \"params\" : [\n", indent.c_str());
 
 		fprintf(outputFile, "%s      { \"name\" : \"%s\", \"value\" : \"%s\" }",
-			indent.c_str(), Params::getParamName(paramsItr->first).c_str(),
-			paramsItr->second.c_str());
+			// indent.c_str(), Params::getParamName(paramsItr->first).c_str(),
+			// paramsItr->second.c_str());
+			indent.c_str(), paramsItr->c_str(),
+                comp.params.find_string(*paramsItr).c_str());
 
 		paramsItr++;
 
-		for(; paramsItr != comp.params.end(); paramsItr++) {
-			std::string paramName  = Params::getParamName(paramsItr->first);
-			std::string paramValue = paramsItr->second;
+		// for(; paramsItr != comp.params.end(); paramsItr++) {
+		for(; paramsItr != keys.end(); paramsItr++) {
+			// std::string paramName  = Params::getParamName(paramsItr->first);
+			// std::string paramValue = paramsItr->second;
+			std::string paramName  = *paramsItr;
+			std::string paramValue = comp.params.find_string(*paramsItr);
 
 			fprintf(outputFile, ",\n%s      { \"name\" : \"%s\", \"value\" : \"%s\" }",
 				indent.c_str(), paramName.c_str(), paramValue.c_str());
