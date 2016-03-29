@@ -42,9 +42,11 @@ void XMLConfigGraphOutput::generateXML(const std::string indent, const ConfigCom
 	fprintf(outputFile, "%s<component id=\"system.%s\" name=\"%s\" type=\"%s\">\n",
 		indent.c_str(), comp.name.c_str(), comp.name.c_str(), comp.type.c_str());
 
-	for(auto paramsItr = comp.params.begin(); paramsItr != comp.params.end(); paramsItr++) {
-		std::string paramName  = Params::getParamName(paramsItr->first);
-		std::string paramValue = paramsItr->second;
+	// for(auto paramsItr = comp.params.begin(); paramsItr != comp.params.end(); paramsItr++) {
+    auto keys = comp.params.getKeys();
+	for(auto paramsItr = keys.begin(); paramsItr != keys.end(); paramsItr++) {
+		std::string paramName  = *paramsItr;
+		std::string paramValue = comp.params.find_string(*paramsItr);
 
 		fprintf(outputFile, "%s%s<param name=\"%s\" value=\"%s\"/>\n",
 			indent.c_str(), "   ",

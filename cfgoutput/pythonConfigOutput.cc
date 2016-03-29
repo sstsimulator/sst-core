@@ -37,11 +37,17 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 		fprintf(outputFile, "%s = sst.Component(\"%s\", \"%s\")\n",
 			pyCompName, esCompName, comp_itr->type.c_str());
 
-		auto params_itr = comp_itr->params.begin();
+        Params& params = comp_itr->params;
+        auto keys = params.getKeys();
+		// auto params_itr = comp_itr->params.begin();
+		auto params_itr = keys.begin();
 
-		if(params_itr != comp_itr->params.end()) {
-			char* esParamName = makeEscapeSafe(Params::getParamName(params_itr->first).c_str());
-			char* esValue     = makeEscapeSafe(params_itr->second.c_str());
+		// if(params_itr != comp_itr->params.end()) {
+		if(params_itr != keys.end()) {
+			// char* esParamName = makeEscapeSafe(Params::getParamName(params_itr->first).c_str());
+			// char* esValue     = makeEscapeSafe(params_itr->second.c_str());
+			char* esParamName = makeEscapeSafe(params_itr->c_str());
+			char* esValue     = makeEscapeSafe(params.find_string(*params_itr).c_str());
 
 			fprintf(outputFile, "%s.addParams({\n", pyCompName);
 
@@ -56,9 +62,10 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 
 			params_itr++;
 
-			for(; params_itr != comp_itr->params.end(); params_itr++) {
-				char* esParamName = makeEscapeSafe(Params::getParamName(params_itr->first).c_str());
-				char* esValue     = makeEscapeSafe(params_itr->second.c_str());
+			// for(; params_itr != comp_itr->params.end(); params_itr++) {
+			for(; params_itr != keys.end(); params_itr++) {
+				char* esParamName = makeEscapeSafe(params_itr->c_str());
+				char* esValue     = makeEscapeSafe(params.find_string(*params_itr).c_str());
 
 				if(isMultiLine(esValue)) {
 					fprintf(outputFile, ",\n     \"%s\" : \"\"\"%s\"\"\"",
@@ -99,16 +106,23 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 			if( 0 != comp_itr->enabledStatParams[statIndex].size() ) {
 				fprintf(outputFile, ", {\n");
 
-				auto param_itr = comp_itr->enabledStatParams[statIndex].begin();
+                Params& params = comp_itr->enabledStatParams[statIndex];
+                auto keys = params.getKeys();
+                auto param_itr = keys.begin();
+				// auto param_itr = comp_itr->enabledStatParams[statIndex].begin();
 
-				for(; param_itr != comp_itr->enabledStatParams[statIndex].end(); param_itr++) {
-					if(param_itr != comp_itr->enabledStatParams[statIndex].begin()) {
+				// for(; param_itr != comp_itr->enabledStatParams[statIndex].end(); param_itr++) {
+				for(; param_itr != keys.end(); param_itr++) {
+					// if(param_itr != comp_itr->enabledStatParams[statIndex].begin()) {
+					if(param_itr != keys.begin()) {
 						fprintf(outputFile, ",\n");
 					}
 
-					char* esParamName = makeEscapeSafe(Params::getParamName(
-						param_itr->first));
-					char* esValue     = makeEscapeSafe(param_itr->second);
+					// char* esParamName = makeEscapeSafe(Params::getParamName(
+					// 	param_itr->first));
+					// char* esValue     = makeEscapeSafe(param_itr->second);
+					char* esParamName = makeEscapeSafe(*param_itr);
+					char* esValue     = makeEscapeSafe(comp_itr->enabledStatParams[statIndex].find_string(*param_itr));
 
 					fprintf(outputFile, "     \"%s\" : \"%s\"", esParamName,
 						esValue);
