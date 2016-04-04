@@ -44,7 +44,7 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, Core::ThreadSafe:
     send_count(0),
     barrier(barrier)
 {
-    TraceFunction(CALL_INFO_LONG);
+    // TraceFunction(CALL_INFO_LONG);
     max_period = Simulation::getSimulation()->getMinPartTC();
     myNextSyncTime = max_period->getFactor();
     recv_count = new int[num_ranks.thread];

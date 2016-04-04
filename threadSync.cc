@@ -75,7 +75,7 @@ ThreadSync::getQueueForThread(int tid)
 void
 ThreadSync::execute()
 {
-    // TraceFunction trace(CALL_INFO_LONG);
+    TraceFunction trace(CALL_INFO_LONG);
     totalWaitTime += barrier.wait();
     if ( disabled ) return;
     // Empty all the queues and send events on the links
