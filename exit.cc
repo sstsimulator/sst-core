@@ -168,7 +168,6 @@ void Exit::check()
         end_time = end_value;
 #endif
         if (single_rank) {
-            std::cout << "Going to call endSimulation with end_time = " << end_time << std::endl;
             endSimulation(end_time);
         }
     }
