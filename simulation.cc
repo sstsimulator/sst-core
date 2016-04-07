@@ -301,11 +301,14 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.
-    if ( min_part == MAX_SIMTIME_T ) {
+    // if ( min_part == MAX_SIMTIME_T ) {
+    //     independent = true;
+    //     for ( int i = 0; i < num_ranks.thread; i++ ) {
+    //         if ( interThreadLatencies[i] != MAX_SIMTIME_T ) independent = false;
+    //     }
+    // }
+    if ( min_part == MAX_SIMTIME_T && cross_thread_links == 0 ) {
         independent = true;
-        for ( int i = 0; i < num_ranks.thread; i++ ) {
-            if ( interThreadLatencies[i] != MAX_SIMTIME_T ) independent = false;
-        }
     }
     else {
         independent = false;

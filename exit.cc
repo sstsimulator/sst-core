@@ -148,11 +148,16 @@ void Exit::check()
     // TraceFunction trace(CALL_INFO_LONG);
     int value = ( m_refCount > 0 );
     int out;
-
+    
 #ifdef SST_CONFIG_HAVE_MPI
     // boost::mpi::communicator world;
     // all_reduce( world, &value, 1, &out, std::plus<int>() );  
-    MPI_Allreduce( &value, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );  
+    if ( !single_rank ) {
+        MPI_Allreduce( &value, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );
+    }
+    else {
+        out = value;
+    }
 #else
     out = value;
 #endif
@@ -164,8 +169,10 @@ void Exit::check()
         SimTime_t end_value;
         // Simulation::getSimulationOutput().output(CALL_INFO,"end_time = %llu\n",end_time);
         // all_reduce( world, &end_time, 1, &end_value, boost::mpi::maximum<SimTime_t>() );
-        MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
-        end_time = end_value;
+        if ( !single_rank ) {
+            MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
+            end_time = end_value;
+        }
 #endif
         if (single_rank) {
             endSimulation(end_time);
