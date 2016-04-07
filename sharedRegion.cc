@@ -28,7 +28,6 @@
 namespace SST {
 
 
-
 bool SharedRegionMerger::merge(uint8_t *target, const uint8_t *newData, size_t size)
 {
     return false;
@@ -245,7 +244,7 @@ const void* SharedRegionManagerImpl::getConstPtr(const SharedRegion *sr) const
 void SharedRegionManagerImpl::updateState(bool finalize)
 {
     std::lock_guard<std::mutex> lock(mtx);
-
+    
     if ( finalize ) {
 #ifdef SST_CONFIG_HAVE_MPI
         int myRank = Simulation::getSimulation()->getRank().rank;

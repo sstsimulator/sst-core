@@ -143,6 +143,9 @@ public:
         return *value;
     }
 
+    bool empty() {
+        return dataByName.empty();
+    }
 };
     
 } //namespace SST

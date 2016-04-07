@@ -11,28 +11,21 @@
 
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
+#include <sst/core/serialization/serializer.h>
 #include <sst/core/syncQueue.h>
-
-#include <boost/archive/polymorphic_binary_iarchive.hpp>
-#include <boost/archive/polymorphic_binary_oarchive.hpp>
-#include <boost/serialization/vector.hpp>
 
 #include <sst/core/event.h>
 
-#include <boost/iostreams/stream_buffer.hpp>
-#include <boost/iostreams/stream.hpp>
-#include <boost/iostreams/device/back_inserter.hpp>
-
-#include "sst/core/simulation.h"
+#include <sst/core/simulation.h>
 
 
 namespace SST {
 
 using namespace Core::ThreadSafe;
+using namespace Core::Serialization;
 
 SyncQueue::SyncQueue() :
-    ActivityQueue()
+    ActivityQueue(), buffer(NULL), buf_size(0)
 {
 }
 
@@ -91,35 +84,38 @@ char*
 SyncQueue::getData()
 {
     std::lock_guard<Spinlock> lock(slock);
-    buffer.clear();
 
-    // Reserve space for the header information
-    for ( unsigned int i = 0; i < sizeof(SyncQueue::Header); i++ ) {
-        buffer.push_back(0);
+    serializer ser;
+
+    ser.start_sizing();
+
+    ser & activities;
+
+    size_t size = ser.size();
+
+    if ( buf_size < ( size + sizeof(SyncQueue::Header) ) ) {
+        if ( buffer != NULL ) {
+            delete[] buffer;
+        }
+        
+        buf_size = size + sizeof(SyncQueue::Header);
+        buffer = new char[buf_size];
     }
+        
+    ser.start_packing(buffer + sizeof(SyncQueue::Header), size);
 
-    boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
-    boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
-    boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header || boost::archive:: no_tracking);
+    ser & activities;
 
-    oa << activities;
-    output_stream.flush();
-    
+    // Delete all the events
     for ( unsigned int i = 0; i < activities.size(); i++ ) {
         delete activities[i];
     }
     activities.clear();
 
-    SyncQueue::Header hdr;
-    hdr.buffer_size = buffer.size();
-
-    char* hdr_bytes = reinterpret_cast<char*>(&hdr);
-    for ( unsigned int i = 0; i < sizeof(SyncQueue::Header); i++ ) {
-        buffer[i] = hdr_bytes[i];
-    }
+    // Set the size field in the header
+    static_cast<SyncQueue::Header*>(static_cast<void*>(buffer))->buffer_size = size + sizeof(SyncQueue::Header);
     
-    return buffer.data();
- }
-} // namespace SST
+    return buffer;
+}
 
-// BOOST_CLASS_EXPORT_IMPLEMENT(SST::SyncQueue)
+} // namespace SST

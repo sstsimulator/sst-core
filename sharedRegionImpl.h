@@ -21,11 +21,27 @@
 #include <mutex>
 
 #include <sst/core/sharedRegion.h>
+//#include <sst/core/changeSet.h>
 
 namespace SST {
 
 class SharedRegionImpl;
 
+class ChangeSet {
+private:
+    friend class boost::serialization::access;
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version );
+    
+public:
+    ChangeSet() { } /* Should be private.  For some reason, clang is ignoring the friend declaration */
+    size_t offset;
+    size_t length;
+    const uint8_t *data;
+    
+    ChangeSet(size_t offset, size_t length, const uint8_t *data = NULL) : offset(offset), length(length), data(data) { }
+    
+};
 
 class RegionInfo {
 public:
@@ -79,10 +95,12 @@ public:
 
         ChangeSetMergeInfo() : RegionMergeInfo() {}
 
-        std::vector<SharedRegionMerger::ChangeSet> changeSets;
+        // std::vector<SharedRegionMerger::ChangeSet> changeSets;
+        std::vector<ChangeSet> changeSets;
     public:
         ChangeSetMergeInfo(int rank, const std::string & key,
-                std::vector<SharedRegionMerger::ChangeSet> & changeSets) : RegionMergeInfo(rank, key),
+                // std::vector<SharedRegionMerger::ChangeSet> & changeSets) : RegionMergeInfo(rank, key),
+                std::vector<ChangeSet> & changeSets) : RegionMergeInfo(rank, key),
             changeSets(changeSets)
         { }
         bool merge(RegionInfo *ri) {
@@ -103,7 +121,8 @@ private:
     std::vector<SharedRegionImpl*> sharers;
 
     SharedRegionMerger *merger; // If null, no multi-rank merging
-    std::vector<SharedRegionMerger::ChangeSet> changesets;
+    // std::vector<SharedRegionMerger::ChangeSet> changesets;
+    std::vector<ChangeSet> changesets;
 
     bool didBulk;
     bool initialized;

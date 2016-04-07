@@ -14,9 +14,12 @@
 #define SST_CORE_ACTION_H
 
 #include <sst/core/serialization.h>
+#include <sst/core/serialization/serializer.h>
 
 #include <sst/core/activity.h>
 #include <sst/core/output.h>
+
+
 
 namespace SST {
 
@@ -25,7 +28,11 @@ namespace SST {
  */
 class Action : public Activity {
 public:
-    Action() {}
+    Action() {
+#ifdef SST_ENFORCE_EVENT_ORDERING
+        enforce_link_order = 0;
+#endif
+    }
     ~Action() {}
 
     void print(const std::string& header, Output &out) const {
@@ -47,6 +54,8 @@ private:
      {
          ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
      }
+
+    NotSerializable(Action)
 };
 
 } //namespace SST

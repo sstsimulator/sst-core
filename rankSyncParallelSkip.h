@@ -110,4 +110,4 @@ private:
 
 } // namespace SST
 
-#endif // SST_CORE_SYNCMANAGER_H
+#endif // SST_CORE_RANKSYNCPARALLELSKIP_H

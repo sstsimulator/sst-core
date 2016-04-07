@@ -54,7 +54,11 @@ public:
     
     /** Sets the link id used for delivery.  For use by SST Core only */
     inline void setDeliveryLink(LinkId_t id, Link *link) {
+#ifdef SST_ENFORCE_EVENT_ORDERING
+        enforce_link_order = id;
+#else
         link_id = id;
+#endif
         delivery_link = link;
     }
 
@@ -69,7 +73,13 @@ public:
     }
 
     /** Gets the link id associated with this event.  For use by SST Core only */
-    inline LinkId_t getLinkId(void) const { return link_id; }
+    inline LinkId_t getLinkId(void) const {
+#ifdef SST_ENFORCE_EVENT_ORDERING
+        return enforce_link_order;
+#else
+        return link_id;
+#endif
+    }
 
 
     /// Functor classes for Event handling
@@ -170,6 +180,22 @@ public:
     }
 
 #endif
+
+    void serialize_order(SST::Core::Serialization::serializer &ser){
+        Activity::serialize_order(ser);
+#ifndef SST_ENFORCE_EVENT_ORDERING        
+        ser & link_id;
+#endif
+#ifdef __SST_DEBUG_EVENT_TRACKING__
+        ser & first_comp;
+        ser & first_type;
+        ser & first_port;
+        ser & last_comp;
+        ser & last_type;
+        ser & last_port;
+#endif
+
+    }    
     
 protected:
     /** Link used for delivery */
@@ -182,8 +208,12 @@ protected:
 
 private:
     static std::atomic<uint64_t> id_counter;
+    // If SST_ENFORCE_EVENT_ORDERING is turned on, then we'll use
+    // Activity::enforce_link_order as the link_id
+#ifndef SST_ENFORCE_EVENT_ORDERING
     LinkId_t link_id;
-
+#endif
+    
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     std::string first_comp;
     std::string first_type;
@@ -203,7 +233,7 @@ private:
 /**
  * Null Event.  Does nothing.
  */
-class NullEvent : public Event {
+class NullEvent : public Event, public SST::Core::Serialization::serializable_type<NullEvent> {
 public:
     NullEvent() : Event() {}
     ~NullEvent() {}
@@ -215,11 +245,16 @@ public:
                 header.c_str(), getDeliveryTime(), getPriority());
     }
 
+    
+
 private:
     friend class boost::serialization::access;
     template<class Archive>
     void
     serialize(Archive & ar, const unsigned int version );
+
+    ImplementSerializable(SST::NullEvent)
+
 };
 } //namespace SST
 
