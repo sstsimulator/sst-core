@@ -46,7 +46,11 @@ public:
     uint64_t getMaxDepth() const { return max_depth; }
     
 private:
+#ifdef SST_ENFORCE_EVENT_ORDERING
+    typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::pq_less_time_priority_order> dataType_t;
+#else
     typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::pq_less_time_priority> dataType_t;
+#endif
     dataType_t data;
     uint64_t insertOrder;
 

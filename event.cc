@@ -49,7 +49,9 @@ void Event::serialize(Archive & ar, const unsigned int version)
 {
     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
     // ar & BOOST_SERIALIZATION_NVP(delivery_link);
+#ifndef SST_ENFORCE_EVENT_ORDERING
     ar & BOOST_SERIALIZATION_NVP(link_id);
+#endif
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     ar & BOOST_SERIALIZATION_NVP(first_comp);
     ar & BOOST_SERIALIZATION_NVP(first_type);

@@ -28,7 +28,11 @@ namespace SST {
  */
 class Action : public Activity {
 public:
-    Action() {}
+    Action() {
+#ifdef SST_ENFORCE_EVENT_ORDERING
+        enforce_link_order = 0;
+#endif
+    }
     ~Action() {}
 
     void print(const std::string& header, Output &out) const {

@@ -42,6 +42,8 @@
 #define FINALEVENTPRIORITY     98
 #define EXITPRIORITY           99
 
+#define SST_ENFORCE_EVENT_ORDERING
+
 extern int main(int argc, char **argv);
 
 
@@ -56,6 +58,83 @@ public:
     /** Function which will be called when the time for this Activity comes to pass. */
     virtual void execute(void) = 0;
 
+#ifdef SST_ENFORCE_EVENT_ORDERING
+
+    /** To use with STL container classes. */
+    class less_time_priority_order {
+    public:
+        /** Compare based off pointers */
+        inline bool operator()(const Activity* lhs, const Activity* rhs) const {
+            if ( lhs->delivery_time == rhs->delivery_time ) {
+                if ( lhs->priority == rhs->priority ) {
+                    /* TODO:  Handle 64-bit wrap-around */
+                    return lhs->enforce_link_order > rhs->enforce_link_order;
+                } else {
+               	    return lhs->priority > rhs->priority;
+                }
+            } else {
+            	return lhs->delivery_time > rhs->delivery_time;
+            }
+        }
+
+        /** Compare based off references */
+        inline bool operator()(const Activity& lhs, const Activity& rhs) const {
+            if ( lhs.delivery_time == rhs.delivery_time ) {
+                if ( lhs.priority == rhs.priority ) {
+                    /* TODO:  Handle 64-bit wrap-around */
+                    return lhs.enforce_link_order > rhs.enforce_link_order;
+                } else {
+                    return lhs.priority > rhs.priority;
+                }
+            } else {
+            	return lhs.delivery_time > rhs.delivery_time;
+            }
+        }
+    };
+    
+    /** To use with STL priority queues, that order in reverse. */
+    class pq_less_time_priority_order {
+    public:
+        /** Compare based off pointers */
+        inline bool operator()(const Activity* lhs, const Activity* rhs) const {
+            if ( lhs->delivery_time == rhs->delivery_time ) {
+                if ( lhs->priority == rhs->priority ) {
+                    if ( lhs->enforce_link_order == rhs->enforce_link_order ) {
+                        /* TODO:  Handle 64-bit wrap-around */
+                        return lhs->queue_order > rhs->queue_order;
+                    }
+                    else {
+                        return lhs->enforce_link_order > rhs->enforce_link_order;
+                    }
+                } else {
+               	    return lhs->priority > rhs->priority;
+                }
+            } else {
+            	return lhs->delivery_time > rhs->delivery_time;
+            }
+        }
+
+        /** Compare based off references */
+        inline bool operator()(const Activity& lhs, const Activity& rhs) const {
+            if ( lhs.delivery_time == rhs.delivery_time ) {
+                if ( lhs.priority == rhs.priority ) {
+                    if ( lhs.enforce_link_order == rhs.enforce_link_order ) {
+                        return lhs.queue_order > rhs.queue_order;
+                    }
+                    else {
+                        return lhs.enforce_link_order > rhs.enforce_link_order;
+                    }
+                } else {
+                    return lhs.priority > rhs.priority;
+                }
+            } else {
+            	return lhs.delivery_time > rhs.delivery_time;
+            }
+        }
+    };
+    
+#endif
+    
     /** Comparator class to use with STL container classes. */
     class less_time_priority {
     public:
@@ -268,7 +347,14 @@ protected:
         ser & queue_order;
         ser & delivery_time;
         ser & priority;
+#ifdef SST_ENFORCE_EVENT_ORDERING
+        ser & enforce_link_order;
+#endif
     }    
+
+#ifdef SST_ENFORCE_EVENT_ORDERING
+    int32_t   enforce_link_order;
+#endif
 
 private:
     uint64_t  queue_order;
