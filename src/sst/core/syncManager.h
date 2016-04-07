@@ -102,7 +102,7 @@ private:
 
 class SyncManager : public Action {
 public:
-    SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC, const std::vector<SimTime_t>& interThreadLatencies);
+    SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& interThreadLatencies);
     virtual ~SyncManager();
 
     /** Register a Link which this Sync Object is responsible for */
@@ -134,7 +134,8 @@ private:
     Simulation * sim;
     
     sync_type_t      next_sync_type;
-
+    SimTime_t min_part;
+    
     void computeNextInsert();
     
 };

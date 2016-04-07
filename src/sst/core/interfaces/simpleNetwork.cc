@@ -11,7 +11,6 @@
 //
 #include "sst_config.h"
 
-#include "sst/core/serialization.h"
 #include "sst/core/interfaces/simpleNetwork.h"
 
 #include "sst/core/objectComms.h"
@@ -134,4 +133,4 @@ void SST::Interfaces::SimpleNetwork::exchangeMappingData() {
 } // namespace Interfaces
 } // namespace SST
 
-
+DeclareSerializable(SST::Interfaces::SimpleNetwork::Request)

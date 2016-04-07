@@ -21,6 +21,8 @@
 #include <sst/core/subcomponent.h>
 #include <sst/core/params.h>
 
+#include <sst/core/serialization/serializable.h>
+
 namespace SST {
 
 class Component;
@@ -44,8 +46,7 @@ public:
     /**
      * Represents both network sends and receives
      */
-    class Request {
-
+    class Request : public SST::Core::Serialization::serializable, SST::Core::Serialization::serializable_type<Request> {
 
     public:
         nid_t  dest;          /*!< Node ID of destination */
@@ -132,17 +133,25 @@ public:
         int getTraceID() {return traceID;}
         TraceType getTraceType() {return trace;}
         
+        void serialize_order(SST::Core::Serialization::serializer &ser) {
+            ser & dest;
+            ser & src;
+            ser & vn;
+            ser & size_in_bits;
+            ser & head;
+            ser & tail;
+            ser & payload;
+            ser & trace;
+            ser & traceID;
+        }
+        
     protected:
         TraceType trace;
         int traceID;
 
     private:
 
-        friend class boost::serialization::access;
-        template<class Archive>
-        void
-        serialize(Archive & ar, const unsigned int version );
-
+        ImplementSerializable(SST::Interfaces::SimpleNetwork::Request)
     };
     /**
        Class used to inspect network requests going through the network.
@@ -237,10 +246,6 @@ public:
      */
     class Mapping {
     private:
-        friend class boost::serialization::access;
-        template<class Archive>
-        void
-        serialize(Archive & ar, const unsigned int version );
 
         friend class SimpleNetwork;
         std::vector<nid_t>* data;
@@ -399,7 +404,5 @@ public:
 
 }
 }
-
-BOOST_CLASS_EXPORT_KEY(SST::Interfaces::SimpleNetwork::Request);
 
 #endif

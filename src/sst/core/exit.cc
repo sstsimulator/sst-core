@@ -21,6 +21,7 @@
 #include "sst/core/component.h"
 #include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
+#include "sst/core/stopAction.h"
 
 using SST::Core::ThreadSafe::Spinlock;
 
@@ -84,6 +85,7 @@ bool Exit::refInc( ComponentId_t id, uint32_t thread )
 
 bool Exit::refDec( ComponentId_t id, uint32_t thread )
 {
+    // TraceFunction trace(CALL_INFO_LONG);
     std::lock_guard<Spinlock> lock(slock);
     if ( m_idSet.find( id ) == m_idSet.end() ) {
         Simulation::getSimulation()->getSimulationOutput().verbose(CALL_INFO, 1, 1, "component (%s) multiple decrement\n",
@@ -103,7 +105,7 @@ bool Exit::refDec( ComponentId_t id, uint32_t thread )
     --m_thread_counts[thread];
 
     if ( single_rank && num_threads == 1 && m_refCount == 0 ) {
-        // std::cout << "Exiting..." << std::endl;
+        //std::cout << "Exiting..." << std::endl;
         end_time = Simulation::getSimulation()->getCurrentSimCycle();
         Simulation* sim = Simulation::getSimulation();
         // sim->insertActivity( sim->getCurrentSimCycle() + m_period->getFactor(), this );
@@ -111,7 +113,15 @@ bool Exit::refDec( ComponentId_t id, uint32_t thread )
     }
     else if ( m_thread_counts[thread] == 0 ) {
         SimTime_t end_time_new = Simulation::getSimulation()->getCurrentSimCycle();
+        // trace.getOutput().output(CALL_INFO,"end_time_new = %llu\n",end_time_new);
+        // trace.getOutput().output(CALL_INFO,"end_time = %llu\n",end_time);
         if ( end_time_new > end_time ) end_time = end_time_new;
+        if ( Simulation::getSimulation()->isIndependentThread() ) {
+            // Need to exit just this thread, so we'll need to use a
+            // StopAction
+            Simulation* sim = Simulation::getSimulation();
+            sim->insertActivity( sim->getCurrentSimCycle(), new StopAction() );            
+        }
     }    
         
     return false;
@@ -135,13 +145,19 @@ Exit::execute()
 // bool Exit::handler( Event* e )
 void Exit::check()
 {
+    // TraceFunction trace(CALL_INFO_LONG);
     int value = ( m_refCount > 0 );
     int out;
-
+    
 #ifdef SST_CONFIG_HAVE_MPI
     // boost::mpi::communicator world;
     // all_reduce( world, &value, 1, &out, std::plus<int>() );  
-    MPI_Allreduce( &value, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );  
+    if ( !single_rank ) {
+        MPI_Allreduce( &value, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );
+    }
+    else {
+        out = value;
+    }
 #else
     out = value;
 #endif
@@ -151,9 +167,12 @@ void Exit::check()
 #ifdef SST_CONFIG_HAVE_MPI
         // Do an all_reduce to get the end_time
         SimTime_t end_value;
+        // Simulation::getSimulationOutput().output(CALL_INFO,"end_time = %llu\n",end_time);
         // all_reduce( world, &end_time, 1, &end_value, boost::mpi::maximum<SimTime_t>() );
-        MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
-        end_time = end_value;
+        if ( !single_rank ) {
+            MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
+            end_time = end_value;
+        }
 #endif
         if (single_rank) {
             endSimulation(end_time);

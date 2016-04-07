@@ -19,7 +19,7 @@
 namespace SST {
 
 typedef unsigned long   ComponentId_t;
-typedef long   LinkId_t;
+typedef int32_t   LinkId_t;
 typedef uint64_t  Cycle_t;
 typedef uint64_t  SimTime_t;
 typedef double          Time_t;

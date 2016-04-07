@@ -218,7 +218,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     }
 
     ////// Create Simulation Objects //////
-    SST::Simulation* sim = Simulation::createSimulation(info.config, info.myRank, info.world_size);
+    SST::Simulation* sim = Simulation::createSimulation(info.config, info.myRank, info.world_size, info.min_part);
 
     barrier.wait();
 
@@ -340,7 +340,8 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     barrier.wait();
 
     info.simulated_time = sim->getFinalSimTime();
-
+    // g_output.output(CALL_INFO,"Simulation time = %s\n",info.simulated_time.toStringBestSI().c_str());
+    
     double end_time = sst_get_cpu_time();
     info.run_time = end_time - start_run;
 
@@ -352,17 +353,11 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
 
 }
 
-
-
-
-
-
-
-
 int
 main(int argc, char *argv[])
 {
 
+    
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Init(&argc, &argv);
 
@@ -550,7 +545,7 @@ main(int argc, char *argv[])
                 RankInfo rank[2];
                 rank[0] = comps[clink.component[0]].rank;
                 rank[1] = comps[clink.component[1]].rank;
-                if ( rank[0] == rank[1] ) continue;
+                if ( rank[0].rank == rank[1].rank ) continue;
                 if ( clink.getMinLatency() < min_part ) {
                     min_part = clink.getMinLatency();
                 }
@@ -563,10 +558,10 @@ main(int argc, char *argv[])
         // links that cross the boundary and we're a multi-rank job,
         // we need to put in a sync interval to look for the exit
         // conditions being met.
-        if ( min_part == MAX_SIMTIME_T ) {
-            // std::cout << "No links cross rank boundary" << std::endl;
-            min_part = Simulation::getTimeLord()->getSimCycles("1us","");
-        }
+        // if ( min_part == MAX_SIMTIME_T ) {
+        //     // std::cout << "No links cross rank boundary" << std::endl;
+        //     min_part = Simulation::getTimeLord()->getSimCycles("1us","");
+        // }
 
         // broadcast(world, min_part, 0);
         Comms::broadcast(min_part, 0);
@@ -656,8 +651,12 @@ main(int argc, char *argv[])
         g_output.output("\n");
 
         g_output.output("Statistic Output Parameters Provided:\n");
-        for (Params::const_iterator it = graph->getStatOutputParams().begin(); it != graph->getStatOutputParams().end(); ++it ) {
-            g_output.output("  %s = %s\n", Params::getParamName(it->first).c_str(), it->second.c_str());
+        // for (Params::const_iterator it = graph->getStatOutputParams().begin(); it != graph->getStatOutputParams().end(); ++it ) {
+        //     g_output.output("  %s = %s\n", Params::getParamName(it->first).c_str(), it->second.c_str());
+        // }
+        std::set<std::string> keys = graph->getStatOutputParams().getKeys();
+        for (auto it = keys.begin(); it != keys.end(); ++it ) {
+            g_output.output("  %s = %s\n", it->c_str(), graph->getStatOutputParams().find_string(*it).c_str());
         }
         g_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
     }
@@ -707,6 +706,7 @@ main(int argc, char *argv[])
     double total_end_time = sst_get_cpu_time();
 
     for ( uint32_t i = 1 ; i < world_size.thread ; i++ ) {
+        // g_output.output(CALL_INFO,"simulated_time = %s, %s\n",threadInfo[0].simulated_time.toStringBestSI().c_str(),threadInfo[1].simulated_time.toStringBestSI().c_str());
         threadInfo[0].simulated_time = std::max(threadInfo[0].simulated_time, threadInfo[i].simulated_time);
         threadInfo[0].run_time = std::max(threadInfo[0].run_time, threadInfo[i].run_time);
         threadInfo[0].build_time = std::max(threadInfo[0].build_time, threadInfo[i].build_time);

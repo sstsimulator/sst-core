@@ -272,7 +272,8 @@ void
 ConfigGraph::addParams(ComponentId_t comp_id, Params& p)
 {
     bool bk = comps[comp_id].params.enableVerify(false);
-    comps[comp_id].params.insert(p.begin(),p.end());
+    // comps[comp_id].params.insert(p.begin(),p.end());
+    comps[comp_id].params.insert(p);
     comps[comp_id].params.enableVerify(bk);
 }
 
@@ -280,12 +281,13 @@ void
 ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string value, bool overwrite)
 {
     bool bk = comps[comp_id].params.enableVerify(false);
-	if ( overwrite ) {
-		comps[comp_id].params[key] = value;
-	}
-	else {
-		comps[comp_id].params.insert(pair<string,string>(key,value));
-	}
+	// if ( overwrite ) {
+	// 	comps[comp_id].params[key] = value;
+	// }
+	// else {
+	// 	comps[comp_id].params.insert(pair<string,string>(key,value));
+	// }
+    comps[comp_id].params.insert(key,value,overwrite);
     comps[comp_id].params.enableVerify(bk);
 }
 
@@ -304,7 +306,8 @@ ConfigGraph::setStatisticOutputParams(const Params& p)
 void 
 ConfigGraph::addStatisticOutputParameter(const char* param, const char* value)
 {
-    statOutputParams[param] = value;
+    // statOutputParams[param] = value;
+    statOutputParams.insert(std::string(param), std::string(value));
 }
 
 void 
@@ -395,7 +398,8 @@ ConfigGraph::addComponentStatisticParameter(ComponentId_t comp_id, string statis
         // Check to see if the names match.  NOTE this also works for the STATALLFLAG
         if (statisticName == comps[comp_id].enabledStatistics.at(x)) {
             // Add/set the parameter
-            comps[comp_id].enabledStatParams.at(x)[param] = value;
+            // comps[comp_id].enabledStatParams.at(x)[param] = value;
+            comps[comp_id].enabledStatParams.at(x).insert(std::string(param),std::string(value));
         }
     }
 }
