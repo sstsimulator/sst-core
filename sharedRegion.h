@@ -15,12 +15,13 @@
 #include <sst/core/sst_types.h>
 
 #include <string>
+#include <vector>
 
 
 namespace SST {
 
 class SharedRegion;
-
+class ChangeSet;
 
 /**
  * Utility class to define how to merge multiple pieces of shared memory regions
@@ -29,21 +30,21 @@ class SharedRegion;
 class SharedRegionMerger {
 public:
 
-    class ChangeSet {
-    private:
-        friend class boost::serialization::access;
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version );
+    // class ChangeSet {
+    // private:
+    //     friend class boost::serialization::access;
+    //     template<class Archive>
+    //     void serialize(Archive & ar, const unsigned int version );
 
-    public:
-        ChangeSet() { } /* Should be private.  For some reason, clang is ignoring the friend declaration */
-        size_t offset;
-        size_t length;
-        const uint8_t *data;
+    // public:
+    //     ChangeSet() { } /* Should be private.  For some reason, clang is ignoring the friend declaration */
+    //     size_t offset;
+    //     size_t length;
+    //     const uint8_t *data;
 
-        ChangeSet(size_t offset, size_t length, const uint8_t *data = NULL) : offset(offset), length(length), data(data) { }
+    //     ChangeSet(size_t offset, size_t length, const uint8_t *data = NULL) : offset(offset), length(length), data(data) { }
 
-    };
+    // };
 
     virtual ~SharedRegionMerger() { }
 

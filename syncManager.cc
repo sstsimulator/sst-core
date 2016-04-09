@@ -21,6 +21,7 @@
 
 #include "sst/core/rankSyncSerialSkip.h"
 #include "sst/core/rankSyncParallelSkip.h"
+#include "sst/core/rankSyncParallelSkip.h"
 #include "sst/core/threadSyncSimpleSkip.h"
 
 namespace SST {
@@ -70,20 +71,22 @@ public:
 };
 
 
-SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC, const std::vector<SimTime_t>& interThreadLatencies) :
+SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& interThreadLatencies) :
     Action(),
     rank(rank),
     num_ranks(num_ranks),
     barrier(barrier),
     threadSync(NULL),
-    next_threadSync(0)
+    next_threadSync(0),
+    min_part(min_part)
 {
     // TraceFunction trace(CALL_INFO_LONG);    
-
+    
     sim = Simulation::getSimulation();
-
+    
     if ( rank.thread == 0  ) {
-        if ( num_ranks.rank > 1 ) {
+        // if ( num_ranks.rank > 1 ) {
+        if ( min_part != MAX_SIMTIME_T ) {
             if ( num_ranks.thread == 1 ) {
                 rankSync = new RankSyncSerialSkip(/*num_ranks,*/ barrier, minPartTC);
             }
@@ -153,7 +156,6 @@ SyncManager::execute(void)
     // trace.getOutput().output(CALL_INFO, "next_sync_type @ switch = %d\n", next_sync_type);
     switch ( next_sync_type ) {
     case RANK:
-
         // Need to make sure all threads have reached the sync to
         // guarantee that all events have been sent to the appropriate
         // queues.
@@ -195,8 +197,8 @@ SyncManager::execute(void)
     case THREAD:
 
         threadSync->execute();
-
-        if ( num_ranks.rank == 1 ) {
+        
+        if ( /*num_ranks.rank == 1*/ min_part == MAX_SIMTIME_T ) {
             if ( exit->getRefCount() == 0 ) {
                 endSimulation(exit->getEndTime());
             }

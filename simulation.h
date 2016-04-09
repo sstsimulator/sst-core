@@ -98,7 +98,7 @@ public:
      * @param my_rank - Parallel Rank of this simulation object
      * @param num_ranks - How many Ranks are in the simulation
      */
-    static Simulation *createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks);
+    static Simulation *createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks, SimTime_t min_part);
     /**
      * Used to signify the end of simulation.  Cleans up any existing Simulation Objects
      */
@@ -130,6 +130,8 @@ public:
     void run();
     void finish();
 
+    bool isIndependentThread() { return independent;}
+    
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
     Mode_t getSimulationMode() const { return runMode; };
     /** Return the current simulation time as a cycle count*/
@@ -350,7 +352,7 @@ private:
     friend int ::main(int argc, char **argv);
 
     Simulation(); // Don't call.  Only rational way to serialize
-    Simulation(Config* config, RankInfo my_rank, RankInfo num_ranks);
+    Simulation(Config* config, RankInfo my_rank, RankInfo num_ranks, SimTime_t min_part);
     Simulation(Simulation const&);     // Don't Implement
     void operator=(Simulation const&); // Don't implement
 
@@ -404,6 +406,7 @@ private:
     TimeConverter*   threadMinPartTC;
     Activity*        current_activity;
     static SyncBase* sync;
+    static SimTime_t minPart;
     static TimeConverter*   minPartTC;
     std::vector<SimTime_t> interThreadLatencies;
     SimTime_t        interThreadMinLatency;
@@ -423,6 +426,7 @@ private:
     bool             endSim;
     RankInfo         my_rank;
     RankInfo         num_ranks;
+    bool             independent; // true if no links leave thread (i.e. no syncs required)
     static std::atomic<int>       init_msg_count;
     unsigned int     init_phase;
     volatile sig_atomic_t lastRecvdSignal;

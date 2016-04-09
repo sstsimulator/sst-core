@@ -23,7 +23,7 @@ namespace Interfaces {
 /**
  * Simple event to pass strings between components
  */
-class StringEvent : public SST::Event {
+class StringEvent : public SST::Event, public SST::Core::Serialization::serializable_type<StringEvent> {
 public:
 	StringEvent() {} // For serialization only
 
@@ -54,14 +54,13 @@ public:
 private:
 	std::string str;
 
-	friend class boost::serialization::access;
-	template<class Archive>
-	void
-	serialize(Archive & ar, const unsigned int version )
-	{
-		ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Event);
-		ar & BOOST_SERIALIZATION_NVP(str);
-	}
+public:	
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        Event::serialize_order(ser);
+        ser & str;
+    }
+    
+    ImplementSerializable(SST::Interfaces::StringEvent);     
 };
 
 } //namespace Interfaces
