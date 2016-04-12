@@ -15,6 +15,7 @@
 #include <sst/core/serialization.h>
 
 #include <sst/core/output.h>
+#include <sst/core/from_string.h>
 
 #include <inttypes.h>
 #include <iostream>
@@ -121,8 +122,8 @@ public:
      *  Params.
      *  Iteration is done in ascending order according to the keys.
      */
-    __attribute__ ((deprecated))
-    iterator begin()  { return data.begin(); }
+    // __attribute__ ((deprecated))
+    // iterator begin()  { return data.begin(); }
     /**  Returns a read/write iterator that points one past the last
      *  pair in the Params.  Iteration is done in ascending order
      *  according to the keys.
@@ -133,8 +134,8 @@ public:
      *  in the Params.  Iteration is done in ascending order according to the
      *  keys.
      */
-    __attribute__ ((deprecated))
-    const_iterator begin() const { return data.begin(); }
+    // __attribute__ ((deprecated))
+    // const_iterator begin() const { return data.begin(); }
     /** Returns a read-only (constant) iterator that points one past the last
      *  pair in the Params.  Iteration is done in ascending order according to
      *  the keys.
@@ -145,31 +146,31 @@ public:
      *  the Params.  Iteration is done in descending order according to the
      *  keys.
      */
-    __attribute__ ((deprecated))
-    reverse_iterator rbegin() { return data.rbegin(); }
+    // __attribute__ ((deprecated))
+    // reverse_iterator rbegin() { return data.rbegin(); }
     /** Returns a read/write reverse iterator that points to one before the
      *  first pair in the Params.  Iteration is done in descending order
      *  according to the keys.
      */
-    __attribute__ ((deprecated))
-    reverse_iterator rend() { return data.rend(); }
+    // __attribute__ ((deprecated))
+    // reverse_iterator rend() { return data.rend(); }
     /** Returns a read-only (constant) reverse iterator that points to the
      *  last pair in the Params.  Iteration is done in descending order
      *  according to the keys.
      */
-    __attribute__ ((deprecated))
-    const_reverse_iterator rbegin() const { return data.rbegin(); }
+    // __attribute__ ((deprecated))
+    // const_reverse_iterator rbegin() const { return data.rbegin(); }
     /** Returns a read-only (constant) reverse iterator that points to one
      *  before the first pair in the Params.  Iteration is done in descending
      *  order according to the keys.
      */
-    __attribute__ ((deprecated))
-    const_reverse_iterator rend() const { return data.rend(); }
+    // __attribute__ ((deprecated))
+    // const_reverse_iterator rend() const { return data.rend(); }
     /** Returns the size of the Params.  */
     size_type size() const { return data.size(); }
     /** Returns the maximum size of the Params.  */
-    __attribute__ ((deprecated))
-    size_type max_size() const { return data.max_size(); }
+    // __attribute__ ((deprecated))
+    // size_type max_size() const { return data.max_size(); }
     /** Returns true if the Params is empty.  (Thus begin() would equal end().) */
     bool empty() const { return data.empty(); }
 
@@ -216,11 +217,11 @@ public:
      *
      *  Insertion requires logarithmic time.
      */
-    __attribute__ ((deprecated))
-    std::pair<iterator, bool> insert(const value_type& x) {
-        uint32_t id = getKey(x.first);
-        return data.insert(std::make_pair(id, x.second));
-    }
+    // __attribute__ ((deprecated))
+    // std::pair<iterator, bool> insert(const value_type& x) {
+    //     uint32_t id = getKey(x.first);
+    //     return data.insert(std::make_pair(id, x.second));
+    // }
 
     /**
      *  @brief Attempts to insert a std::pair into the %map.
@@ -241,11 +242,11 @@ public:
      *
      *  Insertion requires logarithmic time (if the hint is not taken).
      */
-    __attribute__ ((deprecated))
-    iterator insert(iterator pos, const value_type& x) {
-        uint32_t id = getKey(x.first);
-        return data.insert(pos, std::make_pair(id, x.second));
-    }
+    // __attribute__ ((deprecated))
+    // iterator insert(iterator pos, const value_type& x) {
+    //     uint32_t id = getKey(x.first);
+    //     return data.insert(pos, std::make_pair(id, x.second));
+    // }
     /**
      *  @brief Template function that attemps to insert a range of elements.
      *  @param  f  Iterator pointing to the start of the range to be
@@ -254,11 +255,11 @@ public:
      *
      *  Complexity similar to that of the range constructor.
      */
-    template <class InputIterator>
-    __attribute__ ((deprecated))
-    void insert(InputIterator f, InputIterator l) {
-        data.insert(f, l);
-    }
+    // template <class InputIterator>
+    // __attribute__ ((deprecated))
+    // void insert(InputIterator f, InputIterator l) {
+    //     data.insert(f, l);
+    // }
 
     /**
      *  @brief Erases an element from a %map.
@@ -270,8 +271,8 @@ public:
      *  the pointed-to memory is not touched in any way.  Managing
      *  the pointer is the user's responsibilty.
      */
-    __attribute__ ((deprecated))
-    void erase(iterator pos) {  data.erase(pos); }
+    // __attribute__ ((deprecated))
+    // void erase(iterator pos) {  data.erase(pos); }
     /**
      *  @brief Erases elements according to the provided key.
      *  @param  k  Key of element to be erased.
@@ -283,8 +284,8 @@ public:
      *  the element is itself a pointer, the pointed-to memory is not touched
      *  in any way.  Managing the pointer is the user's responsibilty.
      */
-    __attribute__ ((deprecated))
-    size_type erase(const key_type& k) { return data.erase(getKey(k)); }
+    // __attribute__ ((deprecated))
+    // size_type erase(const key_type& k) { return data.erase(getKey(k)); }
     /**
      *  Erases all elements in a %map.  Note that this function only
      *  erases the elements, and that if the elements themselves are
@@ -344,12 +345,13 @@ public:
     __attribute__ ((deprecated))
     mapped_type& operator[](const key_type& k) { verifyParam(k); return data[getKey(k)]; }
 
-    /** Find a Parameter value in the set, and return its value as an integer
+    /** Find a Parameter value in the set, and return its value as a type T
      * @param k - Parameter name
      * @param default_value - Default value to return if parameter isn't found
      * @param found - set to true if the the parameter was found
      */
-    int64_t find_integer(const key_type &k, long default_value, bool &found) const {
+    template <class T>
+    T find(const std::string &k, T default_value, bool &found) const {
         verifyParam(k);
         const_iterator i = data.find(getKey(k));
         if (i == data.end()) {
@@ -357,8 +359,86 @@ public:
             return default_value;
         } else {
             found = true;
-            return strtol(i->second.c_str(), NULL, 0);
+            return SST::Core::from_string<T>(i->second);
+        }        
+    }
+    
+    /** Find a Parameter value in the set, and return its value as a type T
+     * @param k - Parameter name
+     * @param default_value - Default value to return if parameter isn't found
+     */
+    template <class T>
+    T find(const std::string &k, T default_value ) const {
+        bool tmp;
+        return find(k, default_value, tmp);
+    }
+    
+    /** Find a Parameter value in the set, and return its value as a type T
+     * @param k - Parameter name
+     */
+    template <class T>
+    T find(const std::string &k) const {
+        bool tmp;
+        T default_value = T();
+        return find(k, default_value, tmp);
+    }
+    
+    /** Find a Parameter value in the set, and return its value as a type T
+     * @param k - Parameter name
+     * @param found - set to true if the the parameter was found
+     */
+    template <class T>
+    T find(const std::string &k, bool &found) const {
+        T default_value = T();
+        return find(k, default_value, found);
+    }
+
+    /** Find a Parameter value in the set, and return its value as a
+     * vector of T's.  The array will be appended to
+     * the end of the vector.
+     *
+     * @param k - Parameter name
+     * @param vec - vector to append array items to
+     */
+    template <class T>
+    void find_array(const key_type &k, std::vector<T>& vec) const {
+        verifyParam(k);
+        const_iterator i = data.find(getKey(k));
+        if ( i == data.end()) {
+            return;
         }
+        std::string value = i->second;
+        // String should start with [ and end with ], we need to cut
+        // these out
+        value = value.substr(0,value.size()-1);
+        value = value.substr(1);
+        
+        std::stringstream ss(value);
+        
+        while( ss.good() ) {
+            std::string substr;
+            getline( ss, substr, ',' );
+            // vec.push_back(strtol(substr.c_str(), NULL, 0));
+            vec.push_back(SST::Core::from_string<T>(substr));
+        }
+    }
+
+    /** Find a Parameter value in the set, and return its value as an integer
+     * @param k - Parameter name
+     * @param default_value - Default value to return if parameter isn't found
+     * @param found - set to true if the the parameter was found
+     */
+    int64_t find_integer(const key_type &k, long default_value, bool &found) const {
+        return find<int64_t>(k,default_value,found);
+        // verifyParam(k);
+        // const_iterator i = data.find(getKey(k));
+        // if (i == data.end()) {
+        //     found = false;
+        //     return default_value;
+        // } else {
+        //     found = true;
+        //     return strtol(i->second.c_str(), NULL, 0);
+        // }
     }
 
     /** Find a Parameter value in the set, and return its value as an integer
@@ -366,8 +446,9 @@ public:
      * @param default_value - Default value to return if parameter isn't found
      */
     int64_t find_integer(const key_type &k, long default_value = -1) const {
-        bool tmp;
-        return find_integer(k, default_value, tmp);
+        return find<int64_t>(k,default_value);
+        // bool tmp;
+        // return find_integer(k, default_value, tmp);
     }
 
     /** Find a Parameter value in the set, and return its value as a
@@ -378,24 +459,25 @@ public:
      * @param vec - vector to append array items to
      */
     void find_integer_array(const key_type &k, std::vector<int64_t>& vec) const {
-        verifyParam(k);
-        const_iterator i = data.find(getKey(k));
-        if ( i == data.end()) {
-            return;
-        }
-        std::string value = i->second;
-        // String should start with [ and end with ], we need to cut
-        // these out
-        value = value.substr(0,value.size()-1);
-        value = value.substr(1);
+        find_array<int64_t>(k,vec);
+        // verifyParam(k);
+        // const_iterator i = data.find(getKey(k));
+        // if ( i == data.end()) {
+        //     return;
+        // }
+        // std::string value = i->second;
+        // // String should start with [ and end with ], we need to cut
+        // // these out
+        // value = value.substr(0,value.size()-1);
+        // value = value.substr(1);
         
-        std::stringstream ss(value);
+        // std::stringstream ss(value);
         
-        while( ss.good() ) {
-            std::string substr;
-            getline( ss, substr, ',' );
-            vec.push_back(strtol(substr.c_str(), NULL, 0));
-        }
+        // while( ss.good() ) {
+        //     std::string substr;
+        //     getline( ss, substr, ',' );
+        //     vec.push_back(strtol(substr.c_str(), NULL, 0));
+        // }
     }
 
     /** Find a Parameter value in the set, and return its value as a double
@@ -404,15 +486,16 @@ public:
      * @param found - set to true if the the parameter was found
      */
     double find_floating(const key_type& k, double default_value, bool &found) const {
-        verifyParam(k);
-        const_iterator i = data.find(getKey(k));
-        if (i == data.end()) {
-            found = false;
-            return default_value;
-        } else {
-            found = true;
-            return strtod(i->second.c_str(), NULL);
-        }
+        return find<double>(k,default_value,found);
+        // verifyParam(k);
+        // const_iterator i = data.find(getKey(k));
+        // if (i == data.end()) {
+        //     found = false;
+        //     return default_value;
+        // } else {
+        //     found = true;
+        //     return strtod(i->second.c_str(), NULL);
+        // }
     }
 
     /** Find a Parameter value in the set, and return its value as a double
@@ -420,8 +503,9 @@ public:
      * @param default_value - Default value to return if parameter isn't found
      */
     double find_floating(const key_type& k, double default_value = -1.0) const {
-        bool tmp;
-        return find_floating(k, default_value, tmp);
+        return find<double>(k,default_value);
+        // bool tmp;
+        // return find_floating(k, default_value, tmp);
     }
 
     /** Find a Parameter value in the set, and return its value as a
@@ -432,24 +516,25 @@ public:
      * @param vec - vector to append array items to
      */
     void find_floating_array(const key_type &k, std::vector<double>& vec) const {
-        verifyParam(k);
-        const_iterator i = data.find(getKey(k));
-        if ( i == data.end()) {
-            return;
-        }
-        std::string value = i->second;
-        // String should start with [ and end with ], we need to cut
-        // these out
-        value = value.substr(0,value.size()-1);
-        value = value.substr(1);
+        find_array<double>(k,vec);
+        // verifyParam(k);
+        // const_iterator i = data.find(getKey(k));
+        // if ( i == data.end()) {
+        //     return;
+        // }
+        // std::string value = i->second;
+        // // String should start with [ and end with ], we need to cut
+        // // these out
+        // value = value.substr(0,value.size()-1);
+        // value = value.substr(1);
         
-        std::stringstream ss(value);
+        // std::stringstream ss(value);
         
-        while( ss.good() ) {
-            std::string substr;
-            getline( ss, substr, ',' );
-            vec.push_back(strtod(substr.c_str(), NULL));
-        }
+        // while( ss.good() ) {
+        //     std::string substr;
+        //     getline( ss, substr, ',' );
+        //     vec.push_back(strtod(substr.c_str(), NULL));
+        // }
     }
 
     /** Find a Parameter value in the set, and return its value
@@ -458,15 +543,16 @@ public:
      * @param found - set to true if the the parameter was found
      */
     std::string find_string(const key_type &k, std::string default_value, bool &found) const {
-        verifyParam(k);
-        const_iterator i = data.find(getKey(k));
-        if (i == data.end()) {
-            found = false;
-            return default_value;
-        } else {
-            found = true;
-            return i->second;
-        }
+        return find<std::string>(k,default_value,found);
+        // verifyParam(k);
+        // const_iterator i = data.find(getKey(k));
+        // if (i == data.end()) {
+        //     found = false;
+        //     return default_value;
+        // } else {
+        //     found = true;
+        //     return i->second;
+        // }
     }
 
     /** Find a Parameter value in the set, and return its value
@@ -474,8 +560,9 @@ public:
      * @param default_value - Default value to return if parameter isn't found
      */
     std::string find_string(const key_type &k, std::string default_value = "") const {
-        bool tmp;
-        return find_string(k, default_value, tmp);
+        return find<std::string>(k,default_value);
+        // bool tmp;
+        // return find_string(k, default_value, tmp);
     }
 
     /** Find a Parameter value in the set, and return its value as a
@@ -486,33 +573,34 @@ public:
      * @param vec - vector to append array items to
      */
     void find_string_array(const key_type &k, std::vector<std::string>& vec) const {
-        verifyParam(k);
-        const_iterator i = data.find(getKey(k));
-        if ( i == data.end()) {
-            return;
-        }
-        std::string value = i->second;
-        // String should start with [ and end with ], we need to cut
-        // these out
-        value = value.substr(0,value.size()-1);
-        value = value.substr(1);
+        find_array<std::string>(k,vec);
+        // verifyParam(k);
+        // const_iterator i = data.find(getKey(k));
+        // if ( i == data.end()) {
+        //     return;
+        // }
+        // std::string value = i->second;
+        // // String should start with [ and end with ], we need to cut
+        // // these out
+        // value = value.substr(0,value.size()-1);
+        // value = value.substr(1);
         
-        std::stringstream ss(value);
+        // std::stringstream ss(value);
         
-        while( ss.good() ) {
-            std::string substr;
-            getline( ss, substr, ',' );
-            // Trim any whitespace at front and back
-            int front_index = 0;
-            while ( isspace(substr[front_index]) ) front_index++;
+        // while( ss.good() ) {
+        //     std::string substr;
+        //     getline( ss, substr, ',' );
+        //     // Trim any whitespace at front and back
+        //     int front_index = 0;
+        //     while ( isspace(substr[front_index]) ) front_index++;
     
-            int back_index = substr.length() - 1;
-            while ( isspace(substr[back_index]) ) back_index--;
+        //     int back_index = substr.length() - 1;
+        //     while ( isspace(substr[back_index]) ) back_index--;
     
-            substr = substr.substr(front_index,back_index-front_index+1);
+        //     substr = substr.substr(front_index,back_index-front_index+1);
             
-            vec.push_back(substr);
-        }
+        //     vec.push_back(substr);
+        // }
     }
 
     /** Print all key/value parameter pairs to specified ostream */
