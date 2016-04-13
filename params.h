@@ -359,7 +359,15 @@ public:
             return default_value;
         } else {
             found = true;
-            return SST::Core::from_string<T>(i->second);
+            try {
+                return SST::Core::from_string<T>(i->second);
+            }
+            catch ( const std::invalid_argument& e ) {
+                std::string msg = "Params::find(): No conversion for value: key = " + k + ", value =  " + i->second +
+                    ".  Oringal error: " + e.what();
+                std::invalid_argument t(msg);
+                throw t;
+            }
         }        
     }
     
@@ -419,7 +427,15 @@ public:
             std::string substr;
             getline( ss, substr, ',' );
             // vec.push_back(strtol(substr.c_str(), NULL, 0));
-            vec.push_back(SST::Core::from_string<T>(substr));
+            try {
+                vec.push_back(SST::Core::from_string<T>(substr));
+            }
+            catch ( const std::invalid_argument& e ) {
+                std::string msg = "Params::find(): No conversion for value: key = " + k + ", value =  " + substr +
+                    ".  Oringal error: " + e.what();
+                std::invalid_argument t(msg);
+                throw t;
+            }
         }
     }
 
