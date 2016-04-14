@@ -91,6 +91,11 @@ Simulation::~Simulation()
     }
     introMap.clear();
 
+    for ( auto it = compInfoMap.begin(); it != compInfoMap.end(); ++it ) {
+        delete (*it)->getComponent();
+    }
+    // delete compInfoMap;
+    
     // Clocks already got deleted by timeVortex, simply clear the clockMap
     clockMap.clear();
     
