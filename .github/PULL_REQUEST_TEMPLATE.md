@@ -1,4 +1,4 @@
-Erease this information and put your Pull Request comments here <BR><BR><BR>
+Erase this information and put your Pull Request comments here <BR><BR><BR>
 
 
 ---
