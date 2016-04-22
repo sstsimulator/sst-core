@@ -31,5 +31,3 @@ TestEvent::~TestEvent()
 	printf("Deleting TestEvent\n");
     }
 }
-
-DeclareSerializable(SST::Interfaces::TestEvent)
