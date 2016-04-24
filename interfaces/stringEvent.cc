@@ -18,4 +18,3 @@
 using namespace SST;
 using namespace SST::Interfaces;
 
-DeclareSerializable(SST::Interfaces::StringEvent)
