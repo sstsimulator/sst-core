@@ -12,7 +12,7 @@
 #ifndef SST_CORE_SERIALIZATION_SERIALIZABLE_H
 #define SST_CORE_SERIALIZATION_SERIALIZABLE_H
 
-#include <sst/core/serialization/serialize.h>
+#include <sst/core/serialization/serializer.h>
 #include <sst/core/output.h>
 //#include <sprockit/unordered.h>
 #include <unordered_map>
@@ -28,22 +28,22 @@ namespace pvt {
 // Functions to implement the hash for cls_id at compile time.  The
 // hash function being implemented is:
 
-// uint32_t hash(const char* key)
-// {
-//   int len = ::strlen(key);
-//   uint32_t hash = 0;
-//   for(int i = 0; i < len; ++i)
-//   {
-//     hash += key[i];
-//     hash += (hash << 10);
-//     hash ^= (hash >> 6);
-//   }
-//   hash += (hash << 3);
-//   hash ^= (hash >> 11);
-//   hash += (hash << 15);
+inline uint32_t type_hash(const char* key)
+{
+  int len = ::strlen(key);
+  uint32_t hash = 0;
+  for(int i = 0; i < len; ++i)
+  {
+    hash += key[i];
+    hash += (hash << 10);
+    hash ^= (hash >> 6);
+  }
+  hash += (hash << 3);
+  hash ^= (hash >> 11);
+  hash += (hash << 15);
 
-//   return hash;
-// }
+  return hash;
+}
 
 // Using constexpr is very limited, so the implementation is a bit
 // convoluted.  May be able to streamline later.
@@ -128,20 +128,6 @@ class serializable
 template <class T>
 class serializable_type
 {
-//  protected:
-//   static uint32_t cls_id_;
-
-//   virtual T*
-//   you_forgot_to_add_ImplementSerializable_to_this_class() = 0;
-
-//  public:
-//   virtual ~serializable_type() {}
-
-//   uint32_t
-//   cls_id() const {
-//     return cls_id_;
-//   }
-
 };
 
 #define ImplementVirtualSerializable(obj)     \
@@ -153,7 +139,7 @@ class serializable_type
  public:  \
   static void \
   throw_exc(){ \
-     Output ser_abort("", 5, -1, Output::STDERR); \
+     Output ser_abort("", 5, -1, SST::Output::STDERR);                  \
      ser_abort.fatal(CALL_INFO_LONG, -1, "ERROR: type %s should not be serialized\n",#obj); \
   } \
   virtual void \
@@ -189,12 +175,8 @@ class serializable_type
   } \
   virtual uint32_t \
   cls_id() const { \
-      /*return ::SST::Core::Serialization::serializable_type< obj >::cls_id();*/ \
-  /*constexpr uint32_t id = COMPILE_TIME_HASH(#obj);                   */ \
-  /*  static_assert(id,"Compile time hash did not evaluate at compile time (or hash was unexpectedly 0"); */ \
-  /*  return id;                                                       */ \
-      return cls_id_static();                                           \
-  }             \
+    return SST::Core::Serialization::serializable_builder_impl<obj>::static_cls_id(); \
+  }           \
   static obj* \
   construct_deserialize_stub() { \
     return new obj; \
@@ -208,17 +190,11 @@ private:\
   static bool                                                 \
   you_forgot_to_add_ImplementSerializable_to_this_class() { \
     return false; \
-  } \
-  static constexpr uint32_t \
-  cls_id_static() { \
-    static_assert(COMPILE_TIME_HASH(#obj),"Compile time hash did not evaluate at compile time (or hash was unexpectedly 0"); \
-    return COMPILE_TIME_HASH(#obj); \
-  } \
+  }
 
 #define ImplementSerializable(obj) \
  public: \
- ImplementSerializableDefaultConstructor(obj) \
- //obj(){}
+ ImplementSerializableDefaultConstructor(obj)
 
 
 class serializable_builder
@@ -245,10 +221,8 @@ class serializable_builder_impl : public serializable_builder
  protected:
     static const char* name_;
     static const uint32_t cls_id_;
-    static const bool correcly_implemented_;
 
  public:
-
   serializable*
   build() const {
       return T::construct_deserialize_stub();
@@ -261,7 +235,17 @@ class serializable_builder_impl : public serializable_builder
 
   const uint32_t
   cls_id() const {
-      return T::cls_id_static();
+      return cls_id_;
+  }
+
+  static uint32_t
+  static_cls_id() {
+    return cls_id_;
+  }
+
+  static const char*
+  static_name() {
+      return name_;
   }
     
   bool
@@ -270,11 +254,10 @@ class serializable_builder_impl : public serializable_builder
   }
 };
 
-
 class serializable_factory
 {
- protected:
-    typedef std::unordered_map<long, serializable_builder*> builder_map;
+protected:
+  typedef std::unordered_map<long, serializable_builder*> builder_map;
   static builder_map* builders_;
 
  public:
@@ -286,7 +269,7 @@ class serializable_factory
   */
   static uint32_t
   // add_builder(serializable_builder* builder, uint32_t cls_id);
-  add_builder(serializable_builder* builder);
+  add_builder(serializable_builder* builder, const char* name);
 
   static bool
   sanity(serializable* ser, uint32_t cls_id) {
@@ -298,35 +281,19 @@ class serializable_factory
 
 };
 
+template<class T> const char* serializable_builder_impl<T>::name_ = typeid(T).name();
+template<class T> const uint32_t serializable_builder_impl<T>::cls_id_
+  = serializable_factory::add_builder(new serializable_builder_impl<T>,
+       typeid(T).name());
+
 }  // namespace Serialization
 }  // namespace Core
 }  // namespace SST
 
 #define SerializableName(obj) #obj
 
-// #define DeclareSerializable(...) \
-// namespace SST { \
-// namespace Core { \
-// namespace Serialization { \
-// template<> const char* serializable_builder_impl<__VA_ARGS__ >::name_ = SerializableName((__VA_ARGS__)); \
-// template<> const uint32_t serializable_builder_impl<__VA_ARGS__ >::cls_id = serializable_factory::add_builder(new serializable_builder_impl<__VA_ARGS__ >, COMPILE_TIME_HASH(SerializableName((__VA_ARGS__)))); \
-// /*template<> uint32_t SST::Core::Serialization::serializable_type<__VA_ARGS__ >::cls_id_ = serializable_factory::add_builder(new serializable_builder_impl<__VA_ARGS__ >);*/ \
-// } \
-// } \
-// }
 
-#define DeclareSerializable(obj) \
-namespace SST { \
-namespace Core { \
-namespace Serialization { \
-template<> const bool serializable_builder_impl<obj>::correcly_implemented_ = obj::you_forgot_to_add_ImplementSerializable_to_this_class(); \
-template<> const char* serializable_builder_impl<obj>::name_ = #obj; \
-template<> const uint32_t serializable_builder_impl<obj>::cls_id_ = serializable_factory::add_builder(new serializable_builder_impl<obj>); \
-/*template<> const uint32_t serializable_builder_impl<obj>::cls_id = serializable_factory::add_builder(new serializable_builder_impl<obj>, COMPILE_TIME_HASH(#obj));*/ \
-/*template<> uint32_t SST::Core::Serialization::serializable_type<__VA_ARGS__ >::cls_id_ = serializable_factory::add_builder(new serializable_builder_impl<__VA_ARGS__ >);*/ \
-} \
-} \
-}
+#define DeclareSerializable(obj)
 
 #include <sst/core/serialization/serialize_serializable.h>
 

@@ -3,6 +3,7 @@
 
 #include <sst/core/serialization/serializable.h>
 #include <sst/core/serialization/serializer.h>
+#include <sst/core/serialization/serialize.h>
 //#include <sprockit/ptr_type.h>
 #include <iostream>
 
@@ -89,39 +90,6 @@ case serializer::UNPACK:
   }  
 }
 
-#if 0
-template <class T>
-class serialize<sprockit::refcount_ptr<T> > {
- public:
-  void operator()(sprockit::refcount_ptr<T>& o, serializer& ser){
-    T* tmp = o.get();
-    serialize_intrusive_ptr(tmp, ser);
-    o = tmp;
-  }
-};
-
-template <class T>
-class serialize<const sprockit::refcount_ptr<T> > {
- public:
-  void operator()(const sprockit::refcount_ptr<T>& o, serializer& ser){
-    T* tmp = o.get();
-    serialize_intrusive_ptr(tmp, ser);
-  }
-};
-
-
-template <class T>
-class serialize<sprockit::refcount_ptr<const T> > {
- public:
-  void operator()(sprockit::refcount_ptr<const T>& o, serializer& ser){
-    T* tmp = const_cast<T*>(o.get());
-    serialize_intrusive_ptr(tmp, ser);
-    o = tmp;    
-  }
-};
-
-#else
-
 template <>
 class serialize<serializable> {
  public:
@@ -131,16 +99,6 @@ class serialize<serializable> {
   }
 };
 
-// template <class T>
-// class serialize<const sprockit::refcount_ptr<T> > {
-//  public:
-//   void operator()(const T& o, serializer& ser){
-//     T* tmp = &o;
-//     serialize_intrusive_ptr(tmp, ser);
-//   }
-// };
-
-#endif
 
 } 
 }
