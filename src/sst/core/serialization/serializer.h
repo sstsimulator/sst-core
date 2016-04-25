@@ -201,7 +201,7 @@ class serializer
 
 };
 
-} // end of namespace sprockit
+}
 }
 }
 
