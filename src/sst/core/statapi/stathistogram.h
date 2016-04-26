@@ -57,11 +57,11 @@ private:
         statParams.pushAllowedKeys(allowedKeySet);
         
         // Process the Parameters
-        m_minValue = statParams.find_integer("minvalue", 0);
-        m_binWidth = statParams.find_integer("binwidth", 5000);
-        m_numBins = statParams.find_integer("numbins", 100);
-        m_dumpBinsOnOutput = statParams.find_integer("dumpbinsonoutput", 1);
-        m_includeOutOfBounds = statParams.find_integer("includeoutofbounds", 1);
+        m_minValue = statParams.find<BinDataType>("minvalue", 0);
+        m_binWidth = statParams.find<NumBinsType>("binwidth", 5000);
+        m_numBins = statParams.find<NumBinsType>("numbins", 100);
+        m_dumpBinsOnOutput = statParams.find<bool>("dumpbinsonoutput", true);
+        m_includeOutOfBounds = statParams.find<bool>("includeoutofbounds", true);
         
         // Initialize other properties
         m_totalSummed = 0;
