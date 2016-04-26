@@ -86,21 +86,10 @@ NO_VARIABLE:
         }
     };
 
-public:
-    typedef std::map<std::string, std::string>::key_type key_type;  /*!< Type of key (string) */
-    typedef std::map<uint32_t, std::string>::mapped_type mapped_type; /*!< Type of value (string) */
-    typedef std::map<std::string, std::string>::value_type value_type; /*!< Pair of strings */
-    typedef std::map<uint32_t, std::string>::key_compare key_compare; /*!< Key comparator type */
-    typedef std::map<uint32_t, std::string>::value_compare value_compare; /*!< Value comparator type */
-    typedef std::map<uint32_t, std::string>::pointer pointer; /*!< Pointer type */
-    typedef std::map<uint32_t, std::string>::reference reference; /*!< Reference type */
-    typedef std::map<uint32_t, std::string>::const_reference const_reference; /*!< Const Reference type */
-    typedef std::map<uint32_t, std::string>::size_type size_type; /*!< Size type */
-    typedef std::map<uint32_t, std::string>::difference_type difference_type; /*!< Difference type */
-    typedef std::map<uint32_t, std::string>::iterator iterator; /*!< Iterator type */
     typedef std::map<uint32_t, std::string>::const_iterator const_iterator; /*!< Const Iterator type */
-    typedef std::map<uint32_t, std::string>::reverse_iterator reverse_iterator; /*!< Reverse Iterator type */
-    typedef std::map<uint32_t, std::string>::const_reverse_iterator const_reverse_iterator; /*!< Const Reverse Iterator type */
+
+public:
+    typedef std::string key_type;  /*!< Type of key (string) */
     typedef std::set<key_type, KeyCompare> KeySet_t; /*!< Type of a set of keys */
 
     /**
@@ -117,70 +106,14 @@ public:
      */
     static void enableVerify() { g_verify_enabled = true; };
 
-    // pretend like we're a map
-    /** Returns a read/write iterator that points to the first pair in the
-     *  Params.
-     *  Iteration is done in ascending order according to the keys.
-     */
-    // __attribute__ ((deprecated))
-    // iterator begin()  { return data.begin(); }
-    /**  Returns a read/write iterator that points one past the last
-     *  pair in the Params.  Iteration is done in ascending order
-     *  according to the keys.
-     */
-    __attribute__ ((deprecated))
-    iterator end() { return data.end(); }
-    /** Returns a read-only (constant) iterator that points to the first pair
-     *  in the Params.  Iteration is done in ascending order according to the
-     *  keys.
-     */
-    // __attribute__ ((deprecated))
-    // const_iterator begin() const { return data.begin(); }
-    /** Returns a read-only (constant) iterator that points one past the last
-     *  pair in the Params.  Iteration is done in ascending order according to
-     *  the keys.
-     */
-    __attribute__ ((deprecated))
-    const_iterator end() const { return data.end(); }
-    /** Returns a read/write reverse iterator that points to the last pair in
-     *  the Params.  Iteration is done in descending order according to the
-     *  keys.
-     */
-    // __attribute__ ((deprecated))
-    // reverse_iterator rbegin() { return data.rbegin(); }
-    /** Returns a read/write reverse iterator that points to one before the
-     *  first pair in the Params.  Iteration is done in descending order
-     *  according to the keys.
-     */
-    // __attribute__ ((deprecated))
-    // reverse_iterator rend() { return data.rend(); }
-    /** Returns a read-only (constant) reverse iterator that points to the
-     *  last pair in the Params.  Iteration is done in descending order
-     *  according to the keys.
-     */
-    // __attribute__ ((deprecated))
-    // const_reverse_iterator rbegin() const { return data.rbegin(); }
-    /** Returns a read-only (constant) reverse iterator that points to one
-     *  before the first pair in the Params.  Iteration is done in descending
-     *  order according to the keys.
-     */
-    // __attribute__ ((deprecated))
-    // const_reverse_iterator rend() const { return data.rend(); }
     /** Returns the size of the Params.  */
-    size_type size() const { return data.size(); }
-    /** Returns the maximum size of the Params.  */
-    // __attribute__ ((deprecated))
-    // size_type max_size() const { return data.max_size(); }
+    size_t size() const { return data.size(); }
     /** Returns true if the Params is empty.  (Thus begin() would equal end().) */
     bool empty() const { return data.empty(); }
 
 
     /** Create a new, empty Params */
     Params() : data(), verify_enabled(true) { }
-
-    /** Create a new, empty Params with specified key comparison functor */
-    Params(const key_compare& comp) : data(comp), verify_enabled(true) { }
-
 
     /** Create a copy of a Params object */
     Params(const Params& old) : data(old.data), allowedKeys(old.allowedKeys), verify_enabled(old.verify_enabled) { }
@@ -202,91 +135,6 @@ public:
     }
 
     /**
-     *  @brief Attempts to insert a std::pair into the %map.
-     *
-     *  @param  x  Pair to be inserted (see std::make_pair for easy creation 
-     *         of pairs).
-     *
-     *  @return  A pair, of which the first element is an iterator that 
-     *           points to the possibly inserted pair, and the second is 
-     *           a bool that is true if the pair was actually inserted.
-     *
-     *  This function attempts to insert a (key, value) %pair into the %map.
-     *  A %map relies on unique keys and thus a %pair is only inserted if its
-     *  first element (the key) is not already present in the %map.
-     *
-     *  Insertion requires logarithmic time.
-     */
-    // __attribute__ ((deprecated))
-    // std::pair<iterator, bool> insert(const value_type& x) {
-    //     uint32_t id = getKey(x.first);
-    //     return data.insert(std::make_pair(id, x.second));
-    // }
-
-    /**
-     *  @brief Attempts to insert a std::pair into the %map.
-     *  @param  pos  An iterator that serves as a hint as to where the
-     *                    pair should be inserted.
-     *  @param  x  Pair to be inserted (see std::make_pair for easy creation
-     *             of pairs).
-     *  @return  An iterator that points to the element with key of @a x (may
-     *           or may not be the %pair passed in).
-     *
-     *
-     *  This function is not concerned about whether the insertion
-     *  took place, and thus does not return a boolean like the
-     *  single-argument insert() does.  Note that the first
-     *  parameter is only a hint and can potentially improve the
-     *  performance of the insertion process.  A bad hint would
-     *  cause no gains in efficiency.
-     *
-     *  Insertion requires logarithmic time (if the hint is not taken).
-     */
-    // __attribute__ ((deprecated))
-    // iterator insert(iterator pos, const value_type& x) {
-    //     uint32_t id = getKey(x.first);
-    //     return data.insert(pos, std::make_pair(id, x.second));
-    // }
-    /**
-     *  @brief Template function that attemps to insert a range of elements.
-     *  @param  f  Iterator pointing to the start of the range to be
-     *                 inserted.
-     *  @param  l  Iterator pointing to the end of the range.
-     *
-     *  Complexity similar to that of the range constructor.
-     */
-    // template <class InputIterator>
-    // __attribute__ ((deprecated))
-    // void insert(InputIterator f, InputIterator l) {
-    //     data.insert(f, l);
-    // }
-
-    /**
-     *  @brief Erases an element from a %map.
-     *  @param  pos  An iterator pointing to the element to be erased.
-     *
-     *  This function erases an element, pointed to by the given
-     *  iterator, from a %map.  Note that this function only erases
-     *  the element, and that if the element is itself a pointer,
-     *  the pointed-to memory is not touched in any way.  Managing
-     *  the pointer is the user's responsibilty.
-     */
-    // __attribute__ ((deprecated))
-    // void erase(iterator pos) {  data.erase(pos); }
-    /**
-     *  @brief Erases elements according to the provided key.
-     *  @param  k  Key of element to be erased.
-     *  @return  The number of elements erased.
-     *
-     *  This function erases all the elements located by the given key from
-     *  a %map.
-     *  Note that this function only erases the element, and that if
-     *  the element is itself a pointer, the pointed-to memory is not touched
-     *  in any way.  Managing the pointer is the user's responsibilty.
-     */
-    // __attribute__ ((deprecated))
-    // size_type erase(const key_type& k) { return data.erase(getKey(k)); }
-    /**
      *  Erases all elements in a %map.  Note that this function only
      *  erases the elements, and that if the elements themselves are
      *  pointers, the pointed-to memory is not touched in any way.
@@ -296,32 +144,6 @@ public:
 
 
     /**
-     *  @brief Tries to locate an element in a %map.
-     *  @param  k  Key of (key, value) %pair to be located.
-     *  @return  Iterator pointing to sought-after element, or end() if not
-     *           found.
-     *
-     *  This function takes a key and tries to locate the element with which
-     *  the key matches.  If successful the function returns an iterator
-     *  pointing to the sought after %pair.  If unsuccessful it returns the
-     *  past-the-end ( @c end() ) iterator.
-     */
-    __attribute__ ((deprecated))
-    iterator find(const key_type& k) { verifyParam(k); return data.find(getKey(k)); }
-    /**
-     *  @brief Tries to locate an element in a %map.
-     *  @param  k  Key of (key, value) %pair to be located.
-     *  @return  Read-only (constant) iterator pointing to sought-after
-     *           element, or end() if not found.
-     *
-     *  This function takes a key and tries to locate the element with which
-     *  the key matches.  If successful the function returns a constant
-     *  iterator pointing to the sought after %pair. If unsuccessful it
-     *  returns the past-the-end ( @c end() ) iterator.
-     */
-    __attribute__ ((deprecated))
-    const_iterator find(const key_type& k) const { verifyParam(k); return data.find(getKey(k)); }
-    /**
      *  @brief  Finds the number of elements with given key.
      *  @param  k  Key of (key, value) pairs to be located.
      *  @return  Number of elements with specified key.
@@ -329,21 +151,7 @@ public:
      *  This function only makes sense for multimaps; for map the result will
      *  either be 0 (not present) or 1 (present).
      */
-    size_type count(const key_type& k) { return data.count(getKey(k)); }
-    /**
-     *  @brief  Subscript ( @c [] ) access to %map data.
-     *  @param  k  The key for which data should be retrieved.
-     *  @return  A reference to the data of the (key,data) %pair.
-     *
-     *  Allows for easy lookup with the subscript ( @c [] )
-     *  operator.  Returns data associated with the key specified in
-     *  subscript.  If the key does not exist, a pair with that key
-     *  is created using default values, which is then returned.
-     *
-     *  Lookup requires logarithmic time.
-     */
-    __attribute__ ((deprecated))
-    mapped_type& operator[](const key_type& k) { verifyParam(k); return data[getKey(k)]; }
+    size_t count(const key_type& k) { return data.count(getKey(k)); }
 
     /** Find a Parameter value in the set, and return its value as a type T
      * @param k - Parameter name
@@ -444,27 +252,18 @@ public:
      * @param default_value - Default value to return if parameter isn't found
      * @param found - set to true if the the parameter was found
      */
+    __attribute__ ((deprecated))
     int64_t find_integer(const key_type &k, long default_value, bool &found) const {
         return find<int64_t>(k,default_value,found);
-        // verifyParam(k);
-        // const_iterator i = data.find(getKey(k));
-        // if (i == data.end()) {
-        //     found = false;
-        //     return default_value;
-        // } else {
-        //     found = true;
-        //     return strtol(i->second.c_str(), NULL, 0);
-        // }
     }
 
     /** Find a Parameter value in the set, and return its value as an integer
      * @param k - Parameter name
      * @param default_value - Default value to return if parameter isn't found
      */
+    __attribute__ ((deprecated))
     int64_t find_integer(const key_type &k, long default_value = -1) const {
         return find<int64_t>(k,default_value);
-        // bool tmp;
-        // return find_integer(k, default_value, tmp);
     }
 
     /** Find a Parameter value in the set, and return its value as a
@@ -474,26 +273,9 @@ public:
      * @param k - Parameter name
      * @param vec - vector to append array items to
      */
+    __attribute__ ((deprecated))
     void find_integer_array(const key_type &k, std::vector<int64_t>& vec) const {
         find_array<int64_t>(k,vec);
-        // verifyParam(k);
-        // const_iterator i = data.find(getKey(k));
-        // if ( i == data.end()) {
-        //     return;
-        // }
-        // std::string value = i->second;
-        // // String should start with [ and end with ], we need to cut
-        // // these out
-        // value = value.substr(0,value.size()-1);
-        // value = value.substr(1);
-        
-        // std::stringstream ss(value);
-        
-        // while( ss.good() ) {
-        //     std::string substr;
-        //     getline( ss, substr, ',' );
-        //     vec.push_back(strtol(substr.c_str(), NULL, 0));
-        // }
     }
 
     /** Find a Parameter value in the set, and return its value as a double
@@ -501,27 +283,18 @@ public:
      * @param default_value - Default value to return if parameter isn't found
      * @param found - set to true if the the parameter was found
      */
+    __attribute__ ((deprecated))
     double find_floating(const key_type& k, double default_value, bool &found) const {
         return find<double>(k,default_value,found);
-        // verifyParam(k);
-        // const_iterator i = data.find(getKey(k));
-        // if (i == data.end()) {
-        //     found = false;
-        //     return default_value;
-        // } else {
-        //     found = true;
-        //     return strtod(i->second.c_str(), NULL);
-        // }
     }
 
     /** Find a Parameter value in the set, and return its value as a double
      * @param k - Parameter name
      * @param default_value - Default value to return if parameter isn't found
      */
+    __attribute__ ((deprecated))
     double find_floating(const key_type& k, double default_value = -1.0) const {
         return find<double>(k,default_value);
-        // bool tmp;
-        // return find_floating(k, default_value, tmp);
     }
 
     /** Find a Parameter value in the set, and return its value as a
@@ -531,26 +304,9 @@ public:
      * @param k - Parameter name
      * @param vec - vector to append array items to
      */
+    __attribute__ ((deprecated))
     void find_floating_array(const key_type &k, std::vector<double>& vec) const {
         find_array<double>(k,vec);
-        // verifyParam(k);
-        // const_iterator i = data.find(getKey(k));
-        // if ( i == data.end()) {
-        //     return;
-        // }
-        // std::string value = i->second;
-        // // String should start with [ and end with ], we need to cut
-        // // these out
-        // value = value.substr(0,value.size()-1);
-        // value = value.substr(1);
-        
-        // std::stringstream ss(value);
-        
-        // while( ss.good() ) {
-        //     std::string substr;
-        //     getline( ss, substr, ',' );
-        //     vec.push_back(strtod(substr.c_str(), NULL));
-        // }
     }
 
     /** Find a Parameter value in the set, and return its value
@@ -558,27 +314,18 @@ public:
      * @param default_value - Default value to return if parameter isn't found
      * @param found - set to true if the the parameter was found
      */
+    __attribute__ ((deprecated))
     std::string find_string(const key_type &k, std::string default_value, bool &found) const {
         return find<std::string>(k,default_value,found);
-        // verifyParam(k);
-        // const_iterator i = data.find(getKey(k));
-        // if (i == data.end()) {
-        //     found = false;
-        //     return default_value;
-        // } else {
-        //     found = true;
-        //     return i->second;
-        // }
     }
 
     /** Find a Parameter value in the set, and return its value
      * @param k - Parameter name
      * @param default_value - Default value to return if parameter isn't found
      */
+    __attribute__ ((deprecated))
     std::string find_string(const key_type &k, std::string default_value = "") const {
         return find<std::string>(k,default_value);
-        // bool tmp;
-        // return find_string(k, default_value, tmp);
     }
 
     /** Find a Parameter value in the set, and return its value as a
@@ -588,35 +335,9 @@ public:
      * @param k - Parameter name
      * @param vec - vector to append array items to
      */
+    __attribute__ ((deprecated))
     void find_string_array(const key_type &k, std::vector<std::string>& vec) const {
         find_array<std::string>(k,vec);
-        // verifyParam(k);
-        // const_iterator i = data.find(getKey(k));
-        // if ( i == data.end()) {
-        //     return;
-        // }
-        // std::string value = i->second;
-        // // String should start with [ and end with ], we need to cut
-        // // these out
-        // value = value.substr(0,value.size()-1);
-        // value = value.substr(1);
-        
-        // std::stringstream ss(value);
-        
-        // while( ss.good() ) {
-        //     std::string substr;
-        //     getline( ss, substr, ',' );
-        //     // Trim any whitespace at front and back
-        //     int front_index = 0;
-        //     while ( isspace(substr[front_index]) ) front_index++;
-    
-        //     int back_index = substr.length() - 1;
-        //     while ( isspace(substr[back_index]) ) back_index--;
-    
-        //     substr = substr.substr(front_index,back_index-front_index+1);
-            
-        //     vec.push_back(substr);
-        // }
     }
 
     /** Print all key/value parameter pairs to specified ostream */
@@ -661,7 +382,6 @@ public:
         for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
             std::string key = keyMapReverse[i->first].substr(0, prefix.length());
             if (key == prefix) {
-                // ret[keyMapReverse[i->first].substr(prefix.length())] = i->second;
                 ret.insert(keyMapReverse[i->first].substr(prefix.length()), i->second);
             }
         }
