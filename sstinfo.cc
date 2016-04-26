@@ -265,7 +265,7 @@ void outputSSTElementInfo()
     // Tell the user what Element.Component will be displayed
     if (g_configuration.getFilteredElementComponentNamesArray()->size() > 0) {
         for (x = 0; x < g_configuration.getFilteredElementComponentNamesArray()->size(); x++) {
-            fprintf (stdout, "Filtering output on Element.Component = \"%s\"\n", g_configuration.getFilteredElementComponentNamesArray()->at(x).c_str());
+            fprintf (stdout, "Filtering output on Element.Component|SubComponent = \"%s\"\n", g_configuration.getFilteredElementComponentNamesArray()->at(x).c_str());
         }
     }
     
@@ -394,7 +394,7 @@ SSTInfoConfig::~SSTInfoConfig()
 
 void SSTInfoConfig::outputUsage()
 {
-    cout << "Usage: " << m_AppName << " [<element[.component]>] "<< " [options]" << endl;
+    cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "<< " [options]" << endl;
     cout << *m_configDesc << endl;
 }
 
@@ -718,6 +718,26 @@ void SSTInfoElement_LibraryInfo::outputLibraryInfo(int LibIndex)
                 eic->outputComponentInfo(x);
             }
         }
+        
+        numObjects = getNumberOfLibrarySubComponents();
+        for (x = 0; x < numObjects; x++) {
+            
+            eisc = getInfoSubComponent(x);
+            
+            // See if this component is to be outputed
+            if (true == testNameAgainstOutputFilters(getLibraryName(), eisc->getName())) {
+            
+                // Check to see if we have output'ed the Element header the at least once                 
+                if (false == elemHeaderBeenOutput) {
+                    fprintf(stdout, "================================================================================\n");
+                    fprintf(stdout, "ELEMENT %d = %s (%s)\n", LibIndex, getLibraryName().c_str(), getLibraryDescription().c_str());
+                    elemHeaderBeenOutput = true;
+                }
+                
+                eisc->outputSubComponentInfo(x);
+            }
+        }
+        
     }
 }
 
