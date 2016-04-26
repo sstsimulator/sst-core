@@ -133,4 +133,3 @@ void SST::Interfaces::SimpleNetwork::exchangeMappingData() {
 } // namespace Interfaces
 } // namespace SST
 
-DeclareSerializable(SST::Interfaces::SimpleNetwork::Request)
