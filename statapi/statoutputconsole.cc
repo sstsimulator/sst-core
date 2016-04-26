@@ -31,7 +31,7 @@ bool StatisticOutputConsole::checkOutputParameters()
     bool foundKey;
     
     // Look for Help Param
-    getOutputParameters().find_string("help", "1", foundKey);
+    getOutputParameters().find<std::string>("help", "1", foundKey);
     if (true == foundKey) {
         return false;
     }

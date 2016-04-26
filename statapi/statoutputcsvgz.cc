@@ -41,17 +41,17 @@ bool StatisticOutputCompressedCSV::checkOutputParameters()
     // also setup internal variables
 
     // Look for Help Param
-    getOutputParameters().find_string("help", "1", foundKey);
+    getOutputParameters().find<std::string>("help", "1", foundKey);
     if (true == foundKey) {
         return false;
     }
 
     // Get the parameters
-    m_Separator = getOutputParameters().find_string("separator", ", ");
-    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.csv");
-    topHeaderFlag = getOutputParameters().find_string("outputtopheader", "1");
-    simTimeFlag = getOutputParameters().find_string("outputsimtime", "1");
-    rankFlag = getOutputParameters().find_string("outputrank", "1");
+    m_Separator = getOutputParameters().find<std::string>("separator", ", ");
+    m_FilePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.csv");
+    topHeaderFlag = getOutputParameters().find<std::string>("outputtopheader", "1");
+    simTimeFlag = getOutputParameters().find<std::string>("outputsimtime", "1");
+    rankFlag = getOutputParameters().find<std::string>("outputrank", "1");
     m_outputTopHeader = ("1" == topHeaderFlag);
     m_outputSimTime = ("1" == simTimeFlag);
     m_outputRank = ("1" == rankFlag);
