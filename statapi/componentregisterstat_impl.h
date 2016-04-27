@@ -83,10 +83,10 @@
 
             // We found an acceptible name... Now check its critical Parameters
             // Note: If parameter not found, defaults will be provided
-            statTypeParam = statParamsList->at(x).find_string("type", "sst.AccumulatorStatistic");
-            statRateParam = statParamsList->at(x).find_string("rate", "0ns");
-            statStartAtTimeParam = statParamsList->at(x).find_string("startat", "0ns");
-            statStopAtTimeParam = statParamsList->at(x).find_string("stopat", "0ns");
+            statTypeParam = statParamsList->at(x).find<std::string>("type", "sst.AccumulatorStatistic");
+            statRateParam = statParamsList->at(x).find<std::string>("rate", "0ns");
+            statStartAtTimeParam = statParamsList->at(x).find<std::string>("startat", "0ns");
+            statStopAtTimeParam = statParamsList->at(x).find<std::string>("stopat", "0ns");
 
             // Check for an empty string on the collection rate and start/stop times 
             if (true == statRateParam.empty()) {

@@ -47,7 +47,7 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 			// char* esParamName = makeEscapeSafe(Params::getParamName(params_itr->first).c_str());
 			// char* esValue     = makeEscapeSafe(params_itr->second.c_str());
 			char* esParamName = makeEscapeSafe(params_itr->c_str());
-			char* esValue     = makeEscapeSafe(params.find_string(*params_itr).c_str());
+			char* esValue     = makeEscapeSafe(params.find<std::string>(*params_itr).c_str());
 
 			fprintf(outputFile, "%s.addParams({\n", pyCompName);
 
@@ -65,7 +65,7 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 			// for(; params_itr != comp_itr->params.end(); params_itr++) {
 			for(; params_itr != keys.end(); params_itr++) {
 				char* esParamName = makeEscapeSafe(params_itr->c_str());
-				char* esValue     = makeEscapeSafe(params.find_string(*params_itr).c_str());
+				char* esValue     = makeEscapeSafe(params.find<std::string>(*params_itr).c_str());
 
 				if(isMultiLine(esValue)) {
 					fprintf(outputFile, ",\n     \"%s\" : \"\"\"%s\"\"\"",
@@ -122,7 +122,7 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 					// 	param_itr->first));
 					// char* esValue     = makeEscapeSafe(param_itr->second);
 					char* esParamName = makeEscapeSafe(*param_itr);
-					char* esValue     = makeEscapeSafe(comp_itr->enabledStatParams[statIndex].find_string(*param_itr));
+					char* esValue     = makeEscapeSafe(comp_itr->enabledStatParams[statIndex].find<std::string>(*param_itr));
 
 					fprintf(outputFile, "     \"%s\" : \"%s\"", esParamName,
 						esValue);
