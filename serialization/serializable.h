@@ -139,7 +139,7 @@ class serializable_type
  public:  \
   static void \
   throw_exc(){ \
-     Output ser_abort("", 5, -1, SST::Output::STDERR);                  \
+     SST::Output ser_abort("", 5, -1, SST::Output::STDERR);            \
      ser_abort.fatal(CALL_INFO_LONG, -1, "ERROR: type %s should not be serialized\n",#obj); \
   } \
   virtual void \
