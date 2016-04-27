@@ -46,7 +46,7 @@ void XMLConfigGraphOutput::generateXML(const std::string indent, const ConfigCom
     auto keys = comp.params.getKeys();
 	for(auto paramsItr = keys.begin(); paramsItr != keys.end(); paramsItr++) {
 		std::string paramName  = *paramsItr;
-		std::string paramValue = comp.params.find_string(*paramsItr);
+		std::string paramValue = comp.params.find<std::string>(*paramsItr);
 
 		fprintf(outputFile, "%s%s<param name=\"%s\" value=\"%s\"/>\n",
 			indent.c_str(), "   ",

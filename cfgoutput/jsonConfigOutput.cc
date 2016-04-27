@@ -66,7 +66,7 @@ void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigC
 			// indent.c_str(), Params::getParamName(paramsItr->first).c_str(),
 			// paramsItr->second.c_str());
 			indent.c_str(), paramsItr->c_str(),
-                comp.params.find_string(*paramsItr).c_str());
+                comp.params.find<std::string>(*paramsItr).c_str());
 
 		paramsItr++;
 
@@ -75,7 +75,7 @@ void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigC
 			// std::string paramName  = Params::getParamName(paramsItr->first);
 			// std::string paramValue = paramsItr->second;
 			std::string paramName  = *paramsItr;
-			std::string paramValue = comp.params.find_string(*paramsItr);
+			std::string paramValue = comp.params.find<std::string>(*paramsItr);
 
 			fprintf(outputFile, ",\n%s      { \"name\" : \"%s\", \"value\" : \"%s\" }",
 				indent.c_str(), paramName.c_str(), paramValue.c_str());

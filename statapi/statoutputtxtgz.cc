@@ -42,22 +42,22 @@ bool StatisticOutputCompressedTxt::checkOutputParameters()
     // also setup internal variables
     
     // Look for Help Param
-    getOutputParameters().find_string("help", "1", foundKey);
+    getOutputParameters().find<std::string>("help", "1", foundKey);
     if (true == foundKey) {
         return false;
     }
-    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.txt");
-    topHeaderFlag = getOutputParameters().find_string("outputtopheader", "0");
-    inlineHeaderFlag = getOutputParameters().find_string("outputinlineheader", "1");
-    simTimeFlag = getOutputParameters().find_string("outputsimtime", "1");
-    rankFlag = getOutputParameters().find_string("outputrank", "1");
+    m_FilePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.txt");
+    topHeaderFlag = getOutputParameters().find<std::string>("outputtopheader", "0");
+    inlineHeaderFlag = getOutputParameters().find<std::string>("outputinlineheader", "1");
+    simTimeFlag = getOutputParameters().find<std::string>("outputsimtime", "1");
+    rankFlag = getOutputParameters().find<std::string>("outputrank", "1");
     m_outputTopHeader = ("1" == topHeaderFlag);
     m_outputInlineHeader = ("1" == inlineHeaderFlag);
     m_outputSimTime = ("1" == simTimeFlag);
     m_outputRank = ("1" == rankFlag);
 
     // Get the parameters
-    m_FilePath = getOutputParameters().find_string("filepath", "./StatisticOutput.txt");
+    m_FilePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.txt");
     
     // Perform some checking on the parameters
     if (0 == m_FilePath.length()) { 
