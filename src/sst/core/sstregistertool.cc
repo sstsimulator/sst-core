@@ -131,7 +131,8 @@ int main(int argc, char* argv[]) {
 				char* long_name = (char*) malloc(sizeof(char) * 256);
 				sprintf(long_name, "%s_%s", dependencyName, name);
 
-				fprintf(config_file, "%s=%s\n", long_name, value);
+				fprintf(config_file, "%s=%s\n", long_name,
+					(NULL == value) ? "" : value);
 			}
 
 			fclose(config_file);

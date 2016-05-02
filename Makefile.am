@@ -1,5 +1,4 @@
 
-
 ACLOCAL_AMFLAGS = -I config
 
 SUBDIRS = \
@@ -7,4 +6,3 @@ SUBDIRS = \
 
 sstconfdir = ${sysconfdir}/sst
 sstconf_DATA = src/sst/sstsimulator.conf
-
