@@ -20,7 +20,7 @@
 #include <atomic>
 
 #include <sst/core/sst_types.h>
-#include <sst/core/module.h>
+#include <sst/core/subcomponent.h>
 #include <sst/core/params.h>
 #include <sst/core/link.h>
 
@@ -34,7 +34,7 @@ namespace Interfaces {
 /**
  * Simplified, generic interface to Memory models
  */
-class SimpleMem : public Module {
+class SimpleMem : public SubComponent {
 
 public:
     /** All Addresses can be 64-bit */
@@ -221,8 +221,10 @@ public:
     };
 
 
-    /** Constructor, designed to be used via 'loadModuleWithComponent'. */
-    SimpleMem(SST::Component *comp, Params &params) { }
+    /** Constructor, designed to be used via 'loadSubComponent'. */
+    SimpleMem(SST::Component *comp, Params &params) :
+        SubComponent(comp)
+        { }
 
     /** Second half of building the interface.
      * Intialize with link name name, and handler, if any

@@ -23,29 +23,25 @@ serializable_factory::builder_map* serializable_factory::builders_ = 0;
 
 uint32_t
 // serializable_factory::add_builder(serializable_builder* builder, uint32_t cls_id)
-serializable_factory::add_builder(serializable_builder* builder)
+serializable_factory::add_builder(serializable_builder* builder, const char* name)
 {
   if (builders_ == 0) {
     builders_ = new builder_map;
   }
 
-  // const char* key = builder->name();
-  // int len = ::strlen(key);
-  // uint32_t hash = 0;
-  // for(int i = 0; i < len; ++i)
-  // {
-  //   hash += key[i];
-  //   hash += (hash << 10);
-  //   hash ^= (hash >> 6);
-  // }
-  // hash += (hash << 3);
-  // hash ^= (hash >> 11);
-  // hash += (hash << 15);
+  const char* key = name;
+  int len = ::strlen(key);
+  uint32_t hash = 0;
+  for(int i = 0; i < len; ++i)
+  {
+    hash += key[i];
+    hash += (hash << 10);
+    hash ^= (hash >> 6);
+  }
+  hash += (hash << 3);
+  hash ^= (hash >> 11);
+  hash += (hash << 15);
 
-  // std::cout << "Using cls_id " << cls_id << " for class " << builder->name() << std::endl;
-  
-  uint32_t hash = builder->cls_id();
-  
   builder_map& bmap = *builders_;
   serializable_builder*& current = bmap[hash];
   if (current != 0){
