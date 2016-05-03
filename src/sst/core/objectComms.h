@@ -211,7 +211,7 @@ void all_gather(const dataType& data, std::vector<dataType> &out_data) {
         Comms::deserialize(&bigBuff[displ[i]], allSizes[i], out_data[i]);
     }
 
-    delete bigBuff;
+    delete [] bigBuff;
 
 }
 
