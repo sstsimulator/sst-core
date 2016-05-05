@@ -67,6 +67,7 @@ AC_CHECK_HEADERS([c_asm.h dlfcn.h intrinsics.h mach/mach_time.h sys/time.h sys/s
 
 AC_CACHE_SAVE
 
+SST_CHECK_OSX()
 SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 SST_CHECK_BOOST([], [AC_MSG_ERROR([Could not find Boost, this is required for SST to build])])
 
@@ -115,6 +116,7 @@ AC_DEFINE_UNQUOTED([SST_BOOST_LIBDIR], ["$BOOST_LIBDIR"],
 	[Defines the LIBDIR needed to load dynamic libraries for Boost])
 
 AC_DEFINE([__STDC_FORMAT_MACROS], [1], [Defines that standard PRI macros should be enabled])
+
 
 AC_CACHE_SAVE
 
