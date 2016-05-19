@@ -227,24 +227,24 @@ sst_info_SOURCES = \
 	bootshared.cc \
 	bootshared.h \
 	sstconfigreader.cc \
-	sstconfigreader.h
+	sstconfigreader.hpp
 
 sst_SOURCES = \
 	bootsst.cc \
 	bootshared.cc \
 	bootshared.h \
 	sstconfigreader.cc \
-	sstconfigreader.h
+	sstconfigreader.hpp
 
 sst_config_SOURCES = \
 	sstconfigtool.cc \
 	sstconfigreader.cc \
-	sstconfigreader.h
+	sstconfigreader.hpp
 
 sst_register_SOURCES = \
 	sstregistertool.cc \
 	sstconfigreader.cc \
-	sstconfigreader.h
+	sstconfigreader.hpp
 
 sstsim_x_SOURCES = \
 	main.cc \
