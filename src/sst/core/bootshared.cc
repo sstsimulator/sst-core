@@ -30,23 +30,23 @@ void update_env_var(const char* name, const int verbose, char* argv[], const int
 	}
 
 	std::vector<std::string> configFiles;
-	EnvironmentConfiguration* envConfig = SST::Core::getSSTEnvironmentConfiguration(configFiles);
+	SST::Core::Environment::EnvironmentConfiguration* envConfig = SST::Core::Environment::getSSTEnvironmentConfiguration(configFiles);
 	std::set<std::string> groups = envConfig->getGroupNames();
 
 	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-		EnvironmentConfigGroup* currentGroup = envConfig->getGroupByName(*groupItr);
+		SST::Core::Environment::EnvironmentConfigGroup* currentGroup = envConfig->getGroupByName(*groupItr);
 		std::set<std::string> keys = currentGroup->getKeys();
 
 		for(auto configItr = keys.begin(); configItr != keys.end(); configItr++) {
 			const std::string& paramName = *configItr;
-			const std::string* value     = envConfig->currentGroup->getValue(*configItr).c_str();
+			const std::string& value     = currentGroup->getValue(*configItr).c_str();
 
 			if(paramName.size() > 6) {
 				const char* paramNameEnding = paramName.c_str();
 
 				if(strcmp(&paramNameEnding[paramName.size() - 6], "LIBDIR") == 0) {
 					strcpy(new_ld_path_copy, new_ld_path);
-					sprintf(new_ld_path, "%s:%s", value, new_ld_path_copy);
+					sprintf(new_ld_path, "%s:%s", value.c_str(), new_ld_path_copy);
 				}
 			}
 		}
