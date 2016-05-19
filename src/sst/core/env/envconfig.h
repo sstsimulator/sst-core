@@ -41,6 +41,14 @@ public:
 		params.insert(std::pair<std::string, std::string>(key, value));
 	}
 
+	void print() {
+		std::cout << "Group: " << groupName << std::endl;
+
+		for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
+			std::cout << paramsItr->first << "=" << paramsItr->second << std::endl;
+		}
+	}
+
 protected:
 	std::string groupName;
 	std::map<std::string, std::string> params;
@@ -63,6 +71,7 @@ public:
 
 		if(groups.find(groupName) == groups.end()) {
 			newGroup = new EnvironmentConfigGroup(groupName);
+			groups.insert(std::pair<std::string, EnvironmentConfigGroup*>(groupName, newGroup));
 		} else {
 			newGroup = groups.find(groupName)->second;
 		}
@@ -90,6 +99,12 @@ public:
 
 	EnvironmentConfigGroup* getGroupByName(std::string groupName) {
 		return createGroup(groupName);
+	}
+
+	void print() {
+		for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
+			groupItr->second->print();
+		}
 	}
 
 private:

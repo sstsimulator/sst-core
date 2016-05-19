@@ -41,6 +41,8 @@ void configReadLine(FILE* theFile, char* lineBuffer) {
 }
 
 void populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg) {
+	std::cout << "Populating configuration info from: " << path << std::endl;
+
 	FILE* configFile = fopen(path.c_str(), "rt");
 
 	if(NULL == configFile) {
@@ -124,16 +126,19 @@ EnvironmentConfiguration* getSSTEnvironmentConfiguration(const std::vector<std::
 	// NEXT - ENVIRONMENT VARIABLE
 	const char* envConfigPaths = getenv("SST_CONFIG_FILE_PATH");
 	const char* envConfigPathSep = getenv("SST_CONFIG_FILE_PATH_SEPARATOR");
-	char* envConfigPathBuffer = (char*) malloc( sizeof(char) * (strlen(envConfigPaths) + 1) );
-	strcpy(envConfigPathBuffer, envConfigPaths);
 
 	if( NULL != envConfigPaths ) {
+		char* envConfigPathBuffer = (char*) malloc( sizeof(char) * (strlen(envConfigPaths) + 1) );
+		strcpy(envConfigPathBuffer, envConfigPaths);
+
 		char* nextToken = strtok(envConfigPathBuffer, envConfigPathSep);
 
 		while( NULL != nextToken ) {
 			populateEnvironmentConfig(nextToken, envConfig);
 			nextToken = strtok(NULL, envConfigPathSep);
 		}
+
+		free(envConfigPathBuffer);
 	}
 
 	// NEXT - override paths
@@ -141,7 +146,6 @@ EnvironmentConfiguration* getSSTEnvironmentConfiguration(const std::vector<std::
 		populateEnvironmentConfig(nextPath, envConfig);
 	}
 
-	free(envConfigPathBuffer);
 	return envConfig;
 }
 
