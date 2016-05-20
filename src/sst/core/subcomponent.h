@@ -44,6 +44,9 @@ protected:
     Component* const parent;
     // Component* parent;
 
+    /** Determine if a port name is connected to any links */
+    bool isPortConnected(const std::string &name) const;
+
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.
      * @param time_base - Time Base of the link
