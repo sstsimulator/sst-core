@@ -151,11 +151,15 @@ public:
 				}
 			}
 		}
-	}	
+	}
 
 	if(NULL != envpath) {
 		fullLibPath.clear();
 		fullLibPath.append(envpath);
+	}
+
+	if(verbose) {
+		std::cout << "SST-Core: Configuration Library Path will read from: " << fullLibPath << std::endl;
 	}
 
         return fullLibPath;

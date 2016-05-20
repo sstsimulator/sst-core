@@ -182,7 +182,10 @@ ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
             fprintf(stderr, "Opening element library %s failed: %s\n",
                     elemlib.c_str(), lt_dlerror());
             eli = followError(libname, elemlib, eli, searchPaths);
-        }
+        } else {
+	    fprintf(stderr, "Unable to open: \'%s\', not found in search paths: \'%s\'\n",
+		elemlib.c_str(), searchPaths.c_str());
+	}
     } else {
         // look for an info block
         std::string infoname = elemlib + "_eli";
