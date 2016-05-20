@@ -44,8 +44,6 @@ void configReadLine(FILE* theFile, char* lineBuffer) {
 }
 
 void populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg) {
-	std::cout << "Populating configuration info from: " << path << std::endl;
-
 	FILE* configFile = fopen(path.c_str(), "rt");
 
 	if(NULL == configFile) {
