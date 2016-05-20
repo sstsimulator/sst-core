@@ -1,4 +1,7 @@
 
+#ifndef _H_SST_CORE_ENV_QUERY_H
+#define _H_SST_CORE_ENV_QUERY_H
+
 #include <sst_config.h>
 
 #include <cstdio>
@@ -152,3 +155,5 @@ EnvironmentConfiguration* getSSTEnvironmentConfiguration(const std::vector<std::
 }
 }
 }
+
+#endif

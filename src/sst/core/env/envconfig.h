@@ -1,4 +1,7 @@
 
+#ifndef _H_SST_CORE_ENV_CONFIG_H
+#define _H_SST_CORE_ENV_CONFIG_H
+
 #include <string>
 #include <map>
 #include <set>
@@ -46,6 +49,14 @@ public:
 
 		for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
 			std::cout << paramsItr->first << "=" << paramsItr->second << std::endl;
+		}
+	}
+
+	void writeTo(FILE* outFile) {
+		fprintf(outFile, "[%s]\n", groupName.c_str());
+
+		for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
+			fprintf(outFile, "%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
 		}
 	}
 
@@ -107,6 +118,16 @@ public:
 		}
 	}
 
+	void writeTo(std::string filePath) {
+		FILE* output = fopen(filePath.c_str(), "wt");
+
+		for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
+			groupItr->second->writeTo(output);
+		}
+
+		fclose(output);
+	}
+
 private:
 	std::map<std::string, EnvironmentConfigGroup*> groups;
 
@@ -115,3 +136,5 @@ private:
 }
 }
 }
+
+#endif
