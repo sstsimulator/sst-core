@@ -46,6 +46,12 @@ SubComponent::~SubComponent()
 {
 }
 
+bool
+SubComponent::isPortConnected(const std::string &name) const
+{
+    return parent->isPortConnected(name);
+}
+
 Link*
 SubComponent::configureLink(std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
