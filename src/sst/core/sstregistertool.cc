@@ -80,6 +80,10 @@ int main(int argc, char* argv[]) {
 	std::string cfgPathStr(cfgPath);
 	populateEnvironmentConfig(cfgPathStr, database);
 
+	std::cout << "Existing Database:" << std::endl;
+	database->print();
+	std::cout << " END EXISTING DATABASE "  << std::endl;
+
 	database->getGroupByName(groupName)->setValue(key, value);
 	database->writeTo(cfgPathStr);
 

@@ -7,15 +7,10 @@
 #include <string>
 #include <map>
 
-#include "sstconfigreader.hpp"
+#include "sst/core/env/envquery.h"
+#include "sst/core/env/envconfig.h"
 
 void print_usage() {
-	printf("======================================================\n");
-	printf("SST %s Core Installation Configuration\n", PACKAGE_VERSION);
-	printf("======================================================\n");
-	printf("\n");
-	printf("SST Install Prefix:   %s\n", SST_INSTALL_PREFIX);
-	printf("Install Database:     %s/etc/sst/sstsimulator.conf\n", SST_INSTALL_PREFIX);
 	exit(1);
 }
 
@@ -35,44 +30,27 @@ int main(int argc, char* argv[]) {
 	}
 
 	if(found_help) {
-		print_usage();
+
 	}
 
-	std::map<std::string, std::string> configParams;
-	SST::Core::populateConfigMap(configParams);
+	SST::Core::Environment::EnvironmentConfiguration* database =
+		new SST::Core::Environment::EnvironmentConfiguration();
 
-	if( 1 == argc ) {
-		for(auto configItr = configParams.begin(); configItr != configParams.end();
-			configItr++) {
+	populateEnvironmentConfig( SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", database );
 
-			printf("%30s %40s\n", configItr->first.c_str(), configItr->second.c_str());
-		}
-	} else if( 0 == strcmp(argv[1], "--prefix") ) {
-		printf("%s\n", SST_INSTALL_PREFIX);
-	} else if( 0 == strcmp(argv[1], "--version") ) {
-		printf("%s\n", PACKAGE_VERSION);
-	} else if (0 == strcmp(argv[1], "--database") ) {
-		printf("%s/etc/sst/sstsimulator.conf\n", SST_INSTALL_PREFIX);
+	char* userHome = getenv("HOME");
+
+	if( NULL == userHome ) {
+		populateEnvironmentConfig( "~/.sst/sstsimulator.conf", database );
 	} else {
-		if( 0 == strncmp(argv[1], "--", 2) ) {
-			char* param = argv[1];
-			param++;
-			param++;
+		char* userHomeBuffer = (char*) malloc(sizeof(char) * PATH_MAX);
+		sprintf(userHomeBuffer, "%s/.sst/sstsimulator.conf", userHome);
 
-			std::string paramStr(param);
-
-			auto configParamsVal = configParams.find(paramStr);
-
-			if(configParamsVal == configParams.end()) {
-				printf("\n");
-			} else {
-				printf("%s\n", configParamsVal->second.c_str());
-			}
-		} else {
-			fprintf(stderr, "Unknown parameter to find (%s), must start with --\n", argv[1]);
-			exit(-1);
-		}
+		populateEnvironmentConfig( userHomeBuffer, database );
+		free(userHomeBuffer);
 	}
+
+	database->print();
 
 	return 0;
 }

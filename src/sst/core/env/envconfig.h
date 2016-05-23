@@ -18,47 +18,13 @@ namespace Environment {
 class EnvironmentConfigGroup {
 
 public:
-	EnvironmentConfigGroup(const std::string name) :
-		groupName(name) {}
-
-	std::string getName() const {
-		return groupName;
-	}
-
-	std::set<std::string> getKeys() const {
-		std::set<std::string> retKeys;
-
-		for(auto mapItr = params.begin(); mapItr != params.end(); mapItr++) {
-			retKeys.insert(mapItr->first);
-		}
-
-		return retKeys;
-	}
-
-	std::string getValue(std::string key) {
-		return (params.find(key) == params.end()) ?
-			"" : params[key];
-	}
-
-	void setValue(std::string key, std::string value) {
-		params.insert(std::pair<std::string, std::string>(key, value));
-	}
-
-	void print() {
-		std::cout << "Group: " << groupName << std::endl;
-
-		for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
-			std::cout << paramsItr->first << "=" << paramsItr->second << std::endl;
-		}
-	}
-
-	void writeTo(FILE* outFile) {
-		fprintf(outFile, "[%s]\n", groupName.c_str());
-
-		for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
-			fprintf(outFile, "%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
-		}
-	}
+	EnvironmentConfigGroup(std::string name) : groupName(name) {}
+	std::string getName() const;
+	std::set<std::string> getKeys() const;
+	std::string getValue(std::string key);
+	void setValue(std::string key, std::string value);
+	void print();
+	void writeTo(FILE* outFile);
 
 protected:
 	std::string groupName;
@@ -69,64 +35,15 @@ protected:
 class EnvironmentConfiguration {
 
 public:
-	EnvironmentConfiguration() {}
-	~EnvironmentConfiguration() {
-		// Delete all the groups we have created
-		for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-			delete groupItr->second;
-		}
-	}
+	EnvironmentConfiguration();
+	~EnvironmentConfiguration();
 
-	EnvironmentConfigGroup* createGroup(std::string groupName) {
-		EnvironmentConfigGroup* newGroup = NULL;
-
-		if(groups.find(groupName) == groups.end()) {
-			newGroup = new EnvironmentConfigGroup(groupName);
-			groups.insert(std::pair<std::string, EnvironmentConfigGroup*>(groupName, newGroup));
-		} else {
-			newGroup = groups.find(groupName)->second;
-		}
-
-		return newGroup;
-	}
-
-	void removeGroup(std::string groupName) {
-		auto theGroup = groups.find(groupName);
-
-		if(theGroup != groups.end()) {
-			groups.erase(theGroup);
-		}
-	}
-
-	std::set<std::string> getGroupNames() {
-		std::set<std::string> groupNames;
-
-		for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-			groupNames.insert(groupItr->first);
-		}
-
-		return groupNames;
-	}
-
-	EnvironmentConfigGroup* getGroupByName(std::string groupName) {
-		return createGroup(groupName);
-	}
-
-	void print() {
-		for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-			groupItr->second->print();
-		}
-	}
-
-	void writeTo(std::string filePath) {
-		FILE* output = fopen(filePath.c_str(), "wt");
-
-		for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-			groupItr->second->writeTo(output);
-		}
-
-		fclose(output);
-	}
+	EnvironmentConfigGroup* createGroup(std::string groupName);
+	void removeGroup(std::string groupName);
+	std::set<std::string> getGroupNames();
+	EnvironmentConfigGroup* getGroupByName(std::string groupName);
+	void print();
+	void writeTo(std::string filePath);
 
 private:
 	std::map<std::string, EnvironmentConfigGroup*> groups;
