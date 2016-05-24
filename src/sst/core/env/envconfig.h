@@ -15,6 +15,39 @@ namespace SST {
 namespace Core {
 namespace Environment {
 
+/***
+\class EnvironmentConfigGroup envconfig.h "sst/core/env/envconfig.h"
+
+Specifies a class which contains a group of key=value pairs. A group
+is a logical unit of management for collecting configuration parameters.
+For instance, these might relate to an specific dependency or element
+etc.
+
+Grouping of key=value pairs allows entire lists of parameters to be
+removed from the configuration system when needed.
+
+In general the core expects to default to either the "default" group
+or the "SSTCore" group, with the configuration populating the "SSTCore"
+group with parameters during the initial configure script process.
+
+The configuration and management systems treat the "default" and
+"SSTCore" groups with special handling and no guarantee is provided
+that these settings can be modified, removed or added to (since they
+may be held in configuration files that are not accessible to the
+user).
+
+Groups also allow printing (to standard output) or files directly
+of all members.
+
+Although a logical interface may be the utilization of a map, groups
+do not expose this currently to allow for modification in the
+implementation in the future when more complex schemes are expected
+to be used. Users of the group class should use the public accessor
+methods provided to ensure forwards compatibility with future
+SST releases.
+
+*/
+
 class EnvironmentConfigGroup {
 
 public:
@@ -32,6 +65,35 @@ protected:
 
 };
 
+
+/***
+\class EnvironmentConfiguration envconfig.h "sst/core/env/envconfig.h"
+
+The EnvironmentConfiguration class provides an entire configuration
+set for SST, which will include zero or more EnvironmentConfigGroup
+instances (essentially zero or more groups). In the usual course of
+operations the environment will contains two "special" groups called
+"default" (unpopulated but is provided for any ungrouped parameter
+values) and "SSTCore" which houses parameters encoded during the
+core's configuration process.
+
+EnvironmentConfiguration instances can be loaded from a single file
+or via the standard precedence ordered SST loading mechanisms. In the
+case of loading from a specific file, the core makes no guarantees
+about the number of groups provided (zero or more). The user should
+make no assumptions in this case.
+
+If the EnvironmentConfiguration is loaded via the SST precedence
+ordered mechnaisms, then the "default" and "SSTCore" groups will be
+provided.
+
+Although it may seem logical to provide a map structure of group
+names to group instances, the design is not implemented this way
+to permit future modification in the underlying structures. Users
+should use the public methods provided to ensure future compatibility
+with SST releases.
+
+*/
 class EnvironmentConfiguration {
 
 public:
