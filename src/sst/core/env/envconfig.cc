@@ -44,10 +44,22 @@ void SST::Core::Environment::EnvironmentConfigGroup::setValue(std::string key, s
 }
 
 void SST::Core::Environment::EnvironmentConfigGroup::print() {
-	std::cout << "Group: " << groupName << std::endl;
+	printf("# Group: %s ", groupName.c_str());
+
+	int remainingLen = 70 - groupName.size();
+
+	if(remainingLen < 0) {
+		remainingLen = 0;
+	}
+
+	for( ; remainingLen >= 0; remainingLen--) {
+		printf("-");
+	}
+
+	printf("\n");
 
 	for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
-		std::cout << paramsItr->first << "=" << paramsItr->second << std::endl;
+		printf("%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
 	}
 }
 
