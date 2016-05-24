@@ -53,8 +53,8 @@ int main(int argc, char* argv[]) {
 	char* cfgPath = (char*) malloc(sizeof(char) * PATH_MAX);
 
 	sprintf(cfgPath, SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf");
+	FILE* cfgFile = fopen(cfgPath, "r+");
 
-	FILE* cfgFile = fopen(cfgPath, "wt");
 	if(NULL == cfgFile) {
 		char* envHome = getenv("HOME");
 
@@ -64,29 +64,32 @@ int main(int argc, char* argv[]) {
 			sprintf(cfgPath, "%s/.sst/sstsimulator.conf", envHome);
 		}
 
-		cfgFile = fopen(cfgPath, "wt");
+		cfgFile = fopen(cfgPath, "r+");
 
 		if(NULL == cfgFile) {
 			fprintf(stderr, "Unable to open configuration at either: %s or %s, one of these files must be editable.\n",
 				SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", cfgPath);
 			exit(-1);
-		} else {
-			fclose(cfgFile);
 		}
-	} else {
-		fclose(cfgFile);
 	}
 
-	std::string cfgPathStr(cfgPath);
-	populateEnvironmentConfig(cfgPathStr, database);
-
-	std::cout << "Existing Database:" << std::endl;
-	database->print();
-	std::cout << " END EXISTING DATABASE "  << std::endl;
+	populateEnvironmentConfig(cfgFile, database, true);
 
 	database->getGroupByName(groupName)->setValue(key, value);
-	database->writeTo(cfgPathStr);
+	fclose(cfgFile);
 
+	cfgFile = fopen(cfgPath, "w+");
+
+	if(NULL == cfgFile) {
+		fprintf(stderr, "Unable to open: %s for writing.\n",
+			cfgPath);
+		exit(-1);
+	}
+
+	database->writeTo(cfgFile);
+
+	fclose(cfgFile);
 	free(cfgPath);
+
 	return 0;
 }
