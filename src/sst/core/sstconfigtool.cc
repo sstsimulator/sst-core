@@ -28,7 +28,7 @@ void print_usage() {
 int main(int argc, char* argv[]) {
 	bool found_help = false;
 
-	if(argc > 2) {
+	if(argc < 3) {
 		print_usage();
 	}
 
@@ -44,26 +44,31 @@ int main(int argc, char* argv[]) {
 
 	}
 
+	std::vector<std::string> overrideConfigFiles;
 	SST::Core::Environment::EnvironmentConfiguration* database =
-		new SST::Core::Environment::EnvironmentConfiguration();
+		SST::Core::Environment::getSSTEnvironmentConfiguration(overrideConfigFiles);
 
 	populateEnvironmentConfig( SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", database,
 		true );
 
-	char* userHome = getenv("HOME");
+	std::string groupName(argv[1]);
+	std::string key(argv[2]);
 
-	if( NULL == userHome ) {
-		populateEnvironmentConfig( "~/.sst/sstsimulator.conf", database,
-			false );
-	} else {
-		char* userHomeBuffer = (char*) malloc(sizeof(char) * PATH_MAX);
-		sprintf(userHomeBuffer, "%s/.sst/sstsimulator.conf", userHome);
+	SST::Core::Environment::EnvironmentConfigGroup* group = database->getGroupByName(groupName);
 
-		populateEnvironmentConfig( userHomeBuffer, database, false );
-		free(userHomeBuffer);
+	std::set<std::string> groupKeys = group->getKeys();
+	bool keyFound = false;
+
+	for(auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++) {
+		if( key == (*keyItr) ) {
+			printf("%s\n", group->getValue(key).c_str());
+			keyFound = true;
+			break;
+		}
 	}
 
-	database->print();
+	delete database;
 
-	return 0;
+	// If key is found, we return 0 otherwise 1 indicates not found
+	return keyFound ? 0 : 1;
 }
