@@ -28,9 +28,8 @@ void print_usage() {
 int main(int argc, char* argv[]) {
 	bool found_help = false;
 
-	if(argc < 3) {
-		print_usage();
-	}
+	std::string groupName("");
+	std::string key("");
 
 	for(int i = 1; i < argc; i++) {
 		if(strcmp(argv[i], "--help") == 0 ||
@@ -41,7 +40,29 @@ int main(int argc, char* argv[]) {
 	}
 
 	if(found_help) {
+		print_usage();
+	}
 
+	if(argc == 2) {
+		groupName = static_cast<std::string>("SSTCore");
+		std::string keyTemp(argv[1]);
+
+		if(keyTemp.size() < 2) {
+			fprintf(stderr, "Error: key (%s) is not specified with a group and doesn't start with --\n", keyTemp.c_str());
+			exit(-1);
+		}
+
+		if(keyTemp.substr(0, 2) == "--") {
+			key = keyTemp.substr(2);
+		} else {
+			fprintf(stderr, "Error: key (%s) is not specified with a group and doesn't start with --\n", keyTemp.c_str());
+			exit(-1);
+		}
+	} else if (argc == 3) {
+		groupName = static_cast<std::string>(argv[1]);
+		key       = static_cast<std::string>(argv[2]);
+	} else {
+		print_usage();
 	}
 
 	std::vector<std::string> overrideConfigFiles;
@@ -50,9 +71,6 @@ int main(int argc, char* argv[]) {
 
 	populateEnvironmentConfig( SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", database,
 		true );
-
-	std::string groupName(argv[1]);
-	std::string key(argv[2]);
 
 	SST::Core::Environment::EnvironmentConfigGroup* group = database->getGroupByName(groupName);
 
