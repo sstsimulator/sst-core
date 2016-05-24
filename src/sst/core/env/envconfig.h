@@ -44,6 +44,7 @@ public:
 	EnvironmentConfigGroup* getGroupByName(std::string groupName);
 	void print();
 	void writeTo(std::string filePath);
+	void writeTo(FILE* outFile);
 
 private:
 	std::map<std::string, EnvironmentConfigGroup*> groups;

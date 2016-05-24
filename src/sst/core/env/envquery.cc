@@ -20,10 +20,7 @@ void SST::Core::Environment::configReadLine(FILE* theFile, char* lineBuffer) {
 		const int next      = std::fgetc(theFile);
 		const char nextChar = static_cast<char>(next);
 
-		printf("read character: %d %c\n", next, nextChar);
-
 		if(EOF == nextChar) {
-			printf("Line ends at index %d\n", bufferIndex);
 			lineBuffer[bufferIndex] = '\0';
 			break;
 		} else {
@@ -37,40 +34,9 @@ void SST::Core::Environment::configReadLine(FILE* theFile, char* lineBuffer) {
 
 		bufferIndex++;
 	}
-
-	for(auto i = 0; i < 10; i++) {
-		printf("Char[%d]=%c\n", i, lineBuffer[i]);
-	}
-
-	printf("The line: %s\n", lineBuffer);
 }
 
-void SST::Core::Environment::populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg) {
-	printf("Opening [%s]\n", path.c_str());
-	FILE* configFile = fopen(path.c_str(), "r");
-
-	if(NULL == configFile) {
-		std::cerr << "SST: Unable to open configuration file \'" <<
-			path << "\'" << std::endl;
-		exit(-1);
-	} else {
-		printf("Successfully opened file!\n");
-	}
-
-	// Start at the beginning
-	rewind(configFile);
-
-	if(ferror(configFile)) {
-		printf("ERROR ON THE CONFIGURATION FILE\n");
-	} else {
-		printf("NO ERROR ON THE CONFIG FILE, CONTINUE..,\n");
-	}
-
-	if(feof(configFile)) {
-		printf("already at the end of the configuration file\n");
-	} else {
-		printf("NOT at the end of the file yet.\n");
-	}
+void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg, bool errorOnNotOpen) {
 
 	constexpr size_t maxBufferLength = 4096;
 	char* lineBuffer = (char*) malloc(sizeof(char) * maxBufferLength);
@@ -82,11 +48,8 @@ void SST::Core::Environment::populateEnvironmentConfig(const std::string& path, 
 	EnvironmentConfigGroup* currentGroup = cfg->getGroupByName("default");
 
 	while( feof(configFile) == 0 ) {
-		printf("LINE BUFFER BEFORE CALL: [%s]\n", lineBuffer);
 		SST::Core::Environment::configReadLine(configFile, lineBuffer);
 		currentLine++;
-
-		printf("Line %5d = [%s]\n", currentLine, lineBuffer);
 
 		if(0 == strlen(lineBuffer)) {
 			// Empty line, needs no additional processing
@@ -94,8 +57,8 @@ void SST::Core::Environment::populateEnvironmentConfig(const std::string& path, 
 			// Comment line, throw this away, we don't need it
 		} else if('[' == lineBuffer[0]) {
 			if(lineBuffer[strlen(lineBuffer) - 1] != ']') {
-				std::cerr << "SST: Error reading configuration file (" << path
-					<< "), line number: " << currentLine << ", no matching ]"
+				std::cerr << "SST: Error reading configuration file at line number: "
+					<< currentLine << ", no matching ]"
 					<< std::endl;
 				exit(-1);
 			}
@@ -103,10 +66,8 @@ void SST::Core::Environment::populateEnvironmentConfig(const std::string& path, 
 			// This is a configuration group
 			std::string lineStr(lineBuffer);
 
-			std::cout << "Changing to group: " << lineStr << std::endl;
-
 			// Grab the group by this name
-			currentGroup = cfg->getGroupByName(lineStr.substr(1, lineStr.size() - 1));
+			currentGroup = cfg->getGroupByName(lineStr.substr(1, lineStr.size() - 2));
 		} else {
 			std::string lineStr(lineBuffer);
 			int equalsIndex = 0;
@@ -129,6 +90,23 @@ void SST::Core::Environment::populateEnvironmentConfig(const std::string& path, 
 	fclose(configFile);
 }
 
+void SST::Core::Environment::populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg, bool errorOnNotOpen) {
+	const char* configFilePath = path.c_str();
+	FILE* configFile = fopen(configFilePath, "r");
+
+	if(NULL == configFile) {
+		if(errorOnNotOpen) {
+			std::cerr << "SST: Unable to open configuration file \'" <<
+				path << "\'" << std::endl;
+			exit(-1);
+		} else {
+			return ;
+		}
+	}
+
+	populateEnvironmentConfig(configFile, cfg, errorOnNotOpen);
+}
+
 SST::Core::Environment::EnvironmentConfiguration*
 	SST::Core::Environment::getSSTEnvironmentConfiguration(const std::vector<std::string>& overridePaths) {
 	EnvironmentConfiguration* envConfig = new EnvironmentConfiguration();
@@ -136,7 +114,7 @@ SST::Core::Environment::EnvironmentConfiguration*
 	// LOWEST PRIORITY - GLOBAL INSTALL CONFIG
 	std::string prefixConfig = SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf";
 
-	SST::Core::Environment::populateEnvironmentConfig(prefixConfig, envConfig);
+	SST::Core::Environment::populateEnvironmentConfig(prefixConfig, envConfig, true);
 
 	// NEXT - USER HOME CONFIG
 	char* homeConfigPath = (char*) malloc( sizeof(char) * PATH_MAX );
@@ -149,7 +127,7 @@ SST::Core::Environment::EnvironmentConfiguration*
 	}
 
 	const std::string homeConfigPathStr(homeConfigPath);
-	populateEnvironmentConfig(homeConfigPathStr, envConfig);
+	populateEnvironmentConfig(homeConfigPathStr, envConfig, false);
 
 	free(homeConfigPath);
 
@@ -170,7 +148,7 @@ SST::Core::Environment::EnvironmentConfiguration*
 		char* nextToken = strtok(envConfigPathBuffer, envConfigPathSep);
 
 		while( NULL != nextToken ) {
-			populateEnvironmentConfig(nextToken, envConfig);
+			populateEnvironmentConfig(nextToken, envConfig, true);
 			nextToken = strtok(NULL, envConfigPathSep);
 		}
 
@@ -179,7 +157,7 @@ SST::Core::Environment::EnvironmentConfiguration*
 
 	// NEXT - override paths
 	for(std::string nextPath : overridePaths) {
-		populateEnvironmentConfig(nextPath, envConfig);
+		populateEnvironmentConfig(nextPath, envConfig, true);
 	}
 
 	return envConfig;

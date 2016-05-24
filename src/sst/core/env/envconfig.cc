@@ -34,6 +34,12 @@ std::string SST::Core::Environment::EnvironmentConfigGroup::getValue(std::string
 }
 
 void SST::Core::Environment::EnvironmentConfigGroup::setValue(std::string key, std::string value) {
+	auto paramsItr = params.find(key);
+
+	if(paramsItr != params.end()) {
+		params.erase(paramsItr);
+	}
+
 	params.insert(std::pair<std::string, std::string>(key, value));
 }
 
@@ -104,11 +110,17 @@ void SST::Core::Environment::EnvironmentConfiguration::print() {
 }
 
 void SST::Core::Environment::EnvironmentConfiguration::writeTo(std::string filePath) {
-	FILE* output = fopen(filePath.c_str(), "wt");
+	FILE* output = fopen(filePath.c_str(), "w+");
 
 	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
 		groupItr->second->writeTo(output);
 	}
 
 	fclose(output);
+}
+
+void SST::Core::Environment::EnvironmentConfiguration::writeTo(FILE* output) {
+	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
+		groupItr->second->writeTo(output);
+	}
 }

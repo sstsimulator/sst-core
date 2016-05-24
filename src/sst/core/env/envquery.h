@@ -17,7 +17,10 @@ namespace Core {
 namespace Environment {
 
 void configReadLine(FILE* theFile, char* lineBuffer);
-void populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg);
+void populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg,
+	bool errorOnNotOpen);
+void populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg,
+	bool errorOnNotOpen);
 EnvironmentConfiguration* getSSTEnvironmentConfiguration(const std::vector<std::string>& overridePaths);
 
 }

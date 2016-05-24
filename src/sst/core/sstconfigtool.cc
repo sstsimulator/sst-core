@@ -36,17 +36,19 @@ int main(int argc, char* argv[]) {
 	SST::Core::Environment::EnvironmentConfiguration* database =
 		new SST::Core::Environment::EnvironmentConfiguration();
 
-	populateEnvironmentConfig( SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", database );
+	populateEnvironmentConfig( SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", database,
+		true );
 
 	char* userHome = getenv("HOME");
 
 	if( NULL == userHome ) {
-		populateEnvironmentConfig( "~/.sst/sstsimulator.conf", database );
+		populateEnvironmentConfig( "~/.sst/sstsimulator.conf", database,
+			false );
 	} else {
 		char* userHomeBuffer = (char*) malloc(sizeof(char) * PATH_MAX);
 		sprintf(userHomeBuffer, "%s/.sst/sstsimulator.conf", userHome);
 
-		populateEnvironmentConfig( userHomeBuffer, database );
+		populateEnvironmentConfig( userHomeBuffer, database, false );
 		free(userHomeBuffer);
 	}
 
