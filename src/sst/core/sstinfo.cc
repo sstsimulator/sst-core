@@ -29,6 +29,9 @@
 #include <sst/core/element.h>
 #include "sst/core/build_info.h"
 
+#include "sst/core/env/envquery.h"
+#include "sst/core/env/envconfig.h"
+
 #include <sst/core/tinyxml/tinyxml.h>
 #include <sst/core/sstinfo.h>
 
@@ -39,8 +42,8 @@ using namespace SST;
 
 // Global Variables
 ElemLoader*                              g_loader;
-std::string                              g_searchPath = SST_ELEMLIB_DIR;
 int                                      g_fileProcessedCount;
+std::string				 g_searchPath;
 std::vector<SSTInfoElement_LibraryInfo*> g_libInfoArray;
 SSTInfoConfig                            g_configuration;
 
@@ -61,16 +64,40 @@ int main(int argc, char *argv[])
         return -1;
     }
 
+    std::vector<std::string> overridePaths;
+    SST::Core::Environment::EnvironmentConfiguration* sstEnv =
+	SST::Core::Environment::getSSTEnvironmentConfiguration(overridePaths);
+    g_searchPath = "";
+    std::set<std::string> groupNames = sstEnv->getGroupNames();
+
+    for(auto groupItr = groupNames.begin(); groupItr != groupNames.end(); groupItr++) {
+	SST::Core::Environment::EnvironmentConfigGroup* currentGroup =
+		sstEnv->getGroupByName(*groupItr);
+	std::set<std::string> groupKeys = currentGroup->getKeys();
+
+	for(auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++) {
+		const std::string key = *keyItr;
+
+		if(key.size() > 6 && key.substr(key.size() - 6) == "LIBDIR") {
+			if(g_searchPath.size() > 0) {
+				g_searchPath.append(":");
+			}
+
+			g_searchPath.append(currentGroup->getValue(key));
+		}
+	}
+    }
+
     g_loader = new ElemLoader(g_searchPath);
 
     // Read in the Element files and process them
     processSSTElementFiles(g_searchPath);
-    
+
     // Do we output in Human Readable form
     if (g_configuration.getOptionBits() & CFG_OUTPUTHUMAN) {
         outputSSTElementInfo();
     }
-    
+
     // Do we output an XML File
     if (g_configuration.getOptionBits() & CFG_OUTPUTXML) {
         generateXMLOutputFile();
@@ -253,7 +280,7 @@ void outputSSTElementInfo()
 {
     unsigned int            x;
     SSTInfoElement_LibraryInfo* pLibInfo;
-    
+
     fprintf (stdout, "PROCESSED %d .so (SST ELEMENT) FILES FOUND IN DIRECTORY %s\n", g_fileProcessedCount, g_searchPath.c_str());
 
     // Tell the user what Elements will be displayed
@@ -268,7 +295,7 @@ void outputSSTElementInfo()
             fprintf (stdout, "Filtering output on Element.Component|SubComponent = \"%s\"\n", g_configuration.getFilteredElementComponentNamesArray()->at(x).c_str());
         }
     }
-    
+
     // Now dump the Library Info
     for (x = 0; x < g_libInfoArray.size(); x++) {
         pLibInfo = g_libInfoArray[x];
