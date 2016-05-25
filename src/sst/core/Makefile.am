@@ -33,6 +33,8 @@ nobase_dist_sst_HEADERS = \
 	cfgoutput/dotConfigOutput.h \
 	cfgoutput/xmlConfigOutput.h \
 	cfgoutput/jsonConfigOutput.h \
+	env/envquery.h \
+	env/envconfig.h \
 	element.h \
 	elemLoader.h \
 	event.h \
@@ -148,7 +150,6 @@ nobase_nodist_sst_HEADERS = \
 	build_info.h
 
 sst_core_sources = \
-	sstconfigreader.cc \
 	action.cc \
 	archive.cc \
 	clock.cc \
@@ -161,6 +162,8 @@ sst_core_sources = \
 	cfgoutput/xmlConfigOutput.cc \
 	cfgoutput/jsonConfigOutput.cc \
 	boostExports.cc \
+	env/envquery.cc \
+	env/envconfig.cc \
 	elemLoader.cc \
 	event.cc \
 	exit.cc \
@@ -226,25 +229,34 @@ sst_info_SOURCES = \
 	bootsstinfo.cc \
 	bootshared.cc \
 	bootshared.h \
-	sstconfigreader.cc \
-	sstconfigreader.hpp
+	env/envquery.h \
+	env/envconfig.h \
+	env/envquery.cc \
+	env/envconfig.cc
 
 sst_SOURCES = \
 	bootsst.cc \
 	bootshared.cc \
 	bootshared.h \
-	sstconfigreader.cc \
-	sstconfigreader.hpp
+	env/envquery.h \
+	env/envconfig.h \
+	env/envquery.cc \
+	env/envconfig.cc
+
 
 sst_config_SOURCES = \
 	sstconfigtool.cc \
-	sstconfigreader.cc \
-	sstconfigreader.hpp
+	env/envquery.h \
+	env/envconfig.h \
+	env/envquery.cc \
+	env/envconfig.cc
 
 sst_register_SOURCES = \
 	sstregistertool.cc \
-	sstconfigreader.cc \
-	sstconfigreader.hpp
+	env/envquery.h \
+	env/envconfig.h \
+	env/envquery.cc \
+	env/envconfig.cc
 
 sstsim_x_SOURCES = \
 	main.cc \
