@@ -87,7 +87,6 @@ void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, Environ
 	}
 
 	free(lineBuffer);
-	fclose(configFile);
 }
 
 void SST::Core::Environment::populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg, bool errorOnNotOpen) {

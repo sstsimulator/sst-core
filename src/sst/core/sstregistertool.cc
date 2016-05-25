@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 	populateEnvironmentConfig(cfgFile, database, true);
 
 	database->getGroupByName(groupName)->setValue(key, value);
-//	fclose(cfgFile);
+	fclose(cfgFile);
 
 	cfgFile = fopen(cfgPath, "w+");
 
