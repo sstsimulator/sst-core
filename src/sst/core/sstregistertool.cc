@@ -37,8 +37,8 @@ void print_usage() {
 }
 
 int main(int argc, char* argv[]) {
-
-	if(3 < argc) {
+        
+	if(argc < 3) {
 		print_usage();
 		exit(-1);
 	}
@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 	populateEnvironmentConfig(cfgFile, database, true);
 
 	database->getGroupByName(groupName)->setValue(key, value);
-	fclose(cfgFile);
+//	fclose(cfgFile);
 
 	cfgFile = fopen(cfgPath, "w+");
 
