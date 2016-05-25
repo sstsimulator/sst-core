@@ -11,6 +11,4 @@
 #ifndef SST_BUILD_INFO_H
 #define SST_BUILD_INFO_H
 
-#define SST_ELEMLIB_DIR "@SST_ELEMLIB_DIR@"
-
 #endif

@@ -18,24 +18,45 @@
 #include <string>
 #include <map>
 
-#include "sstconfigreader.hpp"
+#include "sst/core/env/envquery.h"
+#include "sst/core/env/envconfig.h"
 
-void print_usage() {
-	printf("======================================================\n");
-	printf("SST %s Core Installation Configuration\n", PACKAGE_VERSION);
-	printf("======================================================\n");
-	printf("\n");
-	printf("SST Install Prefix:   %s\n", SST_INSTALL_PREFIX);
-	printf("Install Database:     %s/etc/sst/sstsimulator.conf\n", SST_INSTALL_PREFIX);
+void print_usage(FILE* output) {
+	fprintf(output, "sst-config\n");
+	fprintf(output, "sst-config --<KEY>\n");
+	fprintf(output, "sst-config <GROUP> <KEY>\n");
+	fprintf(output, "\n");
+	fprintf(output, "<GROUP>    Name of group to which the key belongs\n");
+	fprintf(output, "           (e.g. DRAMSim group contains all DRAMSim\n");
+	fprintf(output, "           KEY=VALUE settings).\n");
+	fprintf(output, "<KEY>      Name of the setting key to find.\n");
+	fprintf(output, "           If <GROUP> not specified this is found in\n");
+	fprintf(output, "           the \'SSTCore\' default group.\n");
+	fprintf(output, "\n");
+	fprintf(output, "Example 1:\n");
+	fprintf(output, "  sst-config --CXX\n");
+	fprintf(output, "           Finds the CXX compiler specified by the core\n");
+	fprintf(output, "Example 2:\n");
+	fprintf(output, "  sst-config DRAMSim CPPFLAGS\n");
+	fprintf(output, "           Finds CPPFLAGS associated with DRAMSim\n");
+	fprintf(output, "Example 3:\n");
+	fprintf(output, "  sst-config\n");
+	fprintf(output, "           Dumps entire configuration found.\n");
+	fprintf(output, "\n");
+	fprintf(output, "The use of -- for the single <KEY> (Example 1) is\n");
+	fprintf(output, "intentional to closely replicate behaviour of the\n");
+	fprintf(output, "pkg-config tool used in Linux environments. This\n");
+	fprintf(output, "should not be specified when using <GROUP> as well.\n");
+	fprintf(output, "\n");
+	fprintf(output, "Return: 0 is key found, 1 key/group not found\n");
 	exit(1);
 }
 
 int main(int argc, char* argv[]) {
 	bool found_help = false;
 
-	if(argc > 2) {
-		print_usage();
-	}
+	std::string groupName("");
+	std::string key("");
 
 	for(int i = 1; i < argc; i++) {
 		if(strcmp(argv[i], "--help") == 0 ||
@@ -46,44 +67,63 @@ int main(int argc, char* argv[]) {
 	}
 
 	if(found_help) {
-		print_usage();
+		print_usage(stdout);
 	}
 
-	std::map<std::string, std::string> configParams;
-	SST::Core::populateConfigMap(configParams);
+	bool dumpEnv = false;
 
-	if( 1 == argc ) {
-		for(auto configItr = configParams.begin(); configItr != configParams.end();
-			configItr++) {
+	if(argc == 1) {
+		dumpEnv = true;
+	} else if(argc == 2) {
+		groupName = static_cast<std::string>("SSTCore");
+		std::string keyTemp(argv[1]);
 
-			printf("%30s %40s\n", configItr->first.c_str(), configItr->second.c_str());
-		}
-	} else if( 0 == strcmp(argv[1], "--prefix") ) {
-		printf("%s\n", SST_INSTALL_PREFIX);
-	} else if( 0 == strcmp(argv[1], "--version") ) {
-		printf("%s\n", PACKAGE_VERSION);
-	} else if (0 == strcmp(argv[1], "--database") ) {
-		printf("%s/etc/sst/sstsimulator.conf\n", SST_INSTALL_PREFIX);
-	} else {
-		if( 0 == strncmp(argv[1], "--", 2) ) {
-			char* param = argv[1];
-			param++;
-			param++;
-
-			std::string paramStr(param);
-
-			auto configParamsVal = configParams.find(paramStr);
-
-			if(configParamsVal == configParams.end()) {
-				printf("\n");
-			} else {
-				printf("%s\n", configParamsVal->second.c_str());
-			}
-		} else {
-			fprintf(stderr, "Unknown parameter to find (%s), must start with --\n", argv[1]);
+		if(keyTemp.size() < 2) {
+			fprintf(stderr, "Error: key (%s) is not specified with a group and doesn't start with --\n", keyTemp.c_str());
+			print_usage(stderr);
 			exit(-1);
 		}
+
+		if(keyTemp.substr(0, 2) == "--") {
+			key = keyTemp.substr(2);
+		} else {
+			fprintf(stderr, "Error: key (%s) is not specified with a group and doesn't start with --\n", keyTemp.c_str());
+			print_usage(stderr);
+			exit(-1);
+		}
+	} else if (argc == 3) {
+		groupName = static_cast<std::string>(argv[1]);
+		key       = static_cast<std::string>(argv[2]);
+	} else {
+		fprintf(stderr, "Error: you specified an incorrect number of parameters\n");
+		print_usage(stderr);
 	}
 
-	return 0;
+	std::vector<std::string> overrideConfigFiles;
+	SST::Core::Environment::EnvironmentConfiguration* database =
+		SST::Core::Environment::getSSTEnvironmentConfiguration(overrideConfigFiles);
+	bool keyFound = false;
+
+	if(dumpEnv) {
+		database->print();
+		exit(0);
+	} else {
+		SST::Core::Environment::EnvironmentConfigGroup* group =
+			database->getGroupByName(groupName);
+
+		std::set<std::string> groupKeys = group->getKeys();
+
+		for(auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++) {
+			if( key == (*keyItr) ) {
+				printf("%s\n", group->getValue(key).c_str());
+				keyFound = true;
+				break;
+			}
+		}
+	}
+
+	delete database;
+
+	// If key is found, we return 0 otherwise 1 indicates not found
+	return keyFound ? 0 : 1;
 }

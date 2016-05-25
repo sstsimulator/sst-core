@@ -16,7 +16,8 @@
 #include <sst/core/serialization.h>
 #include <sst/core/simulation.h>
 #include <sst/core/rankInfo.h>
-#include <sst/core/sstconfigreader.hpp>
+#include <sst/core/env/envquery.h>
+#include <sst/core/env/envconfig.h>
 
 #include <string>
 
@@ -129,29 +130,41 @@ public:
 
     /** Return the library search path */
     std::string getLibPath(void) const {
-        char *envpath = getenv("SST_LIB_PATH");
+    	char *envpath = getenv("SST_LIB_PATH");
 
 	// Get configuration options from the user config
-	std::map<std::string, std::string> configOptions;
-	SST::Core::populateConfigMap(configOptions);
+	std::vector<std::string> overrideConfigPaths;
+	SST::Core::Environment::EnvironmentConfiguration* envConfig =
+		SST::Core::Environment::getSSTEnvironmentConfiguration(overrideConfigPaths);
 
 	std::string fullLibPath = libpath;
+	std::set<std::string> configGroups = envConfig->getGroupNames();
 
-	for(auto configItr = configOptions.begin(); configItr != configOptions.end();
-		configItr++) {
+	// iterate over groups of settings
+	for(auto groupItr = configGroups.begin(); groupItr != configGroups.end(); groupItr++) {
+		SST::Core::Environment::EnvironmentConfigGroup* currentGroup =
+			envConfig->getGroupByName(*groupItr);
+		std::set<std::string> groupKeys = currentGroup->getKeys();
 
-		const std::string key = configItr->first;
-		const std::string value = configItr->second;
+		// find which keys have a LIBDIR at the END of the key
+		// we recognize these may house elements
+		for(auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++) {
+			const std::string key = *keyItr;
+			const std::string value = currentGroup->getValue(key);
 
-		if("BOOST_LIBDIR" != key) {
-			if(key.size() > 6) {
-				if("LIBDIR" == key.substr(key.size() - 6)) {
-					fullLibPath.append(":");
-					fullLibPath.append(value);
+			if("BOOST_LIBDIR" != key) {
+				if(key.size() > 6) {
+						if("LIBDIR" == key.substr(key.size() - 6)) {
+						fullLibPath.append(":");
+						fullLibPath.append(value);
+					}
 				}
 			}
 		}
 	}
+
+	// Clean up and delete the configuration we just loaded up
+	delete envConfig;
 
 	if(NULL != envpath) {
 		fullLibPath.clear();
