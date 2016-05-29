@@ -17,7 +17,7 @@ AC_DEFUN([SST_CHECK_BOOST], [
 		 CPPFLAGS="$BOOST_CPPFLAGS $CPPFLAGS"
 	    	 BOOST_LDFLAGS="-L$with_boost/lib"
 	         BOOST_LIBDIR="$with_boost/lib"
-		 BOOST_LIBS="-lboost_serialization"
+		 BOOST_LIBS=""
 	         LDFLAGS="$BOOST_LDFLAGS $LDFLAGS"],
 		[BOOST_CPPFLAGS=
 		 BOOST_LDFLAGS=
@@ -51,7 +51,7 @@ AC_DEFUN([SST_CHECK_BOOST], [
 
 dnl	Check whether the program options library can be compiled successfully
 	LIBS="$LIBS -lboost_program_options"
-	AC_COMPILE_IFELSE(
+	AC_LINK_IFELSE(
 		[AC_LANG_PROGRAM([[@%:@include <boost/program_options.hpp>
 			namespace po = boost::program_options;]],
 			[[
@@ -66,7 +66,7 @@ dnl	Check whether the program options library can be compiled successfully
                 [AC_MSG_RESULT([no])
 		 LIBS="$LIBS_saved -lboost_program_options-mt"
 		 AC_MSG_CHECKING([Boost program options (multithreaded) library can be successfully used])
-		 AC_COMPILE_IFELSE(
+		 AC_LINK_IFELSE(
 			[AC_LANG_PROGRAM([[@%:@include <boost/program_options.hpp>
 				namespace po = boost::program_options;]],
 				[[
@@ -85,8 +85,42 @@ dnl	Check whether the program options library can be compiled successfully
                 	)
 		]
                 )
-	LIBS="$LIBS_saved"
 
+dnl     Check for boost_serialization library
+	AC_MSG_CHECKING([Boost serialization library can be successfully used])
+	LIBS="$LIBS -lboost_serialization"
+	AC_LINK_IFELSE(
+		[AC_LANG_PROGRAM([[@%:@include <fstream>
+                                   @%:@include <boost/archive/text_oarchive.hpp>
+                                   @%:@include <boost/archive/text_iarchive.hpp>]],
+                                 [[std::ofstream ofs("filename");
+                                        boost::archive::text_oarchive oa(ofs);
+                                        return 0;]])
+                ],
+		[AC_MSG_RESULT([yes])
+		 BOOST_LIBS="$BOOST_LIBS -lboost_serialization"],
+                [AC_MSG_RESULT([no])
+		 LIBS="$LIBS_saved -lboost_serialization-mt"
+		 AC_MSG_CHECKING([Boost serialization (multithreaded) library can be successfully used])
+		 AC_LINK_IFELSE(
+		        [AC_LANG_PROGRAM([[@%:@include <fstream>
+                                   @%:@include <boost/archive/text_oarchive.hpp>
+                                   @%:@include <boost/archive/text_iarchive.hpp>]],
+                                 [[std::ofstream ofs("filename");
+                                        boost::archive::text_oarchive oa(ofs);
+                                        return 0;]])
+                        ],
+			[AC_MSG_RESULT([yes])
+		 	 BOOST_LIBS="$BOOST_LIBS -lboost_serialization-mt"],
+                	[AC_MSG_RESULT([no])
+                 	 sst_check_boost_happy="no"
+		 	 AC_MSG_ERROR([Boost Serialization cannot be successfully compiled.], [1])
+			]
+                	)
+		]
+                )
+
+	LIBS="$LIBS_saved"
 	AC_LANG_POP(C++)
 
 	CPPFLAGS="$CPPFLAGS_saved"
