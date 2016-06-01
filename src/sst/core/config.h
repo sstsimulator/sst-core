@@ -171,6 +171,11 @@ public:
 		fullLibPath.append(envpath);
 	}
 
+    if ( !addlLibPath.empty() ) {
+        fullLibPath.append(":");
+        fullLibPath.append(addlLibPath);
+    }
+
 	if(verbose) {
 		std::cout << "SST-Core: Configuration Library Path will read from: " << fullLibPath << std::endl;
 	}
