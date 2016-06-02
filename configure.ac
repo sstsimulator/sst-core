@@ -67,6 +67,9 @@ AC_CHECK_HEADERS([c_asm.h dlfcn.h intrinsics.h mach/mach_time.h sys/time.h sys/s
 
 AC_CACHE_SAVE
 
+AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen])
+AM_CONDITIONAL([HAVE_DOXYGEN], [test "$DOXYGEN" = "doxygen"])
+
 SST_CHECK_OSX()
 SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 SST_CHECK_BOOST([], [AC_MSG_ERROR([Could not find Boost, this is required for SST to build])])
@@ -125,6 +128,8 @@ AC_CACHE_SAVE
 
 AC_CONFIG_FILES([
   Makefile
+  doc/Makefile
+  doc/Doxyfile
   src/sst/sstsimulator.conf:src/sst/sst.conf
   src/Makefile
   src/sst/Makefile
