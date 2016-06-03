@@ -1,0 +1,611 @@
+/** @mainpage
+
+<h1> Structural Simulation Toolkit (SST) </h1>
+
+<h2> What it does. </h2>
+
+Understanding the performance of large-scale, capability-class , high
+performance computing (HPC) systems is possibly the most significant
+challenge in the development of such a system. Because it is
+impractical to construct proto-type systems for evaluation at the
+desired scale, architects must turn to analytical models and
+simulation to guide design decisions. Historically, the architecture
+community has lacked the tools needed for a reliable and integrated
+evaluation of future architectures and workloads.
+
+The Structural Simulation Toolkit aims address this problem. The SST
+provides a framework for simulating large-scale HPC systems. This
+simulator allows parallel simulation of large machines at multiple
+levels of detail. The SST couples models for processors, memory, and
+network subsystems. The SST aims, over time, to become a standard
+simulation environment for designing HPC systems by helping Industry,
+Academia, and the National Labs in designing and evaluating future
+architectures.
+
+<h2> Key Interfaces for Component Writers</h2>
+<hr>
+<b>NOTE</b>: Please refer to
+
+<a href="http://sst-simulator.org/SSTPages/SSTDeveloperIntegrateYourElementWithSST/">Integrate Your Component With SST</a>
+
+SST wiki entry for further information on writing and integrating a component. 
+
+<b>The information from the "Key Interfaces" link below is deprecated until further notice.</b>
+<hr>
+\subpage interfaces
+
+<h2> Install </h2>
+	
+<h2> Tutorials </h2>
+
+<h2> License </h2>
+
+@verbatim
+Copyright 2009-2016 Sandia Corporation. Under the terms
+of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+Government retains certain rights in this software.
+
+Copyright (c) 2009-2016, Sandia Corporation
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+
+    * Neither the name of Sandia Corporation nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@endverbatim
+
+<h2> Contact </h2>
+
+sst@sandia.gov
+
+*/
+
+/** @page interfaces Key Interfaces
+<hr>
+<b>NOTE</b>: As of 2013-JUN-11, please refer to
+
+<a href="http://www.sst-simulator.org/wiki/DeveloperIntegrateYourComponentWithSST" target="_blank">Integrate Your Component With SST</a>
+
+SST wiki entry for further information on writing and integrating a component.
+
+<b>The information following this notice is deprecated until further notice.</b>
+<hr>
+<h2>The Component</h2>
+
+The most important class for is SST::Component, the base class from
+which all simulation components inherit. At the very least, a
+component writer must create a class which inherits from
+SST::Component and which contains a constructor. This class should be
+created in a dynamic library (.so file) and should include a C-style
+function of the form &lt;componentName&gt;AllocComponent(), which returns a
+pointer to a newly instantiated component. 
+
+SST::Component also contains useful functions for component setup
+(SST::Component::Setup()), cleanup (SST::Component::Finish()), power
+reporting (SST::Component::regPowerStats()), data monitoring by the 
+introspectors (SST::Component::registerMonitorInt() and 
+SST::Component::getIntData()), controlling when the
+simulation stops (SST::Component::registerExit() and
+SST::Component::unregisterExit() ), and for handling time (such as
+SST::Component::getCurrentSimTime()).
+
+<h2>Making Event Handlers</h2>
+
+SST components use event handling functors to handle interactions with
+other components (i.e. through an SST::Event sent over a SST::Link)
+and recurring events (i.e. component clock ticks). The Event Handler
+Class, SST::EventHandler, is templated to create either type of event
+handler by creating a functor which invokes a given member function
+whenever triggered. For example: 
+
+@verbatim
+NICeventHandler = new EventHandler<proc, bool, Event *>
+    (this, &proc::handle_nic_events);
+...
+bool proc::handle_nic_events(Event *event) {
+...
+}
+@endverbatim
+
+creates an event handler which calls \c proc::handle_nic_events() with
+an argument of type \c Event* - the SST::Event to be processed.
+Similarly,
+
+@verbatim
+clockHandler = new EventHandler< proc, bool, Cycle_t>
+    ( this, &proc::preTic );
+@endverbatim
+
+creates an event handler which invokes the function \c proc::preTic()
+with the current cycle time. 
+
+<h2>Using Event Handlers</h2>
+
+Once created, an SST::EventHandler must be registered with the
+simulation core. This can be done with the SST::LinkMap::LinkAdd()
+function for events coming from another component, or by
+SST::Component::registerClock(), for event handlers triggered by a
+clock. For example, the handlers created above could be registed in
+this way:
+
+@verbatim
+LinkAdd("mem0", NICeventHandler)
+registerClock( "1Ghz", clockHandler );
+@endverbatim
+
+Note that SST::Component::registerClock() can have its period or
+frequency expressed in SI units in a string. The allowed units are
+specified in SST::TimeLord::getTimeConverter() function.
+
+Also note that the SST::LinkMap::LinkAdd() function does not require
+an event handler if the recieving component uses the "event pull"
+mechanism with SST::Link::Recv().
+
+<h2>Links</h2>
+
+SST::Component s use SST::Link to communicate by passing events. An
+SST::Link is specified in the XML file use to configure the
+simulation, and must also be added to each component which uses it by
+the SST::LinkMap::LinkAdd() function. For example, 
+
+@verbatim
+<component id="processor">
+ <genericProc>
+   <links>
+    <link id="cpu2mem">
+      <params>
+       <name>mem0</name>
+       <lat>1 ns</lat>
+      </params>
+    </link>
+  </links>
+ </genericProc>
+</component>
+
+<component id="memory">
+ <DRAMSimC>
+  <links>
+   <link id="cpu2mem">
+    <params>
+     <name>bus</name>
+     <lat>1 ns</lat>
+    </params>
+  </link>
+ </links>
+ </DRAMSimC>
+</component>
+@endverbatim
+
+specifies two components, a processor and a memory. These components
+are connected by an SST::Link. Each \c link block contains an \c id,
+a \c name, and a \c lat : 
+
+   - The \c id is a global identifier for the SST::Link object. Since
+     multiple components connect to the link ("memory" and "processor"
+     in this case), each component has a \c link block and the \c id
+     is used to make it clear that they are both referencing the same
+     link object.
+
+   - The \c name specifies the local name for that component to
+     reference the link. It is the string passed to the
+     SST::LinkMap::LinkAdd() function to make a component connect to
+     that SST::Link object.
+
+   - The \c lat specifies the latency of the link in SI units. This is
+     the minimum latency for an event to be passed from one end of the
+     link to another. I.e. After the event is sent from one component
+     with SST::Link::Send(), it will cause the event handler on the other
+     component to be invoked after at least this period of time. More
+     time can be added to this delay with different varients of the
+     SST::Link::Send() function.
+
+Other commonly used SST::Link functions are:
+
+  - SST::Link::Send(CompEvent *event) : Send an SST::Event across the link. 
+
+  - SST::Link::Send(SimTime_t delay, CompEvent *event) : Send an
+    SST::Event with an additional delay, where the delay is in units of
+    the link frequency.
+
+  - SST::Link::Send(SimTime_t delay, TimeConverter *tc, CompEvent
+    *event) : Send an SST::Event with additional delay, where the
+    delay is specified in units of the SST::TimeConverter object
+    supplied.
+
+  - SST::Link::Recv() : Pull a pending SST::Event from the SST::Link.
+    If there is no event handler registered with the Link, this
+    function should be used to gather incoming events from the link.
+    (I.e. a component "pulls" events from the link, rather than having
+    them "pushed" into an event handler). 
+
+<h2>Technology Interface</h2>
+SST components can query power/thermal modeling libraries for power dissipation 
+and temperature through the technology interface. Currently, SST technology interface 
+is integrated with four power/area modeling libraries (McPAT, ORION, IntSim and Sim-Panalyzer)
+ that support power/area analysis of five component types (core, clock, shared cache, 
+memory controller and NoC/router). It is also integrated with a thermal modeling tool,
+HotSpot and provides the leakge-feedback functionality. A component type may be broken 
+into several sub-component types for power/area analysis. For example, a core 
+component is broken into iL1 cache, dL1 cache, L2 cache, L3 cache, iTLB cache, 
+dTLB cache, branch predictor, register file, ALU, FPU, instruction buffer, LSQ, 
+bypass, pipeline, BTB, schedler unit, rename unit, etc. A component can specify 
+which sub-components it wants power analyzed in SST::Component::Setup() by 
+calling Power::setTech().
+
+SST component specifies in the XML file if it wants power/temperature analyzed. For example, 
+
+@verbatim
+<component id="processor">	
+ <cpu_power>
+  <params>
+   <power_monitor>YES</power_monitor>
+   <temperature_monitor>YES</temperature_monitor> 
+  </params> 
+  .
+  .
+  .
+ </cpu_power>
+</component>
+@endverbatim
+
+specifies a component, a processor, wants power and thermal modeling
+in the \c param block.
+
+   - The \c power_monitor specifies if the component wants power modeling. 
+     Options are YES or NO.	
+   - The \c temperature_monitor specifies if the component wants temperature modeling. 
+     Options are YES or NO.
+  
+<h2>Estimate Power Dissipation</h2>
+Dynamic energy of a SST component is calculated inside the power interface.
+The technology interface first gets usage count of the component. It then
+calculates the dynamic energy by multiplying the usage count by the 
+corresponding dynamic energy per access (unit energy) statically calculated by power models.
+ There are three main steps for a SST componet to get power analysis. First is to call
+Power::setChip() to setup chip-level parameters and create silicon laye floorplans. 
+Second, call Power::setTech() to get unit energy where technology parameters of the 
+component are decoupled from the XML file and fed into the power models. 
+This step is usually done in SST::Component::Setup(), so unit energy of 
+sub-components are calculated only once at the beginning of the simulation 
+and stored locally. For example, 
+
+@verbatim
+int Setup() {
+    power = new Power(getId());  
+    power->setChip(params);
+    power->setTech(getId(), params, CACHE_IL1, McPAT); 
+    power->setTech(getId(), params, ROUTER, ORION); 
+}
+@endverbatim
+
+first creates an Power object in Setup(). It calls Power::setChip() and 
+ then Power::setTech() to get unit energy of il1 cache and router calculated by
+McPAT and ORION, respectively.  
+
+Last, the component needs to pass its usage counts to the technology interface 
+in a structure through Power::getPower() to get dynamic energy. The structure 
+(see usagecounts_t in Power) contains over specified counter names, such as 
+number_of_il1_read, number_of_L2_read, number_of_router_access, etc, that are 
+required by each of the power models. The over-specified structure helps SST 
+component not to worry about interfaces to the power models and simply provides 
+as much information as it can. Component writers decide how often to have power 
+analyzed (call Power::getPower()). They can get power either at a time after 
+an event occurs, or at a given frequency, etc. For example, 
+
+@verbatim 
+    mycounts.il1_read=1; mycounts.il1_readmiss=0; mycounts.IB_read=2; 
+    mycounts.IB_write=2; mycounts.BTB_read=2; mycounts.BTB_write=2;
+    pdata = power->getPower(this, CACHE_IL1, mycounts);
+    regPowerStats(pdata);    
+@endverbatim
+
+shows how to get the current dynamic energy of level-1 intruction (il1) cahce 
+of a SST component. The component first set the values of the il1-related counters 
+in the structure, \c mycounts. Then it called Power::getPower(IntrospectedComponent \c *c,
+ ptype \c power_type, usagecounts_t \c counts) to get power information, where 
+\c c is pointer to the component (which should be inherits from SST::introspectedComponent. 
+See the Introspection Interface Section below), \c power_type is the sub-component type, and \c counts 
+is the over-specified structure that contains various counters. The above example 
+indicates that since last power extimation, il1 cache is read once, instruction buffer (IB)
+ is read and write twice, and branch predictor buffer (BTB) is read and write twice. 
+Power::getPower returns power data in a structure (\c pdata with type \c Pdissipation_t) 
+based on these usage counts. The structure contains power information such as, leakage power, 
+runtime dynamic power, total power, peak power, etc. These data information were then
+stored in a central power database, SST::Component::PDB by SST::Component::regPowerStats(). 
+After Power::gerPower(), SST component needs to re-set the values of the counters 
+to zero. For example,
+
+@verbatim
+power->resetCounts(mycounts); 
+@endverbatim
+
+re-sets the counters in the above example to zero, and the component continues to 
+update the usage counts for the next power estimation.
+
+The power data of a certain SST component can be read from the power database by
+SST::Component::readPowerStats(). For example, the following codes in SST::Component::Finish()
+print out the power dissipation data at the end of the simulation.
+
+@verbatim
+using namespace io_interval;
+std::pair<bool, Pdissipation_t> res = readPowerStats(this);
+
+if(res.first){
+    std::cout <<"ID " << getId() <<": current power = " << res.second.currentPower << " W" << std::endl;
+    std::cout <<"ID " << getId() <<": total energy = " << res.second.totalEnergy << " J" << std::endl;
+    std::cout <<"ID " << getId() <<": peak power = " << res.second.peak << " W" << std::endl;
+    std::cout <<"ID " << getId() <<": current cycle = " << res.second.currentCycle << std::endl;
+}
+
+@endverbatim
+
+, which first read power data of this component from the central power database 
+(if there is such data entry in the databse) and print the power data in a range:
+
+@verbatim
+ID 0: current power = 134.184 ± 0.000670918 W
+ID 0: total energy = 134.184 ± 0.000670918 J
+ID 0: peak power = 68.9647 ± 3.4486 W
+ID 0: current cycle = 1
+@endverbatim
+
+<h2>Calculate Temperature</h2>
+Once the power calculation is done for all components in the simulated chip, 
+a SST component can call Power::compute_temperature() to trigger temperature
+calculation. The Technology interface makes sure that all the components that 
+want power modeling have power eatimated already before trigger the thermal 
+model to calculate temperature. For example, a SST component only wants power 
+modeling of its caches (il1, il2, itlb, dtlb, and L2), and it calls 
+Power::compute_temperature() after it calls Power::getPower() for each of these 
+subcomponents. 
+
+@verbatim
+pdata = power->getPower(this, CACHE_IL1, mycounts);
+pdata = power->getPower(this, CACHE_DL1, mycounts);
+pdata = power->getPower(this, CACHE_ITLB, mycounts);
+pdata = power->getPower(this, CACHE_DTLB, mycounts);
+pdata = power->getPower(this, CACHE_L2, mycounts);
+power->compute_temperature(getId());
+@endverbatim
+
+Components can call Power::printFloorplanAreaInfo(), Power::printFloorplanPowerInfo(),
+and Power::printFloorplanThermalInfo() to print area/power/temperature information.
+
+
+
+
+<h2>Introspection Interface</h2>
+The introspection interface is a unified way to report and record simulation data 
+for analysis and display. The SST::Introspector class can be created to monitor 
+information from all, or a sub set of other real components. Like SST components, 
+an introspector is an object which receives a clock event, allowing it to perform 
+regular, periodic actions. Introspector writers must create a class which inherits 
+from SST::Introspector and which contains a constructor. This class should be created 
+in a dynamic library (.so file) and should include a C-style function of the form 
+&lt;introspectorName&gt;AllocComponent(), which returns a pointer to a newly instantiated 
+introspector. The key differences between an introspector and a component is that 
+an introspector:
+    - does not send or receive events
+    - is not partitioned (i.e. a copy exists on every rank)
+
+If a component writer wants to utilize the introspection interface, he/she follows the 
+same steps described in the previous section to create a class except that the class must inherits from
+SST::introspectedComponent. SST introspected components declare which introspectors will be monitoring them 
+(SST::introspectedComponent::registerIntrospector()) and provide arbitrary data to be 
+monitored by the introspectors (SST::introspectedComponent::registerMonitor()).
+Additoinally, they can report exceptional or rare events to the introspectors 
+through the "push" mechanism (SST::introspectedComponent::triggerUpdate()).
+Introspectors can access components they monitor (SST::Introspector::getModelsbyName() 
+and SST::Introspector::getModelsbyType()), query these components to retrieve component 
+data (e.g. power) by SST::Introspector::getData() and analyze/display the data by 
+SST::Introspector::triggeredUpdate(). SST introspectors can exchange and manipulate 
+these components data via Boost::mpi collective communication periodically 
+(SST::Introspector::collectInt()) or at an arbitrary time (SST::Introspector::oneTimeCollect()).
+
+Like components, introspectors are created and parameterized by the SDL.
+For example,
+
+@verbatim
+<introspector id="CountIntrospector">	
+ <introspector_cpu>
+  <params>
+    <period>50ns</period>
+    <model>cpu</model>
+  </params>
+ </introspector_cpu>
+</introspector>
+@endverbatim
+
+specifies an introspector which pulls some data from cpu (\c model 
+in the \c params block) every 50 ns (\c period in the \c params block).
+
+<h2>Data Monitoring</h2>
+For arbitrary data introspection, a SST introspected component needs to specify the 
+data that it wishes to be monitored by calling 
+SST::introspectedComponent::registerMonitor(std::string dataName, IntrospectedComponent::MonitorBase* handler)
+The \c dataName is the description of the data. The SST::IntrospectedComponent::MonitorBase class 
+is the pure virtual base class of monitors (data which introspected components wish to be monitored). 
+A monitor can be a pointer to a data (SST::IntrospectedComponent::MonitorPointer) 
+or an accessor function (SST::IntrospectedComponent::MonitorFunction). Both classes inherit from the 
+SST::IntrospectedComponent::MonitorBase class and are templated to create either type of monitor. The  
+SST::IntrospectedComponent::MonitorPointer class creates either type of MonitorPointer by creating 
+a functor which returns value of a given member variable whenever triggered. 
+For example,
+
+@verbatim
+int counts;
+...
+cpuMonitorPointer = new MonitorPointer<int>(&counts);
+@endverbatim
+
+creates a MonitorPointer which returns the value of a variable \c counts of type \c int.
+Similarly, the SST::introspectedComponent::MonitorFunction class creates either type of MonitorFunction by
+creating a functor that invokes a given member function whenever triggered. For example,
+
+@verbatim
+cpuMonitorFunction = new MonitorFunction<Cpu, double>(this, &Cpu::updateTemperature);
+...
+double Cpu::updateTemperature() {
+...
+}
+@endverbatim
+
+creates a MonitorFunction which calls \c Cpu::updateTemperature().
+ 
+SST::introspectedComponent::registerMonitor() is usually
+called in SST::Component::Setup(). For example,
+
+@verbatim
+registerIntrospector("CpuIntropector");
+registerMonitor("temperature", new MonitorFunction<Cpu, double>(this, &Cpu::updateTemperature));
+registerMonitor("totalCounts", new MonitorPointer<int>(&counts));
+@endverbatim
+
+indicates the Cpu component registers its introspector whose name is \c CpuIntrospector 
+and asks it to monitor the two data with name \c temperature and \c totalCounts.
+
+On the SST::Introspector's side, it first calls SST::Introspector::getModelsByType(const std::string CompType) 
+(or SST::introspector::getModelsByName(const std::string CompName)) to get a list of relevant 
+component with type indicated by \c CompType on the rank. This is usually done in SST::Introspector::Setup().
+For example,
+
+@verbatim
+MyCompList = getModels(model); 
+
+for (std::list<Component*>::iterator i = MyCompList.begin();
+     i != MyCompList.end(); ++i) {
+    
+}
+@endverbatim
+
+specifies a SST introspector stored a list of components with SST::Component::type 
+indicated by \c model to a local list, \c MyCompList. It went over the \c MyCompList
+and stated that it will monitor each of the components on the list. 
+
+SST::Introspector writers implement their own SST::Introspector::triggeredUpdate() function.
+In this function, introspector-writers should first call SST::Introspector::getData(IntrospectedComponent* c, std::string dataname)
+to retrieve a component data by passing in pointer to the component \c c and the data name \c dataname.
+Then they implement the function based on what they want to do with the data (print to screen, manipulate, etc).
+SST introspectors can periodically pull data from components (this is called introspector "pull" mechanism) 
+by creating an event handler which invokes the function triggeredUpdate() and register the event handler 
+to a clock. The following is an example of triggeredUpdate() which prints the data it is monitoring to screen.
+
+@verbatim
+bool Introspector_cpu::triggeredUpdate()
+{
+    for (std::list<IntrospectedComponent*>::iterator i = MyCompList.begin();
+	     i != MyCompList.end(); ++i) {
+		std::cout << "Pull data from component ID " << (*i)->getId() << " and total counts = " << getData<uint64_t>(*i, "totalCounts") << std::endl;
+		std::cout << "Pull data from component ID " << (*i)->getId() << " and temperature = " << getData<double>(*i, "temperature") << std::endl;
+		std::cout << "Pull data from component ID " << (*i)->getId() << " and general counts = " << getData<int>(*i, "generalCounts") << std::endl;
+	        ////intData = getData(*i, "totalCounts");
+	    }
+    return false;
+}
+@endverbatim
+
+SST::Introspector::getData<typeT>(IntrospectedComponent* c, std::string dataname) is a template function
+ with template parameter \c typeT which is the type of the monitored data. In the example above, 
+ 
+@verbatim
+getData<uint64_t>(*i, "totalCounts");
+@endverbatim
+
+returns value of the monitored data with name \c totalCounts and the type of the data is \c uint64_t.
+
+In addition to introspector "pull" mechanism, there is also component "push" mechanism.
+This is implemented by SST::introspectedComponent::triggerUpdate(). Introspected components 
+can call the function to have data pulled by their introspectors for analysis/display.
+
+
+<h2>Introspectors MPI communication</h2>
+SST::Introspector communicates with introspectors on other ranks via
+boost::mpi collective calls. Via collective communication, introspectors
+can gather information like highest core tmeperture in the system, summation
+of power dissipation of all componets, etc. For periodically collective communication,
+SST introspector calls SST::Introspector::collectInt (collect_type ctype, uint64_t invalue,
+ mpi_operation op=NA, int rank=0) in a member function that is invoked by an event handler 
+registered to a clock. Parameters in SST::Introspector::collectInt () are:
+    - The \c ctype is the type of collective communication. Currently supported 
+        options are Broadcast, (all)gather, and (all)reduce. 
+    - The \c invalue is the local value to be communicated.
+    - The \c op is the type of the MPI operations for the (all)reduce algorithm to combine the values.
+        Currently supported options are summarize, minimum and maximum.
+
+For example,
+
+@verbatim
+bool Introspector_cpu::mpiCollectInt( Cycle_t current )
+{
+    boost::mpi::communicator world;
+
+	
+    collectInt(REDUCE, intData, MINIMUM);
+    collectInt(REDUCE, intData, MAXIMUM);
+    collectInt(GATHER, intData, NA);
+}
+@endverbatim
+
+shows a member function of a SST introspector, \c Introspector_cpu. It periodically (by 
+event handler registered to a clock) gets the minimum, the maximum and gather the values 
+of the integer data, \c intData, from introspectors of the same type on other ranks. 
+These collected values are store in local SST::Introspector::minvalue,
+SST::Introspector::maxvalue, and SST::Introspector::arrayvalue, respectively.
+
+SST introspector can also make collective communication at arbitrary time by 
+SST::Introspector::oneTimeCollect (SimTime_t time, EventHandlerBase< bool, Event * > *functor).
+For example,
+
+@verbatim
+oneTimeCollect(90000, mpionetimehandler);
+@endverbatim
+
+specifies the introspector will make collective communication call at simulation time = 90000 ns,
+and the communication funciton is invoked by an event handler, \c mpionetimehandler:
+
+@verbatim
+mpionetimehandler = new EventHandler< Introspector_cpu, bool, Event*>
+                                 ( this, &Introspector_cpu::mpiOneTimeCollect );
+@endverbatim
+
+where \c Introspector_cpu::mpiOneTimeCollect() is a member funciton that implements the collective 
+communication (finding the maximum value in the example below).
+
+@verbatim
+bool Introspector_cpu::mpiOneTimeCollect( Event* e)
+{
+    boost::mpi::communicator world;
+
+    if (world.rank() == 0){
+        reduce( world, intData, maxvalue, boost::mpi::maximum<int>(), 0); 
+    } else {
+        reduce(world, intData, boost::mpi::maximum<int>(), 0);
+    } 
+    return (false);
+}
+@endverbatim
+*/
