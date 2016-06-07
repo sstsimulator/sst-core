@@ -140,3 +140,41 @@ AC_CONFIG_FILES([
 ])
 AC_OUTPUT
 
+echo ""
+echo "-------------------------------------------------------"
+echo "SST Core Configuration completed."
+echo "-------------------------------------------------------"
+echo "Build Environment:"
+echo ""
+printf "%38s : %s\n" "Prefix" "$prefix"
+printf "%38s : %s\n" "Preprocessor" "$CPP"
+printf "%38s : %s\n" "C++ Compiler" "$CXX"
+printf "%38s : %s\n" "C Compiler" "$CC"
+printf "%38s : %s\n" "MPI C Compiler" "$MPICC"
+printf "%38s : %s\n" "MPI C++ Compiler" "$MPICXX"
+printf "%38s : %s\n" "Linker" "$LD"
+printf "%38s : %s\n" "Preprocessor Options" "$CPPFLAGS"
+printf "%38s : %s\n" "C Compiler Options" "$CFLAGS"
+printf "%38s : %s\n" "C++ Compiler Options" "$CXXFLAGS"
+
+if test "x$found_cxx1y" = "xyes"; then
+printf "%38s : %s\n" "C++ Standard Compliance" "C++1Y/14"
+else
+printf "%38s : %s\n" "C++ Standard Compliance" "C++11"
+fi
+
+printf "%38s : %s\n" "Linker Options" "$LDFLAGS"
+printf "%38s : %s\n" "Boost Library Preprocessor" "$BOOST_CPPFLAGS"
+printf "%38s : %s\n" "Boost Library Linker Options" "$BOOST_LDFLAGS"
+echo "-------------------------------------------------------"
+echo "Configuration Information (Dependencies):"
+echo ""
+
+if test "x$sst_check_zoltan_happy" = "xyes" ; then
+    printf "%38s : YES\n" "Zoltan Partitioner"
+else
+    printf "%38s : No\n" "Zoltan Partitioner"
+fi
+
+echo "-------------------------------------------------------" 
+
