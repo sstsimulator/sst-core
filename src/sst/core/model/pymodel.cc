@@ -725,6 +725,12 @@ static PyObject* getSSTMPIWorldSize(PyObject* self, PyObject* args) {
     return PyInt_FromLong(ranks);
 }
 
+static PyObject* getSSTThreadCount(PyObject* self, PyObject* args) {
+    Config *cfg = gModel->getConfig();
+    return PyLong_FromLong(cfg->getNumThreads());
+}
+
+
 static PyObject* setStatisticOutput(PyObject* self, PyObject* args)
 {
     char*      statOutputName; 
@@ -960,8 +966,11 @@ static PyMethodDef sstModuleMethods[] = {
         exitsst, METH_NOARGS,
         "Exits SST - indicates the script wanted to exit." },
     {   "getMPIRankCount",
-	getSSTMPIWorldSize, METH_NOARGS,
-	"Gets the number of MPI ranks currently being used to run SST" }, 
+        getSSTMPIWorldSize, METH_NOARGS,
+        "Gets the number of MPI ranks currently being used to run SST" },
+    {   "getThreadCount",
+        getSSTThreadCount, METH_NOARGS,
+        "Gets the number of MPI ranks currently being used to run SST" },
     {   "setStatisticOutput",
         setStatisticOutput, METH_VARARGS,
         "Sets the Statistic Output - default is console output." },
