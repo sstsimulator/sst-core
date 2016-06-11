@@ -43,7 +43,7 @@ using namespace SST;
 // Global Variables
 ElemLoader*                              g_loader;
 int                                      g_fileProcessedCount;
-std::string				 g_searchPath;
+std::string                              g_searchPath;
 std::vector<SSTInfoElement_LibraryInfo*> g_libInfoArray;
 SSTInfoConfig                            g_configuration;
 
@@ -72,20 +72,20 @@ int main(int argc, char *argv[])
 
     for(auto groupItr = groupNames.begin(); groupItr != groupNames.end(); groupItr++) {
 	SST::Core::Environment::EnvironmentConfigGroup* currentGroup =
-		sstEnv->getGroupByName(*groupItr);
-	std::set<std::string> groupKeys = currentGroup->getKeys();
-
-	for(auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++) {
-		const std::string key = *keyItr;
-
-		if(key.size() > 6 && key.substr(key.size() - 6) == "LIBDIR") {
-			if(g_searchPath.size() > 0) {
-				g_searchPath.append(":");
-			}
-
-			g_searchPath.append(currentGroup->getValue(key));
-		}
-	}
+        sstEnv->getGroupByName(*groupItr);
+        std::set<std::string> groupKeys = currentGroup->getKeys();
+    
+        for(auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++) {
+            const std::string key = *keyItr;
+    
+            if(key.size() > 6 && key.substr(key.size() - 6) == "LIBDIR") {
+                if(g_searchPath.size() > 0) {
+                    g_searchPath.append(":");
+                }
+    
+                g_searchPath.append(currentGroup->getValue(key));
+            }
+        }
     }
 
     g_loader = new ElemLoader(g_searchPath);
@@ -112,7 +112,8 @@ int main(int argc, char *argv[])
 
 void processSSTElementFiles(std::string searchPath)
 {
-    std::string             targetDir = searchPath;
+    std::string             targetDir;
+    std::string             searchDir;
     std::string             dirEntryPath;
     std::string             dirEntryName;
     std::string             elementName;
@@ -150,76 +151,99 @@ void processSSTElementFiles(std::string searchPath)
         }
     }
     
-    // Open the target directory
-    pDir = opendir(searchPath.c_str());
-    if (NULL != pDir) {
-
-        // Dir is open, now read the entrys
-        while ((pDirEntry = readdir(pDir)) != 0) {
-
-            // Get the Name of the Entry; and prepend the path
-            dirEntryName = pDirEntry->d_name;
-            dirEntryPath = targetDir + "/" + dirEntryName;
-
-            // Decide if the entry is a File or a Sub-Directory
-            if (0 == stat(dirEntryPath.c_str(), &dirEntryStat)) {
-                isDir = dirEntryStat.st_mode & S_IFDIR;
-            } else {
-                // Failed to open the directory for some reason
-                fprintf(stderr, "ERROR: %s - Unable to get stat info on Directory Entry %s\n", strerror(errno), dirEntryPath.c_str());
-                return;
-            }
-            
-            for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
-                // Check to see if we are supposed to process just this file or all files
-                if ((true == testAllEntries) || (dirEntryName == g_configuration.getElementsToProcessArray()->at(x))) {
-
-                    // Now only check out files that have the .so extension (.so must 
-                    // be at the end of the file name) and a 'lib' in the front of the file
-                    indexExt = dirEntryName.find(".so");
-                    indexLib = dirEntryName.find("lib");
-                    if ((false == isDir) && 
-                        (indexExt != std::string::npos) && 
-                        (indexExt == dirEntryName.length() - 3) &&
-                        (indexLib != std::string::npos) && 
-                        (indexLib == 0)) {
+    
+    // The search path may be broken into multiple directories separated by ':'
+    // Break each directory into a separate search.
+    
+    // First check to see if there even is a :
+    size_t index = 0;
+    size_t foundIndex = 0;
+    do {
+        foundIndex = searchPath.find(":", index);
+        if (foundIndex == string::npos) {
+            // : not found, use the remainder of the string
+            searchDir = searchPath.substr(index, foundIndex);
+        } else {
+            // : found, use the string up to the :
+            searchDir = searchPath.substr(index, foundIndex - index);
+            index = foundIndex + 1;
+        }
         
-                        // Well as far as we can tell this is some sort of element library
-                        // Lets strip off the lib and .so to get an Element Name
-                        elementName = dirEntryName.substr(3, dirEntryName.length() - 6);
-                        
-                        g_fileProcessedCount++;
-                        
-                        // Now we process the file and populate our internal structures
-//                      fprintf(stderr, "**** DEBUG - PROCESSING DIR ENTRY NAME = %s; ELEM NAME = %s; TYPE = %d; DIR FLAG = %d\n", dirEntryName.c_str(), elementName.c_str(), pDirEntry->d_type, isDir);
-                        pELI = g_loader->loadLibrary(elementName, true);
-                        if (pELI != NULL) {
-                            // Build
-                            pLibInfo = new SSTInfoElement_LibraryInfo(pELI); 
-                            g_libInfoArray.push_back(pLibInfo);
-                            EntryProcessedArray[x] = true;
+        // Open the target directory
+        pDir = opendir(searchDir.c_str());
+        if (NULL != pDir) {
+    
+            targetDir = searchDir;
+            
+            // Dir is open, now read the entrys
+            while ((pDirEntry = readdir(pDir)) != 0) {
+    
+                // Get the Name of the Entry; and prepend the path
+                dirEntryName = pDirEntry->d_name;
+                dirEntryPath = targetDir + "/" + dirEntryName;
+    
+                // Decide if the entry is a File or a Sub-Directory
+                if (0 == stat(dirEntryPath.c_str(), &dirEntryStat)) {
+                    isDir = dirEntryStat.st_mode & S_IFDIR;
+                } else {
+                    // Failed to open the directory for some reason
+                    fprintf(stderr, "ERROR: %s - Unable to get stat info on Directory Entry %s\n", strerror(errno), dirEntryPath.c_str());
+                    return;
+                }
+                
+                for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
+                    // Check to see if we are supposed to process just this file or all files
+                    if ((true == testAllEntries) || (dirEntryName == g_configuration.getElementsToProcessArray()->at(x))) {
+    
+                        // Now only check out files that have the .so extension (.so must 
+                        // be at the end of the file name) and a 'lib' in the front of the file
+                        indexExt = dirEntryName.find(".so");
+                        indexLib = dirEntryName.find("lib");
+                        if ((false == isDir) && 
+                            (indexExt != std::string::npos) && 
+                            (indexExt == dirEntryName.length() - 3) &&
+                            (indexLib != std::string::npos) && 
+                            (indexLib == 0)) {
+            
+                            // Well as far as we can tell this is some sort of element library
+                            // Lets strip off the lib and .so to get an Element Name
+                            elementName = dirEntryName.substr(3, dirEntryName.length() - 6);
+                            
+                            g_fileProcessedCount++;
+                            
+                            // Now we process the file and populate our internal structures
+    //                      fprintf(stderr, "**** DEBUG - PROCESSING DIR ENTRY NAME = %s; ELEM NAME = %s; TYPE = %d; DIR FLAG = %d\n", dirEntryName.c_str(), elementName.c_str(), pDirEntry->d_type, isDir);
+                            pELI = g_loader->loadLibrary(elementName, true);
+                            if (pELI != NULL) {
+                                // Build
+                                pLibInfo = new SSTInfoElement_LibraryInfo(pELI); 
+                                g_libInfoArray.push_back(pLibInfo);
+                                EntryProcessedArray[x] = true;
+                            }
                         }
                     }
                 }
             }
-        }
-        
-        // Now check to see if we processed all entries
-        if (false == testAllEntries) {
-            for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
-                if (false == EntryProcessedArray[x]) {
-                    std::string name = g_configuration.getElementsToProcessArray()->at(x);
-                    fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s - BECAUSE IT WAS NOT FOUND\n", name.c_str());
+            
+            // Now check to see if we processed all entries
+            if (false == testAllEntries) {
+                for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
+                    if (false == EntryProcessedArray[x]) {
+                        std::string name = g_configuration.getElementsToProcessArray()->at(x);
+                        fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s - BECAUSE IT WAS NOT FOUND\n", name.c_str());
+                    }
                 }
             }
+            
+            // Finished, close the directory
+            closedir(pDir);
+        } else {
+            // Failed to open the directory for some reason
+            fprintf(stderr, "ERROR: %s - When trying to open Directory %s\n", strerror(errno), targetDir.c_str());
         }
-        
-        // Finished, close the directory
-        closedir(pDir);
-    } else {
-        // Failed to open the directory for some reason
-        fprintf(stderr, "ERROR: %s - When trying to open Directory %s\n", strerror(errno), targetDir.c_str());
-    }
+    
+    } while (foundIndex != std::string::npos);
+    
 }
 
 bool areOutputFiltersEnabled()
@@ -281,7 +305,7 @@ void outputSSTElementInfo()
     unsigned int            x;
     SSTInfoElement_LibraryInfo* pLibInfo;
 
-    fprintf (stdout, "PROCESSED %d .so (SST ELEMENT) FILES FOUND IN DIRECTORY %s\n", g_fileProcessedCount, g_searchPath.c_str());
+    fprintf (stdout, "PROCESSED %d .so (SST ELEMENT) FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
 
     // Tell the user what Elements will be displayed
     if (g_configuration.getFilteredElementNamesArray()->size() > 0) {
@@ -347,7 +371,7 @@ void generateXMLOutputFile()
 	sprintf(Comment, "SSTInfo XML Data Generated on %s", TimeStamp);
 	TiXmlComment* XMLStartComment = new TiXmlComment(Comment);
 
-    sprintf (Comment, "%d .so FILES FOUND IN DIRECTORY %s\n", g_fileProcessedCount, g_searchPath.c_str());
+    sprintf (Comment, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
 	TiXmlComment* XMLNumElementsComment = new TiXmlComment(Comment);
 
 	// Set the Top Level Element
