@@ -302,14 +302,6 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
 
         barrier.wait();
         
-        // TODO:  This should be able to be removed once this migrates into SharedRegions
-        if ( 0 == tid ) {
-            SST::Interfaces::SimpleNetwork::exchangeMappingData();
-            // std::cout << "Done merging network maps" << std::endl;
-        }
-        barrier.wait();
-
-        
         /* Run Simulation */
         sim->setup();
         barrier.wait();
