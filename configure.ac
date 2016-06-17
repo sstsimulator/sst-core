@@ -124,6 +124,18 @@ AC_DEFINE_UNQUOTED([SST_BOOST_LIBDIR], ["$BOOST_LIBDIR"],
 
 AC_DEFINE([__STDC_FORMAT_MACROS], [1], [Defines that standard PRI macros should be enabled])
 
+AC_MSG_CHECKING([for SST-Core Git Build Number])
+if test -d ".git" ; then
+	SSTCORE_GIT_BUILDNUM=`git rev-list HEAD | wc -l | sed -e 's/^ *//g'`
+	AC_MSG_RESULT([${SSTCORE_GIT_BUILDNUM}])
+else
+	SSTCORE_GIT_BUILDNUM="${PACKAGE_VERSION}"
+	AC_MSG_RESULT([${PACKAGE_VERSION}])
+fi
+
+AC_SUBST(SSTCORE_GIT_BUILDNUM)
+AC_DEFINE_UNQUOTED([SSTCORE_GIT_BUILDNUM], ["$SSTCORE_GIT_BUILDNUM"], [SST-Core Git Build Number])
+
 AC_CACHE_SAVE
 
 AC_CONFIG_FILES([
@@ -146,6 +158,12 @@ echo "SST Core Configuration completed."
 echo "-------------------------------------------------------"
 echo "Build Environment:"
 echo ""
+printf "%38s : %s\n" "SST-Core Version" "$PACKAGE_VERSION"
+if test "x$SSTCORE_GIT_BUILDNUM" != "x$PACKAGE_VERSION"; then
+printf "%38s : %s\n" "Build Number" "$SSTCORE_GIT_BUILDNUM"
+else 
+printf "%38s : %s\n" "Build Number" "Release Package for $PACKAGE_VERSION"
+fi
 printf "%38s : %s\n" "Prefix" "$prefix"
 printf "%38s : %s\n" "Preprocessor" "$CPP"
 printf "%38s : %s\n" "C++ Compiler" "$CXX"
