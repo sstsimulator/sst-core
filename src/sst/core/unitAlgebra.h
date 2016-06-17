@@ -317,14 +317,14 @@ namespace SST {
 namespace Core {
 namespace Serialization {
 
-template <>
-class serialize <SST::UnitAlgebra> {
-public:
-    void
-    operator()(UnitAlgebra& v, SST::Core::Serialization::serializer& ser) {
-        v.serialize_order(ser);
-    }
-};
+// template <>
+// class serialize <SST::UnitAlgebra> {
+// public:
+//     void
+//     operator()(UnitAlgebra& v, SST::Core::Serialization::serializer& ser) {
+//         v.serialize_order(ser);
+//     }
+// };
 }
 }
 }

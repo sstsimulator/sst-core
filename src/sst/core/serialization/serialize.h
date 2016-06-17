@@ -23,8 +23,25 @@ namespace SST {
 namespace Core {
 namespace Serialization {
 
-template <class T>
+template <class T, class Enable = void>
 class serialize {
+ public:
+  inline void operator()(T& t, serializer& ser){
+      // If the default gets called, then it's actually invalid
+      // because we don't know how to serialize it.
+
+      // This is a bit strange, but if I just do a
+      // static_assert(false) it always triggers, but if I use
+      // std::is_* then it seems to only trigger if something expands
+      // to this version of the template.
+      // static_assert(false,"Trying to serialize an object that is not serializable.");
+      static_assert(std::is_fundamental<T>::value,"Trying to serialize an object that is not serializable.");
+      static_assert(!std::is_fundamental<T>::value,"Trying to serialize an object that is not serializable.");
+  }
+};
+
+template <class T>
+class serialize <T, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type> {
  public:
   inline void operator()(T& t, serializer& ser){
       ser.primitive(t); 
