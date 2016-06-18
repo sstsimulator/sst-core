@@ -95,6 +95,7 @@ nobase_dist_sst_HEADERS = \
 	serialization/serialize.h \
 	serialization/serialize_array.h \
 	serialization/serialize_buffer_accessor.h \
+	serialization/serialize_deque.h \
 	serialization/serialize_list.h \
 	serialization/serialize_map.h \
 	serialization/serialize_packer.h \
