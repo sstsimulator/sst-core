@@ -43,10 +43,20 @@ class ser_buffer_wrapper
 }
 
 template <class T, int N>
-class serialize<T[N]> {
+class serialize<T[N], typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type> {
  public:
   void operator()(T arr[N], serializer& ser){
     ser.array<T,N>(arr);
+  }
+};
+
+template <class T, int N>
+class serialize<T[N], typename std::enable_if<!std::is_fundamental<T>::value && !std::is_enum<T>::value>::type> {
+ public:
+  void operator()(T arr[N], serializer& ser){
+      for ( int i = 0; i < N; i++ ) {
+          serialize<T>()(arr[i],ser);
+      }
   }
 };
 

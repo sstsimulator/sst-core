@@ -286,14 +286,20 @@ template<class T> const uint32_t serializable_builder_impl<T>::cls_id_
   = serializable_factory::add_builder(new serializable_builder_impl<T>,
        typeid(T).name());
 
+// Hold off on trivailly_serializable for now, as it's not really safe
+// in the case of inheritance
+//
+// class trivially_serializable {
+// };
+
 }  // namespace Serialization
 }  // namespace Core
 }  // namespace SST
 
 #define SerializableName(obj) #obj
 
-
 #define DeclareSerializable(obj)
+
 
 #include <sst/core/serialization/serialize_serializable.h>
 
