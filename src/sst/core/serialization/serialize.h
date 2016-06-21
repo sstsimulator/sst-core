@@ -23,6 +23,11 @@ namespace SST {
 namespace Core {
 namespace Serialization {
 
+/**
+   Base serialize class.  This is the default, which if hit will
+   static_assert.  All other instances are partial specializations of
+   this class and do all the real serialization.
+ */
 template <class T, class Enable = void>
 class serialize {
 public:
@@ -40,6 +45,9 @@ public:
     }
 };
 
+/**
+   Version of serialize that works for fundamental types and enums.
+ */
 template <class T>
 class serialize <T, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type> {
 public:
@@ -48,16 +56,20 @@ public:
     }
 };
 
-// Maintains backward compatibility for now.  In the future, probably
-// need to do some error checking
-template <class U, class V>
-class serialize<std::pair<U,V> > {
-public:
-    inline void operator()(std::pair<U,V>& t, serializer& ser){
-        ser.primitive(t); 
-    }
-};
+// template <class U, class V>
+// class serialize<std::pair<U,V>,
+//                 typename std::enable_if<(std::is_fundamental<U>::value || std::is_enum<U>::value) &&
+//                                         (std::is_fundamental<V>::value || std::is_enum<V>::value)>::type> {
+// public:
+//     inline void operator()(std::pair<U,V>& t, serializer& ser){
+//         ser.primitive(t); 
+//     }
+// };
 
+
+/**
+   Version of serialize that works for bool.
+ */
 template <>
 class serialize<bool> {
 public:
@@ -68,6 +80,43 @@ public:
     }
 };
 
+/**
+   Version of serialize that works for pointers to fundamental types
+   and enums. Note that there is no pointer tracking.  This only
+   copies the value pointed to into the buffer.  If multiple objects
+   point to the same location, they will each have an independant copy
+   after deserialization.
+ */
+template <class T>
+class serialize<T*, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type> {
+public:
+    inline void operator()(T*& t, serializer& ser){
+        switch (ser.mode()){
+        case serializer::SIZER:
+            ser.size(*t);
+            break;
+        case serializer::PACK:
+            ser.primitive(*t);
+            break;
+        case serializer::UNPACK:
+            t = new T();
+            ser.primitive(*t);
+            break;  
+        }
+    }
+};
+
+/**
+   Version of serialize that works for std::pair.
+ */
+template <class U, class V>
+class serialize<std::pair<U,V> > {
+public:
+    inline void operator()(std::pair<U,V>& t, serializer& ser){
+        serialize<U>()(t.first,ser);
+        serialize<V>()(t.second,ser);        
+    }
+};
 
 template <class T>
 inline void
