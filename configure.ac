@@ -133,8 +133,12 @@ else
 	AC_MSG_RESULT([${PACKAGE_VERSION}])
 fi
 
+
 AC_SUBST(SSTCORE_GIT_BUILDNUM)
 AC_DEFINE_UNQUOTED([SSTCORE_GIT_BUILDNUM], ["$SSTCORE_GIT_BUILDNUM"], [SST-Core Git Build Number])
+
+CC_VERSION=`$CC --version | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/%/g' | awk -F'%' '{print $1}'`
+AC_SUBST(CC_VERSION)
 
 AC_CACHE_SAVE
 
@@ -165,6 +169,7 @@ else
 printf "%38s : %s\n" "Build Number" "Release Package for $PACKAGE_VERSION"
 fi
 printf "%38s : %s\n" "Prefix" "$prefix"
+printf "%38s : %s\n" "Compiler Version" "$CC_VERSION"
 printf "%38s : %s\n" "Preprocessor" "$CPP"
 printf "%38s : %s\n" "C++ Compiler" "$CXX"
 printf "%38s : %s\n" "C Compiler" "$CC"
