@@ -169,7 +169,7 @@ printf "%38s : %s\n" "SST-Core Version" "$PACKAGE_VERSION"
 if test "x$SSTCORE_GIT_COMMITCOUNT" != "x$PACKAGE_VERSION"; then
 printf "%38s : %s\n" "Branch Commit Count" "$SSTCORE_GIT_COMMITCOUNT"
 else 
-printf "%38s \n" "Release Package for $PACKAGE_VERSION"
+printf "%38s : %s\n" "Release Package" "For SST-Core $PACKAGE_VERSION"
 fi
 printf "%38s : %s\n" "Prefix" "$prefix"
 printf "%38s : %s\n" "Preprocessor" "$CPP"
