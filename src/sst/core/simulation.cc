@@ -757,10 +757,6 @@ void Simulation::run() {
     barrier.wait();  // TODO<- Is this needed?
     // fprintf(stderr, "thread %u released from runLoop finish barrier\n", my_rank.thread);
     if (num_ranks.rank != 1 && num_ranks.thread == 0) delete m_exit;
-
-
-    // Tell the Statistics Engine that the simulation is ending
-    statisticsEngine->endOfSimulation();
 }
 
 
@@ -825,6 +821,8 @@ void Simulation::finish() {
                 my_rank.rank, my_rank.thread);
     }
 
+    // Tell the Statistics Engine that the simulation is ending
+    statisticsEngine->endOfSimulation();
 }
 
 const SimTime_t&

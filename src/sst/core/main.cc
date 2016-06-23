@@ -316,17 +316,14 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
         barrier.wait();
     // fprintf(stderr, "thread %u release from run finish barrier\n", tid);
 
+        sim->finish();
+    // fprintf(stderr, "thread %u waiting on finish() finish barrier\n", tid);
+        barrier.wait();
+    // fprintf(stderr, "thread %u release from finish() finish barrier\n", tid);
 
         // Tell the Statistics Output that the simulation is finished
         if ( 0 == info.myRank.thread )
             Simulation::signalStatisticsEnd();
-
-    // fprintf(stderr, "thread %u waiting on statEnd finish barrier\n", tid);
-        barrier.wait();
-    // fprintf(stderr, "thread %u release from statEnd finish barrier\n", tid);
-
-        sim->finish();
-
     }
 
     barrier.wait();

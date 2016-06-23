@@ -243,11 +243,6 @@ public:
     template <typename T>
     Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
     {
-        // // NOTE: Templated Code for implementation of Statistic Registration
-        // // is in the componentregisterstat_impl.h file.  This was done
-        // // to avoid code bloat in the .h file.  
-        // #include "sst/core/statapi/componentregisterstat_impl.h"
-
         // Verify here that name of the stat is one of the registered
         // names of the component's ElementInfoStatistic.  
         if (false == doesComponentInfoStatisticExist(statName)) {
