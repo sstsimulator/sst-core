@@ -128,11 +128,14 @@ AC_MSG_CHECKING([for SST-Core Git Commit Count])
 if test -d ".git" ; then
 	SSTCORE_GIT_COMMITCOUNT=`git rev-list HEAD | wc -l | sed -e 's/^ *//g'`
 	AC_MSG_RESULT([${SSTCORE_GIT_COMMITCOUNT}])
+    SSTCORE_GIT_HEADSHA=`git rev-parse HEAD`
+    AC_MSG_RESULT([${SSTCORE_GIT_HEADSHA}])
 else
 	SSTCORE_GIT_COMMITCOUNT="${PACKAGE_VERSION}"
 	AC_MSG_RESULT([${PACKAGE_VERSION}])
+    SSTCORE_GIT_HEADSHA="N/A"
+    AC_MSG_RESULT([${SSTCORE_GIT_HEADSHA}])
 fi
-
 
 AC_SUBST(SSTCORE_GIT_COMMITCOUNT)
 AC_DEFINE_UNQUOTED([SSTCORE_GIT_COMMITCOUNT], ["$SSTCORE_GIT_COMMITCOUNT"], [SST-Core Git Commit Count])
@@ -167,6 +170,7 @@ echo "Build Environment:"
 echo ""
 printf "%38s : %s\n" "SST-Core Version" "$PACKAGE_VERSION"
 if test "x$SSTCORE_GIT_COMMITCOUNT" != "x$PACKAGE_VERSION"; then
+printf "%38s : %s\n" "Git HEAD SHA" "$SSTCORE_GIT_HEADSHA"
 printf "%38s : %s\n" "Branch Commit Count" "$SSTCORE_GIT_COMMITCOUNT"
 else 
 printf "%38s : %s\n" "Release Package" "For SST-Core $PACKAGE_VERSION"
