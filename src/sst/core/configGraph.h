@@ -26,6 +26,8 @@
 #include "sst/core/statapi/statoutput.h"
 #include "sst/core/rankInfo.h"
 
+#include <sst/core/serialization/serializable.h>
+
 // #include "sst/core/simulation.h"
 
 using namespace SST::Statistics;
@@ -44,7 +46,7 @@ typedef std::vector<LinkId_t> LinkIdMap_t;
 
 
 /** Represents the configuration of a generic Link */
-class ConfigLink {
+class ConfigLink : public SST::Core::Serialization::serializable {
 public:
     LinkId_t         id;            /*!< ID of this link */
     std::string      name;          /*!< Name of this link */
@@ -77,6 +79,21 @@ public:
 
     /* Do not use.  For serialization only */
     ConfigLink() {}
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        ser & id;
+        ser & name;
+        ser & component[0];
+        ser & component[1];
+        ser & port[0];
+        ser & port[1];
+        ser & latency[0];
+        ser & latency[1];
+        ser & current_ref;
+    }
+
+    ImplementSerializable(SST::ConfigLink)
+    
 private:
     friend class ConfigGraph;
     ConfigLink(LinkId_t id) :
@@ -124,7 +141,7 @@ private:
 typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 
 /** Represents the configuration of a generic component */
-class ConfigComponent {
+class ConfigComponent : public SST::Core::Serialization::serializable {
 public:
     ComponentId_t                 id;                /*!< Unique ID of this component */
     std::string                   name;              /*!< Name of this component */
@@ -146,6 +163,24 @@ public:
     ConfigComponent cloneWithoutLinksOrParams() const;
     
     ~ConfigComponent() {}
+    ConfigComponent() {} // for serialization
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        ser & id;
+        ser & name;
+        ser & type;
+        ser & weight;
+        ser & rank.rank;
+        ser & rank.thread;
+        ser & links;
+        ser & params;
+        ser & isIntrospector;
+        ser & enabledStatistics;
+        ser & enabledStatParams;
+    }
+
+    ImplementSerializable(SST::ConfigComponent)
+
 private:
 
     friend class ConfigGraph;
@@ -159,7 +194,6 @@ private:
         isIntrospector(isIntrospector)
     { }
 
-    ConfigComponent() {}
 
     friend class boost::serialization::access;
     template<class Archive>
@@ -196,7 +230,7 @@ class PartitionGraph;
 /** A Configuration Graph
  *  A graph representing Components and Links
  */
-class ConfigGraph {
+class ConfigGraph : public SST::Core::Serialization::serializable {
 public:
     /** Print the configuration graph */
 	void print(std::ostream &os) const {
@@ -296,6 +330,15 @@ public:
     PartitionGraph* getCollapsedPartitionGraph();
     void annotateRanks(PartitionGraph* graph);
     void getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group);
+
+    void serialize_order(SST::Core::Serialization::serializer &ser)
+	{
+		ser & links;
+		ser & comps;
+		ser & statOutputName;
+		ser & statOutputParams;
+		ser & statLoadLevel;
+	}
     
 private:
     friend class Simulation;
@@ -328,6 +371,7 @@ private:
 		ar & BOOST_SERIALIZATION_NVP(statLoadLevel);
 	}
 
+    ImplementSerializable(SST::ConfigGraph)
 
 };
 

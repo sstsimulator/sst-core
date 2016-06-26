@@ -21,53 +21,77 @@
 #include <mutex>
 
 #include <sst/core/sharedRegion.h>
+#include <sst/core/serialization/serializable.h>
 //#include <sst/core/changeSet.h>
 
 namespace SST {
 
 class SharedRegionImpl;
 
-class ChangeSet {
+class ChangeSet : public SST::Core::Serialization::serializable {
 private:
     friend class boost::serialization::access;
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version );
     
 public:
-    ChangeSet() { } /* Should be private.  For some reason, clang is ignoring the friend declaration */
+    ChangeSet() { }
     size_t offset;
     size_t length;
-    const uint8_t *data;
+    /*const*/ uint8_t *data;
     
-    ChangeSet(size_t offset, size_t length, const uint8_t *data = NULL) : offset(offset), length(length), data(data) { }
+    ChangeSet(size_t offset, size_t length, /*const*/ uint8_t *data = NULL) : offset(offset), length(length), data(data) { }
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        ser & offset;
+        // ser & length;
+        // if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+        //     data = new uint8_t[length];
+        // }
+        // for ( int i = 0; i < length; i++ ) {
+        //     ser & data[i];
+        // }
+        ser & SST::Core::Serialization::array(data,length);
+        // ser.binary(data,length);
+
+    }    
+    
+    ImplementSerializable(SST::ChangeSet)
+
     
 };
 
 class RegionInfo {
 public:
-    class RegionMergeInfo {
+    class RegionMergeInfo : public SST::Core::Serialization::serializable {
 
     protected:
         friend class boost::serialization::access;
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version );
 
-        RegionMergeInfo() {}
         int rank;
         std::string key;
 
     public:
+        RegionMergeInfo() {}
         RegionMergeInfo(int rank, const std::string &key) : rank(rank), key(key) { }
         virtual ~RegionMergeInfo() { }
 
         virtual bool merge(RegionInfo *ri) { return true; }
         const std::string& getKey() const { return key; }
+
+        void serialize_order(SST::Core::Serialization::serializer &ser) {
+            ser & rank;
+            ser & key;
+        }    
+        
+        ImplementSerializable(SST::RegionInfo::RegionMergeInfo)
     };
 
 
     class BulkMergeInfo : public RegionMergeInfo {
     protected:
-        BulkMergeInfo() : RegionMergeInfo() {}
         friend class boost::serialization::access;
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version );
@@ -76,6 +100,7 @@ public:
         void *data;
 
     public:
+        BulkMergeInfo() : RegionMergeInfo() {}
         BulkMergeInfo(int rank, const std::string &key, void *data, size_t length) : RegionMergeInfo(rank, key),
             length(length), data(data)
         { }
@@ -85,6 +110,22 @@ public:
             free(data);
             return ret;
         }
+
+        void serialize_order(SST::Core::Serialization::serializer &ser) {
+            RegionInfo::RegionMergeInfo::serialize_order(ser);
+
+            ser & length;
+            // if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+            //     data = malloc(length);
+            // }
+            // for ( int i = 0; i < length; i++ ) {
+            //     ser & ((uint8_t*)data)[i];
+            // }
+            ser & SST::Core::Serialization::array(data,length);
+            // ser.binary(data,length);
+        }    
+        
+        ImplementSerializable(SST::RegionInfo::BulkMergeInfo)
     };
 
     class ChangeSetMergeInfo : public RegionMergeInfo {
@@ -93,11 +134,11 @@ public:
         template<class Archive>
         void serialize(Archive & ar, const unsigned int version );
 
-        ChangeSetMergeInfo() : RegionMergeInfo() {}
 
         // std::vector<SharedRegionMerger::ChangeSet> changeSets;
         std::vector<ChangeSet> changeSets;
     public:
+        ChangeSetMergeInfo() : RegionMergeInfo() {}
         ChangeSetMergeInfo(int rank, const std::string & key,
                 // std::vector<SharedRegionMerger::ChangeSet> & changeSets) : RegionMergeInfo(rank, key),
                 std::vector<ChangeSet> & changeSets) : RegionMergeInfo(rank, key),
@@ -106,6 +147,13 @@ public:
         bool merge(RegionInfo *ri) {
             return ri->getMerger()->merge((uint8_t*)ri->getMemory(), ri->getSize(), changeSets);
         }
+
+        void serialize_order(SST::Core::Serialization::serializer &ser) {
+            RegionInfo::RegionMergeInfo::serialize_order(ser);
+            ser & changeSets;
+        }    
+        
+        ImplementSerializable(SST::RegionInfo::ChangeSetMergeInfo)
     };
 
 

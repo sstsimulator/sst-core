@@ -448,9 +448,7 @@ public:
 
 
     void serialize_order(SST::Core::Serialization::serializer &ser) {
-        std::cout << "Params: starting serialization of data" << std::endl;
         ser & data;
-        std::cout << "Params: done with serialization of data" << std::endl;
     }    
     
     ImplementSerializable(SST::Params)

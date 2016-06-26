@@ -14,9 +14,11 @@
 #ifndef SST_CORE_RANKINFO_H
 #define SST_CORE_RANKINFO_H
 
+#include <sst/core/serialization/serializable.h>
+
 namespace SST {
 
-class RankInfo {
+class RankInfo : public SST::Core::Serialization::serializable {
 public:
     static const uint32_t UNASSIGNED = (uint32_t)-1;
     uint32_t rank;
@@ -68,6 +70,13 @@ public:
         return rank >= other.rank;
     }
 
+    void serialize_order(SST::Core::Serialization::serializer &ser)
+    {
+        ser & rank;
+        ser & thread;
+    }
+
+    
 private:
 
     friend class boost::serialization::access;
@@ -78,6 +87,8 @@ private:
         ar & BOOST_SERIALIZATION_NVP(rank);
         ar & BOOST_SERIALIZATION_NVP(thread);
     }
+
+    ImplementSerializable(SST::RankInfo)
 };
 
 }
