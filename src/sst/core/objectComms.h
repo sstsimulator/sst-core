@@ -25,77 +25,152 @@
 #include <boost/iostreams/stream.hpp>
 #include <boost/iostreams/device/back_inserter.hpp>
 
+#include <sst/core/serialization/serializer.h>
+
+#include <typeinfo>
+
 namespace SST {
 
 namespace Comms {
 
-template <typename dataType>
-std::vector<char> serialize(dataType *data)
-{
-    std::vector<char> buffer;
+// template <typename dataType>
+// std::vector<char> serialize(dataType *data)
+// {
+//     std::vector<char> buffer;
 
-    boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
-    boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
-    boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header);
+//     boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
+//     boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
+//     boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header);
 
-    oa << data;
-    output_stream.flush();
+//     oa << data;
+//     output_stream.flush();
 
-    return buffer;
-}
+//     return buffer;
+// }
 
+
+// template <typename dataType>
+// std::vector<char> serialize(dataType &data)
+// {
+//     std::vector<char> buffer;
+
+//     boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
+//     boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
+//     boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header);
+
+//     oa << data;
+//     output_stream.flush();
+
+//     return buffer;
+// }
 
 template <typename dataType>
 std::vector<char> serialize(dataType &data)
 {
+    SST::Core::Serialization::serializer ser;
+
+    ser.start_sizing();
+    ser & data;
+    
+    int size = ser.size();
+    
     std::vector<char> buffer;
+    buffer.resize(size);
 
-    boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
-    boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
-    boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header);
+    ser.start_packing(buffer.data(),size);
+    ser & data;
 
-    oa << data;
-    output_stream.flush();
-
-    return buffer;
+    return buffer;    
 }
 
+// template <typename dataType>
+// std::vector<char> serialize(dataType* data)
+// {
+//     SST::Core::Serialization::serializer ser;
+
+//     std::cout << typeid(data).name() << std::endl;
+//     ser.start_sizing();
+//     ser & data;
+
+//     ser.start_sizing();
+//     ser & data;
+    
+//     int size = ser.size();
+//     std::cout << "serialize size = " << size << std::endl;
+    
+//     std::vector<char> buffer;
+//     buffer.resize(size);
+
+//     ser.start_packing(buffer.data(),size);
+//     ser & data;
+
+//     return buffer;    
+// }
+
+// template <typename dataType>
+// dataType* deserialize(std::vector<char> &buffer)
+// {
+//     dataType *tgt;
+
+//     boost::iostreams::basic_array_source<char> source(buffer.data(), buffer.size());
+//     boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
+//     boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
+
+//     ia >> tgt;
+
+//     return tgt;
+// }
+
+// template <typename dataType>
+// void deserialize(std::vector<char> &buffer, dataType &tgt)
+// {
+//     boost::iostreams::basic_array_source<char> source(buffer.data(), buffer.size());
+//     boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
+//     boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
+
+//     ia >> tgt;
+// }
+
+// template <typename dataType>
+// void deserialize(char *buffer, int blen, dataType &tgt)
+// {
+//     boost::iostreams::basic_array_source<char> source(buffer, blen);
+//     boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
+//     boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
+
+//     ia >> tgt;
+// }
 
 template <typename dataType>
 dataType* deserialize(std::vector<char> &buffer)
 {
     dataType *tgt;
 
-    boost::iostreams::basic_array_source<char> source(buffer.data(), buffer.size());
-    boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-    boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
+    SST::Core::Serialization::serializer ser;
 
-    ia >> tgt;
-
+    ser.start_unpacking(buffer.data(), buffer.size());
+    ser & tgt;
+    
     return tgt;
 }
 
 template <typename dataType>
 void deserialize(std::vector<char> &buffer, dataType &tgt)
-{
-    boost::iostreams::basic_array_source<char> source(buffer.data(), buffer.size());
-    boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-    boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
+{ 
+    SST::Core::Serialization::serializer ser;
 
-    ia >> tgt;
+    ser.start_unpacking(buffer.data(), buffer.size());
+    ser & tgt;
 }
 
 template <typename dataType>
 void deserialize(char *buffer, int blen, dataType &tgt)
 {
-    boost::iostreams::basic_array_source<char> source(buffer, blen);
-    boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-    boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
+    SST::Core::Serialization::serializer ser;
 
-    ia >> tgt;
+    ser.start_unpacking(buffer, blen);
+    ser & tgt;
 }
-
-
 
 #ifdef SST_CONFIG_HAVE_MPI
 template <typename dataType>
@@ -130,7 +205,7 @@ void broadcast(dataType& data, int root) {
 template <typename dataType>
 void send(int dest, int tag, dataType& data) {
     // Serialize the data
-    std::vector<char> buffer = Comms::serialize(data);
+    std::vector<char> buffer = Comms::serialize<dataType>(data);
 
     // Now send the data.  Send size first, then payload
     // std::cout<< sizeof(buffer.size()) << std::endl;
@@ -175,7 +250,7 @@ void recv(int src, int tag, dataType& data) {
 
 
 template <typename dataType>
-void all_gather(const dataType& data, std::vector<dataType> &out_data) {
+void all_gather(dataType& data, std::vector<dataType> &out_data) {
     int rank = 0, world = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world);

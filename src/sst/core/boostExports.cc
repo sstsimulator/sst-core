@@ -62,7 +62,7 @@ void SST::ChangeSet::serialize(Archive & ar, const unsigned int version )
     ar & BOOST_SERIALIZATION_NVP(offset);
     ar & BOOST_SERIALIZATION_NVP(length);
     if ( Archive::is_loading::value ) {
-        data = (const uint8_t*)malloc(length);
+        data = (/*const*/ uint8_t*)malloc(length);
     }
     ar & boost::serialization::make_binary_object((void*)data, length);
 }

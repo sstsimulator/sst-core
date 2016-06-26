@@ -15,7 +15,7 @@
 #define SST_CORE_SPARSEVECTORMAP_H
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization.h>
+#include <sst/core/serialization/serializable.h>
 
 #include <vector>
 
@@ -25,6 +25,8 @@ namespace SST {
 template <typename keyT, typename classT = keyT>
 class SparseVectorMap {
 private:
+    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT,classT> >;
+    
     std::vector<classT> data;
     int binary_search_insert(keyT id) const
     {
@@ -76,14 +78,6 @@ private:
             else bottom = middle + 1;
         }
         return -1;
-    }
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(data);
     }
 
     friend class ConfigGraph;
@@ -159,6 +153,8 @@ public:
 template <typename keyT>
 class SparseVectorMap<keyT,keyT> {
 private:
+    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT,keyT> >;
+
     std::vector<keyT> data;
     int binary_search_insert(keyT id) const
     {
@@ -210,14 +206,6 @@ private:
             else bottom = middle + 1;
         }
         return -1;
-    }
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(data);
     }
 
     friend class ConfigGraph;
@@ -293,5 +281,22 @@ public:
 
  
 } // namespace SST
+
+namespace SST {
+namespace Core {
+namespace Serialization {
+
+template <typename keyT, typename classT>
+class serialize <SST::SparseVectorMap<keyT,classT>> {
+public:
+    void
+        operator()(SST::SparseVectorMap<keyT,classT>& v, SST::Core::Serialization::serializer& ser) {
+        ser & v.data;
+    }
+};
+}
+}
+}
+
 
 #endif // SST_CORE_CONFIGGRAPH_H
