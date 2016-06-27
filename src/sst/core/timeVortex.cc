@@ -11,7 +11,6 @@
 
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 
 #include <sst/core/timeVortex.h>
 #include <sst/core/output.h>
@@ -88,6 +87,3 @@ void TimeVortex::print(Output &out) const
 
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::ActivityQueue)
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::TimeVortex)

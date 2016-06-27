@@ -13,7 +13,6 @@
 #define SST_CORE_LINKMAP_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <string>
 #include <map>
@@ -189,17 +188,8 @@ public:
         return linkMap;
     }
 
-    friend class boost::serialization::access;
-    /** Serialize LinkMap */
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(linkMap);
-    }
 };
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::LinkMap)
 
 #endif // SST_CORE_LINKMAP_H

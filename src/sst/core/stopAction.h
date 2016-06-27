@@ -12,8 +12,6 @@
 #ifndef SST_CORE_STOPACTION_H
 #define SST_CORE_STOPACTION_H
 
-#include <sst/core/serialization.h>
-
 #include <iostream>
 #include <cinttypes>
 
@@ -57,16 +55,6 @@ public:
         out.output("%s StopAction to be delivered at %" PRIu64 "\n", header.c_str(), getDeliveryTime());
     }
 
-private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
-        ar & BOOST_SERIALIZATION_NVP(message);
-        ar & BOOST_SERIALIZATION_NVP(print_message);
-    }
 };
 
 } // namespace SST

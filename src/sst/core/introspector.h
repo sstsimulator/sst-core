@@ -12,8 +12,6 @@
 #ifndef SST_CORE_INTROSPECTOR_H
 #define SST_CORE_INTROSPECTOR_H
 
-#include <sst/core/serialization.h>
-
 #include "sst/core/clock.h"
 #include "sst/core/introspectedComponent.h"
 //#include "sst/core/simulation.h"
@@ -138,9 +136,6 @@ protected:
     TimeConverter* defaultTimeBase;
 
 private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version);
 };
 
 template <typename typeT> 
@@ -161,7 +156,5 @@ typeT Introspector::getData(IntrospectedComponent* c, std::string dataname)
 }
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Introspector)
 
 #endif // SST_CORE_INTROSPECTOR_H

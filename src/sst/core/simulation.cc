@@ -11,7 +11,6 @@
 
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 #include <sst/core/simulation.h>
 
 #include <utility>
@@ -34,8 +33,7 @@
 #include <sst/core/output.h>
 #include <sst/core/stopAction.h>
 #include <sst/core/stringize.h>
-#include <sst/core/rankSync.h>
-#include <sst/core/sync.h>
+#include <sst/core/syncBase.h>
 #include <sst/core/syncManager.h>
 #include <sst/core/syncQueue.h>
 #include <sst/core/threadSync.h>
@@ -999,49 +997,6 @@ uint64_t Simulation::getSyncQueueDataSize() const {
 }
 
     
-template<class Archive>
-void
-Simulation::serialize(Archive & ar, const unsigned int version)
-{
-    printf("begin Simulation::serialize\n");
-
-    ar & BOOST_SERIALIZATION_NVP(output_directory);
-
-    printf("  - Simulation::timeVortex\n");
-    ar & BOOST_SERIALIZATION_NVP(timeVortex);
-
-    printf("  - Simulation::sync (%p)\n", sync);
-    ar & BOOST_SERIALIZATION_NVP(sync);
-
-    // printf("  - Simulation::compMap\n");
-    // ar & BOOST_SERIALIZATION_NVP(compMap);
-
-    printf("  - Simulation::introMap\n");
-    ar & BOOST_SERIALIZATION_NVP(introMap);
-    printf("  - Simulation::clockMap\n");
-    ar & BOOST_SERIALIZATION_NVP(clockMap);
-    printf("  - Simulation::oneShotMap\n");
-    ar & BOOST_SERIALIZATION_NVP(oneShotMap);
-    printf("  - Simulation::currentSimCycle\n");
-    ar & BOOST_SERIALIZATION_NVP(currentSimCycle);
-    printf("  - Simulation::m_exit\n");
-    ar & BOOST_SERIALIZATION_NVP(m_exit);
-    printf("  - Simulation::endSim\n");
-    ar & BOOST_SERIALIZATION_NVP(endSim);
-    printf("  - Simulation::my_rank\n");
-    ar & BOOST_SERIALIZATION_NVP(my_rank);
-    printf("  - Simulation::num_ranks\n");
-    ar & BOOST_SERIALIZATION_NVP(num_ranks);
-    printf("  - Simulation::statisticsEngine\n");
-    ar & BOOST_SERIALIZATION_NVP(statisticsEngine);
-
-    // printf("  - Simulation::compInfoMap\n");
-    // ar & BOOST_SERIALIZATION_NVP(compInfoMap);
-
-    printf("end Simulation::serialize\n");
-}
-
-
 // Function to allow for easy serialization of threads while debugging
 // code
 void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads) {
@@ -1103,8 +1058,3 @@ Exit* Simulation::m_exit;
 
 
 } // namespace SST
-
-
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Simulation::serialize)
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Simulation)

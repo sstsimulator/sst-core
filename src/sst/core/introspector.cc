@@ -10,7 +10,6 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 #include "sst/core/introspector.h"
 
 //#include <boost/foreach.hpp>
@@ -77,7 +76,6 @@ void
 Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operation op, int rank)
 {
 #ifdef SST_CONFIG_HAVE_MPI
-    // boost::mpi::communicator world; 
     int my_rank;
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     int world_size;
@@ -111,30 +109,12 @@ Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operation op,
 	    switch(op)
 	    {
 		case 0: //minimum
-            // if (world.rank() == 0) {
-            //     reduce( world, invalue, minvalue, boost::mpi::minimum<int>(), 0); 
-            //     //std::cout << "The minimum value is " << minvalue << std::endl;
-            // } else {
-            //     reduce(world, invalue, boost::mpi::minimum<int>(), 0);
-            // }
             MPI_Reduce(&invalue, &minvalue, 1, MPI_UINT64_T, MPI_MIN, 0, MPI_COMM_WORLD);
 		    break;
 		case 1: //maximum
-            // if (world.rank() == 0) {
-            //     reduce( world, invalue, maxvalue, boost::mpi::maximum<int>(), 0); 
-            //     //std::cout << "The maximum value is " << maxvalue << std::endl;
-            // } else {
-            //     reduce(world, invalue, boost::mpi::maximum<int>(), 0);
-            // }
             MPI_Reduce(&invalue, &maxvalue, 1, MPI_UINT64_T, MPI_MAX, 0, MPI_COMM_WORLD);
 		    break;
 		case 2: //sum
-		    // if (world.rank() == 0) {
-            //     reduce( world, invalue, value, std::plus<int>(), 0); 
-            //     //std::cout << "The value is " << value << std::endl;
-            // } else {
-            //     reduce(world, invalue, std::plus<int>(), 0);
-            // }
             MPI_Reduce(&invalue, &value, 1, MPI_UINT64_T, MPI_SUM, 0, MPI_COMM_WORLD);
 		    break;
 		default:
@@ -145,15 +125,12 @@ Introspector::collectInt(collect_type ctype, uint64_t invalue, mpi_operation op,
 	    switch(op)
         {
 		case 0: //minimum	            
-            // all_reduce( world, invalue, minvalue, boost::mpi::minimum<int>()); 
             MPI_Allreduce(&invalue, &minvalue, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
 		    break;
 		case 1: //maximum            
-            // all_reduce( world, invalue, maxvalue, boost::mpi::maximum<int>());       
             MPI_Allreduce(&invalue, &maxvalue, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD);
 		    break;
 		case 2: //sum   
-            // all_reduce( world, invalue, value, std::plus<int>()); 
             MPI_Allreduce(&invalue, &value, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD);
 		    break;
 		default:
@@ -220,18 +197,4 @@ void Introspector::oneTimeCollect(SimTime_t time, Event::HandlerBase* functor){
 	sim->insertActivity(time, act); 
 }
 
-template<class Archive>
-void
-Introspector::serialize(Archive& ar, const unsigned int version) {
-//    ar & BOOST_SERIALIZATION_NVP(MyCompList);
-    ar & BOOST_SERIALIZATION_NVP(minvalue);
-    ar & BOOST_SERIALIZATION_NVP(maxvalue);
-    ar & BOOST_SERIALIZATION_NVP(value);
-    // ar & BOOST_SERIALIZATION_NVP(arrayvalue);
-    ar & BOOST_SERIALIZATION_NVP(defaultTimeBase);
-}
-
 } //namespace SST
-
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Introspector::serialize)
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Introspector)

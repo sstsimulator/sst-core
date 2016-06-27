@@ -10,7 +10,6 @@
 // distribution.
 
 #include <sst_config.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/simulation.h>
 #include <sst/core/statapi/statoutputcsvgz.h>
@@ -277,7 +276,5 @@ void StatisticOutputCompressedCSV::implOutputField(fieldHandle_t fieldHandle, do
 
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticOutputCompressedCSV)
 
 #endif

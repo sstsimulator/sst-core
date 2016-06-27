@@ -12,7 +12,6 @@
 #ifndef SST_CORE_INTROSPECTED_COMPONENT_H
 #define SST_CORE_INTROSPECTED_COMPONENT_H
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <cmath>
 //#include <deque>
@@ -290,13 +289,8 @@ protected:
     IntrospectedComponent(); // For serialization only
     
 private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version);
 }; 
 
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::IntrospectedComponent)
 
 #endif // SST_CORE_INTROSPECTED_COMPONENT_H

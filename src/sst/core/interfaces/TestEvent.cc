@@ -10,7 +10,6 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 #include "TestEvent.h"
 
 #include "sst/core/element.h"

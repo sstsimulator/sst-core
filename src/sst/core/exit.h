@@ -13,7 +13,6 @@
 #define SST_CORE_CORE_EXIT_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <unordered_set>
 #include <cinttypes>
@@ -91,13 +90,8 @@ private:
     
     bool single_rank;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
 };
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Exit)
 
 #endif // SST_CORE_EXIT_H

@@ -13,7 +13,6 @@
 #define SST_CORE_LINK_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/event.h>
 // #include <sst/core/eventFunctor.h>
@@ -190,9 +189,6 @@ private:
     
     //    friend class SST::Sync;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version );
 };
 
 /** Self Links are links from a component to itself */
@@ -204,17 +200,9 @@ public:
         latency = 0;
     }
 
-    friend class boost::serialization::access;
-    /** Serialize the state of the link */
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version );
 };
 
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Link)
-BOOST_CLASS_EXPORT_KEY(SST::SelfLink)
-
 
 #endif // SST_CORE_LINK_H
