@@ -13,7 +13,6 @@
 #define SST_CORE_COMPONENT_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <map>
 #include <string>
@@ -429,13 +428,8 @@ private:
 
 
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version);
 };
 
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Component)
 
 #endif // SST_CORE_COMPONENT_H

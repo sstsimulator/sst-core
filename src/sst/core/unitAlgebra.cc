@@ -569,11 +569,3 @@ UnitAlgebra::getRoundedValue() const
 //     return os;
 // }
 //
-
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Units::serialize)
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::UnitAlgebra::serialize)
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Units)
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::UnitAlgebra)
-
-

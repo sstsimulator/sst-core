@@ -15,7 +15,6 @@
 #define SST_CORE_TIMELORD_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <map>
 #include <string>
@@ -105,22 +104,8 @@ class TimeLord {
     TimeConverter* micro;
     TimeConverter* milli;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(timeBaseString);
-        ar & BOOST_SERIALIZATION_NVP(tcMap);
-        // ar & BOOST_SERIALIZATION_NVP(timeBase);
-        ar & BOOST_SERIALIZATION_NVP(parseCache);
-        ar & BOOST_SERIALIZATION_NVP(nano);
-        ar & BOOST_SERIALIZATION_NVP(micro);
-        ar & BOOST_SERIALIZATION_NVP(milli);
-    }
 };    
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::TimeLord)
 
 #endif //SST_CORE_TIMELORD_H

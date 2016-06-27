@@ -11,7 +11,6 @@
 
 
 #include <sst_config.h>
-#include "sst/core/serialization.h"
 #include "sst/core/introspectedComponent.h"
 
 #include <boost/foreach.hpp>
@@ -198,16 +197,4 @@ bool IntrospectedComponent::isTimeToPush(Cycle_t current, const char *name){
 
 
 
-template<class Archive>
-void
-IntrospectedComponent::serialize(Archive& ar, const unsigned int version) {
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Component);
-    ar & BOOST_SERIALIZATION_NVP(MyIntroList);
-    ar & BOOST_SERIALIZATION_NVP(monitorMap);
-}
-    
 } // namespace SST
-
-
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::IntrospectedComponent::serialize)
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::IntrospectedComponent)

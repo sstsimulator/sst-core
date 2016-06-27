@@ -10,7 +10,6 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 
 #include <sst/core/stringize.h>
 #include <sst/core/statapi/statfieldinfo.h>
@@ -69,7 +68,3 @@ const char* StatisticFieldInfo::getFieldTypeFullName(fieldType_t type)
 
 } //namespace Statistics
 } //namespace SST
-
-//BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticFieldInfo);
-
-

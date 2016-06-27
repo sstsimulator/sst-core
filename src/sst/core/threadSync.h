@@ -13,7 +13,6 @@
 #define SST_CORE_THREADSYNC_H
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization.h>
 
 #include <unordered_map>
 

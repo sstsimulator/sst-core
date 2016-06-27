@@ -13,7 +13,6 @@
 #define SST_CORE_CORE_HEARTBEAT_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 #include <sst/core/output.h>
 #include <sst/core/config.h>
 #include <sst/core/cputimer.h>
@@ -47,13 +46,8 @@ private:
     TimeConverter*  m_period;
     double lastTime;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
 };
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::SimulatorHeartbeat)
 
 #endif // SST_CORE_HEARTBEAT_H

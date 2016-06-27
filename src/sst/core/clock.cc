@@ -10,7 +10,6 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 #include "sst/core/clock.h"
 
 #include <boost/foreach.hpp>
@@ -137,6 +136,4 @@ Clock::print(const std::string& header, Output &out) const
 }
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Clock);
 

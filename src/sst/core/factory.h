@@ -13,7 +13,6 @@
 #define _SST_CORE_FACTORY_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <stdio.h>
 #include <boost/foreach.hpp>
@@ -364,62 +363,11 @@ private:
 
     std::recursive_mutex factoryMutex;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void save(Archive & ar, const unsigned int version) const
-    {
-        std::vector<std::string> loaded_element_libraries;
-        loaded_element_libraries.reserve(loaded_libraries.size());
-        for (eli_map_t::const_iterator i = loaded_libraries.begin() ;
-             i != loaded_libraries.end() ;
-             ++i) {
-            loaded_element_libraries.push_back(i->first);
-        }
-        ar & BOOST_SERIALIZATION_NVP(loaded_element_libraries);
-    }
-
-    template<class Archive>
-    void load(Archive & ar, const unsigned int version)
-    {
-        std::vector<std::string> loaded_element_libraries;
-        ar & BOOST_SERIALIZATION_NVP(loaded_element_libraries); 
-        BOOST_FOREACH(std::string type, loaded_element_libraries) {
-            if (NULL == findLibrary(type)) {
-                fprintf(stderr, 
-                        "factory::load() failed to load %s\n", 
-                        type.c_str());
-                abort();
-            }
-        }
-    }
-
-    template<class Archive>
-    friend void save_construct_data(Archive & ar, 
-                                    const Factory * t, 
-                                    const unsigned int file_version)
-    {
-        std::string search_path = t->searchPaths;
-        ar << BOOST_SERIALIZATION_NVP(search_path);
-    }
-
-    template<class Archive>
-    friend void load_construct_data(Archive & ar, 
-                                    Factory * t,
-                                    const unsigned int file_version)
-    {
-        std::string search_path;
-        ar >> BOOST_SERIALIZATION_NVP(search_path);
-        ::new(t)Factory(search_path);
-    }
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
 
 protected:
    Output &out;
 };
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Factory)
 
 #endif // SST_CORE_FACTORY_H

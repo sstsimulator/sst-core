@@ -13,7 +13,6 @@
 #define _H_SST_CORE_STATISTICS_OUTPUTCONSOLE
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization.h>
 
 #include <sst/core/statapi/statoutput.h>
 
@@ -87,18 +86,9 @@ protected:
 private:
     std::string m_OutputBuffer;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StatisticOutput);
-        ar & BOOST_SERIALIZATION_NVP(m_OutputBuffer);
-    }
 };
 
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::StatisticOutputConsole)
 
 #endif

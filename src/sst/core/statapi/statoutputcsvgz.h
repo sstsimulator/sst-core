@@ -13,7 +13,6 @@
 #define _H_SST_CORE_STATISTICS_OUTPUT_CSV_GZ
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization.h>
 
 #include <sst/core/statapi/statoutput.h>
 
@@ -100,28 +99,10 @@ private:
     bool                     m_outputSimTime;
     bool                     m_outputRank;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StatisticOutput);
-        ar & BOOST_SERIALIZATION_NVP(m_OutputBufferArray);
-        ar & BOOST_SERIALIZATION_NVP(m_Separator);
-        ar & BOOST_SERIALIZATION_NVP(m_FilePath);
-        ar & BOOST_SERIALIZATION_NVP(m_currentComponentName);
-        ar & BOOST_SERIALIZATION_NVP(m_currentStatisticName);
-        ar & BOOST_SERIALIZATION_NVP(m_currentStatisticSubId);
-        ar & BOOST_SERIALIZATION_NVP(m_currentStatisticType);
-        ar & BOOST_SERIALIZATION_NVP(m_outputTopHeader);
-        ar & BOOST_SERIALIZATION_NVP(m_outputSimTime);
-        ar & BOOST_SERIALIZATION_NVP(m_outputRank);
-    }
 };
 
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::StatisticOutputCompressedCSV)
 
 #endif
 #endif

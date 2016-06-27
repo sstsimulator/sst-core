@@ -13,8 +13,6 @@
 #ifndef SST_CORE_CLOCK_H
 #define SST_CORE_CLOCK_H
 
-#include <sst/core/serialization.h>
-
 //#include <deque>
 //#include <list>
 #include <vector>
@@ -136,20 +134,9 @@ private:
     SimTime_t          next;
     bool               scheduled;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
-        ar & BOOST_SERIALIZATION_NVP(currentCycle);
-        ar & BOOST_SERIALIZATION_NVP(period);
-        ar & BOOST_SERIALIZATION_NVP(staticHandlerMap);
-        ar & BOOST_SERIALIZATION_NVP(scheduled);
-    }
 };
 
 } // namespace SST
 
-BOOST_CLASS_EXPORT_KEY(SST::Clock)
 
 #endif // SST_CORE_CLOCK_H

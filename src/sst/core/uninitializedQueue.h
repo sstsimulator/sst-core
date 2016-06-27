@@ -13,8 +13,6 @@
 #ifndef SST_CORE_UNINITIALIZEDQUEUE_H
 #define SST_CORE_UNINITIALIZEDQUEUE_H
 
-#include <sst/core/serialization.h>
-
 #include <sst/core/activityQueue.h>
 
 namespace SST {
@@ -42,18 +40,8 @@ public:
 private:
     std::string message;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
-        ar & BOOST_SERIALIZATION_NVP(message);
-    }
 };
 
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::UninitializedQueue)
 
 #endif // SST_CORE_UNINITIALIZEDQUEUE_H

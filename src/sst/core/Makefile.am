@@ -22,7 +22,6 @@ nobase_dist_sst_HEADERS = \
 	activityQueue.h \
 	action.h \
 	activity.h \
-	archive.h \
 	clock.h \
 	component.h \
 	componentInfo.h \
@@ -60,18 +59,15 @@ nobase_dist_sst_HEADERS = \
 	pollingLinkQueue.h \
 	profile.h \
 	rankInfo.h \
-	rankSync.h \
 	rankSyncParallelSkip.h \
 	rankSyncSerialSkip.h \
 	simulation.h \
-	serialization.h \
 	sparseVectorMap.h \
 	sst_types.h \
 	sstinfo.h \
 	stopAction.h \
 	stringize.h \
 	subcomponent.h \
-	sync.h \
 	syncBase.h \
 	syncManager.h \
 	syncQueue.h \
@@ -86,9 +82,6 @@ nobase_dist_sst_HEADERS = \
 	math/sqrt.h \
 	uninitializedQueue.h \
 	unitAlgebra.h \
-	serialization/core.h \
-	serialization/types.h \
-	serialization/element.h \
 	serialization/ser_ptr_type.h \
 	serialization/serializable.h \
 	serialization/serializable_fwd.h \
@@ -152,7 +145,6 @@ nobase_nodist_sst_HEADERS = \
 
 sst_core_sources = \
 	action.cc \
-	archive.cc \
 	clock.cc \
 	component.cc \
 	componentInfo.cc \
@@ -162,13 +154,11 @@ sst_core_sources = \
 	cfgoutput/dotConfigOutput.cc \
 	cfgoutput/xmlConfigOutput.cc \
 	cfgoutput/jsonConfigOutput.cc \
-	boostExports.cc \
 	env/envquery.cc \
 	env/envconfig.cc \
 	elemLoader.cc \
 	event.cc \
 	exit.cc \
-	export.cc \
 	factory.cc \
 	heartbeat.cc \
 	initQueue.cc \
@@ -181,13 +171,10 @@ sst_core_sources = \
 	output.cc \
 	params.cc \
 	pollingLinkQueue.cc \
-	rankInfo.cc \
-	rankSync.cc \
 	rankSyncParallelSkip.cc \
 	rankSyncSerialSkip.cc \
 	simulation.cc \
 	subcomponent.cc \
-	sync.cc \
 	syncBase.cc \
 	syncManager.cc \
 	syncQueue.cc \
@@ -202,11 +189,9 @@ sst_core_sources = \
 	serialization/serialize_serializable.cc \
 	serialization/serializer.cc \
 	serialization/statics.cc \
-	interfaces/stringEvent.cc \
 	interfaces/TestEvent.cc \
 	interfaces/simpleMem.cc \
 	interfaces/simpleNetwork.cc \
-	interfaces/simpleNetworkExports.cc \
 	rng/sstrng.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
