@@ -124,18 +124,21 @@ AC_DEFINE_UNQUOTED([SST_BOOST_LIBDIR], ["$BOOST_LIBDIR"],
 
 AC_DEFINE([__STDC_FORMAT_MACROS], [1], [Defines that standard PRI macros should be enabled])
 
-AC_MSG_CHECKING([for SST-Core Git Commit Count])
+AC_MSG_CHECKING([for SST-Core Git Head SHA and Commit Count])
 if test -d ".git" ; then
-	SSTCORE_GIT_COMMITCOUNT=`git rev-list HEAD | wc -l | sed -e 's/^ *//g'`
-	AC_MSG_RESULT([${SSTCORE_GIT_COMMITCOUNT}])
     SSTCORE_GIT_HEADSHA=`git rev-parse HEAD`
     AC_MSG_RESULT([${SSTCORE_GIT_HEADSHA}])
+	SSTCORE_GIT_COMMITCOUNT=`git rev-list HEAD | wc -l | sed -e 's/^ *//g'`
+	AC_MSG_RESULT([${SSTCORE_GIT_COMMITCOUNT}])
 else
-	SSTCORE_GIT_COMMITCOUNT="${PACKAGE_VERSION}"
-	AC_MSG_RESULT([${PACKAGE_VERSION}])
-    SSTCORE_GIT_HEADSHA="N/A"
+    SSTCORE_GIT_HEADSHA="${PACKAGE_VERSION}"
     AC_MSG_RESULT([${SSTCORE_GIT_HEADSHA}])
+	SSTCORE_GIT_COMMITCOUNT="0"
+	AC_MSG_RESULT([${SSTCORE_GIT_COMMITCOUNT}])
 fi
+
+AC_SUBST(SSTCORE_GIT_HEADSHA)
+AC_DEFINE_UNQUOTED([SSTCORE_GIT_HEADSHA], ["$SSTCORE_GIT_HEADSHA"], [SST-Core Git Head SHA])
 
 AC_SUBST(SSTCORE_GIT_COMMITCOUNT)
 AC_DEFINE_UNQUOTED([SSTCORE_GIT_COMMITCOUNT], ["$SSTCORE_GIT_COMMITCOUNT"], [SST-Core Git Commit Count])
@@ -169,7 +172,7 @@ echo "-------------------------------------------------------"
 echo "Build Environment:"
 echo ""
 printf "%38s : %s\n" "SST-Core Version" "$PACKAGE_VERSION"
-if test "x$SSTCORE_GIT_COMMITCOUNT" != "x$PACKAGE_VERSION"; then
+if test "x$SSTCORE_GIT_HEADSHA" != "x$PACKAGE_VERSION"; then
 printf "%38s : %s\n" "Git HEAD SHA" "$SSTCORE_GIT_HEADSHA"
 printf "%38s : %s\n" "Branch Commit Count" "$SSTCORE_GIT_COMMITCOUNT"
 else 

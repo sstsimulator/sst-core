@@ -237,10 +237,10 @@ Config::parseCmdLine(int argc, char* argv[]) {
     print_timing = (var_map->count("print-timing-info") > 0);
 
     if ( var_map->count( "version" ) ) {
-        if (SSTCORE_GIT_COMMITCOUNT == PACKAGE_VERSION)
+        if (SSTCORE_GIT_HEADSHA == PACKAGE_VERSION)
             cout << "SST-Core Release Version (" PACKAGE_VERSION << ")" << endl;
         else
-            cout << "SST-Core Release Version (" PACKAGE_VERSION << ", Branch Commit Count: " SSTCORE_GIT_COMMITCOUNT << ")" << endl;
+            cout << "SST-Core Release Version (" PACKAGE_VERSION << ", Branch SHA: " SSTCORE_GIT_HEADSHA << ")" << endl;
         return 1;
     }
 
