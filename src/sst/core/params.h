@@ -26,6 +26,9 @@
 #include <utility>
 #include <sst/core/threadsafe.h>
 
+#include <sst/core/serialization/serializable.h>
+#include <sst/core/serialization/serializer.h>
+
 int main(int argc, char *argv[]);
 
 namespace SST {
@@ -41,7 +44,7 @@ class ConfigGraph;
  *  For a @c map<Key,T> the key_type is Key, the mapped_type is T, and the
  *  value_type is std::pair<const Key,T>.
  */
-class Params {
+class Params : public SST::Core::Serialization::serializable {
 private:
     struct KeyCompare : std::binary_function<std::string, std::string, bool>
     {
@@ -444,6 +447,11 @@ public:
     }
 
 
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        ser & data;
+    }    
+    
+    ImplementSerializable(SST::Params)
 
 private:
     std::map<uint32_t, std::string> data;
@@ -481,7 +489,6 @@ private:
     {
         ar & BOOST_SERIALIZATION_NVP(data);
     }
-
 
     /* Friend main() because it broadcasts the maps */
     friend int ::main(int argc, char *argv[]);

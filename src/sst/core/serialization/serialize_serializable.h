@@ -59,7 +59,7 @@ operator()(serializable*& s, serializer& ser)
 
 
 template <class T>
-class serialize<T*> {
+class serialize<T*, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable,T>::value>::type> {
  
 public:
 void
@@ -101,14 +101,26 @@ case serializer::UNPACK:
   }  
 }
 
-template <>
-class serialize<serializable> {
- public:
-  void operator()(serializable& o, serializer& ser){
-    serializable* tmp = &o;
-    serialize_intrusive_ptr(tmp, ser);
-  }
+template <class T>
+class serialize <T, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable,T>::value>::type> {
+public:
+    inline void operator()(T& t, serializer& ser){
+        // T* tmp = &t;
+        // serialize_intrusive_ptr(tmp, ser);
+        t.serialize_order(ser);
+    }
 };
+
+// Hold off on trivailly_serializable for now, as it's not really safe
+// in the case of inheritance
+//
+// template <class T>
+// class serialize <T, typename std::enable_if<std::is_base_of<SST::Core::Serialization::trivially_serializable,T>::value>::type> {
+// public:
+//     inline void operator()(T& t, serializer& ser){
+//         ser.primitive(t);
+//     }
+// };
 
 
 } 

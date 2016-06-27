@@ -19,6 +19,8 @@
 #include <sst/core/env/envquery.h>
 #include <sst/core/env/envconfig.h>
 
+#include <sst/core/serialization/serializable.h>
+
 #include <string>
 
 namespace boost {
@@ -35,7 +37,7 @@ namespace SST {
 /**
  * Class to contain SST Simulation Configuration variables
  */
-class Config {
+class Config : public SST::Core::Serialization::serializable {
 public:
 
     /** Create a new Config object.
@@ -43,6 +45,7 @@ public:
      * @param world_size - number of parallel ranks in the simulation
      */
     Config(RankInfo world_size);
+    Config () {} // For serialization
     ~Config();
 
     /** Parse command-line arguments to update configuration values */
@@ -186,6 +189,30 @@ public:
     uint32_t getNumRanks() { return world_size.rank; }
     uint32_t getNumThreads() { return world_size.thread; }
 
+    void serialize_order(SST::Core::Serialization::serializer &ser)
+    {
+        ser & debugFile;
+        ser & runMode;
+        ser & libpath;
+        ser & addlLibPath;
+        ser & sdlfile;
+        ser & stopAtCycle;
+        ser & timeBase;
+        ser & partitioner;
+        ser & generator;
+        ser & generator_options;
+        ser & dump_component_graph_file;
+        ser & output_config_graph;
+        ser & output_xml;
+        ser & output_json;
+        ser & no_env_config;
+        ser & model_options;
+        ser & world_size;
+        ser & enable_sig_handling;
+        ser & output_core_prefix;
+        ser & print_timing;
+    }
+
 private:
     boost::program_options::options_description* visNoConfigDesc;
     boost::program_options::options_description* hiddenNoConfigDesc;
@@ -214,19 +241,21 @@ private:
         ar & BOOST_SERIALIZATION_NVP(generator_options);
         ar & BOOST_SERIALIZATION_NVP(dump_component_graph_file);
         ar & BOOST_SERIALIZATION_NVP(output_config_graph);
-	ar & BOOST_SERIALIZATION_NVP(output_xml);
-	ar & BOOST_SERIALIZATION_NVP(output_json);
+        ar & BOOST_SERIALIZATION_NVP(output_xml);
+        ar & BOOST_SERIALIZATION_NVP(output_json);
         ar & BOOST_SERIALIZATION_NVP(no_env_config);
         ar & BOOST_SERIALIZATION_NVP(model_options);
         ar & BOOST_SERIALIZATION_NVP(world_size);
-	ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
+        ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
         ar & BOOST_SERIALIZATION_NVP(output_core_prefix);
         ar & BOOST_SERIALIZATION_NVP(print_timing);
     }
+
     
     int rank;
 	int numRanks;
 
+    ImplementSerializable(SST::Config)
 };
 
 } // namespace SST

@@ -13,8 +13,6 @@
 #define SST_CORE_SERIALIZATION_SERIALIZABLE_H
 
 #include <sst/core/serialization/serializer.h>
-#include <sst/core/output.h>
-//#include <sprockit/unordered.h>
 #include <unordered_map>
 #include <typeinfo>
 #include <stdint.h>
@@ -109,20 +107,21 @@ constexpr uint32_t ct_hash(const char* str)
 
 class serializable
 {
- public:
-  virtual const char*
-  cls_name() const = 0;
+public:
+    virtual const char*
+    cls_name() const = 0;
 
-  virtual void
-  serialize_order(serializer& ser) = 0;
-
-  virtual uint32_t
-  cls_id() const = 0;
-
-  virtual ~serializable() { }
-
- protected:
-  typedef enum { ConstructorFlag } cxn_flag_t;
+    virtual void
+    serialize_order(serializer& ser) = 0;
+    
+    virtual uint32_t
+    cls_id() const = 0;
+    
+    virtual ~serializable() { }
+    
+protected:
+    typedef enum { ConstructorFlag } cxn_flag_t;
+    static void serializable_abort(uint32_t line, const char* file, const char* func, const char* obj);
 };
 
 template <class T>
@@ -139,8 +138,7 @@ class serializable_type
  public:  \
   static void \
   throw_exc(){ \
-     SST::Output ser_abort("", 5, -1, SST::Output::STDERR);            \
-     ser_abort.fatal(CALL_INFO_LONG, -1, "ERROR: type %s should not be serialized\n",#obj); \
+     serializable_abort(CALL_INFO_LONG, #obj); \
   } \
   virtual void \
   serialize_order(SST::Core::Serialization::serializer& sst){    \
@@ -286,14 +284,20 @@ template<class T> const uint32_t serializable_builder_impl<T>::cls_id_
   = serializable_factory::add_builder(new serializable_builder_impl<T>,
        typeid(T).name());
 
+// Hold off on trivailly_serializable for now, as it's not really safe
+// in the case of inheritance
+//
+// class trivially_serializable {
+// };
+
 }  // namespace Serialization
 }  // namespace Core
 }  // namespace SST
 
 #define SerializableName(obj) #obj
 
-
 #define DeclareSerializable(obj)
+
 
 #include <sst/core/serialization/serialize_serializable.h>
 

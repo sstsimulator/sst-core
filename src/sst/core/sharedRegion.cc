@@ -297,7 +297,6 @@ void SharedRegionManagerImpl::updateState(bool finalize)
 
             Comms::all_gather(myKeys, allKeysVec);
 
-
             size_t numRecv = 0;
             for ( size_t rank = 0 ; rank < allKeysVec.size() ; rank++ ) {
                 if ( rank == (size_t)myRank ) continue;
@@ -318,7 +317,7 @@ void SharedRegionManagerImpl::updateState(bool finalize)
                 MPI_Request sendReqs[numRecv];
                 size_t req = 0;
                 for ( size_t rank = 0 ; rank < allKeysVec.size() ; rank++ ) {
-                    if ( rank == (size_t)myRank ) continue;
+                     if ( rank == (size_t)myRank ) continue;
                     // Foreach key in rank, see if I have it, too.
                     // If so, record as such for future merging
                     for ( auto && j = allKeysVec[rank].begin() ; j != allKeysVec[rank].end() ; ++j ) {
@@ -352,7 +351,6 @@ void SharedRegionManagerImpl::updateState(bool finalize)
                     MPI_Waitany(numRecv, recvReqs, &index, &status);
 
                     RegionInfo::RegionMergeInfo *rmi = Comms::deserialize<RegionInfo::RegionMergeInfo>(receives[index]);
-
                     RegionInfo& ri = regions[rmi->getKey()];
                     ri.setProtected(false);
                     rmi->merge(&ri);
@@ -363,6 +361,13 @@ void SharedRegionManagerImpl::updateState(bool finalize)
                 // WaitAll on sends
                 MPI_Waitall(numRecv, sendReqs, MPI_STATUSES_IGNORE);
 
+            }
+
+            // Print out the regions
+            if ( myRank == 0 ) {
+                for ( auto it = regions.begin(); it != regions.end(); ++it) {
+                    
+                }
             }
 
         }
