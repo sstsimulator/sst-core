@@ -19,6 +19,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <climits>
 
 #include "sst/core/sparseVectorMap.h"
 #include "sst/core/params.h"
