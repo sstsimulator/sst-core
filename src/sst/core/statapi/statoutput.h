@@ -13,7 +13,6 @@
 #define _H_SST_CORE_STATISTICS_OUTPUT
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization.h>
 #include <sst/core/module.h>
 #include <sst/core/params.h>
 #include <sst/core/statapi/statfieldinfo.h>
@@ -250,23 +249,9 @@ private:
     uint8_t          m_statLoadLevel;
     std::recursive_mutex  m_lock;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        //ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Module);
-        ar & BOOST_SERIALIZATION_NVP(m_outputParameters);
-        ar & BOOST_SERIALIZATION_NVP(m_outputFieldInfoArray);
-        ar & BOOST_SERIALIZATION_NVP(m_highestFieldHandle);
-        ar & BOOST_SERIALIZATION_NVP(m_currentFieldCompName);
-        ar & BOOST_SERIALIZATION_NVP(m_currentFieldStatName);
-        ar & BOOST_SERIALIZATION_NVP(m_statLoadLevel);
-    }
 };                          
 
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::StatisticOutput)
 
 #endif

@@ -14,7 +14,6 @@
 #define _H_SST_CORE_HISTOGRAM_STATISTIC_
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/statapi/statbase.h>
 
@@ -342,29 +341,9 @@ private:
     bool                  m_dumpBinsOnOutput;
     bool                  m_includeOutOfBounds;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Statistic<BinDataType>);
-        ar & BOOST_SERIALIZATION_NVP(m_minValue);
-        ar & BOOST_SERIALIZATION_NVP(m_binWidth); 
-        ar & BOOST_SERIALIZATION_NVP(m_numBins); 
-        ar & BOOST_SERIALIZATION_NVP(m_OOBMinCount); 
-        ar & BOOST_SERIALIZATION_NVP(m_OOBMaxCount); 
-        ar & BOOST_SERIALIZATION_NVP(m_itemsBinnedCount); 
-        ar & BOOST_SERIALIZATION_NVP(m_totalSummed);
-        ar & BOOST_SERIALIZATION_NVP(m_totalSummedSqr);
-        ar & BOOST_SERIALIZATION_NVP(m_binsMap);
-        ar & BOOST_SERIALIZATION_NVP(m_Fields);
-        ar & BOOST_SERIALIZATION_NVP(m_dumpBinsOnOutput);
-        ar & BOOST_SERIALIZATION_NVP(m_includeOutOfBounds);
-    }
 };
 
 } //namespace Statistics
 } //namespace SST
-
-//BOOST_CLASS_EXPORT_KEY(SST::Statistics::HistogramStatistic<uint32_t, uint32_t>)
 
 #endif

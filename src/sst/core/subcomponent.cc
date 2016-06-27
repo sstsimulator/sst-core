@@ -10,7 +10,6 @@
 // distribution.
 
 #include <sst_config.h>
-#include "sst/core/serialization.h"
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/unitAlgebra.h"

@@ -11,7 +11,6 @@
 
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 #include <sst/core/link.h>
 
 #include <utility>
@@ -207,46 +206,4 @@ TimeConverter* Link::getDefaultTimeBase() {
 }
 
 
-template<class Archive>
-void
-Link::serialize(Archive & ar, const unsigned int version)
-{
-    std::string type;
-
-    printf("begin Link::serialize\n");
-    printf("  - Link::recvQueue\n");
-    ar & BOOST_SERIALIZATION_NVP( recvQueue );
-    printf("  - Link::initQueue\n");
-    ar & BOOST_SERIALIZATION_NVP( initQueue );
-    printf("  - Link::configuredQueue\n");
-    ar & BOOST_SERIALIZATION_NVP( configuredQueue );
-    // don't serialize rFunctor
-    printf("  - Link::defaultTimeBase\n");
-    ar & BOOST_SERIALIZATION_NVP( defaultTimeBase );
-    printf("  - Link::latency\n");
-    ar & BOOST_SERIALIZATION_NVP( latency );
-    printf("  - Link::pair_link\n");
-    ar & BOOST_SERIALIZATION_NVP(pair_link);
-    printf("  - Link::type\n");
-    ar & BOOST_SERIALIZATION_NVP( type );
-    printf("  - Link::id\n");
-    ar & BOOST_SERIALIZATION_NVP(id);
-    printf("end Link::serialize\n");
-}
-
-
-template<class Archive>
-void
-SelfLink::serialize(Archive & ar, const unsigned int version)
-{
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Link);
-}
-    
 } // namespace SST
-
-
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Link::serialize)
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SelfLink::serialize)
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Link)
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::SelfLink)

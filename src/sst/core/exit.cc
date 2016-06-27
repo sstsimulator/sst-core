@@ -11,7 +11,6 @@
 
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 #include "sst/core/exit.h"
 
 #ifdef SST_CONFIG_HAVE_MPI
@@ -150,8 +149,6 @@ void Exit::check()
     int out;
     
 #ifdef SST_CONFIG_HAVE_MPI
-    // boost::mpi::communicator world;
-    // all_reduce( world, &value, 1, &out, std::plus<int>() );  
     if ( !single_rank ) {
         MPI_Allreduce( &value, &out, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );
     }
@@ -167,8 +164,6 @@ void Exit::check()
 #ifdef SST_CONFIG_HAVE_MPI
         // Do an all_reduce to get the end_time
         SimTime_t end_value;
-        // Simulation::getSimulationOutput().output(CALL_INFO,"end_time = %llu\n",end_time);
-        // all_reduce( world, &end_time, 1, &end_value, boost::mpi::maximum<SimTime_t>() );
         if ( !single_rank ) {
             MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
             end_time = end_value;
@@ -193,21 +188,4 @@ void Exit::check()
 }
 
 
-template<class Archive>
-void
-Exit::serialize(Archive & ar, const unsigned int version)
-{
-    printf("begin Exit::serialize\n");
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
-    ar & BOOST_SERIALIZATION_NVP(m_refCount);
-    ar & BOOST_SERIALIZATION_NVP(m_period);
-    // ar & BOOST_SERIALIZATION_NVP(m_idSet);
-    ar & BOOST_SERIALIZATION_NVP(single_rank);
-    printf("end Exit::serialize\n");
-}
-
 } // namespace SST
-
-
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Exit::serialize)
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Exit);

@@ -12,11 +12,10 @@
 #ifndef SST_CORE_PARAM_H
 #define SST_CORE_PARAM_H
 
-#include <sst/core/serialization.h>
-
 #include <sst/core/output.h>
 #include <sst/core/from_string.h>
 
+#include <cassert>
 #include <inttypes.h>
 #include <iostream>
 #include <sstream>
@@ -481,13 +480,6 @@ private:
             return id;
         }
         return i->second;
-    }
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive& ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_NVP(data);
     }
 
     /* Friend main() because it broadcasts the maps */
