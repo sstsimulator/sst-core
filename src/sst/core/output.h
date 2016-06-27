@@ -29,6 +29,8 @@
 #include <thread>
 #include <unordered_map>
 
+#include <stdarg.h>
+
 #include <sst/core/rankInfo.h>
 
 extern int main(int argc, char **argv);
