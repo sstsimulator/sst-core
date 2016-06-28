@@ -10,7 +10,6 @@
 // distribution.
 
 #include <sst_config.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/simulation.h>
 #include <sst/core/statapi/statoutputcsv.h>
@@ -275,6 +274,3 @@ void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, double data)
 
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticOutputCSV)
-

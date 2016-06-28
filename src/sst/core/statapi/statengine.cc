@@ -10,7 +10,6 @@
 // distribution.
 
 #include <sst_config.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/timeLord.h>
 #include <sst/core/timeConverter.h>
@@ -413,7 +412,4 @@ void StatisticProcessingEngine::addStatisticToCompStatMap(const ComponentId_t& c
 
 } //namespace Statistics
 } //namespace SST
-
-//BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticProcessingEngine);
-
 

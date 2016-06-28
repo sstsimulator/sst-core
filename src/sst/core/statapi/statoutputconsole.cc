@@ -10,7 +10,6 @@
 // distribution.
 
 #include <sst_config.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/simulation.h>
 #include <sst/core/statapi/statoutputconsole.h>
@@ -150,6 +149,3 @@ void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, double d
 
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticOutputConsole)
-

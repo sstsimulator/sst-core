@@ -13,7 +13,6 @@
 #define _H_SST_CORE_STATISTICS_BASE
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 #include <sst/core/params.h>
 #include <sst/core/oneshot.h>
 #include <sst/core/statapi/statfieldinfo.h>
@@ -248,31 +247,6 @@ private:
     OneShot::HandlerBase* m_outputDelayedHandler;
     OneShot::HandlerBase* m_collectionDelayedHandler;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_NVP(m_component);
-        ar & BOOST_SERIALIZATION_NVP(m_statName);
-        ar & BOOST_SERIALIZATION_NVP(m_statSubId);
-        ar & BOOST_SERIALIZATION_NVP(m_statFullName);
-        ar & BOOST_SERIALIZATION_NVP(m_statTypeName);
-        ar & BOOST_SERIALIZATION_NVP(m_registeredCollectionMode);
-        ar & BOOST_SERIALIZATION_NVP(m_currentCollectionCount);
-        ar & BOOST_SERIALIZATION_NVP(m_collectionCountLimit);
-        ar & BOOST_SERIALIZATION_NVP(m_statDataType);
-        ar & BOOST_SERIALIZATION_NVP(m_statEnabled);
-        ar & BOOST_SERIALIZATION_NVP(m_outputEnabled);
-        ar & BOOST_SERIALIZATION_NVP(m_resetCountOnOutput);
-        ar & BOOST_SERIALIZATION_NVP(m_clearDataOnOutput);
-        ar & BOOST_SERIALIZATION_NVP(m_outputAtEndOfSim);
-        ar & BOOST_SERIALIZATION_NVP(m_outputDelayed);
-        ar & BOOST_SERIALIZATION_NVP(m_collectionDelayed);
-        ar & BOOST_SERIALIZATION_NVP(m_savedStatEnabled);
-        ar & BOOST_SERIALIZATION_NVP(m_savedOutputEnabled);
-        ar & BOOST_SERIALIZATION_NVP(m_outputDelayedHandler);
-        ar & BOOST_SERIALIZATION_NVP(m_collectionDelayedHandler);
-    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -327,18 +301,9 @@ private:
     virtual void addData_impl(T data) = 0;
 
 private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(StatisticBase);
-    }
 };
 
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::StatisticBase)
-//BOOST_CLASS_EXPORT_KEY(SST::Statistics::Statistic<uint32_t>)
 
 #endif

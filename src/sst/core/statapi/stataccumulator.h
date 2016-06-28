@@ -14,7 +14,6 @@
 #define _H_SST_CORE_ACCUMULATOR_STATISTIC_
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/statapi/statbase.h>
 
@@ -162,19 +161,9 @@ private:
     NumberBase m_sum_sq;
 
     StatisticOutput::fieldHandle_t Field1, Field2, Field3;
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Statistic<NumberBase>);
-        ar & BOOST_SERIALIZATION_NVP(m_sum);
-        ar & BOOST_SERIALIZATION_NVP(m_sum_sq); 
-    }
 };
 
 } //namespace Statistics
 } //namespace SST
-
-//BOOST_CLASS_EXPORT_KEY(SST::Statistics::AccumulatorStatistic<uint32_t>)
 
 #endif

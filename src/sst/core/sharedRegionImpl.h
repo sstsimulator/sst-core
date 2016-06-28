@@ -29,11 +29,6 @@ namespace SST {
 class SharedRegionImpl;
 
 class ChangeSet : public SST::Core::Serialization::serializable {
-private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version );
-    
 public:
     ChangeSet() { }
     size_t offset;
@@ -66,10 +61,6 @@ public:
     class RegionMergeInfo : public SST::Core::Serialization::serializable {
 
     protected:
-        friend class boost::serialization::access;
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version );
-
         int rank;
         std::string key;
 
@@ -92,10 +83,6 @@ public:
 
     class BulkMergeInfo : public RegionMergeInfo {
     protected:
-        friend class boost::serialization::access;
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version );
-
         size_t length;
         void *data;
 
@@ -130,11 +117,6 @@ public:
 
     class ChangeSetMergeInfo : public RegionMergeInfo {
     protected:
-        friend class boost::serialization::access;
-        template<class Archive>
-        void serialize(Archive & ar, const unsigned int version );
-
-
         // std::vector<SharedRegionMerger::ChangeSet> changeSets;
         std::vector<ChangeSet> changeSets;
     public:

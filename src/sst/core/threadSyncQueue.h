@@ -13,8 +13,6 @@
 #ifndef SST_CORE_THREADSYNCQUEUE_H
 #define SST_CORE_THREADSYNCQUEUE_H
 
-#include <sst/core/serialization.h>
-
 #include <sst/core/activityQueue.h>
 
 namespace SST {

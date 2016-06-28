@@ -13,8 +13,6 @@
 #ifndef SST_CORE_ACTIVITYQUEUE_H
 #define SST_CORE_ACTIVITYQUEUE_H
 
-#include <sst/core/serialization.h>
-
 #include <sst/core/activity.h>
 
 namespace SST {
@@ -39,16 +37,8 @@ public:
 
 private:
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-    }
 };
  
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::ActivityQueue)
 
 #endif // SST_CORE_ACTIVITYQUEUE_H
