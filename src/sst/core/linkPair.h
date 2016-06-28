@@ -13,7 +13,6 @@
 #define SST_CORE_LINKPAIR_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/link.h>
 
@@ -54,16 +53,8 @@ private:
 
     LinkId_t my_id;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-    }
 };
 
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::LinkPair)
 
 #endif // SST_CORE_LINKPAIR_H

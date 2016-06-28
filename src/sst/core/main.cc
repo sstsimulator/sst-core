@@ -15,9 +15,6 @@
 #include <Python.h>
 #endif
 
-#include "sst/core/serialization.h"
-
-
 #ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif
@@ -29,7 +26,6 @@
 #include <signal.h>
 
 #include <sst/core/activity.h>
-#include <sst/core/archive.h>
 #include <sst/core/config.h>
 #include <sst/core/configGraph.h>
 #include <sst/core/factory.h>
@@ -58,6 +54,8 @@
 #include <sst/core/cfgoutput/dotConfigOutput.h>
 #include <sst/core/cfgoutput/xmlConfigOutput.h>
 #include <sst/core/cfgoutput/jsonConfigOutput.h>
+
+#include <mpi.h>
 
 using namespace SST::Core;
 using namespace SST::Partition;
@@ -345,8 +343,6 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
 int
 main(int argc, char *argv[])
 {
-
-    
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Init(&argc, &argv);
 
@@ -625,6 +621,19 @@ main(int argc, char *argv[])
 #endif
     ////// End Broadcast Graph //////
 
+    // // Print the graph
+    // if ( myRank.rank == 0 ) {
+    //     std::cout << "Rank 0 graph:" << std::endl;
+    //     graph->print(std::cout);
+    // }
+    // Simulation::barrier.wait();
+    // if ( myRank.rank == 1 ) {
+    //     std::cout << "Rank 1 graph:" << std::endl;
+    //     graph->print(std::cout);
+    // }
+    // Simulation::barrier.wait();
+    
+    
 
     ///// Set up StatisticOutput /////
 

@@ -15,11 +15,11 @@
 #define SST_CORE_CONFIGGRAPH_H
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization.h>
 
 #include <vector>
 #include <map>
 #include <set>
+#include <climits>
 
 #include "sst/core/sparseVectorMap.h"
 #include "sst/core/params.h"
@@ -122,20 +122,6 @@ private:
     void updateLatencies(TimeLord*);
 
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(id);
-        ar & BOOST_SERIALIZATION_NVP(name);
-        ar & BOOST_SERIALIZATION_NVP(component);
-        ar & BOOST_SERIALIZATION_NVP(port);
-        ar & BOOST_SERIALIZATION_NVP(latency);
-        ar & BOOST_SERIALIZATION_NVP(current_ref);
-    }
-
-
 };
 
 typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
@@ -194,23 +180,6 @@ private:
         isIntrospector(isIntrospector)
     { }
 
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(id);
-        ar & BOOST_SERIALIZATION_NVP(name);
-        ar & BOOST_SERIALIZATION_NVP(type);
-        ar & BOOST_SERIALIZATION_NVP(weight);
-        ar & BOOST_SERIALIZATION_NVP(rank);
-        ar & BOOST_SERIALIZATION_NVP(links);
-        ar & BOOST_SERIALIZATION_NVP(params);
-        ar & BOOST_SERIALIZATION_NVP(isIntrospector);
-        ar & BOOST_SERIALIZATION_NVP(enabledStatistics);
-        ar & BOOST_SERIALIZATION_NVP(enabledStatParams);
-    }
 
 };
 
@@ -355,21 +324,6 @@ private:
     std::string statOutputName;
     Params      statOutputParams;
     uint8_t     statLoadLevel;
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-	{
-        // std::cout <<Simulation::getSimulation()->getRank() << ": serializing links" << std::endl;
-		ar & BOOST_SERIALIZATION_NVP(links);
-        // std::cout << "serializing comps" << std::endl;
-		ar & BOOST_SERIALIZATION_NVP(comps);
-        // std::cout << "done serializing" << std::endl;
-		ar & BOOST_SERIALIZATION_NVP(statOutputName);
-		ar & BOOST_SERIALIZATION_NVP(statOutputParams);
-		ar & BOOST_SERIALIZATION_NVP(statLoadLevel);
-	}
 
     ImplementSerializable(SST::ConfigGraph)
 

@@ -13,7 +13,6 @@
 #define _H_SST_CORE_STATISTICS_ENGINE
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 #include <sst/core/statapi/statfieldinfo.h>
 #include <sst/core/unitAlgebra.h>
 
@@ -118,26 +117,9 @@ private:
     CompStatMap_t                             m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */  
     bool                                      m_SimulationStarted;    /*!< Flag showing if Simulation has started */
     
-    // Serialization
-    friend class boost::serialization::access;
-    template<class Archive> 
-    void serialize(Archive& ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_NVP(m_EventStatisticArray);
-        ar & BOOST_SERIALIZATION_NVP(m_PeriodicStatisticMap);
-        ar & BOOST_SERIALIZATION_NVP(m_StartTimeMap);
-        ar & BOOST_SERIALIZATION_NVP(m_StopTimeMap);
-        ar & BOOST_SERIALIZATION_NVP(m_ClockMap);
-        ar & BOOST_SERIALIZATION_NVP(m_StartTimeOneShotMap);
-        ar & BOOST_SERIALIZATION_NVP(m_StopTimeOneShotMap);
-        ar & BOOST_SERIALIZATION_NVP(m_CompStatMap);
-        ar & BOOST_SERIALIZATION_NVP(m_SimulationStarted);
-    }
 };
 
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::StatisticProcessingEngine)
 
 #endif

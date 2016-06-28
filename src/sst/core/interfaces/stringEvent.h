@@ -13,7 +13,6 @@
 #define INTERFACES_STRINGEVENT_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/event.h>
 

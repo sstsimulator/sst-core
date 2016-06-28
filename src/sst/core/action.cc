@@ -10,7 +10,6 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 #include "sst/core/action.h"
 
 #include "sst/core/simulation.h"
@@ -26,5 +25,3 @@ void Action::endSimulation(SimTime_t end) {
 }
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Action);

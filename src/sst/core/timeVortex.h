@@ -12,9 +12,6 @@
 #ifndef SST_CORE_TIMEVORTEX_H
 #define SST_CORE_TIMEVORTEX_H
 
-#include <sst/core/serialization.h>
-
-#include <cstdio> // For printf
 #include <functional>
 #include <queue>
 #include <vector>
@@ -57,21 +54,8 @@ private:
     uint64_t current_depth;
     uint64_t max_depth;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        printf("begin TimeVortex::serialize\n");
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
-        printf("  - TimeVortex::data\n");
-//        ar & BOOST_SERIALIZATION_NVP(data);
-        printf("end TimeVortex::serialize\n");
-    }
 };
 
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::TimeVortex)
 
 #endif // SST_CORE_TIMEVORTEX_H

@@ -12,8 +12,6 @@
 #ifndef SST_CORE_INTROSPECTACTION_H
 #define SST_CORE_INTROSPECTACTION_H
 
-#include <sst/core/serialization.h>
-
 #include <cinttypes>
 
 #include <sst/core/action.h>
@@ -37,15 +35,8 @@ private:
     IntrospectAction() { } // for serialization only
     Event::HandlerBase* m_handler;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version );
-    
 };
 
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::IntrospectAction)
 
 #endif // SST_CORE_INTROSPECTACTION_H

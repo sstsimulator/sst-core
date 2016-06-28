@@ -14,7 +14,6 @@
 #define _H_SST_CORE_NULL_STATISTIC_
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/component.h>
 #include <sst/core/statapi/statbase.h>
@@ -87,17 +86,9 @@ private:
     }
 
 private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Statistic<T>);
-    }
 };
 
 } //namespace Statistics
 } //namespace SST
-
-//BOOST_CLASS_EXPORT_KEY(SST::Statistics::NullStatistic<uint32_t>)
 
 #endif

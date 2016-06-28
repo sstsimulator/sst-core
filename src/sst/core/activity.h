@@ -14,7 +14,6 @@
 #define SST_CORE_ACTIVITY_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/serialization/serializable.h>
 
@@ -375,21 +374,10 @@ private:
     static std::mutex poolMutex;
 	static std::vector<PoolInfo_t> memPools;
 #endif
-
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(delivery_time);
-        ar & BOOST_SERIALIZATION_NVP(priority);
-    }
 };
 
 
 } //namespace SST
 
-
-BOOST_CLASS_EXPORT_KEY(SST::Activity)
 
 #endif // SST_CORE_ACTIVITY_H

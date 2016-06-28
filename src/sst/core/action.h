@@ -13,7 +13,6 @@
 #ifndef SST_CORE_ACTION_H
 #define SST_CORE_ACTION_H
 
-#include <sst/core/serialization.h>
 #include <sst/core/serialization/serializer.h>
 
 #include <cinttypes>
@@ -49,19 +48,9 @@ protected:
     void endSimulation(SimTime_t end);
 
 private:
-     friend class boost::serialization::access;
-     template<class Archive>
-     void
-     serialize(Archive & ar, const unsigned int version )
-     {
-         ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Activity);
-     }
-
     NotSerializable(Action)
 };
 
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Action)
 
 #endif // SST_CORE_ACTION_H

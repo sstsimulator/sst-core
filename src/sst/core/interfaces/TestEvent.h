@@ -13,8 +13,6 @@
 #ifndef INTERFACES_TEST_EVENT_H
 #define INTERFACES_TEST_EVENT_H
 
-#include <sst/core/serialization.h>
-
 #include <sst/core/event.h>
 
 namespace SST{

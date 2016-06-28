@@ -10,7 +10,6 @@
 // distribution.
 
 #include <sst_config.h>
-#include "sst/core/serialization.h"
 #include "sst/core/component.h"
 #include "sst/core/unitAlgebra.h"
 
@@ -415,20 +414,7 @@ SharedRegion* Component::getGlobalSharedRegion(const std::string &key, size_t si
     return mgr->getGlobalSharedRegion(key, size, merger);
 }
 
-
-
-template<class Archive>
-void
-Component::serialize(Archive& ar, const unsigned int version) {
-    // ar & BOOST_SERIALIZATION_NVP(type);
-    // ar & BOOST_SERIALIZATION_NVP(id);
-    // ar & BOOST_SERIALIZATION_NVP(name);
-    ar & BOOST_SERIALIZATION_NVP(defaultTimeBase);
-    // ar & BOOST_SERIALIZATION_NVP(myLinks);
-}
     
 } // namespace SST
 
 
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Component::serialize)
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Component)

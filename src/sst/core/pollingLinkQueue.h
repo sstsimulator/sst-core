@@ -12,9 +12,6 @@
 #ifndef SST_CORE_POLLINGLINKQUEUE_H
 #define SST_CORE_POLLINGLINKQUEUE_H
 
-#include <sst/core/serialization.h>
-
-#include <cstdio> // For printf
 #include <set>
 
 #include <sst/core/activityQueue.h>
@@ -39,21 +36,8 @@ public:
 private:
     std::multiset<Activity*,Activity::less_time> data;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        printf("begin PollingLinkQueue::serialize\n");
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
-        printf("  - PollingLinkQueue::data\n");
-        ar & BOOST_SERIALIZATION_NVP(data);
-        printf("end PollingLinkQueue::serialize\n");
-    }
 };
 
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::PollingLinkQueue)
 
 #endif // SST_CORE_POLLINGLINKQUEUE_H
