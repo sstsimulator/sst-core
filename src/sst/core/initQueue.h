@@ -12,9 +12,6 @@
 #ifndef SST_CORE_INITQUEUE_H
 #define SST_CORE_INITQUEUE_H
 
-#include <sst/core/serialization.h>
-
-#include <cstdio> // For printf
 #include <deque>
 
 #include <sst/core/activityQueue.h>
@@ -38,18 +35,8 @@ public:
 private:
     std::deque<Activity*> data;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(ActivityQueue);
-        ar & BOOST_SERIALIZATION_NVP(data);
-    }
 };
 
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::InitQueue)
 
 #endif // SST_CORE_INITQUEUE_H

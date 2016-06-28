@@ -11,8 +11,6 @@
 
 #include <sst_config.h>
 
-#include "sst/core/serialization.h"
-
 #include <boost/program_options.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/foreach.hpp>

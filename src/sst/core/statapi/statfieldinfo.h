@@ -13,7 +13,6 @@
 #define _H_SST_CORE_STATISTICS_FIELDINFO
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization.h>
 
 namespace SST {
 namespace Statistics {
@@ -97,20 +96,9 @@ private:
     fieldType_t   m_fieldType;
     fieldHandle_t m_fieldHandle;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version)
-    {
-        ar & BOOST_SERIALIZATION_NVP(m_statName); 
-        ar & BOOST_SERIALIZATION_NVP(m_fieldName); 
-        ar & BOOST_SERIALIZATION_NVP(m_fieldType);
-        ar & BOOST_SERIALIZATION_NVP(m_fieldHandle);
-    }
 };
     
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Statistics::StatisticFieldInfo)
 
 #endif

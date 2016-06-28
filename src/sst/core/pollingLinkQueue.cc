@@ -11,7 +11,6 @@
 
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 
 #include <sst/core/pollingLinkQueue.h>
 
@@ -59,5 +58,3 @@ namespace SST {
 
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::PollingLinkQueue)

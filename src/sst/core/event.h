@@ -13,7 +13,6 @@
 #define SST_CORE_CORE_EVENT_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <atomic>
 #include <string>
@@ -224,10 +223,6 @@ private:
     std::string last_port;
 #endif
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version );
 };
 
 
@@ -249,17 +244,9 @@ public:
     
 
 private:
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version );
-
     ImplementSerializable(SST::NullEvent)
 
 };
 } //namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Event)
-BOOST_CLASS_EXPORT_KEY(SST::NullEvent)
 
 #endif // SST_CORE_EVENT_H

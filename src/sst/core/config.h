@@ -13,7 +13,6 @@
 #define SST_CORE_CONFIG_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 #include <sst/core/simulation.h>
 #include <sst/core/rankInfo.h>
 #include <sst/core/env/envquery.h>
@@ -224,34 +223,6 @@ private:
     std::string libpath;
     std::string addlLibPath;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void
-    serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_NVP(debugFile);
-        ar & BOOST_SERIALIZATION_NVP(runMode);
-        ar & BOOST_SERIALIZATION_NVP(libpath);
-        ar & BOOST_SERIALIZATION_NVP(addlLibPath);
-        ar & BOOST_SERIALIZATION_NVP(sdlfile);
-        ar & BOOST_SERIALIZATION_NVP(stopAtCycle);
-        ar & BOOST_SERIALIZATION_NVP(timeBase);
-        ar & BOOST_SERIALIZATION_NVP(partitioner);
-        ar & BOOST_SERIALIZATION_NVP(generator);
-        ar & BOOST_SERIALIZATION_NVP(generator_options);
-        ar & BOOST_SERIALIZATION_NVP(dump_component_graph_file);
-        ar & BOOST_SERIALIZATION_NVP(output_config_graph);
-        ar & BOOST_SERIALIZATION_NVP(output_xml);
-        ar & BOOST_SERIALIZATION_NVP(output_json);
-        ar & BOOST_SERIALIZATION_NVP(no_env_config);
-        ar & BOOST_SERIALIZATION_NVP(model_options);
-        ar & BOOST_SERIALIZATION_NVP(world_size);
-        ar & BOOST_SERIALIZATION_NVP(enable_sig_handling);
-        ar & BOOST_SERIALIZATION_NVP(output_core_prefix);
-        ar & BOOST_SERIALIZATION_NVP(print_timing);
-    }
-
-    
     int rank;
 	int numRanks;
 

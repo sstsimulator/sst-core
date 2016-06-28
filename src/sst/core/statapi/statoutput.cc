@@ -10,7 +10,6 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 
 #include "sst/core/output.h"
 #include <sst/core/statapi/statoutput.h>
@@ -158,7 +157,3 @@ const char* StatisticOutput::getFieldTypeShortName(fieldType_t type)
 
 } //namespace Statistics
 } //namespace SST
-
-//BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticOutput);
-
-

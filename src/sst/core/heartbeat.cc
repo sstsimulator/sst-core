@@ -11,7 +11,6 @@
 
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 #include "sst/core/heartbeat.h"
 
 #include "sst/core/component.h"
@@ -122,16 +121,5 @@ void SimulatorHeartbeat::execute( void )
 
 }
 
-
-// template<class Archive>
-// void
-// SimulatorHeartbeat::serialize(Archive & ar, const unsigned int version)
-// {
-//     ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
-//     ar & BOOST_SERIALIZATION_NVP(m_period);
-// }
-
 } // namespace SST
 
-// SST_BOOST_SERIALIZATION_INSTANTIATE(SST::SimulatorHeartbeat::serialize)
-// BOOST_CLASS_EXPORT_IMPLEMENT(SST::SimulatorHeartbeat);

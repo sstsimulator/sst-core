@@ -12,9 +12,7 @@
 #include "sst_config.h"
 #include "sst/core/rankSyncSerialSkip.h"
 
-#include "sst/core/serialization.h"
 #include "sst/core/serialization/serializer.h"
-#include "sst/core/sync.h"
 
 #include "sst/core/event.h"
 #include "sst/core/exit.h"
@@ -249,7 +247,6 @@ RankSyncSerialSkip::exchange(void)
     // Simulation::getSimulation()->getSimulationOutput().output("Entering RankSyncSerialSkip::execute()\n");
     // static Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
 #ifdef SST_CONFIG_HAVE_MPI
-    // std::vector<boost::mpi::request> pending_requests;
     
     //Maximum number of outstanding requests is 3 times the number
     // of ranks I communicate with (1 recv, 2 sends per rank)
@@ -505,11 +502,6 @@ RankSyncSerialSkip::exchangeLinkInitData(int thread, std::atomic<int>& msg_count
     }
     
     // Do an allreduce to see if there were any messages sent
-    // boost::mpi::communicator world;
-    // int input = msg_count;
-    // int count;
-    // all_reduce( world, &input, 1, &count, std::plus<int>() );
-    // return count;
     int input = msg_count;
 
     int count;
@@ -517,23 +509,6 @@ RankSyncSerialSkip::exchangeLinkInitData(int thread, std::atomic<int>& msg_count
     msg_count = count;
 #endif
 }
-
-template<class Archive>
-void
-RankSyncSerialSkip::serialize(Archive & ar, const unsigned int version)
-{
-    // printf("begin Sync::serialize\n");
-    // ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(SyncBase);
-    // printf("  - Sync::period\n");
-    // // ar & BOOST_SERIALIZATION_NVP(period);
-    // printf("  - Sync::comm_map (%d)\n", (int) comm_map.size());
-    // ar & BOOST_SERIALIZATION_NVP(comm_map);
-    // printf("  - Sync::link_map (%d)\n", (int) link_map.size());
-    // ar & BOOST_SERIALIZATION_NVP(link_map);
-    // // don't serialize comm - let it be silently rebuilt at restart
-    // printf("end Sync::serialize\n");
-}
-
 
 } // namespace SST
 

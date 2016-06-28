@@ -14,7 +14,6 @@
 #define SST_CORE_ONESHOT_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 #include <cinttypes>
 
@@ -146,19 +145,9 @@ private:
     HandlerVectorMap_t  m_HandlerVectorMap;
     bool                m_scheduled;
     
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version )
-    {
-        ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
-        ar & BOOST_SERIALIZATION_NVP(m_timeDelay);
-        ar & BOOST_SERIALIZATION_NVP(m_HandlerVectorMap);
-        ar & BOOST_SERIALIZATION_NVP(m_scheduled);
-    }
 };
 
 } // namespace SST
 
-BOOST_CLASS_EXPORT_KEY(SST::OneShot)
 
 #endif // SST_CORE_ONESHOT_H

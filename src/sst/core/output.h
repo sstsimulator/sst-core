@@ -29,7 +29,7 @@
 #include <thread>
 #include <unordered_map>
 
-#include <sst/core/serialization.h>
+#include <stdarg.h>
 
 #include <sst/core/rankInfo.h>
 
@@ -510,9 +510,6 @@ private:
     static RankInfo m_worldSize;
     static int m_mpiRank;
     
-    // Serialization Methods
-    friend class boost::serialization::access;
-    template<class Archive> void serialize(Archive & ar, const unsigned int version);
 };
 
 // Class to easily trace function enter and exit
@@ -534,7 +531,5 @@ private:
 
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Output)
 
 #endif // SST_CORE_OUTPUT_H

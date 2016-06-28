@@ -10,8 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
-#include "sst/core/sync.h"
+#include "sst/core/syncBase.h"
 
 #include "sst/core/event.h"
 #include "sst/core/exit.h"
@@ -33,15 +32,6 @@ SyncBase::setMaxPeriod(TimeConverter* period)
     // sim->insertActivity( next, this );        
 }
     
-template<class Archive>
-void
-SyncBase::serialize(Archive & ar, const unsigned int version)
-{
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
-    ar & BOOST_SERIALIZATION_NVP(max_period);
-    ar & BOOST_SERIALIZATION_NVP(exit);
-}
-
 void
 SyncBase::sendInitData_sync(Link* link, Event* init_data)
 {

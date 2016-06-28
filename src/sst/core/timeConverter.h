@@ -13,7 +13,6 @@
 #define SST_CORE_TIMECONVERTER_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 
 namespace SST {
 
@@ -66,18 +65,10 @@ class TimeConverter {
     }
     
 
-    // Boost serialization from here down
     TimeConverter() {}   // Only needed to simplify serialization
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version ) {
-	ar & BOOST_SERIALIZATION_NVP(factor);
-    }
 };    
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::TimeConverter)
 
 #endif //SST_CORE_TIMECONVERTER_H

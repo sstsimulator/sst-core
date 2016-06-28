@@ -15,7 +15,6 @@
 #define SST_CORE_UNITALGEBRA_H
 
 #include <sst/core/sst_types.h>
-#include <sst/core/serialization.h>
 #include <sst/core/serialization/serializable.h>
 #include <sst/core/serialization/serializer.h>
 
@@ -71,15 +70,6 @@ private:
     // Used in constructor to incrementally build up unit from string
     void addUnit(std::string, sst_dec_float& multiplier, bool invert);
 
-	friend class boost::serialization::access;
-	template<class Archive>
-	void
-	serialize(Archive & ar, const unsigned int version )
-	{
-		ar & BOOST_SERIALIZATION_NVP(numerator);
-		ar & BOOST_SERIALIZATION_NVP(denominator);
-	}
-
 public:
     // Static data members and functions
     /** Create a new Base Unit type */
@@ -128,36 +118,6 @@ private:
     static std::string trim(std::string str);
     void init(std::string val);
 
-	friend class boost::serialization::access;
-#if BOOST_VERSION < 105500
-    /* cpp_dec_float in Boost 1.54 and earlier doesn't serialize automatically */
-    template<class Archive>
-    void save(Archive &ar, const unsigned int version ) const
-    {
-		ar & BOOST_SERIALIZATION_NVP(unit);
-        std::string s = value.str(40, std::ios_base::fixed);
-		ar & BOOST_SERIALIZATION_NVP(s);
-    }
-
-    template<class Archive>
-    void load(Archive &ar, const unsigned int version )
-    {
-		ar & BOOST_SERIALIZATION_NVP(unit);
-        std::string s;
-		ar & BOOST_SERIALIZATION_NVP(s);
-        value = sst_dec_float(s);
-    }
-
-    BOOST_SERIALIZATION_SPLIT_MEMBER()
-#else
-	template<class Archive>
-	void
-	serialize(Archive & ar, const unsigned int version )
-	{
-		ar & BOOST_SERIALIZATION_NVP(unit);
-		ar & BOOST_SERIALIZATION_NVP(value);
-	}
-#endif
 public:
     UnitAlgebra() {}
     /**
@@ -313,23 +273,5 @@ inline std::ostream& operator<< (std::ostream& os, const Units& r)
 
 } // namespace SST
 
-namespace SST {
-namespace Core {
-namespace Serialization {
-
-// template <>
-// class serialize <SST::UnitAlgebra> {
-// public:
-//     void
-//     operator()(UnitAlgebra& v, SST::Core::Serialization::serializer& ser) {
-//         v.serialize_order(ser);
-//     }
-// };
-}
-}
-}
-
-BOOST_CLASS_EXPORT_KEY(SST::Units)
-BOOST_CLASS_EXPORT_KEY(SST::UnitAlgebra)
 
 #endif //SST_CORE_UNITALGEBRA_H

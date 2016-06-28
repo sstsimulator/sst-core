@@ -15,7 +15,6 @@
 #define SST_CORE_SIMULATION_H
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization.h>
 
 #include <signal.h>
 #include <atomic>
@@ -441,26 +440,6 @@ private:
     static std::unordered_map<std::thread::id, Simulation*> instanceMap;
     static std::vector<Simulation*> instanceVec;
 
-    friend class boost::serialization::access;
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version);
-
-    template<class Archive>
-    friend void save_construct_data(Archive & ar, 
-                                    const Simulation * t, 
-                                    const unsigned int file_version)
-    {
-    }
-
-    template<class Archive>
-    friend void load_construct_data(Archive & ar, 
-                                    Simulation * t,
-                                    const unsigned int file_version)
-    {
-        ::new(t)Simulation();
-        Simulation::instanceMap[std::this_thread::get_id()] = t;
-    }
-
     friend void wait_my_turn_start();
     friend void wait_my_turn_end();
 
@@ -483,7 +462,5 @@ void wait_my_turn_end();
 
 
 } // namespace SST
-
-BOOST_CLASS_EXPORT_KEY(SST::Simulation)
 
 #endif //SST_CORE_SIMULATION_H

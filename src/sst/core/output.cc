@@ -13,7 +13,6 @@
 // Include Files per Coding Standards
 ///////////////////////////////////////
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 
 #include "sst/core/output.h"
 
@@ -205,7 +204,6 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
 #ifdef SST_CONFIG_HAVE_MPI
     // If MPI exists, abort
-    // boost::mpi::environment::abort(exit_code);      
     MPI_Abort(MPI_COMM_WORLD, exit_code);
 #else
     exit(1);
@@ -479,21 +477,6 @@ uint32_t Output::getThreadRank() const {
 }
 
 
-// std::string Output::getMPIProcName() const {
-// #ifdef SST_CONFIG_HAVE_MPI
-//     return boost::mpi::environment::processor_name();
-// #endif
-//     return "";
-// }
-
-
-template<class Archive> void Output::serialize(Archive& ar, const unsigned int version) {
-    ar & BOOST_SERIALIZATION_NVP(m_objInitialized);
-    ar & BOOST_SERIALIZATION_NVP(m_outputPrefix);
-    ar & BOOST_SERIALIZATION_NVP(m_verboseLevel);
-    ar & BOOST_SERIALIZATION_NVP(m_verboseMask);
-    ar & BOOST_SERIALIZATION_NVP(m_targetLoc);
-}
 
 TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func) {
     output.init("@R, @I (@t): " /*prefix*/, 0, 0, Output::STDOUT);               
@@ -512,7 +495,3 @@ TraceFunction::~TraceFunction() {
 
 
 } // namespace SST
-
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::Output::serialize)
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Output);
-

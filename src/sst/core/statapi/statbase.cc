@@ -10,7 +10,6 @@
 // distribution.
 
 #include <sst_config.h>
-#include <sst/core/serialization.h>
 
 #include <sst/core/component.h>
 #include <sst/core/statapi/statbase.h>
@@ -152,8 +151,3 @@ void StatisticBase::delayCollectionExpiredHandler()
 
 } //namespace Statistics
 } //namespace SST
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::StatisticBase);
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::Statistics::Statistic<uint32_t>);
-
-

@@ -11,7 +11,6 @@
 
 
 #include "sst_config.h"
-#include "sst/core/serialization.h"
 
 #include "sst/core/introspectAction.h"
 //#include "sst/core/event.h"
@@ -27,17 +26,4 @@ IntrospectAction::execute(void)
     ( *m_handler )( event );
 }
 
-    
-template<class Archive>
-void
-IntrospectAction::serialize(Archive & ar, const unsigned int version)
-{
-    ar & BOOST_SERIALIZATION_BASE_OBJECT_NVP(Action);
-}
-
 } // namespace SST
-
-
-SST_BOOST_SERIALIZATION_INSTANTIATE(SST::IntrospectAction::serialize)
-
-BOOST_CLASS_EXPORT_IMPLEMENT(SST::IntrospectAction)
