@@ -59,10 +59,10 @@ array(TPtr*& buf, IntType& size)
 }
 
 template <class IntType>
-inline pvt::ser_array_wrapper<void*,IntType>
+inline pvt::ser_array_wrapper<void,IntType>
 buffer(void*& buf, IntType& size)
 {
-    return pvt::ser_array_wrapper<void*,IntType>(buf, size);
+    return pvt::ser_array_wrapper<void,IntType>(buf, size);
 }
 
 template <class TPtr>
