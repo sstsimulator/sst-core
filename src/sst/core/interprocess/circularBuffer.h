@@ -13,12 +13,10 @@
 #define SST_CORE_INTERPROCESS_CIRCULARBUFFER_H 1
 
 #include <cstddef>
+#include <sst/core/output.h>
 
-#include <boost/interprocess/sync/interprocess_mutex.hpp>
-#include <boost/interprocess/sync/scoped_lock.hpp>
-#include <boost/interprocess/sync/interprocess_condition.hpp>
-#include <boost/interprocess/containers/vector.hpp>
-
+#include <mutex>
+#include <condition_variable>
 
 namespace SST {
 namespace Core {
@@ -30,16 +28,15 @@ namespace Interprocess {
  * @tparam T  Type of data item to store in the buffer
  * @tparam A  Memory Allocator type to use
  */
-template <typename T, typename A>
+template <typename T>
 class CircularBuffer {
-    typedef boost::interprocess::vector<T, A> RawBuffer_t;
 
-    boost::interprocess::interprocess_mutex mutex;
-    boost::interprocess::interprocess_condition cond_full, cond_empty;
+    std::mutex mtx;
+    std::condition_variable cond_full, cond_empty;
 
     size_t rPtr, wPtr;
-    RawBuffer_t buffer;
     size_t buffSize;
+    T buffer[0]; // Actual size: buffSize
 
 
 public:
@@ -48,10 +45,16 @@ public:
      * @param bufferSize Number of elements in the buffer
      * @param allocator Memory allocator to use for constructing the buffer
      */
-    CircularBuffer(size_t bufferSize, const A & allocator) :
-        rPtr(0), wPtr(0), buffer(allocator), buffSize(bufferSize)
+    CircularBuffer(size_t bufferSize = 0) :
+        rPtr(0), wPtr(0), buffSize(bufferSize)
     {
-        buffer.resize(buffSize);
+    }
+
+    void setBufferSize(size_t bufferSize)
+    {
+        if ( buffSize != 0 )
+            Output::getDefaultObject().fatal(CALL_INFO, -1, "Already specified size for buffer\n");
+        buffSize = bufferSize;
     }
 
     /**
@@ -60,7 +63,7 @@ public:
      */
     void write(const T &value)
     {
-		boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(mutex);
+        std::unique_lock<std::mutex> lock(mtx);
 		while ( (wPtr+1) % buffSize == rPtr ) cond_full.wait(lock);
 
         buffer[wPtr] = value;
@@ -75,7 +78,7 @@ public:
      */
     T read(void)
     {
-		boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(mutex);
+        std::unique_lock<std::mutex> lock(mtx);
 		while ( rPtr == wPtr ) cond_empty.wait(lock);
 
         T ans = buffer[rPtr];
@@ -93,7 +96,7 @@ public:
      */
     bool readNB(T *result)
     {
-		boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(mutex, boost::interprocess::try_to_lock);
+        std::unique_lock<std::mutex> lock(mtx);
         if ( !lock ) return false;
 		if ( rPtr == wPtr ) return false;
 
