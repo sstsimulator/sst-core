@@ -14,7 +14,6 @@
 #include <sst/core/configGraph.h>
 
 #include <fstream>
-#include <boost/format.hpp>
 
 #include <sst/core/component.h>
 #include <sst/core/config.h>

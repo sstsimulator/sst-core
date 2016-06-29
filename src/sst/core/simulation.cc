@@ -15,8 +15,6 @@
 
 #include <utility>
 
-#include <boost/foreach.hpp>
-
 //#include <sst/core/archive.h>
 #include <sst/core/clock.h>
 #include <sst/core/config.h>

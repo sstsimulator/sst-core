@@ -30,8 +30,6 @@ uint64_t SST::Core::maxLocalMemSize() {
     uint64_t local_max_rss = sim_ruse.ru_maxrss;
     uint64_t global_max_rss = local_max_rss;
 #ifdef SST_CONFIG_HAVE_MPI
-    // boost::mpi::communicator world;
-    // all_reduce(world, &local_max_rss, 1, &global_max_rss, boost::mpi::maximum<uint64_t>() );
     MPI_Allreduce(&local_max_rss, &global_max_rss, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
 #endif
 
@@ -50,8 +48,6 @@ uint64_t SST::Core::maxGlobalMemSize() {
     uint64_t local_max_rss = sim_ruse.ru_maxrss;
     uint64_t global_max_rss = local_max_rss;
 #ifdef SST_CONFIG_HAVE_MPI
-    // boost::mpi::communicator world;
-    // all_reduce(world, &local_max_rss, 1, &global_max_rss, std::plus<uint64_t>() );
     MPI_Allreduce(&local_max_rss, &global_max_rss, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
 #endif
 
@@ -70,8 +66,6 @@ uint64_t SST::Core::maxLocalPageFaults() {
     uint64_t local_pf = sim_ruse.ru_majflt;
     uint64_t global_max_pf = local_pf;
 #ifdef SST_CONFIG_HAVE_MPI
-	// boost::mpi::communicator world;
-    // all_reduce(world, &local_pf, 1, &global_max_pf, boost::mpi::maximum<uint64_t>() );
     MPI_Allreduce(&local_pf, &global_max_pf, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
 #endif
 	return global_max_pf;
@@ -84,8 +78,6 @@ uint64_t SST::Core::globalPageFaults() {
     uint64_t local_pf = sim_ruse.ru_majflt;
     uint64_t global_pf = local_pf;
 #ifdef SST_CONFIG_HAVE_MPI
-    // boost::mpi::communicator world;
-    // all_reduce(world, &local_pf, 1, &global_pf, std::plus<uint64_t>() );
     MPI_Allreduce(&local_pf, &global_pf, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
 #endif
 

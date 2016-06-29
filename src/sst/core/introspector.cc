@@ -12,7 +12,6 @@
 #include "sst_config.h"
 #include "sst/core/introspector.h"
 
-//#include <boost/foreach.hpp>
 #ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
 #endif

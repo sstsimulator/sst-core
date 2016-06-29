@@ -12,8 +12,6 @@
 #include "sst_config.h"
 #include "sst/core/clock.h"
 
-#include <boost/foreach.hpp>
-
 //#include "sst/core/event.h"
 #include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"

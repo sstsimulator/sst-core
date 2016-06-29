@@ -17,10 +17,6 @@
 #include <ltdl.h>
 #include <vector>
 
-#include <boost/tuple/tuple.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/foreach.hpp>
-
 #ifdef HAVE_DLFCN_H
 #include <dlfcn.h>
 #endif
@@ -120,6 +116,22 @@ ElemLoader::~ElemLoader()
 }
 
 
+static std::vector<std::string>&& splitPath(const std::string & searchPaths)
+{
+    std::vector<std::string> paths;
+    char * pathCopy = new char [searchPaths.length() + 1];
+    std::strcpy(pathCopy, searchPaths.c_str());
+    char *brkb = NULL;
+    char *p = NULL;
+    for ( p = strtok_r(pathCopy, ":", &brkb); p ; p = strtok_r(NULL, ":", &brkb) ) {
+        paths.push_back(p);
+    }
+
+    delete [] pathCopy;
+    return std::move( paths );
+}
+
+
 static ElementLibraryInfo* followError(std::string libname, std::string elemlib, ElementLibraryInfo* eli, std::string searchPaths)
 {
 
@@ -128,10 +140,9 @@ static ElementLibraryInfo* followError(std::string libname, std::string elemlib,
     std::string fullpath;
     void *handle;
 
-    std::vector<std::string> paths;
-    boost::split(paths, searchPaths, boost::is_any_of(":"));
-   
-    BOOST_FOREACH( std::string path, paths ) {
+    std::vector<std::string> paths = splitPath(searchPaths);
+
+    for ( std::string path : paths ) {
         struct stat sbuf;
         int ret;
 
