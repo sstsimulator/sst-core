@@ -185,17 +185,19 @@ ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
         } else {
 	    // fprintf(stderr, "Unable to open: \'%s\', not found in search paths: \'%s\'\n",
 		// elemlib.c_str(), searchPaths.c_str());
-	}
+		}
     } else {
         // look for an info block
         std::string infoname = elemlib + "_eli";
         eli = (ElementLibraryInfo*) lt_dlsym(lt_handle, infoname.c_str());
 
         if (NULL == eli) {
-            char *old_error = strdup(lt_dlerror());
-            fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
-                    infoname.c_str(), libname.c_str(), old_error);
-            free(old_error);
+            if (showErrors) {
+                char *old_error = strdup(lt_dlerror());
+                fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
+                        infoname.c_str(), libname.c_str(), old_error);
+                free(old_error);
+            }
         }
     }
     return eli;

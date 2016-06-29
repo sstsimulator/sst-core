@@ -207,13 +207,12 @@ void processSSTElementFiles(std::string searchPath)
                             // Lets strip off the lib and .so to get an Element Name
                             elementName = dirEntryName.substr(3, dirEntryName.length() - 6);
                             
-                            g_fileProcessedCount++;
-                            
                             // Now we process the file and populate our internal structures
     //                      fprintf(stderr, "**** DEBUG - PROCESSING DIR ENTRY NAME = %s; ELEM NAME = %s; TYPE = %d; DIR FLAG = %d\n", dirEntryName.c_str(), elementName.c_str(), pDirEntry->d_type, isDir);
-                            pELI = g_loader->loadLibrary(elementName, true);
+                            pELI = g_loader->loadLibrary(elementName, false);
                             if (pELI != NULL) {
                                 // Build
+                                g_fileProcessedCount++;
                                 pLibInfo = new SSTInfoElement_LibraryInfo(pELI); 
                                 g_libInfoArray.push_back(pLibInfo);
                                 EntryProcessedArray[x] = true;
