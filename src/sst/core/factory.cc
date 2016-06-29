@@ -13,10 +13,8 @@
 #include "sst_config.h"
 #include "sst/core/factory.h"
 
-#include <boost/algorithm/string.hpp>
-#include <boost/tuple/tuple.hpp>
-
 #include <set>
+#include <tuple>
 #include <stdio.h>
 
 #include "sst/core/simulation.h"
@@ -61,7 +59,7 @@ const std::vector<std::string>*
 Factory::GetComponentAllowedPorts(std::string type) {
     std::string elemlib, elem;
     
-    boost::tie(elemlib, elem) = parseLoadName(type);
+    std::tie(elemlib, elem) = parseLoadName(type);
 
     // ensure library is already loaded...
     if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
@@ -89,7 +87,7 @@ Factory::CreateComponent(ComponentId_t id,
 {
     std::string elemlib, elem;
     
-    boost::tie(elemlib, elem) = parseLoadName(type);
+    std::tie(elemlib, elem) = parseLoadName(type);
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -149,7 +147,7 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
     }
     
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -185,7 +183,7 @@ Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const s
     }
     
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -221,7 +219,7 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     }
     
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -257,7 +255,7 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
     }
     
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
     // ensure library is already loaded...
     if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
@@ -288,7 +286,7 @@ Factory::CreateIntrospector(std::string &type,
                             Params& params)
 {
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(type);
+    std::tie(elemlib, elem) = parseLoadName(type);
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -321,7 +319,7 @@ Factory::CreateModule(std::string type, Params& params)
     }
 
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(type);
+    std::tie(elemlib, elem) = parseLoadName(type);
 
     if("sst" == elemlib) {
         return CreateCoreModule(elem, params);
@@ -413,7 +411,7 @@ Module*
 Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& params)
 {
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(type);
+    std::tie(elemlib, elem) = parseLoadName(type);
 
     if("sst" == elemlib) {
         return CreateCoreModuleWithComponent(elem, comp, params);
@@ -447,7 +445,7 @@ SubComponent*
 Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
 {
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(type);
+    std::tie(elemlib, elem) = parseLoadName(type);
 
     // if("sst" == elemlib) {
     //     return CreateCoreModuleWithComponent(elem, comp, params);
@@ -480,7 +478,7 @@ void
 Factory::RequireEvent(std::string eventname)
 {
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(eventname);
+    std::tie(elemlib, elem) = parseLoadName(eventname);
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -499,7 +497,7 @@ partitionFunction
 Factory::GetPartitioner(std::string name)
 {
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(name);
+    std::tie(elemlib, elem) = parseLoadName(name);
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -521,7 +519,7 @@ generateFunction
 Factory::GetGenerator(std::string name)
 {
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(name);
+    std::tie(elemlib, elem) = parseLoadName(name);
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -545,7 +543,7 @@ genPythonModuleFunction
 Factory::getPythonModule(std::string name)
 {
     std::string elemlib, elem;
-    boost::tie(elemlib, elem) = parseLoadName(name);
+    std::tie(elemlib, elem) = parseLoadName(name);
 
     const ElementLibraryInfo *eli = findLibrary(elemlib, false);
     if ( eli )
