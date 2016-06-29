@@ -13,7 +13,7 @@
 #define SST_CORE_INTERPROCESS_CIRCULARBUFFER_H 1
 
 #include <cstddef>
-#include <sst/core/output.h>
+#include <pthread.h>
 
 #include <mutex>
 #include <condition_variable>
@@ -31,8 +31,10 @@ namespace Interprocess {
 template <typename T>
 class CircularBuffer {
 
-    std::mutex mtx;
-    std::condition_variable cond_full, cond_empty;
+    pthread_mutex_t mtx;
+    pthread_cond_t cond_full, cond_empty;
+    pthread_condattr_t attrcond;
+    pthread_mutexattr_t attrmutex;
 
     size_t rPtr, wPtr;
     size_t buffSize;
@@ -48,12 +50,31 @@ public:
     CircularBuffer(size_t bufferSize = 0) :
         rPtr(0), wPtr(0), buffSize(bufferSize)
     {
+        pthread_mutexattr_init(&attrmutex);
+        pthread_mutexattr_setpshared(&attrmutex, PTHREAD_PROCESS_SHARED);
+        pthread_mutex_init(&mtx, &attrmutex);
+
+        pthread_condattr_init(&attrcond);
+        pthread_condattr_setpshared(&attrcond, PTHREAD_PROCESS_SHARED);
+        pthread_cond_init(&cond_full, &attrcond);
+        pthread_cond_init(&cond_empty, &attrcond);
+    }
+
+    ~CircularBuffer() {
+        pthread_mutex_destroy(&mtx);
+        pthread_mutexattr_destroy(&attrmutex);
+
+        pthread_cond_destroy(&cond_full);
+        pthread_cond_destroy(&cond_empty);
+        pthread_condattr_destroy(&attrcond);
     }
 
     void setBufferSize(size_t bufferSize)
     {
-        if ( buffSize != 0 )
-            Output::getDefaultObject().fatal(CALL_INFO, -1, "Already specified size for buffer\n");
+        if ( buffSize != 0 ) {
+            fprintf(stderr, "Already specified size for buffer\n");
+            exit(1);
+        }
         buffSize = bufferSize;
     }
 
@@ -63,13 +84,14 @@ public:
      */
     void write(const T &value)
     {
-        std::unique_lock<std::mutex> lock(mtx);
-		while ( (wPtr+1) % buffSize == rPtr ) cond_full.wait(lock);
+        pthread_mutex_lock(&mtx);
+		while ( (wPtr+1) % buffSize == rPtr ) pthread_cond_wait(&cond_full, &mtx);
 
         buffer[wPtr] = value;
         wPtr = (wPtr +1 ) % buffSize;
 
-		cond_empty.notify_one();
+        pthread_cond_signal(&cond_empty);
+        pthread_mutex_unlock(&mtx);
     }
 
     /**
@@ -78,14 +100,15 @@ public:
      */
     T read(void)
     {
-        std::unique_lock<std::mutex> lock(mtx);
-		while ( rPtr == wPtr ) cond_empty.wait(lock);
+        pthread_mutex_lock(&mtx);
+		while ( rPtr == wPtr ) pthread_cond_wait(&cond_empty, &mtx);
 
         T ans = buffer[rPtr];
         rPtr = (rPtr +1 ) % buffSize;
 
-		cond_full.notify_one();
+		pthread_cond_signal(&cond_full);
 
+        pthread_mutex_unlock(&mtx);
         return ans;
     }
 
@@ -96,15 +119,19 @@ public:
      */
     bool readNB(T *result)
     {
-        std::unique_lock<std::mutex> lock(mtx);
+        int lock = pthread_mutex_trylock(&mtx);
         if ( !lock ) return false;
-		if ( rPtr == wPtr ) return false;
+		if ( rPtr == wPtr ) {
+            pthread_mutex_unlock(&mtx);
+            return false;
+        }
 
         *result = buffer[rPtr];
         rPtr = (rPtr +1 ) % buffSize;
 
-		cond_full.notify_one();
+		pthread_cond_signal(&cond_full);
 
+        pthread_mutex_unlock(&mtx);
         return true;
     }
 

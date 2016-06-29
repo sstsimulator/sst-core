@@ -23,7 +23,6 @@
 #include <unistd.h>
 
 #include <sst/core/interprocess/circularBuffer.h>
-#include <sst/core/output.h>
 
 #include <boost/interprocess/managed_shared_memory.hpp>
 #include <boost/interprocess/managed_xsi_shared_memory.hpp>
@@ -61,7 +60,7 @@ public:
      * @param bufferSize How large each core's buffer should be
      */
     IPCTunnel(const std::string &region_name, size_t numBuffers,
-            size_t bufferSize)
+            size_t bufferSize) : master(true)
     {
         if ( region_name.length() == 0 ) {
             char *fname = (char*) malloc(sizeof(char) * 1024);
@@ -77,21 +76,25 @@ public:
         }
 
         if ( fd < 0 ) {
-            Output::getDefaultObject().fatal(CALL_INFO, -1, "Failed to open IPC region '%s': %s\n",
-                    filename.c_str(), strerror(errno));
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "Failed to open IPC region '%s': %s\n", filename.c_str(), strerror(errno));
+            exit(1);
         }
 
 
         shmSize = calculateShmemSize(numBuffers, bufferSize);
         if ( ftruncate(fd, shmSize) ) {
-            Output::getDefaultObject().fatal(CALL_INFO, -1, "Resizing shared file '%s' failed: %s\n",
-                    filename.c_str(), strerror(errno));
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "Resizing shared file '%s' failed: %s\n", filename.c_str(), strerror(errno));
+            exit(1);
         }
         fsync(fd);
 
         shmPtr = mmap(NULL, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
         if ( shmPtr == MAP_FAILED ) {
-            Output::getDefaultObject().fatal(CALL_INFO, -1, "mmap failed: %s\n", strerror(errno));
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "mmap failed: %s\n", strerror(errno));
+            exit(1);
         }
         nextAllocPtr = (uint8_t*)shmPtr;
         memset(shmPtr, '\0', shmSize);
@@ -120,19 +123,23 @@ public:
      * Access an existing Tunnel
      * @param region_name Name of the shared-memory region to access
      */
-    IPCTunnel(const std::string &region_name)
+    IPCTunnel(const std::string &region_name) : master(false)
     {
-        fd = open(region_name.c_str(), O_CREAT,O_RDWR);
+        fd = open(region_name.c_str(), O_RDWR);
         filename = region_name;
 
         if ( fd < 0 ) {
-            Output::getDefaultObject().fatal(CALL_INFO, -1, "Failed to open IPC region '%s': %s\n",
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "Failed to open IPC region '%s': %s\n",
                     filename.c_str(), strerror(errno));
+            exit(1);
         }
 
         shmPtr = mmap(NULL, sizeof(InternalSharedData), PROT_READ, MAP_SHARED, fd, 0);
         if ( shmPtr == MAP_FAILED ) {
-            Output::getDefaultObject().fatal(CALL_INFO, -1, "mmap failed: %s\n", strerror(errno));
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "mmap 0 failed: %s\n", strerror(errno));
+            exit(1);
         }
 
         isd = (InternalSharedData*)shmPtr;
@@ -141,7 +148,9 @@ public:
 
         shmPtr = mmap(NULL, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
         if ( shmPtr == MAP_FAILED ) {
-            Output::getDefaultObject().fatal(CALL_INFO, -1, "mmap failed: %s\n", strerror(errno));
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "mmap 1 failed: %s\n", strerror(errno));
+            exit(1);
         }
         isd = (InternalSharedData*)shmPtr;
         sharedData = (ShareDataType*)((uint8_t*)shmPtr + isd->offsets[0]);
@@ -165,6 +174,12 @@ public:
      */
     void shutdown(bool all = false)
     {
+        if ( master ) {
+            for ( CircBuff_t *cb : circBuffs ) {
+                delete cb;
+            }
+            unlink(filename.c_str());
+        }
         if ( shmPtr ) {
             munmap(shmPtr, shmSize);
             shmPtr = NULL;
@@ -174,7 +189,6 @@ public:
             close(fd);
             fd = -1;
         }
-        unlink(filename.c_str());
     }
 
     const std::string& getRegionName(void) const { return filename; }
@@ -231,6 +245,7 @@ protected:
     ShareDataType *sharedData;
 
 private:
+    bool master;
     int fd;
     std::string filename;
     void *shmPtr;
