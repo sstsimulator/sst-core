@@ -13,7 +13,7 @@
 #define SST_CORE_INTERPROCESS_TUNNEL_H 1
 
 
-#include <tuple>
+#include <fcntl.h>
 #include <cstdio>
 #include <vector>
 #include <string>
@@ -23,10 +23,6 @@
 #include <unistd.h>
 
 #include <sst/core/interprocess/circularBuffer.h>
-
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/managed_xsi_shared_memory.hpp>
-
 
 namespace SST {
 namespace Core {
@@ -100,19 +96,24 @@ public:
         memset(shmPtr, '\0', shmSize);
 
         /* Construct our private buffer first.  Used for our communications */
-        size_t offset;
-        std::tie(offset, isd) = reserveSpace<InternalSharedData>((1+numBuffers)*sizeof(size_t));
+        auto resResult = reserveSpace<InternalSharedData>((1+numBuffers)*sizeof(size_t));
+        isd = resResult.second;
         isd->shmSegSize = shmSize;
         isd->numBuffers = numBuffers;
 
         /* Construct user's shared-data region */
-        std::tie(isd->offsets[0], sharedData) = reserveSpace<ShareDataType>(0);
+        auto shareResult = reserveSpace<ShareDataType>(0);
+        isd->offsets[0] = shareResult.first;
+        sharedData = shareResult.second;
 
         /* Construct the circular buffers */
         const size_t cbSize = sizeof(MsgType) * bufferSize;
         for ( size_t c = 0 ; c < isd->numBuffers ; c++ ) {
             CircBuff_t* cPtr = NULL;
-            std::tie(isd->offsets[1+c], cPtr) = reserveSpace<CircBuff_t>(cbSize);
+
+            auto resResult = reserveSpace<CircBuff_t>(cbSize);
+            isd->offsets[1+c] = resResult.first;
+            cPtr = resResult.second;
             cPtr->setBufferSize(bufferSize);
             circBuffs.push_back(cPtr);
         }

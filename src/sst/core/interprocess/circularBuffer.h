@@ -15,9 +15,6 @@
 #include <cstddef>
 #include <pthread.h>
 
-#include <mutex>
-#include <condition_variable>
-
 namespace SST {
 namespace Core {
 namespace Interprocess {
