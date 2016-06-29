@@ -187,6 +187,11 @@ public:
 
     uint32_t getNumRanks() { return world_size.rank; }
     uint32_t getNumThreads() { return world_size.thread; }
+    uint32_t setNumThreads(uint32_t nthr) {
+        uint32_t old = world_size.thread;
+        world_size.thread = nthr;
+        return old;
+    }
 
     void serialize_order(SST::Core::Serialization::serializer &ser)
     {
