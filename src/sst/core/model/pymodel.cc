@@ -730,6 +730,15 @@ static PyObject* getSSTThreadCount(PyObject* self, PyObject* args) {
     return PyLong_FromLong(cfg->getNumThreads());
 }
 
+static PyObject* setSSTThreadCount(PyObject* self, PyObject* args) {
+    Config *cfg = gModel->getConfig();
+    long oldNThr = cfg->getNumThreads();
+    long nThr = PyLong_AsLong(args);
+    if ( nThr > 0 && nThr <= oldNThr )
+        cfg->setNumThreads(nThr);
+    return PyLong_FromLong(oldNThr);
+}
+
 
 static PyObject* setStatisticOutput(PyObject* self, PyObject* args)
 {
@@ -970,6 +979,9 @@ static PyMethodDef sstModuleMethods[] = {
         "Gets the number of MPI ranks currently being used to run SST" },
     {   "getThreadCount",
         getSSTThreadCount, METH_NOARGS,
+        "Gets the number of MPI ranks currently being used to run SST" },
+    {   "setThreadCount",
+        setSSTThreadCount, METH_O,
         "Gets the number of MPI ranks currently being used to run SST" },
     {   "setStatisticOutput",
         setStatisticOutput, METH_VARARGS,
