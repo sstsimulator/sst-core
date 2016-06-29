@@ -13,7 +13,6 @@
 #include "sst/core/component.h"
 #include "sst/core/unitAlgebra.h"
 
-#include <boost/foreach.hpp>
 #include <string>
 
 //#include "sst/core/event.h"
@@ -108,8 +107,7 @@ TimeConverter* Component::registerClock( std::string freq, Clock::HandlerBase* h
     if ( regAll ) {
         LinkMap* myLinks = my_info->getLinkMap();
         if (NULL != myLinks) {
-            std::pair<std::string,Link*> p;
-            BOOST_FOREACH( p, myLinks->getLinkMap() ) {
+            for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
                 if ( NULL == p.second->getDefaultTimeBase() ) {
                     p.second->setDefaultTimeBase(tc);
                 }
@@ -128,8 +126,7 @@ TimeConverter* Component::registerClock( const UnitAlgebra& freq, Clock::Handler
     if ( regAll ) {
         LinkMap* myLinks = my_info->getLinkMap();
         if (NULL != myLinks) {
-            std::pair<std::string,Link*> p;
-            BOOST_FOREACH( p, myLinks->getLinkMap() ) {
+            for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
                 if ( NULL == p.second->getDefaultTimeBase() ) {
                     p.second->setDefaultTimeBase(tc);
                 }
@@ -168,8 +165,7 @@ TimeConverter* Component::registerTimeBase( std::string base, bool regAll) {
     if ( regAll ) {
         LinkMap* myLinks = my_info->getLinkMap();
         if (NULL != myLinks) {
-            std::pair<std::string,Link*> p;
-            BOOST_FOREACH( p, myLinks->getLinkMap() ) {
+            for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
                 if ( NULL == p.second->getDefaultTimeBase() ) {
                     p.second->setDefaultTimeBase(tc);
                 }

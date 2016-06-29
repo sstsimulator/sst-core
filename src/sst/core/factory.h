@@ -15,7 +15,6 @@
 #include <sst/core/sst_types.h>
 
 #include <stdio.h>
-#include <boost/foreach.hpp>
 #include <mutex>
 
 #include <sst/core/params.h>

@@ -14,7 +14,6 @@
 #include "sst/core/subcomponent.h"
 #include "sst/core/unitAlgebra.h"
 
-#include <boost/foreach.hpp>
 #include <string>
 
 //#include "sst/core/event.h"

@@ -17,14 +17,6 @@
 #include <mpi.h>
 #endif
 
-#include <boost/archive/polymorphic_binary_iarchive.hpp>
-#include <boost/archive/polymorphic_binary_oarchive.hpp>
-#include <boost/serialization/vector.hpp>
-
-#include <boost/iostreams/stream_buffer.hpp>
-#include <boost/iostreams/stream.hpp>
-#include <boost/iostreams/device/back_inserter.hpp>
-
 #include <sst/core/serialization/serializer.h>
 
 #include <typeinfo>
@@ -33,36 +25,6 @@ namespace SST {
 
 namespace Comms {
 
-// template <typename dataType>
-// std::vector<char> serialize(dataType *data)
-// {
-//     std::vector<char> buffer;
-
-//     boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
-//     boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
-//     boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header);
-
-//     oa << data;
-//     output_stream.flush();
-
-//     return buffer;
-// }
-
-
-// template <typename dataType>
-// std::vector<char> serialize(dataType &data)
-// {
-//     std::vector<char> buffer;
-
-//     boost::iostreams::back_insert_device<std::vector<char> > inserter(buffer);
-//     boost::iostreams::stream<boost::iostreams::back_insert_device<std::vector<char> > > output_stream(inserter);
-//     boost::archive::polymorphic_binary_oarchive oa(output_stream, boost::archive::no_header);
-
-//     oa << data;
-//     output_stream.flush();
-
-//     return buffer;
-// }
 
 template <typename dataType>
 std::vector<char> serialize(dataType &data)
@@ -107,39 +69,6 @@ std::vector<char> serialize(dataType &data)
 //     return buffer;    
 // }
 
-// template <typename dataType>
-// dataType* deserialize(std::vector<char> &buffer)
-// {
-//     dataType *tgt;
-
-//     boost::iostreams::basic_array_source<char> source(buffer.data(), buffer.size());
-//     boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-//     boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
-
-//     ia >> tgt;
-
-//     return tgt;
-// }
-
-// template <typename dataType>
-// void deserialize(std::vector<char> &buffer, dataType &tgt)
-// {
-//     boost::iostreams::basic_array_source<char> source(buffer.data(), buffer.size());
-//     boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-//     boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
-
-//     ia >> tgt;
-// }
-
-// template <typename dataType>
-// void deserialize(char *buffer, int blen, dataType &tgt)
-// {
-//     boost::iostreams::basic_array_source<char> source(buffer, blen);
-//     boost::iostreams::stream<boost::iostreams::basic_array_source <char> > input_stream(source);
-//     boost::archive::polymorphic_binary_iarchive ia(input_stream, boost::archive::no_header );
-
-//     ia >> tgt;
-// }
 
 template <typename dataType>
 dataType* deserialize(std::vector<char> &buffer)

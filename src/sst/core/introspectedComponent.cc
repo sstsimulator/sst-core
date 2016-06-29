@@ -13,7 +13,6 @@
 #include <sst_config.h>
 #include "sst/core/introspectedComponent.h"
 
-#include <boost/foreach.hpp>
 #include <string.h>
 
 //#include "sst/core/exit.h"
@@ -144,7 +143,6 @@ std::pair<bool, IntrospectedComponent::MonitorBase*> IntrospectedComponent::getM
 {
      MonitorMap_t::iterator i = monitorMap.find(dataname);
      if (i != monitorMap.end()) {
-            ////return (boost::unsafe_any_cast<IntrospectedComponent::MonitorBase<returnT>*>(i->second));
 	    return (std::make_pair(true, i->second));
      } 
      else{
