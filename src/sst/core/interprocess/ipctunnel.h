@@ -19,6 +19,7 @@
 #include <string>
 #include <errno.h>
 #include <cstring>
+#include <sys/mman.h>
 #include <unistd.h>
 
 #include <sst/core/interprocess/circularBuffer.h>
@@ -71,7 +72,7 @@ public:
             filename = fname;
             free(fname);
         } else {
-            fd = open(region_name.c_str(), O_CREAT,O_RDWR);
+            fd = open(region_name.c_str(), O_CREAT,O_RDWR|O_EXCL);
             filename = region_name;
         }
 
@@ -82,12 +83,13 @@ public:
 
 
         shmSize = calculateShmemSize(numBuffers, bufferSize);
-        if ( !ftruncate(fd, shmSize) ) {
+        if ( ftruncate(fd, shmSize) ) {
             Output::getDefaultObject().fatal(CALL_INFO, -1, "Resizing shared file '%s' failed: %s\n",
                     filename.c_str(), strerror(errno));
         }
+        fsync(fd);
 
-        shmPtr = mmap(NULL, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_HASSEMAPHORE, fd, 0);
+        shmPtr = mmap(NULL, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
         if ( shmPtr == MAP_FAILED ) {
             Output::getDefaultObject().fatal(CALL_INFO, -1, "mmap failed: %s\n", strerror(errno));
         }
@@ -128,7 +130,7 @@ public:
                     filename.c_str(), strerror(errno));
         }
 
-        shmPtr = mmap(NULL, sizeof(InternalSharedData), PROT_READ, MAP_SHARED|MAP_HASSEMAPHORE, fd, 0);
+        shmPtr = mmap(NULL, sizeof(InternalSharedData), PROT_READ, MAP_SHARED, fd, 0);
         if ( shmPtr == MAP_FAILED ) {
             Output::getDefaultObject().fatal(CALL_INFO, -1, "mmap failed: %s\n", strerror(errno));
         }
@@ -137,7 +139,7 @@ public:
         shmSize = isd->shmSegSize;
         munmap(shmPtr, sizeof(InternalSharedData));
 
-        shmPtr = mmap(NULL, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_HASSEMAPHORE, fd, 0);
+        shmPtr = mmap(NULL, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
         if ( shmPtr == MAP_FAILED ) {
             Output::getDefaultObject().fatal(CALL_INFO, -1, "mmap failed: %s\n", strerror(errno));
         }
