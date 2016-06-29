@@ -30,6 +30,8 @@
 #include <unistd.h>
 #endif
 
+#include <cstring>
+
 #include <stdio.h>
 
 /* This needs to happen before lt_dlinit() and sets up the preload
