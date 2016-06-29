@@ -124,6 +124,31 @@ AC_DEFINE_UNQUOTED([SST_BOOST_LIBDIR], ["$BOOST_LIBDIR"],
 
 AC_DEFINE([__STDC_FORMAT_MACROS], [1], [Defines that standard PRI macros should be enabled])
 
+AC_MSG_CHECKING([for SST-Core Git Head SHA and Commit Count])
+if test -d ".git" ; then
+    SSTCORE_GIT_HEADSHA=`git rev-parse HEAD`
+    AC_MSG_RESULT([${SSTCORE_GIT_HEADSHA}])
+	SSTCORE_GIT_COMMITCOUNT=`git rev-list HEAD | wc -l | sed -e 's/^ *//g'`
+	AC_MSG_RESULT([${SSTCORE_GIT_COMMITCOUNT}])
+else
+    SSTCORE_GIT_HEADSHA="${PACKAGE_VERSION}"
+    AC_MSG_RESULT([${SSTCORE_GIT_HEADSHA}])
+	SSTCORE_GIT_COMMITCOUNT="0"
+	AC_MSG_RESULT([${SSTCORE_GIT_COMMITCOUNT}])
+fi
+
+AC_SUBST(SSTCORE_GIT_HEADSHA)
+AC_DEFINE_UNQUOTED([SSTCORE_GIT_HEADSHA], ["$SSTCORE_GIT_HEADSHA"], [SST-Core Git Head SHA])
+
+AC_SUBST(SSTCORE_GIT_COMMITCOUNT)
+AC_DEFINE_UNQUOTED([SSTCORE_GIT_COMMITCOUNT], ["$SSTCORE_GIT_COMMITCOUNT"], [SST-Core Git Commit Count])
+
+CC_VERSION=`$CC --version | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/%/g' | awk -F'%' '{print $1}'`
+AC_SUBST(CC_VERSION)
+
+MPICC_VERSION=`$MPICC --version | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/%/g' | awk -F'%' '{print $1}'`
+AC_SUBST(MPICC_VERSION)
+
 AC_CACHE_SAVE
 
 AC_CONFIG_FILES([
@@ -146,12 +171,21 @@ echo "SST Core Configuration completed."
 echo "-------------------------------------------------------"
 echo "Build Environment:"
 echo ""
+printf "%38s : %s\n" "SST-Core Version" "$PACKAGE_VERSION"
+if test "x$SSTCORE_GIT_HEADSHA" != "x$PACKAGE_VERSION"; then
+printf "%38s : %s\n" "Git HEAD SHA" "$SSTCORE_GIT_HEADSHA"
+printf "%38s : %s\n" "Branch Commit Count" "$SSTCORE_GIT_COMMITCOUNT"
+else 
+printf "%38s : %s\n" "Release Package" "For SST-Core $PACKAGE_VERSION"
+fi
 printf "%38s : %s\n" "Prefix" "$prefix"
 printf "%38s : %s\n" "Preprocessor" "$CPP"
 printf "%38s : %s\n" "C++ Compiler" "$CXX"
 printf "%38s : %s\n" "C Compiler" "$CC"
+printf "%38s : %s\n" "Compiler Version" "$CC_VERSION"
 printf "%38s : %s\n" "MPI C Compiler" "$MPICC"
 printf "%38s : %s\n" "MPI C++ Compiler" "$MPICXX"
+printf "%38s : %s\n" "MPI Compiler Version" "$MPICC_VERSION"
 printf "%38s : %s\n" "Linker" "$LD"
 printf "%38s : %s\n" "Preprocessor Options" "$CPPFLAGS"
 printf "%38s : %s\n" "C Compiler Options" "$CFLAGS"
