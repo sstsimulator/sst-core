@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <cstring>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <sst/core/interprocess/circularBuffer.h>
@@ -119,7 +120,7 @@ public:
      */
     IPCTunnel(const std::string &region_name) : master(false), shmPtr(NULL), fd(-1)
     {
-        fd = shm_open(region_name.c_str(), O_RDWR);
+        fd = shm_open(region_name.c_str(), O_RDWR, S_IRUSR|S_IWUSR);
         filename = region_name;
 
         if ( fd < 0 ) {
