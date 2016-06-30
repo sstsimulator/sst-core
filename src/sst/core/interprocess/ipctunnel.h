@@ -28,6 +28,8 @@ namespace SST {
 namespace Core {
 namespace Interprocess {
 
+
+extern uint32_t globalIPCTunnelCount;
 /**
  * Tunneling class between two processes, connected by shared memory.
  * Supports multiple circular-buffer queues, and a generic region
@@ -51,29 +53,21 @@ class IPCTunnel {
 public:
     /**
      * Construct a new Tunnel for IPC Communications
-     * @param region_name Name of the shared-memory region to use.
+     * @param comp_id Component ID of owner
      * @param numBuffers Number of buffers for which we should tunnel
      * @param bufferSize How large each core's buffer should be
      */
-    IPCTunnel(const std::string &region_name, size_t numBuffers,
-            size_t bufferSize) : master(true)
+    IPCTunnel(uint32_t comp_id, size_t numBuffers, size_t bufferSize) : master(true), shmPtr(NULL), fd(-1)
     {
-        if ( region_name.length() == 0 ) {
-            char *fname = (char*) malloc(sizeof(char) * 1024);
-            const char *tmpdir = getenv("TMPDIR");
-            if ( !tmpdir ) tmpdir = "/tmp";
-            sprintf(fname, "%s/sst_shmem_%u_XXXXXX", tmpdir, getpid());
-            fd = mkstemp(fname);
-            filename = fname;
-            free(fname);
-        } else {
-            fd = open(region_name.c_str(), O_CREAT,O_RDWR|O_EXCL);
-            filename = region_name;
-        }
+        char key[256];
+        memset(key, '\0', sizeof(key));
+        sprintf(key, "sst_shmem_%u-%" PRIu32 , getpid(), comp_id);
+        filename = key;
 
+        fd = shm_open(filename.c_str(), O_RDWR|O_CREAT|O_EXCL, S_IRUSR|S_IWUSR);
         if ( fd < 0 ) {
             // Not using Output because IPC means Output might not be available
-            fprintf(stderr, "Failed to open IPC region '%s': %s\n", filename.c_str(), strerror(errno));
+            fprintf(stderr, "Failed to create IPC region '%s': %s\n", filename.c_str(), strerror(errno));
             exit(1);
         }
 
@@ -84,7 +78,6 @@ public:
             fprintf(stderr, "Resizing shared file '%s' failed: %s\n", filename.c_str(), strerror(errno));
             exit(1);
         }
-        fsync(fd);
 
         shmPtr = mmap(NULL, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
         if ( shmPtr == MAP_FAILED ) {
@@ -124,9 +117,9 @@ public:
      * Access an existing Tunnel
      * @param region_name Name of the shared-memory region to access
      */
-    IPCTunnel(const std::string &region_name) : master(false)
+    IPCTunnel(const std::string &region_name) : master(false), shmPtr(NULL), fd(-1)
     {
-        fd = open(region_name.c_str(), O_RDWR);
+        fd = shm_open(region_name.c_str(), O_RDWR);
         filename = region_name;
 
         if ( fd < 0 ) {
@@ -177,9 +170,9 @@ public:
     {
         if ( master ) {
             for ( CircBuff_t *cb : circBuffs ) {
-                delete cb;
+                cb->~CircBuff_t();
             }
-            unlink(filename.c_str());
+            shm_unlink(filename.c_str());
         }
         if ( shmPtr ) {
             munmap(shmPtr, shmSize);

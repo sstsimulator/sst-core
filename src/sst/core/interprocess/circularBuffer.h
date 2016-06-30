@@ -13,6 +13,8 @@
 #define SST_CORE_INTERPROCESS_CIRCULARBUFFER_H 1
 
 #include <cstddef>
+#include <string.h>
+#include <errno.h>
 #include <pthread.h>
 
 namespace SST {
@@ -49,12 +51,21 @@ public:
     {
         pthread_mutexattr_init(&attrmutex);
         pthread_mutexattr_setpshared(&attrmutex, PTHREAD_PROCESS_SHARED);
-        pthread_mutex_init(&mtx, &attrmutex);
+        if ( pthread_mutex_init(&mtx, &attrmutex) ) {
+            fprintf(stderr, "Failed to initialie mutex: %s\n", strerror(errno));
+            exit(1);
+        }
 
         pthread_condattr_init(&attrcond);
         pthread_condattr_setpshared(&attrcond, PTHREAD_PROCESS_SHARED);
-        pthread_cond_init(&cond_full, &attrcond);
-        pthread_cond_init(&cond_empty, &attrcond);
+        if ( pthread_cond_init(&cond_full, &attrcond) ) {
+            fprintf(stderr, "Failed to initialie condition vars: %s\n", strerror(errno));
+            exit(1);
+        }
+        if ( pthread_cond_init(&cond_empty, &attrcond) ) {
+            fprintf(stderr, "Failed to initialie condition vars: %s\n", strerror(errno));
+            exit(1);
+        }
     }
 
     ~CircularBuffer() {
@@ -81,12 +92,17 @@ public:
      */
     void write(const T &value)
     {
-        pthread_mutex_lock(&mtx);
-		while ( (wPtr+1) % buffSize == rPtr ) pthread_cond_wait(&cond_full, &mtx);
+        if ( pthread_mutex_lock(&mtx) ) {
+            fprintf(stderr, "LOCKING ERROR:  %s\n", strerror(errno));
+        }
+		while ( (wPtr+1) % buffSize == rPtr ) {
+            pthread_cond_wait(&cond_full, &mtx);
+        }
 
         buffer[wPtr] = value;
         wPtr = (wPtr +1 ) % buffSize;
 
+        __sync_synchronize();
         pthread_cond_signal(&cond_empty);
         pthread_mutex_unlock(&mtx);
     }
@@ -97,14 +113,18 @@ public:
      */
     T read(void)
     {
-        pthread_mutex_lock(&mtx);
-		while ( rPtr == wPtr ) pthread_cond_wait(&cond_empty, &mtx);
+        if ( pthread_mutex_lock(&mtx) ) {
+            fprintf(stderr, "LOCKING ERROR:  %s\n", strerror(errno));
+        }
+		while ( rPtr == wPtr ) {
+            pthread_cond_wait(&cond_empty, &mtx);
+        }
 
         T ans = buffer[rPtr];
         rPtr = (rPtr +1 ) % buffSize;
 
+        __sync_synchronize();
 		pthread_cond_signal(&cond_full);
-
         pthread_mutex_unlock(&mtx);
         return ans;
     }
@@ -116,8 +136,7 @@ public:
      */
     bool readNB(T *result)
     {
-        int lock = pthread_mutex_trylock(&mtx);
-        if ( !lock ) return false;
+        if ( pthread_mutex_trylock(&mtx) != 0 ) return false;
 		if ( rPtr == wPtr ) {
             pthread_mutex_unlock(&mtx);
             return false;
@@ -126,8 +145,8 @@ public:
         *result = buffer[rPtr];
         rPtr = (rPtr +1 ) % buffSize;
 
+        __sync_synchronize();
 		pthread_cond_signal(&cond_full);
-
         pthread_mutex_unlock(&mtx);
         return true;
     }
