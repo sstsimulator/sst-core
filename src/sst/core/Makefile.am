@@ -192,6 +192,7 @@ sst_core_sources = \
 	interfaces/TestEvent.cc \
 	interfaces/simpleMem.cc \
 	interfaces/simpleNetwork.cc \
+	interprocess/ipctunnel.cc \
 	rng/sstrng.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \

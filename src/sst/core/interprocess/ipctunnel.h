@@ -13,21 +13,24 @@
 #define SST_CORE_INTERPROCESS_TUNNEL_H 1
 
 
+#include <fcntl.h>
 #include <cstdio>
 #include <vector>
 #include <string>
+#include <errno.h>
+#include <cstring>
+#include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <sst/core/interprocess/circularBuffer.h>
-
-#include <boost/interprocess/managed_shared_memory.hpp>
-#include <boost/interprocess/managed_xsi_shared_memory.hpp>
-
 
 namespace SST {
 namespace Core {
 namespace Interprocess {
 
+
+extern uint32_t globalIPCTunnelCount;
 /**
  * Tunneling class between two processes, connected by shared memory.
  * Supports multiple circular-buffer queues, and a generic region
@@ -39,65 +42,74 @@ namespace Interprocess {
 template<typename ShareDataType, typename MsgType>
 class IPCTunnel {
 
-    typedef SST::Core::Interprocess::CircularBuffer<
-            MsgType,
-            boost::interprocess::allocator<MsgType,
-                boost::interprocess::managed_xsi_shared_memory::segment_manager> >
-        CircBuff_t;
+    typedef SST::Core::Interprocess::CircularBuffer<MsgType> CircBuff_t;
 
     struct InternalSharedData {
+        size_t shmSegSize;
         size_t numBuffers;
+        size_t offsets[0];  // Actual size:  numBuffers + 2
     };
 
-    bool remove_old_shared_memory() {
-        bool removed = false;
-        try {
-            boost::interprocess::xsi_shared_memory xsi(boost::interprocess::open_only, xkey);
-            boost::interprocess::xsi_shared_memory::remove(xsi.get_shmid());
-            removed = true;
-        } catch (boost::interprocess::interprocess_exception & e) {
-            if ( e.get_error_code() != boost::interprocess::not_found_error )
-                throw ;
-        }
-        return removed;
-    }
-
-    boost::interprocess::xsi_key get_xsi_key(const std::string &name) {
-        xkey = boost::interprocess::xsi_key(name.c_str(), 1);
-        return xkey;
-    }
 
 public:
     /**
      * Construct a new Tunnel for IPC Communications
-     * @param region_name Name of the shared-memory region to use.
+     * @param comp_id Component ID of owner
      * @param numBuffers Number of buffers for which we should tunnel
      * @param bufferSize How large each core's buffer should be
      */
-    IPCTunnel(const std::string &region_name, size_t numBuffers,
-            size_t bufferSize)
+    IPCTunnel(uint32_t comp_id, size_t numBuffers, size_t bufferSize) : master(true), shmPtr(NULL), fd(-1)
     {
-        get_xsi_key(region_name);
-        /* Remove any lingering mappings */
-        remove_old_shared_memory();
+        char key[256];
+        memset(key, '\0', sizeof(key));
+        sprintf(key, "sst_shmem_%u-%" PRIu32 , getpid(), comp_id);
+        filename = key;
 
-        shm = boost::interprocess::managed_xsi_shared_memory(
-                boost::interprocess::create_only, xkey,
-                calculateShmemSize(numBuffers, bufferSize));
+        fd = shm_open(filename.c_str(), O_RDWR|O_CREAT|O_EXCL, S_IRUSR|S_IWUSR);
+        if ( fd < 0 ) {
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "Failed to create IPC region '%s': %s\n", filename.c_str(), strerror(errno));
+            exit(1);
+        }
+
+
+        shmSize = calculateShmemSize(numBuffers, bufferSize);
+        if ( ftruncate(fd, shmSize) ) {
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "Resizing shared file '%s' failed: %s\n", filename.c_str(), strerror(errno));
+            exit(1);
+        }
+
+        shmPtr = mmap(NULL, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+        if ( shmPtr == MAP_FAILED ) {
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "mmap failed: %s\n", strerror(errno));
+            exit(1);
+        }
+        nextAllocPtr = (uint8_t*)shmPtr;
+        memset(shmPtr, '\0', shmSize);
 
         /* Construct our private buffer first.  Used for our communications */
-        isd = shm.construct<InternalSharedData>("InternalShared")();
+        auto resResult = reserveSpace<InternalSharedData>((1+numBuffers)*sizeof(size_t));
+        isd = resResult.second;
+        isd->shmSegSize = shmSize;
         isd->numBuffers = numBuffers;
 
         /* Construct user's shared-data region */
-        sharedData = shm.construct<ShareDataType>("Shared Data")();
+        auto shareResult = reserveSpace<ShareDataType>(0);
+        isd->offsets[0] = shareResult.first;
+        sharedData = shareResult.second;
 
         /* Construct the circular buffers */
-        char bufName[1024];
-        for ( size_t c = 0 ; c < numBuffers ; c++ ) {
-            sprintf(bufName, "buffer%zu", c);
-            circBuffs.push_back(shm.construct<CircBuff_t>(bufName)(
-                        bufferSize, shm.get_segment_manager()));
+        const size_t cbSize = sizeof(MsgType) * bufferSize;
+        for ( size_t c = 0 ; c < isd->numBuffers ; c++ ) {
+            CircBuff_t* cPtr = NULL;
+
+            auto resResult = reserveSpace<CircBuff_t>(cbSize);
+            isd->offsets[1+c] = resResult.first;
+            cPtr = resResult.second;
+            cPtr->setBufferSize(bufferSize);
+            circBuffs.push_back(cPtr);
         }
 
     }
@@ -106,18 +118,40 @@ public:
      * Access an existing Tunnel
      * @param region_name Name of the shared-memory region to access
      */
-    IPCTunnel(const std::string &region_name)
+    IPCTunnel(const std::string &region_name) : master(false), shmPtr(NULL), fd(-1)
     {
-        get_xsi_key(region_name);
-        shm = boost::interprocess::managed_xsi_shared_memory(
-                    boost::interprocess::open_only, xkey);
-        isd = shm.find<InternalSharedData>("InternalShared").first;
-        sharedData = shm.find<ShareDataType>("Shared Data").first;
+        fd = shm_open(region_name.c_str(), O_RDWR, S_IRUSR|S_IWUSR);
+        filename = region_name;
 
-        char bufName[1024];
+        if ( fd < 0 ) {
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "Failed to open IPC region '%s': %s\n",
+                    filename.c_str(), strerror(errno));
+            exit(1);
+        }
+
+        shmPtr = mmap(NULL, sizeof(InternalSharedData), PROT_READ, MAP_SHARED, fd, 0);
+        if ( shmPtr == MAP_FAILED ) {
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "mmap 0 failed: %s\n", strerror(errno));
+            exit(1);
+        }
+
+        isd = (InternalSharedData*)shmPtr;
+        shmSize = isd->shmSegSize;
+        munmap(shmPtr, sizeof(InternalSharedData));
+
+        shmPtr = mmap(NULL, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+        if ( shmPtr == MAP_FAILED ) {
+            // Not using Output because IPC means Output might not be available
+            fprintf(stderr, "mmap 1 failed: %s\n", strerror(errno));
+            exit(1);
+        }
+        isd = (InternalSharedData*)shmPtr;
+        sharedData = (ShareDataType*)((uint8_t*)shmPtr + isd->offsets[0]);
+
         for ( size_t c = 0 ; c < isd->numBuffers ; c++ ) {
-            sprintf(bufName, "buffer%zu", c);
-            circBuffs.push_back(shm.find<CircBuff_t>(bufName).first);
+            circBuffs.push_back((CircBuff_t*)((uint8_t*)shmPtr + isd->offsets[c+1]));
         }
     }
 
@@ -127,7 +161,7 @@ public:
      */
     virtual ~IPCTunnel()
     {
-        remove_old_shared_memory();
+        shutdown(true);
     }
 
     /**
@@ -135,13 +169,24 @@ public:
      */
     void shutdown(bool all = false)
     {
-        if ( all ) {
-            while (remove_old_shared_memory() );
-        } else {
-            remove_old_shared_memory();
+        if ( master ) {
+            for ( CircBuff_t *cb : circBuffs ) {
+                cb->~CircBuff_t();
+            }
+            shm_unlink(filename.c_str());
         }
-
+        if ( shmPtr ) {
+            munmap(shmPtr, shmSize);
+            shmPtr = NULL;
+            shmSize = 0;
+        }
+        if ( fd >= 0 ) {
+            close(fd);
+            fd = -1;
+        }
     }
+
+    const std::string& getRegionName(void) const { return filename; }
 
     /** return a pointer to the ShareDataType region */
     ShareDataType* getSharedData() { return sharedData; }
@@ -164,18 +209,30 @@ public:
 
 
 private:
-    size_t calculateShmemSize(size_t numBuffers, size_t bufferSize) const
+    template <typename T>
+    std::pair<size_t, T*> reserveSpace(size_t extraSpace = 0)
+    {
+        size_t space = sizeof(T) + extraSpace;
+        if ( ((nextAllocPtr + space) - (uint8_t*)shmPtr) > shmSize )
+            return std::make_pair<size_t, T*>(0, NULL);
+        T* ptr = (T*)nextAllocPtr;
+        nextAllocPtr += space;
+        new (ptr) T();  // Call constructor if need be
+        return std::make_pair((uint8_t*)ptr - (uint8_t*)shmPtr, ptr);
+    }
+
+    size_t static calculateShmemSize(size_t numBuffers, size_t bufferSize)
     {
         long page_size = sysconf(_SC_PAGESIZE);
 
         /* Count how many pages are needed, at minimum */
+        size_t isd = 1 + ((sizeof(InternalSharedData) + (1+numBuffers)*sizeof(size_t)) / page_size);
         size_t buffer = 1+ ((sizeof(CircBuff_t) +
                 bufferSize*sizeof(MsgType)) / page_size);
         size_t shdata = 1+ ((sizeof(ShareDataType) + sizeof(InternalSharedData)) / page_size);
 
         /* Alloc 2 extra pages, just in case */
-        return (2 + shdata + numBuffers*buffer) * page_size;
-
+        return (2 + isd + shdata + numBuffers*buffer) * page_size;
     }
 
 protected:
@@ -183,8 +240,12 @@ protected:
     ShareDataType *sharedData;
 
 private:
-    boost::interprocess::xsi_key xkey;
-    boost::interprocess::managed_xsi_shared_memory shm;
+    bool master;
+    int fd;
+    std::string filename;
+    void *shmPtr;
+    uint8_t *nextAllocPtr;
+    size_t shmSize;
     InternalSharedData *isd;
     std::vector<CircBuff_t* > circBuffs;
 
