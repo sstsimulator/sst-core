@@ -55,8 +55,6 @@
 #include <sst/core/cfgoutput/xmlConfigOutput.h>
 #include <sst/core/cfgoutput/jsonConfigOutput.h>
 
-#include <mpi.h>
-
 using namespace SST::Core;
 using namespace SST::Partition;
 using namespace std;
