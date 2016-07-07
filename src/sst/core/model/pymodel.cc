@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sstream>
 
+#include <sst/core/sst_types.h>
 #include <sst/core/model/pymodel.h>
 #include <sst/core/simulation.h>
 #include <sst/core/element.h>
@@ -62,6 +63,7 @@ static PyObject* compSetRank(PyObject *self, PyObject *arg);
 static PyObject* compSetWeight(PyObject *self, PyObject *arg);
 static PyObject* compAddLink(PyObject *self, PyObject *args);
 static PyObject* compGetFullName(PyObject *self, PyObject *args);
+static int compCompare(PyObject *obj0, PyObject *obj1);
 
 static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args);
 static PyObject* compEnableStatistics(PyObject *self, PyObject *args);
@@ -122,7 +124,7 @@ static PyTypeObject ComponentType = {
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
-    0,                         /* tp_compare */
+    compCompare,               /* tp_compare */
     0,                         /* tp_repr */
     0,                         /* tp_as_number */
     0,                         /* tp_as_sequence */
@@ -262,12 +264,18 @@ static PyTypeObject ModuleLoaderType = {
 static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
 {
     char *name, *type;
-    if ( !PyArg_ParseTuple(args, "ss", &name, &type) )
+    ComponentId_t useID = UNSET_COMPONENT_ID;
+    if ( !PyArg_ParseTuple(args, "ss|k", &name, &type, &useID) )
         return -1;
 
-    self->name = gModel->addNamePrefix(name);
-    self->id = gModel->addComponent(self->name, type);
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%lu]\n", name, type, self->id);
+    if ( useID == UNSET_COMPONENT_ID ) {
+        self->name = gModel->addNamePrefix(name);
+        self->id = gModel->addComponent(self->name, type);
+        gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%lu]\n", name, type, self->id);
+    } else {
+        self->name = name;
+        self->id = useID;
+    }
 
     return 0;
 }
@@ -390,6 +398,12 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 static PyObject* compGetFullName(PyObject *self, PyObject *args)
 {
     return PyString_FromString(((ComponentPy_t*)self)->name);
+}
+
+static int compCompare(PyObject *obj0, PyObject *obj1) {
+    ComponentId_t id0 = ((ComponentPy_t*)obj0)->id;
+    ComponentId_t id1 = ((ComponentPy_t*)obj1)->id;
+    return (id0 < id1) ? -1 : (id0 > id1) ? 1 : 0;
 }
 
 void generateStatisticParameters(PyObject* statParamDict)
@@ -625,6 +639,23 @@ static PyObject* mlLoadModule(PyObject *self, PyObject *args)
 
 
 /***** Module information *****/
+
+static PyObject* findComponentByName(PyObject* self, PyObject* args)
+{
+    if ( ! PyString_Check(args) ) {
+        Py_INCREF(Py_None);
+        return Py_None;
+    }
+    char *name = PyString_AsString(args);
+    ComponentId_t id = gModel->findComponentByName(name);
+    if ( id != UNSET_COMPONENT_ID ) {
+        PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", id);
+        PyObject *res = PyObject_CallObject((PyObject *) &ComponentType, argList);
+        return res;
+    }
+    Py_INCREF(Py_None);
+    return Py_None;
+}
 
 static PyObject* setProgramOption(PyObject* self, PyObject* args)
 {
@@ -1010,6 +1041,9 @@ static PyMethodDef sstModuleMethods[] = {
     {   "enableStatisticForComponentType",
         enableStatisticForComponentType, METH_VARARGS,
         "Enables a single statistic on all components of component type with output occurring at defined rate."},
+    {   "findComponentByName",
+        findComponentByName, METH_O,
+        "Looks up to find a previously created component, based off of its name.  Returns None if none are to be found."},
     {   NULL, NULL, 0, NULL }
 };
 

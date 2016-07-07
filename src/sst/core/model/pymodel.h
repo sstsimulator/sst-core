@@ -28,8 +28,6 @@
 #include <sst/core/config.h>
 #include <sst/core/rankInfo.h>
 #include <sst/core/output.h>
-#include <Python.h>
-
 
 using namespace SST;
 
@@ -54,8 +52,9 @@ class SSTPythonModelDefinition : public SSTModelDescription {
         char *namePrefix;
         size_t namePrefixLen;
         std::vector<size_t> nameStack;
-    
-    public:        
+        std::map<std::string, ComponentId_t> compNameMap;
+
+    public:
         std::vector<std::string> statParamKeyArray;
         std::vector<std::string> statParamValueArray;
 
@@ -65,7 +64,15 @@ class SSTPythonModelDefinition : public SSTModelDescription {
 		//ConfigGraph* getConfigGraph(void) const { return graph; }
 		std::string getConfigString(void) const;
 		Output* getOutput() const { return output; }
-        ComponentId_t addComponent(const char *name, const char *type) const { return graph->addComponent(name, type); }
+        ComponentId_t addComponent(const char *name, const char *type) {
+            ComponentId_t id = graph->addComponent(name, type);
+            compNameMap[std::string(name)] = id;
+            return id;
+        }
+        ComponentId_t findComponentByName(const char *name) const {
+            auto itr = compNameMap.find(name);
+            return ( itr != compNameMap.end() ) ? itr->second : UNSET_COMPONENT_ID;
+        }
         void addParameter(ComponentId_t id, const char *name, const char *value) const { graph->addParameter(id, name, value, true); }
 
         void setComponentRank(ComponentId_t id, uint32_t rank, uint32_t thread) const { graph->setComponentRank(id, RankInfo(rank, thread)); }
