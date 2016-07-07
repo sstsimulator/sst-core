@@ -45,6 +45,7 @@ class IPCTunnel {
     typedef SST::Core::Interprocess::CircularBuffer<MsgType> CircBuff_t;
 
     struct InternalSharedData {
+        volatile uint32_t expectedChildren;
         size_t shmSegSize;
         size_t numBuffers;
         size_t offsets[0];  // Actual size:  numBuffers + 2
@@ -58,11 +59,11 @@ public:
      * @param numBuffers Number of buffers for which we should tunnel
      * @param bufferSize How large each core's buffer should be
      */
-    IPCTunnel(uint32_t comp_id, size_t numBuffers, size_t bufferSize) : master(true), shmPtr(NULL), fd(-1)
+    IPCTunnel(uint32_t comp_id, size_t numBuffers, size_t bufferSize, uint32_t expectedChildren = 1) : master(true), shmPtr(NULL), fd(-1)
     {
         char key[256];
         memset(key, '\0', sizeof(key));
-        sprintf(key, "sst_shmem_%u-%" PRIu32 , getpid(), comp_id);
+        sprintf(key, "/sst_shmem_%u-%" PRIu32 , getpid(), comp_id);
         filename = key;
 
         fd = shm_open(filename.c_str(), O_RDWR|O_CREAT|O_EXCL, S_IRUSR|S_IWUSR);
@@ -92,6 +93,7 @@ public:
         /* Construct our private buffer first.  Used for our communications */
         auto resResult = reserveSpace<InternalSharedData>((1+numBuffers)*sizeof(size_t));
         isd = resResult.second;
+        isd->expectedChildren = expectedChildren;
         isd->shmSegSize = shmSize;
         isd->numBuffers = numBuffers;
 
@@ -153,6 +155,11 @@ public:
         for ( size_t c = 0 ; c < isd->numBuffers ; c++ ) {
             circBuffs.push_back((CircBuff_t*)((uint8_t*)shmPtr + isd->offsets[c+1]));
         }
+
+        /* Clean up if we're the last to attach */
+        if ( --isd->expectedChildren == 0 ) {
+            shm_unlink(filename.c_str());
+        }
     }
 
 
@@ -173,7 +180,6 @@ public:
             for ( CircBuff_t *cb : circBuffs ) {
                 cb->~CircBuff_t();
             }
-            shm_unlink(filename.c_str());
         }
         if ( shmPtr ) {
             munmap(shmPtr, shmSize);
