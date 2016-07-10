@@ -63,10 +63,19 @@ public:
     {
         char key[256];
         memset(key, '\0', sizeof(key));
-        sprintf(key, "/sst_shmem_%u-%" PRIu32 , getpid(), comp_id);
-        filename = key;
+        do {
+            snprintf(key, sizeof(key), "/sst_shmem_%u-%" PRIu32 "-%d", getpid(), comp_id, rand());
+            filename = key;
 
-        fd = shm_open(filename.c_str(), O_RDWR|O_CREAT|O_EXCL, S_IRUSR|S_IWUSR);
+            fd = shm_open(filename.c_str(), O_RDWR|O_CREAT|O_EXCL, S_IRUSR|S_IWUSR);
+            /* There's a rare chance that a file we are looking to use exists.
+             * It's unlikely, but perhaps a previous run (with the same PID
+             * and random number) crashed before the * clients all connected.
+             *
+             * So, if we get an error, and the error is EEXIST, try again with
+             * a different random number.
+             */
+        } while ( (fd < 0) && (errno == EEXIST) );
         if ( fd < 0 ) {
             // Not using Output because IPC means Output might not be available
             fprintf(stderr, "Failed to create IPC region '%s': %s\n", filename.c_str(), strerror(errno));
