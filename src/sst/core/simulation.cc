@@ -92,6 +92,9 @@ Simulation::~Simulation()
     
     // OneShots already got deleted by timeVortex, simply clear the onsShotMap
     oneShotMap.clear();
+
+    // Clear out Components
+    compInfoMap.clear();
     
     // // Delete any remaining links.  This should never happen now, but
     // // when we add an API to have components build subcomponents, user

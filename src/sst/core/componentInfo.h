@@ -145,6 +145,14 @@ public:
     bool empty() {
         return dataByName.empty();
     }
+
+    void clear() {
+        for ( auto i : dataByName ) {
+            delete i; 
+        }
+        dataByName.clear();
+        dataByID.clear();
+    }
 };
     
 } //namespace SST

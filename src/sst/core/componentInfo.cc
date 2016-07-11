@@ -20,6 +20,7 @@ namespace SST {
 
 ComponentInfo::~ComponentInfo() {
     delete link_map;
+    delete component;
 }
 
 } // namespace SST
