@@ -1,14 +1,3 @@
-# -*- Autoconf -*-
-#
-# SYNOPSIS
-#
-#   SST_CHECK_ZOLTAN
-#
-# DESCRIPTION
-#
-# LICENSE
-#
-
 AC_DEFUN([SST_CHECK_ZOLTAN],
 [
   sst_check_zoltan_happy="yes"
@@ -18,11 +7,6 @@ AC_DEFUN([SST_CHECK_ZOLTAN],
       [Use Zoltan package installed in optionally specified DIR])])
 
   AS_IF([test "$with_zoltan" = "no"], [sst_check_zoltan_happy="no"])
-
-#  SST_CHECK_PARMETIS([ AC_DEFINE([HAVE_PARMETIS], [1], [Define if you have the ParMETIS library.])] )
-
-#  AS_IF([test "$sst_check_zoltan_happy" = "yes"], 
-#        [SST_CHECK_PARMETIS([AC_DEFINE([HAVE_PARMETIS], [1], [Define if you have the Parmetis library.])], [sst_check_zoltan_happy="no"])])
 
   CPPFLAGS_saved="$CPPFLAGS"
   LDFLAGS_saved="$LDFLAGS"
@@ -56,6 +40,13 @@ AC_DEFUN([SST_CHECK_ZOLTAN],
 
   AC_MSG_CHECKING([for Zoltan package])
   AC_MSG_RESULT([$sst_check_zoltan_happy])
-  AS_IF([test "$sst_check_zoltan_happy" = "no" -a ! -z "$with_zoltan" -a "$with_zoltan" != "no"], [$3])
+
+  # if user doesn't specify --with-zoltan then string is empty, otherwise is has a value
+  # if the value is not "no" then we treat as a path, and MUST find in order to be
+  # successful
+  AS_IF([test "x$with_zoltan" != "x"],
+  	[AS_IF([test "x$with_zoltan" != "xno" -a "x$sst_check_zoltan_happy" != "xyes"],
+		[AC_MSG_FAILURE([Zoltan was requested (--with-zoltan=$with_zoltan) but could not be found during checks (sst_check_zoltan_happy=$sst_check_zoltan_happy)."])
+	])])
   AS_IF([test "$sst_check_zoltan_happy" = "yes"], [$1], [$2])
 ])
