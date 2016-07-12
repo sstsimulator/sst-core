@@ -1,0 +1,196 @@
+/** @mainpage
+
+<h1> Structural Simulation Toolkit (SST) </h1>
+
+<h2> What it does. </h2>
+
+Understanding the performance of large-scale, capability-class , high
+performance computing (HPC) systems is possibly the most significant
+challenge in the development of such a system. Because it is
+impractical to construct prototype systems for evaluation at the
+desired scale, architects must turn to analytical models and
+simulation to guide design decisions. Historically, the architecture
+community has lacked the tools needed for a reliable and integrated
+evaluation of future architectures and workloads.
+
+The Structural Simulation Toolkit (SST) aims address this problem. The SST
+provides a framework for simulating large-scale HPC systems. This
+simulator allows parallel simulation of large machines at multiple
+levels of detail. The SST couples models for processors, memory, and
+network subsystems. The SST aims, over time, to become a standard
+simulation environment for designing HPC systems by helping Industry,
+Academia, and the National Labs in designing and evaluating future
+architectures.
+
+<h2> Key Interfaces for Component Writers</h2>
+
+A quick overview of some key interfaces and data structures in SST can be found here: \subpage interfaces
+
+<h2> Install </h2>
+	
+Installation instructions can be found <A HREF="http://sst-simulator.org/SSTPages/SSTTopDocBuildInfo/">here</A>.
+
+<h2> Tutorials </h2>
+
+<A HREF="http://sst-simulator.org/SSTPages/SSTMainDocumentation/">Tutorials</A>
+
+<h2> License </h2>
+
+@verbatim
+Copyright 2009-2016 Sandia Corporation. Under the terms
+of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+Government retains certain rights in this software.
+
+Copyright (c) 2009-2016, Sandia Corporation
+
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+
+    * Redistributions in binary form must reproduce the above
+      copyright notice, this list of conditions and the following
+      disclaimer in the documentation and/or other materials provided
+      with the distribution.
+
+    * Neither the name of Sandia Corporation nor the names of its
+      contributors may be used to endorse or promote products derived
+      from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+@endverbatim
+
+<h2> Contact </h2>
+
+sst@sandia.gov
+
+*/
+
+/** @page interfaces Key Interfaces
+
+<h2>The Component</h2>
+
+The most important class for is SST::Component, the base class from
+which all simulation components inherit. At the very least, a
+component writer must create a class which inherits from
+SST::Component and which contains a constructor. This class should be
+created in a dynamic library (.so or .dylib file) and should include a C-style
+function which returns a
+pointer to a newly instantiated component. 
+
+SST::Component also contains useful functions for component setup
+(SST::Component::Setup() and SST::Component::Init()), cleanup (SST::Component::Finish()), controlling when the
+simulation stops (SST::Component::registerExit() and
+SST::Component::unregisterExit() ), and for handling time (such as
+SST::Component::getCurrentSimTime()).
+
+<h2>Making Event Handlers</h2>
+
+SST components use event handling functors to handle interactions with
+other components (i.e. through an SST::Event sent over an SST::Link)
+and recurring events (i.e. component clock ticks). The Event Handler
+Class, SST::EventHandler, is templated to create either type of event
+handler by creating a functor which invokes a given member function
+whenever triggered. For example: 
+
+@verbatim
+NICeventHandler = new Event::Handler<proc>
+    (this, &proc::handle_nic_events);
+...
+bool proc::handle_nic_events(Event *event) {
+...
+}
+@endverbatim
+
+creates an event handler which calls \c proc::handle_nic_events() with
+an argument of type \c Event* - the SST::Event to be processed.
+Similarly,
+
+@verbatim
+clockHandler = new Clock::Handler<proc>(this, &proc::preTic());
+@endverbatim
+
+creates an clock handler which invokes the function \c proc::preTic()
+at a regular interval. 
+
+<h2>Using Event Handlers</h2>
+
+Once created, an SST::EventHandler must be registered with the
+simulation core. This can be done with the SST::Component::configureLink()
+function for events coming from another component, or by
+SST::Component::registerClock(), for event handlers triggered by a
+clock. For example, the handlers created above could be registed in
+this way:
+
+@verbatim
+configureLink("mem0", NICeventHandler)
+registerClock( "1Ghz", clockHandler );
+@endverbatim
+
+Note that SST::Component::registerClock() can have its period or
+frequency expressed in SI units in a string. The allowed units are
+specified in SST::TimeLord::getTimeConverter() function.
+
+Also note that the SST::LinkMap::LinkAdd() function does not require
+an event handler if the recieving component uses the "event pull"
+mechanism with SST::Link::Recv().
+
+<h2>Links</h2>
+
+SST::Component s use SST::Link to communicate by passing events. An
+SST::Link is specified in the Python file use to configure the
+simulation. For example, 
+
+@verbatim
+comp_A = sst.Component("cA", "simpleElementExample.simpleComponent")
+comp_A.addParams({
+      "workPerCycle" : """1000""",
+      "commSize" : """100""",
+})
+comp_B = sst.Component("cB", "simpleElementExample.simpleComponent")
+comp_B.addParams({
+      "workPerCycle" : """1000""",
+      "commSize" : """100""",
+})
+
+link_AB = sst.Link("link_AB")
+link_AB.connect( (comp_A, "Slink", "10000ps"), (comp_B, "Nlink", "10000ps") )
+@endverbatim
+
+specifies two components, \c comp_A and \c comp_B . These components
+are connected by an SST::Link. Each \c link.connect contains a pair of structures which specify the endpoint, port name, and latency of the link.
+
+Other commonly used SST::Link functions are:
+
+  - SST::Link::Send(CompEvent *event) : Send an SST::Event across the link. 
+
+  - SST::Link::Send(SimTime_t delay, CompEvent *event) : Send an
+    SST::Event with an additional delay, where the delay is in units of
+    the link frequency.
+
+  - SST::Link::Send(SimTime_t delay, TimeConverter *tc, CompEvent
+    *event) : Send an SST::Event with additional delay, where the
+    delay is specified in units of the SST::TimeConverter object
+    supplied.
+
+  - SST::Link::Recv() : Pull a pending SST::Event from the SST::Link.
+    If there is no event handler registered with the Link, this
+    function should be used to gather incoming events from the link.
+    (I.e. a component "pulls" events from the link, rather than having
+    them "pushed" into an event handler). 
+
+*/
