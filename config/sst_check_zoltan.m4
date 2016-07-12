@@ -1,10 +1,13 @@
 AC_DEFUN([SST_CHECK_ZOLTAN],
 [
   sst_check_zoltan_happy="yes"
+  sst_check_zoltan_requested="yes"
 
   AC_ARG_WITH([zoltan],
     [AS_HELP_STRING([--with-zoltan@<:@=DIR@:>@],
-      [Use Zoltan package installed in optionally specified DIR])])
+      [Use Zoltan package installed in optionally specified DIR])],
+    [sst_check_zoltan_requested="yes"],
+    [sst_check_zoltan_requested="no"])
 
   AS_IF([test "$with_zoltan" = "no"], [sst_check_zoltan_happy="no"])
 
@@ -44,9 +47,7 @@ AC_DEFUN([SST_CHECK_ZOLTAN],
   # if user doesn't specify --with-zoltan then string is empty, otherwise is has a value
   # if the value is not "no" then we treat as a path, and MUST find in order to be
   # successful
-  AS_IF([test "x$with_zoltan" != "x"],
-  	[AS_IF([test "x$with_zoltan" != "xno" -a "x$sst_check_zoltan_happy" != "xyes"],
-		[AC_MSG_FAILURE([Zoltan was requested (--with-zoltan=$with_zoltan) but could not be found during checks (sst_check_zoltan_happy=$sst_check_zoltan_happy)."])
-	])])
+  AS_IF([test "x$sst_check_zoltan_requested" = "xyes" -a "x$sst_check_zoltan_happy" != "xyes"],
+	[AC_MSG_FAILURE([Zoltan was requested by configure (--with-zoltan=$with_zoltan) but the required libraries and header files could not be found.])])
   AS_IF([test "$sst_check_zoltan_happy" = "yes"], [$1], [$2])
 ])
