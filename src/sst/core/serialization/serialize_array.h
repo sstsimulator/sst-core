@@ -44,7 +44,7 @@ class raw_ptr_wrapper
 {
 public:
     TPtr*& bufptr;
-    raw_ptr_wrapper(TPtr* ptr) :
+    raw_ptr_wrapper(TPtr*& ptr) :
         bufptr(ptr) {}
 };
 
