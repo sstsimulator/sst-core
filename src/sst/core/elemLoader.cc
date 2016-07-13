@@ -118,7 +118,7 @@ ElemLoader::~ElemLoader()
 }
 
 
-static std::vector<std::string>&& splitPath(const std::string & searchPaths)
+static std::vector<std::string> splitPath(const std::string & searchPaths)
 {
     std::vector<std::string> paths;
     char * pathCopy = new char [searchPaths.length() + 1];
