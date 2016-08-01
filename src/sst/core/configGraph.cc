@@ -181,7 +181,7 @@ ConfigGraph::checkForStructuralErrors()
         }
         else {
             found_error = true;
-            output.output("WARNING:  Found duplicate component nane: %s\n",ccomp->name.c_str());
+            output.output("WARNING:  Found duplicate component name: %s\n",ccomp->name.c_str());
             count--;
             if ( count == 0 ) {
                 output.output("Maximum name clashes reached, no more checks will be made.\n");
