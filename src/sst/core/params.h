@@ -35,13 +35,11 @@ namespace SST {
 class ConfigGraph;
 
 /**
- * Parameter store
+ * Parameter store.
  *
- *  Meets the requirements of a <a href="tables.html#65">container</a>, a
- *  <a href="tables.html#66">reversible container</a>, and an
- *  <a href="tables.html#69">associative container</a> (using unique keys).
- *  For a @c map<Key,T> the key_type is Key, the mapped_type is T, and the
- *  value_type is std::pair<const Key,T>.
+ * Stores key-value pairs as std::strings and provides
+ * a templated find method for finding values and converting
+ * them to arbitrary types (@see find()).
  */
 class Params : public SST::Core::Serialization::serializable {
 private:
@@ -123,11 +121,10 @@ public:
     virtual ~Params() { }
 
     /**
-     *  @brief  Map assignment operator.
-     *  @param  old  A %map of identical element and allocator types.
+     *  @brief  Assignment operator.
+     *  @param  old  Param to be copied
      *
-     *  All the elements of @a x are copied, but unlike the copy constructor,
-     *  the allocator object is not copied.
+     *  All the elements of old are copied,
      */
     Params& operator=(const Params& old) {
         data = old.data;
@@ -137,10 +134,7 @@ public:
     }
 
     /**
-     *  Erases all elements in a %map.  Note that this function only
-     *  erases the elements, and that if the elements themselves are
-     *  pointers, the pointed-to memory is not touched in any way.
-     *  Managing the pointer is the user's responsibilty.
+     *  Erases all elements.
      */
     void clear() { data.clear(); }
 
@@ -148,17 +142,22 @@ public:
     /**
      *  @brief  Finds the number of elements with given key.
      *  @param  k  Key of (key, value) pairs to be located.
-     *  @return  Number of elements with specified key.
+     *  @return  Number of elements with specified key
+     *  (either 1 or 0).
      *
-     *  This function only makes sense for multimaps; for map the result will
-     *  either be 0 (not present) or 1 (present).
      */
     size_t count(const key_type& k) { return data.count(getKey(k)); }
 
-    /** Find a Parameter value in the set, and return its value as a type T
+    /** Find a Parameter value in the set, and return its value as a type T.
+     * Type T must be either a basic numeric type (including bool) ,
+     * a std::string, or a class that has a constructor with a std::string
+     * as its only parameter.  This class uses SST::Core::from_string to
+     * do the conversion.
      * @param k - Parameter name
      * @param default_value - Default value to return if parameter isn't found
      * @param found - set to true if the the parameter was found
+     * @throw std::invalid_argument If value in (key, value) can't be
+     * converted to type T, an invalid_argument exception is thrown.
      */
     template <class T>
     T find(const std::string &k, T default_value, bool &found) const {
@@ -181,17 +180,79 @@ public:
         }        
     }
     
-    /** Find a Parameter value in the set, and return its value as a type T
+    /** Find a Parameter value in the set, and return its value as a type T.
+     * Type T must be either a basic numeric type (including bool) ,
+     * a std::string, or a class that has a constructor with a std::string
+     * as its only parameter.  This class uses SST::Core::from_string to
+     * do the conversion.
+     * @param k - Parameter name
+     * @param default_value - Default value to return if parameter isn't found,
+     *   specified as a string
+     * @param found - set to true if the the parameter was found
+     */
+    template <class T>
+    T find(const std::string &k, std::string default_value, bool &found) const {
+        verifyParam(k);
+        const_iterator i = data.find(getKey(k));
+        if (i == data.end()) {
+            found = false;
+            try {
+                return SST::Core::from_string<T>(default_value);
+            }
+            catch ( const std::invalid_argument& e ) {
+                std::string msg = "Params::find(): Invalid default value specified: key = " + k + ", value =  " + i->second +
+                    ".  Original error: " + e.what();
+                std::invalid_argument t(msg);
+                throw t;
+            }
+        } else {
+            found = true;
+            try {
+                return SST::Core::from_string<T>(i->second);
+            }
+            catch ( const std::invalid_argument& e ) {
+                std::string msg = "Params::find(): No conversion for value: key = " + k + ", value =  " + i->second +
+                    ".  Original error: " + e.what();
+                std::invalid_argument t(msg);
+                throw t;
+            }
+        }        
+    }
+    
+    /** Find a Parameter value in the set, and return its value as a type T.
+     * Type T must be either a basic numeric type (including bool),
+     * a std::string, or a class that has a constructor with a std::string
+     * as its only parameter.  This class uses SST::Core::from_string to
+     * do the conversion.
      * @param k - Parameter name
      * @param default_value - Default value to return if parameter isn't found
      */
     template <class T>
     T find(const std::string &k, T default_value ) const {
         bool tmp;
-        return find(k, default_value, tmp);
+        return find<T>(k, default_value, tmp);
     }
     
-    /** Find a Parameter value in the set, and return its value as a type T
+    /** Find a Parameter value in the set, and return its value as a type T.
+     * Type T must be either a basic numeric type (including bool) ,
+     * a std::string, or a class that has a constructor with a std::string
+     * as its only parameter.  This class uses SST::Core::from_string to
+     * do the conversion.
+     * @param k - Parameter name
+     * @param default_value - Default value to return if parameter isn't found,
+     *   specified as a string
+     */
+    template <class T>
+    T find(const std::string &k, std::string default_value ) const {
+        bool tmp;
+        return find<T>(k, default_value, tmp);
+    }
+    
+    /** Find a Parameter value in the set, and return its value as a type T.
+     * Type T must be either a basic numeric type (including bool) ,
+     * a std::string, or a class that has a constructor with a std::string
+     * as its only parameter.  This class uses SST::Core::from_string to
+     * do the conversion.
      * @param k - Parameter name
      */
     template <class T>
@@ -201,7 +262,11 @@ public:
         return find(k, default_value, tmp);
     }
     
-    /** Find a Parameter value in the set, and return its value as a type T
+    /** Find a Parameter value in the set, and return its value as a type T.
+     * Type T must be either a basic numeric type (including bool) ,
+     * a std::string, or a class that has a constructor with a std::string
+     * as its only parameter.  This class uses SST::Core::from_string to
+     * do the conversion.
      * @param k - Parameter name
      * @param found - set to true if the the parameter was found
      */
@@ -214,6 +279,10 @@ public:
     /** Find a Parameter value in the set, and return its value as a
      * vector of T's.  The array will be appended to
      * the end of the vector.
+     * Type T must be either a basic numeric type (including bool) ,
+     * a std::string, or a class that has a constructor with a std::string
+     * as its only parameter.  This class uses SST::Core::from_string to
+     * do the conversion.
      *
      * @param k - Parameter name
      * @param vec - vector to append array items to
