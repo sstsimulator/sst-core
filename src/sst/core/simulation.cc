@@ -797,6 +797,8 @@ void Simulation::endSimulation(SimTime_t end)
 
 void Simulation::finish() {
 
+    currentSimCycle = endSimCycle;
+
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter )
     {
         (*iter)->getComponent()->finish();
