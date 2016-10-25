@@ -55,7 +55,10 @@ public:
             Read,       /*!< Issue a Read from Memory */
             Write,      /*!< Issue a Write to Memory */
             ReadResp,   /*!< Response from Memory to a Read */
-            WriteResp   /*!< Response from Memory to a Write */
+            WriteResp,  /*!< Response from Memory to a Write */
+            FlushLine,  /*!< Cache flush request - writeback specified line throughout memory system */
+            FlushLineInv,  /*!< Cache flush request - writeback and invalidate specified line throughout memory system */
+            FlushLineResp,  /*!< Response to FlushLine; flag F_FLUSH_SUCCESS indicates success or failure */
         } Command;
 
         /**
@@ -65,7 +68,8 @@ public:
             F_NONCACHEABLE  = 1<<1,     /*!< This request should not be cached */
             F_LOCKED        = 1<<2,     /*!< This request should be locked.  A LOCKED read should be soon followed by a LOCKED write (to unlock) */
             F_LLSC          = 1<<3,
-            F_LLSC_RESP     = 1<<4
+            F_LLSC_RESP     = 1<<4,
+            F_FLUSH_SUCCESS = 1<<5      /*!< This flag is set if the flush was successful. Flush may fail due to LOCKED lines */
         } Flags;
 
         /** Type of the payload or data */
