@@ -6,6 +6,7 @@
 #include <iostream>
 #include <cstring>
 #include <string>
+#include <sys/file.h>
 
 #include "envquery.h"
 #include "envconfig.h"
@@ -37,6 +38,11 @@ void SST::Core::Environment::configReadLine(FILE* theFile, char* lineBuffer) {
 }
 
 void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg, bool errorOnNotOpen) {
+
+	// Get the file descriptor and lock the file using a shared lock so
+	// people don't come and change it from under us
+	int configFileFD = fileno(configFile);
+	flock(configFileFD, LOCK_SH);
 
 	constexpr size_t maxBufferLength = 4096;
 	char* lineBuffer = (char*) malloc(sizeof(char) * maxBufferLength);
@@ -86,6 +92,8 @@ void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, Environ
 		}
 	}
 
+	// Unlock since we are done processing it
+	flock(configFileFD, LOCK_UN);
 	free(lineBuffer);
 }
 

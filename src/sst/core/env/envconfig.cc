@@ -9,6 +9,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
+#include <sys/file.h>
 
 //SST::Core::Environment::EnvironmentConfigGroup(std::string gName) {
 //	groupName(gName);
@@ -124,10 +125,22 @@ void SST::Core::Environment::EnvironmentConfiguration::print() {
 void SST::Core::Environment::EnvironmentConfiguration::writeTo(std::string filePath) {
 	FILE* output = fopen(filePath.c_str(), "w+");
 
+	if(NULL == output) {
+		fprintf(stderr, "Unable to open file: %s\n", filePath.c_str());
+		exit(-1);
+	}
+
+	const int outputFD = fileno(output);
+
+	// Lock the file because we are going to write it out (this should be
+	// exclusive since no one else should muck with it)
+	flock(outputFD, LOCK_EX);
+
 	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
 		groupItr->second->writeTo(output);
 	}
 
+	flock(outputFD, LOCK_UN);
 	fclose(output);
 }
 
