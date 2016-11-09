@@ -148,18 +148,16 @@ Config::Config(RankInfo rankInfo)
          "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
         ("output-dot", po::value <string >(&output_dot),
          "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
-        ("output-directory", po::value <string >(&output_directory),
-         "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
-    ("num_threads,n", po::value <uint32_t>(&world_size.thread),
-     "Number of parallel threads to use per rank.")
+        ("num_threads,n", po::value <uint32_t>(&world_size.thread),
+         "Number of parallel threads to use per rank.")
 #ifdef SST_CONFIG_HAVE_PYTHON
         ("model-options", po::value< string >(&model_options),
          "Provide options to the SST Python scripting engine (default is to provide no script options)")
 #endif
         ("output-partition", po::value< string >(&dump_component_graph_file),
          "Dump the component partition to this file (default is not to dump information)")
-	("output-prefix-core", po::value< string >(&output_core_prefix),
-	 "Sets the SST::Output prefix for the core during execution")
+        ("output-prefix-core", po::value< string >(&output_core_prefix),
+         "Sets the SST::Output prefix for the core during execution")
 #ifdef USE_MEMPOOL
         ("output-undeleted-events", po::value<string>(&event_dump_file),
          "Outputs information about all undeleted events to the specified file at end of simulation (STDOUT and STDERR can be used to output to console on stdout and stderr")

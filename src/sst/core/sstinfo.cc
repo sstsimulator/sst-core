@@ -234,7 +234,7 @@ void processSSTElementFiles(std::string searchPath)
             closedir(pDir);
         } else {
             // Failed to open the directory for some reason
-            fprintf(stderr, "ERROR: %s - When trying to open Directory %s\n", strerror(errno), targetDir.c_str());
+            fprintf(stderr, "ERROR: %s - When trying to open Directory %s\n", strerror(errno), searchDir.c_str());
         }
     
     } while (foundIndex != std::string::npos);
