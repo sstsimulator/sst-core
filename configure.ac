@@ -81,6 +81,7 @@ AC_DEFINE_UNQUOTED([SST_WANT_POLYMORPHIC_ARCHIVE], [$want_polymorphic],
 
 SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
 SST_CHECK_LIBZ()
+SST_CHECK_HDF5()
 SST_CHECK_MEM_POOL()
 
 SST_ENABLE_DEBUG_OUTPUT()

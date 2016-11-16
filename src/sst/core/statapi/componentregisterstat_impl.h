@@ -201,7 +201,7 @@
     if (true == statGood) {
         // The passed in Statistic is OK to use, register its fields
         StatisticOutput* statOutput = Simulation::getSimulation()->getStatisticsOutput();
-        statOutput->startRegisterFields(statistic->getCompName().c_str(), statistic->getStatName().c_str());
+        statOutput->startRegisterFields(statistic);
         statistic->registerOutputFields(statOutput);
         statOutput->stopRegisterFields();
 
