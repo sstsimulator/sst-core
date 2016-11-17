@@ -266,9 +266,13 @@ void StatisticOutputHDF5::StatisticInfo::finalizeRegistration()
     std::string statName = objName + "/" + statistic->getStatName();
 
     if ( statistic->getStatSubId().length() > 0 ) {
-        H5::Group* statGroup = new H5::Group( file->createGroup(statName));
-        statGroup->close();
-        delete statGroup;
+        try {
+            H5::Group* statGroup = new H5::Group( file->createGroup(statName));
+            statGroup->close();
+            delete statGroup;
+        } catch (H5::FileIException ie) {
+            /* Ignore - group already exists. */
+        }
         statName += "/" + statistic->getStatSubId();
     }
 
@@ -278,7 +282,7 @@ void StatisticOutputHDF5::StatisticInfo::finalizeRegistration()
     hsize_t maxdims[1] = { H5S_UNLIMITED };
     H5::DataSpace dspace(1, dims, maxdims);
     H5::DSetCreatPropList cparms;
-    hsize_t chunk_dims[1] = {32};
+    hsize_t chunk_dims[1] = {128};
     cparms.setChunk(1, chunk_dims);
     cparms.setDeflate(7);
 
