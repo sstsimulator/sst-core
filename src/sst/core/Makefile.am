@@ -131,6 +131,7 @@ nobase_dist_sst_HEADERS = \
 	statapi/statoutputtxtgz.h \
 	statapi/statoutputcsv.h \
 	statapi/statoutputcsvgz.h \
+	statapi/statoutputhdf5.h \
 	statapi/statbase.h \
 	statapi/stathistogram.h \
 	statapi/stataccumulator.h \
@@ -297,4 +298,11 @@ include model/Makefile.inc
 if USE_LIBZ
 sstsim_x_LDADD += $(LIBZ_LIBS)
 sstinfo_x_LDADD += $(LIBZ_LIBS)
+endif
+
+if USE_HDF5
+sstsim_x_SOURCES += statapi/statoutputhdf5.cc
+sstinfo_x_SOURCES += statapi/statoutputhdf5.cc
+sstsim_x_LDADD += $(HDF5_LIBS)
+sstinfo_x_LDADD += $(HDF5_LIBS)
 endif

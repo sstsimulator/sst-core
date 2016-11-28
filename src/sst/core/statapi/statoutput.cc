@@ -36,14 +36,16 @@ StatisticOutput::~StatisticOutput()
 }
 
 // Start / Stop of register
-void StatisticOutput::startRegisterFields(const char* componentName, const char* statisticName)
+void StatisticOutput::startRegisterFields(StatisticBase *statistic)
 {
-    m_currentFieldCompName = componentName;
-    m_currentFieldStatName = statisticName;
+    m_currentFieldCompName = statistic->getCompName();
+    m_currentFieldStatName = statistic->getStatName();
+    implStartRegisterFields(statistic);
 }
 
 void StatisticOutput::stopRegisterFields()
 {
+    implStopRegisterFields();
     m_currentFieldCompName = "";
     m_currentFieldStatName = "";
 }
