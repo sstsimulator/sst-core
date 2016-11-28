@@ -184,7 +184,7 @@ void processSSTElementFiles(std::string searchPath)
                 } else {
                     // Failed to open the directory for some reason
                     fprintf(stderr, "ERROR: %s - Unable to get stat info on Directory Entry %s\n", strerror(errno), dirEntryPath.c_str());
-                    return;
+                    continue;
                 }
                 
                 for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
