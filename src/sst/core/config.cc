@@ -22,7 +22,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <getopt.h>
-#include <termio.h>
+#include <sys/ioctl.h>
 #include <iostream>
 
 #ifdef SST_CONFIG_HAVE_MPI
