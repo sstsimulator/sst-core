@@ -601,7 +601,6 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
                 return self;
             }
         }
-        
     }
 
     Py_RETURN_NONE;
@@ -664,11 +663,13 @@ static PyObject* setProgramOption(PyObject* self, PyObject* args)
     int argOK = PyArg_ParseTuple(args, "ss", &param, &value);
 
     if ( argOK ) {
-        gModel->getParams()[param] = value;
+        if ( gModel->getConfig()->setConfigEntryFromModel(param, value) )
+            Py_RETURN_TRUE;
+        else
+            Py_RETURN_FALSE;
     } else {
         return NULL;
     }
-    return PyInt_FromLong(0);
 }
 
 
@@ -681,8 +682,8 @@ static PyObject* setProgramOptions(PyObject* self, PyObject* args)
     PyObject *key, *val;
     long count = 0;
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        gModel->getParams()[PyString_AsString(key)] = PyString_AsString(val);
-        count++;
+        if ( gModel->getConfig()->setConfigEntryFromModel(PyString_AsString(key), PyString_AsString(val)) )
+            count++;
     }
     return PyInt_FromLong(count);
 }
@@ -692,8 +693,6 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
 {
     // Load parameters already set.
     Config *cfg = gModel->getConfig();
-    cfg->parseConfigFile(gModel->getConfigString());
-    gModel->getParams().clear(); // No longer need anything set.
 
     PyObject* dict = PyDict_New();
     PyDict_SetItem(dict, PyString_FromString("debug-file"), PyString_FromString(cfg->debugFile.c_str()));
@@ -1226,10 +1225,6 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
     }
 
 
-    output->verbose(CALL_INFO, 1, 0, "Configuration will now parse parameters.\n");
-
-    config->parseConfigFile(getConfigString());
-
     output->verbose(CALL_INFO, 1, 0, "Construction of config graph with Python is complete.\n");
 
     if(NULL != PyErr_Occurred()) {
@@ -1238,16 +1233,6 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
     }
 
     return graph;
-}
-
-
-std::string SSTPythonModelDefinition::getConfigString() const
-{
-    std::stringstream ss;
-    for ( std::map<std::string, std::string>::const_iterator i = cfgParams.begin(); i != cfgParams.end() ; ++i ) {
-        ss << i->first << "=" << i->second << "\n";
-    }
-    return ss.str();
 }
 
 

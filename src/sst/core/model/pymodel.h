@@ -48,7 +48,6 @@ class SSTPythonModelDefinition : public SSTModelDescription {
 		Output* output;
 		Config* config;
 		ConfigGraph *graph;
-		std::map<std::string, std::string> cfgParams;
         char *namePrefix;
         size_t namePrefixLen;
         std::vector<size_t> nameStack;
@@ -60,9 +59,7 @@ class SSTPythonModelDefinition : public SSTModelDescription {
 
 	public:  /* Public, but private.  Called only from Python functions */
 		Config* getConfig(void) const { return config; }
-		std::map<std::string, std::string>& getParams(void) { return cfgParams; }
 		//ConfigGraph* getConfigGraph(void) const { return graph; }
-		std::string getConfigString(void) const;
 		Output* getOutput() const { return output; }
         ComponentId_t addComponent(const char *name, const char *type) {
             ComponentId_t id = graph->addComponent(name, type);

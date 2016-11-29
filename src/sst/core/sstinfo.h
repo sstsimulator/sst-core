@@ -55,21 +55,16 @@ public:
 private:
     void outputUsage();
     void outputVersion();
-    
-private:      
-    char*                                                   m_AppName;
-    boost::program_options::options_description*            m_configDesc;
-    boost::program_options::options_description*            m_hiddenDesc;
-    boost::program_options::positional_options_description* m_posDesc;
-    boost::program_options::variables_map*                  m_vm;
-    
-    std::vector<std::string>                                m_elementsToProcess;    
-    std::vector<std::string>                                m_filteredElementNames;
-    std::vector<std::string>                                m_filteredElementComponentNames;
-    unsigned int                                            m_optionBits;
-    std::string                                             m_XMLFilePath;
-};    
-    
+
+private:
+    char*                     m_AppName;
+    std::vector<std::string>  m_elementsToProcess;
+    std::vector<std::string>  m_filteredElementNames;
+    std::vector<std::string>  m_filteredElementComponentNames;
+    unsigned int              m_optionBits;
+    std::string               m_XMLFilePath;
+};
+
 /**
  * The SSTInfo representation of ElementInfoParam object.
  *

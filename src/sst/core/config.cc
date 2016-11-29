@@ -1,10 +1,10 @@
 // Copyright 2009-2016 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
-// 
+//
 // Copyright (c) 2009-2016, Sandia Corporation
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -15,8 +15,15 @@
 #include "sst/core/part/sstpart.h"
 
 #include <errno.h>
+#ifndef E_OK
+#define E_OK 0
+#endif
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <getopt.h>
+#include <termio.h>
 #include <iostream>
-#include <boost/program_options.hpp>
 
 #ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
@@ -26,28 +33,20 @@
 #include "sst/core/output.h"
 //#include "sst/core/sdl.h"
 
-namespace po = boost::program_options;
-
 using namespace std;
 
 namespace SST {
 
 Config::~Config() {
-    delete visNoConfigDesc;
-    delete hiddenNoConfigDesc;
-    delete legacyDesc;
-    delete mainDesc;
-    delete posDesc;
-    delete var_map;
 }
-    
+
 Config::Config(RankInfo rankInfo)
 {
     debugFile   = "/dev/null";
     runMode     = Simulation::BOTH;
-    libpath     = SST_INSTALL_PREFIX"/lib/sst";
+    libpath     = SST_INSTALL_PREFIX "/lib/sst";
     addlLibPath = "";
-    sdlfile     = "NONE";
+    configFile     = "NONE";
     stopAtCycle = "0 ns";
     timeBase    = "1 ps";
     heartbeatPeriod = "N";
@@ -56,9 +55,7 @@ Config::Config(RankInfo rankInfo)
     generator_options   = "";
     dump_component_graph_file = "";
     output_directory = "";
-#ifdef SST_CONFIG_HAVE_PYTHON
     model_options = "";
-#endif
     verbose     = 0;
     world_size.rank = rankInfo.rank;
     world_size.thread = 1;
@@ -70,106 +67,350 @@ Config::Config(RankInfo rankInfo)
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     event_dump_file = "";
 #endif
-    
+
     // Some config items can be initialized from either the command line or
     // the config file. The command line has precedence. We need to initialize
     // the items found in the sdl file first. They will be overridden later.
-    // We need to find the sdlfile amongst the command line arguments
+    // We need to find the configFile amongst the command line arguments
 
-    visNoConfigDesc = new po::options_description( "Allowed options" );
-    visNoConfigDesc->add_options()
-        ("help,h", "print help message")
-        ("verbose,v", "print information about core runtimes")
-        ("disable-signal-handlers", "disable SST automatic dynamic library environment configuration")
-        ("no-env-config", "disable SST environment configuration")
-        ("print-timing-info", "print SST timing information")
-        ("version,V", "print SST Release Version")
-    ;
-
-    hiddenNoConfigDesc = new po::options_description( "" );
-    hiddenNoConfigDesc->add_options()
-        ("sdl-file", po::value< string >( &sdlfile ), 
-                                "system description file")
-    ; 
-
-    legacyDesc = new po::options_description( "Legacy options" );
-    legacyDesc->add_options()
-        ("stopAtCycle", po::value< string >(&stopAtCycle), 
-	                        "how long should the simulation run")
-        ("timeBase", po::value< string >(&timeBase), 
-                                "the base time of the simulation")
-    ; 
-
-    posDesc = new po::positional_options_description();
-    posDesc->add("sdl-file", 1);
-
-    // Build the string for the partitioner help
-    string part_desc;
-    part_desc.append("partitioner to be used < ");
-    map<string,string> desc = SST::Partition::SSTPartitioner::getDescriptionMap();
-    string prefix = "";
-    for ( map<string,string>::const_iterator it = desc.begin(); it != desc.end() ; ++it ) {
-        part_desc.append(prefix).append(it->first);
-        prefix = " | ";
-    }
-    part_desc.append(" | lib.partitioner_name >\nDescriptions:");
-    for ( map<string,string>::const_iterator it = desc.begin(); it != desc.end() ; ++it ) {
-        part_desc.append("\n-  ").append(it->first).append(": ").append(it->second);
-    }
-    part_desc.append("\n-  lib.partitioner_name: Partitioner found in element library 'lib' with name 'partitioner_name'");
-    mainDesc = new po::options_description( "" );
-    mainDesc->add_options()
-        ("debug-file", po::value <string> ( &debugFile ),
-                                "file where debug output will go")
-        ("lib-path", po::value< string >( &libpath ),
-                                "component library path (overwrites default)")
-        ("add-lib-path", po::value< string >( &addlLibPath ),
-                                "add additional component library paths")
-        ("run-mode", po::value< string >(), 
-                                "run mode [ init | run | both ]")
-        ("stop-at", po::value< string >(&stopAtCycle), 
-	                        "set time at which simulation will end execution")
-        ("heartbeat-period", po::value< string >(&heartbeatPeriod),
-				"Set time for heart beats to be published (these are approximate timings published by the core to update on progress), default is every 10000 simulated seconds")
-        ("timebase", po::value< string >(&timeBase), 
-                                "sets the base time step of the simulation (default: 1ps)")
-#ifdef SST_CONFIG_HAVE_MPI
-        ("partitioner", po::value< string >(&partitioner),
-         part_desc.c_str())
-#endif
-
-        ("generator", po::value< string >(&generator),
-         "generator to be used to build simulation <lib.generator_name>")
-        ("gen-options", po::value< string >(&generator_options),
-         "options to be passed to generator function (must use quotes if whitespace is present)")
-        ("output-config", po::value< string >(&output_config_graph),
-         "Dump the SST component and link configuration graph to this file (as a Python file), empty string (default) is not to dump anything.")
-        ("output-directory", po::value <string >(&output_directory),
-         "Controls where SST will place output files including debug output and simulation statistics, default is for SST to create a unique directory.")
-        ("output-dot", po::value <string >(&output_dot),
-         "Dump the SST component and link graph to this file in DOT-format, empty string (default) is not to dump anything.")
-        ("num_threads,n", po::value <uint32_t>(&world_size.thread),
-         "Number of parallel threads to use per rank.")
-#ifdef SST_CONFIG_HAVE_PYTHON
-        ("model-options", po::value< string >(&model_options),
-         "Provide options to the SST Python scripting engine (default is to provide no script options)")
-#endif
-        ("output-partition", po::value< string >(&dump_component_graph_file),
-         "Dump the component partition to this file (default is not to dump information)")
-        ("output-prefix-core", po::value< string >(&output_core_prefix),
-         "Sets the SST::Output prefix for the core during execution")
-#ifdef USE_MEMPOOL
-        ("output-undeleted-events", po::value<string>(&event_dump_file),
-         "Outputs information about all undeleted events to the specified file at end of simulation (STDOUT and STDERR can be used to output to console on stdout and stderr")
-#endif
-        ("output-xml", po::value< string >(&output_xml),
-         "Dump the SST component and link configuration graph to this file (as an XML file), empty string (default) is not to dump anything.")
-        ("output-json", po::value< string >(&output_json),
-         "Dump the SST component and link configuration graph to this file (as an JSON file), empty string (default) is not to dump anything.")
-        ;
-
-    	var_map = new po::variables_map();
 }
+
+struct sstLongOpts_s {
+    struct option opt;
+    const char *argName;
+    const char *desc;
+    Config::flagFunction flagFunc;
+    Config::argFunction  argFunc;
+};
+
+
+#define DEF_FLAGOPTVAL(longName, shortName, text, func, valFunc) \
+    {{longName, no_argument, 0, shortName}, NULL, text, func, valFunc}
+
+#define DEF_FLAGOPT(longName, shortName, text, func) \
+    DEF_FLAGOPTVAL(longName, shortName, text, func, NULL)
+
+
+#define DEF_ARGOPT_SHORT(longName, shortName, argName, text, func) \
+    {{longName, required_argument, 0, shortName}, argName, text, NULL, func}
+
+#define DEF_ARGOPT(longName, argName, text, func) \
+    DEF_ARGOPT_SHORT(longName, 0, argName, text, func)
+
+static const struct sstLongOpts_s sstOptions[] = {
+    /* visNoConfigDesc */
+    DEF_FLAGOPT("help",                     'h',    "print help message", &Config::usage),
+    DEF_FLAGOPTVAL("verbose",                  'v',    "print information about core runtime", &Config::incrVerbose, &Config::setVerbosity),
+    DEF_FLAGOPT("version",                  'V',    "print SST Release Version", &Config::printVersion),
+    DEF_FLAGOPT("disable-signal-handlers",  0,      "disable SST automatic dynamic library environment configuration", &Config::disableSigHandlers),
+    DEF_FLAGOPT("no-env-config",            0,      "disable SST environment configuration", &Config::disableEnvConfig),
+    DEF_FLAGOPT("print-timing-info",        0,      "print SST timing information", &Config::enablePrintTiming),
+    /* HiddenNoConfigDesc */
+    DEF_ARGOPT("sdl-file",          "FILE",         "SST Configuration file", &Config::setConfigFile),
+    /* MainDesc */
+    DEF_ARGOPT("debug-file",        "FILE",         "file where debug output will go", &Config::setDebugFile),
+    DEF_ARGOPT("lib-path",          "LIBPATH",      "component library path (overwrites default)", &Config::setLibPath),
+    DEF_ARGOPT("add-lib-path",      "LIBPATH",      "component library path (appends to main path)", &Config::addLibPath),
+    DEF_ARGOPT("run-mode",          "MODE",         "run mode [ init | run | both]", &Config::setRunMode),
+    DEF_ARGOPT("stop-at",           "TIME",         "set time at which simulation will end execution", &Config::setStopAt),
+    DEF_ARGOPT("heartbeat-period",  "PERIOD",       "set time for heartbeats to be published (these are approximate timings, published by the core, to update on progress), default is every 10000 simulated seconds", &Config::setHeartbeat),
+    DEF_ARGOPT("timebase",          "TIMEBASE",     "sets the base time step of the simulation (default: 1ps)", &Config::setTimebase),
+    DEF_ARGOPT("partitioner",       "PARTITIONER",  "select the partioner to be used. <lib.partitionerName>", &Config::setPartitioner),
+    DEF_ARGOPT("generator",         "GENERATOR",    "select the generator to be used to build simulation <lib.generatorName>", &Config::setGenerator),
+    DEF_ARGOPT("gen-options",       "OPTSTIRNG",    "options to be passed to generator function", &Config::setGeneratorOptions),
+    DEF_ARGOPT("output-directory",  "DIR",          "directory into which all SST output files should reside", &Config::setOutputDir),
+    DEF_ARGOPT("output-config",     "FILE",         "file to write SST configuration (in Python format)", &Config::setWriteConfig),
+    DEF_ARGOPT("output-dot",        "FILE",         "file to write SST configuration graph (in GraphViz format)", &Config::setWriteDot),
+    DEF_ARGOPT("output-xml",        "FILE",         "file to write SST configuration graph (in XML format)", &Config::setWriteXML),
+    DEF_ARGOPT("output-json",       "FILE",         "file to write SST configuration graph (in JSON format)", &Config::setWriteJSON),
+    DEF_ARGOPT("output-partition",  "FILE",         "file to write SST compoenent partitioning information", &Config::setWritePartition),
+    DEF_ARGOPT("output-prefix-core","STR",          "set the SST::Output prefix for the core", &Config::setOutputPrefix),
+#ifdef USE_MEMPOOL
+    DEF_ARGOPT("output-undeleted-events",   "FILE", "file to write information about all undeleted events at the end of simulation (STDOUT and STDERR can be used to output to console)", &Config::setWriteUndeleted),
+#endif
+    DEF_ARGOPT("model-options",     "STR",          "provide options to the python configuration script", &Config::setModelOptions),
+    DEF_ARGOPT_SHORT("num_threads", 'n',   "NUM",   "number of parallel threads to use per rank", &Config::setNumThreads),
+    {{NULL, 0, 0, 0}, NULL, NULL, NULL, NULL}
+};
+static const size_t nLongOpts = (sizeof(sstOptions) / sizeof(sstLongOpts_s)) -1;
+
+
+bool Config::usage() {
+#ifdef SST_CONFIG_HAVE_MPI
+	int this_rank = 0;
+	MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
+	if(this_rank != 0)  return true;
+#endif
+
+    /* Determine screen / description widths */
+    uint32_t MAX_WIDTH = 80;
+
+    struct winsize size;
+    if ( ioctl(STDERR_FILENO,TIOCGWINSZ,&size) == 0 ) {
+        MAX_WIDTH = size.ws_col;
+    }
+
+    if ( getenv("COLUMNS") ) {
+        errno = E_OK;
+        uint32_t x = strtoul(getenv("COLUMNS"), 0, 0);
+        if ( errno == E_OK ) MAX_WIDTH = x;
+    }
+
+    const uint32_t desc_start = 32;
+    const uint32_t desc_width = MAX_WIDTH - desc_start;
+
+
+    /* Print usage */
+    fprintf(stderr,
+            "Usage: sst [options] config-file\n"
+            "\n");
+    for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
+        int npos = 0;
+        if ( sstOptions[i].opt.val ) {
+            npos += fprintf(stderr, "  -%c, ", (char)sstOptions[i].opt.val);
+        } else {
+            npos += fprintf(stderr, "      ");
+        }
+        npos += fprintf(stderr, "--%s", sstOptions[i].opt.name);
+        if ( sstOptions[i].opt.has_arg != no_argument ) {
+            npos += fprintf(stderr, "=%s", sstOptions[i].argName);
+        }
+        if ( npos >= desc_start ) { fprintf(stderr, "\n"); npos = 0; }
+
+
+
+        const char *text = sstOptions[i].desc;
+        while ( text != NULL  && *text != '\0' ) {
+            /* Advance to offset */
+            while ( npos < desc_start ) npos += fprintf(stderr, " ");
+
+            if ( strlen(text) <= desc_width ) {
+                fprintf(stderr, "%s", text);
+                break;
+            } else {
+                /* TODO:  Handle hyphenation more intelligently */
+                int nwritten = fprintf(stderr, "%.*s-\n", desc_width-1, text);
+                text += (nwritten -2);
+                npos = 0;
+            }
+        }
+        fprintf(stderr, "\n");
+    }
+
+    return false; /* Should not continue */
+}
+
+
+int
+Config::parseCmdLine(int argc, char* argv[]) {
+    static const char* sst_short_options = "hvVn:";
+    struct option sst_long_options[nLongOpts];
+    for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
+        sst_long_options[i] = sstOptions[i].opt;
+    }
+
+    run_name = argv[0];
+
+    bool ok = true;
+    while (ok) {
+        int option_index = 0;
+        char c = getopt_long(argc, argv, sst_short_options, sst_long_options, &option_index);
+        if ( c == -1 ) /* We're done */
+            break;
+
+        switch (c) {
+        case 0:
+            /* Long option, no short option */
+            if ( optarg == NULL ) {
+                ok = (this->*sstOptions[option_index].flagFunc)();
+            } else {
+                ok = (this->*sstOptions[option_index].argFunc)(optarg);
+            }
+            break;
+
+        case 'v':
+            ok = incrVerbose();
+            break;
+
+        case 'n': {
+            ok = setNumThreads(optarg);
+            break;
+        }
+
+        case 'V':
+            ok = printVersion();
+            break;
+        case 'h':
+        case '?':
+        default:
+            ok = usage();
+        }
+    }
+
+    if ( !ok ) return 1;
+
+    /* Handle non-positional arguments */
+    if ( optind < argc ) {
+        ok = setConfigFile(argv[optind++]);
+        /* Support further additional arguments to be args to the model */
+        while ( ok && optind < argc ) {
+            ok = setModelOptions(argv[optind++]);
+        }
+    }
+
+    if ( !ok ) return 1;
+
+
+    /* Sanity check, and other duties */
+    Output::setFileName( debugFile != "/dev/null" ? debugFile : "sst_output" );
+
+    if ( configFile == "NONE" && generator == "NONE" ) {
+        cout << "ERROR: no sdl-file and no generator specified" << endl;
+        cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
+        return -1;
+    }
+
+    return 0;
+}
+
+
+bool Config::setConfigEntryFromModel(const string &entryName, const string &value)
+{
+    for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
+        if ( !entryName.compare(sstOptions[i].opt.name) ) {
+            if ( NULL != sstOptions[i].argFunc ) {
+                return (this->*sstOptions[i].argFunc)(value);
+            } else {
+                return (this->*sstOptions[i].flagFunc)();
+            }
+        }
+    }
+    return false;
+}
+
+
+
+bool Config::printVersion() {
+    printf("SST-Core Release Version (" PACKAGE_VERSION);
+    if (SSTCORE_GIT_HEADSHA != PACKAGE_VERSION)
+        printf(", Branch SHA: " SSTCORE_GIT_HEADSHA );
+    printf(")\n");
+
+    return false; /* Should not continue */
+}
+
+
+bool Config::setConfigFile(const std::string &arg) {
+    struct stat sb;
+    char *fqpath = realpath(arg.c_str(), NULL);
+    if ( NULL == fqpath ) {
+        fprintf(stderr, "Failed to canonicalize path [%s]:  %s\n", arg.c_str(), strerror(errno));
+        return false;
+    }
+    configFile = fqpath;
+    free(fqpath);
+    if ( 0 != stat(configFile.c_str(), &sb) ) {
+        fprintf(stderr, "File [%s] cannot be found: %s\n", configFile.c_str(), strerror(errno));
+        return false;
+    }
+    if ( ! S_ISREG(sb.st_mode) ) {
+        fprintf(stderr, "File [%s] is not a regular file.\n", configFile.c_str());
+        return false;
+    }
+
+    if ( 0 != access(configFile.c_str(), R_OK) ) {
+        fprintf(stderr, "File [%s] is not readable.\n", configFile.c_str());
+        return false;
+    }
+
+    return true;
+}
+
+
+bool Config::setDebugFile(const std::string &arg) { debugFile = arg; return true; }
+
+/* TODO: Error checking */
+bool Config::setLibPath(const std::string &arg) { libpath = arg; return true; }
+/* TODO: Error checking */
+bool Config::addLibPath(const std::string &arg) { libpath += std::string(":") + arg; return true; }
+
+
+bool Config::setRunMode(const std::string &arg) {
+    if( ! arg.compare( "init" ) ) runMode =  Simulation::INIT;
+    else if( ! arg.compare( "run" ) )  runMode =  Simulation::RUN;
+    else if( ! arg.compare( "both" ) ) runMode =  Simulation::BOTH;
+    else runMode =  Simulation::UNKNOWN;
+
+    return runMode != Simulation::UNKNOWN;
+}
+
+
+/* TODO: Error checking */
+bool Config::setStopAt(const std::string &arg) { stopAtCycle = arg;  return true; }
+/* TODO: Error checking */
+bool Config::setHeartbeat(const std::string &arg) { heartbeatPeriod = arg;  return true; }
+/* TODO: Error checking */
+bool Config::setTimebase(const std::string &arg) { timeBase = arg;  return true; }
+
+/* TODO: Error checking */
+bool Config::setPartitioner(const std::string &arg) { partitioner = arg; return true; }
+/* TODO: Error checking */
+bool Config::setGenerator(const std::string &arg) { generator = arg; return true; }
+
+bool Config::setGeneratorOptions(const std::string &arg) {
+    if ( generator_options.empty() )
+        generator_options = arg;
+    else
+        generator_options += std::string(" \"") + arg + std::string("\"");
+    return true;
+}
+
+bool Config::setOutputDir(const std::string &arg) { output_directory = arg ;  return true; }
+bool Config::setWriteConfig(const std::string &arg) { output_config_graph = arg;  return true; }
+bool Config::setWriteDot(const std::string &arg) { output_dot = arg; return true; }
+bool Config::setWriteXML(const std::string &arg){ output_xml = arg; return true; }
+bool Config::setWriteJSON(const std::string &arg) { output_json = arg; return true; }
+bool Config::setWritePartition(const std::string &arg) { dump_component_graph_file = arg; return true; }
+bool Config::setOutputPrefix(const std::string &arg) { output_core_prefix = arg; return true; }
+#ifdef USE_MEMPOOL
+bool Config::setWriteUndeleted(const std::string &arg) { event_dump_file = arg; return true; }
+#endif
+
+bool Config::setModelOptions(const std::string &arg) {
+    if ( model_options.empty() )
+        model_options = arg;
+    else
+        model_options += std::string(" \"") + arg + std::string("\"");
+    return true;
+}
+
+
+bool Config::setVerbosity(const std::string &arg) {
+    errno = E_OK;
+    unsigned long val = strtoul(arg.c_str(), NULL, 0);
+    if ( errno == E_OK ) {
+        verbose = val;
+        return true;
+    }
+    fprintf(stderr, "Failed to parse [%s] as number\n", arg.c_str());
+    return false;
+}
+
+
+bool Config::setNumThreads(const std::string &arg) {
+    errno = E_OK;
+    unsigned long nthr = strtoul(arg.c_str(), NULL, 0);
+    if ( errno == E_OK ) {
+        world_size.thread = nthr;
+        return true;
+    }
+    fprintf(stderr, "Failed to parse [%s] as number of threads\n", arg.c_str());
+    return false;
+}
+
+
+
+/* Getters */
 
 bool Config::printTimingInfo() {
 	return print_timing;
@@ -179,154 +420,59 @@ uint32_t Config::getVerboseLevel() {
 	return verbose;
 }
 
-void Config::setTimeBase(std::string timebaseStr) {
-	timeBase = timebaseStr;
-}
 
-void Config::setStopAt(std::string stopAt) {
-	stopAtCycle = stopAt;
-}
+std::string Config::getLibPath(void) const {
+    char *envpath = getenv("SST_LIB_PATH");
 
-int
-Config::parseCmdLine(int argc, char* argv[]) {
-    std::string tempFileName = "sst_output"; 
+    // Get configuration options from the user config
+    std::vector<std::string> overrideConfigPaths;
+    SST::Core::Environment::EnvironmentConfiguration* envConfig =
+        SST::Core::Environment::getSSTEnvironmentConfiguration(overrideConfigPaths);
 
-    run_name = argv[0];
-    
-    po::options_description cmdline_options;
-    cmdline_options.add(*visNoConfigDesc).add(*hiddenNoConfigDesc).add(*mainDesc).add(*legacyDesc);
+    std::string fullLibPath = libpath;
+    std::set<std::string> configGroups = envConfig->getGroupNames();
 
-    try {
-	po::parsed_options parsed =
-	    po::command_line_parser(argc,argv).options(cmdline_options).positional(*posDesc).run();
-	po::store( parsed, *var_map );
-	po::notify( *var_map );
-    }
-    catch (exception& e) {
-	cout << "Error: " << e.what() << endl;
-	return -1;
-    }
+    // iterate over groups of settings
+    for(auto groupItr = configGroups.begin(); groupItr != configGroups.end(); groupItr++) {
+        SST::Core::Environment::EnvironmentConfigGroup* currentGroup =
+            envConfig->getGroupByName(*groupItr);
+        std::set<std::string> groupKeys = currentGroup->getKeys();
 
-    if ( var_map->count("debug-file") ) {
-        Output::setFileName(debugFile);
-    }
-    else {
-        Output::setFileName(tempFileName);
-    }
+        // find which keys have a LIBDIR at the END of the key
+        // we recognize these may house elements
+        for(auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++) {
+            const std::string key = *keyItr;
+            const std::string value = currentGroup->getValue(key);
 
-    if ( var_map->count( "help" ) ) {
-#ifdef SST_CONFIG_HAVE_MPI
-	int this_rank = 0;
-	MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
-	if(this_rank == 0) {
-#endif
-		cout << "Usage: " << run_name << " [options] config-file" << endl;
-	        cout << *visNoConfigDesc;
-	        cout << *mainDesc << endl;
-#ifdef SST_CONFIG_HAVE_MPI
-	}
-#endif
-        return 1;
-    }
-
-    verbose = var_map->count( "verbose" );
-    enable_sig_handling = (var_map->count("disable-signal-handlers") > 0) ? false : true;
-    print_timing = (var_map->count("print-timing-info") > 0);
-
-    if ( var_map->count( "version" ) ) {
-        if (SSTCORE_GIT_HEADSHA == PACKAGE_VERSION)
-            cout << "SST-Core Release Version (" PACKAGE_VERSION << ")" << endl;
-        else
-            cout << "SST-Core Release Version (" PACKAGE_VERSION << ", Branch SHA: " SSTCORE_GIT_HEADSHA << ")" << endl;
-        return 1;
-    }
-
-    if ( sdlfile == "NONE" && generator == "NONE" ) {
-	cout << "ERROR: no sdl-file and no generator specified" << endl;
-	cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
-	return -1;
-    }
-
-
-    // get the absolute path to the sdl file 
-    if ( sdlfile != "NONE" ) {
-	if ( sdlfile.compare(0,1,"/" ) ) {
-	    #define BUF_LEN PATH_MAX
-	    char buf[BUF_LEN];
-	    if (getcwd( buf, BUF_LEN ) == NULL) {
-	        cerr << "could not find my cwd:" << strerror(errno) << endl;
-	        return -1;
-	    }
-	    std::string cwd = buf;
-	    cwd.append("/");
-	    sdlfile = cwd + sdlfile;
-	}
-    }
-
-    if ( 0 == world_size.thread ) {
-        cerr << "ERROR: Must have at least 1 thread.\n";
-        return -1;
-    }
-
-    return 0;
-}
-
-int
-Config::parseConfigFile(string config_string)
-{
-    std::stringbuf sb( config_string );
-    std::istream ifs(&sb);
-
-    // std::vector<string> the_rest =
-    //         po::collect_unrecognized( parsed.options, po::include_positional );
-
-    try {
-        // po::variables_map var_map;
-        // po::store( po::command_line_parser(the_rest).options(desc).run(), var_map);
-        po::options_description config_options;
-        config_options.add(*mainDesc).add(*legacyDesc);
-
-        po::store( po::parse_config_file( ifs, config_options), *var_map);
-        po::notify( *var_map );
-
-        if ( var_map->count("run-mode") ) {
-            runMode = Config::setRunMode( (*var_map)[ "run-mode" ].as< string >() );
-            if ( runMode == Simulation::UNKNOWN ) {
-                // this needs to be improved 
-                printf("ERROR: Unknown run mode %s\n", 
-                        (*var_map)[ "run-mode" ].as< string >().c_str());
-                cout << "Usage: " << run_name << " sdl-file [options]" << endl;
-                cout << visNoConfigDesc;
-                cout << mainDesc << "\n";
-                return -1;
+            if("BOOST_LIBDIR" != key) {
+                if(key.size() > 6) {
+                    if("LIBDIR" == key.substr(key.size() - 6)) {
+                        fullLibPath.append(":");
+                        fullLibPath.append(value);
+                    }
+                }
             }
         }
-    } catch( exception& e ) {
-        cerr << "error: " << e.what() << "\n";
-        return -1;
-    } catch(...) {
-        cerr << "Exception of unknown type!\n";
-        return -1;
     }
 
-    // if ( runMode == RUN && ! archive ) {
-    //     cerr << "ERROR: you specified \"--run-mode run\" without an archive";
-    //     cerr << "\n";
-    //     return -1;
-    // }
+    // Clean up and delete the configuration we just loaded up
+    delete envConfig;
 
-#define BUF_LEN PATH_MAX
-    char buf[BUF_LEN];
-    if (getcwd( buf, BUF_LEN ) == NULL) {
-        cerr << "could not find my cwd:" << strerror(errno) << endl;
-        return -1;
+    if(NULL != envpath) {
+        fullLibPath.clear();
+        fullLibPath.append(envpath);
     }
-    std::string cwd = buf;
 
-    cwd.append("/");
+    if ( !addlLibPath.empty() ) {
+        fullLibPath.append(":");
+        fullLibPath.append(addlLibPath);
+    }
 
-    return 0;
+    if(verbose) {
+        std::cout << "SST-Core: Configuration Library Path will read from: " << fullLibPath << std::endl;
+    }
+
+    return fullLibPath;
 }
-    
-    
+
 } // namespace SST
