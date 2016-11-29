@@ -48,40 +48,6 @@ AC_DEFUN([SST_CHECK_BOOST], [
 		)
 
 
-dnl     Check for boost_serialization library
-	AC_MSG_CHECKING([Boost serialization library can be successfully used])
-	LIBS="$LIBS -lboost_serialization"
-	AC_LINK_IFELSE(
-		[AC_LANG_PROGRAM([[@%:@include <fstream>
-                                   @%:@include <boost/archive/text_oarchive.hpp>
-                                   @%:@include <boost/archive/text_iarchive.hpp>]],
-                                 [[std::ofstream ofs("filename");
-                                        boost::archive::text_oarchive oa(ofs);
-                                        return 0;]])
-                ],
-		[AC_MSG_RESULT([yes])
-		 BOOST_LIBS="$BOOST_LIBS -lboost_serialization"],
-                [AC_MSG_RESULT([no])
-		 LIBS="$LIBS_saved -lboost_serialization-mt"
-		 AC_MSG_CHECKING([Boost serialization (multithreaded) library can be successfully used])
-		 AC_LINK_IFELSE(
-		        [AC_LANG_PROGRAM([[@%:@include <fstream>
-                                   @%:@include <boost/archive/text_oarchive.hpp>
-                                   @%:@include <boost/archive/text_iarchive.hpp>]],
-                                 [[std::ofstream ofs("filename");
-                                        boost::archive::text_oarchive oa(ofs);
-                                        return 0;]])
-                        ],
-			[AC_MSG_RESULT([yes])
-		 	 BOOST_LIBS="$BOOST_LIBS -lboost_serialization-mt"],
-                	[AC_MSG_RESULT([no])
-                 	 sst_check_boost_happy="no"
-		 	 AC_MSG_ERROR([Boost Serialization cannot be successfully compiled.], [1])
-			]
-                	)
-		]
-                )
-
 	LIBS="$LIBS_saved"
 	AC_LANG_POP(C++)
 
