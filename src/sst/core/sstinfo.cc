@@ -207,7 +207,7 @@ void processSSTElementFiles(std::string searchPath)
                             
                             // Now we process the file and populate our internal structures
     //                      fprintf(stderr, "**** DEBUG - PROCESSING DIR ENTRY NAME = %s; ELEM NAME = %s; TYPE = %d; DIR FLAG = %d\n", dirEntryName.c_str(), elementName.c_str(), pDirEntry->d_type, isDir);
-                            pELI = g_loader->loadLibrary(elementName, false);
+                            pELI = g_loader->loadLibrary(elementName, g_configuration.debugEnabled());
                             if (pELI != NULL) {
                                 // Build
                                 g_fileProcessedCount++;
@@ -405,6 +405,7 @@ SSTInfoConfig::SSTInfoConfig()
 {
     m_optionBits = CFG_OUTPUTHUMAN;  // Enable normal output by default
     m_XMLFilePath = "./SSTInfo.xml"; // Default XML File Path
+    m_debugEnabled = false;
 }
 
 SSTInfoConfig::~SSTInfoConfig()
@@ -416,6 +417,7 @@ void SSTInfoConfig::outputUsage()
     cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "<< " [options]" << endl;
     cout << "  -h, --help               Print Help Message\n";
     cout << "  -v, --version            Print SST Package Release Version\n";
+    cout << "  -d, --debug              Enabled debugging messages\n";
     cout << "  -n, --nodisplay          Do not display output - default is off\n";
     cout << "  -x, --xml                Generate XML data - default is off\n";
     cout << "  -o, --outputxml=FILE     File path to XML file. Default is SSTInfo.xml\n";
@@ -438,6 +440,7 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
     static const struct option longOpts[] = {
         {"help",        no_argument,        0, 'h'},
         {"version",     no_argument,        0, 'v'},
+        {"debug",       no_argument,        0, 'd'},
         {"nodisplay",   no_argument,        0, 'n'},
         {"xml",         no_argument,        0, 'x'},
         {"outputxml",   required_argument,  0, 'o'},
@@ -447,7 +450,7 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
     };
     while (1) {
         int opt_idx = 0;
-        char c = getopt_long(argc, argv, "hvnxo:l:", longOpts, &opt_idx);
+        char c = getopt_long(argc, argv, "hvdnxo:l:", longOpts, &opt_idx);
         if ( c == -1 )
             break;
 
@@ -458,6 +461,9 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
         case 'v':
             outputVersion();
             return 1;
+        case 'd':
+            m_debugEnabled = true;
+            break;
         case 'n':
             m_optionBits &= ~CFG_OUTPUTHUMAN;
             break;

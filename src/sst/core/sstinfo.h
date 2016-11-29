@@ -51,7 +51,10 @@ public:
     
     /** Return the user defined path the XML File. */
     std::string&              getXMLFilePath() {return m_XMLFilePath;}
-    
+
+    /** Is debugging output enabled? */
+    bool                      debugEnabled() const { return m_debugEnabled; }
+
 private:
     void outputUsage();
     void outputVersion();
@@ -63,6 +66,7 @@ private:
     std::vector<std::string>  m_filteredElementComponentNames;
     unsigned int              m_optionBits;
     std::string               m_XMLFilePath;
+    bool                      m_debugEnabled;
 };
 
 /**
