@@ -11,8 +11,6 @@
 
 #include <sst_config.h>
 
-#include <boost/program_options.hpp>
-
 #include <cstdio>
 #include <cerrno>
 #include <list>
@@ -20,6 +18,9 @@
 #include <sys/stat.h>
 #include <ltdl.h>
 #include <dlfcn.h>
+#include <cstdlib>
+#include <getopt.h>
+#include <ctime>
 
 #include <sst/core/elemLoader.h>
 #include <sst/core/element.h>
@@ -31,7 +32,6 @@
 #include <sst/core/tinyxml/tinyxml.h>
 #include <sst/core/sstinfo.h>
 
-namespace po = boost::program_options;
 
 using namespace std;
 using namespace SST;
@@ -207,7 +207,7 @@ void processSSTElementFiles(std::string searchPath)
                             
                             // Now we process the file and populate our internal structures
     //                      fprintf(stderr, "**** DEBUG - PROCESSING DIR ENTRY NAME = %s; ELEM NAME = %s; TYPE = %d; DIR FLAG = %d\n", dirEntryName.c_str(), elementName.c_str(), pDirEntry->d_type, isDir);
-                            pELI = g_loader->loadLibrary(elementName, false);
+                            pELI = g_loader->loadLibrary(elementName, g_configuration.debugEnabled());
                             if (pELI != NULL) {
                                 // Build
                                 g_fileProcessedCount++;
@@ -405,43 +405,24 @@ SSTInfoConfig::SSTInfoConfig()
 {
     m_optionBits = CFG_OUTPUTHUMAN;  // Enable normal output by default
     m_XMLFilePath = "./SSTInfo.xml"; // Default XML File Path
-    
-    // Setup the Visible Options
-    m_configDesc = new po::options_description( "options" );
-    m_configDesc->add_options()
-        ("help,h", "Print Help Message")
-        ("version,v", "Print SST Package Release Version")
-        ("nodisplay,n", "Do Not Display Output - default is off")
-        ("xml,x", "Generate XML data - default is off")
-        ("outputxml,o", po::value< string >( &m_XMLFilePath ), "Filepath XML file - default is ./SSTInfo.xml")
-        ("libs,l", po::value< std::vector<std::string> >()->multitoken(), 
-            "{all | <elementname>} - Element Library(s) to process - default is 'all'")
-    ; 
-    
-    m_hiddenDesc = new po::options_description( "" );
-    m_hiddenDesc->add_options()
-        ("elemfilt", po::value< std::vector<std::string> >()->multitoken(), 
-            "[<elem[.comp]>] - Element Library(s) and components to filter on output - default is to show all")
-    ; 
-
-    m_posDesc = new po::positional_options_description();
-    m_posDesc->add("elemfilt", -1);
-    
-    m_vm = new po::variables_map();
+    m_debugEnabled = false;
 }
 
 SSTInfoConfig::~SSTInfoConfig()
 {
-    delete m_configDesc;
-    delete m_hiddenDesc;
-    delete m_posDesc;
-    delete m_vm;
 }
 
 void SSTInfoConfig::outputUsage()
 {
     cout << "Usage: " << m_AppName << " [<element[.component|subcomponent]>] "<< " [options]" << endl;
-    cout << *m_configDesc << endl;
+    cout << "  -h, --help               Print Help Message\n";
+    cout << "  -v, --version            Print SST Package Release Version\n";
+    cout << "  -d, --debug              Enabled debugging messages\n";
+    cout << "  -n, --nodisplay          Do not display output - default is off\n";
+    cout << "  -x, --xml                Generate XML data - default is off\n";
+    cout << "  -o, --outputxml=FILE     File path to XML file. Default is SSTInfo.xml\n";
+    cout << "  -l, --libs=LIBS          {all, <elementname>} - Element Library9(s) to process\n";
+    cout << endl;
 }
 
 void SSTInfoConfig::outputVersion()
@@ -453,111 +434,101 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 {
     unsigned int              x;
     size_t                    foundIndex;
-    std::string               filterName;
-    std::string               libraryName;
-    std::string               fullLibraryName;
-    std::vector<std::string>  filteredNames;
 
     m_AppName = argv[0];
 
-    po::options_description cmdline_options;
-    cmdline_options.add(*m_configDesc).add(*m_hiddenDesc);
+    static const struct option longOpts[] = {
+        {"help",        no_argument,        0, 'h'},
+        {"version",     no_argument,        0, 'v'},
+        {"debug",       no_argument,        0, 'd'},
+        {"nodisplay",   no_argument,        0, 'n'},
+        {"xml",         no_argument,        0, 'x'},
+        {"outputxml",   required_argument,  0, 'o'},
+        {"libs",        required_argument,  0, 'l'},
+        {"elemenfilt",  required_argument,  0, 0},
+        {NULL, 0, 0, 0}
+    };
+    while (1) {
+        int opt_idx = 0;
+        char c = getopt_long(argc, argv, "hvdnxo:l:", longOpts, &opt_idx);
+        if ( c == -1 )
+            break;
 
-    // Parse the Command line into something we can analyze
-    try {
-        po::parsed_options parsed = po::command_line_parser(argc,argv).options(cmdline_options).positional(*m_posDesc).run();
-        po::store( parsed, *m_vm );
-        po::notify(*m_vm);
-    }
-    catch (exception& e) {
-        // Tell the user the usage when something is wrong on parameters
-        cout << "Error: " << e.what() << endl;
-        outputUsage();        
-        return -1;
-    }
-    
-    // Check if user is asking for help
-    if (m_vm->count("help")) {
-        outputUsage();        
-        return 1;
-    }
-    
-    // Check if user is asking for version
-    if (m_vm->count("version")) {
-        outputVersion();
-        return 1;
-    }
+        switch (c) {
+        case 'h':
+            outputUsage();
+            return 1;
+        case 'v':
+            outputVersion();
+            return 1;
+        case 'd':
+            m_debugEnabled = true;
+            break;
+        case 'n':
+            m_optionBits &= ~CFG_OUTPUTHUMAN;
+            break;
+        case 'x':
+            m_optionBits |= CFG_OUTPUTXML;
+            break;
+        case 'o':
+            m_XMLFilePath = optarg;
+            break;
+        case 'l': {
+            m_elementsToProcess.push_back( optarg );
 
-    // Check if user is asking for XML Output
-    if (m_vm->count("xml")) {
-        m_optionBits |= CFG_OUTPUTXML;
-    }
-
-    // Check if user is asking for NO Text display
-    if (m_vm->count("nodisplay")) {
-        m_optionBits &= ~CFG_OUTPUTHUMAN;
-    }
-
-    // Check if user is setting the XML output filepath
-    if (m_vm->count("outputxml")) {
-    }
-
-    // Get the List of filters on the output
-    if (m_vm->count("elemfilt")) {
-        // Get the list from the command parser
-        filteredNames = (*m_vm)["elemfilt"].as< std::vector<std::string> >();
-        
-        // Look the Name over and decide if it is an element name only or a 
-        // element.component name, and then add it to the appropriate list
-        for (x = 0; x < filteredNames.size(); x++) {
-            filterName = filteredNames[x];
-            foundIndex = filterName.find(".");
-            
-            if (foundIndex != string::npos) {   
-                // We found a "." in the name so assume that this is a element.component
-                m_filteredElementComponentNames.push_back(filterName);
-            } else {
-                // No "." found, this is an element only name
-                m_filteredElementNames.push_back(filterName);
-            }
-        }
-    }    
-    
-    // Get the List of libs that the user may trying to use
-    if (m_vm->count("libs")) {
-        // Get the list from the command parser
-        m_elementsToProcess = (*m_vm)["libs"].as< std::vector<std::string> >();
-        
-        // Walk through each element and make sure it has a "lib" in front 
-        // and a ".so" in back if not, add them
-        for (x = 0; x < m_elementsToProcess.size(); x++) {
-            fullLibraryName = "";
-            libraryName = m_elementsToProcess[x];
+            std::string fullLibraryName = "";
+            std::string libraryName = optarg;
 
             // See if "lib" is at front of the library name; if not, append to full name
-            foundIndex = libraryName.find("lib");
-            if (foundIndex != 0) {
+            if ( libraryName.compare(0, 3, "lib") )
                 fullLibraryName += "lib";
-            }
-            
+
             // Add the Library Name to the full name
             fullLibraryName += libraryName;
-            
+
             // See if ".so" is at back of the library name; if not, postpend to full name
-            foundIndex = libraryName.rfind(".so");
-            if (foundIndex != libraryName.length() - 3)
-            {
+            if ( fullLibraryName.compare(fullLibraryName.size()-3, 3, ".so") )
                 fullLibraryName += ".so";
-            }
-            
+
             // Write the full name back to the m_elementsToProcess
-            m_elementsToProcess[x] = fullLibraryName;
+            m_elementsToProcess.push_back(fullLibraryName);
+            break;
         }
-    } else {
+        case 0:
+            if ( !strcmp(longOpts[opt_idx].name, "elemnfilt" ) ) {
+                std::string arg = optarg;
+                // Look the Name over and decide if it is an element name only or a 
+                // element.component name, and then add it to the appropriate list
+                if ( arg.find(".") != string::npos ) {
+                    // We found a "." in the name so assume that this is a element.component
+                    m_filteredElementComponentNames.push_back(arg);
+                } else {
+                    // No "." found, this is an element only name
+                    m_filteredElementNames.push_back(arg);
+                }
+            }
+            break;
+        }
+
+    }
+
+    while ( optind < argc ) {
+        std::string arg = argv[optind++];
+        if ( arg.find(".") != string::npos ) {
+            // We found a "." in the name so assume that this is a element.component
+            m_filteredElementComponentNames.push_back(arg);
+        } else {
+            // No "." found, this is an element only name
+            m_filteredElementNames.push_back(arg);
+        }
+    }
+
+    // Get the List of libs that the user may trying to use
+    if ( m_elementsToProcess.empty()) {
         // Build the default value
         m_elementsToProcess.push_back(std::string("all"));
     }
-    
+
 //// DEBUG    
 //cout << "DEBUG ELEMENTS TO PROCESS = " << m_elementsToProcess.size() << endl;
 //for (x = 0; x < m_elementsToProcess.size(); x++) {
