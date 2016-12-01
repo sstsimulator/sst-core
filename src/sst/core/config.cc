@@ -107,6 +107,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_FLAGOPT("print-timing-info",        0,      "print SST timing information", &Config::enablePrintTiming),
     /* HiddenNoConfigDesc */
     DEF_ARGOPT("sdl-file",          "FILE",         "SST Configuration file", &Config::setConfigFile),
+    DEF_ARGOPT("stopAtCycle",       "TIME",         "set time at which simulation will end execution", &Config::setStopAt),
     /* MainDesc */
     DEF_ARGOPT("debug-file",        "FILE",         "file where debug output will go", &Config::setDebugFile),
     DEF_ARGOPT("lib-path",          "LIBPATH",      "component library path (overwrites default)", &Config::setLibPath),
@@ -285,6 +286,7 @@ bool Config::setConfigEntryFromModel(const string &entryName, const string &valu
             }
         }
     }
+    fprintf(stderr, "Unknown configuration entry [%s]\n", entryName.c_str());
     return false;
 }
 
