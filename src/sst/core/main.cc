@@ -367,19 +367,19 @@ main(int argc, char *argv[])
 
     SSTModelDescription* modelGen = 0;
 
-    if ( cfg.sdlfile != "NONE" ) {
+    if ( cfg.configFile != "NONE" ) {
         string file_ext = "";
 
-        if(cfg.sdlfile.size() > 3) {
-            file_ext = cfg.sdlfile.substr(cfg.sdlfile.size() - 3);
+        if(cfg.configFile.size() > 3) {
+            file_ext = cfg.configFile.substr(cfg.configFile.size() - 3);
 
             if(file_ext == "xml" || file_ext == "sdl") {
-                cfg.model_options = cfg.sdlfile;
-                cfg.sdlfile = SST_INSTALL_PREFIX "/libexec/xmlToPython.py";
+                cfg.model_options = cfg.configFile;
+                cfg.configFile = SST_INSTALL_PREFIX "/libexec/xmlToPython.py";
                 file_ext = ".py";
             }
             if(file_ext == ".py") {
-                modelGen = new SSTPythonModelDefinition(cfg.sdlfile, cfg.verbose, &cfg);
+                modelGen = new SSTPythonModelDefinition(cfg.configFile, cfg.verbose, &cfg);
             }
             else {
                 std::cerr << "Unsupported SDL file type: " << file_ext << std::endl;

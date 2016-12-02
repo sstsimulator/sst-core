@@ -83,12 +83,12 @@ public:
     template<typename T>
     fieldHandle_t registerField(const char* fieldName)
     {
-        if (is_type_same<T, int32_t    >::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::INT32)); }
-        if (is_type_same<T, uint32_t   >::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::UINT32));}
-        if (is_type_same<T, int64_t    >::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::INT64)); }
-        if (is_type_same<T, uint64_t   >::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::UINT64));}
-        if (is_type_same<T, float      >::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::FLOAT)); }
-        if (is_type_same<T, double     >::value){return generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::DOUBLE));}
+        if (is_type_same<T, int32_t    >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::INT32));  implRegisteredField(res); return res; }
+        if (is_type_same<T, uint32_t   >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::UINT32)); implRegisteredField(res); return res; }
+        if (is_type_same<T, int64_t    >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::INT64));  implRegisteredField(res); return res; }
+        if (is_type_same<T, uint64_t   >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::UINT64)); implRegisteredField(res); return res; }
+        if (is_type_same<T, float      >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::FLOAT));  implRegisteredField(res); return res; }
+        if (is_type_same<T, double     >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::DOUBLE)); implRegisteredField(res); return res; }
 
         //TODO: IF WE GET THERE, GENERATE AN ERROR AS THIS IS AN UNSUPPORTED TYPE 
         return -1;
@@ -186,6 +186,11 @@ protected:
      *  Called when checkOutputParameters() returns false */
     virtual void printUsage() = 0;
 
+
+    virtual void implStartRegisterFields(StatisticBase *statistic) {}
+    virtual void implRegisteredField(fieldHandle_t fieldHandle) {}
+    virtual void implStopRegisterFields() {}
+
     // Simulation Events
     /** Indicate to Statistic Output that simulation has started.
       * Allows object to perform any setup required. */ 
@@ -214,9 +219,10 @@ protected:
     virtual void implOutputField(fieldHandle_t fieldHandle, float data) = 0;  
     virtual void implOutputField(fieldHandle_t fieldHandle, double data) = 0;
 
+
 private:    
     // Start / Stop of register Fields
-    void startRegisterFields(const char* componentName, const char* statisticName);
+    void startRegisterFields(StatisticBase *statistic);
     void stopRegisterFields();
     
     // Set the Statistic Load Level

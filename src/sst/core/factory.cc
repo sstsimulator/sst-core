@@ -28,6 +28,9 @@
 #include <sst/core/statapi/statoutputconsole.h>
 #include <sst/core/statapi/statoutputtxt.h>
 #include <sst/core/statapi/statoutputcsv.h>
+#ifdef HAVE_HDF5
+#include <sst/core/statapi/statoutputhdf5.h>
+#endif
 
 #ifdef HAVE_LIBZ
 #include <sst/core/statapi/statoutputcsvgz.h>
@@ -370,6 +373,12 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 #endif
     }
 
+#ifdef HAVE_HDF5
+    if (0 == strcasecmp("statoutputhdf5", type.c_str())) {
+        return new StatisticOutputHDF5(params);
+    }
+#endif
+
     if (0 == strcasecmp("statoutputtxt", type.c_str())) {
         return new StatisticOutputTxt(params);
     }
@@ -377,6 +386,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
     if (0 == strcasecmp("statoutputconsole", type.c_str())) {
         return new StatisticOutputConsole(params);
     }
+
 
     return NULL;
 }
