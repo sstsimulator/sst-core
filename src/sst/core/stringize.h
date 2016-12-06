@@ -13,6 +13,7 @@
 #define _H_SST_CORE_STRINGIZE
 
 #include <string>
+#include <strings.h>
 #include <cinttypes>
 #include <cctype>
 
@@ -68,7 +69,7 @@ inline std::string to_string(uint64_t val) {
 
 
 inline bool strcasecmp(const std::string &s1, const std::string &s2) {
-    return !strcasecmp(s1.c_str(), s2.c_str());
+    return !::strcasecmp(s1.c_str(), s2.c_str());
 }
 
 inline void to_lower(std::string &s) {
