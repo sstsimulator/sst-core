@@ -353,11 +353,11 @@ Module*
 Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 {
     // Names of sst.xxx Statistic Output Modules
-    if (0 == strcasecmp("statoutputcsv", type.c_str())) {
+    if (0 == ::strcasecmp("statoutputcsv", type.c_str())) {
         return new StatisticOutputCSV(params);
     }
 
-    if (0 == strcasecmp("statoutputcsvgz", type.c_str())) {
+    if (0 == ::strcasecmp("statoutputcsvgz", type.c_str())) {
 #ifdef HAVE_LIBZ
 	return new StatisticOutputCompressedCSV(params);
 #else
@@ -365,7 +365,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 #endif
     }
 
-    if (0 == strcasecmp("statoutputtxtgz", type.c_str())) {
+    if (0 == ::strcasecmp("statoutputtxtgz", type.c_str())) {
 #ifdef HAVE_LIBZ
 	return new StatisticOutputCompressedTxt(params);
 #else
@@ -374,16 +374,16 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
     }
 
 #ifdef HAVE_HDF5
-    if (0 == strcasecmp("statoutputhdf5", type.c_str())) {
+    if (0 == ::strcasecmp("statoutputhdf5", type.c_str())) {
         return new StatisticOutputHDF5(params);
     }
 #endif
 
-    if (0 == strcasecmp("statoutputtxt", type.c_str())) {
+    if (0 == ::strcasecmp("statoutputtxt", type.c_str())) {
         return new StatisticOutputTxt(params);
     }
 
-    if (0 == strcasecmp("statoutputconsole", type.c_str())) {
+    if (0 == ::strcasecmp("statoutputconsole", type.c_str())) {
         return new StatisticOutputConsole(params);
     }
 
