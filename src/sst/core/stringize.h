@@ -129,7 +129,7 @@ struct escaped_list_separator {
     /**
      * @return pair<iter, iter> = <tok_end, next_tok>
      */
-    bool operator()(iter &first, iter last, std::string &token) {
+    void operator()(iter &first, iter last, std::string &token) {
         token.clear();
 
         bool inside_quotes = false;
