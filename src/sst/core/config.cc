@@ -293,9 +293,11 @@ bool Config::setConfigEntryFromModel(const string &entryName, const string &valu
 
 
 bool Config::printVersion() {
-    printf("SST-Core Release Version (" PACKAGE_VERSION);
-    if (SSTCORE_GIT_HEADSHA != PACKAGE_VERSION)
-        printf(", Branch SHA: " SSTCORE_GIT_HEADSHA );
+    printf("SST-Core Version (" PACKAGE_VERSION);
+    if (SSTCORE_GIT_HEADSHA != PACKAGE_VERSION) { 
+        printf(", git branch : " SSTCORE_GIT_BRANCH);
+        printf(", SHA: " SSTCORE_GIT_HEADSHA);
+    }
     printf(")\n");
 
     return false; /* Should not continue */
