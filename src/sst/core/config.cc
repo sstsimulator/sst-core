@@ -205,10 +205,11 @@ bool Config::usage() {
 int
 Config::parseCmdLine(int argc, char* argv[]) {
     static const char* sst_short_options = "hvVn:";
-    struct option sst_long_options[nLongOpts];
+    struct option sst_long_options[nLongOpts + 1];
     for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
         sst_long_options[i] = sstOptions[i].opt;
     }
+    sst_long_options[nLongOpts] = {NULL, 0 ,0, 0};
 
     run_name = argv[0];
 
