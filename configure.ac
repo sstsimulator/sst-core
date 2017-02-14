@@ -1,6 +1,6 @@
 
 
-AC_INIT([SSTCore], [Under-Development], [sst@sandia.gov])
+AC_INIT([SSTCore], [-dev], [sst@sandia.gov])
 
 AC_PREREQ([2.59])
 
