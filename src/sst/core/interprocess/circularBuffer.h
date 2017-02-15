@@ -68,7 +68,8 @@ public:
         }
     }
 
-    ~CircularBuffer() {
+    ~CircularBuffer()
+    {
         pthread_mutex_destroy(&mtx);
         pthread_mutexattr_destroy(&attrmutex);
 
@@ -87,9 +88,10 @@ public:
     }
 
     /***
-     * Set the buffer size to zero
+     * Clear the messages in the buffer
      */
-    void clearBuffer() {
+    void clearBuffer()
+    {
         if ( pthread_mutex_lock(&mtx) ) {
             fprintf(stderr, "LOCKING ERROR:  %s\n", strerror(errno));
         }

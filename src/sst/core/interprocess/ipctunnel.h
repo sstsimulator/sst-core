@@ -221,8 +221,8 @@ public:
         return circBuffs[buffer]->readNB(result);
     }
 
-    /** Set rdPtr to wrPtr **/
-    void clearBuffer(size_t core){
+    /** Empty the messages in the buffer **/
+    void clearBuffer(size_t core) {
        circBuffs[core]->clearBuffer();
     }
 
