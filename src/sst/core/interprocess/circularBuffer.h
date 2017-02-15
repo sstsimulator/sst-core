@@ -86,6 +86,21 @@ public:
         buffSize = bufferSize;
     }
 
+    /***
+     * Set the buffer size to zero
+     */
+    void clearBuffer() {
+        if ( pthread_mutex_lock(&mtx) ) {
+            fprintf(stderr, "LOCKING ERROR:  %s\n", strerror(errno));
+        }
+
+        rPtr = wPtr;
+
+        __sync_synchronize();
+        pthread_mutex_unlock(&mtx);
+    }
+
+
     /**
      * Write a value to the circular buffer
      * @param value New Value to write

@@ -221,6 +221,10 @@ public:
         return circBuffs[buffer]->readNB(result);
     }
 
+    /** Set rdPtr to wrPtr **/
+    void clearBuffer(size_t core){
+       circBuffs[core]->clearBuffer();
+    }
 
 
 private:
