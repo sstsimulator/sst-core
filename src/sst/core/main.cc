@@ -152,6 +152,12 @@ static void do_graph_wireup(ConfigGraph* graph,
                 myRank.rank, myRank.thread);
     }
 
+    sim->performWireUp( *graph, myRank, min_part );
+
+}
+
+
+static void doGraphOutput(SST::Config *cfg, ConfigGraph *graph) {
     std::vector<ConfigGraphOutput*> graphOutputs;
 
     // User asked us to dump the config graph to a file in Python
@@ -178,11 +184,7 @@ static void do_graph_wireup(ConfigGraph* graph,
         graphOutputs[i]->generate(cfg, graph);
         delete graphOutputs[i];
     }
-
-    sim->performWireUp( *graph, myRank, min_part );
-
 }
-
 
 
 typedef struct {
@@ -510,6 +512,7 @@ main(int argc, char *argv[])
 
         // Output the partition information is user requests it
         dump_partition(cfg, graph, world_size);
+        doGraphOutput(&cfg, graph);
     }
 
     ////// End Partitioning //////
