@@ -60,6 +60,7 @@ public:
     Simulation::Mode_t  runMode;            /*!< Run Mode (Init, Both, Run-only) */
     std::string     configFile;            /*!< Graph generation file */
     std::string     stopAtCycle;        /*!< When to stop the simulation */
+    uint32_t        stopAfterSec;       /*!< When (wall-time) to stop the simulation */
     std::string     heartbeatPeriod;    /*!< Sets the heartbeat period for the simulation */
     std::string     timeBase;           /*!< Timebase of simulation */
     std::string     partitioner;        /*!< Partitioner to use */
@@ -102,6 +103,7 @@ public:
     bool addLibPath(const std::string &arg);
     bool setRunMode(const std::string &arg);
     bool setStopAt(const std::string &arg);
+    bool setStopAfter(const std::string &arg);
     bool setHeartbeat(const std::string &arg);
     bool setTimebase(const std::string &arg);
     bool setPartitioner(const std::string &arg);
@@ -130,6 +132,7 @@ public:
         std::cout << "libpath = " << getLibPath() << std::endl;
         std::cout << "configFile = " << configFile << std::endl;
         std::cout << "stopAtCycle = " << stopAtCycle << std::endl;
+        std::cout << "stopAfterSec = " << stopAfterSec << std::endl;
         std::cout << "timeBase = " << timeBase << std::endl;
         std::cout << "partitioner = " << partitioner << std::endl;
         std::cout << "generator = " << generator << std::endl;
@@ -166,6 +169,7 @@ public:
         ser & addlLibPath;
         ser & configFile;
         ser & stopAtCycle;
+        ser & stopAfterSec;
         ser & timeBase;
         ser & partitioner;
         ser & generator;
