@@ -734,6 +734,7 @@ void Simulation::run() {
             switch ( lastRecvdSignal ) {
             case SIGUSR1: printStatus(false); break;
             case SIGUSR2: printStatus(true); break;
+            case SIGALRM:
             case SIGINT:
             case SIGTERM:
                 ThreadSync::disable();
