@@ -68,7 +68,8 @@ public:
         }
     }
 
-    ~CircularBuffer() {
+    ~CircularBuffer()
+    {
         pthread_mutex_destroy(&mtx);
         pthread_mutexattr_destroy(&attrmutex);
 
@@ -85,6 +86,22 @@ public:
         }
         buffSize = bufferSize;
     }
+
+    /***
+     * Clear the messages in the buffer
+     */
+    void clearBuffer()
+    {
+        if ( pthread_mutex_lock(&mtx) ) {
+            fprintf(stderr, "LOCKING ERROR:  %s\n", strerror(errno));
+        }
+
+        rPtr = wPtr;
+
+        __sync_synchronize();
+        pthread_mutex_unlock(&mtx);
+    }
+
 
     /**
      * Write a value to the circular buffer
