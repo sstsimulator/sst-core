@@ -28,15 +28,17 @@ namespace Partition {
 
     SimplePartitioner::SimplePartitioner(RankInfo total_ranks) :
         SSTPartitioner(),
-        world_size(total_ranks)
+        world_size(total_ranks),
+        total_parts(world_size.rank * world_size.thread)
     {}
 
     SimplePartitioner::SimplePartitioner() :
         SSTPartitioner(),
-        world_size(RankInfo(1,1))
+        world_size(RankInfo(1,1)),
+        total_parts(world_size.rank * world_size.thread)
     {}
     
-    inline int pow2(int step) {
+    static inline int pow2(int step) {
 		int value = 1;
 
 		for(int i = 0; i < step; i++) {
@@ -47,7 +49,7 @@ namespace Partition {
 	}
 
 	// Find the index of a specific component in this array
-	inline int findIndex(ComponentId_t* theArray, const int length, ComponentId_t findThis) {
+	static inline int findIndex(ComponentId_t* theArray, const int length, ComponentId_t findThis) {
 		int index = -1;
 		
 		for(int i = 0; i < length; i++) {
@@ -61,7 +63,7 @@ namespace Partition {
 
 	// Cost up all of the links between two sets (that is all links which originate in A
 	// and connect to a vertex in B
-	SimTime_t cost_external_links(ComponentId_t* setA, 
+	static SimTime_t cost_external_links(ComponentId_t* setA, 
 				const int lengthA,
 				ComponentId_t* setB,
 				const int lengthB,
@@ -86,11 +88,11 @@ namespace Partition {
 	}
 
 	// Perform one step of the recursive algorithm to partition the graph
-	void simple_partition_step(PartitionComponentMap_t& component_map,
+	void SimplePartitioner::simple_partition_step(PartitionComponentMap_t& component_map,
 			ComponentId_t* setA, const int lengthA, int rankA,
 			ComponentId_t* setB, const int lengthB, int rankB,
 			map<ComponentId_t, map<ComponentId_t, SimTime_t>*> timeTable,
-			int world_size, int step) {
+			int step) {
 
 		SimTime_t costExt = cost_external_links(setA, lengthA, setB, lengthB, timeTable);
 
@@ -116,17 +118,17 @@ namespace Partition {
 		/////////////////////////////////////////////////////////////////////////////////////
 		// Sub-divide and repeat
 		for(int i = 0; i < lengthA; i++) {
-			component_map[setA[i]].rank = RankInfo(rankA, 0);
+			component_map[setA[i]].rank = convertPartNum(rankA);
 		}
 
 		for(int i = 0; i < lengthB; i++) {
-			component_map[setB[i]].rank = RankInfo(rankB, 0);
+			component_map[setB[i]].rank = convertPartNum(rankB);
 		}
 
 		const int A1_rank = rankA;
 		const int A2_rank = rankA + pow2(step);
 
-		if(A2_rank < world_size) {		
+		if(A2_rank < total_parts) {
 			const int lengthA1 = lengthA % 2 == 1 ? (lengthA / 2) + 1 : (lengthA / 2);
 			const int lengthA2 = lengthA / 2;
 
@@ -145,7 +147,7 @@ namespace Partition {
 			}
 
 			simple_partition_step(component_map, setA1, lengthA1, A1_rank,
-				setA2, lengthA2, A2_rank, timeTable, world_size, step + 1);
+				setA2, lengthA2, A2_rank, timeTable, step + 1);
 
 			free(setA1);
 			free(setA2);
@@ -153,8 +155,8 @@ namespace Partition {
 
 		const int B1_rank = rankB;
 		const int B2_rank = rankB + pow2(step);
-		
-		if(B2_rank < world_size) {		
+
+		if(B2_rank < total_parts) {
 			const int lengthB1 = lengthB % 2 == 1 ? (lengthB / 2) + 1 : (lengthB / 2);
 			const int lengthB2 = lengthB / 2;
 
@@ -173,7 +175,7 @@ namespace Partition {
 			}
 
 			simple_partition_step(component_map, setB1, lengthB1, B1_rank,
-				setB2, lengthB2, B2_rank, timeTable, world_size, step + 1);
+				setB2, lengthB2, B2_rank, timeTable, step + 1);
 
 			free(setB1);
 			free(setB2);
@@ -185,7 +187,7 @@ namespace Partition {
 		PartitionComponentMap_t& component_map = graph->getComponentMap();
 
 
-		if(world_size.rank == 1) {
+		if(total_parts == 1) {
 			for(PartitionComponentMap_t::iterator compItr = component_map.begin();
 				compItr != component_map.end();
 				++compItr) {
@@ -193,6 +195,7 @@ namespace Partition {
 				compItr->rank = RankInfo(0,0);
 			}
 		} else {
+
 			// const int A_size = component_map.size() % 2 == 1 ? (component_map.size() / 2) + 1 : (component_map.size() / 2);
 			// const int B_size = component_map.size() / 2;
 			const int A_size = graph->getNumComponents() % 2 == 1 ? (graph->getNumComponents() / 2) + 1 : (graph->getNumComponents() / 2);
@@ -202,7 +205,7 @@ namespace Partition {
 			ComponentId_t setB[B_size];
 
 			int indexA = 0;
-			int indexB = 0;		
+			int indexB = 0;
 			int count  = 0;
 
 			map<ComponentId_t, map<ComponentId_t, SimTime_t>*> timeTable;
@@ -214,19 +217,19 @@ namespace Partition {
                  ++compItr) {
 
                 ComponentId_t theComponent = (*compItr).id;
-                
+
 				map<ComponentId_t, SimTime_t>* compConnectMap = new map<ComponentId_t, SimTime_t>();
 				timeTable[theComponent] = compConnectMap;
 
 				if(count++ % 2 == 0) {
-					setA[indexA++] = theComponent;	
+					setA[indexA++] = theComponent;
 				} else {
 					setB[indexB++] = theComponent;
 				}
 
 				// vector<string> component_links = (*compItr).links;
 				LinkIdMap_t component_links = (*compItr).links;
-                
+
                 PartitionLinkMap_t& linkMap = graph->getLinkMap();
 
 				for(LinkIdMap_t::const_iterator linkItr = component_links.begin();
@@ -239,7 +242,7 @@ namespace Partition {
 				}
 			}
 
-			simple_partition_step(component_map, setA, A_size, 0, setB, B_size, 1, timeTable, world_size.rank, 1);
+			simple_partition_step(component_map, setA, A_size, 0, setB, B_size, 1, timeTable, 1);
 		}
 	}
 } // namespace partition
