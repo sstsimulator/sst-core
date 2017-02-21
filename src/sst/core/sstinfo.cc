@@ -553,7 +553,6 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 void SSTInfoElement_LibraryInfo::populateLibraryInfo()
 {
     const ElementInfoComponent*    eic;
-    const ElementInfoIntrospector* eii;
     const ElementInfoEvent*        eie;
     const ElementInfoModule*       eim;
     const ElementInfoSubComponent* eisc;
@@ -568,17 +567,6 @@ void SSTInfoElement_LibraryInfo::populateLibraryInfo()
         while (NULL != eic->name) {
             addInfoComponent(eic);
             eic++;  // Get the next item
-        }
-    }
-
-    // Are there any Introspectors
-    if (NULL != m_eli->introspectors) {
-        // Get a pointer to the array
-        eii = m_eli->introspectors;
-        // If the name is NULL, we have reached the last item
-        while (NULL != eii->name) {
-            addInfoIntrospector(eii);
-            eii++;  // Get the next item
         }
     }
 
@@ -644,7 +632,6 @@ void SSTInfoElement_LibraryInfo::outputLibraryInfo(int LibIndex)
     int                          x;
     int                          numObjects;
     SSTInfoElement_ComponentInfo*    eic;
-    SSTInfoElement_IntrospectorInfo* eii;
     SSTInfoElement_EventInfo*        eie;
     SSTInfoElement_ModuleInfo*       eim;
     SSTInfoElement_SubComponentInfo* eisc;
@@ -674,12 +661,6 @@ void SSTInfoElement_LibraryInfo::outputLibraryInfo(int LibIndex)
             eic->outputComponentInfo(x);
         }
         
-        numObjects = getNumberOfLibraryIntrospectors(); 
-        fprintf(stdout, "   NUM INTROSPECTORS = %d\n", numObjects);
-        for (x = 0; x < numObjects; x++) {
-            eii = getInfoIntrospector(x);
-            eii->outputIntrospectorInfo(x);
-        }
     
         numObjects = getNumberOfLibraryEvents();        
         fprintf(stdout, "   NUM EVENTS        = %d\n", numObjects);
@@ -763,7 +744,6 @@ void SSTInfoElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlN
     int                          x;
     int                          numObjects;
     SSTInfoElement_ComponentInfo*    eic;
-    SSTInfoElement_IntrospectorInfo* eii;
     SSTInfoElement_EventInfo*        eie;
     SSTInfoElement_ModuleInfo*       eim;
 //    SSTInfoElement_SubComponentInfo* eisc;
@@ -785,15 +765,6 @@ void SSTInfoElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlN
     for (x = 0; x < numObjects; x++) {
         eic = getInfoComponent(x);
         eic->generateComponentInfoXMLData(x, XMLLibraryElement);
-    }
-    
-    numObjects = getNumberOfLibraryIntrospectors(); 
-	sprintf(Comment, "NUM INTROSPECTORS = %d", numObjects);
-	TiXmlComment* XMLLibIntrospectorsComment = new TiXmlComment(Comment);
-	XMLLibraryElement->LinkEndChild(XMLLibIntrospectorsComment);
-    for (x = 0; x < numObjects; x++) {
-        eii = getInfoIntrospector(x);
-        eii->generateIntrospectorInfoXMLData(x, XMLLibraryElement);
     }
 
     numObjects = getNumberOfLibraryEvents();        
@@ -1067,39 +1038,6 @@ void SSTInfoElement_ComponentInfo::buildCategoryString()
     }
 }
 
-void SSTInfoElement_IntrospectorInfo::outputIntrospectorInfo(int index)
-{
-    fprintf(stdout, "      INTROSPECTOR %d = %s (%s)\n", index, getName(), getDesc());
-
-    // Print out the Parameter Info
-    fprintf(stdout, "         NUM PARAMETERS = %ld\n", m_ParamArray.size());
-    for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
-        getParamInfo(x)->outputParameterInfo(x);
-    }
-}
-
-void SSTInfoElement_IntrospectorInfo::generateIntrospectorInfoXMLData(int Index, TiXmlNode* XMLParentElement)
-{
-    char Comment[256];
-
-    // Build the Element to Represent the Introspector
-	TiXmlElement* XMLIntrospectorElement = new TiXmlElement("Introspector");
-	XMLIntrospectorElement->SetAttribute("Index", Index);
-	XMLIntrospectorElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
-	XMLIntrospectorElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
-	
-	// Get the Num Parameters and Display an XML comment about them
-    sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
-    TiXmlComment* XMLParamsComment = new TiXmlComment(Comment);
-    XMLIntrospectorElement->LinkEndChild(XMLParamsComment);
-	
-    for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
-        getParamInfo(x)->generateParameterInfoXMLData(x, XMLIntrospectorElement);
-    }
-
-    // Add this Element to the Parent Element
-    XMLParentElement->LinkEndChild(XMLIntrospectorElement);
-}
 
 void SSTInfoElement_EventInfo::outputEventInfo(int index)
 {
