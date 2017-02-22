@@ -234,7 +234,7 @@ ElemLoader::loadCoreInfo()
         {"simple", "Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.", NULL, NULL},
         {"self", "Used when partitioning is already specified in the configuration.", NULL, NULL},
 #ifdef HAVE_ZOLTAN
-        {"zoltan", "Zoltan parallel partitioner", NULL, NULL}
+        {"zoltan", "Zoltan parallel partitioner", NULL, NULL},
 #endif
 
         {NULL, NULL, NULL, NULL}
