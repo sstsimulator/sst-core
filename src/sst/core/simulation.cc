@@ -24,7 +24,6 @@
 #include <sst/core/exit.h>
 #include <sst/core/factory.h>
 //#include <sst/core/graph.h>
-#include <sst/core/introspector.h>
 #include <sst/core/linkMap.h>
 #include <sst/core/linkPair.h>
 #include <sst/core/sharedRegionImpl.h>
@@ -35,6 +34,7 @@
 #include <sst/core/syncManager.h>
 #include <sst/core/syncQueue.h>
 #include <sst/core/threadSync.h>
+#include <sst/core/timeConverter.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/timeVortex.h>
 #include <sst/core/unitAlgebra.h>
@@ -81,11 +81,6 @@ Simulation::~Simulation()
     // }
     // compMap.clear();
     
-    // Delete all the introspectors
-    for ( IntroMap_t::iterator it = introMap.begin(); it != introMap.end(); ++it ) {
-        delete it->second;
-    }
-    introMap.clear();
 
     // Clocks already got deleted by timeVortex, simply clear the clockMap
     clockMap.clear();
@@ -200,11 +195,6 @@ Simulation::createComponent( ComponentId_t id, std::string &name,
     return factory->CreateComponent(id, name, params);
 }
 
-Introspector*
-Simulation::createIntrospector(std::string &name, Params &params )
-{
-    return factory->CreateIntrospector(name, params);
-}
 
 void
 Simulation::requireEvent(std::string name)
@@ -568,16 +558,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     {
         ConfigComponent* ccomp = &(*iter);
 
-        if (ccomp->isIntrospector) {
-            Introspector* tmp;
-
-            // _SIM_DBG("creating introspector: name=\"%s\" type=\"%s\" id=%d\n",
-            // 	     name.c_str(), sdl_c->type().c_str(), (int)id );
-
-            tmp = createIntrospector( ccomp->type, ccomp->params );
-            introMap[ccomp->name] = tmp;
-        }
-        else if ( ccomp->rank == myRank ) {
+        if ( ccomp->rank == myRank ) {
             Component* tmp;
             //             _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
             // 		     name.c_str(), sdl_c->type().c_str(), (int)id );
@@ -675,14 +656,6 @@ void Simulation::setup() {
 
     barrier.wait();
 
-    //for introspector
-    for( IntroMap_t::iterator iter = introMap.begin();
-                            iter != introMap.end(); ++iter )
-    {
-      (*iter).second->setup();
-    }
-
-    barrier.wait();
     /* Enforce finalization of shared regions */
     if ( my_rank.thread == 0 ) sharedRegionManager->updateState(true);
 
@@ -803,12 +776,6 @@ void Simulation::finish() {
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter )
     {
         (*iter)->getComponent()->finish();
-    }
-    //for introspector
-    for( IntroMap_t::iterator iter = introMap.begin();
-                            iter != introMap.end(); ++iter )
-    {
-      (*iter).second->finish();
     }
 
     switch ( shutdown_mode ) {
