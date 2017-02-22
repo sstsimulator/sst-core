@@ -35,18 +35,18 @@
 
 using namespace std;
 using namespace SST;
+using namespace SST::Core;
 
 // Global Variables
-ElemLoader*                              g_loader;
 int                                      g_fileProcessedCount;
 std::string                              g_searchPath;
-std::vector<SSTInfoElement_LibraryInfo*> g_libInfoArray;
+std::vector<SSTInfoElement_LibraryInfo>  g_libInfoArray;
 SSTInfoConfig                            g_configuration;
 
 // Forward Declarations
-void initLTDL(std::string searchPath); 
-void shutdownLTDL(); 
-void processSSTElementFiles(std::string searchPath);
+void initLTDL(std::string searchPath);
+void shutdownLTDL();
+static void processSSTElementFiles(std::string searchPath);
 bool areOutputFiltersEnabled();
 bool testNameAgainstOutputFilters(std::string testElemName, std::string testCompName);
 void outputSSTElementInfo();
@@ -61,8 +61,7 @@ int main(int argc, char *argv[])
     }
 
     std::vector<std::string> overridePaths;
-    SST::Core::Environment::EnvironmentConfiguration* sstEnv =
-	SST::Core::Environment::getSSTEnvironmentConfiguration(overridePaths);
+    Environment::EnvironmentConfiguration* sstEnv = Environment::getSSTEnvironmentConfiguration(overridePaths);
     g_searchPath = "";
     std::set<std::string> groupNames = sstEnv->getGroupNames();
 
@@ -70,24 +69,72 @@ int main(int argc, char *argv[])
 	SST::Core::Environment::EnvironmentConfigGroup* currentGroup =
         sstEnv->getGroupByName(*groupItr);
         std::set<std::string> groupKeys = currentGroup->getKeys();
-    
+
         for(auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++) {
             const std::string key = *keyItr;
-    
+
             if(key.size() > 6 && key.substr(key.size() - 6) == "LIBDIR") {
                 if(g_searchPath.size() > 0) {
                     g_searchPath.append(":");
                 }
-    
+
                 g_searchPath.append(currentGroup->getValue(key));
             }
         }
     }
 
-    g_loader = new ElemLoader(g_searchPath);
 
     // Read in the Element files and process them
     processSSTElementFiles(g_searchPath);
+
+    return 0;
+}
+
+
+static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
+{
+
+    if ( g_configuration.debugEnabled() )
+        fprintf (stdout, "Looking for library \"%s\"\n", lib.c_str());
+
+    const ElementLibraryInfo* pELI = (lib == "libsst") ?
+        loader.loadCoreInfo() :
+        loader.loadLibrary(lib, g_configuration.debugEnabled());
+    if ( pELI != NULL ) {
+        if ( g_configuration.debugEnabled() )
+            fprintf(stdout, "Found!\n");
+        // Build
+        g_fileProcessedCount++;
+        g_libInfoArray.emplace_back(pELI);
+    } else if ( !optional ) {
+        fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s\n", lib.c_str());
+    } else if ( g_configuration.debugEnabled() ) {
+        fprintf(stdout, "**** Not Found!\n");
+    }
+
+}
+
+
+static void processSSTElementFiles(std::string searchPath)
+{
+    std::vector<bool>       EntryProcessedArray;
+    ElemLoader              loader(g_searchPath);
+
+    std::vector<std::string> potentialLibs = loader.getPotentialElements();
+
+    // Which libraries should we (attempt) to process
+    std::vector<std::string> processLibs;
+    if ( g_configuration.processAllElements() ) {
+        processLibs = potentialLibs;
+        processLibs.push_back("libsst"); // Core libraries
+    } else {
+        processLibs = *g_configuration.getElementsToProcessArray();
+    }
+
+    for ( auto l : processLibs ) {
+        addELI(loader, l, g_configuration.processAllElements());
+    }
+
 
     // Do we output in Human Readable form
     if (g_configuration.getOptionBits() & CFG_OUTPUTHUMAN) {
@@ -99,146 +146,6 @@ int main(int argc, char *argv[])
         generateXMLOutputFile();
     }
 
-    delete g_loader;
-
-    return 0;
-}
-
-
-
-void processSSTElementFiles(std::string searchPath)
-{
-    std::string             targetDir;
-    std::string             searchDir;
-    std::string             dirEntryPath;
-    std::string             dirEntryName;
-    std::string             elementName;
-    DIR*                    pDir;
-    struct dirent*          pDirEntry;
-    struct stat             dirEntryStat;
-    bool                    isDir;
-    size_t                  indexExt;
-    size_t                  indexLib;
-    const ElementLibraryInfo* pELI;
-    SSTInfoElement_LibraryInfo* pLibInfo;
-    unsigned int            x;
-    bool                    testAllEntries = false;
-    std::vector<bool>       EntryProcessedArray;
-
-    // Tell the user what libraries (if not all selected) will be processed
-    if (g_configuration.getElementsToProcessArray()->size() > 0) {
-        if (g_configuration.getElementsToProcessArray()->at(0) != "all") {
-            for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
-                fprintf (stdout, "Looking For Library \"%s\"\n", g_configuration.getElementsToProcessArray()->at(x).c_str());
-            }
-        }
-    }
-    
-    // Init global var
-    g_fileProcessedCount = 0;
-
-    // Figure out if we are supposed to check all entrys, and setup array that 
-    // tracks what entries have been processed
-    for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
-        EntryProcessedArray.push_back(false);
-        if (g_configuration.getElementsToProcessArray()->at(x) == "all") {
-            testAllEntries = true;
-            EntryProcessedArray[x] = true;
-        }
-    }
-    
-    
-    // The search path may be broken into multiple directories separated by ':'
-    // Break each directory into a separate search.
-    
-    // First check to see if there even is a :
-    size_t index = 0;
-    size_t foundIndex = 0;
-    do {
-        foundIndex = searchPath.find(":", index);
-        if (foundIndex == string::npos) {
-            // : not found, use the remainder of the string
-            searchDir = searchPath.substr(index, foundIndex);
-        } else {
-            // : found, use the string up to the :
-            searchDir = searchPath.substr(index, foundIndex - index);
-            index = foundIndex + 1;
-        }
-        
-        // Open the target directory
-        pDir = opendir(searchDir.c_str());
-        if (NULL != pDir) {
-    
-            targetDir = searchDir;
-            
-            // Dir is open, now read the entrys
-            while ((pDirEntry = readdir(pDir)) != 0) {
-    
-                // Get the Name of the Entry; and prepend the path
-                dirEntryName = pDirEntry->d_name;
-                dirEntryPath = targetDir + "/" + dirEntryName;
-    
-                // Decide if the entry is a File or a Sub-Directory
-                if (0 == stat(dirEntryPath.c_str(), &dirEntryStat)) {
-                    isDir = dirEntryStat.st_mode & S_IFDIR;
-                } else {
-                    // Failed to open the directory for some reason
-                    fprintf(stderr, "ERROR: %s - Unable to get stat info on Directory Entry %s\n", strerror(errno), dirEntryPath.c_str());
-                    continue;
-                }
-                
-                for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
-                    // Check to see if we are supposed to process just this file or all files
-                    if ((true == testAllEntries) || (dirEntryName == g_configuration.getElementsToProcessArray()->at(x))) {
-    
-                        // Now only check out files that have the .so extension (.so must 
-                        // be at the end of the file name) and a 'lib' in the front of the file
-                        indexExt = dirEntryName.find(".so");
-                        indexLib = dirEntryName.find("lib");
-                        if ((false == isDir) && 
-                            (indexExt != std::string::npos) && 
-                            (indexExt == dirEntryName.length() - 3) &&
-                            (indexLib != std::string::npos) && 
-                            (indexLib == 0)) {
-            
-                            // Well as far as we can tell this is some sort of element library
-                            // Lets strip off the lib and .so to get an Element Name
-                            elementName = dirEntryName.substr(3, dirEntryName.length() - 6);
-                            
-                            // Now we process the file and populate our internal structures
-    //                      fprintf(stderr, "**** DEBUG - PROCESSING DIR ENTRY NAME = %s; ELEM NAME = %s; TYPE = %d; DIR FLAG = %d\n", dirEntryName.c_str(), elementName.c_str(), pDirEntry->d_type, isDir);
-                            pELI = g_loader->loadLibrary(elementName, g_configuration.debugEnabled());
-                            if (pELI != NULL) {
-                                // Build
-                                g_fileProcessedCount++;
-                                pLibInfo = new SSTInfoElement_LibraryInfo(pELI); 
-                                g_libInfoArray.push_back(pLibInfo);
-                                EntryProcessedArray[x] = true;
-                            }
-                        }
-                    }
-                }
-            }
-            
-            // Now check to see if we processed all entries
-            if (false == testAllEntries) {
-                for (x = 0; x < g_configuration.getElementsToProcessArray()->size(); x++) {
-                    if (false == EntryProcessedArray[x]) {
-                        std::string name = g_configuration.getElementsToProcessArray()->at(x);
-                        fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s - BECAUSE IT WAS NOT FOUND\n", name.c_str());
-                    }
-                }
-            }
-            
-            // Finished, close the directory
-            closedir(pDir);
-        } else {
-            // Failed to open the directory for some reason
-            fprintf(stderr, "ERROR: %s - When trying to open Directory %s\n", strerror(errno), searchDir.c_str());
-        }
-    
-    } while (foundIndex != std::string::npos);
-    
 }
 
 bool areOutputFiltersEnabled()
@@ -280,7 +187,7 @@ bool testNameAgainstOutputFilters(std::string testElemName, std::string testComp
             return true;
         }
     }
-    
+
     elemCompName = testElemName + "." + testCompName; 
     // Check the Element.Component Name, against the Element.Component Filter list, 
     // if there is a match, then allow the Component to be displayed.  
@@ -298,7 +205,6 @@ bool testNameAgainstOutputFilters(std::string testElemName, std::string testComp
 void outputSSTElementInfo()
 {
     unsigned int            x;
-    SSTInfoElement_LibraryInfo* pLibInfo;
 
     fprintf (stdout, "PROCESSED %d .so (SST ELEMENT) FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
 
@@ -317,15 +223,13 @@ void outputSSTElementInfo()
 
     // Now dump the Library Info
     for (x = 0; x < g_libInfoArray.size(); x++) {
-        pLibInfo = g_libInfoArray[x];
-        pLibInfo->outputLibraryInfo(x);
+        g_libInfoArray[x].outputLibraryInfo(x);
     }
 }
 
 void generateXMLOutputFile()
 {
     unsigned int            x;
-    SSTInfoElement_LibraryInfo* pLibInfo;
     char                    Comment[256];
     char                    TimeStamp[32];
     std::time_t             now = std::time(NULL);
@@ -386,8 +290,7 @@ void generateXMLOutputFile()
     // Now Generate the XML Data that represents the Library Info, 
     // and add the data to the Top Level Element
     for (x = 0; x < g_libInfoArray.size(); x++) {
-        pLibInfo = g_libInfoArray[x];
-        pLibInfo->generateLibraryInfoXMLData(x, XMLTopLevelElement);
+        g_libInfoArray[x].generateLibraryInfoXMLData(x, XMLTopLevelElement);
     }
 
 	// Add the entries into the XML Document
@@ -481,14 +384,10 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 
             // See if "lib" is at front of the library name; if not, append to full name
             if ( libraryName.compare(0, 3, "lib") )
-                fullLibraryName += "lib";
+                fullLibraryName = "lib";
 
             // Add the Library Name to the full name
             fullLibraryName += libraryName;
-
-            // See if ".so" is at back of the library name; if not, postpend to full name
-            if ( fullLibraryName.compare(fullLibraryName.size()-3, 3, ".so") )
-                fullLibraryName += ".so";
 
             // Write the full name back to the m_elementsToProcess
             m_elementsToProcess.push_back(fullLibraryName);
@@ -524,27 +423,7 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
     }
 
     // Get the List of libs that the user may trying to use
-    if ( m_elementsToProcess.empty()) {
-        // Build the default value
-        m_elementsToProcess.push_back(std::string("all"));
-    }
-
-//// DEBUG    
-//cout << "DEBUG ELEMENTS TO PROCESS = " << m_elementsToProcess.size() << endl;
-//for (x = 0; x < m_elementsToProcess.size(); x++) {
-//    cout << " LIBRARY ELEMENT TO PROCESS #" << x << " = " << m_elementsToProcess[x] << endl;
-//}
-//cout << "DEBUG ELEMENT NAMES TO FILTER = " << m_filteredElementNames.size() << endl;
-//for (x = 0; x < m_filteredElementNames.size(); x++) {
-//    cout << " ELEMENT NAME TO FILTER #" << x << " = " << m_filteredElementNames[x] << endl;
-//}
-//cout << "DEBUG ELEMENT.COMP NAMES TO FILTER = " << m_filteredElementComponentNames.size() << endl;
-//for (x = 0; x < m_filteredElementComponentNames.size(); x++) {
-//    cout << " ELEMENT.COMP NAME TO FILTER #" << x << " = " << m_filteredElementComponentNames[x] << endl;
-//}
-//cout << "DEBUG OPTIONBITS = " << m_optionBits << endl;
-//return 1;
-//// DEBUG    
+    m_processAllElements = m_elementsToProcess.empty();
 
     return 0;
 }

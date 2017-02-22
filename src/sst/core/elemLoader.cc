@@ -215,4 +215,66 @@ ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
     }
     return eli;
 }
+
+
+const ElementLibraryInfo*
+ElemLoader::loadCoreInfo()
+{
+    static const ElementInfoEvent events[] = {
+        {NULL, NULL, NULL, 0}
+    };
+
+    static const ElementInfoModule modules[] = {
+        {NULL, NULL, NULL, NULL, NULL, NULL, NULL}
+    };
+
+    static const ElementInfoPartitioner partitioners[] = {
+        {"linear", "Partitions components by dividing Component ID space into roughly equal portions.  Components with sequential IDs will be placed close together.", NULL, NULL},
+        {"roundrobin", "Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.", NULL, NULL},
+        {"simple", "Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.", NULL, NULL},
+        {"self", "Used when partitioning is already specified in the configuration.", NULL, NULL},
+#ifdef HAVE_ZOLTAN
+        {"zoltan", "Zoltan parallel partitioner", NULL, NULL}
+#endif
+
+        {NULL, NULL, NULL, NULL}
+    };
+
+
+    static const ElementLibraryInfo eli = {
+        .name = "sst",
+        .description = "SST Core elements",
+        .components = NULL,
+        .events = events,
+        .introspectors = NULL,
+        .modules = modules,
+        .subcomponents = NULL,
+        .partitioners = partitioners,
+        .pythonModuleGenerator = NULL,
+        .generators = NULL
+    };
+    return &eli;
+}
+
+
+extern "C" {
+static int elemCB(const char *fname, void *vd)
+{
+    std::vector<std::string>* arr = (std::vector<std::string>*)vd;
+    const char *base = strrchr(fname, '/') + 1; /* +1 to go past the / */
+    if ( !strncmp("lib", base, 3) ) { /* Filter out directories and the like */
+        arr->push_back(base + 3); /* skip past "lib" */
+    }
+    return 0;
+}
+}
+
+std::vector<std::string>
+ElemLoader::getPotentialElements()
+{
+    std::vector<std::string> res;
+    lt_dlforeachfile(searchPaths.c_str(), elemCB, &res);
+    return res;
+}
+
 }
