@@ -221,6 +221,10 @@ public:
         return circBuffs[buffer]->readNB(result);
     }
 
+    /** Empty the messages in the buffer **/
+    void clearBuffer(size_t core) {
+       circBuffs[core]->clearBuffer();
+    }
 
 
 private:

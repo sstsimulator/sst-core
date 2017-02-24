@@ -48,7 +48,6 @@ class Exit;
 class Factory;
 class SimulatorHeartbeat;
 //class Graph;
-class Introspector;
 class LinkMap;
 class Params;
 class SyncBase;
@@ -64,8 +63,6 @@ namespace Statistics {
     class StatisticProcessingEngine;
 }
 
-
-typedef std::map<std::string, Introspector* > IntroMap_t;
 
 
 /**
@@ -286,19 +283,6 @@ public:
     }
 
 
-    /** Returns the Introspector with the given name */
-    Introspector* getIntrospector(const std::string &name) const
-    {
-        IntroMap_t::const_iterator i = introMap.find(name);
-        if (i != introMap.end()) {
-            return i->second;
-        } else {
-            printf("Simulation::getIntrospector() couldn't find introspector with name = %s\n",
-                   name.c_str()); 
-            exit(1); 
-        }
-    }
-
     /**
 	Set the output directory for this simulation
 	@param outDir Path of directory to place simulation outputs in
@@ -378,8 +362,6 @@ private:
 
     Component* createComponent(ComponentId_t id, std::string &name, 
                                Params &params);
-    Introspector* createIntrospector(std::string &name, 
-                                     Params &params );
 
     TimeVortex* getTimeVortex() const { return timeVortex; }
 
@@ -412,7 +394,6 @@ private:
     SyncManager*     syncManager;
     ThreadSync*      threadSync;
     ComponentInfoMap compInfoMap;
-    IntroMap_t       introMap;
     clockMap_t       clockMap;
     statEnableMap_t  statisticEnableMap;
     statParamsMap_t  statisticParamsMap;

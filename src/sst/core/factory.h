@@ -30,7 +30,6 @@ using namespace SST::Statistics;
 namespace SST {
 
 class Component;
-class Introspector;
 
 /**
  * Class for instantiating Components, Links and the like out
@@ -55,14 +54,6 @@ public:
      * @return Newly created component
      */
     Component* CreateComponent(ComponentId_t id, std::string &componentname,
-                               Params& params);
-    
-    /** Attempt to create a new Introspector instantiation
-     * @param introspectorname - The fully qualified elementlibname.introspectorname type of introspector
-     * @param params - The params to pass to the introspectors's constructor
-     * @return Newly created introspector
-     */
-    Introspector* CreateIntrospector(std::string &introspectorname,
                                Params& params);
 
     /** Ensure that an element library containing the required event is loaded
@@ -243,28 +234,6 @@ private:
         }
     };
 
-    struct IntrospectorInfo {
-        const ElementInfoIntrospector* introspector;
-        Params::KeySet_t params;
-
-        IntrospectorInfo() {}
-
-        IntrospectorInfo(const ElementInfoIntrospector *introspector,
-                         Params::KeySet_t params) : introspector(introspector), params(params)
-        { }
-
-        IntrospectorInfo(const IntrospectorInfo& old) : introspector(old.introspector), params(old.params)
-        { }
-
-        IntrospectorInfo& operator=(const IntrospectorInfo& old)
-        {
-            introspector = old.introspector;
-            params = old.params;
-            return *this;
-        }
-    };
-
-
     struct ModuleInfo {
         const ElementInfoModule* module;
         Params::KeySet_t params;
@@ -324,7 +293,6 @@ private:
     typedef std::map<std::string, const ElementLibraryInfo*> eli_map_t;
     typedef std::map<std::string, ComponentInfo> eic_map_t;
     typedef std::map<std::string, const ElementInfoEvent*> eie_map_t;
-    typedef std::map<std::string, IntrospectorInfo> eii_map_t;
     typedef std::map<std::string, ModuleInfo> eim_map_t;
     typedef std::map<std::string, SubComponentInfo> eis_map_t;
     typedef std::map<std::string, const ElementInfoPartitioner*> eip_map_t;
@@ -348,7 +316,6 @@ private:
 
     eli_map_t loaded_libraries;
     eic_map_t found_components;
-    eii_map_t found_introspectors;
     eie_map_t found_events;
     eim_map_t found_modules;
     eis_map_t found_subcomponents;

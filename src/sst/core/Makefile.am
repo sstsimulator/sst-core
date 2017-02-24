@@ -42,9 +42,6 @@ nobase_dist_sst_HEADERS = \
 	from_string.h \
 	heartbeat.h \
 	initQueue.h \
-	introspectAction.h \
-	introspector.h \
-	introspectedComponent.h \
 	link.h \
 	linkMap.h \
 	linkPair.h \
@@ -118,10 +115,6 @@ nobase_dist_sst_HEADERS = \
 	rng/expon.h \
 	rng/constant.h \
 	rng/uniform.h \
-	stats/basestats.h \
-	stats/statfuncs.h \
-	stats/accumulator.h \
-	stats/histo/histo.h \
 	statapi/statengine.h \
 	statapi/statoutput.h \
 	statapi/statfieldinfo.h \
@@ -163,9 +156,6 @@ sst_core_sources = \
 	factory.cc \
 	heartbeat.cc \
 	initQueue.cc \
-	introspectAction.cc \
-	introspector.cc \
-	introspectedComponent.cc \
 	link.cc \
 	memuse.cc \
 	oneshot.cc \

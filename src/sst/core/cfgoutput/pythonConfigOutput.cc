@@ -105,50 +105,80 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 	}
 
 	fprintf(outputFile, "\n# Define Component Statistics Information:\n");
-	for(auto comp_itr = compMap.begin(); comp_itr != compMap.end(); comp_itr++) {
-		for(size_t statIndex = 0; statIndex < comp_itr->enabledStatistics.size(); statIndex++) {
-			char* pyCompName = makePythonSafeWithPrefix(comp_itr->name.c_str(), "comp_");
-			char* esStatName = makeEscapeSafe(comp_itr->enabledStatistics[statIndex].c_str());
+    for(auto comp_itr = compMap.begin(); comp_itr != compMap.end(); comp_itr++) {
+        for(size_t statIndex = 0; statIndex < comp_itr->enabledStatistics.size(); statIndex++) {
+            char* pyCompName = makePythonSafeWithPrefix(comp_itr->name.c_str(), "comp_");
 
-			fprintf(outputFile, "%s.enableStatistics([\"%s\"]",
-				pyCompName, esStatName);
+            if ( comp_itr->enabledStatistics[statIndex] == STATALLFLAG ) {
+                fprintf(outputFile, "%s.enableAllStatistics(", pyCompName);
+                if ( !comp_itr->enabledStatParams[statIndex].empty() ) {
+                    fprintf(outputFile, "{\n");
 
-			// Output the Statistic Parameters
-			if( 0 != comp_itr->enabledStatParams[statIndex].size() ) {
-				fprintf(outputFile, ", {\n");
+                    Params& params = comp_itr->enabledStatParams[statIndex];
+                    auto keys = params.getKeys();
+                    auto param_itr = keys.begin();
+                    // auto param_itr = comp_itr->enabledStatParams[statIndex].begin();
 
-                Params& params = comp_itr->enabledStatParams[statIndex];
-                auto keys = params.getKeys();
-                auto param_itr = keys.begin();
-				// auto param_itr = comp_itr->enabledStatParams[statIndex].begin();
+                    // for(; param_itr != comp_itr->enabledStatParams[statIndex].end(); param_itr++) {
+                    for(; param_itr != keys.end(); param_itr++) {
+                        // if(param_itr != comp_itr->enabledStatParams[statIndex].begin()) {
+                        if(param_itr != keys.begin()) {
+                            fprintf(outputFile, ",\n");
+                        }
 
-				// for(; param_itr != comp_itr->enabledStatParams[statIndex].end(); param_itr++) {
-				for(; param_itr != keys.end(); param_itr++) {
-					// if(param_itr != comp_itr->enabledStatParams[statIndex].begin()) {
-					if(param_itr != keys.begin()) {
-						fprintf(outputFile, ",\n");
-					}
+                        // char* esParamName = makeEscapeSafe(Params::getParamName(param_itr->first));
+                        // char* esValue     = makeEscapeSafe(param_itr->second);
+                        char* esParamName = makeEscapeSafe(*param_itr);
+                        char* esValue     = makeEscapeSafe(comp_itr->enabledStatParams[statIndex].find<std::string>(*param_itr));
 
-					// char* esParamName = makeEscapeSafe(Params::getParamName(
-					// 	param_itr->first));
-					// char* esValue     = makeEscapeSafe(param_itr->second);
-					char* esParamName = makeEscapeSafe(*param_itr);
-					char* esValue     = makeEscapeSafe(comp_itr->enabledStatParams[statIndex].find<std::string>(*param_itr));
+                        fprintf(outputFile, "     \"%s\" : \"%s\"", esParamName, esValue);
 
-					fprintf(outputFile, "     \"%s\" : \"%s\"", esParamName,
-						esValue);
+                        free(esParamName);
+                        free(esValue);
+                    }
+                    fprintf(outputFile, "}");
+                }
+                fprintf(outputFile, ")\n");
+            } else {
+                char* esStatName = makeEscapeSafe(comp_itr->enabledStatistics[statIndex].c_str());
 
-					free(esParamName);
-					free(esValue);
-				}
-			}
+                fprintf(outputFile, "%s.enableStatistics([\"%s\"]",
+                        pyCompName, esStatName);
 
-			fprintf(outputFile, "\n})\n");
+                // Output the Statistic Parameters
+                if( 0 != comp_itr->enabledStatParams[statIndex].size() ) {
+                    fprintf(outputFile, ", {\n");
 
-			free(pyCompName);
-			free(esStatName);
-		}
-	}
+                    Params& params = comp_itr->enabledStatParams[statIndex];
+                    auto keys = params.getKeys();
+                    auto param_itr = keys.begin();
+                    // auto param_itr = comp_itr->enabledStatParams[statIndex].begin();
+
+                    // for(; param_itr != comp_itr->enabledStatParams[statIndex].end(); param_itr++) {
+                    for(; param_itr != keys.end(); param_itr++) {
+                        // if(param_itr != comp_itr->enabledStatParams[statIndex].begin()) {
+                        if(param_itr != keys.begin()) {
+                            fprintf(outputFile, ",\n");
+                        }
+
+                        // char* esParamName = makeEscapeSafe(Params::getParamName(param_itr->first));
+                        // char* esValue     = makeEscapeSafe(param_itr->second);
+                        char* esParamName = makeEscapeSafe(*param_itr);
+                        char* esValue     = makeEscapeSafe(comp_itr->enabledStatParams[statIndex].find<std::string>(*param_itr));
+
+                        fprintf(outputFile, "     \"%s\" : \"%s\"", esParamName, esValue);
+
+                        free(esParamName);
+                        free(esValue);
+                    }
+                    fprintf(outputFile, "\n}");
+                }
+                fprintf(outputFile, ")\n");
+                free(esStatName);
+            }
+            free(pyCompName);
+        }
+    }
 
 	// Dump the SST Simulation Link Information
 	auto linkMap = graph->getLinkMap();

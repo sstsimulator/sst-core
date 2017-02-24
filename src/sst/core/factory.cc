@@ -20,7 +20,6 @@
 #include "sst/core/simulation.h"
 #include "sst/core/component.h"
 #include "sst/core/element.h"
-#include "sst/core/introspector.h"
 #include "sst/core/params.h"
 #include "sst/core/linkMap.h"
 
@@ -284,34 +283,6 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
     return 0;
 }
 
-Introspector*
-Factory::CreateIntrospector(std::string &type, 
-                            Params& params)
-{
-    std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(type);
-
-    // ensure library is already loaded...
-    requireLibrary(elemlib);
-
-    // now look for component
-    std::string tmp = elemlib + "." + elem;
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-
-    eii_map_t::iterator eii = found_introspectors.find(tmp);
-    if (eii == found_introspectors.end()) {
-        out.fatal(CALL_INFO, -1,"can't find requested introspector %s.\n ", tmp.c_str());
-        return NULL;
-    }
-
-    const IntrospectorInfo ii = eii->second;
-
-    params.pushAllowedKeys(ii.params);
-    Introspector *ret = ii.introspector->alloc(params);
-    params.popAllowedKeys();
-    return ret;
-}
 
 Module*
 Factory::CreateModule(std::string type, Params& params)
@@ -643,14 +614,6 @@ Factory::findLibrary(std::string elemlib, bool showErrors)
         }
     }
 
-    if (NULL != eli->introspectors) {
-        const ElementInfoIntrospector *eii = eli->introspectors;
-        while (NULL != eii->name) {
-            std::string tmp = elemlib + "." + eii->name;
-            found_introspectors[tmp] = IntrospectorInfo(eii, create_params_set(eii->params));
-            eii++;
-        }
-    }
 
     if (NULL != eli->modules) {
         const ElementInfoModule *eim = eli->modules;

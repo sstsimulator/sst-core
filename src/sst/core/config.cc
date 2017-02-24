@@ -24,6 +24,7 @@
 #include <getopt.h>
 #include <sys/ioctl.h>
 #include <iostream>
+#include <cstdlib>
 
 #ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
@@ -48,6 +49,7 @@ Config::Config(RankInfo rankInfo)
     addlLibPath = "";
     configFile     = "NONE";
     stopAtCycle = "0 ns";
+    stopAfterSec = 0;
     timeBase    = "1 ps";
     heartbeatPeriod = "N";
     partitioner = "linear";
@@ -108,6 +110,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     /* HiddenNoConfigDesc */
     DEF_ARGOPT("sdl-file",          "FILE",         "SST Configuration file", &Config::setConfigFile),
     DEF_ARGOPT("stopAtCycle",       "TIME",         "set time at which simulation will end execution", &Config::setStopAt),
+    DEF_ARGOPT("stopAfter",         "TIME",         "set maximum wall time after which simulation will end execution", &Config::setStopAfter),
     /* MainDesc */
     DEF_ARGOPT("debug-file",        "FILE",         "file where debug output will go", &Config::setDebugFile),
     DEF_ARGOPT("lib-path",          "LIBPATH",      "component library path (overwrites default)", &Config::setLibPath),
@@ -205,10 +208,11 @@ bool Config::usage() {
 int
 Config::parseCmdLine(int argc, char* argv[]) {
     static const char* sst_short_options = "hvVn:";
-    struct option sst_long_options[nLongOpts];
+    struct option sst_long_options[nLongOpts + 1];
     for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
         sst_long_options[i] = sstOptions[i].opt;
     }
+    sst_long_options[nLongOpts] = {NULL, 0 ,0, 0};
 
     run_name = argv[0];
 
@@ -293,9 +297,11 @@ bool Config::setConfigEntryFromModel(const string &entryName, const string &valu
 
 
 bool Config::printVersion() {
-    printf("SST-Core Release Version (" PACKAGE_VERSION);
-    if (SSTCORE_GIT_HEADSHA != PACKAGE_VERSION)
-        printf(", Branch SHA: " SSTCORE_GIT_HEADSHA );
+    printf("SST-Core Version (" PACKAGE_VERSION);
+    if (SSTCORE_GIT_HEADSHA != PACKAGE_VERSION) { 
+        printf(", git branch : " SSTCORE_GIT_BRANCH);
+        printf(", SHA: " SSTCORE_GIT_HEADSHA);
+    }
     printf(")\n");
 
     return false; /* Should not continue */
@@ -349,6 +355,42 @@ bool Config::setRunMode(const std::string &arg) {
 
 /* TODO: Error checking */
 bool Config::setStopAt(const std::string &arg) { stopAtCycle = arg;  return true; }
+/* TODO: Error checking */
+bool Config::setStopAfter(const std::string &arg) {
+    errno = 0;
+
+    static const char *templates[] = {
+        "%H:%M:%S",
+        "%M:%S",
+        "%S",
+        "%Hh",
+        "%Mm",
+        "%Ss"
+    };
+    const size_t n_templ = sizeof(templates) / sizeof(templates[0]);
+    struct tm res = {0};
+    char *p;
+
+    for ( size_t i = 0 ; i < n_templ ; i++ ) {
+        memset(&res, '\0', sizeof(res));
+        p = strptime(arg.c_str(), templates[i], &res);
+        fprintf(stderr, "**** [%s]  p = %p ; *p = '%c', %u:%u:%u\n", templates[i], p, (p) ? *p : '\0', res.tm_hour, res.tm_min, res.tm_sec);
+        if ( p != NULL && *p == '\0' ) {
+            stopAfterSec = res.tm_sec;
+            stopAfterSec += res.tm_min * 60;
+            stopAfterSec += res.tm_hour * 60 * 60;
+            return true;
+        }
+    }
+
+    fprintf(stderr, "Failed to parse stop time [%s]\n"
+            "Valid formats are:\n", arg.c_str());
+    for ( size_t i = 0 ; i < n_templ ; i++ ) {
+        fprintf(stderr, "\t%s\n", templates[i]);
+    }
+
+    return false;
+}
 /* TODO: Error checking */
 bool Config::setHeartbeat(const std::string &arg) { heartbeatPeriod = arg;  return true; }
 /* TODO: Error checking */
