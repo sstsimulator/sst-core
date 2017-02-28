@@ -62,7 +62,7 @@ public:
             TxBegin,        /*!< Start a new transaction */
             TxEnd,          /*!< End the current lowest transaction */
             TxResp,
-	    TxAbort,
+            TxAbort,
             TxCommit
         } Command;
 
@@ -87,35 +87,34 @@ public:
         size_t size;        /*!< Size of this request or response */
         dataVec data;       /*!< Payload data (for Write, or ReadResp) */
         id_t id;            /*!< Unique ID to identify responses with requests */
-        uint32_t groupId;   /* Group Id.  Used to maintain group-based stats in MH */
         Addr instrPtr;      /*!< Instruction pointer associated with the operation */
         Addr virtualAddr;   /*!< Virtual address associated with the operation */
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, dataVec &data, flags_t flags = 0, flags_t memFlags = 0) :
-            cmd(cmd), addr(addr), size(size), data(data), flags(flags), memFlags(memFlags), groupId(0),
-                instrPtr(0), virtualAddr(0)
+            cmd(cmd), addr(addr), size(size), data(data), flags(flags), memFlags(memFlags),
+            instrPtr(0), virtualAddr(0)
         {
+            addrs.push_back(addr);
             id = main_id++;
         }
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, flags_t flags = 0, flags_t memFlags = 0) :
-            cmd(cmd), addr(addr), size(size), flags(flags), memFlags(memFlags), groupId(0),
-                instrPtr(0), virtualAddr(0)
+            cmd(cmd), addr(addr), size(size), flags(flags), memFlags(memFlags),
+            instrPtr(0), virtualAddr(0)
         {
+            addrs.push_back(addr);
             id = main_id++;
         }
 
-        /**
-         * @brief Set Stats Group Id
-         */
-        void setGroupId(uint32_t _groupId)
+        void addAddress(Addr addr)
         {
-            groupId = _groupId;
+            addrs.push_back(addr);
         }
 
         /**
+         * @param[in] data_in
          * @brief Set the contents of the payload / data field.
          */
         void setPayload(const std::vector<uint8_t> & data_in )
@@ -124,6 +123,7 @@ public:
         }
 
         /**
+         * @param[in] data_in
          * @brief Set the contents of the payload / data field.
          */
         void setPayload(uint8_t *data_in, size_t len)
@@ -163,7 +163,6 @@ public:
         Addr getInstructionPointer() {
                 return instrPtr;
         }
-
 
         /**
         * @brief Clears the flags associated with the operation
@@ -206,6 +205,7 @@ public:
         flags_t get_memFlags() {
                 return memFlags;
         }
+
 
     private:
         static std::atomic<id_t> main_id;
