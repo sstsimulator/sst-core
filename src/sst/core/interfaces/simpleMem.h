@@ -82,6 +82,7 @@ public:
         typedef std::vector<uint8_t> dataVec;
 
         Command cmd;        /*!< Command to issue */
+        std::vector<Addr> addrs; /*!< Target address(es) */
         Addr addr;          /*!< Target address */
         size_t size;        /*!< Size of this request or response */
         dataVec data;       /*!< Payload data (for Write, or ReadResp) */
