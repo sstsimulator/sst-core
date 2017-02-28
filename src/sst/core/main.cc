@@ -24,6 +24,7 @@
 #include <fstream>
 #include <cinttypes>
 #include <signal.h>
+#include <time.h>
 
 #include <sst/core/activity.h>
 #include <sst/core/config.h>
@@ -87,6 +88,9 @@ static void setupSignals(uint32_t threadRank)
 		}
 		if(SIG_ERR == signal(SIGINT, SimulationSigHandler)) {
 			g_output.fatal(CALL_INFO, -1, "Installation of SIGINT signal handler failed\n");
+		}
+		if(SIG_ERR == signal(SIGALRM, SimulationSigHandler)) {
+			g_output.fatal(CALL_INFO, -1, "Installation of SIGALRM signal handler failed\n");
 		}
 		if(SIG_ERR == signal(SIGTERM, SimulationSigHandler)) {
 			g_output.fatal(CALL_INFO, -1, "Installation of SIGTERM signal handler failed\n");
@@ -152,6 +156,12 @@ static void do_graph_wireup(ConfigGraph* graph,
                 myRank.rank, myRank.thread);
     }
 
+    sim->performWireUp( *graph, myRank, min_part );
+
+}
+
+
+static void doGraphOutput(SST::Config *cfg, ConfigGraph *graph) {
     std::vector<ConfigGraphOutput*> graphOutputs;
 
     // User asked us to dump the config graph to a file in Python
@@ -178,11 +188,7 @@ static void do_graph_wireup(ConfigGraph* graph,
         graphOutputs[i]->generate(cfg, graph);
         delete graphOutputs[i];
     }
-
-    sim->performWireUp( *graph, myRank, min_part );
-
 }
-
 
 
 typedef struct {
@@ -258,6 +264,17 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
             g_output.verbose(CALL_INFO, 1, 0, "# Start time: %04u/%02u/%02u at: %02u:%02u:%02u\n",
                     (now->tm_year + 1900), (now->tm_mon+1), now->tm_mday,
                     now->tm_hour, now->tm_min, now->tm_sec);
+
+            if ( info.config->stopAfterSec > 0 ) {
+                time_t stop_time = the_time + info.config->stopAfterSec;
+                struct tm *end = localtime( &stop_time );
+                g_output.verbose(CALL_INFO, 1, 0, "# Will end by: %04u/%02u/%02u at: %02u:%02u:%02u\n",
+                        (end->tm_year + 1900), (end->tm_mon+1), end->tm_mday,
+                        end->tm_hour, end->tm_min, end->tm_sec);
+
+                /* Set the alarm */
+                alarm(info.config->stopAfterSec);
+            }
         }
         // g_output.output("info.config.stopAtCycle = %s\n",info.config->stopAtCycle.c_str());
         sim->setStopAtCycle(info.config);
@@ -510,6 +527,7 @@ main(int argc, char *argv[])
 
         // Output the partition information is user requests it
         dump_partition(cfg, graph, world_size);
+        doGraphOutput(&cfg, graph);
     }
 
     ////// End Partitioning //////
