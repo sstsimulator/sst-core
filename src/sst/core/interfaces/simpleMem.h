@@ -83,7 +83,7 @@ public:
 
         Command cmd;        /*!< Command to issue */
         std::vector<Addr> addrs; /*!< Target address(es) */
-        Addr addr;          /*!< Target address */
+        Addr addr;          /*!< Target address - DEPRECATED but included for backward compatibility, defaults to addrs[0] */
         size_t size;        /*!< Size of this request or response */
         dataVec data;       /*!< Payload data (for Write, or ReadResp) */
         id_t id;            /*!< Unique ID to identify responses with requests */
