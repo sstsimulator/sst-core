@@ -13,6 +13,7 @@
 #define _SST_CORE_ELEMLOADER_H
 
 #include <string>
+#include <vector>
 #include <sst/core/element.h>
 
 namespace SST {
@@ -34,6 +35,16 @@ public:
      * @return Informational structure of the library, or NULL if it failed to load.
      */
     const ElementLibraryInfo* loadLibrary(const std::string &elemlib, bool showErrors);
+
+    /**
+     * Gather ELI information for core-provided features
+     */
+    const ElementLibraryInfo* loadCoreInfo();
+
+    /**
+     * Returns a list of potential element libraries in the search path
+     */
+    std::vector<std::string> getPotentialElements();
 };
 
 }

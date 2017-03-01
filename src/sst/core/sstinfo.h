@@ -54,6 +54,7 @@ public:
 
     /** Is debugging output enabled? */
     bool                      debugEnabled() const { return m_debugEnabled; }
+    bool                      processAllElements() const { return m_processAllElements; }
 
 private:
     void outputUsage();
@@ -67,6 +68,7 @@ private:
     unsigned int              m_optionBits;
     std::string               m_XMLFilePath;
     bool                      m_debugEnabled;
+    bool                      m_processAllElements;
 };
 
 /**
