@@ -128,8 +128,7 @@ public:
          * @param[in] data_in
          * @brief Set the contents of the payload / data field.
          */
-        void setPayload(uint8_t *data_in, size_t len)
-        {
+        void setPayload(uint8_t *data_in, size_t len) {
             data.resize(len);
             for ( size_t i = 0 ; i < len ; i++ ) {
                 data[i] = data_in[i];
@@ -169,42 +168,42 @@ public:
         /**
         * @brief Clears the flags associated with the operation
         */
-        void clear_flags(void) {
+        void clearFlags(void) {
                 flags = 0;
         }
 
         /**
         * @param[in] inValue  Should be one of the flags beginning with F_ in simpleMem
         */
-        void set_flags(flags_t inValue) {
+        void setFlags(flags_t inValue) {
                 flags = flags | inValue;
         }
 
         /**
         * @returns the flags associated with the operation
         */
-        flags_t get_flags() {
+        flags_t getFlags(void) {
                 return flags;
         }
 
         /**
         * @brief Clears the memory flags associated with the operation
         */
-        void clear_memFlags(void) {
+        void clearMemFlags(void) {
                 memFlags = 0;
         }
 
         /**
         * @param[in] inValue  Should be one of the flags beginning with F_ in simpleMem
         */
-        void set_memFlags(flags_t inValue) {
+        void setMemFlags(flags_t inValue) {
                 memFlags = memFlags | inValue;
         }
 
         /**
         * @returns the memory flags associated with the operation
         */
-        flags_t get_memFlags() {
+        flags_t getMemFlags(void) {
                 return memFlags;
         }
 
