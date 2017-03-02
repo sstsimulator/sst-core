@@ -86,6 +86,8 @@ public:
         Addr addr;          /*!< Target address - DEPRECATED but included for backward compatibility, defaults to addrs[0] */
         size_t size;        /*!< Size of this request or response */
         dataVec data;       /*!< Payload data (for Write, or ReadResp) */
+        flags_t flags;      /*!< Flags associated with this request or response */
+        flags_t memFlags;   /*!< Memory flags - ignored by caches except to be passed through with request to main memory */
         id_t id;            /*!< Unique ID to identify responses with requests */
         Addr instrPtr;      /*!< Instruction pointer associated with the operation */
         Addr virtualAddr;   /*!< Virtual address associated with the operation */
@@ -210,8 +212,6 @@ public:
     private:
         static std::atomic<id_t> main_id;
 
-        flags_t flags;      /*!< Flags associated with this request or response */
-        flags_t memFlags;   /*!< Memory flags - ignored by caches except to be passed through with request to main memory */
     };
 
     /** Functor classes for Clock handling */
