@@ -75,7 +75,8 @@ ConfigComponent::cloneWithoutLinks() const
     ret.enabledStatParams = enabledStatParams;
     return ret;
 }
-    
+
+
 ConfigComponent
 ConfigComponent::cloneWithoutLinksOrParams() const
 {
@@ -90,7 +91,91 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.enabledStatParams = enabledStatParams;
     return ret;
 }
-    
+
+
+void ConfigComponent::setRank(RankInfo r)
+{
+    rank = r;
+    for ( auto i : subComponents ) {
+        i.second.setRank(r);
+    }
+
+}
+
+
+void ConfigComponent::setWeight(double w)
+{
+    weight = w;
+    for ( auto i : subComponents ) {
+        i.second.setWeight(w);
+    }
+}
+
+
+void ConfigComponent::addParameter(const std::string &key, const std::string &value, bool overwrite)
+{
+    bool bk = params.enableVerify(false);
+    params.insert(key, value, overwrite);
+    params.enableVerify(bk);
+}
+
+void ConfigComponent::enableStatistic(const std::string &statisticName)
+{
+    // NOTE: For every statistic in the enabledStatistics List, there must be
+    //       a coresponding params entry in enabledStatParams list.  The two
+    //       lists will always be the same size.
+
+    // Check for Enable All Statistics
+    if (statisticName == STATALLFLAG) {
+        // Force the STATALLFLAG to always be on the bottom of the list.
+        // First check to see if anything is in the vector, if vector is empty,
+        // a STATALLFLAG flag will be added to the vector
+        if (false == enabledStatistics.empty()) {
+            // The vector is populated, so see if the STATALLFLAG
+            // already exists if it does, we are done
+            if (STATALLFLAG != enabledStatistics.back()) {
+                // Add a STATALLFLAG to end of the vector
+                enabledStatistics.push_back(STATALLFLAG);
+                enabledStatParams.push_back(Params());
+            }
+        } else {
+            // Add a STATALLFLAG to end of the vector
+            enabledStatistics.push_back(STATALLFLAG);
+            enabledStatParams.push_back(Params());
+        }
+    } else {
+        // Check to see if the stat is already in the list
+        for (std::vector<std::string>::iterator iter = enabledStatistics.begin(); iter != enabledStatistics.end(); ++iter) {
+            if (statisticName == *iter) {
+                // We found the name already in the enabledStatistics list, do nothing
+                return;
+            }
+        }
+
+        // statisticName not in list, so add statistic and params to top of the vectors
+        enabledStatistics.insert(enabledStatistics.begin(), statisticName);
+        enabledStatParams.insert(enabledStatParams.begin(), Params());
+    }
+}
+
+
+void ConfigComponent::addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value)
+{
+    // NOTE: For every statistic in the enabledStatistics List, there must be
+    //       a coresponding params entry in enabledStatParams list.  The two
+    //       lists will always be the same size.
+
+    // Scan the enabledStatistics list for the statistic name
+    for (size_t x = 0; x < enabledStatistics.size(); x++) {
+        // Check to see if the names match.  NOTE this also works for the STATALLFLAG
+        if (statisticName == enabledStatistics.at(x)) {
+            // Add/set the parameter
+            enabledStatParams.at(x).insert(std::string(param),std::string(value));
+        }
+    }
+}
+
+
 void
 ConfigGraph::setComponentRanks(RankInfo rank)
 {
@@ -254,43 +339,11 @@ ConfigGraph::addComponent(std::string name, std::string type)
     return nextCompID++;
 }
 
-void
-ConfigGraph::setComponentRank(ComponentId_t comp_id, RankInfo rank)
-{
-    comps[comp_id].rank = rank;
-}
+
+
 
 void
-ConfigGraph::setComponentWeight(ComponentId_t comp_id, float weight)
-{
-	comps[comp_id].weight = weight;
-}
-
-void
-ConfigGraph::addParams(ComponentId_t comp_id, Params& p)
-{
-    bool bk = comps[comp_id].params.enableVerify(false);
-    // comps[comp_id].params.insert(p.begin(),p.end());
-    comps[comp_id].params.insert(p);
-    comps[comp_id].params.enableVerify(bk);
-}
-
-void
-ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string value, bool overwrite)
-{
-    bool bk = comps[comp_id].params.enableVerify(false);
-	// if ( overwrite ) {
-	// 	comps[comp_id].params[key] = value;
-	// }
-	// else {
-	// 	comps[comp_id].params.insert(pair<string,string>(key,value));
-	// }
-    comps[comp_id].params.insert(key,value,overwrite);
-    comps[comp_id].params.enableVerify(bk);
-}
-
-void 
-ConfigGraph::setStatisticOutput(const char* name)
+ConfigGraph::setStatisticOutput(const std::string &name)
 {
     statOutputName = name;
 }
@@ -301,133 +354,75 @@ ConfigGraph::setStatisticOutputParams(const Params& p)
     statOutputParams = p;
 }
 
-void 
-ConfigGraph::addStatisticOutputParameter(const char* param, const char* value)
+void
+ConfigGraph::addStatisticOutputParameter(const std::string& param, const std::string& value)
 {
-    // statOutputParams[param] = value;
-    statOutputParams.insert(std::string(param), std::string(value));
+    statOutputParams.insert(param, value);
 }
 
-void 
+void
 ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
 {
     statLoadLevel = loadLevel;
 }
 
-void 
-ConfigGraph::enableComponentStatistic(ComponentId_t comp_id, string statisticName)
-{
-    // NOTE: For every statistic in the enabledStatistics List, there must be
-    //       a coresponding params entry in enabledStatParams list.  The two
-    //       lists will always be the same size.  
-    
-    // Check for Enable All Statistics
-    if (statisticName == STATALLFLAG) {
-        // Force the STATALLFLAG to always be on the bottom of the list.
-        // First check to see if anything is in the vector, if vector is empty, 
-        // a STATALLFLAG flag will be added to the vector
-        if (false == comps[comp_id].enabledStatistics.empty()) {
-            // The vector is populated, so see if the STATALLFLAG 
-            // already exists if it does, we are done
-            if (STATALLFLAG != comps[comp_id].enabledStatistics.back()) {
-                // Add a STATALLFLAG to end of the vector
-                comps[comp_id].enabledStatistics.push_back(STATALLFLAG);
-                comps[comp_id].enabledStatParams.push_back(Params());
-            }
-        } else {
-            // Add a STATALLFLAG to end of the vector
-            comps[comp_id].enabledStatistics.push_back(STATALLFLAG);
-            comps[comp_id].enabledStatParams.push_back(Params());
-        }
-    } else {
-        // Check to see if the stat is already in the list
-        for (std::vector<std::string>::iterator iter = comps[comp_id].enabledStatistics.begin(); iter != comps[comp_id].enabledStatistics.end(); ++iter) {
-            if (statisticName == *iter) {
-                // We found the name already in the enabledStatistics list, do nothing
-                return;                
-            }
-        }
-        
-        // statisticName not in list, so add statistic and params to top of the vectors
-        comps[comp_id].enabledStatistics.insert(comps[comp_id].enabledStatistics.begin(), statisticName);
-        comps[comp_id].enabledStatParams.insert(comps[comp_id].enabledStatParams.begin(), Params());
-    }
-}
 
-void 
+void
 ConfigGraph::enableStatisticForComponentName(string ComponentName, string statisticName)
 {
     bool found;
-    
+
     // Search all the components for a matching name
     for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
         // Check to see if the names match or All components are selected
         found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
         if (true == found) {
-            enableComponentStatistic(iter->id, statisticName);
+            comps[iter->id].enableStatistic(statisticName);
         }
     }
 }
 
-void 
+void
 ConfigGraph::enableStatisticForComponentType(string ComponentType, string statisticName)
 {
     bool found;
-    
+
     // Search all the components for a matching type
     for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
         // Check to see if the types match or All components are selected
         found = ((ComponentType == iter->type) || (ComponentType == STATALLFLAG));
         if (true == found) {
-            enableComponentStatistic(iter->id, statisticName);
+            comps[iter->id].enableStatistic(statisticName);
         }
     }
 }
 
-void 
-ConfigGraph::addComponentStatisticParameter(ComponentId_t comp_id, string statisticName, const char* param, const char* value)
-{
-    // NOTE: For every statistic in the enabledStatistics List, there must be
-    //       a coresponding params entry in enabledStatParams list.  The two
-    //       lists will always be the same size.  
-    
-    // Scan the enabledStatistics list for the statistic name
-    for (size_t x = 0; x < comps[comp_id].enabledStatistics.size(); x++) {
-        // Check to see if the names match.  NOTE this also works for the STATALLFLAG
-        if (statisticName == comps[comp_id].enabledStatistics.at(x)) {
-            // Add/set the parameter
-            // comps[comp_id].enabledStatParams.at(x)[param] = value;
-            comps[comp_id].enabledStatParams.at(x).insert(std::string(param),std::string(value));
-        }
-    }
-}
-
-void 
-ConfigGraph::addStatisticParameterForComponentName(string ComponentName, string statisticName, const char* param, const char* value)
+void
+ConfigGraph::addStatisticParameterForComponentName(const std::string &ComponentName, const std::string &statisticName, const std::string &param, const std::string &value)
 {
     bool found;
-    
+
     // Search all the components for a matching name
     for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
         // Check to see if the names match or All components are selected
         found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
         if (true == found) {
-            addComponentStatisticParameter(iter->id, statisticName, param, value);
+            comps[iter->id].addStatisticParameter(statisticName, param, value);
         }
     }
 }
 
-void 
-ConfigGraph::addStatisticParameterForComponentType(string ComponentType, string statisticName, const char* param, const char* value)
+void
+ConfigGraph::addStatisticParameterForComponentType(const std::string &ComponentType, const std::string &statisticName, const std::string &param, const std::string &value)
 {
     bool found;
-    
+
     // Search all the components for a matching type
     for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
         // Check to see if the types match or All components are selected
         found = ((ComponentType == iter->type) || (ComponentType == STATALLFLAG));
         if (true == found) {
-            addComponentStatisticParameter(iter->id, statisticName, param, value);
+            comps[iter->id].addStatisticParameter(statisticName, param, value);
         }
     }
 }
@@ -453,9 +448,11 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 	link.port[index] = port;
     link.latency_str[index] = latency_str;
     link.no_cut = link.no_cut | no_cut;
-    
+
 	comps[comp_id].links.push_back(link.id);
 }
+
+
 ComponentId_t
 ConfigGraph::addIntrospector(string name, string type)
 {
