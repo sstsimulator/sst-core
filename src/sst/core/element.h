@@ -134,6 +134,7 @@ struct ElementInfoSubComponent {
     const ElementInfoStatistic *stats;              /*!< List of statistics supplied by this subcomponent. */
     const char *provides;                           /*!< Name of SuperClass which for this subcomponent can be used. */
     const ElementInfoPort *ports;		            /*!< List of ports that this subcomponent uses. */
+    const ElementInfoSubComponentHook *subComponents;
 };
 
 /** Describes a Partitioner

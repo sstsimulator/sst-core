@@ -136,7 +136,6 @@ public:
     RankInfo                      rank;              /*!< Parallel Rank for this component */
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
-    bool                          isIntrospector;    /*!< Is this an Introspector? */
     std::vector<std::string>      enabledStatistics; /*!< List of statistics to be enabled */
     std::vector<Params>           enabledStatParams; /*!< List of parameters for enabled statistics */
     std::vector<std::pair<std::string, ConfigComponent> > subComponents; /*!< List of subcomponents */
@@ -155,6 +154,7 @@ public:
     void setRank(RankInfo r);
     void setWeight(double w);
     void addParameter(const std::string &key, const std::string &value, bool overwrite);
+    ConfigComponent* addSubComponent(const std::string &name, const std::string &type);
     void enableStatistic(const std::string &statisticName);
     void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value);
 
@@ -167,7 +167,6 @@ public:
         ser & rank.thread;
         ser & links;
         ser & params;
-        ser & isIntrospector;
         ser & enabledStatistics;
         ser & enabledStatParams;
         ser & subComponents;
@@ -179,13 +178,12 @@ private:
 
     friend class ConfigGraph;
     /** Create a new Component */
-    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank, bool isIntrospector) :
+    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank) :
         id(id),
         name(name),
         type(type),
         weight(weight),
-        rank(rank),
-        isIntrospector(isIntrospector)
+        rank(rank)
     { }
 
 
@@ -269,9 +267,6 @@ public:
 
     /** Add a Link to a Component on a given Port */
     void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str, bool no_cut = false);
-
-    /** Create a new Introspector */
-    ComponentId_t addIntrospector(std::string name, std::string type);
 
     /** Perform any post-creation cleanup processes */
     void postCreationCleanup();

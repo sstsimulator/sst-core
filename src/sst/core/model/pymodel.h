@@ -32,6 +32,7 @@
 using namespace SST;
 
 namespace SST {
+namespace Core {
 
 class SSTPythonModelDefinition : public SSTModelDescription {
 
@@ -85,6 +86,9 @@ class SSTPythonModelDefinition : public SSTModelDescription {
         void addStatisticParameterForComponentType(const std::string &comptype, const std::string &statname, const std::string &param, const std::string &value) { graph->addStatisticParameterForComponentType(comptype, statname, param, value); }
 };
 
+std::map<std::string,std::string> generateStatisticParameters(PyObject* statParamDict);
+
+}
 }
 
 #endif

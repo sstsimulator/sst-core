@@ -45,7 +45,6 @@ void ConfigComponent::print(std::ostream &os) const {
     os << "  weight = " << weight << std::endl;
     os << "  rank = " << rank.rank << std::endl;
     os << "  thread = " << rank.thread << std::endl;
-    os << "  isIntrospector = " << isIntrospector << std::endl;
     os << "  Links:" << std::endl;
     for (size_t i = 0 ; i != links.size() ; ++i) {
         os << "    " << links[i];
@@ -71,7 +70,6 @@ ConfigComponent::cloneWithoutLinks() const
     ret.weight = weight;
     ret.rank = rank;
     ret.params = params;
-    ret.isIntrospector = isIntrospector;
     ret.enabledStatistics = enabledStatistics;
     ret.enabledStatParams = enabledStatParams;
     return ret;
@@ -87,7 +85,6 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.type = type;
     ret.weight = weight;
     ret.rank = rank;
-    ret.isIntrospector = isIntrospector;
     ret.enabledStatistics = enabledStatistics;
     ret.enabledStatParams = enabledStatParams;
     return ret;
@@ -97,7 +94,7 @@ ConfigComponent::cloneWithoutLinksOrParams() const
 void ConfigComponent::setRank(RankInfo r)
 {
     rank = r;
-    for ( auto i : subComponents ) {
+    for ( auto &i : subComponents ) {
         i.second.setRank(r);
     }
 
@@ -107,7 +104,7 @@ void ConfigComponent::setRank(RankInfo r)
 void ConfigComponent::setWeight(double w)
 {
     weight = w;
-    for ( auto i : subComponents ) {
+    for ( auto &i : subComponents ) {
         i.second.setWeight(w);
     }
 }
@@ -176,6 +173,26 @@ void ConfigComponent::addStatisticParameter(const std::string &statisticName, co
     }
 }
 
+ConfigComponent* ConfigComponent::addSubComponent(const std::string &name, const std::string &type)
+{
+    /* Check for existing subComponent with this name */
+    for ( auto &i : subComponents ) {
+        if ( i.first == name )
+            return NULL;
+    }
+
+    subComponents.emplace_back(
+            std::make_pair(
+                name,
+                ConfigComponent((ComponentId_t)-1, /* TODO: Do we need IDs? */
+                                name,
+                                type,
+                                this->weight,
+                                this->rank)));
+
+    return &(subComponents.back().second);
+}
+
 
 void
 ConfigGraph::setComponentRanks(RankInfo rank)
@@ -183,7 +200,7 @@ ConfigGraph::setComponentRanks(RankInfo rank)
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
     {
-        iter->rank = rank;
+        iter->setRank(rank);
     }
 }
 
@@ -329,14 +346,14 @@ ConfigGraph::checkForStructuralErrors()
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type, float weight, RankInfo rank)
 {
-	comps.push_back(ConfigComponent(nextCompID, name, type, weight, rank, false));
+	comps.push_back(ConfigComponent(nextCompID, name, type, weight, rank));
     return nextCompID++;
 }
 
 ComponentId_t
 ConfigGraph::addComponent(std::string name, std::string type)
 {
-	comps.push_back(ConfigComponent(nextCompID, name, type, 1.0f, RankInfo(), false));
+	comps.push_back(ConfigComponent(nextCompID, name, type, 1.0f, RankInfo()));
     return nextCompID++;
 }
 
@@ -453,14 +470,6 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 	comps[comp_id].links.push_back(link.id);
 }
 
-
-ComponentId_t
-ConfigGraph::addIntrospector(string name, string type)
-{
-	comps.push_back(ConfigComponent(nextCompID, name, type, 0.0f, RankInfo(0, 0), true));
-    return nextCompID++;
-
-}
 
 
 ConfigGraph*
