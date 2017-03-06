@@ -405,7 +405,7 @@ static int compCompare(PyObject *obj0, PyObject *obj1) {
     return (id0 < id1) ? -1 : (id0 > id1) ? 1 : 0;
 }
 
-std::map<std::string,std::string> generateStatisticParameters(PyObject* statParamDict)
+static std::map<std::string,std::string> generateStatisticParameters(PyObject* statParamDict)
 {
     PyObject*     pykey = NULL;
     PyObject*     pyval = NULL;
