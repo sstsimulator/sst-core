@@ -75,6 +75,11 @@ struct ElementInfoPort {
     const char **validEvents;	/*!< List of fully-qualified event types that this Port expects to send or receive */
 };
 
+struct ElementInfoSubComponentHook {
+    const char * name;
+    const char * superclass;
+};
+
 /** Describes a Component and its associated information
  */
 struct ElementInfoComponent {
@@ -86,6 +91,7 @@ struct ElementInfoComponent {
     const ElementInfoPort *ports;		/*!< List of ports that this component uses. */
     uint32_t category;	   		        /*!< Bit-mask of categories in which this component fits. */
     const ElementInfoStatistic *stats;	/*!< List of statistic Names that this component wants enabled. */
+    const ElementInfoSubComponentHook *subComponents;
 };
 
 /** Describes an Introspector
@@ -127,6 +133,7 @@ struct ElementInfoSubComponent {
     const ElementInfoParam *params;					/*!< List of parameters which are used by this subcomponent. */
     const ElementInfoStatistic *stats;              /*!< List of statistics supplied by this subcomponent. */
     const char *provides;                           /*!< Name of SuperClass which for this subcomponent can be used. */
+    const ElementInfoPort *ports;		            /*!< List of ports that this subcomponent uses. */
 };
 
 /** Describes a Partitioner

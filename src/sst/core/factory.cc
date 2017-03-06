@@ -57,12 +57,43 @@ Factory::~Factory()
     delete loader;
 }
 
-const std::vector<std::string>*
-Factory::GetComponentAllowedPorts(std::string type) {
-    std::string elemlib, elem;
-    
-    std::tie(elemlib, elem) = parseLoadName(type);
 
+
+static bool checkPort(const std::string &def, const std::string &offered)
+{
+    const char * x = def.c_str();
+    const char * y = offered.c_str();
+
+    /* Special case.  Name of '*' matches everything */
+    if ( *x == '*' && *(x+1) == '\0' ) return true;
+
+    do {
+        if ( *x == '%' && (*(x+1) == '(' || *(x+1) == 'd') ) {
+            // We have a %d or %(var)d to eat
+            x++;
+            if ( *x == '(' ) {
+                while ( *x && (*x != ')') ) x++;
+                x++;  /* *x should now == 'd' */
+            }
+            if ( *x != 'd') /* Malformed string.  Fail all the things */
+                return false;
+            x++; /* Finish eating the variable */
+            /* Now, eat the corresponding digits of y */
+            while ( *y && isdigit(*y) ) y++;
+        }
+        if ( *x != *y ) return false;
+        if ( *x == '\0' ) return true;
+        x++;
+        y++;
+    } while ( *x && *y );
+    if ( *x != *y ) return false; // aka, both NULL
+    return true;
+}
+
+bool Factory::isPortNameValid(const std::string &type, const std::string port_name)
+{
+    std::string elemlib, elem;
+    std::tie(elemlib, elem) = parseLoadName(type);
     // ensure library is already loaded...
     if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
         findLibrary(elemlib);
@@ -70,17 +101,29 @@ Factory::GetComponentAllowedPorts(std::string type) {
 
     // now look for component
     std::string tmp = elemlib + "." + elem;
-    eic_map_t::iterator eii = 
-        found_components.find(tmp);
-    if (eii == found_components.end()) {
-        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
-        return NULL;
+
+    std::vector<std::string> *portNames = NULL;
+
+    eic_map_t::iterator eii = found_components.find(tmp);
+    eis_map_t::iterator esii = found_subcomponents.find(tmp);
+    if ( eii != found_components.end() ) {
+        portNames = &eii->second.ports;
+    } else if ( esii != found_subcomponents.end() ) {
+        portNames = &esii->second.ports;
     }
 
-    const ComponentInfo& ci = eii->second;
+    if ( portNames == NULL ) {
+        out.fatal(CALL_INFO, -1,"can't find requested component or subcomponent %s.\n ", tmp.c_str());
+        return false;
+    }
 
-    return &ci.ports;
+    for ( auto p : *portNames ) {
+        if ( checkPort(p, port_name) )
+            return true;
+    }
+    return false;
 }
+
 
 Component*
 Factory::CreateComponent(ComponentId_t id, 

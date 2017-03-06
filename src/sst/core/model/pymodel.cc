@@ -348,7 +348,7 @@ static PyObject* compSetRank(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    c.rank = RankInfo(rank, thread);
+    c.setRank(RankInfo(rank, thread));
 
     return PyInt_FromLong(0);
 }
@@ -365,7 +365,7 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg)
         exit(-1);
     }
 
-    c.weight = weight;
+    c.setWeight(weight);
 
     return PyInt_FromLong(0);
 }

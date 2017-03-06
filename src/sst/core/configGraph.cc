@@ -19,6 +19,7 @@
 #include <sst/core/config.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/simulation.h>
+#include <sst/core/factory.h>
 
 #include <string.h>
 
@@ -289,7 +290,7 @@ ConfigGraph::checkForStructuralErrors()
                 const ConfigLink& link = links[ccomp->links[i]];
                 if ( link.component[j] == ccomp->id ) {
                     // If port is not found, print a warning
-                    if (!Component::isPortValidForComponent(ccomp->type, link.port[j]) ) {
+                    if (!Factory::getFactory()->isPortNameValid(ccomp->type, link.port[j]) ) {
                         // For now this is not a fatal error
                         // found_error = true;
                         output.output("WARNING:  Attempling to connect to undocumented port: %s, "

@@ -15,10 +15,10 @@
 
 #include <sst/core/sst_types.h>
 
-#include <sst/core/component.h>
 #include <sst/core/statapi/statbase.h>
 
 namespace SST {
+class BaseComponent;
 namespace Statistics {
 
 // NOTE: When calling base class members of classes derived from 
@@ -42,9 +42,9 @@ template <typename T>
 class NullStatistic : public Statistic<T>
 {
 private:    
-    friend class SST::Component;
+    friend class SST::BaseComponent;
     
-    NullStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) 
+    NullStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams) 
 		: Statistic<T>(comp, statName, statSubId, statParams)
     {
         // Set the Name of this Statistic

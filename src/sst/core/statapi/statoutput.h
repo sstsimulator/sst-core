@@ -28,7 +28,7 @@
 extern int main(int argc, char **argv);
 
 namespace SST {
-class Component;
+class BaseComponent;
 class Simulation;
 namespace Statistics {
 class StatisticProcessingEngine;
@@ -172,7 +172,7 @@ public:
     
 protected:    
     friend int ::main(int argc, char **argv);
-    friend class SST::Component;
+    friend class SST::BaseComponent;
     friend class SST::Simulation;
     friend class SST::Statistics::StatisticProcessingEngine;
 

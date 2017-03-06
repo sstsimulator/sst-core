@@ -386,7 +386,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
         ConfigComponent* ccomp = &(*iter);
         if ( ccomp->rank == myRank ) {
             // compInfoMap[ccomp->id] = ComponentInfo(ccomp->name, ccomp->type, new LinkMap());
-            compInfoMap.insert(new ComponentInfo(ccomp->id, ccomp->name, ccomp->type, new LinkMap()));
+            compInfoMap.insert(new ComponentInfo(ccomp, new LinkMap()));
         }
     }
     
@@ -564,32 +564,27 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
             // 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
             // Check to make sure there are any entries in the component's LinkMap
-            if ( compInfoMap.getByID(ccomp->id)->getLinkMap()->empty() ) {
+            ComponentInfo *cinfo = compInfoMap.getByID(ccomp->id);
+            if ( cinfo->getLinkMap()->empty() ) {
                 printf("WARNING: Building component \"%s\" with no links assigned.\n",ccomp->name.c_str());
             }
 
             // Save off what statistics can be enabled before instantiating the component
             // This allows the component to register its statistics in its constructor.
-            statisticEnableMap[ccomp->id] = &(ccomp->enabledStatistics);
-            statisticParamsMap[ccomp->id] = &(ccomp->enabledStatParams);
-            
+            cinfo->setStatEnablement(&ccomp->enabledStatistics, &ccomp->enabledStatParams);
+
             // compIdMap[ccomp->id] = ccomp->name;
             tmp = createComponent( ccomp->id, ccomp->type,
                     ccomp->params );
             // compMap[ccomp->name] = tmp;
             compInfoMap.getByName(ccomp->name)->setComponent(tmp);
-            
-            // After component is created, clear out the statisticEnableMap so 
-            // we dont eat up lots of memory
-            statisticEnableMap.erase(ccomp->id);
-            statisticParamsMap.erase(ccomp->id);
+
+            cinfo->clearStatEnablement();
         }
-    } // end for all vertex    
+    } // end for all vertex
     // Done with verticies, delete them;
     /*  TODO:  THREADING:  Clear only once everybody is done.
     graph.comps.clear();
-    statisticEnableMap.clear();
-    statisticParamsMap.clear();
     */
     wireUpFinished = true;
     // std::cout << "Done with performWireUp" << std::endl;

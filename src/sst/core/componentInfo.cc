@@ -18,6 +18,32 @@
 
 namespace SST {
 
+ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name, const std::string &type, LinkMap* link_map) :
+    id(id),
+    name(name),
+    type(type),
+    link_map(link_map),
+    component(NULL),
+    enabledStats(NULL),
+    statParams(NULL)
+{ }
+
+
+ComponentInfo::ComponentInfo(const ConfigComponent *ccomp, LinkMap* link_map) :
+    id(ccomp->id),
+    name(ccomp->name),
+    type(ccomp->type),
+    link_map(link_map),
+    component(NULL),
+    enabledStats(NULL),
+    statParams(NULL)
+{
+    for ( auto sc : ccomp->subComponents ) {
+        subComponents.emplace(std::make_pair(sc.first, ComponentInfo(&sc.second, new LinkMap())));
+    }
+}
+
+
 ComponentInfo::~ComponentInfo() {
     delete link_map;
     delete component;

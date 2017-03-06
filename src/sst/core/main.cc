@@ -45,7 +45,6 @@
 #include <sst/core/iouse.h>
 
 #include <sys/resource.h>
-#include <sst/core/interfaces/simpleNetwork.h>
 
 #include <sst/core/objectComms.h>
 

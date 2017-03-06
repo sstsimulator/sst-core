@@ -18,63 +18,68 @@
 #include <string>
 #include <functional>
 
-/* #include <sst/core/clock.h> */
-/* #include <sst/core/oneshot.h> */
-/* #include <sst/core/event.h> */
-/* //#include <sst/core/params.h> */
-/* //#include <sst/core/link.h> */
-/* //#include <sst/core/timeConverter.h> */
-/* #include "sst/core/simulation.h" */
-/* #include "sst/core/unitAlgebra.h" */
-/* #include "sst/core/statapi/statbase.h" */
+#include <sst/core/configGraph.h>
+
 
 namespace SST {
 
 class LinkMap;
 class Component;
-    
+
 struct ComponentInfo {
 
-    friend class Simulation;
-    
+public:
+    typedef std::vector<std::string>      statEnableList_t;        /*!< List of Enabled Statistics */
+    typedef std::vector<Params>           statParamsList_t;        /*!< List of Enabled Statistics Parameters */
+
 private:
+    friend class Simulation;
     const ComponentId_t id;
     const std::string name;
     const std::string type;
     LinkMap* link_map;
     Component* component;
+    std::map<std::string, ComponentInfo> subComponents;
+
+
+    statEnableList_t *enabledStats;
+    statParamsList_t *statParams;
 
     inline void setComponent(Component* comp) { component = comp; }
 
-    
-public:
-    ComponentInfo(ComponentId_t id, std::string name, std::string type, LinkMap* link_map) :
-        id(id),
-        name(name),
-        type(type),
-        link_map(link_map),
-        component(NULL)
-    {}
 
+public:
+    /* Old ELI Style */
+    ComponentInfo(ComponentId_t id, const std::string &name, const std::string &type, LinkMap* link_map);
+
+    /* New ELI Style */
+    ComponentInfo(const ConfigComponent *ccomp, LinkMap* link_map);
     ~ComponentInfo();
 
-    // ComponentInfo() :
-    //     id(0),
-    //     name(""),
-    //     type(""),
-    //     link_map(NULL)
-    // {}
-
     inline ComponentId_t getID() const { return id; }
-    
+
     inline const std::string& getName() const { return name; }
 
     inline const std::string& getType() const { return type; }
 
     inline Component* getComponent() const { return component; }
-    
+
     inline LinkMap* getLinkMap() const { return link_map; }
 
+    inline std::map<std::string, ComponentInfo> getSubComponents() const { return subComponents; }
+
+    void setStatEnablement(statEnableList_t *enabled, statParamsList_t *params) {
+        enabledStats = enabled;
+        statParams = params;
+    }
+
+    statEnableList_t* getStatEnableList() const { return enabledStats; }
+    statParamsList_t* getStatParams() const { return statParams; }
+
+    void clearStatEnablement() {
+        enabledStats = NULL;
+        statParams = NULL;
+    }
 
     struct HashName {
         size_t operator() (const ComponentInfo* info) const {
