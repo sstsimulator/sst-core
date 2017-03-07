@@ -314,69 +314,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     // Params objects should now start verifying parameters
     Params::enableVerify();
 
-    // Need to create the sync objects.  There are two versions, one
-    // that synchronizes between threads and one that synchronizes
-    // between MPI ranks.
 
-#if 0    
-    if ( num_ranks.rank > 1 ) {        
-        // For now, we are doing performWireUp serially, if this ever
-        // changes, then need to serialize the creation of the sync
-        // objects.
-        if ( my_rank.thread == 0 ) {
-            sync = new SyncD(barrier);
-            sync->setExit(m_exit);
-            sync->setMaxPeriod( minPartTC = minPartToTC(min_part) );
-            // Action* ms = sync->getMasterAction();
-            // insertActivity(minPartTC->getFactor(), ms);
-        }
-        else {
-            Action* ss = sync->getSlaveAction();
-            // insertActivity(minPartTC->getFactor(), ss);
-        }
-        
-        
-    }
-
-    // Need to determine the lookahead for the thread synchronization
-
-    if ( num_ranks.thread > 1 ) {
-        // Need to determine the lookahead for the thread synchronization
-        SimTime_t look_ahead = 0xffffffffffffffffl;
-        ConfigComponentMap_t comps = graph.getComponentMap();
-        ConfigLinkMap_t links = graph.getLinkMap();
-        // Find the minimum latency across a partition
-        for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
-            ConfigLink &clink = *iter;
-            RankInfo rank[2];
-            rank[0] = comps[clink.component[0]].rank;
-            rank[1] = comps[clink.component[1]].rank;
-            // We only care about links that are on the same rank, but
-            // different threads
-            if ( rank[0] == rank[1] ) continue;
-            if ( rank[0].rank != rank[1].rank ) continue;
-            if ( clink.getMinLatency() < look_ahead ) {
-                look_ahead = clink.getMinLatency();
-            }
-        }
-
-
-        // Fix for case that probably doesn't matter in practice, but
-        // does come up during some specific testing.  If there are no
-        // links that cross the boundary and we're a single rank job,
-        // we need to put in a sync interval to look for the exit
-        // conditions being met.
-        if ( look_ahead == MAX_SIMTIME_T ) {
-            // std::cout << "No links cross thread boundary" << std::endl;
-        }
-        if ( look_ahead == MAX_SIMTIME_T && num_ranks.rank == 1) {
-            // std::cout << "No links cross thread boundary" << std::endl;
-            look_ahead = timeLord.getSimCycles("1us","");
-        }
-        threadSync->setMaxPeriod( threadMinPartTC = minPartToTC(look_ahead) );
-    }
-#endif
-    
     // First, go through all the components that are in this rank and
     // create the ComponentInfo object for it
     // Now, build all the components
@@ -389,8 +327,8 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
             compInfoMap.insert(new ComponentInfo(ccomp, new LinkMap()));
         }
     }
-    
-    
+
+
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
@@ -399,8 +337,8 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     {
         ConfigLink &clink = *iter;
         RankInfo rank[2];
-        rank[0] = graph.comps[clink.component[0]].rank;
-        rank[1] = graph.comps[clink.component[1]].rank;
+        rank[0] = graph.comps[COMPONENT_ID_MASK(clink.component[0])].rank;
+        rank[1] = graph.comps[COMPONENT_ID_MASK(clink.component[1])].rank;
 
         if ( rank[0] != myRank && rank[1] != myRank ) {
             // Nothing to be done
@@ -469,85 +407,6 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
             lp.getRight()->initQueue = sync_q;
         }
 
-/*        
-        // Same rank, different thread
-        else if ( rank[0].rank == rank[1].rank ) {
-            // This is same MPI rank, different thread
-            int local, remote;
-            if ( rank[0] == myRank ) {
-                local = 0;
-                remote = 1;
-            }
-            else {
-                local = 1;
-                remote = 0;
-            }
-
-            // Create a LinkPair to represent this link
-            LinkPair lp(clink.id);
-
-            lp.getLeft()->setLatency(clink.latency[local]);
-            lp.getRight()->setLatency(0);
-            lp.getRight()->setDefaultTimeBase(minPartToTC(1));
-
-
-            // Add this link to the appropriate LinkMap for the local component
-            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
-            if ( cinfo == NULL ) {
-                // This shouldn't happen and is an error
-                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
-            }
-            cinfo->getLinkMap()->insertLink(clink.port[local],lp.getLeft());
-
-            // Need to register with both of the syncs (the ones for
-            // both local and remote thread)
-
-            // For local, just register link with threadSync object so
-            // it can map link_id to link*
-            threadSync->registerLink(clink.id, lp.getRight());
-
-            // Fpor remote thread, I get the proper queue and finish
-            // setting up the right link
-            ActivityQueue* sync_q = instanceVec[rank[remote].thread]->threadSync->getQueueForThread(rank[local].thread);
-            
-            lp.getRight()->configuredQueue = sync_q;
-            lp.getRight()->initQueue = sync_q;
-        }
-        // Different rank
-        else {
-            int local, remote;
-            if ( rank[0] == myRank ) {
-                local = 0;
-                remote = 1;
-            }
-            else {
-                local = 1;
-                remote = 0;
-            }
-
-            // Create a LinkPair to represent this link
-            LinkPair lp(clink.id);
-
-            lp.getLeft()->setLatency(clink.latency[local]);
-            lp.getRight()->setLatency(0);
-            lp.getRight()->setDefaultTimeBase(minPartToTC(1));
-
-
-            // Add this link to the appropriate LinkMap for the local component
-            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
-            if ( cinfo == NULL ) {
-                // This shouldn't happen and is an error
-                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
-            }
-            cinfo->getLinkMap()->insertLink(clink.port[local],lp.getLeft());
-
-            // For the remote side, register with sync object
-            ActivityQueue* sync_q = sync->registerLink(rank[remote],rank[local],clink.id,lp.getRight());
-            // lp.getRight()->recvQueue = sync_q;
-            lp.getRight()->configuredQueue = sync_q;
-            lp.getRight()->initQueue = sync_q;
-        }
-*/
     }
 
     // Done with that edge, delete it.
