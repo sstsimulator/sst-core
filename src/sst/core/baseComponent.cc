@@ -278,7 +278,7 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
 {
     ComponentInfo *oldLoadingSubCopmonent = currentlyLoadingSubComponent;
     /* By "magic", the new component will steal ownership of this pointer */
-    currentlyLoadingSubComponent = new ComponentInfo(comp->my_info->getID(), comp->getName(), type, comp->my_info->getLinkMap());
+    currentlyLoadingSubComponent = new ComponentInfo(comp->my_info->getID(), comp->getName(), type, &params, comp->my_info->getLinkMap());
     currentlyLoadingSubComponent->setStatEnablement(comp->my_info->getStatEnableList(), comp->my_info->getStatParams());
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
     currentlyLoadingSubComponent = oldLoadingSubCopmonent;
@@ -287,13 +287,30 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
 
 /* New ELI style */
 SubComponent*
+BaseComponent::loadNamedSubComponent(std::string name) {
+    Params empty;
+    return loadNamedSubComponent(name, empty);
+}
+
+SubComponent*
 BaseComponent::loadNamedSubComponent(std::string name, Params& params)
 {
+    auto infoItr = my_info->getSubComponents().find(name);
+    if ( infoItr == my_info->getSubComponents().end() ) return NULL;
+
     ComponentInfo *oldLoadingSubCopmonent = currentlyLoadingSubComponent;
-    currentlyLoadingSubComponent = &(my_info->getSubComponents().at(name));
+    currentlyLoadingSubComponent = &(infoItr->second);
+
     /* TODO:  Get subcomponent stat enablement */
     currentlyLoadingSubComponent->setStatEnablement(my_info->getStatEnableList(), my_info->getStatParams());
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(currentlyLoadingSubComponent->getType(), getTrueComponent(), params); /* TODO:  Mix params */
+
+    Params myParams;
+    if ( currentlyLoadingSubComponent->getParams() != NULL )
+        myParams.insert(*currentlyLoadingSubComponent->getParams());
+    myParams.insert(params);
+
+    SubComponent* ret = Factory::getFactory()->CreateSubComponent(currentlyLoadingSubComponent->getType(), getTrueComponent(), myParams);
+
     // currentlyLoadingSubComponent->clearStatEnablement(); Don't clear - assumptions are different for subcomponents
     currentlyLoadingSubComponent = oldLoadingSubCopmonent;
     return ret;

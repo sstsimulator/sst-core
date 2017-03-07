@@ -37,7 +37,7 @@ extern "C" {
 
 ConfigComponent* ComponentHolder::getSubComp(const std::string &name)
 {
-    for ( auto &sc : getComp().subComponents ) {
+    for ( auto &sc : getComp()->subComponents ) {
         if ( sc.first == name )
             return &(sc.second);
     }
@@ -51,8 +51,8 @@ const char* PyComponent::getName() const {
 }
 
 
-ConfigComponent& PyComponent::getComp() {
-    return gModel->getGraph()->getComponentMap()[id];
+ConfigComponent* PyComponent::getComp() {
+    return &(gModel->getGraph()->getComponentMap()[id]);
 }
 
 
@@ -74,8 +74,8 @@ const char* PySubComponent::getName() const {
 }
 
 
-ConfigComponent& PySubComponent::getComp() {
-    return *(parent->getSubComp(name));
+ConfigComponent* PySubComponent::getComp() {
+    return parent->getSubComp(name);
 }
 
 
@@ -96,8 +96,12 @@ int PySubComponent::compare(ComponentHolder *other) {
 }
 
 
-static inline ConfigComponent& getComp(PyObject *pobj) {
-    return ((ComponentPy_t*)pobj)->obj->getComp();
+static inline ConfigComponent* getComp(PyObject *pobj) {
+    ConfigComponent *c = ((ComponentPy_t*)pobj)->obj->getComp();
+    if ( c == NULL ) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent");
+    }
+    return c;
 }
 
 
@@ -138,10 +142,11 @@ static PyObject* compAddParam(PyObject *self, PyObject *args)
     if ( !PyArg_ParseTuple(args, "sO", &param, &value) )
         return NULL;
 
-    ConfigComponent &c = getComp(self);
+    ConfigComponent *c = getComp(self);
+    if ( NULL == c ) return NULL;
 
     PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", NULL);
-    c.addParameter(param, PyString_AsString(vstr), true);
+    c->addParameter(param, PyString_AsString(vstr), true);
     Py_XDECREF(vstr);
 
     return PyInt_FromLong(0);
@@ -150,7 +155,8 @@ static PyObject* compAddParam(PyObject *self, PyObject *args)
 
 static PyObject* compAddParams(PyObject *self, PyObject *args)
 {
-    ConfigComponent &c = getComp(self);
+    ConfigComponent *c = getComp(self);
+    if ( NULL == c ) return NULL;
 
     if ( !PyDict_Check(args) ) {
         return NULL;
@@ -163,7 +169,7 @@ static PyObject* compAddParams(PyObject *self, PyObject *args)
     while ( PyDict_Next(args, &pos, &key, &val) ) {
         PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", NULL);
         PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", NULL);
-        c.addParameter(PyString_AsString(kstr), PyString_AsString(vstr), true);
+        c->addParameter(PyString_AsString(kstr), PyString_AsString(vstr), true);
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
         count++;
@@ -174,7 +180,8 @@ static PyObject* compAddParams(PyObject *self, PyObject *args)
 
 static PyObject* compSetRank(PyObject *self, PyObject *args)
 {
-    ConfigComponent &c = getComp(self);
+    ConfigComponent *c = getComp(self);
+    if ( NULL == c ) return NULL;
 
     PyErr_Clear();
 
@@ -185,7 +192,7 @@ static PyObject* compSetRank(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    c.setRank(RankInfo(rank, thread));
+    c->setRank(RankInfo(rank, thread));
 
     return PyInt_FromLong(0);
 }
@@ -193,7 +200,8 @@ static PyObject* compSetRank(PyObject *self, PyObject *args)
 
 static PyObject* compSetWeight(PyObject *self, PyObject *arg)
 {
-    ConfigComponent &c = getComp(self);
+    ConfigComponent *c = getComp(self);
+    if ( NULL == c ) return NULL;
 
     PyErr_Clear();
     double weight = PyFloat_AsDouble(arg);
@@ -202,7 +210,7 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg)
         exit(-1);
     }
 
-    c.setWeight(weight);
+    c->setWeight(weight);
 
     return PyInt_FromLong(0);
 }
@@ -233,7 +241,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 
 static PyObject* compGetFullName(PyObject *self, PyObject *args)
 {
-    return PyString_FromString(getComp(self).name.c_str());
+    return PyString_FromString(getComp(self)->name.c_str());
 }
 
 static int compCompare(PyObject *obj0, PyObject *obj1) {
@@ -248,15 +256,18 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     if ( !PyArg_ParseTuple(args, "ss", &name, &type) )
         return NULL;
 
-    ConfigComponent &c = ((ComponentHolder*)self)->getComp();
-    if ( NULL != c.addSubComponent(name, type) ) {
+    ConfigComponent *c = getComp(self);
+    if ( NULL == c ) return NULL;
+
+    if ( NULL != c->addSubComponent(name, type) ) {
         PyObject *argList = Py_BuildValue("Oss", self, name, type);
-        ComponentPy_t *subObj = (ComponentPy_t*)PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);
-        return (PyObject*)subObj;
+        PyObject *subObj = PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);
+        Py_DECREF(argList);
+        return subObj;
     }
 
     char errMsg[1024] = {0};
-    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create subcomponent %s on %s.  Name already exists?\n", name, c.name.c_str());
+    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create subcomponent %s on %s.  Name already exists?\n", name, c->name.c_str());
     PyErr_SetString(PyExc_RuntimeError, errMsg);
     return NULL;
 }
@@ -266,7 +277,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
 {
     int           argOK = 0;
     PyObject*     statParamDict = NULL;
-    ConfigComponent &c = getComp(self);
+    ConfigComponent *c = getComp(self);
 
     PyErr_Clear();
 
@@ -274,11 +285,11 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
     argOK = PyArg_ParseTuple(args, "|O!", &PyDict_Type, &statParamDict);
 
     if (argOK) {
-        c.enableStatistic(STATALLFLAG);
+        c->enableStatistic(STATALLFLAG);
 
         // Generate and Add the Statistic Parameters
         for ( auto p : generateStatisticParameters(statParamDict) ) {
-            c.addStatisticParameter(STATALLFLAG, p.first, p.second);
+            c->addStatisticParameter(STATALLFLAG, p.first, p.second);
         }
 
     } else {
@@ -295,7 +306,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     PyObject*     statList = NULL;
     PyObject*     statParamDict = NULL;
     Py_ssize_t    numStats = 0;
-    ConfigComponent &c = getComp(self);
+    ConfigComponent *c = getComp(self);
 
     PyErr_Clear();
 
@@ -318,11 +329,11 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
             PyObject* pylistitem = PyList_GetItem(statList, x);
             PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", NULL);
 
-            c.enableStatistic(PyString_AsString(pyname));
+            c->enableStatistic(PyString_AsString(pyname));
 
             // Add the parameters
             for ( auto p : params ) {
-                c.addStatisticParameter(PyString_AsString(pyname), p.first, p.second);
+                c->addStatisticParameter(PyString_AsString(pyname), p.first, p.second);
             }
 
             Py_XDECREF(pyname);
@@ -422,10 +433,9 @@ static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
         return -1;
 
     PySubComponent *obj = new PySubComponent(self);
-    obj->parent = (ComponentHolder*)parent;
+    obj->parent = ((ComponentPy_t*)parent)->obj;
 
-    obj->name = (char*)calloc(1, strlen(obj->parent->getName()) + 2 + strlen(name));
-    sprintf(obj->name, "%s.%s", obj->parent->getName(), name);
+    obj->name = strdup(name);
 
     self->obj = obj;
     Py_INCREF(obj->parent->pobj);
@@ -467,9 +477,6 @@ static PyMethodDef subComponentMethods[] = {
     {   "addLink",
         subCompAddLink, METH_VARARGS,
         "Connects this component to a Link"},
-	{	"getFullName",
-		compGetFullName, METH_NOARGS,
-		"Returns the full name, after any prefix, of the component."},
     {   "enableAllStatistics",
         compEnableAllStatistics, METH_VARARGS,
         "Enable all Statistics in the component with optional parameters"},

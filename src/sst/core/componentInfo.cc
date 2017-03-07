@@ -18,11 +18,12 @@
 
 namespace SST {
 
-ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name, const std::string &type, LinkMap* link_map) :
+ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name, const std::string &type, const Params *params, LinkMap* link_map) :
     id(id),
     name(name),
     type(type),
     link_map(link_map),
+    params(params),
     component(NULL),
     enabledStats(NULL),
     statParams(NULL)
@@ -35,18 +36,33 @@ ComponentInfo::ComponentInfo(const ConfigComponent *ccomp, LinkMap* link_map) :
     type(ccomp->type),
     link_map(link_map),
     component(NULL),
+    params(&ccomp->params),
     enabledStats(NULL),
     statParams(NULL)
 {
-    for ( auto sc : ccomp->subComponents ) {
-        subComponents.emplace(std::make_pair(sc.first, ComponentInfo(&sc.second, new LinkMap())));
+    for ( auto &sc : ccomp->subComponents ) {
+        subComponents.emplace(sc.first, ComponentInfo(&sc.second, new LinkMap()));
     }
+}
+
+ComponentInfo::ComponentInfo(ComponentInfo &&o) :
+    id(o.id),
+    name(std::move(o.name)),
+    type(std::move(o.type)),
+    link_map(o.link_map),
+    component(o.component),
+    params(o.params),
+    enabledStats(std::move(o.enabledStats)),
+    statParams(std::move(o.statParams))
+{
+    o.link_map = NULL;
+    o.component = NULL;
 }
 
 
 ComponentInfo::~ComponentInfo() {
-    delete link_map;
-    delete component;
+    if ( link_map ) delete link_map;
+    if ( component ) delete component;
 }
 
 } // namespace SST

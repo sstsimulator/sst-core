@@ -27,7 +27,7 @@ struct ComponentHolder {
 	char *name;
     ComponentHolder(ComponentPy_t *pobj) : pobj(pobj), name(NULL) { }
     virtual ~ComponentHolder() { free(name); }
-    virtual ConfigComponent& getComp() = 0;
+    virtual ConfigComponent* getComp() = 0;
     virtual PyComponent* getBaseObj() = 0;
     virtual int compare(ComponentHolder *other) = 0;
     virtual const char* getName() const = 0;
@@ -40,7 +40,7 @@ struct PyComponent : ComponentHolder {
     PyComponent(ComponentPy_t *pobj) : ComponentHolder(pobj) { }
     ~PyComponent() {}
     const char* getName() const ;
-    ConfigComponent& getComp();
+    ConfigComponent* getComp();
     PyComponent* getBaseObj();
     int compare(ComponentHolder *other);
 };
@@ -51,7 +51,7 @@ struct PySubComponent : ComponentHolder {
     PySubComponent(ComponentPy_t *pobj) : ComponentHolder(pobj) { }
     ~PySubComponent() {}
     const char* getName() const ;
-    ConfigComponent& getComp();
+    ConfigComponent* getComp();
     PyComponent* getBaseObj();
     int compare(ComponentHolder *other);
 };

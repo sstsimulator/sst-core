@@ -181,6 +181,7 @@ static PyObject* findComponentByName(PyObject* self, PyObject* args)
     if ( id != UNSET_COMPONENT_ID ) {
         PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", id);
         PyObject *res = PyObject_CallObject((PyObject *) &PyModel_ComponentType, argList);
+        Py_DECREF(argList);
         return res;
     }
     Py_INCREF(Py_None);
@@ -607,9 +608,11 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
 
     // Initialize our types
     PyModel_ComponentType.tp_new = PyType_GenericNew;
+    PyModel_SubComponentType.tp_new = PyType_GenericNew;
     PyModel_LinkType.tp_new = PyType_GenericNew;
     ModuleLoaderType.tp_new = PyType_GenericNew;
     if ( ( PyType_Ready(&PyModel_ComponentType) < 0 ) ||
+         ( PyType_Ready(&PyModel_SubComponentType) < 0 ) ||
          ( PyType_Ready(&PyModel_LinkType) < 0 ) ||
          ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
         output->fatal(CALL_INFO, -1, "Error loading Python types.\n");
@@ -623,6 +626,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
     Py_INCREF(&PyModel_ComponentType);
+    Py_INCREF(&PyModel_SubComponentType);
     Py_INCREF(&PyModel_LinkType);
     Py_INCREF(&ModuleLoaderType);
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
@@ -631,6 +635,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     
     PyModule_AddObject(module, "Link", (PyObject*)&PyModel_LinkType);
     PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
+    PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
 
 
     // Add our custom loader

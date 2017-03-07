@@ -40,7 +40,7 @@ private:
     LinkMap* link_map;
     Component* component;
     std::map<std::string, ComponentInfo> subComponents;
-
+    const Params *params;
 
     statEnableList_t *enabledStats;
     statParamsList_t *statParams;
@@ -50,10 +50,11 @@ private:
 
 public:
     /* Old ELI Style */
-    ComponentInfo(ComponentId_t id, const std::string &name, const std::string &type, LinkMap* link_map);
+    ComponentInfo(ComponentId_t id, const std::string &name, const std::string &type, const Params *params, LinkMap* link_map);
 
     /* New ELI Style */
     ComponentInfo(const ConfigComponent *ccomp, LinkMap* link_map);
+    ComponentInfo(ComponentInfo &&o);
     ~ComponentInfo();
 
     inline ComponentId_t getID() const { return id; }
@@ -66,7 +67,9 @@ public:
 
     inline LinkMap* getLinkMap() const { return link_map; }
 
-    inline std::map<std::string, ComponentInfo> getSubComponents() const { return subComponents; }
+    inline const Params* getParams() const { return params; }
+
+    inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
 
     void setStatEnablement(statEnableList_t *enabled, statParamsList_t *params) {
         enabledStats = enabled;
@@ -134,14 +137,14 @@ public:
     }
 
     ComponentInfo* getByName(const std::string& key) const {
-        ComponentInfo infoKey(0, key, "", NULL);
+        ComponentInfo infoKey(0, key, "", NULL, NULL);
         auto value = dataByName.find(&infoKey);
         if ( value == dataByName.end() ) return NULL;
         return *value;
     }
 
     ComponentInfo* getByID(const ComponentId_t key) const {
-        ComponentInfo infoKey(key, "", "", NULL);
+        ComponentInfo infoKey(key, "", "", NULL, NULL);
         auto value = dataByID.find(&infoKey);
         if ( value == dataByID.end() ) return NULL;
         return *value;

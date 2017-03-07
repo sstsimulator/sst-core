@@ -265,6 +265,7 @@ public:
      */
     SubComponent* loadSubComponent(std::string type, Component* comp, Params& params);
     /* New ELI style */
+    SubComponent* loadNamedSubComponent(std::string name);
     SubComponent* loadNamedSubComponent(std::string name, Params& params);
 
 protected:
