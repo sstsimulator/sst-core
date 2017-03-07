@@ -26,6 +26,8 @@ namespace SST {
 class LinkMap;
 class Component;
 
+class ComponentInfoMap;
+
 struct ComponentInfo {
 
 public:
@@ -42,18 +44,21 @@ private:
     std::map<std::string, ComponentInfo> subComponents;
     const Params *params;
 
-    statEnableList_t *enabledStats;
-    statParamsList_t *statParams;
+    statEnableList_t * enabledStats;
+    statParamsList_t * statParams;
 
     inline void setComponent(Component* comp) { component = comp; }
 
+    friend class ComponentInfoMap;
+    /* Lookup Key style constructor */
+    ComponentInfo(ComponentId_t id, const std::string &name);
 
 public:
-    /* Old ELI Style */
-    ComponentInfo(ComponentId_t id, const std::string &name, const std::string &type, const Params *params, LinkMap* link_map);
+    /* Old ELI Style subcomponent constructor */
+    ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent);
 
     /* New ELI Style */
-    ComponentInfo(const ConfigComponent *ccomp, LinkMap* link_map);
+    ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map);
     ComponentInfo(ComponentInfo &&o);
     ~ComponentInfo();
 
@@ -71,18 +76,13 @@ public:
 
     inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
 
-    void setStatEnablement(statEnableList_t *enabled, statParamsList_t *params) {
+    void setStatEnablement(statEnableList_t * enabled, statParamsList_t * params) {
         enabledStats = enabled;
         statParams = params;
     }
 
-    statEnableList_t* getStatEnableList() const { return enabledStats; }
-    statParamsList_t* getStatParams() const { return statParams; }
-
-    void clearStatEnablement() {
-        enabledStats = NULL;
-        statParams = NULL;
-    }
+    statEnableList_t* getStatEnableList() { return enabledStats; }
+    statParamsList_t* getStatParams() { return statParams; }
 
     struct HashName {
         size_t operator() (const ComponentInfo* info) const {
@@ -137,14 +137,14 @@ public:
     }
 
     ComponentInfo* getByName(const std::string& key) const {
-        ComponentInfo infoKey(0, key, "", NULL, NULL);
+        ComponentInfo infoKey(0, key);
         auto value = dataByName.find(&infoKey);
         if ( value == dataByName.end() ) return NULL;
         return *value;
     }
 
     ComponentInfo* getByID(const ComponentId_t key) const {
-        ComponentInfo infoKey(key, "", "", NULL, NULL);
+        ComponentInfo infoKey(key, "");
         auto value = dataByID.find(&infoKey);
         if ( value == dataByID.end() ) return NULL;
         return *value;

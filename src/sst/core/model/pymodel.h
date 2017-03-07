@@ -53,14 +53,17 @@ class SSTPythonModelDefinition : public SSTModelDescription {
         size_t namePrefixLen;
         std::vector<size_t> nameStack;
         std::map<std::string, ComponentId_t> compNameMap;
+        ComponentId_t nextComponentId;
 
 
 	public:  /* Public, but private.  Called only from Python functions */
 		Config* getConfig(void) const { return config; }
 		ConfigGraph* getGraph(void) const { return graph; }
 		Output* getOutput() const { return output; }
+        ComponentId_t getNextComponentId() { return nextComponentId++; }
         ComponentId_t addComponent(const char *name, const char *type) {
-            ComponentId_t id = graph->addComponent(name, type);
+            ComponentId_t id = getNextComponentId();
+            graph->addComponent(id, name, type);
             compNameMap[std::string(name)] = id;
             return id;
         }

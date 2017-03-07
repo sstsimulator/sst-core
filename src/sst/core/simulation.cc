@@ -578,8 +578,6 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
                     ccomp->params );
             // compMap[ccomp->name] = tmp;
             compInfoMap.getByName(ccomp->name)->setComponent(tmp);
-
-            cinfo->clearStatEnablement();
         }
     } // end for all vertex
     // Done with verticies, delete them;

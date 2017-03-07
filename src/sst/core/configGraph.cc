@@ -72,6 +72,9 @@ ConfigComponent::cloneWithoutLinks() const
     ret.params = params;
     ret.enabledStatistics = enabledStatistics;
     ret.enabledStatParams = enabledStatParams;
+    for ( auto &i : subComponents ) {
+        ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinks());
+    }
     return ret;
 }
 
@@ -87,6 +90,9 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.rank = rank;
     ret.enabledStatistics = enabledStatistics;
     ret.enabledStatParams = enabledStatParams;
+    for ( auto &i : subComponents ) {
+        ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinksOrParams());
+    }
     return ret;
 }
 
@@ -173,7 +179,7 @@ void ConfigComponent::addStatisticParameter(const std::string &statisticName, co
     }
 }
 
-ConfigComponent* ConfigComponent::addSubComponent(const std::string &name, const std::string &type)
+ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t id, const std::string &name, const std::string &type)
 {
     /* Check for existing subComponent with this name */
     for ( auto &i : subComponents ) {
@@ -184,11 +190,7 @@ ConfigComponent* ConfigComponent::addSubComponent(const std::string &name, const
     subComponents.emplace_back(
             std::make_pair(
                 name,
-                ConfigComponent((ComponentId_t)-1, /* TODO: Do we need IDs? */
-                                name,
-                                type,
-                                this->weight,
-                                this->rank)));
+                ConfigComponent(id, name, type, this->weight, this->rank)));
 
     return &(subComponents.back().second);
 }
@@ -338,23 +340,23 @@ ConfigGraph::checkForStructuralErrors()
         // }
     }
 #endif
-    
+
     return found_error;
 }
 
 
 ComponentId_t
-ConfigGraph::addComponent(std::string name, std::string type, float weight, RankInfo rank)
+ConfigGraph::addComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank)
 {
-	comps.push_back(ConfigComponent(nextCompID, name, type, weight, rank));
-    return nextCompID++;
+	comps.push_back(ConfigComponent(id, name, type, weight, rank));
+    return id;
 }
 
 ComponentId_t
-ConfigGraph::addComponent(std::string name, std::string type)
+ConfigGraph::addComponent(ComponentId_t id, std::string name, std::string type)
 {
-	comps.push_back(ConfigComponent(nextCompID, name, type, 1.0f, RankInfo()));
-    return nextCompID++;
+	comps.push_back(ConfigComponent(id, name, type, 1.0f, RankInfo()));
+    return id;
 }
 
 

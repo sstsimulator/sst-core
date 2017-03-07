@@ -584,6 +584,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     gModel = this;
 
     graph = new ConfigGraph();
+    nextComponentId = 0;
 
     std::string local_script_name;
     int substr_index = 0;

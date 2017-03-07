@@ -154,7 +154,7 @@ public:
     void setRank(RankInfo r);
     void setWeight(double w);
     void addParameter(const std::string &key, const std::string &value, bool overwrite);
-    ConfigComponent* addSubComponent(const std::string &name, const std::string &type);
+    ConfigComponent* addSubComponent(ComponentId_t, const std::string &name, const std::string &type);
     void enableStatistic(const std::string &statisticName);
     void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value);
 
@@ -218,7 +218,6 @@ public:
     ConfigGraph() {
         links.clear();
         comps.clear();
-        nextCompID = 0;
         // Init the statistic output settings
         statOutputName = STATISTICSDEFAULTOUTPUTNAME;
         statLoadLevel = STATISTICSDEFAULTLOADLEVEL;
@@ -236,9 +235,9 @@ public:
 
     // API for programatic initialization
     /** Create a new component with weight and rank */
-    ComponentId_t addComponent(std::string name, std::string type, float weight, RankInfo rank);
+    ComponentId_t addComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank);
     /** Create a new component */
-    ComponentId_t addComponent(std::string name, std::string type);
+    ComponentId_t addComponent(ComponentId_t id, std::string name, std::string type);
 
 
     /** Set the statistic ouput module */
@@ -300,7 +299,7 @@ public:
 		ser & statOutputParams;
 		ser & statLoadLevel;
 	}
-    
+
 private:
     friend class Simulation;
     friend class SSTSDLModelDefinition;
@@ -310,9 +309,7 @@ private:
 
     // temporary as a test
     std::map<std::string,LinkId_t> link_names;
-    
-    ComponentId_t  nextCompID;
-    
+
     std::string statOutputName;
     Params      statOutputParams;
     uint8_t     statLoadLevel;
@@ -321,7 +318,7 @@ private:
 
 };
 
-    
+
 class PartitionComponent {
 public:
     ComponentId_t             id;

@@ -18,27 +18,39 @@
 
 namespace SST {
 
-ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name, const std::string &type, const Params *params, LinkMap* link_map) :
+ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
     id(id),
     name(name),
-    type(type),
-    link_map(link_map),
-    params(params),
+    type(""),
+    link_map(NULL),
+    params(NULL),
     component(NULL),
     enabledStats(NULL),
     statParams(NULL)
 { }
 
 
-ComponentInfo::ComponentInfo(const ConfigComponent *ccomp, LinkMap* link_map) :
+ComponentInfo::ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent) :
+    id(parent->id),
+    name(parent->name),
+    type(type),
+    link_map(parent->link_map),
+    params(params),
+    component(NULL),
+    enabledStats(parent->enabledStats),
+    statParams(parent->statParams)
+{ }
+
+
+ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
     id(ccomp->id),
     name(ccomp->name),
     type(ccomp->type),
     link_map(link_map),
     component(NULL),
     params(&ccomp->params),
-    enabledStats(NULL),
-    statParams(NULL)
+    enabledStats(&ccomp->enabledStatistics),
+    statParams(&ccomp->enabledStatParams)
 {
     for ( auto &sc : ccomp->subComponents ) {
         subComponents.emplace(sc.first, ComponentInfo(&sc.second, new LinkMap()));
@@ -52,8 +64,8 @@ ComponentInfo::ComponentInfo(ComponentInfo &&o) :
     link_map(o.link_map),
     component(o.component),
     params(o.params),
-    enabledStats(std::move(o.enabledStats)),
-    statParams(std::move(o.statParams))
+    enabledStats(o.enabledStats),
+    statParams(o.statParams)
 {
     o.link_map = NULL;
     o.component = NULL;

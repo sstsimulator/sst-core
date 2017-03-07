@@ -259,7 +259,7 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     ConfigComponent *c = getComp(self);
     if ( NULL == c ) return NULL;
 
-    if ( NULL != c->addSubComponent(name, type) ) {
+    if ( NULL != c->addSubComponent(gModel->getNextComponentId(), name, type) ) {
         PyObject *argList = Py_BuildValue("Oss", self, name, type);
         PyObject *subObj = PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);
         Py_DECREF(argList);
