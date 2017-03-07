@@ -248,8 +248,8 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
         for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
             ConfigLink &clink = *iter;
             RankInfo rank[2];
-            rank[0] = comps[clink.component[0]].rank;
-            rank[1] = comps[clink.component[1]].rank;
+            rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])].rank;
+            rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])].rank;
             // We only care about links that are on my rank, but
             // different threads
 
@@ -560,24 +560,17 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 
         if ( ccomp->rank == myRank ) {
             Component* tmp;
-            //             _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
-            // 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
             // Check to make sure there are any entries in the component's LinkMap
+            // TODO:  IS this still a valid warning?  Subcomponents may be the link owners
             ComponentInfo *cinfo = compInfoMap.getByID(ccomp->id);
             if ( cinfo->getLinkMap()->empty() ) {
                 printf("WARNING: Building component \"%s\" with no links assigned.\n",ccomp->name.c_str());
             }
 
-            // Save off what statistics can be enabled before instantiating the component
-            // This allows the component to register its statistics in its constructor.
-            cinfo->setStatEnablement(&ccomp->enabledStatistics, &ccomp->enabledStatParams);
+            tmp = createComponent( ccomp->id, ccomp->type, ccomp->params );
 
-            // compIdMap[ccomp->id] = ccomp->name;
-            tmp = createComponent( ccomp->id, ccomp->type,
-                    ccomp->params );
-            // compMap[ccomp->name] = tmp;
-            compInfoMap.getByName(ccomp->name)->setComponent(tmp);
+            cinfo->setComponent(tmp);
         }
     } // end for all vertex
     // Done with verticies, delete them;

@@ -117,7 +117,7 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
     if ( useID == UNSET_COMPONENT_ID ) {
         obj->name = gModel->addNamePrefix(name);
         obj->id = gModel->addComponent(obj->name, type);
-        gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%lu]\n", name, type, obj->id);
+        gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, obj->id);
     } else {
         obj->name = name;
         obj->id = useID;
@@ -232,7 +232,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
     if ( NULL == lat ) return NULL;
 
 
-	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %lu to Link %s\n", id, link->name);
+	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s\n", id, link->name);
     gModel->addLink(id, link->name, port, lat, link->no_cut);
 
     return PyInt_FromLong(0);
@@ -259,7 +259,9 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     ConfigComponent *c = getComp(self);
     if ( NULL == c ) return NULL;
 
-    if ( NULL != c->addSubComponent(gModel->getNextComponentId(), name, type) ) {
+    PyComponent *baseComp = ((ComponentPy_t*)self)->obj->getBaseObj();
+    ComponentId_t subC_id = SUBCOMPONENT_ID_CREATE(++(baseComp->subCompId), baseComp->id);
+    if ( NULL != c->addSubComponent(subC_id, name, type) ) {
         PyObject *argList = Py_BuildValue("Oss", self, name, type);
         PyObject *subObj = PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);
         Py_DECREF(argList);

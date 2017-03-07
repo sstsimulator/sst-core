@@ -36,8 +36,9 @@ struct ComponentHolder {
 
 struct PyComponent : ComponentHolder {
     ComponentId_t id;
+    uint16_t subCompId;
 
-    PyComponent(ComponentPy_t *pobj) : ComponentHolder(pobj) { }
+    PyComponent(ComponentPy_t *pobj) : ComponentHolder(pobj), subCompId(0) { }
     ~PyComponent() {}
     const char* getName() const ;
     ConfigComponent* getComp();

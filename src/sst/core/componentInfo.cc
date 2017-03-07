@@ -77,6 +77,25 @@ ComponentInfo::~ComponentInfo() {
     if ( component ) delete component;
 }
 
+
+ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id)
+{
+    /* See if it is us */
+    if ( id == this->id )
+        return this;
+
+    /* Check to make sure we're part of the same component */
+    if ( COMPONENT_ID_MASK(id) != COMPONENT_ID_MASK(this->id) )
+        return NULL;
+
+    for ( auto &s : subComponents ) {
+        ComponentInfo* found = s.second.findSubComponent(id);
+        if ( found != NULL )
+            return found;
+    }
+    return NULL;
+}
+
 } // namespace SST
 
 // BOOST_CLASS_EXPORT_IMPLEMENT(SST::InitQueue)

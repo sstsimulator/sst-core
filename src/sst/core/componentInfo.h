@@ -81,6 +81,8 @@ public:
         statParams = params;
     }
 
+    ComponentInfo* findSubComponent(ComponentId_t id);
+
     statEnableList_t* getStatEnableList() { return enabledStats; }
     statParamsList_t* getStatParams() { return statParams; }
 
@@ -115,50 +117,44 @@ public:
 
 class ComponentInfoMap {
 private:
-    std::unordered_set<ComponentInfo*, ComponentInfo::HashName, ComponentInfo::EqualsName> dataByName;
     std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID> dataByID;
 
 public:
     typedef std::unordered_set<ComponentInfo*, ComponentInfo::HashName, ComponentInfo::EqualsName>::const_iterator const_iterator;
 
     const_iterator begin() const {
-        return dataByName.begin();
+        return dataByID.begin();
     }
 
     const_iterator end() const {
-        return dataByName.end();
+        return dataByID.end();
     }
 
     ComponentInfoMap() {}
 
     void insert(ComponentInfo* info) {
-        dataByName.insert(info);
         dataByID.insert(info);
     }
 
-    ComponentInfo* getByName(const std::string& key) const {
-        ComponentInfo infoKey(0, key);
-        auto value = dataByName.find(&infoKey);
-        if ( value == dataByName.end() ) return NULL;
-        return *value;
-    }
-
     ComponentInfo* getByID(const ComponentId_t key) const {
-        ComponentInfo infoKey(key, "");
+        ComponentInfo infoKey(COMPONENT_ID_MASK(key), "");
         auto value = dataByID.find(&infoKey);
         if ( value == dataByID.end() ) return NULL;
+        if ( SUBCOMPONENT_ID_MASK(key) != 0 ) {
+            // Looking for a subcomponent
+            return (*value)->findSubComponent(key);
+        }
         return *value;
     }
 
     bool empty() {
-        return dataByName.empty();
+        return dataByID.empty();
     }
 
     void clear() {
-        for ( auto i : dataByName ) {
-            delete i; 
+        for ( auto i : dataByID ) {
+            delete i;
         }
-        dataByName.clear();
         dataByID.clear();
     }
 };

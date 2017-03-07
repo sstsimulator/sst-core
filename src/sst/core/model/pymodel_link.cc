@@ -90,7 +90,7 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
     id0 = ((PyComponent*)(((ComponentPy_t*)c0)->obj))->id;
     id1 = ((PyComponent*)(((ComponentPy_t*)c1)->obj))->id;
 
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Connecting components %lu and %lu to Link %s (lat: %p %p)\n",
+	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Connecting components %" PRIu64 " and %" PRIu64 " to Link %s (lat: %p %p)\n",
 			id0, id1, ((LinkPy_t*)self)->name, lat0, lat1);
     gModel->addLink(id0, link->name, port0, lat0, link->no_cut);
     gModel->addLink(id1, link->name, port1, lat1, link->no_cut);

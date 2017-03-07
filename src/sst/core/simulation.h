@@ -203,45 +203,21 @@ public:
     // // const CompIdMap_t& getComponentIdMap(void) const { return compIdMap; }
     const ComponentInfoMap& getComponentInfoMap(void) { return compInfoMap; }
 
-    
-    /** Returns the component with a given name */
-    Component* getComponent(const std::string &name) const
-    {
-        ComponentInfo* i = compInfoMap.getByName(name);
-        if (NULL != i) {
-            return i->getComponent();
-        } else {
-            printf("Simulation::getComponent() couldn't find component with name = %s\n",
-                   name.c_str()); 
-            exit(1); 
-        }
-    }
-    
+
     /** returns the component with the given ID */
     Component* getComponent(const ComponentId_t &id) const
-    {        
+    {
 		ComponentInfo* i = compInfoMap.getByID(id);
 		// CompInfoMap_t::const_iterator i = compInfoMap.find(id);
 		if ( NULL != i ) {
 			return i->getComponent();
 		} else {
-            printf("Simulation::getComponent() couldn't find component with id = %lu\n", id);
+            printf("Simulation::getComponent() couldn't find component with id = %" PRIu64 "\n", id);
             exit(1);
 		}
     }
 
-    ComponentInfo* getComponentInfo(const std::string& name) const
-    {
-        ComponentInfo* i = compInfoMap.getByName(name);
-        if (NULL != i) {
-            return i;
-        } else {
-            printf("Simulation::getComponentInfo() couldn't find component with name = %s\n",
-                   name.c_str()); 
-            exit(1); 
-        }
-    }
-    
+
     ComponentInfo* getComponentInfo(const ComponentId_t &id) const
     {        
 		ComponentInfo* i = compInfoMap.getByID(id);
@@ -249,7 +225,7 @@ public:
 		if ( NULL != i ) {
 			return i;
 		} else {
-            printf("Simulation::getComponentInfo() couldn't find component with id = %lu\n", id);
+            printf("Simulation::getComponentInfo() couldn't find component with id = %" PRIu64 "\n", id);
             exit(1);
 		}
     }
