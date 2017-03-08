@@ -71,12 +71,16 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
 
     if ( !PyArg_ParseTuple(t0, "O!s|s",
                 &PyModel_ComponentType, &c0, &port0, &lat0) )
+        if ( !PyArg_ParseTuple(t0, "O!s|s",
+                    &PyModel_SubComponentType, &c0, &port0, &lat0) )
         return NULL;
     if ( NULL == lat0 )
         lat0 = link->latency;
 
     if ( !PyArg_ParseTuple(t1, "O!s|s",
                 &PyModel_ComponentType, &c1, &port1, &lat1) )
+        if ( !PyArg_ParseTuple(t1, "O!s|s",
+                    &PyModel_SubComponentType, &c1, &port1, &lat1) )
         return NULL;
     if ( NULL == lat1 )
         lat1 = link->latency;
@@ -87,8 +91,8 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
     }
 
     ComponentId_t id0, id1;
-    id0 = ((PyComponent*)(((ComponentPy_t*)c0)->obj))->id;
-    id1 = ((PyComponent*)(((ComponentPy_t*)c1)->obj))->id;
+    id0 = getComp(c0)->id;
+    id1 = getComp(c1)->id;
 
 	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Connecting components %" PRIu64 " and %" PRIu64 " to Link %s (lat: %p %p)\n",
 			id0, id1, ((LinkPy_t*)self)->name, lat0, lat1);

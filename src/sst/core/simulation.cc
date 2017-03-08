@@ -323,7 +323,6 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     {
         ConfigComponent* ccomp = &(*iter);
         if ( ccomp->rank == myRank ) {
-            // compInfoMap[ccomp->id] = ComponentInfo(ccomp->name, ccomp->type, new LinkMap());
             compInfoMap.insert(new ComponentInfo(ccomp, new LinkMap()));
         }
     }
@@ -469,12 +468,18 @@ void Simulation::initialize() {
     } while ( !done);
 
     // Walk through all the links and call finalizeConfiguration
+
+    for ( auto &i : compInfoMap ) {
+        i->finalizeLinkConfiguration();
+    }
+#if 0
     for ( auto i = compInfoMap.begin(); i != compInfoMap.end(); ++i) {
         std::map<std::string,Link*>& map = (*i)->getLinkMap()->getLinkMap();
         for ( std::map<std::string,Link*>::iterator j = map.begin(); j != map.end(); ++j ) {
             (*j).second->finalizeConfiguration();
         }
     }
+#endif
 #if 0
     if ( num_ranks.rank > 1 && my_rank.thread == 0 ) {
         sync->finalizeLinkConfigurations();

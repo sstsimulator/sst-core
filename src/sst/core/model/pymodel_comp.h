@@ -31,6 +31,7 @@ struct ComponentHolder {
     virtual PyComponent* getBaseObj() = 0;
     virtual int compare(ComponentHolder *other) = 0;
     virtual const char* getName() const = 0;
+    ComponentId_t getID();
     ConfigComponent* getSubComp(const std::string &name);
 };
 
@@ -65,6 +66,14 @@ struct ComponentPy_t {
 
 extern PyTypeObject PyModel_ComponentType;
 extern PyTypeObject PyModel_SubComponentType;
+
+static inline ConfigComponent* getComp(PyObject *pobj) {
+    ConfigComponent *c = ((ComponentPy_t*)pobj)->obj->getComp();
+    if ( c == NULL ) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent");
+    }
+    return c;
+}
 
 
 }  /* extern C */

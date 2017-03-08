@@ -44,7 +44,10 @@ ConfigComponent* ComponentHolder::getSubComp(const std::string &name)
     return NULL;
 }
 
-
+ComponentId_t ComponentHolder::getID()
+{
+    return getComp()->id;
+}
 
 const char* PyComponent::getName() const {
     return name;
@@ -95,14 +98,6 @@ int PySubComponent::compare(ComponentHolder *other) {
     return -11;
 }
 
-
-static inline ConfigComponent* getComp(PyObject *pobj) {
-    ConfigComponent *c = ((ComponentPy_t*)pobj)->obj->getComp();
-    if ( c == NULL ) {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent");
-    }
-    return c;
-}
 
 
 static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
@@ -260,7 +255,7 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     if ( NULL == c ) return NULL;
 
     PyComponent *baseComp = ((ComponentPy_t*)self)->obj->getBaseObj();
-    ComponentId_t subC_id = SUBCOMPONENT_ID_CREATE(++(baseComp->subCompId), baseComp->id);
+    ComponentId_t subC_id = SUBCOMPONENT_ID_CREATE(baseComp->id, ++(baseComp->subCompId));
     if ( NULL != c->addSubComponent(subC_id, name, type) ) {
         PyObject *argList = Py_BuildValue("Oss", self, name, type);
         PyObject *subObj = PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);

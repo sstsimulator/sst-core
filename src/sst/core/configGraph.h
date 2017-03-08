@@ -155,6 +155,7 @@ public:
     void setWeight(double w);
     void addParameter(const std::string &key, const std::string &value, bool overwrite);
     ConfigComponent* addSubComponent(ComponentId_t, const std::string &name, const std::string &type);
+    ConfigComponent* findSubComponent(ComponentId_t);
     void enableStatistic(const std::string &statisticName);
     void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value);
 
@@ -278,6 +279,9 @@ public:
     ConfigComponentMap_t& getComponentMap() {
         return comps;
     }
+
+    ConfigComponent* findComponent(ComponentId_t);
+
     /** Return the map of links */
     ConfigLinkMap_t& getLinkMap() {
         return links;

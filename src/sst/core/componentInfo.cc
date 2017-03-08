@@ -77,6 +77,14 @@ ComponentInfo::~ComponentInfo() {
     if ( component ) delete component;
 }
 
+void ComponentInfo::finalizeLinkConfiguration() {
+    for ( auto & i : link_map->getLinkMap() ) {
+        i.second->finalizeConfiguration();
+    }
+    for ( auto &s : subComponents ) {
+        s.second.finalizeLinkConfiguration();
+    }
+}
 
 ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id)
 {

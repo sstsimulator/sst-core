@@ -77,6 +77,7 @@ struct ElementInfoPort {
 
 struct ElementInfoSubComponentHook {
     const char * name;
+    const char * description;
     const char * superclass;
 };
 

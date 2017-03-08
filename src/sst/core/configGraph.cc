@@ -179,7 +179,7 @@ void ConfigComponent::addStatisticParameter(const std::string &statisticName, co
     }
 }
 
-ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t id, const std::string &name, const std::string &type)
+ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string &name, const std::string &type)
 {
     /* Check for existing subComponent with this name */
     for ( auto &i : subComponents ) {
@@ -190,9 +190,22 @@ ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t id, const std::s
     subComponents.emplace_back(
             std::make_pair(
                 name,
-                ConfigComponent(id, name, type, this->weight, this->rank)));
+                ConfigComponent(sid, name, type, this->weight, this->rank)));
 
     return &(subComponents.back().second);
+}
+
+ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid)
+{
+    if ( sid == this->id ) return this;
+
+    for ( auto &s : subComponents ) {
+        ConfigComponent* res = s.second.findSubComponent(sid);
+        if ( res != NULL )
+            return res;
+    }
+
+    return NULL;
 }
 
 
@@ -469,9 +482,20 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
     link.latency_str[index] = latency_str;
     link.no_cut = link.no_cut | no_cut;
 
-	comps[comp_id].links.push_back(link.id);
+	findComponent(comp_id)->links.push_back(link.id);
 }
 
+
+ConfigComponent* ConfigGraph::findComponent(ComponentId_t id)
+{
+    /* Check to make sure we're part of the same component */
+    if ( COMPONENT_ID_MASK(id) == id ) {
+        return &comps[id];
+    }
+
+    return comps[COMPONENT_ID_MASK(id)].findSubComponent(id);
+
+}
 
 
 ConfigGraph*

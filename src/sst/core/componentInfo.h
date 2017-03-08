@@ -52,6 +52,8 @@ private:
     friend class ComponentInfoMap;
     /* Lookup Key style constructor */
     ComponentInfo(ComponentId_t id, const std::string &name);
+    friend class Simulation;
+    void finalizeLinkConfiguration();
 
 public:
     /* Old ELI Style subcomponent constructor */
@@ -120,7 +122,7 @@ private:
     std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID> dataByID;
 
 public:
-    typedef std::unordered_set<ComponentInfo*, ComponentInfo::HashName, ComponentInfo::EqualsName>::const_iterator const_iterator;
+    typedef std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID>::const_iterator const_iterator;
 
     const_iterator begin() const {
         return dataByID.begin();
