@@ -276,6 +276,7 @@ BaseComponent::loadModuleWithComponent(std::string type, Component* comp, Params
 SubComponent*
 BaseComponent::loadSubComponent(std::string type, Component* comp, Params& params)
 {
+    /* Old Style SubComponents end up with their parent's Id, name, etc. */
     ComponentInfo *sub_info = new ComponentInfo(type, &params, comp->my_info);
     ComponentInfo *oldLoadingSubCopmonent = getTrueComponent()->currentlyLoadingSubComponent;
     /* By "magic", the new component will steal ownership of this pointer */

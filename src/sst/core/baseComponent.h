@@ -299,6 +299,12 @@ protected:
     virtual std::string getComponentInfoStatisticUnits(const std::string &statisticName) = 0;
 
     virtual Component* getTrueComponent() = 0;
+    /**
+     * Returns self if Component
+     * If sub-component, returns self if a "modern" subcomponent
+     *    otherwise, return base component.
+     */
+    virtual BaseComponent* getStatisticOwner() = 0;
 
 protected:
     ComponentInfo* my_info;

@@ -47,6 +47,12 @@ protected:
     Component* const parent;
 
     Component* getTrueComponent() final { return parent; }
+    BaseComponent* getStatisticOwner() final {
+        /* If our ID == parent ID, then we're a legacy subcomponent that doesn't own stats. */
+        if ( this->getId() == parent->getId() )
+            return parent;
+        return this;
+    }
 
     /* Deprecate?   Old ELI style*/
     SubComponent* loadSubComponent(std::string type, Params& params) {

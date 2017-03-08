@@ -106,6 +106,7 @@ protected:
     Component() {} // Unused, but previously available
 
     Component* getTrueComponent() final { return this; }
+    BaseComponent* getStatisticOwner() final { return this; }
 
 
     // Does the statisticName exist in the ElementInfoStatistic

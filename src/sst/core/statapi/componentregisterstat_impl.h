@@ -53,6 +53,12 @@
         fprintf(stderr, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
         exit(1);
     }
+
+    /* Create the statistic in the "owning" component.  That should just be us, 
+     * in the case of 'modern' subcomponents.  For legacy subcomponents, that will
+     * be the owning component.  We've got the ID of that component in 'my_info->getID()'
+     */
+    BaseComponent *owner = this->getStatisticOwner();
     
     // // Verify here that name of the stat is one of the registered
     // // names of the component's ElementInfoStatistic.  
@@ -143,7 +149,7 @@
 
     if (true == statGood) {
         // Instantiate the Statistic here defined by the type here
-        statistic = CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
+        statistic = CreateStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             fprintf(stderr, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
             exit(1);
@@ -216,7 +222,7 @@
         
         // Instantiate the Statistic here defined by the type here
         statTypeParam = "sst.NullStatistic";
-        statistic = CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
+        statistic = CreateStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             statGood = false;
             fprintf(stderr, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
