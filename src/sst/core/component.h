@@ -38,9 +38,6 @@ public:
     Component( ComponentId_t id );
     virtual ~Component();
 
-    /** Returns unique component ID */
-    inline ComponentId_t getId() const { return id; }
-
 
     /** Register that the simulation should not end until this
         component says it is OK to. Calling this function (generally

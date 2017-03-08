@@ -543,8 +543,8 @@ main(int argc, char *argv[])
                     iter != links.end(); ++iter ) {
                 ConfigLink &clink = *iter;
                 RankInfo rank[2];
-                rank[0] = comps[clink.component[0]].rank;
-                rank[1] = comps[clink.component[1]].rank;
+                rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])].rank;
+                rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])].rank;
                 if ( rank[0].rank == rank[1].rank ) continue;
                 if ( clink.getMinLatency() < min_part ) {
                     min_part = clink.getMinLatency();

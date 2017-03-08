@@ -56,6 +56,9 @@ public:
     BaseComponent();
     virtual ~BaseComponent();
 
+    /** Returns unique component ID */
+    inline ComponentId_t getId() const { return my_info->id; }
+
     /** Called when SIGINT or SIGTERM has been seen.
      * Allows components opportunity to clean up external state.
      */
