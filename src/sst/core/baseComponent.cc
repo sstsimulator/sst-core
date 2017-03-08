@@ -276,12 +276,13 @@ BaseComponent::loadModuleWithComponent(std::string type, Component* comp, Params
 SubComponent*
 BaseComponent::loadSubComponent(std::string type, Component* comp, Params& params)
 {
+    ComponentInfo *sub_info = new ComponentInfo(type, &params, comp->my_info);
     ComponentInfo *oldLoadingSubCopmonent = getTrueComponent()->currentlyLoadingSubComponent;
     /* By "magic", the new component will steal ownership of this pointer */
-    currentlyLoadingSubComponent = new ComponentInfo(type, &params, comp->my_info);
+    getTrueComponent()->currentlyLoadingSubComponent = sub_info;
 
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
-    currentlyLoadingSubComponent->setComponent(ret);
+    sub_info->setComponent(ret);
     getTrueComponent()->currentlyLoadingSubComponent = oldLoadingSubCopmonent;
     return ret;
 }
@@ -300,15 +301,16 @@ BaseComponent::loadNamedSubComponent(std::string name, Params& params)
     if ( infoItr == my_info->getSubComponents().end() ) return NULL;
 
     ComponentInfo *oldLoadingSubCopmonent = getTrueComponent()->currentlyLoadingSubComponent;
-    currentlyLoadingSubComponent = &(infoItr->second);
+    ComponentInfo *sub_info = &(infoItr->second);
+    getTrueComponent()->currentlyLoadingSubComponent = sub_info;
 
     Params myParams;
-    if ( currentlyLoadingSubComponent->getParams() != NULL )
-        myParams.insert(*currentlyLoadingSubComponent->getParams());
+    if ( sub_info->getParams() != NULL )
+        myParams.insert(*sub_info->getParams());
     myParams.insert(params);
 
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(currentlyLoadingSubComponent->getType(), getTrueComponent(), myParams);
-    currentlyLoadingSubComponent->setComponent(ret);
+    SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponent(), myParams);
+    sub_info->setComponent(ret);
 
     getTrueComponent()->currentlyLoadingSubComponent = oldLoadingSubCopmonent;
     return ret;
