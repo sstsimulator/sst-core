@@ -24,7 +24,7 @@
 namespace SST {
 
 class LinkMap;
-class Component;
+class BaseComponent;
 
 class ComponentInfoMap;
 
@@ -36,23 +36,23 @@ public:
 
 private:
     friend class Simulation;
+    friend class BaseComponent;
+    friend class ComponentInfoMap;
     const ComponentId_t id;
     const std::string name;
     const std::string type;
     LinkMap* link_map;
-    Component* component;
+    BaseComponent* component;
     std::map<std::string, ComponentInfo> subComponents;
     const Params *params;
 
     statEnableList_t * enabledStats;
     statParamsList_t * statParams;
 
-    inline void setComponent(Component* comp) { component = comp; }
+    inline void setComponent(BaseComponent* comp) { component = comp; }
 
-    friend class ComponentInfoMap;
     /* Lookup Key style constructor */
     ComponentInfo(ComponentId_t id, const std::string &name);
-    friend class Simulation;
     void finalizeLinkConfiguration();
 
 public:
@@ -70,7 +70,7 @@ public:
 
     inline const std::string& getType() const { return type; }
 
-    inline Component* getComponent() const { return component; }
+    inline BaseComponent* getComponent() const { return component; }
 
     inline LinkMap* getLinkMap() const { return link_map; }
 

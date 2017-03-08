@@ -10,21 +10,21 @@
 // distribution.
 
 #include <sst_config.h>
-#include "sst/core/component.h"
-#include "sst/core/unitAlgebra.h"
 
 #include <string>
 
-//#include "sst/core/event.h"
-#include "sst/core/exit.h"
-#include "sst/core/factory.h"
-#include "sst/core/link.h"
-#include "sst/core/linkMap.h"
-#include "sst/core/simulation.h"
-#include "sst/core/timeConverter.h"
-#include "sst/core/timeLord.h"
-#include "sst/core/unitAlgebra.h"
-#include "sst/core/sharedRegion.h"
+#include <sst/core/basecomponent.h>
+#include <sst/core/component.h>
+#include <sst/core/subcomponent.h>
+#include <sst/core/unitAlgebra.h>
+#include <sst/core/factory.h>
+#include <sst/core/link.h>
+#include <sst/core/linkMap.h>
+#include <sst/core/simulation.h>
+#include <sst/core/timeConverter.h>
+#include <sst/core/timeLord.h>
+#include <sst/core/unitAlgebra.h>
+#include <sst/core/sharedRegion.h>
 
 using namespace SST::Statistics;
 
@@ -281,6 +281,7 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
     currentlyLoadingSubComponent = new ComponentInfo(type, &params, comp->my_info);
 
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
+    currentlyLoadingSubComponent->setComponent(ret);
     getTrueComponent()->currentlyLoadingSubComponent = oldLoadingSubCopmonent;
     return ret;
 }
@@ -307,6 +308,7 @@ BaseComponent::loadNamedSubComponent(std::string name, Params& params)
     myParams.insert(params);
 
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(currentlyLoadingSubComponent->getType(), getTrueComponent(), myParams);
+    currentlyLoadingSubComponent->setComponent(ret);
 
     getTrueComponent()->currentlyLoadingSubComponent = oldLoadingSubCopmonent;
     return ret;

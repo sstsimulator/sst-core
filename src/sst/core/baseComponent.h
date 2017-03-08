@@ -27,7 +27,6 @@
 #include <sst/core/event.h>
 #include <sst/core/clock.h>
 #include <sst/core/oneshot.h>
-#include <sst/core/unitAlgebra.h>
 #include <sst/core/componentInfo.h>
 #include <sst/core/simulation.h>
 

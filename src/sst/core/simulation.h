@@ -205,7 +205,7 @@ public:
 
 
     /** returns the component with the given ID */
-    Component* getComponent(const ComponentId_t &id) const
+    BaseComponent* getComponent(const ComponentId_t &id) const
     {
 		ComponentInfo* i = compInfoMap.getByID(id);
 		// CompInfoMap_t::const_iterator i = compInfoMap.find(id);
