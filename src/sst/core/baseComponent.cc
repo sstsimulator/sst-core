@@ -13,7 +13,7 @@
 
 #include <string>
 
-#include <sst/core/basecomponent.h>
+#include <sst/core/baseComponent.h>
 #include <sst/core/component.h>
 #include <sst/core/subcomponent.h>
 #include <sst/core/unitAlgebra.h>
