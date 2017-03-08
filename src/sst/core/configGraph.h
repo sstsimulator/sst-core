@@ -158,6 +158,7 @@ public:
     ConfigComponent* findSubComponent(ComponentId_t);
     void enableStatistic(const std::string &statisticName);
     void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value);
+    std::vector<LinkId_t> allLinks() const;
 
     void serialize_order(SST::Core::Serialization::serializer &ser) {
         ser & id;

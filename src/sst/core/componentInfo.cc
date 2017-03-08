@@ -104,6 +104,20 @@ ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id)
     return NULL;
 }
 
+
+std::vector<LinkId_t> ComponentInfo::getAllLinkIds() const
+{
+    std::vector<LinkId_t> res;
+    for ( auto & l : link_map->getLinkMap() ) {
+        res.push_back(l.second->id);
+    }
+    for ( auto& sc : subComponents ) {
+        std::vector<LinkId_t> s = sc.second.getAllLinkIds();
+        res.insert(res.end(), s.begin(), s.end());
+    }
+    return res;
+}
+
 } // namespace SST
 
 // BOOST_CLASS_EXPORT_IMPLEMENT(SST::InitQueue)

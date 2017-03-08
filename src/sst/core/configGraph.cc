@@ -58,6 +58,10 @@ void ConfigComponent::print(std::ostream &os) const {
         os << "      Params:" << std::endl;
         enabledStatParams[x].print_all_params(os, "      ");
     }
+    os << "  SubComponents:\n";
+    for ( auto & sc : subComponents ) {
+        sc.second.print(os);
+    }
 }
 
 ConfigComponent
@@ -208,6 +212,16 @@ ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid)
     return NULL;
 }
 
+
+std::vector<LinkId_t> ConfigComponent::allLinks() const {
+    std::vector<LinkId_t> res;
+    res.insert(res.end(), links.begin(), links.end());
+    for ( auto& sc : subComponents ) {
+        std::vector<LinkId_t> s = sc.second.allLinks();
+        res.insert(res.end(), s.begin(), s.end());
+    }
+    return res;
+}
 
 void
 ConfigGraph::setComponentRanks(RankInfo rank)
@@ -512,7 +526,7 @@ ConfigGraph*
 ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
 {
     ConfigGraph* graph = new ConfigGraph();
-    
+
     // SparseVectorMap is a extremely slow at random inserts, so make
     // sure things go in in order into both comps and links, then tie
     // it all together.
@@ -525,17 +539,15 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
         else {
             // See if the other side of any of component's links is in
             // set, if so, add to graph
-            for ( LinkIdMap_t::const_iterator link_it = comp.links.begin();
-                  link_it != comp.links.end(); ++link_it ) {
-                const ConfigLink& link = links[*link_it];
-                ComponentId_t remote = link.component[0] == comp.id ?
+            for ( LinkId_t l : comp.allLinks() ) {
+                const ConfigLink& link = links[l];
+                ComponentId_t remote = COMPONENT_ID_MASK(link.component[0]) == COMPONENT_ID_MASK(comp.id) ?
                     link.component[1] : link.component[0];
-                if ( rank_set.find(comps[remote].rank.rank) != rank_set.end() ) {
+                if ( rank_set.find(comps[COMPONENT_ID_MASK(remote)].rank.rank) != rank_set.end() ) {
                     graph->comps.push_back(comp.cloneWithoutLinksOrParams());
                     break;
                 }
             }
-            
         }
     }
 
@@ -545,18 +557,18 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
         const ConfigLink& link = *it;
 
-        const ConfigComponent& comp0 = comps[link.component[0]];
-        const ConfigComponent& comp1 = comps[link.component[1]];
+        const ConfigComponent* comp0 = findComponent(link.component[0]);
+        const ConfigComponent* comp1 = findComponent(link.component[1]);
 
-        bool comp0_in_ranks = (rank_set.find(comp0.rank.rank) != rank_set.end());
-        bool comp1_in_ranks = (rank_set.find(comp1.rank.rank) != rank_set.end());
-        
+        bool comp0_in_ranks = (rank_set.find(comp0->rank.rank) != rank_set.end());
+        bool comp1_in_ranks = (rank_set.find(comp1->rank.rank) != rank_set.end());
+
         if ( comp0_in_ranks || comp1_in_ranks ) {
             // Clone the link and add to new lin k map
             graph->links.insert(ConfigLink(link));  // Will make a copy into map
 
-            graph->comps[comp0.id].links.push_back(link.id);
-            graph->comps[comp1.id].links.push_back(link.id);
+            graph->findComponent(comp0->id)->links.push_back(link.id);
+            graph->findComponent(comp1->id)->links.push_back(link.id);
         }
     }
 
@@ -565,7 +577,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     graph->setStatisticOutputParams(this->getStatOutputParams());
     graph->setStatisticLoadLevel(this->getStatLoadLevel());
 
-    return graph;    
+    return graph;
 }
 
 PartitionGraph*
@@ -589,8 +601,8 @@ ConfigGraph::getPartitionGraph()
     for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
         const ConfigLink& link = *it;
         
-        const ConfigComponent& comp0 = comps[link.component[0]];
-        const ConfigComponent& comp1 = comps[link.component[1]];
+        const ConfigComponent& comp0 = comps[COMPONENT_ID_MASK(link.component[0])];
+        const ConfigComponent& comp1 = comps[COMPONENT_ID_MASK(link.component[1])];
 
         plinks.insert(PartitionLink(link));
 
@@ -637,15 +649,13 @@ ConfigGraph::getCollapsedPartitionGraph()
                 // Compute the new weight
                 pcomp.weight += comp.weight;
                 pcomp.group.insert(comp.id);
-                
+
                 // Walk through all the links and insert the ones that connect
                 // outside the group
-                for ( LinkIdMap_t::const_iterator link_it = comp.links.begin();
-                      link_it != comp.links.end(); ++link_it ) {
+                for ( LinkId_t id : comp.allLinks() ) {
+                    const ConfigLink& link = links[id];
 
-                    const ConfigLink& link = links[*link_it];
-                    
-                    if ( !group.contains(link.component[0]) || !group.contains(link.component[1] ) ) {
+                    if ( !group.contains(COMPONENT_ID_MASK(link.component[0])) || !group.contains(COMPONENT_ID_MASK(link.component[1]) ) ) {
                         pcomp.links.push_back(link.id);
                     }
                     else {
@@ -674,7 +684,7 @@ ConfigGraph::getCollapsedPartitionGraph()
         }
     }
 
-    return graph;    
+    return graph;
 }
 
 void
@@ -687,7 +697,7 @@ ConfigGraph::annotateRanks(PartitionGraph* graph)
 
         for ( ComponentIdMap_t::const_iterator c_iter = comp.group.begin();
               c_iter != comp.group.end(); ++ c_iter ) {
-            comps[*c_iter].rank = comp.rank;
+            comps[*c_iter].setRank(comp.rank);
         }
     }
 }
@@ -696,18 +706,18 @@ void
 ConfigGraph::getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group)
 {
     // We'll do this as a simple recursive depth first search
-    group.insert(start);
+    group.insert(COMPONENT_ID_MASK(start));
     
     // First, get the component
     ConfigComponent& comp = comps[start];
 
-    for ( vector<LinkId_t>::iterator it = comp.links.begin(); it != comp.links.end(); ++it ) {
-        ConfigLink& link = links[*it];
+    for ( LinkId_t id : comp.allLinks() ) {
+        ConfigLink& link = links[id];
 
         // If this is a no_cut link, need to follow it to next
         // component if next component is not already in group
         if ( link.no_cut ) {
-            ComponentId_t id = (link.component[0] == start ? link.component[1] : link.component[0]);
+            ComponentId_t id = COMPONENT_ID_MASK((COMPONENT_ID_MASK(link.component[0]) == COMPONENT_ID_MASK(start) ? link.component[1] : link.component[0]));
             if ( !group.contains(id) ) {
                 getConnectedNoCutComps(id,group);
             }

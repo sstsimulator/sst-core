@@ -422,7 +422,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
             // Check to make sure there are any entries in the component's LinkMap
             // TODO:  IS this still a valid warning?  Subcomponents may be the link owners
             ComponentInfo *cinfo = compInfoMap.getByID(ccomp->id);
-            if ( cinfo->getLinkMap()->empty() ) {
+            if ( cinfo->getAllLinkIds().empty() ) {
                 printf("WARNING: Building component \"%s\" with no links assigned.\n",ccomp->name.c_str());
             }
 

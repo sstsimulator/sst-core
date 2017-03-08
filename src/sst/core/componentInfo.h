@@ -84,6 +84,7 @@ public:
     }
 
     ComponentInfo* findSubComponent(ComponentId_t id);
+    std::vector<LinkId_t> getAllLinkIds() const;
 
     statEnableList_t* getStatEnableList() { return enabledStats; }
     statParamsList_t* getStatParams() { return statParams; }
@@ -113,7 +114,6 @@ public:
             return lhs->id == rhs->id;
         }
     };
-    
 };
 
 
