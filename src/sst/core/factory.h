@@ -42,9 +42,9 @@ public:
 
     /** Get a list of allowed ports for a given component type.
      * @param type - Name of component in lib.name format
-     * @return Vector of allowed port names 
+     * @return True if this is a valid portname
      */
-    const std::vector<std::string>* GetComponentAllowedPorts(std::string type);
+    bool isPortNameValid(const std::string &type, const std::string port_name);
 
 
     /** Attempt to create a new Component instantiation
@@ -261,6 +261,7 @@ private:
         std::vector<std::string>  statNames;
         std::vector<std::string>  statUnits;
         std::vector<uint8_t>      statEnableLevels;
+        std::vector<std::string>  ports;
 
         SubComponentInfo() {}
 
@@ -274,6 +275,13 @@ private:
                 statEnableLevels.push_back(s->enableLevel);
                 s++;
             }
+
+            const ElementInfoPort *p = subcomponent->ports;
+            while ( NULL != p && NULL != p->name ) {
+                ports.push_back(p->name);
+                p++;
+            }
+
         }
 
     SubComponentInfo(const SubComponentInfo& old) : subcomponent(old.subcomponent), params(old.params), statNames(old.statNames), statUnits(old.statUnits), statEnableLevels(old.statEnableLevels)

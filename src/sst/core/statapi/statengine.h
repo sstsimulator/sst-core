@@ -15,12 +15,15 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/statapi/statfieldinfo.h>
 #include <sst/core/unitAlgebra.h>
+#include <sst/core/clock.h>
+#include <sst/core/oneshot.h>
 
 namespace SST {
-class Component;
+class BaseComponent;
 class Simulation;
+
 namespace Statistics {
-    
+
 class StatisticBase;
 
 /**
@@ -47,7 +50,7 @@ public:
     void performGlobalStatisticOutput(bool endOfSimFlag = false);
 
 private:
-    friend class SST::Component;
+    friend class SST::BaseComponent;
     friend class SST::Simulation;
 
     StatisticProcessingEngine();

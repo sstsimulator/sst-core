@@ -23,6 +23,7 @@ nobase_dist_sst_HEADERS = \
 	action.h \
 	activity.h \
 	clock.h \
+	baseComponent.h \
 	component.h \
 	componentInfo.h \
 	config.h \
@@ -140,6 +141,7 @@ nobase_nodist_sst_HEADERS = \
 sst_core_sources = \
 	action.cc \
 	clock.cc \
+	baseComponent.cc \
 	component.cc \
 	componentInfo.cc \
 	config.cc \

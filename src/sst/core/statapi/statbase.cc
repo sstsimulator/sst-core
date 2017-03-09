@@ -11,19 +11,19 @@
 
 #include <sst_config.h>
 
-#include <sst/core/component.h>
+#include <sst/core/baseComponent.h>
 #include <sst/core/statapi/statbase.h>
 
 namespace SST {
 namespace Statistics {
-    
-StatisticBase::StatisticBase(Component* comp, std::string& statName, std::string& statSubId, Params& statParams)
+
+StatisticBase::StatisticBase(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams)
 {
     m_statName   = statName;
     m_statSubId  = statSubId;
     m_component  = comp;
     m_statParams = statParams;
-    
+
     initializeProperties();
 }
 

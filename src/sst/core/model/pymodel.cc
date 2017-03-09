@@ -12,7 +12,6 @@
 // distribution.
 
 #include "sst_config.h"
-#ifdef SST_CONFIG_HAVE_PYTHON
 #include <Python.h>
 
 #ifdef SST_CONFIG_HAVE_MPI
@@ -24,49 +23,27 @@
 
 #include <sst/core/sst_types.h>
 #include <sst/core/model/pymodel.h>
+#include <sst/core/model/pymodel_comp.h>
+#include <sst/core/model/pymodel_link.h>
+
 #include <sst/core/simulation.h>
 #include <sst/core/element.h>
 #include <sst/core/factory.h>
 #include <sst/core/component.h>
+#include <sst/core/configGraph.h>
 
-static SSTPythonModelDefinition *gModel = NULL;
 
-using namespace SST;
+using namespace SST::Core;
+
+SST::Core::SSTPythonModelDefinition *gModel = NULL;
 
 extern "C" {
 
 
-typedef struct {
+struct ModuleLoaderPy_t {
     PyObject_HEAD
-    ComponentId_t id;
-	char *name;
-} ComponentPy_t;
+};
 
-
-typedef struct {
-    PyObject_HEAD
-    char *name;
-    bool no_cut;
-    char *latency;
-} LinkPy_t;
-
-
-typedef struct {
-    PyObject_HEAD
-} ModuleLoaderPy_t;
-
-static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds);
-static void compDealloc(ComponentPy_t *self);
-static PyObject* compAddParam(PyObject *self, PyObject *args);
-static PyObject* compAddParams(PyObject *self, PyObject *args);
-static PyObject* compSetRank(PyObject *self, PyObject *arg);
-static PyObject* compSetWeight(PyObject *self, PyObject *arg);
-static PyObject* compAddLink(PyObject *self, PyObject *args);
-static PyObject* compGetFullName(PyObject *self, PyObject *args);
-static int compCompare(PyObject *obj0, PyObject *obj1);
-
-static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args);
-static PyObject* compEnableStatistics(PyObject *self, PyObject *args);
 
 static PyObject* setStatisticOutput(PyObject *self, PyObject *args);
 static PyObject* setStatisticLoadLevel(PyObject *self, PyObject *args);
@@ -77,137 +54,11 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *a
 static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args);
 static PyObject* enableStatisticForComponentType(PyObject *self, PyObject *args);
 
-static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds);
-static void linkDealloc(LinkPy_t *self);
-static PyObject* linkConnect(PyObject* self, PyObject *args);
-static PyObject* linkSetNoCut(PyObject* self, PyObject *args);
 
 static PyObject* mlFindModule(PyObject *self, PyObject *args);
 static PyObject* mlLoadModule(PyObject *self, PyObject *args);
 
-static PyMethodDef componentMethods[] = {
-    {   "addParam",
-        compAddParam, METH_VARARGS,
-        "Adds a parameter(name, value)"},
-    {   "addParams",
-        compAddParams, METH_O,
-        "Adds Multiple Parameters from a dict"},
-    {   "setRank",
-        compSetRank, METH_VARARGS,
-        "Sets which rank on which this component should sit"},
-    {   "setWeight",
-        compSetWeight, METH_O,
-        "Sets the weight of the component"},
-    {   "addLink",
-        compAddLink, METH_VARARGS,
-        "Connects this component to a Link"},
-	{	"getFullName",
-		compGetFullName, METH_NOARGS,
-		"Returns the full name, after any prefix, of the component."},
-    {   "enableAllStatistics",
-        compEnableAllStatistics, METH_VARARGS,
-        "Enable all Statistics in the component with optional parameters"},
-    {   "enableStatistics",
-        compEnableStatistics, METH_VARARGS,
-        "Enables Multiple Statistics in the component with optional parameters"},
-    {   NULL, NULL, 0, NULL }
-};
 
-
-static PyTypeObject ComponentType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-    "sst.Component",           /* tp_name */
-    sizeof(ComponentPy_t),     /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor)compDealloc,   /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    compCompare,               /* tp_compare */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "SST Component",           /* tp_doc */
-    0,                         /* tp_traverse */
-    0,                         /* tp_clear */
-    0,                         /* tp_richcompare */
-    0,                         /* tp_weaklistoffset */
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */
-    componentMethods,          /* tp_methods */
-    0,                         /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    (initproc)compInit,        /* tp_init */
-    0,                         /* tp_alloc */
-    0,                         /* tp_new */
-};
-
-static PyMethodDef linkMethods[] = {
-    {   "connect",
-        linkConnect, METH_VARARGS,
-        "Connects two components to a Link"},
-    {   "setNoCut",
-        linkSetNoCut, METH_NOARGS,
-        "Specifies that this link should not be partitioned across"},
-    {   NULL, NULL, 0, NULL }
-};
-
-
-static PyTypeObject LinkType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-    "sst.Link",                /* tp_name */
-    sizeof(LinkPy_t),          /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor)linkDealloc,   /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_compare */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "SST Link",                /* tp_doc */
-    0,                         /* tp_traverse */
-    0,                         /* tp_clear */
-    0,                         /* tp_richcompare */
-    0,                         /* tp_weaklistoffset */
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */
-    linkMethods,               /* tp_methods */
-    0,                         /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    (initproc)linkInit,        /* tp_init */
-    0,                         /* tp_alloc */
-    0,                         /* tp_new */
-};
 
 
 static PyMethodDef mlMethods[] = {
@@ -261,326 +112,6 @@ static PyTypeObject ModuleLoaderType = {
 
 
 
-static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
-{
-    char *name, *type;
-    ComponentId_t useID = UNSET_COMPONENT_ID;
-    if ( !PyArg_ParseTuple(args, "ss|k", &name, &type, &useID) )
-        return -1;
-
-    if ( useID == UNSET_COMPONENT_ID ) {
-        self->name = gModel->addNamePrefix(name);
-        self->id = gModel->addComponent(self->name, type);
-        gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%lu]\n", name, type, self->id);
-    } else {
-        self->name = name;
-        self->id = useID;
-    }
-
-    return 0;
-}
-
-
-static void compDealloc(ComponentPy_t *self)
-{
-    if ( self->name ) free(self->name);
-    self->ob_type->tp_free((PyObject*)self);
-}
-
-
-
-static PyObject* compAddParam(PyObject *self, PyObject *args)
-{
-    char *param = NULL;
-    PyObject *value = NULL;
-    if ( !PyArg_ParseTuple(args, "sO", &param, &value) )
-        return NULL;
-
-    ComponentId_t id = ((ComponentPy_t*)self)->id;
-
-    PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", NULL);
-    gModel->addParameter(id, param, PyString_AsString(vstr));
-    Py_XDECREF(vstr);
-
-    return PyInt_FromLong(0);
-}
-
-
-static PyObject* compAddParams(PyObject *self, PyObject *args)
-{
-    ComponentId_t id = ((ComponentPy_t*)self)->id;
-
-    if ( !PyDict_Check(args) ) {
-        return NULL;
-    }
-
-    Py_ssize_t pos = 0;
-    PyObject *key, *val;
-    long count = 0;
-
-    while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", NULL);
-        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", NULL);
-        gModel->addParameter(id, PyString_AsString(kstr), PyString_AsString(vstr));
-        Py_XDECREF(kstr);
-        Py_XDECREF(vstr);
-        count++;
-    }
-    return PyInt_FromLong(count);
-}
-
-
-static PyObject* compSetRank(PyObject *self, PyObject *args)
-{
-    ComponentId_t id = ((ComponentPy_t*)self)->id;
-
-    PyErr_Clear();
-    // long rank = PyInt_AsLong(arg);
-    // if ( PyErr_Occurred() ) {
-    //     PyErr_Print();
-    //     exit(-1);
-    // }
-
-    unsigned long rank = (unsigned long)-1;
-    unsigned long thread = (unsigned long)0;
-
-    if ( !PyArg_ParseTuple(args, "k|k", &rank, &thread) ) {
-        return NULL;
-    }
-
-    
-    gModel->setComponentRank(id, rank, thread);
-
-    return PyInt_FromLong(0);
-}
-
-
-static PyObject* compSetWeight(PyObject *self, PyObject *arg)
-{
-    ComponentId_t id = ((ComponentPy_t*)self)->id;
-
-    PyErr_Clear();
-    double weight = PyFloat_AsDouble(arg);
-    if ( PyErr_Occurred() ) {
-        PyErr_Print();
-        exit(-1);
-    }
-
-    gModel->setComponentWeight(id, weight);
-
-    return PyInt_FromLong(0);
-}
-
-
-static PyObject* compAddLink(PyObject *self, PyObject *args)
-{
-    ComponentId_t id = ((ComponentPy_t*)self)->id;
-
-    PyObject *plink = NULL;
-    char *port = NULL, *lat = NULL;
-
-
-    if ( !PyArg_ParseTuple(args, "O!s|s", &LinkType, &plink, &port, &lat) ) {
-        return NULL;
-    }
-    LinkPy_t* link = (LinkPy_t*)plink;
-    if ( NULL == lat ) lat = link->latency;
-    if ( NULL == lat ) return NULL;
-
-
-	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %lu to Link %s\n", id, link->name);
-    gModel->addLink(id, link->name, port, lat, link->no_cut);
-
-    return PyInt_FromLong(0);
-}
-
-
-static PyObject* compGetFullName(PyObject *self, PyObject *args)
-{
-    return PyString_FromString(((ComponentPy_t*)self)->name);
-}
-
-static int compCompare(PyObject *obj0, PyObject *obj1) {
-    ComponentId_t id0 = ((ComponentPy_t*)obj0)->id;
-    ComponentId_t id1 = ((ComponentPy_t*)obj1)->id;
-    return (id0 < id1) ? -1 : (id0 > id1) ? 1 : 0;
-}
-
-void generateStatisticParameters(PyObject* statParamDict)
-{
-    PyObject*     pykey = NULL;
-    PyObject*     pyval = NULL;
-    Py_ssize_t    pos = 0;
-
-    gModel->statParamKeyArray.clear();
-    gModel->statParamValueArray.clear();
-    
-    // If the user did not include a dict for the parameters
-    // the variable statParamDict will be NULL.       
-    if (NULL != statParamDict) {
-        // Make sure it really is a Dict
-        if (true == PyDict_Check(statParamDict)) {
-
-            // Extract the Key and Value for each parameter and put them into the vectors 
-            while ( PyDict_Next(statParamDict, &pos, &pykey, &pyval) ) {
-                PyObject* pyparam = PyObject_CallMethod(pykey, (char*)"__str__", NULL);
-                PyObject* pyvalue = PyObject_CallMethod(pyval, (char*)"__str__", NULL);
-                
-                gModel->statParamKeyArray.push_back(PyString_AsString(pyparam));
-                gModel->statParamValueArray.push_back(PyString_AsString(pyvalue));
-                
-                Py_XDECREF(pyparam);
-                Py_XDECREF(pyvalue);
-            }
-        }
-    }
-}
-
-static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
-{
-    int           argOK = 0;
-    PyObject*     statParamDict = NULL;
-    ComponentId_t id = ((ComponentPy_t*)self)->id;
-
-    PyErr_Clear();
-
-    // Parse the Python Args and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "|O!", &PyDict_Type, &statParamDict);
-
-    if (argOK) {
-        gModel->enableComponentStatistic(id, STATALLFLAG);
-
-        // Generate and Add the Statistic Parameters
-        generateStatisticParameters(statParamDict);
-        for (uint32_t x = 0; x < gModel->statParamKeyArray.size(); x++) {
-            gModel->addComponentStatisticParameter(id, STATALLFLAG, gModel->statParamKeyArray[x].c_str(), gModel->statParamValueArray[x].c_str());
-        }
-                
-    } else {
-        // ParseTuple Failed, return NULL for error
-        return NULL;
-    }
-    return PyInt_FromLong(0);
-}
-
-
-static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
-{
-    int           argOK = 0;
-    PyObject*     statList = NULL;
-    PyObject*     statParamDict = NULL;
-    Py_ssize_t    numStats = 0;
-    ComponentId_t id = ((ComponentPy_t*)self)->id;
-
-    PyErr_Clear();
-    
-    // Parse the Python Args and get A List Object and the optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "O!|O!", &PyList_Type, &statList, &PyDict_Type, &statParamDict);
-
-    if (argOK) {
-        // Generate the Statistic Parameters
-        generateStatisticParameters(statParamDict);
-        
-        // Make sure we have a list 
-        if ( !PyList_Check(statList) ) {
-            return NULL;
-        }
-    
-        // Get the Number of Stats in the list, and enable them separatly,
-        // also set their parameters
-        numStats = PyList_Size(statList);
-        for (uint32_t x = 0; x < numStats; x++) {
-            PyObject* pylistitem = PyList_GetItem(statList, x);
-            PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", NULL);
-    
-            gModel->enableComponentStatistic(id, PyString_AsString(pyname));
-            
-            // Add the parameters
-            for (uint32_t x = 0; x < gModel->statParamKeyArray.size(); x++) {
-                gModel->addComponentStatisticParameter(id, PyString_AsString(pyname), gModel->statParamKeyArray[x].c_str(), gModel->statParamValueArray[x].c_str());
-            }
-
-            Py_XDECREF(pyname);
-        }
-    } else {
-        // ParseTuple Failed, return NULL for error
-        return NULL;
-    }
-    return PyInt_FromLong(0);
-}
-
-static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds)
-{
-    char *name = NULL, *lat = NULL;
-    if ( !PyArg_ParseTuple(args, "s|s", &name, &lat) ) return -1;
-
-    self->name = gModel->addNamePrefix(name);
-    self->no_cut = false;
-    self->latency = lat ? strdup(lat) : NULL;
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
-
-    return 0;
-}
-
-static void linkDealloc(LinkPy_t *self)
-{
-    if ( self->name ) free(self->name);
-    if ( self->latency ) free(self->latency);
-    self->ob_type->tp_free((PyObject*)self);
-}
-
-
-static PyObject* linkConnect(PyObject* self, PyObject *args)
-{
-    PyObject *t0, *t1;
-    if ( !PyArg_ParseTuple(args, "O!O!",
-                &PyTuple_Type, &t0,
-                &PyTuple_Type, &t1) ) {
-        return NULL;
-    }
-
-    PyObject *c0, *c1;
-    char *port0, *port1;
-    char *lat0 = NULL, *lat1 = NULL;
-
-    LinkPy_t *link = (LinkPy_t*)self;
-
-    if ( !PyArg_ParseTuple(t0, "O!s|s",
-                &ComponentType, &c0, &port0, &lat0) )
-        return NULL;
-    if ( NULL == lat0 )
-        lat0 = link->latency;
-
-    if ( !PyArg_ParseTuple(t1, "O!s|s",
-                &ComponentType, &c1, &port1, &lat1) )
-        return NULL;
-    if ( NULL == lat1 )
-        lat1 = link->latency;
-
-    if ( NULL == lat0 || NULL == lat1 ) {
-        gModel->getOutput()->fatal(CALL_INFO, 1, "No Latency specified for link %s\n", link->name);
-        return NULL;
-    }
-
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Connecting components %lu and %lu to Link %s (lat: %p %p)\n",
-			((ComponentPy_t*)c0)->id, ((ComponentPy_t*)c1)->id, ((LinkPy_t*)self)->name, lat0, lat1);
-    gModel->addLink(((ComponentPy_t*)c0)->id,
-            link->name, port0, lat0, link->no_cut);
-    gModel->addLink(((ComponentPy_t*)c1)->id,
-            link->name, port1, lat1, link->no_cut);
-
-
-    return PyInt_FromLong(0);
-}
-
-
-static PyObject* linkSetNoCut(PyObject* self, PyObject *args)
-{
-    LinkPy_t *link = (LinkPy_t*)self;
-    bool prev = link->no_cut;
-    link->no_cut = true;
-    return PyBool_FromLong(prev ? 1 : 0);
-}
 
 
 static PyObject* mlFindModule(PyObject *self, PyObject *args)
@@ -649,7 +180,8 @@ static PyObject* findComponentByName(PyObject* self, PyObject* args)
     ComponentId_t id = gModel->findComponentByName(name);
     if ( id != UNSET_COMPONENT_ID ) {
         PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", id);
-        PyObject *res = PyObject_CallObject((PyObject *) &ComponentType, argList);
+        PyObject *res = PyObject_CallObject((PyObject *) &PyModel_ComponentType, argList);
+        Py_DECREF(argList);
         return res;
     }
     Py_INCREF(Py_None);
@@ -772,22 +304,21 @@ static PyObject* setSSTThreadCount(PyObject* self, PyObject* args) {
 
 static PyObject* setStatisticOutput(PyObject* self, PyObject* args)
 {
-    char*      statOutputName; 
+    char*      statOutputName;
     int        argOK = 0;
     PyObject*  outputParamDict = NULL;
 
     PyErr_Clear();
-    
+
     // Parse the Python Args and get the StatOutputName and optional Stat Params (as a Dictionary)
     argOK = PyArg_ParseTuple(args, "s|O!", &statOutputName, &PyDict_Type, &outputParamDict);
 
     if (argOK) {
         gModel->setStatisticOutput(statOutputName);
-        
+
         // Generate and Add the Statistic Output Parameters
-        generateStatisticParameters(outputParamDict);
-        for (uint32_t x = 0; x < gModel->statParamKeyArray.size(); x++) {
-            gModel->addStatisticOutputParameter(gModel->statParamKeyArray[x].c_str(), gModel->statParamValueArray[x].c_str());
+        for ( auto p : generateStatisticParameters(outputParamDict) ) {
+            gModel->addStatisticOutputParameter(p.first, p.second);
         }
     } else {
         return NULL;
@@ -800,9 +331,9 @@ static PyObject* setStatisticOutputOption(PyObject* self, PyObject* args)
     char* param;
     char* value;
     int   argOK = 0;
-    
+
     PyErr_Clear();
-    
+
     argOK = PyArg_ParseTuple(args, "ss", &param, &value);
 
     if (argOK) {
@@ -817,15 +348,14 @@ static PyObject* setStatisticOutputOption(PyObject* self, PyObject* args)
 static PyObject* setStatisticOutputOptions(PyObject* self, PyObject* args)
 {
     PyErr_Clear();
-    
+
     if ( !PyDict_Check(args) ) {
         return NULL;
     }
-    
+
     // Generate and Add the Statistic Output Parameters
-    generateStatisticParameters(args);
-    for (uint32_t x = 0; x < gModel->statParamKeyArray.size(); x++) {
-        gModel->addStatisticOutputParameter(gModel->statParamKeyArray[x].c_str(), gModel->statParamValueArray[x].c_str());
+    for ( auto p : generateStatisticParameters(args) ) {
+        gModel->addStatisticOutputParameter(p.first, p.second);
     }
     return PyInt_FromLong(0);
 }
@@ -834,8 +364,8 @@ static PyObject* setStatisticOutputOptions(PyObject* self, PyObject* args)
 static PyObject* setStatisticLoadLevel(PyObject*self, PyObject* arg)
 {
     PyErr_Clear();
-    
-    uint8_t loadLevel = PyInt_AsLong(arg); 
+
+    uint8_t loadLevel = PyInt_AsLong(arg);
     if (PyErr_Occurred()) {
         PyErr_Print();
         exit(-1);
@@ -851,7 +381,7 @@ static PyObject* enableAllStatisticsForAllComponents(PyObject* self, PyObject* a
 {
     int           argOK = 0;
     PyObject*     statParamDict = NULL;
-                  
+
     PyErr_Clear();
 
     // Parse the Python Args and get optional Stat Params (as a Dictionary)
@@ -861,15 +391,14 @@ static PyObject* enableAllStatisticsForAllComponents(PyObject* self, PyObject* a
         gModel->enableStatisticForComponentName(STATALLFLAG, STATALLFLAG);
 
         // Generate and Add the Statistic Parameters
-        generateStatisticParameters(statParamDict);
-        for (uint32_t x = 0; x < gModel->statParamKeyArray.size(); x++) {
-            gModel->addStatisticParameterForComponentName(STATALLFLAG, STATALLFLAG, gModel->statParamKeyArray[x].c_str(), gModel->statParamValueArray[x].c_str());
+        for ( auto p : generateStatisticParameters(statParamDict) ) {
+            gModel->addStatisticParameterForComponentName(STATALLFLAG, STATALLFLAG, p.first, p.second);
         }
     } else {
         // ParseTuple Failed, return NULL for error
         return NULL;
     }
-    
+
     return PyInt_FromLong(0);
 }
 
@@ -879,7 +408,7 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *self, PyObject *a
     int           argOK = 0;
     char*         compName = NULL;
     PyObject*     statParamDict = NULL;
-                  
+
     PyErr_Clear();
 
     // Parse the Python Args Component Name and get optional Stat Params (as a Dictionary)
@@ -889,11 +418,10 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *self, PyObject *a
         gModel->enableStatisticForComponentName(compName, STATALLFLAG);
 
         // Generate and Add the Statistic Parameters
-        generateStatisticParameters(statParamDict);
-        for (uint32_t x = 0; x < gModel->statParamKeyArray.size(); x++) {
-            gModel->addStatisticParameterForComponentName(compName, STATALLFLAG, gModel->statParamKeyArray[x].c_str(), gModel->statParamValueArray[x].c_str());
+        for ( auto p : generateStatisticParameters(statParamDict) ) {
+            gModel->addStatisticParameterForComponentName(compName, STATALLFLAG, p.first, p.second);
         }
-                
+
     } else {
         // ParseTuple Failed, return NULL for error
         return NULL;
@@ -907,7 +435,7 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *a
     int           argOK = 0;
     char*         compType = NULL;
     PyObject*     statParamDict = NULL;
-                  
+
     PyErr_Clear();
 
     // Parse the Python Args Component Type and get optional Stat Params (as a Dictionary)
@@ -917,9 +445,8 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *a
         gModel->enableStatisticForComponentType(compType, STATALLFLAG);
 
         // Generate and Add the Statistic Parameters
-        generateStatisticParameters(statParamDict);
-        for (uint32_t x = 0; x < gModel->statParamKeyArray.size(); x++) {
-            gModel->addStatisticParameterForComponentType(compType, STATALLFLAG, gModel->statParamKeyArray[x].c_str(), gModel->statParamValueArray[x].c_str());
+        for ( auto p : generateStatisticParameters(statParamDict) ) {
+            gModel->addStatisticParameterForComponentType(compType, STATALLFLAG, p.first, p.second);
         }
     } else {
         // ParseTuple Failed, return NULL for error
@@ -935,7 +462,7 @@ static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args)
     char*         compName = NULL;
     char*         statName = NULL;
     PyObject*     statParamDict = NULL;
-                  
+
     PyErr_Clear();
 
     // Parse the Python Args Component Name, Stat Name and get optional Stat Params (as a Dictionary)
@@ -945,9 +472,8 @@ static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args)
         gModel->enableStatisticForComponentName(compName, statName);
 
         // Generate and Add the Statistic Parameters
-        generateStatisticParameters(statParamDict);
-        for (uint32_t x = 0; x < gModel->statParamKeyArray.size(); x++) {
-            gModel->addStatisticParameterForComponentName(compName, statName, gModel->statParamKeyArray[x].c_str(), gModel->statParamValueArray[x].c_str());
+        for ( auto p : generateStatisticParameters(statParamDict) ) {
+            gModel->addStatisticParameterForComponentName(compName, statName, p.first, p.second);
         }
     } else {
         // ParseTuple Failed, return NULL for error
@@ -963,7 +489,7 @@ static PyObject* enableStatisticForComponentType(PyObject *self, PyObject *args)
     char*         compType = NULL;
     char*         statName = NULL;
     PyObject*     statParamDict = NULL;
-                  
+
     PyErr_Clear();
 
     // Parse the Python Args Component Type, Stat Name and get optional Stat Params (as a Dictionary)
@@ -973,9 +499,8 @@ static PyObject* enableStatisticForComponentType(PyObject *self, PyObject *args)
         gModel->enableStatisticForComponentType(compType, statName);
 
         // Generate and Add the Statistic Parameters
-        generateStatisticParameters(statParamDict);
-        for (uint32_t x = 0; x < gModel->statParamKeyArray.size(); x++) {
-            gModel->addStatisticParameterForComponentType(compType, statName, gModel->statParamKeyArray[x].c_str(), gModel->statParamValueArray[x].c_str());
+        for ( auto p : generateStatisticParameters(statParamDict) ) {
+            gModel->addStatisticParameterForComponentType(compType, statName, p.first, p.second);
         }
     } else {
         // ParseTuple Failed, return NULL for error
@@ -1059,6 +584,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     gModel = this;
 
     graph = new ConfigGraph();
+    nextComponentId = 0;
 
     std::string local_script_name;
     int substr_index = 0;
@@ -1082,11 +608,13 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     PySys_SetArgv(argc, argv);
 
     // Initialize our types
-    ComponentType.tp_new = PyType_GenericNew;
-    LinkType.tp_new = PyType_GenericNew;
+    PyModel_ComponentType.tp_new = PyType_GenericNew;
+    PyModel_SubComponentType.tp_new = PyType_GenericNew;
+    PyModel_LinkType.tp_new = PyType_GenericNew;
     ModuleLoaderType.tp_new = PyType_GenericNew;
-    if ( ( PyType_Ready(&ComponentType) < 0 ) ||
-         ( PyType_Ready(&LinkType) < 0 ) ||
+    if ( ( PyType_Ready(&PyModel_ComponentType) < 0 ) ||
+         ( PyType_Ready(&PyModel_SubComponentType) < 0 ) ||
+         ( PyType_Ready(&PyModel_LinkType) < 0 ) ||
          ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
         output->fatal(CALL_INFO, -1, "Error loading Python types.\n");
     }
@@ -1098,15 +626,17 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
-    Py_INCREF(&ComponentType);
-    Py_INCREF(&LinkType);
+    Py_INCREF(&PyModel_ComponentType);
+    Py_INCREF(&PyModel_SubComponentType);
+    Py_INCREF(&PyModel_LinkType);
     Py_INCREF(&ModuleLoaderType);
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic pop
 #endif
     
-    PyModule_AddObject(module, "Link", (PyObject*)&LinkType);
-    PyModule_AddObject(module, "Component", (PyObject*)&ComponentType);
+    PyModule_AddObject(module, "Link", (PyObject*)&PyModel_LinkType);
+    PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
+    PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
 
 
     // Add our custom loader
@@ -1286,4 +816,33 @@ char* SSTPythonModelDefinition::addNamePrefix(const char *name) const
     return buf;
 }
 
-#endif
+/* Utilties */
+std::map<std::string,std::string> SST::Core::generateStatisticParameters(PyObject* statParamDict)
+{
+    PyObject*     pykey = NULL;
+    PyObject*     pyval = NULL;
+    Py_ssize_t    pos = 0;
+
+    std::map<std::string,std::string> p;
+
+    // If the user did not include a dict for the parameters
+    // the variable statParamDict will be NULL.
+    if (NULL != statParamDict) {
+        // Make sure it really is a Dict
+        if (true == PyDict_Check(statParamDict)) {
+
+            // Extract the Key and Value for each parameter and put them into the vectors 
+            while ( PyDict_Next(statParamDict, &pos, &pykey, &pyval) ) {
+                PyObject* pyparam = PyObject_CallMethod(pykey, (char*)"__str__", NULL);
+                PyObject* pyvalue = PyObject_CallMethod(pyval, (char*)"__str__", NULL);
+
+                p[PyString_AsString(pyparam)] = PyString_AsString(pyvalue);
+
+                Py_XDECREF(pyparam);
+                Py_XDECREF(pyvalue);
+            }
+        }
+    }
+    return p;
+}
+

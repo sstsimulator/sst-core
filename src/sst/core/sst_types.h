@@ -18,15 +18,21 @@
 
 namespace SST {
 
-typedef unsigned long   ComponentId_t;
+typedef uint64_t  ComponentId_t;
 typedef int32_t   LinkId_t;
 typedef uint64_t  Cycle_t;
 typedef uint64_t  SimTime_t;
 typedef double          Time_t;
 
 #define MAX_SIMTIME_T 0xFFFFFFFFFFFFFFFFl
-#define UNSET_COMPONENT_ID 0xFFFFFFFF
- 
+/* Subcomponent IDs are in the high-12 bits of the Component ID */
+#define UNSET_COMPONENT_ID 0xFFFFFFFFFFFFFFFFULL
+#define COMPONENT_ID_BITS 48
+#define COMPONENT_ID_MASK(x) ((x) & 0x0000FFFFFFFFFFFFULL)
+#define SUBCOMPONENT_ID_BITS 16
+#define SUBCOMPONENT_ID_MASK(x) ((x) >> COMPONENT_ID_BITS)
+#define SUBCOMPONENT_ID_CREATE(compId, sCompId) ((((uint64_t)sCompId) << COMPONENT_ID_BITS) | compId)
+
 typedef double watts;
 typedef double joules;
 typedef double farads;

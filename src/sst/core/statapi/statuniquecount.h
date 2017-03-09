@@ -18,6 +18,7 @@
 #include <sst/core/statapi/statbase.h>
 
 namespace SST {
+class BaseComponent;
 namespace Statistics {
 
 /**
@@ -32,9 +33,9 @@ template <typename T>
 class UniqueCountStatistic : public Statistic<T>
 {
 private:
-    friend class SST::Component;
+    friend class SST::BaseComponent;
 
-    UniqueCountStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams)
+    UniqueCountStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams)
 		: Statistic<T>(comp, statName, statSubId, statParams)
     {
         // Set the Name of this Statistic
