@@ -121,7 +121,7 @@ private:
 
     RankInfo rank;
     RankInfo num_ranks;
-    static Core::ThreadSafe::Barrier RankExecBarrier[5];
+    static Core::ThreadSafe::Barrier RankExecBarrier[6];
     static Core::ThreadSafe::Barrier LinkInitBarrier[3];
     // static SimTime_t min_next_time;
     // static int min_count;

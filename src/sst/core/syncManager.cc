@@ -28,7 +28,7 @@ namespace SST {
 
 // Static data members
 NewRankSync* SyncManager::rankSync = NULL;
-Core::ThreadSafe::Barrier SyncManager::RankExecBarrier[5];
+Core::ThreadSafe::Barrier SyncManager::RankExecBarrier[6];
 Core::ThreadSafe::Barrier SyncManager::LinkInitBarrier[3];
 SimTime_t SyncManager::next_rankSync = MAX_SIMTIME_T;
 
@@ -213,6 +213,7 @@ SyncManager::execute(void)
     }
     computeNextInsert();
     // trace.getOutput().output(CALL_INFO, "next_sync_type = %d\n", next_sync_type);
+    RankExecBarrier[5].wait();
 }
 
 /** Cause an exchange of Initialization Data to occur */
