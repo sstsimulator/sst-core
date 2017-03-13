@@ -286,7 +286,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
     // Create the SyncManager for this rank.  It gets created even if
     // we are single rank/single thread because it also manages the
     // Exit and Heartbeat actions.
-    syncManager = new SyncManager(my_rank, num_ranks, barrier, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
+    syncManager = new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.
@@ -443,23 +443,23 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 void Simulation::initialize() {
     // TraceFunction trace(CALL_INFO_LONG);    
     bool done = false;
-    barrier.wait();
+    initBarrier.wait();
     if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
 
     do {
 
-        barrier.wait();
+        initBarrier.wait();
         if ( my_rank.thread == 0 ) init_msg_count = 0;
-        barrier.wait();
+        initBarrier.wait();
         
         
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
             (*iter)->getComponent()->init(init_phase);
         }
 
-        barrier.wait();
+        initBarrier.wait();
         syncManager->exchangeLinkInitData(init_msg_count);
-        barrier.wait();
+        initBarrier.wait();
         // We're done if no new messages were sent
         if ( init_msg_count == 0 ) done = true;
         if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
@@ -498,13 +498,13 @@ void Simulation::setup() {
     // TraceFunction(CALL_INFO_LONG);    
     // Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
 
-    barrier.wait();
+    setupBarrier.wait();
     
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
         (*iter)->getComponent()->setup();
     }
 
-    barrier.wait();
+    setupBarrier.wait();
 
     /* Enforce finalization of shared regions */
     if ( my_rank.thread == 0 ) sharedRegionManager->updateState(true);
@@ -538,13 +538,13 @@ void Simulation::run() {
     // Tell the Statistics Engine that the simulation is beginning
     statisticsEngine->startOfSimulation();
 
-    // wait_my_turn_start(barrier, my_rank.thread, num_ranks.thread);
+    // wait_my_turn_start(runBarrier, my_rank.thread, num_ranks.thread);
     // sim_output.output("%d: Start main event loop\n",my_rank.thread);
     std::string header = SST::to_string(my_rank.rank);
     header += ", ";
     header += SST::to_string(my_rank.thread);
     header += ":  ";
-    // wait_my_turn_end(barrier, my_rank.thread, num_ranks.thread);
+    // wait_my_turn_end(runBarrier, my_rank.thread, num_ranks.thread);
     while( LIKELY( ! endSim ) ) {
         currentSimCycle = timeVortex->front()->getDeliveryTime();
         currentPriority = timeVortex->front()->getPriority();
@@ -577,7 +577,7 @@ void Simulation::run() {
     ThreadSync::disable();
 
     // fprintf(stderr, "thread %u waiting on runLoop finish barrier\n", my_rank.thread);
-    barrier.wait();  // TODO<- Is this needed?
+    runBarrier.wait();  // TODO<- Is this needed?
     // fprintf(stderr, "thread %u released from runLoop finish barrier\n", my_rank.thread);
     if (num_ranks.rank != 1 && num_ranks.thread == 0) delete m_exit;
 }
@@ -607,13 +607,13 @@ void Simulation::endSimulation(SimTime_t end)
 
     // This is a collective operation across threads.  All threads
     // must enter and set flag before any will exit.
-    // exit_barrier.wait();
+    // exitBarrier.wait();
 
     // if ( my_rank.thread == 1 ) sim_output.fatal(CALL_INFO,-1,"endSimulation called with end = %llu\n", end);
     endSimCycle = end;
     endSim = true;
 
-    exit_barrier.wait();
+    exitBarrier.wait();
 
 
 }
@@ -829,14 +829,6 @@ void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int tota
     }
 }
 
-// Uses Simulation's barrier
-void wait_my_turn_start() {
-    Core::ThreadSafe::Barrier& barrier = Simulation::getThreadBarrier();
-    int thread = Simulation::getSimulation()->my_rank.thread;
-    int total_threads = Simulation::getSimulation()->num_ranks.thread;
-    wait_my_turn_start(barrier, thread, total_threads);
-}
-
 void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads) {
 
     // Wait for all the threads after me to finish
@@ -847,12 +839,13 @@ void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_
     barrier.wait();
 }
 
-// Uses Simulation's barrier
-void wait_my_turn_end() {
-    Core::ThreadSafe::Barrier& barrier = Simulation::getThreadBarrier();
-    int thread = Simulation::getSimulation()->my_rank.thread;
-    int total_threads = Simulation::getSimulation()->num_ranks.thread;
-    wait_my_turn_end(barrier, thread, total_threads);
+
+
+void Simulation::resizeBarriers(uint32_t nthr) {
+    initBarrier.resize(nthr);
+    setupBarrier.resize(nthr);
+    runBarrier.resize(nthr);
+    exitBarrier.resize(nthr);
 }
 
 
@@ -861,8 +854,10 @@ Factory* Simulation::factory;
 TimeLord Simulation::timeLord;
 Statistics::StatisticOutput* Simulation::statisticsOutput;
 Output Simulation::sim_output;
-Core::ThreadSafe::Barrier Simulation::barrier;
-Core::ThreadSafe::Barrier Simulation::exit_barrier;
+Core::ThreadSafe::Barrier Simulation::initBarrier;
+Core::ThreadSafe::Barrier Simulation::setupBarrier;
+Core::ThreadSafe::Barrier Simulation::runBarrier;
+Core::ThreadSafe::Barrier Simulation::exitBarrier;
 std::mutex Simulation::simulationMutex;
 TimeConverter* Simulation::minPartTC = NULL;
 SimTime_t Simulation::minPart;

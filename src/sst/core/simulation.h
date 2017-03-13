@@ -293,7 +293,6 @@ private:
      * @param cycles Frequency which is the base of the TimeConverter
      */
     TimeConverter* minPartToTC(SimTime_t cycles) const;
-    static Core::ThreadSafe::Barrier& getThreadBarrier() { return barrier; }
 
     /** Factory used to generate the simulation components */
     static Factory *factory;
@@ -303,8 +302,11 @@ private:
     static Statistics::StatisticOutput* statisticsOutput;
     /** Output */
     static Output sim_output;
-    static Core::ThreadSafe::Barrier barrier;
-    static Core::ThreadSafe::Barrier exit_barrier;
+    static void resizeBarriers(uint32_t nthr);
+    static Core::ThreadSafe::Barrier initBarrier;
+    static Core::ThreadSafe::Barrier setupBarrier;
+    static Core::ThreadSafe::Barrier runBarrier;
+    static Core::ThreadSafe::Barrier exitBarrier;
     static std::mutex simulationMutex;
 
 
@@ -380,13 +382,7 @@ private:
 // time.  ONLY FOR DEBUG USE.
 void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
 
-// Uses Simulation's barrier
-void wait_my_turn_start();
-
 void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
-
-// Uses Simulation's barrier
-void wait_my_turn_end();
 
 
 } // namespace SST

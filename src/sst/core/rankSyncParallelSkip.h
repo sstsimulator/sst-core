@@ -31,7 +31,7 @@ class RankSyncParallelSkip : public NewRankSync {
 public:
     /** Create a new Sync object which fires with a specified period */
     // Sync(TimeConverter* period);
-    RankSyncParallelSkip(RankInfo num_ranks, Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC);
+    RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC);
     virtual ~RankSyncParallelSkip();
     
     /** Register a Link which this Sync Object is responsible for */
@@ -100,7 +100,9 @@ private:
     void deserializeMessage(comm_recv_pair* msg);
     
 
-    Core::ThreadSafe::Barrier& barrier;
+    Core::ThreadSafe::Barrier serializeReadyBarrier;
+    Core::ThreadSafe::Barrier slaveExchangeDoneBarrier;
+    Core::ThreadSafe::Barrier allDoneBarrier;
 };
 
 

@@ -35,13 +35,15 @@ SimTime_t RankSyncParallelSkip::myNextSyncTime = 0;
 
 ///// RankSyncParallelSkip class /////
     
-RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC) :
+RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC) :
     NewRankSync(),
     minPartTC(minPartTC),
     mpiWaitTime(0.0),
     deserializeTime(0.0),
     send_count(0),
-    barrier(barrier)
+    serializeReadyBarrier(num_ranks.thread),
+    slaveExchangeDoneBarrier(num_ranks.thread),
+    allDoneBarrier(num_ranks.thread)
 {
     // TraceFunction(CALL_INFO_LONG);
     max_period = Simulation::getSimulation()->getMinPartTC();
@@ -145,22 +147,13 @@ RankSyncParallelSkip::execute(int thread)
 {
     // TraceFunction trace(CALL_INFO_LONG);
     if ( thread == 0 ) {
-        // totalWait += barrier.wait();
-        // barrier.wait();
         exchange_master(thread);
-        // totalWait += barrier.wait();
-        barrier.wait();
-        // SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
-        // Simulation::getSimulation()->insertActivity( next, this );
+        allDoneBarrier.wait(); /* Sync up with slave finish below */
     }
     else {
-        // totalWait += barrier.wait();
-        // totalWait += barrier.wait();
-        barrier.wait();
-        exchange_slave(thread);
-        barrier.wait();
-        // SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
-        // Simulation::getSimulation()->insertActivity( next, this );
+        serializeReadyBarrier.wait(); /* Wait for exchange_master() to start up */
+        exchange_slave(thread); /* Waits at the end */
+        allDoneBarrier.wait(); /* Wait for exchange_master to finish */
     }
 }
 
@@ -220,7 +213,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
             link_send_queue[recv->local_thread].insert(recv);
         }
     }
-    barrier.wait();
+    slaveExchangeDoneBarrier.wait();
     
 }
 
@@ -246,7 +239,7 @@ RankSyncParallelSkip::exchange_master(int thread)
 
     remaining_deser = comm_recv_map.size();
     
-    barrier.wait();
+    serializeReadyBarrier.wait(); /* Wait for / release slaves to serialize */
     
     for (auto i = comm_recv_map.begin() ; i != comm_recv_map.end() ; ++i) {
         // Post all the receives
@@ -373,7 +366,7 @@ RankSyncParallelSkip::exchange_master(int thread)
     }
 */
     // For now simply call exchange_slave() to deliver events
-    exchange_slave(0);
+    exchange_slave(0); /* Barriers at end */
 
     // Clear the SyncQueues used to send the data after all the sends have completed
     // waitStart = SST::Core::Profile::now();

@@ -39,7 +39,7 @@ namespace ThreadSafe {
 #endif
 
 
-class Barrier {
+class CACHE_ALIGNED_T Barrier {
     size_t origCount;
     std::atomic<bool> enabled;
     std::atomic<size_t> count, generation;

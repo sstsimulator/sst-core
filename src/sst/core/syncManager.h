@@ -102,7 +102,7 @@ private:
 
 class SyncManager : public Action {
 public:
-    SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& interThreadLatencies);
+    SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& interThreadLatencies);
     virtual ~SyncManager();
 
     /** Register a Link which this Sync Object is responsible for */
@@ -117,12 +117,12 @@ public:
     void print(const std::string& header, Output &out) const;
 
 private:
-    enum sync_type_t { RANK, THREAD}; 
+    enum sync_type_t { RANK, THREAD};
 
     RankInfo rank;
     RankInfo num_ranks;
-    Core::ThreadSafe::Barrier& barrier;
-    static std::mutex sync_mutex;
+    static Core::ThreadSafe::Barrier RankExecBarrier[5];
+    static Core::ThreadSafe::Barrier LinkInitBarrier[3];
     // static SimTime_t min_next_time;
     // static int min_count;
     
