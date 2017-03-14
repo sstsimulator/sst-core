@@ -58,7 +58,7 @@ public:
 private:
     std::vector<ThreadSyncQueue*> queues;
     std::unordered_map<LinkId_t, Link*> link_map;
-    SimTime_t max_period;
+    SimTime_t my_max_period;
     int num_threads;
     int thread;
     static SimTime_t localMinimumNextActivityTime;

@@ -42,8 +42,8 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
     if ( sim->getNumRanks().rank > 1 ) single_rank = false;
     else single_rank = true;
 
-    max_period = sim->getInterThreadMinLatency();
-    nextSyncTime = max_period;
+    my_max_period = sim->getInterThreadMinLatency();
+    nextSyncTime = my_max_period;
 }
 
 ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
@@ -85,13 +85,6 @@ ThreadSyncSimpleSkip::before()
 {
     // TraceFunction trace(CALL_INFO_LONG);
 
-    // No need to barrier.  SyncManger already barriers before calling
-    // this function
-
-    // totalWaitTime += barrier.wait();
-
-    // if ( disabled ) return;
-
     // Empty all the queues and send events on the links
     for ( int i = 0; i < queues.size(); i++ ) {
         ThreadSyncQueue* queue = queues[i];
@@ -109,12 +102,6 @@ ThreadSyncSimpleSkip::before()
         }
         queue->clear();
     }
-
-    // No need to barrier, SyncManger will barrier right after this
-    // call
-
-    // totalWaitTime += barrier.wait();
-
 }
 
 void
@@ -124,22 +111,14 @@ ThreadSyncSimpleSkip::after()
 
     // Use this nextSyncTime computation for no skip
     // nextSyncTime = sim->getCurrentSimCycle() + max_period;
-    
-    
-    // No need to barrier.  SyncManger already barriers before calling
-    // this function
-
-    // totalWaitTime += barrier.wait();
-
 
     // Use this nextSyncTime computation for skipping
 
     // if ( thread == 0 ) localMinimumNextActivityTime = sim->getLocalMinimumNextActivityTime();
-    // totalWaitTime += barrier.wait();
     // nextSyncTime = localMinimumNextActivityTime + max_period;
-    nextSyncTime = sim->getLocalMinimumNextActivityTime() + max_period;
-    totalWaitTime += barrier.wait();
-
+    auto nextmin = sim->getLocalMinimumNextActivityTime();
+    auto nextminPlus = nextmin + my_max_period;
+    nextSyncTime = nextmin > nextminPlus ? nextmin : nextminPlus;
 }
 
 void
@@ -151,41 +130,7 @@ ThreadSyncSimpleSkip::execute()
     before();
     totalWaitTime = barrier.wait();
     after();
-    
-
-    // // TraceFunction trace(CALL_INFO_LONG);
-    // totalWaitTime += barrier.wait();
-    // // if ( disabled ) return;
-    // // Empty all the queues and send events on the links
-    // for ( int i = 0; i < queues.size(); i++ ) {
-    //     ThreadSyncQueue* queue = queues[i];
-    //     std::vector<Activity*>& vec = queue->getVector();
-    //     for ( int j = 0; j < vec.size(); j++ ) {
-    //         Event* ev = static_cast<Event*>(vec[j]);
-    //         auto link = link_map.find(ev->getLinkId());
-    //         if (link == link_map.end()) {
-    //             printf("Link not found in map!\n");
-    //             abort();
-    //         } else {
-    //             SimTime_t delay = ev->getDeliveryTime() - sim->getCurrentSimCycle();
-    //             link->second->send(delay,ev);
-    //         }
-    //     }
-    //     queue->clear();
-    // }
-
-    // // Use this nextSyncTime computation for no skip
-    // // nextSyncTime = sim->getCurrentSimCycle() + max_period;
-
-
-    // // Use this nextSyncTime computation for skipping
-    // totalWaitTime += barrier.wait();
-
-    // // if ( thread == 0 ) localMinimumNextActivityTime = sim->getLocalMinimumNextActivityTime();
-    // // totalWaitTime += barrier.wait();
-    // // nextSyncTime = localMinimumNextActivityTime + max_period;
-    // nextSyncTime = sim->getLocalMinimumNextActivityTime() + max_period;
-    
+    totalWaitTime += barrier.wait();
 }
 
 void

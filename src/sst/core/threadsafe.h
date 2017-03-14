@@ -39,7 +39,7 @@ namespace ThreadSafe {
 #endif
 
 
-class Barrier {
+class CACHE_ALIGNED_T Barrier {
     size_t origCount;
     std::atomic<bool> enabled;
     std::atomic<size_t> count, generation;
@@ -73,10 +73,12 @@ public:
             auto startTime = SST::Core::Profile::now();
 
             size_t gen = generation.load();
+            asm("":::"memory");
             size_t c = --count;
             if ( 0 == c ) {
                 /* We should release */
                 count = origCount;
+                asm("":::"memory");
                 ++generation; /* Incrementing generation causes release */
             } else {
                 /* Try spinning first */

@@ -27,8 +27,9 @@
 namespace SST {
 
 // Static data members
-std::mutex SyncManager::sync_mutex;
 NewRankSync* SyncManager::rankSync = NULL;
+Core::ThreadSafe::Barrier SyncManager::RankExecBarrier[6];
+Core::ThreadSafe::Barrier SyncManager::LinkInitBarrier[3];
 SimTime_t SyncManager::next_rankSync = MAX_SIMTIME_T;
 
 class EmptyRankSync : public NewRankSync {
@@ -71,33 +72,34 @@ public:
 };
 
 
-SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& interThreadLatencies) :
+SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& interThreadLatencies) :
     Action(),
     rank(rank),
     num_ranks(num_ranks),
-    barrier(barrier),
     threadSync(NULL),
     next_threadSync(0),
     min_part(min_part)
 {
     // TraceFunction trace(CALL_INFO_LONG);    
-    
+
     sim = Simulation::getSimulation();
-    
+
+
     if ( rank.thread == 0  ) {
         // if ( num_ranks.rank > 1 ) {
+        for ( auto &b : RankExecBarrier ) { b.resize(num_ranks.thread); }
+        for ( auto &b : LinkInitBarrier ) { b.resize(num_ranks.thread); }
         if ( min_part != MAX_SIMTIME_T ) {
             if ( num_ranks.thread == 1 ) {
-                rankSync = new RankSyncSerialSkip(/*num_ranks,*/ barrier, minPartTC);
+                rankSync = new RankSyncSerialSkip(/*num_ranks,*/ minPartTC);
             }
             else {
-                rankSync = new RankSyncParallelSkip(num_ranks, barrier, minPartTC);
+                rankSync = new RankSyncParallelSkip(num_ranks, minPartTC);
             }
         }
         else {
             rankSync = new EmptyRankSync();
         }
-        
     }
 
     // Need to check to see if there are any inter-thread
@@ -159,7 +161,7 @@ SyncManager::execute(void)
         // Need to make sure all threads have reached the sync to
         // guarantee that all events have been sent to the appropriate
         // queues.
-        barrier.wait();
+        RankExecBarrier[0].wait();
         
         // For a rank sync, we will force a thread sync first.  This
         // will ensure that all events sent between threads will be
@@ -170,24 +172,24 @@ SyncManager::execute(void)
 
         // Need to make sure everyone has made it through the mutex
         // and the min time computation is complete
-        barrier.wait();
+        RankExecBarrier[1].wait();
         
         // Now call the actual RankSync
         // trace.getOutput().output(CALL_INFO, "About to enter rankSync->execute()\n");
         rankSync->execute(rank.thread);
         // trace.getOutput().output(CALL_INFO, "Complete rankSync->execute()\n");
 
-        barrier.wait();
+        RankExecBarrier[2].wait();
 
         // Now call the threadSync after() call
         threadSync->after();
         // trace.getOutput().output(CALL_INFO, "Complete threadSync->after()\n");
 
-        barrier.wait();
+        RankExecBarrier[3].wait();
         
         if ( exit != NULL && rank.thread == 0 ) exit->check();
 
-        barrier.wait();
+        RankExecBarrier[4].wait();
 
         if ( exit->getGlobalCount() == 0 ) {
             endSimulation(exit->getEndTime());
@@ -211,6 +213,7 @@ SyncManager::execute(void)
     }
     computeNextInsert();
     // trace.getOutput().output(CALL_INFO, "next_sync_type = %d\n", next_sync_type);
+    RankExecBarrier[5].wait();
 }
 
 /** Cause an exchange of Initialization Data to occur */
@@ -218,11 +221,11 @@ void
 SyncManager::exchangeLinkInitData(std::atomic<int>& msg_count)
 {
     // TraceFunction trace(CALL_INFO_LONG);    
-    barrier.wait();
+    LinkInitBarrier[0].wait();
     threadSync->processLinkInitData();
-    barrier.wait();
+    LinkInitBarrier[1].wait();
     rankSync->exchangeLinkInitData(rank.thread, msg_count);
-    barrier.wait();
+    LinkInitBarrier[2].wait();
 }
 
 /** Finish link configuration */
