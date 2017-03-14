@@ -73,10 +73,12 @@ public:
             auto startTime = SST::Core::Profile::now();
 
             size_t gen = generation.load();
+            asm("":::"memory");
             size_t c = --count;
             if ( 0 == c ) {
                 /* We should release */
                 count = origCount;
+                asm("":::"memory");
                 ++generation; /* Incrementing generation causes release */
             } else {
                 /* Try spinning first */

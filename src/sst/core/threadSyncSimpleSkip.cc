@@ -42,8 +42,8 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
     if ( sim->getNumRanks().rank > 1 ) single_rank = false;
     else single_rank = true;
 
-    max_period = sim->getInterThreadMinLatency();
-    nextSyncTime = max_period;
+    my_max_period = sim->getInterThreadMinLatency();
+    nextSyncTime = my_max_period;
 }
 
 ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
@@ -116,7 +116,9 @@ ThreadSyncSimpleSkip::after()
 
     // if ( thread == 0 ) localMinimumNextActivityTime = sim->getLocalMinimumNextActivityTime();
     // nextSyncTime = localMinimumNextActivityTime + max_period;
-    nextSyncTime = sim->getLocalMinimumNextActivityTime() + max_period;
+    auto nextmin = sim->getLocalMinimumNextActivityTime();
+    auto nextminPlus = nextmin + my_max_period;
+    nextSyncTime = nextmin > nextminPlus ? nextmin : nextminPlus;
 }
 
 void
