@@ -52,13 +52,18 @@ public:
          * Commands and responses possible with a Request object
          */
         typedef enum {
-            Read,       /*!< Issue a Read from Memory */
-            Write,      /*!< Issue a Write to Memory */
-            ReadResp,   /*!< Response from Memory to a Read */
-            WriteResp,  /*!< Response from Memory to a Write */
-            FlushLine,  /*!< Cache flush request - writeback specified line throughout memory system */
-            FlushLineInv,  /*!< Cache flush request - writeback and invalidate specified line throughout memory system */
+            Read,           /*!< Issue a Read from Memory */
+            Write,          /*!< Issue a Write to Memory */
+            ReadResp,       /*!< Response from Memory to a Read */
+            WriteResp,      /*!< Response from Memory to a Write */
+            FlushLine,      /*!< Cache flush request - writeback specified line throughout memory system */
+            FlushLineInv,   /*!< Cache flush request - writeback and invalidate specified line throughout memory system */
             FlushLineResp,  /*!< Response to FlushLine; flag F_FLUSH_SUCCESS indicates success or failure */
+            TxBegin,        /*!< Start a new transaction */
+            TxEnd,          /*!< End the current lowest transaction */
+            TxResp,
+            TxAbort,
+            TxCommit
         } Command;
 
         /**
@@ -69,7 +74,8 @@ public:
             F_LOCKED        = 1<<2,     /*!< This request should be locked.  A LOCKED read should be soon followed by a LOCKED write (to unlock) */
             F_LLSC          = 1<<3,
             F_LLSC_RESP     = 1<<4,
-            F_FLUSH_SUCCESS = 1<<5      /*!< This flag is set if the flush was successful. Flush may fail due to LOCKED lines */
+            F_FLUSH_SUCCESS = 1<<5,     /*!< This flag is set if the flush was successful. Flush may fail due to LOCKED lines */
+            F_TRANSACTION   = 1<<6
         } Flags;
 
         /** Type of the payload or data */
@@ -83,13 +89,13 @@ public:
         flags_t flags;      /*!< Flags associated with this request or response */
         flags_t memFlags;   /*!< Memory flags - ignored by caches except to be passed through with request to main memory */
         id_t id;            /*!< Unique ID to identify responses with requests */
-	Addr instrPtr;      /*!< Instruction pointer associated with the operation */
+        Addr instrPtr;      /*!< Instruction pointer associated with the operation */
         Addr virtualAddr;   /*!< Virtual address associated with the operation */
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, dataVec &data, flags_t flags = 0, flags_t memFlags = 0) :
             cmd(cmd), addr(addr), size(size), data(data), flags(flags), memFlags(memFlags),
-		instrPtr(0), virtualAddr(0)
+            instrPtr(0), virtualAddr(0)
         {
             addrs.push_back(addr);
             id = main_id++;
@@ -98,18 +104,20 @@ public:
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, flags_t flags = 0, flags_t memFlags = 0) :
             cmd(cmd), addr(addr), size(size), flags(flags), memFlags(memFlags),
-		instrPtr(0), virtualAddr(0)
+            instrPtr(0), virtualAddr(0)
         {
             addrs.push_back(addr);
             id = main_id++;
         }
 
-        void addAddress(Addr addr) {
+        void addAddress(Addr addr)
+        {
             addrs.push_back(addr);
         }
 
         /**
-         * Set the contents of the payload / data field.
+         * @param[in] data_in
+         * @brief Set the contents of the payload / data field.
          */
         void setPayload(const std::vector<uint8_t> & data_in )
         {
@@ -117,46 +125,92 @@ public:
         }
 
         /**
-         * Set the contents of the payload / data field.
+         * @param[in] data_in
+         * @brief Set the contents of the payload / data field.
          */
-        void setPayload(uint8_t *data_in, size_t len)
-        {
+        void setPayload(uint8_t *data_in, size_t len) {
             data.resize(len);
             for ( size_t i = 0 ; i < len ; i++ ) {
                 data[i] = data_in[i];
             }
         }
 
-	/**
-	* Set the virtual address associated with the operation
-	*/
-  	void setVirtualAddress(const Addr newVA) {
-		virtualAddr = newVA;
-	}
+        /**
+        * @param[in] newVA
+        * @brief  Set the virtual address associated with the operation
+        */
+        void setVirtualAddress(const Addr newVA) {
+                virtualAddr = newVA;
+        }
 
-	/**
-	* Get the virtual address associated with the operation
-	*/
-	uint64_t getVirtualAddress() {
-		return (uint64_t) virtualAddr;
-	}
+        /**
+        * @returns the virtual address associated with the operation
+        */
+        uint64_t getVirtualAddress() {
+                return (uint64_t) virtualAddr;
+        }
 
-	/*
-	* Sets the instruction pointer associated with the operation
-	*/
-	void setInstructionPointer(const Addr newIP) {
-		instrPtr = newIP;
-	}
+        /**
+        * @param[in] newIP
+        * @brief Sets the instruction pointer associated with the operation
+        */
+        void setInstructionPointer(const Addr newIP) {
+                instrPtr = newIP;
+        }
 
-	/**
-	* Sets the instruction pointer associated with the operation
-	*/
-	Addr getInstructionPointer() {
-		return instrPtr;
-	}
+        /**
+        * @returns the instruction pointer associated with the operation
+        */
+        Addr getInstructionPointer() {
+                return instrPtr;
+        }
+
+        /**
+        * @brief Clears the flags associated with the operation
+        */
+        void clearFlags(void) {
+                flags = 0;
+        }
+
+        /**
+        * @param[in] inValue  Should be one of the flags beginning with F_ in simpleMem
+        */
+        void setFlags(flags_t inValue) {
+                flags = flags | inValue;
+        }
+
+        /**
+        * @returns the flags associated with the operation
+        */
+        flags_t getFlags(void) {
+                return flags;
+        }
+
+        /**
+        * @brief Clears the memory flags associated with the operation
+        */
+        void clearMemFlags(void) {
+                memFlags = 0;
+        }
+
+        /**
+        * @param[in] inValue  Should be one of the flags beginning with F_ in simpleMem
+        */
+        void setMemFlags(flags_t inValue) {
+                memFlags = memFlags | inValue;
+        }
+
+        /**
+        * @returns the memory flags associated with the operation
+        */
+        flags_t getMemFlags(void) {
+                return memFlags;
+        }
+
 
     private:
         static std::atomic<id_t> main_id;
+
     };
 
     /** Functor classes for Clock handling */
