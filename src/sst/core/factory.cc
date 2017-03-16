@@ -20,6 +20,7 @@
 #include "sst/core/simulation.h"
 #include "sst/core/component.h"
 #include "sst/core/element.h"
+#include <sst/core/elementinfo.h>
 #include "sst/core/params.h"
 #include "sst/core/linkMap.h"
 
@@ -99,17 +100,36 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
         findLibrary(elemlib);
     }
 
-    // now look for component
+    const std::vector<std::string> *portNames = NULL;
+
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        ComponentElementInfo* comp = lib->getComponent(elem);
+        if ( comp != NULL ) {
+            portNames = &(comp->getPortnames());
+        }
+        else {
+            SubComponentElementInfo* subcomp = lib->getSubComponent(elem);
+            if ( subcomp != NULL ) {
+                portNames = &(subcomp->getPortnames());
+            }
+        }
+    }
+    
     std::string tmp = elemlib + "." + elem;
+    if ( portNames == NULL ) {
+        // now look for component
 
-    std::vector<std::string> *portNames = NULL;
 
-    eic_map_t::iterator eii = found_components.find(tmp);
-    eis_map_t::iterator esii = found_subcomponents.find(tmp);
-    if ( eii != found_components.end() ) {
-        portNames = &eii->second.ports;
-    } else if ( esii != found_subcomponents.end() ) {
-        portNames = &esii->second.ports;
+        eic_map_t::iterator eii = found_components.find(tmp);
+        eis_map_t::iterator esii = found_subcomponents.find(tmp);
+        if ( eii != found_components.end() ) {
+            portNames = &eii->second.ports;
+        } else if ( esii != found_subcomponents.end() ) {
+            portNames = &esii->second.ports;
+        }
     }
 
     if ( portNames == NULL ) {
@@ -137,10 +157,28 @@ Factory::CreateComponent(ComponentId_t id,
     // ensure library is already loaded...
     requireLibrary(elemlib);
 
-    // now look for component
-    std::string tmp = elemlib + "." + elem;
-
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        ComponentElementInfo* comp = lib->getComponent(elem);
+        if ( comp != NULL ) {
+            LinkMap *lm = Simulation::getSimulation()->getComponentLinkMap(id);
+            lm->setAllowedPorts(&(comp->getPortnames()));
+
+            loadingComponentType = type;    
+            params.pushAllowedKeys(comp->getParamNames());
+            Component *ret = comp->create(id, params);
+            params.popAllowedKeys();
+            loadingComponentType = "";
+            std::cout << "Using new ELI for " << type << std::endl;
+            return ret;
+        }
+    }
+
+    // now look for component in old ELI
+    std::string tmp = elemlib + "." + elem;
 
     eic_map_t::iterator eii = found_components.find(tmp);
     if (eii == found_components.end()) {
@@ -197,10 +235,26 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
     // ensure library is already loaded...
     requireLibrary(elemlib);
 
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        ComponentElementInfo* comp = lib->getComponent(elem);
+        if ( comp != NULL ) {
+            for ( auto item : comp->getStatnames() ) {
+                if ( statisticName == item ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    
     // now look for component
     std::string tmp = elemlib + "." + elem;
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
     eic_map_t::iterator eii = found_components.find(tmp);
     if (eii == found_components.end()) {
@@ -233,10 +287,25 @@ Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const s
     // ensure library is already loaded...
     requireLibrary(elemlib);
 
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        SubComponentElementInfo* subcomp = lib->getSubComponent(elem);
+        if ( subcomp != NULL ) {
+            for ( auto item : subcomp->getStatnames() ) {
+                if ( statisticName == item ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     // now look for subcomponent
     std::string tmp = elemlib + "." + elem;
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
     eis_map_t::iterator eii = found_subcomponents.find(tmp);
     if (eii == found_subcomponents.end()) {
@@ -269,10 +338,25 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     // ensure library is already loaded...
     requireLibrary(elemlib);
 
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        ComponentElementInfo* comp = lib->getComponent(elem);
+        if ( comp != NULL ) {
+            for ( auto item : comp->getValidStats() ) {
+                if ( statisticName == item.name ) {
+                    return item.enableLevel;
+                }
+            }
+            return 0;
+        }
+    }
+
     // now look for component
     std::string tmp = elemlib + "." + elem;
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
     eic_map_t::iterator eii = found_components.find(tmp);
     if (eii == found_components.end()) {
@@ -305,6 +389,19 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
     // ensure library is already loaded...
     if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
         findLibrary(elemlib);
+    }
+
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        ComponentElementInfo* comp = lib->getComponent(elem);
+        if ( comp != NULL ) {
+            for ( auto item : comp->getValidStats() ) {
+                if ( statisticName == item.name ) {
+                    return item.units;
+                }
+            }
+            return 0;
+        }
     }
 
     // now look for component
@@ -478,10 +575,23 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
     // ensure library is already loaded...
     requireLibrary(elemlib);
 
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        SubComponentElementInfo* subcomp = lib->getSubComponent(elem);
+        if ( subcomp != NULL ) {
+            params.pushAllowedKeys(subcomp->getParamNames());
+            SubComponent* ret = subcomp->create(comp, params);
+            params.popAllowedKeys();
+            std::cout << "Using new ELI for " << type << std::endl;
+            return ret;
+        }
+    }
+
     // now look for module
     std::string tmp = elemlib + "." + elem;
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
     eis_map_t::iterator eis = found_subcomponents.find(tmp);
     if (eis == found_subcomponents.end()) {

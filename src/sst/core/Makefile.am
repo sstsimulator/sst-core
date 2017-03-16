@@ -36,7 +36,9 @@ nobase_dist_sst_HEADERS = \
 	env/envquery.h \
 	env/envconfig.h \
 	element.h \
+	elementinfo.h \
 	elemLoader.h \
+	elibase.h \
 	event.h \
 	exit.h \
 	factory.h \
@@ -152,6 +154,7 @@ sst_core_sources = \
 	cfgoutput/jsonConfigOutput.cc \
 	env/envquery.cc \
 	env/envconfig.cc \
+	elementinfo.cc \
 	elemLoader.cc \
 	event.cc \
 	exit.cc \
