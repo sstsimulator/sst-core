@@ -437,28 +437,44 @@ Factory::CreateModule(std::string type, Params& params)
 
     if("sst" == elemlib) {
         return CreateCoreModule(elem, params);
-    } else {
-        // ensure library is already loaded...
-        requireLibrary(elemlib);
-
-        // now look for module
-        std::string tmp = elemlib + "." + elem;
-
-        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-        eim_map_t::iterator eim = found_modules.find(tmp);
-        if (eim == found_modules.end()) {
-            out.fatal(CALL_INFO, -1, "can't find requested module %s.\n ", tmp.c_str());
-            return NULL;
-        }
-
-        const ModuleInfo mi = eim->second;
-
-        params.pushAllowedKeys(mi.params);
-        Module *ret = mi.module->alloc(params);
-        params.popAllowedKeys();
-        return ret;
     }
+
+    requireLibrary(elemlib);
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        ModuleElementInfo* module = lib->getModule(elem);
+        if ( module != NULL ) {
+            params.pushAllowedKeys(module->getParamNames());
+            Module *ret = module->create(params);
+            params.popAllowedKeys();
+            std::cout << "Using new ELI for " << type << std::endl;
+            return ret;
+        }
+    }
+
+    
+    // now look for module
+    std::string tmp = elemlib + "." + elem;
+    
+    // std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    eim_map_t::iterator eim = found_modules.find(tmp);
+    if (eim == found_modules.end()) {
+        out.fatal(CALL_INFO, -1, "can't find requested module %s.\n ", tmp.c_str());
+        return NULL;
+    }
+    
+    const ModuleInfo mi = eim->second;
+    
+    params.pushAllowedKeys(mi.params);
+    Module *ret = mi.module->alloc(params);
+    params.popAllowedKeys();
+    return ret;
 }
+
 
 Module* 
 Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
@@ -536,30 +552,45 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
 
     if("sst" == elemlib) {
         return CreateCoreModuleWithComponent(elem, comp, params);
-    } else {
-
-        // ensure library is already loaded...
-        requireLibrary(elemlib);
-
-        // now look for module
-        std::string tmp = elemlib + "." + elem;
-
-        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-
-        eim_map_t::iterator eim = found_modules.find(tmp);
-        if (eim == found_modules.end()) {
-            out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", tmp.c_str());
-            return NULL;
-        }
-
-        const ModuleInfo mi = eim->second;
-
-        params.pushAllowedKeys(mi.params);
-        Module *ret = mi.module->alloc_with_comp(comp, params);
-        params.popAllowedKeys();
-        return ret;
     }
+
+    // ensure library is already loaded...
+    requireLibrary(elemlib);
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        ModuleElementInfo* module = lib->getModule(elem);
+        if ( module != NULL ) {
+            params.pushAllowedKeys(module->getParamNames());
+            Module *ret = module->create(comp,params);
+            params.popAllowedKeys();
+            std::cout << "Using new ELI for " << type << std::endl;
+            return ret;
+        }
+    }
+
+    // now look for module
+    std::string tmp = elemlib + "." + elem;
+    
+    
+    eim_map_t::iterator eim = found_modules.find(tmp);
+    if (eim == found_modules.end()) {
+        out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", tmp.c_str());
+        return NULL;
+    }
+    
+    const ModuleInfo mi = eim->second;
+    
+    params.pushAllowedKeys(mi.params);
+    Module *ret = mi.module->alloc_with_comp(comp, params);
+    params.popAllowedKeys();
+    return ret;
 }
+
 
 
 SubComponent*
@@ -711,6 +742,7 @@ bool Factory::hasLibrary(std::string elemlib)
 
 void Factory::requireLibrary(std::string &elemlib)
 {
+    if ( elemlib == "sst" ) return;
     (void)findLibrary(elemlib, true);
 }
 

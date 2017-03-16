@@ -19,24 +19,12 @@ namespace SST {
 
 std::map<std::string,LibraryInfo*> SST::ElementLibraryDatabase::libraries;
 
+/**************************************************************************
+  BaseElementInfo class functions
+**************************************************************************/
 void
-BaseComponentElementInfo::initialize()
+BaseElementInfo::initialize_allowedKeys()
 {
-    // Need to create the vector of just the port names so we can
-    // set allowed ports
-    // const std::vector<ElementInfoPort2>& ports = getValidPorts();
-    const auto& ports = getValidPorts();
-    for ( auto item : ports ) {
-        portnames.push_back(item.name);
-    }
-
-    // Need to create the vector of just the stat names
-    // const std::vector<ElementInfoStatistic>& stats = getValidStats();
-    const auto& stats = getValidStats();
-    for ( auto item : stats ) {
-        statnames.push_back(item.name);
-    }
-
     // Get the valid parameters into the right data structure for
     // created the components.
     // const std::vector<ElementInfoParam>& params = getValidParams();
@@ -47,7 +35,7 @@ BaseComponentElementInfo::initialize()
 }
 
 std::string
-BaseComponentElementInfo::getParametersString() {
+BaseElementInfo::getParametersString() {
     std::stringstream stream;
     stream << "    Parameters (" << getValidParams().size() << " total):"<<  std::endl;
     for ( auto item : getValidParams() ) {
@@ -56,6 +44,46 @@ BaseComponentElementInfo::getParametersString() {
                << " ("
                << (item.defaultValue == NULL ? "<required>" : item.defaultValue)
                << ")" << std::endl;
+    }
+    return stream.str();
+}
+
+
+/**************************************************************************
+  BaseComponentElementInfo class functions
+**************************************************************************/
+void
+BaseComponentElementInfo::initialize_portnames()
+{
+    // Need to create the vector of just the port names so we can
+    // set allowed ports
+    // const std::vector<ElementInfoPort2>& ports = getValidPorts();
+    const auto& ports = getValidPorts();
+    for ( auto item : ports ) {
+        portnames.push_back(item.name);
+    }
+}
+
+void
+BaseComponentElementInfo::initialize_statnames()
+{
+    // Need to create the vector of just the stat names
+    // const std::vector<ElementInfoStatistic>& stats = getValidStats();
+    const auto& stats = getValidStats();
+    for ( auto item : stats ) {
+        statnames.push_back(item.name);
+    }
+}
+
+
+std::string
+BaseComponentElementInfo::getPortsString() {
+    std::stringstream stream;    
+    stream << "    Ports (" << getValidPorts().size() << " total):"<<  std::endl;
+    for ( auto item : getValidPorts() ) {
+        stream << "      " << item.name << ": "
+               << (item.description == NULL ? "<empty>" : item.description)
+               << std::endl;
     }
     return stream.str();
 }
@@ -70,18 +98,6 @@ BaseComponentElementInfo::getStatisticsString() {
                << " ("
                << (item.units == NULL ? "<empty>" : item.units)
                << ").  Enable level = " << (int16_t)item.enableLevel << std::endl;
-    }
-    return stream.str();
-}
-
-std::string
-BaseComponentElementInfo::getPortsString() {
-    std::stringstream stream;    
-    stream << "    Ports (" << getValidPorts().size() << " total):"<<  std::endl;
-    for ( auto item : getValidPorts() ) {
-        stream << "      " << item.name << ": "
-               << (item.description == NULL ? "<empty>" : item.description)
-               << std::endl;
     }
     return stream.str();
 }

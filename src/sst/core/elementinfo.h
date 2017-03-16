@@ -41,14 +41,12 @@ class RankInfo;
    Base classes for templated documentation classes
 *****************************************************/
 
-class BaseComponentElementInfo {
+class BaseElementInfo {
 
 protected:
-    std::vector<std::string> portnames;
     Params::KeySet_t allowedKeys;
-    std::vector<std::string> statnames;
     
-    void initialize();
+    void initialize_allowedKeys();
     
 public:
 
@@ -57,14 +55,31 @@ public:
     virtual const std::string getName() = 0;
     virtual const std::string getLibrary() = 0;
     virtual const std::vector<ElementInfoParam>& getValidParams() = 0;
-    virtual const std::vector<ElementInfoStatistic>& getValidStats() = 0;
-    virtual const std::vector<ElementInfoPort2>& getValidPorts() = 0;
 
-    const std::vector<std::string>& getPortnames() { return portnames; }
-    const std::vector<std::string>& getStatnames() { return statnames; }
     const Params::KeySet_t& getParamNames() { return allowedKeys; }
 
     std::string getParametersString();
+
+};
+
+class BaseComponentElementInfo : public BaseElementInfo {
+
+protected:
+    std::vector<std::string> portnames;
+    std::vector<std::string> statnames;
+    
+    void initialize_portnames();
+    void initialize_statnames();
+    
+public:
+
+    // virtual Component* create(ComponentId_t id, Params& params) = 0;
+    virtual const std::vector<ElementInfoPort2>& getValidPorts() = 0;
+    virtual const std::vector<ElementInfoStatistic>& getValidStats() = 0;
+
+    const std::vector<std::string>& getPortnames() { return portnames; }
+    const std::vector<std::string>& getStatnames() { return statnames; }
+
     std::string getStatisticsString();
     std::string getPortsString();
     
@@ -142,10 +157,27 @@ public:
     }
 };
 
-class ModuleElementInfo {
+
+class ModuleElementInfo : public BaseElementInfo {
+
+protected:
 
 public:
-    virtual Module* create() = 0;
+    virtual Module* create(Component* comp, Params& params) { /* Need to print error */ return NULL; }
+    virtual Module* create(Params& params) { /* Need to print error */ return NULL; }
+    virtual const std::string getInterface() = 0;
+    
+    void print() {
+        std::cout << "    " << getName() << ": " << getDescription() << std::endl;
+        std::cout << "    Parameters (" << getValidParams().size() << " total):"<<  std::endl;
+        for ( auto item : getValidParams() ) {
+            std::cout << "      " << item.name << ": "
+                      << (item.description == NULL ? "<empty>" : item.description)
+                      << " ("
+                      << (item.defaultValue == NULL ? "<required>" : item.defaultValue)
+                      << ")" << std::endl;
+        }
+    }
 };
 
  // class PythonModuleInfo {
@@ -160,6 +192,7 @@ class LibraryInfo {
 public:
     std::map<std::string,ComponentElementInfo*> components;
     std::map<std::string,SubComponentElementInfo*> subcomponents;
+    std::map<std::string,ModuleElementInfo*> modules;
     // std::vector<PythonModuleElementInfo*> python_modules;
     
     ComponentElementInfo* getComponent(std::string name) {
@@ -172,6 +205,11 @@ public:
         return subcomponents[name];
     }
     
+    ModuleElementInfo* getModule(std::string name) {
+        if ( modules.count(name) == 0 ) return NULL;
+        return modules[name];
+    }
+    
     void print() {
         std::cout << "  Components: " << std::endl;
         for ( auto item : components ) {
@@ -180,6 +218,11 @@ public:
         }
         std::cout << "  SubComponents: " << std::endl;
         for ( auto item : subcomponents ) {
+            item.second->print();
+            std::cout << std::endl;
+        }
+        std::cout << "  Modules: " << std::endl;
+        for ( auto item : modules ) {
             item.second->print();
             std::cout << std::endl;
         }
@@ -210,6 +253,13 @@ public:
         LibraryInfo* library = getLibrary(comp->getLibrary());
         // library->subcomponents.push_back(comp);
         library->subcomponents[comp->getName()] = comp;
+        return true;
+    }
+
+    static bool addModule(ModuleElementInfo* comp) {
+        LibraryInfo* library = getLibrary(comp->getLibrary());
+        // library->subcomponents.push_back(comp);
+        library->modules[comp->getName()] = comp;
         return true;
     }
 
@@ -252,7 +302,9 @@ private:
 public:
 
     ComponentDoc() : ComponentElementInfo() {
-        initialize();
+        initialize_allowedKeys();
+        initialize_portnames();
+        initialize_statnames();
     }
     
     Component* create(ComponentId_t id, Params& params) {
@@ -343,7 +395,9 @@ private:
 public:
     
     SubComponentDoc() : SubComponentElementInfo() {
-        initialize();
+        initialize_allowedKeys();
+        initialize_portnames();
+        initialize_statnames();
     }
 
     SubComponent* create(Component* comp, Params& params) {
@@ -419,7 +473,112 @@ template<class T> const bool SubComponentDoc<T>::loaded = ElementLibraryDatabase
   Classes to support Modules
 **************************************************************************/
 
+template <class T>
+class ModuleDoc : public ModuleElementInfo {
+private:
+    static const bool loaded;
 
+public:
+    
+    ModuleDoc() : ModuleElementInfo() {
+        initialize_allowedKeys();
+    }
+
+    Module* create(Component* comp, Params& params) {
+        return new T(comp,params);
+    }
+
+    Module* create(Params& params) {
+        return new T(params);
+    }
+
+    static const bool isLoaded() { return loaded; }
+    const std::string getLibrary() { return T::ELI_getLibrary(); }
+    const std::string getName() { return T::ELI_getName(); }
+    const std::string getDescription() { return T::ELI_getDescription(); }
+    const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
+    const std::string getInterface() { return T::ELI_getInterface(); }
+};
+
+template <class T>
+class ModuleDocWithComponent : public ModuleElementInfo {
+private:
+    static const bool loaded;
+
+public:
+    
+    ModuleDocWithComponent() : ModuleElementInfo() {
+        initialize_allowedKeys();
+    }
+
+    Module* create(Component* comp, Params& params) {
+        return new T(comp,params);
+    }
+
+    static const bool isLoaded() { return loaded; }
+    const std::string getLibrary() { return T::ELI_getLibrary(); }
+    const std::string getName() { return T::ELI_getName(); }
+    const std::string getDescription() { return T::ELI_getDescription(); }
+    const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
+    const std::string getInterface() { return T::ELI_getInterface(); }
+};
+
+template <class T>
+class ModuleDocWithoutComponent : public ModuleElementInfo {
+private:
+    static const bool loaded;
+
+public:
+    
+    ModuleDocWithoutComponent() : ModuleElementInfo() {
+        initialize_allowedKeys();
+    }
+
+    Module* create(Params& params) {
+        return new T(params);
+    }
+
+    static const bool isLoaded() { return loaded; }
+    const std::string getLibrary() { return T::ELI_getLibrary(); }
+    const std::string getName() { return T::ELI_getName(); }
+    const std::string getDescription() { return T::ELI_getDescription(); }
+    const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
+    const std::string getInterface() { return T::ELI_getInterface(); }
+};
+
+
+// These static functions choose between the custom and not custom
+// create versions by looking for ELI_Custom_Create
+template<class T>
+typename std::enable_if<std::is_constructible<T,Component*,Params&>::value &&
+                        std::is_constructible<T,Params&>::value, ModuleElementInfo*>::type
+createModuleDoc() {
+    return new ModuleDoc<T>();
+}
+
+template<class T>
+typename std::enable_if<std::is_constructible<T,Component*,Params&>::value &&
+                        not std::is_constructible<T,Params&>::value, ModuleElementInfo*>::type
+createModuleDoc() {
+    return new ModuleDocWithComponent<T>();
+}
+
+template<class T>
+typename std::enable_if<not std::is_constructible<T,Component*,Params&>::value &&
+                        std::is_constructible<T,Params&>::value, ModuleElementInfo*>::type
+createModuleDoc() {
+    return new ModuleDocWithoutComponent<T>();
+}
+
+template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addModule(createModuleDoc<T>());
+// template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addModule(new ModuleDoc<T>());
+
+
+
+
+/**************************************************************************
+  Macros used by elements to add element documentation
+**************************************************************************/
 
 #define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat)  \
     friend class ComponentDoc<cls>; \
@@ -482,6 +641,24 @@ template<class T> const bool SubComponentDoc<T>::loaded = ElementLibraryDatabase
       return interface; \
     }
 
+
+#define SST_ELI_REGISTER_MODULE(cls,lib,name,desc,interface) \
+    friend class SubComponentDoc<cls>; \
+    bool ELI_isLoaded() {                           \
+      return ModuleDoc<cls>::isLoaded(); \
+    } \
+    static const std::string ELI_getLibrary() { \
+      return lib; \
+    } \
+    static const std::string ELI_getName() { \
+      return name; \
+    } \
+    static const std::string ELI_getDescription() {  \
+      return desc; \
+    } \
+    static const std::string ELI_getInterface() {  \
+      return interface; \
+    }
 
 } //namespace SST
 
