@@ -54,6 +54,8 @@
 #include <sst/core/cfgoutput/xmlConfigOutput.h>
 #include <sst/core/cfgoutput/jsonConfigOutput.h>
 
+#include <sst/core/elementinfo.h>
+
 using namespace SST::Core;
 using namespace SST::Partition;
 using namespace std;
@@ -474,14 +476,11 @@ main(int argc, char *argv[])
 
     // If this is a serial job, just use the single partitioner,
     // but the same code path
-    if ( world_size.rank == 1 && world_size.thread == 1) cfg.partitioner = "single";
-    SSTPartitioner* partitioner = SSTPartitioner::getPartitioner(cfg.partitioner, world_size, myRank, cfg.verbose);
-    if ( partitioner == NULL ) {
-        // Not a built in partitioner, see if this is a
-        // partitioner contained in an element library.
-        partitionFunction func = factory->GetPartitioner(cfg.partitioner);
-        partitioner = func(world_size, myRank, cfg.verbose);
-    }
+    if ( world_size.rank == 1 && world_size.thread == 1) cfg.partitioner = "sst.single";
+
+    // Get the partitioner.  Built in partitioners are in the "sst" library.
+    SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner, world_size, myRank, cfg.verbose);
+
 
     if ( partitioner->requiresConfigGraph() ) {
         partitioner->performPartition(graph);
