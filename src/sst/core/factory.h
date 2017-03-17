@@ -96,7 +96,7 @@ public:
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */
-    partitionFunction GetPartitioner(std::string name);
+    Partition::SSTPartitioner* CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
 
     /** Return generator function
      * @param name - Fully qualified elementlibname.generator type name

@@ -18,6 +18,7 @@
 
 #include <sst/core/part/sstpart.h>
 #include <sst/core/output.h>
+#include <sst/core/elementinfo.h>
 
 // SST and ZOLTANÕs configurations are conflicting on the SST_CONFIG_HAVE_MPI definition.  
 // So temporarily shut down SSTÕs SST_CONFIG_HAVE_MPI, then allow ZOLTANÕs SST_CONFIG_HAVE_MPI to 
@@ -43,37 +44,33 @@ namespace Partition {
 */
 class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 
-	public:
-		/**
-			Create a Zoltan-based partition scheme
-			\param verbosity Verbosity level with which messages and information are generated
-		*/
-		SSTZoltanPartition(RankInfo world_size, RankInfo my_rank, int verbosity);
-		~SSTZoltanPartition();
-
-		/**
-			Performs a partition of an SST partition graph. Components in the graph
-			have their setRank() attribute set based on the partition scheme computed
-			by Zoltan.
-			\param graph An SST partition graph
-		*/
-		void performPartition(PartitionGraph* graph);
-
-        bool requiresConfigGraph() { return false; }
-
-        bool spawnOnAllRanks() { return true; }
-        
-        static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
-            return new SSTZoltanPartition(total_ranks, my_rank, verbosity);
-        }
-        
-	protected:
-		void initZoltan();
-		RankInfo rankcount;
-		struct Zoltan_Struct * zolt_config;
-		RankInfo rank;
-
-        static bool initialized;
+protected:
+    void initZoltan();
+    RankInfo rankcount;
+    struct Zoltan_Struct * zolt_config;
+    RankInfo rank;
+    
+public:
+    /**
+       Create a Zoltan-based partition scheme
+       \param verbosity Verbosity level with which messages and information are generated
+    */
+    SSTZoltanPartition(RankInfo world_size, RankInfo my_rank, int verbosity);
+    ~SSTZoltanPartition();
+    
+    /**
+       Performs a partition of an SST partition graph. Components in the graph
+       have their setRank() attribute set based on the partition scheme computed
+       by Zoltan.
+       \param graph An SST partition graph
+    */
+    void performPartition(PartitionGraph* graph);
+    
+    bool requiresConfigGraph() { return false; }
+    
+    bool spawnOnAllRanks() { return true; }
+    
+    SST_ELI_REGISTER_PARTITIONER(SSTZoltanPartition,"sst","zoltan","zoltan parallel partitioner")
 };
 
 }

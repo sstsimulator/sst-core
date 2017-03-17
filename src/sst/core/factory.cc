@@ -658,14 +658,25 @@ Factory::RequireEvent(std::string eventname)
     }
 }
 
-partitionFunction
-Factory::GetPartitioner(std::string name)
+Partition::SSTPartitioner*
+Factory::CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(name);
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
+
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        PartitionerElementInfo* part = lib->getPartitioner(elem);
+        if ( part != NULL ) {
+            std::cout << "Using new ELI for " << name << std::endl;
+            return part->create(total_ranks, my_rank, verbosity);
+        }
+    }
 
     // Look for the partitioner
     std::string tmp = elemlib + "." + elem;
@@ -677,7 +688,7 @@ Factory::GetPartitioner(std::string name)
     }
 
     const ElementInfoPartitioner *ei = eii->second;
-    return ei->func;
+    return ei->func(total_ranks, my_rank, verbosity);
 }
 
 generateFunction

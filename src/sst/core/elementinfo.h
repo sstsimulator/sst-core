@@ -180,7 +180,22 @@ public:
     }
 };
 
- // class PythonModuleInfo {
+
+class PartitionerElementInfo {
+public:
+    virtual Partition::SSTPartitioner* create(RankInfo total_ranks, RankInfo my_rank, int verbosity) = 0;
+    
+    virtual const std::string getDescription() = 0;
+    virtual const std::string getName() = 0;
+    virtual const std::string getLibrary() = 0;
+
+    void print() {
+        std::cout << "    " << getName() << ": " << getDescription() << std::endl;
+    }
+
+};
+
+// class PythonModuleInfo {
  //     virtual const std::string getFoo() = 0;
 
  //     std::string 
@@ -193,6 +208,7 @@ public:
     std::map<std::string,ComponentElementInfo*> components;
     std::map<std::string,SubComponentElementInfo*> subcomponents;
     std::map<std::string,ModuleElementInfo*> modules;
+    std::map<std::string,PartitionerElementInfo*> partitioners;
     // std::vector<PythonModuleElementInfo*> python_modules;
     
     ComponentElementInfo* getComponent(std::string name) {
@@ -210,22 +226,39 @@ public:
         return modules[name];
     }
     
+    PartitionerElementInfo* getPartitioner(std::string name) {
+        if ( partitioners.count(name) == 0 ) return NULL;
+        return partitioners[name];
+    }
+    
     void print() {
         std::cout << "  Components: " << std::endl;
         for ( auto item : components ) {
             item.second->print();
             std::cout << std::endl;
         }
+        if ( components.size() == 0 ) std::cout << "    <none>" << std::endl;
+
         std::cout << "  SubComponents: " << std::endl;
         for ( auto item : subcomponents ) {
             item.second->print();
             std::cout << std::endl;
         }
+        if ( subcomponents.size() == 0 ) std::cout << "    <none>" << std::endl;
+
         std::cout << "  Modules: " << std::endl;
         for ( auto item : modules ) {
             item.second->print();
             std::cout << std::endl;
         }
+        if ( modules.size() == 0 ) std::cout << "    <none>" << std::endl;
+
+        std::cout << "  Partitioners: " << std::endl;
+        for ( auto item : partitioners ) {
+            item.second->print();
+            std::cout << std::endl;
+        }
+        if ( partitioners.size() == 0 ) std::cout << "    <none>" << std::endl;
     }
 };
 
@@ -263,10 +296,18 @@ public:
         return true;
     }
 
+    static bool addPartitioner(PartitionerElementInfo* part) {
+        LibraryInfo* library = getLibrary(part->getLibrary());
+        // library->subcomponents.push_back(comp);
+        library->partitioners[part->getName()] = part;
+        return true;
+    }
+
     static void printDatabase() {
         for ( auto item : libraries ) {
             std::cout << "library : " << item.first << std::endl;
             item.second->print();
+            std::cout << std::endl;
         }
     }
 
@@ -574,13 +615,34 @@ template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addM
 // template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addModule(new ModuleDoc<T>());
 
 
+/**************************************************************************
+  Classes to support partitioners
+**************************************************************************/
 
+template <class T>
+class PartitionerDoc : PartitionerElementInfo {
+private:
+    static const bool loaded;
+
+public:
+    
+    virtual Partition::SSTPartitioner* create(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
+        return new T(total_ranks,my_rank,verbosity);
+    }
+    
+    static const bool isLoaded() { return loaded; }
+    const std::string getDescription() { return T::ELI_getDescription(); }
+    const std::string getName() { return T::ELI_getName(); }
+    const std::string getLibrary() { return T::ELI_getLibrary(); }
+};
+
+template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase::addPartitioner(new PartitionerDoc<T>());
 
 /**************************************************************************
   Macros used by elements to add element documentation
 **************************************************************************/
 
-#define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat)  \
+#define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat)   \
     friend class ComponentDoc<cls>; \
     bool ELI_isLoaded() {                           \
         return ComponentDoc<cls>::isLoaded();     \
@@ -643,7 +705,7 @@ template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addM
 
 
 #define SST_ELI_REGISTER_MODULE(cls,lib,name,desc,interface) \
-    friend class SubComponentDoc<cls>; \
+    friend class ModuleDoc<cls>; \
     bool ELI_isLoaded() {                           \
       return ModuleDoc<cls>::isLoaded(); \
     } \
@@ -658,6 +720,21 @@ template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addM
     } \
     static const std::string ELI_getInterface() {  \
       return interface; \
+    }
+
+#define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,desc) \
+    friend class PartitionerDoc<cls>; \
+    bool ELI_isLoaded() { \
+      return PartitionerDoc<cls>::isLoaded(); \
+    } \
+    static const std::string ELI_getLibrary() { \
+      return lib; \
+    } \
+    static const std::string ELI_getName() { \
+      return name; \
+    } \
+    static const std::string ELI_getDescription() {  \
+      return desc; \
     }
 
 } //namespace SST

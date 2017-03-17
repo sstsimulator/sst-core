@@ -24,9 +24,7 @@ using namespace std;
 namespace SST {
 namespace Partition {
 
-    bool SimplePartitioner::initialized = SSTPartitioner::addPartitioner("simple",&SimplePartitioner::allocate,"Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.");
-
-    SimplePartitioner::SimplePartitioner(RankInfo total_ranks) :
+SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo my_rank, int verbosity) :
         SSTPartitioner(),
         world_size(total_ranks),
         total_parts(world_size.rank * world_size.thread)

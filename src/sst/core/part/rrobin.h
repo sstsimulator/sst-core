@@ -12,14 +12,18 @@
 #define SST_CORE_PART_RROBIN_H
 
 #include <sst/core/part/sstpart.h>
+#include <sst/core/elementinfo.h>
 
 namespace SST {
 namespace Partition {
 
 class SSTRoundRobinPartition : public SST::Partition::SSTPartitioner {
 
+private:
+    RankInfo world_size;
+
 public:
-    SSTRoundRobinPartition(RankInfo world_size);
+    SSTRoundRobinPartition(RankInfo world_size, RankInfo my_rank, int verbosity);
     
     /**
        Performs a partition of an SST simulation configuration
@@ -30,13 +34,9 @@ public:
     bool requiresConfigGraph() { return false; }
     bool spawnOnAllRanks() { return false; }
     
-    static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
-        return new SSTRoundRobinPartition(total_ranks);
-    }        
         
-private:
-    RankInfo world_size;
-    static bool initialized;
+    SST_ELI_REGISTER_PARTITIONER(SSTRoundRobinPartition,"sst","roundrobin","Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.")
+
 };
 
 } // namespace Partition

@@ -16,11 +16,9 @@
 
 using namespace std;
 
-bool SSTSinglePartition::initialized = SSTPartitioner::addPartitioner("single",&SSTSinglePartition::allocate, "Allocates all components to rank 0.  Automatically selected for serial jobs.");
-
 using namespace SST::Partition;
 
-SSTSinglePartition::SSTSinglePartition() {}
+SSTSinglePartition::SSTSinglePartition(RankInfo total_ranks, RankInfo my_rank, int verbosity) {}
 
 void SSTSinglePartition::performPartition(PartitionGraph* graph) {
 

@@ -397,7 +397,13 @@ bool Config::setHeartbeat(const std::string &arg) { heartbeatPeriod = arg;  retu
 bool Config::setTimebase(const std::string &arg) { timeBase = arg;  return true; }
 
 /* TODO: Error checking */
-bool Config::setPartitioner(const std::string &arg) { partitioner = arg; return true; }
+bool Config::setPartitioner(const std::string &arg) {
+    partitioner = arg;
+    if ( partitioner.find('.') == partitioner.npos ) {
+        partitioner = "sst." + partitioner;
+    }
+    return true;
+}
 /* TODO: Error checking */
 bool Config::setGenerator(const std::string &arg) { generator = arg; return true; }
 

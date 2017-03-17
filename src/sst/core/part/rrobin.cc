@@ -21,11 +21,9 @@ using namespace std;
 namespace SST {
 namespace Partition {
 
-bool SSTRoundRobinPartition::initialized = SSTPartitioner::addPartitioner("roundrobin",&SSTRoundRobinPartition::allocate, "Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.");
-
-SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo mpiranks) :
+SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo my_rank, int verbosity) :
     SSTPartitioner(),
-    world_size(mpiranks)
+    world_size(world_size)
 {
 }
 
