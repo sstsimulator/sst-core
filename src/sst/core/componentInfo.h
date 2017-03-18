@@ -18,63 +18,76 @@
 #include <string>
 #include <functional>
 
-/* #include <sst/core/clock.h> */
-/* #include <sst/core/oneshot.h> */
-/* #include <sst/core/event.h> */
-/* //#include <sst/core/params.h> */
-/* //#include <sst/core/link.h> */
-/* //#include <sst/core/timeConverter.h> */
-/* #include "sst/core/simulation.h" */
-/* #include "sst/core/unitAlgebra.h" */
-/* #include "sst/core/statapi/statbase.h" */
+#include <sst/core/configGraph.h>
+
 
 namespace SST {
 
 class LinkMap;
-class Component;
-    
+class BaseComponent;
+
+class ComponentInfoMap;
+
 struct ComponentInfo {
 
-    friend class Simulation;
-    
+public:
+    typedef std::vector<std::string>      statEnableList_t;        /*!< List of Enabled Statistics */
+    typedef std::vector<Params>           statParamsList_t;        /*!< List of Enabled Statistics Parameters */
+
 private:
+    friend class Simulation;
+    friend class BaseComponent;
+    friend class ComponentInfoMap;
     const ComponentId_t id;
     const std::string name;
     const std::string type;
     LinkMap* link_map;
-    Component* component;
+    BaseComponent* component;
+    std::map<std::string, ComponentInfo> subComponents;
+    const Params *params;
 
-    inline void setComponent(Component* comp) { component = comp; }
+    statEnableList_t * enabledStats;
+    statParamsList_t * statParams;
 
-    
+    inline void setComponent(BaseComponent* comp) { component = comp; }
+
+    /* Lookup Key style constructor */
+    ComponentInfo(ComponentId_t id, const std::string &name);
+    void finalizeLinkConfiguration();
+
 public:
-    ComponentInfo(ComponentId_t id, std::string name, std::string type, LinkMap* link_map) :
-        id(id),
-        name(name),
-        type(type),
-        link_map(link_map),
-        component(NULL)
-    {}
+    /* Old ELI Style subcomponent constructor */
+    ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent);
 
+    /* New ELI Style */
+    ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map);
+    ComponentInfo(ComponentInfo &&o);
     ~ComponentInfo();
 
-    // ComponentInfo() :
-    //     id(0),
-    //     name(""),
-    //     type(""),
-    //     link_map(NULL)
-    // {}
-
     inline ComponentId_t getID() const { return id; }
-    
+
     inline const std::string& getName() const { return name; }
 
     inline const std::string& getType() const { return type; }
 
-    inline Component* getComponent() const { return component; }
-    
+    inline BaseComponent* getComponent() const { return component; }
+
     inline LinkMap* getLinkMap() const { return link_map; }
 
+    inline const Params* getParams() const { return params; }
+
+    inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
+
+    void setStatEnablement(statEnableList_t * enabled, statParamsList_t * params) {
+        enabledStats = enabled;
+        statParams = params;
+    }
+
+    ComponentInfo* findSubComponent(ComponentId_t id);
+    std::vector<LinkId_t> getAllLinkIds() const;
+
+    statEnableList_t* getStatEnableList() { return enabledStats; }
+    statParamsList_t* getStatParams() { return statParams; }
 
     struct HashName {
         size_t operator() (const ComponentInfo* info) const {
@@ -101,56 +114,49 @@ public:
             return lhs->id == rhs->id;
         }
     };
-    
 };
 
 
 class ComponentInfoMap {
 private:
-    std::unordered_set<ComponentInfo*, ComponentInfo::HashName, ComponentInfo::EqualsName> dataByName;
     std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID> dataByID;
 
 public:
-    typedef std::unordered_set<ComponentInfo*, ComponentInfo::HashName, ComponentInfo::EqualsName>::const_iterator const_iterator;
+    typedef std::unordered_set<ComponentInfo*, ComponentInfo::HashID, ComponentInfo::EqualsID>::const_iterator const_iterator;
 
     const_iterator begin() const {
-        return dataByName.begin();
+        return dataByID.begin();
     }
 
     const_iterator end() const {
-        return dataByName.end();
+        return dataByID.end();
     }
 
     ComponentInfoMap() {}
 
     void insert(ComponentInfo* info) {
-        dataByName.insert(info);
         dataByID.insert(info);
     }
 
-    ComponentInfo* getByName(const std::string& key) const {
-        ComponentInfo infoKey(0, key, "", NULL);
-        auto value = dataByName.find(&infoKey);
-        if ( value == dataByName.end() ) return NULL;
-        return *value;
-    }
-
     ComponentInfo* getByID(const ComponentId_t key) const {
-        ComponentInfo infoKey(key, "", "", NULL);
+        ComponentInfo infoKey(COMPONENT_ID_MASK(key), "");
         auto value = dataByID.find(&infoKey);
         if ( value == dataByID.end() ) return NULL;
+        if ( SUBCOMPONENT_ID_MASK(key) != 0 ) {
+            // Looking for a subcomponent
+            return (*value)->findSubComponent(key);
+        }
         return *value;
     }
 
     bool empty() {
-        return dataByName.empty();
+        return dataByID.empty();
     }
 
     void clear() {
-        for ( auto i : dataByName ) {
-            delete i; 
+        for ( auto i : dataByID ) {
+            delete i;
         }
-        dataByName.clear();
         dataByID.clear();
     }
 };

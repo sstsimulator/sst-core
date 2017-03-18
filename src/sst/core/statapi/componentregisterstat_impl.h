@@ -24,8 +24,8 @@
     bool                            statGood = true;
     bool                            nameFound = false;
     StatisticBase::StatMode_t       statCollectionMode = StatisticBase::STAT_MODE_COUNT;
-    Simulation::statEnableList_t*   statEnableList;
-    Simulation::statParamsList_t*   statParamsList;
+    ComponentInfo::statEnableList_t*   statEnableList;
+    ComponentInfo::statParamsList_t*   statParamsList;
     Output                          out = Simulation::getSimulation()->getSimulationOutput();
     UnitAlgebra                     collectionRate;
     UnitAlgebra                     startAtTime;
@@ -38,7 +38,7 @@
     Statistic<T>*                   statistic = NULL;    
     
     // Check to see if the Statistic is previously registered with the Statistics Engine
-    StatisticBase* prevStat = Simulation::getSimulation()->getStatisticsProcessingEngine()->isStatisticRegisteredWithEngine<T>(getName(), getId(), statName, statSubId);
+    StatisticBase* prevStat = Simulation::getSimulation()->getStatisticsProcessingEngine()->isStatisticRegisteredWithEngine<T>(getName(), my_info->getID(), statName, statSubId);
     if (NULL != prevStat) {
         // Dynamic cast the base stat to the expected type
         return dynamic_cast<Statistic<T>*>(prevStat);
@@ -53,6 +53,12 @@
         fprintf(stderr, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
         exit(1);
     }
+
+    /* Create the statistic in the "owning" component.  That should just be us, 
+     * in the case of 'modern' subcomponents.  For legacy subcomponents, that will
+     * be the owning component.  We've got the ID of that component in 'my_info->getID()'
+     */
+    BaseComponent *owner = this->getStatisticOwner();
     
     // // Verify here that name of the stat is one of the registered
     // // names of the component's ElementInfoStatistic.  
@@ -62,8 +68,8 @@
     // }
 
     // Get Component Statistic Information from the ConfigGraph data
-    statEnableList = Simulation::getSimulation()->getComponentStatisticEnableList(getId());
-    statParamsList = Simulation::getSimulation()->getComponentStatisticParamsList(getId());
+    statEnableList = my_info->getStatEnableList();
+    statParamsList = my_info->getStatParams();
     
     // Check each entry in the StatEnableList (from the ConfigGraph via the 
     // Python File) to see if this Statistic is enabled, then check any of 
@@ -143,7 +149,7 @@
 
     if (true == statGood) {
         // Instantiate the Statistic here defined by the type here
-        statistic = CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
+        statistic = CreateStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             fprintf(stderr, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
             exit(1);
@@ -216,7 +222,7 @@
         
         // Instantiate the Statistic here defined by the type here
         statTypeParam = "sst.NullStatistic";
-        statistic = CreateStatistic<T>(this, statTypeParam, statName, statSubId, statParams);
+        statistic = CreateStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             statGood = false;
             fprintf(stderr, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
@@ -225,7 +231,7 @@
     }
 
     // Register the new Statistic with the Statistic Engine
-    Simulation::getSimulation()->getStatisticsProcessingEngine()->registerStatisticWithEngine<T>(getId(), statistic);
+    Simulation::getSimulation()->getStatisticsProcessingEngine()->registerStatisticWithEngine<T>(my_info->getID(), statistic);
     return statistic;
 //}
 

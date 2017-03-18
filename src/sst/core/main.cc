@@ -11,9 +11,7 @@
 
 
 #include <sst_config.h>
-#ifdef SST_CONFIG_HAVE_PYTHON
 #include <Python.h>
-#endif
 
 #ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
@@ -31,6 +29,7 @@
 #include <sst/core/configGraph.h>
 #include <sst/core/factory.h>
 #include <sst/core/rankInfo.h>
+#include <sst/core/threadsafe.h>
 #include <sst/core/simulation.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/timeVortex.h>
@@ -45,7 +44,6 @@
 #include <sst/core/iouse.h>
 
 #include <sys/resource.h>
-#include <sst/core/interfaces/simpleNetwork.h>
 
 #include <sst/core/objectComms.h>
 
@@ -544,8 +542,8 @@ main(int argc, char *argv[])
                     iter != links.end(); ++iter ) {
                 ConfigLink &clink = *iter;
                 RankInfo rank[2];
-                rank[0] = comps[clink.component[0]].rank;
-                rank[1] = comps[clink.component[1]].rank;
+                rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])].rank;
+                rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])].rank;
                 if ( rank[0].rank == rank[1].rank ) continue;
                 if ( clink.getMinLatency() < min_part ) {
                     min_part = clink.getMinLatency();
@@ -681,10 +679,12 @@ main(int argc, char *argv[])
     ///// End Set up StatisticOutput /////
 
     ////// Create Simulation //////
+    Core::ThreadSafe::Barrier mainBarrier(world_size.thread);
+
     Simulation::factory = factory;
     Simulation::statisticsOutput = so;
     Simulation::sim_output = g_output;
-    Simulation::barrier.resize(world_size.thread);
+    Simulation::resizeBarriers(world_size.thread);
     #ifdef USE_MEMPOOL
     /* Estimate that we won't have more than 128 sizes of events */
     Activity::memPools.reserve(world_size.thread * 128);
@@ -705,12 +705,12 @@ main(int argc, char *argv[])
 
     Output::setThreadID(std::this_thread::get_id(), 0);
     for ( uint32_t i = 1 ; i < world_size.thread ; i++ ) {
-        threads[i] = std::thread(start_simulation, i, std::ref(threadInfo[i]), std::ref(Simulation::barrier));
+        threads[i] = std::thread(start_simulation, i, std::ref(threadInfo[i]), std::ref(mainBarrier));
         Output::setThreadID(threads[i].get_id(), i);
     }
 
 
-    start_simulation(0, threadInfo[0], Simulation::barrier);
+    start_simulation(0, threadInfo[0], mainBarrier);
     for ( uint32_t i = 1 ; i < world_size.thread ; i++ ) {
         threads[i].join();
     }

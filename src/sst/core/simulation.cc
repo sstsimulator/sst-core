@@ -248,8 +248,8 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
         for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
             ConfigLink &clink = *iter;
             RankInfo rank[2];
-            rank[0] = comps[clink.component[0]].rank;
-            rank[1] = comps[clink.component[1]].rank;
+            rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])].rank;
+            rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])].rank;
             // We only care about links that are on my rank, but
             // different threads
 
@@ -286,7 +286,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
     // Create the SyncManager for this rank.  It gets created even if
     // we are single rank/single thread because it also manages the
     // Exit and Heartbeat actions.
-    syncManager = new SyncManager(my_rank, num_ranks, barrier, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
+    syncManager = new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.
@@ -314,69 +314,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     // Params objects should now start verifying parameters
     Params::enableVerify();
 
-    // Need to create the sync objects.  There are two versions, one
-    // that synchronizes between threads and one that synchronizes
-    // between MPI ranks.
 
-#if 0    
-    if ( num_ranks.rank > 1 ) {        
-        // For now, we are doing performWireUp serially, if this ever
-        // changes, then need to serialize the creation of the sync
-        // objects.
-        if ( my_rank.thread == 0 ) {
-            sync = new SyncD(barrier);
-            sync->setExit(m_exit);
-            sync->setMaxPeriod( minPartTC = minPartToTC(min_part) );
-            // Action* ms = sync->getMasterAction();
-            // insertActivity(minPartTC->getFactor(), ms);
-        }
-        else {
-            Action* ss = sync->getSlaveAction();
-            // insertActivity(minPartTC->getFactor(), ss);
-        }
-        
-        
-    }
-
-    // Need to determine the lookahead for the thread synchronization
-
-    if ( num_ranks.thread > 1 ) {
-        // Need to determine the lookahead for the thread synchronization
-        SimTime_t look_ahead = 0xffffffffffffffffl;
-        ConfigComponentMap_t comps = graph.getComponentMap();
-        ConfigLinkMap_t links = graph.getLinkMap();
-        // Find the minimum latency across a partition
-        for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
-            ConfigLink &clink = *iter;
-            RankInfo rank[2];
-            rank[0] = comps[clink.component[0]].rank;
-            rank[1] = comps[clink.component[1]].rank;
-            // We only care about links that are on the same rank, but
-            // different threads
-            if ( rank[0] == rank[1] ) continue;
-            if ( rank[0].rank != rank[1].rank ) continue;
-            if ( clink.getMinLatency() < look_ahead ) {
-                look_ahead = clink.getMinLatency();
-            }
-        }
-
-
-        // Fix for case that probably doesn't matter in practice, but
-        // does come up during some specific testing.  If there are no
-        // links that cross the boundary and we're a single rank job,
-        // we need to put in a sync interval to look for the exit
-        // conditions being met.
-        if ( look_ahead == MAX_SIMTIME_T ) {
-            // std::cout << "No links cross thread boundary" << std::endl;
-        }
-        if ( look_ahead == MAX_SIMTIME_T && num_ranks.rank == 1) {
-            // std::cout << "No links cross thread boundary" << std::endl;
-            look_ahead = timeLord.getSimCycles("1us","");
-        }
-        threadSync->setMaxPeriod( threadMinPartTC = minPartToTC(look_ahead) );
-    }
-#endif
-    
     // First, go through all the components that are in this rank and
     // create the ComponentInfo object for it
     // Now, build all the components
@@ -385,12 +323,11 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     {
         ConfigComponent* ccomp = &(*iter);
         if ( ccomp->rank == myRank ) {
-            // compInfoMap[ccomp->id] = ComponentInfo(ccomp->name, ccomp->type, new LinkMap());
-            compInfoMap.insert(new ComponentInfo(ccomp->id, ccomp->name, ccomp->type, new LinkMap()));
+            compInfoMap.insert(new ComponentInfo(ccomp, new LinkMap()));
         }
     }
-    
-    
+
+
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.
@@ -399,8 +336,8 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     {
         ConfigLink &clink = *iter;
         RankInfo rank[2];
-        rank[0] = graph.comps[clink.component[0]].rank;
-        rank[1] = graph.comps[clink.component[1]].rank;
+        rank[0] = graph.comps[COMPONENT_ID_MASK(clink.component[0])].rank;
+        rank[1] = graph.comps[COMPONENT_ID_MASK(clink.component[1])].rank;
 
         if ( rank[0] != myRank && rank[1] != myRank ) {
             // Nothing to be done
@@ -469,85 +406,6 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
             lp.getRight()->initQueue = sync_q;
         }
 
-/*        
-        // Same rank, different thread
-        else if ( rank[0].rank == rank[1].rank ) {
-            // This is same MPI rank, different thread
-            int local, remote;
-            if ( rank[0] == myRank ) {
-                local = 0;
-                remote = 1;
-            }
-            else {
-                local = 1;
-                remote = 0;
-            }
-
-            // Create a LinkPair to represent this link
-            LinkPair lp(clink.id);
-
-            lp.getLeft()->setLatency(clink.latency[local]);
-            lp.getRight()->setLatency(0);
-            lp.getRight()->setDefaultTimeBase(minPartToTC(1));
-
-
-            // Add this link to the appropriate LinkMap for the local component
-            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
-            if ( cinfo == NULL ) {
-                // This shouldn't happen and is an error
-                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
-            }
-            cinfo->getLinkMap()->insertLink(clink.port[local],lp.getLeft());
-
-            // Need to register with both of the syncs (the ones for
-            // both local and remote thread)
-
-            // For local, just register link with threadSync object so
-            // it can map link_id to link*
-            threadSync->registerLink(clink.id, lp.getRight());
-
-            // Fpor remote thread, I get the proper queue and finish
-            // setting up the right link
-            ActivityQueue* sync_q = instanceVec[rank[remote].thread]->threadSync->getQueueForThread(rank[local].thread);
-            
-            lp.getRight()->configuredQueue = sync_q;
-            lp.getRight()->initQueue = sync_q;
-        }
-        // Different rank
-        else {
-            int local, remote;
-            if ( rank[0] == myRank ) {
-                local = 0;
-                remote = 1;
-            }
-            else {
-                local = 1;
-                remote = 0;
-            }
-
-            // Create a LinkPair to represent this link
-            LinkPair lp(clink.id);
-
-            lp.getLeft()->setLatency(clink.latency[local]);
-            lp.getRight()->setLatency(0);
-            lp.getRight()->setDefaultTimeBase(minPartToTC(1));
-
-
-            // Add this link to the appropriate LinkMap for the local component
-            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
-            if ( cinfo == NULL ) {
-                // This shouldn't happen and is an error
-                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
-            }
-            cinfo->getLinkMap()->insertLink(clink.port[local],lp.getLeft());
-
-            // For the remote side, register with sync object
-            ActivityQueue* sync_q = sync->registerLink(rank[remote],rank[local],clink.id,lp.getRight());
-            // lp.getRight()->recvQueue = sync_q;
-            lp.getRight()->configuredQueue = sync_q;
-            lp.getRight()->initQueue = sync_q;
-        }
-*/
     }
 
     // Done with that edge, delete it.
@@ -560,36 +418,22 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 
         if ( ccomp->rank == myRank ) {
             Component* tmp;
-            //             _SIM_DBG("creating component: name=\"%s\" type=\"%s\" id=%d\n",
-            // 		     name.c_str(), sdl_c->type().c_str(), (int)id );
 
             // Check to make sure there are any entries in the component's LinkMap
-            if ( compInfoMap.getByID(ccomp->id)->getLinkMap()->empty() ) {
+            // TODO:  IS this still a valid warning?  Subcomponents may be the link owners
+            ComponentInfo *cinfo = compInfoMap.getByID(ccomp->id);
+            if ( cinfo->getAllLinkIds().empty() ) {
                 printf("WARNING: Building component \"%s\" with no links assigned.\n",ccomp->name.c_str());
             }
 
-            // Save off what statistics can be enabled before instantiating the component
-            // This allows the component to register its statistics in its constructor.
-            statisticEnableMap[ccomp->id] = &(ccomp->enabledStatistics);
-            statisticParamsMap[ccomp->id] = &(ccomp->enabledStatParams);
-            
-            // compIdMap[ccomp->id] = ccomp->name;
-            tmp = createComponent( ccomp->id, ccomp->type,
-                    ccomp->params );
-            // compMap[ccomp->name] = tmp;
-            compInfoMap.getByName(ccomp->name)->setComponent(tmp);
-            
-            // After component is created, clear out the statisticEnableMap so 
-            // we dont eat up lots of memory
-            statisticEnableMap.erase(ccomp->id);
-            statisticParamsMap.erase(ccomp->id);
+            tmp = createComponent( ccomp->id, ccomp->type, ccomp->params );
+
+            cinfo->setComponent(tmp);
         }
-    } // end for all vertex    
+    } // end for all vertex
     // Done with verticies, delete them;
     /*  TODO:  THREADING:  Clear only once everybody is done.
     graph.comps.clear();
-    statisticEnableMap.clear();
-    statisticParamsMap.clear();
     */
     wireUpFinished = true;
     // std::cout << "Done with performWireUp" << std::endl;
@@ -599,23 +443,23 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 void Simulation::initialize() {
     // TraceFunction trace(CALL_INFO_LONG);    
     bool done = false;
-    barrier.wait();
+    initBarrier.wait();
     if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
 
     do {
 
-        barrier.wait();
+        initBarrier.wait();
         if ( my_rank.thread == 0 ) init_msg_count = 0;
-        barrier.wait();
+        initBarrier.wait();
         
         
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
             (*iter)->getComponent()->init(init_phase);
         }
 
-        barrier.wait();
+        initBarrier.wait();
         syncManager->exchangeLinkInitData(init_msg_count);
-        barrier.wait();
+        initBarrier.wait();
         // We're done if no new messages were sent
         if ( init_msg_count == 0 ) done = true;
         if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
@@ -624,12 +468,18 @@ void Simulation::initialize() {
     } while ( !done);
 
     // Walk through all the links and call finalizeConfiguration
+
+    for ( auto &i : compInfoMap ) {
+        i->finalizeLinkConfiguration();
+    }
+#if 0
     for ( auto i = compInfoMap.begin(); i != compInfoMap.end(); ++i) {
         std::map<std::string,Link*>& map = (*i)->getLinkMap()->getLinkMap();
         for ( std::map<std::string,Link*>::iterator j = map.begin(); j != map.end(); ++j ) {
             (*j).second->finalizeConfiguration();
         }
     }
+#endif
 #if 0
     if ( num_ranks.rank > 1 && my_rank.thread == 0 ) {
         sync->finalizeLinkConfigurations();
@@ -648,13 +498,13 @@ void Simulation::setup() {
     // TraceFunction(CALL_INFO_LONG);    
     // Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
 
-    barrier.wait();
+    setupBarrier.wait();
     
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
         (*iter)->getComponent()->setup();
     }
 
-    barrier.wait();
+    setupBarrier.wait();
 
     /* Enforce finalization of shared regions */
     if ( my_rank.thread == 0 ) sharedRegionManager->updateState(true);
@@ -688,13 +538,13 @@ void Simulation::run() {
     // Tell the Statistics Engine that the simulation is beginning
     statisticsEngine->startOfSimulation();
 
-    // wait_my_turn_start(barrier, my_rank.thread, num_ranks.thread);
+    // wait_my_turn_start(runBarrier, my_rank.thread, num_ranks.thread);
     // sim_output.output("%d: Start main event loop\n",my_rank.thread);
     std::string header = SST::to_string(my_rank.rank);
     header += ", ";
     header += SST::to_string(my_rank.thread);
     header += ":  ";
-    // wait_my_turn_end(barrier, my_rank.thread, num_ranks.thread);
+    // wait_my_turn_end(runBarrier, my_rank.thread, num_ranks.thread);
     while( LIKELY( ! endSim ) ) {
         currentSimCycle = timeVortex->front()->getDeliveryTime();
         currentPriority = timeVortex->front()->getPriority();
@@ -727,7 +577,7 @@ void Simulation::run() {
     ThreadSync::disable();
 
     // fprintf(stderr, "thread %u waiting on runLoop finish barrier\n", my_rank.thread);
-    barrier.wait();  // TODO<- Is this needed?
+    runBarrier.wait();  // TODO<- Is this needed?
     // fprintf(stderr, "thread %u released from runLoop finish barrier\n", my_rank.thread);
     if (num_ranks.rank != 1 && num_ranks.thread == 0) delete m_exit;
 }
@@ -757,13 +607,13 @@ void Simulation::endSimulation(SimTime_t end)
 
     // This is a collective operation across threads.  All threads
     // must enter and set flag before any will exit.
-    // exit_barrier.wait();
+    // exitBarrier.wait();
 
     // if ( my_rank.thread == 1 ) sim_output.fatal(CALL_INFO,-1,"endSimulation called with end = %llu\n", end);
     endSimCycle = end;
     endSim = true;
 
-    exit_barrier.wait();
+    exitBarrier.wait();
 
 
 }
@@ -979,14 +829,6 @@ void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int tota
     }
 }
 
-// Uses Simulation's barrier
-void wait_my_turn_start() {
-    Core::ThreadSafe::Barrier& barrier = Simulation::getThreadBarrier();
-    int thread = Simulation::getSimulation()->my_rank.thread;
-    int total_threads = Simulation::getSimulation()->num_ranks.thread;
-    wait_my_turn_start(barrier, thread, total_threads);
-}
-
 void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads) {
 
     // Wait for all the threads after me to finish
@@ -997,12 +839,13 @@ void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_
     barrier.wait();
 }
 
-// Uses Simulation's barrier
-void wait_my_turn_end() {
-    Core::ThreadSafe::Barrier& barrier = Simulation::getThreadBarrier();
-    int thread = Simulation::getSimulation()->my_rank.thread;
-    int total_threads = Simulation::getSimulation()->num_ranks.thread;
-    wait_my_turn_end(barrier, thread, total_threads);
+
+
+void Simulation::resizeBarriers(uint32_t nthr) {
+    initBarrier.resize(nthr);
+    setupBarrier.resize(nthr);
+    runBarrier.resize(nthr);
+    exitBarrier.resize(nthr);
 }
 
 
@@ -1011,8 +854,10 @@ Factory* Simulation::factory;
 TimeLord Simulation::timeLord;
 Statistics::StatisticOutput* Simulation::statisticsOutput;
 Output Simulation::sim_output;
-Core::ThreadSafe::Barrier Simulation::barrier;
-Core::ThreadSafe::Barrier Simulation::exit_barrier;
+Core::ThreadSafe::Barrier Simulation::initBarrier;
+Core::ThreadSafe::Barrier Simulation::setupBarrier;
+Core::ThreadSafe::Barrier Simulation::runBarrier;
+Core::ThreadSafe::Barrier Simulation::exitBarrier;
 std::mutex Simulation::simulationMutex;
 TimeConverter* Simulation::minPartTC = NULL;
 SimTime_t Simulation::minPart;

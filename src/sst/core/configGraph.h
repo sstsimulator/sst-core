@@ -136,20 +136,29 @@ public:
     RankInfo                      rank;              /*!< Parallel Rank for this component */
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
-    bool                          isIntrospector;    /*!< Is this an Introspector? */
     std::vector<std::string>      enabledStatistics; /*!< List of statistics to be enabled */
     std::vector<Params>           enabledStatParams; /*!< List of parameters for enabled statistics */
+    std::vector<std::pair<std::string, ConfigComponent> > subComponents; /*!< List of subcomponents */
 
     inline const ComponentId_t& key()const { return id; }
-    
+
     /** Print Component information */
     void print(std::ostream &os) const;
 
     ConfigComponent cloneWithoutLinks() const;
     ConfigComponent cloneWithoutLinksOrParams() const;
-    
+
     ~ConfigComponent() {}
     ConfigComponent() {} // for serialization
+
+    void setRank(RankInfo r);
+    void setWeight(double w);
+    void addParameter(const std::string &key, const std::string &value, bool overwrite);
+    ConfigComponent* addSubComponent(ComponentId_t, const std::string &name, const std::string &type);
+    ConfigComponent* findSubComponent(ComponentId_t);
+    void enableStatistic(const std::string &statisticName);
+    void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value);
+    std::vector<LinkId_t> allLinks() const;
 
     void serialize_order(SST::Core::Serialization::serializer &ser) {
         ser & id;
@@ -160,9 +169,9 @@ public:
         ser & rank.thread;
         ser & links;
         ser & params;
-        ser & isIntrospector;
         ser & enabledStatistics;
         ser & enabledStatParams;
+        ser & subComponents;
     }
 
     ImplementSerializable(SST::ConfigComponent)
@@ -171,13 +180,12 @@ private:
 
     friend class ConfigGraph;
     /** Create a new Component */
-    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank, bool isIntrospector) :
+    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank) :
         id(id),
         name(name),
         type(type),
         weight(weight),
-        rank(rank),
-        isIntrospector(isIntrospector)
+        rank(rank)
     { }
 
 
@@ -212,7 +220,6 @@ public:
     ConfigGraph() {
         links.clear();
         comps.clear();
-        nextCompID = 0;
         // Init the statistic output settings
         statOutputName = STATISTICSDEFAULTOUTPUTNAME;
         statLoadLevel = STATISTICSDEFAULTLOADLEVEL;
@@ -230,25 +237,16 @@ public:
 
     // API for programatic initialization
     /** Create a new component with weight and rank */
-    ComponentId_t addComponent(std::string name, std::string type, float weight, RankInfo rank);
+    ComponentId_t addComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank);
     /** Create a new component */
-    ComponentId_t addComponent(std::string name, std::string type);
+    ComponentId_t addComponent(ComponentId_t id, std::string name, std::string type);
 
-    /** Set on which rank a Component will exist (partitioning) */
-    void setComponentRank(ComponentId_t comp_id, RankInfo rank);
-    /** Set the weight of a Component (partitioning) */
-    void setComponentWeight(ComponentId_t comp_id, float weight);
-
-    /** Add a set of Parameters to a component */
-    void addParams(ComponentId_t comp_id, Params& p);
-    /** Add a single parameter to a component */
-    void addParameter(ComponentId_t comp_id, std::string key, std::string value, bool overwrite = false);
 
     /** Set the statistic ouput module */
-    void setStatisticOutput(const char* name);
-    
+    void setStatisticOutput(const std::string &name);
+
     /** Add parameter to the statistic output module */
-    void addStatisticOutputParameter(const char* param, const char* value);
+    void addStatisticOutputParameter(const std::string &param, const std::string &value);
 
     /** Set a set of parameter to the statistic output module */
     void setStatisticOutputParams(const Params& p);
@@ -257,24 +255,19 @@ public:
     void setStatisticLoadLevel(uint8_t loadLevel);
 
     /** Enable a Statistics assigned to a component */
-    void enableComponentStatistic(ComponentId_t comp_id, std::string statisticName);
     void enableStatisticForComponentName(std::string ComponentName, std::string statisticName);
     void enableStatisticForComponentType(std::string ComponentType, std::string statisticName);
 
     /** Add Parameters for a Statistic */
-    void addComponentStatisticParameter(ComponentId_t comp_id, std::string statisticName, const char* param, const char* value);
-    void addStatisticParameterForComponentName(std::string ComponentName, std::string statisticName, const char* param, const char* value);
-    void addStatisticParameterForComponentType(std::string ComponentType, std::string statisticName, const char* param, const char* value);
-    
+    void addStatisticParameterForComponentName(const std::string &ComponentName, const std::string &statisticName, const std::string &param, const std::string &value);
+    void addStatisticParameterForComponentType(const std::string &ComponentType, const std::string &statisticName, const std::string &param, const std::string &value);
+
     const std::string& getStatOutput() const {return statOutputName;}
     const Params&      getStatOutputParams() const {return statOutputParams;}
     long               getStatLoadLevel() const {return statLoadLevel;}
-    
+
     /** Add a Link to a Component on a given Port */
     void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str, bool no_cut = false);
-
-    /** Create a new Introspector */
-    ComponentId_t addIntrospector(std::string name, std::string type);
 
     /** Perform any post-creation cleanup processes */
     void postCreationCleanup();
@@ -287,6 +280,9 @@ public:
     ConfigComponentMap_t& getComponentMap() {
         return comps;
     }
+
+    ConfigComponent* findComponent(ComponentId_t);
+
     /** Return the map of links */
     ConfigLinkMap_t& getLinkMap() {
         return links;
@@ -308,7 +304,7 @@ public:
 		ser & statOutputParams;
 		ser & statLoadLevel;
 	}
-    
+
 private:
     friend class Simulation;
     friend class SSTSDLModelDefinition;
@@ -318,9 +314,7 @@ private:
 
     // temporary as a test
     std::map<std::string,LinkId_t> link_names;
-    
-    ComponentId_t  nextCompID;
-    
+
     std::string statOutputName;
     Params      statOutputParams;
     uint8_t     statLoadLevel;
@@ -329,7 +323,7 @@ private:
 
 };
 
-    
+
 class PartitionComponent {
 public:
     ComponentId_t             id;

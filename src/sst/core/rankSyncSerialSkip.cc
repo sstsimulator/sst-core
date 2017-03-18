@@ -32,132 +32,12 @@ namespace SST {
 // Static Data Members
 SimTime_t RankSyncSerialSkip::myNextSyncTime = 0;
 
-#if 0
-/**
-   Class that implements the slave functionality for rank syncs.
- */
-class SyncSlave : public Action {
-public:
-    SyncSlave(Core::ThreadSafe::Barrier&, TimeConverter* period);
-    virtual ~SyncSlave();
-    void execute();
-    void print(const std::string& header, Output &out) const;
 
-private:
-    Core::ThreadSafe::Barrier& barrier;
-    TimeConverter* period;
-    double totalWait;
-};
-
-SyncSlave::SyncSlave(Core::ThreadSafe::Barrier& barrier, TimeConverter* period) :
-    Action(),
-    barrier(barrier),
-    period(period),
-    totalWait(0.0)
-{
-    setPriority(SYNCPRIORITY);
-}
-
-SyncSlave::~SyncSlave()
-{
-    if ( totalWait > 0.0 )
-        Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "SyncSlave total Barrier wait time: %lg sec\n", totalWait);
-}
-
-void SyncSlave::execute() {
-    totalWait += barrier.wait();
-    totalWait += barrier.wait();
-    SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
-    Simulation::getSimulation()->insertActivity( next, this );
-}
-
-void
-SyncSlave::print(const std::string& header, Output &out) const
-{
-    out.output("%s SyncSlave with period %" PRIu64 " to be delivered at %" PRIu64
-               " with priority %d\n",
-               header.c_str(), period->getFactor(), getDeliveryTime(), getPriority());
-}
-
-/**
-   Class that implements the master functionality for rank syncs.
- */
-class SyncMaster : public Action {
-public:
-    SyncMaster(RankSyncSerialSkip* sync, Core::ThreadSafe::Barrier&, TimeConverter* period);
-    virtual ~SyncMaster();
-    void execute();
-    void print(const std::string& header, Output &out) const;
-
-private:
-    RankSyncSerialSkip* sync;
-    Core::ThreadSafe::Barrier& barrier;
-    TimeConverter* period;
-    double totalWait;
-};
-
-SyncMaster::SyncMaster(RankSyncSerialSkip* sync, Core::ThreadSafe::Barrier& barrier, TimeConverter* period) :
-    Action(),
-    sync(sync),
-    barrier(barrier),
-    period(period),
-    totalWait(0.0)
-{
-    setPriority(SYNCPRIORITY);
-}
-
-SyncMaster::~SyncMaster()
-{
-    if ( totalWait > 0.0 )
-        Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "SyncSlave total Barrier wait time: %lg sec\n", totalWait);
-}
-
-
-void SyncMaster::execute() {
-    totalWait += barrier.wait();
-    sync->execute();
-    totalWait += barrier.wait();
-    SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
-    Simulation::getSimulation()->insertActivity( next, this );
-}
-
-void
-SyncMaster::print(const std::string& header, Output &out) const
-{
-    out.output("%s SyncMaster with period %" PRIu64 " to be delivered at %" PRIu64
-               " with priority %d\n",
-               header.c_str(), period->getFactor(), getDeliveryTime(), getPriority());
-}
-#endif
-
-///// RankSyncSerialSkip class /////
-
-#if 0
-Action*
-RankSyncSerialSkip::getSlaveAction()
-{
-    if ( max_period == NULL ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,1,"Call to getSlaveAction() before call to setMaxPeriod().  Exiting...\n");
-    }
-    return new SyncSlave(barrier,max_period);
-}
-
-Action*
-RankSyncSerialSkip::getMasterAction()
-{
-    if ( max_period == NULL ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,1,"Call to getMasterAction() before call to setMaxPeriod().  Exiting...\n");
-    }
-    return new SyncMaster(this,barrier,max_period);
-}
-#endif
-    
-RankSyncSerialSkip::RankSyncSerialSkip(Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC) :
+RankSyncSerialSkip::RankSyncSerialSkip(TimeConverter* minPartTC) :
     NewRankSync(),
     minPartTC(minPartTC),
     mpiWaitTime(0.0),
-    deserializeTime(0.0),
-    barrier(barrier)
+    deserializeTime(0.0)
 {
     max_period = Simulation::getSimulation()->getMinPartTC();
     myNextSyncTime = max_period->getFactor();
@@ -223,19 +103,11 @@ void
 RankSyncSerialSkip::execute(int thread)
 {
     if ( thread == 0 ) {
-        // totalWait += barrier.wait();
-        barrier.wait();
         exchange();
-        // totalWait += barrier.wait();
-        barrier.wait();
         // SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
         // Simulation::getSimulation()->insertActivity( next, this );
     }
     else {
-        // totalWait += barrier.wait();
-        // totalWait += barrier.wait();
-        barrier.wait();
-        barrier.wait();
         // SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
         // Simulation::getSimulation()->insertActivity( next, this );
     }

@@ -13,6 +13,7 @@
 #ifndef SST_CORE_SUBCOMPONENT_H
 #define SST_CORE_SUBCOMPONENT_H
 
+#include <sst/core/baseComponent.h>
 #include <sst/core/component.h>
 
 namespace SST {
@@ -24,11 +25,13 @@ namespace SST {
    SubComponent API is nearly identical to the Component API and all
    the calls are proxied to the parent Compoent.
 */
-class SubComponent : public Module {
+class SubComponent : public Module, public BaseComponent {
 
 public:
-	SubComponent(Component* parent);
-	virtual ~SubComponent();
+	SubComponent(Component* parent) : BaseComponent(), parent(parent) {
+        my_info = parent->currentlyLoadingSubComponent;
+    };
+	virtual ~SubComponent() {};
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
@@ -42,142 +45,36 @@ public:
 
 protected:
     Component* const parent;
-    // Component* parent;
 
-    /** Determine if a port name is connected to any links */
-    bool isPortConnected(const std::string &name) const;
-
-    /** Configure a Link
-     * @param name - Port Name on which the link to configure is attached.
-     * @param time_base - Time Base of the link
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
-     */
-    Link* configureLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
-    /** Configure a Link
-     * @param name - Port Name on which the link to configure is attached.
-     * @param time_base - Time Base of the link
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
-     */
-    Link* configureLink( std::string name, std::string time_base, Event::HandlerBase* handler = NULL);
-    /** Configure a Link
-     * @param name - Port Name on which the link to configure is attached.
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
-     */
-    Link* configureLink( std::string name, Event::HandlerBase* handler = NULL);
-
-    /** Configure a SelfLink  (Loopback link)
-     * @param name - Name of the self-link port
-     * @param time_base - Time Base of the link
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
-     */
-    Link* configureSelfLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
-    /** Configure a SelfLink  (Loopback link)
-     * @param name - Name of the self-link port
-     * @param time_base - Time Base of the link
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
-     */
-    Link* configureSelfLink( std::string name, std::string time_base, Event::HandlerBase* handler = NULL);
-    /** Configure a SelfLink  (Loopback link)
-     * @param name - Name of the self-link port
-     * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
-     */
-    Link* configureSelfLink( std::string name, Event::HandlerBase* handler = NULL);
-
-    bool doesSubComponentInfoStatisticExist(std::string statisticName);
-
-    template <typename T>
-    Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
-    {
-        // Verify here that name of the stat is one of the registered
-        // names of the component's ElementInfoStatistic.  
-        if (false == doesSubComponentInfoStatisticExist(statName)) {
-            printf("Error: Statistic %s name %s is not found in ElementInfoStatistic, exiting...\n",
-                   StatisticBase::buildStatisticFullName(parent->getName().c_str(), statName, statSubId).
-                   c_str(),
-                   statName.c_str());
-            exit(1);
-        }
-        return parent->registerStatisticCore<T>(statName, statSubId);
+    Component* getTrueComponent() final { return parent; }
+    BaseComponent* getStatisticOwner() final {
+        /* If our ID == parent ID, then we're a legacy subcomponent that doesn't own stats. */
+        if ( this->getId() == parent->getId() )
+            return parent;
+        return this;
     }
 
-    /** Registers a clock for this component.
-        @param freq Frequency for the clock in SI units
-        @param handler Pointer to Clock::HandlerBase which is to be invoked
-        at the specified interval
-        NOTE:  Unlike Components, SubComponents do not have a default timebase
-    */
-    TimeConverter* registerClock( std::string freq, Clock::HandlerBase* handler);
-    TimeConverter* registerClock( const UnitAlgebra& freq, Clock::HandlerBase* handler);
+    /* Deprecate?   Old ELI style*/
+    SubComponent* loadSubComponent(std::string type, Params& params) {
+        return parent->loadSubComponent(type, parent, params);
+    }
 
-    /** Removes a clock handler from the component */
-    void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
+    // Does the statisticName exist in the ElementInfoStatistic
+    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) final;
+    // Return the EnableLevel for the statisticName from the ElementInfoStatistic
+    virtual uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) final;
+    // Return the Units for the statisticName from the ElementInfoStatistic
+    virtual std::string getComponentInfoStatisticUnits(const std::string &statisticName) final;
 
-    /** Reactivates an existing Clock and Handler
-     * @return time of next time clock handler will fire
-     */
-    Cycle_t reregisterClock(TimeConverter *freq, Clock::HandlerBase* handler);
-    /** Returns the next Cycle that the TimeConverter would fire */
-    Cycle_t getNextClockCycle(TimeConverter *freq);
-    
-    // For now, no OneShot support in SubComponent
-#if 0
-    /** Registers a OneShot event for this component.
-        Note: OneShot cannot be canceled, and will always callback after
-          the timedelay.  
-        @param timeDelay Time delay for the OneShot in SI units
-        @param handler Pointer to OneShot::HandlerBase which is to be invoked
-        at the specified interval
-    */
-    TimeConverter* registerOneShot( std::string timeDelay, OneShot::HandlerBase* handler);
-    TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
-#endif
-
-    TimeConverter* getTimeConverter( const std::string& base );
-    TimeConverter* getTimeConverter( const UnitAlgebra& base );
-
-    /** return the time since the simulation began in units specified by
-        the parameter.
-        @param tc TimeConverter specificing the units */
-    SimTime_t getCurrentSimTime(TimeConverter *tc) const;
-
-    /** return the time since the simulation began in timebase specified
-        @param base Timebase frequency in SI Units */
-    SimTime_t getCurrentSimTime(std::string base);
-
-    /** Utility function to return the time since the simulation began in nanoseconds */ 
-    SimTime_t getCurrentSimTimeNano() const;
-    /** Utility function to return the time since the simulation began in microseconds */ 
-    SimTime_t getCurrentSimTimeMicro() const;
-    /** Utility function to return the time since the simulation began in milliseconds */ 
-    SimTime_t getCurrentSimTimeMilli() const;
-
-    Module* loadModule(std::string type, Params& params);
-    Module* loadModuleWithComponent(std::string type, Params& params);
-    SubComponent* loadSubComponent(std::string type, Params& params);
-
-
-    /** Find a lookup table */
-    SharedRegion* getLocalSharedRegion(const std::string &key, size_t size);
-    SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL);
-
-    
 private:
     /** Component's type, set by the factory when the object is created.
         It is identical to the configuration string used to create the
         component. I.e. the XML "<component id="aFoo"><foo>..." would
         set component::type to "foo" */
     friend class Component;
-    std::string type;
-    SubComponent();
-    };
+
+};
 } //namespace SST
 
-// BOOST_CLASS_EXPORT_KEY(SST::SubComponent)
 
 #endif // SST_CORE_SUBCOMPONENT_H

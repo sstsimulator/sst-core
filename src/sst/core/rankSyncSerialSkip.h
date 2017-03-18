@@ -27,7 +27,7 @@ class RankSyncSerialSkip : public NewRankSync {
 public:
     /** Create a new Sync object which fires with a specified period */
     // Sync(TimeConverter* period);
-    RankSyncSerialSkip(Core::ThreadSafe::Barrier& barrier, TimeConverter* minPartTC);
+    RankSyncSerialSkip(TimeConverter* minPartTC);
     virtual ~RankSyncSerialSkip();
     
     /** Register a Link which this Sync Object is responsible for */
@@ -68,8 +68,6 @@ private:
 
     double mpiWaitTime;
     double deserializeTime;
-
-    Core::ThreadSafe::Barrier& barrier;
 
 };
 

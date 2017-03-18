@@ -19,6 +19,7 @@
 #include <sst/core/config.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/simulation.h>
+#include <sst/core/factory.h>
 
 #include <string.h>
 
@@ -44,7 +45,6 @@ void ConfigComponent::print(std::ostream &os) const {
     os << "  weight = " << weight << std::endl;
     os << "  rank = " << rank.rank << std::endl;
     os << "  thread = " << rank.thread << std::endl;
-    os << "  isIntrospector = " << isIntrospector << std::endl;
     os << "  Links:" << std::endl;
     for (size_t i = 0 ; i != links.size() ; ++i) {
         os << "    " << links[i];
@@ -58,6 +58,10 @@ void ConfigComponent::print(std::ostream &os) const {
         os << "      Params:" << std::endl;
         enabledStatParams[x].print_all_params(os, "      ");
     }
+    os << "  SubComponents:\n";
+    for ( auto & sc : subComponents ) {
+        sc.second.print(os);
+    }
 }
 
 ConfigComponent
@@ -70,12 +74,15 @@ ConfigComponent::cloneWithoutLinks() const
     ret.weight = weight;
     ret.rank = rank;
     ret.params = params;
-    ret.isIntrospector = isIntrospector;
     ret.enabledStatistics = enabledStatistics;
     ret.enabledStatParams = enabledStatParams;
+    for ( auto &i : subComponents ) {
+        ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinks());
+    }
     return ret;
 }
-    
+
+
 ConfigComponent
 ConfigComponent::cloneWithoutLinksOrParams() const
 {
@@ -85,19 +92,144 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.type = type;
     ret.weight = weight;
     ret.rank = rank;
-    ret.isIntrospector = isIntrospector;
     ret.enabledStatistics = enabledStatistics;
     ret.enabledStatParams = enabledStatParams;
+    for ( auto &i : subComponents ) {
+        ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinksOrParams());
+    }
     return ret;
 }
-    
+
+
+void ConfigComponent::setRank(RankInfo r)
+{
+    rank = r;
+    for ( auto &i : subComponents ) {
+        i.second.setRank(r);
+    }
+
+}
+
+
+void ConfigComponent::setWeight(double w)
+{
+    weight = w;
+    for ( auto &i : subComponents ) {
+        i.second.setWeight(w);
+    }
+}
+
+
+void ConfigComponent::addParameter(const std::string &key, const std::string &value, bool overwrite)
+{
+    bool bk = params.enableVerify(false);
+    params.insert(key, value, overwrite);
+    params.enableVerify(bk);
+}
+
+void ConfigComponent::enableStatistic(const std::string &statisticName)
+{
+    // NOTE: For every statistic in the enabledStatistics List, there must be
+    //       a coresponding params entry in enabledStatParams list.  The two
+    //       lists will always be the same size.
+
+    // Check for Enable All Statistics
+    if (statisticName == STATALLFLAG) {
+        // Force the STATALLFLAG to always be on the bottom of the list.
+        // First check to see if anything is in the vector, if vector is empty,
+        // a STATALLFLAG flag will be added to the vector
+        if (false == enabledStatistics.empty()) {
+            // The vector is populated, so see if the STATALLFLAG
+            // already exists if it does, we are done
+            if (STATALLFLAG != enabledStatistics.back()) {
+                // Add a STATALLFLAG to end of the vector
+                enabledStatistics.push_back(STATALLFLAG);
+                enabledStatParams.push_back(Params());
+            }
+        } else {
+            // Add a STATALLFLAG to end of the vector
+            enabledStatistics.push_back(STATALLFLAG);
+            enabledStatParams.push_back(Params());
+        }
+    } else {
+        // Check to see if the stat is already in the list
+        for (std::vector<std::string>::iterator iter = enabledStatistics.begin(); iter != enabledStatistics.end(); ++iter) {
+            if (statisticName == *iter) {
+                // We found the name already in the enabledStatistics list, do nothing
+                return;
+            }
+        }
+
+        // statisticName not in list, so add statistic and params to top of the vectors
+        enabledStatistics.insert(enabledStatistics.begin(), statisticName);
+        enabledStatParams.insert(enabledStatParams.begin(), Params());
+    }
+}
+
+
+void ConfigComponent::addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value)
+{
+    // NOTE: For every statistic in the enabledStatistics List, there must be
+    //       a coresponding params entry in enabledStatParams list.  The two
+    //       lists will always be the same size.
+
+    // Scan the enabledStatistics list for the statistic name
+    for (size_t x = 0; x < enabledStatistics.size(); x++) {
+        // Check to see if the names match.  NOTE this also works for the STATALLFLAG
+        if (statisticName == enabledStatistics.at(x)) {
+            // Add/set the parameter
+            enabledStatParams.at(x).insert(std::string(param),std::string(value));
+        }
+    }
+}
+
+ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string &name, const std::string &type)
+{
+    /* Check for existing subComponent with this name */
+    for ( auto &i : subComponents ) {
+        if ( i.first == name )
+            return NULL;
+    }
+
+    subComponents.emplace_back(
+            std::make_pair(
+                name,
+                ConfigComponent(sid, name, type, this->weight, this->rank)));
+
+    return &(subComponents.back().second);
+}
+
+ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid)
+{
+    if ( sid == this->id ) return this;
+
+    for ( auto &s : subComponents ) {
+        ConfigComponent* res = s.second.findSubComponent(sid);
+        if ( res != NULL )
+            return res;
+    }
+
+    return NULL;
+}
+
+
+std::vector<LinkId_t> ConfigComponent::allLinks() const {
+    std::vector<LinkId_t> res;
+    res.insert(res.end(), links.begin(), links.end());
+    for ( auto& sc : subComponents ) {
+        std::vector<LinkId_t> s = sc.second.allLinks();
+        res.insert(res.end(), s.begin(), s.end());
+    }
+    return res;
+}
+
 void
 ConfigGraph::setComponentRanks(RankInfo rank)
 {
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
     {
-        iter->rank = rank;
+        iter->setRank(rank);
     }
 }
 
@@ -204,7 +336,7 @@ ConfigGraph::checkForStructuralErrors()
                 const ConfigLink& link = links[ccomp->links[i]];
                 if ( link.component[j] == ccomp->id ) {
                     // If port is not found, print a warning
-                    if (!Component::isPortValidForComponent(ccomp->type, link.port[j]) ) {
+                    if (!Factory::getFactory()->isPortNameValid(ccomp->type, link.port[j]) ) {
                         // For now this is not a fatal error
                         // found_error = true;
                         output.output("WARNING:  Attempling to connect to undocumented port: %s, "
@@ -235,62 +367,30 @@ ConfigGraph::checkForStructuralErrors()
         // }
     }
 #endif
-    
+
     return found_error;
 }
 
 
 ComponentId_t
-ConfigGraph::addComponent(std::string name, std::string type, float weight, RankInfo rank)
+ConfigGraph::addComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank)
 {
-	comps.push_back(ConfigComponent(nextCompID, name, type, weight, rank, false));
-    return nextCompID++;
+	comps.push_back(ConfigComponent(id, name, type, weight, rank));
+    return id;
 }
 
 ComponentId_t
-ConfigGraph::addComponent(std::string name, std::string type)
+ConfigGraph::addComponent(ComponentId_t id, std::string name, std::string type)
 {
-	comps.push_back(ConfigComponent(nextCompID, name, type, 1.0f, RankInfo(), false));
-    return nextCompID++;
+	comps.push_back(ConfigComponent(id, name, type, 1.0f, RankInfo()));
+    return id;
 }
+
+
+
 
 void
-ConfigGraph::setComponentRank(ComponentId_t comp_id, RankInfo rank)
-{
-    comps[comp_id].rank = rank;
-}
-
-void
-ConfigGraph::setComponentWeight(ComponentId_t comp_id, float weight)
-{
-	comps[comp_id].weight = weight;
-}
-
-void
-ConfigGraph::addParams(ComponentId_t comp_id, Params& p)
-{
-    bool bk = comps[comp_id].params.enableVerify(false);
-    // comps[comp_id].params.insert(p.begin(),p.end());
-    comps[comp_id].params.insert(p);
-    comps[comp_id].params.enableVerify(bk);
-}
-
-void
-ConfigGraph::addParameter(ComponentId_t comp_id, const string key, const string value, bool overwrite)
-{
-    bool bk = comps[comp_id].params.enableVerify(false);
-	// if ( overwrite ) {
-	// 	comps[comp_id].params[key] = value;
-	// }
-	// else {
-	// 	comps[comp_id].params.insert(pair<string,string>(key,value));
-	// }
-    comps[comp_id].params.insert(key,value,overwrite);
-    comps[comp_id].params.enableVerify(bk);
-}
-
-void 
-ConfigGraph::setStatisticOutput(const char* name)
+ConfigGraph::setStatisticOutput(const std::string &name)
 {
     statOutputName = name;
 }
@@ -301,133 +401,75 @@ ConfigGraph::setStatisticOutputParams(const Params& p)
     statOutputParams = p;
 }
 
-void 
-ConfigGraph::addStatisticOutputParameter(const char* param, const char* value)
+void
+ConfigGraph::addStatisticOutputParameter(const std::string& param, const std::string& value)
 {
-    // statOutputParams[param] = value;
-    statOutputParams.insert(std::string(param), std::string(value));
+    statOutputParams.insert(param, value);
 }
 
-void 
+void
 ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
 {
     statLoadLevel = loadLevel;
 }
 
-void 
-ConfigGraph::enableComponentStatistic(ComponentId_t comp_id, string statisticName)
-{
-    // NOTE: For every statistic in the enabledStatistics List, there must be
-    //       a coresponding params entry in enabledStatParams list.  The two
-    //       lists will always be the same size.  
-    
-    // Check for Enable All Statistics
-    if (statisticName == STATALLFLAG) {
-        // Force the STATALLFLAG to always be on the bottom of the list.
-        // First check to see if anything is in the vector, if vector is empty, 
-        // a STATALLFLAG flag will be added to the vector
-        if (false == comps[comp_id].enabledStatistics.empty()) {
-            // The vector is populated, so see if the STATALLFLAG 
-            // already exists if it does, we are done
-            if (STATALLFLAG != comps[comp_id].enabledStatistics.back()) {
-                // Add a STATALLFLAG to end of the vector
-                comps[comp_id].enabledStatistics.push_back(STATALLFLAG);
-                comps[comp_id].enabledStatParams.push_back(Params());
-            }
-        } else {
-            // Add a STATALLFLAG to end of the vector
-            comps[comp_id].enabledStatistics.push_back(STATALLFLAG);
-            comps[comp_id].enabledStatParams.push_back(Params());
-        }
-    } else {
-        // Check to see if the stat is already in the list
-        for (std::vector<std::string>::iterator iter = comps[comp_id].enabledStatistics.begin(); iter != comps[comp_id].enabledStatistics.end(); ++iter) {
-            if (statisticName == *iter) {
-                // We found the name already in the enabledStatistics list, do nothing
-                return;                
-            }
-        }
-        
-        // statisticName not in list, so add statistic and params to top of the vectors
-        comps[comp_id].enabledStatistics.insert(comps[comp_id].enabledStatistics.begin(), statisticName);
-        comps[comp_id].enabledStatParams.insert(comps[comp_id].enabledStatParams.begin(), Params());
-    }
-}
 
-void 
+void
 ConfigGraph::enableStatisticForComponentName(string ComponentName, string statisticName)
 {
     bool found;
-    
+
     // Search all the components for a matching name
     for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
         // Check to see if the names match or All components are selected
         found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
         if (true == found) {
-            enableComponentStatistic(iter->id, statisticName);
+            comps[iter->id].enableStatistic(statisticName);
         }
     }
 }
 
-void 
+void
 ConfigGraph::enableStatisticForComponentType(string ComponentType, string statisticName)
 {
     bool found;
-    
+
     // Search all the components for a matching type
     for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
         // Check to see if the types match or All components are selected
         found = ((ComponentType == iter->type) || (ComponentType == STATALLFLAG));
         if (true == found) {
-            enableComponentStatistic(iter->id, statisticName);
+            comps[iter->id].enableStatistic(statisticName);
         }
     }
 }
 
-void 
-ConfigGraph::addComponentStatisticParameter(ComponentId_t comp_id, string statisticName, const char* param, const char* value)
-{
-    // NOTE: For every statistic in the enabledStatistics List, there must be
-    //       a coresponding params entry in enabledStatParams list.  The two
-    //       lists will always be the same size.  
-    
-    // Scan the enabledStatistics list for the statistic name
-    for (size_t x = 0; x < comps[comp_id].enabledStatistics.size(); x++) {
-        // Check to see if the names match.  NOTE this also works for the STATALLFLAG
-        if (statisticName == comps[comp_id].enabledStatistics.at(x)) {
-            // Add/set the parameter
-            // comps[comp_id].enabledStatParams.at(x)[param] = value;
-            comps[comp_id].enabledStatParams.at(x).insert(std::string(param),std::string(value));
-        }
-    }
-}
-
-void 
-ConfigGraph::addStatisticParameterForComponentName(string ComponentName, string statisticName, const char* param, const char* value)
+void
+ConfigGraph::addStatisticParameterForComponentName(const std::string &ComponentName, const std::string &statisticName, const std::string &param, const std::string &value)
 {
     bool found;
-    
+
     // Search all the components for a matching name
     for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
         // Check to see if the names match or All components are selected
         found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
         if (true == found) {
-            addComponentStatisticParameter(iter->id, statisticName, param, value);
+            comps[iter->id].addStatisticParameter(statisticName, param, value);
         }
     }
 }
 
-void 
-ConfigGraph::addStatisticParameterForComponentType(string ComponentType, string statisticName, const char* param, const char* value)
+void
+ConfigGraph::addStatisticParameterForComponentType(const std::string &ComponentType, const std::string &statisticName, const std::string &param, const std::string &value)
 {
     bool found;
-    
+
     // Search all the components for a matching type
     for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
         // Check to see if the types match or All components are selected
         found = ((ComponentType == iter->type) || (ComponentType == STATALLFLAG));
         if (true == found) {
-            addComponentStatisticParameter(iter->id, statisticName, param, value);
+            comps[iter->id].addStatisticParameter(statisticName, param, value);
         }
     }
 }
@@ -453,14 +495,19 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 	link.port[index] = port;
     link.latency_str[index] = latency_str;
     link.no_cut = link.no_cut | no_cut;
-    
-	comps[comp_id].links.push_back(link.id);
+
+	findComponent(comp_id)->links.push_back(link.id);
 }
-ComponentId_t
-ConfigGraph::addIntrospector(string name, string type)
+
+
+ConfigComponent* ConfigGraph::findComponent(ComponentId_t id)
 {
-	comps.push_back(ConfigComponent(nextCompID, name, type, 0.0f, RankInfo(0, 0), true));
-    return nextCompID++;
+    /* Check to make sure we're part of the same component */
+    if ( COMPONENT_ID_MASK(id) == id ) {
+        return &comps[id];
+    }
+
+    return comps[COMPONENT_ID_MASK(id)].findSubComponent(id);
 
 }
 
@@ -479,7 +526,7 @@ ConfigGraph*
 ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
 {
     ConfigGraph* graph = new ConfigGraph();
-    
+
     // SparseVectorMap is a extremely slow at random inserts, so make
     // sure things go in in order into both comps and links, then tie
     // it all together.
@@ -492,17 +539,15 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
         else {
             // See if the other side of any of component's links is in
             // set, if so, add to graph
-            for ( LinkIdMap_t::const_iterator link_it = comp.links.begin();
-                  link_it != comp.links.end(); ++link_it ) {
-                const ConfigLink& link = links[*link_it];
-                ComponentId_t remote = link.component[0] == comp.id ?
+            for ( LinkId_t l : comp.allLinks() ) {
+                const ConfigLink& link = links[l];
+                ComponentId_t remote = COMPONENT_ID_MASK(link.component[0]) == COMPONENT_ID_MASK(comp.id) ?
                     link.component[1] : link.component[0];
-                if ( rank_set.find(comps[remote].rank.rank) != rank_set.end() ) {
+                if ( rank_set.find(comps[COMPONENT_ID_MASK(remote)].rank.rank) != rank_set.end() ) {
                     graph->comps.push_back(comp.cloneWithoutLinksOrParams());
                     break;
                 }
             }
-            
         }
     }
 
@@ -512,18 +557,18 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
         const ConfigLink& link = *it;
 
-        const ConfigComponent& comp0 = comps[link.component[0]];
-        const ConfigComponent& comp1 = comps[link.component[1]];
+        const ConfigComponent* comp0 = findComponent(link.component[0]);
+        const ConfigComponent* comp1 = findComponent(link.component[1]);
 
-        bool comp0_in_ranks = (rank_set.find(comp0.rank.rank) != rank_set.end());
-        bool comp1_in_ranks = (rank_set.find(comp1.rank.rank) != rank_set.end());
-        
+        bool comp0_in_ranks = (rank_set.find(comp0->rank.rank) != rank_set.end());
+        bool comp1_in_ranks = (rank_set.find(comp1->rank.rank) != rank_set.end());
+
         if ( comp0_in_ranks || comp1_in_ranks ) {
             // Clone the link and add to new lin k map
             graph->links.insert(ConfigLink(link));  // Will make a copy into map
 
-            graph->comps[comp0.id].links.push_back(link.id);
-            graph->comps[comp1.id].links.push_back(link.id);
+            graph->findComponent(comp0->id)->links.push_back(link.id);
+            graph->findComponent(comp1->id)->links.push_back(link.id);
         }
     }
 
@@ -532,7 +577,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     graph->setStatisticOutputParams(this->getStatOutputParams());
     graph->setStatisticLoadLevel(this->getStatLoadLevel());
 
-    return graph;    
+    return graph;
 }
 
 PartitionGraph*
@@ -556,8 +601,8 @@ ConfigGraph::getPartitionGraph()
     for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
         const ConfigLink& link = *it;
         
-        const ConfigComponent& comp0 = comps[link.component[0]];
-        const ConfigComponent& comp1 = comps[link.component[1]];
+        const ConfigComponent& comp0 = comps[COMPONENT_ID_MASK(link.component[0])];
+        const ConfigComponent& comp1 = comps[COMPONENT_ID_MASK(link.component[1])];
 
         plinks.insert(PartitionLink(link));
 
@@ -604,15 +649,13 @@ ConfigGraph::getCollapsedPartitionGraph()
                 // Compute the new weight
                 pcomp.weight += comp.weight;
                 pcomp.group.insert(comp.id);
-                
+
                 // Walk through all the links and insert the ones that connect
                 // outside the group
-                for ( LinkIdMap_t::const_iterator link_it = comp.links.begin();
-                      link_it != comp.links.end(); ++link_it ) {
+                for ( LinkId_t id : comp.allLinks() ) {
+                    const ConfigLink& link = links[id];
 
-                    const ConfigLink& link = links[*link_it];
-                    
-                    if ( !group.contains(link.component[0]) || !group.contains(link.component[1] ) ) {
+                    if ( !group.contains(COMPONENT_ID_MASK(link.component[0])) || !group.contains(COMPONENT_ID_MASK(link.component[1]) ) ) {
                         pcomp.links.push_back(link.id);
                     }
                     else {
@@ -641,7 +684,7 @@ ConfigGraph::getCollapsedPartitionGraph()
         }
     }
 
-    return graph;    
+    return graph;
 }
 
 void
@@ -654,7 +697,7 @@ ConfigGraph::annotateRanks(PartitionGraph* graph)
 
         for ( ComponentIdMap_t::const_iterator c_iter = comp.group.begin();
               c_iter != comp.group.end(); ++ c_iter ) {
-            comps[*c_iter].rank = comp.rank;
+            comps[*c_iter].setRank(comp.rank);
         }
     }
 }
@@ -663,18 +706,18 @@ void
 ConfigGraph::getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group)
 {
     // We'll do this as a simple recursive depth first search
-    group.insert(start);
+    group.insert(COMPONENT_ID_MASK(start));
     
     // First, get the component
     ConfigComponent& comp = comps[start];
 
-    for ( vector<LinkId_t>::iterator it = comp.links.begin(); it != comp.links.end(); ++it ) {
-        ConfigLink& link = links[*it];
+    for ( LinkId_t id : comp.allLinks() ) {
+        ConfigLink& link = links[id];
 
         // If this is a no_cut link, need to follow it to next
         // component if next component is not already in group
         if ( link.no_cut ) {
-            ComponentId_t id = (link.component[0] == start ? link.component[1] : link.component[0]);
+            ComponentId_t id = COMPONENT_ID_MASK((COMPONENT_ID_MASK(link.component[0]) == COMPONENT_ID_MASK(start) ? link.component[1] : link.component[0]));
             if ( !group.contains(id) ) {
                 getConnectedNoCutComps(id,group);
             }

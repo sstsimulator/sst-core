@@ -81,10 +81,6 @@ public:
 
     typedef std::map<SimTime_t, Clock*>   clockMap_t;              /*!< Map of times to clocks */
     typedef std::map<SimTime_t, OneShot*> oneShotMap_t;            /*!< Map of times to OneShots */
-    typedef std::vector<std::string>      statEnableList_t;        /*!< List of Enabled Statistics */
-    typedef std::vector<Params>           statParamsList_t;        /*!< List of Enabled Statistics Parameters */
-    typedef std::map<ComponentId_t, statEnableList_t*> statEnableMap_t;  /*!< Map of Statistics that are requested to be enabled for a component defined in configGraph */
-    typedef std::map<ComponentId_t, statParamsList_t*> statParamsMap_t;  /*!< Map of Statistic Params for a component defined in configGraph */
     // typedef std::map< unsigned int, Sync* > SyncMap_t; /*!< Map of times to Sync Objects */
 
     ~Simulation();
@@ -207,45 +203,21 @@ public:
     // // const CompIdMap_t& getComponentIdMap(void) const { return compIdMap; }
     const ComponentInfoMap& getComponentInfoMap(void) { return compInfoMap; }
 
-    
-    /** Returns the component with a given name */
-    Component* getComponent(const std::string &name) const
-    {
-        ComponentInfo* i = compInfoMap.getByName(name);
-        if (NULL != i) {
-            return i->getComponent();
-        } else {
-            printf("Simulation::getComponent() couldn't find component with name = %s\n",
-                   name.c_str()); 
-            exit(1); 
-        }
-    }
-    
+
     /** returns the component with the given ID */
-    Component* getComponent(const ComponentId_t &id) const
-    {        
+    BaseComponent* getComponent(const ComponentId_t &id) const
+    {
 		ComponentInfo* i = compInfoMap.getByID(id);
 		// CompInfoMap_t::const_iterator i = compInfoMap.find(id);
 		if ( NULL != i ) {
 			return i->getComponent();
 		} else {
-            printf("Simulation::getComponent() couldn't find component with id = %lu\n", id);
+            printf("Simulation::getComponent() couldn't find component with id = %" PRIu64 "\n", id);
             exit(1);
 		}
     }
 
-    ComponentInfo* getComponentInfo(const std::string& name) const
-    {
-        ComponentInfo* i = compInfoMap.getByName(name);
-        if (NULL != i) {
-            return i;
-        } else {
-            printf("Simulation::getComponentInfo() couldn't find component with name = %s\n",
-                   name.c_str()); 
-            exit(1); 
-        }
-    }
-    
+
     ComponentInfo* getComponentInfo(const ComponentId_t &id) const
     {        
 		ComponentInfo* i = compInfoMap.getByID(id);
@@ -253,34 +225,11 @@ public:
 		if ( NULL != i ) {
 			return i;
 		} else {
-            printf("Simulation::getComponentInfo() couldn't find component with id = %lu\n", id);
+            printf("Simulation::getComponentInfo() couldn't find component with id = %" PRIu64 "\n", id);
             exit(1);
 		}
     }
 
-    statEnableList_t* getComponentStatisticEnableList(const ComponentId_t &id) const
-    {
-		statEnableMap_t::const_iterator i = statisticEnableMap.find(id);
-		if (i != statisticEnableMap.end()) {
-			return i->second;
-		} else {
-            printf("Simulation::getComponentStatisticEnableList() couldn't find component with id = %lu\n", id);
-            exit(1);
-		}
-        return NULL; 
-    }
-    
-    statParamsList_t* getComponentStatisticParamsList(const ComponentId_t &id) const
-    {
-		statParamsMap_t::const_iterator i = statisticParamsMap.find(id);
-		if (i != statisticParamsMap.end()) {
-			return i->second;
-		} else {
-            printf("Simulation::getComponentStatisticParamsList() couldn't find component with id = %lu\n", id);
-            exit(1);
-		}
-        return NULL; 
-    }
 
 
     /**
@@ -344,7 +293,6 @@ private:
      * @param cycles Frequency which is the base of the TimeConverter
      */
     TimeConverter* minPartToTC(SimTime_t cycles) const;
-    static Core::ThreadSafe::Barrier& getThreadBarrier() { return barrier; }
 
     /** Factory used to generate the simulation components */
     static Factory *factory;
@@ -354,8 +302,11 @@ private:
     static Statistics::StatisticOutput* statisticsOutput;
     /** Output */
     static Output sim_output;
-    static Core::ThreadSafe::Barrier barrier;
-    static Core::ThreadSafe::Barrier exit_barrier;
+    static void resizeBarriers(uint32_t nthr);
+    static Core::ThreadSafe::Barrier initBarrier;
+    static Core::ThreadSafe::Barrier setupBarrier;
+    static Core::ThreadSafe::Barrier runBarrier;
+    static Core::ThreadSafe::Barrier exitBarrier;
     static std::mutex simulationMutex;
 
 
@@ -395,8 +346,6 @@ private:
     ThreadSync*      threadSync;
     ComponentInfoMap compInfoMap;
     clockMap_t       clockMap;
-    statEnableMap_t  statisticEnableMap;
-    statParamsMap_t  statisticParamsMap;
     oneShotMap_t     oneShotMap;
     SimTime_t        currentSimCycle;
     SimTime_t        endSimCycle;
@@ -433,13 +382,7 @@ private:
 // time.  ONLY FOR DEBUG USE.
 void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
 
-// Uses Simulation's barrier
-void wait_my_turn_start();
-
 void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
-
-// Uses Simulation's barrier
-void wait_my_turn_end();
 
 
 } // namespace SST

@@ -41,6 +41,7 @@ public:
     friend class SyncBase;
     friend class ThreadSync;
     friend class SyncManager;
+    friend class ComponentInfo;
     
     /** Create a new link with a given ID */
     Link(LinkId_t id);

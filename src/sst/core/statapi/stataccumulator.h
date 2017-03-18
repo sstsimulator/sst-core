@@ -42,9 +42,9 @@ template <typename NumberBase>
 class AccumulatorStatistic : public Statistic<NumberBase> 
 {
 private:
-    friend class SST::Component;
+    friend class SST::BaseComponent;
 
-    AccumulatorStatistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) 
+    AccumulatorStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams) 
 		: Statistic<NumberBase>(comp, statName, statSubId, statParams)
     {
         m_sum = 0;

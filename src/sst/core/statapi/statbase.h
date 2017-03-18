@@ -18,10 +18,9 @@
 #include <sst/core/statapi/statfieldinfo.h>
 
 namespace SST {
-class Component; 
-class SubComponent; 
+class BaseComponent;
 namespace Statistics {
-class StatisticOutput; 
+class StatisticOutput;
 class StatisticProcessingEngine;
 
 /**
@@ -105,7 +104,7 @@ public:
     inline const char* getStatDataTypeFullName() const {return StatisticFieldInfo::getFieldTypeFullName(m_statDataType);} 
     
     /** Return a pointer to the parent Component */
-    Component*   getComponent() const {return m_component;}
+    BaseComponent*   getComponent() const {return m_component;}
     
     /** Return the enable status of the Statistic */
     bool         isEnabled() const {return m_statEnabled;}
@@ -150,8 +149,6 @@ public:
     virtual bool isNullStatistic() const {return false;} 
 
 protected:  
-    friend class SST::Component;
-    friend class SST::SubComponent;
     friend class SST::Statistics::StatisticProcessingEngine;
     
     /** Construct a StatisticBase
@@ -162,7 +159,7 @@ protected:
       * @param statParams - The parameters for this statistic
       */
     // Constructors:
-    StatisticBase(Component* comp, std::string& statName, std::string& statSubId, Params& statParams);
+    StatisticBase(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams);
 
     // Destructor
     virtual ~StatisticBase() {}
@@ -177,6 +174,8 @@ protected:
     void setStatisticTypeName(const char* typeName) {m_statTypeName = typeName;}
     
 private:
+    friend class SST::BaseComponent;
+
     /** Set the Registered Collection Mode */
     void setRegisteredCollectionMode(StatMode_t mode) {m_registeredCollectionMode = mode;} 
 
@@ -223,7 +222,7 @@ private:
     StatisticBase(); // For serialization only
     
 private:
-    Component*            m_component;
+    BaseComponent*        m_component;
     std::string           m_statName;
     std::string           m_statSubId;
     std::string           m_statFullName;
@@ -278,7 +277,7 @@ public:
     }
     
 protected:    
-    friend class SST::Component;
+    friend class SST::BaseComponent;
     /** Construct a Statistic
       * @param comp - Pointer to the parent constructor.
       * @param statName - Name of the statistic to be registered.  This name must
@@ -286,7 +285,7 @@ protected:
       * @param statSubId - Additional name of the statistic 
       * @param statParams - The parameters for this statistic
       */
-    Statistic(Component* comp, std::string& statName, std::string& statSubId, Params& statParams) :
+    Statistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams) :
         StatisticBase(comp, statName, statSubId, statParams)
     {
         setStatisticDataType(StatisticFieldInfo::getFieldTypeFromTemplate<T>());
