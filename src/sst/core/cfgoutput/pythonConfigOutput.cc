@@ -103,6 +103,33 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 		fprintf(outputFile, "sst.setStatisticLoadLevel(%" PRIu64 ")\n",
 			(uint64_t) graph->getStatLoadLevel());
 	}
+	if( !graph->getStatOutput().empty() ) {
+		fprintf(outputFile, "sst.setStatisticOutput(\"%s\"", graph->getStatOutput().c_str());
+        const Params &outParams = graph->getStatOutputParams();
+        if ( !outParams.empty() ) {
+            fprintf(outputFile, ", {\n");
+
+            auto keys = outParams.getKeys();
+            auto param_itr = keys.begin();
+
+            for(; param_itr != keys.end(); param_itr++) {
+                if(param_itr != keys.begin()) {
+                    fprintf(outputFile, ",\n");
+                }
+
+                char* esParamName = makeEscapeSafe(*param_itr);
+                char* esValue     = makeEscapeSafe(outParams.find<std::string>(*param_itr));
+
+                fprintf(outputFile, "     \"%s\" : \"%s\"", esParamName, esValue);
+
+                free(esParamName);
+                free(esValue);
+            }
+            fprintf(outputFile, "}");
+        }
+		fprintf(outputFile, ")\n");
+	}
+
 
 	fprintf(outputFile, "\n# Define Component Statistics Information:\n");
     for(auto comp_itr = compMap.begin(); comp_itr != compMap.end(); comp_itr++) {
