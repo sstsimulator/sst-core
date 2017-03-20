@@ -315,6 +315,8 @@ void PythonConfigGraphOutput::makeBufferPythonSafe(char* buffer)
 
 	for(size_t i = 0; i < length; i++) {
                 switch(buffer[i]) {
+                case ' ':
+                        buffer[i] = '_'; break;
                 case '.':
                         buffer[i] = '_'; break;
                 case ':':
