@@ -82,6 +82,7 @@ nobase_dist_sst_HEADERS = \
 	math/sqrt.h \
 	uninitializedQueue.h \
 	unitAlgebra.h \
+	part/sstpart.h \
 	serialization/ser_ptr_type.h \
 	serialization/serializable.h \
 	serialization/serializable_fwd.h \
@@ -135,7 +136,8 @@ nobase_dist_sst_HEADERS = \
 	statapi/componentregisterstat_impl.h \
 	threadsafe.h \
 	cputimer.h \
-	sst_config.h
+	sst_config.h \
+	model/element_python.h
 
 nobase_nodist_sst_HEADERS = \
 	build_info.h

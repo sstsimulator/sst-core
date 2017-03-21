@@ -15,17 +15,9 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/params.h>
 
-#include <stdio.h>
 #include <string>
 
 #include <sst/core/elibase.h>
-
-// // Component Category Definitions
-// #define COMPONENT_CATEGORY_UNCATEGORIZED  0x00
-// #define COMPONENT_CATEGORY_PROCESSOR      0x01
-// #define COMPONENT_CATEGORY_MEMORY         0x02
-// #define COMPONENT_CATEGORY_NETWORK        0x04
-// #define COMPONENT_CATEGORY_SYSTEM         0x08
 
 namespace SST {
 class Component;
@@ -35,7 +27,7 @@ namespace Partition {
     class SSTPartitioner;
 }
 class RankInfo;
-
+class SSTElementPythonModule;
 
 /****************************************************
    Base classes for templated documentation classes
@@ -95,31 +87,7 @@ public:
     virtual Component* create(ComponentId_t id, Params& params) = 0;
     virtual const uint32_t getCategory() = 0;
     
-    void print() {
-        std::cout << "    " << getName() << ": " << getDescription() << std::endl;
-        std::cout << "    Parameters (" << getValidParams().size() << " total):"<<  std::endl;
-        for ( auto item : getValidParams() ) {
-            std::cout << "      " << item.name << ": "
-                      << (item.description == NULL ? "<empty>" : item.description)
-                      << " ("
-                      << (item.defaultValue == NULL ? "<required>" : item.defaultValue)
-                      << ")" << std::endl;
-        }
-        std::cout << "    Statistics (" << getValidStats().size() << " total):"<<  std::endl;
-        for ( auto item : getValidStats() ) {
-            std::cout << "      " << item.name << ": "
-                      << (item.description == NULL ? "<empty>" : item.description)
-                      << " ("
-                      << (item.units == NULL ? "<empty>" : item.units)
-                      << ").  Enable level = " << (int16_t)item.enableLevel << std::endl;
-        }
-        std::cout << "    Ports (" << getValidPorts().size() << " total):"<<  std::endl;
-        for ( auto item : getValidPorts() ) {
-            std::cout << "      " << item.name << ": "
-                      << (item.description == NULL ? "<empty>" : item.description)
-                      << std::endl;
-        }
-    }
+    std::string toString();
 };
 
 class SubComponentElementInfo : public BaseComponentElementInfo {
@@ -130,31 +98,7 @@ public:
     // virtual SubComponent* create(ComponentId_t id, Params& params) = 0;
     virtual const std::string getInterface() = 0;
 
-    void print() {
-        std::cout << "    " << getName() << ": " << getDescription() << std::endl;
-        std::cout << "    Parameters (" << getValidParams().size() << " total):"<<  std::endl;
-        for ( auto item : getValidParams() ) {
-            std::cout << "      " << item.name << ": "
-                      << (item.description == NULL ? "<empty>" : item.description)
-                      << " ("
-                      << (item.defaultValue == NULL ? "<required>" : item.defaultValue)
-                      << ")" << std::endl;
-        }
-        std::cout << "    Statistics (" << getValidStats().size() << " total):"<<  std::endl;
-        for ( auto item : getValidStats() ) {
-            std::cout << "      " << item.name << ": "
-                      << (item.description == NULL ? "<empty>" : item.description)
-                      << " ("
-                      << (item.units == NULL ? "<empty>" : item.units)
-                      << ").  Enable level = " << (int16_t)item.enableLevel << std::endl;
-        }
-        // std::cout << "    Ports (" << getValidPorts().size() << " total):"<<  std::endl;
-        // for ( auto item : getValidPorts() ) {
-        //     std::cout << "      " << item.name << ": "
-        //               << (item.description == NULL ? "<empty>" : item.description)
-        //               << std::endl;
-        // }
-    }
+    std::string toString();
 };
 
 
@@ -167,17 +111,7 @@ public:
     virtual Module* create(Params& params) { /* Need to print error */ return NULL; }
     virtual const std::string getInterface() = 0;
     
-    void print() {
-        std::cout << "    " << getName() << ": " << getDescription() << std::endl;
-        std::cout << "    Parameters (" << getValidParams().size() << " total):"<<  std::endl;
-        for ( auto item : getValidParams() ) {
-            std::cout << "      " << item.name << ": "
-                      << (item.description == NULL ? "<empty>" : item.description)
-                      << " ("
-                      << (item.defaultValue == NULL ? "<required>" : item.defaultValue)
-                      << ")" << std::endl;
-        }
-    }
+    std::string toString();
 };
 
 
@@ -189,18 +123,15 @@ public:
     virtual const std::string getName() = 0;
     virtual const std::string getLibrary() = 0;
 
-    void print() {
-        std::cout << "    " << getName() << ": " << getDescription() << std::endl;
-    }
-
+    std::string toString();
 };
 
-// class PythonModuleInfo {
- //     virtual const std::string getFoo() = 0;
-
- //     std::string 
-     
- // };
+class PythonModuleElementInfo {
+public:
+    virtual SSTElementPythonModule* create() = 0;
+    
+    virtual const std::string getLibrary() = 0;
+ };
  
 
 class LibraryInfo {
@@ -209,7 +140,11 @@ public:
     std::map<std::string,SubComponentElementInfo*> subcomponents;
     std::map<std::string,ModuleElementInfo*> modules;
     std::map<std::string,PartitionerElementInfo*> partitioners;
-    // std::vector<PythonModuleElementInfo*> python_modules;
+    PythonModuleElementInfo* python_module;
+
+    LibraryInfo() :
+        python_module(NULL) {}
+    
     
     ComponentElementInfo* getComponent(std::string name) {
         if ( components.count(name) == 0 ) return NULL;
@@ -231,35 +166,11 @@ public:
         return partitioners[name];
     }
     
-    void print() {
-        std::cout << "  Components: " << std::endl;
-        for ( auto item : components ) {
-            item.second->print();
-            std::cout << std::endl;
-        }
-        if ( components.size() == 0 ) std::cout << "    <none>" << std::endl;
-
-        std::cout << "  SubComponents: " << std::endl;
-        for ( auto item : subcomponents ) {
-            item.second->print();
-            std::cout << std::endl;
-        }
-        if ( subcomponents.size() == 0 ) std::cout << "    <none>" << std::endl;
-
-        std::cout << "  Modules: " << std::endl;
-        for ( auto item : modules ) {
-            item.second->print();
-            std::cout << std::endl;
-        }
-        if ( modules.size() == 0 ) std::cout << "    <none>" << std::endl;
-
-        std::cout << "  Partitioners: " << std::endl;
-        for ( auto item : partitioners ) {
-            item.second->print();
-            std::cout << std::endl;
-        }
-        if ( partitioners.size() == 0 ) std::cout << "    <none>" << std::endl;
+    PythonModuleElementInfo* getPythonModule() {
+        return python_module;
     }
+    
+    std::string toString();
 };
 
 
@@ -284,42 +195,39 @@ public:
 
     static bool addSubComponent(SubComponentElementInfo* comp) {
         LibraryInfo* library = getLibrary(comp->getLibrary());
-        // library->subcomponents.push_back(comp);
         library->subcomponents[comp->getName()] = comp;
         return true;
     }
 
     static bool addModule(ModuleElementInfo* comp) {
         LibraryInfo* library = getLibrary(comp->getLibrary());
-        // library->subcomponents.push_back(comp);
         library->modules[comp->getName()] = comp;
         return true;
     }
 
     static bool addPartitioner(PartitionerElementInfo* part) {
         LibraryInfo* library = getLibrary(part->getLibrary());
-        // library->subcomponents.push_back(comp);
         library->partitioners[part->getName()] = part;
         return true;
     }
 
-    static void printDatabase() {
-        for ( auto item : libraries ) {
-            std::cout << "library : " << item.first << std::endl;
-            item.second->print();
-            std::cout << std::endl;
+    static bool addPythonModule(PythonModuleElementInfo* pymod) {
+        LibraryInfo* library = getLibrary(pymod->getLibrary());
+        if ( library->python_module == NULL ) {
+            library->python_module = pymod;
         }
+        else {
+            // need to fatal
+        }
+        return true;
     }
+
+    static std::string toString();
 
     static LibraryInfo* getLibraryInfo(std::string library) {
         if ( libraries.count(library) == 0 ) return NULL;
         return libraries[library];
-    }
-    
-    // static Component* createComponent(std::string lib, std::string name, ComponentId_t id, Params& params) {
-        
-    // }
-    
+    }    
 };
 
 
@@ -349,7 +257,8 @@ public:
     }
     
     Component* create(ComponentId_t id, Params& params) {
-        return new T(id, params);
+        // return new T(id, params);
+        return T::create(id,params);
     }
 
     static const bool isLoaded() { return loaded; }
@@ -363,65 +272,7 @@ public:
 };
 
 
-// This version gets instanced if there is a custom create function
-template <class T>
-class ComponentDocCustomCreate : public ComponentDoc<T> {
-public:
-    ComponentDocCustomCreate() : ComponentDoc<T>() {
-    }
-    
-    Component* create(ComponentId_t id, Params& params) {
-        return T::ELI_Custom_Create(id, params);
-    }
-};
-
-// Class to check to see if the function custom_create exists.
-template <class T>
-class checkForCustomCreateComponent
-{
-    template <typename F, F> struct check;
-
-    typedef char Match;
-    typedef long NotMatch;
-
-    // Used for non-static
-    // template <typename F>
-    // struct FunctionSignature
-    // {
-    //     typedef Component* (F::*function)(ComponentId_t,Params&);
-    // };
-        
-    struct FunctionSignature
-    {
-        typedef Component* (*function)(ComponentId_t,Params&);
-    };
-
-    // Used for non-static functions
-    // template <typename F> static Match HasCustomCreate(check< typename FunctionSignature<F>::function, &F::ELI_Custom_Create >*);
-    template <typename F> static Match HasCustomCreate(check< typename FunctionSignature::function, &F::ELI_Custom_Create >*);
-    template <typename F> static NotMatch HasCustomCreate(...);
-
-public:
-    static bool const value = (sizeof(HasCustomCreate<T>(0)) == sizeof(Match) );
-};
-
-// These static functions choose between the custom and not custom
-// create versions by looking for ELI_Custom_Create
-template<class T>
-typename std::enable_if<checkForCustomCreateComponent<T>::value, ComponentElementInfo*>::type
-createComponentDoc() {
-    return new ComponentDocCustomCreate<T>();
-}
-
-template<class T>
-typename std::enable_if<not checkForCustomCreateComponent<T>::value, ComponentElementInfo*>::type
-createComponentDoc() {
-    return new ComponentDoc<T>();
-}
-
-
-// template<class T> const bool ComponentDoc<T>::loaded = ElementLibraryDatabase::addComponent(new ComponentDoc<T>());
-template<class T> const bool ComponentDoc<T>::loaded = ElementLibraryDatabase::addComponent(createComponentDoc<T>());
+template<class T> const bool ComponentDoc<T>::loaded = ElementLibraryDatabase::addComponent(new ComponentDoc<T>());
 
 
 /**************************************************************************
@@ -442,7 +293,8 @@ public:
     }
 
     SubComponent* create(Component* comp, Params& params) {
-        return new T(comp,params);
+        // return new T(comp,params);
+        return T::create(comp,params);
     }
 
     static const bool isLoaded() { return loaded; }
@@ -456,62 +308,13 @@ public:
 
 };
 
-// This version gets instanced if there is a custom create function
-template <class T>
-class SubComponentDocCustomCreate : public SubComponentDoc<T> {
-public:
-    SubComponentDocCustomCreate() : SubComponentDoc<T>() {
-    }
-    
-    SubComponent* create(Component* comp, Params& params) {
-        return T::ELI_Custom_Create(comp, params);
-    }
-};
-
-// Class to check to see if the function custom_create exists.
-template <class T>
-class checkForCustomCreateSubComponent
-{
-    template <typename F, F> struct check;
-
-    typedef char Match;
-    typedef long NotMatch;
-
-    struct FunctionSignature
-    {
-        typedef SubComponent* (*function)(Component*,Params&);
-    };
-
-    // Used for non-static functions
-    // template <typename F> static Match HasCustomCreate(check< typename FunctionSignature<F>::function, &F::ELI_Custom_Create >*);
-    template <typename F> static Match HasCustomCreate(check< typename FunctionSignature::function, &F::ELI_Custom_Create >*);
-    template <typename F> static NotMatch HasCustomCreate(...);
-
-public:
-    static bool const value = (sizeof(HasCustomCreate<T>(0)) == sizeof(Match) );
-};
-
-// These static functions choose between the custom and not custom
-// create versions by looking for ELI_Custom_Create
-template<class T>
-typename std::enable_if<checkForCustomCreateComponent<T>::value, SubComponentElementInfo*>::type
-createSubComponentDoc() {
-    return new SubComponentDocCustomCreate<T>();
-}
-
-template<class T>
-typename std::enable_if<not checkForCustomCreateSubComponent<T>::value, SubComponentElementInfo*>::type
-createSubComponentDoc() {
-    return new SubComponentDoc<T>();
-}
-
-
-// template<class T> const bool SubComponentDoc<T>::loaded = ElementLibraryDatabase::addSubComponent(new SubComponentDoc<T>());
-template<class T> const bool SubComponentDoc<T>::loaded = ElementLibraryDatabase::addSubComponent(createSubComponentDoc<T>());
+template<class T> const bool SubComponentDoc<T>::loaded = ElementLibraryDatabase::addSubComponent(new SubComponentDoc<T>());
 
 
 /**************************************************************************
   Classes to support Modules
+  There's some template metaprogramming to check for the two different
+  versions of constructors that can exist.
 **************************************************************************/
 
 template <class T>
@@ -638,11 +441,37 @@ public:
 
 template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase::addPartitioner(new PartitionerDoc<T>());
 
+
+/**************************************************************************
+  Classes to support element python modules
+**************************************************************************/
+template <class T>
+class PythonModuleDoc : public PythonModuleElementInfo {
+private:
+    static const bool loaded;
+    // Only need to create one of these
+    static T* instance;
+    
+public:
+
+    SSTElementPythonModule* create() {
+        // return new T(getLibrary());
+        if( instance == NULL ) instance = new T(getLibrary());
+        return instance; 
+    }
+    
+    static const bool isLoaded() { return loaded; }
+    const std::string getLibrary() { return T::ELI_getLibrary(); }
+};
+
+template<class T> T* PythonModuleDoc<T>::instance = NULL;
+template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase::addPythonModule(new PythonModuleDoc<T>());
+
 /**************************************************************************
   Macros used by elements to add element documentation
 **************************************************************************/
 
-#define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat)   \
+#define SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)   \
     friend class ComponentDoc<cls>; \
     bool ELI_isLoaded() {                           \
         return ComponentDoc<cls>::isLoaded();     \
@@ -660,32 +489,36 @@ template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase:
       return cat; \
     }
 
-#define SST_ELI_DOCUMENT_PARAMS(...) \
+#define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat) \
+    static Component* create(ComponentId_t id, Params& params) { \
+      return new cls(id,params); \
+    } \
+    SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)
+
+
+
+#define SST_ELI_DOCUMENT_PARAMS(...)                              \
     static const std::vector<ElementInfoParam>& ELI_getParams() { \
         static std::vector<ElementInfoParam> var = { __VA_ARGS__ } ; \
         return var; \
     }
 
-// #define DOCUMENT_STATISTICS(...) \
-//     static const std::vector<ElementInfoStatistic>& ELI_getStatistics() {  \
-// return std::vector<ElementInfoStatistic> { __VA_ARGS__ } ;      \
-//     }
 
-#define SST_ELI_DOCUMENT_STATISTICS(...) \
+#define SST_ELI_DOCUMENT_STATISTICS(...)                                \
     static const std::vector<ElementInfoStatistic>& ELI_getStatistics() {  \
         static std::vector<ElementInfoStatistic> var = { __VA_ARGS__ } ;  \
         return var; \
     }
 
-#define SST_ELI_DOCUMENT_PORTS(...) \
+
+#define SST_ELI_DOCUMENT_PORTS(...)                              \
     static const std::vector<ElementInfoPort2>& ELI_getPorts() { \
         static std::vector<ElementInfoPort2> var = { __VA_ARGS__ } ;      \
         return var; \
     }
 
 
-
-#define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \
+#define SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)   \
     friend class SubComponentDoc<cls>; \
     bool ELI_isLoaded() {                           \
       return SubComponentDoc<cls>::isLoaded(); \
@@ -702,6 +535,12 @@ template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase:
     static const std::string ELI_getInterface() {  \
       return interface; \
     }
+
+#define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \
+    static SubComponent* create(Component* comp, Params& params) { \
+    return new cls(comp,params); \
+    } \
+    SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)
 
 
 #define SST_ELI_REGISTER_MODULE(cls,lib,name,desc,interface) \
@@ -722,6 +561,7 @@ template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase:
       return interface; \
     }
 
+
 #define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,desc) \
     friend class PartitionerDoc<cls>; \
     bool ELI_isLoaded() { \
@@ -735,6 +575,16 @@ template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase:
     } \
     static const std::string ELI_getDescription() {  \
       return desc; \
+    }
+
+
+#define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib) \
+    friend class PythonModuleDoc<cls>; \
+    bool ELI_isLoaded() { \
+      return PythonModuleDoc<cls>::isLoaded(); \
+    } \
+    static const std::string ELI_getLibrary() { \
+      return lib; \
     }
 
 } //namespace SST

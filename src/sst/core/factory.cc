@@ -172,7 +172,6 @@ Factory::CreateComponent(ComponentId_t id,
             Component *ret = comp->create(id, params);
             params.popAllowedKeys();
             loadingComponentType = "";
-            std::cout << "Using new ELI for " << type << std::endl;
             return ret;
         }
     }
@@ -451,7 +450,6 @@ Factory::CreateModule(std::string type, Params& params)
             params.pushAllowedKeys(module->getParamNames());
             Module *ret = module->create(params);
             params.popAllowedKeys();
-            std::cout << "Using new ELI for " << type << std::endl;
             return ret;
         }
     }
@@ -568,7 +566,6 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
             params.pushAllowedKeys(module->getParamNames());
             Module *ret = module->create(comp,params);
             params.popAllowedKeys();
-            std::cout << "Using new ELI for " << type << std::endl;
             return ret;
         }
     }
@@ -616,7 +613,6 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
             params.pushAllowedKeys(subcomp->getParamNames());
             SubComponent* ret = subcomp->create(comp, params);
             params.popAllowedKeys();
-            std::cout << "Using new ELI for " << type << std::endl;
             return ret;
         }
     }
@@ -673,7 +669,6 @@ Factory::CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_r
     if ( lib != NULL ) {
         PartitionerElementInfo* part = lib->getPartitioner(elem);
         if ( part != NULL ) {
-            std::cout << "Using new ELI for " << name << std::endl;
             return part->create(total_ranks, my_rank, verbosity);
         }
     }
@@ -715,15 +710,34 @@ Factory::GetGenerator(std::string name)
 }
 
 
-genPythonModuleFunction
+// genPythonModuleFunction
+SSTElementPythonModule*
 Factory::getPythonModule(std::string name)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(name);
 
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        PythonModuleElementInfo* pymod = lib->getPythonModule();
+        if ( pymod != NULL ) {
+            return pymod->create();
+        }
+    }
+
+    // Didn't find it in new ELI, so look in old.
     const ElementLibraryInfo *eli = findLibrary(elemlib, false);
-    if ( eli )
-        return eli->pythonModuleGenerator;
+    if ( eli ) {
+        if ( eli->pythonModuleGenerator != NULL ) {
+            // This could create a small memory leak, but will go away
+            // once old ELI is dropped and shouldn't create a big
+            // enough leak to be a problem.  Could add a cache in the
+            // factory so that only one is created.
+            return new SSTElementPythonModuleOldELI(eli->pythonModuleGenerator);
+        }
+    }
     return NULL;
 }
 
