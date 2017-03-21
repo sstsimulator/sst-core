@@ -213,7 +213,8 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg)
 
 static PyObject* compAddLink(PyObject *self, PyObject *args)
 {
-    ComponentId_t id = ((PyComponent*)(((ComponentPy_t*)self)->obj))->id;;
+    ConfigComponent *c = getComp(self);
+    ComponentId_t id = c->id;
 
     PyObject *plink = NULL;
     char *port = NULL, *lat = NULL;
@@ -455,15 +456,6 @@ static void subCompDealloc(ComponentPy_t *self)
 
 
 
-static PyObject* subCompAddLink(PyObject *self, PyObject *args)
-{
-    /* TODO */
-    gModel->getOutput()->fatal(CALL_INFO, 1, "SubComponent Links not yet implemented.\n");
-    return NULL;
-}
-
-
-
 static PyMethodDef subComponentMethods[] = {
     {   "addParam",
         compAddParam, METH_VARARGS,
@@ -472,8 +464,8 @@ static PyMethodDef subComponentMethods[] = {
         compAddParams, METH_O,
         "Adds Multiple Parameters from a dict"},
     {   "addLink",
-        subCompAddLink, METH_VARARGS,
-        "Connects this component to a Link"},
+        compAddLink, METH_VARARGS,
+        "Connects this subComponent to a Link"},
     {   "enableAllStatistics",
         compEnableAllStatistics, METH_VARARGS,
         "Enable all Statistics in the component with optional parameters"},

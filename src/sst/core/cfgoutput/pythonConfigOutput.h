@@ -15,24 +15,37 @@
 
 #include <sst/core/configGraph.h>
 #include <sst/core/configGraphOutput.h>
+#include <map>
 
 namespace SST {
 namespace Core {
 
 class PythonConfigGraphOutput : public ConfigGraphOutput {
 public:
-        PythonConfigGraphOutput(const char* path);
+    PythonConfigGraphOutput(const char* path);
 
-        virtual void generate(const Config* cfg,
-		ConfigGraph* graph) throw(ConfigGraphOutputException);
+    virtual void generate(const Config* cfg,
+            ConfigGraph* graph) throw(ConfigGraphOutputException);
 
 protected:
-	char* makePythonSafeWithPrefix(const std::string name, const std::string prefix) const;
-	void makeBufferPythonSafe(char* buffer) const;
-	char* makeEscapeSafe(const std::string input) const;
-	bool strncmp(const char* a, const char* b, const size_t n) const;
-	bool isMultiLine(const char* check) const;
-	bool isMultiLine(const std::string check) const;
+    ConfigGraph* getGraph() { return graph; }
+    void generateParams( const Params &params );
+    void generateCommonComponent( const char* objName, const ConfigComponent &comp);
+    void generateSubComponent( const char* owner, const ConfigComponent &comp );
+    void generateComponent( const ConfigComponent &comp );
+
+    const std::string& getLinkObject(LinkId_t id);
+
+    char* makePythonSafeWithPrefix(const std::string name, const std::string prefix) const;
+    void makeBufferPythonSafe(char* buffer) const;
+    char* makeEscapeSafe(const std::string input) const;
+    bool strncmp(const char* a, const char* b, const size_t n) const;
+    bool isMultiLine(const char* check) const;
+    bool isMultiLine(const std::string check) const;
+
+private:
+    ConfigGraph *graph;
+    std::map<LinkId_t, std::string> linkMap;
 };
 
 }
