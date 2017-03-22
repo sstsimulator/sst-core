@@ -52,7 +52,7 @@ Config::Config(RankInfo rankInfo)
     stopAfterSec = 0;
     timeBase    = "1 ps";
     heartbeatPeriod = "N";
-    partitioner = "linear";
+    partitioner = "sst.linear";
     generator   = "NONE";
     generator_options   = "";
     dump_component_graph_file = "";
