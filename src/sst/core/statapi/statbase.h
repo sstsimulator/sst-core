@@ -202,7 +202,7 @@ private:
       * by default, both modes are supported.
       * @param mode - Mode to test
       */
-    virtual bool isStatModeSupported(StatMode_t mode) const {return true;}      // Default is to accept all modes
+    virtual bool isStatModeSupported(StatMode_t mode __attribute__((unused))) const {return true;}      // Default is to accept all modes
 
     /** Verify that the statistic names match */
     bool operator==(StatisticBase& checkStat); 

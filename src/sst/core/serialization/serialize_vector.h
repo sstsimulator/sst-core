@@ -45,7 +45,7 @@ class serialize<std::vector<T> > {
     }
     }
   
-    for (int i=0; i < v.size(); ++i){
+    for (size_t i=0; i < v.size(); ++i){
       serialize<T>()(v[i], ser);
     }
   }

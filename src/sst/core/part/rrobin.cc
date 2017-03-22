@@ -21,7 +21,7 @@ using namespace std;
 namespace SST {
 namespace Partition {
 
-SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo my_rank, int verbosity) :
+SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo my_rank __attribute__((unused)), int verbosity __attribute__((unused))) :
     SSTPartitioner(),
     world_size(world_size)
 {

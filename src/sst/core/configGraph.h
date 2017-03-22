@@ -348,7 +348,7 @@ public:
     // PartitionComponent(ComponentId_t id, ConfigGraph* graph, const ComponentIdMap_t& group);
     void print(std::ostream &os, const PartitionGraph* graph) const;
 
-    inline const ComponentId_t key() const { return id; }
+    inline ComponentId_t key() const { return id; }
 
 };
 
@@ -368,7 +368,7 @@ public:
         no_cut = cl.no_cut;
     }
 
-    inline const LinkId_t key() const { return id; }
+    inline LinkId_t key() const { return id; }
 
     /** Return the minimum latency of this link (from both sides) */
     SimTime_t getMinLatency() const {

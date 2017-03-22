@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 	std::string groupName(argv[1]);
 	std::string keyValPair(argv[2]);
 
-	int equalsIndex = 0;
+	size_t equalsIndex = 0;
 
 	for(equalsIndex = 0; equalsIndex < keyValPair.size(); equalsIndex++) {
 		if('=' == argv[2][equalsIndex]) {

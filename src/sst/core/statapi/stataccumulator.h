@@ -138,7 +138,7 @@ private:
         Field3 = statOutput->registerField<uint64_t>  ("Count");
     }
     
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag)
+    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused)))
     {
         statOutput->outputField(Field1, m_sum);
         statOutput->outputField(Field2, m_sum_sq);  

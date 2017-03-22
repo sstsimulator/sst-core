@@ -221,16 +221,13 @@ BaseComponent::configureSelfLink( std::string name, Event::HandlerBase* handler)
     return configureLink(name,handler);
 }
 
-Link* BaseComponent::selfLink( std::string name, Event::HandlerBase* handler )
+Link* BaseComponent::selfLink( std::string name __attribute__((unused)), Event::HandlerBase* handler )
 {
-//     Link* link = new Link(handler);
-//     link->Connect(link,0);
-//     return link;
     Link* link = new SelfLink();
     link->setLatency(0);
     link->setFunctor(handler);
     if ( handler == NULL ) {
-	link->setPolling();
+        link->setPolling();
     }
     return link;
 }

@@ -21,7 +21,7 @@ XMLConfigGraphOutput::XMLConfigGraphOutput(const char* path) :
 
 }
 
-void XMLConfigGraphOutput::generate(const Config* cfg,
+void XMLConfigGraphOutput::generate(const Config* cfg __attribute__((unused)),
                 ConfigGraph* graph) throw(ConfigGraphOutputException) {
 
 	if(NULL == outputFile) {
@@ -48,7 +48,7 @@ void XMLConfigGraphOutput::generate(const Config* cfg,
 }
 
 void XMLConfigGraphOutput::generateXML(const std::string indent, const ConfigComponent& comp,
-                const ConfigLinkMap_t& linkMap) const {
+                const ConfigLinkMap_t& linkMap __attribute__((unused))) const {
 
 	fprintf(outputFile, "%s<component id=\"system.%s\" name=\"%s\" type=\"%s\">\n",
 		indent.c_str(), comp.name.c_str(), comp.name.c_str(), comp.type.c_str());

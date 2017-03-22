@@ -278,7 +278,7 @@ public:
 
 
     /** Constructor, designed to be used via 'loadSubComponent'. */
-    SimpleMem(SST::Component *comp, Params &params) :
+    SimpleMem(SST::Component *comp, Params &params __attribute__((unused))) :
         SubComponent(comp)
         { }
 

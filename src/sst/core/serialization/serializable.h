@@ -68,7 +68,7 @@ constexpr uint32_t ct_hash_rec(const char* str)
 // End of the recursion (i.e. when you've walked back off the front of
 // the string
 template<>
-constexpr uint32_t ct_hash_rec<size_t(-1)>(const char* str)
+constexpr uint32_t ct_hash_rec<size_t(-1)>(const char* str __attribute__((unused)))
 {
     return 0;
 }
@@ -141,7 +141,7 @@ class serializable_type
      serializable_abort(CALL_INFO_LONG, #obj); \
   } \
   virtual void \
-  serialize_order(SST::Core::Serialization::serializer& sst){    \
+  serialize_order(SST::Core::Serialization::serializer& sst __attribute__((unused))){    \
     throw_exc(); \
   } \
   virtual uint32_t \
@@ -206,7 +206,7 @@ class serializable_builder
   virtual const char*
   name() const = 0;
 
-  virtual const uint32_t
+  virtual uint32_t
   cls_id() const = 0;
 
   virtual bool
@@ -231,7 +231,7 @@ class serializable_builder_impl : public serializable_builder
     return name_;
   }
 
-  const uint32_t
+  uint32_t
   cls_id() const {
       return cls_id_;
   }

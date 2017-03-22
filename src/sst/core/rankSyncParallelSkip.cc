@@ -35,7 +35,7 @@ SimTime_t RankSyncParallelSkip::myNextSyncTime = 0;
 
 ///// RankSyncParallelSkip class /////
     
-RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC) :
+RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC __attribute__((unused))) :
     NewRankSync(),
     mpiWaitTime(0.0),
     deserializeTime(0.0),
@@ -48,7 +48,7 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* mi
     max_period = Simulation::getSimulation()->getMinPartTC();
     myNextSyncTime = max_period->getFactor();
     recv_count = new int[num_ranks.thread];
-    for ( int i = 0; i < num_ranks.thread; i++ ) {
+    for ( uint32_t i = 0; i < num_ranks.thread; i++ ) {
         recv_count[i] = 0;
     }
     link_send_queue = new SST::Core::ThreadSafe::UnboundedQueue<comm_recv_pair*>[num_ranks.thread];
@@ -190,7 +190,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
             // comm_recv_pair* recv = link_send_queue[thread].remove();        
             my_recv_count--;
 
-            for ( int i = 0; i < recv->activity_vec.size(); i++ ) {
+            for ( size_t i = 0; i < recv->activity_vec.size(); i++ ) {
                 Event* ev = static_cast<Event*>(recv->activity_vec[i]);
                 link_map_t::iterator link = link_map.find(ev->getLinkId());
                 if (link == link_map.end()) {
@@ -215,7 +215,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
 }
 
 void
-RankSyncParallelSkip::exchange_master(int thread)
+RankSyncParallelSkip::exchange_master(int thread __attribute__((unused)))
 {
     // TraceFunction trace(CALL_INFO_LONG);
     // Simulation::getSimulation()->getSimulationOutput().output("Entering RankSyncParallelSkip::execute()\n");

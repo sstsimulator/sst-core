@@ -169,7 +169,7 @@ bool Config::usage() {
             "Usage: sst [options] config-file\n"
             "\n");
     for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
-        int npos = 0;
+        uint32_t npos = 0;
         if ( sstOptions[i].opt.val ) {
             npos += fprintf(stderr, "  -%c, ", (char)sstOptions[i].opt.val);
         } else {
@@ -368,7 +368,7 @@ bool Config::setStopAfter(const std::string &arg) {
         "%Ss"
     };
     const size_t n_templ = sizeof(templates) / sizeof(templates[0]);
-    struct tm res = {0};
+    struct tm res = {};
     char *p;
 
     for ( size_t i = 0 ; i < n_templ ; i++ ) {

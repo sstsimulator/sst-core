@@ -18,7 +18,7 @@ using namespace std;
 
 using namespace SST::Partition;
 
-SSTSinglePartition::SSTSinglePartition(RankInfo total_ranks, RankInfo my_rank, int verbosity) {}
+SSTSinglePartition::SSTSinglePartition(RankInfo total_ranks __attribute__((unused)), RankInfo my_rank __attribute__((unused)), int verbosity __attribute__((unused))) {}
 
 void SSTSinglePartition::performPartition(PartitionGraph* graph) {
 

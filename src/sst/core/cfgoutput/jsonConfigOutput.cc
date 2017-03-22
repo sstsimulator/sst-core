@@ -27,7 +27,7 @@ JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) :
 
 }
 
-void JSONConfigGraphOutput::generate(const Config* cfg,
+void JSONConfigGraphOutput::generate(const Config* cfg __attribute__((unused)),
                 ConfigGraph* graph) throw(ConfigGraphOutputException) {
 
 	if(NULL == outputFile) {
@@ -59,7 +59,7 @@ void JSONConfigGraphOutput::generate(const Config* cfg,
 }
 
 void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigComponent& comp,
-                const ConfigLinkMap_t& linkMap) const {
+                const ConfigLinkMap_t& linkMap __attribute__((unused))) const {
 
 	fprintf(outputFile, "%s  {\n", indent.c_str());
 	fprintf(outputFile, "%s    \"name\" : \"%s\",\n", indent.c_str(), comp.name.c_str());

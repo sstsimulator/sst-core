@@ -104,7 +104,7 @@ TimeLord::~TimeLord() {
     parseCache.clear();
 }
 
-SimTime_t TimeLord::getSimCycles(std::string ts, std::string where)
+SimTime_t TimeLord::getSimCycles(std::string ts, std::string where __attribute__((unused)))
 {
     // See if this is in the cache
     std::lock_guard<std::recursive_mutex> lock(slock);

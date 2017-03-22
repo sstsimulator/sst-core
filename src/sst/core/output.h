@@ -326,6 +326,14 @@ public:
                 va_end(arg);
             }
         }
+#else
+        /* When debug is disabled, silence warnings of unused parameters */
+        (void)line;
+        (void)file;
+        (void)func;
+        (void)output_level;
+        (void)output_bits;
+        (void)format;
 #endif
     }
 

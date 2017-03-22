@@ -28,7 +28,7 @@
 namespace SST {
 
 
-bool SharedRegionMerger::merge(uint8_t *target, const uint8_t *newData, size_t size)
+bool SharedRegionMerger::merge(uint8_t *target __attribute__((unused)), const uint8_t *newData __attribute__((unused)), size_t size __attribute__((unused)))
 {
     return false;
 }

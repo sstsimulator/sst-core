@@ -24,7 +24,7 @@ using namespace std;
 namespace SST {
 namespace Partition {
 
-SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo my_rank, int verbosity) :
+SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo my_rank __attribute__((unused)), int verbosity __attribute__((unused))) :
         SSTPartitioner(),
         world_size(total_ranks),
         total_parts(world_size.rank * world_size.thread)
@@ -123,8 +123,8 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo my_rank, int
 			component_map[setB[i]].rank = convertPartNum(rankB);
 		}
 
-		const int A1_rank = rankA;
-		const int A2_rank = rankA + pow2(step);
+		const uint32_t A1_rank = rankA;
+		const uint32_t A2_rank = rankA + pow2(step);
 
 		if(A2_rank < total_parts) {
 			const int lengthA1 = lengthA % 2 == 1 ? (lengthA / 2) + 1 : (lengthA / 2);
@@ -151,8 +151,8 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo my_rank, int
 			free(setA2);
 		}
 
-		const int B1_rank = rankB;
-		const int B2_rank = rankB + pow2(step);
+		const uint32_t B1_rank = rankB;
+		const uint32_t B2_rank = rankB + pow2(step);
 
 		if(B2_rank < total_parts) {
 			const int lengthB1 = lengthB % 2 == 1 ? (lengthB / 2) + 1 : (lengthB / 2);

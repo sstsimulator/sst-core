@@ -54,7 +54,7 @@ private:
     ~NullStatistic(){};
 
 protected:    
-    void addData_impl(T data)
+    void addData_impl(T data __attribute__((unused)))
     {
         // Do Nothing
     }
@@ -65,12 +65,12 @@ private:
         // Do Nothing
     }
     
-    void registerOutputFields(StatisticOutput* statOutput)
+    void registerOutputFields(StatisticOutput* statOutput __attribute__((unused)))
     {
         // Do Nothing
     }
     
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag)
+    void outputStatisticData(StatisticOutput* statOutput __attribute__((unused)), bool EndOfSimFlag __attribute__((unused)))
     {
         // Do Nothing
     }

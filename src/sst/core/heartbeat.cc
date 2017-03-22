@@ -23,7 +23,7 @@
 
 namespace SST {
 
-SimulatorHeartbeat::SimulatorHeartbeat( Config* cfg, int this_rank, Simulation* sim, TimeConverter* period) :
+SimulatorHeartbeat::SimulatorHeartbeat( Config* cfg __attribute__((unused)), int this_rank, Simulation* sim, TimeConverter* period) :
     Action(),
     rank(this_rank),
     m_period( period )

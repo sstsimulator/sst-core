@@ -187,8 +187,8 @@ protected:
     virtual void printUsage() = 0;
 
 
-    virtual void implStartRegisterFields(StatisticBase *statistic) {}
-    virtual void implRegisteredField(fieldHandle_t fieldHandle) {}
+    virtual void implStartRegisterFields(StatisticBase *statistic __attribute__((unused))) {}
+    virtual void implRegisteredField(fieldHandle_t fieldHandle __attribute__((unused))) {}
     virtual void implStopRegisterFields() {}
 
     // Simulation Events
