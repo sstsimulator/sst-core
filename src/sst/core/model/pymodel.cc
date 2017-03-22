@@ -126,8 +126,9 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
         // Check for the existence of a library
         char *modName = name+4;
         if ( Factory::getFactory()->hasLibrary(modName) ) {
-            genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
-            if ( func ) {
+            // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
+            SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
+            if ( pymod ) {
                 Py_INCREF(self);
                 return self;
             }
@@ -155,12 +156,13 @@ static PyObject* mlLoadModule(PyObject *self, PyObject *args)
     char *modName = name+4; // sst.<modName>
 
     //fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
-    genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
+    // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
+    SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
     PyObject* mod = NULL;
-    if ( !func ) {
+    if ( !pymod ) {
         mod = Py_InitModule(name, emptyModMethods);
     } else {
-        mod = static_cast<PyObject*>((*func)());
+        mod = static_cast<PyObject*>(pymod->load());
     }
 
     return mod;

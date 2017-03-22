@@ -13,19 +13,12 @@
 #define SST_CORE_ELEMENT_H
 
 #include <sst/core/sst_types.h>
-
-//#include <sst/core/component.h>
-//#include <sst/core/params.h>
+#include <sst/core/params.h>
 
 #include <stdio.h>
 #include <string>
 
-// Component Category Definitions
-#define COMPONENT_CATEGORY_UNCATEGORIZED  0x00
-#define COMPONENT_CATEGORY_PROCESSOR      0x01
-#define COMPONENT_CATEGORY_MEMORY         0x02
-#define COMPONENT_CATEGORY_NETWORK        0x04
-#define COMPONENT_CATEGORY_SYSTEM         0x08
+#include <elibase.h>
 
 namespace SST {
 class Component;
@@ -50,36 +43,6 @@ typedef SST::Partition::SSTPartitioner* (*partitionFunction)(RankInfo, RankInfo,
 typedef void (*generateFunction)(ConfigGraph*, std::string options, int ranks);
 typedef void* (*genPythonModuleFunction)(void);
 
-/** Describes Statistics used by a Component.
- */
-struct ElementInfoStatistic {
-    const char* name;		/*!< Name of the Statistic to be Enabled */
-    const char* description;	/*!< Brief description of the Statistic */
-    const char* units;          /*!< Units associated with this Statistic value */
-    const uint8_t enableLevel;	/*!< Level to meet to enable statistic 0 = disabled */
-};
-
-/** Describes Parameters to a Component.
- */
-struct ElementInfoParam {
-    const char *name;			/*!< Name of the parameter */
-    const char *description;	/*!< Brief description of the parameter (ie, what it controls) */
-    const char *defaultValue;	/*!< Default value (if any) NULL == required parameter with no default, "" == optional parameter, blank default, "foo" == default value */
-};
-
-/** Describes Ports that the Component can use
- */
-struct ElementInfoPort {
-    const char *name;			/*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter */
-    const char *description;	/*!< Brief description of the port (ie, what it is used for) */
-    const char **validEvents;	/*!< List of fully-qualified event types that this Port expects to send or receive */
-};
-
-struct ElementInfoSubComponentHook {
-    const char * name;
-    const char * description;
-    const char * superclass;
-};
 
 /** Describes a Component and its associated information
  */
@@ -170,6 +133,7 @@ struct ElementLibraryInfo {
     genPythonModuleFunction pythonModuleGenerator;			/*!< Pointer to Function to generate a Python Module for use in Configurations */
     const struct ElementInfoGenerator* generators;			/*!< List of Generators provided by the library. */
 };
+
 } //namespace SST
 
 #endif // SST_CORE_ELEMENT_H
