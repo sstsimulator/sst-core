@@ -35,7 +35,6 @@ SimTime_t RankSyncSerialSkip::myNextSyncTime = 0;
 
 RankSyncSerialSkip::RankSyncSerialSkip(TimeConverter* minPartTC) :
     NewRankSync(),
-    minPartTC(minPartTC),
     mpiWaitTime(0.0),
     deserializeTime(0.0)
 {

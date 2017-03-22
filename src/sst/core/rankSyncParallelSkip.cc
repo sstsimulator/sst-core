@@ -37,7 +37,6 @@ SimTime_t RankSyncParallelSkip::myNextSyncTime = 0;
     
 RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC) :
     NewRankSync(),
-    minPartTC(minPartTC),
     mpiWaitTime(0.0),
     deserializeTime(0.0),
     send_count(0),
@@ -191,8 +190,6 @@ RankSyncParallelSkip::exchange_slave(int thread)
             // comm_recv_pair* recv = link_send_queue[thread].remove();        
             my_recv_count--;
 
-            std::vector<Activity*>& activities = recv->activity_vec;
-        
             for ( int i = 0; i < recv->activity_vec.size(); i++ ) {
                 Event* ev = static_cast<Event*>(recv->activity_vec[i]);
                 link_map_t::iterator link = link_map.find(ev->getLinkId());
@@ -228,9 +225,7 @@ RankSyncParallelSkip::exchange_master(int thread)
     //Maximum number of outstanding requests is 3 times the number
     // of ranks I communicate with (1 recv, 2 sends per rank)
     MPI_Request sreqs[2 * comm_send_map.size()];
-    MPI_Request rreqs[comm_recv_map.size()];
     int sreq_count = 0;
-    int rreq_count = 0;
 
     // First thing to do is fill the serialize_queue.
     for (auto i = comm_send_map.begin() ; i != comm_send_map.end() ; ++i) {
@@ -245,8 +240,6 @@ RankSyncParallelSkip::exchange_master(int thread)
         // Post all the receives
         int tag = 2 * i->second.local_thread;
         i->second.recv_done = false;
-        // MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE,
-        //           i->second.remote_rank, tag, MPI_COMM_WORLD, &rreqs[rreq_count++]);
         MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE,
                   i->second.remote_rank, tag, MPI_COMM_WORLD, &i->second.req);
     }

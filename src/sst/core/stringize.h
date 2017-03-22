@@ -123,7 +123,7 @@ struct escaped_list_separator {
     std::string s;
 
     escaped_list_separator(const std::string &esc="\\", const std::string &sep=",", const std::string &quote="\"")
-        : e(esc), s(sep), q(quote) { }
+        : e(esc), q(quote), s(sep) { }
 
 
     /**

@@ -144,7 +144,6 @@ Link*
 BaseComponent::configureLink(std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
     LinkMap* myLinks = my_info->getLinkMap();
-    const std::string& type = my_info->getType();
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
 
@@ -170,7 +169,6 @@ Link*
 BaseComponent::configureLink(std::string name, Event::HandlerBase* handler)
 {
     LinkMap* myLinks = my_info->getLinkMap();
-    const std::string& type = my_info->getType();
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
 

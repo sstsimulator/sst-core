@@ -46,8 +46,7 @@ public:
 private:
 
     static SimTime_t myNextSyncTime;
-    TimeConverter* minPartTC;
-    
+
     // Function that actually does the exchange during run
     void exchange();
     

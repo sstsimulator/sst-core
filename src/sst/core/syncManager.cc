@@ -77,7 +77,6 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeCo
     rank(rank),
     num_ranks(num_ranks),
     threadSync(NULL),
-    next_threadSync(0),
     min_part(min_part)
 {
     // TraceFunction trace(CALL_INFO_LONG);    

@@ -335,9 +335,6 @@ void SSTInfoConfig::outputVersion()
 
 int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 {
-    unsigned int              x;
-    size_t                    foundIndex;
-
     m_AppName = argv[0];
 
     static const struct option longOpts[] = {

@@ -238,7 +238,6 @@ void StatisticOutputHDF5::StatisticInfo::finalizeRegistration()
     size_t nFields = typeList.size() -1;
     currentData.resize(nFields);
 
-    StatData_u* dataPointer = currentData.data();
     /* Build HDF5 datatypes */
     size_t dataSize = currentData.size() * sizeof(StatData_u);
     memType = new H5::CompType(dataSize);

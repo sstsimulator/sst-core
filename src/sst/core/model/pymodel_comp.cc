@@ -426,7 +426,6 @@ static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
 {
     char *name, *type;
     PyObject *parent;
-    ComponentId_t useID = UNSET_COMPONENT_ID;
     if ( !PyArg_ParseTuple(args, "Oss", &parent, &name, &type) )
         return -1;
 
