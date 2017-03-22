@@ -210,6 +210,7 @@ public:
         case PACK: return packer_.size();
         case UNPACK: return unpacker_.size();
         }
+        return 0;
     }
 
 protected:

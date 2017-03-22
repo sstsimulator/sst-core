@@ -73,7 +73,7 @@ std::vector<char> serialize(dataType &data)
 template <typename dataType>
 dataType* deserialize(std::vector<char> &buffer)
 {
-    dataType *tgt;
+    dataType *tgt = NULL;
 
     SST::Core::Serialization::serializer ser;
 

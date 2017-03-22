@@ -52,8 +52,8 @@ class serialize<std::map<Key,Value> > {
       size_t size;
       ser.unpack(size);
       for (size_t i=0; i < size; ++i){
-        Key k;
-        Value v;
+        Key k = {};
+        Value v = {};
         serialize<Key>()(k, ser);
         serialize<Value>()(v, ser);
         m[k] = v;
