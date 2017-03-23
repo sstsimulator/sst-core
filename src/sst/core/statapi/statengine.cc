@@ -306,7 +306,7 @@ void StatisticProcessingEngine::addStatisticClock(const UnitAlgebra& freq, Stati
     statArray->push_back(stat);
 }
 
-bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor) 
+bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t CycleNum __attribute__((unused)), SimTime_t timeFactor) 
 {
     StatArray_t*     statArray;
     StatisticBase*   stat;
@@ -392,7 +392,7 @@ StatisticBase* StatisticProcessingEngine::isStatisticInCompStatMap(const std::st
     return NULL;
 }
 
-void StatisticProcessingEngine::addStatisticToCompStatMap(const ComponentId_t& compId, StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType)
+void StatisticProcessingEngine::addStatisticToCompStatMap(const ComponentId_t& compId, StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType __attribute__((unused)))
 {
     StatArray_t*        statArray;
     

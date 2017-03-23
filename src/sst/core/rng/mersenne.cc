@@ -99,11 +99,11 @@ int64_t  MersenneRNG::generateNextInt64() {
 	const char* lowerHalfPtr = (const char*) &lowerHalf;
 	const char* upperHalfPtr = (const char*) &upperHalf;
 
-	for(int i = 0; i < sizeof(lowerHalf); i++) {
+	for(size_t i = 0; i < sizeof(lowerHalf); i++) {
 		returnNumberPtr[i] = lowerHalfPtr[i];
 	}
 
-	for(int i = 0; i < sizeof(upperHalf); i++) {
+	for(size_t i = 0; i < sizeof(upperHalf); i++) {
 		returnNumberPtr[i + 4] = upperHalfPtr[i];
 	}
 

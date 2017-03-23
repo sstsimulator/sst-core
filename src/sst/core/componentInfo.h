@@ -28,7 +28,7 @@ class BaseComponent;
 
 class ComponentInfoMap;
 
-struct ComponentInfo {
+class ComponentInfo {
 
 public:
     typedef std::vector<std::string>      statEnableList_t;        /*!< List of Enabled Statistics */

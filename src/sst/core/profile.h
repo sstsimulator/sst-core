@@ -57,13 +57,13 @@ inline ProfData_t now()
     return 0.0;
 }
 
-inline double getElapsed(const ProfData_t &begin, const ProfData_t &end)
+inline double getElapsed(const ProfData_t &begin __attribute__((unused)), const ProfData_t &end __attribute__((unused)))
 {
     return 0.0;
 }
 
 
-inline double getElapsed(const ProfData_t &since)
+inline double getElapsed(const ProfData_t &since __attribute__((unused)))
 {
     return 0.0;
 }

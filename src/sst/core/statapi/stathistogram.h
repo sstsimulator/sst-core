@@ -262,7 +262,7 @@ private:
         }
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag)
+    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused)))
     {
         uint32_t x = 0;
         statOutput->outputField(m_Fields[x++], getBinsMinValue());

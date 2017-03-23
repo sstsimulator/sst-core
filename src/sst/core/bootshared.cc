@@ -20,7 +20,7 @@
 #include "bootshared.h"
 #include "sst/core/env/envquery.h"
 
-void update_env_var(const char* name, const int verbose, char* argv[], const int argc) {
+void update_env_var(const char* name, const int verbose __attribute__((unused)), char* argv[] __attribute__((unused)), const int argc __attribute__((unused))) {
         char* current_ld_path  = getenv(name);
 	char* new_ld_path      = (char*) malloc(sizeof(char) * 32768);
 	char* new_ld_path_copy = (char*) malloc(sizeof(char) * 32768);
@@ -70,7 +70,7 @@ void boot_sst_configure_env(const int verbose, char* argv[], const int argc) {
         update_env_var("DYLD_LIBRARY_PATH", verbose, argv, argc);
 }
 
-void boot_sst_executable(const char* binary, const int verbose, char* argv[], const int argc) {
+void boot_sst_executable(const char* binary, const int verbose, char* argv[], const int argc __attribute__((unused))) {
 	char* real_binary_path = (char*) malloc(sizeof(char) * PATH_MAX);
 
 	if(strcmp(SST_INSTALL_PREFIX, "NONE") == 0) {

@@ -130,7 +130,7 @@ static std::vector<std::string> splitPath(const std::string & searchPaths)
     }
 
     delete [] pathCopy;
-    return std::move( paths );
+    return paths;
 }
 
 

@@ -69,7 +69,7 @@ public:
         RegionMergeInfo(int rank, const std::string &key) : rank(rank), key(key) { }
         virtual ~RegionMergeInfo() { }
 
-        virtual bool merge(RegionInfo *ri) { return true; }
+        virtual bool merge(RegionInfo *ri __attribute__((unused))) { return true; }
         const std::string& getKey() const { return key; }
 
         void serialize_order(SST::Core::Serialization::serializer &ser) {

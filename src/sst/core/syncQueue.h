@@ -58,7 +58,7 @@ public:
     
 private:
     char* buffer;
-    int buf_size;
+    size_t buf_size;
     std::vector<Activity*> activities;
 
     Core::ThreadSafe::Spinlock slock;

@@ -115,7 +115,7 @@ static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
 }
 
 
-static void processSSTElementFiles(std::string searchPath)
+static void processSSTElementFiles(std::string searchPath __attribute__((unused)))
 {
     std::vector<bool>       EntryProcessedArray;
     ElemLoader              loader(g_searchPath);
@@ -335,9 +335,6 @@ void SSTInfoConfig::outputVersion()
 
 int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 {
-    unsigned int              x;
-    size_t                    foundIndex;
-
     m_AppName = argv[0];
 
     static const struct option longOpts[] = {
@@ -799,7 +796,7 @@ void SSTInfoElement_StatisticInfo::outputStatisticInfo(int index)
     fprintf(stdout, "            STATISTIC %d = %s [%s] (%s) Enable Level = %d\n", index, getName(), getUnits(), getDesc(), getEnableLevel());
 }
 
-void SSTInfoElement_StatisticInfo::generateStatisticXMLData(int Index, TiXmlNode* XMLParentElement)
+void SSTInfoElement_StatisticInfo::generateStatisticXMLData(int Index __attribute__((unused)), TiXmlNode* XMLParentElement __attribute__((unused)))
 {
 // TODO: Dump Statistic info to XML.  Turned off for 5.0 since SSTWorkbench
 //       chokes if format is changed.  

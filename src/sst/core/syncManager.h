@@ -129,7 +129,6 @@ private:
     static NewRankSync*     rankSync;
     static SimTime_t        next_rankSync;
     NewThreadSync*   threadSync;
-    SimTime_t        next_threadSync;
     Exit* exit;
     Simulation * sim;
     

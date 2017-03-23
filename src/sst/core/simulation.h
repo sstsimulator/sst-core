@@ -165,8 +165,8 @@ public:
     /** Return the exit event */
     Exit* getExit() const { return m_exit; }
 
-    const std::vector<SimTime_t>& getInterThreadLatencies() { return interThreadLatencies; }
-    const SimTime_t getInterThreadMinLatency() { return interThreadMinLatency; }
+    const std::vector<SimTime_t>& getInterThreadLatencies() const { return interThreadLatencies; }
+    SimTime_t getInterThreadMinLatency() const { return interThreadMinLatency; }
     static TimeConverter* getMinPartTC() { return minPartTC; }
 
     /** Return the TimeLord associated with this Simulation */

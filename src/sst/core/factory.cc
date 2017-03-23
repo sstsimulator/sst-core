@@ -536,7 +536,7 @@ Factory::CreateCoreModule(std::string type, Params& params) {
 }
 
 Module*
-Factory::CreateCoreModuleWithComponent(std::string type, Component* comp, Params& params) {
+Factory::CreateCoreModuleWithComponent(std::string type, Component* comp __attribute__((unused)), Params& params __attribute__((unused))) {
     out.fatal(CALL_INFO, -1, "can't find requested core module %s when loading with component\n", type.c_str());
     return NULL;
 }

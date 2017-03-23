@@ -294,7 +294,7 @@ public:
     virtual Request* recv(int vn) = 0;
 
     virtual void setup() {}
-    virtual void init(unsigned int phase) {}
+    virtual void init(unsigned int phase __attribute__((unused))) {}
     virtual void finish() {}
 
     /**

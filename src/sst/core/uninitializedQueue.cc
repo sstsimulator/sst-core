@@ -38,7 +38,7 @@ namespace SST {
 	abort();
     }
     
-    void UninitializedQueue::insert(Activity* activity)
+    void UninitializedQueue::insert(Activity* activity __attribute__((unused)))
     {
 	std::cout << message << std::endl;
 	abort();

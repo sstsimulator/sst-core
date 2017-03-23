@@ -59,6 +59,13 @@ AS_IF([test "x$found_cxx1y" = "xyes"],
         [CXXFLAGS="$CXXFLAGS $SST_CXX1Y_FLAGS"],
         [CXXFLAGS="$CXXFLAGS $SST_CXX0X_FLAGS"])
 
+SST_CHECK_PICKY
+AS_IF([test "x$use_picky" = "xyes"],
+      [WARNFLAGS="-Wall -Wextra"],
+      [WARNFLAGS=""])
+CFLAGS="$CFLAGS $WARNFLAGS"
+CXXFLAGS="$CXXFLAGS $WARNFLAGS"
+
 dnl Fix flags - seems to be only way to make libltdl play nice
 CPPFLAGS='-I$(top_builddir) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_builddir)/src'" $CPPFLAGS"
 

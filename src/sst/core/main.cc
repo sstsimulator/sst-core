@@ -148,7 +148,7 @@ static void dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo &size
 }
 
 static void do_graph_wireup(ConfigGraph* graph,
-        SST::Simulation* sim, SST::Config* cfg, const RankInfo &world_size,
+        SST::Simulation* sim,
         const RankInfo &myRank, SimTime_t min_part) {
 
     if ( !graph->containsComponentInRank( myRank ) ) {
@@ -234,7 +234,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
         if ( i == info.myRank.thread ) {
             // g_output.output("wiring up this thread %u\n", info.myRank.thread);
-            do_graph_wireup(info.graph, sim, info.config, info.world_size, info.myRank, info.min_part);
+            do_graph_wireup(info.graph, sim, info.myRank, info.min_part);
         }
         barrier.wait();
     }

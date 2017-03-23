@@ -33,7 +33,7 @@ extern SST::Core::SSTPythonModelDefinition *gModel;
 extern "C" {
 
 
-static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds)
+static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
 {
     char *name = NULL, *lat = NULL;
     if ( !PyArg_ParseTuple(args, "s|s", &name, &lat) ) return -1;
@@ -104,7 +104,7 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
 }
 
 
-static PyObject* linkSetNoCut(PyObject* self, PyObject *args)
+static PyObject* linkSetNoCut(PyObject* self, PyObject *args __attribute__((unused)))
 {
     LinkPy_t *link = (LinkPy_t*)self;
     bool prev = link->no_cut;
@@ -166,6 +166,15 @@ PyTypeObject PyModel_LinkType = {
     (initproc)linkInit,        /* tp_init */
     0,                         /* tp_alloc */
     0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+    0,                         /* tp_version_tag */
 };
 
 

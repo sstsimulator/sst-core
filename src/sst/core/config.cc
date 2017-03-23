@@ -169,7 +169,7 @@ bool Config::usage() {
             "Usage: sst [options] config-file\n"
             "\n");
     for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
-        int npos = 0;
+        uint32_t npos = 0;
         if ( sstOptions[i].opt.val ) {
             npos += fprintf(stderr, "  -%c, ", (char)sstOptions[i].opt.val);
         } else {
@@ -298,7 +298,7 @@ bool Config::setConfigEntryFromModel(const string &entryName, const string &valu
 
 bool Config::printVersion() {
     printf("SST-Core Version (" PACKAGE_VERSION);
-    if (SSTCORE_GIT_HEADSHA != PACKAGE_VERSION) { 
+    if (strcmp(SSTCORE_GIT_HEADSHA, PACKAGE_VERSION)) { 
         printf(", git branch : " SSTCORE_GIT_BRANCH);
         printf(", SHA: " SSTCORE_GIT_HEADSHA);
     }
@@ -368,7 +368,7 @@ bool Config::setStopAfter(const std::string &arg) {
         "%Ss"
     };
     const size_t n_templ = sizeof(templates) / sizeof(templates[0]);
-    struct tm res = {0};
+    struct tm res = {}; /* This warns on GCC 4.8 due to a bug in GCC */
     char *p;
 
     for ( size_t i = 0 ; i < n_templ ; i++ ) {

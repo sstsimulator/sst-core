@@ -74,7 +74,7 @@ public:
     static const char* getFieldTypeFullName(fieldType_t type);
 
     template<typename T>
-    static const fieldType_t getFieldTypeFromTemplate()
+    static fieldType_t getFieldTypeFromTemplate()
     {
         if (is_type_same<T, int32_t    >::value){return INT32; }
         if (is_type_same<T, uint32_t   >::value){return UINT32;}

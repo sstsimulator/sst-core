@@ -52,7 +52,7 @@ public:
     case serializer::UNPACK: {
       size_t size;
       ser.unpack(size);
-      for (int i=0; i < size; ++i){
+      for (size_t i=0; i < size; ++i){
         T t;
         serialize<T>()(t,ser);
         v.insert(t);

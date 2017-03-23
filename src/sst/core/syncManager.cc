@@ -40,10 +40,10 @@ public:
     ~EmptyRankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) { return NULL; }
+    ActivityQueue* registerLink(const RankInfo& to_rank __attribute__((unused)), const RankInfo& from_rank __attribute__((unused)), LinkId_t link_id __attribute__((unused)), Link* link __attribute__((unused))) { return NULL; }
 
-    void execute(int thread) {}
-    void exchangeLinkInitData(int thread, std::atomic<int>& msg_count) {}
+    void execute(int thread __attribute__((unused))) {}
+    void exchangeLinkInitData(int thread __attribute__((unused)), std::atomic<int>& msg_count __attribute__((unused))) {}
     void finalizeLinkConfigurations() {}
 
     SimTime_t getNextSyncTime() { return nextSyncTime; }
@@ -67,17 +67,16 @@ public:
     void finalizeLinkConfigurations() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    void registerLink(LinkId_t link_id, Link* link) {}
-    ActivityQueue* getQueueForThread(int tid) { return NULL; }
+    void registerLink(LinkId_t link_id __attribute__((unused)), Link* link __attribute__((unused))) {}
+    ActivityQueue* getQueueForThread(int tid __attribute__((unused))) { return NULL; }
 };
 
 
-SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& interThreadLatencies) :
+SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& interThreadLatencies __attribute__((unused))) :
     Action(),
     rank(rank),
     num_ranks(num_ranks),
     threadSync(NULL),
-    next_threadSync(0),
     min_part(min_part)
 {
     // TraceFunction trace(CALL_INFO_LONG);    

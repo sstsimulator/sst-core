@@ -13,9 +13,9 @@
 
 #include "sst_config.h"
 
-#include "sst/core/model/element_python.h"
-
 #include <Python.h>
+
+#include "sst/core/model/element_python.h"
 
 namespace SST {
 

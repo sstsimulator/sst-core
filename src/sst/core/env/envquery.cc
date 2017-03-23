@@ -37,7 +37,7 @@ void SST::Core::Environment::configReadLine(FILE* theFile, char* lineBuffer) {
 	}
 }
 
-void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg, bool errorOnNotOpen) {
+void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg, bool errorOnNotOpen __attribute__((unused))) {
 
 	// Get the file descriptor and lock the file using a shared lock so
 	// people don't come and change it from under us
@@ -46,7 +46,7 @@ void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, Environ
 
 	constexpr size_t maxBufferLength = 4096;
 	char* lineBuffer = (char*) malloc(sizeof(char) * maxBufferLength);
-	for(auto i = 0; i < maxBufferLength; i++) {
+	for(size_t i = 0; i < maxBufferLength; i++) {
 		lineBuffer[i] = '\0';
 	}
 	int currentLine = 0;
@@ -78,7 +78,7 @@ void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, Environ
 			std::string lineStr(lineBuffer);
 			int equalsIndex = 0;
 
-			for(int i = 0; i < strlen(lineBuffer); i++) {
+			for(size_t i = 0; i < strlen(lineBuffer); i++) {
 				if('=' == lineBuffer[i]) {
 					equalsIndex = i;
 					break;

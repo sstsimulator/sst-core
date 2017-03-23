@@ -26,7 +26,6 @@ class serialize<std::deque<T> > {
 public:
   void
   operator()(Deque& v, serializer& ser) {
-      typedef typename std::set<T>::iterator iterator;
       switch(ser.mode()) {
       case serializer::SIZER: {
           size_t size = v.size();

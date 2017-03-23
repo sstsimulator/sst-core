@@ -23,8 +23,8 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
     name(name),
     type(""),
     link_map(NULL),
-    params(NULL),
     component(NULL),
+    params(NULL),
     enabledStats(NULL),
     statParams(NULL)
 { }
@@ -35,8 +35,8 @@ ComponentInfo::ComponentInfo(const std::string &type, const Params *params, cons
     name(parent->name),
     type(type),
     link_map(parent->link_map),
-    params(params),
     component(NULL),
+    params(params),
     enabledStats(parent->enabledStats),
     statParams(parent->statParams)
 { }

@@ -64,7 +64,7 @@ private:
 	uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag)
+    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused)))
     {
 	statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
     }

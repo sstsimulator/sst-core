@@ -281,7 +281,7 @@ public:
 
         pool->free(ptr8);
     }
-    void operator delete(void* ptr, std::size_t sz){
+    void operator delete(void* ptr, std::size_t sz __attribute__((unused))){
         /* 1) Decrement pointer
          * 2) Determine Pool Pointer
          * 2b) Set Pointer field to NULL to allow tracking

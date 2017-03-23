@@ -100,7 +100,7 @@ int PySubComponent::compare(ComponentHolder *other) {
 
 
 
-static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
+static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
 {
     char *name, *type;
     ComponentId_t useID = UNSET_COMPONENT_ID;
@@ -235,7 +235,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 }
 
 
-static PyObject* compGetFullName(PyObject *self, PyObject *args)
+static PyObject* compGetFullName(PyObject *self, PyObject *args __attribute__((unused)))
 {
     return PyString_FromString(getComp(self)->name.c_str());
 }
@@ -416,17 +416,25 @@ PyTypeObject PyModel_ComponentType = {
     (initproc)compInit,        /* tp_init */
     0,                         /* tp_alloc */
     0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+    0,                         /* tp_version_tag */
 };
 
 
 
 
 
-static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
+static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
 {
     char *name, *type;
     PyObject *parent;
-    ComponentId_t useID = UNSET_COMPONENT_ID;
     if ( !PyArg_ParseTuple(args, "Oss", &parent, &name, &type) )
         return -1;
 
@@ -519,6 +527,15 @@ PyTypeObject PyModel_SubComponentType = {
     (initproc)subCompInit,     /* tp_init */
     0,                         /* tp_alloc */
     0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+    0,                         /* tp_version_tag */
 };
 
 

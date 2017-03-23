@@ -78,10 +78,10 @@ ThreadSync::execute()
     totalWaitTime += barrier.wait();
     if ( disabled ) return;
     // Empty all the queues and send events on the links
-    for ( int i = 0; i < queues.size(); i++ ) {
+    for ( size_t i = 0; i < queues.size(); i++ ) {
         ThreadSyncQueue* queue = queues[i];
         std::vector<Activity*>& vec = queue->getVector();
-        for ( int j = 0; j < vec.size(); j++ ) {
+        for ( size_t j = 0; j < vec.size(); j++ ) {
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
@@ -115,7 +115,7 @@ ThreadSync::processLinkInitData()
     for ( int i = 0; i < num_threads; i++ ) {
         ThreadSyncQueue* queue = queues[i];
         std::vector<Activity*>& vec = queue->getVector();
-        for ( int j = 0; j < vec.size(); j++ ) {
+        for ( size_t j = 0; j < vec.size(); j++ ) {
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {

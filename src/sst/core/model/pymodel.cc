@@ -33,6 +33,12 @@
 #include <sst/core/configGraph.h>
 
 
+/* Disable GCC's strict-aliasing warnings for Python macros */
+#if defined(__GNUC__) && ((__GNUC__ == 4 && 3 <= __GNUC_MINOR__) || 4 < __GNUC__)
+# pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
+
+
 using namespace SST::Core;
 
 SST::Core::SSTPythonModelDefinition *gModel = NULL;
@@ -108,6 +114,15 @@ static PyTypeObject ModuleLoaderType = {
     0,                         /* tp_init */
     0,                         /* tp_alloc */
     0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+    0,                         /* tp_version_tag */
 };
 
 
@@ -142,7 +157,7 @@ static PyMethodDef emptyModMethods[] = {
     {NULL, NULL, 0, NULL }
 };
 
-static PyObject* mlLoadModule(PyObject *self, PyObject *args)
+static PyObject* mlLoadModule(PyObject *self __attribute__((unused)), PyObject *args)
 {
     char *name;
     if ( !PyArg_ParseTuple(args, "s", &name) )
@@ -172,7 +187,7 @@ static PyObject* mlLoadModule(PyObject *self, PyObject *args)
 
 /***** Module information *****/
 
-static PyObject* findComponentByName(PyObject* self, PyObject* args)
+static PyObject* findComponentByName(PyObject* self __attribute__((unused)), PyObject* args)
 {
     if ( ! PyString_Check(args) ) {
         Py_INCREF(Py_None);
@@ -190,7 +205,7 @@ static PyObject* findComponentByName(PyObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* setProgramOption(PyObject* self, PyObject* args)
+static PyObject* setProgramOption(PyObject* self __attribute__((unused)), PyObject* args)
 {
     char *param, *value;
     PyErr_Clear();
@@ -207,7 +222,7 @@ static PyObject* setProgramOption(PyObject* self, PyObject* args)
 }
 
 
-static PyObject* setProgramOptions(PyObject* self, PyObject* args)
+static PyObject* setProgramOptions(PyObject* self __attribute__((unused)), PyObject* args)
 {
     if ( !PyDict_Check(args) ) {
         return NULL;
@@ -223,7 +238,7 @@ static PyObject* setProgramOptions(PyObject* self, PyObject* args)
 }
 
 
-static PyObject* getProgramOptions(PyObject*self, PyObject *args)
+static PyObject* getProgramOptions(PyObject*self __attribute__((unused)), PyObject *args __attribute__((unused)))
 {
     // Load parameters already set.
     Config *cfg = gModel->getConfig();
@@ -253,7 +268,7 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
 }
 
 
-static PyObject* pushNamePrefix(PyObject* self, PyObject* arg)
+static PyObject* pushNamePrefix(PyObject* self __attribute__((unused)), PyObject* arg)
 {
     char *name = NULL;
     PyErr_Clear();
@@ -268,20 +283,20 @@ static PyObject* pushNamePrefix(PyObject* self, PyObject* arg)
 }
 
 
-static PyObject* popNamePrefix(PyObject* self, PyObject* args)
+static PyObject* popNamePrefix(PyObject* self __attribute__((unused)), PyObject* args __attribute__((unused)))
 {
     gModel->popNamePrefix();
     return PyInt_FromLong(0);
 }
 
 
-static PyObject* exitsst(PyObject* self, PyObject* args)
+static PyObject* exitsst(PyObject* self __attribute__((unused)), PyObject* args __attribute__((unused)))
 {
     exit(-1);
     return NULL;
 }
 
-static PyObject* getSSTMPIWorldSize(PyObject* self, PyObject* args) {
+static PyObject* getSSTMPIWorldSize(PyObject* self __attribute__((unused)), PyObject* args __attribute__((unused))) {
     int ranks = 1;
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Comm_size(MPI_COMM_WORLD, &ranks);
@@ -289,12 +304,12 @@ static PyObject* getSSTMPIWorldSize(PyObject* self, PyObject* args) {
     return PyInt_FromLong(ranks);
 }
 
-static PyObject* getSSTThreadCount(PyObject* self, PyObject* args) {
+static PyObject* getSSTThreadCount(PyObject* self __attribute__((unused)), PyObject* args __attribute__((unused))) {
     Config *cfg = gModel->getConfig();
     return PyLong_FromLong(cfg->getNumThreads());
 }
 
-static PyObject* setSSTThreadCount(PyObject* self, PyObject* args) {
+static PyObject* setSSTThreadCount(PyObject* self __attribute__((unused)), PyObject* args) {
     Config *cfg = gModel->getConfig();
     long oldNThr = cfg->getNumThreads();
     long nThr = PyLong_AsLong(args);
@@ -304,7 +319,7 @@ static PyObject* setSSTThreadCount(PyObject* self, PyObject* args) {
 }
 
 
-static PyObject* setStatisticOutput(PyObject* self, PyObject* args)
+static PyObject* setStatisticOutput(PyObject* self __attribute__((unused)), PyObject* args)
 {
     char*      statOutputName;
     int        argOK = 0;
@@ -328,7 +343,7 @@ static PyObject* setStatisticOutput(PyObject* self, PyObject* args)
     return PyInt_FromLong(0);
 }
 
-static PyObject* setStatisticOutputOption(PyObject* self, PyObject* args)
+static PyObject* setStatisticOutputOption(PyObject* self __attribute__((unused)), PyObject* args)
 {
     char* param;
     char* value;
@@ -347,7 +362,7 @@ static PyObject* setStatisticOutputOption(PyObject* self, PyObject* args)
 }
 
 
-static PyObject* setStatisticOutputOptions(PyObject* self, PyObject* args)
+static PyObject* setStatisticOutputOptions(PyObject* self __attribute__((unused)), PyObject* args)
 {
     PyErr_Clear();
 
@@ -363,7 +378,7 @@ static PyObject* setStatisticOutputOptions(PyObject* self, PyObject* args)
 }
 
 
-static PyObject* setStatisticLoadLevel(PyObject*self, PyObject* arg)
+static PyObject* setStatisticLoadLevel(PyObject* self __attribute__((unused)), PyObject* arg)
 {
     PyErr_Clear();
 
@@ -379,7 +394,7 @@ static PyObject* setStatisticLoadLevel(PyObject*self, PyObject* arg)
 }
 
 
-static PyObject* enableAllStatisticsForAllComponents(PyObject* self, PyObject* args)
+static PyObject* enableAllStatisticsForAllComponents(PyObject* self __attribute__((unused)), PyObject* args)
 {
     int           argOK = 0;
     PyObject*     statParamDict = NULL;
@@ -405,7 +420,7 @@ static PyObject* enableAllStatisticsForAllComponents(PyObject* self, PyObject* a
 }
 
 
-static PyObject* enableAllStatisticsForComponentName(PyObject *self, PyObject *args)
+static PyObject* enableAllStatisticsForComponentName(PyObject *self __attribute__((unused)), PyObject *args)
 {
     int           argOK = 0;
     char*         compName = NULL;
@@ -432,7 +447,7 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *self, PyObject *a
 }
 
 
-static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *args)
+static PyObject* enableAllStatisticsForComponentType(PyObject *self __attribute__((unused)), PyObject *args)
 {
     int           argOK = 0;
     char*         compType = NULL;
@@ -458,7 +473,7 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *a
 }
 
 
-static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args)
+static PyObject* enableStatisticForComponentName(PyObject *self __attribute__((unused)), PyObject *args)
 {
     int           argOK = 0;
     char*         compName = NULL;
@@ -485,7 +500,7 @@ static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args)
 }
 
 
-static PyObject* enableStatisticForComponentType(PyObject *self, PyObject *args)
+static PyObject* enableStatisticForComponentType(PyObject *self __attribute__((unused)), PyObject *args)
 {
     int           argOK = 0;
     char*         compType = NULL;
@@ -576,7 +591,7 @@ static PyMethodDef sstModuleMethods[] = {
 }  /* extern C */
 
 
-void SSTPythonModelDefinition::initModel(const std::string script_file, int verbosity, Config* config, int argc, char** argv)
+void SSTPythonModelDefinition::initModel(const std::string script_file, int verbosity, Config* config __attribute__((unused)), int argc, char** argv)
 {
     output = new Output("SSTPythonModel ", verbosity, 0, SST::Output::STDOUT);
 

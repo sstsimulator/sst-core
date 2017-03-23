@@ -85,7 +85,7 @@ public:
     ComponentElementInfo() {  }
     
     virtual Component* create(ComponentId_t id, Params& params) = 0;
-    virtual const uint32_t getCategory() = 0;
+    virtual uint32_t getCategory() = 0;
     
     std::string toString();
 };
@@ -107,8 +107,8 @@ class ModuleElementInfo : public BaseElementInfo {
 protected:
 
 public:
-    virtual Module* create(Component* comp, Params& params) { /* Need to print error */ return NULL; }
-    virtual Module* create(Params& params) { /* Need to print error */ return NULL; }
+    virtual Module* create(Component* comp __attribute__((unused)), Params& params __attribute__((unused))) { /* Need to print error */ return NULL; }
+    virtual Module* create(Params& params __attribute__((unused))) { /* Need to print error */ return NULL; }
     virtual const std::string getInterface() = 0;
     
     std::string toString();
@@ -261,14 +261,14 @@ public:
         return T::create(id,params);
     }
 
-    static const bool isLoaded() { return loaded; }
+    static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
     const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
     const std::vector<ElementInfoStatistic>& getValidStats() { return T::ELI_getStatistics(); }
     const std::vector<ElementInfoPort2>& getValidPorts() { return T::ELI_getPorts(); }
-    const uint32_t getCategory() { return T::ELI_getCategory(); };
+    uint32_t getCategory() { return T::ELI_getCategory(); };
 };
 
 
@@ -297,7 +297,7 @@ public:
         return T::create(comp,params);
     }
 
-    static const bool isLoaded() { return loaded; }
+    static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
@@ -336,7 +336,7 @@ public:
         return new T(params);
     }
 
-    static const bool isLoaded() { return loaded; }
+    static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
@@ -359,7 +359,7 @@ public:
         return new T(comp,params);
     }
 
-    static const bool isLoaded() { return loaded; }
+    static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
@@ -382,7 +382,7 @@ public:
         return new T(params);
     }
 
-    static const bool isLoaded() { return loaded; }
+    static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
@@ -433,7 +433,7 @@ public:
         return new T(total_ranks,my_rank,verbosity);
     }
     
-    static const bool isLoaded() { return loaded; }
+    static bool isLoaded() { return loaded; }
     const std::string getDescription() { return T::ELI_getDescription(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
@@ -460,7 +460,7 @@ public:
         return instance; 
     }
     
-    static const bool isLoaded() { return loaded; }
+    static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
 };
 

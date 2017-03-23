@@ -35,7 +35,7 @@ public:
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
-    virtual void init(unsigned int phase) {}
+    virtual void init(unsigned int phase __attribute__((unused))) {}
     /** Called after all components have been constructed and inialization has
 	completed, but before simulation time has begun. */
     virtual void setup( ) { }

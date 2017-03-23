@@ -27,7 +27,7 @@ class ser_sizer
 
   template <class T>
   void
-  size(T& t){
+  size(T& t __attribute__((unused))){
     size_ += sizeof(T);
   }
 

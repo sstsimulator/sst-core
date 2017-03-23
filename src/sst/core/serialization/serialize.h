@@ -31,7 +31,7 @@ namespace Serialization {
 template <class T, class Enable = void>
 class serialize {
 public:
-    inline void operator()(T& t, serializer& ser){
+    inline void operator()(T& t __attribute__((unused)), serializer& ser __attribute__((unused))){
         // If the default gets called, then it's actually invalid
         // because we don't know how to serialize it.
         

@@ -224,7 +224,7 @@ public:
     const char* getUnits() {return m_elstat->units;}
 
     /** Return the enable level of the Statistic. */
-    const uint8_t getEnableLevel() {return m_elstat->enableLevel;}
+    uint8_t getEnableLevel() {return m_elstat->enableLevel;}
     
     /** Output the Statistic Information. 
      * @param Index The Index of the Statistic.
