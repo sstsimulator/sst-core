@@ -20,7 +20,7 @@ using namespace SST;
 static SST::Output* partOutput;
 
 extern "C" {
-static int sst_zoltan_count_vertices(void* data, int* ierr) {
+static int sst_zoltan_count_vertices(void* data, int* ierr __attribute__((unused))) {
 	int rank = 0;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -35,9 +35,9 @@ static int sst_zoltan_count_vertices(void* data, int* ierr) {
 	}
 }
 
-static void sst_zoltan_get_vertex_list(void* data, int sizeGID, int sizeLID,
+static void sst_zoltan_get_vertex_list(void* data, int sizeGID __attribute__((unused)), int sizeLID __attribute__((unused)),
 	ZOLTAN_ID_PTR globalIDs, ZOLTAN_ID_PTR localIDs,
-	int wgt_dim, float* obj_wgts, int* ierr) {
+	int wgt_dim __attribute__((unused)), float* obj_wgts, int* ierr) {
 
 	int rank = 0;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -67,8 +67,8 @@ static void sst_zoltan_get_vertex_list(void* data, int sizeGID, int sizeLID,
 	}
 }
 
-static void sst_zoltan_get_num_edges_list(void *data, int sizeGID, int sizeLID, int num_obj,
-             ZOLTAN_ID_PTR globalID, ZOLTAN_ID_PTR localID,
+static void sst_zoltan_get_num_edges_list(void *data, int sizeGID __attribute__((unused)), int sizeLID __attribute__((unused)), int num_obj,
+             ZOLTAN_ID_PTR globalID __attribute__((unused)), ZOLTAN_ID_PTR localID __attribute__((unused)),
              int *numEdges, int *ierr) {
 
  	int rank = 0;
@@ -106,11 +106,11 @@ static void sst_zoltan_get_num_edges_list(void *data, int sizeGID, int sizeLID, 
 	}
 }
 
-static void sst_zoltan_get_edge_list(void *data, int sizeGID, int sizeLID,
-        int num_obj, ZOLTAN_ID_PTR globalID, ZOLTAN_ID_PTR localID,
+static void sst_zoltan_get_edge_list(void *data, int sizeGID __attribute__((unused)), int sizeLID __attribute__((unused)),
+        int num_obj, ZOLTAN_ID_PTR globalID __attribute__((unused)), ZOLTAN_ID_PTR localID __attribute__((unused)),
         int *num_edges,
         ZOLTAN_ID_PTR nborGID, int *nborProc,
-        int wgt_dim, float *ewgts, int *ierr) {
+        int wgt_dim __attribute__((unused)), float *ewgts __attribute__((unused)), int *ierr) {
 
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, & rank);
@@ -276,7 +276,7 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
   	partOutput->verbose(CALL_INFO, 1, 0, "Assigning components to ranks based on Zoltan output...\n");
 
 	uint64_t rank_assignments[rankcount.rank];
-	for(int i = 0; i < rankcount.rank; ++i) {
+	for(uint32_t i = 0; i < rankcount.rank; ++i) {
 		rank_assignments[i] = 0;
 	}
 
@@ -301,7 +301,7 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
 
 	if(0 == rank.rank) {
 		partOutput->verbose(CALL_INFO, 1, 0, "Exporting components for load balance:\n");
-		for(int i = 1; i < rankcount.rank; ++i) {
+		for(uint32_t i = 1; i < rankcount.rank; ++i) {
 			partOutput->verbose(CALL_INFO, 1, 0, "Export to rank %" PRIu32 " (assigned %" PRIu64 " components).\n", i, rank_assignments[i]);
 		}
 	}
