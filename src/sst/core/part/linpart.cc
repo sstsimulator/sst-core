@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -15,9 +15,7 @@
 
 using namespace std;
 
-bool SSTLinearPartition::initialized = SSTPartitioner::addPartitioner("linear",&SSTLinearPartition::allocate, "Partitions components by dividing Component ID space into roughly equal portions.  Components with sequential IDs will be placed close together.");
-
-SSTLinearPartition::SSTLinearPartition(RankInfo mpiranks, int verbosity) {
+SSTLinearPartition::SSTLinearPartition(RankInfo mpiranks, RankInfo my_rank __attribute__((unused)), int verbosity) {
 	rankcount = mpiranks;
 	partOutput = new Output("LinearPartition ", verbosity, 0, SST::Output::STDOUT);
 }

@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -23,7 +23,7 @@
 
 namespace SST {
 
-SimulatorHeartbeat::SimulatorHeartbeat( Config* cfg, int this_rank, Simulation* sim, TimeConverter* period) :
+SimulatorHeartbeat::SimulatorHeartbeat( Config* cfg __attribute__((unused)), int this_rank, Simulation* sim, TimeConverter* period) :
     Action(),
     rank(this_rank),
     m_period( period )

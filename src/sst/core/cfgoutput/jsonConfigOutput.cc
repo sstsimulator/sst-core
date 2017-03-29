@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -27,7 +27,7 @@ JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) :
 
 }
 
-void JSONConfigGraphOutput::generate(const Config* cfg,
+void JSONConfigGraphOutput::generate(const Config* cfg __attribute__((unused)),
                 ConfigGraph* graph) throw(ConfigGraphOutputException) {
 
 	if(NULL == outputFile) {
@@ -59,7 +59,7 @@ void JSONConfigGraphOutput::generate(const Config* cfg,
 }
 
 void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigComponent& comp,
-                const ConfigLinkMap_t& linkMap) const {
+                const ConfigLinkMap_t& linkMap __attribute__((unused))) const {
 
 	fprintf(outputFile, "%s  {\n", indent.c_str());
 	fprintf(outputFile, "%s    \"name\" : \"%s\",\n", indent.c_str(), comp.name.c_str());

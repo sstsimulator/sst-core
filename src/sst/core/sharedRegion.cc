@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -28,7 +28,7 @@
 namespace SST {
 
 
-bool SharedRegionMerger::merge(uint8_t *target, const uint8_t *newData, size_t size)
+bool SharedRegionMerger::merge(uint8_t *target __attribute__((unused)), const uint8_t *newData __attribute__((unused)), size_t size __attribute__((unused)))
 {
     return false;
 }

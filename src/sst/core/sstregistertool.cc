@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 	std::string groupName(argv[1]);
 	std::string keyValPair(argv[2]);
 
-	int equalsIndex = 0;
+	size_t equalsIndex = 0;
 
 	for(equalsIndex = 0; equalsIndex < keyValPair.size(); equalsIndex++) {
 		if('=' == argv[2][equalsIndex]) {

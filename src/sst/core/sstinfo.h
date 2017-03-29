@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -224,7 +224,7 @@ public:
     const char* getUnits() {return m_elstat->units;}
 
     /** Return the enable level of the Statistic. */
-    const uint8_t getEnableLevel() {return m_elstat->enableLevel;}
+    uint8_t getEnableLevel() {return m_elstat->enableLevel;}
     
     /** Output the Statistic Information. 
      * @param Index The Index of the Statistic.

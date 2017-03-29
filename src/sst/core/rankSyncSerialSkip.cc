@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -33,9 +33,8 @@ namespace SST {
 SimTime_t RankSyncSerialSkip::myNextSyncTime = 0;
 
 
-RankSyncSerialSkip::RankSyncSerialSkip(TimeConverter* minPartTC) :
+RankSyncSerialSkip::RankSyncSerialSkip(TimeConverter* minPartTC __attribute__((unused))) :
     NewRankSync(),
-    minPartTC(minPartTC),
     mpiWaitTime(0.0),
     deserializeTime(0.0)
 {
@@ -59,7 +58,7 @@ RankSyncSerialSkip::~RankSyncSerialSkip()
         Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "RankSyncSerialSkip mpiWait: %lg sec  deserializeWait:  %lg sec\n", mpiWaitTime, deserializeTime);
 }
     
-ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link)
+ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& from_rank __attribute__((unused)), LinkId_t link_id, Link* link)
 {
     // TraceFunction trace(CALL_INFO_LONG);
     SyncQueue* queue;

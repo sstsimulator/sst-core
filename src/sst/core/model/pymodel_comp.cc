@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -100,7 +100,7 @@ int PySubComponent::compare(ComponentHolder *other) {
 
 
 
-static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
+static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
 {
     char *name, *type;
     ComponentId_t useID = UNSET_COMPONENT_ID;
@@ -213,7 +213,8 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg)
 
 static PyObject* compAddLink(PyObject *self, PyObject *args)
 {
-    ComponentId_t id = ((PyComponent*)(((ComponentPy_t*)self)->obj))->id;;
+    ConfigComponent *c = getComp(self);
+    ComponentId_t id = c->id;
 
     PyObject *plink = NULL;
     char *port = NULL, *lat = NULL;
@@ -234,7 +235,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 }
 
 
-static PyObject* compGetFullName(PyObject *self, PyObject *args)
+static PyObject* compGetFullName(PyObject *self, PyObject *args __attribute__((unused)))
 {
     return PyString_FromString(getComp(self)->name.c_str());
 }
@@ -415,17 +416,25 @@ PyTypeObject PyModel_ComponentType = {
     (initproc)compInit,        /* tp_init */
     0,                         /* tp_alloc */
     0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+    0,                         /* tp_version_tag */
 };
 
 
 
 
 
-static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *kwds)
+static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
 {
     char *name, *type;
     PyObject *parent;
-    ComponentId_t useID = UNSET_COMPONENT_ID;
     if ( !PyArg_ParseTuple(args, "Oss", &parent, &name, &type) )
         return -1;
 
@@ -455,15 +464,6 @@ static void subCompDealloc(ComponentPy_t *self)
 
 
 
-static PyObject* subCompAddLink(PyObject *self, PyObject *args)
-{
-    /* TODO */
-    gModel->getOutput()->fatal(CALL_INFO, 1, "SubComponent Links not yet implemented.\n");
-    return NULL;
-}
-
-
-
 static PyMethodDef subComponentMethods[] = {
     {   "addParam",
         compAddParam, METH_VARARGS,
@@ -472,8 +472,8 @@ static PyMethodDef subComponentMethods[] = {
         compAddParams, METH_O,
         "Adds Multiple Parameters from a dict"},
     {   "addLink",
-        subCompAddLink, METH_VARARGS,
-        "Connects this component to a Link"},
+        compAddLink, METH_VARARGS,
+        "Connects this subComponent to a Link"},
     {   "enableAllStatistics",
         compEnableAllStatistics, METH_VARARGS,
         "Enable all Statistics in the component with optional parameters"},
@@ -527,6 +527,15 @@ PyTypeObject PyModel_SubComponentType = {
     (initproc)subCompInit,     /* tp_init */
     0,                         /* tp_alloc */
     0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+    0,                         /* tp_version_tag */
 };
 
 

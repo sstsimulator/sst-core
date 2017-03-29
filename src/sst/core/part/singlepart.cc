@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -16,11 +16,9 @@
 
 using namespace std;
 
-bool SSTSinglePartition::initialized = SSTPartitioner::addPartitioner("single",&SSTSinglePartition::allocate, "Allocates all components to rank 0.  Automatically selected for serial jobs.");
-
 using namespace SST::Partition;
 
-SSTSinglePartition::SSTSinglePartition() {}
+SSTSinglePartition::SSTSinglePartition(RankInfo total_ranks __attribute__((unused)), RankInfo my_rank __attribute__((unused)), int verbosity __attribute__((unused))) {}
 
 void SSTSinglePartition::performPartition(PartitionGraph* graph) {
 

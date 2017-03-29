@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -21,11 +21,9 @@ using namespace std;
 namespace SST {
 namespace Partition {
 
-bool SSTRoundRobinPartition::initialized = SSTPartitioner::addPartitioner("roundrobin",&SSTRoundRobinPartition::allocate, "Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.");
-
-SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo mpiranks) :
+SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo my_rank __attribute__((unused)), int verbosity __attribute__((unused))) :
     SSTPartitioner(),
-    world_size(mpiranks)
+    world_size(world_size)
 {
 }
 

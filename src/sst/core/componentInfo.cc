@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -23,8 +23,8 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
     name(name),
     type(""),
     link_map(NULL),
-    params(NULL),
     component(NULL),
+    params(NULL),
     enabledStats(NULL),
     statParams(NULL)
 { }
@@ -35,8 +35,8 @@ ComponentInfo::ComponentInfo(const std::string &type, const Params *params, cons
     name(parent->name),
     type(type),
     link_map(parent->link_map),
-    params(params),
     component(NULL),
+    params(params),
     enabledStats(parent->enabledStats),
     statParams(parent->statParams)
 { }

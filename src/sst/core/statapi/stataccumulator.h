@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -138,7 +138,7 @@ private:
         Field3 = statOutput->registerField<uint64_t>  ("Count");
     }
     
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag)
+    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused)))
     {
         statOutput->outputField(Field1, m_sum);
         statOutput->outputField(Field2, m_sum_sq);  

@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -21,6 +21,7 @@
 #include <sst/core/elemLoader.h>
 #include <sst/core/element.h>
 #include <sst/core/statapi/statoutput.h>
+#include <sst/core/model/element_python.h>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
@@ -96,7 +97,7 @@ public:
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */
-    partitionFunction GetPartitioner(std::string name);
+    Partition::SSTPartitioner* CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
 
     /** Return generator function
      * @param name - Fully qualified elementlibname.generator type name
@@ -142,7 +143,8 @@ public:
     /** Return Python Module creation function
      * @param name - Fully qualified elementlibname.pythonModName type name
      */
-    genPythonModuleFunction getPythonModule(std::string name);
+    // genPythonModuleFunction getPythonModule(std::string name);
+    SSTElementPythonModule* getPythonModule(std::string name);
     /** Checks to see if library exists and can be loaded */
     bool hasLibrary(std::string elemlib);
     void requireLibrary(std::string &elemlib);

@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -52,7 +52,7 @@ Config::Config(RankInfo rankInfo)
     stopAfterSec = 0;
     timeBase    = "1 ps";
     heartbeatPeriod = "N";
-    partitioner = "linear";
+    partitioner = "sst.linear";
     generator   = "NONE";
     generator_options   = "";
     dump_component_graph_file = "";
@@ -169,7 +169,7 @@ bool Config::usage() {
             "Usage: sst [options] config-file\n"
             "\n");
     for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
-        int npos = 0;
+        uint32_t npos = 0;
         if ( sstOptions[i].opt.val ) {
             npos += fprintf(stderr, "  -%c, ", (char)sstOptions[i].opt.val);
         } else {
@@ -298,7 +298,7 @@ bool Config::setConfigEntryFromModel(const string &entryName, const string &valu
 
 bool Config::printVersion() {
     printf("SST-Core Version (" PACKAGE_VERSION);
-    if (SSTCORE_GIT_HEADSHA != PACKAGE_VERSION) { 
+    if (strcmp(SSTCORE_GIT_HEADSHA, PACKAGE_VERSION)) { 
         printf(", git branch : " SSTCORE_GIT_BRANCH);
         printf(", SHA: " SSTCORE_GIT_HEADSHA);
     }
@@ -368,7 +368,7 @@ bool Config::setStopAfter(const std::string &arg) {
         "%Ss"
     };
     const size_t n_templ = sizeof(templates) / sizeof(templates[0]);
-    struct tm res = {0};
+    struct tm res = {}; /* This warns on GCC 4.8 due to a bug in GCC */
     char *p;
 
     for ( size_t i = 0 ; i < n_templ ; i++ ) {
@@ -397,7 +397,13 @@ bool Config::setHeartbeat(const std::string &arg) { heartbeatPeriod = arg;  retu
 bool Config::setTimebase(const std::string &arg) { timeBase = arg;  return true; }
 
 /* TODO: Error checking */
-bool Config::setPartitioner(const std::string &arg) { partitioner = arg; return true; }
+bool Config::setPartitioner(const std::string &arg) {
+    partitioner = arg;
+    if ( partitioner.find('.') == partitioner.npos ) {
+        partitioner = "sst." + partitioner;
+    }
+    return true;
+}
 /* TODO: Error checking */
 bool Config::setGenerator(const std::string &arg) { generator = arg; return true; }
 

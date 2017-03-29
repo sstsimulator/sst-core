@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -69,7 +69,7 @@ public:
         RegionMergeInfo(int rank, const std::string &key) : rank(rank), key(key) { }
         virtual ~RegionMergeInfo() { }
 
-        virtual bool merge(RegionInfo *ri) { return true; }
+        virtual bool merge(RegionInfo *ri __attribute__((unused))) { return true; }
         const std::string& getKey() const { return key; }
 
         void serialize_order(SST::Core::Serialization::serializer &ser) {

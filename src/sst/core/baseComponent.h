@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -72,7 +72,7 @@ public:
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
-    virtual void init(unsigned int phase) {}
+    virtual void init(unsigned int phase __attribute__((unused))) {}
     /** Called after all components have been constructed and inialization has
 	completed, but before simulation time has begun. */
     virtual void setup( ) { }
@@ -88,7 +88,7 @@ public:
      * print it's current status.  Useful for debugging.
      * @param out The Output class which should be used to print component status.
      */
-    virtual void printStatus(Output &out) { return; }
+    virtual void printStatus(Output &out __attribute__((unused))) { return; }
 
     /** Determine if a port name is connected to any links */
     bool isPortConnected(const std::string &name) const;

@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -14,6 +14,7 @@
 #include <map>
 #include "sst/core/sst_types.h"
 #include "sst/core/part/sstpart.h"
+#include <sst/core/elementinfo.h>
 
 namespace SST {
 namespace Partition{
@@ -23,7 +24,6 @@ class SimplePartitioner : public SST::Partition::SSTPartitioner {
 private:
     RankInfo world_size;
     uint32_t total_parts;
-    static bool initialized;
 
     RankInfo convertPartNum(uint32_t partNum) {
         return RankInfo(partNum / world_size.thread, partNum % world_size.thread);
@@ -36,7 +36,7 @@ private:
 			int step);
 public:
 
-    SimplePartitioner(RankInfo total_ranks);
+    SimplePartitioner(RankInfo total_ranks, RankInfo my_rank, int verbosity);
     SimplePartitioner();
     ~SimplePartitioner() {}
 
@@ -45,10 +45,8 @@ public:
     bool requiresConfigGraph() { return false; }
     bool spawnOnAllRanks() { return false; }
 
-    static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
-        return new SimplePartitioner(total_ranks);
-    }
-
+    SST_ELI_REGISTER_PARTITIONER(SimplePartitioner,"sst","simple","Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.")
+    
 };
 
 } // namespace partition

@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -54,7 +54,7 @@ private:
     ~NullStatistic(){};
 
 protected:    
-    void addData_impl(T data)
+    void addData_impl(T data __attribute__((unused)))
     {
         // Do Nothing
     }
@@ -65,12 +65,12 @@ private:
         // Do Nothing
     }
     
-    void registerOutputFields(StatisticOutput* statOutput)
+    void registerOutputFields(StatisticOutput* statOutput __attribute__((unused)))
     {
         // Do Nothing
     }
     
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag)
+    void outputStatisticData(StatisticOutput* statOutput __attribute__((unused)), bool EndOfSimFlag __attribute__((unused)))
     {
         // Do Nothing
     }

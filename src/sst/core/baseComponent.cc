@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -144,7 +144,6 @@ Link*
 BaseComponent::configureLink(std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
     LinkMap* myLinks = my_info->getLinkMap();
-    const std::string& type = my_info->getType();
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
 
@@ -170,7 +169,6 @@ Link*
 BaseComponent::configureLink(std::string name, Event::HandlerBase* handler)
 {
     LinkMap* myLinks = my_info->getLinkMap();
-    const std::string& type = my_info->getType();
     Link* tmp = myLinks->getLink(name);
     if ( tmp == NULL ) return NULL;
 
@@ -223,16 +221,13 @@ BaseComponent::configureSelfLink( std::string name, Event::HandlerBase* handler)
     return configureLink(name,handler);
 }
 
-Link* BaseComponent::selfLink( std::string name, Event::HandlerBase* handler )
+Link* BaseComponent::selfLink( std::string name __attribute__((unused)), Event::HandlerBase* handler )
 {
-//     Link* link = new Link(handler);
-//     link->Connect(link,0);
-//     return link;
     Link* link = new SelfLink();
     link->setLatency(0);
     link->setFunctor(handler);
     if ( handler == NULL ) {
-	link->setPolling();
+        link->setPolling();
     }
     return link;
 }

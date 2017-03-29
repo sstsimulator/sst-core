@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -187,8 +187,8 @@ protected:
     virtual void printUsage() = 0;
 
 
-    virtual void implStartRegisterFields(StatisticBase *statistic) {}
-    virtual void implRegisteredField(fieldHandle_t fieldHandle) {}
+    virtual void implStartRegisterFields(StatisticBase *statistic __attribute__((unused))) {}
+    virtual void implRegisteredField(fieldHandle_t fieldHandle __attribute__((unused))) {}
     virtual void implStopRegisterFields() {}
 
     // Simulation Events

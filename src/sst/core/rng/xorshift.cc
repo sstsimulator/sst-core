@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -62,7 +62,7 @@ uint64_t XORShiftRNG::generateNextUInt64() {
 	char* returnUInt64Ptr = (char*) &returnUInt64;
 	const char* nextInt64Ptr = (const char*) &nextInt64;
 
-	for(int i = 0; i < sizeof(nextInt64); i++) {
+	for(size_t i = 0; i < sizeof(nextInt64); i++) {
 		returnUInt64Ptr[i] = nextInt64Ptr[i];
 	}
 
@@ -78,11 +78,11 @@ int64_t  XORShiftRNG::generateNextInt64() {
 	const char* lowerHalfPtr = (const char*) &lowerHalf;
 	const char* upperHalfPtr = (const char*) &upperHalf;
 
-	for(int i = 0; i < sizeof(lowerHalf); i++) {
+	for(size_t i = 0; i < sizeof(lowerHalf); i++) {
 		returnInt64Ptr[i] = lowerHalfPtr[i];
 	}
 
-	for(int i = 0; i < sizeof(lowerHalf); i++) {
+	for(size_t i = 0; i < sizeof(lowerHalf); i++) {
 		returnInt64Ptr[i+4] = upperHalfPtr[i];
 	}
 
@@ -96,7 +96,7 @@ int32_t  XORShiftRNG::generateNextInt32() {
 	char* returnInt32Ptr = (char*) &returnInt32;
 	const char* nextUInt32Ptr = (const char*) &nextUInt32;
 
-	for(int i = 0; i < sizeof(returnInt32); i++) {
+	for(size_t i = 0; i < sizeof(returnInt32); i++) {
 		returnInt32Ptr[i] = nextUInt32Ptr[i];
 	}
 

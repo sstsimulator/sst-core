@@ -36,7 +36,9 @@ nobase_dist_sst_HEADERS = \
 	env/envquery.h \
 	env/envconfig.h \
 	element.h \
+	elementinfo.h \
 	elemLoader.h \
+	elibase.h \
 	event.h \
 	exit.h \
 	factory.h \
@@ -80,6 +82,7 @@ nobase_dist_sst_HEADERS = \
 	math/sqrt.h \
 	uninitializedQueue.h \
 	unitAlgebra.h \
+	part/sstpart.h \
 	serialization/ser_ptr_type.h \
 	serialization/serializable.h \
 	serialization/serializable_fwd.h \
@@ -133,7 +136,8 @@ nobase_dist_sst_HEADERS = \
 	statapi/componentregisterstat_impl.h \
 	threadsafe.h \
 	cputimer.h \
-	sst_config.h
+	sst_config.h \
+	model/element_python.h
 
 nobase_nodist_sst_HEADERS = \
 	build_info.h
@@ -152,6 +156,7 @@ sst_core_sources = \
 	cfgoutput/jsonConfigOutput.cc \
 	env/envquery.cc \
 	env/envconfig.cc \
+	elementinfo.cc \
 	elemLoader.cc \
 	event.cc \
 	exit.cc \

@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -31,6 +31,12 @@
 #include <sst/core/factory.h>
 #include <sst/core/component.h>
 #include <sst/core/configGraph.h>
+
+
+/* Disable GCC's strict-aliasing warnings for Python macros */
+#if defined(__GNUC__) && ((__GNUC__ == 4 && 3 <= __GNUC_MINOR__) || 4 < __GNUC__)
+# pragma GCC diagnostic ignored "-Wstrict-aliasing"
+#endif
 
 
 using namespace SST::Core;
@@ -108,6 +114,15 @@ static PyTypeObject ModuleLoaderType = {
     0,                         /* tp_init */
     0,                         /* tp_alloc */
     0,                         /* tp_new */
+    0,                         /* tp_free */
+    0,                         /* tp_is_gc */
+    0,                         /* tp_bases */
+    0,                         /* tp_mro */
+    0,                         /* tp_cache */
+    0,                         /* tp_subclasses */
+    0,                         /* tp_weaklist */
+    0,                         /* tp_del */
+    0,                         /* tp_version_tag */
 };
 
 
@@ -126,8 +141,9 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
         // Check for the existence of a library
         char *modName = name+4;
         if ( Factory::getFactory()->hasLibrary(modName) ) {
-            genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
-            if ( func ) {
+            // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
+            SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
+            if ( pymod ) {
                 Py_INCREF(self);
                 return self;
             }
@@ -141,7 +157,7 @@ static PyMethodDef emptyModMethods[] = {
     {NULL, NULL, 0, NULL }
 };
 
-static PyObject* mlLoadModule(PyObject *self, PyObject *args)
+static PyObject* mlLoadModule(PyObject *self __attribute__((unused)), PyObject *args)
 {
     char *name;
     if ( !PyArg_ParseTuple(args, "s", &name) )
@@ -155,12 +171,13 @@ static PyObject* mlLoadModule(PyObject *self, PyObject *args)
     char *modName = name+4; // sst.<modName>
 
     //fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
-    genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
+    // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
+    SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
     PyObject* mod = NULL;
-    if ( !func ) {
+    if ( !pymod ) {
         mod = Py_InitModule(name, emptyModMethods);
     } else {
-        mod = static_cast<PyObject*>((*func)());
+        mod = static_cast<PyObject*>(pymod->load());
     }
 
     return mod;
@@ -170,7 +187,7 @@ static PyObject* mlLoadModule(PyObject *self, PyObject *args)
 
 /***** Module information *****/
 
-static PyObject* findComponentByName(PyObject* self, PyObject* args)
+static PyObject* findComponentByName(PyObject* self __attribute__((unused)), PyObject* args)
 {
     if ( ! PyString_Check(args) ) {
         Py_INCREF(Py_None);
@@ -188,7 +205,7 @@ static PyObject* findComponentByName(PyObject* self, PyObject* args)
     return Py_None;
 }
 
-static PyObject* setProgramOption(PyObject* self, PyObject* args)
+static PyObject* setProgramOption(PyObject* self __attribute__((unused)), PyObject* args)
 {
     char *param, *value;
     PyErr_Clear();
@@ -205,7 +222,7 @@ static PyObject* setProgramOption(PyObject* self, PyObject* args)
 }
 
 
-static PyObject* setProgramOptions(PyObject* self, PyObject* args)
+static PyObject* setProgramOptions(PyObject* self __attribute__((unused)), PyObject* args)
 {
     if ( !PyDict_Check(args) ) {
         return NULL;
@@ -221,7 +238,7 @@ static PyObject* setProgramOptions(PyObject* self, PyObject* args)
 }
 
 
-static PyObject* getProgramOptions(PyObject*self, PyObject *args)
+static PyObject* getProgramOptions(PyObject*self __attribute__((unused)), PyObject *args __attribute__((unused)))
 {
     // Load parameters already set.
     Config *cfg = gModel->getConfig();
@@ -251,7 +268,7 @@ static PyObject* getProgramOptions(PyObject*self, PyObject *args)
 }
 
 
-static PyObject* pushNamePrefix(PyObject* self, PyObject* arg)
+static PyObject* pushNamePrefix(PyObject* self __attribute__((unused)), PyObject* arg)
 {
     char *name = NULL;
     PyErr_Clear();
@@ -266,20 +283,20 @@ static PyObject* pushNamePrefix(PyObject* self, PyObject* arg)
 }
 
 
-static PyObject* popNamePrefix(PyObject* self, PyObject* args)
+static PyObject* popNamePrefix(PyObject* self __attribute__((unused)), PyObject* args __attribute__((unused)))
 {
     gModel->popNamePrefix();
     return PyInt_FromLong(0);
 }
 
 
-static PyObject* exitsst(PyObject* self, PyObject* args)
+static PyObject* exitsst(PyObject* self __attribute__((unused)), PyObject* args __attribute__((unused)))
 {
     exit(-1);
     return NULL;
 }
 
-static PyObject* getSSTMPIWorldSize(PyObject* self, PyObject* args) {
+static PyObject* getSSTMPIWorldSize(PyObject* self __attribute__((unused)), PyObject* args __attribute__((unused))) {
     int ranks = 1;
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Comm_size(MPI_COMM_WORLD, &ranks);
@@ -287,12 +304,12 @@ static PyObject* getSSTMPIWorldSize(PyObject* self, PyObject* args) {
     return PyInt_FromLong(ranks);
 }
 
-static PyObject* getSSTThreadCount(PyObject* self, PyObject* args) {
+static PyObject* getSSTThreadCount(PyObject* self __attribute__((unused)), PyObject* args __attribute__((unused))) {
     Config *cfg = gModel->getConfig();
     return PyLong_FromLong(cfg->getNumThreads());
 }
 
-static PyObject* setSSTThreadCount(PyObject* self, PyObject* args) {
+static PyObject* setSSTThreadCount(PyObject* self __attribute__((unused)), PyObject* args) {
     Config *cfg = gModel->getConfig();
     long oldNThr = cfg->getNumThreads();
     long nThr = PyLong_AsLong(args);
@@ -302,7 +319,7 @@ static PyObject* setSSTThreadCount(PyObject* self, PyObject* args) {
 }
 
 
-static PyObject* setStatisticOutput(PyObject* self, PyObject* args)
+static PyObject* setStatisticOutput(PyObject* self __attribute__((unused)), PyObject* args)
 {
     char*      statOutputName;
     int        argOK = 0;
@@ -326,7 +343,7 @@ static PyObject* setStatisticOutput(PyObject* self, PyObject* args)
     return PyInt_FromLong(0);
 }
 
-static PyObject* setStatisticOutputOption(PyObject* self, PyObject* args)
+static PyObject* setStatisticOutputOption(PyObject* self __attribute__((unused)), PyObject* args)
 {
     char* param;
     char* value;
@@ -345,7 +362,7 @@ static PyObject* setStatisticOutputOption(PyObject* self, PyObject* args)
 }
 
 
-static PyObject* setStatisticOutputOptions(PyObject* self, PyObject* args)
+static PyObject* setStatisticOutputOptions(PyObject* self __attribute__((unused)), PyObject* args)
 {
     PyErr_Clear();
 
@@ -361,7 +378,7 @@ static PyObject* setStatisticOutputOptions(PyObject* self, PyObject* args)
 }
 
 
-static PyObject* setStatisticLoadLevel(PyObject*self, PyObject* arg)
+static PyObject* setStatisticLoadLevel(PyObject* self __attribute__((unused)), PyObject* arg)
 {
     PyErr_Clear();
 
@@ -377,7 +394,7 @@ static PyObject* setStatisticLoadLevel(PyObject*self, PyObject* arg)
 }
 
 
-static PyObject* enableAllStatisticsForAllComponents(PyObject* self, PyObject* args)
+static PyObject* enableAllStatisticsForAllComponents(PyObject* self __attribute__((unused)), PyObject* args)
 {
     int           argOK = 0;
     PyObject*     statParamDict = NULL;
@@ -403,7 +420,7 @@ static PyObject* enableAllStatisticsForAllComponents(PyObject* self, PyObject* a
 }
 
 
-static PyObject* enableAllStatisticsForComponentName(PyObject *self, PyObject *args)
+static PyObject* enableAllStatisticsForComponentName(PyObject *self __attribute__((unused)), PyObject *args)
 {
     int           argOK = 0;
     char*         compName = NULL;
@@ -430,7 +447,7 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *self, PyObject *a
 }
 
 
-static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *args)
+static PyObject* enableAllStatisticsForComponentType(PyObject *self __attribute__((unused)), PyObject *args)
 {
     int           argOK = 0;
     char*         compType = NULL;
@@ -456,7 +473,7 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *a
 }
 
 
-static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args)
+static PyObject* enableStatisticForComponentName(PyObject *self __attribute__((unused)), PyObject *args)
 {
     int           argOK = 0;
     char*         compName = NULL;
@@ -483,7 +500,7 @@ static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args)
 }
 
 
-static PyObject* enableStatisticForComponentType(PyObject *self, PyObject *args)
+static PyObject* enableStatisticForComponentType(PyObject *self __attribute__((unused)), PyObject *args)
 {
     int           argOK = 0;
     char*         compType = NULL;
@@ -574,7 +591,7 @@ static PyMethodDef sstModuleMethods[] = {
 }  /* extern C */
 
 
-void SSTPythonModelDefinition::initModel(const std::string script_file, int verbosity, Config* config, int argc, char** argv)
+void SSTPythonModelDefinition::initModel(const std::string script_file, int verbosity, Config* config __attribute__((unused)), int argc, char** argv)
 {
     output = new Output("SSTPythonModel ", verbosity, 0, SST::Output::STDOUT);
 

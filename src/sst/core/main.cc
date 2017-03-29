@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -53,6 +53,8 @@
 #include <sst/core/cfgoutput/dotConfigOutput.h>
 #include <sst/core/cfgoutput/xmlConfigOutput.h>
 #include <sst/core/cfgoutput/jsonConfigOutput.h>
+
+#include <sst/core/elementinfo.h>
 
 using namespace SST::Core;
 using namespace SST::Partition;
@@ -146,7 +148,7 @@ static void dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo &size
 }
 
 static void do_graph_wireup(ConfigGraph* graph,
-        SST::Simulation* sim, SST::Config* cfg, const RankInfo &world_size,
+        SST::Simulation* sim,
         const RankInfo &myRank, SimTime_t min_part) {
 
     if ( !graph->containsComponentInRank( myRank ) ) {
@@ -232,7 +234,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
         if ( i == info.myRank.thread ) {
             // g_output.output("wiring up this thread %u\n", info.myRank.thread);
-            do_graph_wireup(info.graph, sim, info.config, info.world_size, info.myRank, info.min_part);
+            do_graph_wireup(info.graph, sim, info.myRank, info.min_part);
         }
         barrier.wait();
     }
@@ -474,14 +476,11 @@ main(int argc, char *argv[])
 
     // If this is a serial job, just use the single partitioner,
     // but the same code path
-    if ( world_size.rank == 1 && world_size.thread == 1) cfg.partitioner = "single";
-    SSTPartitioner* partitioner = SSTPartitioner::getPartitioner(cfg.partitioner, world_size, myRank, cfg.verbose);
-    if ( partitioner == NULL ) {
-        // Not a built in partitioner, see if this is a
-        // partitioner contained in an element library.
-        partitionFunction func = factory->GetPartitioner(cfg.partitioner);
-        partitioner = func(world_size, myRank, cfg.verbose);
-    }
+    if ( world_size.rank == 1 && world_size.thread == 1) cfg.partitioner = "sst.single";
+
+    // Get the partitioner.  Built in partitioners are in the "sst" library.
+    SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner, world_size, myRank, cfg.verbose);
+
 
     if ( partitioner->requiresConfigGraph() ) {
         partitioner->performPartition(graph);

@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -31,7 +31,7 @@ namespace Serialization {
 template <class T, class Enable = void>
 class serialize {
 public:
-    inline void operator()(T& t, serializer& ser){
+    inline void operator()(T& t __attribute__((unused)), serializer& ser __attribute__((unused))){
         // If the default gets called, then it's actually invalid
         // because we don't know how to serialize it.
         

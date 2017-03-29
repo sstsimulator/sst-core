@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -123,7 +123,7 @@ struct escaped_list_separator {
     std::string s;
 
     escaped_list_separator(const std::string &esc="\\", const std::string &sep=",", const std::string &quote="\"")
-        : e(esc), s(sep), q(quote) { }
+        : e(esc), q(quote), s(sep) { }
 
 
     /**

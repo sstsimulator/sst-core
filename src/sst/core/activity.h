@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -281,7 +281,7 @@ public:
 
         pool->free(ptr8);
     }
-    void operator delete(void* ptr, std::size_t sz){
+    void operator delete(void* ptr, std::size_t sz __attribute__((unused))){
         /* 1) Decrement pointer
          * 2) Determine Pool Pointer
          * 2b) Set Pointer field to NULL to allow tracking

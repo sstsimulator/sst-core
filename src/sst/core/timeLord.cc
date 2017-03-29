@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -104,7 +104,7 @@ TimeLord::~TimeLord() {
     parseCache.clear();
 }
 
-SimTime_t TimeLord::getSimCycles(std::string ts, std::string where)
+SimTime_t TimeLord::getSimCycles(std::string ts, std::string where __attribute__((unused)))
 {
     // See if this is in the cache
     std::lock_guard<std::recursive_mutex> lock(slock);

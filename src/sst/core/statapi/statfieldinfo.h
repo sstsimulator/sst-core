@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -74,7 +74,7 @@ public:
     static const char* getFieldTypeFullName(fieldType_t type);
 
     template<typename T>
-    static const fieldType_t getFieldTypeFromTemplate()
+    static fieldType_t getFieldTypeFromTemplate()
     {
         if (is_type_same<T, int32_t    >::value){return INT32; }
         if (is_type_same<T, uint32_t   >::value){return UINT32;}

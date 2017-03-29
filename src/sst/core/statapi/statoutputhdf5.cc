@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -238,7 +238,6 @@ void StatisticOutputHDF5::StatisticInfo::finalizeRegistration()
     size_t nFields = typeList.size() -1;
     currentData.resize(nFields);
 
-    StatData_u* dataPointer = currentData.data();
     /* Build HDF5 datatypes */
     size_t dataSize = currentData.size() * sizeof(StatData_u);
     memType = new H5::CompType(dataSize);

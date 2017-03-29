@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -223,7 +223,7 @@ Simulation::getLocalMinimumNextActivityTime()
 }
 
 void
-Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part )
+Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank __attribute__((unused)), SimTime_t min_part )
 {
     // TraceFunction trace(CALL_INFO_LONG);    
     // Set minPartTC (only thread 0 will do this)
@@ -234,7 +234,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
 
     // Get the minimum latencies for links between the various threads
     interThreadLatencies.resize(num_ranks.thread);
-    for ( int i = 0; i < interThreadLatencies.size(); i++ ) {
+    for ( size_t i = 0; i < interThreadLatencies.size(); i++ ) {
         interThreadLatencies[i] = MAX_SIMTIME_T;
     }
 
@@ -305,7 +305,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank, SimTim
     // if ( independent ) std::cout << "thread " << my_rank.thread <<  " is independent" << std::endl;
 }
     
-int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part )
+int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part __attribute__((unused)))
 {
     // TraceFunction trace(CALL_INFO_LONG);    
     
@@ -820,7 +820,7 @@ uint64_t Simulation::getSyncQueueDataSize() const {
     
 // Function to allow for easy serialization of threads while debugging
 // code
-void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads) {
+void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads __attribute__((unused))) {
     // Everyone barriers
     barrier.wait();
     // Now barrier until it's my turn

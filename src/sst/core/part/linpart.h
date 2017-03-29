@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -14,6 +14,7 @@
 #define SST_CORE_PART_LINEAR
 
 #include <sst/core/part/sstpart.h>
+#include <sst/core/elementinfo.h>
 
 using namespace SST;
 using namespace SST::Partition;
@@ -39,34 +40,34 @@ partitioner.
 */
 class SSTLinearPartition : public SST::Partition::SSTPartitioner {
 
-	public:
-		/**
-			Creates a new linear partition scheme.
-			\param mpiRankCount Number of MPI ranks in the simulation
-			\param verbosity The level of information to output
-		*/
-		SSTLinearPartition(RankInfo rankCount, int verbosity);
-
-		/**
-			Performs a partition of an SST simulation configuration
-			\param graph The simulation configuration to partition
-		*/
-		void performPartition(PartitionGraph* graph);
-
-        bool requiresConfigGraph() { return false; }
-        bool spawnOnAllRanks() { return false; }
-
-        static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
-            return new SSTLinearPartition(total_ranks, verbosity);
-    }
-        
-	protected:
-        /** Number of ranks in the simulation */
-		RankInfo rankcount;
-        /** Output object to print partitioning information */
-		Output* partOutput;
-
-        static bool initialized;
+protected:
+    /** Number of ranks in the simulation */
+    RankInfo rankcount;
+    /** Output object to print partitioning information */
+    Output* partOutput;
+    
+public:
+    /**
+       Creates a new linear partition scheme.
+       \param mpiRankCount Number of MPI ranks in the simulation
+       \param verbosity The level of information to output
+    */
+    SSTLinearPartition(RankInfo rankCount, RankInfo my_rank, int verbosity);
+    
+    /**
+       Performs a partition of an SST simulation configuration
+       \param graph The simulation configuration to partition
+    */
+    void performPartition(PartitionGraph* graph);
+    
+    bool requiresConfigGraph() { return false; }
+    bool spawnOnAllRanks() { return false; }
+    
+    // static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
+    //     return new SSTLinearPartition(total_ranks, my_rank, verbosity);
+    // }
+    
+    SST_ELI_REGISTER_PARTITIONER(SSTLinearPartition,"sst","linear","Partitions components by dividing Component ID space into roughly equal portions.  Components with sequential IDs will be placed close together.")
 };
 
 }

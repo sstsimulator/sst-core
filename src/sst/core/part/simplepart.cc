@@ -1,8 +1,8 @@
-// Copyright 2009-2016 Sandia Corporation. Under the terms
+// Copyright 2009-2017 Sandia Corporation. Under the terms
 // of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2016, Sandia Corporation
+// Copyright (c) 2009-2017, Sandia Corporation
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -24,9 +24,7 @@ using namespace std;
 namespace SST {
 namespace Partition {
 
-    bool SimplePartitioner::initialized = SSTPartitioner::addPartitioner("simple",&SimplePartitioner::allocate,"Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.");
-
-    SimplePartitioner::SimplePartitioner(RankInfo total_ranks) :
+SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo my_rank __attribute__((unused)), int verbosity __attribute__((unused))) :
         SSTPartitioner(),
         world_size(total_ranks),
         total_parts(world_size.rank * world_size.thread)
@@ -125,8 +123,8 @@ namespace Partition {
 			component_map[setB[i]].rank = convertPartNum(rankB);
 		}
 
-		const int A1_rank = rankA;
-		const int A2_rank = rankA + pow2(step);
+		const uint32_t A1_rank = rankA;
+		const uint32_t A2_rank = rankA + pow2(step);
 
 		if(A2_rank < total_parts) {
 			const int lengthA1 = lengthA % 2 == 1 ? (lengthA / 2) + 1 : (lengthA / 2);
@@ -153,8 +151,8 @@ namespace Partition {
 			free(setA2);
 		}
 
-		const int B1_rank = rankB;
-		const int B2_rank = rankB + pow2(step);
+		const uint32_t B1_rank = rankB;
+		const uint32_t B2_rank = rankB + pow2(step);
 
 		if(B2_rank < total_parts) {
 			const int lengthB1 = lengthB % 2 == 1 ? (lengthB / 2) + 1 : (lengthB / 2);
