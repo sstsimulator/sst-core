@@ -26,8 +26,6 @@
 #include <sst/core/unitAlgebra.h>
 #include <sst/core/sharedRegion.h>
 
-using namespace SST::Statistics;
-
 namespace SST {
 
 BaseComponent::BaseComponent() :
@@ -326,6 +324,20 @@ SharedRegion* BaseComponent::getGlobalSharedRegion(const std::string &key, size_
 {
     SharedRegionManager *mgr = Simulation::getSharedRegionManager();
     return mgr->getGlobalSharedRegion(key, size, merger);
+}
+
+
+
+uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string &statisticName)
+{
+    const std::string& type = getStatisticOwner()->my_info->getType();
+    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
+}
+
+std::string BaseComponent::getComponentInfoStatisticUnits(const std::string &statisticName)
+{
+    const std::string& type = getStatisticOwner()->my_info->getType();
+    return Factory::getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
 }
 
 

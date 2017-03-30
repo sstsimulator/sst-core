@@ -26,7 +26,8 @@
     StatisticBase::StatMode_t       statCollectionMode = StatisticBase::STAT_MODE_COUNT;
     ComponentInfo::statEnableList_t*   statEnableList;
     ComponentInfo::statParamsList_t*   statParamsList;
-    Output                          out = Simulation::getSimulation()->getSimulationOutput();
+    Output &                        out = getSimulation()->getSimulationOutput();
+    Statistics::StatisticProcessingEngine *engine = getSimulation()->getStatisticsProcessingEngine();
     UnitAlgebra                     collectionRate;
     UnitAlgebra                     startAtTime;
     UnitAlgebra                     stopAtTime;
@@ -35,23 +36,16 @@
     std::string                     statTypeParam;
     std::string                     statStartAtTimeParam;
     std::string                     statStopAtTimeParam;
-    Statistic<T>*                   statistic = NULL;    
-    
-    // Check to see if the Statistic is previously registered with the Statistics Engine
-    StatisticBase* prevStat = Simulation::getSimulation()->getStatisticsProcessingEngine()->isStatisticRegisteredWithEngine<T>(getName(), my_info->getID(), statName, statSubId);
-    if (NULL != prevStat) {
-        // Dynamic cast the base stat to the expected type
-        return dynamic_cast<Statistic<T>*>(prevStat);
-    }
-    
+    Statistic<T>*                   statistic = NULL;
+
+
     // Build a name to report errors against
     fullStatName = StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId);
 
     // Make sure that the wireup has not been completed
-    if (true == Simulation::getSimulation()->isWireUpFinished()) {
+    if (true == getSimulation()->isWireUpFinished()) {
         // We cannot register statistics AFTER the wireup (after all components have been created) 
-        fprintf(stderr, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
-        exit(1);
+        out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
     }
 
     /* Create the statistic in the "owning" component.  That should just be us, 
@@ -135,15 +129,13 @@
             statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
         } else {
             // collectionRate is a unit type we dont recognize 
-            fprintf(stderr, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
-            exit(1);
+            out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
         }
         
         // Check the startat and stopat is in units of seconds
         if ((true != startAtTime.hasUnits("s")) || (true != stopAtTime.hasUnits("s"))) {
             // startat or stopat has a unit type we dont allow 
-            fprintf(stderr, "ERROR: Statistic %s - param startat = %s; stopat = %s must both be in units of seconds; exiting...\n", fullStatName.c_str(), startAtTime.toString().c_str(), stopAtTime.toString().c_str());
-            exit(1);
+            out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - param startat = %s; stopat = %s must both be in units of seconds; exiting...\n", fullStatName.c_str(), startAtTime.toString().c_str(), stopAtTime.toString().c_str());
         }
     }
 
@@ -151,8 +143,7 @@
         // Instantiate the Statistic here defined by the type here
         statistic = CreateStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
-            fprintf(stderr, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
-            exit(1);
+            out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
         }
 
         // Check that the statistic supports this collection rate
@@ -192,11 +183,11 @@
         // If the mode is Periodic Based, the add the statistic to the 
         // StatisticProcessingEngine otherwise add it as an Event Based Stat.
         if (StatisticBase::STAT_MODE_PERIODIC == statCollectionMode) {
-            if (false == Simulation::getSimulation()->getStatisticsProcessingEngine()->addPeriodicBasedStatistic(collectionRate, statistic)) {
+            if (false == engine->addPeriodicBasedStatistic(collectionRate, statistic)) {
                 statGood = false;
             }
         } else {
-            if (false == Simulation::getSimulation()->getStatisticsProcessingEngine()->addEventBasedStatistic(collectionRate, statistic)) {
+            if (false == engine->addEventBasedStatistic(collectionRate, statistic)) {
                 statGood = false;
             }
         }
@@ -206,14 +197,14 @@
     // add it to the array of registered statistics.
     if (true == statGood) {
         // The passed in Statistic is OK to use, register its fields
-        StatisticOutput* statOutput = Simulation::getSimulation()->getStatisticsOutput();
+        StatisticOutput* statOutput = getSimulation()->getStatisticsOutput();
         statOutput->startRegisterFields(statistic);
         statistic->registerOutputFields(statOutput);
         statOutput->stopRegisterFields();
 
         // Set the start / stop times for the stat
-        Simulation::getSimulation()->getStatisticsProcessingEngine()->setStatisticStartTime(startAtTime, statistic);
-        Simulation::getSimulation()->getStatisticsProcessingEngine()->setStatisticStopTime(stopAtTime, statistic);
+        engine->setStatisticStartTime(startAtTime, statistic);
+        engine->setStatisticStopTime(stopAtTime, statistic);
     } else {
         // Delete the original statistic (if created), and return a NULL statistic instead
         if (NULL != statistic) {
@@ -225,13 +216,12 @@
         statistic = CreateStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             statGood = false;
-            fprintf(stderr, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
-            exit(1);
+            out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
         }
     }
 
     // Register the new Statistic with the Statistic Engine
-    Simulation::getSimulation()->getStatisticsProcessingEngine()->registerStatisticWithEngine<T>(my_info->getID(), statistic);
+    engine->registerStatisticWithEngine<T>(my_info->getID(), statistic);
     return statistic;
 //}
 

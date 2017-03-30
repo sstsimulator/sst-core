@@ -215,15 +215,6 @@ public:
                 depending upon runtime settings.
     */
     template <typename T>
-    Statistic<T>* registerStatisticCore(std::string statName, std::string statSubId = "")
-    {
-        // NOTE: Templated Code for implementation of Statistic Registration
-        // is in the componentregisterstat_impl.h file.  This was done
-        // to avoid code bloat in the .h file.
-        #include "sst/core/statapi/componentregisterstat_impl.h"
-    }
-
-    template <typename T>
     Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
     {
         // Verify here that name of the stat is one of the registered
@@ -233,6 +224,12 @@ public:
                    StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId).c_str(),
                    statName.c_str());
             exit(1);
+        }
+        // Check to see if the Statistic is previously registered with the Statistics Engine
+        StatisticBase* prevStat = getSimulation()->getStatisticsProcessingEngine()->isStatisticRegisteredWithEngine<T>(getName(), my_info->getID(), statName, statSubId);
+        if (NULL != prevStat) {
+            // Dynamic cast the base stat to the expected type
+            return dynamic_cast<Statistic<T>*>(prevStat);
         }
         return registerStatisticCore<T>(statName, statSubId);
     }
@@ -295,8 +292,10 @@ protected:
 
     // Does the statisticName exist in the ElementInfoStatistic
     virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) = 0;
-    virtual uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) = 0;
-    virtual std::string getComponentInfoStatisticUnits(const std::string &statisticName) = 0;
+    // Return the EnableLevel for the statisticName from the ElementInfoStatistic
+    uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName);
+    // Return the Units for the statisticName from the ElementInfoStatistic
+    std::string getComponentInfoStatisticUnits(const std::string &statisticName);
 
     virtual Component* getTrueComponent() = 0;
     /**
@@ -314,6 +313,15 @@ protected:
 
 private:
     void addSelfLink(std::string name);
+
+    template <typename T>
+    Statistic<T>* registerStatisticCore(std::string statName, std::string statSubId = "")
+    {
+        // NOTE: Templated Code for implementation of Statistic Registration
+        // is in the componentregisterstat_impl.h file.  This was done
+        // to avoid code bloat in the .h file.
+        #include "sst/core/statapi/componentregisterstat_impl.h"
+    }
 
     template <typename T>
     Statistic<T>* CreateStatistic(BaseComponent* comp, std::string& type, std::string& statName, std::string& statSubId, Params& params)
@@ -339,9 +347,9 @@ private:
             return new HistogramStatistic<T>(comp, statName, statSubId, params);
         }
 
-	if(0 == ::strcasecmp("sst.uniquecountstatistic", type.c_str())) {
-	    return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
-	}
+        if(0 == ::strcasecmp("sst.uniquecountstatistic", type.c_str())) {
+            return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
+        }
 
         // We did not find this statistic
         printf("ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());

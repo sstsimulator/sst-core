@@ -21,19 +21,4 @@ SubComponent::doesComponentInfoStatisticExist(const std::string &statisticName)
     return Factory::getFactory()->DoesSubComponentInfoStatisticNameExist(my_info->getType(), statisticName);
 }
 
-uint8_t SubComponent::getComponentInfoStatisticEnableLevel(const std::string &statisticName)
-{
-    const std::string& type = parent->my_info->getType();
-    /* TODO:  SubComponent, not component stat? */
-    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
-}
-
-std::string SubComponent::getComponentInfoStatisticUnits(const std::string &statisticName)
-{
-    const std::string& type = parent->my_info->getType();
-    /* TODO:  SubComponent, not component stat? */
-    return Factory::getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
-}
-
-
 } // namespace SST
