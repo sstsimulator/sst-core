@@ -31,11 +31,6 @@ StatisticProcessingEngine::~StatisticProcessingEngine()
     StatArray_t*     statArray;
     StatisticBase*   stat;
 
-    // Clocks and OneShots already got deleted by timeVortex, simply clear them
-    m_ClockMap.clear();
-    m_StartTimeOneShotMap.clear();
-    m_StopTimeOneShotMap.clear();
-    
     // Destroy all the Statistics that have been created
     for (CompStatMap_t::iterator it_m = m_CompStatMap.begin(); it_m != m_CompStatMap.end(); it_m++) {
         // Get the Array for this Map Item    
@@ -88,7 +83,7 @@ void StatisticProcessingEngine::setStatisticStartTime(const UnitAlgebra& startTi
                              &StatisticProcessingEngine::handleStatisticEngineStartTimeEvent, tcFactor);
     
             // Set the OneShot priority so that normal events will occur before this event.
-            registerStartOneShot(startTime, OneShotHandler, STATISTICCLOCKPRIORITY);
+            sim->registerOneShot(startTime, OneShotHandler, STATISTICCLOCKPRIORITY);
     
             // Also create a new Array of Statistics and relate it to the map
             statArray = new std::vector<StatisticBase*>(); 
@@ -123,7 +118,7 @@ void StatisticProcessingEngine::setStatisticStopTime(const UnitAlgebra& stopTime
                              &StatisticProcessingEngine::handleStatisticEngineStopTimeEvent, tcFactor);
     
             // Set the OneShot priority so that normal events will occur before this event.
-            registerStopOneShot(stopTime, OneShotHandler, STATISTICCLOCKPRIORITY);
+            sim->registerOneShot(stopTime, OneShotHandler, STATISTICCLOCKPRIORITY);
     
             // Also create a new Array of Statistics and relate it to the map
             statArray = new std::vector<StatisticBase*>(); 
@@ -230,46 +225,8 @@ void StatisticProcessingEngine::startOfSimulation()
     m_SimulationStarted = true;
 }
 
-TimeConverter* StatisticProcessingEngine::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority)
-{
-    Simulation* sim = Simulation::getSimulation();
-    TimeConverter* tcFreq = sim->getTimeLord()->getTimeConverter(freq);
-    
-    if ( m_ClockMap.find( tcFreq->getFactor() ) == m_ClockMap.end() ) {
-        Clock* ce = new Clock( tcFreq, priority );
-        m_ClockMap[ tcFreq->getFactor() ] = ce; 
 
-        ce->schedule();
-    }
-    m_ClockMap[ tcFreq->getFactor() ]->registerHandler( handler );
-    return tcFreq;
-}
 
-TimeConverter* StatisticProcessingEngine::registerStartOneShot(const UnitAlgebra& startTime, OneShot::HandlerBase* handler, int priority)
-{
-    Simulation* sim = Simulation::getSimulation();
-    TimeConverter* tcTime = sim->getTimeLord()->getTimeConverter(startTime);
-    
-    if (m_StartTimeOneShotMap.find(tcTime->getFactor()) == m_StartTimeOneShotMap.end()) {
-        OneShot* os = new OneShot(tcTime, priority);
-        m_StartTimeOneShotMap[tcTime->getFactor()] = os; 
-    }
-    m_StartTimeOneShotMap[tcTime->getFactor()]->registerHandler(handler);
-    return tcTime;
-}
-
-TimeConverter* StatisticProcessingEngine::registerStopOneShot(const UnitAlgebra& stopTime, OneShot::HandlerBase* handler, int priority)
-{
-    Simulation* sim = Simulation::getSimulation();
-    TimeConverter* tcTime = sim->getTimeLord()->getTimeConverter(stopTime);
-    
-    if (m_StopTimeOneShotMap.find(tcTime->getFactor()) == m_StopTimeOneShotMap.end()) {
-        OneShot* os = new OneShot(tcTime, priority);
-        m_StopTimeOneShotMap[tcTime->getFactor()] = os; 
-    }
-    m_StopTimeOneShotMap[tcTime->getFactor()]->registerHandler(handler);
-    return tcTime;
-}
 
 void StatisticProcessingEngine::addStatisticClock(const UnitAlgebra& freq, StatisticBase* stat)
 {
@@ -291,7 +248,7 @@ void StatisticProcessingEngine::addStatisticClock(const UnitAlgebra& freq, Stati
     
             // Set the clock priority so that normal clocks events will occur before 
             // this clock event.
-            registerClock(freq, ClockHandler, STATISTICCLOCKPRIORITY);
+            sim->registerClock(freq, ClockHandler, STATISTICCLOCKPRIORITY);
         }
 
         // Also create a new Array of Statistics and relate it to the map

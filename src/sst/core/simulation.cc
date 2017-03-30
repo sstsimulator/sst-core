@@ -702,88 +702,82 @@ void Simulation::printStatus(bool fullStatus)
 
 }
 
-TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* handler )
+TimeConverter* Simulation::registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority)
 {
-//     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
-    
     TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
-
-    if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
-        Clock* ce = new Clock( tcFreq );
-        clockMap[ tcFreq->getFactor() ] = ce; 
-        
-        // ce->setDeliveryTime( currentSimCycle + tcFreq->getFactor() );
-        // timeVortex->insert( ce );
-        ce->schedule();
-    }
-    clockMap[ tcFreq->getFactor() ]->registerHandler( handler );
-    return tcFreq;    
+    return registerClock(tcFreq, handler, priority);
 }
 
-TimeConverter* Simulation::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler)
+TimeConverter* Simulation::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority)
 {
     TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
-    
-    if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
-        Clock* ce = new Clock( tcFreq );
-        clockMap[ tcFreq->getFactor() ] = ce; 
+    return registerClock(tcFreq, handler, priority);
+}
+
+TimeConverter* Simulation::registerClock(TimeConverter *tcFreq, Clock::HandlerBase* handler, int priority)
+{
+    clockMap_t::key_type mapKey = std::make_pair(tcFreq->getFactor(), priority);
+    if ( clockMap.find( mapKey ) == clockMap.end() ) {
+        Clock* ce = new Clock( tcFreq, priority );
+        clockMap[ mapKey ] = ce;
 
         ce->schedule();
     }
-    clockMap[ tcFreq->getFactor() ]->registerHandler( handler );
+    clockMap[ mapKey ]->registerHandler( handler );
     return tcFreq;
 }
 
-Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* handler )
+
+Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* handler, int priority )
 {
-    if ( clockMap.find( tc->getFactor() ) == clockMap.end() ) {
+    clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
+    if ( clockMap.find( mapKey ) == clockMap.end() ) {
         Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
         out.fatal(CALL_INFO, 1, "Tried to reregister with a clock that was not previously registered, exiting...\n");
     }
-    clockMap[ tc->getFactor() ]->registerHandler( handler );
-    return clockMap[tc->getFactor()]->getNextCycle();
-    
+    clockMap[ mapKey ]->registerHandler( handler );
+    return clockMap[ mapKey ]->getNextCycle();
 }
 
-Cycle_t Simulation::getNextClockCycle(TimeConverter* tc) {
-    if ( clockMap.find( tc->getFactor() ) == clockMap.end() ) {
-	Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-	out.fatal(CALL_INFO, -1,
-		  "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
+Cycle_t Simulation::getNextClockCycle(TimeConverter* tc, int priority) {
+    clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
+    if ( clockMap.find( mapKey ) == clockMap.end() ) {
+        Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
+        out.fatal(CALL_INFO, -1,
+                "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
     }
-    return clockMap[tc->getFactor()]->getNextCycle();
+    return clockMap[ mapKey ]->getNextCycle();
 }
 
-void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
-//     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
-    
-    if ( clockMap.find( tc->getFactor() ) != clockMap.end() ) {
-	bool empty;
-	clockMap[ tc->getFactor() ]->unregisterHandler( handler, empty );
-	
+void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority) {
+    clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
+    if ( clockMap.find( mapKey ) != clockMap.end() ) {
+        bool empty;
+        clockMap[ mapKey ]->unregisterHandler( handler, empty );
     }
 }
 
-TimeConverter* Simulation::registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler)
+TimeConverter* Simulation::registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler, int priority)
 {
-    return registerOneShot(UnitAlgebra(timeDelay), handler);
+    return registerOneShot(UnitAlgebra(timeDelay), handler, priority);
 }
 
-TimeConverter* Simulation::registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler)
+TimeConverter* Simulation::registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority)
 {
     TimeConverter* tcTimeDelay = timeLord.getTimeConverter(timeDelay);
+    clockMap_t::key_type mapKey = std::make_pair(tcTimeDelay->getFactor(), priority);
 
     // Search the oneShot map for a oneShot with the associated timeDelay factor
-    if (oneShotMap.find(tcTimeDelay->getFactor()) == oneShotMap.end()) {
-        // OneShot with the specific timeDelay not found, 
+    if (oneShotMap.find( mapKey ) == oneShotMap.end()) {
+        // OneShot with the specific timeDelay not found,
         // create a new one and add it to the map of OneShots
-        OneShot* ose = new OneShot(tcTimeDelay);
-        oneShotMap[tcTimeDelay->getFactor()] = ose; 
+        OneShot* ose = new OneShot(tcTimeDelay, priority);
+        oneShotMap[ mapKey ] = ose;
     }
-    
+
     // Add the handler to the OneShots list of handlers, Also the
     // registerHandler will schedule the oneShot to fire in the future
-    oneShotMap[tcTimeDelay->getFactor()]->registerHandler(handler);
+    oneShotMap[ mapKey ]->registerHandler(handler);
     return tcTimeDelay;
 }
 

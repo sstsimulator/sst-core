@@ -117,7 +117,7 @@ void StatisticBase::delayOutput(const char* delayTime)
         m_outputEnabled = false;
         m_outputDelayed = true;
 
-        Simulation::getSimulation()->registerOneShot(delayTime, m_outputDelayedHandler);
+        Simulation::getSimulation()->registerOneShot(delayTime, m_outputDelayedHandler, STATISTICCLOCKPRIORITY);
     }
 }
 
@@ -131,7 +131,7 @@ void StatisticBase::delayCollection(const char* delayTime)
         m_statEnabled = false;
         m_collectionDelayed = true;
 
-        Simulation::getSimulation()->registerOneShot(delayTime, m_collectionDelayedHandler);
+        Simulation::getSimulation()->registerOneShot(delayTime, m_collectionDelayedHandler, STATISTICCLOCKPRIORITY);
     }
 }
 
