@@ -337,7 +337,6 @@ private:
     TimeVortex*      timeVortex;
     TimeConverter*   threadMinPartTC;
     Activity*        current_activity;
-    static SyncBase* sync;
     static SimTime_t minPart;
     static TimeConverter*   minPartTC;
     std::vector<SimTime_t> interThreadLatencies;
