@@ -161,6 +161,12 @@ AC_SUBST(MPICC_VERSION)
 
 AC_CACHE_SAVE
 
+dnl Remove flags like -g, -O, and -W, that are not needed by other elements
+SST_EXPORT_CXXFLAGS=`echo "$CXXFLAGS" | sed -E -e 's/ *-(g|O.|W@<:@^\s@:>@+)//g'`
+SST_EXPORT_CFLAGS=`echo "$CFLAGS" | sed -E -e 's/ *-(g|O.|W@<:@^\s@:>@+)//g'`
+AC_SUBST(SST_EXPORT_CXXFLAGS)
+AC_SUBST(SST_EXPORT_CFLAGS)
+
 AC_CONFIG_FILES([
   Makefile
   doc/Makefile
