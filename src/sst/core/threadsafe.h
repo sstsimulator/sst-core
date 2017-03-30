@@ -22,7 +22,7 @@
 #include <vector>
 //#include <stdalign.h>
 
-#include <sched.h>
+#include <time.h>
 
 #include <sst/core/profile.h>
 
@@ -72,18 +72,31 @@ public:
         if ( enabled ) {
             auto startTime = SST::Core::Profile::now();
 
-            size_t gen = generation.load();
+            size_t gen = generation.load(std::memory_order_acquire);
             asm("":::"memory");
-            size_t c = --count;
+            size_t c = count.fetch_sub(1) -1;
             if ( 0 == c ) {
                 /* We should release */
-                count = origCount;
+                count.store(origCount);
                 asm("":::"memory");
-                ++generation; /* Incrementing generation causes release */
+                /* Incrementing generation causes release */
+                generation.fetch_add(1, std::memory_order_release);
+                __sync_synchronize();
             } else {
                 /* Try spinning first */
+                uint32_t count = 0;
                 do {
-                    _mm_pause();
+                    count++;
+                    if ( count < 1024 )
+                        _mm_pause();
+                    else if ( count < (1024*1024) ) 
+                        std::this_thread::yield();
+                    else {
+                        struct timespec ts;
+                        ts.tv_sec = 0;
+                        ts.tv_nsec = 1000;
+                        nanosleep(&ts, NULL);
+                    }
                 } while ( gen == generation.load(std::memory_order_acquire) );
             }
             elapsed = SST::Core::Profile::getElapsed(startTime);
