@@ -742,7 +742,6 @@ main(int argc, char *argv[])
     uint64_t local_current_tv_depth = threadInfo[0].current_tv_depth;
     uint64_t global_current_tv_depth = 0;
     
-    uint64_t local_sync_data_size = threadInfo[0].sync_data_size;
     uint64_t global_max_sync_data_size = 0, global_sync_data_size = 0;
 
     uint64_t mempool_size = 0, max_mempool_size = 0, global_mempool_size = 0;
@@ -752,6 +751,8 @@ main(int argc, char *argv[])
 #endif
 
 #ifdef SST_CONFIG_HAVE_MPI
+    uint64_t local_sync_data_size = threadInfo[0].sync_data_size;
+
     MPI_Allreduce(&run_time, &max_run_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&build_time, &max_build_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );
     MPI_Allreduce(&total_time, &max_total_time, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD );

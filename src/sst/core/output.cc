@@ -206,7 +206,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
     // If MPI exists, abort
     MPI_Abort(MPI_COMM_WORLD, exit_code);
 #else
-    exit(1);
+    exit(exit_code);
 #endif
 }
 

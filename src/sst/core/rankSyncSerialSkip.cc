@@ -24,6 +24,9 @@
 
 #ifdef SST_CONFIG_HAVE_MPI
 #include <mpi.h>
+#define UNUSED_WO_MPI
+#else
+#define UNUSED_WO_MPI __attribute__((unused))
 #endif
 
 
@@ -259,7 +262,7 @@ RankSyncSerialSkip::exchange(void)
 }
 
 void
-RankSyncSerialSkip::exchangeLinkInitData(int thread, std::atomic<int>& msg_count)
+RankSyncSerialSkip::exchangeLinkInitData(int thread UNUSED_WO_MPI, std::atomic<int>& msg_count UNUSED_WO_MPI)
 {
     // TraceFunction trace(CALL_INFO_LONG);
 #ifdef SST_CONFIG_HAVE_MPI
