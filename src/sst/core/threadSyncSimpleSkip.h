@@ -64,7 +64,7 @@ private:
     static SimTime_t localMinimumNextActivityTime;
     Simulation* sim;
     // static bool disabled;
-    static Core::ThreadSafe::Barrier barrier;
+    static Core::ThreadSafe::Barrier barrier[3];
     double totalWaitTime;
     bool single_rank;
 };
