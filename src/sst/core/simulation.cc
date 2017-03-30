@@ -73,8 +73,6 @@ Simulation::~Simulation()
     // in the queue, as well as the Sync, Exit and Clock objects.
     delete timeVortex;
 
-    if ( sync && (my_rank.thread == 0) ) delete sync;
-
     // Delete all the components
     // for ( CompMap_t::iterator it = compMap.begin(); it != compMap.end(); ++it ) {
 	// delete it->second;
@@ -480,15 +478,6 @@ void Simulation::initialize() {
         }
     }
 #endif
-#if 0
-    if ( num_ranks.rank > 1 && my_rank.thread == 0 ) {
-        sync->finalizeLinkConfigurations();
-    }
-
-    if ( num_ranks.thread > 1 ) {
-        threadSync->finalizeLinkConfigurations();
-    }
-#endif
     syncManager->finalizeLinkConfigurations();
 
 }
@@ -813,8 +802,7 @@ uint64_t Simulation::getTimeVortexCurrentDepth() const {
 }
 
 uint64_t Simulation::getSyncQueueDataSize() const {
-    if ( num_ranks.rank == 1 || my_rank.thread > 0 ) return 0;
-    return sync->getDataSize();
+    return syncManager->getDataSize();
 }
 
     
@@ -861,7 +849,6 @@ Core::ThreadSafe::Barrier Simulation::exitBarrier;
 std::mutex Simulation::simulationMutex;
 TimeConverter* Simulation::minPartTC = NULL;
 SimTime_t Simulation::minPart;
-SyncBase* Simulation::sync = NULL;
 
 
 
