@@ -37,7 +37,9 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
     }
 
     if ( sim->getRank().thread == 0 )
-        barrier.resize(num_threads);
+        barrier[0].resize(num_threads);
+        barrier[1].resize(num_threads);
+        barrier[2].resize(num_threads);
 
     if ( sim->getNumRanks().rank > 1 ) single_rank = false;
     else single_rank = true;
@@ -126,11 +128,11 @@ ThreadSyncSimpleSkip::execute()
 {
     // TraceFunction trace(CALL_INFO_LONG);
 
-    totalWaitTime = barrier.wait();
+    totalWaitTime = barrier[0].wait();
     before();
-    totalWaitTime = barrier.wait();
+    totalWaitTime = barrier[1].wait();
     after();
-    totalWaitTime += barrier.wait();
+    totalWaitTime += barrier[2].wait();
 }
 
 void
@@ -184,6 +186,6 @@ ThreadSyncSimpleSkip::getDataSize() const {
 
 
 // bool ThreadSyncSimpleSkip::disabled = false;
-Core::ThreadSafe::Barrier ThreadSyncSimpleSkip::barrier;
+Core::ThreadSafe::Barrier ThreadSyncSimpleSkip::barrier[3];
 
 } // namespace SST

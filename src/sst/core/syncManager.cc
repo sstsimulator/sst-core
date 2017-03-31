@@ -266,6 +266,13 @@ SyncManager::print(const std::string& header, Output &out) const
                " with priority %d\n",
                header.c_str(), getDeliveryTime(), getPriority());
 }
+
+uint64_t SyncManager::getDataSize() const
+{
+    return rankSync->getDataSize();
+}
+
+
 } // namespace SST
 
 

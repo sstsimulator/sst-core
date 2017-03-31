@@ -116,6 +116,8 @@ public:
 
     void print(const std::string& header, Output &out) const;
 
+    uint64_t getDataSize() const;
+
 private:
     enum sync_type_t { RANK, THREAD};
 
