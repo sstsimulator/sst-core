@@ -39,6 +39,38 @@ void ConfigLink::updateLatencies(TimeLord *timeLord)
 }
 
 
+bool ConfigStatGroup::addComponent(ComponentId_t id)
+{
+    return false;
+}
+
+
+bool ConfigStatGroup::addStatistic(const std::string &name, Params &p)
+{
+    return false;
+}
+
+
+bool ConfigStatGroup::setOutput(const std::string &type, Params &p)
+{
+    return false;
+}
+
+
+bool ConfigStatGroup::setFrequency(const std::string &freq)
+{
+    return false;
+}
+
+
+std::pair<bool, std::string> ConfigStatGroup::verifyStatsAndComponents()
+{
+    return std::make_pair(false, "");
+}
+
+
+
+
 void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
     os << "  type = " << type << std::endl;

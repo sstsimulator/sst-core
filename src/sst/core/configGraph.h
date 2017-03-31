@@ -44,7 +44,6 @@ typedef SparseVectorMap<ComponentId_t> ComponentIdMap_t;
 typedef std::vector<LinkId_t> LinkIdMap_t;
 
 
-
 /** Represents the configuration of a generic Link */
 class ConfigLink : public SST::Core::Serialization::serializable {
 public:
@@ -123,6 +122,43 @@ private:
 
 
 };
+
+
+
+class ConfigStatGroup : public SST::Core::Serialization::serializable {
+    std::string name;
+    std::map<std::string, Params> statMap;
+    std::vector<ComponentId_t> components;
+
+public:
+    ConfigStatGroup(const std::string &name) : name(name) { }
+    ConfigStatGroup() {} /* Do not use */
+
+
+    bool addComponent(ComponentId_t id);
+    bool addStatistic(const std::string &name, Params &p);
+    bool setOutput(const std::string &type, Params &p);
+    bool setFrequency(const std::string &freq);
+
+    /**
+     * Checks to make sure that all components in the group support all
+     * of the statistics as configured in the group.
+     * @return pair of:  bool for OK, string for error message (if any)
+     */
+    std::pair<bool, std::string> verifyStatsAndComponents();
+
+
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        ser & name;
+        ser & statMap;
+        ser & components;
+    }
+
+    ImplementSerializable(SST::ConfigStatGroup)
+
+};
+
 
 typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 
@@ -281,6 +317,15 @@ public:
         return comps;
     }
 
+    ConfigStatGroup* getStatGroup(const std::string &name) {
+        auto found = statGroups.find(name);
+        if ( found == statGroups.end() ) {
+            bool ok;
+            std::tie(found, ok) = statGroups.emplace(name, name);
+        }
+        return &(found->second);
+    }
+
     ConfigComponent* findComponent(ComponentId_t);
 
     /** Return the map of links */
@@ -303,6 +348,7 @@ public:
 		ser & statOutputName;
 		ser & statOutputParams;
 		ser & statLoadLevel;
+        ser & statGroups;
 	}
 
 private:
@@ -311,6 +357,7 @@ private:
 
     ConfigLinkMap_t      links;
     ConfigComponentMap_t comps;
+    std::map<std::string, ConfigStatGroup> statGroups;
 
     // temporary as a test
     std::map<std::string,LinkId_t> link_names;
