@@ -32,11 +32,6 @@
 #include <sst/core/statapi/statoutputhdf5.h>
 #endif
 
-#ifdef HAVE_LIBZ
-#include <sst/core/statapi/statoutputcsvgz.h>
-#include <sst/core/statapi/statoutputtxtgz.h>
-#endif
-
 using namespace SST::Statistics;
 
 namespace SST {
@@ -479,12 +474,12 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 {
     // Names of sst.xxx Statistic Output Modules
     if (0 == ::strcasecmp("statoutputcsv", type.c_str())) {
-        return new StatisticOutputCSV(params);
+        return new StatisticOutputCSV(params, false);
     }
 
     if (0 == ::strcasecmp("statoutputcsvgz", type.c_str())) {
 #ifdef HAVE_LIBZ
-	return new StatisticOutputCompressedCSV(params);
+	return new StatisticOutputCSV(params, true);
 #else
 	out.fatal(CALL_INFO, -1, "Statistics output requested compressed CSV but SST does not have LIBZ compiled.\n");
 #endif
@@ -492,7 +487,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 
     if (0 == ::strcasecmp("statoutputtxtgz", type.c_str())) {
 #ifdef HAVE_LIBZ
-	return new StatisticOutputCompressedTxt(params);
+	return new StatisticOutputTxt(params, true);
 #else
 	out.fatal(CALL_INFO, -1, "Statistics output requested compressed TXT but SST does not have LIBZ compiled.\n");
 #endif
@@ -505,7 +500,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 #endif
 
     if (0 == ::strcasecmp("statoutputtxt", type.c_str())) {
-        return new StatisticOutputTxt(params);
+        return new StatisticOutputTxt(params, false);
     }
 
     if (0 == ::strcasecmp("statoutputconsole", type.c_str())) {

@@ -18,13 +18,14 @@
 namespace SST {
 namespace Statistics {
 
-StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters) 
-    : StatisticOutput (outputParameters)
+StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters, bool compressed)
+    : StatisticOutput (outputParameters), m_useCompression(compressed)
 {
     // Announce this output object's name
     Output out = Simulation::getSimulationOutput();
-    out.verbose(CALL_INFO, 1, 0, " : StatisticOutputTxt enabled...\n");
-    setStatisticOutputName("StatisticOutputTxt");
+    out.verbose(CALL_INFO, 1, 0, " : StatisticOutput%sTxt enabled...\n",
+            m_useCompression ? "Compressed" : "");
+    setStatisticOutputName(m_useCompression ? "StatisticOutputCompressedTxt" : "StatisticOutputTxt");
 }
 
 bool StatisticOutputTxt::checkOutputParameters()
@@ -37,7 +38,7 @@ bool StatisticOutputTxt::checkOutputParameters()
 
     // Review the output parameters and make sure they are correct, and 
     // also setup internal variables
-    
+
     // Look for Help Param
     getOutputParameters().find<std::string>("help", "1", foundKey);
     if (true == foundKey) {
@@ -101,30 +102,25 @@ void StatisticOutputTxt::startOfSimulation()
     }
     
     // Open the finalized filename
-    m_hFile = fopen(m_FilePath.c_str(), "w");
-    if (NULL == m_hFile){
-        // We got an error of some sort
-        Output out = Simulation::getSimulation()->getSimulationOutput();
-        out.fatal(CALL_INFO, -1, " : StatisticOutputTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+    if ( !openFile() )
         return;
-    }
 
     // Output a Top Header is requested to do so
     if (true == m_outputTopHeader) {
         // Add a Simulation Component to the front
         m_outputBuffer = "Component.Statistic";
-        fprintf(m_hFile, "%s; ", m_outputBuffer.c_str());
+        print("%s; ", m_outputBuffer.c_str());
         
         if (true == m_outputSimTime) {
             // Add a Simulation Time Header to the front
             m_outputBuffer = "SimTime";
-            fprintf(m_hFile, "%s; ", m_outputBuffer.c_str());
+            printf("%s; ", m_outputBuffer.c_str());
         }
 
         if (true == m_outputRank) {
             // Add a Rank Header to the front
             m_outputBuffer = "Rank";
-            fprintf(m_hFile, "%s; ", m_outputBuffer.c_str());
+            printf("%s; ", m_outputBuffer.c_str());
         }
     
         // Output all Headers
@@ -139,16 +135,16 @@ void StatisticOutputTxt::startOfSimulation()
             // Increment the iterator 
             it_v++;
     
-            fprintf(m_hFile, "%s; ", m_outputBuffer.c_str());
+            print("%s; ", m_outputBuffer.c_str());
         }
-        fprintf(m_hFile, "\n");
+        print("\n");
     }
 }
 
 void StatisticOutputTxt::endOfSimulation() 
 {
     // Close the file
-    fclose(m_hFile);
+    closeFile();
 }
 
 void StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic) 
@@ -190,7 +186,7 @@ void StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic)
 void StatisticOutputTxt::implStopOutputEntries() 
 {
     // Done with Output
-    fprintf(m_hFile, "%s\n", m_outputBuffer.c_str());
+    print("%s\n", m_outputBuffer.c_str());
 }
 
 void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, int32_t data)
@@ -299,6 +295,61 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, double data)
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
     }
+}
+
+
+bool StatisticOutputTxt::openFile(void)
+{
+    if ( m_useCompression ) {
+#ifdef HAVE_LIBZ
+        m_gzFile = gzopen(m_FilePath.c_str(), "w");
+        if (NULL == m_hFile){
+            // We got an error of some sort
+            Output out = Simulation::getSimulation()->getSimulationOutput();
+            out.fatal(CALL_INFO, -1, " : StatisticOutputCompressedTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+            return false;
+        }
+#else
+        return false;
+#endif
+    } else {
+        m_hFile = fopen(m_FilePath.c_str(), "w");
+        if (NULL == m_hFile){
+            // We got an error of some sort
+            Output out = Simulation::getSimulation()->getSimulationOutput();
+            out.fatal(CALL_INFO, -1, " : StatisticOutputTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+            return false;;
+        }
+    }
+    return true;
+}
+
+void StatisticOutputTxt::closeFile(void)
+{
+    if ( m_useCompression ) {
+#ifdef HAVE_LIBZ
+        gzclose(m_gzFile);
+#endif
+    } else {
+        fclose(m_hFile);
+    }
+}
+
+
+int StatisticOutputTxt::print(const char* fmt, ...)
+{
+    int res = 0;
+    va_list args;
+    va_start(args,fmt);
+    if ( m_useCompression ) {
+#ifdef HAVE_LIBZ
+        res = gzvprintf(m_gzFile, fmt, args);
+#endif
+    } else {
+        res = vfprintf(m_hFile, fmt, args);
+    }
+    va_end(args);
+    return res;
 }
 
 } //namespace Statistics
