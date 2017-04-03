@@ -40,6 +40,23 @@ StatisticProcessingEngine::StatisticProcessingEngine(ConfigGraph *graph) :
     for ( auto & cfg : graph->getStatOutputs() ) {
         m_statOutputs.push_back(createStatisticOutput(cfg));
     }
+
+    m_defaultGroup.output = m_statOutputs[0];
+    for ( auto & cfg : graph->getStatGroups() ) {
+        m_statGroups.emplace_back(cfg.second);
+
+        /* Force component / statistic registration for Group stats*/
+        for ( ComponentId_t compID : cfg.second.components ) {
+            ConfigComponent *ccomp = graph->findComponent(compID);
+            if ( ccomp ) { /* Should always be true */
+                for ( auto &kv : cfg.second.statMap ) {
+                    ccomp->enableStatistic(kv.first);
+                    ccomp->setStatisticParameters(kv.first, kv.second);
+                }
+            }
+        }
+    }
+
 }
 
 StatisticProcessingEngine::~StatisticProcessingEngine()
@@ -100,6 +117,8 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
     setStatisticStartTime(stat);
     setStatisticStopTime(stat);
 
+    placeStatisticInProperGroup(stat);
+
     return true;
 }
 
@@ -129,10 +148,32 @@ StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigSt
 }
 
 
+
 StatisticOutput* StatisticProcessingEngine::getOutputForStatistic(const StatisticBase *stat) const
 {
-    /* TODO:  Lookup stat to determine its proper output (may be part of a group assigned elsewhere) */
-    return m_statOutputs[0];
+    return getGroupForStatistic(stat).output;
+}
+
+
+StatisticProcessingEngine::StatisticGroup& StatisticProcessingEngine::getGroupForStatistic(const StatisticBase *stat) const
+{
+    for ( auto & g : m_statGroups ) {
+        if ( g.containsStatistic(stat) )
+            return const_cast<StatisticGroup&>(g);
+    }
+    return const_cast<StatisticGroup&>(m_defaultGroup);
+}
+
+
+void StatisticProcessingEngine::placeStatisticInProperGroup(StatisticBase *stat)
+{
+    for ( auto & g : m_statGroups ) {
+        if ( g.claimsStatistic(stat) ) {
+            g.addStatistic(stat);
+            return;
+        }
+    }
+    m_defaultGroup.addStatistic(stat);
 }
 
 
@@ -480,6 +521,39 @@ void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat, S
 
     // Add the statistic to the lists of statistics registered to this component   
     statArray->push_back(Stat);
+}
+
+
+
+
+StatisticProcessingEngine::StatisticGroup::StatisticGroup(const ConfigStatGroup &csg) :
+    isDefault(false), name(csg.name),
+    output(StatisticProcessingEngine::getInstance()->m_statOutputs[csg.outputID]),
+    components(csg.components)
+{
+    for ( auto & kv : csg.statMap ) {
+        statNames.push_back(kv.first);
+    }
+}
+
+
+bool StatisticProcessingEngine::StatisticGroup::containsStatistic(const StatisticBase *stat) const
+{
+    if ( isDefault ) return true;
+    std::find(stats.begin(), stats.end(), stat);
+    return false;
+}
+
+
+bool StatisticProcessingEngine::StatisticGroup::claimsStatistic(const StatisticBase *stat) const
+{
+    if ( isDefault ) return true;
+    if ( std::find(statNames.begin(), statNames.end(), stat->getStatName()) != statNames.end() ) {
+        if ( std::find(components.begin(), components.end(), stat->getComponent()->getId()) != components.end() )
+            return true;
+    }
+
+    return false;
 }
 
 

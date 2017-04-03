@@ -240,6 +240,20 @@ void ConfigComponent::addStatisticParameter(const std::string &statisticName, co
     }
 }
 
+
+void ConfigComponent::setStatisticParameters(const std::string &statisticName, const Params &params)
+{
+    for ( auto & si : enabledStatistics ) {
+        // Check to see if the names match.  NOTE this also works for the STATALLFLAG
+        if ( statisticName == si.name ) {
+            si.params.insert(params);
+        }
+    }
+
+}
+
+
+
 ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string &name, const std::string &type)
 {
     /* Check for existing subComponent with this name */
@@ -562,6 +576,11 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 }
 
 
+
+bool ConfigGraph::containsComponent(ComponentId_t id) const {
+    return comps.contains(id);
+}
+
 ConfigComponent* ConfigGraph::findComponent(ComponentId_t id)
 {
     return const_cast<ConfigComponent*>(const_cast<const ConfigGraph*>(this)->findComponent(id));
@@ -640,6 +659,15 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
 
     // Copy the statistic configuration to the sub-graph
     graph->statOutputs = this->statOutputs;
+    /* Only need to copy StatGroups which are referenced in this subgraph */
+    for ( auto & kv : this->statGroups ) {
+        for ( auto & id : kv.second.components ) {
+            if ( graph->containsComponent(id) ) {
+                graph->statGroups.insert(std::make_pair(kv.first, kv.second));
+                break;
+            }
+        }
+    }
     graph->setStatisticLoadLevel(this->getStatLoadLevel());
 
     return graph;

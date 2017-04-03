@@ -26,6 +26,7 @@ namespace SST {
 class BaseComponent;
 class Simulation;
 class ConfigGraph;
+class ConfigStatGroup;
 class ConfigStatOutput;
 
 namespace Statistics {
@@ -86,6 +87,24 @@ private:
     friend class SST::Simulation;
     friend int ::main(int argc, char **argv);
 
+    struct StatisticGroup {
+        StatisticGroup() : isDefault(true), name("default") { };
+        StatisticGroup(const ConfigStatGroup &csg);
+
+        bool containsStatistic(const StatisticBase *stat) const;
+        bool claimsStatistic(const StatisticBase *stat) const;
+        void addStatistic(StatisticBase *stat) { stats.push_back(stat); }
+        bool isDefault;
+
+        std::string name;
+        StatisticOutput *output;
+
+        std::vector<ComponentId_t> components;
+        std::vector<std::string> statNames;
+
+        std::vector<StatisticBase*> stats;
+    };
+
     StatisticProcessingEngine(ConfigGraph *graph);
     ~StatisticProcessingEngine();
 
@@ -96,6 +115,8 @@ private:
     bool registerStatisticCore(StatisticBase* stat);
 
     StatisticOutput* getOutputForStatistic(const StatisticBase *stat) const;
+    StatisticGroup& getGroupForStatistic(const StatisticBase *stat) const;
+    void placeStatisticInProperGroup(StatisticBase *stat);
     bool addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
     bool addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
     UnitAlgebra getParamTime(StatisticBase *stat, const std::string& pName) const;
@@ -137,6 +158,8 @@ private:
     Output & m_output;
     uint8_t                                   m_statLoadLevel;
     std::vector<StatisticOutput*>             m_statOutputs;
+    StatisticGroup                            m_defaultGroup;
+    std::vector<StatisticGroup>               m_statGroups;
 
 };
 

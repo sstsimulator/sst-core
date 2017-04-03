@@ -129,13 +129,13 @@ private:
 
 
 class ConfigStatGroup : public SST::Core::Serialization::serializable {
+public:
     std::string name;
     std::map<std::string, Params> statMap;
     std::vector<ComponentId_t> components;
     size_t outputID;
     UnitAlgebra outputFrequency;
 
-public:
     ConfigStatGroup(const std::string &name) : name(name), outputID(0) { }
     ConfigStatGroup() {} /* Do not use */
 
@@ -223,6 +223,8 @@ public:
     const ConfigComponent* findSubComponent(ComponentId_t) const;
     void enableStatistic(const std::string &statisticName);
     void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value);
+    void setStatisticParameters(const std::string &statisticName, const Params &params);
+
     std::vector<LinkId_t> allLinks() const;
 
     void serialize_order(SST::Core::Serialization::serializer &ser) {
@@ -346,6 +348,7 @@ public:
         return comps;
     }
 
+    const std::map<std::string, ConfigStatGroup>& getStatGroups() const { return statGroups; }
     ConfigStatGroup* getStatGroup(const std::string &name) {
         auto found = statGroups.find(name);
         if ( found == statGroups.end() ) {
@@ -355,6 +358,7 @@ public:
         return &(found->second);
     }
 
+    bool containsComponent(ComponentId_t id) const;
     ConfigComponent* findComponent(ComponentId_t);
     const ConfigComponent* findComponent(ComponentId_t) const;
 
