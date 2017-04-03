@@ -13,19 +13,18 @@
 #define SST_CORE_COMPONENTINFO_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/params.h>
 
 #include <unordered_set>
 #include <string>
 #include <functional>
-
-#include <sst/core/configGraph.h>
-
 
 namespace SST {
 
 class LinkMap;
 class BaseComponent;
 
+class ConfigComponent;
 class ComponentInfoMap;
 
 class ComponentInfo {

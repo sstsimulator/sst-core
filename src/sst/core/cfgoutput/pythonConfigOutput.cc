@@ -13,6 +13,8 @@
 #include <sst_config.h>
 
 #include "pythonConfigOutput.h"
+#include <sst/core/simulation.h>
+#include <sst/core/config.h>
 
 using namespace SST::Core;
 

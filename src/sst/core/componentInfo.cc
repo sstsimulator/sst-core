@@ -14,6 +14,7 @@
 // #include "sst/core/serialization.h"
 
 #include <sst/core/componentInfo.h>
+#include <sst/core/configGraph.h>
 #include <sst/core/linkMap.h>
 
 namespace SST {
