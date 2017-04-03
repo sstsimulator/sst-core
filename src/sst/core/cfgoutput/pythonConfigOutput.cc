@@ -75,22 +75,22 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
         fprintf(outputFile, ")\n");
     }
 
-    for ( size_t statIndex = 0 ; statIndex < comp.enabledStatistics.size() ; statIndex++ ) {
-        if ( comp.enabledStatistics[statIndex] == STATALLFLAG ) {
+    for ( auto &si : comp.enabledStatistics ) {
+        if ( si.name == STATALLFLAG ) {
             fprintf(outputFile, "%s.enableAllStatistics(", objName);
-            if ( !comp.enabledStatParams[statIndex].empty() ) {
-                generateParams(comp.enabledStatParams[statIndex]);
+            if ( !si.params.empty() ) {
+                generateParams(si.params);
             }
             fprintf(outputFile, ")\n");
         } else {
-            char* esStatName = makeEscapeSafe(comp.enabledStatistics[statIndex].c_str());
+            char* esStatName = makeEscapeSafe(si.name.c_str());
 
             fprintf(outputFile, "%s.enableStatistics([\"%s\"]", objName, esStatName);
 
             // Output the Statistic Parameters
-            if( !comp.enabledStatParams[statIndex].empty() ) {
+            if( !si.params.empty() ) {
                 fprintf(outputFile, ", ");
-                generateParams(comp.enabledStatParams[statIndex]);
+                generateParams(si.params);
             }
             fprintf(outputFile, ")\n");
 

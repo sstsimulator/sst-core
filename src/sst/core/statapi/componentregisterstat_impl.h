@@ -24,8 +24,6 @@
     bool                            statGood = true;
     bool                            nameFound = false;
     StatisticBase::StatMode_t       statCollectionMode = StatisticBase::STAT_MODE_COUNT;
-    ComponentInfo::statEnableList_t*   statEnableList;
-    ComponentInfo::statParamsList_t*   statParamsList;
     Output &                        out = getSimulation()->getSimulationOutput();
     Statistics::StatisticProcessingEngine *engine = getSimulation()->getStatisticsProcessingEngine();
     UnitAlgebra                     collectionRate;
@@ -53,40 +51,36 @@
      * be the owning component.  We've got the ID of that component in 'my_info->getID()'
      */
     BaseComponent *owner = this->getStatisticOwner();
-    
+
     // // Verify here that name of the stat is one of the registered
-    // // names of the component's ElementInfoStatistic.  
+    // // names of the component's ElementInfoStatistic.
     // if (false == doesComponentInfoStatisticExist(statName)) {
     //     fprintf(stderr, "Error: Statistic %s name %s is not found in ElementInfoStatistic, exiting...\n", fullStatName.c_str(), statName.c_str());
     //     exit(1);
     // }
 
-    // Get Component Statistic Information from the ConfigGraph data
-    statEnableList = my_info->getStatEnableList();
-    statParamsList = my_info->getStatParams();
-    
     // Check each entry in the StatEnableList (from the ConfigGraph via the 
     // Python File) to see if this Statistic is enabled, then check any of 
     // its critical parameters
-    for (uint32_t x = 0; x < statEnableList->size(); x++) {
+    for ( auto & si : *my_info->getStatEnableList() ) {
         // First check to see if the any entry in the StatEnableList matches 
         // the Statistic Name or the STATALLFLAG.  If so, then this Statistic
         // will be enabled.  Then check any critical parameters   
-        if ((std::string(STATALLFLAG) == statEnableList->at(x)) || (statName == statEnableList->at(x))) {
+        if ((std::string(STATALLFLAG) == si.name) || (statName == si.name)) {
             // Identify what keys are Allowed in the parameters
             Params::KeySet_t allowedKeySet;
             allowedKeySet.insert("type");
             allowedKeySet.insert("rate");
             allowedKeySet.insert("startat");
             allowedKeySet.insert("stopat");
-            statParamsList->at(x).pushAllowedKeys(allowedKeySet);
+            si.params.pushAllowedKeys(allowedKeySet);
 
             // We found an acceptible name... Now check its critical Parameters
             // Note: If parameter not found, defaults will be provided
-            statTypeParam = statParamsList->at(x).find<std::string>("type", "sst.AccumulatorStatistic");
-            statRateParam = statParamsList->at(x).find<std::string>("rate", "0ns");
-            statStartAtTimeParam = statParamsList->at(x).find<std::string>("startat", "0ns");
-            statStopAtTimeParam = statParamsList->at(x).find<std::string>("stopat", "0ns");
+            statTypeParam = si.params.find<std::string>("type", "sst.AccumulatorStatistic");
+            statRateParam = si.params.find<std::string>("rate", "0ns");
+            statStartAtTimeParam = si.params.find<std::string>("startat", "0ns");
+            statStopAtTimeParam = si.params.find<std::string>("stopat", "0ns");
 
             // Check for an empty string on the collection rate and start/stop times 
             if (true == statRateParam.empty()) {
@@ -98,11 +92,11 @@
             if (true == statStopAtTimeParam.empty()) {
                 statStopAtTimeParam = "0ns";
             }
-            
-            collectionRate = UnitAlgebra(statRateParam); 
+
+            collectionRate = UnitAlgebra(statRateParam);
             startAtTime = UnitAlgebra(statStartAtTimeParam);
             stopAtTime = UnitAlgebra(statStopAtTimeParam);
-            statParams = statParamsList->at(x);
+            statParams = si.params;
             nameFound = true;
             break;
         }

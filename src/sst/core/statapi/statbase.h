@@ -12,16 +12,39 @@
 #ifndef _H_SST_CORE_STATISTICS_BASE
 #define _H_SST_CORE_STATISTICS_BASE
 
+#include <string>
+
 #include <sst/core/sst_types.h>
 #include <sst/core/params.h>
 #include <sst/core/oneshot.h>
 #include <sst/core/statapi/statfieldinfo.h>
+#include <sst/core/serialization/serializable.h>
 
 namespace SST {
 class BaseComponent;
 namespace Statistics {
 class StatisticOutput;
 class StatisticProcessingEngine;
+
+
+class StatisticInfo : public SST::Core::Serialization::serializable {
+public:
+    std::string name;
+    Params params;
+
+    StatisticInfo(const std::string &name) : name(name) { }
+    StatisticInfo(const std::string &name, const Params &params) : name(name), params(params) { }
+    StatisticInfo() { } /* DO NOT USE:  For serialization */
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        ser & name;
+        ser & params;
+    }
+
+    ImplementSerializable(SST::Statistics::StatisticInfo)
+};
+
+
 
 /**
     \class StatisticBase

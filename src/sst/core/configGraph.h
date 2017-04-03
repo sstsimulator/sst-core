@@ -21,11 +21,12 @@
 #include <set>
 #include <climits>
 
-#include "sst/core/sparseVectorMap.h"
-#include "sst/core/params.h"
-#include "sst/core/statapi/statoutput.h"
-#include "sst/core/rankInfo.h"
-#include "sst/core/unitAlgebra.h"
+#include <sst/core/sparseVectorMap.h>
+#include <sst/core/params.h>
+#include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/statoutput.h>
+#include <sst/core/rankInfo.h>
+#include <sst/core/unitAlgebra.h>
 
 #include <sst/core/serialization/serializable.h>
 
@@ -200,8 +201,7 @@ public:
     RankInfo                      rank;              /*!< Parallel Rank for this component */
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
-    std::vector<std::string>      enabledStatistics; /*!< List of statistics to be enabled */
-    std::vector<Params>           enabledStatParams; /*!< List of parameters for enabled statistics */
+    std::vector<Statistics::StatisticInfo> enabledStatistics; /*!< List of statistics to be enabled */
     std::vector<std::pair<std::string, ConfigComponent> > subComponents; /*!< List of subcomponents */
 
     inline const ComponentId_t& key()const { return id; }
@@ -235,7 +235,6 @@ public:
         ser & links;
         ser & params;
         ser & enabledStatistics;
-        ser & enabledStatParams;
         ser & subComponents;
     }
 

@@ -115,10 +115,10 @@ void ConfigComponent::print(std::ostream &os) const {
     os << "  Params:" << std::endl;
     params.print_all_params(os, "    ");
     os << "  Statistics:" << std::endl;
-    for (size_t x = 0 ; x != enabledStatistics.size() ; ++x) {
-        os << "    " << enabledStatistics[x] << std::endl;
+    for ( auto & si : enabledStatistics ) {
+        os << "    " << si.name << std::endl;
         os << "      Params:" << std::endl;
-        enabledStatParams[x].print_all_params(os, "      ");
+        si.params.print_all_params(os, "      ");
     }
     os << "  SubComponents:\n";
     for ( auto & sc : subComponents ) {
@@ -137,7 +137,6 @@ ConfigComponent::cloneWithoutLinks() const
     ret.rank = rank;
     ret.params = params;
     ret.enabledStatistics = enabledStatistics;
-    ret.enabledStatParams = enabledStatParams;
     for ( auto &i : subComponents ) {
         ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinks());
     }
@@ -155,7 +154,6 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.weight = weight;
     ret.rank = rank;
     ret.enabledStatistics = enabledStatistics;
-    ret.enabledStatParams = enabledStatParams;
     for ( auto &i : subComponents ) {
         ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinksOrParams());
     }
@@ -203,28 +201,25 @@ void ConfigComponent::enableStatistic(const std::string &statisticName)
         if (false == enabledStatistics.empty()) {
             // The vector is populated, so see if the STATALLFLAG
             // already exists if it does, we are done
-            if (STATALLFLAG != enabledStatistics.back()) {
+            if (STATALLFLAG != enabledStatistics.back().name) {
                 // Add a STATALLFLAG to end of the vector
-                enabledStatistics.push_back(STATALLFLAG);
-                enabledStatParams.push_back(Params());
+                enabledStatistics.emplace_back(STATALLFLAG);
             }
         } else {
             // Add a STATALLFLAG to end of the vector
-            enabledStatistics.push_back(STATALLFLAG);
-            enabledStatParams.push_back(Params());
+            enabledStatistics.emplace_back(STATALLFLAG);
         }
     } else {
         // Check to see if the stat is already in the list
-        for (std::vector<std::string>::iterator iter = enabledStatistics.begin(); iter != enabledStatistics.end(); ++iter) {
-            if (statisticName == *iter) {
+        for ( auto & si : enabledStatistics ) {
+            if ( statisticName == si.name ) {
                 // We found the name already in the enabledStatistics list, do nothing
                 return;
             }
         }
 
         // statisticName not in list, so add statistic and params to top of the vectors
-        enabledStatistics.insert(enabledStatistics.begin(), statisticName);
-        enabledStatParams.insert(enabledStatParams.begin(), Params());
+        enabledStatistics.emplace(enabledStatistics.begin(), statisticName);
     }
 }
 
@@ -236,11 +231,11 @@ void ConfigComponent::addStatisticParameter(const std::string &statisticName, co
     //       lists will always be the same size.
 
     // Scan the enabledStatistics list for the statistic name
-    for (size_t x = 0; x < enabledStatistics.size(); x++) {
+    for ( auto & si : enabledStatistics ) {
         // Check to see if the names match.  NOTE this also works for the STATALLFLAG
-        if (statisticName == enabledStatistics.at(x)) {
+        if ( statisticName == si.name ) {
             // Add/set the parameter
-            enabledStatParams.at(x).insert(std::string(param),std::string(value));
+            si.params.insert(param, value);
         }
     }
 }
