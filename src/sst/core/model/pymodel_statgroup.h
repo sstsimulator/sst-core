@@ -29,7 +29,14 @@ struct StatGroupPy_t {
 };
 
 
+struct StatOutputPy_t {
+    PyObject_HEAD
+    size_t id; /* Index into Graph's statOutputs array */
+    SST::ConfigStatOutput *ptr;
+};
+
 extern PyTypeObject PyModel_StatGroupType;
+extern PyTypeObject PyModel_StatOutputType;
 
 
 }  /* extern C */

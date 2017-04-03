@@ -27,6 +27,7 @@
 
 #include <sst/core/serialization/serializable.h>
 #include <sst/core/serialization/serializer.h>
+#include <sst/core/output.h>
 
 int main(int argc, char *argv[]);
 
@@ -415,6 +416,12 @@ public:
     void print_all_params(std::ostream &os, std::string prefix = "") const {
         for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
             os << prefix << "key=" << keyMapReverse[i->first] << ", value=" << i->second << std::endl;
+        }
+    }
+
+    void print_all_params(Output &out, std::string prefix = "") const {
+        for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
+            out.output("%s%s = %s\n", prefix.c_str(), keyMapReverse[i->first].c_str(), i->second.c_str());
         }
     }
 

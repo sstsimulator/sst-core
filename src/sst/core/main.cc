@@ -650,9 +650,9 @@ main(int argc, char *argv[])
 
     ///// Set up StatisticOutput /////
 
-    StatisticOutput *so = Factory::getFactory()->CreateStatisticOutput(graph->getStatOutput(), graph->getStatOutputParams());
+    StatisticOutput *so = Factory::getFactory()->CreateStatisticOutput(graph->getStatOutput().type, graph->getStatOutput().params);
     if (NULL == so) {
-        g_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", graph->getStatOutput().c_str());
+        g_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", graph->getStatOutput().type.c_str());
     }
 
     if (false == so->checkOutputParameters()) {
@@ -665,10 +665,7 @@ main(int argc, char *argv[])
         // for (Params::const_iterator it = graph->getStatOutputParams().begin(); it != graph->getStatOutputParams().end(); ++it ) {
         //     g_output.output("  %s = %s\n", Params::getParamName(it->first).c_str(), it->second.c_str());
         // }
-        std::set<std::string> keys = graph->getStatOutputParams().getKeys();
-        for (auto it = keys.begin(); it != keys.end(); ++it ) {
-            g_output.output("  %s = %s\n", it->c_str(), graph->getStatOutputParams().find<std::string>(*it).c_str());
-        }
+        graph->getStatOutput().params.print_all_params(g_output, "  ");
         g_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
     }
 

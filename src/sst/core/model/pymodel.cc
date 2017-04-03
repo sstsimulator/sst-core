@@ -635,6 +635,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
          ( PyType_Ready(&PyModel_SubComponentType) < 0 ) ||
          ( PyType_Ready(&PyModel_LinkType) < 0 ) ||
          ( PyType_Ready(&PyModel_StatGroupType) < 0 ) ||
+         ( PyType_Ready(&PyModel_StatOutputType) < 0 ) ||
          ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
         output->fatal(CALL_INFO, -1, "Error loading Python types.\n");
     }
@@ -650,6 +651,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     Py_INCREF(&PyModel_SubComponentType);
     Py_INCREF(&PyModel_LinkType);
     Py_INCREF(&PyModel_StatGroupType);
+    Py_INCREF(&PyModel_StatOutputType);
     Py_INCREF(&ModuleLoaderType);
 #if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
 #pragma GCC diagnostic pop
@@ -658,7 +660,8 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     PyModule_AddObject(module, "Link", (PyObject*)&PyModel_LinkType);
     PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
     PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
-    PyModule_AddObject(module, "StatGroup", (PyObject*)&PyModel_StatGroupType);
+    PyModule_AddObject(module, "StatisticGroup", (PyObject*)&PyModel_StatGroupType);
+    PyModule_AddObject(module, "StatisticOutput", (PyObject*)&PyModel_StatOutputType);
 
 
     // Add our custom loader

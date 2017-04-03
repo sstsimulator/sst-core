@@ -14,6 +14,7 @@
 #include <sst/core/configGraph.h>
 
 #include <fstream>
+#include <algorithm>
 
 #include <sst/core/component.h>
 #include <sst/core/config.h>
@@ -41,34 +42,63 @@ void ConfigLink::updateLatencies(TimeLord *timeLord)
 
 bool ConfigStatGroup::addComponent(ComponentId_t id)
 {
-    return false;
+    if ( std::find(components.begin(), components.end(), id) != components.end() ) {
+        components.push_back(id);
+    }
+    return true;
 }
 
 
 bool ConfigStatGroup::addStatistic(const std::string &name, Params &p)
 {
-    return false;
+    statMap[name] = p;
+    return true;
 }
 
 
-bool ConfigStatGroup::setOutput(const std::string &type, Params &p)
+bool ConfigStatGroup::setOutput(size_t id)
 {
-    return false;
+    outputID = id;
+    return true;
 }
 
 
 bool ConfigStatGroup::setFrequency(const std::string &freq)
 {
+    UnitAlgebra uaFreq(freq);
+    if ( uaFreq.hasUnits("s") || uaFreq.hasUnits("hz") ) {
+        outputFrequency = uaFreq;
+        return true;
+    }
     return false;
 }
 
 
-std::pair<bool, std::string> ConfigStatGroup::verifyStatsAndComponents()
+std::pair<bool, std::string> ConfigStatGroup::verifyStatsAndComponents(const ConfigGraph *graph)
 {
-    return std::make_pair(false, "");
+    for ( auto & id : components ) {
+        const ConfigComponent* comp = graph->findComponent(id);
+        if ( !comp ) {
+            std::stringstream ss;
+            ss << "Component id " << id << " is not a valid component";
+            return std::make_pair(false, ss.str());
+        }
+        for ( auto & statKV : statMap ) {
+
+            bool ok = SUBCOMPONENT_ID_MASK(comp->id) == 0 ?
+                Factory::getFactory()->DoesComponentInfoStatisticNameExist(comp->type, statKV.first) :
+                Factory::getFactory()->DoesSubComponentInfoStatisticNameExist(comp->type, statKV.first);
+
+            if ( !ok ) {
+                std::stringstream ss;
+                ss << "Component " << comp->name << " does not support statistic " << statKV.first;
+                return std::make_pair(false, ss.str());
+            }
+        }
+    }
+
+    return std::make_pair(true, "");
 }
-
-
 
 
 void ConfigComponent::print(std::ostream &os) const {
@@ -233,10 +263,15 @@ ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::
 
 ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid)
 {
+    return const_cast<ConfigComponent*>(const_cast<const ConfigComponent*>(this)->findSubComponent(sid));
+}
+
+const ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid) const
+{
     if ( sid == this->id ) return this;
 
     for ( auto &s : subComponents ) {
-        ConfigComponent* res = s.second.findSubComponent(sid);
+        const ConfigComponent* res = s.second.findSubComponent(sid);
         if ( res != NULL )
             return res;
     }
@@ -424,19 +459,19 @@ ConfigGraph::addComponent(ComponentId_t id, std::string name, std::string type)
 void
 ConfigGraph::setStatisticOutput(const std::string &name)
 {
-    statOutputName = name;
+    statOutputs[0].type = name;
 }
 
 void
 ConfigGraph::setStatisticOutputParams(const Params& p)
 {
-    statOutputParams = p;
+    statOutputs[0].params = p;
 }
 
 void
 ConfigGraph::addStatisticOutputParameter(const std::string& param, const std::string& value)
 {
-    statOutputParams.insert(param, value);
+    statOutputs[0].params.insert(param, value);
 }
 
 void
@@ -534,13 +569,17 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 
 ConfigComponent* ConfigGraph::findComponent(ComponentId_t id)
 {
+    return const_cast<ConfigComponent*>(const_cast<const ConfigGraph*>(this)->findComponent(id));
+}
+
+const ConfigComponent* ConfigGraph::findComponent(ComponentId_t id) const
+{
     /* Check to make sure we're part of the same component */
     if ( COMPONENT_ID_MASK(id) == id ) {
         return &comps[id];
     }
 
     return comps[COMPONENT_ID_MASK(id)].findSubComponent(id);
-
 }
 
 
@@ -605,8 +644,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     }
 
     // Copy the statistic configuration to the sub-graph
-    graph->setStatisticOutput(this->statOutputName.c_str());
-    graph->setStatisticOutputParams(this->getStatOutputParams());
+    graph->statOutputs = this->statOutputs;
     graph->setStatisticLoadLevel(this->getStatLoadLevel());
 
     return graph;

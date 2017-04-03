@@ -185,9 +185,9 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 		fprintf(outputFile, "sst.setStatisticLoadLevel(%" PRIu64 ")\n",
 			(uint64_t) graph->getStatLoadLevel());
 	}
-	if( !graph->getStatOutput().empty() ) {
-		fprintf(outputFile, "sst.setStatisticOutput(\"%s\"", graph->getStatOutput().c_str());
-        const Params &outParams = graph->getStatOutputParams();
+	if( !graph->getStatOutput().type.empty() ) {
+		fprintf(outputFile, "sst.setStatisticOutput(\"%s\"", graph->getStatOutput().type.c_str());
+        const Params &outParams = graph->getStatOutput().params;
         if ( !outParams.empty() ) {
             fprintf(outputFile, ", ");
             generateParams(outParams);
