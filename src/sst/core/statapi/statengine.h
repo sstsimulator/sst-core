@@ -18,9 +18,15 @@
 #include <sst/core/clock.h>
 #include <sst/core/oneshot.h>
 
+/* Forward declare for Friendship */
+extern int main(int argc, char **argv);
+
+
 namespace SST {
 class BaseComponent;
 class Simulation;
+class ConfigGraph;
+class ConfigStatOutput;
 
 namespace Statistics {
 
@@ -35,13 +41,18 @@ class StatisticBase;
 
 class StatisticProcessingEngine
 {
+    static StatisticProcessingEngine* instance;
+
 public:
+    static StatisticProcessingEngine* getInstance() { return instance; }
+
+
     /** Called by the Components and Subcomponent to perform a statistic Output.
       * @param stat - Pointer to the statistic.
       * @param EndOfSimFlag - Indicates that the output is occuring at the end of simulation.
       */
     void performStatisticOutput(StatisticBase* stat, bool endOfSimFlag = false);
-    
+
     /** Called by the Components and Subcomponent to perform a global statistic Output.
      * This routine will force ALL Components and Subcomponents to output their statistic information.
      * This may lead to unexpected results if the statistic counts or data is reset on output.
@@ -49,69 +60,84 @@ public:
      */
     void performGlobalStatisticOutput(bool endOfSimFlag = false);
 
-private:
-    friend class SST::BaseComponent;
-    friend class SST::Simulation;
+    /** Return the statistics load level for the system */
+    uint8_t getStatisticLoadLevel() {return m_statLoadLevel;}
 
-    StatisticProcessingEngine();
-    ~StatisticProcessingEngine();
-   
-    bool addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
-    bool addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
-    void setStatisticStartTime(const UnitAlgebra& startTime, StatisticBase* Stat);
-    void setStatisticStopTime(const UnitAlgebra& stopTime, StatisticBase* Stat);
 
-    void endOfSimulation();
-    void startOfSimulation();
-    
     template<typename T>
-    void registerStatisticWithEngine(const ComponentId_t& compId, StatisticBase* Stat)
+    bool registerStatisticWithEngine(StatisticBase* stat)
     {
-        if (is_type_same<T, int32_t    >::value){return addStatisticToCompStatMap(compId, Stat, StatisticFieldInfo::INT32); }
-        if (is_type_same<T, uint32_t   >::value){return addStatisticToCompStatMap(compId, Stat, StatisticFieldInfo::UINT32);}
-        if (is_type_same<T, int64_t    >::value){return addStatisticToCompStatMap(compId, Stat, StatisticFieldInfo::INT64); }
-        if (is_type_same<T, uint64_t   >::value){return addStatisticToCompStatMap(compId, Stat, StatisticFieldInfo::UINT64);}
-        if (is_type_same<T, float      >::value){return addStatisticToCompStatMap(compId, Stat, StatisticFieldInfo::FLOAT); }
-        if (is_type_same<T, double     >::value){return addStatisticToCompStatMap(compId, Stat, StatisticFieldInfo::DOUBLE);}
-
-        // If we get here, this is actually an illegal type
-        addStatisticToCompStatMap(compId, Stat, StatisticFieldInfo::UNDEFINED);
+        bool ok;
+        if ( true == (ok = registerStatisticCore(stat)) ) {
+            StatisticFieldInfo::fieldType_t fieldType = getFieldType<T>();
+            addStatisticToCompStatMap(stat, fieldType);
+        }
+        return ok;
     }
 
     template<typename T>
     StatisticBase* isStatisticRegisteredWithEngine(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId)
     {
-        if (is_type_same<T, int32_t    >::value){return isStatisticInCompStatMap(compName, compId, statName, statSubId, StatisticFieldInfo::INT32); }
-        if (is_type_same<T, uint32_t   >::value){return isStatisticInCompStatMap(compName, compId, statName, statSubId, StatisticFieldInfo::UINT32);}
-        if (is_type_same<T, int64_t    >::value){return isStatisticInCompStatMap(compName, compId, statName, statSubId, StatisticFieldInfo::INT64); }
-        if (is_type_same<T, uint64_t   >::value){return isStatisticInCompStatMap(compName, compId, statName, statSubId, StatisticFieldInfo::UINT64);}
-        if (is_type_same<T, float      >::value){return isStatisticInCompStatMap(compName, compId, statName, statSubId, StatisticFieldInfo::FLOAT); }
-        if (is_type_same<T, double     >::value){return isStatisticInCompStatMap(compName, compId, statName, statSubId, StatisticFieldInfo::DOUBLE);}
-
-        // If we get here, this is actually an illegal type
-        return isStatisticInCompStatMap(compName, compId, statName, statSubId, StatisticFieldInfo::UNDEFINED);
+        StatisticFieldInfo::fieldType_t fieldType = getFieldType<T>();
+        return isStatisticInCompStatMap(compName, compId, statName, statSubId, fieldType);
     }
 
 private:
-    void addStatisticClock(const UnitAlgebra& freq, StatisticBase* Stat);
-    bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor); 
-    void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor); 
-    void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor); 
+    friend class SST::Simulation;
+    friend int ::main(int argc, char **argv);
+
+    StatisticProcessingEngine(ConfigGraph *graph);
+    ~StatisticProcessingEngine();
+
+    static void init(ConfigGraph *graph);
+
+    StatisticOutput* createStatisticOutput(const ConfigStatOutput &cfg);
+
+    bool registerStatisticCore(StatisticBase* stat);
+
+    StatisticOutput* getOutputForStatistic(const StatisticBase *stat) const;
+    bool addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
+    bool addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
+    UnitAlgebra getParamTime(StatisticBase *stat, const std::string& pName) const;
+    void setStatisticStartTime(StatisticBase* Stat);
+    void setStatisticStopTime(StatisticBase* Stat);
+
+    void endOfSimulation();
+    void startOfSimulation();
+
+    template<typename T>
+    StatisticFieldInfo::fieldType_t getFieldType() const {
+        if (is_type_same<T, int32_t    >::value){return StatisticFieldInfo::INT32; }
+        if (is_type_same<T, uint32_t   >::value){return StatisticFieldInfo::UINT32;}
+        if (is_type_same<T, int64_t    >::value){return StatisticFieldInfo::INT64; }
+        if (is_type_same<T, uint64_t   >::value){return StatisticFieldInfo::UINT64;}
+        if (is_type_same<T, float      >::value){return StatisticFieldInfo::FLOAT; }
+        if (is_type_same<T, double     >::value){return StatisticFieldInfo::DOUBLE;}
+        return StatisticFieldInfo::UNDEFINED;
+    }
+
+    bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
+    void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
+    void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
     StatisticBase* isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType);
-    void addStatisticToCompStatMap(const ComponentId_t& compId, StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
-    
+    void addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
+
 private:
     typedef std::vector<StatisticBase*>           StatArray_t;       /*!< Array of Statistics */
     typedef std::map<SimTime_t, StatArray_t*>     StatMap_t;         /*!< Map of simtimes to Statistic Arrays */
     typedef std::map<ComponentId_t, StatArray_t*> CompStatMap_t;     /*!< Map of ComponentId's to StatInfo Arrays */
-                                              
+
     StatArray_t                               m_EventStatisticArray;  /*!< Array of Event Based Statistics */
     StatMap_t                                 m_PeriodicStatisticMap; /*!< Map of Array's of Periodic Based Statistics */
     StatMap_t                                 m_StartTimeMap;         /*!< Map of Array's of Statistics that are started at a sim time */
     StatMap_t                                 m_StopTimeMap;          /*!< Map of Array's of Statistics that are stopped at a sim time */
     CompStatMap_t                             m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */  
     bool                                      m_SimulationStarted;    /*!< Flag showing if Simulation has started */
-    
+
+    Output & m_output;
+    uint8_t                                   m_statLoadLevel;
+    std::vector<StatisticOutput*>             m_statOutputs;
+
 };
 
 } //namespace Statistics

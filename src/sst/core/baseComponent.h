@@ -226,7 +226,7 @@ public:
             exit(1);
         }
         // Check to see if the Statistic is previously registered with the Statistics Engine
-        StatisticBase* prevStat = getSimulation()->getStatisticsProcessingEngine()->isStatisticRegisteredWithEngine<T>(getName(), my_info->getID(), statName, statSubId);
+        StatisticBase* prevStat = StatisticProcessingEngine::getInstance()->isStatisticRegisteredWithEngine<T>(getName(), my_info->getID(), statName, statSubId);
         if (NULL != prevStat) {
             // Dynamic cast the base stat to the expected type
             return dynamic_cast<Statistic<T>*>(prevStat);
@@ -268,6 +268,7 @@ public:
     SubComponent* loadNamedSubComponent(std::string name, Params& params);
 
 protected:
+    friend class StatisticProcessingEngine;
 
     /** Manually set the default detaulTimeBase */
     void setDefaultTimeBase(TimeConverter *tc) {
@@ -291,19 +292,19 @@ protected:
     Simulation* getSimulation() const { return sim; }
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) = 0;
+    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const = 0;
     // Return the EnableLevel for the statisticName from the ElementInfoStatistic
-    uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName);
+    uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) const;
     // Return the Units for the statisticName from the ElementInfoStatistic
-    std::string getComponentInfoStatisticUnits(const std::string &statisticName);
+    std::string getComponentInfoStatisticUnits(const std::string &statisticName) const;
 
-    virtual Component* getTrueComponent() = 0;
+    virtual Component* getTrueComponent() const = 0;
     /**
      * Returns self if Component
      * If sub-component, returns self if a "modern" subcomponent
      *    otherwise, return base component.
      */
-    virtual BaseComponent* getStatisticOwner() = 0;
+    virtual BaseComponent* getStatisticOwner() const = 0;
 
 protected:
     ComponentInfo* my_info;

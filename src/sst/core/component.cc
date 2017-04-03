@@ -68,7 +68,7 @@ Component::primaryComponentOKToEndSim()
 
 
 
-bool Component::doesComponentInfoStatisticExist(const std::string &statisticName)
+bool Component::doesComponentInfoStatisticExist(const std::string &statisticName) const
 {
     const std::string& type = my_info->getType();
     return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);

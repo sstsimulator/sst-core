@@ -28,7 +28,6 @@ StatisticOutput::StatisticOutput(Params& outputParameters)
     m_highestFieldHandle = 0;
     m_currentFieldCompName = "";
     m_currentFieldStatName = "";
-    m_statLoadLevel = 0;
 }
 
 StatisticOutput::~StatisticOutput()

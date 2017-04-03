@@ -25,15 +25,10 @@
     bool                            nameFound = false;
     StatisticBase::StatMode_t       statCollectionMode = StatisticBase::STAT_MODE_COUNT;
     Output &                        out = getSimulation()->getSimulationOutput();
-    Statistics::StatisticProcessingEngine *engine = getSimulation()->getStatisticsProcessingEngine();
     UnitAlgebra                     collectionRate;
-    UnitAlgebra                     startAtTime;
-    UnitAlgebra                     stopAtTime;
     Params                          statParams;
     std::string                     statRateParam;
     std::string                     statTypeParam;
-    std::string                     statStartAtTimeParam;
-    std::string                     statStopAtTimeParam;
     Statistic<T>*                   statistic = NULL;
 
 
@@ -73,29 +68,15 @@
             allowedKeySet.insert("rate");
             allowedKeySet.insert("startat");
             allowedKeySet.insert("stopat");
+            allowedKeySet.insert("resetOnRead");
             si.params.pushAllowedKeys(allowedKeySet);
 
             // We found an acceptible name... Now check its critical Parameters
             // Note: If parameter not found, defaults will be provided
             statTypeParam = si.params.find<std::string>("type", "sst.AccumulatorStatistic");
             statRateParam = si.params.find<std::string>("rate", "0ns");
-            statStartAtTimeParam = si.params.find<std::string>("startat", "0ns");
-            statStopAtTimeParam = si.params.find<std::string>("stopat", "0ns");
-
-            // Check for an empty string on the collection rate and start/stop times 
-            if (true == statRateParam.empty()) {
-                statRateParam = "0ns";
-            }
-            if (true == statStartAtTimeParam.empty()) {
-                statStartAtTimeParam = "0ns";
-            }
-            if (true == statStopAtTimeParam.empty()) {
-                statStopAtTimeParam = "0ns";
-            }
 
             collectionRate = UnitAlgebra(statRateParam);
-            startAtTime = UnitAlgebra(statStartAtTimeParam);
-            stopAtTime = UnitAlgebra(statStopAtTimeParam);
             statParams = si.params;
             nameFound = true;
             break;
@@ -110,7 +91,7 @@
 
     if (true == statGood) {
         // Check that the Collection Rate is a valid unit type that we can use
-        if ((true == collectionRate.hasUnits("s")) || 
+        if ((true == collectionRate.hasUnits("s")) ||
             (true == collectionRate.hasUnits("hz")) ) {
             // Rate is Periodic Based
             statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
@@ -118,18 +99,12 @@
             // Rate is Count Based
             statCollectionMode = StatisticBase::STAT_MODE_COUNT;
         } else if (0 == collectionRate.getValue()) {
-            // Collection rate is zero and has no units, so make up a periodic flavor  
+            // Collection rate is zero and has no units, so make up a periodic flavor
             collectionRate = UnitAlgebra("0ns");
             statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
         } else {
             // collectionRate is a unit type we dont recognize 
             out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
-        }
-        
-        // Check the startat and stopat is in units of seconds
-        if ((true != startAtTime.hasUnits("s")) || (true != stopAtTime.hasUnits("s"))) {
-            // startat or stopat has a unit type we dont allow 
-            out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - param startat = %s; stopat = %s must both be in units of seconds; exiting...\n", fullStatName.c_str(), startAtTime.toString().c_str(), stopAtTime.toString().c_str());
         }
     }
 
@@ -149,62 +124,22 @@
             }
             statGood = false;
         }
-    
+
         // Tell the Statistic what collection mode it is in
         statistic->setRegisteredCollectionMode(statCollectionMode);
     }
-    
-    // If Stat is good, Add it to the Statistic Processing Engine
-    if (true == statGood) {
-        // Check the Statistics Enable Level vs the system Load Level to decide
-        // if this statistic can be used.
-        uint8_t enableLevel = getComponentInfoStatisticEnableLevel(statistic->getStatName());
-        uint8_t loadLevel = Simulation::getStatisticsOutput()->getStatisticLoadLevel();
-        if (0 == loadLevel) {
-            out.verbose(CALL_INFO, 1, 0, " Warning: Statistic Load Level = 0 (all statistics disabled); statistic %s is disabled...\n", fullStatName.c_str());
-            statGood = false;
-        // } else if (0 == enableLevel) {
-        //     out.verbose(CALL_INFO, 1, 0, " Warning: Statistic %s Enable Level = %d, statistic is disabled by the ElementInfoStatistic...\n", fullStatName.c_str(), enableLevel);
-        //     statGood = false;
-        } else if (enableLevel > loadLevel) {
-            out.verbose(CALL_INFO, 1, 0, " Warning: Load Level %d is too low to enable Statistic %s with Enable Level %d, statistic will not be enabled...\n", loadLevel, fullStatName.c_str(), enableLevel);
-            statGood = false;
-        }
-    }
-    
-    // If Stat is good, Add it to the Statistic Processing Engine
-    if (true == statGood) {
-        // If the mode is Periodic Based, the add the statistic to the 
-        // StatisticProcessingEngine otherwise add it as an Event Based Stat.
-        if (StatisticBase::STAT_MODE_PERIODIC == statCollectionMode) {
-            if (false == engine->addPeriodicBasedStatistic(collectionRate, statistic)) {
-                statGood = false;
-            }
-        } else {
-            if (false == engine->addEventBasedStatistic(collectionRate, statistic)) {
-                statGood = false;
-            }
-        }
-    }
-    
-    // If Stats are still good, register its fields and   
-    // add it to the array of registered statistics.
-    if (true == statGood) {
-        // The passed in Statistic is OK to use, register its fields
-        StatisticOutput* statOutput = getSimulation()->getStatisticsOutput();
-        statOutput->startRegisterFields(statistic);
-        statistic->registerOutputFields(statOutput);
-        statOutput->stopRegisterFields();
 
-        // Set the start / stop times for the stat
-        engine->setStatisticStartTime(startAtTime, statistic);
-        engine->setStatisticStopTime(stopAtTime, statistic);
-    } else {
+    // If Stat is good, Add it to the Statistic Processing Engine
+    if (true == statGood) {
+        statGood = StatisticProcessingEngine::getInstance()->registerStatisticWithEngine<T>(statistic);
+    }
+
+    if (false == statGood ) {
         // Delete the original statistic (if created), and return a NULL statistic instead
         if (NULL != statistic) {
             delete statistic;
         }
-        
+
         // Instantiate the Statistic here defined by the type here
         statTypeParam = "sst.NullStatistic";
         statistic = CreateStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
@@ -212,10 +147,10 @@
             statGood = false;
             out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
         }
+        StatisticProcessingEngine::getInstance()->registerStatisticWithEngine<T>(statistic);
     }
 
     // Register the new Statistic with the Statistic Engine
-    engine->registerStatisticWithEngine<T>(my_info->getID(), statistic);
     return statistic;
 //}
 

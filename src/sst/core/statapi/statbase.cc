@@ -98,7 +98,7 @@ void StatisticBase::checkEventForOutput()
          (m_currentCollectionCount >= m_collectionCountLimit) &&
          (1 <= m_collectionCountLimit) ) {
         // Dont output if CountLimit is zero
-        Simulation::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(this);
+        StatisticProcessingEngine::getInstance()->performStatisticOutput(this);
     }
 }
 

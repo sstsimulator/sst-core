@@ -51,23 +51,10 @@ TimeConverter* Simulation::minPartToTC(SimTime_t cycles) const {
     return getTimeLord()->getTimeConverter(cycles);
 }
 
-void Simulation::signalStatisticsBegin() {
-    statisticsOutput->startOfSimulation();
-}
-
-
-void Simulation::signalStatisticsEnd() {
-    statisticsOutput->endOfSimulation();
-}
-
-
 
 Simulation::~Simulation()
 {
     // Clean up as best we can
-
-    // Delete the Statistic Objects
-    delete statisticsEngine;
 
     // Delete the timeVortex first.  This will delete all events left
     // in the queue, as well as the Sync, Exit and Clock objects.
@@ -148,9 +135,6 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
 {
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
     output_directory = "";
-
-    // Create the Statistic Processing Engine
-    statisticsEngine = new StatisticProcessingEngine();
 
     timeVortex = new TimeVortex;
     if( my_rank.thread == 0 ) {
@@ -307,7 +291,9 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 {
     // TraceFunction trace(CALL_INFO_LONG);    
     
-    // Create the Statistics Output
+    // Create the Statistics Engine
+    if ( myRank.thread == 0 ) {
+    }
 
     // Params objects should now start verifying parameters
     Params::enableVerify();
@@ -525,7 +511,8 @@ void Simulation::run() {
     }
     
     // Tell the Statistics Engine that the simulation is beginning
-    statisticsEngine->startOfSimulation();
+    if ( my_rank.thread == 0 )
+        StatisticProcessingEngine::getInstance()->startOfSimulation();
 
     // wait_my_turn_start(runBarrier, my_rank.thread, num_ranks.thread);
     // sim_output.output("%d: Start main event loop\n",my_rank.thread);
@@ -630,7 +617,9 @@ void Simulation::finish() {
     }
 
     // Tell the Statistics Engine that the simulation is ending
-    statisticsEngine->endOfSimulation();
+    if ( my_rank.thread == 0 ) {
+        StatisticProcessingEngine::getInstance()->endOfSimulation();
+    }
 }
 
 const SimTime_t&
@@ -834,7 +823,6 @@ void Simulation::resizeBarriers(uint32_t nthr) {
 /* Define statics */
 Factory* Simulation::factory;
 TimeLord Simulation::timeLord;
-Statistics::StatisticOutput* Simulation::statisticsOutput;
 Output Simulation::sim_output;
 Core::ThreadSafe::Barrier Simulation::initBarrier;
 Core::ThreadSafe::Barrier Simulation::setupBarrier;

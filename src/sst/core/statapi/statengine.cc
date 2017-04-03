@@ -11,19 +11,35 @@
 
 #include <sst_config.h>
 
+#include <sst/core/output.h>
+#include <sst/core/factory.h>
 #include <sst/core/timeLord.h>
 #include <sst/core/timeConverter.h>
 #include <sst/core/simulation.h>
 #include <sst/core/statapi/statbase.h>
 #include <sst/core/statapi/statengine.h>
 #include <sst/core/statapi/statoutput.h>
+#include <sst/core/configGraph.h>
+#include <sst/core/baseComponent.h>
 
 namespace SST {
 namespace Statistics {
-    
-StatisticProcessingEngine::StatisticProcessingEngine()
+
+
+void StatisticProcessingEngine::init(ConfigGraph *graph)
+{
+    StatisticProcessingEngine::instance = new StatisticProcessingEngine(graph);
+}
+
+
+StatisticProcessingEngine::StatisticProcessingEngine(ConfigGraph *graph) :
+    m_output(Output::getDefaultObject())
 {
     m_SimulationStarted = false;
+    m_statLoadLevel = graph->getStatLoadLevel();
+    for ( auto & cfg : graph->getStatOutputs() ) {
+        m_statOutputs.push_back(createStatisticOutput(cfg));
+    }
 }
 
 StatisticProcessingEngine::~StatisticProcessingEngine()
@@ -44,10 +60,116 @@ StatisticProcessingEngine::~StatisticProcessingEngine()
     }
 }
 
+
+
+
+bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
+{
+    if ( 0 == m_statLoadLevel ) {
+        m_output.verbose(CALL_INFO, 1, 0,
+                " Warning: Statistic Load Level = 0 (all statistics disabled); statistic %s is disabled...\n",
+                stat->getFullStatName().c_str());
+        return false;
+    }
+    uint8_t enableLevel = stat->getComponent()->getComponentInfoStatisticEnableLevel(stat->getStatName());
+    if ( enableLevel > m_statLoadLevel ) {
+        m_output.verbose(CALL_INFO, 1, 0,
+                " Warning: Load Level %d is too low to enable Statistic %s with Enable Level %d, statistic will not be enabled...\n",
+                m_statLoadLevel, stat->getFullStatName().c_str(), enableLevel);
+        return false;
+    }
+
+    // If the mode is Periodic Based, the add the statistic to the
+    // StatisticProcessingEngine otherwise add it as an Event Based Stat.
+    UnitAlgebra collectionRate = stat->m_statParams.find<SST::UnitAlgebra>("rate", "0ns");
+    if (StatisticBase::STAT_MODE_PERIODIC == stat->getRegisteredCollectionMode()) {
+        if (false == addPeriodicBasedStatistic(collectionRate, stat)) {
+            return false;
+        }
+    } else {
+        if (false == addEventBasedStatistic(collectionRate, stat)) {
+            return false;
+        }
+    }
+
+    StatisticOutput *so = getOutputForStatistic(stat);
+    so->startRegisterFields(stat);
+    stat->registerOutputFields(so);
+    so->stopRegisterFields();
+
+    setStatisticStartTime(stat);
+    setStatisticStopTime(stat);
+
+    return true;
+}
+
+
+
+
+
+
+StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigStatOutput &cfg)
+{
+    StatisticOutput *so = Factory::getFactory()->CreateStatisticOutput(cfg.type, cfg.params);
+    if (NULL == so) {
+        m_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
+    }
+
+    if (false == so->checkOutputParameters()) {
+        // If checkOutputParameters() fail, Tell the user how to use them and abort simulation
+        m_output.output("Statistic Output (%s) :\n", so->getStatisticOutputName().c_str());
+        so->printUsage();
+        m_output.output("\n");
+
+        m_output.output("Statistic Output Parameters Provided:\n");
+        cfg.params.print_all_params(Output::getDefaultObject(), "  ");
+        m_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
+    }
+    return so;
+}
+
+
+StatisticOutput* StatisticProcessingEngine::getOutputForStatistic(const StatisticBase *stat) const
+{
+    /* TODO:  Lookup stat to determine its proper output (may be part of a group assigned elsewhere) */
+    return m_statOutputs[0];
+}
+
+
 bool StatisticProcessingEngine::addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* stat)
 {
-    // Add the statistic to the Map of Periodic Based Statistics   
-    addStatisticClock(freq, stat);
+    Simulation*         sim = Simulation::getSimulation();
+    TimeConverter*      tcFreq = sim->getTimeLord()->getTimeConverter(freq);
+    SimTime_t           tcFactor = tcFreq->getFactor();
+    Clock::HandlerBase* ClockHandler;
+    StatArray_t*        statArray;
+
+    // See if the map contains an entry for this factor
+    if (m_PeriodicStatisticMap.find(tcFactor) == m_PeriodicStatisticMap.end() ) {
+
+        // Check to see if the freq is zero.  Only add a new clock if the freq is non zero
+        if (0 != freq.getValue()) {
+
+            // This tcFactor is not found in the map, so create a new clock handler.
+            ClockHandler = new Clock::Handler<StatisticProcessingEngine, SimTime_t>(this,
+                          &StatisticProcessingEngine::handleStatisticEngineClockEvent, tcFactor);
+
+            // Set the clock priority so that normal clocks events will occur before
+            // this clock event.
+            sim->registerClock(freq, ClockHandler, STATISTICCLOCKPRIORITY);
+        }
+
+        // Also create a new Array of Statistics and relate it to the map
+        statArray = new std::vector<StatisticBase*>();
+        m_PeriodicStatisticMap[tcFactor] = statArray;
+    }
+
+    // The Statistic Map has the time factor registered.
+    statArray = m_PeriodicStatisticMap[tcFactor];
+
+    // Add the statistic to the lists of statistics to be called when the clock fires.
+    statArray->push_back(stat);
+
     return true;
 }
 
@@ -66,76 +188,95 @@ bool StatisticProcessingEngine::addEventBasedStatistic(const UnitAlgebra& count,
     return true;
 }
 
-void StatisticProcessingEngine::setStatisticStartTime(const UnitAlgebra& startTime, StatisticBase* stat)
+
+UnitAlgebra StatisticProcessingEngine::getParamTime(StatisticBase *stat, const std::string& pName) const
 {
+    std::string pVal = stat->m_statParams.find<std::string>(pName);
+    if ( pVal.empty() ) {
+        pVal = "0ns";
+    }
+
+    UnitAlgebra uaVal = UnitAlgebra(pVal);
+
+    if ( !uaVal.hasUnits("s") ) {
+        m_output.fatal(CALL_INFO, 1,
+                "ERROR: Statistic %s - param %s = %s; must be in units of seconds; exiting...\n",
+                stat->getFullStatName().c_str(), pName.c_str(), pVal.c_str());
+    }
+
+    return uaVal;
+}
+
+void StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat)
+{
+    UnitAlgebra startTime = getParamTime(stat, "startat");
     Simulation*           sim = Simulation::getSimulation();
     TimeConverter*        tcStartTime = sim->getTimeLord()->getTimeConverter(startTime);
     SimTime_t             tcFactor = tcStartTime->getFactor();
-    OneShot::HandlerBase* OneShotHandler;
     StatArray_t*          statArray;
-    
+
     // Check to see if the time is zero, if it is we skip this work
     if (0 != startTime.getValue()) {
         // See if the map contains an entry for this factor
         if (m_StartTimeMap.find(tcFactor) == m_StartTimeMap.end()) {
             // This tcFactor is not found in the map, so create a new OneShot handler.
-            OneShotHandler = new OneShot::Handler<StatisticProcessingEngine, SimTime_t>(this, 
-                             &StatisticProcessingEngine::handleStatisticEngineStartTimeEvent, tcFactor);
-    
+            OneShot::HandlerBase* OneShotHandler = new OneShot::Handler<StatisticProcessingEngine, SimTime_t>(this,
+                    &StatisticProcessingEngine::handleStatisticEngineStartTimeEvent, tcFactor);
+
             // Set the OneShot priority so that normal events will occur before this event.
             sim->registerOneShot(startTime, OneShotHandler, STATISTICCLOCKPRIORITY);
-    
+
             // Also create a new Array of Statistics and relate it to the map
-            statArray = new std::vector<StatisticBase*>(); 
-            m_StartTimeMap[tcFactor] = statArray; 
+            statArray = new std::vector<StatisticBase*>();
+            m_StartTimeMap[tcFactor] = statArray;
         }
-            
-        // The Statistic Map has the time factor registered.    
+
+        // The Statistic Map has the time factor registered.
         statArray = m_StartTimeMap[tcFactor];
-    
-        // Add the statistic to the lists of statistics to be called when the OneShot fires.    
+
+        // Add the statistic to the lists of statistics to be called when the OneShot fires.
         statArray->push_back(stat);
-        
+
         // Disable the Statistic until the start time event occurs
         stat->disable();
     }
 }
 
-void StatisticProcessingEngine::setStatisticStopTime(const UnitAlgebra& stopTime, StatisticBase* stat)
+void StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat)
 {
+    UnitAlgebra stopTime = getParamTime(stat, "startat");
     Simulation*           sim = Simulation::getSimulation();
     TimeConverter*        tcStopTime = sim->getTimeLord()->getTimeConverter(stopTime);
     SimTime_t             tcFactor = tcStopTime->getFactor();
-    OneShot::HandlerBase* OneShotHandler;
     StatArray_t*          statArray;
-    
+
     // Check to see if the time is zero, if it is we skip this work
     if (0 != stopTime.getValue()) {
         // See if the map contains an entry for this factor
         if (m_StopTimeMap.find(tcFactor) == m_StopTimeMap.end()) {
             // This tcFactor is not found in the map, so create a new OneShot handler.
-            OneShotHandler = new OneShot::Handler<StatisticProcessingEngine, SimTime_t>(this, 
-                             &StatisticProcessingEngine::handleStatisticEngineStopTimeEvent, tcFactor);
-    
+            OneShot::HandlerBase* OneShotHandler = new OneShot::Handler<StatisticProcessingEngine, SimTime_t>(this,
+                    &StatisticProcessingEngine::handleStatisticEngineStopTimeEvent, tcFactor);
+
             // Set the OneShot priority so that normal events will occur before this event.
             sim->registerOneShot(stopTime, OneShotHandler, STATISTICCLOCKPRIORITY);
-    
+
             // Also create a new Array of Statistics and relate it to the map
-            statArray = new std::vector<StatisticBase*>(); 
-            m_StopTimeMap[tcFactor] = statArray; 
+            statArray = new std::vector<StatisticBase*>();
+            m_StopTimeMap[tcFactor] = statArray;
         }
-            
-        // The Statistic Map has the time factor registered.    
+
+        // The Statistic Map has the time factor registered.
         statArray = m_StopTimeMap[tcFactor];
-    
-        // Add the statistic to the lists of statistics to be called when the OneShot fires.    
+
+        // Add the statistic to the lists of statistics to be called when the OneShot fires.
         statArray->push_back(stat);
     }
 }
 
 void StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool endOfSimFlag /*=false*/)
 {
-    StatisticOutput* statOutput = Simulation::getSimulation()->getStatisticsOutput();
+    StatisticOutput* statOutput = getOutputForStatistic(stat);
 
     // Has the simulation started?
     if (true == m_SimulationStarted) {
@@ -218,50 +359,23 @@ void StatisticProcessingEngine::endOfSimulation()
             }
         }
     }
+
+
+    for ( auto &so : m_statOutputs ) {
+        so->endOfSimulation();
+    }
 }
 
 void StatisticProcessingEngine::startOfSimulation()
 {
     m_SimulationStarted = true;
-}
-
-
-
-
-void StatisticProcessingEngine::addStatisticClock(const UnitAlgebra& freq, StatisticBase* stat)
-{
-    Simulation*         sim = Simulation::getSimulation();
-    TimeConverter*      tcFreq = sim->getTimeLord()->getTimeConverter(freq);
-    SimTime_t           tcFactor = tcFreq->getFactor();
-    Clock::HandlerBase* ClockHandler;
-    StatArray_t*        statArray;
-    
-    // See if the map contains an entry for this factor
-    if (m_PeriodicStatisticMap.find(tcFactor) == m_PeriodicStatisticMap.end() ) {
-
-        // Check to see if the freq is zero.  Only add a new clock if the freq is non zero
-        if (0 != freq.getValue()) {
-
-            // This tcFactor is not found in the map, so create a new clock handler.
-            ClockHandler = new Clock::Handler<StatisticProcessingEngine, SimTime_t>(this, 
-                          &StatisticProcessingEngine::handleStatisticEngineClockEvent, tcFactor);
-    
-            // Set the clock priority so that normal clocks events will occur before 
-            // this clock event.
-            sim->registerClock(freq, ClockHandler, STATISTICCLOCKPRIORITY);
-        }
-
-        // Also create a new Array of Statistics and relate it to the map
-        statArray = new std::vector<StatisticBase*>(); 
-        m_PeriodicStatisticMap[tcFactor] = statArray; 
+    for ( auto &so : m_statOutputs ) {
+        so->startOfSimulation();
     }
-        
-    // The Statistic Map has the time factor registered.    
-    statArray = m_PeriodicStatisticMap[tcFactor];
-
-    // Add the statistic to the lists of statistics to be called when the clock fires.    
-    statArray->push_back(stat);
 }
+
+
+
 
 bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t CycleNum __attribute__((unused)), SimTime_t timeFactor) 
 {
@@ -349,23 +463,28 @@ StatisticBase* StatisticProcessingEngine::isStatisticInCompStatMap(const std::st
     return NULL;
 }
 
-void StatisticProcessingEngine::addStatisticToCompStatMap(const ComponentId_t& compId, StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType __attribute__((unused)))
+void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType __attribute__((unused)))
 {
     StatArray_t*        statArray;
-    
+    ComponentId_t compId = Stat->getComponent()->getId();
+
     // See if the map contains an entry for this Component ID
     if (m_CompStatMap.find(compId) == m_CompStatMap.end() ) {
         // Nope, Create a new Array of Statistics and relate it to the map
         statArray = new std::vector<StatisticBase*>(); 
         m_CompStatMap[compId] = statArray; 
     }
-        
+
     // The CompStatMap has Component ID registered, get the array assocated with it    
     statArray = m_CompStatMap[compId];
 
     // Add the statistic to the lists of statistics registered to this component   
     statArray->push_back(Stat);
 }
+
+
+
+StatisticProcessingEngine* StatisticProcessingEngine::instance = NULL;
 
 } //namespace Statistics
 } //namespace SST

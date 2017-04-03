@@ -25,8 +25,6 @@
 #define STATISTICSDEFAULTOUTPUTNAME "sst.statOutputConsole"
 #define STATISTICSDEFAULTLOADLEVEL 0
 
-extern int main(int argc, char **argv);
-
 namespace SST {
 class BaseComponent;
 class Simulation;
@@ -62,8 +60,6 @@ public:
     /** Return the Statistic Output name */
     std::string& getStatisticOutputName() {return m_statOutputName;}
     
-    /** Return the statistics load level for the system */
-    uint8_t getStatisticLoadLevel() {return m_statLoadLevel;}
     
     /** Return the parameters for the StatisticOutput */
     Params& getOutputParameters() {return m_outputParameters;}
@@ -170,9 +166,7 @@ public:
      */
     const char* getFieldTypeShortName(fieldType_t type);
     
-protected:    
-    friend int ::main(int argc, char **argv);
-    friend class SST::BaseComponent;
+protected:
     friend class SST::Simulation;
     friend class SST::Statistics::StatisticProcessingEngine;
 
@@ -221,17 +215,15 @@ protected:
 
 
 private:    
+
     // Start / Stop of register Fields
     void startRegisterFields(StatisticBase *statistic);
     void stopRegisterFields();
-    
-    // Set the Statistic Load Level
-    void setStatisticLoadLevel(uint8_t loadLevel) {m_statLoadLevel = loadLevel;}
-    
+
     // Start / Stop of output
     void startOutputEntries(StatisticBase* statistic);
     void stopOutputEntries();
-    
+
     // Other support functions
     StatisticFieldInfo* addFieldToLists(const char* fieldName, fieldType_t fieldType);
     fieldHandle_t generateFileHandle(StatisticFieldInfo* FieldInfo);
@@ -252,7 +244,6 @@ private:
     fieldHandle_t    m_highestFieldHandle;
     std::string      m_currentFieldCompName;
     std::string      m_currentFieldStatName;
-    uint8_t          m_statLoadLevel;
     std::recursive_mutex  m_lock;
 
 };                          

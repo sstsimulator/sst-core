@@ -105,12 +105,12 @@ protected:
     friend class SubComponent;
     Component() {} // Unused, but previously available
 
-    Component* getTrueComponent() final { return this; }
-    BaseComponent* getStatisticOwner() final { return this; }
+    Component* getTrueComponent() const final { return const_cast<Component*>(this); }
+    BaseComponent* getStatisticOwner() const final { return const_cast<Component*>(this); }
 
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) final;
+    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final;
 
 private:
 

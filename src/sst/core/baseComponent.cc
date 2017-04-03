@@ -328,13 +328,13 @@ SharedRegion* BaseComponent::getGlobalSharedRegion(const std::string &key, size_
 
 
 
-uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string &statisticName)
+uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string &statisticName) const
 {
     const std::string& type = getStatisticOwner()->my_info->getType();
     return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
 }
 
-std::string BaseComponent::getComponentInfoStatisticUnits(const std::string &statisticName)
+std::string BaseComponent::getComponentInfoStatisticUnits(const std::string &statisticName) const
 {
     const std::string& type = getStatisticOwner()->my_info->getType();
     return Factory::getFactory()->GetComponentInfoStatisticUnits(type, statisticName);

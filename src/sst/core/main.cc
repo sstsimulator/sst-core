@@ -34,7 +34,7 @@
 #include <sst/core/timeLord.h>
 #include <sst/core/timeVortex.h>
 #include <sst/core/part/sstpart.h>
-#include <sst/core/statapi/statoutput.h>
+#include <sst/core/statapi/statengine.h>
 
 #include <sst/core/cputimer.h>
 
@@ -319,10 +319,6 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
         sim->setup();
         barrier.wait();
 
-        if ( 0 == info.myRank.thread )
-            Simulation::signalStatisticsBegin();
-        barrier.wait();
-
         /* Run Simulation */
         sim->run();
     // fprintf(stderr, "thread %u waiting on run finish barrier\n", tid);
@@ -334,9 +330,6 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
         barrier.wait();
     // fprintf(stderr, "thread %u release from finish() finish barrier\n", tid);
 
-        // Tell the Statistics Output that the simulation is finished
-        if ( 0 == info.myRank.thread )
-            Simulation::signalStatisticsEnd();
     }
 
     barrier.wait();
@@ -645,40 +638,18 @@ main(int argc, char *argv[])
     //     graph->print(std::cout);
     // }
     // Simulation::barrier.wait();
-    
-    
 
-    ///// Set up StatisticOutput /////
+    ///// Set up StatisticEngine /////
 
-    StatisticOutput *so = Factory::getFactory()->CreateStatisticOutput(graph->getStatOutput().type, graph->getStatOutput().params);
-    if (NULL == so) {
-        g_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", graph->getStatOutput().type.c_str());
-    }
+    SST::Statistics::StatisticProcessingEngine::init(graph);
 
-    if (false == so->checkOutputParameters()) {
-        // If checkOutputParameters() fail, Tell the user how to use them and abort simulation
-        g_output.output("Statistic Output (%s) :\n", so->getStatisticOutputName().c_str());
-        so->printUsage();
-        g_output.output("\n");
+    ///// End Set up StatisticEngine /////
 
-        g_output.output("Statistic Output Parameters Provided:\n");
-        // for (Params::const_iterator it = graph->getStatOutputParams().begin(); it != graph->getStatOutputParams().end(); ++it ) {
-        //     g_output.output("  %s = %s\n", Params::getParamName(it->first).c_str(), it->second.c_str());
-        // }
-        graph->getStatOutput().params.print_all_params(g_output, "  ");
-        g_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
-    }
-
-    // Set the Statistics Load Level into the Statistic Output
-    so->setStatisticLoadLevel(graph->getStatLoadLevel());
-
-    ///// End Set up StatisticOutput /////
 
     ////// Create Simulation //////
     Core::ThreadSafe::Barrier mainBarrier(world_size.thread);
 
     Simulation::factory = factory;
-    Simulation::statisticsOutput = so;
     Simulation::sim_output = g_output;
     Simulation::resizeBarriers(world_size.thread);
     #ifdef USE_MEMPOOL

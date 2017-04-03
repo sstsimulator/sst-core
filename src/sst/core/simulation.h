@@ -175,17 +175,10 @@ public:
     /** Return the base simulation Output class instance */
     static Output& getSimulationOutput() { return sim_output; };
 
-    static Statistics::StatisticOutput* getStatisticsOutput() { return statisticsOutput; }
-    static void signalStatisticsBegin();
-    static void signalStatisticsEnd();
-
     uint64_t getTimeVortexMaxDepth() const;
     uint64_t getTimeVortexCurrentDepth() const;
     uint64_t getSyncQueueDataSize() const;
 
-
-    /** Return the Statistic Processing Engine associated with this Simulation */
-    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const { return statisticsEngine; }
 
     /** Return pointer to map of links for a given component id */
     LinkMap* getComponentLinkMap(ComponentId_t id) const {
@@ -299,8 +292,6 @@ private:
     static Factory *factory;
     /** TimeLord of the simulation */
     static TimeLord timeLord;
-    /** Statistics Output of the simulation */
-    static Statistics::StatisticOutput* statisticsOutput;
     /** Output */
     static Output sim_output;
     static void resizeBarriers(uint32_t nthr);
@@ -364,8 +355,6 @@ private:
     std::string      output_directory;
     static SharedRegionManager* sharedRegionManager;
     bool             wireUpFinished;
-    /** Statistics Timing Engine of the simulation */
-    Statistics::StatisticProcessingEngine* statisticsEngine;
 
     static std::unordered_map<std::thread::id, Simulation*> instanceMap;
     static std::vector<Simulation*> instanceVec;
