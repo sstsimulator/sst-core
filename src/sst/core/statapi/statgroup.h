@@ -34,8 +34,8 @@ public:
     bool containsStatistic(const StatisticBase *stat) const;
     bool claimsStatistic(const StatisticBase *stat) const;
     void addStatistic(StatisticBase *stat);
-    bool isDefault;
 
+    bool isDefault;
     std::string name;
     StatisticOutput *output;
     UnitAlgebra outputFreq;

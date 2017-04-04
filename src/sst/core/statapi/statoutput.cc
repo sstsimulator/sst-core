@@ -34,15 +34,21 @@ StatisticOutput::~StatisticOutput()
 {
 }
 
-void StatisticOutput::registerStatistic(StatisticBase *stat, StatisticGroup *group)
+void StatisticOutput::registerStatistic(StatisticBase *stat)
 {
-    implStartRegisterInGroup(group);
     startRegisterFields(stat);
     stat->registerOutputFields(this);
     stopRegisterFields();
-    implStopRegisterInGroup(group);
 }
 
+void StatisticOutput::registerGroup(StatisticGroup *group)
+{
+    implStartRegisterGroup(group);
+    for ( auto &stat : group->stats ) {
+        registerStatistic(stat);
+    }
+    implStopRegisterGroup();
+}
 
 // Start / Stop of register
 void StatisticOutput::startRegisterFields(StatisticBase *statistic)
@@ -109,18 +115,18 @@ StatisticFieldInfo* StatisticOutput::getRegisteredField(fieldHandle_t fieldHandl
 
 void StatisticOutput::outputEntries(StatisticBase* statistic, bool endOfSimFlag)
 {
+    this->lock();
     startOutputEntries(statistic);
     statistic->outputStatisticData(this, endOfSimFlag);
     stopOutputEntries();
+    this->unlock();
 }
 
 void StatisticOutput::startOutputEntries(StatisticBase* statistic)
 {
-    this->lock();
     m_currentFieldStatName = statistic->getStatName();
     // Call the Derived class method
     implStartOutputEntries(statistic);
-    this->unlock();
 }
 
 void StatisticOutput::stopOutputEntries()
@@ -134,20 +140,20 @@ void StatisticOutput::stopOutputEntries()
 
 void StatisticOutput::outputGroup(StatisticGroup* group, bool endOfSimFlag)
 {
+    this->lock();
     startOutputGroup(group);
     for ( auto & stat : group->stats ) {
-        stat->outputStatisticData(this, endOfSimFlag);
+        outputEntries(stat, endOfSimFlag);
     }
     stopOutputGroup();
+    this->unlock();
 }
 
 void StatisticOutput::startOutputGroup(StatisticGroup* group)
 {
-    this->lock();
     m_currentFieldStatName = group->name;
     // Call the Derived class method
     implStartOutputGroup(group);
-    this->unlock();
 }
 
 void StatisticOutput::stopOutputGroup()

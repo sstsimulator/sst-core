@@ -36,6 +36,7 @@ public:
      */
     StatisticOutputHDF5(Params& outputParameters);
 
+    bool acceptsGroups() const { return true; }
 protected:
     /** Perform a check of provided parameters
      * @return True if all required parameters and options are acceptable
@@ -48,6 +49,9 @@ protected:
     void implStartRegisterFields(StatisticBase *stat);
     void implRegisteredField(fieldHandle_t fieldHandle);
     void implStopRegisterFields();
+
+    void implStartRegisterGroup(StatisticGroup* group );
+    void implStopRegisterGroup();
 
     /** Indicate to Statistic Output that simulation started.
      *  Statistic output may perform any startup code here as necessary.
@@ -73,6 +77,9 @@ protected:
      * The Statisic Output can perform any output related functions here.
      */
     void implStopOutputEntries();
+
+    void implStartOutputGroup(StatisticGroup* group);
+    void implStopOutputGroup();
 
     /** Implementation functions for output.
      * These will be called by the statistic to provide Statistic defined
@@ -101,7 +108,32 @@ private:
         double      d;
     } StatData_u;
 
-    class StatisticInfo {
+
+    class DataSet {
+    public:
+        DataSet(H5::H5File *file) : file(file) { }
+        virtual ~DataSet() { }
+        virtual bool isGroup() const = 0;
+
+        virtual void setCurrentStatistic(StatisticBase *stat) { }
+        virtual void registerField(StatisticFieldInfo *fi) = 0;
+        virtual void finalizeCurrentStatistic() = 0;
+
+        virtual void beginGroupRegistration(StatisticGroup *group) { }
+        virtual void finalizeGroupRegistration() { }
+
+
+        virtual void startNewGroupEntry() {}
+        virtual void finishGroupEntry() {}
+
+        virtual void startNewEntry() = 0;
+        virtual StatData_u& getFieldLoc(fieldHandle_t fieldHandle) = 0;
+        virtual void finishEntry() = 0;
+    protected:
+        H5::H5File *file;
+    };
+
+    class StatisticInfo : public DataSet {
         StatisticBase *statistic;
         std::vector<fieldHandle_t> indexMap;
         std::vector<StatData_u> currentData;
@@ -110,29 +142,53 @@ private:
 
         H5::DataSet *dataset;
         H5::CompType *memType;
-        H5::H5File *file;
 
         hsize_t nEntries;
 
     public:
-        StatisticInfo(StatisticBase *stat, H5::H5File *file) : statistic(stat), file(file), nEntries(0) { }
+        StatisticInfo(StatisticBase *stat, H5::H5File *file) :
+            DataSet(file), statistic(stat), nEntries(0)
+        {
+            typeList.push_back(StatisticFieldInfo::UINT64);
+            indexMap.push_back(-1);
+        }
         ~StatisticInfo() {
             if ( dataset ) delete dataset;
             if ( memType ) delete memType;
         }
-        void registerSimTime();
         void registerField(StatisticFieldInfo *fi);
-        void finalizeRegistration();
+        void finalizeCurrentStatistic();
 
+        bool isGroup() const { return false; }
         void startNewEntry();
         StatData_u& getFieldLoc(fieldHandle_t fieldHandle);
         void finishEntry();
     };
 
+    class GroupInfo : public DataSet {
+    public:
+        GroupInfo(StatisticGroup *group, H5::H5File *file) : DataSet(file) { /* TODO */ }
+        void beginGroupRegistration(StatisticGroup *group) { }
+        void setCurrentStatistic(StatisticBase *stat) { /* TODO */ }
+        void registerField(StatisticFieldInfo *fi) { /* TODO */ }
+        void finalizeCurrentStatistic() { /* TODO */ }
+        void finalizeGroupRegistration() { /* TODO */ }
+
+        bool isGroup() const { return true; }
+        void startNewEntry() { /* TODO */ }
+        StatData_u& getFieldLoc(fieldHandle_t fieldHandle) { /* TODO */ }
+        void finishEntry() { /* TODO */ }
+
+        void startNewGroupEntry() { /* TODO */ }
+        void finishGroupEntry() { /* TODO */ }
+    };
+
 
     H5::H5File*              m_hFile;
+    DataSet*                 m_currentDataSet;
     StatisticInfo*           m_currentStatistic;
     std::map<StatisticBase*, StatisticInfo*> m_statistics;
+    std::map<std::string, GroupInfo> m_statGroups;
 
 
     StatisticInfo*  initStatistic(StatisticBase* statistic);

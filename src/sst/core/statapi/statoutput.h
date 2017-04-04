@@ -197,10 +197,10 @@ protected:
       * Allows object to perform any cleanup. */ 
     virtual void implStopOutputEntries() = 0;
 
-    virtual void implStartRegisterInGroup(StatisticGroup* group __attribute__((unused))) {};
-    virtual void implStopRegisterInGroup(StatisticGroup* group __attribute__((unused))) {};
-    virtual void implStartOutputGroup(StatisticGroup* group __attribute__((unused))) {};
-    virtual void implStopOutputGroup() {};
+    virtual void implStartRegisterGroup(StatisticGroup* group __attribute__((unused))) {}
+    virtual void implStopRegisterGroup() {}
+    virtual void implStartOutputGroup(StatisticGroup* group __attribute__((unused))) {}
+    virtual void implStopOutputGroup() {}
     // Field Outputs
     /** Implementation of outputField() for derived classes.  
       * Perform the actual implementation of the output. */ 
@@ -215,7 +215,8 @@ protected:
 private:
 
     // Start / Stop of register Fields
-    void registerStatistic(StatisticBase *stat, StatisticGroup *group);
+    void registerStatistic(StatisticBase *stat);
+    void registerGroup(StatisticGroup *group);
 
     void startRegisterFields(StatisticBase *statistic);
     void stopRegisterFields();

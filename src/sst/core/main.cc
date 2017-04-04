@@ -208,6 +208,10 @@ typedef struct {
 
 } SimThreadInfo_t;
 
+void finalize_statEngineConfig(void)
+{
+    StatisticProcessingEngine::getInstance()->finalizeInitialization();
+}
 
 static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSafe::Barrier &barrier)
 {
@@ -227,7 +231,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     sim->processGraphInfo( *info.graph, info.myRank, info.min_part );
 
     barrier.wait();
-    
+
     // Perform the wireup.  Do this one thread at a time for now.  If
     // this ever changes, then need to put in some serialization into
     // performWireUp.
@@ -239,8 +243,8 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
         barrier.wait();
     }
 
-    barrier.wait();
     if ( tid == 0 ) {
+        finalize_statEngineConfig();
         delete info.graph;
     }
 
@@ -251,8 +255,8 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     if ( tid == 0 && info.world_size.rank > 1 ) {
         MPI_Barrier(MPI_COMM_WORLD);
     }
-    barrier.wait();
 #endif
+    barrier.wait();
 
     if ( info.config->runMode == Simulation::RUN || info.config->runMode == Simulation::BOTH ) {
         if ( info.config->verbose && 0 == tid ) {

@@ -13,6 +13,7 @@
 
 #include <sst/core/simulation.h>
 #include <sst/core/statapi/statoutputhdf5.h>
+#include <sst/core/statapi/statgroup.h>
 #include <sst/core/stringize.h>
 
 namespace SST {
@@ -69,23 +70,43 @@ void StatisticOutputHDF5::printUsage()
 
 void StatisticOutputHDF5::implStartRegisterFields(StatisticBase *stat)
 {
-    m_currentStatistic = initStatistic(stat);
-    m_currentStatistic->registerSimTime();
+    if ( m_currentDataSet != NULL ) {
+        m_currentDataSet->setCurrentStatistic(stat);
+    } else {
+        m_currentDataSet = initStatistic(stat);
+    }
 }
 
 
 void StatisticOutputHDF5::implRegisteredField(fieldHandle_t fieldHandle)
 {
     StatisticFieldInfo* fi = getRegisteredField(fieldHandle);
-    m_currentStatistic->registerField(fi);
+    m_currentDataSet->registerField(fi);
 }
 
 void StatisticOutputHDF5::implStopRegisterFields()
 {
-    m_currentStatistic->finalizeRegistration();
-    m_currentStatistic = NULL;
+    m_currentDataSet->finalizeCurrentStatistic();
+    if ( !m_currentDataSet->isGroup() )
+        m_currentDataSet = NULL;
 }
 
+
+void StatisticOutputHDF5::implStartRegisterGroup(StatisticGroup* group )
+{
+    m_statGroups.emplace(std::piecewise_construct,
+            std::forward_as_tuple(group->name),
+            std::forward_as_tuple(group, m_hFile));
+    m_currentDataSet = &m_statGroups.at(group->name);
+    m_currentDataSet->beginGroupRegistration(group);
+}
+
+
+void StatisticOutputHDF5::implStopRegisterGroup()
+{
+    m_currentDataSet->finalizeGroupRegistration();
+    m_currentDataSet = NULL;
+}
 
 
 void StatisticOutputHDF5::startOfSimulation()
@@ -101,47 +122,70 @@ void StatisticOutputHDF5::endOfSimulation()
     delete m_hFile;
 }
 
+
+
+
 void StatisticOutputHDF5::implStartOutputEntries(StatisticBase* statistic)
 {
-    m_currentStatistic = getStatisticInfo(statistic);
-    m_currentStatistic->startNewEntry();
+    if ( m_currentDataSet == NULL )
+        m_currentDataSet = getStatisticInfo(statistic);
+    m_currentDataSet->startNewEntry();
 }
 
 void StatisticOutputHDF5::implStopOutputEntries()
 {
-    m_currentStatistic->finishEntry();
+    m_currentDataSet->finishEntry();
+    if ( !m_currentDataSet->isGroup() )
+        m_currentDataSet = NULL;
 }
+
+
+
+void StatisticOutputHDF5::implStartOutputGroup(StatisticGroup* group)
+{
+    m_currentDataSet = &m_statGroups.at(group->name);
+    m_currentDataSet->startNewGroupEntry();
+}
+
+
+void StatisticOutputHDF5::implStopOutputGroup()
+{
+    m_currentDataSet->finishGroupEntry();
+    m_currentDataSet = NULL;
+}
+
+
 
 
 
 void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, int32_t data)
 {
-    m_currentStatistic->getFieldLoc(fieldHandle).i32 = data;
+    m_currentDataSet->getFieldLoc(fieldHandle).i32 = data;
 }
 
 void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, uint32_t data)
 {
-    m_currentStatistic->getFieldLoc(fieldHandle).u32 = data;
+    m_currentDataSet->getFieldLoc(fieldHandle).u32 = data;
 }
 
 void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, int64_t data)
 {
-    m_currentStatistic->getFieldLoc(fieldHandle).i64 = data;
+    m_currentDataSet->getFieldLoc(fieldHandle).i64 = data;
 }
 
 void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, uint64_t data)
 {
-    m_currentStatistic->getFieldLoc(fieldHandle).u64 = data;
+    m_currentDataSet->getFieldLoc(fieldHandle).u64 = data;
 }
 
 void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, float data)
 {
-    m_currentStatistic->getFieldLoc(fieldHandle).f = data;
+    m_currentDataSet->getFieldLoc(fieldHandle).f = data;
 }
 
 void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, double data)
 {
-    m_currentStatistic->getFieldLoc(fieldHandle).d = data;
+    m_currentDataSet->getFieldLoc(fieldHandle).d = data;
 }
 
 
@@ -201,12 +245,6 @@ void StatisticOutputHDF5::StatisticInfo::finishEntry()
 }
 
 
-void StatisticOutputHDF5::StatisticInfo::registerSimTime()
-{
-    typeList.push_back(StatisticFieldInfo::UINT64);
-    indexMap.push_back(-1);
-}
-
 
 void StatisticOutputHDF5::StatisticInfo::registerField(StatisticFieldInfo *fi)
 {
@@ -233,7 +271,7 @@ static H5::DataType getMemTypeForStatType(StatisticOutput::fieldType_t type) {
 }
 
 
-void StatisticOutputHDF5::StatisticInfo::finalizeRegistration()
+void StatisticOutputHDF5::StatisticInfo::finalizeCurrentStatistic()
 {
     size_t nFields = typeList.size() -1;
     currentData.resize(nFields);

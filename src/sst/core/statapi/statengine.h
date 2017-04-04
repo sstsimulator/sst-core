@@ -18,9 +18,11 @@
 #include <sst/core/unitAlgebra.h>
 #include <sst/core/clock.h>
 #include <sst/core/oneshot.h>
+#include <sst/core/threadsafe.h>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
+extern void finalize_statEngineConfig(void);
 
 
 namespace SST {
@@ -97,6 +99,7 @@ public:
 private:
     friend class SST::Simulation;
     friend int ::main(int argc, char **argv);
+    friend void ::finalize_statEngineConfig(void);
 
     StatisticProcessingEngine(ConfigGraph *graph);
     ~StatisticProcessingEngine();
@@ -118,14 +121,16 @@ private:
     void setStatisticStartTime(StatisticBase* Stat);
     void setStatisticStopTime(StatisticBase* Stat);
 
-    void endOfSimulation();
+    void finalizeInitialization(); /* Called when performWireUp() finished */
     void startOfSimulation();
+    void endOfSimulation();
 
 
     void performStatisticOutputImpl(StatisticBase* stat, bool endOfSimFlag);
     void performStatisticGroupOutputImpl(StatisticGroup& group, bool endOfSimFlag);
 
     bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
+    bool handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group);
     void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
     void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
     StatisticBase* isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType);
@@ -148,6 +153,7 @@ private:
     std::vector<StatisticOutput*>             m_statOutputs;
     StatisticGroup                            m_defaultGroup;
     std::vector<StatisticGroup>               m_statGroups;
+    Core::ThreadSafe::Barrier                 m_barrier;
 
 };
 

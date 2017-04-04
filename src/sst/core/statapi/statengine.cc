@@ -55,8 +55,6 @@ StatisticProcessingEngine::StatisticProcessingEngine(ConfigGraph *graph) :
                 }
             }
         }
-
-        /* Register group clock, if rate is set */
     }
 
 }
@@ -133,7 +131,9 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 
     group.addStatistic(stat);
 
-    getOutputForStatistic(stat)->registerStatistic(stat, &group);
+    if ( group.isDefault ) {
+        getOutputForStatistic(stat)->registerStatistic(stat);
+    }
 
     setStatisticStartTime(stat);
     setStatisticStopTime(stat);
@@ -143,6 +143,75 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 
 
 
+void StatisticProcessingEngine::finalizeInitialization()
+{
+    bool master = ( Simulation::getSimulation()->getRank().thread == 0 );
+    if ( master ) {
+        m_barrier.resize(Simulation::getSimulation()->getNumRanks().thread);
+    }
+    for ( auto & g : m_statGroups ) {
+        if ( master ) {
+            g.output->registerGroup(&g);
+        }
+
+        /* Register group clock, if rate is set */
+        if ( g.outputFreq.getValue() != 0 ) {
+            Simulation::getSimulation()->registerClock(
+                    g.outputFreq,
+                    new Clock::Handler<StatisticProcessingEngine, StatisticGroup*>(this,
+                        &StatisticProcessingEngine::handleGroupClockEvent, &g),
+                    STATISTICCLOCKPRIORITY);
+        }
+    }
+
+}
+
+
+void StatisticProcessingEngine::startOfSimulation()
+{
+    m_SimulationStarted = true;
+
+    for ( auto &so : m_statOutputs ) {
+        so->startOfSimulation();
+    }
+}
+
+
+void StatisticProcessingEngine::endOfSimulation()
+{
+
+    // Output the Event based Statistics
+    for ( StatisticBase * stat : m_EventStatisticArray ) {
+        // Check to see if the Statistic is to output at end of sim
+        if (true == stat->getFlagOutputAtEndOfSim()) {
+            // Perform the output
+           performStatisticOutputImpl(stat, true);
+        }
+    }
+
+    // Output the Periodic Based Statistics
+    for ( auto & it_m : m_PeriodicStatisticMap ) {
+        // Get the array from the Map Iterator
+        StatArray_t* statArray = it_m.second;
+
+        for ( StatisticBase* stat : *statArray ) {
+            // Check to see if the Statistic is to output at end of sim
+            if (true == stat->getFlagOutputAtEndOfSim()) {
+                // Perform the output
+               performStatisticOutputImpl(stat, true);
+            }
+        }
+    }
+
+    for ( auto & sg : m_statGroups ) {
+        performStatisticGroupOutputImpl(sg, true);
+    }
+
+
+    for ( auto &so : m_statOutputs ) {
+        so->endOfSimulation();
+    }
+}
 
 
 
@@ -415,58 +484,6 @@ void StatisticProcessingEngine::performGlobalStatisticOutput(bool endOfSimFlag /
     }
 }
 
-void StatisticProcessingEngine::endOfSimulation()
-{
-    StatArray_t*     statArray;
-    StatisticBase*   stat;
-
-    // Output the Event based Statistics
-    for (StatArray_t::iterator it_v = m_EventStatisticArray.begin(); it_v != m_EventStatisticArray.end(); it_v++) {
-        stat = *it_v;
-
-        // Check to see if the Statistic is to output at end of sim
-        if (true == stat->getFlagOutputAtEndOfSim()) {
-        
-            // Perform the output
-           performStatisticOutputImpl(stat, true);
-        }
-    }
-    
-    // Output the Periodic Based Statistics
-    for (StatMap_t::iterator it_m = m_PeriodicStatisticMap.begin(); it_m != m_PeriodicStatisticMap.end(); it_m++) {
-        // Get the array from the Map Iterator
-
-        statArray = it_m->second;
-
-        for (StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++) {
-            stat = *it_v;
-            // Check to see if the Statistic is to output at end of sim
-            if (true == stat->getFlagOutputAtEndOfSim()) {
-            
-                // Perform the output
-               performStatisticOutputImpl(stat, true);
-            }
-        }
-    }
-
-    for ( auto & sg : m_statGroups ) {
-        performStatisticGroupOutputImpl(sg, true);
-    }
-
-
-    for ( auto &so : m_statOutputs ) {
-        so->endOfSimulation();
-    }
-}
-
-void StatisticProcessingEngine::startOfSimulation()
-{
-    m_SimulationStarted = true;
-    for ( auto &so : m_statOutputs ) {
-        so->startOfSimulation();
-    }
-}
-
 
 
 
@@ -487,6 +504,18 @@ bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t CycleNum
         performStatisticOutputImpl(stat, false);
     }
     // Return false to keep the clock going
+    return false;
+}
+
+
+
+bool StatisticProcessingEngine::handleGroupClockEvent(Cycle_t CycleNum __attribute__((unused)), StatisticGroup *group)
+{
+    m_barrier.wait();
+    if ( Simulation::getSimulation()->getRank().thread == 0 ) {
+        performStatisticGroupOutputImpl(*group, false);
+    }
+    m_barrier.wait();
     return false;
 }
 
