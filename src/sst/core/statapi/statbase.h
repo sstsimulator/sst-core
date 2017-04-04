@@ -22,6 +22,7 @@
 
 namespace SST {
 class BaseComponent;
+class Factory;
 namespace Statistics {
 class StatisticOutput;
 class StatisticProcessingEngine;
@@ -171,9 +172,10 @@ public:
     /** Indicate if the Statistic is a NullStatistic */
     virtual bool isNullStatistic() const {return false;} 
 
-protected:  
+protected:
     friend class SST::Statistics::StatisticProcessingEngine;
-    
+    friend class SST::BaseComponent;
+
     /** Construct a StatisticBase
       * @param comp - Pointer to the parent constructor.
       * @param statName - Name of the statistic to be registered.  This name must
@@ -182,7 +184,7 @@ protected:
       * @param statParams - The parameters for this statistic
       */
     // Constructors:
-    StatisticBase(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams);
+    StatisticBase(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams);
 
     // Destructor
     virtual ~StatisticBase() {}
@@ -298,8 +300,9 @@ public:
             incrementCollectionCount();
         }
     }
-    
-protected:    
+
+protected:
+    friend class SST::Factory;
     friend class SST::BaseComponent;
     /** Construct a Statistic
       * @param comp - Pointer to the parent constructor.
@@ -308,14 +311,14 @@ protected:
       * @param statSubId - Additional name of the statistic 
       * @param statParams - The parameters for this statistic
       */
-    Statistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams) :
+    Statistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
         StatisticBase(comp, statName, statSubId, statParams)
     {
         setStatisticDataType(StatisticFieldInfo::getFieldTypeFromTemplate<T>());
     }
-        
+
     virtual ~Statistic(){}
-    
+
 private:     
     Statistic(){}; // For serialization only
 

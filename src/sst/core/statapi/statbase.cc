@@ -17,7 +17,7 @@
 namespace SST {
 namespace Statistics {
 
-StatisticBase::StatisticBase(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams)
+StatisticBase::StatisticBase(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 {
     m_statName   = statName;
     m_statSubId  = statSubId;

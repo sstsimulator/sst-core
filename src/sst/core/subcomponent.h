@@ -15,6 +15,7 @@
 
 #include <sst/core/baseComponent.h>
 #include <sst/core/component.h>
+#include <sst/core/module.h>
 
 namespace SST {
 

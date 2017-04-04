@@ -79,15 +79,13 @@ public:
     template<typename T>
     fieldHandle_t registerField(const char* fieldName)
     {
-        if (is_type_same<T, int32_t    >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::INT32));  implRegisteredField(res); return res; }
-        if (is_type_same<T, uint32_t   >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::UINT32)); implRegisteredField(res); return res; }
-        if (is_type_same<T, int64_t    >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::INT64));  implRegisteredField(res); return res; }
-        if (is_type_same<T, uint64_t   >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::UINT64)); implRegisteredField(res); return res; }
-        if (is_type_same<T, float      >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::FLOAT));  implRegisteredField(res); return res; }
-        if (is_type_same<T, double     >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::DOUBLE)); implRegisteredField(res); return res; }
+        StatisticFieldInfo::fieldType_t FieldType = StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
+        if ( FieldType == StatisticFieldInfo::UNDEFINED )
+            return -1;
 
-        //TODO: IF WE GET THERE, GENERATE AN ERROR AS THIS IS AN UNSUPPORTED TYPE 
-        return -1;
+        auto res = generateFileHandle(addFieldToLists(fieldName, FieldType));
+        implRegisteredField(res);
+        return res;
     }
     
 //    /** Adjust the heirarchy of the fields (FUTURE SUPPORT)
@@ -117,16 +115,8 @@ public:
     {
         StatisticFieldInfo*             NewStatFieldInfo;
         StatisticFieldInfo*             ExistingStatFieldInfo;
-        StatisticFieldInfo::fieldType_t FieldType = StatisticFieldInfo::UNDEFINED;
-        
-        // Figure out the Field Type
-        if (is_type_same<T, int32_t    >::value) {FieldType = StatisticFieldInfo::INT32; }
-        if (is_type_same<T, uint32_t   >::value) {FieldType = StatisticFieldInfo::UINT32;}
-        if (is_type_same<T, int64_t    >::value) {FieldType = StatisticFieldInfo::INT64; }
-        if (is_type_same<T, uint64_t   >::value) {FieldType = StatisticFieldInfo::UINT64;}
-        if (is_type_same<T, float      >::value) {FieldType = StatisticFieldInfo::FLOAT; }
-        if (is_type_same<T, double     >::value) {FieldType = StatisticFieldInfo::DOUBLE;}
-        
+        StatisticFieldInfo::fieldType_t FieldType = StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
+
         NewStatFieldInfo = new StatisticFieldInfo(statisticName, fieldName, FieldType);
 
         // Now search the FieldNameMap_t of type for a matching entry

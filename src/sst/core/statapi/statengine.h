@@ -28,10 +28,13 @@ class Simulation;
 class ConfigGraph;
 class ConfigStatGroup;
 class ConfigStatOutput;
+class Params;
 
 namespace Statistics {
 
+template<typename T> class Statistic;
 class StatisticBase;
+class StatisticOutput;
 
 /**
 	\class StatisticProcessingEngine
@@ -64,13 +67,19 @@ public:
     /** Return the statistics load level for the system */
     uint8_t getStatisticLoadLevel() {return m_statLoadLevel;}
 
+    template<typename T>
+    Statistic<T>* createStatistic(BaseComponent *comp, const std::string &type, const std::string &statName, const std::string &statSubId, Params &params)
+    {
+        StatisticFieldInfo::fieldType_t fieldType = StatisticFieldInfo::getFieldTypeFromTemplate<T>();
+        return dynamic_cast<Statistic<T>*>(createStatistic(comp, type, statName, statSubId, params, fieldType));
+    }
 
     template<typename T>
     bool registerStatisticWithEngine(StatisticBase* stat)
     {
         bool ok;
         if ( true == (ok = registerStatisticCore(stat)) ) {
-            StatisticFieldInfo::fieldType_t fieldType = getFieldType<T>();
+            StatisticFieldInfo::fieldType_t fieldType = StatisticFieldInfo::getFieldTypeFromTemplate<T>();
             addStatisticToCompStatMap(stat, fieldType);
         }
         return ok;
@@ -79,7 +88,7 @@ public:
     template<typename T>
     StatisticBase* isStatisticRegisteredWithEngine(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId)
     {
-        StatisticFieldInfo::fieldType_t fieldType = getFieldType<T>();
+        StatisticFieldInfo::fieldType_t fieldType = StatisticFieldInfo::getFieldTypeFromTemplate<T>();
         return isStatisticInCompStatMap(compName, compId, statName, statSubId, fieldType);
     }
 
@@ -112,6 +121,9 @@ private:
 
     StatisticOutput* createStatisticOutput(const ConfigStatOutput &cfg);
 
+    StatisticBase* createStatistic(BaseComponent* comp, const std::string &type,
+            const std::string &statName, const std::string &statSubId,
+            Params &params, StatisticFieldInfo::fieldType_t fieldType);
     bool registerStatisticCore(StatisticBase* stat);
 
     StatisticOutput* getOutputForStatistic(const StatisticBase *stat) const;
@@ -125,17 +137,6 @@ private:
 
     void endOfSimulation();
     void startOfSimulation();
-
-    template<typename T>
-    StatisticFieldInfo::fieldType_t getFieldType() const {
-        if (is_type_same<T, int32_t    >::value){return StatisticFieldInfo::INT32; }
-        if (is_type_same<T, uint32_t   >::value){return StatisticFieldInfo::UINT32;}
-        if (is_type_same<T, int64_t    >::value){return StatisticFieldInfo::INT64; }
-        if (is_type_same<T, uint64_t   >::value){return StatisticFieldInfo::UINT64;}
-        if (is_type_same<T, float      >::value){return StatisticFieldInfo::FLOAT; }
-        if (is_type_same<T, double     >::value){return StatisticFieldInfo::DOUBLE;}
-        return StatisticFieldInfo::UNDEFINED;
-    }
 
     bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
     void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);

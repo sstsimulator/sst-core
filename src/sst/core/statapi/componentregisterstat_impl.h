@@ -25,6 +25,7 @@
     bool                            nameFound = false;
     StatisticBase::StatMode_t       statCollectionMode = StatisticBase::STAT_MODE_COUNT;
     Output &                        out = getSimulation()->getSimulationOutput();
+    StatisticProcessingEngine      *engine = StatisticProcessingEngine::getInstance();
     UnitAlgebra                     collectionRate;
     Params                          statParams;
     std::string                     statRateParam;
@@ -110,7 +111,7 @@
 
     if (true == statGood) {
         // Instantiate the Statistic here defined by the type here
-        statistic = CreateStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
+        statistic = engine->createStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
         }
@@ -131,7 +132,7 @@
 
     // If Stat is good, Add it to the Statistic Processing Engine
     if (true == statGood) {
-        statGood = StatisticProcessingEngine::getInstance()->registerStatisticWithEngine<T>(statistic);
+        statGood = engine->registerStatisticWithEngine<T>(statistic);
     }
 
     if (false == statGood ) {
@@ -142,12 +143,12 @@
 
         // Instantiate the Statistic here defined by the type here
         statTypeParam = "sst.NullStatistic";
-        statistic = CreateStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
+        statistic = engine->createStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
         if (NULL == statistic) {
             statGood = false;
             out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
         }
-        StatisticProcessingEngine::getInstance()->registerStatisticWithEngine<T>(statistic);
+        engine->registerStatisticWithEngine<T>(statistic);
     }
 
     // Register the new Statistic with the Statistic Engine

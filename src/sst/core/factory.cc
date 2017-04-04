@@ -31,6 +31,11 @@
 #ifdef HAVE_HDF5
 #include <sst/core/statapi/statoutputhdf5.h>
 #endif
+#include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/stataccumulator.h>
+#include <sst/core/statapi/stathistogram.h>
+#include <sst/core/statapi/statnull.h>
+#include <sst/core/statapi/statuniquecount.h>
 
 using namespace SST::Statistics;
 
@@ -214,6 +219,68 @@ Factory::CreateStatisticOutput(const std::string& statOutputType, const Params& 
     
     return rtnStatOut;
 }
+
+
+
+template<typename T>
+static Statistic<T>* buildStatistic(BaseComponent *comp, const std::string &type, const std::string &statName, const std::string &statSubId, Params &params)
+{
+        if (0 == ::strcasecmp("sst.nullstatistic", type.c_str())) {
+            return new NullStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        if (0 == ::strcasecmp("sst.accumulatorstatistic", type.c_str())) {
+            return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        if (0 == ::strcasecmp("sst.histogramstatistic", type.c_str())) {
+            return new HistogramStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        if(0 == ::strcasecmp("sst.uniquecountstatistic", type.c_str())) {
+            return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        return NULL;
+}
+
+
+StatisticBase* Factory::CreateStatistic(BaseComponent* comp, const std::string &type,
+        const std::string &statName, const std::string &statSubId,
+        Params &params, StatisticFieldInfo::fieldType_t fieldType)
+{
+    StatisticBase * res = NULL;
+    switch (fieldType) {
+    case StatisticFieldInfo::UINT32:
+        res = buildStatistic<uint32_t>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::UINT64:
+        res = buildStatistic<uint64_t>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::INT32:
+        res = buildStatistic<int32_t>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::INT64:
+        res = buildStatistic<int64_t>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::FLOAT:
+        res = buildStatistic<float>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::DOUBLE:
+        res = buildStatistic<double>(comp, type, statName, statSubId, params);
+        break;
+    default:
+        break;
+    }
+    if ( res == NULL ) {
+        // We did not find this statistic
+        out.fatal(CALL_INFO, 1, "ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
+    }
+
+    return res;
+
+}
+
 
 bool 
 Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName)

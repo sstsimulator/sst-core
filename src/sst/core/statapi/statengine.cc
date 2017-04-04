@@ -79,6 +79,12 @@ StatisticProcessingEngine::~StatisticProcessingEngine()
 
 
 
+StatisticBase* StatisticProcessingEngine::createStatistic(BaseComponent* comp, const std::string &type,
+            const std::string &statName, const std::string &statSubId,
+            Params &params, StatisticFieldInfo::fieldType_t fieldType)
+{
+    return Factory::getFactory()->CreateStatistic(comp, type, statName, statSubId, params, fieldType);
+}
 
 bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 {

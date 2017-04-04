@@ -17,12 +17,7 @@
 #include <map>
 #include <string>
 
-#include <sst/core/statapi/statoutput.h>
 #include <sst/core/statapi/statengine.h>
-#include <sst/core/statapi/statnull.h>
-#include <sst/core/statapi/stataccumulator.h>
-#include <sst/core/statapi/stathistogram.h>
-#include <sst/core/statapi/statuniquecount.h>
 #include <sst/core/statapi/statbase.h>
 #include <sst/core/event.h>
 #include <sst/core/clock.h>
@@ -323,42 +318,6 @@ private:
         // to avoid code bloat in the .h file.
         #include "sst/core/statapi/componentregisterstat_impl.h"
     }
-
-    template <typename T>
-    Statistic<T>* CreateStatistic(BaseComponent* comp, std::string& type, std::string& statName, std::string& statSubId, Params& params)
-    {
-        // Load one of the SST Core provided Statistics
-        // NOTE: This happens here (in simulation) instead of the factory because
-        //       it is a templated method.  The BaseComponent::registerStatistic<T>()
-        //       must be defined in the component.h however the the Factory is
-        //       not available from the Simulation::::getSimulation() because
-        //       Factory is only defined via a forwarded definition.  Basically
-        //       we have to go through some twists and jumps to make this work.
-
-        // Names of sst.xxx Statistics
-        if (0 == ::strcasecmp("sst.nullstatistic", type.c_str())) {
-            return new NullStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if (0 == ::strcasecmp("sst.accumulatorstatistic", type.c_str())) {
-            return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if (0 == ::strcasecmp("sst.histogramstatistic", type.c_str())) {
-            return new HistogramStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if(0 == ::strcasecmp("sst.uniquecountstatistic", type.c_str())) {
-            return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        // We did not find this statistic
-        printf("ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
-
-        return NULL;
-    }
-
-
 
 
 };

@@ -38,6 +38,7 @@
 #include <sst/core/timeLord.h>
 #include <sst/core/timeVortex.h>
 #include <sst/core/unitAlgebra.h>
+#include <sst/core/statapi/statengine.h>
 
 #define SST_SIMTIME_MAX  0xffffffffffffffff
 
@@ -788,7 +789,11 @@ uint64_t Simulation::getSyncQueueDataSize() const {
     return syncManager->getDataSize();
 }
 
-    
+Statistics::StatisticProcessingEngine* Simulation::getStatisticsProcessingEngine(void) const
+{
+    return Statistics::StatisticProcessingEngine::getInstance();
+}
+
 // Function to allow for easy serialization of threads while debugging
 // code
 void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads __attribute__((unused))) {

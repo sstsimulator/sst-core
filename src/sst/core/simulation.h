@@ -179,6 +179,8 @@ public:
     uint64_t getTimeVortexCurrentDepth() const;
     uint64_t getSyncQueueDataSize() const;
 
+    /** Return the Statistic Processing Engine associated with this Simulation */
+    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const;
 
     /** Return pointer to map of links for a given component id */
     LinkMap* getComponentLinkMap(ComponentId_t id) const {

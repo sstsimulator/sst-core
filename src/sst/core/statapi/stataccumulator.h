@@ -16,6 +16,7 @@
 #include <sst/core/sst_types.h>
 
 #include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/statoutput.h>
 
 namespace SST {
 namespace Statistics {
@@ -41,10 +42,9 @@ namespace Statistics {
 template <typename NumberBase>
 class AccumulatorStatistic : public Statistic<NumberBase> 
 {
-private:
-    friend class SST::BaseComponent;
+public:
 
-    AccumulatorStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams) 
+    AccumulatorStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<NumberBase>(comp, statName, statSubId, statParams)
     {
         m_sum = 0;
@@ -66,8 +66,8 @@ protected:
         m_sum += value;
         m_sum_sq += (value * value);
     }
-    
-private:    
+
+public:
     /**
         Provides the sum of the values presented so far.
         @return The sum of values presented to the class so far.
