@@ -55,6 +55,8 @@ StatisticProcessingEngine::StatisticProcessingEngine(ConfigGraph *graph) :
                 }
             }
         }
+
+        /* Register group clock, if rate is set */
     }
 
 }
@@ -94,6 +96,8 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
                 stat->getFullStatName().c_str());
         return false;
     }
+
+
     uint8_t enableLevel = stat->getComponent()->getComponentInfoStatisticEnableLevel(stat->getStatName());
     if ( enableLevel > m_statLoadLevel ) {
         m_output.verbose(CALL_INFO, 1, 0,
@@ -102,28 +106,37 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
         return false;
     }
 
-    // If the mode is Periodic Based, the add the statistic to the
-    // StatisticProcessingEngine otherwise add it as an Event Based Stat.
-    UnitAlgebra collectionRate = stat->m_statParams.find<SST::UnitAlgebra>("rate", "0ns");
-    if (StatisticBase::STAT_MODE_PERIODIC == stat->getRegisteredCollectionMode()) {
-        if (false == addPeriodicBasedStatistic(collectionRate, stat)) {
-            return false;
+    StatisticGroup &group = getGroupForStatistic(stat);
+
+    if ( group.isDefault ) {
+        // If the mode is Periodic Based, the add the statistic to the
+        // StatisticProcessingEngine otherwise add it as an Event Based Stat.
+        UnitAlgebra collectionRate = stat->m_statParams.find<SST::UnitAlgebra>("rate", "0ns");
+        if (StatisticBase::STAT_MODE_PERIODIC == stat->getRegisteredCollectionMode()) {
+            if (false == addPeriodicBasedStatistic(collectionRate, stat)) {
+                return false;
+            }
+        } else {
+            if (false == addEventBasedStatistic(collectionRate, stat)) {
+                return false;
+            }
         }
     } else {
-        if (false == addEventBasedStatistic(collectionRate, stat)) {
+        /* Make sure it is periodic! */
+        if ( StatisticBase::STAT_MODE_PERIODIC != stat->getRegisteredCollectionMode() ) {
+            m_output.output("ERROR: Statistics in groups must be periodic in nature!\n");
             return false;
         }
     }
 
-    StatisticOutput *so = getOutputForStatistic(stat);
-    so->startRegisterFields(stat);
-    stat->registerOutputFields(so);
-    so->stopRegisterFields();
+    /* All checks pass.  Add the stat */
+
+    group.addStatistic(stat);
+
+    getOutputForStatistic(stat)->registerStatistic(stat, &group);
 
     setStatisticStartTime(stat);
     setStatisticStopTime(stat);
-
-    placeStatisticInProperGroup(stat);
 
     return true;
 }
@@ -161,26 +174,17 @@ StatisticOutput* StatisticProcessingEngine::getOutputForStatistic(const Statisti
 }
 
 
-StatisticProcessingEngine::StatisticGroup& StatisticProcessingEngine::getGroupForStatistic(const StatisticBase *stat) const
+/* Return the group that would claim this stat */
+StatisticGroup& StatisticProcessingEngine::getGroupForStatistic(const StatisticBase *stat) const
 {
     for ( auto & g : m_statGroups ) {
-        if ( g.containsStatistic(stat) )
+        if ( g.claimsStatistic(stat) ) {
             return const_cast<StatisticGroup&>(g);
+        }
     }
     return const_cast<StatisticGroup&>(m_defaultGroup);
 }
 
-
-void StatisticProcessingEngine::placeStatisticInProperGroup(StatisticBase *stat)
-{
-    for ( auto & g : m_statGroups ) {
-        if ( g.claimsStatistic(stat) ) {
-            g.addStatistic(stat);
-            return;
-        }
-    }
-    m_defaultGroup.addStatistic(stat);
-}
 
 
 bool StatisticProcessingEngine::addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* stat)
@@ -323,6 +327,15 @@ void StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat)
 
 void StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool endOfSimFlag /*=false*/)
 {
+    if ( stat->getGroup()->isDefault )
+        performStatisticOutputImpl(stat, endOfSimFlag);
+    else
+        performStatisticGroupOutputImpl(*const_cast<StatisticGroup*>(stat->getGroup()), endOfSimFlag);
+}
+
+void StatisticProcessingEngine::performStatisticOutputImpl(StatisticBase* stat, bool endOfSimFlag /*=false*/)
+{
+
     StatisticOutput* statOutput = getOutputForStatistic(stat);
 
     // Has the simulation started?
@@ -331,18 +344,15 @@ void StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool
         if (false == stat->isOutputEnabled()) {
             return;
         }
-        statOutput->lock();
-        statOutput->startOutputEntries(stat);
-        stat->outputStatisticData(statOutput, endOfSimFlag);
-        statOutput->stopOutputEntries();
-        statOutput->unlock();
-        
-        if (false == endOfSimFlag) {    
+
+        statOutput->outputEntries(stat, endOfSimFlag);
+
+        if (false == endOfSimFlag) {
             // Check to see if the Statistic Count needs to be reset
             if (true == stat->getFlagResetCountOnOutput()) {
                 stat->resetCollectionCount();
             }
-    
+
             // Check to see if the Statistic Data needs to be cleared
             if (true == stat->getFlagClearDataOnOutput()) {
                 stat->clearStatisticData();
@@ -350,6 +360,34 @@ void StatisticProcessingEngine::performStatisticOutput(StatisticBase* stat, bool
         }
     }
 }
+
+
+void StatisticProcessingEngine::performStatisticGroupOutputImpl(StatisticGroup &group, bool endOfSimFlag /*=false*/)
+{
+
+    StatisticOutput* statOutput = group.output;
+
+    // Has the simulation started?
+    if (true == m_SimulationStarted) {
+
+        statOutput->outputGroup(&group, endOfSimFlag);
+
+        if (false == endOfSimFlag) {
+            for ( auto & stat : group.stats ) {
+                // Check to see if the Statistic Count needs to be reset
+                if (true == stat->getFlagResetCountOnOutput()) {
+                    stat->resetCollectionCount();
+                }
+
+                // Check to see if the Statistic Data needs to be cleared
+                if (true == stat->getFlagClearDataOnOutput()) {
+                    stat->clearStatisticData();
+                }
+            }
+        }
+    }
+}
+
 
 void StatisticProcessingEngine::performGlobalStatisticOutput(bool endOfSimFlag /*=false*/) 
 {
@@ -359,7 +397,7 @@ void StatisticProcessingEngine::performGlobalStatisticOutput(bool endOfSimFlag /
     // Output Event based statistics
     for (StatArray_t::iterator it_v = m_EventStatisticArray.begin(); it_v != m_EventStatisticArray.end(); it_v++) {
         stat = * it_v;
-        performStatisticOutput(stat, endOfSimFlag);
+        performStatisticOutputImpl(stat, endOfSimFlag);
     }
 
     // Output Periodic based statistics 
@@ -368,8 +406,12 @@ void StatisticProcessingEngine::performGlobalStatisticOutput(bool endOfSimFlag /
 
         for (StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++) {
             stat = *it_v;
-            performStatisticOutput(stat, endOfSimFlag);
+            performStatisticOutputImpl(stat, endOfSimFlag);
         }
+    }
+
+    for ( auto & sg : m_statGroups ) {
+        performStatisticGroupOutputImpl(sg, endOfSimFlag);
     }
 }
 
@@ -386,7 +428,7 @@ void StatisticProcessingEngine::endOfSimulation()
         if (true == stat->getFlagOutputAtEndOfSim()) {
         
             // Perform the output
-           performStatisticOutput(stat, true);
+           performStatisticOutputImpl(stat, true);
         }
     }
     
@@ -402,9 +444,13 @@ void StatisticProcessingEngine::endOfSimulation()
             if (true == stat->getFlagOutputAtEndOfSim()) {
             
                 // Perform the output
-               performStatisticOutput(stat, true);
+               performStatisticOutputImpl(stat, true);
             }
         }
+    }
+
+    for ( auto & sg : m_statGroups ) {
+        performStatisticGroupOutputImpl(sg, true);
     }
 
 
@@ -438,7 +484,7 @@ bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t CycleNum
         stat = statArray->at(x);
 
         // Perform the output
-        performStatisticOutput(stat);
+        performStatisticOutputImpl(stat, false);
     }
     // Return false to keep the clock going
     return false;
@@ -529,38 +575,6 @@ void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat, S
     statArray->push_back(Stat);
 }
 
-
-
-
-StatisticProcessingEngine::StatisticGroup::StatisticGroup(const ConfigStatGroup &csg) :
-    isDefault(false), name(csg.name),
-    output(StatisticProcessingEngine::getInstance()->m_statOutputs[csg.outputID]),
-    components(csg.components)
-{
-    for ( auto & kv : csg.statMap ) {
-        statNames.push_back(kv.first);
-    }
-}
-
-
-bool StatisticProcessingEngine::StatisticGroup::containsStatistic(const StatisticBase *stat) const
-{
-    if ( isDefault ) return true;
-    std::find(stats.begin(), stats.end(), stat);
-    return false;
-}
-
-
-bool StatisticProcessingEngine::StatisticGroup::claimsStatistic(const StatisticBase *stat) const
-{
-    if ( isDefault ) return true;
-    if ( std::find(statNames.begin(), statNames.end(), stat->getStatName()) != statNames.end() ) {
-        if ( std::find(components.begin(), components.end(), stat->getComponent()->getId()) != components.end() )
-            return true;
-    }
-
-    return false;
-}
 
 
 

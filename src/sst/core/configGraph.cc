@@ -52,6 +52,10 @@ bool ConfigStatGroup::addComponent(ComponentId_t id)
 bool ConfigStatGroup::addStatistic(const std::string &name, Params &p)
 {
     statMap[name] = p;
+    if ( outputFrequency.getRoundedValue() == 0 ) {
+        /* aka, not yet really set to anything other than 0 */
+        setFrequency(p.find<std::string>("rate", "0ns"));
+    }
     return true;
 }
 

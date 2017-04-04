@@ -13,6 +13,7 @@
 
 #include "sst/core/output.h"
 #include <sst/core/statapi/statoutput.h>
+#include <sst/core/statapi/statgroup.h>
 #include <sst/core/stringize.h>
 
 namespace SST {
@@ -26,7 +27,6 @@ StatisticOutput::StatisticOutput(Params& outputParameters)
     m_statOutputName = "StatisticOutput";
     m_outputParameters = outputParameters;
     m_highestFieldHandle = 0;
-    m_currentFieldCompName = "";
     m_currentFieldStatName = "";
 }
 
@@ -34,10 +34,19 @@ StatisticOutput::~StatisticOutput()
 {
 }
 
+void StatisticOutput::registerStatistic(StatisticBase *stat, StatisticGroup *group)
+{
+    implStartRegisterInGroup(group);
+    startRegisterFields(stat);
+    stat->registerOutputFields(this);
+    stopRegisterFields();
+    implStopRegisterInGroup(group);
+}
+
+
 // Start / Stop of register
 void StatisticOutput::startRegisterFields(StatisticBase *statistic)
 {
-    m_currentFieldCompName = statistic->getCompName();
     m_currentFieldStatName = statistic->getStatName();
     implStartRegisterFields(statistic);
 }
@@ -45,7 +54,6 @@ void StatisticOutput::startRegisterFields(StatisticBase *statistic)
 void StatisticOutput::stopRegisterFields()
 {
     implStopRegisterFields();
-    m_currentFieldCompName = "";
     m_currentFieldStatName = "";
 }
 
@@ -99,20 +107,54 @@ StatisticFieldInfo* StatisticOutput::getRegisteredField(fieldHandle_t fieldHandl
     return NULL;
 }
 
+void StatisticOutput::outputEntries(StatisticBase* statistic, bool endOfSimFlag)
+{
+    startOutputEntries(statistic);
+    statistic->outputStatisticData(this, endOfSimFlag);
+    stopOutputEntries();
+}
+
 void StatisticOutput::startOutputEntries(StatisticBase* statistic)
 {
-    m_currentFieldCompName = statistic->getCompName();
+    this->lock();
     m_currentFieldStatName = statistic->getStatName();
     // Call the Derived class method
     implStartOutputEntries(statistic);
+    this->unlock();
 }
 
 void StatisticOutput::stopOutputEntries()
 {
-    m_currentFieldCompName = "";
     m_currentFieldStatName = "";
     // Call the Derived class method
     implStopOutputEntries();
+}
+
+
+
+void StatisticOutput::outputGroup(StatisticGroup* group, bool endOfSimFlag)
+{
+    startOutputGroup(group);
+    for ( auto & stat : group->stats ) {
+        stat->outputStatisticData(this, endOfSimFlag);
+    }
+    stopOutputGroup();
+}
+
+void StatisticOutput::startOutputGroup(StatisticGroup* group)
+{
+    this->lock();
+    m_currentFieldStatName = group->name;
+    // Call the Derived class method
+    implStartOutputGroup(group);
+    this->unlock();
+}
+
+void StatisticOutput::stopOutputGroup()
+{
+    m_currentFieldStatName = "";
+    // Call the Derived class method
+    implStopOutputGroup();
 }
 
 void StatisticOutput::outputField(fieldHandle_t fieldHandle, int32_t data)  

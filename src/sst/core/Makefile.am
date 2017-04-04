@@ -120,6 +120,7 @@ nobase_dist_sst_HEADERS = \
 	rng/constant.h \
 	rng/uniform.h \
 	statapi/statengine.h \
+	statapi/statgroup.h \
 	statapi/statoutput.h \
 	statapi/statfieldinfo.h \
 	statapi/statoutputconsole.h \
@@ -194,6 +195,7 @@ sst_core_sources = \
 	rng/mersenne.cc \
 	rng/xorshift.cc \
 	statapi/statengine.cc \
+	statapi/statgroup.cc \
 	statapi/statoutput.cc \
 	statapi/statfieldinfo.cc \
 	statapi/statoutputconsole.cc \

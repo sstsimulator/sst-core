@@ -30,6 +30,7 @@ class BaseComponent;
 class Simulation;
 namespace Statistics {
 class StatisticProcessingEngine;
+class StatisticGroup;
 
 ////////////////////////////////////////////////////////////////////////////////
     
@@ -59,10 +60,13 @@ public:
 
     /** Return the Statistic Output name */
     std::string& getStatisticOutputName() {return m_statOutputName;}
-    
-    
+
     /** Return the parameters for the StatisticOutput */
     Params& getOutputParameters() {return m_outputParameters;}
+
+    /** True if this StatOutput can handle StatisticGroups */
+    virtual bool acceptsGroups() const { return false; }
+
 
 /////////////////
 // Methods for Registering Fields (Called by Statistic Objects)
@@ -193,6 +197,10 @@ protected:
       * Allows object to perform any cleanup. */ 
     virtual void implStopOutputEntries() = 0;
 
+    virtual void implStartRegisterInGroup(StatisticGroup* group __attribute__((unused))) {};
+    virtual void implStopRegisterInGroup(StatisticGroup* group __attribute__((unused))) {};
+    virtual void implStartOutputGroup(StatisticGroup* group __attribute__((unused))) {};
+    virtual void implStopOutputGroup() {};
     // Field Outputs
     /** Implementation of outputField() for derived classes.  
       * Perform the actual implementation of the output. */ 
@@ -204,15 +212,22 @@ protected:
     virtual void implOutputField(fieldHandle_t fieldHandle, double data) = 0;
 
 
-private:    
+private:
 
     // Start / Stop of register Fields
+    void registerStatistic(StatisticBase *stat, StatisticGroup *group);
+
     void startRegisterFields(StatisticBase *statistic);
     void stopRegisterFields();
 
     // Start / Stop of output
+    void outputEntries(StatisticBase* statistic, bool endOfSimFlag);
     void startOutputEntries(StatisticBase* statistic);
     void stopOutputEntries();
+
+    void outputGroup(StatisticGroup* group, bool endOfSimFlag);
+    void startOutputGroup(StatisticGroup* group);
+    void stopOutputGroup();
 
     // Other support functions
     StatisticFieldInfo* addFieldToLists(const char* fieldName, fieldType_t fieldType);
@@ -232,7 +247,6 @@ private:
     FieldInfoArray_t m_outputFieldInfoArray;
     FieldNameMap_t   m_outputFieldNameMap;
     fieldHandle_t    m_highestFieldHandle;
-    std::string      m_currentFieldCompName;
     std::string      m_currentFieldStatName;
     std::recursive_mutex  m_lock;
 

@@ -14,6 +14,7 @@
 
 #include <sst/core/sst_types.h>
 #include <sst/core/statapi/statfieldinfo.h>
+#include <sst/core/statapi/statgroup.h>
 #include <sst/core/unitAlgebra.h>
 #include <sst/core/clock.h>
 #include <sst/core/oneshot.h>
@@ -64,8 +65,6 @@ public:
      */
     void performGlobalStatisticOutput(bool endOfSimFlag = false);
 
-    /** Return the statistics load level for the system */
-    uint8_t getStatisticLoadLevel() {return m_statLoadLevel;}
 
     template<typename T>
     Statistic<T>* createStatistic(BaseComponent *comp, const std::string &type, const std::string &statName, const std::string &statSubId, Params &params)
@@ -92,27 +91,12 @@ public:
         return isStatisticInCompStatMap(compName, compId, statName, statSubId, fieldType);
     }
 
+
+    const std::vector<StatisticOutput*>& getStatOutputs() const { return m_statOutputs; }
+
 private:
     friend class SST::Simulation;
     friend int ::main(int argc, char **argv);
-
-    struct StatisticGroup {
-        StatisticGroup() : isDefault(true), name("default") { };
-        StatisticGroup(const ConfigStatGroup &csg);
-
-        bool containsStatistic(const StatisticBase *stat) const;
-        bool claimsStatistic(const StatisticBase *stat) const;
-        void addStatistic(StatisticBase *stat) { stats.push_back(stat); }
-        bool isDefault;
-
-        std::string name;
-        StatisticOutput *output;
-
-        std::vector<ComponentId_t> components;
-        std::vector<std::string> statNames;
-
-        std::vector<StatisticBase*> stats;
-    };
 
     StatisticProcessingEngine(ConfigGraph *graph);
     ~StatisticProcessingEngine();
@@ -128,7 +112,6 @@ private:
 
     StatisticOutput* getOutputForStatistic(const StatisticBase *stat) const;
     StatisticGroup& getGroupForStatistic(const StatisticBase *stat) const;
-    void placeStatisticInProperGroup(StatisticBase *stat);
     bool addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
     bool addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
     UnitAlgebra getParamTime(StatisticBase *stat, const std::string& pName) const;
@@ -137,6 +120,10 @@ private:
 
     void endOfSimulation();
     void startOfSimulation();
+
+
+    void performStatisticOutputImpl(StatisticBase* stat, bool endOfSimFlag);
+    void performStatisticGroupOutputImpl(StatisticGroup& group, bool endOfSimFlag);
 
     bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
     void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);

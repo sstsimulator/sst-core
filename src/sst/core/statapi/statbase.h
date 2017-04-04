@@ -26,6 +26,7 @@ class Factory;
 namespace Statistics {
 class StatisticOutput;
 class StatisticProcessingEngine;
+class StatisticGroup;
 
 
 class StatisticInfo : public SST::Core::Serialization::serializable {
@@ -174,6 +175,8 @@ public:
 
 protected:
     friend class SST::Statistics::StatisticProcessingEngine;
+    friend class SST::Statistics::StatisticOutput;
+    friend class SST::Statistics::StatisticGroup;
     friend class SST::BaseComponent;
 
     /** Construct a StatisticBase
@@ -243,34 +246,38 @@ private:
     void delayOutputExpiredHandler();                               // Enable Output in handler
     void delayCollectionExpiredHandler();                           // Enable Collection in Handler
 
-private:     
+    const StatisticGroup* getGroup() const { return m_group; }
+    void setGroup(const StatisticGroup *group ) { m_group = group; }
+
+private:
     StatisticBase(); // For serialization only
-    
+
 private:
     BaseComponent*        m_component;
     std::string           m_statName;
     std::string           m_statSubId;
     std::string           m_statFullName;
-    std::string           m_statTypeName;    
+    std::string           m_statTypeName;
     Params                m_statParams;
     StatMode_t            m_registeredCollectionMode;
     uint64_t              m_currentCollectionCount;
     uint64_t              m_collectionCountLimit;
-    StatisticFieldInfo::fieldType_t m_statDataType;    
-                          
+    StatisticFieldInfo::fieldType_t m_statDataType;
+
     bool                  m_statEnabled;
     bool                  m_outputEnabled;
     bool                  m_resetCountOnOutput;
     bool                  m_clearDataOnOutput;
     bool                  m_outputAtEndOfSim;
-                          
+
     bool                  m_outputDelayed;
     bool                  m_collectionDelayed;
     bool                  m_savedStatEnabled;
     bool                  m_savedOutputEnabled;
     OneShot::HandlerBase* m_outputDelayedHandler;
     OneShot::HandlerBase* m_collectionDelayedHandler;
-    
+    const StatisticGroup* m_group;
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
