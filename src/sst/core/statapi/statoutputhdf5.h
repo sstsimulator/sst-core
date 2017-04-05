@@ -113,22 +113,24 @@ private:
     public:
         DataSet(H5::H5File *file) : file(file) { }
         virtual ~DataSet() { }
+        H5::H5File* getFile() { return file; }
         virtual bool isGroup() const = 0;
 
-        virtual void setCurrentStatistic(StatisticBase *stat) { }
+        virtual void setCurrentStatistic(StatisticBase *stat __attribute__((unused))) { }
         virtual void registerField(StatisticFieldInfo *fi) = 0;
         virtual void finalizeCurrentStatistic() = 0;
 
-        virtual void beginGroupRegistration(StatisticGroup *group) { }
+        virtual void beginGroupRegistration(StatisticGroup *group __attribute__((unused))) { }
         virtual void finalizeGroupRegistration() { }
 
 
         virtual void startNewGroupEntry() {}
         virtual void finishGroupEntry() {}
 
-        virtual void startNewEntry() = 0;
+        virtual void startNewEntry(StatisticBase *stat) = 0;
         virtual StatData_u& getFieldLoc(fieldHandle_t fieldHandle) = 0;
         virtual void finishEntry() = 0;
+
     protected:
         H5::H5File *file;
     };
@@ -160,33 +162,74 @@ private:
         void finalizeCurrentStatistic();
 
         bool isGroup() const { return false; }
-        void startNewEntry();
+        void startNewEntry(StatisticBase *stat);
         StatData_u& getFieldLoc(fieldHandle_t fieldHandle);
         void finishEntry();
     };
 
     class GroupInfo : public DataSet {
+        struct GroupStat {
+            GroupInfo *gi;
+            std::string statPath;
+
+            H5::DataSet *dataset;
+            H5::CompType *memType;
+
+            hsize_t nEntries;
+
+            std::vector<std::string> registeredFields; /* fi->uniqueName */
+            std::vector<fieldType_t> typeList;
+            std::map<fieldHandle_t, size_t> handleIndexMap;
+
+            std::vector<StatData_u> currentData;
+            size_t currentCompOffset;
+
+
+            GroupStat(GroupInfo *group, StatisticBase *stat);
+            void finalizeRegistration();
+            static std::string getStatName(StatisticBase* stat);
+
+            void startNewGroupEntry();
+
+            void startNewEntry(size_t componentIndex, StatisticBase *stat);
+            StatData_u& getFieldLoc(fieldHandle_t fieldHandle);
+            void finishEntry();
+
+            void finishGroupEntry();
+        };
+
+
+
+        hsize_t nEntries;
+        std::map<std::string, GroupStat> m_statGroups;
+        GroupStat *m_currentStat;
+        StatisticGroup *m_statGroup;
+        std::vector<BaseComponent*> m_components;
+        H5::DataSet *timeDataSet;
+
     public:
-        GroupInfo(StatisticGroup *group, H5::H5File *file) : DataSet(file) { /* TODO */ }
-        void beginGroupRegistration(StatisticGroup *group) { }
-        void setCurrentStatistic(StatisticBase *stat) { /* TODO */ }
-        void registerField(StatisticFieldInfo *fi) { /* TODO */ }
-        void finalizeCurrentStatistic() { /* TODO */ }
-        void finalizeGroupRegistration() { /* TODO */ }
+        GroupInfo(StatisticGroup *group, H5::H5File *file);
+        void beginGroupRegistration(StatisticGroup *group __attribute__((unused))) { }
+        void setCurrentStatistic(StatisticBase *stat);
+        void registerField(StatisticFieldInfo *fi);
+        void finalizeCurrentStatistic();
+        void finalizeGroupRegistration();
 
         bool isGroup() const { return true; }
-        void startNewEntry() { /* TODO */ }
-        StatData_u& getFieldLoc(fieldHandle_t fieldHandle) { /* TODO */ }
-        void finishEntry() { /* TODO */ }
+        void startNewEntry(StatisticBase *stat);
+        StatData_u& getFieldLoc(fieldHandle_t fieldHandle) { return m_currentStat->getFieldLoc(fieldHandle); }
+        void finishEntry();
 
-        void startNewGroupEntry() { /* TODO */ }
-        void finishGroupEntry() { /* TODO */ }
+        void startNewGroupEntry();
+        void finishGroupEntry();
+        size_t getNumComponents() const { return m_components.size(); }
+
+        const std::string& getName() const { return m_statGroup->name; }
     };
 
 
     H5::H5File*              m_hFile;
     DataSet*                 m_currentDataSet;
-    StatisticInfo*           m_currentStatistic;
     std::map<StatisticBase*, StatisticInfo*> m_statistics;
     std::map<std::string, GroupInfo> m_statGroups;
 
