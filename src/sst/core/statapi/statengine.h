@@ -101,7 +101,8 @@ private:
     friend int ::main(int argc, char **argv);
     friend void ::finalize_statEngineConfig(void);
 
-    StatisticProcessingEngine(ConfigGraph *graph);
+    StatisticProcessingEngine();
+    void setup(ConfigGraph *graph);
     ~StatisticProcessingEngine();
 
     static void init(ConfigGraph *graph);

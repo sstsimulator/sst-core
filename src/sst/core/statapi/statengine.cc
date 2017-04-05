@@ -28,12 +28,16 @@ namespace Statistics {
 
 void StatisticProcessingEngine::init(ConfigGraph *graph)
 {
-    StatisticProcessingEngine::instance = new StatisticProcessingEngine(graph);
+    StatisticProcessingEngine::instance = new StatisticProcessingEngine();
+    instance->setup(graph);
 }
 
-
-StatisticProcessingEngine::StatisticProcessingEngine(ConfigGraph *graph) :
+StatisticProcessingEngine::StatisticProcessingEngine() :
     m_output(Output::getDefaultObject())
+{
+}
+
+void StatisticProcessingEngine::setup(ConfigGraph *graph)
 {
     m_SimulationStarted = false;
     m_statLoadLevel = graph->getStatLoadLevel();

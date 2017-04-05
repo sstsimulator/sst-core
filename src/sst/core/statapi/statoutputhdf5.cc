@@ -455,7 +455,7 @@ void StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
     }
 
     dset->write(infoArray, infoType);
-    delete [] dset;
+    delete [] infoArray;
 
 
     /* Create timestamp array */
