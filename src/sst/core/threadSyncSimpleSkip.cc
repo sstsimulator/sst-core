@@ -36,10 +36,11 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
         queues.push_back(new ThreadSyncQueue());
     }
 
-    if ( sim->getRank().thread == 0 )
+    if ( sim->getRank().thread == 0 ) {
         barrier[0].resize(num_threads);
         barrier[1].resize(num_threads);
         barrier[2].resize(num_threads);
+    }
 
     if ( sim->getNumRanks().rank > 1 ) single_rank = false;
     else single_rank = true;
