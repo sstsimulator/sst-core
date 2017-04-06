@@ -303,7 +303,7 @@ bool StatisticOutputTxt::openFile(void)
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
         m_gzFile = gzopen(m_FilePath.c_str(), "w");
-        if (NULL == m_hFile){
+        if (NULL == m_gzFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
             out.fatal(CALL_INFO, -1, " : StatisticOutputCompressedTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
@@ -340,15 +340,42 @@ int StatisticOutputTxt::print(const char* fmt, ...)
 {
     int res = 0;
     va_list args;
-    va_start(args,fmt);
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
+#if ZLIB_VERBUM >= 0x1271
+        /* zlib added gzvprintf in 1.2.7.1.  CentOS 7 apparently uses 1.2.7.0 */
+        va_start(args,fmt);
         res = gzvprintf(m_gzFile, fmt, args);
+        va_end(args);
+#else
+        ssize_t bufSize = 128;
+        bool retry = true;
+        do {
+            char *buf = (char*)malloc(bufSize);
+
+            va_start(args, fmt);
+            ssize_t n = vsnprintf(buf, bufSize, fmt, args);
+            va_end(args);
+
+            if ( n < 0 ) {
+                retry = false;
+            } else if ( n < bufSize ) {
+                gzprintf(m_gzFile, "%s", buf);
+                /* Success */
+                retry = false;
+            } else {
+                bufSize += 128;
+            }
+            free(buf);
+        } while ( retry );
+        
+#endif
 #endif
     } else {
+        va_start(args,fmt);
         res = vfprintf(m_hFile, fmt, args);
+        va_end(args);
     }
-    va_end(args);
     return res;
 }
 

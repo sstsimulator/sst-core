@@ -177,7 +177,6 @@ protected:
     friend class SST::Statistics::StatisticProcessingEngine;
     friend class SST::Statistics::StatisticOutput;
     friend class SST::Statistics::StatisticGroup;
-    friend class SST::BaseComponent;
 
     /** Construct a StatisticBase
       * @param comp - Pointer to the parent constructor.
