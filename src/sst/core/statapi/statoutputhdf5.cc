@@ -343,7 +343,7 @@ StatisticOutputHDF5::GroupInfo::GroupInfo(StatisticGroup *group, H5::H5File *fil
     m_components.resize(m_statGroup->components.size());
 
     /* Create group directory */
-    std::string objName = "/" + m_statGroup->name;
+    std::string objName = "/" + getName();
     try {
         H5::Group* compGroup = new H5::Group( file->createGroup(objName));
         compGroup->close();
@@ -386,7 +386,7 @@ void StatisticOutputHDF5::GroupInfo::registerField(StatisticFieldInfo *fi)
             m_currentStat->registeredFields.begin(),
             m_currentStat->registeredFields.end(),
             name);
-    bool firstSeen = (location != m_currentStat->registeredFields.end());
+    bool firstSeen = (location == m_currentStat->registeredFields.end());
 
     if ( firstSeen ) {
         index = m_currentStat->registeredFields.size();
@@ -403,6 +403,7 @@ void StatisticOutputHDF5::GroupInfo::registerField(StatisticFieldInfo *fi)
 void StatisticOutputHDF5::GroupInfo::finalizeCurrentStatistic()
 {
     m_currentStat->finalizeRegistration();
+    m_currentStat = NULL;
 }
 
 
@@ -564,12 +565,11 @@ void StatisticOutputHDF5::GroupInfo::GroupStat::finalizeRegistration()
 
     H5::DataSpace dspace(2, dims, maxdims);
     H5::DSetCreatPropList cparms;
-    hsize_t chunk_dims[2] = {16, 128};
+    hsize_t chunk_dims[2] = {std::min((hsize_t)16, dims[0]), 128};
     cparms.setChunk(2, chunk_dims);
     cparms.setDeflate(7);
 
     dataset = new H5::DataSet( gi->getFile()->createDataSet(statPath, *memType, dspace, cparms) );
-
 }
 
 

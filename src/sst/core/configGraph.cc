@@ -42,7 +42,7 @@ void ConfigLink::updateLatencies(TimeLord *timeLord)
 
 bool ConfigStatGroup::addComponent(ComponentId_t id)
 {
-    if ( std::find(components.begin(), components.end(), id) != components.end() ) {
+    if ( std::find(components.begin(), components.end(), id) == components.end() ) {
         components.push_back(id);
     }
     return true;
