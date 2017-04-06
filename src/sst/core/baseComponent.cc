@@ -26,8 +26,6 @@
 #include <sst/core/unitAlgebra.h>
 #include <sst/core/sharedRegion.h>
 
-using namespace SST::Statistics;
-
 namespace SST {
 
 BaseComponent::BaseComponent() :
@@ -45,7 +43,7 @@ BaseComponent::~BaseComponent()
 
 
 TimeConverter* BaseComponent::registerClock( std::string freq, Clock::HandlerBase* handler, bool regAll) {
-    TimeConverter* tc = getSimulation()->registerClock(freq,handler);
+    TimeConverter* tc = getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -64,7 +62,7 @@ TimeConverter* BaseComponent::registerClock( std::string freq, Clock::HandlerBas
 }
 
 TimeConverter* BaseComponent::registerClock( const UnitAlgebra& freq, Clock::HandlerBase* handler, bool regAll) {
-    TimeConverter* tc = getSimulation()->registerClock(freq,handler);
+    TimeConverter* tc = getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -83,23 +81,23 @@ TimeConverter* BaseComponent::registerClock( const UnitAlgebra& freq, Clock::Han
 }
 
 Cycle_t BaseComponent::reregisterClock( TimeConverter* freq, Clock::HandlerBase* handler) {
-    return getSimulation()->reregisterClock(freq,handler);
+    return getSimulation()->reregisterClock(freq, handler, CLOCKPRIORITY);
 }
 
 Cycle_t BaseComponent::getNextClockCycle( TimeConverter* freq ) {
-    return getSimulation()->getNextClockCycle(freq);
+    return getSimulation()->getNextClockCycle(freq, CLOCKPRIORITY);
 }
 
 void BaseComponent::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
-    getSimulation()->unregisterClock(tc,handler);
+    getSimulation()->unregisterClock(tc, handler, CLOCKPRIORITY);
 }
 
 TimeConverter* BaseComponent::registerOneShot( std::string timeDelay, OneShot::HandlerBase* handler) {
-    return getSimulation()->registerOneShot(timeDelay, handler);
+    return getSimulation()->registerOneShot(timeDelay, handler, ONESHOTPRIORITY);
 }
 
 TimeConverter* BaseComponent::registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler) {
-    return getSimulation()->registerOneShot(timeDelay, handler);
+    return getSimulation()->registerOneShot(timeDelay, handler, ONESHOTPRIORITY);
 }
 
 TimeConverter* BaseComponent::registerTimeBase( std::string base, bool regAll) {
@@ -326,6 +324,20 @@ SharedRegion* BaseComponent::getGlobalSharedRegion(const std::string &key, size_
 {
     SharedRegionManager *mgr = Simulation::getSharedRegionManager();
     return mgr->getGlobalSharedRegion(key, size, merger);
+}
+
+
+
+uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string &statisticName) const
+{
+    const std::string& type = getStatisticOwner()->my_info->getType();
+    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
+}
+
+std::string BaseComponent::getComponentInfoStatisticUnits(const std::string &statisticName) const
+{
+    const std::string& type = getStatisticOwner()->my_info->getType();
+    return Factory::getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
 }
 
 

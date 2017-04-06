@@ -16,6 +16,10 @@
 
 #include <sst/core/statapi/statoutput.h>
 
+#ifdef HAVE_LIBZ
+#include <zlib.h>
+#endif
+
 namespace SST {
 namespace Statistics {
 
@@ -30,7 +34,7 @@ public:
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputTxt(Params& outputParameters);
+    StatisticOutputTxt(Params& outputParameters, bool compressed);
 
 protected:
     /** Perform a check of provided parameters
@@ -79,10 +83,18 @@ protected:
     void implOutputField(fieldHandle_t fieldHandle, float data);
     void implOutputField(fieldHandle_t fieldHandle, double data);
 
-protected: 
+protected:
     StatisticOutputTxt() {;} // For serialization
-    
+
 private:
+    bool openFile();
+    void closeFile();
+    int print(const char* fmt, ...);
+
+private:
+#ifdef HAVE_LIBZ
+    gzFile                   m_gzFile;
+#endif
     FILE*                    m_hFile;
     std::string              m_outputBuffer;
     std::string              m_FilePath;
@@ -90,6 +102,7 @@ private:
     bool                     m_outputInlineHeader;
     bool                     m_outputSimTime;
     bool                     m_outputRank;
+    bool                     m_useCompression;
 
 };
 

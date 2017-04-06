@@ -17,7 +17,7 @@
 namespace SST {
 namespace Statistics {
 
-StatisticBase::StatisticBase(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams)
+StatisticBase::StatisticBase(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 {
     m_statName   = statName;
     m_statSubId  = statSubId;
@@ -25,6 +25,10 @@ StatisticBase::StatisticBase(BaseComponent* comp, std::string& statName, std::st
     m_statParams = statParams;
 
     initializeProperties();
+
+    m_resetCountOnOutput = statParams.find<bool>("resetOnRead", false);
+    m_clearDataOnOutput = statParams.find<bool>("resetOnRead", false);
+
 }
 
 const std::string& StatisticBase::getCompName() const
@@ -98,7 +102,7 @@ void StatisticBase::checkEventForOutput()
          (m_currentCollectionCount >= m_collectionCountLimit) &&
          (1 <= m_collectionCountLimit) ) {
         // Dont output if CountLimit is zero
-        Simulation::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(this);
+        StatisticProcessingEngine::getInstance()->performStatisticOutput(this);
     }
 }
 
@@ -117,7 +121,7 @@ void StatisticBase::delayOutput(const char* delayTime)
         m_outputEnabled = false;
         m_outputDelayed = true;
 
-        Simulation::getSimulation()->registerOneShot(delayTime, m_outputDelayedHandler);
+        Simulation::getSimulation()->registerOneShot(delayTime, m_outputDelayedHandler, STATISTICCLOCKPRIORITY);
     }
 }
 
@@ -131,7 +135,7 @@ void StatisticBase::delayCollection(const char* delayTime)
         m_statEnabled = false;
         m_collectionDelayed = true;
 
-        Simulation::getSimulation()->registerOneShot(delayTime, m_collectionDelayedHandler);
+        Simulation::getSimulation()->registerOneShot(delayTime, m_collectionDelayedHandler, STATISTICCLOCKPRIORITY);
     }
 }
 

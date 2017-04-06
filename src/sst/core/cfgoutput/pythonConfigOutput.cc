@@ -13,6 +13,8 @@
 #include <sst_config.h>
 
 #include "pythonConfigOutput.h"
+#include <sst/core/simulation.h>
+#include <sst/core/config.h>
 
 using namespace SST::Core;
 
@@ -73,22 +75,22 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
         fprintf(outputFile, ")\n");
     }
 
-    for ( size_t statIndex = 0 ; statIndex < comp.enabledStatistics.size() ; statIndex++ ) {
-        if ( comp.enabledStatistics[statIndex] == STATALLFLAG ) {
+    for ( auto &si : comp.enabledStatistics ) {
+        if ( si.name == STATALLFLAG ) {
             fprintf(outputFile, "%s.enableAllStatistics(", objName);
-            if ( !comp.enabledStatParams[statIndex].empty() ) {
-                generateParams(comp.enabledStatParams[statIndex]);
+            if ( !si.params.empty() ) {
+                generateParams(si.params);
             }
             fprintf(outputFile, ")\n");
         } else {
-            char* esStatName = makeEscapeSafe(comp.enabledStatistics[statIndex].c_str());
+            char* esStatName = makeEscapeSafe(si.name.c_str());
 
             fprintf(outputFile, "%s.enableStatistics([\"%s\"]", objName, esStatName);
 
             // Output the Statistic Parameters
-            if( !comp.enabledStatParams[statIndex].empty() ) {
+            if( !si.params.empty() ) {
                 fprintf(outputFile, ", ");
-                generateParams(comp.enabledStatParams[statIndex]);
+                generateParams(si.params);
             }
             fprintf(outputFile, ")\n");
 
@@ -185,9 +187,9 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 		fprintf(outputFile, "sst.setStatisticLoadLevel(%" PRIu64 ")\n",
 			(uint64_t) graph->getStatLoadLevel());
 	}
-	if( !graph->getStatOutput().empty() ) {
-		fprintf(outputFile, "sst.setStatisticOutput(\"%s\"", graph->getStatOutput().c_str());
-        const Params &outParams = graph->getStatOutputParams();
+	if( !graph->getStatOutput().type.empty() ) {
+		fprintf(outputFile, "sst.setStatisticOutput(\"%s\"", graph->getStatOutput().type.c_str());
+        const Params &outParams = graph->getStatOutput().params;
         if ( !outParams.empty() ) {
             fprintf(outputFile, ", ");
             generateParams(outParams);

@@ -16,9 +16,9 @@
 #include <sst/core/sst_types.h>
 
 #include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/statoutput.h>
 
 namespace SST {
-class BaseComponent;
 namespace Statistics {
 
 // NOTE: When calling base class members in classes derived from 
@@ -41,10 +41,9 @@ namespace Statistics {
 template<class BinDataType>
 class HistogramStatistic : public Statistic<BinDataType> 
 {
-private:
-    friend class SST::BaseComponent;
-    
-    HistogramStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams)
+public:
+
+    HistogramStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<BinDataType>(comp, statName, statSubId, statParams)
     {
         // Identify what keys are Allowed in the parameters

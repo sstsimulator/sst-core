@@ -13,12 +13,15 @@
 #ifndef SST_CORE_PART_BASE
 #define SST_CORE_PART_BASE
 
-#include <sst/core/configGraph.h>
 #include <sst/core/rankInfo.h>
 
 #include <map>
 
 namespace SST {
+
+class ConfigGraph;
+class PartitionGraph;
+
 namespace Partition {
 
 /**

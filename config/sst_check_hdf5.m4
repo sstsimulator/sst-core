@@ -12,18 +12,31 @@ AC_DEFUN([SST_CHECK_HDF5],
   LDFLAGS_saved="$LDFLAGS"
 
   AS_IF([test "$sst_check_hdf5_happy" = "yes"], [
-    AS_IF([test ! -z "$with_hdf5" -a "$with_hdf5" != "yes"],
-      [HDF5_CPPFLAGS="-I$with_hdf5/include"
-       CPPFLAGS="$HDF5_CPPFLAGS $CPPFLAGS"
-       HDF5_LDFLAGS="-L$with_hdf5/lib"
-       HDF5_LIBS="-lhdf5",
-       LDFLAGS="$HDF5_LDFLAGS $LDFLAGS"],
-      [HDF5_CPPFLAGS=
-       HDF5_LDFLAGS=
-       HDF5_LIBS=])])
+      AS_IF([test ! -z "$with_hdf5" -a "$with_hdf5" != "yes"],
+          [
+            HDF5_CFLAGS="-I$with_hdf5/include"
+            HDF5_LDFLAGS="-L$with_hdf5/lib"
+          ],
+          [
+            AC_PATH_PROG([PKGCONFIG], [pkg-config])
+            AS_IF([test ! -z ${PKGCONFIG}],
+                [
+                    echo "PKGCONFIG = $PKGCONFIG"
+                    HDF5_LDFLAGS=`${PKGCONFIG} --libs hdf5`
+                    HDF5_CFLAGS=`${PKGCONFIG} --cflags hdf5`
+                ],
+                [
+                    HDF5_CFLAGS=
+                    HDF5_LDFLAGS=
+                ]
+            )
+          ]
+        )
+    ]
+  )
 
-  CPPFLAGS="${CPPFLAGS} ${HDF_CPPFLAGS}"
-  LDFLAGS="${LDFLAGS} ${HDF_LDFLAGS}"
+  CPPFLAGS="${CPPFLAGS} ${HDF5_CFLAGS}"
+  LDFLAGS="${LDFLAGS} ${HDF5_LDFLAGS}"
   
   AC_LANG_PUSH([C++])
   AC_CHECK_HEADER([H5Cpp.h], [], [sst_check_hdf5_happy="no"])
@@ -35,7 +48,7 @@ AC_DEFUN([SST_CHECK_HDF5],
   CPPFLAGS="$CPPFLAGS_saved"
   LDFLAGS="$LDFLAGS_saved"
 
-  AC_SUBST([HDF5_CPPFLAGS])
+  AC_SUBST([HDF5_CFLAGS])
   AC_SUBST([HDF5_LDFLAGS])
   AC_SUBST([HDF5_LIBS])
   AS_IF([test "x$sst_check_hdf5_happy" = "xyes"], [AC_DEFINE([HAVE_HDF5],[1],[Defines whether we have the hdf5 library])])

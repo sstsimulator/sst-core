@@ -11,6 +11,7 @@
 
 #include <sst_config.h>
 #include <sst/core/part/zoltpart.h>
+#include <sst/core/configGraph.h>
 
 #ifdef HAVE_ZOLTAN
 

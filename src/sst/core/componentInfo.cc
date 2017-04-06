@@ -14,6 +14,7 @@
 // #include "sst/core/serialization.h"
 
 #include <sst/core/componentInfo.h>
+#include <sst/core/configGraph.h>
 #include <sst/core/linkMap.h>
 
 namespace SST {
@@ -25,8 +26,7 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
     link_map(NULL),
     component(NULL),
     params(NULL),
-    enabledStats(NULL),
-    statParams(NULL)
+    enabledStats(NULL)
 { }
 
 
@@ -37,8 +37,7 @@ ComponentInfo::ComponentInfo(const std::string &type, const Params *params, cons
     link_map(parent->link_map),
     component(NULL),
     params(params),
-    enabledStats(parent->enabledStats),
-    statParams(parent->statParams)
+    enabledStats(parent->enabledStats)
 { }
 
 
@@ -49,8 +48,7 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
     link_map(link_map),
     component(NULL),
     params(&ccomp->params),
-    enabledStats(&ccomp->enabledStatistics),
-    statParams(&ccomp->enabledStatParams)
+    enabledStats(&ccomp->enabledStatistics)
 {
     for ( auto &sc : ccomp->subComponents ) {
         subComponents.emplace(sc.first, ComponentInfo(&sc.second, new LinkMap()));
@@ -64,8 +62,7 @@ ComponentInfo::ComponentInfo(ComponentInfo &&o) :
     link_map(o.link_map),
     component(o.component),
     params(o.params),
-    enabledStats(o.enabledStats),
-    statParams(o.statParams)
+    enabledStats(o.enabledStats)
 {
     o.link_map = NULL;
     o.component = NULL;

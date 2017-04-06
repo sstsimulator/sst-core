@@ -12,6 +12,7 @@
 
 #include <sst_config.h>
 #include <sst/core/configGraphOutput.h>
+#include <sst/core/config.h>
 #include "dotConfigOutput.h"
 
 using namespace SST::Core;

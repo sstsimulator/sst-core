@@ -15,6 +15,7 @@
 
 #include <sst/core/baseComponent.h>
 #include <sst/core/component.h>
+#include <sst/core/module.h>
 
 namespace SST {
 
@@ -46,12 +47,12 @@ public:
 protected:
     Component* const parent;
 
-    Component* getTrueComponent() final { return parent; }
-    BaseComponent* getStatisticOwner() final {
+    Component* getTrueComponent() const final { return parent; }
+    BaseComponent* getStatisticOwner() const final {
         /* If our ID == parent ID, then we're a legacy subcomponent that doesn't own stats. */
         if ( this->getId() == parent->getId() )
             return parent;
-        return this;
+        return const_cast<SubComponent*>(this);
     }
 
     /* Deprecate?   Old ELI style*/
@@ -60,11 +61,7 @@ protected:
     }
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) final;
-    // Return the EnableLevel for the statisticName from the ElementInfoStatistic
-    virtual uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) final;
-    // Return the Units for the statisticName from the ElementInfoStatistic
-    virtual std::string getComponentInfoStatisticUnits(const std::string &statisticName) final;
+    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final;
 
 private:
     /** Component's type, set by the factory when the object is created.

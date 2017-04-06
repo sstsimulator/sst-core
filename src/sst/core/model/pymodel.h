@@ -28,6 +28,7 @@
 #include <sst/core/config.h>
 #include <sst/core/rankInfo.h>
 #include <sst/core/output.h>
+#include <sst/core/configGraph.h>
 
 using namespace SST;
 
