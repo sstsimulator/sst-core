@@ -222,7 +222,7 @@ static int soInit(StatOutputPy_t *self, PyObject *args, PyObject *kwds __attribu
 {
     char *type = NULL;
     PyObject *params = NULL;
-    if ( !PyArg_ParseTuple(args, "s|O!", &type, PyDict_Type, params) ) return -1;
+    if ( !PyArg_ParseTuple(args, "s|O!", &type, &PyDict_Type, &params) ) return -1;
 
     std::vector<ConfigStatOutput>& vec = gModel->getGraph()->getStatOutputs();
 

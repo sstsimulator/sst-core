@@ -630,6 +630,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     PyModel_SubComponentType.tp_new = PyType_GenericNew;
     PyModel_LinkType.tp_new = PyType_GenericNew;
     PyModel_StatGroupType.tp_new = PyType_GenericNew;
+    PyModel_StatOutputType.tp_new = PyType_GenericNew;
     ModuleLoaderType.tp_new = PyType_GenericNew;
     if ( ( PyType_Ready(&PyModel_ComponentType) < 0 ) ||
          ( PyType_Ready(&PyModel_SubComponentType) < 0 ) ||
