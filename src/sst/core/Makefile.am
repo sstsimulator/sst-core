@@ -296,8 +296,9 @@ sstinfo_x_LDADD += $(LIBZ_LIBS)
 endif
 
 if USE_HDF5
+AM_CPPFLAGS += $(HDF5_CFLAGS)
 sstsim_x_SOURCES += statapi/statoutputhdf5.cc
 sstinfo_x_SOURCES += statapi/statoutputhdf5.cc
-sstsim_x_LDADD += $(HDF5_LIBS)
-sstinfo_x_LDADD += $(HDF5_LIBS)
+sstsim_x_LDADD += $(HDF5_LDFLAGS) $(HDF5_LIBS)
+sstinfo_x_LDADD += $(HDF5_LDFLAGS) $(HDF5_LIBS)
 endif
