@@ -1,179 +1,104 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
-// Government retains certain rights in this software.
-//
-// Copyright (c) 2009-2017, Sandia Corporation
-// All rights reserved.
-//
-// This file is part of the SST software package. For license
-// information, see the LICENSE file in the top level directory of the
-// distribution.
 
 #ifndef SST_CORE_INTERPROCESS_CIRCULARBUFFER_H
-#define SST_CORE_INTERPROCESS_CIRCULARBUFFER_H 1
+#define SST_CORE_INTERPROCESS_CIRCULARBUFFER_H
 
-#include <cstddef>
-#include <string.h>
-#include <errno.h>
-#include <pthread.h>
+#include <mutex>
+#include <condition_variable>
 
 namespace SST {
 namespace Core {
 namespace Interprocess {
 
-/**
- * Multi-process safe, Circular Buffer class
- *
- * @tparam T  Type of data item to store in the buffer
- * @tparam A  Memory Allocator type to use
- */
 template <typename T>
 class CircularBuffer {
 
-    pthread_mutex_t mtx;
-    pthread_cond_t cond_full, cond_empty;
-    pthread_condattr_t attrcond;
-    pthread_mutexattr_t attrmutex;
-
-    size_t rPtr, wPtr;
-    size_t buffSize;
-    T buffer[0]; // Actual size: buffSize
-
-
 public:
-    /**
-     * Construct a new circular buffer
-     * @param bufferSize Number of elements in the buffer
-     * @param allocator Memory allocator to use for constructing the buffer
-     */
-    CircularBuffer(size_t bufferSize = 0) :
-        rPtr(0), wPtr(0), buffSize(bufferSize)
-    {
-        pthread_mutexattr_init(&attrmutex);
-        pthread_mutexattr_setpshared(&attrmutex, PTHREAD_PROCESS_SHARED);
-        if ( pthread_mutex_init(&mtx, &attrmutex) ) {
-            fprintf(stderr, "Failed to initialie mutex: %s\n", strerror(errno));
-            exit(1);
-        }
+	CircularBuffer(size_t mSize = 0) {
+		buffSize = mSize;
+		buffer = new T[mSize];
 
-        pthread_condattr_init(&attrcond);
-        pthread_condattr_setpshared(&attrcond, PTHREAD_PROCESS_SHARED);
-        if ( pthread_cond_init(&cond_full, &attrcond) ) {
-            fprintf(stderr, "Failed to initialie condition vars: %s\n", strerror(errno));
-            exit(1);
-        }
-        if ( pthread_cond_init(&cond_empty, &attrcond) ) {
-            fprintf(stderr, "Failed to initialie condition vars: %s\n", strerror(errno));
-            exit(1);
-        }
-    }
+		readIndex = 0;
+		writeIndex = 0;
+	}
 
-    ~CircularBuffer()
-    {
-        pthread_mutex_destroy(&mtx);
-        pthread_mutexattr_destroy(&attrmutex);
+	void setBufferSize(const size_t bufferSize)
+    	{
+        	if ( buffSize != 0 ) {
+	            fprintf(stderr, "Already specified size for buffer\n");
+        	    exit(1);
+        	}
 
-        pthread_cond_destroy(&cond_full);
-        pthread_cond_destroy(&cond_empty);
-        pthread_condattr_destroy(&attrcond);
-    }
+	        buffSize = bufferSize;
+		buffer = new T[buffSize];
+    	}
 
-    void setBufferSize(size_t bufferSize)
-    {
-        if ( buffSize != 0 ) {
-            fprintf(stderr, "Already specified size for buffer\n");
-            exit(1);
-        }
-        buffSize = bufferSize;
-    }
+	T read() {
+		std::unique_lock<std::mutex> lock(bufferMutex);
+		bufferCondVar.wait(lock, [this]{ return (readIndex != writeIndex); });
 
-    /***
-     * Clear the messages in the buffer
-     */
-    void clearBuffer()
-    {
-        if ( pthread_mutex_lock(&mtx) ) {
-            fprintf(stderr, "LOCKING ERROR:  %s\n", strerror(errno));
-        }
+		const T result = buffer[readIndex];
+		readIndex = (readIndex + 1) % buffSize;
 
-        rPtr = wPtr;
+		__sync_synchronize();
+		bufferCondVar.notify_all();
 
-        __sync_synchronize();
-        pthread_mutex_unlock(&mtx);
-    }
+		return result;
+	}
 
+	bool readNB(T* result) {
+		if( bufferMutex.try_lock() ) {
+			if( writeIndex == readIndex ) {
+				bufferMutex.unlock();
+				return false;
+			} else {
+				*result = buffer[readIndex];
+				readIndex = (readIndex + 1) % buffSize;
 
-    /**
-     * Write a value to the circular buffer
-     * @param value New Value to write
-     */
-    void write(const T &value)
-    {
-        if ( pthread_mutex_lock(&mtx) ) {
-            fprintf(stderr, "LOCKING ERROR:  %s\n", strerror(errno));
-        }
-		while ( (wPtr+1) % buffSize == rPtr ) {
-            pthread_cond_wait(&cond_full, &mtx);
-        }
+				__sync_synchronize();
+				bufferCondVar.notify_all();
+				bufferMutex.unlock();
 
-        buffer[wPtr] = value;
-        wPtr = (wPtr +1 ) % buffSize;
+				return true;
+			}
+		} else {
+			return false;
+		}
+	}
 
-        __sync_synchronize();
-        pthread_cond_signal(&cond_empty);
-        pthread_mutex_unlock(&mtx);
-    }
+	void write(const T& v) {
+		std::unique_lock<std::mutex> lock(bufferMutex);
 
-    /**
-     * Blocking Read a value from the circular buffer
-     * @return The next item in the queue to be read
-     */
-    T read(void)
-    {
-        if ( pthread_mutex_lock(&mtx) ) {
-            fprintf(stderr, "LOCKING ERROR:  %s\n", strerror(errno));
-        }
-		while ( rPtr == wPtr ) {
-            pthread_cond_wait(&cond_empty, &mtx);
-        }
+		bufferCondVar.wait(lock, [this]{ return ((writeIndex + 1) % buffSize) != readIndex; });
 
-        T ans = buffer[rPtr];
-        rPtr = (rPtr +1 ) % buffSize;
+		buffer[writeIndex] = v;
+		writeIndex = (writeIndex + 1) % buffSize;
 
-        __sync_synchronize();
-		pthread_cond_signal(&cond_full);
-        pthread_mutex_unlock(&mtx);
-        return ans;
-    }
+		__sync_synchronize();
+		bufferCondVar.notify_all();
+	}
 
-    /**
-     * Non-Blocking Read a value from the circular buffer
-     * @param result Pointer to an item which will be filled in if possible
-     * @return True if an item was available, False otherwisw
-     */
-    bool readNB(T *result)
-    {
-        if ( pthread_mutex_trylock(&mtx) != 0 ) return false;
-		if ( rPtr == wPtr ) {
-            pthread_mutex_unlock(&mtx);
-            return false;
-        }
+	~CircularBuffer() {
+		delete[] buffer;
+	}
 
-        *result = buffer[rPtr];
-        rPtr = (rPtr +1 ) % buffSize;
+	void clearBuffer() {
+		std::unique_lock<std::mutex> lock(bufferMutex);
+		readIndex = writeIndex;
+		__sync_synchronize();
+	}
 
-        __sync_synchronize();
-		pthread_cond_signal(&cond_full);
-        pthread_mutex_unlock(&mtx);
-        return true;
-    }
+private:
+	std::mutex bufferMutex;
+	std::condition_variable bufferCondVar;
+	size_t buffSize;
+	T* buffer;
+	size_t readIndex;
+	size_t writeIndex;
 
 };
 
 }
 }
 }
-
-
 
 #endif
