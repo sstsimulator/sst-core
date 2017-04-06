@@ -25,6 +25,10 @@ StatisticBase::StatisticBase(BaseComponent* comp, const std::string& statName, c
     m_statParams = statParams;
 
     initializeProperties();
+
+    m_resetCountOnOutput = statParams.find<bool>("resetOnRead", false);
+    m_clearDataOnOutput = statParams.find<bool>("resetOnRead", false);
+
 }
 
 const std::string& StatisticBase::getCompName() const

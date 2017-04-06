@@ -309,7 +309,7 @@ bool StatisticProcessingEngine::addEventBasedStatistic(const UnitAlgebra& count,
         stat->setCollectionCountLimit(0); 
     }
     stat->setFlagResetCountOnOutput(true);
-    
+
     // Add the statistic to the Array of Event Based Statistics    
     m_EventStatisticArray.push_back(stat);
     return true;
