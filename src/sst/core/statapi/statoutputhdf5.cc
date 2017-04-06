@@ -67,7 +67,6 @@ void StatisticOutputHDF5::printUsage()
     out.output(" : Parameters:\n");
     out.output(" : help = Force Statistic Output to display usage\n");
     out.output(" : filepath = <Path to .h5 file> - Default is ./StatisticOutput.h5\n");
-    out.output(" : outputsimtime = 0 | 1 - Output Simulation Time - Default is 1\n");
 }
 
 
@@ -261,9 +260,10 @@ void StatisticOutputHDF5::StatisticInfo::registerField(StatisticFieldInfo *fi)
 
 static H5::DataType getMemTypeForStatType(StatisticOutput::fieldType_t type) {
     switch ( type ) {
+    default:
     case StatisticFieldInfo::UNDEFINED:
         Output::getDefaultObject().fatal(CALL_INFO, -1, "Unhandled UNDEFINED datatype.\n");
-        return NULL;
+        return H5::PredType::NATIVE_UINT32;
     case StatisticFieldInfo::UINT32: return H5::PredType::NATIVE_UINT32;
     case StatisticFieldInfo::UINT64: return H5::PredType::NATIVE_UINT64;
     case StatisticFieldInfo::INT32:  return H5::PredType::NATIVE_INT32;
@@ -276,16 +276,14 @@ static H5::DataType getMemTypeForStatType(StatisticOutput::fieldType_t type) {
 
 void StatisticOutputHDF5::StatisticInfo::finalizeCurrentStatistic()
 {
-    size_t nFields = typeList.size() -1;
+    size_t nFields = typeList.size();
     currentData.resize(nFields);
 
     /* Build HDF5 datatypes */
     size_t dataSize = currentData.size() * sizeof(StatData_u);
     memType = new H5::CompType(dataSize);
     for ( size_t i = 0 ; i < nFields ; i++ ) {
-        const std::string &name = (indexMap[i] == -1)
-            ? "SimTime"
-            : fieldNames[i];
+        const std::string &name = fieldNames[i];
         size_t offset = (char*)&currentData[i] - (char*)&currentData[0];
         H5::DataType type = getMemTypeForStatType(typeList[i]);
         memType->insertMember(name, offset, type);
@@ -402,23 +400,21 @@ void StatisticOutputHDF5::GroupInfo::registerField(StatisticFieldInfo *fi)
 
 void StatisticOutputHDF5::GroupInfo::finalizeCurrentStatistic()
 {
-    m_currentStat->finalizeRegistration();
     m_currentStat = NULL;
 }
 
 
 void StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
 {
+    for ( auto &stat : m_statGroups ) {
+        stat.second.finalizeRegistration();
+    }
     /* Create:
      *      /group/names
      *          Array of Component information
      *      /group/timestamp
      *          Array of timestamps for each entry
      */
-    H5::DSetCreatPropList cparms;
-    hsize_t chunk_dims[1] = {64};
-    cparms.setChunk(1, chunk_dims);
-    cparms.setDeflate(7);
 
     /* Create ComponentInfo */
     struct CInfo {
@@ -445,9 +441,20 @@ void StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
     infoType.insertMember("z", HOFFSET(CInfo, z), H5::PredType::NATIVE_DOUBLE);
     infoType.insertMember("name", HOFFSET(CInfo, name), H5::StrType(H5::PredType::C_S1, 224));
 
+    H5::DSetCreatPropList cparms;
+    hsize_t chunk_dims[1] = {std::min(m_statGroup->components.size(), (size_t)64)};
+    cparms.setChunk(1, chunk_dims);
+    cparms.setDeflate(7);
+
     hsize_t dim[1] = {m_statGroup->components.size()};
     H5::DataSpace space (1, dim);
-    H5::DataSet* dset = new H5::DataSet(getFile()->createDataSet("/" + getName() + "/componentInfo", infoType, space, cparms));
+    H5::DataSet* dset = NULL;
+    try {
+        dset = new H5::DataSet(getFile()->createDataSet("/" + getName() + "/componentInfo", infoType, space, cparms));
+    } catch (H5::FileIException ie) {
+        ie.printError(stderr);
+        throw ie;
+    }
 
     CInfo* infoArray = new CInfo[m_statGroup->components.size()];
     for ( size_t i = 0 ; i < m_components.size() ; i++ ) {

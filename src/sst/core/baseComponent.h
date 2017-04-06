@@ -263,7 +263,7 @@ public:
     SubComponent* loadNamedSubComponent(std::string name, Params& params);
 
 protected:
-    friend class StatisticProcessingEngine;
+    friend class SST::Statistics::StatisticProcessingEngine;
 
     /** Manually set the default detaulTimeBase */
     void setDefaultTimeBase(TimeConverter *tc) {

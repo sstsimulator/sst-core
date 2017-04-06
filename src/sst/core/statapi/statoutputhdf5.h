@@ -153,6 +153,7 @@ private:
         {
             typeList.push_back(StatisticFieldInfo::UINT64);
             indexMap.push_back(-1);
+            fieldNames.push_back("SimTime");
         }
         ~StatisticInfo() {
             if ( dataset ) delete dataset;
