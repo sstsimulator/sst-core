@@ -36,7 +36,7 @@ public:
 	}
 
 	bool try_lock() {
-		__sync_val_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED) != SST_CORE_INTERPROCESS_UNLOCKED;
+		return __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED);
 	}
 
 private:

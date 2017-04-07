@@ -107,6 +107,7 @@ nobase_dist_sst_HEADERS = \
 	interfaces/simpleMem.h \
 	interfaces/simpleNetwork.h \
 	interprocess/circularBuffer.h \
+	interprocess/sstmutex.h \
 	interprocess/ipctunnel.h \
 	rng/sstrng.h \
 	rng/marsaglia.h \

@@ -2,8 +2,7 @@
 #ifndef SST_CORE_INTERPROCESS_CIRCULARBUFFER_H
 #define SST_CORE_INTERPROCESS_CIRCULARBUFFER_H
 
-#include <mutex>
-#include <condition_variable>
+#include "sstmutex.h"
 
 namespace SST {
 namespace Core {
@@ -33,48 +32,56 @@ public:
     	}
 
 	T read() {
-		std::unique_lock<std::mutex> lock(bufferMutex);
-		bufferCondVar.wait(lock, [this]{ return (readIndex != writeIndex); });
+		T result;
+		bool readDone = false;
 
-		const T result = buffer[readIndex];
-		readIndex = (readIndex + 1) % buffSize;
+		while( (!readDone) ) {
+			bufferMutex.lock();
 
-		__sync_synchronize();
-		bufferCondVar.notify_all();
+			if( readIndex != writeIndex ) {
+				result = buffer[readIndex];
+				readIndex = (readIndex + 1) % buffSize;
+				readDone = true;
+			}
+
+			bufferMutex.unlock();
+		}
 
 		return result;
 	}
 
 	bool readNB(T* result) {
 		if( bufferMutex.try_lock() ) {
-			if( writeIndex == readIndex ) {
-				bufferMutex.unlock();
-				return false;
-			} else {
+			if( readIndex != writeIndex ) {
 				*result = buffer[readIndex];
 				readIndex = (readIndex + 1) % buffSize;
 
-				__sync_synchronize();
-				bufferCondVar.notify_all();
 				bufferMutex.unlock();
-
 				return true;
+			} else {
+				bufferMutex.unlock();
 			}
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 
 	void write(const T& v) {
-		std::unique_lock<std::mutex> lock(bufferMutex);
+		bool writeDone = false;
 
-		bufferCondVar.wait(lock, [this]{ return ((writeIndex + 1) % buffSize) != readIndex; });
+		while( (!writeDone) ) {
+			bufferMutex.lock();
 
-		buffer[writeIndex] = v;
-		writeIndex = (writeIndex + 1) % buffSize;
+			if( ((writeIndex + 1) % buffSize) != readIndex ) {
+				buffer[writeIndex] = v;
+				writeIndex = (writeIndex + 1) % buffSize;
 
-		__sync_synchronize();
-		bufferCondVar.notify_all();
+				writeDone = true;
+				__sync_synchronize();
+			}
+
+			bufferMutex.unlock();
+		}
 	}
 
 	~CircularBuffer() {
@@ -82,14 +89,14 @@ public:
 	}
 
 	void clearBuffer() {
-		std::unique_lock<std::mutex> lock(bufferMutex);
+		bufferMutex.lock();
 		readIndex = writeIndex;
 		__sync_synchronize();
+		bufferMutex.unlock();
 	}
 
 private:
-	std::mutex bufferMutex;
-	std::condition_variable bufferCondVar;
+	SSTMutex bufferMutex;
 	size_t buffSize;
 	T* buffer;
 	size_t readIndex;
