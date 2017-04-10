@@ -23,22 +23,12 @@
 #include <vector>
 #include <mutex>
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#endif
-
-#include <boost/multiprecision/cpp_dec_float.hpp>
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
-
-#include <boost/version.hpp>
+#include <sst/core/decimal_fixedpoint.h>
 
 namespace SST {
 
-typedef boost::multiprecision::number<boost::multiprecision::cpp_dec_float<40,boost::int16_t> > sst_dec_float;
+// typedef decimal_fixedpoint<3,3> sst_dec_float;
+typedef decimal_fixedpoint<3,3> sst_big_num;
 
 /**
  * Helper class internal to UnitAlgebra.
@@ -55,7 +45,7 @@ private:
     // Static data members and functions
     static std::recursive_mutex unit_lock;
     static std::map<std::string,unit_id_t> valid_base_units;
-    static std::map<std::string,std::pair<Units,sst_dec_float> > valid_compound_units;
+    static std::map<std::string,std::pair<Units,sst_big_num> > valid_compound_units;
     static std::map<unit_id_t,std::string> unit_strings;
     static unit_id_t count;
     static bool initialized;
@@ -68,7 +58,7 @@ private:
 
     void reduce();
     // Used in constructor to incrementally build up unit from string
-    void addUnit(std::string, sst_dec_float& multiplier, bool invert);
+    void addUnit(std::string, sst_big_num& multiplier, bool invert);
 
 public:
     // Static data members and functions
@@ -82,7 +72,7 @@ public:
      * \param units String representing the new unit
      * \param multiplier Value by which to multiply to get to this unit
      */
-    Units(std::string units, sst_dec_float& multiplier);
+    Units(std::string units, sst_big_num& multiplier);
     Units() {}
     virtual ~Units() {}
 
@@ -113,7 +103,7 @@ class UnitAlgebra : public SST::Core::Serialization::serializable,
                        public SST::Core::Serialization::serializable_type<UnitAlgebra> {
 private:
     Units unit;
-    sst_dec_float value;
+    sst_big_num value;
 
     static std::string trim(std::string str);
     void init(std::string val);
@@ -187,7 +177,7 @@ public:
      */
     bool hasUnits(std::string u) const;
     /** Return the raw value */
-    sst_dec_float getValue() const {return value;}
+    sst_big_num getValue() const {return value;}
     /** Return the rounded value as a 64bit integer */
     int64_t getRoundedValue() const;
 
@@ -201,14 +191,15 @@ public:
         switch(ser.mode()) {
         case SST::Core::Serialization::serializer::SIZER:
         case SST::Core::Serialization::serializer::PACK: {
-            std::string s = value.str(40, std::ios_base::fixed);
+            // std::string s = value.str(40, std::ios_base::fixed);
+            std::string s = value.toString(0);
             ser & s;
         break;
         }
         case SST::Core::Serialization::serializer::UNPACK: {
             std::string s;
             ser & s;
-            value = sst_dec_float(s);
+            value = sst_big_num(s);
             break;
         }
         }
