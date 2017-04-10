@@ -3,6 +3,9 @@
 #ifndef _H_SST_CORE_INTERPROCESS_MUTEX
 #define _H_SST_CORE_INTERPROCESS_MUTEX
 
+#include <immintrin.h>
+#include <sched.h>
+
 namespace SST {
 namespace Core {
 namespace Interprocess {
@@ -20,19 +23,23 @@ public:
 	void processorPause() {
 #if defined(__x86_64__)
 #pragma message "Compiling into NOP and PAUSE.."
-			asm volatile ( "nop\n" : : : "memory" );
-			asm volatile ( "nop\n" : : : "memory" );
-			asm volatile ( "nop\n" : : : "memory" );
-			asm volatile ( "nop\n" : : : "memory" );
-			asm volatile ( "pause\n" : : : "memory" );
+			_mm_pause();
 #else
 			// Put some pause code in here
 #endif
 	}
 
 	void lock() {
+		int loop_counter = 0;
+
 		while( ! __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED) ) {
-			processorPause();
+			if(loop_counter < 64) {
+				processorPause();
+			} else {
+				sched_yield();
+			}
+
+			loop_counter++;
 		}
 	}
 
