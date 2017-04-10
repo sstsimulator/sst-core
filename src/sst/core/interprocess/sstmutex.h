@@ -17,16 +17,22 @@ public:
 		lockVal = SST_CORE_INTERPROCESS_UNLOCKED;
 	}
 
-	void lock() {
-		while( __sync_val_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED) != SST_CORE_INTERPROCESS_UNLOCKED ) {
+	void processorPause() {
 #if defined(__x86_64__)
+#pragma message "Compiling into NOP and PAUSE.."
 			asm volatile ( "nop\n" : : : "memory" );
 			asm volatile ( "nop\n" : : : "memory" );
 			asm volatile ( "nop\n" : : : "memory" );
 			asm volatile ( "nop\n" : : : "memory" );
+			asm volatile ( "pause\n" : : : "memory" );
 #else
 			// Put some pause code in here
 #endif
+	}
+
+	void lock() {
+		while( ! __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED) ) {
+			processorPause();
 		}
 	}
 
@@ -36,7 +42,7 @@ public:
 	}
 
 	bool try_lock() {
-		return __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED);
+		return __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED );
 	}
 
 private:

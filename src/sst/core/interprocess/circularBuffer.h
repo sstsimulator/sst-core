@@ -14,8 +14,6 @@ class CircularBuffer {
 public:
 	CircularBuffer(size_t mSize = 0) {
 		buffSize = mSize;
-		buffer = new T[mSize];
-
 		readIndex = 0;
 		writeIndex = 0;
 	}
@@ -28,26 +26,24 @@ public:
         	}
 
 	        buffSize = bufferSize;
-		buffer = new T[buffSize];
+		__sync_synchronize();
     	}
 
 	T read() {
-		T result;
-		bool readDone = false;
-
-		while( (!readDone) ) {
+		while( true ) {
 			bufferMutex.lock();
 
 			if( readIndex != writeIndex ) {
-				result = buffer[readIndex];
+				const T result = buffer[readIndex];
 				readIndex = (readIndex + 1) % buffSize;
-				readDone = true;
+
+				bufferMutex.unlock();
+				return result;
 			}
 
 			bufferMutex.unlock();
+			bufferMutex.processorPause();
 		}
-
-		return result;
 	}
 
 	bool readNB(T* result) {
@@ -58,34 +54,34 @@ public:
 
 				bufferMutex.unlock();
 				return true;
-			} else {
-				bufferMutex.unlock();
-			}
+			} 
+
+			bufferMutex.unlock();
 		}
 
 		return false;
 	}
 
 	void write(const T& v) {
-		bool writeDone = false;
-
-		while( (!writeDone) ) {
+		while( true ) {
 			bufferMutex.lock();
 
 			if( ((writeIndex + 1) % buffSize) != readIndex ) {
 				buffer[writeIndex] = v;
 				writeIndex = (writeIndex + 1) % buffSize;
 
-				writeDone = true;
 				__sync_synchronize();
+				bufferMutex.unlock();
+				return;
 			}
 
 			bufferMutex.unlock();
+			bufferMutex.processorPause();
 		}
 	}
 
 	~CircularBuffer() {
-		delete[] buffer;
+
 	}
 
 	void clearBuffer() {
@@ -98,9 +94,9 @@ public:
 private:
 	SSTMutex bufferMutex;
 	size_t buffSize;
-	T* buffer;
 	size_t readIndex;
 	size_t writeIndex;
+	T buffer[0];
 
 };
 
