@@ -270,6 +270,36 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     return NULL;
 }
 
+static PyObject* compSetCoords(PyObject *self, PyObject *args)
+{
+    double x = 0.0;
+    double y = 0.0;
+    double z = 0.0;
+    if ( !PyArg_ParseTuple(args, "d|dd", &x, &y, &z) ) {
+        PyObject* list = NULL;
+        if ( PyArg_ParseTuple(args, "O!", &PyList_Type, &list) && PyList_Size(list) > 0 ) {
+            x = PyFloat_AsDouble(PyList_GetItem(list, 0));
+            if ( PyList_Size(list) > 1 ) y = PyFloat_AsDouble(PyList_GetItem(list, 1));
+            if ( PyList_Size(list) > 2 ) y = PyFloat_AsDouble(PyList_GetItem(list, 2));
+            if ( PyErr_Occurred() ) goto error;
+        } else if ( PyArg_ParseTuple(args, "O!", &PyTuple_Type, &list) && PyTuple_Size(list) > 0 ) {
+            x = PyFloat_AsDouble(PyTuple_GetItem(list, 0));
+            if ( PyList_Size(list) > 1 ) y = PyFloat_AsDouble(PyTuple_GetItem(list, 1));
+            if ( PyList_Size(list) > 2 ) y = PyFloat_AsDouble(PyTuple_GetItem(list, 2));
+            if ( PyErr_Occurred() ) goto error;
+        } else {
+error:
+            PyErr_SetString(PyExc_TypeError, "compSetCoords() expects arguments of 1-3 doubles, or a list/tuple of doubles");
+            return NULL;
+        }
+    }
+
+    ConfigComponent *c = getComp(self);
+    if ( NULL == c ) return NULL;
+    c->setCoordinates(x, y, z);
+
+    return PyInt_FromLong(0);
+}
 
 static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
 {
@@ -372,6 +402,9 @@ static PyMethodDef componentMethods[] = {
     {   "setSubComponent",
         compSetSubComponent, METH_VARARGS,
         "Bind a subcomponent to slot <name>, with type <type>"},
+    {   "setCoordinates",
+        compSetCoords, METH_VARARGS,
+        "Set (X,Y,Z) coordinates of this component, for use with visualization"},
     {   NULL, NULL, 0, NULL }
 };
 
@@ -483,6 +516,9 @@ static PyMethodDef subComponentMethods[] = {
     {   "setSubComponent",
         compSetSubComponent, METH_VARARGS,
         "Bind a subcomponent to slot <name>, with type <type>"},
+    {   "setCoordinates",
+        compSetCoords, METH_VARARGS,
+        "Set (X,Y,Z) coordinates of this component, for use with visualization"},
     {   NULL, NULL, 0, NULL }
 };
 

@@ -27,7 +27,9 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
     component(NULL),
     params(NULL),
     enabledStats(NULL)
-{ }
+{
+    coordinates[0] = coordinates[1] = coordinates[2] = 0.0;
+}
 
 
 ComponentInfo::ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent) :
@@ -38,7 +40,11 @@ ComponentInfo::ComponentInfo(const std::string &type, const Params *params, cons
     component(NULL),
     params(params),
     enabledStats(parent->enabledStats)
-{ }
+{
+    coordinates[0] = parent->coordinates[0];
+    coordinates[1] = parent->coordinates[1];
+    coordinates[2] = parent->coordinates[2];
+}
 
 
 ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
@@ -53,6 +59,10 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
     for ( auto &sc : ccomp->subComponents ) {
         subComponents.emplace(sc.first, ComponentInfo(&sc.second, new LinkMap()));
     }
+
+    coordinates[0] = ccomp->coords[0];
+    coordinates[1] = ccomp->coords[1];
+    coordinates[2] = ccomp->coords[2];
 }
 
 ComponentInfo::ComponentInfo(ComponentInfo &&o) :
@@ -66,6 +76,10 @@ ComponentInfo::ComponentInfo(ComponentInfo &&o) :
 {
     o.link_map = NULL;
     o.component = NULL;
+
+    coordinates[0] = o.coordinates[0];
+    coordinates[1] = o.coordinates[1];
+    coordinates[2] = o.coordinates[2];
 }
 
 

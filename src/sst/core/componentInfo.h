@@ -49,6 +49,7 @@ private:
     const Params *params;
 
     statEnableList_t * enabledStats;
+    double coordinates[3];
 
     inline void setComponent(BaseComponent* comp) { component = comp; }
 

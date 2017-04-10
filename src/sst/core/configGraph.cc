@@ -183,6 +183,13 @@ void ConfigComponent::setWeight(double w)
     }
 }
 
+void ConfigComponent::setCoordinates(double x, double y, double z)
+{
+    coords[0] = x;
+    coords[1] = y;
+    coords[2] = z;
+}
+
 
 void ConfigComponent::addParameter(const std::string &key, const std::string &value, bool overwrite)
 {
