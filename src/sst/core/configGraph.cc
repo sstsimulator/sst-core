@@ -419,10 +419,9 @@ ConfigGraph::checkForStructuralErrors()
                     if (!Factory::getFactory()->isPortNameValid(ccomp->type, link.port[j]) ) {
                         // For now this is not a fatal error
                         // found_error = true;
-                        output.output("WARNING:  Attempling to connect to undocumented port: %s, "
-                                      "in component %s of type %s.  The most likely "
-                                      "outcome is a segfault.\n", link.port[j].c_str(),
-                                      ccomp->name.c_str(), ccomp->type.c_str());
+                        output.fatal(CALL_INFO, 1, "ERROR:  Attempling to connect to unknown port: %s, "
+                                      "in component %s of type %s.\n",
+                                      link.port[j].c_str(), ccomp->name.c_str(), ccomp->type.c_str());
                         count--;
                     }
                 }
