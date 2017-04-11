@@ -263,10 +263,8 @@ public:
     SubComponent* loadNamedSubComponent(std::string name, Params& params);
 
     /** Retrieve the X,Y,Z coordinates of this component */
-    void getCoordinates(double *x, double *y, double *z) const {
-        if ( x != NULL ) *x = my_info->coordinates[0];
-        if ( y != NULL ) *y = my_info->coordinates[1];
-        if ( z != NULL ) *z = my_info->coordinates[2];
+    const std::vector<double>& getCoordinates() const {
+        return my_info->coordinates;
     }
 
 protected:

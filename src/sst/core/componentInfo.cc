@@ -26,9 +26,9 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
     link_map(NULL),
     component(NULL),
     params(NULL),
-    enabledStats(NULL)
+    enabledStats(NULL),
+    coordinates(3, 0.0)
 {
-    coordinates[0] = coordinates[1] = coordinates[2] = 0.0;
 }
 
 
@@ -39,11 +39,9 @@ ComponentInfo::ComponentInfo(const std::string &type, const Params *params, cons
     link_map(parent->link_map),
     component(NULL),
     params(params),
-    enabledStats(parent->enabledStats)
+    enabledStats(parent->enabledStats),
+    coordinates(parent->coordinates)
 {
-    coordinates[0] = parent->coordinates[0];
-    coordinates[1] = parent->coordinates[1];
-    coordinates[2] = parent->coordinates[2];
 }
 
 
@@ -54,15 +52,12 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
     link_map(link_map),
     component(NULL),
     params(&ccomp->params),
-    enabledStats(&ccomp->enabledStatistics)
+    enabledStats(&ccomp->enabledStatistics),
+    coordinates(ccomp->coords)
 {
     for ( auto &sc : ccomp->subComponents ) {
         subComponents.emplace(sc.first, ComponentInfo(&sc.second, new LinkMap()));
     }
-
-    coordinates[0] = ccomp->coords[0];
-    coordinates[1] = ccomp->coords[1];
-    coordinates[2] = ccomp->coords[2];
 }
 
 ComponentInfo::ComponentInfo(ComponentInfo &&o) :
@@ -72,14 +67,11 @@ ComponentInfo::ComponentInfo(ComponentInfo &&o) :
     link_map(o.link_map),
     component(o.component),
     params(o.params),
-    enabledStats(o.enabledStats)
+    enabledStats(o.enabledStats),
+    coordinates(o.coordinates)
 {
     o.link_map = NULL;
     o.component = NULL;
-
-    coordinates[0] = o.coordinates[0];
-    coordinates[1] = o.coordinates[1];
-    coordinates[2] = o.coordinates[2];
 }
 
 

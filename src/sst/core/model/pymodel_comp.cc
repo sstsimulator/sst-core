@@ -272,21 +272,21 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
 
 static PyObject* compSetCoords(PyObject *self, PyObject *args)
 {
-    double x = 0.0;
-    double y = 0.0;
-    double z = 0.0;
-    if ( !PyArg_ParseTuple(args, "d|dd", &x, &y, &z) ) {
+    std::vector<double> coords(3, 0.0);
+    if ( !PyArg_ParseTuple(args, "d|dd", &coords[0], &coords[1], &coords[2]) ) {
         PyObject* list = NULL;
         if ( PyArg_ParseTuple(args, "O!", &PyList_Type, &list) && PyList_Size(list) > 0 ) {
-            x = PyFloat_AsDouble(PyList_GetItem(list, 0));
-            if ( PyList_Size(list) > 1 ) y = PyFloat_AsDouble(PyList_GetItem(list, 1));
-            if ( PyList_Size(list) > 2 ) y = PyFloat_AsDouble(PyList_GetItem(list, 2));
-            if ( PyErr_Occurred() ) goto error;
+            coords.clear();
+            for ( Py_ssize_t i = 0 ; i < PyList_Size(list) ; i++ ) {
+                coords.push_back(PyFloat_AsDouble(PyList_GetItem(list, 0)));
+                if ( PyErr_Occurred() ) goto error;
+            }
         } else if ( PyArg_ParseTuple(args, "O!", &PyTuple_Type, &list) && PyTuple_Size(list) > 0 ) {
-            x = PyFloat_AsDouble(PyTuple_GetItem(list, 0));
-            if ( PyList_Size(list) > 1 ) y = PyFloat_AsDouble(PyTuple_GetItem(list, 1));
-            if ( PyList_Size(list) > 2 ) y = PyFloat_AsDouble(PyTuple_GetItem(list, 2));
-            if ( PyErr_Occurred() ) goto error;
+            coords.clear();
+            for ( Py_ssize_t i = 0 ; i < PyTuple_Size(list) ; i++ ) {
+                coords.push_back(PyFloat_AsDouble(PyTuple_GetItem(list, 0)));
+                if ( PyErr_Occurred() ) goto error;
+            }
         } else {
 error:
             PyErr_SetString(PyExc_TypeError, "compSetCoords() expects arguments of 1-3 doubles, or a list/tuple of doubles");
@@ -296,7 +296,7 @@ error:
 
     ConfigComponent *c = getComp(self);
     if ( NULL == c ) return NULL;
-    c->setCoordinates(x, y, z);
+    c->setCoordinates(coords);
 
     return PyInt_FromLong(0);
 }

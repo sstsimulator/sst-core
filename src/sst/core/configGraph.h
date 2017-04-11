@@ -203,7 +203,7 @@ public:
     Params                        params;            /*!< Set of Parameters */
     std::vector<Statistics::StatisticInfo> enabledStatistics; /*!< List of statistics to be enabled */
     std::vector<std::pair<std::string, ConfigComponent> > subComponents; /*!< List of subcomponents */
-    double                        coords[3];
+    std::vector<double>           coords;
 
     inline const ComponentId_t& key()const { return id; }
 
@@ -218,7 +218,7 @@ public:
 
     void setRank(RankInfo r);
     void setWeight(double w);
-    void setCoordinates(double x, double y, double z);
+    void setCoordinates(const std::vector<double> &c);
     void addParameter(const std::string &key, const std::string &value, bool overwrite);
     ConfigComponent* addSubComponent(ComponentId_t, const std::string &name, const std::string &type);
     ConfigComponent* findSubComponent(ComponentId_t);
@@ -255,7 +255,7 @@ private:
         weight(weight),
         rank(rank)
     {
-        coords[0] = coords[1] = coords[2] = 0.0;
+        coords.resize(3, 0.0);
     }
 
 

@@ -49,7 +49,7 @@ private:
     const Params *params;
 
     statEnableList_t * enabledStats;
-    double coordinates[3];
+    std::vector<double> coordinates;
 
     inline void setComponent(BaseComponent* comp) { component = comp; }
 

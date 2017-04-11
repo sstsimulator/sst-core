@@ -459,11 +459,10 @@ void StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
 
         idVec.push_back(comp->getId());
         nameVec.push_back(comp->getName().c_str());
-        double x = 0.0, y = 0.0, z = 0.0;
-        comp->getCoordinates(&x, &y, &z);
-        xVec.push_back(x);
-        yVec.push_back(y);
-        zVec.push_back(z);
+        const std::vector<double> &coords = comp->getCoordinates();
+        xVec.push_back(coords[0]);
+        yVec.push_back(coords[1]);
+        zVec.push_back(coords[2]);
     }
 
     idSet->write(idVec.data(), H5::PredType::NATIVE_UINT64);
