@@ -13,6 +13,8 @@
 #ifndef _H_SST_CORE_ACCUMULATOR_STATISTIC_
 #define _H_SST_CORE_ACCUMULATOR_STATISTIC_
 
+#include <cmath>
+
 #include <sst/core/sst_types.h>
 
 #include <sst/core/statapi/statbase.h>
