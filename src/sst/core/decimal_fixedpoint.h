@@ -101,9 +101,9 @@ private:
 
         // See if we have an exponent
         size_t exponent_pos = init.find_last_of("eE");
-        double exponent = 0;
+        uint32_t exponent = 0;
         if ( exponent_pos != init.npos ) {
-            exponent = SST::Core::from_string<int>(init.substr(exponent_pos+1,init.npos));
+            exponent = static_cast<uint32_t>(SST::Core::from_string<double>(init.substr(exponent_pos+1,init.npos)));
             init = init.substr(0,exponent_pos);
         }
 
@@ -624,6 +624,12 @@ public:
                     stream << static_cast<uint32_t>(digits[i]);
                     zeros = 0;
                 }
+            }
+            std::string ret = stream.str();
+            if ( ret[ret.length()-1] == '.' ) {
+                ret = ret.substr(0,ret.length()-1);
+                stream.str(std::string(""));
+                stream << ret;
             }
             stream << "e-" << std::setfill('0') << std::setw(2) << exponent;
         }
