@@ -26,8 +26,10 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
     link_map(NULL),
     component(NULL),
     params(NULL),
-    enabledStats(NULL)
-{ }
+    enabledStats(NULL),
+    coordinates(3, 0.0)
+{
+}
 
 
 ComponentInfo::ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent) :
@@ -37,8 +39,10 @@ ComponentInfo::ComponentInfo(const std::string &type, const Params *params, cons
     link_map(parent->link_map),
     component(NULL),
     params(params),
-    enabledStats(parent->enabledStats)
-{ }
+    enabledStats(parent->enabledStats),
+    coordinates(parent->coordinates)
+{
+}
 
 
 ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
@@ -48,7 +52,8 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
     link_map(link_map),
     component(NULL),
     params(&ccomp->params),
-    enabledStats(&ccomp->enabledStatistics)
+    enabledStats(&ccomp->enabledStatistics),
+    coordinates(ccomp->coords)
 {
     for ( auto &sc : ccomp->subComponents ) {
         subComponents.emplace(sc.first, ComponentInfo(&sc.second, new LinkMap()));
@@ -62,7 +67,8 @@ ComponentInfo::ComponentInfo(ComponentInfo &&o) :
     link_map(o.link_map),
     component(o.component),
     params(o.params),
-    enabledStats(o.enabledStats)
+    enabledStats(o.enabledStats),
+    coordinates(o.coordinates)
 {
     o.link_map = NULL;
     o.component = NULL;

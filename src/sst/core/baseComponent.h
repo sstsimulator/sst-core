@@ -262,6 +262,11 @@ public:
     SubComponent* loadNamedSubComponent(std::string name);
     SubComponent* loadNamedSubComponent(std::string name, Params& params);
 
+    /** Retrieve the X,Y,Z coordinates of this component */
+    const std::vector<double>& getCoordinates() const {
+        return my_info->coordinates;
+    }
+
 protected:
     friend class SST::Statistics::StatisticProcessingEngine;
 

@@ -141,6 +141,7 @@ ConfigComponent::cloneWithoutLinks() const
     ret.rank = rank;
     ret.params = params;
     ret.enabledStatistics = enabledStatistics;
+    ret.coords = coords;
     for ( auto &i : subComponents ) {
         ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinks());
     }
@@ -158,6 +159,7 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.weight = weight;
     ret.rank = rank;
     ret.enabledStatistics = enabledStatistics;
+    ret.coords = coords;
     for ( auto &i : subComponents ) {
         ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinksOrParams());
     }
@@ -181,6 +183,14 @@ void ConfigComponent::setWeight(double w)
     for ( auto &i : subComponents ) {
         i.second.setWeight(w);
     }
+}
+
+void ConfigComponent::setCoordinates(const std::vector<double> &c)
+{
+    coords = c;
+    /* Maintain minimum of 3D information */
+    while ( coords.size() < 3 )
+        coords.push_back(0.0);
 }
 
 

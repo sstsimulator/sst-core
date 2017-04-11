@@ -410,61 +410,72 @@ void StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
         stat.second.finalizeRegistration();
     }
     /* Create:
-     *      /group/names
-     *          Array of Component information
+     *      /group/components
+     *          Arrays of Component information
+     *          /ids
+     *          /names
+     *          /coord_x
+     *          /coord_y
+     *          /coord_z
      *      /group/timestamp
      *          Array of timestamps for each entry
      */
 
-    /* Create ComponentInfo */
-    struct CInfo {
-        uint64_t id;
-        double x;
-        double y;
-        double z;
-        char name[224]; /*  256 - 8 * 4 */
-        CInfo(){}
-        CInfo(BaseComponent* comp)
-        {
-            id = comp->getId();
-            x = 0.0;
-            y = 0.0;
-            z = 0.0;
-            strncpy(name, comp->getName().c_str(), 223);
-            name[223] = '\0';
-        }
-    };
-    H5::CompType infoType(sizeof(CInfo));
-    infoType.insertMember("id", HOFFSET(CInfo, id), H5::PredType::NATIVE_UINT64);
-    infoType.insertMember("x", HOFFSET(CInfo, x), H5::PredType::NATIVE_DOUBLE);
-    infoType.insertMember("y", HOFFSET(CInfo, y), H5::PredType::NATIVE_DOUBLE);
-    infoType.insertMember("z", HOFFSET(CInfo, z), H5::PredType::NATIVE_DOUBLE);
-    infoType.insertMember("name", HOFFSET(CInfo, name), H5::StrType(H5::PredType::C_S1, 224));
+
+    /* Create components sub-group */
+    std::string groupName = "/" + getName() + "/components";
+    try {
+        H5::Group* statGroup = new H5::Group( getFile()->createGroup(groupName) );
+        statGroup->close();
+        delete statGroup;
+    } catch (H5::FileIException ie) {
+        /* Ignore - group already exists. */
+    }
 
     H5::DSetCreatPropList cparms;
     hsize_t chunk_dims[1] = {std::min(m_statGroup->components.size(), (size_t)64)};
     cparms.setChunk(1, chunk_dims);
     cparms.setDeflate(7);
 
-    hsize_t dim[1] = {m_statGroup->components.size()};
-    H5::DataSpace space (1, dim);
-    H5::DataSet* dset = NULL;
-    try {
-        dset = new H5::DataSet(getFile()->createDataSet("/" + getName() + "/componentInfo", infoType, space, cparms));
-    } catch (H5::FileIException ie) {
-        ie.printError(stderr);
-        throw ie;
-    }
 
-    CInfo* infoArray = new CInfo[m_statGroup->components.size()];
-    for ( size_t i = 0 ; i < m_components.size() ; i++ ) {
+
+    /* Create arrays */
+    hsize_t infoDim[1] = {m_statGroup->components.size()};
+    H5::DataSpace infoSpace(1, infoDim);
+    H5::DataSet *idSet = new H5::DataSet(getFile()->createDataSet(groupName + "/ids", H5::PredType::NATIVE_UINT64, infoSpace, cparms));
+    H5::DataSet *nameSet = new H5::DataSet(getFile()->createDataSet(groupName + "/names", H5::StrType(H5::PredType::C_S1, H5T_VARIABLE), infoSpace, cparms));
+    H5::DataSet *coordXSet = new H5::DataSet(getFile()->createDataSet(groupName + "/coord_x", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
+    H5::DataSet *coordYSet = new H5::DataSet(getFile()->createDataSet(groupName + "/coord_y", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
+    H5::DataSet *coordZSet = new H5::DataSet(getFile()->createDataSet(groupName + "/coord_z", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
+
+    std::vector<uint64_t> idVec;
+    std::vector<const char*> nameVec;
+    std::vector<double> xVec;
+    std::vector<double> yVec;
+    std::vector<double> zVec;
+
+    for ( size_t i = 0 ; i < infoDim[0] ; i++ ) {
         BaseComponent* comp = m_components.at(i);
-        infoArray[i] = CInfo(comp);
+
+        idVec.push_back(comp->getId());
+        nameVec.push_back(comp->getName().c_str());
+        const std::vector<double> &coords = comp->getCoordinates();
+        xVec.push_back(coords[0]);
+        yVec.push_back(coords[1]);
+        zVec.push_back(coords[2]);
     }
 
-    dset->write(infoArray, infoType);
-    delete [] infoArray;
+    idSet->write(idVec.data(), H5::PredType::NATIVE_UINT64);
+    nameSet->write(nameVec.data(), H5::StrType(H5::PredType::C_S1, H5T_VARIABLE));
+    coordXSet->write(xVec.data(), H5::PredType::NATIVE_DOUBLE);
+    coordYSet->write(yVec.data(), H5::PredType::NATIVE_DOUBLE);
+    coordZSet->write(zVec.data(), H5::PredType::NATIVE_DOUBLE);
 
+    delete idSet;
+    delete nameSet;
+    delete coordXSet;
+    delete coordYSet;
+    delete coordZSet;
 
     /* Create timestamp array */
     hsize_t tdim[1] = {0};
