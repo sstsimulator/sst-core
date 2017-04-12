@@ -353,6 +353,27 @@ public:
             ret += ( static_cast<int64_t>(data[fraction_words + i]) * factor );
             factor *= storage_radix;
         }
+
+        // Check to see if we need to round
+        bool round = false;
+        if ( data[fraction_words - 1] > ( storage_radix / 2 ) ) {
+            round = true;
+        }
+        else if ( data[fraction_words - 1] == ( storage_radix / 2 ) ) {
+            for ( int i = fraction_words - 2; i >= 0; --i ) {
+                if ( data[i] != 0 ) {
+                    round = true;
+                    break;
+                }
+            }
+
+            if ( !round ) {
+                // There were no extra digits, so we need to do a
+                // round to nearest even.
+                if ( ret % 2 == 1 ) round = true;
+            }
+        }
+        if ( round ) ++ret;
         if ( negative ) ret = -ret;
         return ret;
     }
@@ -421,12 +442,6 @@ public:
             }
         }
 
-        // std::cout << std::endl;
-        // for ( int i = num_digits - 1; i >= 0; --i ) {
-        //     std::cout << static_cast<uint32_t>(digits[i]);
-        // }
-        // std::cout << std::endl;
-
         // Find the first non-zero
         int first_non_zero = -1;
         for ( int i = num_digits - 1; i >= 0; --i ) {
@@ -436,8 +451,6 @@ public:
             }
         }
 
-        // std::cout << "first_non_zero: " << first_non_zero << std::endl;
-        
         // If no non-zeros, return 0
         if ( first_non_zero == -1 ) return "0";
 
@@ -445,8 +458,6 @@ public:
         int round_position = first_non_zero - precision;
         bool round = false;
 
-        // std::cout << "round_position: " << round_position << std::endl;
-        
         // If round_position < 0 then we have already gotten all the
         // digits that exist, so no need to round
         if ( round_position >= 0 ) {
@@ -483,12 +494,6 @@ public:
             }
         }
 
-        // std::cout << std::endl;
-        // for ( int i = num_digits - 1; i >= 0; --i ) {
-        //     std::cout << static_cast<uint32_t>(digits[i]);
-        // }
-        // std::cout << std::endl;
-        
         // print possible negative sign
         if ( negative ) stream << '-';
         
@@ -514,7 +519,6 @@ public:
 
         // Need to switch to exponent notation for numbers > 1
         if ( first_non_zero >= ((fraction_words*digits_per_word) + precision) ) {
-            // std::cout << "option 1: first_non_zero = " << first_non_zero << std::endl;
             // Need to use exponent notation
             int exponent = first_non_zero - (fraction_words * digits_per_word );
             stream << static_cast<uint32_t>(digits[first_non_zero]) << ".";
@@ -544,7 +548,6 @@ public:
         
         // Decimal point is within the string of digits to print
         else if ( first_non_zero >= (fraction_words * digits_per_word)) {
-            // std::cout << "option 2: first_non_zero = " << first_non_zero << std::endl;
             int zeros = 0;
             for ( int i = first_non_zero; i >= (fraction_words * digits_per_word); --i ) {
                 // Digits before the decimal point
@@ -580,7 +583,6 @@ public:
         // yet.  We are willing to print three leading zeros before
         // switching to exponent notation
         else if ( first_non_zero > (fraction_words * digits_per_word) - 5 ) {
-            // std::cout << "option 3: first_non_zero = " << first_non_zero << std::endl;
             stream << "0.";
             for ( int i = (fraction_words * digits_per_word) - 1; i > first_non_zero; --i ) {
                 stream << "0";
@@ -604,7 +606,6 @@ public:
         }
         // Switch to exponent notation
         else {
-            // std::cout << "option 4: first_non_zero = " << first_non_zero << std::endl;
             // Need to use exponent notation
             int exponent = first_non_zero - (fraction_words * digits_per_word );
             exponent = -exponent;
