@@ -3,7 +3,10 @@
 #ifndef _H_SST_CORE_INTERPROCESS_MUTEX
 #define _H_SST_CORE_INTERPROCESS_MUTEX
 
+#if defined(__x86_64__)
 #include <immintrin.h>
+#endif
+
 #include <sched.h>
 #include <time.h>
 
