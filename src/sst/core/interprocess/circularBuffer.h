@@ -30,6 +30,8 @@ public:
     	}
 
 	T read() {
+		int loop_counter = 0;
+
 		while( true ) {
 			bufferMutex.lock();
 
@@ -42,7 +44,7 @@ public:
 			}
 
 			bufferMutex.unlock();
-			bufferMutex.processorPause();
+			bufferMutex.processorPause(loop_counter++);
 		}
 	}
 
@@ -63,6 +65,8 @@ public:
 	}
 
 	void write(const T& v) {
+		int loop_counter = 0;
+	
 		while( true ) {
 			bufferMutex.lock();
 
@@ -76,7 +80,7 @@ public:
 			}
 
 			bufferMutex.unlock();
-			bufferMutex.processorPause();
+			bufferMutex.processorPause(loop_counter++);
 		}
 	}
 

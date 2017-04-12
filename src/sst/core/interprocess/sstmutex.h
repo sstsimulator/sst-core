@@ -5,6 +5,7 @@
 
 #include <immintrin.h>
 #include <sched.h>
+#include <time.h>
 
 namespace SST {
 namespace Core {
@@ -20,25 +21,30 @@ public:
 		lockVal = SST_CORE_INTERPROCESS_UNLOCKED;
 	}
 
-	void processorPause() {
+	void processorPause(int currentCount) {
+		if( currentCount < 64 ) {
 #if defined(__x86_64__)
-#pragma message "Compiling into NOP and PAUSE.."
 			_mm_pause();
 #else
 			// Put some pause code in here
 #endif
+		} else if( currentCount < 256 ) {
+			sched_yield();
+		} else {
+			struct timespec sleepPeriod;
+			sleepPeriod.tv_sec = 0;
+			sleepPeriod.tv_nsec = 100;
+
+			struct timespec interPeriod;
+			nanosleep(&sleepPeriod, &interPeriod);
+		}
 	}
 
 	void lock() {
 		int loop_counter = 0;
 
 		while( ! __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED) ) {
-			if(loop_counter < 64) {
-				processorPause();
-			} else {
-				sched_yield();
-			}
-
+			processorPause(loop_counter);
 			loop_counter++;
 		}
 	}
@@ -53,7 +59,7 @@ public:
 	}
 
 private:
-	volatile int lockVal __attribute__((aligned(64)));
+	volatile int lockVal;
 
 };
 
