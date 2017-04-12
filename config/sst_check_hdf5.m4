@@ -19,11 +19,11 @@ AC_DEFUN([SST_CHECK_HDF5],
           ],
           [
             AC_PATH_PROG([PKGCONFIG], [pkg-config])
-            AS_IF([test ! -z ${PKGCONFIG}],
+            AS_IF([test ! -z "${PKGCONFIG}" ],
                 [
                     echo "PKGCONFIG = $PKGCONFIG"
-                    HDF5_LDFLAGS=`${PKGCONFIG} --libs hdf5`
-                    HDF5_CFLAGS=`${PKGCONFIG} --cflags hdf5`
+                    HDF5_LDFLAGS=`${PKGCONFIG} hdf5 && ${PKGCONFIG} --libs hdf5`
+                    HDF5_CFLAGS=`${PKGCONFIG} hdf5 && ${PKGCONFIG} --cflags hdf5`
                 ],
                 [
                     HDF5_CFLAGS=
@@ -36,14 +36,29 @@ AC_DEFUN([SST_CHECK_HDF5],
   )
 
   CPPFLAGS="${CPPFLAGS} ${HDF5_CFLAGS}"
-  LDFLAGS="${LDFLAGS} ${HDF5_LDFLAGS}"
+  LDFLAGS="${LDFLAGS} ${HDF5_LDFLAGS} -lhdf5 -lhdf5_cpp"
   
   AC_LANG_PUSH([C++])
   AC_CHECK_HEADER([H5Cpp.h], [], [sst_check_hdf5_happy="no"])
-  AC_LANG_POP([C++])
-
   AC_CHECK_LIB([hdf5], [H5F_open],
     [HDF5_LIBS="-lhdf5 -lhdf5_cpp"], [sst_check_hdf5_happy="no"])
+
+  AC_MSG_CHECKING("For C++ ABI compatibility with HDF5Cpp library")
+  AC_LINK_IFELSE(
+    [AC_LANG_PROGRAM(
+        [#include <H5Cpp.h>],
+        [
+            std::string name = "";
+            H5::H5File file(name, H5F_ACC_TRUNC);
+        ]
+    )],
+    [],
+    [sst_check_hdf5_happy="no"]
+  )
+  AC_MSG_RESULT($sst_check_hdf5_happy)
+
+  AC_LANG_POP([C++])
+
 
   CPPFLAGS="$CPPFLAGS_saved"
   LDFLAGS="$LDFLAGS_saved"

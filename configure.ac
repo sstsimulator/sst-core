@@ -226,6 +226,11 @@ if test "x$sst_check_zoltan_happy" = "xyes" ; then
 else
     printf "%38s : No\n" "Zoltan Partitioner"
 fi
+if test "x$sst_check_hdf5_happy" = "xyes" ; then
+    printf "%38s : YES\n" "HDF5 Support"
+else
+    printf "%38s : No\n" "HDF5 Support"
+fi
 
 echo "-------------------------------------------------------" 
 
