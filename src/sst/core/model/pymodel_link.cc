@@ -71,6 +71,7 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
 
     if ( !PyArg_ParseTuple(t0, "O!s|s",
                 &PyModel_ComponentType, &c0, &port0, &lat0) )
+        PyErr_Clear();
         if ( !PyArg_ParseTuple(t0, "O!s|s",
                     &PyModel_SubComponentType, &c0, &port0, &lat0) )
         return NULL;
@@ -79,6 +80,7 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
 
     if ( !PyArg_ParseTuple(t1, "O!s|s",
                 &PyModel_ComponentType, &c1, &port1, &lat1) )
+        PyErr_Clear();
         if ( !PyArg_ParseTuple(t1, "O!s|s",
                     &PyModel_SubComponentType, &c1, &port1, &lat1) )
         return NULL;
