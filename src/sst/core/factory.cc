@@ -405,7 +405,7 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     // ElementLibraryDatabase
     LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
     if ( lib != NULL ) {
-        ComponentElementInfo* comp = lib->getComponent(elem);
+        BaseComponentElementInfo* comp = lib->getComponentOrSubComponent(elem);
         if ( comp != NULL ) {
             for ( auto item : comp->getValidStats() ) {
                 if ( statisticName == item.name ) {
@@ -419,19 +419,29 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     // now look for component
     std::string tmp = elemlib + "." + elem;
 
-    eic_map_t::iterator eii = found_components.find(tmp);
-    if (eii == found_components.end()) {
+    eic_map_t::iterator eici = found_components.find(tmp);
+    eis_map_t::iterator eisi = found_subcomponents.find(tmp);
+    if (eici != found_components.end()) {
+        const ComponentInfo ci = eici->second;
+
+        // See if the statistic exists, if so return the enable level
+        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+            if (statisticName == ci.statNames[x]) {
+                return ci.statEnableLevels[x];
+            }
+        }
+    } else if (eisi != found_subcomponents.end()) {
+        const SubComponentInfo ci = eisi->second;
+
+        // See if the statistic exists, if so return the enable level
+        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+            if (statisticName == ci.statNames[x]) {
+                return ci.statEnableLevels[x];
+            }
+        }
+    } else {
         out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return 0;
-    }
-
-    const ComponentInfo ci = eii->second;
-
-    // See if the statistic exists, if so return the enable level
-    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-        if (statisticName == ci.statNames[x]) {
-            return ci.statEnableLevels[x];
-        }
     }
     return 0;
 }
@@ -454,7 +464,7 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
 
     LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
     if ( lib != NULL ) {
-        ComponentElementInfo* comp = lib->getComponent(elem);
+        BaseComponentElementInfo* comp = lib->getComponentOrSubComponent(elem);
         if ( comp != NULL ) {
             for ( auto item : comp->getValidStats() ) {
                 if ( statisticName == item.name ) {
@@ -467,19 +477,29 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
 
     // now look for component
     std::string tmp = elemlib + "." + elem;
-    eic_map_t::iterator eii = found_components.find(tmp);
-    if (eii == found_components.end()) {
+    eic_map_t::iterator eici = found_components.find(tmp);
+    eis_map_t::iterator eisi = found_subcomponents.find(tmp);
+    if (eici != found_components.end()) {
+        const ComponentInfo ci = eici->second;
+
+        // See if the statistic exists, if so return the enable level
+        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+            if (statisticName == ci.statNames[x]) {
+                return ci.statUnits[x];
+            }
+        }
+    } else if (eisi != found_subcomponents.end()) {
+        const SubComponentInfo ci = eisi->second;
+
+        // See if the statistic exists, if so return the enable level
+        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+            if (statisticName == ci.statNames[x]) {
+                return ci.statUnits[x];
+            }
+        }
+    } else {
         out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return 0;
-    }
-
-    const ComponentInfo ci = eii->second;
-
-    // See if the statistic exists, if so return the enable level
-    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-        if (statisticName == ci.statNames[x]) {
-            return ci.statUnits[x];
-        }
     }
     return 0;
 }
