@@ -3,10 +3,6 @@
 #ifndef _H_SST_CORE_INTERPROCESS_MUTEX
 #define _H_SST_CORE_INTERPROCESS_MUTEX
 
-#if defined(__x86_64__)
-#include <immintrin.h>
-#endif
-
 #include <sched.h>
 #include <time.h>
 
@@ -27,7 +23,7 @@ public:
 	void processorPause(int currentCount) {
 		if( currentCount < 64 ) {
 #if defined(__x86_64__)
-			_mm_pause();
+			asm volatile ("pause" : : : "memory");
 #else
 			// Put some pause code in here
 #endif
