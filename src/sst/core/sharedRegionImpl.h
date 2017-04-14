@@ -13,6 +13,7 @@
 #define SST_CORE_CORE_SHAREDREGIONIMPL_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <string>
 #include <vector>
@@ -69,7 +70,7 @@ public:
         RegionMergeInfo(int rank, const std::string &key) : rank(rank), key(key) { }
         virtual ~RegionMergeInfo() { }
 
-        virtual bool merge(RegionInfo *ri __attribute__((unused))) { return true; }
+        virtual bool merge(RegionInfo *UNUSED(ri)) { return true; }
         const std::string& getKey() const { return key; }
 
         void serialize_order(SST::Core::Serialization::serializer &ser) override {

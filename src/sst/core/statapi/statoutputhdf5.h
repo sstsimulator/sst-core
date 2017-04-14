@@ -120,11 +120,11 @@ private:
         H5::H5File* getFile() { return file; }
         virtual bool isGroup() const = 0;
 
-        virtual void setCurrentStatistic(StatisticBase *stat __attribute__((unused))) { }
+        virtual void setCurrentStatistic(StatisticBase *UNUSED(stat)) { }
         virtual void registerField(StatisticFieldInfo *fi) = 0;
         virtual void finalizeCurrentStatistic() = 0;
 
-        virtual void beginGroupRegistration(StatisticGroup *group __attribute__((unused))) { }
+        virtual void beginGroupRegistration(StatisticGroup *UNUSED(group)) { }
         virtual void finalizeGroupRegistration() { }
 
 
@@ -214,7 +214,7 @@ private:
 
     public:
         GroupInfo(StatisticGroup *group, H5::H5File *file);
-        void beginGroupRegistration(StatisticGroup *group __attribute__((unused))) override { }
+        void beginGroupRegistration(StatisticGroup *UNUSED(group)) override { }
         void setCurrentStatistic(StatisticBase *stat) override;
         void registerField(StatisticFieldInfo *fi) override;
         void finalizeCurrentStatistic() override;

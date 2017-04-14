@@ -11,6 +11,7 @@
 
 #include "sst_config.h"
 
+#include <sst/core/warnmacros.h>
 #include "sst/core/syncManager.h"
 
 #include "sst/core/exit.h"
@@ -40,10 +41,10 @@ public:
     ~EmptyRankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(const RankInfo& to_rank __attribute__((unused)), const RankInfo& from_rank __attribute__((unused)), LinkId_t link_id __attribute__((unused)), Link* link __attribute__((unused))) override { return NULL; }
+    ActivityQueue* registerLink(const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), LinkId_t UNUSED(link_id), Link* UNUSED(link)) override { return NULL; }
 
-    void execute(int thread __attribute__((unused))) override {}
-    void exchangeLinkInitData(int thread __attribute__((unused)), std::atomic<int>& msg_count __attribute__((unused))) override {}
+    void execute(int UNUSED(thread)) override {}
+    void exchangeLinkInitData(int UNUSED(thread), std::atomic<int>& UNUSED(msg_count)) override {}
     void finalizeLinkConfigurations() override {}
 
     SimTime_t getNextSyncTime() override { return nextSyncTime; }
@@ -67,12 +68,12 @@ public:
     void finalizeLinkConfigurations() override {}
 
     /** Register a Link which this Sync Object is responsible for */
-    void registerLink(LinkId_t link_id __attribute__((unused)), Link* link __attribute__((unused))) override {}
-    ActivityQueue* getQueueForThread(int tid __attribute__((unused))) override { return NULL; }
+    void registerLink(LinkId_t UNUSED(link_id), Link* UNUSED(link)) override {}
+    ActivityQueue* getQueueForThread(int UNUSED(tid)) override { return NULL; }
 };
 
 
-SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& interThreadLatencies __attribute__((unused))) :
+SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& UNUSED(interThreadLatencies)) :
     Action(),
     rank(rank),
     num_ranks(num_ranks),

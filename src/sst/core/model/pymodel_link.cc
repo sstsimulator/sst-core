@@ -17,6 +17,7 @@
 #include <string.h>
 #include <sstream>
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/model/pymodel.h>
 #include <sst/core/model/pymodel_comp.h>
 #include <sst/core/model/pymodel_link.h>
@@ -33,7 +34,7 @@ extern SST::Core::SSTPythonModelDefinition *gModel;
 extern "C" {
 
 
-static int linkInit(LinkPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
+static int linkInit(LinkPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     char *name = NULL, *lat = NULL;
     if ( !PyArg_ParseTuple(args, "s|s", &name, &lat) ) return -1;
@@ -110,7 +111,7 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
 }
 
 
-static PyObject* linkSetNoCut(PyObject* self, PyObject *args __attribute__((unused)))
+static PyObject* linkSetNoCut(PyObject* self, PyObject *UNUSED(args))
 {
     LinkPy_t *link = (LinkPy_t*)self;
     bool prev = link->no_cut;

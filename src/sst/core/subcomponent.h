@@ -13,6 +13,7 @@
 #ifndef SST_CORE_SUBCOMPONENT_H
 #define SST_CORE_SUBCOMPONENT_H
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/baseComponent.h>
 #include <sst/core/component.h>
 #include <sst/core/module.h>
@@ -36,7 +37,7 @@ public:
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
-    virtual void init(unsigned int phase __attribute__((unused))) override {}
+    virtual void init(unsigned int UNUSED(phase)) override {}
     /** Called after all components have been constructed and inialization has
 	completed, but before simulation time has begun. */
     virtual void setup( ) override { }

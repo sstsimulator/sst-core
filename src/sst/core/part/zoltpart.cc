@@ -10,6 +10,7 @@
 // distribution.
 
 #include <sst_config.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/part/zoltpart.h>
 #include <sst/core/configGraph.h>
 
@@ -21,7 +22,7 @@ using namespace SST;
 static SST::Output* partOutput;
 
 extern "C" {
-static int sst_zoltan_count_vertices(void* data, int* ierr __attribute__((unused))) {
+static int sst_zoltan_count_vertices(void* data, int* UNUSED(ierr)) {
 	int rank = 0;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
@@ -36,9 +37,9 @@ static int sst_zoltan_count_vertices(void* data, int* ierr __attribute__((unused
 	}
 }
 
-static void sst_zoltan_get_vertex_list(void* data, int sizeGID __attribute__((unused)), int sizeLID __attribute__((unused)),
+static void sst_zoltan_get_vertex_list(void* data, int UNUSED(sizeGID), int UNUSED(sizeLID),
 	ZOLTAN_ID_PTR globalIDs, ZOLTAN_ID_PTR localIDs,
-	int wgt_dim __attribute__((unused)), float* obj_wgts, int* ierr) {
+	int UNUSED(wgt_dim), float* obj_wgts, int* ierr) {
 
 	int rank = 0;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -68,8 +69,8 @@ static void sst_zoltan_get_vertex_list(void* data, int sizeGID __attribute__((un
 	}
 }
 
-static void sst_zoltan_get_num_edges_list(void *data, int sizeGID __attribute__((unused)), int sizeLID __attribute__((unused)), int num_obj,
-             ZOLTAN_ID_PTR globalID __attribute__((unused)), ZOLTAN_ID_PTR localID __attribute__((unused)),
+static void sst_zoltan_get_num_edges_list(void *data, int UNUSED(sizeGID), int UNUSED(sizeLID), int num_obj,
+             ZOLTAN_ID_PTR UNUSED(globalID), ZOLTAN_ID_PTR UNUSED(localID),
              int *numEdges, int *ierr) {
 
  	int rank = 0;
@@ -107,11 +108,11 @@ static void sst_zoltan_get_num_edges_list(void *data, int sizeGID __attribute__(
 	}
 }
 
-static void sst_zoltan_get_edge_list(void *data, int sizeGID __attribute__((unused)), int sizeLID __attribute__((unused)),
-        int num_obj, ZOLTAN_ID_PTR globalID __attribute__((unused)), ZOLTAN_ID_PTR localID __attribute__((unused)),
+static void sst_zoltan_get_edge_list(void *data, int UNUSED(sizeGID), int UNUSED(sizeLID),
+        int num_obj, ZOLTAN_ID_PTR UNUSED(globalID), ZOLTAN_ID_PTR UNUSED(localID),
         int *num_edges,
         ZOLTAN_ID_PTR nborGID, int *nborProc,
-        int wgt_dim __attribute__((unused)), float *ewgts __attribute__((unused)), int *ierr) {
+        int UNUSED(wgt_dim), float *UNUSED(ewgts), int *ierr) {
 
     int rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, & rank);

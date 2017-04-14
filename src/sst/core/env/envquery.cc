@@ -18,6 +18,7 @@
 #include <string>
 #include <sys/file.h>
 
+#include <sst/core/warnmacros.h>
 #include "envquery.h"
 #include "envconfig.h"
 
@@ -47,7 +48,7 @@ void SST::Core::Environment::configReadLine(FILE* theFile, char* lineBuffer) {
 	}
 }
 
-void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg, bool errorOnNotOpen __attribute__((unused))) {
+void SST::Core::Environment::populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg, bool UNUSED(errorOnNotOpen)) {
 
 	// Get the file descriptor and lock the file using a shared lock so
 	// people don't come and change it from under us

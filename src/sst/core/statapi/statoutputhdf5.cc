@@ -12,6 +12,7 @@
 #include <sst_config.h>
 
 #include <sst/core/simulation.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/baseComponent.h>
 #include <sst/core/statapi/statoutputhdf5.h>
 #include <sst/core/statapi/statgroup.h>
@@ -209,7 +210,7 @@ StatisticOutputHDF5::StatisticInfo* StatisticOutputHDF5::getStatisticInfo(Statis
 
 
 
-void StatisticOutputHDF5::StatisticInfo::startNewEntry(StatisticBase *stat __attribute__((unused)))
+void StatisticOutputHDF5::StatisticInfo::startNewEntry(StatisticBase *UNUSED(stat))
 {
     for ( StatData_u &i : currentData ) {
         memset(&i, '\0', sizeof(i));
@@ -600,7 +601,7 @@ void StatisticOutputHDF5::GroupInfo::GroupStat::startNewGroupEntry() {
 }
 
 
-void StatisticOutputHDF5::GroupInfo::GroupStat::startNewEntry(size_t componentIndex, StatisticBase *stat __attribute__((unused)))
+void StatisticOutputHDF5::GroupInfo::GroupStat::startNewEntry(size_t componentIndex, StatisticBase *UNUSED(stat))
 {
     currentCompOffset = componentIndex * registeredFields.size();
 }

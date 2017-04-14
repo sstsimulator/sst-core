@@ -14,6 +14,7 @@
 #define _H_SST_CORE_HISTOGRAM_STATISTIC_
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <sst/core/statapi/statbase.h>
 #include <sst/core/statapi/statoutput.h>
@@ -261,7 +262,7 @@ private:
         }
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused))) override
+    void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
         uint32_t x = 0;
         statOutput->outputField(m_Fields[x++], getBinsMinValue());

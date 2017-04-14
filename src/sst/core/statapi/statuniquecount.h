@@ -14,6 +14,7 @@
 #define _H_SST_CORE_UNIQUE_COUNT_STATISTIC_
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <sst/core/statapi/statbase.h>
 
@@ -63,7 +64,7 @@ private:
 	uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused))) override
+    void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
 	statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
     }

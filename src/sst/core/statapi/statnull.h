@@ -14,6 +14,7 @@
 #define _H_SST_CORE_NULL_STATISTIC_
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <sst/core/statapi/statbase.h>
 
@@ -55,12 +56,12 @@ public:
         // Do Nothing
     }
 
-    void registerOutputFields(StatisticOutput* statOutput __attribute__((unused))) override
+    void registerOutputFields(StatisticOutput* UNUSED(statOutput)) override
     {
         // Do Nothing
     }
 
-    void outputStatisticData(StatisticOutput* statOutput __attribute__((unused)), bool EndOfSimFlag __attribute__((unused))) override
+    void outputStatisticData(StatisticOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
     {
         // Do Nothing
     }
@@ -76,7 +77,7 @@ public:
     }
 
 protected:
-    void addData_impl(T data __attribute__((unused))) override
+    void addData_impl(T UNUSED(data)) override
     {
         // Do Nothing
     }

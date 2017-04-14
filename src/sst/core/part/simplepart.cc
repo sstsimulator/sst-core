@@ -11,6 +11,7 @@
 
 #include <sst_config.h>
 #include "sst/core/part/simplepart.h"
+#include <sst/core/warnmacros.h>
 
 #include <string>
 #include <vector>
@@ -24,7 +25,7 @@ using namespace std;
 namespace SST {
 namespace Partition {
 
-SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo my_rank __attribute__((unused)), int verbosity __attribute__((unused))) :
+SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
         SSTPartitioner(),
         world_size(total_ranks),
         total_parts(world_size.rank * world_size.thread)

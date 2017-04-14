@@ -14,6 +14,7 @@
 #define _H_SST_CORE_ACCUMULATOR_STATISTIC_
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <sst/core/statapi/statbase.h>
 #include <sst/core/statapi/statoutput.h>
@@ -138,7 +139,7 @@ public:
         Field3 = statOutput->registerField<uint64_t>  ("Count");
     }
     
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused))) override
+    void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
         statOutput->outputField(Field1, m_sum);
         statOutput->outputField(Field2, m_sum_sq);  

@@ -13,6 +13,7 @@
 #define _H_SST_CORE_STATISTICS_OUTPUT
 
 #include "sst/core/sst_types.h"
+#include <sst/core/warnmacros.h>
 #include <sst/core/module.h>
 #include <sst/core/params.h>
 #include <sst/core/statapi/statfieldinfo.h>
@@ -175,8 +176,8 @@ protected:
     virtual void printUsage() = 0;
 
 
-    virtual void implStartRegisterFields(StatisticBase *statistic __attribute__((unused))) {}
-    virtual void implRegisteredField(fieldHandle_t fieldHandle __attribute__((unused))) {}
+    virtual void implStartRegisterFields(StatisticBase *UNUSED(statistic)) {}
+    virtual void implRegisteredField(fieldHandle_t UNUSED(fieldHandle)) {}
     virtual void implStopRegisterFields() {}
 
     // Simulation Events
@@ -197,9 +198,9 @@ protected:
       * Allows object to perform any cleanup. */ 
     virtual void implStopOutputEntries() = 0;
 
-    virtual void implStartRegisterGroup(StatisticGroup* group __attribute__((unused))) {}
+    virtual void implStartRegisterGroup(StatisticGroup* UNUSED(group)) {}
     virtual void implStopRegisterGroup() {}
-    virtual void implStartOutputGroup(StatisticGroup* group __attribute__((unused))) {}
+    virtual void implStartOutputGroup(StatisticGroup* UNUSED(group)) {}
     virtual void implStopOutputGroup() {}
     // Field Outputs
     /** Implementation of outputField() for derived classes.  

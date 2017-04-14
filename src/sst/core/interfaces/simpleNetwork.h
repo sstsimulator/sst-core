@@ -18,6 +18,7 @@
 #include <unordered_map>
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/subcomponent.h>
 #include <sst/core/params.h>
 
@@ -294,7 +295,7 @@ public:
     virtual Request* recv(int vn) = 0;
 
     virtual void setup() override {}
-    virtual void init(unsigned int phase __attribute__((unused))) override {}
+    virtual void init(unsigned int UNUSED(phase)) override {}
     virtual void finish() override {}
 
     /**

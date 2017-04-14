@@ -13,6 +13,7 @@
 #define SST_CORE_ELEMENTINFO_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/params.h>
 
 #include <string>
@@ -107,8 +108,8 @@ class ModuleElementInfo : public BaseElementInfo {
 protected:
 
 public:
-    virtual Module* create(Component* comp __attribute__((unused)), Params& params __attribute__((unused))) { /* Need to print error */ return NULL; }
-    virtual Module* create(Params& params __attribute__((unused))) { /* Need to print error */ return NULL; }
+    virtual Module* create(Component* UNUSED(comp), Params& UNUSED(params)) { /* Need to print error */ return NULL; }
+    virtual Module* create(Params& UNUSED(params)) { /* Need to print error */ return NULL; }
     virtual const std::string getInterface() = 0;
     
     std::string toString();

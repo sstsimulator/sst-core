@@ -69,7 +69,7 @@ constexpr uint32_t ct_hash_rec(const char* str)
 // End of the recursion (i.e. when you've walked back off the front of
 // the string
 template<>
-constexpr uint32_t ct_hash_rec<size_t(-1)>(const char* str __attribute__((unused)))
+constexpr uint32_t ct_hash_rec<size_t(-1)>(const char* UNUSED(str))
 {
     return 0;
 }
@@ -143,7 +143,7 @@ class serializable_type
      serializable_abort(CALL_INFO_LONG, #obj); \
   } \
   virtual void \
-  serialize_order(SST::Core::Serialization::serializer& sst __attribute__((unused))) override {    \
+  serialize_order(SST::Core::Serialization::serializer& UNUSED(sst)) override {    \
     throw_exc(); \
   } \
   virtual uint32_t \

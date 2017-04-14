@@ -18,6 +18,7 @@
 #include <string.h>
 #include <sstream>
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/model/pymodel.h>
 #include <sst/core/model/pymodel_comp.h>
 #include <sst/core/model/pymodel_link.h>
@@ -100,7 +101,7 @@ int PySubComponent::compare(ComponentHolder *other) {
 
 
 
-static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
+static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     char *name, *type;
     ComponentId_t useID = UNSET_COMPONENT_ID;
@@ -235,7 +236,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 }
 
 
-static PyObject* compGetFullName(PyObject *self, PyObject *args __attribute__((unused)))
+static PyObject* compGetFullName(PyObject *self, PyObject *UNUSED(args))
 {
     return PyString_FromString(getComp(self)->name.c_str());
 }
@@ -464,7 +465,7 @@ PyTypeObject PyModel_ComponentType = {
 
 
 
-static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
+static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     char *name, *type;
     PyObject *parent;

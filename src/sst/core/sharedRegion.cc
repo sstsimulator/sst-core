@@ -11,6 +11,7 @@
 
 
 #include <sst_config.h>
+#include <sst/core/warnmacros.h>
 
 #include <string>
 #include <vector>
@@ -28,7 +29,7 @@
 namespace SST {
 
 
-bool SharedRegionMerger::merge(uint8_t *target __attribute__((unused)), const uint8_t *newData __attribute__((unused)), size_t size __attribute__((unused)))
+bool SharedRegionMerger::merge(uint8_t *UNUSED(target), const uint8_t *UNUSED(newData), size_t UNUSED(size))
 {
     return false;
 }
