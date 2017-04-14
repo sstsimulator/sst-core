@@ -22,8 +22,11 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/profile.h"
 
+#include <sst/core/warnmacros.h>
 #ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
+REENABLE_WARNING
 #define UNUSED_WO_MPI
 #else
 #define UNUSED_WO_MPI __attribute__((unused))

@@ -48,22 +48,22 @@ protected:
 	Present a new value to the Statistic to be included in the unique set
         @param data New data item to be included in the unique set
     */
-    void addData_impl(T data) {
+    void addData_impl(T data) override {
 	uniqueSet.insert(data);
     }
 
 private:
-    void clearStatisticData()
+    void clearStatisticData() override
     {
 	uniqueSet.clear();
     }
 
-    void registerOutputFields(StatisticOutput* statOutput)
+    void registerOutputFields(StatisticOutput* statOutput) override
     {
 	uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused)))
+    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused))) override
     {
 	statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
     }

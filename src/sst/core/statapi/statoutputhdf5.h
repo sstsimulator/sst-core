@@ -15,8 +15,12 @@
 #include "sst/core/sst_types.h"
 
 #include <sst/core/statapi/statoutput.h>
+#include <sst/core/warnmacros.h>
 
+DISABLE_WARN_MISSING_OVERRIDE
 #include "H5Cpp.h"
+REENABLE_WARNING
+
 #include <map>
 #include <string>
 
@@ -36,32 +40,32 @@ public:
      */
     StatisticOutputHDF5(Params& outputParameters);
 
-    bool acceptsGroups() const { return true; }
+    bool acceptsGroups() const override { return true; }
 protected:
     /** Perform a check of provided parameters
      * @return True if all required parameters and options are acceptable
      */
-    bool checkOutputParameters();
+    bool checkOutputParameters() override;
 
     /** Print out usage for this Statistic Output */
-    void printUsage();
+    void printUsage() override;
 
-    void implStartRegisterFields(StatisticBase *stat);
-    void implRegisteredField(fieldHandle_t fieldHandle);
-    void implStopRegisterFields();
+    void implStartRegisterFields(StatisticBase *stat) override;
+    void implRegisteredField(fieldHandle_t fieldHandle) override;
+    void implStopRegisterFields() override;
 
-    void implStartRegisterGroup(StatisticGroup* group );
-    void implStopRegisterGroup();
+    void implStartRegisterGroup(StatisticGroup* group ) override;
+    void implStopRegisterGroup() override;
 
     /** Indicate to Statistic Output that simulation started.
      *  Statistic output may perform any startup code here as necessary.
      */
-    void startOfSimulation();
+    void startOfSimulation() override;
 
     /** Indicate to Statistic Output that simulation ended.
      *  Statistic output may perform any shutdown code here as necessary.
      */
-    void endOfSimulation();
+    void endOfSimulation() override;
 
     /** Implementation function for the start of output.
      * This will be called by the Statistic Processing Engine to indicate that
@@ -69,17 +73,17 @@ protected:
      * @param statistic - Pointer to the statistic object than the output can
      * retrieve data from.
      */
-    void implStartOutputEntries(StatisticBase* statistic);
+    void implStartOutputEntries(StatisticBase* statistic) override;
 
     /** Implementation function for the end of output.
      * This will be called by the Statistic Processing Engine to indicate that
      * a Statistic is finished sendind data to the Statistic Output for processing.
      * The Statisic Output can perform any output related functions here.
      */
-    void implStopOutputEntries();
+    void implStopOutputEntries() override;
 
-    void implStartOutputGroup(StatisticGroup* group);
-    void implStopOutputGroup();
+    void implStartOutputGroup(StatisticGroup* group) override;
+    void implStopOutputGroup() override;
 
     /** Implementation functions for output.
      * These will be called by the statistic to provide Statistic defined
@@ -87,12 +91,12 @@ protected:
      * @param fieldHandle - The handle to the registered statistic field.
      * @param data - The data related to the registered field to be output.
      */
-    void implOutputField(fieldHandle_t fieldHandle, int32_t data);
-    void implOutputField(fieldHandle_t fieldHandle, uint32_t data);
-    void implOutputField(fieldHandle_t fieldHandle, int64_t data);
-    void implOutputField(fieldHandle_t fieldHandle, uint64_t data);
-    void implOutputField(fieldHandle_t fieldHandle, float data);
-    void implOutputField(fieldHandle_t fieldHandle, double data);
+    void implOutputField(fieldHandle_t fieldHandle, int32_t data) override;
+    void implOutputField(fieldHandle_t fieldHandle, uint32_t data) override;
+    void implOutputField(fieldHandle_t fieldHandle, int64_t data) override;
+    void implOutputField(fieldHandle_t fieldHandle, uint64_t data) override;
+    void implOutputField(fieldHandle_t fieldHandle, float data) override;
+    void implOutputField(fieldHandle_t fieldHandle, double data) override;
 
 protected:
     StatisticOutputHDF5() {;} // For serialization
@@ -159,13 +163,13 @@ private:
             if ( dataset ) delete dataset;
             if ( memType ) delete memType;
         }
-        void registerField(StatisticFieldInfo *fi);
-        void finalizeCurrentStatistic();
+        void registerField(StatisticFieldInfo *fi) override;
+        void finalizeCurrentStatistic() override;
 
-        bool isGroup() const { return false; }
-        void startNewEntry(StatisticBase *stat);
-        StatData_u& getFieldLoc(fieldHandle_t fieldHandle);
-        void finishEntry();
+        bool isGroup() const override { return false; }
+        void startNewEntry(StatisticBase *stat) override;
+        StatData_u& getFieldLoc(fieldHandle_t fieldHandle) override;
+        void finishEntry() override;
     };
 
     class GroupInfo : public DataSet {
@@ -210,19 +214,19 @@ private:
 
     public:
         GroupInfo(StatisticGroup *group, H5::H5File *file);
-        void beginGroupRegistration(StatisticGroup *group __attribute__((unused))) { }
-        void setCurrentStatistic(StatisticBase *stat);
-        void registerField(StatisticFieldInfo *fi);
-        void finalizeCurrentStatistic();
-        void finalizeGroupRegistration();
+        void beginGroupRegistration(StatisticGroup *group __attribute__((unused))) override { }
+        void setCurrentStatistic(StatisticBase *stat) override;
+        void registerField(StatisticFieldInfo *fi) override;
+        void finalizeCurrentStatistic() override;
+        void finalizeGroupRegistration() override;
 
-        bool isGroup() const { return true; }
-        void startNewEntry(StatisticBase *stat);
-        StatData_u& getFieldLoc(fieldHandle_t fieldHandle) { return m_currentStat->getFieldLoc(fieldHandle); }
-        void finishEntry();
+        bool isGroup() const override { return true; }
+        void startNewEntry(StatisticBase *stat) override;
+        StatData_u& getFieldLoc(fieldHandle_t fieldHandle) override { return m_currentStat->getFieldLoc(fieldHandle); }
+        void finishEntry() override;
 
-        void startNewGroupEntry();
-        void finishGroupEntry();
+        void startNewGroupEntry() override;
+        void finishGroupEntry() override;
         size_t getNumComponents() const { return m_components.size(); }
 
         const std::string& getName() const { return m_statGroup->name; }

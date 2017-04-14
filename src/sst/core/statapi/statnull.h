@@ -50,33 +50,33 @@ public:
 
     ~NullStatistic(){};
 
-    void clearStatisticData()
+    void clearStatisticData() override
     {
         // Do Nothing
     }
 
-    void registerOutputFields(StatisticOutput* statOutput __attribute__((unused)))
+    void registerOutputFields(StatisticOutput* statOutput __attribute__((unused))) override
     {
         // Do Nothing
     }
 
-    void outputStatisticData(StatisticOutput* statOutput __attribute__((unused)), bool EndOfSimFlag __attribute__((unused)))
+    void outputStatisticData(StatisticOutput* statOutput __attribute__((unused)), bool EndOfSimFlag __attribute__((unused))) override
     {
         // Do Nothing
     }
 
-    bool isReady() const
+    bool isReady() const override
     {
         return true;
     }
 
-    bool isNullStatistic() const
+    bool isNullStatistic() const override
     {
         return true;
     }
 
 protected:
-    void addData_impl(T data __attribute__((unused)))
+    void addData_impl(T data __attribute__((unused))) override
     {
         // Do Nothing
     }

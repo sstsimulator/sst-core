@@ -12,10 +12,14 @@
 // distribution.
 
 #include "sst_config.h"
+#include <sst/core/warnmacros.h>
 #include <Python.h>
 
+
 #ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
+REENABLE_WARNING
 #endif
 
 #include <string.h>
@@ -32,13 +36,7 @@
 #include <sst/core/factory.h>
 #include <sst/core/component.h>
 #include <sst/core/configGraph.h>
-
-
-/* Disable GCC's strict-aliasing warnings for Python macros */
-#if defined(__GNUC__) && ((__GNUC__ == 4 && 3 <= __GNUC_MINOR__) || 4 < __GNUC__)
-# pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif
-
+DISABLE_WARN_STRICT_ALIASING
 
 using namespace SST::Core;
 
@@ -644,20 +642,13 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     // Add our built in methods to the Python engine
     PyObject *module = Py_InitModule("sst", sstModuleMethods);
 
-#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-aliasing"
-#endif
     Py_INCREF(&PyModel_ComponentType);
     Py_INCREF(&PyModel_SubComponentType);
     Py_INCREF(&PyModel_LinkType);
     Py_INCREF(&PyModel_StatGroupType);
     Py_INCREF(&PyModel_StatOutputType);
     Py_INCREF(&ModuleLoaderType);
-#if ((__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-#pragma GCC diagnostic pop
-#endif
-    
+
     PyModule_AddObject(module, "Link", (PyObject*)&PyModel_LinkType);
     PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
     PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
@@ -872,3 +863,4 @@ std::map<std::string,std::string> SST::Core::generateStatisticParameters(PyObjec
     return p;
 }
 
+REENABLE_WARNING

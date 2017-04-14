@@ -38,7 +38,7 @@ public:
     StatisticInfo(const std::string &name, const Params &params) : name(name), params(params) { }
     StatisticInfo() { } /* DO NOT USE:  For serialization */
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & name;
         ser & params;
     }

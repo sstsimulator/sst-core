@@ -37,7 +37,7 @@ public:
     
     ChangeSet(size_t offset, size_t length, /*const*/ uint8_t *data = NULL) : offset(offset), length(length), data(data) { }
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & offset;
         // ser & length;
         // if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
@@ -72,7 +72,7 @@ public:
         virtual bool merge(RegionInfo *ri __attribute__((unused))) { return true; }
         const std::string& getKey() const { return key; }
 
-        void serialize_order(SST::Core::Serialization::serializer &ser) {
+        void serialize_order(SST::Core::Serialization::serializer &ser) override {
             ser & rank;
             ser & key;
         }    
@@ -92,13 +92,13 @@ public:
             length(length), data(data)
         { }
 
-        bool merge(RegionInfo *ri) {
+        bool merge(RegionInfo *ri) override {
             bool ret = ri->getMerger()->merge((uint8_t*)ri->getMemory(), (const uint8_t*)data, length);
             free(data);
             return ret;
         }
 
-        void serialize_order(SST::Core::Serialization::serializer &ser) {
+        void serialize_order(SST::Core::Serialization::serializer &ser) override {
             RegionInfo::RegionMergeInfo::serialize_order(ser);
 
             ser & length;
@@ -126,11 +126,11 @@ public:
                 std::vector<ChangeSet> & changeSets) : RegionMergeInfo(rank, key),
             changeSets(changeSets)
         { }
-        bool merge(RegionInfo *ri) {
+        bool merge(RegionInfo *ri) override {
             return ri->getMerger()->merge((uint8_t*)ri->getMemory(), ri->getSize(), changeSets);
         }
 
-        void serialize_order(SST::Core::Serialization::serializer &ser) {
+        void serialize_order(SST::Core::Serialization::serializer &ser) override {
             RegionInfo::RegionMergeInfo::serialize_order(ser);
             ser & changeSets;
         }    
@@ -221,22 +221,22 @@ class SharedRegionManagerImpl : public SharedRegionManager {
     std::mutex mtx;
 
 protected:
-    void modifyRegion(SharedRegion *sr, size_t offset, size_t length, const void *data);
-    void* getMemory(SharedRegion *sr);
-    const void* getConstPtr(const SharedRegion *sr) const;
+    void modifyRegion(SharedRegion *sr, size_t offset, size_t length, const void *data) override;
+    void* getMemory(SharedRegion *sr) override;
+    const void* getConstPtr(const SharedRegion *sr) const override;
 
 public:
     SharedRegionManagerImpl();
     ~SharedRegionManagerImpl();
 
-    virtual SharedRegion* getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte = 0);
-    virtual SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL, uint8_t initByte = 0);
+    virtual SharedRegion* getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte = 0) override;
+    virtual SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL, uint8_t initByte = 0) override;
 
-    virtual void publishRegion(SharedRegion*);
-    virtual bool isRegionReady(const SharedRegion*);
-    virtual void shutdownSharedRegion(SharedRegion*);
+    virtual void publishRegion(SharedRegion*) override;
+    virtual bool isRegionReady(const SharedRegion*) override;
+    virtual void shutdownSharedRegion(SharedRegion*) override;
 
-    void updateState(bool finalize);
+    void updateState(bool finalize) override;
 };
 
 

@@ -23,7 +23,6 @@
 #include "sst/core/profile.h"
 
 #ifdef SST_CONFIG_HAVE_MPI
-#include <mpi.h>
 #define UNUSED_WO_MPI
 #else
 #define UNUSED_WO_MPI __attribute__((unused))

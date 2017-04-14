@@ -30,7 +30,7 @@ public:
 		std::strcpy(exMsg, msg);
 	}
 
-	virtual const char* what() const throw() {
+	virtual const char* what() const throw() override {
 		return exMsg;
 	}
 

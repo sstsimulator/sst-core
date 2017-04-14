@@ -81,7 +81,7 @@ protected:
         Adds a new value to the histogram. The correct bin is identified and then incremented. If no bin can be found
         to hold the value then a new bin is created.
     */
-    void addData_impl(BinDataType value) 
+    void addData_impl(BinDataType value) override
     {
         // Check to see if the value is above or below the min/max values
         if (value < getBinsMinValue()) {   
@@ -215,7 +215,7 @@ private:
         return m_totalSummedSqr;
     }
 
-    void clearStatisticData()
+    void clearStatisticData() override
     {
         m_totalSummed = 0;
         m_totalSummedSqr = 0;
@@ -226,7 +226,7 @@ private:
         this->setCollectionCount(0);
     }
     
-    void registerOutputFields(StatisticOutput* statOutput)
+    void registerOutputFields(StatisticOutput* statOutput) override
     {
         // Check to see if we have registered the Startup Fields        
         m_Fields.push_back(statOutput->registerField<BinDataType>("BinsMinValue"));
@@ -261,7 +261,7 @@ private:
         }
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused)))
+    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused))) override
     {
         uint32_t x = 0;
         statOutput->outputField(m_Fields[x++], getBinsMinValue());
@@ -290,7 +290,7 @@ private:
         }
     }
 
-    bool isStatModeSupported(StatisticBase::StatMode_t mode) const 
+    bool isStatModeSupported(StatisticBase::StatMode_t mode) const override
     {
         if (mode == StatisticBase::STAT_MODE_COUNT) {
             return true;

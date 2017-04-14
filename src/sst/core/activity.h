@@ -343,7 +343,7 @@ protected:
     // Function used by derived classes to serialize data members.
     // This class is not serializable, becuase not all class that
     // inherit from it need to be serializable.
-    void serialize_order(SST::Core::Serialization::serializer &ser){
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & queue_order;
         ser & delivery_time;
         ser & priority;

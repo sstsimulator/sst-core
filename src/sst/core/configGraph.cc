@@ -24,10 +24,6 @@
 
 #include <string.h>
 
-#ifdef SST_CONFIG_HAVE_MPI
-#include <mpi.h>
-#endif
-
 using namespace std;
 
 namespace SST {

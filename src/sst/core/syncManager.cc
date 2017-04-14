@@ -40,17 +40,17 @@ public:
     ~EmptyRankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(const RankInfo& to_rank __attribute__((unused)), const RankInfo& from_rank __attribute__((unused)), LinkId_t link_id __attribute__((unused)), Link* link __attribute__((unused))) { return NULL; }
+    ActivityQueue* registerLink(const RankInfo& to_rank __attribute__((unused)), const RankInfo& from_rank __attribute__((unused)), LinkId_t link_id __attribute__((unused)), Link* link __attribute__((unused))) override { return NULL; }
 
-    void execute(int thread __attribute__((unused))) {}
-    void exchangeLinkInitData(int thread __attribute__((unused)), std::atomic<int>& msg_count __attribute__((unused))) {}
-    void finalizeLinkConfigurations() {}
+    void execute(int thread __attribute__((unused))) override {}
+    void exchangeLinkInitData(int thread __attribute__((unused)), std::atomic<int>& msg_count __attribute__((unused))) override {}
+    void finalizeLinkConfigurations() override {}
 
-    SimTime_t getNextSyncTime() { return nextSyncTime; }
+    SimTime_t getNextSyncTime() override { return nextSyncTime; }
 
     TimeConverter* getMaxPeriod() {return max_period;}
 
-    uint64_t getDataSize() const { return 0; }    
+    uint64_t getDataSize() const override { return 0; }
 };
 
 class EmptyThreadSync : public NewThreadSync {
@@ -60,15 +60,15 @@ public:
     }
     ~EmptyThreadSync() {}
 
-    void before() {}
-    void after() {}
-    void execute() {}
-    void processLinkInitData() {}
-    void finalizeLinkConfigurations() {}
+    void before() override {}
+    void after() override {}
+    void execute() override {}
+    void processLinkInitData() override {}
+    void finalizeLinkConfigurations() override {}
 
     /** Register a Link which this Sync Object is responsible for */
-    void registerLink(LinkId_t link_id __attribute__((unused)), Link* link __attribute__((unused))) {}
-    ActivityQueue* getQueueForThread(int tid __attribute__((unused))) { return NULL; }
+    void registerLink(LinkId_t link_id __attribute__((unused)), Link* link __attribute__((unused))) override {}
+    ActivityQueue* getQueueForThread(int tid __attribute__((unused))) override { return NULL; }
 };
 
 

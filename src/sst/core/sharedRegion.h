@@ -48,7 +48,7 @@ public:
         defVal = defaultValue;
     }
 
-    bool merge(uint8_t *target, const uint8_t *newData, size_t size);
+    bool merge(uint8_t *target, const uint8_t *newData, size_t size) override;
 
 };
 

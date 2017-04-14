@@ -82,7 +82,7 @@ public:
     /* Do not use.  For serialization only */
     ConfigLink() {}
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & id;
         ser & name;
         ser & component[0];
@@ -154,7 +154,7 @@ public:
 
 
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & name;
         ser & statMap;
         ser & components;
@@ -180,7 +180,7 @@ public:
         params.insert(key, val);
     }
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & type;
         ser & params;
     }
@@ -229,7 +229,7 @@ public:
 
     std::vector<LinkId_t> allLinks() const;
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & id;
         ser & name;
         ser & type;
@@ -379,7 +379,7 @@ public:
     void annotateRanks(PartitionGraph* graph);
     void getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group);
 
-    void serialize_order(SST::Core::Serialization::serializer &ser)
+    void serialize_order(SST::Core::Serialization::serializer &ser) override
 	{
 		ser & links;
 		ser & comps;

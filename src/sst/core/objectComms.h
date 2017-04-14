@@ -13,8 +13,11 @@
 #ifndef SST_CORE_OBJECTCOMMS_H
 #define SST_CORE_OBJECTCOMMS_H
 
+#include <sst/core/warnmacros.h>
 #ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
+REENABLE_WARNING
 #endif
 
 #include <sst/core/serialization/serializer.h>

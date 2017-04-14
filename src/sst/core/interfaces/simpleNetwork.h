@@ -133,7 +133,7 @@ public:
         int getTraceID() {return traceID;}
         TraceType getTraceType() {return trace;}
         
-        void serialize_order(SST::Core::Serialization::serializer &ser) {
+        void serialize_order(SST::Core::Serialization::serializer &ser) override {
             ser & dest;
             ser & src;
             ser & vn;
@@ -293,9 +293,9 @@ public:
      */
     virtual Request* recv(int vn) = 0;
 
-    virtual void setup() {}
-    virtual void init(unsigned int phase __attribute__((unused))) {}
-    virtual void finish() {}
+    virtual void setup() override {}
+    virtual void init(unsigned int phase __attribute__((unused))) override {}
+    virtual void finish() override {}
 
     /**
      * Checks if there is sufficient space to send on the specified
