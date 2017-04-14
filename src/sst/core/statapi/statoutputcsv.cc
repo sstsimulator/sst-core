@@ -18,8 +18,8 @@
 namespace SST {
 namespace Statistics {
 
-StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters)
-    : StatisticOutput (outputParameters)
+StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters, bool compressed)
+    : StatisticOutput (outputParameters), m_useCompression(compressed)
 {
     // Announce this output object's name
     Output &out = Simulation::getSimulationOutput();
@@ -103,13 +103,8 @@ void StatisticOutputCSV::startOfSimulation()
     }
 
     // Open the finalized filename
-    m_hFile = fopen(m_FilePath.c_str(), "w");
-    if (NULL == m_hFile){
-        // We got an error of some sort
-        Output out = Simulation::getSimulation()->getSimulationOutput();
-        out.fatal(CALL_INFO, -1, " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+    if ( !openFile() )
         return;
-    }
 
     // Initialize the OutputBufferArray with std::string objects
     for (FieldInfoArray_t::iterator it_v = getFieldInfoArray().begin(); it_v != getFieldInfoArray().end(); it_v++) {
@@ -120,32 +115,32 @@ void StatisticOutputCSV::startOfSimulation()
         // Add a Component Time Header to the front
         outputBuffer = "ComponentName";
         outputBuffer += m_Separator;
-        fprintf(m_hFile, "%s", outputBuffer.c_str());
+        print("%s", outputBuffer.c_str());
 
         outputBuffer = "StatisticName";
         outputBuffer += m_Separator;
-        fprintf(m_hFile, "%s", outputBuffer.c_str());
+        print("%s", outputBuffer.c_str());
 
         outputBuffer = "StatisticSubId";
         outputBuffer += m_Separator;
-        fprintf(m_hFile, "%s", outputBuffer.c_str());
+        print("%s", outputBuffer.c_str());
 
         outputBuffer = "StatisticType";
         outputBuffer += m_Separator;
-        fprintf(m_hFile, "%s", outputBuffer.c_str());
+        print("%s", outputBuffer.c_str());
 
         if (true == m_outputSimTime) {
             // Add a Simulation Time Header to the front
             outputBuffer = "SimTime";
             outputBuffer += m_Separator;
-            fprintf(m_hFile, "%s", outputBuffer.c_str());
+            print("%s", outputBuffer.c_str());
         }
     
         if (true == m_outputRank) {
             // Add a rank Header to the front
             outputBuffer = "Rank";
             outputBuffer += m_Separator;
-            fprintf(m_hFile, "%s", outputBuffer.c_str());
+            print("%s", outputBuffer.c_str());
         }
 
         // Output all Headers
@@ -164,16 +159,16 @@ void StatisticOutputCSV::startOfSimulation()
                 outputBuffer += m_Separator;
             }
     
-            fprintf(m_hFile, "%s", outputBuffer.c_str());
+            print("%s", outputBuffer.c_str());
         }
-        fprintf(m_hFile, "\n");
+        print("\n");
     }
 }
 
 void StatisticOutputCSV::endOfSimulation() 
 {
     // Close the file
-    fclose(m_hFile);
+    closeFile();
 }
 
 void StatisticOutputCSV::implStartOutputEntries(StatisticBase* statistic) 
@@ -196,38 +191,38 @@ void StatisticOutputCSV::implStopOutputEntries()
     uint32_t x;
     
     // Output the Component and Statistic names
-    fprintf(m_hFile, "%s", m_currentComponentName.c_str());
-    fprintf(m_hFile, "%s", m_Separator.c_str());
-    fprintf(m_hFile, "%s", m_currentStatisticName.c_str());
-    fprintf(m_hFile, "%s", m_Separator.c_str());
-    fprintf(m_hFile, "%s", m_currentStatisticSubId.c_str());
-    fprintf(m_hFile, "%s", m_Separator.c_str());
-    fprintf(m_hFile, "%s", m_currentStatisticType.c_str());
-    fprintf(m_hFile, "%s", m_Separator.c_str());
+    print("%s", m_currentComponentName.c_str());
+    print("%s", m_Separator.c_str());
+    print("%s", m_currentStatisticName.c_str());
+    print("%s", m_Separator.c_str());
+    print("%s", m_currentStatisticSubId.c_str());
+    print("%s", m_Separator.c_str());
+    print("%s", m_currentStatisticType.c_str());
+    print("%s", m_Separator.c_str());
     
     // Done with Output, Send a line of data to the file
     if (true == m_outputSimTime) {
         // Add the Simulation Time to the front
-        fprintf(m_hFile, "%" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
-        fprintf(m_hFile, "%s", m_Separator.c_str());
+        print("%" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
+        print("%s", m_Separator.c_str());
     }
 
     // Done with Output, Send a line of data to the file
     if (true == m_outputRank) {
         // Add the Simulation Time to the front
-        fprintf(m_hFile, "%d", Simulation::getSimulation()->getRank().rank);
-        fprintf(m_hFile, "%s", m_Separator.c_str());
+        print("%d", Simulation::getSimulation()->getRank().rank);
+        print("%s", m_Separator.c_str());
     }
     
     x = 0;
     while (x < m_OutputBufferArray.size()) {
-        fprintf(m_hFile, "%s", m_OutputBufferArray[x].c_str());
+        print("%s", m_OutputBufferArray[x].c_str());
         x++;
         if (x != m_OutputBufferArray.size()) {
-            fprintf(m_hFile, "%s", m_Separator.c_str());
+            print("%s", m_Separator.c_str());
         }
     }
-    fprintf(m_hFile, "\n");
+    print("\n");
 }
 
 void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, int32_t data)
@@ -271,6 +266,89 @@ void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, double data)
     sprintf(buffer, "%f", data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
+
+
+bool StatisticOutputCSV::openFile(void)
+{
+    if ( m_useCompression ) {
+#ifdef HAVE_LIBZ
+        m_gzFile = gzopen(m_FilePath.c_str(), "w");
+        if (NULL == m_gzFile){
+            // We got an error of some sort
+            Output out = Simulation::getSimulation()->getSimulationOutput();
+            out.fatal(CALL_INFO, -1, " : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+            return false;
+        }
+#else
+        return false;
+#endif
+    } else {
+        m_hFile = fopen(m_FilePath.c_str(), "w");
+        if (NULL == m_hFile){
+            // We got an error of some sort
+            Output out = Simulation::getSimulation()->getSimulationOutput();
+            out.fatal(CALL_INFO, -1, " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+            return false;;
+        }
+    }
+    return true;
+}
+
+void StatisticOutputCSV::closeFile(void)
+{
+    if ( m_useCompression ) {
+#ifdef HAVE_LIBZ
+        gzclose(m_gzFile);
+#endif
+    } else {
+        fclose(m_hFile);
+    }
+}
+
+
+int StatisticOutputCSV::print(const char* fmt, ...)
+{
+    int res = 0;
+    va_list args;
+    if ( m_useCompression ) {
+#ifdef HAVE_LIBZ
+#if ZLIB_VERBUM >= 0x1271
+        /* zlib added gzvprintf in 1.2.7.1.  CentOS 7 apparently uses 1.2.7.0 */
+        va_start(args,fmt);
+        res = gzvprintf(m_gzFile, fmt, args);
+        va_end(args);
+#else
+        ssize_t bufSize = 128;
+        bool retry = true;
+        do {
+            char *buf = (char*)malloc(bufSize);
+
+            va_start(args, fmt);
+            ssize_t n = vsnprintf(buf, bufSize, fmt, args);
+            va_end(args);
+
+            if ( n < 0 ) {
+                retry = false;
+            } else if ( n < bufSize ) {
+                gzprintf(m_gzFile, "%s", buf);
+                /* Success */
+                retry = false;
+            } else {
+                bufSize += 128;
+            }
+            free(buf);
+        } while ( retry );
+        
+#endif
+#endif
+    } else {
+        va_start(args,fmt);
+        res = vfprintf(m_hFile, fmt, args);
+        va_end(args);
+    }
+    return res;
+}
+
 
 } //namespace Statistics
 } //namespace SST

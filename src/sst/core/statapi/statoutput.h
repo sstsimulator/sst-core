@@ -25,13 +25,12 @@
 #define STATISTICSDEFAULTOUTPUTNAME "sst.statOutputConsole"
 #define STATISTICSDEFAULTLOADLEVEL 0
 
-extern int main(int argc, char **argv);
-
 namespace SST {
 class BaseComponent;
 class Simulation;
 namespace Statistics {
 class StatisticProcessingEngine;
+class StatisticGroup;
 
 ////////////////////////////////////////////////////////////////////////////////
     
@@ -61,12 +60,13 @@ public:
 
     /** Return the Statistic Output name */
     std::string& getStatisticOutputName() {return m_statOutputName;}
-    
-    /** Return the statistics load level for the system */
-    uint8_t getStatisticLoadLevel() {return m_statLoadLevel;}
-    
+
     /** Return the parameters for the StatisticOutput */
     Params& getOutputParameters() {return m_outputParameters;}
+
+    /** True if this StatOutput can handle StatisticGroups */
+    virtual bool acceptsGroups() const { return false; }
+
 
 /////////////////
 // Methods for Registering Fields (Called by Statistic Objects)
@@ -83,15 +83,13 @@ public:
     template<typename T>
     fieldHandle_t registerField(const char* fieldName)
     {
-        if (is_type_same<T, int32_t    >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::INT32));  implRegisteredField(res); return res; }
-        if (is_type_same<T, uint32_t   >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::UINT32)); implRegisteredField(res); return res; }
-        if (is_type_same<T, int64_t    >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::INT64));  implRegisteredField(res); return res; }
-        if (is_type_same<T, uint64_t   >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::UINT64)); implRegisteredField(res); return res; }
-        if (is_type_same<T, float      >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::FLOAT));  implRegisteredField(res); return res; }
-        if (is_type_same<T, double     >::value){auto res = generateFileHandle(addFieldToLists(fieldName, StatisticFieldInfo::DOUBLE)); implRegisteredField(res); return res; }
+        StatisticFieldInfo::fieldType_t FieldType = StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
+        if ( FieldType == StatisticFieldInfo::UNDEFINED )
+            return -1;
 
-        //TODO: IF WE GET THERE, GENERATE AN ERROR AS THIS IS AN UNSUPPORTED TYPE 
-        return -1;
+        auto res = generateFileHandle(addFieldToLists(fieldName, FieldType));
+        implRegisteredField(res);
+        return res;
     }
     
 //    /** Adjust the heirarchy of the fields (FUTURE SUPPORT)
@@ -121,16 +119,8 @@ public:
     {
         StatisticFieldInfo*             NewStatFieldInfo;
         StatisticFieldInfo*             ExistingStatFieldInfo;
-        StatisticFieldInfo::fieldType_t FieldType = StatisticFieldInfo::UNDEFINED;
-        
-        // Figure out the Field Type
-        if (is_type_same<T, int32_t    >::value) {FieldType = StatisticFieldInfo::INT32; }
-        if (is_type_same<T, uint32_t   >::value) {FieldType = StatisticFieldInfo::UINT32;}
-        if (is_type_same<T, int64_t    >::value) {FieldType = StatisticFieldInfo::INT64; }
-        if (is_type_same<T, uint64_t   >::value) {FieldType = StatisticFieldInfo::UINT64;}
-        if (is_type_same<T, float      >::value) {FieldType = StatisticFieldInfo::FLOAT; }
-        if (is_type_same<T, double     >::value) {FieldType = StatisticFieldInfo::DOUBLE;}
-        
+        StatisticFieldInfo::fieldType_t FieldType = StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
+
         NewStatFieldInfo = new StatisticFieldInfo(statisticName, fieldName, FieldType);
 
         // Now search the FieldNameMap_t of type for a matching entry
@@ -170,9 +160,7 @@ public:
      */
     const char* getFieldTypeShortName(fieldType_t type);
     
-protected:    
-    friend int ::main(int argc, char **argv);
-    friend class SST::BaseComponent;
+protected:
     friend class SST::Simulation;
     friend class SST::Statistics::StatisticProcessingEngine;
 
@@ -209,6 +197,10 @@ protected:
       * Allows object to perform any cleanup. */ 
     virtual void implStopOutputEntries() = 0;
 
+    virtual void implStartRegisterGroup(StatisticGroup* group __attribute__((unused))) {}
+    virtual void implStopRegisterGroup() {}
+    virtual void implStartOutputGroup(StatisticGroup* group __attribute__((unused))) {}
+    virtual void implStopOutputGroup() {}
     // Field Outputs
     /** Implementation of outputField() for derived classes.  
       * Perform the actual implementation of the output. */ 
@@ -220,18 +212,24 @@ protected:
     virtual void implOutputField(fieldHandle_t fieldHandle, double data) = 0;
 
 
-private:    
+private:
+
     // Start / Stop of register Fields
+    void registerStatistic(StatisticBase *stat);
+    void registerGroup(StatisticGroup *group);
+
     void startRegisterFields(StatisticBase *statistic);
     void stopRegisterFields();
-    
-    // Set the Statistic Load Level
-    void setStatisticLoadLevel(uint8_t loadLevel) {m_statLoadLevel = loadLevel;}
-    
+
     // Start / Stop of output
+    void outputEntries(StatisticBase* statistic, bool endOfSimFlag);
     void startOutputEntries(StatisticBase* statistic);
     void stopOutputEntries();
-    
+
+    void outputGroup(StatisticGroup* group, bool endOfSimFlag);
+    void startOutputGroup(StatisticGroup* group);
+    void stopOutputGroup();
+
     // Other support functions
     StatisticFieldInfo* addFieldToLists(const char* fieldName, fieldType_t fieldType);
     fieldHandle_t generateFileHandle(StatisticFieldInfo* FieldInfo);
@@ -250,9 +248,7 @@ private:
     FieldInfoArray_t m_outputFieldInfoArray;
     FieldNameMap_t   m_outputFieldNameMap;
     fieldHandle_t    m_highestFieldHandle;
-    std::string      m_currentFieldCompName;
     std::string      m_currentFieldStatName;
-    uint8_t          m_statLoadLevel;
     std::recursive_mutex  m_lock;
 
 };                          

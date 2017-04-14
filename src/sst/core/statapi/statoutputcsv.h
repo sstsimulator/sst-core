@@ -16,6 +16,10 @@
 
 #include <sst/core/statapi/statoutput.h>
 
+#ifdef HAVE_LIBZ
+#include <zlib.h>
+#endif
+
 namespace SST {
 namespace Statistics {
 
@@ -30,7 +34,7 @@ public:
     /** Construct a StatOutputCSV
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputCSV(Params& outputParameters);
+    StatisticOutputCSV(Params& outputParameters, bool compressed);
 
 protected:
     /** Perform a check of provided parameters
@@ -79,10 +83,18 @@ protected:
     void implOutputField(fieldHandle_t fieldHandle, float data);
     void implOutputField(fieldHandle_t fieldHandle, double data);
 
-protected: 
+protected:
     StatisticOutputCSV() {;} // For serialization
-    
+
 private:
+    bool openFile();
+    void closeFile();
+    int print(const char* fmt, ...);
+
+private:
+#ifdef HAVE_LIBZ
+    gzFile                   m_gzFile;
+#endif
     FILE*                    m_hFile;
     std::vector<std::string> m_OutputBufferArray;
     std::string              m_Separator;
@@ -94,7 +106,8 @@ private:
     bool                     m_outputTopHeader;
     bool                     m_outputSimTime;
     bool                     m_outputRank;
-    
+    bool                     m_useCompression;
+
 };
 
 } //namespace Statistics

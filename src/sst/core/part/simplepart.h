@@ -12,9 +12,10 @@
 #define SST_CORE_PART_SIMPLEPART_H
 
 #include <map>
-#include "sst/core/sst_types.h"
-#include "sst/core/part/sstpart.h"
+#include <sst/core/sst_types.h>
+#include <sst/core/part/sstpart.h>
 #include <sst/core/elementinfo.h>
+#include <sst/core/configGraph.h>
 
 namespace SST {
 namespace Partition{

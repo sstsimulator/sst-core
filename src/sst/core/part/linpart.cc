@@ -12,6 +12,7 @@
 #include <sst_config.h>
 #include <sst/core/part/linpart.h>
 #include <sst/core/output.h>
+#include <sst/core/configGraph.h>
 
 using namespace std;
 

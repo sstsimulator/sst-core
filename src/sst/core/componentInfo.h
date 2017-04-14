@@ -13,26 +13,28 @@
 #define SST_CORE_COMPONENTINFO_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/params.h>
 
 #include <unordered_set>
 #include <string>
 #include <functional>
-
-#include <sst/core/configGraph.h>
-
 
 namespace SST {
 
 class LinkMap;
 class BaseComponent;
 
+class ConfigComponent;
 class ComponentInfoMap;
+
+namespace Statistics {
+class StatisticInfo;
+}
 
 class ComponentInfo {
 
 public:
-    typedef std::vector<std::string>      statEnableList_t;        /*!< List of Enabled Statistics */
-    typedef std::vector<Params>           statParamsList_t;        /*!< List of Enabled Statistics Parameters */
+    typedef std::vector<Statistics::StatisticInfo>      statEnableList_t;        /*!< List of Enabled Statistics */
 
 private:
     friend class Simulation;
@@ -47,7 +49,7 @@ private:
     const Params *params;
 
     statEnableList_t * enabledStats;
-    statParamsList_t * statParams;
+    std::vector<double> coordinates;
 
     inline void setComponent(BaseComponent* comp) { component = comp; }
 
@@ -78,16 +80,10 @@ public:
 
     inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
 
-    void setStatEnablement(statEnableList_t * enabled, statParamsList_t * params) {
-        enabledStats = enabled;
-        statParams = params;
-    }
-
     ComponentInfo* findSubComponent(ComponentId_t id);
     std::vector<LinkId_t> getAllLinkIds() const;
 
     statEnableList_t* getStatEnableList() { return enabledStats; }
-    statParamsList_t* getStatParams() { return statParams; }
 
     struct HashName {
         size_t operator() (const ComponentInfo* info) const {

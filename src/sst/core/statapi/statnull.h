@@ -18,7 +18,6 @@
 #include <sst/core/statapi/statbase.h>
 
 namespace SST {
-class BaseComponent;
 namespace Statistics {
 
 // NOTE: When calling base class members of classes derived from 
@@ -41,10 +40,8 @@ namespace Statistics {
 template <typename T>
 class NullStatistic : public Statistic<T>
 {
-private:    
-    friend class SST::BaseComponent;
-    
-    NullStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams) 
+public:
+    NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<T>(comp, statName, statSubId, statParams)
     {
         // Set the Name of this Statistic
@@ -53,28 +50,21 @@ private:
 
     ~NullStatistic(){};
 
-protected:    
-    void addData_impl(T data __attribute__((unused)))
-    {
-        // Do Nothing
-    }
-
-private:    
     void clearStatisticData()
     {
         // Do Nothing
     }
-    
+
     void registerOutputFields(StatisticOutput* statOutput __attribute__((unused)))
     {
         // Do Nothing
     }
-    
+
     void outputStatisticData(StatisticOutput* statOutput __attribute__((unused)), bool EndOfSimFlag __attribute__((unused)))
     {
         // Do Nothing
     }
-    
+
     bool isReady() const
     {
         return true;
@@ -84,6 +74,13 @@ private:
     {
         return true;
     }
+
+protected:
+    void addData_impl(T data __attribute__((unused)))
+    {
+        // Do Nothing
+    }
+
 
 private:
 };

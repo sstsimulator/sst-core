@@ -32,10 +32,9 @@ namespace Statistics {
 template <typename T>
 class UniqueCountStatistic : public Statistic<T>
 {
-private:
-    friend class SST::BaseComponent;
+public:
 
-    UniqueCountStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams)
+    UniqueCountStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<T>(comp, statName, statSubId, statParams)
     {
         // Set the Name of this Statistic

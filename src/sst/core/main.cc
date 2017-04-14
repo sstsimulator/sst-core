@@ -34,7 +34,7 @@
 #include <sst/core/timeLord.h>
 #include <sst/core/timeVortex.h>
 #include <sst/core/part/sstpart.h>
-#include <sst/core/statapi/statoutput.h>
+#include <sst/core/statapi/statengine.h>
 
 #include <sst/core/cputimer.h>
 
@@ -208,6 +208,10 @@ typedef struct {
 
 } SimThreadInfo_t;
 
+void finalize_statEngineConfig(void)
+{
+    StatisticProcessingEngine::getInstance()->finalizeInitialization();
+}
 
 static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSafe::Barrier &barrier)
 {
@@ -227,7 +231,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     sim->processGraphInfo( *info.graph, info.myRank, info.min_part );
 
     barrier.wait();
-    
+
     // Perform the wireup.  Do this one thread at a time for now.  If
     // this ever changes, then need to put in some serialization into
     // performWireUp.
@@ -239,8 +243,8 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
         barrier.wait();
     }
 
-    barrier.wait();
     if ( tid == 0 ) {
+        finalize_statEngineConfig();
         delete info.graph;
     }
 
@@ -251,8 +255,8 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     if ( tid == 0 && info.world_size.rank > 1 ) {
         MPI_Barrier(MPI_COMM_WORLD);
     }
-    barrier.wait();
 #endif
+    barrier.wait();
 
     if ( info.config->runMode == Simulation::RUN || info.config->runMode == Simulation::BOTH ) {
         if ( info.config->verbose && 0 == tid ) {
@@ -319,10 +323,6 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
         sim->setup();
         barrier.wait();
 
-        if ( 0 == info.myRank.thread )
-            Simulation::signalStatisticsBegin();
-        barrier.wait();
-
         /* Run Simulation */
         sim->run();
     // fprintf(stderr, "thread %u waiting on run finish barrier\n", tid);
@@ -334,9 +334,6 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
         barrier.wait();
     // fprintf(stderr, "thread %u release from finish() finish barrier\n", tid);
 
-        // Tell the Statistics Output that the simulation is finished
-        if ( 0 == info.myRank.thread )
-            Simulation::signalStatisticsEnd();
     }
 
     barrier.wait();
@@ -645,43 +642,18 @@ main(int argc, char *argv[])
     //     graph->print(std::cout);
     // }
     // Simulation::barrier.wait();
-    
-    
 
-    ///// Set up StatisticOutput /////
+    ///// Set up StatisticEngine /////
 
-    StatisticOutput *so = Factory::getFactory()->CreateStatisticOutput(graph->getStatOutput(), graph->getStatOutputParams());
-    if (NULL == so) {
-        g_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", graph->getStatOutput().c_str());
-    }
+    SST::Statistics::StatisticProcessingEngine::init(graph);
 
-    if (false == so->checkOutputParameters()) {
-        // If checkOutputParameters() fail, Tell the user how to use them and abort simulation
-        g_output.output("Statistic Output (%s) :\n", so->getStatisticOutputName().c_str());
-        so->printUsage();
-        g_output.output("\n");
+    ///// End Set up StatisticEngine /////
 
-        g_output.output("Statistic Output Parameters Provided:\n");
-        // for (Params::const_iterator it = graph->getStatOutputParams().begin(); it != graph->getStatOutputParams().end(); ++it ) {
-        //     g_output.output("  %s = %s\n", Params::getParamName(it->first).c_str(), it->second.c_str());
-        // }
-        std::set<std::string> keys = graph->getStatOutputParams().getKeys();
-        for (auto it = keys.begin(); it != keys.end(); ++it ) {
-            g_output.output("  %s = %s\n", it->c_str(), graph->getStatOutputParams().find<std::string>(*it).c_str());
-        }
-        g_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
-    }
-
-    // Set the Statistics Load Level into the Statistic Output
-    so->setStatisticLoadLevel(graph->getStatLoadLevel());
-
-    ///// End Set up StatisticOutput /////
 
     ////// Create Simulation //////
     Core::ThreadSafe::Barrier mainBarrier(world_size.thread);
 
     Simulation::factory = factory;
-    Simulation::statisticsOutput = so;
     Simulation::sim_output = g_output;
     Simulation::resizeBarriers(world_size.thread);
     #ifdef USE_MEMPOOL

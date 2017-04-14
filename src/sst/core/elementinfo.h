@@ -146,22 +146,29 @@ public:
         python_module(NULL) {}
     
     
-    ComponentElementInfo* getComponent(std::string name) {
+    BaseComponentElementInfo* getComponentOrSubComponent(const std::string &name) {
+        BaseComponentElementInfo *bcei = getComponent(name);
+        if ( !bcei )
+            bcei = getSubComponent(name);
+        return bcei;
+    }
+
+    ComponentElementInfo* getComponent(const std::string &name) {
         if ( components.count(name) == 0 ) return NULL;
         return components[name];
     }
-    
-    SubComponentElementInfo* getSubComponent(std::string name) {
+
+    SubComponentElementInfo* getSubComponent(const std::string &name) {
         if ( subcomponents.count(name) == 0 ) return NULL;
         return subcomponents[name];
     }
     
-    ModuleElementInfo* getModule(std::string name) {
+    ModuleElementInfo* getModule(const std::string &name) {
         if ( modules.count(name) == 0 ) return NULL;
         return modules[name];
     }
     
-    PartitionerElementInfo* getPartitioner(std::string name) {
+    PartitionerElementInfo* getPartitioner(const std::string &name) {
         if ( partitioners.count(name) == 0 ) return NULL;
         return partitioners[name];
     }
@@ -179,7 +186,7 @@ private:
     // Database
     static std::map<std::string,LibraryInfo*> libraries;
 
-    static LibraryInfo* getLibrary(std::string library) {
+    static LibraryInfo* getLibrary(const std::string &library) {
         if ( libraries.count(library) == 0 ) {
             libraries[library] = new LibraryInfo;
         }
@@ -224,7 +231,7 @@ public:
 
     static std::string toString();
 
-    static LibraryInfo* getLibraryInfo(std::string library) {
+    static LibraryInfo* getLibraryInfo(const std::string &library) {
         if ( libraries.count(library) == 0 ) return NULL;
         return libraries[library];
     }    

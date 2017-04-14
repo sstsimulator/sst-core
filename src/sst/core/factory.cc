@@ -31,11 +31,11 @@
 #ifdef HAVE_HDF5
 #include <sst/core/statapi/statoutputhdf5.h>
 #endif
-
-#ifdef HAVE_LIBZ
-#include <sst/core/statapi/statoutputcsvgz.h>
-#include <sst/core/statapi/statoutputtxtgz.h>
-#endif
+#include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/stataccumulator.h>
+#include <sst/core/statapi/stathistogram.h>
+#include <sst/core/statapi/statnull.h>
+#include <sst/core/statapi/statuniquecount.h>
 
 using namespace SST::Statistics;
 
@@ -220,6 +220,68 @@ Factory::CreateStatisticOutput(const std::string& statOutputType, const Params& 
     return rtnStatOut;
 }
 
+
+
+template<typename T>
+static Statistic<T>* buildStatistic(BaseComponent *comp, const std::string &type, const std::string &statName, const std::string &statSubId, Params &params)
+{
+        if (0 == ::strcasecmp("sst.nullstatistic", type.c_str())) {
+            return new NullStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        if (0 == ::strcasecmp("sst.accumulatorstatistic", type.c_str())) {
+            return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        if (0 == ::strcasecmp("sst.histogramstatistic", type.c_str())) {
+            return new HistogramStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        if(0 == ::strcasecmp("sst.uniquecountstatistic", type.c_str())) {
+            return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
+        }
+
+        return NULL;
+}
+
+
+StatisticBase* Factory::CreateStatistic(BaseComponent* comp, const std::string &type,
+        const std::string &statName, const std::string &statSubId,
+        Params &params, StatisticFieldInfo::fieldType_t fieldType)
+{
+    StatisticBase * res = NULL;
+    switch (fieldType) {
+    case StatisticFieldInfo::UINT32:
+        res = buildStatistic<uint32_t>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::UINT64:
+        res = buildStatistic<uint64_t>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::INT32:
+        res = buildStatistic<int32_t>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::INT64:
+        res = buildStatistic<int64_t>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::FLOAT:
+        res = buildStatistic<float>(comp, type, statName, statSubId, params);
+        break;
+    case StatisticFieldInfo::DOUBLE:
+        res = buildStatistic<double>(comp, type, statName, statSubId, params);
+        break;
+    default:
+        break;
+    }
+    if ( res == NULL ) {
+        // We did not find this statistic
+        out.fatal(CALL_INFO, 1, "ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
+    }
+
+    return res;
+
+}
+
+
 bool 
 Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName)
 {
@@ -343,7 +405,7 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     // ElementLibraryDatabase
     LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
     if ( lib != NULL ) {
-        ComponentElementInfo* comp = lib->getComponent(elem);
+        BaseComponentElementInfo* comp = lib->getComponentOrSubComponent(elem);
         if ( comp != NULL ) {
             for ( auto item : comp->getValidStats() ) {
                 if ( statisticName == item.name ) {
@@ -357,19 +419,29 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     // now look for component
     std::string tmp = elemlib + "." + elem;
 
-    eic_map_t::iterator eii = found_components.find(tmp);
-    if (eii == found_components.end()) {
+    eic_map_t::iterator eici = found_components.find(tmp);
+    eis_map_t::iterator eisi = found_subcomponents.find(tmp);
+    if (eici != found_components.end()) {
+        const ComponentInfo ci = eici->second;
+
+        // See if the statistic exists, if so return the enable level
+        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+            if (statisticName == ci.statNames[x]) {
+                return ci.statEnableLevels[x];
+            }
+        }
+    } else if (eisi != found_subcomponents.end()) {
+        const SubComponentInfo ci = eisi->second;
+
+        // See if the statistic exists, if so return the enable level
+        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+            if (statisticName == ci.statNames[x]) {
+                return ci.statEnableLevels[x];
+            }
+        }
+    } else {
         out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return 0;
-    }
-
-    const ComponentInfo ci = eii->second;
-
-    // See if the statistic exists, if so return the enable level
-    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-        if (statisticName == ci.statNames[x]) {
-            return ci.statEnableLevels[x];
-        }
     }
     return 0;
 }
@@ -392,7 +464,7 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
 
     LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
     if ( lib != NULL ) {
-        ComponentElementInfo* comp = lib->getComponent(elem);
+        BaseComponentElementInfo* comp = lib->getComponentOrSubComponent(elem);
         if ( comp != NULL ) {
             for ( auto item : comp->getValidStats() ) {
                 if ( statisticName == item.name ) {
@@ -405,19 +477,29 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
 
     // now look for component
     std::string tmp = elemlib + "." + elem;
-    eic_map_t::iterator eii = found_components.find(tmp);
-    if (eii == found_components.end()) {
+    eic_map_t::iterator eici = found_components.find(tmp);
+    eis_map_t::iterator eisi = found_subcomponents.find(tmp);
+    if (eici != found_components.end()) {
+        const ComponentInfo ci = eici->second;
+
+        // See if the statistic exists, if so return the enable level
+        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+            if (statisticName == ci.statNames[x]) {
+                return ci.statUnits[x];
+            }
+        }
+    } else if (eisi != found_subcomponents.end()) {
+        const SubComponentInfo ci = eisi->second;
+
+        // See if the statistic exists, if so return the enable level
+        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
+            if (statisticName == ci.statNames[x]) {
+                return ci.statUnits[x];
+            }
+        }
+    } else {
         out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
         return 0;
-    }
-
-    const ComponentInfo ci = eii->second;
-
-    // See if the statistic exists, if so return the enable level
-    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-        if (statisticName == ci.statNames[x]) {
-            return ci.statUnits[x];
-        }
     }
     return 0;
 }
@@ -479,12 +561,12 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 {
     // Names of sst.xxx Statistic Output Modules
     if (0 == ::strcasecmp("statoutputcsv", type.c_str())) {
-        return new StatisticOutputCSV(params);
+        return new StatisticOutputCSV(params, false);
     }
 
     if (0 == ::strcasecmp("statoutputcsvgz", type.c_str())) {
 #ifdef HAVE_LIBZ
-	return new StatisticOutputCompressedCSV(params);
+	return new StatisticOutputCSV(params, true);
 #else
 	out.fatal(CALL_INFO, -1, "Statistics output requested compressed CSV but SST does not have LIBZ compiled.\n");
 #endif
@@ -492,7 +574,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 
     if (0 == ::strcasecmp("statoutputtxtgz", type.c_str())) {
 #ifdef HAVE_LIBZ
-	return new StatisticOutputCompressedTxt(params);
+	return new StatisticOutputTxt(params, true);
 #else
 	out.fatal(CALL_INFO, -1, "Statistics output requested compressed TXT but SST does not have LIBZ compiled.\n");
 #endif
@@ -505,7 +587,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 #endif
 
     if (0 == ::strcasecmp("statoutputtxt", type.c_str())) {
-        return new StatisticOutputTxt(params);
+        return new StatisticOutputTxt(params, false);
     }
 
     if (0 == ::strcasecmp("statoutputconsole", type.c_str())) {

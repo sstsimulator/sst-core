@@ -21,10 +21,12 @@
 #include <set>
 #include <climits>
 
-#include "sst/core/sparseVectorMap.h"
-#include "sst/core/params.h"
-#include "sst/core/statapi/statoutput.h"
-#include "sst/core/rankInfo.h"
+#include <sst/core/sparseVectorMap.h>
+#include <sst/core/params.h>
+#include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/statoutput.h>
+#include <sst/core/rankInfo.h>
+#include <sst/core/unitAlgebra.h>
 
 #include <sst/core/serialization/serializable.h>
 
@@ -39,10 +41,10 @@ class Simulation;
 
 class Config;
 class TimeLord;
+class ConfigGraph;
 
 typedef SparseVectorMap<ComponentId_t> ComponentIdMap_t;
 typedef std::vector<LinkId_t> LinkIdMap_t;
-
 
 
 /** Represents the configuration of a generic Link */
@@ -124,6 +126,69 @@ private:
 
 };
 
+
+
+class ConfigStatGroup : public SST::Core::Serialization::serializable {
+public:
+    std::string name;
+    std::map<std::string, Params> statMap;
+    std::vector<ComponentId_t> components;
+    size_t outputID;
+    UnitAlgebra outputFrequency;
+
+    ConfigStatGroup(const std::string &name) : name(name), outputID(0) { }
+    ConfigStatGroup() {} /* Do not use */
+
+
+    bool addComponent(ComponentId_t id);
+    bool addStatistic(const std::string &name, Params &p);
+    bool setOutput(size_t id);
+    bool setFrequency(const std::string &freq);
+
+    /**
+     * Checks to make sure that all components in the group support all
+     * of the statistics as configured in the group.
+     * @return pair of:  bool for OK, string for error message (if any)
+     */
+    std::pair<bool, std::string> verifyStatsAndComponents(const ConfigGraph* graph);
+
+
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        ser & name;
+        ser & statMap;
+        ser & components;
+        ser & outputID;
+        ser & outputFrequency;
+    }
+
+    ImplementSerializable(SST::ConfigStatGroup)
+
+};
+
+
+class ConfigStatOutput : public SST::Core::Serialization::serializable {
+public:
+
+    std::string type;
+    Params params;
+
+    ConfigStatOutput(const std::string &type) : type(type) { }
+    ConfigStatOutput() { }
+
+    void addParameter(const std::string &key, const std::string &val) {
+        params.insert(key, val);
+    }
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) {
+        ser & type;
+        ser & params;
+    }
+
+    ImplementSerializable(SST::ConfigStatOutput)
+};
+
+
 typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 
 /** Represents the configuration of a generic component */
@@ -136,9 +201,9 @@ public:
     RankInfo                      rank;              /*!< Parallel Rank for this component */
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
-    std::vector<std::string>      enabledStatistics; /*!< List of statistics to be enabled */
-    std::vector<Params>           enabledStatParams; /*!< List of parameters for enabled statistics */
+    std::vector<Statistics::StatisticInfo> enabledStatistics; /*!< List of statistics to be enabled */
     std::vector<std::pair<std::string, ConfigComponent> > subComponents; /*!< List of subcomponents */
+    std::vector<double>           coords;
 
     inline const ComponentId_t& key()const { return id; }
 
@@ -153,11 +218,15 @@ public:
 
     void setRank(RankInfo r);
     void setWeight(double w);
+    void setCoordinates(const std::vector<double> &c);
     void addParameter(const std::string &key, const std::string &value, bool overwrite);
     ConfigComponent* addSubComponent(ComponentId_t, const std::string &name, const std::string &type);
     ConfigComponent* findSubComponent(ComponentId_t);
+    const ConfigComponent* findSubComponent(ComponentId_t) const;
     void enableStatistic(const std::string &statisticName);
     void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value);
+    void setStatisticParameters(const std::string &statisticName, const Params &params);
+
     std::vector<LinkId_t> allLinks() const;
 
     void serialize_order(SST::Core::Serialization::serializer &ser) {
@@ -170,7 +239,6 @@ public:
         ser & links;
         ser & params;
         ser & enabledStatistics;
-        ser & enabledStatParams;
         ser & subComponents;
     }
 
@@ -186,10 +254,13 @@ private:
         type(type),
         weight(weight),
         rank(rank)
-    { }
+    {
+        coords.resize(3, 0.0);
+    }
 
 
 };
+
 
 
 /** Map names to Links */
@@ -221,8 +292,8 @@ public:
         links.clear();
         comps.clear();
         // Init the statistic output settings
-        statOutputName = STATISTICSDEFAULTOUTPUTNAME;
         statLoadLevel = STATISTICSDEFAULTLOADLEVEL;
+        statOutputs.emplace_back(STATISTICSDEFAULTOUTPUTNAME);
     }
 
     size_t getNumComponents() { return comps.data.size(); }
@@ -262,9 +333,9 @@ public:
     void addStatisticParameterForComponentName(const std::string &ComponentName, const std::string &statisticName, const std::string &param, const std::string &value);
     void addStatisticParameterForComponentType(const std::string &ComponentType, const std::string &statisticName, const std::string &param, const std::string &value);
 
-    const std::string& getStatOutput() const {return statOutputName;}
-    const Params&      getStatOutputParams() const {return statOutputParams;}
-    long               getStatLoadLevel() const {return statLoadLevel;}
+    std::vector<ConfigStatOutput>& getStatOutputs() {return statOutputs;}
+    const ConfigStatOutput& getStatOutput(size_t index = 0) const {return statOutputs[index];}
+    long getStatLoadLevel() const {return statLoadLevel;}
 
     /** Add a Link to a Component on a given Port */
     void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str, bool no_cut = false);
@@ -281,7 +352,19 @@ public:
         return comps;
     }
 
+    const std::map<std::string, ConfigStatGroup>& getStatGroups() const { return statGroups; }
+    ConfigStatGroup* getStatGroup(const std::string &name) {
+        auto found = statGroups.find(name);
+        if ( found == statGroups.end() ) {
+            bool ok;
+            std::tie(found, ok) = statGroups.emplace(name, name);
+        }
+        return &(found->second);
+    }
+
+    bool containsComponent(ComponentId_t id) const;
     ConfigComponent* findComponent(ComponentId_t);
+    const ConfigComponent* findComponent(ComponentId_t) const;
 
     /** Return the map of links */
     ConfigLinkMap_t& getLinkMap() {
@@ -300,9 +383,9 @@ public:
 	{
 		ser & links;
 		ser & comps;
-		ser & statOutputName;
-		ser & statOutputParams;
+		ser & statOutputs;
 		ser & statLoadLevel;
+        ser & statGroups;
 	}
 
 private:
@@ -311,12 +394,12 @@ private:
 
     ConfigLinkMap_t      links;
     ConfigComponentMap_t comps;
+    std::map<std::string, ConfigStatGroup> statGroups;
 
     // temporary as a test
     std::map<std::string,LinkId_t> link_names;
 
-    std::string statOutputName;
-    Params      statOutputParams;
+    std::vector<ConfigStatOutput> statOutputs; // [0] is default
     uint8_t     statLoadLevel;
 
     ImplementSerializable(SST::ConfigGraph)

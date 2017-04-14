@@ -17,12 +17,7 @@
 #include <map>
 #include <string>
 
-#include <sst/core/statapi/statoutput.h>
 #include <sst/core/statapi/statengine.h>
-#include <sst/core/statapi/statnull.h>
-#include <sst/core/statapi/stataccumulator.h>
-#include <sst/core/statapi/stathistogram.h>
-#include <sst/core/statapi/statuniquecount.h>
 #include <sst/core/statapi/statbase.h>
 #include <sst/core/event.h>
 #include <sst/core/clock.h>
@@ -215,15 +210,6 @@ public:
                 depending upon runtime settings.
     */
     template <typename T>
-    Statistic<T>* registerStatisticCore(std::string statName, std::string statSubId = "")
-    {
-        // NOTE: Templated Code for implementation of Statistic Registration
-        // is in the componentregisterstat_impl.h file.  This was done
-        // to avoid code bloat in the .h file.
-        #include "sst/core/statapi/componentregisterstat_impl.h"
-    }
-
-    template <typename T>
     Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
     {
         // Verify here that name of the stat is one of the registered
@@ -233,6 +219,12 @@ public:
                    StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId).c_str(),
                    statName.c_str());
             exit(1);
+        }
+        // Check to see if the Statistic is previously registered with the Statistics Engine
+        StatisticBase* prevStat = StatisticProcessingEngine::getInstance()->isStatisticRegisteredWithEngine<T>(getName(), my_info->getID(), statName, statSubId);
+        if (NULL != prevStat) {
+            // Dynamic cast the base stat to the expected type
+            return dynamic_cast<Statistic<T>*>(prevStat);
         }
         return registerStatisticCore<T>(statName, statSubId);
     }
@@ -270,7 +262,13 @@ public:
     SubComponent* loadNamedSubComponent(std::string name);
     SubComponent* loadNamedSubComponent(std::string name, Params& params);
 
+    /** Retrieve the X,Y,Z coordinates of this component */
+    const std::vector<double>& getCoordinates() const {
+        return my_info->coordinates;
+    }
+
 protected:
+    friend class SST::Statistics::StatisticProcessingEngine;
 
     /** Manually set the default detaulTimeBase */
     void setDefaultTimeBase(TimeConverter *tc) {
@@ -294,17 +292,19 @@ protected:
     Simulation* getSimulation() const { return sim; }
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) = 0;
-    virtual uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) = 0;
-    virtual std::string getComponentInfoStatisticUnits(const std::string &statisticName) = 0;
+    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const = 0;
+    // Return the EnableLevel for the statisticName from the ElementInfoStatistic
+    uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) const;
+    // Return the Units for the statisticName from the ElementInfoStatistic
+    std::string getComponentInfoStatisticUnits(const std::string &statisticName) const;
 
-    virtual Component* getTrueComponent() = 0;
+    virtual Component* getTrueComponent() const = 0;
     /**
      * Returns self if Component
      * If sub-component, returns self if a "modern" subcomponent
      *    otherwise, return base component.
      */
-    virtual BaseComponent* getStatisticOwner() = 0;
+    virtual BaseComponent* getStatisticOwner() const = 0;
 
 protected:
     ComponentInfo* my_info;
@@ -316,40 +316,13 @@ private:
     void addSelfLink(std::string name);
 
     template <typename T>
-    Statistic<T>* CreateStatistic(BaseComponent* comp, std::string& type, std::string& statName, std::string& statSubId, Params& params)
+    Statistic<T>* registerStatisticCore(std::string statName, std::string statSubId = "")
     {
-        // Load one of the SST Core provided Statistics
-        // NOTE: This happens here (in simulation) instead of the factory because
-        //       it is a templated method.  The BaseComponent::registerStatistic<T>()
-        //       must be defined in the component.h however the the Factory is
-        //       not available from the Simulation::::getSimulation() because
-        //       Factory is only defined via a forwarded definition.  Basically
-        //       we have to go through some twists and jumps to make this work.
-
-        // Names of sst.xxx Statistics
-        if (0 == ::strcasecmp("sst.nullstatistic", type.c_str())) {
-            return new NullStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if (0 == ::strcasecmp("sst.accumulatorstatistic", type.c_str())) {
-            return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if (0 == ::strcasecmp("sst.histogramstatistic", type.c_str())) {
-            return new HistogramStatistic<T>(comp, statName, statSubId, params);
-        }
-
-	if(0 == ::strcasecmp("sst.uniquecountstatistic", type.c_str())) {
-	    return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
-	}
-
-        // We did not find this statistic
-        printf("ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
-
-        return NULL;
+        // NOTE: Templated Code for implementation of Statistic Registration
+        // is in the componentregisterstat_impl.h file.  This was done
+        // to avoid code bloat in the .h file.
+        #include "sst/core/statapi/componentregisterstat_impl.h"
     }
-
-
 
 
 };
