@@ -17,6 +17,7 @@
 #include <string.h>
 #include <sstream>
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/model/pymodel.h>
 #include <sst/core/model/pymodel_comp.h>
 #include <sst/core/model/pymodel_statgroup.h>
@@ -48,7 +49,7 @@ static Params convertToParams(PyObject *dict)
 
 
 
-static int sgInit(StatGroupPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
+static int sgInit(StatGroupPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     char *name = NULL;
     if ( !PyArg_ParseTuple(args, "s", &name) ) return -1;
@@ -218,7 +219,7 @@ PyTypeObject PyModel_StatGroupType = {
 
 
 
-static int soInit(StatOutputPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
+static int soInit(StatOutputPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     char *type = NULL;
     PyObject *params = NULL;

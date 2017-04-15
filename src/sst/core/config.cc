@@ -26,8 +26,11 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <sst/core/warnmacros.h>
 #ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
+REENABLE_WARNING
 #endif
 
 #include "sst/core/build_info.h"

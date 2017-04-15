@@ -73,7 +73,7 @@ public:
             data(data)
         {}
 
-        bool operator()(Cycle_t cycle) {
+        bool operator()(Cycle_t cycle) override {
             return (object->*member)(cycle,data);
         }
     };
@@ -98,7 +98,7 @@ public:
             member(member)
         {}
 
-        bool operator()(Cycle_t cycle) {
+        bool operator()(Cycle_t cycle) override {
             return (object->*member)(cycle);
         }
     };
@@ -117,7 +117,7 @@ public:
     /** Remove a handler from the list of handlers to be called on the clock tick */
     bool unregisterHandler( Clock::HandlerBase* handler, bool& empty );
 
-    void print(const std::string& header, Output &out) const;
+    void print(const std::string& header, Output &out) const override;
     
 private:
 /*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */
@@ -126,7 +126,7 @@ private:
 
     Clock() { }
 
-    void execute( void );
+    void execute( void ) override;
 
     Cycle_t            currentCycle;
     TimeConverter*     period;

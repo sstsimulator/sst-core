@@ -138,6 +138,7 @@ nobase_dist_sst_HEADERS = \
 	threadsafe.h \
 	cputimer.h \
 	sst_config.h \
+	warnmacros.h \
 	model/element_python.h
 
 nobase_nodist_sst_HEADERS = \

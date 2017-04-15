@@ -41,10 +41,10 @@ public:
     SimplePartitioner();
     ~SimplePartitioner() {}
 
-    void performPartition(PartitionGraph* graph);
+    void performPartition(PartitionGraph* graph) override;
 
-    bool requiresConfigGraph() { return false; }
-    bool spawnOnAllRanks() { return false; }
+    bool requiresConfigGraph() override { return false; }
+    bool spawnOnAllRanks() override { return false; }
 
     SST_ELI_REGISTER_PARTITIONER(SimplePartitioner,"sst","simple","Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.")
     

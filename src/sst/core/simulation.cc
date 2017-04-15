@@ -12,6 +12,7 @@
 
 #include "sst_config.h"
 #include <sst/core/simulation.h>
+#include <sst/core/warnmacros.h>
 
 #include <utility>
 
@@ -206,7 +207,7 @@ Simulation::getLocalMinimumNextActivityTime()
 }
 
 void
-Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank __attribute__((unused)), SimTime_t min_part )
+Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank), SimTime_t min_part )
 {
     // TraceFunction trace(CALL_INFO_LONG);    
     // Set minPartTC (only thread 0 will do this)
@@ -288,7 +289,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank __attri
     // if ( independent ) std::cout << "thread " << my_rank.thread <<  " is independent" << std::endl;
 }
     
-int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part __attribute__((unused)))
+int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
     // TraceFunction trace(CALL_INFO_LONG);    
     
@@ -796,7 +797,7 @@ Statistics::StatisticProcessingEngine* Simulation::getStatisticsProcessingEngine
 
 // Function to allow for easy serialization of threads while debugging
 // code
-void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads __attribute__((unused))) {
+void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int UNUSED(total_threads)) {
     // Everyone barriers
     barrier.wait();
     // Now barrier until it's my turn

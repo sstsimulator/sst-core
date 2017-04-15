@@ -11,6 +11,7 @@
 
 #include <sst_config.h>
 #include "sst/core/part/rrobin.h"
+#include <sst/core/warnmacros.h>
 
 #include <string>
 
@@ -21,7 +22,7 @@ using namespace std;
 namespace SST {
 namespace Partition {
 
-SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo my_rank __attribute__((unused)), int verbosity __attribute__((unused))) :
+SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
     SSTPartitioner(),
     world_size(world_size)
 {

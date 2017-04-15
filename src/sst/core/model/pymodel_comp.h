@@ -41,10 +41,10 @@ struct PyComponent : ComponentHolder {
 
     PyComponent(ComponentPy_t *pobj) : ComponentHolder(pobj), subCompId(0) { }
     ~PyComponent() {}
-    const char* getName() const ;
-    ConfigComponent* getComp();
-    PyComponent* getBaseObj();
-    int compare(ComponentHolder *other);
+    const char* getName() const override;
+    ConfigComponent* getComp() override;
+    PyComponent* getBaseObj() override;
+    int compare(ComponentHolder *other) override;
 };
 
 struct PySubComponent : ComponentHolder {
@@ -52,10 +52,10 @@ struct PySubComponent : ComponentHolder {
 
     PySubComponent(ComponentPy_t *pobj) : ComponentHolder(pobj) { }
     ~PySubComponent() {}
-    const char* getName() const ;
-    ConfigComponent* getComp();
-    PyComponent* getBaseObj();
-    int compare(ComponentHolder *other);
+    const char* getName() const override;
+    ConfigComponent* getComp() override;
+    PyComponent* getBaseObj() override;
+    int compare(ComponentHolder *other) override;
 };
 
 

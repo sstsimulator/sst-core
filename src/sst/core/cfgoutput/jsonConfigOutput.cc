@@ -12,6 +12,7 @@
 
 #include <sst_config.h>
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/config.h>
 #include <sst/core/configGraph.h>
 #include <sst/core/configGraphOutput.h>
@@ -27,7 +28,7 @@ JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) :
 
 }
 
-void JSONConfigGraphOutput::generate(const Config* cfg __attribute__((unused)),
+void JSONConfigGraphOutput::generate(const Config* UNUSED(cfg),
                 ConfigGraph* graph) throw(ConfigGraphOutputException) {
 
 	if(NULL == outputFile) {
@@ -59,7 +60,7 @@ void JSONConfigGraphOutput::generate(const Config* cfg __attribute__((unused)),
 }
 
 void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigComponent& comp,
-                const ConfigLinkMap_t& linkMap __attribute__((unused))) const {
+                const ConfigLinkMap_t& UNUSED(linkMap)) const {
 
 	fprintf(outputFile, "%s  {\n", indent.c_str());
 	fprintf(outputFile, "%s    \"name\" : \"%s\",\n", indent.c_str(), comp.name.c_str());

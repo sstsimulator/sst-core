@@ -13,6 +13,7 @@
 #define SST_CORE_ELEMENTINFO_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/params.h>
 
 #include <string>
@@ -107,8 +108,8 @@ class ModuleElementInfo : public BaseElementInfo {
 protected:
 
 public:
-    virtual Module* create(Component* comp __attribute__((unused)), Params& params __attribute__((unused))) { /* Need to print error */ return NULL; }
-    virtual Module* create(Params& params __attribute__((unused))) { /* Need to print error */ return NULL; }
+    virtual Module* create(Component* UNUSED(comp), Params& UNUSED(params)) { /* Need to print error */ return NULL; }
+    virtual Module* create(Params& UNUSED(params)) { /* Need to print error */ return NULL; }
     virtual const std::string getInterface() = 0;
     
     std::string toString();
@@ -436,14 +437,14 @@ private:
 
 public:
     
-    virtual Partition::SSTPartitioner* create(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
+    virtual Partition::SSTPartitioner* create(RankInfo total_ranks, RankInfo my_rank, int verbosity) override {
         return new T(total_ranks,my_rank,verbosity);
     }
     
     static bool isLoaded() { return loaded; }
-    const std::string getDescription() { return T::ELI_getDescription(); }
-    const std::string getName() { return T::ELI_getName(); }
-    const std::string getLibrary() { return T::ELI_getLibrary(); }
+    const std::string getDescription() override { return T::ELI_getDescription(); }
+    const std::string getName() override { return T::ELI_getName(); }
+    const std::string getLibrary() override { return T::ELI_getLibrary(); }
 };
 
 template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase::addPartitioner(new PartitionerDoc<T>());

@@ -10,6 +10,7 @@
 // distribution.
 
 #include <sst_config.h>
+#include <sst/core/warnmacros.h>
 
 #include <string>
 
@@ -219,7 +220,7 @@ BaseComponent::configureSelfLink( std::string name, Event::HandlerBase* handler)
     return configureLink(name,handler);
 }
 
-Link* BaseComponent::selfLink( std::string name __attribute__((unused)), Event::HandlerBase* handler )
+Link* BaseComponent::selfLink( std::string UNUSED(name), Event::HandlerBase* handler )
 {
     Link* link = new SelfLink();
     link->setLatency(0);

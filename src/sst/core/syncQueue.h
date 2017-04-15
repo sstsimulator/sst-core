@@ -40,11 +40,11 @@ public:
     SyncQueue();
     ~SyncQueue();
 
-    bool empty();
-    int size();
-    void insert(Activity* activity);
-    Activity* pop(); // Not a good idea for this particular class
-    Activity* front();
+    bool empty() override;
+    int size() override;
+    void insert(Activity* activity) override;
+    Activity* pop() override; // Not a good idea for this particular class
+    Activity* front() override;
 
     // Not part of the ActivityQueue interface
     /** Clear elements from the queue */

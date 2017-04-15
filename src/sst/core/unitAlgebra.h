@@ -23,7 +23,9 @@
 #include <vector>
 #include <mutex>
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/decimal_fixedpoint.h>
+
 
 namespace SST {
 
@@ -181,7 +183,7 @@ public:
     /** Return the rounded value as a 64bit integer */
     int64_t getRoundedValue() const;
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         // Do the unit
         ser & unit.numerator;
         ser & unit.denominator;

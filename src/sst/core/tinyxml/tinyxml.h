@@ -38,6 +38,9 @@ distribution.
 #include <string.h>
 #include <assert.h>
 
+#include <sst/core/warnmacros.h>
+DISABLE_WARN_MISSING_OVERRIDE
+
 // Help out windows:
 #if defined( _DEBUG ) && !defined( DEBUG )
 #define DEBUG
@@ -1800,5 +1803,7 @@ private:
 #ifdef _MSC_VER
 #pragma warning( pop )
 #endif
+
+REENABLE_WARNING
 
 #endif

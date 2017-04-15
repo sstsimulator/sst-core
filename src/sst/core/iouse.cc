@@ -15,8 +15,11 @@
 #include "sst/core/iouse.h"
 
 #include <sys/resource.h>
+#include <sst/core/warnmacros.h>
 #ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
+REENABLE_WARNING
 #endif
 
 

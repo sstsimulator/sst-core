@@ -14,6 +14,7 @@
 
 #include <ostream>
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/uninitializedQueue.h>
 
 namespace SST {
@@ -38,7 +39,7 @@ namespace SST {
 	abort();
     }
     
-    void UninitializedQueue::insert(Activity* activity __attribute__((unused)))
+    void UninitializedQueue::insert(Activity* UNUSED(activity))
     {
 	std::cout << message << std::endl;
 	abort();

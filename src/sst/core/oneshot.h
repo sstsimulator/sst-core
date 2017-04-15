@@ -73,7 +73,7 @@ public:
          *  by the OneShot object to execute the users callback.
          * @param data - The data passed in when the handler was created
          */
-        void operator()() {
+        void operator()() override {
             (object->*member)(data);
         }
     };
@@ -103,7 +103,7 @@ public:
         /** Operator to callback OneShot Handler; called 
          *  by the OneShot object to execute the users callback.
          */
-        void operator()() {
+        void operator()() override {
             (object->*member)();
         }
     };
@@ -125,7 +125,7 @@ public:
     void registerHandler(OneShot::HandlerBase* handler);
 
     /** Print details about the OneShot */
-    void print(const std::string& header, Output &out) const;
+    void print(const std::string& header, Output &out) const override;
     
 private:
     typedef std::vector<OneShot::HandlerBase*>  HandlerList_t;
@@ -135,7 +135,7 @@ private:
     OneShot() { }
 
     // Called by the Simulation (Activity Queue) when delay time as elapsed
-    void execute(void);
+    void execute(void) override;
 
     // Activates this OneShot object, by inserting into the simulation's
     // timeVortex for future execution.

@@ -11,6 +11,7 @@
 
 
 #include "sst_config.h"
+#include <sst/core/warnmacros.h>
 #include <sst/core/timeLord.h>
 
 #include <cstdio>
@@ -104,7 +105,7 @@ TimeLord::~TimeLord() {
     parseCache.clear();
 }
 
-SimTime_t TimeLord::getSimCycles(std::string ts, std::string where __attribute__((unused)))
+SimTime_t TimeLord::getSimCycles(std::string ts, std::string UNUSED(where))
 {
     // See if this is in the cache
     std::lock_guard<std::recursive_mutex> lock(slock);

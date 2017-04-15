@@ -14,6 +14,7 @@
 #define SST_CORE_PART_BASE
 
 #include <sst/core/rankInfo.h>
+#include <sst/core/warnmacros.h>
 
 #include <map>
 
@@ -42,7 +43,7 @@ public:
      * Result of this function is that every ConfigComponent in
      * graph has a Rank applied to it.
      */
-    virtual void performPartition(PartitionGraph* graph __attribute__((unused))) {}
+    virtual void performPartition(PartitionGraph* UNUSED(graph)) {}
 
     /** Function to be overriden by subclasses
      *
@@ -53,7 +54,7 @@ public:
      * Result of this function is that every ConfigComponent in
      * graph has a Rank applied to it.
      */
-    virtual void performPartition(ConfigGraph* graph __attribute__((unused))) {}
+    virtual void performPartition(ConfigGraph* UNUSED(graph)) {}
     
     virtual bool requiresConfigGraph() { return false; }
     

@@ -40,20 +40,20 @@ protected:
     /** Perform a check of provided parameters
      * @return True if all required parameters and options are acceptable 
      */
-    bool checkOutputParameters();
+    bool checkOutputParameters() override;
     
     /** Print out usage for this Statistic Output */
-    void printUsage();
+    void printUsage() override;
     
     /** Indicate to Statistic Output that simulation started.
      *  Statistic output may perform any startup code here as necessary. 
      */
-    void startOfSimulation(); 
+    void startOfSimulation() override;
 
     /** Indicate to Statistic Output that simulation ended.
      *  Statistic output may perform any shutdown code here as necessary. 
      */
-    void endOfSimulation(); 
+    void endOfSimulation() override;
 
     /** Implementation function for the start of output.
      * This will be called by the Statistic Processing Engine to indicate that  
@@ -61,14 +61,14 @@ protected:
      * @param statistic - Pointer to the statistic object than the output can 
      * retrieve data from.
      */
-    void implStartOutputEntries(StatisticBase* statistic); 
+    void implStartOutputEntries(StatisticBase* statistic) override;
     
     /** Implementation function for the end of output.
      * This will be called by the Statistic Processing Engine to indicate that  
      * a Statistic is finished sendind data to the Statistic Output for processing.
      * The Statisic Output can perform any output related functions here.
      */
-    void implStopOutputEntries(); 
+    void implStopOutputEntries() override;
 
     /** Implementation functions for output.
      * These will be called by the statistic to provide Statistic defined 
@@ -76,12 +76,12 @@ protected:
      * @param fieldHandle - The handle to the registered statistic field.
      * @param data - The data related to the registered field to be output.
      */
-    void implOutputField(fieldHandle_t fieldHandle, int32_t data);
-    void implOutputField(fieldHandle_t fieldHandle, uint32_t data);
-    void implOutputField(fieldHandle_t fieldHandle, int64_t data);
-    void implOutputField(fieldHandle_t fieldHandle, uint64_t data); 
-    void implOutputField(fieldHandle_t fieldHandle, float data);
-    void implOutputField(fieldHandle_t fieldHandle, double data);
+    void implOutputField(fieldHandle_t fieldHandle, int32_t data) override;
+    void implOutputField(fieldHandle_t fieldHandle, uint32_t data) override;
+    void implOutputField(fieldHandle_t fieldHandle, int64_t data) override;
+    void implOutputField(fieldHandle_t fieldHandle, uint64_t data) override;
+    void implOutputField(fieldHandle_t fieldHandle, float data) override;
+    void implOutputField(fieldHandle_t fieldHandle, double data) override;
 
 protected:
     StatisticOutputTxt() {;} // For serialization
