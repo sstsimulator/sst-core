@@ -15,11 +15,14 @@
 #include "sst/core/sst_types.h"
 #include <sst/core/syncManager.h>
 #include <sst/core/threadsafe.h>
+#include <sst/core/warnmacros.h>
 
 #include <map>
 
 #ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
+REENABLE_WARNING
 #endif   
 
 namespace SST {
@@ -35,17 +38,17 @@ public:
     virtual ~RankSyncParallelSkip();
     
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link);
-    void execute(int thread);
+    ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) override;
+    void execute(int thread) override;
 
     /** Cause an exchange of Initialization Data to occur */
-    void exchangeLinkInitData(int thread, std::atomic<int>& msg_count);
+    void exchangeLinkInitData(int thread, std::atomic<int>& msg_count) override;
     /** Finish link configuration */
-    void finalizeLinkConfigurations();
+    void finalizeLinkConfigurations() override;
 
-    SimTime_t getNextSyncTime() { return myNextSyncTime; }
+    SimTime_t getNextSyncTime() override { return myNextSyncTime; }
     
-    uint64_t getDataSize() const;
+    uint64_t getDataSize() const override;
     
 private:
 

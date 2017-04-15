@@ -36,7 +36,7 @@ public:
     }
     ~Action() {}
 
-    void print(const std::string& header, Output &out) const {
+    void print(const std::string& header, Output &out) const override {
         out.output("%s Generic Action to be delivered at %" PRIu64 " with priority %d\n",
                 header.c_str(), getDeliveryTime(), getPriority());
     }

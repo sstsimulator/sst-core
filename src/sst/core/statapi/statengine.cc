@@ -11,6 +11,7 @@
 
 #include <sst_config.h>
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/output.h>
 #include <sst/core/factory.h>
 #include <sst/core/timeLord.h>
@@ -494,7 +495,7 @@ void StatisticProcessingEngine::performGlobalStatisticOutput(bool endOfSimFlag /
 
 
 
-bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t CycleNum __attribute__((unused)), SimTime_t timeFactor) 
+bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t UNUSED(CycleNum), SimTime_t timeFactor) 
 {
     StatArray_t*     statArray;
     StatisticBase*   stat;
@@ -516,7 +517,7 @@ bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t CycleNum
 
 
 
-bool StatisticProcessingEngine::handleGroupClockEvent(Cycle_t CycleNum __attribute__((unused)), StatisticGroup *group)
+bool StatisticProcessingEngine::handleGroupClockEvent(Cycle_t UNUSED(CycleNum), StatisticGroup *group)
 {
     m_barrier.wait();
     if ( Simulation::getSimulation()->getRank().thread == 0 ) {
@@ -592,7 +593,7 @@ StatisticBase* StatisticProcessingEngine::isStatisticInCompStatMap(const std::st
     return NULL;
 }
 
-void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType __attribute__((unused)))
+void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t UNUSED(fieldType))
 {
     StatArray_t*        statArray;
     ComponentId_t compId = Stat->getComponent()->getId();

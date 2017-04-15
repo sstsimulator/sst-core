@@ -13,6 +13,7 @@
 #define SST_CORE_BASECOMPONENT_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <map>
 #include <string>
@@ -67,7 +68,7 @@ public:
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
-    virtual void init(unsigned int phase __attribute__((unused))) {}
+    virtual void init(unsigned int UNUSED(phase)) {}
     /** Called after all components have been constructed and inialization has
 	completed, but before simulation time has begun. */
     virtual void setup( ) { }
@@ -83,7 +84,7 @@ public:
      * print it's current status.  Useful for debugging.
      * @param out The Output class which should be used to print component status.
      */
-    virtual void printStatus(Output &out __attribute__((unused))) { return; }
+    virtual void printStatus(Output &UNUSED(out)) { return; }
 
     /** Determine if a port name is connected to any links */
     bool isPortConnected(const std::string &name) const;

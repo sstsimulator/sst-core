@@ -18,6 +18,7 @@
 #include <unordered_map>
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/subcomponent.h>
 #include <sst/core/params.h>
 
@@ -133,7 +134,7 @@ public:
         int getTraceID() {return traceID;}
         TraceType getTraceType() {return trace;}
         
-        void serialize_order(SST::Core::Serialization::serializer &ser) {
+        void serialize_order(SST::Core::Serialization::serializer &ser) override {
             ser & dest;
             ser & src;
             ser & vn;
@@ -293,9 +294,9 @@ public:
      */
     virtual Request* recv(int vn) = 0;
 
-    virtual void setup() {}
-    virtual void init(unsigned int phase __attribute__((unused))) {}
-    virtual void finish() {}
+    virtual void setup() override {}
+    virtual void init(unsigned int UNUSED(phase)) override {}
+    virtual void finish() override {}
 
     /**
      * Checks if there is sufficient space to send on the specified

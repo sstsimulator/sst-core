@@ -17,13 +17,16 @@
 #include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
 
+#include <sst/core/warnmacros.h>
 #ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
+REENABLE_WARNING
 #endif
 
 namespace SST {
 
-SimulatorHeartbeat::SimulatorHeartbeat( Config* cfg __attribute__((unused)), int this_rank, Simulation* sim, TimeConverter* period) :
+SimulatorHeartbeat::SimulatorHeartbeat( Config* UNUSED(cfg), int this_rank, Simulation* sim, TimeConverter* period) :
     Action(),
     rank(this_rank),
     m_period( period )

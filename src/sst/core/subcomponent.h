@@ -13,6 +13,7 @@
 #ifndef SST_CORE_SUBCOMPONENT_H
 #define SST_CORE_SUBCOMPONENT_H
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/baseComponent.h>
 #include <sst/core/component.h>
 #include <sst/core/module.h>
@@ -36,19 +37,19 @@ public:
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
-    virtual void init(unsigned int phase __attribute__((unused))) {}
+    virtual void init(unsigned int UNUSED(phase)) override {}
     /** Called after all components have been constructed and inialization has
 	completed, but before simulation time has begun. */
-    virtual void setup( ) { }
+    virtual void setup( ) override { }
     /** Called after simulation completes, but before objects are
         destroyed. A good place to print out statistics. */
-    virtual void finish( ) { }
+    virtual void finish( ) override { }
 
 protected:
     Component* const parent;
 
-    Component* getTrueComponent() const final { return parent; }
-    BaseComponent* getStatisticOwner() const final {
+    Component* getTrueComponent() const final override { return parent; }
+    BaseComponent* getStatisticOwner() const final override {
         /* If our ID == parent ID, then we're a legacy subcomponent that doesn't own stats. */
         if ( this->getId() == parent->getId() )
             return parent;
@@ -61,7 +62,7 @@ protected:
     }
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final;
+    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final override;
 
 private:
     /** Component's type, set by the factory when the object is created.

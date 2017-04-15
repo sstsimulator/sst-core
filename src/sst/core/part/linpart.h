@@ -58,10 +58,10 @@ public:
        Performs a partition of an SST simulation configuration
        \param graph The simulation configuration to partition
     */
-    void performPartition(PartitionGraph* graph);
+    void performPartition(PartitionGraph* graph) override;
     
-    bool requiresConfigGraph() { return false; }
-    bool spawnOnAllRanks() { return false; }
+    bool requiresConfigGraph() override { return false; }
+    bool spawnOnAllRanks() override { return false; }
     
     // static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
     //     return new SSTLinearPartition(total_ranks, my_rank, verbosity);

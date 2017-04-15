@@ -11,6 +11,7 @@
 
 
 #include "sst_config.h"
+#include <sst/core/warnmacros.h>
 #include "sst/core/factory.h"
 
 #include <set>
@@ -618,7 +619,7 @@ Factory::CreateCoreModule(std::string type, Params& params) {
 }
 
 Module*
-Factory::CreateCoreModuleWithComponent(std::string type, Component* comp __attribute__((unused)), Params& params __attribute__((unused))) {
+Factory::CreateCoreModuleWithComponent(std::string type, Component* UNUSED(comp), Params& UNUSED(params)) {
     out.fatal(CALL_INFO, -1, "can't find requested core module %s when loading with component\n", type.c_str());
     return NULL;
 }

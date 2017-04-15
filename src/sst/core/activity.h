@@ -14,6 +14,7 @@
 #define SST_CORE_ACTIVITY_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <sst/core/serialization/serializable.h>
 
@@ -281,7 +282,7 @@ public:
 
         pool->free(ptr8);
     }
-    void operator delete(void* ptr, std::size_t sz __attribute__((unused))){
+    void operator delete(void* ptr, std::size_t UNUSED(sz)){
         /* 1) Decrement pointer
          * 2) Determine Pool Pointer
          * 2b) Set Pointer field to NULL to allow tracking
@@ -343,7 +344,7 @@ protected:
     // Function used by derived classes to serialize data members.
     // This class is not serializable, becuase not all class that
     // inherit from it need to be serializable.
-    void serialize_order(SST::Core::Serialization::serializer &ser){
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & queue_order;
         ser & delivery_time;
         ser & priority;

@@ -107,14 +107,14 @@ public:
 
     /** Register a Link which this Sync Object is responsible for */
     ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link);
-    void execute(void);
+    void execute(void) override;
 
     /** Cause an exchange of Initialization Data to occur */
     void exchangeLinkInitData(std::atomic<int>& msg_count);
     /** Finish link configuration */
     void finalizeLinkConfigurations();
 
-    void print(const std::string& header, Output &out) const;
+    void print(const std::string& header, Output &out) const override;
 
     uint64_t getDataSize() const;
 

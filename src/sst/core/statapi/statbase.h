@@ -15,6 +15,7 @@
 #include <string>
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/params.h>
 #include <sst/core/oneshot.h>
 #include <sst/core/statapi/statfieldinfo.h>
@@ -38,7 +39,7 @@ public:
     StatisticInfo(const std::string &name, const Params &params) : name(name), params(params) { }
     StatisticInfo() { } /* DO NOT USE:  For serialization */
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & name;
         ser & params;
     }
@@ -229,7 +230,7 @@ private:
       * by default, both modes are supported.
       * @param mode - Mode to test
       */
-    virtual bool isStatModeSupported(StatMode_t mode __attribute__((unused))) const {return true;}      // Default is to accept all modes
+    virtual bool isStatModeSupported(StatMode_t UNUSED(mode)) const {return true;}      // Default is to accept all modes
 
     /** Verify that the statistic names match */
     bool operator==(StatisticBase& checkStat); 

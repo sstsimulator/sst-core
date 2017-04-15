@@ -64,11 +64,11 @@ public:
        by Zoltan.
        \param graph An SST partition graph
     */
-    void performPartition(PartitionGraph* graph);
+    void performPartition(PartitionGraph* graph) override;
     
-    bool requiresConfigGraph() { return false; }
+    bool requiresConfigGraph() override { return false; }
     
-    bool spawnOnAllRanks() { return true; }
+    bool spawnOnAllRanks() override { return true; }
     
     SST_ELI_REGISTER_PARTITIONER(SSTZoltanPartition,"sst","zoltan","zoltan parallel partitioner")
 };

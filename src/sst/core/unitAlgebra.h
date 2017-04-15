@@ -23,16 +23,11 @@
 #include <vector>
 #include <mutex>
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-register"
-#endif
+#include <sst/core/warnmacros.h>
 
+DISABLE_WARN_DEPRECATED_REGISTER
 #include <boost/multiprecision/cpp_dec_float.hpp>
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
+REENABLE_WARNING
 
 #include <boost/version.hpp>
 
@@ -191,7 +186,7 @@ public:
     /** Return the rounded value as a 64bit integer */
     int64_t getRoundedValue() const;
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         // Do the unit
         ser & unit.numerator;
         ser & unit.denominator;
