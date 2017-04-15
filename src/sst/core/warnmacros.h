@@ -53,9 +53,12 @@
 #define DISABLE_WARN_STRICT_ALIASING \
     DIAG_DISABLE(strict-aliasing)
 
+#if (__GNUC__ >= 5)
 #define DISABLE_WARN_MISSING_OVERRIDE \
     DIAG_DISABLE(suggest-override)
-
+#else
+#define DISABLE_WARN_MISSING_OVERRIDE
+#endif
 
 #else
 

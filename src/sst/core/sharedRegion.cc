@@ -13,6 +13,7 @@
 #include <sst_config.h>
 #include <sst/core/warnmacros.h>
 
+#include <unistd.h>
 #include <string>
 #include <vector>
 #include <set>

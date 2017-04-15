@@ -11,6 +11,8 @@
 
 #include <sst_config.h>
 
+#include <algorithm>
+
 #include <sst/core/simulation.h>
 #include <sst/core/warnmacros.h>
 #include <sst/core/baseComponent.h>
