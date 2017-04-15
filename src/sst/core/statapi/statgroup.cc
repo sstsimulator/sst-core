@@ -11,6 +11,8 @@
 
 #include <sst_config.h>
 
+#include <algorithm>
+
 #include <sst/core/statapi/statgroup.h>
 #include <sst/core/statapi/statbase.h>
 #include <sst/core/statapi/statengine.h>
