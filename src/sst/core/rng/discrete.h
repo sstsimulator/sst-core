@@ -14,6 +14,8 @@
 
 #include "math.h"
 
+#include <cstdlib>  // for malloc/free
+
 #include "distrib.h"
 #include "mersenne.h"
 

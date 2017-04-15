@@ -20,10 +20,9 @@
 #include <sst/core/output.h>
 #include <sst/core/simulation.h>
 
-#include <boost/assign.hpp>
+// #include <boost/assign.hpp>
 
 
-using namespace boost::multiprecision;
 using namespace std;
 using namespace SST;
 
@@ -41,28 +40,29 @@ static void split(string input, string delims, vector<string>& tokens) {
     } while (stop != string::npos);
 }
 
-static map<string,sst_dec_float> si_unit_map =
-    boost::assign::map_list_of
-    ("a",sst_dec_float("1e-18"))
-    ("f",sst_dec_float("1e-15"))
-    ("p",sst_dec_float("1e-12"))
-    ("n",sst_dec_float("1e-9"))
-    ("u",sst_dec_float("1e-6"))
-    ("m",sst_dec_float("1e-3"))
-    ("k",sst_dec_float("1e3"))
-    ("K",sst_dec_float("1e3"))
-    ("ki",sst_dec_float(1024l))
-    ("Ki",sst_dec_float(1024l))
-    ("M",sst_dec_float("1e6"))
-    ("Mi",sst_dec_float(1024l*1024l))
-    ("G",sst_dec_float("1e9"))
-    ("Gi",sst_dec_float(1024l*1024l*1024l))
-    ("T",sst_dec_float("1e12"))
-    ("Ti",sst_dec_float(1024l*1024l*1024l*1024l))
-    ("P",sst_dec_float("1e15"))
-    ("Pi",sst_dec_float(1024l*1024l*1024l*1024l*1024l))
-    ("E",sst_dec_float("1e18")) 
-    ("Ei",sst_dec_float(1024l*1024l*1024l*1024l*1024l*1024l)) ;
+
+static map<string,sst_big_num> si_unit_map = {
+    {"a",sst_big_num("1e-18")},
+    {"f",sst_big_num("1e-15")},
+    {"p",sst_big_num("1e-12")},
+    {"n",sst_big_num("1e-9")},
+    {"u",sst_big_num("1e-6")},
+    {"m",sst_big_num("1e-3")},
+    {"k",sst_big_num("1e3")},
+    {"K",sst_big_num("1e3")},
+    {"ki",sst_big_num(1024l)},
+    {"Ki",sst_big_num(1024l)},
+    {"M",sst_big_num("1e6")},
+    {"Mi",sst_big_num(1024l*1024l)},
+    {"G",sst_big_num("1e9")},
+    {"Gi",sst_big_num(1024l*1024l*1024l)},
+    {"T",sst_big_num("1e12")},
+    {"Ti",sst_big_num(1024l*1024l*1024l*1024l)},
+    {"P",sst_big_num("1e15")},
+    {"Pi",sst_big_num(1024l*1024l*1024l*1024l*1024l)},
+    {"E",sst_big_num("1e18")},
+    {"Ei",sst_big_num(1024l*1024l*1024l*1024l*1024l*1024l)}
+};
 
 
 
@@ -70,7 +70,7 @@ static map<string,sst_dec_float> si_unit_map =
 
 std::recursive_mutex Units::unit_lock;
 map<string,Units::unit_id_t> Units::valid_base_units;
-map<string,pair<Units,sst_dec_float> > Units::valid_compound_units;
+map<string,pair<Units,sst_big_num> > Units::valid_compound_units;
 map<Units::unit_id_t,string> Units::unit_strings;
 Units::unit_id_t Units::count;
 bool Units::initialized = Units::initialize();
@@ -120,7 +120,7 @@ Units::reduce()
 }
 
 void
-Units::addUnit(std::string units, sst_dec_float& multiplier, bool invert)
+Units::addUnit(std::string units, sst_big_num& multiplier, bool invert)
 {
     std::lock_guard<std::recursive_mutex> lock(unit_lock);
     // Check to see if the unit matches one of the registered unit
@@ -172,7 +172,7 @@ Units::addUnit(std::string units, sst_dec_float& multiplier, bool invert)
     }
     // Check to see if this is a compound unit
     else if ( valid_compound_units.find(type) != valid_compound_units.end() ) {
-        pair<Units,sst_dec_float> units = valid_compound_units[type];
+        pair<Units,sst_big_num> units = valid_compound_units[type];
         if ( !invert ) {
             *this *= units.first;
             multiplier *= units.second;
@@ -208,13 +208,13 @@ Units::registerCompoundUnit(string u, string v)
 {
     std::lock_guard<std::recursive_mutex> lock(unit_lock);
     if ( valid_compound_units.find(u) != valid_compound_units.end() ) return;
-    sst_dec_float multiplier = 1;
+    sst_big_num multiplier = 1;
     Units unit(v,multiplier);
-    valid_compound_units[u] = std::pair<Units,sst_dec_float>(unit,multiplier);
+    valid_compound_units[u] = std::pair<Units,sst_big_num>(unit,multiplier);
     return;
 }
 
-Units::Units(std::string units, sst_dec_float& multiplier)
+Units::Units(std::string units, sst_big_num& multiplier)
 {   
     // Get the numerator and the denominator
     string s_numerator;
@@ -362,11 +362,11 @@ UnitAlgebra::init(std::string val)
     string number = trim(parse.substr(0,split));
     string units = trim(parse.substr(split));
 
-    sst_dec_float multiplier(1);
+    sst_big_num multiplier(1);
     unit = Units(units,multiplier);
 
     try {
-        value = sst_dec_float(number);
+        value = sst_big_num(number);
     }
     catch (runtime_error e) {
         Output abort = Simulation::getSimulation()->getSimulationOutput();
@@ -384,7 +384,7 @@ UnitAlgebra::UnitAlgebra(std::string val)
 
 void
 UnitAlgebra::print(ostream& stream) {
-    stream << value << " " << unit.toString() << endl;
+    stream << value.toString() << " " << unit.toString() << endl;
 }
 
 void
@@ -397,7 +397,7 @@ string
 UnitAlgebra::toString() const
 {
     stringstream s;
-    s << value << " " << unit.toString();
+    s << value.toString() << " " << unit.toString();
     return s.str();
 }
 
@@ -406,10 +406,10 @@ string
 UnitAlgebra::toStringBestSI() const
 {
     stringstream s;
-    sst_dec_float temp;
+    sst_big_num temp;
     string si;
     bool found = false;
-    for ( map<string,sst_dec_float>::iterator it = si_unit_map.begin();
+    for ( map<string,sst_big_num>::iterator it = si_unit_map.begin();
          it != si_unit_map.end(); ++it ) {
         // Divide by the value, if it's between 1 and 1000, we have
         // the most natual SI unit
@@ -421,7 +421,7 @@ UnitAlgebra::toStringBestSI() const
             break;
         }
     }
-    s << (found ? temp : value) << " " << si << unit.toString();
+    s << (found ? temp.toString() : value.toString()) << " " << si << unit.toString();
     return s.str();
 }
 
@@ -501,14 +501,15 @@ UnitAlgebra&
 UnitAlgebra::invert()
 {
     unit.invert();
-    value = 1 / value;
+    // value = 1 / value;
+    value.inverse();
     return *this;
 }
 
 bool
 UnitAlgebra::hasUnits(std::string u) const
 {
-    sst_dec_float multiplier = 1;
+    sst_big_num multiplier = 1;
     Units check_units(u,multiplier);
     return unit == check_units;
 }
@@ -526,7 +527,8 @@ UnitAlgebra::getRoundedValue() const
     // ss << round(value);
     // ss >> ret;    
     // return ret;
-    return llround(value);
+    // return llround(value);
+    return value.toLong();
 }
 
 

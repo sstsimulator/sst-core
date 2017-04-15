@@ -71,7 +71,7 @@ TimeConverter* TimeLord::getTimeConverter(const UnitAlgebra& ts) {
                     ts.toString().c_str());
     }
     // Check to see if number is too big or too small
-    if ( uaFactor.getValue() > MAX_SIMTIME_T ) {
+    if ( uaFactor.getValue() > static_cast<uint64_t>(MAX_SIMTIME_T) ) {
         abort.fatal(CALL_INFO,1,"Error:  Attempting to get TimeConverter for a time (%s) "
                     "which is too large for the timebase (%s)\n",
                     ts.toString().c_str(),timeBase.toStringBestSI().c_str());

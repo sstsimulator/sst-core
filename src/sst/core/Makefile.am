@@ -33,6 +33,7 @@ nobase_dist_sst_HEADERS = \
 	cfgoutput/dotConfigOutput.h \
 	cfgoutput/xmlConfigOutput.h \
 	cfgoutput/jsonConfigOutput.h \
+	decimal_fixedpoint.h \
 	env/envquery.h \
 	env/envconfig.h \
 	element.h \
