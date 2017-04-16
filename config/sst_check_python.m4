@@ -25,7 +25,7 @@ AC_DEFUN([SST_CHECK_PYTHON], [
   AS_IF([test -n "$with_python"],
         [PYTHON_LIBS=""],
         [AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-                [PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --libs`])])
+                [PYTHON_LIBS=`$PYTHON_CONFIG_EXE --libs`])])
 
   CPPFLAGS_saved="$CPPFLAGS"
   LDFLAGS_saved="$LDFLAGS"
