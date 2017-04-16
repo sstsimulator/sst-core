@@ -255,6 +255,7 @@ sstinfo_x_SOURCES = \
 
 sstsim_x_LDADD = \
 	$(LIBLTDL) \
+	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
 	$(BOOST_LIBS) \
