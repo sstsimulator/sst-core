@@ -82,7 +82,7 @@ SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 SST_CHECK_BOOST([], [AC_MSG_ERROR([Could not find Boost, this is required for SST to build])])
 
 SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
-SST_CHECK_LIBZ()
+SST_CHECK_LIBZ([have_zlib="yes"],[have_zlib="no"],[AC_MSG_ERROR([zlib was requested but could not be found.])])
 SST_CHECK_HDF5()
 SST_CHECK_MEM_POOL()
 
@@ -230,6 +230,11 @@ if test "x$sst_check_hdf5_happy" = "xyes" ; then
     printf "%38s : YES\n" "HDF5 Support"
 else
     printf "%38s : No\n" "HDF5 Support"
+fi
+if test "x$sst_check_libz_happy" = "xyes" ; then
+    printf "%38s : YES\n" "libz compression library"
+else
+    printf "%38s : No\n" "libz compression library"
 fi
 
 echo "-------------------------------------------------------" 
