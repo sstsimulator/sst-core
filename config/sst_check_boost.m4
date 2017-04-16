@@ -1,12 +1,10 @@
 AC_DEFUN([SST_CHECK_BOOST], [
 
 	AC_ARG_WITH([boost], [AS_HELP_STRING([--with-boost@<:@=DIR@:>@],
-                             [use boost (default is yes) - it is possible to
-                              specify the root directory for boost (optional)])])
+                             [it is possible to specify the root directory
+                              for Boost (optional)])])
 
-	sst_check_boost_happy="yes"
-
-	AS_IF([test "$with_boost" = "no"], [sst_check_boost_happy="no"])
+	sst_check_boost_happy="no"
 
 	CPPFLAGS_saved="$CPPFLAGS"
   	LDFLAGS_saved="$LDFLAGS"
@@ -40,11 +38,10 @@ AC_DEFUN([SST_CHECK_BOOST], [
                                #endif
                          ]])
 		],
-                [AC_MSG_RESULT([yes])],
+                [AC_MSG_RESULT([yes])
+		 sst_check_boost_happy="yes"],
 		[AC_MSG_RESULT([no])
-		 sst_check_boost_happy="no"
-		 AC_MSG_ERROR([Version of Boost supplied is too old or did not compile correctly.], [1])
-		]
+		 sst_check_boost_happy="no"]
 		)
 
 
@@ -54,6 +51,9 @@ AC_DEFUN([SST_CHECK_BOOST], [
 	CPPFLAGS="$CPPFLAGS_saved"
   	LDFLAGS="$LDFLAGS_saved"
   	LIBS="$LIBS_saved"
+
+	AS_IF([test ! -z "$with_boost" -a "$with_boost" != "yes" -a "$sst_check_boost_happy" = "no"],
+		[AC_MSG_ERROR([Boost provided but could not successfully compile or version is too old.])])
 
 	AC_SUBST([BOOST_CPPFLAGS])
 	AC_SUBST([BOOST_LDFLAGS])
