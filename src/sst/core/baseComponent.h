@@ -42,11 +42,69 @@ class SharedRegion;
 class SharedRegionMerger;
 class Component;
 class SubComponent;
+class SubComponentSlotInfo_impl;
+
+class SubComponentSlotInfo {
+
+protected:
+    
+    virtual SubComponent* protected_create(int slot_num, Params& params) const = 0;
+    
+public:
+    virtual ~SubComponentSlotInfo() {}
+    
+    virtual const std::string& getSlotName() const = 0;
+    virtual bool isPopulated(int slot_num) const = 0;
+    virtual bool isAllPopulated() const = 0;
+    virtual int getMaxPopulatedSlotNumber() const = 0;
+        
+    template <typename T>
+    T* create(int slot_num, Params& params) const {
+        SubComponent* sub = protected_create(slot_num, params);
+        if ( sub == NULL ) {
+            // Nothing populated at this index, simply return NULL
+            return NULL;
+        }
+        T* cast_sub = dynamic_cast<T*>(sub);
+        if ( cast_sub == NULL ) {
+            // SubComponent not castable to the correct class,
+            // fatal
+            Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Attempt to load SubComponent into slot "
+                                                    "%s, index %d, which is not castable to correct time\n",
+                                                    getSlotName().c_str(),slot_num);
+        }
+        return cast_sub;
+    }
+
+    template <typename T>
+    void createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const {
+        for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
+            T* sub = create<T>(i, params);
+            if ( sub != NULL || insertNulls ) vec.push_back(sub);
+        }
+    }
+
+    template <typename T>
+    T* create(int slot_num) const {
+        Params empty;
+        return create<T>(slot_num, empty);
+    }
+
+    template <typename T>
+    void createAll(std::vector<T*>& vec, bool insertNulls = true) const {
+        Params empty;
+        return createAll<T>(empty, vec, insertNulls);
+    }
+};
+
 
 /**
  * Main component object for the simulation.
  */
 class BaseComponent {
+
+    friend class SubComponentSlotInfo_impl;
+
 public:
 
     BaseComponent();
@@ -260,8 +318,9 @@ public:
      */
     SubComponent* loadSubComponent(std::string type, Component* comp, Params& params);
     /* New ELI style */
-    SubComponent* loadNamedSubComponent(std::string name);
-    SubComponent* loadNamedSubComponent(std::string name, Params& params);
+    SubComponent* loadNamedSubComponent(std::string name, int slot_num);
+    SubComponent* loadNamedSubComponent(std::string name, int slot_num, Params& params);
+    SubComponentSlotInfo* getSubComponentSlotInfo(std::string name, bool fatalOnEmptyIndex = false);
 
     /** Retrieve the X,Y,Z coordinates of this component */
     const std::vector<double>& getCoordinates() const {

@@ -313,7 +313,6 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
         }
     }
 
-
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
     // them into a map with ComponentID as the key.

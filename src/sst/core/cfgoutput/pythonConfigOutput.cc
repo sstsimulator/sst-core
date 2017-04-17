@@ -121,7 +121,7 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
 
 
     for ( auto & subComp : comp.subComponents ) {
-        generateSubComponent(objName, subComp.second);
+        generateSubComponent(objName, subComp);
     }
 
 }
@@ -134,8 +134,8 @@ void PythonConfigGraphOutput::generateSubComponent( const char* owner, const Con
     char* pyCompName = makePythonSafeWithPrefix(comp.name.c_str(), combName);
     char* esCompName = makeEscapeSafe(comp.name.c_str());
 
-    fprintf(outputFile, "%s = %s.setSubComponent(\"%s\", \"%s\")\n",
-            pyCompName, owner, esCompName, comp.type.c_str());
+    fprintf(outputFile, "%s = %s.setSubComponent(\"%s\", \"%s\", %d)\n",
+            pyCompName, owner, esCompName, comp.type.c_str(), comp.slot_num);
 
     generateCommonComponent( pyCompName, comp );
 

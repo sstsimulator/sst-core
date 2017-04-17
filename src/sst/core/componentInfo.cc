@@ -48,6 +48,7 @@ ComponentInfo::ComponentInfo(const std::string &type, const Params *params, cons
 ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
     id(ccomp->id),
     name(ccomp->name),
+    slot_num(ccomp->slot_num),
     type(ccomp->type),
     link_map(link_map),
     component(NULL),
@@ -56,13 +57,16 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
     coordinates(ccomp->coords)
 {
     for ( auto &sc : ccomp->subComponents ) {
-        subComponents.emplace(sc.first, ComponentInfo(&sc.second, new LinkMap()));
-    }
+        // subComponents.emplace(sc.name + ":" + std::to_string(sc.slot_num),
+        // subComponents.emplace(sc.name,
+        subComponents.emplace_back(ComponentInfo(&sc, new LinkMap()));
+    }   
 }
 
 ComponentInfo::ComponentInfo(ComponentInfo &&o) :
     id(o.id),
     name(std::move(o.name)),
+    slot_num(o.slot_num),
     type(std::move(o.type)),
     link_map(o.link_map),
     component(o.component),
@@ -85,7 +89,7 @@ void ComponentInfo::finalizeLinkConfiguration() {
         i.second->finalizeConfiguration();
     }
     for ( auto &s : subComponents ) {
-        s.second.finalizeLinkConfiguration();
+        s.finalizeLinkConfiguration();
     }
 }
 
@@ -100,9 +104,18 @@ ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id)
         return NULL;
 
     for ( auto &s : subComponents ) {
-        ComponentInfo* found = s.second.findSubComponent(id);
+        ComponentInfo* found = s.findSubComponent(id);
         if ( found != NULL )
             return found;
+    }
+    return NULL;
+}
+
+ComponentInfo* ComponentInfo::findSubComponent(std::string slot, int slot_num)
+{
+    // Non-recursive, only look in current component
+    for ( auto &sc : subComponents ) {
+        if ( sc.name == slot && sc.slot_num == slot_num ) return &sc;
     }
     return NULL;
 }
@@ -115,7 +128,7 @@ std::vector<LinkId_t> ComponentInfo::getAllLinkIds() const
         res.push_back(l.second->id);
     }
     for ( auto& sc : subComponents ) {
-        std::vector<LinkId_t> s = sc.second.getAllLinkIds();
+        std::vector<LinkId_t> s = sc.getAllLinkIds();
         res.insert(res.end(), s.begin(), s.end());
     }
     return res;
