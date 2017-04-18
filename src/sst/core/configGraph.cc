@@ -103,6 +103,7 @@ std::pair<bool, std::string> ConfigStatGroup::verifyStatsAndComponents(const Con
 
 void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
+    os << "  slot_num = " << slot_num << std::endl;
     os << "  type = " << type << std::endl;
     os << "  weight = " << weight << std::endl;
     os << "  rank = " << rank.rank << std::endl;
@@ -122,7 +123,7 @@ void ConfigComponent::print(std::ostream &os) const {
     }
     os << "  SubComponents:\n";
     for ( auto & sc : subComponents ) {
-        sc.second.print(os);
+        sc.print(os);
     }
 }
 
@@ -132,6 +133,7 @@ ConfigComponent::cloneWithoutLinks() const
     ConfigComponent ret;
     ret.id = id;
     ret.name = name;
+    ret.slot_num = slot_num;
     ret.type = type;
     ret.weight = weight;
     ret.rank = rank;
@@ -139,7 +141,7 @@ ConfigComponent::cloneWithoutLinks() const
     ret.enabledStatistics = enabledStatistics;
     ret.coords = coords;
     for ( auto &i : subComponents ) {
-        ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinks());
+        ret.subComponents.emplace_back(i.cloneWithoutLinks());
     }
     return ret;
 }
@@ -151,13 +153,14 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ConfigComponent ret;
     ret.id = id;
     ret.name = name;
+    ret.slot_num = slot_num;
     ret.type = type;
     ret.weight = weight;
     ret.rank = rank;
     ret.enabledStatistics = enabledStatistics;
     ret.coords = coords;
     for ( auto &i : subComponents ) {
-        ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinksOrParams());
+        ret.subComponents.emplace_back(i.cloneWithoutLinksOrParams());
     }
     return ret;
 }
@@ -167,7 +170,7 @@ void ConfigComponent::setRank(RankInfo r)
 {
     rank = r;
     for ( auto &i : subComponents ) {
-        i.second.setRank(r);
+        i.setRank(r);
     }
 
 }
@@ -177,7 +180,7 @@ void ConfigComponent::setWeight(double w)
 {
     weight = w;
     for ( auto &i : subComponents ) {
-        i.second.setWeight(w);
+        i.setWeight(w);
     }
 }
 
@@ -264,20 +267,18 @@ void ConfigComponent::setStatisticParameters(const std::string &statisticName, c
 
 
 
-ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string &name, const std::string &type)
+ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string &name, const std::string &type, int slot_num)
 {
     /* Check for existing subComponent with this name */
     for ( auto &i : subComponents ) {
-        if ( i.first == name )
+        if ( i.name == name && i.slot_num == slot_num )
             return NULL;
     }
 
     subComponents.emplace_back(
-            std::make_pair(
-                name,
-                ConfigComponent(sid, name, type, this->weight, this->rank)));
+        ConfigComponent(sid, name, slot_num, type, this->weight, this->rank));
 
-    return &(subComponents.back().second);
+    return &(subComponents.back());
 }
 
 ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid)
@@ -290,7 +291,7 @@ const ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid) cons
     if ( sid == this->id ) return this;
 
     for ( auto &s : subComponents ) {
-        const ConfigComponent* res = s.second.findSubComponent(sid);
+        const ConfigComponent* res = s.findSubComponent(sid);
         if ( res != NULL )
             return res;
     }
@@ -303,7 +304,7 @@ std::vector<LinkId_t> ConfigComponent::allLinks() const {
     std::vector<LinkId_t> res;
     res.insert(res.end(), links.begin(), links.end());
     for ( auto& sc : subComponents ) {
-        std::vector<LinkId_t> s = sc.second.allLinks();
+        std::vector<LinkId_t> s = sc.allLinks();
         res.insert(res.end(), s.begin(), s.end());
     }
     return res;
@@ -843,6 +844,7 @@ PartitionComponent::print(std::ostream &os, const PartitionGraph* graph) const
         graph->getLink(*it).print(os);
     }
 }
+
 
 } // namespace SST
 

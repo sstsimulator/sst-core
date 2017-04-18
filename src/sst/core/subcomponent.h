@@ -20,7 +20,6 @@
 
 namespace SST {
 
-
 /**
    SubComponent is a class loadable through the factory which allows
    dynamic functionality to be added to a Component.  The
@@ -72,6 +71,7 @@ private:
     friend class Component;
 
 };
+
 } //namespace SST
 
 

@@ -188,6 +188,49 @@ public:
     ImplementSerializable(SST::ConfigStatOutput)
 };
 
+// class ConfigComponent;
+
+// class SubComponentSlotDefinition : public SST::Core::Serialization::serializable {
+
+//     std::string name;
+//     std::vector<ConfigComponent*> slots;
+    
+// public:
+
+//     SubComponentSlotDefinition() {}
+//     SubComponentSlotDefinition(const SubComponentSlotDefinition& init) :
+//         name(init.name)
+//     {
+//         for ( auto &cc : init.slots ) {
+//             slots.push_back
+//         }
+//     }
+
+
+//     const std::string& getName() const { return name; }
+
+//     ConfigComponent* getSlot(uint32_t slot) const {
+//         if ( slot <= slots.size() ) return slots[slot];
+//         return NULL;
+//     }
+    
+//     int getMaxPopulatedSlotNumber() const { return slots.size(); }
+//     bool isPopulated(int slot_num) const;
+
+//     // bool isAllPopulated() const;
+
+//     // SubComponent* create(int slot_num, Params& params);
+//     // std::vector<SubComponent*> createAll(Params& params);
+
+
+//     void serialize_order(SST::Core::Serialization::serializer &ser) {
+//         ser & name;
+//         ser & slots;
+//     }
+
+//     ImplementSerializable(SST::SubComponentSlotDefinition)
+// };
+
 
 typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 
@@ -195,14 +238,15 @@ typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 class ConfigComponent : public SST::Core::Serialization::serializable {
 public:
     ComponentId_t                 id;                /*!< Unique ID of this component */
-    std::string                   name;              /*!< Name of this component */
+    std::string                   name;              /*!< Name of this component, or slot name for subcomp */
+    int                           slot_num;          /*!< Slot number.  Only valid for subcomponents */
     std::string                   type;              /*!< Type of this component */
     float                         weight;            /*!< Parititoning weight for this component */
     RankInfo                      rank;              /*!< Parallel Rank for this component */
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
     std::vector<Statistics::StatisticInfo> enabledStatistics; /*!< List of statistics to be enabled */
-    std::vector<std::pair<std::string, ConfigComponent> > subComponents; /*!< List of subcomponents */
+    std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
 
     inline const ComponentId_t& key()const { return id; }
@@ -214,13 +258,13 @@ public:
     ConfigComponent cloneWithoutLinksOrParams() const;
 
     ~ConfigComponent() {}
-    ConfigComponent() {} // for serialization
+    ConfigComponent() : id(-1) {}
 
     void setRank(RankInfo r);
     void setWeight(double w);
     void setCoordinates(const std::vector<double> &c);
     void addParameter(const std::string &key, const std::string &value, bool overwrite);
-    ConfigComponent* addSubComponent(ComponentId_t, const std::string &name, const std::string &type);
+    ConfigComponent* addSubComponent(ComponentId_t, const std::string &name, const std::string &type, int slot);
     ConfigComponent* findSubComponent(ComponentId_t);
     const ConfigComponent* findSubComponent(ComponentId_t) const;
     void enableStatistic(const std::string &statisticName);
@@ -232,6 +276,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & id;
         ser & name;
+        ser & slot_num;
         ser & type;
         ser & weight;
         ser & rank.rank;
@@ -251,6 +296,17 @@ private:
     ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank) :
         id(id),
         name(name),
+        type(type),
+        weight(weight),
+        rank(rank)
+    {
+        coords.resize(3, 0.0);
+    }
+
+    ConfigComponent(ComponentId_t id, std::string name, int slot_num, std::string type, float weight, RankInfo rank) :
+        id(id),
+        name(name),
+        slot_num(slot_num),
         type(type),
         weight(weight),
         rank(rank)

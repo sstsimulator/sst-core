@@ -32,7 +32,7 @@ struct ComponentHolder {
     virtual int compare(ComponentHolder *other) = 0;
     virtual const char* getName() const = 0;
     ComponentId_t getID();
-    ConfigComponent* getSubComp(const std::string &name);
+    ConfigComponent* getSubComp(const std::string &name, int slot_num);
 };
 
 struct PyComponent : ComponentHolder {
@@ -50,12 +50,15 @@ struct PyComponent : ComponentHolder {
 struct PySubComponent : ComponentHolder {
     ComponentHolder *parent;
 
+    int slot;
+    
     PySubComponent(ComponentPy_t *pobj) : ComponentHolder(pobj) { }
     ~PySubComponent() {}
     const char* getName() const override;
     ConfigComponent* getComp() override;
     PyComponent* getBaseObj() override;
     int compare(ComponentHolder *other) override;
+    int getSlot() const;
 };
 
 
