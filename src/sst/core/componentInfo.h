@@ -42,6 +42,7 @@ private:
     friend class ComponentInfoMap;
     const ComponentId_t id;
     const std::string name;
+    const std::string slot_name;
     int slot_num;
     const std::string type;
     LinkMap* link_map;
@@ -64,13 +65,15 @@ public:
     ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent);
 
     /* New ELI Style */
-    ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map);
+    ComponentInfo(ConfigComponent *ccomp, const std::string& name, LinkMap* link_map);
     ComponentInfo(ComponentInfo &&o);
     ~ComponentInfo();
 
     inline ComponentId_t getID() const { return id; }
 
     inline const std::string& getName() const { return name; }
+
+    inline const std::string& getSlotName() const { return slot_name; }
 
     inline int getSlotNum() const { return slot_num; }
 

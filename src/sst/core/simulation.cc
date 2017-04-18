@@ -309,7 +309,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     {
         ConfigComponent* ccomp = &(*iter);
         if ( ccomp->rank == myRank ) {
-            compInfoMap.insert(new ComponentInfo(ccomp, new LinkMap()));
+            compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, new LinkMap()));
         }
     }
 

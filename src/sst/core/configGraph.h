@@ -246,9 +246,7 @@ public:
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
     std::vector<Statistics::StatisticInfo> enabledStatistics; /*!< List of statistics to be enabled */
-    std::vector<ConfigComponent> subComponents; /*!< List of subcomponents */
-    // std::vector<std::pair<std::string, ConfigComponent> > subComponents; /*!< List of subcomponents */
-    // std::vector<SubComponentSlotDefinition> subComponents;    /*!< List of subcomponents */
+    std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
 
     inline const ComponentId_t& key()const { return id; }

@@ -56,7 +56,7 @@ public:
         // Look for all subcomponents with the right slot name
         max_slot_index = -1;
         for ( auto &ci : subcomps ) {
-            if ( ci.getName() == slot_name ) {
+            if ( ci.getSlotName() == slot_name ) {
                 if ( ci.getSlotNum() > static_cast<int>(max_slot_index) ) {
                     max_slot_index = ci.getSlotNum();
                 }
