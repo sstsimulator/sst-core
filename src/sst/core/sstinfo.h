@@ -20,6 +20,8 @@
 #include <sst/core/element.h>
 #include <sst/core/elementinfo.h>
 
+class TiXmlNode;
+
 namespace SST { 
     
 // CONFIGURATION BITS    
@@ -82,31 +84,78 @@ private:
 };
 
 
-template<typename TO, typename FROM>
-std::vector<TO> convertFromELI(const FROM *ptr) {
-    std::vector<TO> res;
-    if ( ptr != NULL ) {
-        while ( ptr->name ) {
-            res.emplace_back(ptr);
-            ptr++;
+class SSTInfoElement_Outputter {
+public:
+    /** Output the Parameter Information. 
+     * @param Index The Index of the Parameter.
+     */
+    virtual void outputHumanReadable(int index) = 0;
+
+    /** Create the formatted XML data of the Parameter.
+     * @param Index The Index of the Parameter.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
+    virtual void outputXML(int Index, TiXmlNode* XMLParentElement) = 0;
+
+protected:
+    void xmlComment(TiXmlNode* owner, const char* fmt...);
+};
+
+class SSTInfoElement_BaseInfo : public SSTInfoElement_Outputter {
+public:
+
+    template <typename T>
+    SSTInfoElement_BaseInfo( const T *eli ) :
+        m_name(eli->name), m_desc(fs(eli->description))
+    { }
+
+    SSTInfoElement_BaseInfo( BaseElementInfo &eli ) :
+        m_name(eli.getName()), m_desc(eli.getDescription())
+    { }
+
+    /* Because PartitionerElementInfo doesn't subclass from BaseElmentInfo... */
+    SSTInfoElement_BaseInfo( PartitionerElementInfo &eli ) :
+        m_name(eli.getName()), m_desc(eli.getDescription())
+    { }
+
+
+    /** Return the Name of the Element. */
+    const std::string& getName() {return m_name;}
+
+    /** Return the Description of the Parameter. */
+    const std::string& getDesc() {return m_desc;}
+
+protected:
+    template<typename TO, typename FROM>
+    std::vector<TO> convertFromELI(const FROM *ptr) {
+        std::vector<TO> res;
+        if ( ptr != NULL ) {
+            while ( ptr->name ) {
+                res.emplace_back(ptr);
+                ptr++;
+            }
         }
+        return res;
     }
-    return res;
-}
 
-template<typename TO, typename FROM>
-std::vector<TO> convertFromDB(const std::vector<FROM> &input) {
-    std::vector<TO> res;
-    for ( auto &i : input ) {
-        res.emplace_back(&i);
+    template<typename TO, typename FROM>
+    std::vector<TO> convertFromDB(const std::vector<FROM> &input) {
+        std::vector<TO> res;
+        for ( auto &i : input ) {
+            res.emplace_back(&i);
+        }
+        return res;
     }
-    return res;
-}
 
-std::string fs(const char* x) {
-    if ( x == NULL ) return "";
-    return std::string(x);
-}
+    std::string fs(const char* x) {
+        if ( x == NULL ) return "";
+        return std::string(x);
+    }
+
+    std::string m_name;
+    std::string m_desc;
+};
+
 
 /**
  * The SSTInfo representation of ElementInfoParam object.
@@ -114,22 +163,17 @@ std::string fs(const char* x) {
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoParam objects. 
  */
-class SSTInfoElement_ParamInfo {
+class SSTInfoElement_ParamInfo : public SSTInfoElement_BaseInfo {
 public:
     /** Create a new SSTInfoElement_ParamInfo object.
      * @param elparam Pointer to an ElementInfoParam object.
      */
     SSTInfoElement_ParamInfo(const ElementInfoParam* elparam) :
-        m_name(elparam->name), m_desc(fs(elparam->description))
+        SSTInfoElement_BaseInfo(elparam)
     {
         m_defaultValue = (elparam->defaultValue) ? elparam->defaultValue : "REQUIRED";
     }
 
-    /** Return the Name of the Parameter. */
-    const std::string& getName() {return m_name;}
-
-    /** Return the Description of the Parameter. */
-    const std::string& getDesc() {return m_desc;}
 
     /** Return the Default value of the Parameter. */
     const std::string& getDefault() {return m_defaultValue;}
@@ -137,17 +181,15 @@ public:
     /** Output the Parameter Information. 
      * @param Index The Index of the Parameter.
      */
-    void outputParameterInfo(int Index);
+    void outputHumanReadable(int index) override;
 
     /** Create the formatted XML data of the Parameter.
      * @param Index The Index of the Parameter.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generateParameterInfoXMLData(int Index, TiXmlNode* XMLParentElement);
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
 private:
-    std::string m_name;
-    std::string m_desc;
     std::string m_defaultValue;
 };
 
@@ -158,13 +200,13 @@ private:
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoPort objects. 
  */
-class SSTInfoElement_PortInfo {
+class SSTInfoElement_PortInfo : public SSTInfoElement_BaseInfo {
 public:
     /** Create a new SSTInfoElement_PortInfo object.
      * @param elport Pointer to an ElementInfoPort object.
      */
     SSTInfoElement_PortInfo(const ElementInfoPort* elport) :
-        m_name(elport->name), m_desc(fs(elport->description))
+        SSTInfoElement_BaseInfo(elport)
     {
         const char **arrayPtr = elport->validEvents;
         while ( arrayPtr && *arrayPtr ) {
@@ -173,16 +215,10 @@ public:
         }
     }
     SSTInfoElement_PortInfo(const ElementInfoPort2* elport) :
-        m_name(elport->name), m_desc(fs(elport->description))
+        SSTInfoElement_BaseInfo(elport)
     {
         m_validEvents = elport->validEvents;
     }
-
-    /** Return the Name of the Port. */
-    const std::string& getName() {return m_name;}
-
-    /** Return the Description of the Port. */
-    const std::string& getDesc() {return m_desc;}
 
     /** Return the array of Valid Events related to the Port. */
     const std::vector<std::string>& getValidEvents() {return m_validEvents;}
@@ -198,37 +234,21 @@ public:
     /** Output the Port Information. 
      * @param Index The Index of the Port.
      */
-    void outputPortInfo(int Index);
+    void outputHumanReadable(int index) override;
 
     /** Create the formatted XML data of the Port.
      * @param Index The Index of the Port.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generatePortInfoXMLData(int Index, TiXmlNode* XMLParentElement);
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
 private:
     void analyzeValidEventsArray();
 
-    std::string m_name;
-    std::string m_desc;
     std::vector<std::string> m_validEvents;
 
 };
-    
-void PopulatePorts(const ElementInfoPort* ptrPorts, std::vector<SSTInfoElement_PortInfo*>* ptrPortArray)
-{
-    // Populate the Ports Array
-    if (NULL != ptrPorts) {
-        while (NULL != ptrPorts->name) {
-            // Create a new SSTInfoElement_PortInfo and add it to the m_PortArray
-            SSTInfoElement_PortInfo* ptrPortInfo = new SSTInfoElement_PortInfo(ptrPorts);
-            ptrPortArray->push_back(ptrPortInfo);
 
-            // If the name is NULL, we have reached the last item
-            ptrPorts++;  // Get the next structure item
-        }
-    }
-}
 
 /**
  * The SSTInfo representation of ElementInfoPort object.
@@ -236,21 +256,15 @@ void PopulatePorts(const ElementInfoPort* ptrPorts, std::vector<SSTInfoElement_P
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoPort objects. 
  */
-class SSTInfoElement_StatisticInfo {
+class SSTInfoElement_StatisticInfo : public SSTInfoElement_BaseInfo {
 public:
     /** Create a new SSTInfoElement_StatisticInfo object.
      * @param elstat Pointer to an ElementInfoStatistic object.
      */
     SSTInfoElement_StatisticInfo(const ElementInfoStatistic* els) :
-        m_name(els->name), m_desc(fs(els->description)),
+        SSTInfoElement_BaseInfo(els),
         m_units(els->units), m_enableLevel(els->enableLevel)
     { }
-
-    /** Return the Name of the Statistic. */
-    const std::string& getName() {return m_name;}
-
-    /** Return the Description of the Statistic. */
-    const std::string& getDesc() {return m_desc;}
 
     /** Return the Units of the Statistic. */
     const std::string& getUnits() {return m_units;}
@@ -261,17 +275,15 @@ public:
     /** Output the Statistic Information. 
      * @param Index The Index of the Statistic.
      */
-    void outputStatisticInfo(int Index);
+    void outputHumanReadable(int Index) override;
 
     /** Create the formatted XML data of the Statistic.
      * @param Index The Index of the Statistic.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generateStatisticXMLData(int Index, TiXmlNode* XMLParentElement);
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
 private:
-    std::string m_name;
-    std::string m_desc;
     std::string m_units;
     uint8_t m_enableLevel;
 };
@@ -285,13 +297,13 @@ private:
  * This class is used internally by SSTInfo to load and process
  * ElementInfoComponent objects.
  */
-class SSTInfoElement_ComponentInfo {
+class SSTInfoElement_ComponentInfo : public SSTInfoElement_BaseInfo {
 public:
     /** Create a new SSTInfoElement_ComponentInfo object.
      * @param elc Pointer to an ElementInfoComponent object.
      */
     SSTInfoElement_ComponentInfo(const ElementInfoComponent* elc) :
-        m_name(elc->name), m_desc(fs(elc->description)), m_category(elc->category)
+        SSTInfoElement_BaseInfo(elc), m_category(elc->category)
     {
         m_ParamArray = convertFromELI<SSTInfoElement_ParamInfo>(elc->params);
         m_PortArray = convertFromELI<SSTInfoElement_PortInfo>(elc->ports);
@@ -299,18 +311,12 @@ public:
     }
 
     SSTInfoElement_ComponentInfo(ComponentElementInfo* elc) :
-        m_name(elc->getName()), m_desc(elc->getDescription()), m_category(elc->getCategory())
+        SSTInfoElement_BaseInfo(*elc), m_category(elc->getCategory())
     {
         m_ParamArray = convertFromDB<SSTInfoElement_ParamInfo>(elc->getValidParams());
         m_PortArray = convertFromDB<SSTInfoElement_PortInfo>(elc->getValidPorts());
         m_StatisticArray = convertFromDB<SSTInfoElement_StatisticInfo>(elc->getValidStats());
     }
-
-    /** Return the Name of the Component. */
-    const std::string& getName() {return m_name;}
-
-    /** Return the Description of the Component. */
-    const std::string& getDesc() {return m_desc;}
 
     /** Return a Parameter Info Object. 
      * @param index The index of the Parameter.
@@ -336,17 +342,15 @@ public:
     /** Output the Component Information.
      * @param Index The Index of the Component.
      */
-    void outputComponentInfo(int Index);
+    void outputHumanReadable(int index) override;
 
     /** Create the formatted XML data of the Component.
      * @param Index The Index of the Component.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generateComponentInfoXMLData(int Index, TiXmlNode* XMLParentElement);
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
 private:
-    std::string                                       m_name;
-    std::string                                       m_desc;
     uint32_t                                          m_category;
     std::vector<SSTInfoElement_ParamInfo>             m_ParamArray;
     std::vector<SSTInfoElement_PortInfo>              m_PortArray;
@@ -360,35 +364,28 @@ private:
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoEvent objects. 
  */
-class SSTInfoElement_EventInfo {
+class SSTInfoElement_EventInfo : public SSTInfoElement_BaseInfo {
 public:
     /** Create a new SSTInfoElement_EventInfo object.
      * @param ele Pointer to an ElementInfoEvent object.
      */
     SSTInfoElement_EventInfo(const ElementInfoEvent* ele) :
-        m_name(ele->name), m_desc(fs(ele->description))
+        SSTInfoElement_BaseInfo(ele)
     { }
 
-    /** Return the Name of the Event. */
-    const std::string& getName() {return m_name;}
-
-    /** Return the Description of the Event. */
-    const std::string& getDesc() {return m_desc;}
 
     /** Output the Event Information. 
      * @param Index The Index of the Event.
      */
-    void outputEventInfo(int Index);
+    void outputHumanReadable(int index) override;
 
     /** Create the formatted XML data of the Event.
      * @param Index The Index of the Event.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generateEventInfoXMLData(int Index, TiXmlNode* XMLParentElement);
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
 private:
-    std::string                                       m_name;
-    std::string                                       m_desc;
 };
 
 /**
@@ -397,28 +394,21 @@ private:
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoModule objects. 
  */
-class SSTInfoElement_ModuleInfo {
+class SSTInfoElement_ModuleInfo : public SSTInfoElement_BaseInfo {
 public:
     /** Create a new SSTInfoElement_ModuleInfo object.
      * @param elm Pointer to an ElementInfoModule object.
      */
     SSTInfoElement_ModuleInfo(const ElementInfoModule* elm) :
-        m_name(elm->name), m_desc((elm->description)), m_provides(fs(elm->provides))
+        SSTInfoElement_BaseInfo(elm), m_provides(fs(elm->provides))
     {
         m_ParamArray = convertFromELI<SSTInfoElement_ParamInfo>(elm->params);
     }
     SSTInfoElement_ModuleInfo(ModuleElementInfo* elm) :
-        m_name(elm->getName()), m_desc(elm->getDescription()), m_provides(elm->getInterface())
+        SSTInfoElement_BaseInfo(*elm), m_provides(elm->getInterface())
     {
         m_ParamArray = convertFromDB<SSTInfoElement_ParamInfo>(elm->getValidParams());
     }
-
-
-    /** Return the Name of the Module. */
-    const std::string&           getName() {return m_name;}
-
-    /** Return the Description of the Module. */
-    const std::string&           getDesc() {return m_desc;}
 
     /** Return what class the Module provides. */
     const std::string&           getProvides() { return m_provides;}
@@ -431,17 +421,15 @@ public:
     /** Output the Module Information. 
      * @param Index The Index of the Module.
      */
-    void outputModuleInfo(int Index);
+    void outputHumanReadable(int index) override;
 
     /** Create the formatted XML data of the Module.
      * @param Index The Index of the Module.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generateModuleInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
 private:
-    std::string m_name;
-    std::string m_desc;
     std::string m_provides;
     std::vector<SSTInfoElement_ParamInfo> m_ParamArray;
 };
@@ -452,13 +440,13 @@ private:
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoSubComponent objects. 
  */
-class SSTInfoElement_SubComponentInfo {
+class SSTInfoElement_SubComponentInfo : public SSTInfoElement_BaseInfo {
 public:
     /** Create a new SSTInfoElement_SubComponentInfo object.
      * @param elsc Pointer to an ElementInfoComponent object.
      */
     SSTInfoElement_SubComponentInfo(const ElementInfoSubComponent* elsc) :
-        m_name(elsc->name), m_desc(fs(elsc->description))
+        SSTInfoElement_BaseInfo(elsc)
     {
         m_ParamArray = convertFromELI<SSTInfoElement_ParamInfo>(elsc->params);
         m_PortArray = convertFromELI<SSTInfoElement_PortInfo>(elsc->ports);
@@ -466,18 +454,12 @@ public:
     }
 
     SSTInfoElement_SubComponentInfo(SubComponentElementInfo* elc) :
-        m_name(elc->getName()), m_desc(elc->getDescription())
+        SSTInfoElement_BaseInfo(*elc)
     {
         m_ParamArray = convertFromDB<SSTInfoElement_ParamInfo>(elc->getValidParams());
         m_PortArray = convertFromDB<SSTInfoElement_PortInfo>(elc->getValidPorts());
         m_StatisticArray = convertFromDB<SSTInfoElement_StatisticInfo>(elc->getValidStats());
     }
-
-    /** Return the Name of the SubComponent. */
-    const std::string& getName() {return m_name;}
-
-    /** Return the Description of the SubComponent. */
-    const std::string& getDesc() {return m_desc;}
 
     /** Return a Parameter Info Object. 
      * @param index The index of the Parameter.
@@ -497,17 +479,15 @@ public:
     /** Output the SubComponent Information. 
      * @param Index The Index of the SubComponent.
      */
-    void outputSubComponentInfo(int Index);
+    void outputHumanReadable(int index) override;
 
     /** Create the formatted XML data of the Component.
      * @param Index The Index of the Component.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generateSubComponentInfoXMLData(int Index, TiXmlNode* XMLParentElement);
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
 private:
-    std::string                                       m_name;
-    std::string                                       m_desc;
     std::vector<SSTInfoElement_ParamInfo>             m_ParamArray;
     std::vector<SSTInfoElement_PortInfo>              m_PortArray;
     std::vector<SSTInfoElement_StatisticInfo>         m_StatisticArray;
@@ -519,41 +499,31 @@ private:
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoPartitioner objects. 
  */
-class SSTInfoElement_PartitionerInfo {
+class SSTInfoElement_PartitionerInfo : public SSTInfoElement_BaseInfo {
 public:
     /** Create a new SSTInfoElement_PartitionerInfo object.
      * @param elp Pointer to an ElementInfoPartitioner object.
      */
     SSTInfoElement_PartitionerInfo(const ElementInfoPartitioner* elp) :
-        m_name(elp->name), m_desc(fs(elp->description))
-    {
-    }
+        SSTInfoElement_BaseInfo(elp)
+    { }
 
     SSTInfoElement_PartitionerInfo(PartitionerElementInfo* elp) :
-        m_name(elp->getName()), m_desc(elp->getDescription())
-    {
-    }
-
-    /** Return the Name of the Partitioner. */
-    const std::string& getName() {return m_name;}
-
-    /** Return the Description of the Partitioner. */
-    const std::string& getDesc() {return m_desc;}
+        SSTInfoElement_BaseInfo(*elp)
+    { }
 
     /** Output the Partitioner Information. 
      * @param Index The Index of the Partitioner.
      */
-    void outputPartitionerInfo(int Index);
+    void outputHumanReadable(int index) override;
 
     /** Create the formatted XML data of the Partitioner.
      * @param Index The Index of the Partitioner.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generatePartitionerInfoXMLData(int Index, TiXmlNode* XMLParentElement); 
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
 private:
-    std::string m_name;
-    std::string m_desc;
 };
 
 /**
@@ -562,36 +532,27 @@ private:
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoGenerator objects. 
  */
-class SSTInfoElement_GeneratorInfo {
+class SSTInfoElement_GeneratorInfo : public SSTInfoElement_BaseInfo {
 public:
     /** Create a new SSTInfoElement_GeneratorInfo object.
      * @param elg Pointer to an ElementInfoGenerator object.
      */
     SSTInfoElement_GeneratorInfo(const ElementInfoGenerator* elg) :
-        m_name(elg->name), m_desc(fs(elg->description))
-    {
-    }
-
-    /** Return the Name of the Partitioner. */
-    const std::string& getName() {return m_name;}
-
-    /** Return the Description of the Partitioner. */
-    const std::string& getDesc() {return m_desc;}
+        SSTInfoElement_BaseInfo(elg)
+    { }
 
     /** Output the Generator Information. 
      * @param Index The Index of the Generator.
      */
-    void outputGeneratorInfo(int Index);
+    void outputHumanReadable(int index) override;
 
     /** Create the formatted XML data of the Generator.
      * @param Index The Index of the Generator.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generateGeneratorInfoXMLData(int Index, TiXmlNode* XMLParentElement);
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
 private:
-    std::string m_name;
-    std::string m_desc;
 };
 
 
@@ -601,7 +562,7 @@ private:
  * This class is used internally by SSTInfo to load and process  
  * ElementLibraryInfo objects. 
  */
-class SSTInfoElement_LibraryInfo {
+class SSTInfoElement_LibraryInfo : public SSTInfoElement_Outputter {
 
 public:
     /** Create a new SSTInfoElement_LibraryInfo object.
@@ -673,13 +634,13 @@ public:
     /** Output the Library Information. 
      * @param LibIndex The Index of the Library.
      */
-    void outputLibraryInfo(int LibIndex);
+    void outputHumanReadable(int LibIndex) override;
 
     /** Create the formatted XML data of the Library.
      * @param LibIndex The Index of the Library.
      * @param XMLParentElement The parent element to receive the XML data.
      */
-    void generateLibraryInfoXMLData(int LibIndex, TiXmlNode* XMLParentElement);
+    void outputXML(int LibIndex, TiXmlNode* XMLParentElement) override;
 
 private:
     void populateLibraryInfo();

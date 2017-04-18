@@ -44,6 +44,13 @@ std::string                              g_searchPath;
 std::vector<SSTInfoElement_LibraryInfo>  g_libInfoArray;
 SSTInfoConfig                            g_configuration;
 
+class OverallOutputter : public SSTInfoElement_Outputter {
+public:
+    void outputHumanReadable(int index);
+    void outputXML(int Index, TiXmlNode* XMLParentElement);
+} g_Outputter;
+
+
 // Forward Declarations
 void initLTDL(std::string searchPath);
 void shutdownLTDL();
@@ -96,7 +103,7 @@ static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
     if ( g_configuration.debugEnabled() )
         fprintf (stdout, "Looking for library \"%s\"\n", lib.c_str());
 
-    const ElementLibraryInfo* pELI = (lib == "SST_CORE") ?
+    const ElementLibraryInfo* pELI = (lib == "sst") ?
         loader.loadCoreInfo() :
         loader.loadLibrary(lib, g_configuration.debugEnabled());
     if ( pELI != NULL ) {
@@ -126,7 +133,7 @@ static void processSSTElementFiles()
     if ( processLibs.empty() ) {
         for ( auto & i : potentialLibs )
             processLibs.insert(i);
-        processLibs.insert("SST_CORE"); // Core libraries
+        processLibs.insert("sst"); // Core libraries
     }
 
     for ( auto l : processLibs ) {
@@ -146,8 +153,17 @@ static void processSSTElementFiles()
 
 }
 
+void generateXMLOutputFile()
+{
+    g_Outputter.outputXML(0, NULL);
+}
 
 void outputSSTElementInfo()
+{
+    g_Outputter.outputHumanReadable(0);
+}
+
+void OverallOutputter::outputHumanReadable(int UNUSED(Index))
 {
     fprintf (stdout, "PROCESSED %d .so (SST ELEMENT) FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
 
@@ -161,19 +177,18 @@ void outputSSTElementInfo()
 
     // Now dump the Library Info
     for (size_t x = 0; x < g_libInfoArray.size(); x++) {
-        g_libInfoArray[x].outputLibraryInfo(x);
+        g_libInfoArray[x].outputHumanReadable(x);
     }
 }
 
-void generateXMLOutputFile()
+void OverallOutputter::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentElement))
 {
     unsigned int            x;
-    char                    Comment[256];
     char                    TimeStamp[32];
     std::time_t             now = std::time(NULL);
     std::tm*                ptm = std::localtime(&now);
     FILE* pFile;
-    
+
     // Check to see that the file path is valid by trying to create the file
     pFile = fopen (g_configuration.getXMLFilePath().c_str() , "w+");
     if (pFile == NULL) {
@@ -201,19 +216,10 @@ void generateXMLOutputFile()
     // Create the XML Document     
     TiXmlDocument XMLDocument;
 
-    // XML Declaration
-	TiXmlDeclaration* XMLDecl = new TiXmlDeclaration("1.0", "", "");
-	
-	// General Info on the Data
-	sprintf(Comment, "SSTInfo XML Data Generated on %s", TimeStamp);
-	TiXmlComment* XMLStartComment = new TiXmlComment(Comment);
-
-    sprintf (Comment, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
-	TiXmlComment* XMLNumElementsComment = new TiXmlComment(Comment);
 
 	// Set the Top Level Element
 	TiXmlElement* XMLTopLevelElement = new TiXmlElement("SSTInfoXML");
-	
+
 	// Set the File Information
 	TiXmlElement* XMLFileInfoElement = new TiXmlElement("FileInfo");
 	XMLFileInfoElement->SetAttribute("SSTInfoVersion", PACKAGE_VERSION);
@@ -224,19 +230,24 @@ void generateXMLOutputFile()
 
 	// Add the File Information to the Top Level Element
 	XMLTopLevelElement->LinkEndChild(XMLFileInfoElement);
-	
+
     // Now Generate the XML Data that represents the Library Info, 
     // and add the data to the Top Level Element
     for (x = 0; x < g_libInfoArray.size(); x++) {
-        g_libInfoArray[x].generateLibraryInfoXMLData(x, XMLTopLevelElement);
+        g_libInfoArray[x].outputXML(x, XMLTopLevelElement);
     }
 
+	// General Info on the Data
+    xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
+    xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
+
+
 	// Add the entries into the XML Document
+    // XML Declaration
+	TiXmlDeclaration* XMLDecl = new TiXmlDeclaration("1.0", "", "");
 	XMLDocument.LinkEndChild(XMLDecl);
-	XMLDocument.LinkEndChild(XMLStartComment);
-	XMLDocument.LinkEndChild(XMLNumElementsComment);
 	XMLDocument.LinkEndChild(XMLTopLevelElement);
-    
+
     // Save the XML Document
 	XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
 }
@@ -462,7 +473,7 @@ bool shouldPrintElement(const std::string &libName, const std::string elemName)
     return false;
 }
 
-void SSTInfoElement_LibraryInfo::outputLibraryInfo(int LibIndex)
+void SSTInfoElement_LibraryInfo::outputHumanReadable(int LibIndex)
 {
     int                          x;
     int                          numObjects;
@@ -485,42 +496,42 @@ void SSTInfoElement_LibraryInfo::outputLibraryInfo(int LibIndex)
         fprintf(stdout, "   NUM COMPONENTS    = %d\n", numObjects);
         for (x = 0; x < numObjects; x++) {
             eic = getInfoComponent(x);
-            eic->outputComponentInfo(x);
+            eic->outputHumanReadable(x);
         }
 
         numObjects = getNumberOfLibraryEvents();
         fprintf(stdout, "   NUM EVENTS        = %d\n", numObjects);
         for (x = 0; x < numObjects; x++) {
             eie = getInfoEvent(x);
-            eie->outputEventInfo(x);
+            eie->outputHumanReadable(x);
         }
 
         numObjects = getNumberOfLibraryModules();
         fprintf(stdout, "   NUM MODULES       = %d\n", numObjects);
         for (x = 0; x < numObjects; x++) {
             eim = getInfoModule(x);
-            eim->outputModuleInfo(x);
+            eim->outputHumanReadable(x);
         }
 
         numObjects = getNumberOfLibrarySubComponents();
         fprintf(stdout, "   NUM SUBCOMPONENTS = %d\n", numObjects);
         for (x = 0; x < numObjects; x++) {
             eisc = getInfoSubComponent(x);
-            eisc->outputSubComponentInfo(x);
+            eisc->outputHumanReadable(x);
         }
 
         numObjects = getNumberOfLibraryPartitioners();
         fprintf(stdout, "   NUM PARTITIONERS  = %d\n", numObjects);
         for (x = 0; x < numObjects; x++) {
             eip = getInfoPartitioner(x);
-            eip->outputPartitionerInfo(x);
+            eip->outputHumanReadable(x);
         }
 
         numObjects = getNumberOfLibraryGenerators();
         fprintf(stdout, "   NUM GENERATORS    = %d\n", numObjects);
         for (x = 0; x < numObjects; x++) {
             eig = getInfoGenerator(x);
-            eig->outputGeneratorInfo(x);
+            eig->outputHumanReadable(x);
         }
     } else {
         // Check each component one at a time
@@ -530,7 +541,7 @@ void SSTInfoElement_LibraryInfo::outputLibraryInfo(int LibIndex)
             eic = getInfoComponent(x);
             // See if this component is to be outputed
             if (shouldPrintElement(getLibraryName(), eic->getName())) {
-                eic->outputComponentInfo(x);
+                eic->outputHumanReadable(x);
             }
         }
 
@@ -540,14 +551,14 @@ void SSTInfoElement_LibraryInfo::outputLibraryInfo(int LibIndex)
             eisc = getInfoSubComponent(x);
             // See if this component is to be outputed
             if (shouldPrintElement(getLibraryName(), eisc->getName())) {
-                eisc->outputSubComponentInfo(x);
+                eisc->outputHumanReadable(x);
             }
         }
 
     }
 }
 
-void SSTInfoElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlNode* XMLParentElement)
+void SSTInfoElement_LibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentElement)
 {
     int                          x;
     int                          numObjects;
@@ -557,8 +568,7 @@ void SSTInfoElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlN
 //    SSTInfoElement_SubComponentInfo* eisc;
     SSTInfoElement_PartitionerInfo*  eip;
     SSTInfoElement_GeneratorInfo*    eig;
-    char                         Comment[256];
-    
+
     // Build the Element to Represent the Library
 	TiXmlElement* XMLLibraryElement = new TiXmlElement("Element");
 	XMLLibraryElement->SetAttribute("Index", LibIndex);
@@ -567,71 +577,59 @@ void SSTInfoElement_LibraryInfo::generateLibraryInfoXMLData(int LibIndex, TiXmlN
 
 	// Get the Num Objects and Display an XML comment about them
     numObjects = getNumberOfLibraryComponents();
-	sprintf(Comment, "NUM COMPONENTS = %d", numObjects);
-	TiXmlComment* XMLLibComponentsComment = new TiXmlComment(Comment);
-	XMLLibraryElement->LinkEndChild(XMLLibComponentsComment);
+	xmlComment(XMLLibraryElement, "NUM COMPONENTS = %d", numObjects);
     for (x = 0; x < numObjects; x++) {
         eic = getInfoComponent(x);
-        eic->generateComponentInfoXMLData(x, XMLLibraryElement);
+        eic->outputXML(x, XMLLibraryElement);
     }
 
-    numObjects = getNumberOfLibraryEvents();        
-	sprintf(Comment, "NUM EVENTS = %d", numObjects);
-	TiXmlComment* XMLLibEventsComment = new TiXmlComment(Comment);
-	XMLLibraryElement->LinkEndChild(XMLLibEventsComment);
+    numObjects = getNumberOfLibraryEvents();
+	xmlComment(XMLLibraryElement, "NUM EVENTS = %d", numObjects);
     for (x = 0; x < numObjects; x++) {
         eie = getInfoEvent(x);
-        eie->generateEventInfoXMLData(x, XMLLibraryElement);
+        eie->outputXML(x, XMLLibraryElement);
     }
 
-    numObjects = getNumberOfLibraryModules();       
-	sprintf(Comment, "NUM MODULES = %d", numObjects);
-	TiXmlComment* XMLLibModulesComment = new TiXmlComment(Comment);
-	XMLLibraryElement->LinkEndChild(XMLLibModulesComment);
+    numObjects = getNumberOfLibraryModules();
+	xmlComment(XMLLibraryElement, "NUM MODULES = %d", numObjects);
     for (x = 0; x < numObjects; x++) {
         eim = getInfoModule(x);
-        eim->generateModuleInfoXMLData(x, XMLLibraryElement);
+        eim->outputXML(x, XMLLibraryElement);
     }
 
 // TODO: Dump SubComponent info to XML.  Turned off for 5.0 since SSTWorkbench
 //       chokes if format is changed.  
 //    numObjects = getNumberOfLibrarySubComponents();
-//    sprintf(Comment, "NUM SUBCOMPONENTS = %d", numObjects);
-//    TiXmlComment* XMLLibSubComponentsComment = new TiXmlComment(Comment);
-//    XMLLibraryElement->LinkEndChild(XMLLibSubComponentsComment);
+//    xmlComment(XMLLibraryElement, "NUM SUBCOMPONENTS = %d", numObjects);
 //    for (x = 0; x < numObjects; x++) {
 //        eisc = getInfoSubComponent(x);
 //        eisc->generateSubComponentInfoXMLData(x, XMLLibraryElement);
 //    }
-    
+
     numObjects = getNumberOfLibraryPartitioners();  
-	sprintf(Comment, "NUM PARTITIONERS = %d", numObjects);
-	TiXmlComment* XMLLibPartitionersComment = new TiXmlComment(Comment);
-	XMLLibraryElement->LinkEndChild(XMLLibPartitionersComment);
+    xmlComment(XMLLibraryElement, "NUM PARTITIONERS = %d", numObjects);
     for (x = 0; x < numObjects; x++) {
         eip = getInfoPartitioner(x);
-        eip->generatePartitionerInfoXMLData(x, XMLLibraryElement);
+        eip->outputXML(x, XMLLibraryElement);
     }
 
-    numObjects = getNumberOfLibraryGenerators();    
-	sprintf(Comment, "NUM GENERATORS = %d", numObjects);
-	TiXmlComment* XMLLibGeneratorsComment = new TiXmlComment(Comment);
-	XMLLibraryElement->LinkEndChild(XMLLibGeneratorsComment);
+    numObjects = getNumberOfLibraryGenerators();
+    xmlComment(XMLLibraryElement, "NUM GENERATORS = %d", numObjects);
     for (x = 0; x < numObjects; x++) {
         eig = getInfoGenerator(x);
-        eig->generateGeneratorInfoXMLData(x, XMLLibraryElement);
+        eig->outputXML(x, XMLLibraryElement);
     }
 
     // Add this Library Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLLibraryElement);
 }
 
-void SSTInfoElement_ParamInfo::outputParameterInfo(int index)
+void SSTInfoElement_ParamInfo::outputHumanReadable(int index)
 {
     fprintf(stdout, "            PARAMETER %d = %s (%s) [%s]\n", index, getName().c_str(), getDesc().c_str(), getDefault().c_str());
 }
 
-void SSTInfoElement_ParamInfo::generateParameterInfoXMLData(int Index, TiXmlNode* XMLParentElement)
+void SSTInfoElement_ParamInfo::outputXML(int Index, TiXmlNode* XMLParentElement)
 {
     // Build the Element to Represent the Parameter
 	TiXmlElement* XMLParameterElement = new TiXmlElement("Parameter");
@@ -644,7 +642,7 @@ void SSTInfoElement_ParamInfo::generateParameterInfoXMLData(int Index, TiXmlNode
     XMLParentElement->LinkEndChild(XMLParameterElement);
 }
 
-void SSTInfoElement_PortInfo::outputPortInfo(int index)
+void SSTInfoElement_PortInfo::outputHumanReadable(int index)
 {
     fprintf(stdout, "            PORT %d [%zu Valid Events] = %s (%s)\n", index,  m_validEvents.size(), getName().c_str(), getDesc().c_str());
 
@@ -654,9 +652,8 @@ void SSTInfoElement_PortInfo::outputPortInfo(int index)
     }
 }
 
-void SSTInfoElement_PortInfo::generatePortInfoXMLData(int Index, TiXmlNode* XMLParentElement)
+void SSTInfoElement_PortInfo::outputXML(int Index, TiXmlNode* XMLParentElement)
 {
-    char          Comment[256];
     TiXmlElement* XMLValidEventElement;
 
     // Build the Element to Represent the Component
@@ -666,10 +663,8 @@ void SSTInfoElement_PortInfo::generatePortInfoXMLData(int Index, TiXmlNode* XMLP
 	XMLPortElement->SetAttribute("Description", getDesc().c_str());
 
 	// Get the Num Valid Event and Display an XML comment about them
-    sprintf(Comment, "NUM Valid Events = %zu", m_validEvents.size());
-    TiXmlComment* XMLValidEventsComment = new TiXmlComment(Comment);
-    XMLPortElement->LinkEndChild(XMLValidEventsComment);
-	
+    xmlComment(XMLPortElement, "NUM Valid Events = %zu", m_validEvents.size());
+
     for (unsigned int x = 0; x < m_validEvents.size(); x++) {
         // Build the Element to Represent the ValidEvent
         XMLValidEventElement = new TiXmlElement("PortValidEvent");
@@ -686,12 +681,12 @@ void SSTInfoElement_PortInfo::generatePortInfoXMLData(int Index, TiXmlNode* XMLP
 
 
 
-void SSTInfoElement_StatisticInfo::outputStatisticInfo(int index)
+void SSTInfoElement_StatisticInfo::outputHumanReadable(int index)
 {
     fprintf(stdout, "            STATISTIC %d = %s [%s] (%s) Enable Level = %d\n", index, getName().c_str(), getUnits().c_str(), getDesc().c_str(), getEnableLevel());
 }
 
-void SSTInfoElement_StatisticInfo::generateStatisticXMLData(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentElement))
+void SSTInfoElement_StatisticInfo::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentElement))
 {
 // TODO: Dump Statistic info to XML.  Turned off for 5.0 since SSTWorkbench
 //       chokes if format is changed.  
@@ -707,7 +702,7 @@ void SSTInfoElement_StatisticInfo::generateStatisticXMLData(int UNUSED(Index), T
 //    XMLParentElement->LinkEndChild(XMLStatElement);
 }
 
-void SSTInfoElement_ComponentInfo::outputComponentInfo(int index)
+void SSTInfoElement_ComponentInfo::outputHumanReadable(int index)
 {
     // Print out the Component Info
     fprintf(stdout, "      COMPONENT %d = %s [%s] (%s)\n", index, getName().c_str(), getCategoryString().c_str(), getDesc().c_str());
@@ -715,26 +710,24 @@ void SSTInfoElement_ComponentInfo::outputComponentInfo(int index)
     // Print out the Parameter Info
     fprintf(stdout, "         NUM PARAMETERS = %ld\n", m_ParamArray.size());
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
-        getParamInfo(x)->outputParameterInfo(x);
+        getParamInfo(x)->outputHumanReadable(x);
     }
 
     // Print out the Port Info
     fprintf(stdout, "         NUM PORTS = %ld\n", m_PortArray.size());
     for (unsigned int x = 0; x < m_PortArray.size(); x++) {
-        getPortInfo(x)->outputPortInfo(x);
+        getPortInfo(x)->outputHumanReadable(x);
     }
 
     // Print out the Port Info
     fprintf(stdout, "         NUM STATISTICS = %ld\n", m_StatisticArray.size());
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
-        getStatisticInfo(x)->outputStatisticInfo(x);
+        getStatisticInfo(x)->outputHumanReadable(x);
     }
 }
 
-void SSTInfoElement_ComponentInfo::generateComponentInfoXMLData(int Index, TiXmlNode* XMLParentElement)
+void SSTInfoElement_ComponentInfo::outputXML(int Index, TiXmlNode* XMLParentElement)
 {
-    char Comment[256];
-
     // Build the Element to Represent the Component
 	TiXmlElement* XMLComponentElement = new TiXmlElement("Component");
 	XMLComponentElement->SetAttribute("Index", Index);
@@ -743,30 +736,24 @@ void SSTInfoElement_ComponentInfo::generateComponentInfoXMLData(int Index, TiXml
 	XMLComponentElement->SetAttribute("Category", getCategoryString().c_str());
 
 	// Get the Num Parameters and Display an XML comment about them
-    sprintf(Comment, "NUM PARAMETERS = %ld", m_ParamArray.size());
-    TiXmlComment* XMLParamsComment = new TiXmlComment(Comment);
-    XMLComponentElement->LinkEndChild(XMLParamsComment);
-	
+    xmlComment(XMLComponentElement, "NUM PARAMETERS = %ld", m_ParamArray.size());
+
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
-        getParamInfo(x)->generateParameterInfoXMLData(x, XMLComponentElement);
+        getParamInfo(x)->outputXML(x, XMLComponentElement);
     }
 
     // Get the Num Ports and Display an XML comment about them
-    sprintf(Comment, "NUM PORTS = %ld", m_PortArray.size());
-    TiXmlComment* XMLPortsComment = new TiXmlComment(Comment);
-    XMLComponentElement->LinkEndChild(XMLPortsComment);
-	
+    xmlComment(XMLComponentElement, "NUM PORTS = %ld", m_PortArray.size());
+
     for (unsigned int x = 0; x < m_PortArray.size(); x++) {
-        getPortInfo(x)->generatePortInfoXMLData(x, XMLComponentElement);
+        getPortInfo(x)->outputXML(x, XMLComponentElement);
     }
 
 	// Get the Num Statistics and Display an XML comment about them
-    sprintf(Comment, "NUM STATISTICS = %ld", m_StatisticArray.size());
-    TiXmlComment* XMLStatComment = new TiXmlComment(Comment);
-    XMLComponentElement->LinkEndChild(XMLStatComment);
-	
+    xmlComment(XMLComponentElement, "NUM STATISTICS = %ld", m_StatisticArray.size());
+
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
-        getStatisticInfo(x)->generateStatisticXMLData(x, XMLComponentElement);
+        getStatisticInfo(x)->outputXML(x, XMLComponentElement);
     }
 
     // Add this Element to the Parent Element
@@ -803,12 +790,12 @@ std::string SSTInfoElement_ComponentInfo::getCategoryString() const
 }
 
 
-void SSTInfoElement_EventInfo::outputEventInfo(int index)
+void SSTInfoElement_EventInfo::outputHumanReadable(int index)
 {
     fprintf(stdout, "      EVENT %d = %s (%s)\n", index, getName().c_str(), getDesc().c_str());
 }
 
-void SSTInfoElement_EventInfo::generateEventInfoXMLData(int Index, TiXmlNode* XMLParentElement)
+void SSTInfoElement_EventInfo::outputXML(int Index, TiXmlNode* XMLParentElement)
 {
     // Build the Element to Represent the Event
 	TiXmlElement* XMLEventElement = new TiXmlElement("Event");
@@ -820,42 +807,38 @@ void SSTInfoElement_EventInfo::generateEventInfoXMLData(int Index, TiXmlNode* XM
     XMLParentElement->LinkEndChild(XMLEventElement);
 }
 
-void SSTInfoElement_ModuleInfo::outputModuleInfo(int index)
+void SSTInfoElement_ModuleInfo::outputHumanReadable(int index)
 {
     fprintf(stdout, "      MODULE %d = %s (%s) {%s}\n", index, getName().c_str(), getDesc().c_str(), getProvides().c_str());
 
     // Print out the Parameter Info
     fprintf(stdout, "         NUM PARAMETERS = %zu\n", m_ParamArray.size());
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
-        getParamInfo(x)->outputParameterInfo(x);
+        getParamInfo(x)->outputHumanReadable(x);
     }
 }
 
-void SSTInfoElement_ModuleInfo::generateModuleInfoXMLData(int Index, TiXmlNode* XMLParentElement)
+void SSTInfoElement_ModuleInfo::outputXML(int Index, TiXmlNode* XMLParentElement)
 {
-    char Comment[256];
-
     // Build the Element to Represent the Module
 	TiXmlElement* XMLModuleElement = new TiXmlElement("Module");
 	XMLModuleElement->SetAttribute("Index", Index);
 	XMLModuleElement->SetAttribute("Name", getName().c_str());
 	XMLModuleElement->SetAttribute("Description", getDesc().c_str());
 	XMLModuleElement->SetAttribute("Provides", getProvides().c_str());
-	
+
 	// Get the Num Parameters and Display an XML comment about them
-    sprintf(Comment, "NUM PARAMETERS = %zu", m_ParamArray.size());
-    TiXmlComment* XMLParamsComment = new TiXmlComment(Comment);
-    XMLModuleElement->LinkEndChild(XMLParamsComment);
-	
+    xmlComment(XMLModuleElement, "NUM PARAMETERS = %zu", m_ParamArray.size());
+
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
-        getParamInfo(x)->generateParameterInfoXMLData(x, XMLModuleElement);
+        getParamInfo(x)->outputXML(x, XMLModuleElement);
     }
 
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLModuleElement);
 }
 
-void SSTInfoElement_SubComponentInfo::outputSubComponentInfo(int index)
+void SSTInfoElement_SubComponentInfo::outputHumanReadable(int index)
 {
     // Print out the Component Info
     fprintf(stdout, "      SUBCOMPONENT %d = %s (%s)\n", index, getName().c_str(), getDesc().c_str());
@@ -863,20 +846,18 @@ void SSTInfoElement_SubComponentInfo::outputSubComponentInfo(int index)
     // Print out the Parameter Info
     fprintf(stdout, "         NUM PARAMETERS = %zu\n", m_ParamArray.size());
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
-        getParamInfo(x)->outputParameterInfo(x);
+        getParamInfo(x)->outputHumanReadable(x);
     }
 
     // Print out the Port Info
     fprintf(stdout, "         NUM STATISTICS = %zu\n", m_StatisticArray.size());
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
-        getStatisticInfo(x)->outputStatisticInfo(x);
+        getStatisticInfo(x)->outputHumanReadable(x);
     }
 }
 
-void SSTInfoElement_SubComponentInfo::generateSubComponentInfoXMLData(int Index, TiXmlNode* XMLParentElement)
+void SSTInfoElement_SubComponentInfo::outputXML(int Index, TiXmlNode* XMLParentElement)
 {
-    char Comment[256];
-
     // Build the Element to Represent the Component
 	TiXmlElement* XMLSubComponentElement = new TiXmlElement("SubComponent");
 	XMLSubComponentElement->SetAttribute("Index", Index);
@@ -884,60 +865,75 @@ void SSTInfoElement_SubComponentInfo::generateSubComponentInfoXMLData(int Index,
 	XMLSubComponentElement->SetAttribute("Description", getDesc().c_str());
 
 	// Get the Num Parameters and Display an XML comment about them
-    sprintf(Comment, "NUM PARAMETERS = %zu", m_ParamArray.size());
-    TiXmlComment* XMLParamsComment = new TiXmlComment(Comment);
-    XMLSubComponentElement->LinkEndChild(XMLParamsComment);
-	
+    xmlComment(XMLSubComponentElement, "NUM PARAMETERS = %zu", m_ParamArray.size());
+
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
-        getParamInfo(x)->generateParameterInfoXMLData(x, XMLSubComponentElement);
+        getParamInfo(x)->outputXML(x, XMLSubComponentElement);
     }
 
 	// Get the Num Statistics and Display an XML comment about them
-    sprintf(Comment, "NUM STATISTICS = %zu", m_StatisticArray.size());
-    TiXmlComment* XMLStatComment = new TiXmlComment(Comment);
-    XMLSubComponentElement->LinkEndChild(XMLStatComment);
-	
+    xmlComment(XMLSubComponentElement, "NUM STATISTICS = %zu", m_StatisticArray.size());
+
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
-        getStatisticInfo(x)->generateStatisticXMLData(x, XMLSubComponentElement);
+        getStatisticInfo(x)->outputXML(x, XMLSubComponentElement);
     }
 
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLSubComponentElement);
 }
 
-void SSTInfoElement_PartitionerInfo::outputPartitionerInfo(int index)
+void SSTInfoElement_PartitionerInfo::outputHumanReadable(int index)
 {
     fprintf(stdout, "      PARTITIONER %d = %s (%s)\n", index, getName().c_str(), getDesc().c_str());
 }
 
-void SSTInfoElement_PartitionerInfo::generatePartitionerInfoXMLData(int Index, TiXmlNode* XMLParentElement)
+void SSTInfoElement_PartitionerInfo::outputXML(int Index, TiXmlNode* XMLParentElement)
 {
     // Build the Element to Represent the Partitioner
 	TiXmlElement* XMLPartitionerElement = new TiXmlElement("Partitioner");
 	XMLPartitionerElement->SetAttribute("Index", Index);
 	XMLPartitionerElement->SetAttribute("Name", getName().c_str());
 	XMLPartitionerElement->SetAttribute("Description", getDesc().c_str());
-	
+
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLPartitionerElement);
 }
 
-void SSTInfoElement_GeneratorInfo::outputGeneratorInfo(int index)
+void SSTInfoElement_GeneratorInfo::outputHumanReadable(int index)
 {
     fprintf(stdout, "      GENERATOR %d = %s (%s)\n", index, getName().c_str(), getDesc().c_str());
 }
 
-void SSTInfoElement_GeneratorInfo::generateGeneratorInfoXMLData(int Index, TiXmlNode* XMLParentElement)
+void SSTInfoElement_GeneratorInfo::outputXML(int Index, TiXmlNode* XMLParentElement)
 {
     // Build the Element to Represent the Generator
 	TiXmlElement* XMLGeneratorElement = new TiXmlElement("Generator");
 	XMLGeneratorElement->SetAttribute("Index", Index);
 	XMLGeneratorElement->SetAttribute("Name", getName().c_str());
 	XMLGeneratorElement->SetAttribute("Description", getDesc().c_str());
-	
+
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLGeneratorElement);
 }
 
 
 
+void SSTInfoElement_Outputter::xmlComment(TiXmlNode* owner, const char* fmt...)
+{
+    ssize_t size = 128;
+
+retry:
+    char *buf = (char*)calloc(size, 1);
+    va_list ap;
+    va_start(ap, fmt);
+    int res = vsnprintf(buf, size, fmt, ap);
+    va_end(ap);
+    if ( res > size ) {
+        free(buf);
+        size = res + 1;
+        goto retry;
+    }
+
+    TiXmlComment* comment = new TiXmlComment(buf);
+    owner->LinkEndChild(comment);
+}
