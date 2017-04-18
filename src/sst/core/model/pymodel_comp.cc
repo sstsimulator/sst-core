@@ -18,6 +18,7 @@
 #include <string.h>
 #include <sstream>
 
+#include <sst/core/warnmacros.h>
 #include <sst/core/model/pymodel.h>
 #include <sst/core/model/pymodel_comp.h>
 #include <sst/core/model/pymodel_link.h>
@@ -26,6 +27,7 @@
 #include <sst/core/simulation.h>
 #include <sst/core/element.h>
 #include <sst/core/component.h>
+#include <sst/core/subcomponent.h>
 #include <sst/core/configGraph.h>
 
 using namespace SST::Core;
@@ -35,11 +37,11 @@ extern SST::Core::SSTPythonModelDefinition *gModel;
 extern "C" {
 
 
-ConfigComponent* ComponentHolder::getSubComp(const std::string &name)
+ConfigComponent* ComponentHolder::getSubComp(const std::string &name, int slot_num)
 {
     for ( auto &sc : getComp()->subComponents ) {
-        if ( sc.first == name )
-            return &(sc.second);
+        if ( sc.name == name && sc.slot_num == slot_num)
+            return &sc;
     }
     return NULL;
 }
@@ -76,9 +78,12 @@ const char* PySubComponent::getName() const {
     return name;
 }
 
+int PySubComponent::getSlot() const {
+    return slot;
+}
 
 ConfigComponent* PySubComponent::getComp() {
-    return parent->getSubComp(name);
+    return parent->getSubComp(name,slot);
 }
 
 
@@ -100,7 +105,7 @@ int PySubComponent::compare(ComponentHolder *other) {
 
 
 
-static int compInit(ComponentPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
+static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     char *name, *type;
     ComponentId_t useID = UNSET_COMPONENT_ID;
@@ -235,7 +240,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 }
 
 
-static PyObject* compGetFullName(PyObject *self, PyObject *args __attribute__((unused)))
+static PyObject* compGetFullName(PyObject *self, PyObject *UNUSED(args))
 {
     return PyString_FromString(getComp(self)->name.c_str());
 }
@@ -248,8 +253,9 @@ static int compCompare(PyObject *obj0, PyObject *obj1) {
 static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
 {
     char *name = NULL, *type = NULL;
-
-    if ( !PyArg_ParseTuple(args, "ss", &name, &type) )
+    int slot = 0;
+    
+    if ( !PyArg_ParseTuple(args, "ss|i", &name, &type, &slot) )
         return NULL;
 
     ConfigComponent *c = getComp(self);
@@ -257,19 +263,49 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
 
     PyComponent *baseComp = ((ComponentPy_t*)self)->obj->getBaseObj();
     ComponentId_t subC_id = SUBCOMPONENT_ID_CREATE(baseComp->id, ++(baseComp->subCompId));
-    if ( NULL != c->addSubComponent(subC_id, name, type) ) {
-        PyObject *argList = Py_BuildValue("Oss", self, name, type);
+    if ( NULL != c->addSubComponent(subC_id, name, type, slot) ) {
+        PyObject *argList = Py_BuildValue("Ossi", self, name, type, slot);
         PyObject *subObj = PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);
         Py_DECREF(argList);
         return subObj;
     }
 
     char errMsg[1024] = {0};
-    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create subcomponent %s on %s.  Name already exists?\n", name, c->name.c_str());
+    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create subcomponent %s on %s.  Already attached a subcomponent at that slot name and number?\n", name, c->name.c_str());
     PyErr_SetString(PyExc_RuntimeError, errMsg);
     return NULL;
 }
 
+static PyObject* compSetCoords(PyObject *self, PyObject *args)
+{
+    std::vector<double> coords(3, 0.0);
+    if ( !PyArg_ParseTuple(args, "d|dd", &coords[0], &coords[1], &coords[2]) ) {
+        PyObject* list = NULL;
+        if ( PyArg_ParseTuple(args, "O!", &PyList_Type, &list) && PyList_Size(list) > 0 ) {
+            coords.clear();
+            for ( Py_ssize_t i = 0 ; i < PyList_Size(list) ; i++ ) {
+                coords.push_back(PyFloat_AsDouble(PyList_GetItem(list, 0)));
+                if ( PyErr_Occurred() ) goto error;
+            }
+        } else if ( PyArg_ParseTuple(args, "O!", &PyTuple_Type, &list) && PyTuple_Size(list) > 0 ) {
+            coords.clear();
+            for ( Py_ssize_t i = 0 ; i < PyTuple_Size(list) ; i++ ) {
+                coords.push_back(PyFloat_AsDouble(PyTuple_GetItem(list, 0)));
+                if ( PyErr_Occurred() ) goto error;
+            }
+        } else {
+error:
+            PyErr_SetString(PyExc_TypeError, "compSetCoords() expects arguments of 1-3 doubles, or a list/tuple of doubles");
+            return NULL;
+        }
+    }
+
+    ConfigComponent *c = getComp(self);
+    if ( NULL == c ) return NULL;
+    c->setCoordinates(coords);
+
+    return PyInt_FromLong(0);
+}
 
 static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
 {
@@ -372,6 +408,9 @@ static PyMethodDef componentMethods[] = {
     {   "setSubComponent",
         compSetSubComponent, METH_VARARGS,
         "Bind a subcomponent to slot <name>, with type <type>"},
+    {   "setCoordinates",
+        compSetCoords, METH_VARARGS,
+        "Set (X,Y,Z) coordinates of this component, for use with visualization"},
     {   NULL, NULL, 0, NULL }
 };
 
@@ -431,11 +470,12 @@ PyTypeObject PyModel_ComponentType = {
 
 
 
-static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *kwds __attribute__((unused)))
+static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     char *name, *type;
+    int slot;
     PyObject *parent;
-    if ( !PyArg_ParseTuple(args, "Oss", &parent, &name, &type) )
+    if ( !PyArg_ParseTuple(args, "Ossi", &parent, &name, &type, &slot) )
         return -1;
 
     PySubComponent *obj = new PySubComponent(self);
@@ -443,6 +483,8 @@ static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *kwds __att
 
     obj->name = strdup(name);
 
+    obj->slot = slot;
+    
     self->obj = obj;
     Py_INCREF(obj->parent->pobj);
 
@@ -483,6 +525,9 @@ static PyMethodDef subComponentMethods[] = {
     {   "setSubComponent",
         compSetSubComponent, METH_VARARGS,
         "Bind a subcomponent to slot <name>, with type <type>"},
+    {   "setCoordinates",
+        compSetCoords, METH_VARARGS,
+        "Set (X,Y,Z) coordinates of this component, for use with visualization"},
     {   NULL, NULL, 0, NULL }
 };
 

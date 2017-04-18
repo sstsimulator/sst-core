@@ -12,6 +12,7 @@
 #ifndef SERIALIZE_SIZER_H
 #define SERIALIZE_SIZER_H
 
+#include <sst/core/warnmacros.h>
 namespace SST {
 namespace Core {
 namespace Serialization {
@@ -27,7 +28,7 @@ class ser_sizer
 
   template <class T>
   void
-  size(T& t __attribute__((unused))){
+  size(T& UNUSED(t)){
     size_ += sizeof(T);
   }
 

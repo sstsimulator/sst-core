@@ -20,17 +20,22 @@
 #include <sst/core/params.h>
 #include <sst/core/elemLoader.h>
 #include <sst/core/element.h>
-#include <sst/core/statapi/statoutput.h>
 #include <sst/core/model/element_python.h>
+#include <sst/core/statapi/statfieldinfo.h>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
 
-using namespace SST::Statistics;
-
 namespace SST {
+namespace Statistics {
+class StatisticOutput;
+class StatisticBase;
+}
 
+class Module;
 class Component;
+class BaseComponent;
+class SubComponent;
 
 /**
  * Class for instantiating Components, Links and the like out
@@ -104,42 +109,20 @@ public:
      */
     generateFunction GetGenerator(std::string name);
 
-//    /** Instatiate a new StatisticBase Object
-//     * @param type - Fully qualified elementlibname.statisticname type
-//     * @param params - Parameters to pass to the Statistics's constructor
-//     */
-//    StatisticBase* CreateStatisticBase(std::string type, Params& params);
-//    
-//    /** Instatiate a new Statistic
-//     * @param type - Fully qualified elementlibname.statisticname type
-//     * @param params - Parameters to pass to the Statistics's constructor
-//     */
-//    template <typename T>
-//    Statistic<T>* CreateStatistic(std::string type, Params& params)
-//    {
-//        StatisticBase *statbase = CreateStatisticBase(type,params);
-//        // Now cast it to an actual Templated Statistic 
-//        Statistic<T> *ret = dynamic_cast<Statistic<T>*>(statbase);
-//        return ret;
-//    }
-    
-//Module* 
-//Factory::LoadCoreModule_Statistics(std::string& type, Params& params)
-//{
-//    // Names of sst.xxx Statistic Modules
-//    if ("AccumulatorStatistic" == type) {
-//        return new AccumulatorStatistic(params);
-//    }
-//    if ("HistogramStatistic" == type) {
-//        return new HistogramStatistic(params);
-//    }
-//    if ("NullStatistic" == type) {
-//        return new NullStatistic(params);
-//    }
-//    return NULL;
-//}
-    
-    
+
+    /** Instatiate a new Statistic
+     * @param comp - Owning component
+     * @param type - Fully qualified elementlibname.statisticname type
+     * @param statName - Name of the statistic
+     * @param statSubId - Name of the sub statistic
+     * @param params - Parameters to pass to the Statistics's constructor
+     * @param fieldType - Type of data stored in statistic
+     */
+    Statistics::StatisticBase* CreateStatistic(BaseComponent* comp, const std::string &type,
+            const std::string &statName, const std::string &statSubId,
+            Params &params, Statistics::StatisticFieldInfo::fieldType_t fieldType);
+
+
     /** Return Python Module creation function
      * @param name - Fully qualified elementlibname.pythonModName type name
      */
@@ -157,7 +140,7 @@ public:
      * @param statOutputParams - The params to pass to the statistic output's constructor
      * @return Newly created Statistic Output
      */
-    StatisticOutput* CreateStatisticOutput(const std::string& statOutputType, const Params& statOutputParams);
+    Statistics::StatisticOutput* CreateStatisticOutput(const std::string& statOutputType, const Params& statOutputParams);
 
     /** Determine if a statistic is defined in a components ElementInfoStatistic
      * @param type - The name of the component
@@ -189,7 +172,7 @@ public:
 
 private:
     Module* LoadCoreModule_StatisticOutputs(std::string& type, Params& params);
-    
+
     friend int ::main(int argc, char **argv);
 
     struct ComponentInfo {

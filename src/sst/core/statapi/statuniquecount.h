@@ -14,6 +14,7 @@
 #define _H_SST_CORE_UNIQUE_COUNT_STATISTIC_
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <sst/core/statapi/statbase.h>
 
@@ -32,10 +33,9 @@ namespace Statistics {
 template <typename T>
 class UniqueCountStatistic : public Statistic<T>
 {
-private:
-    friend class SST::BaseComponent;
+public:
 
-    UniqueCountStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams)
+    UniqueCountStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<T>(comp, statName, statSubId, statParams)
     {
         // Set the Name of this Statistic
@@ -49,22 +49,22 @@ protected:
 	Present a new value to the Statistic to be included in the unique set
         @param data New data item to be included in the unique set
     */
-    void addData_impl(T data) {
+    void addData_impl(T data) override {
 	uniqueSet.insert(data);
     }
 
 private:
-    void clearStatisticData()
+    void clearStatisticData() override
     {
 	uniqueSet.clear();
     }
 
-    void registerOutputFields(StatisticOutput* statOutput)
+    void registerOutputFields(StatisticOutput* statOutput) override
     {
 	uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused)))
+    void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
 	statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
     }

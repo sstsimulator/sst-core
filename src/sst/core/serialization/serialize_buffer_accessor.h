@@ -12,6 +12,7 @@
 #ifndef SERIALIZE_ACCESSOR_H
 #define SERIALIZE_ACCESSOR_H
 
+#include <sst/core/warnmacros.h>
 #include <cstring>
 #include <exception>
 //#include <sst/core/serialization/errors.h>
@@ -24,7 +25,7 @@ namespace pvt {
 // class ser_buffer_overrun : public spkt_error {
 class ser_buffer_overrun : public std::exception {
  public:
-    ser_buffer_overrun(int maxsize __attribute__((unused)))
+    ser_buffer_overrun(int UNUSED(maxsize))
     // ser_buffer_overrun(int maxsize) :
       //spkt_error(sprockit::printf("serialization overrun buffer of size %d", maxsize))
   {

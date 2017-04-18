@@ -13,12 +13,13 @@
 
 #include <sst/core/configGraph.h>
 #include <sst/core/part/singlepart.h>
+#include <sst/core/warnmacros.h>
 
 using namespace std;
 
 using namespace SST::Partition;
 
-SSTSinglePartition::SSTSinglePartition(RankInfo total_ranks __attribute__((unused)), RankInfo my_rank __attribute__((unused)), int verbosity __attribute__((unused))) {}
+SSTSinglePartition::SSTSinglePartition(RankInfo UNUSED(total_ranks), RankInfo UNUSED(my_rank), int UNUSED(verbosity)) {}
 
 void SSTSinglePartition::performPartition(PartitionGraph* graph) {
 

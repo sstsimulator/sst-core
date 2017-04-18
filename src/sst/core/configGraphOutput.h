@@ -12,7 +12,6 @@
 #ifndef _H_SST_CORE_CONFIG_OUTPUT
 #define _H_SST_CORE_CONFIG_OUTPUT
 
-#include <sst/core/config.h>
 #include <configGraph.h>
 
 #include <exception>
@@ -20,6 +19,8 @@
 #include <cstdio>
 
 namespace SST {
+class ConfigGraph;
+
 namespace Core {
 
 class ConfigGraphOutputException : public std::exception {
@@ -29,7 +30,7 @@ public:
 		std::strcpy(exMsg, msg);
 	}
 
-	virtual const char* what() const throw() {
+	virtual const char* what() const throw() override {
 		return exMsg;
 	}
 

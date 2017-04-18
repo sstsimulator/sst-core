@@ -27,6 +27,7 @@
 
 #include <sst/core/serialization/serializable.h>
 #include <sst/core/serialization/serializer.h>
+#include <sst/core/output.h>
 
 int main(int argc, char *argv[]);
 
@@ -418,6 +419,12 @@ public:
         }
     }
 
+    void print_all_params(Output &out, std::string prefix = "") const {
+        for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
+            out.output("%s%s = %s\n", prefix.c_str(), keyMapReverse[i->first].c_str(), i->second.c_str());
+        }
+    }
+
 
 
     /** Add a key value pair into the param object.
@@ -515,7 +522,7 @@ public:
     }
 
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & data;
     }    
     

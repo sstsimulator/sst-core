@@ -13,6 +13,7 @@
 #define SST_CORE_CORE_PROFILE_H
 
 #include <chrono>
+#include <sst/core/warnmacros.h>
 
 namespace SST {
 namespace Core {
@@ -57,13 +58,13 @@ inline ProfData_t now()
     return 0.0;
 }
 
-inline double getElapsed(const ProfData_t &begin __attribute__((unused)), const ProfData_t &end __attribute__((unused)))
+inline double getElapsed(const ProfData_t &UNUSED(begin), const ProfData_t &UNUSED(end))
 {
     return 0.0;
 }
 
 
-inline double getElapsed(const ProfData_t &since __attribute__((unused)))
+inline double getElapsed(const ProfData_t &UNUSED(since))
 {
     return 0.0;
 }

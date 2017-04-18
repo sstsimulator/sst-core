@@ -13,6 +13,7 @@
 #define SST_CORE_SERIALIZATION_SERIALIZABLE_H
 
 #include <sst/core/serialization/serializer.h>
+#include <sst/core/warnmacros.h>
 #include <unordered_map>
 #include <typeinfo>
 #include <stdint.h>
@@ -68,7 +69,7 @@ constexpr uint32_t ct_hash_rec(const char* str)
 // End of the recursion (i.e. when you've walked back off the front of
 // the string
 template<>
-constexpr uint32_t ct_hash_rec<size_t(-1)>(const char* str __attribute__((unused)))
+constexpr uint32_t ct_hash_rec<size_t(-1)>(const char* UNUSED(str))
 {
     return 0;
 }
@@ -116,6 +117,7 @@ public:
     
     virtual uint32_t
     cls_id() const = 0;
+    virtual std::string serialization_name() const = 0;
     
     virtual ~serializable() { }
     
@@ -141,11 +143,11 @@ class serializable_type
      serializable_abort(CALL_INFO_LONG, #obj); \
   } \
   virtual void \
-  serialize_order(SST::Core::Serialization::serializer& sst __attribute__((unused))){    \
+  serialize_order(SST::Core::Serialization::serializer& UNUSED(sst)) override {    \
     throw_exc(); \
   } \
   virtual uint32_t \
-  cls_id() const { \
+  cls_id() const override { \
     throw_exc(); \
     return -1; \
   } \
@@ -155,12 +157,12 @@ class serializable_type
     return 0; \
   } \
   virtual std::string \
-  serialization_name() const { \
+  serialization_name() const override { \
     throw_exc(); \
     return ""; \
   } \
   virtual const char* \
-  cls_name() const { \
+  cls_name() const override { \
     throw_exc(); \
     return ""; \
   }
@@ -168,11 +170,11 @@ class serializable_type
 #define ImplementSerializableDefaultConstructor(obj)    \
  public: \
   virtual const char* \
-  cls_name() const { \
+  cls_name() const override { \
     return #obj; \
   } \
   virtual uint32_t \
-  cls_id() const { \
+  cls_id() const override { \
     return SST::Core::Serialization::serializable_builder_impl<obj>::static_cls_id(); \
   }           \
   static obj* \
@@ -180,7 +182,7 @@ class serializable_type
     return new obj; \
   } \
   virtual std::string \
-  serialization_name() const { \
+  serialization_name() const override { \
     return #obj; \
   } \
 private:\
@@ -222,17 +224,17 @@ class serializable_builder_impl : public serializable_builder
 
  public:
   serializable*
-  build() const {
+  build() const override {
       return T::construct_deserialize_stub();
   }
 
   const char*
-  name() const {
+  name() const override {
     return name_;
   }
 
   uint32_t
-  cls_id() const {
+  cls_id() const override {
       return cls_id_;
   }
 
@@ -247,7 +249,7 @@ class serializable_builder_impl : public serializable_builder
   }
     
   bool
-  sanity(serializable* ser) {
+  sanity(serializable* ser) override {
     return (typeid(T) == typeid(*ser));
   }
 };

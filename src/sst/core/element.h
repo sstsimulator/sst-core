@@ -55,7 +55,7 @@ struct ElementInfoComponent {
     const ElementInfoPort *ports;		/*!< List of ports that this component uses. */
     uint32_t category;	   		        /*!< Bit-mask of categories in which this component fits. */
     const ElementInfoStatistic *stats;	/*!< List of statistic Names that this component wants enabled. */
-    const ElementInfoSubComponentHook *subComponents;
+    const ElementInfoSubComponentSlot *subComponents;
 };
 
 /** Describes an Introspector
@@ -98,7 +98,7 @@ struct ElementInfoSubComponent {
     const ElementInfoStatistic *stats;              /*!< List of statistics supplied by this subcomponent. */
     const char *provides;                           /*!< Name of SuperClass which for this subcomponent can be used. */
     const ElementInfoPort *ports;		            /*!< List of ports that this subcomponent uses. */
-    const ElementInfoSubComponentHook *subComponents;
+    const ElementInfoSubComponentSlot *subComponents;
 };
 
 /** Describes a Partitioner

@@ -13,16 +13,12 @@
 #define SST_CORE_BASECOMPONENT_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <map>
 #include <string>
 
-#include <sst/core/statapi/statoutput.h>
 #include <sst/core/statapi/statengine.h>
-#include <sst/core/statapi/statnull.h>
-#include <sst/core/statapi/stataccumulator.h>
-#include <sst/core/statapi/stathistogram.h>
-#include <sst/core/statapi/statuniquecount.h>
 #include <sst/core/statapi/statbase.h>
 #include <sst/core/event.h>
 #include <sst/core/clock.h>
@@ -46,11 +42,69 @@ class SharedRegion;
 class SharedRegionMerger;
 class Component;
 class SubComponent;
+class SubComponentSlotInfo_impl;
+
+class SubComponentSlotInfo {
+
+protected:
+    
+    virtual SubComponent* protected_create(int slot_num, Params& params) const = 0;
+    
+public:
+    virtual ~SubComponentSlotInfo() {}
+    
+    virtual const std::string& getSlotName() const = 0;
+    virtual bool isPopulated(int slot_num) const = 0;
+    virtual bool isAllPopulated() const = 0;
+    virtual int getMaxPopulatedSlotNumber() const = 0;
+        
+    template <typename T>
+    T* create(int slot_num, Params& params) const {
+        SubComponent* sub = protected_create(slot_num, params);
+        if ( sub == NULL ) {
+            // Nothing populated at this index, simply return NULL
+            return NULL;
+        }
+        T* cast_sub = dynamic_cast<T*>(sub);
+        if ( cast_sub == NULL ) {
+            // SubComponent not castable to the correct class,
+            // fatal
+            Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Attempt to load SubComponent into slot "
+                                                    "%s, index %d, which is not castable to correct time\n",
+                                                    getSlotName().c_str(),slot_num);
+        }
+        return cast_sub;
+    }
+
+    template <typename T>
+    void createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const {
+        for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
+            T* sub = create<T>(i, params);
+            if ( sub != NULL || insertNulls ) vec.push_back(sub);
+        }
+    }
+
+    template <typename T>
+    T* create(int slot_num) const {
+        Params empty;
+        return create<T>(slot_num, empty);
+    }
+
+    template <typename T>
+    void createAll(std::vector<T*>& vec, bool insertNulls = true) const {
+        Params empty;
+        return createAll<T>(empty, vec, insertNulls);
+    }
+};
+
 
 /**
  * Main component object for the simulation.
  */
 class BaseComponent {
+
+    friend class SubComponentSlotInfo_impl;
+
 public:
 
     BaseComponent();
@@ -72,7 +126,7 @@ public:
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
-    virtual void init(unsigned int phase __attribute__((unused))) {}
+    virtual void init(unsigned int UNUSED(phase)) {}
     /** Called after all components have been constructed and inialization has
 	completed, but before simulation time has begun. */
     virtual void setup( ) { }
@@ -88,7 +142,7 @@ public:
      * print it's current status.  Useful for debugging.
      * @param out The Output class which should be used to print component status.
      */
-    virtual void printStatus(Output &out __attribute__((unused))) { return; }
+    virtual void printStatus(Output &UNUSED(out)) { return; }
 
     /** Determine if a port name is connected to any links */
     bool isPortConnected(const std::string &name) const;
@@ -215,15 +269,6 @@ public:
                 depending upon runtime settings.
     */
     template <typename T>
-    Statistic<T>* registerStatisticCore(std::string statName, std::string statSubId = "")
-    {
-        // NOTE: Templated Code for implementation of Statistic Registration
-        // is in the componentregisterstat_impl.h file.  This was done
-        // to avoid code bloat in the .h file.
-        #include "sst/core/statapi/componentregisterstat_impl.h"
-    }
-
-    template <typename T>
     Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
     {
         // Verify here that name of the stat is one of the registered
@@ -233,6 +278,12 @@ public:
                    StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId).c_str(),
                    statName.c_str());
             exit(1);
+        }
+        // Check to see if the Statistic is previously registered with the Statistics Engine
+        StatisticBase* prevStat = StatisticProcessingEngine::getInstance()->isStatisticRegisteredWithEngine<T>(getName(), my_info->getID(), statName, statSubId);
+        if (NULL != prevStat) {
+            // Dynamic cast the base stat to the expected type
+            return dynamic_cast<Statistic<T>*>(prevStat);
         }
         return registerStatisticCore<T>(statName, statSubId);
     }
@@ -271,6 +322,18 @@ public:
     SubComponent* loadNamedSubComponent(std::string name, Params& params);
 
 protected:
+    SubComponent* loadNamedSubComponent(std::string name, int slot_num);
+    SubComponent* loadNamedSubComponent(std::string name, int slot_num, Params& params);
+public:
+    SubComponentSlotInfo* getSubComponentSlotInfo(std::string name, bool fatalOnEmptyIndex = false);
+
+    /** Retrieve the X,Y,Z coordinates of this component */
+    const std::vector<double>& getCoordinates() const {
+        return my_info->coordinates;
+    }
+
+protected:
+    friend class SST::Statistics::StatisticProcessingEngine;
 
     /** Manually set the default detaulTimeBase */
     void setDefaultTimeBase(TimeConverter *tc) {
@@ -294,17 +357,19 @@ protected:
     Simulation* getSimulation() const { return sim; }
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) = 0;
-    virtual uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) = 0;
-    virtual std::string getComponentInfoStatisticUnits(const std::string &statisticName) = 0;
+    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const = 0;
+    // Return the EnableLevel for the statisticName from the ElementInfoStatistic
+    uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) const;
+    // Return the Units for the statisticName from the ElementInfoStatistic
+    std::string getComponentInfoStatisticUnits(const std::string &statisticName) const;
 
-    virtual Component* getTrueComponent() = 0;
+    virtual Component* getTrueComponent() const = 0;
     /**
      * Returns self if Component
      * If sub-component, returns self if a "modern" subcomponent
      *    otherwise, return base component.
      */
-    virtual BaseComponent* getStatisticOwner() = 0;
+    virtual BaseComponent* getStatisticOwner() const = 0;
 
 protected:
     ComponentInfo* my_info;
@@ -316,40 +381,13 @@ private:
     void addSelfLink(std::string name);
 
     template <typename T>
-    Statistic<T>* CreateStatistic(BaseComponent* comp, std::string& type, std::string& statName, std::string& statSubId, Params& params)
+    Statistic<T>* registerStatisticCore(std::string statName, std::string statSubId = "")
     {
-        // Load one of the SST Core provided Statistics
-        // NOTE: This happens here (in simulation) instead of the factory because
-        //       it is a templated method.  The BaseComponent::registerStatistic<T>()
-        //       must be defined in the component.h however the the Factory is
-        //       not available from the Simulation::::getSimulation() because
-        //       Factory is only defined via a forwarded definition.  Basically
-        //       we have to go through some twists and jumps to make this work.
-
-        // Names of sst.xxx Statistics
-        if (0 == ::strcasecmp("sst.nullstatistic", type.c_str())) {
-            return new NullStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if (0 == ::strcasecmp("sst.accumulatorstatistic", type.c_str())) {
-            return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if (0 == ::strcasecmp("sst.histogramstatistic", type.c_str())) {
-            return new HistogramStatistic<T>(comp, statName, statSubId, params);
-        }
-
-	if(0 == ::strcasecmp("sst.uniquecountstatistic", type.c_str())) {
-	    return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
-	}
-
-        // We did not find this statistic
-        printf("ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
-
-        return NULL;
+        // NOTE: Templated Code for implementation of Statistic Registration
+        // is in the componentregisterstat_impl.h file.  This was done
+        // to avoid code bloat in the .h file.
+        #include "sst/core/statapi/componentregisterstat_impl.h"
     }
-
-
 
 
 };

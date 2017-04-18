@@ -14,11 +14,12 @@
 #define _H_SST_CORE_HISTOGRAM_STATISTIC_
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/statoutput.h>
 
 namespace SST {
-class BaseComponent;
 namespace Statistics {
 
 // NOTE: When calling base class members in classes derived from 
@@ -41,10 +42,9 @@ namespace Statistics {
 template<class BinDataType>
 class HistogramStatistic : public Statistic<BinDataType> 
 {
-private:
-    friend class SST::BaseComponent;
-    
-    HistogramStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams)
+public:
+
+    HistogramStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<BinDataType>(comp, statName, statSubId, statParams)
     {
         // Identify what keys are Allowed in the parameters
@@ -82,7 +82,7 @@ protected:
         Adds a new value to the histogram. The correct bin is identified and then incremented. If no bin can be found
         to hold the value then a new bin is created.
     */
-    void addData_impl(BinDataType value) 
+    void addData_impl(BinDataType value) override
     {
         // Check to see if the value is above or below the min/max values
         if (value < getBinsMinValue()) {   
@@ -216,7 +216,7 @@ private:
         return m_totalSummedSqr;
     }
 
-    void clearStatisticData()
+    void clearStatisticData() override
     {
         m_totalSummed = 0;
         m_totalSummedSqr = 0;
@@ -227,7 +227,7 @@ private:
         this->setCollectionCount(0);
     }
     
-    void registerOutputFields(StatisticOutput* statOutput)
+    void registerOutputFields(StatisticOutput* statOutput) override
     {
         // Check to see if we have registered the Startup Fields        
         m_Fields.push_back(statOutput->registerField<BinDataType>("BinsMinValue"));
@@ -262,7 +262,7 @@ private:
         }
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused)))
+    void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
         uint32_t x = 0;
         statOutput->outputField(m_Fields[x++], getBinsMinValue());
@@ -291,7 +291,7 @@ private:
         }
     }
 
-    bool isStatModeSupported(StatisticBase::StatMode_t mode) const 
+    bool isStatModeSupported(StatisticBase::StatMode_t mode) const override
     {
         if (mode == StatisticBase::STAT_MODE_COUNT) {
             return true;

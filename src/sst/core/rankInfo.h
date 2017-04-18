@@ -70,7 +70,7 @@ public:
         return rank >= other.rank;
     }
 
-    void serialize_order(SST::Core::Serialization::serializer &ser)
+    void serialize_order(SST::Core::Serialization::serializer &ser) override
     {
         ser & rank;
         ser & thread;

@@ -10,6 +10,7 @@
 // distribution.
 
 #include <sst_config.h>
+#include <sst/core/warnmacros.h>
 
 #include <string>
 
@@ -26,9 +27,64 @@
 #include <sst/core/unitAlgebra.h>
 #include <sst/core/sharedRegion.h>
 
-using namespace SST::Statistics;
-
 namespace SST {
+
+
+class SubComponentSlotInfo_impl : public SubComponentSlotInfo {
+private:
+
+    BaseComponent* comp;
+    std::string slot_name;
+    int max_slot_index;
+    
+public:
+
+    SubComponent* protected_create(int slot_num, Params& params) const {
+        if ( slot_num > max_slot_index ) return NULL;
+
+        return comp->loadNamedSubComponent(slot_name, slot_num, params);
+    }
+    
+    ~SubComponentSlotInfo_impl() {}
+    
+    SubComponentSlotInfo_impl(BaseComponent* comp, std::string slot_name) :
+        comp(comp),
+        slot_name(slot_name)
+    {
+        const std::vector<ComponentInfo>& subcomps = comp->my_info->getSubComponents();
+
+        // Look for all subcomponents with the right slot name
+        max_slot_index = -1;
+        for ( auto &ci : subcomps ) {
+            if ( ci.getSlotName() == slot_name ) {
+                if ( ci.getSlotNum() > static_cast<int>(max_slot_index) ) {
+                    max_slot_index = ci.getSlotNum();
+                }
+            }
+        }
+    }
+
+    const std::string& getSlotName() const {
+        return slot_name;
+    }
+    
+    bool isPopulated(int slot_num) const {
+        if ( slot_num > max_slot_index ) return false;
+        if ( comp->my_info->findSubComponent(slot_name,slot_num) == NULL ) return false;
+        return true;
+    }
+    
+    bool isAllPopulated() const {
+        for ( int i = 0; i < max_slot_index; ++i ) {
+            if ( comp->my_info->findSubComponent(slot_name,i) == NULL ) return false;
+        }
+        return true;
+    }
+
+    int getMaxPopulatedSlotNumber() const {
+        return max_slot_index;
+    }
+};
 
 BaseComponent::BaseComponent() :
     defaultTimeBase(NULL), my_info(NULL),
@@ -45,7 +101,7 @@ BaseComponent::~BaseComponent()
 
 
 TimeConverter* BaseComponent::registerClock( std::string freq, Clock::HandlerBase* handler, bool regAll) {
-    TimeConverter* tc = getSimulation()->registerClock(freq,handler);
+    TimeConverter* tc = getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -64,7 +120,7 @@ TimeConverter* BaseComponent::registerClock( std::string freq, Clock::HandlerBas
 }
 
 TimeConverter* BaseComponent::registerClock( const UnitAlgebra& freq, Clock::HandlerBase* handler, bool regAll) {
-    TimeConverter* tc = getSimulation()->registerClock(freq,handler);
+    TimeConverter* tc = getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -83,23 +139,23 @@ TimeConverter* BaseComponent::registerClock( const UnitAlgebra& freq, Clock::Han
 }
 
 Cycle_t BaseComponent::reregisterClock( TimeConverter* freq, Clock::HandlerBase* handler) {
-    return getSimulation()->reregisterClock(freq,handler);
+    return getSimulation()->reregisterClock(freq, handler, CLOCKPRIORITY);
 }
 
 Cycle_t BaseComponent::getNextClockCycle( TimeConverter* freq ) {
-    return getSimulation()->getNextClockCycle(freq);
+    return getSimulation()->getNextClockCycle(freq, CLOCKPRIORITY);
 }
 
 void BaseComponent::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
-    getSimulation()->unregisterClock(tc,handler);
+    getSimulation()->unregisterClock(tc, handler, CLOCKPRIORITY);
 }
 
 TimeConverter* BaseComponent::registerOneShot( std::string timeDelay, OneShot::HandlerBase* handler) {
-    return getSimulation()->registerOneShot(timeDelay, handler);
+    return getSimulation()->registerOneShot(timeDelay, handler, ONESHOTPRIORITY);
 }
 
 TimeConverter* BaseComponent::registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler) {
-    return getSimulation()->registerOneShot(timeDelay, handler);
+    return getSimulation()->registerOneShot(timeDelay, handler, ONESHOTPRIORITY);
 }
 
 TimeConverter* BaseComponent::registerTimeBase( std::string base, bool regAll) {
@@ -221,7 +277,7 @@ BaseComponent::configureSelfLink( std::string name, Event::HandlerBase* handler)
     return configureLink(name,handler);
 }
 
-Link* BaseComponent::selfLink( std::string name __attribute__((unused)), Event::HandlerBase* handler )
+Link* BaseComponent::selfLink( std::string UNUSED(name), Event::HandlerBase* handler )
 {
     Link* link = new SelfLink();
     link->setLatency(0);
@@ -287,17 +343,30 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
 SubComponent*
 BaseComponent::loadNamedSubComponent(std::string name) {
     Params empty;
-    return loadNamedSubComponent(name, empty);
+    return loadNamedSubComponent(name, 0, empty);
 }
 
 SubComponent*
-BaseComponent::loadNamedSubComponent(std::string name, Params& params)
-{
-    auto infoItr = my_info->getSubComponents().find(name);
-    if ( infoItr == my_info->getSubComponents().end() ) return NULL;
+BaseComponent::loadNamedSubComponent(std::string name, Params& params) {
+    return loadNamedSubComponent(name, 0, params);
+}
 
+SubComponent*
+BaseComponent::loadNamedSubComponent(std::string name, int slot_num) {
+    Params empty;
+    return loadNamedSubComponent(name, slot_num, empty);
+}
+
+SubComponent*
+BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& params)
+{
+    // auto infoItr = my_info->getSubComponents().find(name);
+    // if ( infoItr == my_info->getSubComponents().end() ) return NULL;
+    ComponentInfo* sub_info = my_info->findSubComponent(name,slot_num);
+    if ( sub_info == NULL ) return NULL;
+    
     ComponentInfo *oldLoadingSubCopmonent = getTrueComponent()->currentlyLoadingSubComponent;
-    ComponentInfo *sub_info = &(infoItr->second);
+    // ComponentInfo *sub_info = &(infoItr->second);
     getTrueComponent()->currentlyLoadingSubComponent = sub_info;
 
     Params myParams;
@@ -312,7 +381,22 @@ BaseComponent::loadNamedSubComponent(std::string name, Params& params)
     return ret;
 }
 
-
+SubComponentSlotInfo*
+BaseComponent::getSubComponentSlotInfo(std::string name, bool fatalOnEmptyIndex) {
+    SubComponentSlotInfo_impl* info = new SubComponentSlotInfo_impl(this, name);
+    if ( info->getMaxPopulatedSlotNumber() < 0 ) {
+        // Nothing registered on this slot
+        delete info;
+        return NULL;
+    }
+    if ( !info->isAllPopulated() && fatalOnEmptyIndex ) {
+        Simulation::getSimulationOutput().
+            fatal(CALL_INFO,1,
+                  "SubComponent slot %s requires a dense allocation of SubCompents and did not get one.\n",
+                  name.c_str());
+    }
+    return info;
+}
 
 
 SharedRegion* BaseComponent::getLocalSharedRegion(const std::string &key, size_t size)
@@ -326,6 +410,20 @@ SharedRegion* BaseComponent::getGlobalSharedRegion(const std::string &key, size_
 {
     SharedRegionManager *mgr = Simulation::getSharedRegionManager();
     return mgr->getGlobalSharedRegion(key, size, merger);
+}
+
+
+
+uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string &statisticName) const
+{
+    const std::string& type = getStatisticOwner()->my_info->getType();
+    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
+}
+
+std::string BaseComponent::getComponentInfoStatisticUnits(const std::string &statisticName) const
+{
+    const std::string& type = getStatisticOwner()->my_info->getType();
+    return Factory::getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
 }
 
 

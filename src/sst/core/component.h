@@ -105,16 +105,12 @@ protected:
     friend class SubComponent;
     Component() {} // Unused, but previously available
 
-    Component* getTrueComponent() final { return this; }
-    BaseComponent* getStatisticOwner() final { return this; }
+    Component* getTrueComponent() const final override { return const_cast<Component*>(this); }
+    BaseComponent* getStatisticOwner() const final override { return const_cast<Component*>(this); }
 
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) final;
-    // Return the EnableLevel for the statisticName from the ElementInfoStatistic
-    virtual uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) final;
-    // Return the Units for the statisticName from the ElementInfoStatistic
-    virtual std::string getComponentInfoStatisticUnits(const std::string &statisticName) final;
+    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final override;
 
 private:
 

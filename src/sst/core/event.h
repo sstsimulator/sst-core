@@ -47,7 +47,7 @@ public:
     virtual ~Event() = 0;
 
     /** Cause this event to fire */
-    void execute(void);
+    void execute(void) override;
 
     /** Clones the event in for the case of a broadcast */
     virtual Event* clone();
@@ -146,7 +146,7 @@ public:
         };
 
     /** Virtual function to "pretty-print" this event.  Should be implemented by subclasses. */
-    virtual void print(const std::string& header, Output &out) const {
+    virtual void print(const std::string& header, Output &out) const override {
         out.output("%s Generic Event to be delivered at %" PRIu64 " with priority %d\n",
                 header.c_str(), getDeliveryTime(), getPriority());
     }
@@ -181,7 +181,7 @@ public:
 
 #endif
 
-    void serialize_order(SST::Core::Serialization::serializer &ser){
+    void serialize_order(SST::Core::Serialization::serializer &ser) override{
         Activity::serialize_order(ser);
 #ifndef SST_ENFORCE_EVENT_ORDERING        
         ser & link_id;
@@ -234,9 +234,9 @@ public:
     NullEvent() : Event() {}
     ~NullEvent() {}
 
-    void execute(void);
+    void execute(void) override;
 
-    virtual void print(const std::string& header, Output &out) const {
+    virtual void print(const std::string& header, Output &out) const override {
         out.output("%s NullEvent to be delivered at %" PRIu64 " with priority %d\n",
                 header.c_str(), getDeliveryTime(), getPriority());
     }

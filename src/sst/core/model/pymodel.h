@@ -28,6 +28,7 @@
 #include <sst/core/config.h>
 #include <sst/core/rankInfo.h>
 #include <sst/core/output.h>
+#include <sst/core/configGraph.h>
 
 using namespace SST;
 
@@ -41,7 +42,7 @@ class SSTPythonModelDefinition : public SSTModelDescription {
 		SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* config);
 		virtual ~SSTPythonModelDefinition();
 
-		ConfigGraph* createConfigGraph();
+		ConfigGraph* createConfigGraph() override;
 
 	protected:
 		void initModel(const std::string script_file, int verbosity, Config* config, int argc, char** argv);

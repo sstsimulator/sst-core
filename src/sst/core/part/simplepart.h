@@ -12,9 +12,10 @@
 #define SST_CORE_PART_SIMPLEPART_H
 
 #include <map>
-#include "sst/core/sst_types.h"
-#include "sst/core/part/sstpart.h"
+#include <sst/core/sst_types.h>
+#include <sst/core/part/sstpart.h>
 #include <sst/core/elementinfo.h>
+#include <sst/core/configGraph.h>
 
 namespace SST {
 namespace Partition{
@@ -40,10 +41,10 @@ public:
     SimplePartitioner();
     ~SimplePartitioner() {}
 
-    void performPartition(PartitionGraph* graph);
+    void performPartition(PartitionGraph* graph) override;
 
-    bool requiresConfigGraph() { return false; }
-    bool spawnOnAllRanks() { return false; }
+    bool requiresConfigGraph() override { return false; }
+    bool spawnOnAllRanks() override { return false; }
 
     SST_ELI_REGISTER_PARTITIONER(SimplePartitioner,"sst","simple","Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.")
     

@@ -161,7 +161,7 @@ public:
         return old;
     }
 
-    void serialize_order(SST::Core::Serialization::serializer &ser)
+    void serialize_order(SST::Core::Serialization::serializer &ser) override
     {
         ser & debugFile;
         ser & runMode;

@@ -33,6 +33,7 @@ nobase_dist_sst_HEADERS = \
 	cfgoutput/dotConfigOutput.h \
 	cfgoutput/xmlConfigOutput.h \
 	cfgoutput/jsonConfigOutput.h \
+	decimal_fixedpoint.h \
 	env/envquery.h \
 	env/envconfig.h \
 	element.h \
@@ -107,6 +108,7 @@ nobase_dist_sst_HEADERS = \
 	interfaces/simpleMem.h \
 	interfaces/simpleNetwork.h \
 	interprocess/circularBuffer.h \
+	interprocess/sstmutex.h \
 	interprocess/ipctunnel.h \
 	rng/sstrng.h \
 	rng/marsaglia.h \
@@ -120,14 +122,13 @@ nobase_dist_sst_HEADERS = \
 	rng/constant.h \
 	rng/uniform.h \
 	statapi/statengine.h \
+	statapi/statgroup.h \
 	statapi/statoutput.h \
 	statapi/statfieldinfo.h \
 	statapi/statoutputconsole.h \
 	statapi/statuniquecount.h \
 	statapi/statoutputtxt.h \
-	statapi/statoutputtxtgz.h \
 	statapi/statoutputcsv.h \
-	statapi/statoutputcsvgz.h \
 	statapi/statoutputhdf5.h \
 	statapi/statbase.h \
 	statapi/stathistogram.h \
@@ -137,6 +138,7 @@ nobase_dist_sst_HEADERS = \
 	threadsafe.h \
 	cputimer.h \
 	sst_config.h \
+	warnmacros.h \
 	model/element_python.h
 
 nobase_nodist_sst_HEADERS = \
@@ -196,13 +198,12 @@ sst_core_sources = \
 	rng/mersenne.cc \
 	rng/xorshift.cc \
 	statapi/statengine.cc \
+	statapi/statgroup.cc \
 	statapi/statoutput.cc \
 	statapi/statfieldinfo.cc \
 	statapi/statoutputconsole.cc \
 	statapi/statoutputtxt.cc \
-	statapi/statoutputtxtgz.cc \
 	statapi/statoutputcsv.cc \
-	statapi/statoutputcsvgz.cc \
 	statapi/statbase.cc \
 	cputimer.cc \
 	iouse.cc
@@ -254,6 +255,7 @@ sstinfo_x_SOURCES = \
 
 sstsim_x_LDADD = \
 	$(LIBLTDL) \
+	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
 	$(BOOST_LIBS) \
@@ -298,8 +300,9 @@ sstinfo_x_LDADD += $(LIBZ_LIBS)
 endif
 
 if USE_HDF5
+AM_CPPFLAGS += $(HDF5_CFLAGS)
 sstsim_x_SOURCES += statapi/statoutputhdf5.cc
 sstinfo_x_SOURCES += statapi/statoutputhdf5.cc
-sstsim_x_LDADD += $(HDF5_LIBS)
-sstinfo_x_LDADD += $(HDF5_LIBS)
+sstsim_x_LDADD += $(HDF5_LDFLAGS) $(HDF5_LIBS)
+sstinfo_x_LDADD += $(HDF5_LDFLAGS) $(HDF5_LIBS)
 endif

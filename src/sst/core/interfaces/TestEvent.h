@@ -31,7 +31,7 @@ public:
     bool print_on_delete;
 
 public:   
-    void serialize_order(SST::Core::Serialization::serializer &ser) {
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
         Event::serialize_order(ser);
         ser & count;
     }

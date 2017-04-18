@@ -50,27 +50,27 @@ class MersenneRNG : public SSTRandom {
 	/**
 		Generates the next random number as a double value between 0 and 1.
 	*/
-	double   nextUniform();
+	double   nextUniform() override;
 
 	/**
 		Generates the next random number as an unsigned 32-bit integer
 	*/
-	uint32_t generateNextUInt32();
+	uint32_t generateNextUInt32() override;
 
 	/**
 		Generates the next random number as an unsigned 64-bit integer
 	*/
-	uint64_t generateNextUInt64();
+	uint64_t generateNextUInt64() override;
 
 	/**
 		Generates the next random number as a signed 64-bit integer
 	*/
-	int64_t  generateNextInt64();
+	int64_t  generateNextInt64() override;
 
 	/**
 		Generates the next random number as a signed 32-bit integer
 	*/
-    	int32_t  generateNextInt32();
+    	int32_t  generateNextInt32() override;
 
     	/**
 		Seed the XOR RNG
