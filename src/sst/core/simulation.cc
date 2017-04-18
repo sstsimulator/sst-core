@@ -309,10 +309,9 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     {
         ConfigComponent* ccomp = &(*iter);
         if ( ccomp->rank == myRank ) {
-            compInfoMap.insert(new ComponentInfo(ccomp, new LinkMap()));
+            compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, new LinkMap()));
         }
     }
-
 
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put

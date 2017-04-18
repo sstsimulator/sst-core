@@ -45,9 +45,11 @@ ComponentInfo::ComponentInfo(const std::string &type, const Params *params, cons
 }
 
 
-ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
+ComponentInfo::ComponentInfo(ConfigComponent *ccomp, const std::string& name, LinkMap* link_map) :
     id(ccomp->id),
-    name(ccomp->name),
+    name(name),
+    slot_name(ccomp->name),
+    slot_num(ccomp->slot_num),
     type(ccomp->type),
     link_map(link_map),
     component(NULL),
@@ -55,14 +57,35 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map) :
     enabledStats(&ccomp->enabledStatistics),
     coordinates(ccomp->coords)
 {
+
+    // See how many subcomponents are in each slot so we know how to name them
+    std::map<std::string, int> counts;
     for ( auto &sc : ccomp->subComponents ) {
-        subComponents.emplace(sc.first, ComponentInfo(&sc.second, new LinkMap()));
+        counts[sc.name]++;
     }
+    
+    
+    for ( auto &sc : ccomp->subComponents ) {
+        std::string sub_name(name);
+        sub_name += ":";
+        sub_name += sc.name;
+        // If there is more than one subcomponent in this slot, need
+        // to add [index] to the end.
+        if ( counts[sc.name] > 1 ) {
+            sub_name += "[";
+            sub_name += std::to_string(sc.slot_num);
+            sub_name += "]";
+        }
+        subComponents.emplace_back(ComponentInfo(&sc, sub_name, new LinkMap()));
+
+    }   
 }
 
 ComponentInfo::ComponentInfo(ComponentInfo &&o) :
     id(o.id),
     name(std::move(o.name)),
+    slot_name(o.slot_name),
+    slot_num(o.slot_num),
     type(std::move(o.type)),
     link_map(o.link_map),
     component(o.component),
@@ -85,7 +108,7 @@ void ComponentInfo::finalizeLinkConfiguration() {
         i.second->finalizeConfiguration();
     }
     for ( auto &s : subComponents ) {
-        s.second.finalizeLinkConfiguration();
+        s.finalizeLinkConfiguration();
     }
 }
 
@@ -100,9 +123,18 @@ ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id)
         return NULL;
 
     for ( auto &s : subComponents ) {
-        ComponentInfo* found = s.second.findSubComponent(id);
+        ComponentInfo* found = s.findSubComponent(id);
         if ( found != NULL )
             return found;
+    }
+    return NULL;
+}
+
+ComponentInfo* ComponentInfo::findSubComponent(std::string slot, int slot_num)
+{
+    // Non-recursive, only look in current component
+    for ( auto &sc : subComponents ) {
+        if ( sc.slot_name == slot && sc.slot_num == slot_num ) return &sc;
     }
     return NULL;
 }
@@ -115,7 +147,7 @@ std::vector<LinkId_t> ComponentInfo::getAllLinkIds() const
         res.push_back(l.second->id);
     }
     for ( auto& sc : subComponents ) {
-        std::vector<LinkId_t> s = sc.second.getAllLinkIds();
+        std::vector<LinkId_t> s = sc.getAllLinkIds();
         res.insert(res.end(), s.begin(), s.end());
     }
     return res;

@@ -42,10 +42,13 @@ private:
     friend class ComponentInfoMap;
     const ComponentId_t id;
     const std::string name;
+    const std::string slot_name;
+    int slot_num;
     const std::string type;
     LinkMap* link_map;
     BaseComponent* component;
-    std::map<std::string, ComponentInfo> subComponents;
+    // std::map<std::string, ComponentInfo> subComponents;
+    std::vector<ComponentInfo> subComponents;
     const Params *params;
 
     statEnableList_t * enabledStats;
@@ -62,13 +65,17 @@ public:
     ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent);
 
     /* New ELI Style */
-    ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map);
+    ComponentInfo(ConfigComponent *ccomp, const std::string& name, LinkMap* link_map);
     ComponentInfo(ComponentInfo &&o);
     ~ComponentInfo();
 
     inline ComponentId_t getID() const { return id; }
 
     inline const std::string& getName() const { return name; }
+
+    inline const std::string& getSlotName() const { return slot_name; }
+
+    inline int getSlotNum() const { return slot_num; }
 
     inline const std::string& getType() const { return type; }
 
@@ -78,8 +85,10 @@ public:
 
     inline const Params* getParams() const { return params; }
 
-    inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
+    // inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
+    inline std::vector<ComponentInfo>& getSubComponents() { return subComponents; }
 
+    ComponentInfo* findSubComponent(std::string slot, int slot_num);
     ComponentInfo* findSubComponent(ComponentId_t id);
     std::vector<LinkId_t> getAllLinkIds() const;
 

@@ -27,6 +27,7 @@
 #include <sst/core/simulation.h>
 #include <sst/core/element.h>
 #include <sst/core/component.h>
+#include <sst/core/subcomponent.h>
 #include <sst/core/configGraph.h>
 
 using namespace SST::Core;
@@ -36,11 +37,11 @@ extern SST::Core::SSTPythonModelDefinition *gModel;
 extern "C" {
 
 
-ConfigComponent* ComponentHolder::getSubComp(const std::string &name)
+ConfigComponent* ComponentHolder::getSubComp(const std::string &name, int slot_num)
 {
     for ( auto &sc : getComp()->subComponents ) {
-        if ( sc.first == name )
-            return &(sc.second);
+        if ( sc.name == name && sc.slot_num == slot_num)
+            return &sc;
     }
     return NULL;
 }
@@ -77,9 +78,12 @@ const char* PySubComponent::getName() const {
     return name;
 }
 
+int PySubComponent::getSlot() const {
+    return slot;
+}
 
 ConfigComponent* PySubComponent::getComp() {
-    return parent->getSubComp(name);
+    return parent->getSubComp(name,slot);
 }
 
 
@@ -249,8 +253,9 @@ static int compCompare(PyObject *obj0, PyObject *obj1) {
 static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
 {
     char *name = NULL, *type = NULL;
-
-    if ( !PyArg_ParseTuple(args, "ss", &name, &type) )
+    int slot = 0;
+    
+    if ( !PyArg_ParseTuple(args, "ss|i", &name, &type, &slot) )
         return NULL;
 
     ConfigComponent *c = getComp(self);
@@ -258,15 +263,15 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
 
     PyComponent *baseComp = ((ComponentPy_t*)self)->obj->getBaseObj();
     ComponentId_t subC_id = SUBCOMPONENT_ID_CREATE(baseComp->id, ++(baseComp->subCompId));
-    if ( NULL != c->addSubComponent(subC_id, name, type) ) {
-        PyObject *argList = Py_BuildValue("Oss", self, name, type);
+    if ( NULL != c->addSubComponent(subC_id, name, type, slot) ) {
+        PyObject *argList = Py_BuildValue("Ossi", self, name, type, slot);
         PyObject *subObj = PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);
         Py_DECREF(argList);
         return subObj;
     }
 
     char errMsg[1024] = {0};
-    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create subcomponent %s on %s.  Name already exists?\n", name, c->name.c_str());
+    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create subcomponent %s on %s.  Already attached a subcomponent at that slot name and number?\n", name, c->name.c_str());
     PyErr_SetString(PyExc_RuntimeError, errMsg);
     return NULL;
 }
@@ -468,8 +473,9 @@ PyTypeObject PyModel_ComponentType = {
 static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     char *name, *type;
+    int slot;
     PyObject *parent;
-    if ( !PyArg_ParseTuple(args, "Oss", &parent, &name, &type) )
+    if ( !PyArg_ParseTuple(args, "Ossi", &parent, &name, &type, &slot) )
         return -1;
 
     PySubComponent *obj = new PySubComponent(self);
@@ -477,6 +483,8 @@ static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwd
 
     obj->name = strdup(name);
 
+    obj->slot = slot;
+    
     self->obj = obj;
     Py_INCREF(obj->parent->pobj);
 
