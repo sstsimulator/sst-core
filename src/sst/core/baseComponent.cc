@@ -341,6 +341,17 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
 
 /* New ELI style */
 SubComponent*
+BaseComponent::loadNamedSubComponent(std::string name) {
+    Params empty;
+    return loadNamedSubComponent(name, 0, empty);
+}
+
+SubComponent*
+BaseComponent::loadNamedSubComponent(std::string name, Params& params) {
+    return loadNamedSubComponent(name, 0, params);
+}
+
+SubComponent*
 BaseComponent::loadNamedSubComponent(std::string name, int slot_num) {
     Params empty;
     return loadNamedSubComponent(name, slot_num, empty);

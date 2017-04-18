@@ -48,6 +48,7 @@ public:
     virtual const std::string getName() = 0;
     virtual const std::string getLibrary() = 0;
     virtual const std::vector<ElementInfoParam>& getValidParams() = 0;
+    virtual const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() = 0;
 
     const Params::KeySet_t& getParamNames() { return allowedKeys; }
 
@@ -276,6 +277,7 @@ public:
     const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
     const std::vector<ElementInfoStatistic>& getValidStats() { return T::ELI_getStatistics(); }
     const std::vector<ElementInfoPort2>& getValidPorts() { return T::ELI_getPorts(); }
+    const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return T::ELI_getSubComponentSlots(); }
     uint32_t getCategory() { return T::ELI_getCategory(); };
 };
 
@@ -312,6 +314,7 @@ public:
     const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
     const std::vector<ElementInfoStatistic>& getValidStats() { return T::ELI_getStatistics(); }
     const std::vector<ElementInfoPort2>& getValidPorts() { return T::ELI_getPorts(); }
+    const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return T::ELI_getSubComponentSlots(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
 
 };
@@ -495,6 +498,10 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const uint32_t ELI_getCategory() {  \
       return cat; \
+    } \
+    static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
+        static std::vector<ElementInfoSubComponentSlot> var = { } ;     \
+        return var; \
     }
 
 #define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat) \
@@ -525,6 +532,16 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
         return var; \
     }
 
+// #define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)                              \
+//     static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
+//         static std::vector<ElementInfoSubComponentSlot> var = { __VA_ARGS__ } ;      \
+//         return var; \
+//     }
+
+// For now, this does nothing.  It's just here so it can be added to
+// elements.  The function is defined above, but returns an empty
+// vector for now.
+#define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)
 
 #define SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)   \
     friend class SubComponentDoc<cls>; \
@@ -542,6 +559,10 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const std::string ELI_getInterface() {  \
       return interface; \
+    } \
+    static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
+        static std::vector<ElementInfoSubComponentSlot> var = { } ;     \
+        return var; \
     }
 
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \
