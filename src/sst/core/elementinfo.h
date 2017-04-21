@@ -43,12 +43,10 @@ protected:
     
 public:
 
-    // virtual Component* create(ComponentId_t id, Params& params) = 0;
     virtual const std::string getDescription() = 0;
     virtual const std::string getName() = 0;
     virtual const std::string getLibrary() = 0;
     virtual const std::vector<ElementInfoParam>& getValidParams() = 0;
-    virtual const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() = 0;
 
     const Params::KeySet_t& getParamNames() { return allowedKeys; }
 
@@ -67,15 +65,16 @@ protected:
     
 public:
 
-    // virtual Component* create(ComponentId_t id, Params& params) = 0;
     virtual const std::vector<ElementInfoPort2>& getValidPorts() = 0;
     virtual const std::vector<ElementInfoStatistic>& getValidStats() = 0;
+    virtual const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() = 0;
 
     const std::vector<std::string>& getPortnames() { return portnames; }
     const std::vector<std::string>& getStatnames() { return statnames; }
 
     std::string getStatisticsString();
     std::string getPortsString();
+    std::string getSubComponentSlotString();
     
 };
 
@@ -97,7 +96,6 @@ class SubComponentElementInfo : public BaseComponentElementInfo {
 public:
 
     virtual SubComponent* create(Component* comp, Params& params) = 0;
-    // virtual SubComponent* create(ComponentId_t id, Params& params) = 0;
     virtual const std::string getInterface() = 0;
 
     std::string toString();
@@ -498,11 +496,7 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const uint32_t ELI_getCategory() {  \
       return cat; \
-    } \
-    static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
-        static std::vector<ElementInfoSubComponentSlot> var = { } ;     \
-        return var; \
-    }
+    } 
 
 #define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat) \
     static Component* create(ComponentId_t id, Params& params) { \
@@ -532,16 +526,12 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
         return var; \
     }
 
-// #define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)                              \
-//     static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
-//         static std::vector<ElementInfoSubComponentSlot> var = { __VA_ARGS__ } ;      \
-//         return var; \
-//     }
+#define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)                              \
+    static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
+    static std::vector<ElementInfoSubComponentSlot> var = { __VA_ARGS__ } ; \
+        return var; \
+    }
 
-// For now, this does nothing.  It's just here so it can be added to
-// elements.  The function is defined above, but returns an empty
-// vector for now.
-#define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)
 
 #define SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)   \
     friend class SubComponentDoc<cls>; \
@@ -559,10 +549,6 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const std::string ELI_getInterface() {  \
       return interface; \
-    } \
-    static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
-        static std::vector<ElementInfoSubComponentSlot> var = { } ;     \
-        return var; \
     }
 
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \

@@ -204,14 +204,15 @@ ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
         std::string infoname = elemlib + "_eli";
         eli = (ElementLibraryInfo*) lt_dlsym(lt_handle, infoname.c_str());
 
-        if (NULL == eli) {
-            if (showErrors) {
-                char *old_error = strdup(lt_dlerror());
-                fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
-                        infoname.c_str(), libname.c_str(), old_error);
-                free(old_error);
-            }
-        }
+        // Will not longer show this error here, will show it is Factory::loadLibrary()
+        // if (NULL == eli) {
+        //     if (showErrors) {
+        //         char *old_error = strdup(lt_dlerror());
+        //         fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
+        //                 infoname.c_str(), libname.c_str(), old_error);
+        //         free(old_error);
+        //     }
+        // }
     }
     return eli;
 }

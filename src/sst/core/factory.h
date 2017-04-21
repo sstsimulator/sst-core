@@ -142,6 +142,13 @@ public:
      */
     Statistics::StatisticOutput* CreateStatisticOutput(const std::string& statOutputType, const Params& statOutputParams);
 
+    /** Determine if a SubComponentSlot is defined in a components ElementInfoStatistic
+     * @param type - The name of the component/subcomponent
+     * @param slotName - The name of the SubComponentSlot 
+     * @return True if the SubComponentSlot is defined in the component's ELI
+     */
+    bool DoesSubComponentSlotExist(const std::string& type, const std::string& slotName);
+
     /** Determine if a statistic is defined in a components ElementInfoStatistic
      * @param type - The name of the component
      * @param statisticName - The name of the statistic 
@@ -182,6 +189,7 @@ private:
         std::vector<std::string>    statNames;
         std::vector<std::string>    statUnits;
         std::vector<uint8_t>        statEnableLevels;
+        std::vector<std::string>    subcomponentslots;
 
         ComponentInfo() {}
 
@@ -201,10 +209,17 @@ private:
                 statEnableLevels.push_back(s->enableLevel);
                 s++;
             }
+
+            const ElementInfoSubComponentSlot *ss = component->subComponents;
+            while ( NULL != ss && NULL != ss->name ) {
+                subcomponentslots.push_back(ss->name);
+                ss++;
+            }
         }
 
         ComponentInfo(const ComponentInfo& old) : component(old.component), params(old.params), ports(old.ports), 
-                                                  statNames(old.statNames), statUnits(old.statUnits), statEnableLevels(old.statEnableLevels)
+                                                  statNames(old.statNames), statUnits(old.statUnits), statEnableLevels(old.statEnableLevels),
+                                                  subcomponentslots(old.subcomponentslots)
         { }
 
         ComponentInfo& operator=(const ComponentInfo& old)
@@ -215,6 +230,7 @@ private:
             statNames = old.statNames;
             statUnits = old.statUnits;
             statEnableLevels = old.statEnableLevels;
+            subcomponentslots = old.subcomponentslots;
             return *this;
         }
     };
@@ -247,6 +263,7 @@ private:
         std::vector<std::string>  statUnits;
         std::vector<uint8_t>      statEnableLevels;
         std::vector<std::string>  ports;
+        std::vector<std::string>    subcomponentslots;
 
         SubComponentInfo() {}
 
@@ -267,9 +284,14 @@ private:
                 p++;
             }
 
+            const ElementInfoSubComponentSlot *ss = subcomponent->subComponents;
+            while ( NULL != ss && NULL != ss->name ) {
+                subcomponentslots.push_back(ss->name);
+                ss++;
+            }
         }
 
-    SubComponentInfo(const SubComponentInfo& old) : subcomponent(old.subcomponent), params(old.params), statNames(old.statNames), statUnits(old.statUnits), statEnableLevels(old.statEnableLevels)
+        SubComponentInfo(const SubComponentInfo& old) : subcomponent(old.subcomponent), params(old.params), statNames(old.statNames), statUnits(old.statUnits), statEnableLevels(old.statEnableLevels), subcomponentslots(old.subcomponentslots)
         { }
 
         SubComponentInfo& operator=(const SubComponentInfo& old)
@@ -279,6 +301,7 @@ private:
             statNames = old.statNames;
             statUnits = old.statUnits;
             statEnableLevels = old.statEnableLevels;
+            subcomponentslots = subcomponentslots;
             return *this;
         }
     };

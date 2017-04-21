@@ -121,7 +121,11 @@ struct ElementInfoGenerator {
 
 /** Describes all the parts of the Element Library
  */
+#if SST_BUILDING_CORE
 struct ElementLibraryInfo {
+#else
+struct __attribute__ ((deprecated("Please use new ELI defined in sst/core/elementinfo.h"))) ElementLibraryInfo {
+#endif
     const char *name;										/*!< Name of the Library. */
     const char *description;								/*!< Brief description of the Library */
     const struct ElementInfoComponent* components;			/*!< List of Components contained in the library. */
@@ -132,7 +136,8 @@ struct ElementLibraryInfo {
     const struct ElementInfoPartitioner* partitioners;		/*!< List of Partitioners provided by the library. */
     genPythonModuleFunction pythonModuleGenerator;			/*!< Pointer to Function to generate a Python Module for use in Configurations */
     const struct ElementInfoGenerator* generators;			/*!< List of Generators provided by the library. */
-};
+}; 
+
 
 } //namespace SST
 

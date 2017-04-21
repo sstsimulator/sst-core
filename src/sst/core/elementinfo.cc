@@ -89,6 +89,18 @@ BaseComponentElementInfo::getPortsString() {
 }
 
 std::string
+BaseComponentElementInfo::getSubComponentSlotString() {
+    std::stringstream stream;    
+    stream << "      SubComponentSlots (" << getSubComponentSlots().size() << " total):"<<  std::endl;
+    for ( auto item : getSubComponentSlots() ) {
+        stream << "        " << item.name << ": "
+               << (item.description == NULL ? "<empty>" : item.description)
+               << std::endl;
+    }
+    return stream.str();
+}
+
+std::string
 BaseComponentElementInfo::getStatisticsString() {
     std::stringstream stream;    
     stream << "      Statistics (" << getValidStats().size() << " total):"<<  std::endl;
@@ -113,6 +125,7 @@ ComponentElementInfo::toString()
     stream << getParametersString();
     stream << getStatisticsString();
     stream << getPortsString();
+    stream << getSubComponentSlotString();
     return stream.str();
 }
 
@@ -128,6 +141,7 @@ SubComponentElementInfo::toString()
     stream << getParametersString();
     stream << getStatisticsString();
     stream << getPortsString();
+    stream << getSubComponentSlotString();
     return stream.str();
 }
 

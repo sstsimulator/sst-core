@@ -44,6 +44,20 @@ namespace SST {
 
 Factory* Factory::instance = NULL;
 
+ElementLibraryInfo empty_eli = {
+    "empty-eli",
+    "ELI that gets returned when new ELI is used",
+    NULL,
+    NULL,   // Events
+    NULL,   // Introspectors
+    NULL,
+    NULL,
+    NULL, // partitioners,
+    NULL,  // Python Module Generator
+    NULL // generators,
+};
+
+
 Factory::Factory(std::string searchPaths) :
     searchPaths(searchPaths),
     out(Output::getDefaultObject())
@@ -282,6 +296,68 @@ StatisticBase* Factory::CreateStatistic(BaseComponent* comp, const std::string &
 
 }
 
+bool
+Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& slotName)
+{
+    std::string compTypeToLoad = type;
+    // if (true == type.empty()) { 
+    //     compTypeToLoad = loadingComponentType;
+    // }
+    
+    std::string elemlib, elem;
+    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+
+    // ensure library is already loaded...
+    requireLibrary(elemlib);
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != NULL ) {
+        BaseComponentElementInfo* comp = lib->getComponentOrSubComponent(elem);
+        if ( comp != NULL ) {
+            for ( auto item : comp->getSubComponentSlots() ) {
+                if ( slotName == item.name ) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    // now look for subcomponent
+    std::string tmp = elemlib + "." + elem;
+
+    eic_map_t::iterator eici = found_components.find(tmp);
+    eis_map_t::iterator eisi = found_subcomponents.find(tmp);
+    if (eici != found_components.end()) {
+        const ComponentInfo ci = eici->second;
+
+        // See if the slot exists
+        for ( auto item : ci.subcomponentslots ) {
+            if ( slotName == item ) {
+                return true;
+            }
+        }
+    }
+    else if (eisi != found_subcomponents.end()) {
+        const SubComponentInfo ci = eisi->second;
+
+        // See if the slot exists
+        for ( auto item : ci.subcomponentslots ) {
+            if ( slotName == item ) {
+                return true;
+            }
+        }
+    }
+    else {
+        out.fatal(CALL_INFO, -1,"can't find requested component/subcomponent %s.\n ", tmp.c_str());
+        return false;
+    }
+    return false;
+}
 
 bool 
 Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName)
@@ -883,7 +959,8 @@ Factory::findLibrary(std::string elemlib, bool showErrors)
     if (elii != loaded_libraries.end()) return elii->second;
 
 
-    eli = loader->loadLibrary(elemlib, showErrors);
+    // eli = loader->loadLibrary(elemlib, showErrors);
+    eli = loadLibrary(elemlib, showErrors);
     if (NULL == eli) return NULL;
 
     loaded_libraries[elemlib] = eli;
@@ -964,7 +1041,24 @@ Factory::parseLoadName(const std::string& wholename)
 
 const ElementLibraryInfo* Factory::loadLibrary(std::string name, bool showErrors)
 {
-    return loader->loadLibrary(name, showErrors);
+    const ElementLibraryInfo* eli = loader->loadLibrary(name, showErrors);
+
+    if ( NULL == eli ) {
+        // Check to see if this library loaded into the new ELI
+        // Database
+        if ( NULL != ElementLibraryDatabase::getLibraryInfo(name) ) {
+            // Need to just return the empty ElementLibraryInfo
+            return &empty_eli;
+        }
+    }
+    
+    if (NULL == eli) {
+        if (showErrors) {
+            fprintf(stderr, "Could not find ELI block %s_eli in %s\n",
+                    name.c_str(), name.c_str());
+        }
+    }
+    return eli;
 }
 
 } //namespace SST
