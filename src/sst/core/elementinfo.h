@@ -13,6 +13,7 @@
 #define SST_CORE_ELEMENTINFO_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/params.h>
 
 #include <string>
@@ -47,6 +48,7 @@ public:
     virtual const std::string getName() = 0;
     virtual const std::string getLibrary() = 0;
     virtual const std::vector<ElementInfoParam>& getValidParams() = 0;
+    virtual const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() = 0;
 
     const Params::KeySet_t& getParamNames() { return allowedKeys; }
 
@@ -107,8 +109,8 @@ class ModuleElementInfo : public BaseElementInfo {
 protected:
 
 public:
-    virtual Module* create(Component* comp __attribute__((unused)), Params& params __attribute__((unused))) { /* Need to print error */ return NULL; }
-    virtual Module* create(Params& params __attribute__((unused))) { /* Need to print error */ return NULL; }
+    virtual Module* create(Component* UNUSED(comp), Params& UNUSED(params)) { /* Need to print error */ return NULL; }
+    virtual Module* create(Params& UNUSED(params)) { /* Need to print error */ return NULL; }
     virtual const std::string getInterface() = 0;
     
     std::string toString();
@@ -146,22 +148,29 @@ public:
         python_module(NULL) {}
     
     
-    ComponentElementInfo* getComponent(std::string name) {
+    BaseComponentElementInfo* getComponentOrSubComponent(const std::string &name) {
+        BaseComponentElementInfo *bcei = getComponent(name);
+        if ( !bcei )
+            bcei = getSubComponent(name);
+        return bcei;
+    }
+
+    ComponentElementInfo* getComponent(const std::string &name) {
         if ( components.count(name) == 0 ) return NULL;
         return components[name];
     }
-    
-    SubComponentElementInfo* getSubComponent(std::string name) {
+
+    SubComponentElementInfo* getSubComponent(const std::string &name) {
         if ( subcomponents.count(name) == 0 ) return NULL;
         return subcomponents[name];
     }
     
-    ModuleElementInfo* getModule(std::string name) {
+    ModuleElementInfo* getModule(const std::string &name) {
         if ( modules.count(name) == 0 ) return NULL;
         return modules[name];
     }
     
-    PartitionerElementInfo* getPartitioner(std::string name) {
+    PartitionerElementInfo* getPartitioner(const std::string &name) {
         if ( partitioners.count(name) == 0 ) return NULL;
         return partitioners[name];
     }
@@ -179,7 +188,7 @@ private:
     // Database
     static std::map<std::string,LibraryInfo*> libraries;
 
-    static LibraryInfo* getLibrary(std::string library) {
+    static LibraryInfo* getLibrary(const std::string &library) {
         if ( libraries.count(library) == 0 ) {
             libraries[library] = new LibraryInfo;
         }
@@ -224,7 +233,7 @@ public:
 
     static std::string toString();
 
-    static LibraryInfo* getLibraryInfo(std::string library) {
+    static LibraryInfo* getLibraryInfo(const std::string &library) {
         if ( libraries.count(library) == 0 ) return NULL;
         return libraries[library];
     }    
@@ -268,6 +277,7 @@ public:
     const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
     const std::vector<ElementInfoStatistic>& getValidStats() { return T::ELI_getStatistics(); }
     const std::vector<ElementInfoPort2>& getValidPorts() { return T::ELI_getPorts(); }
+    const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return T::ELI_getSubComponentSlots(); }
     uint32_t getCategory() { return T::ELI_getCategory(); };
 };
 
@@ -304,6 +314,7 @@ public:
     const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
     const std::vector<ElementInfoStatistic>& getValidStats() { return T::ELI_getStatistics(); }
     const std::vector<ElementInfoPort2>& getValidPorts() { return T::ELI_getPorts(); }
+    const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return T::ELI_getSubComponentSlots(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
 
 };
@@ -429,14 +440,14 @@ private:
 
 public:
     
-    virtual Partition::SSTPartitioner* create(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
+    virtual Partition::SSTPartitioner* create(RankInfo total_ranks, RankInfo my_rank, int verbosity) override {
         return new T(total_ranks,my_rank,verbosity);
     }
     
     static bool isLoaded() { return loaded; }
-    const std::string getDescription() { return T::ELI_getDescription(); }
-    const std::string getName() { return T::ELI_getName(); }
-    const std::string getLibrary() { return T::ELI_getLibrary(); }
+    const std::string getDescription() override { return T::ELI_getDescription(); }
+    const std::string getName() override { return T::ELI_getName(); }
+    const std::string getLibrary() override { return T::ELI_getLibrary(); }
 };
 
 template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase::addPartitioner(new PartitionerDoc<T>());
@@ -487,6 +498,10 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const uint32_t ELI_getCategory() {  \
       return cat; \
+    } \
+    static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
+        static std::vector<ElementInfoSubComponentSlot> var = { } ;     \
+        return var; \
     }
 
 #define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat) \
@@ -517,6 +532,16 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
         return var; \
     }
 
+// #define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)                              \
+//     static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
+//         static std::vector<ElementInfoSubComponentSlot> var = { __VA_ARGS__ } ;      \
+//         return var; \
+//     }
+
+// For now, this does nothing.  It's just here so it can be added to
+// elements.  The function is defined above, but returns an empty
+// vector for now.
+#define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)
 
 #define SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)   \
     friend class SubComponentDoc<cls>; \
@@ -534,6 +559,10 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const std::string ELI_getInterface() {  \
       return interface; \
+    } \
+    static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
+        static std::vector<ElementInfoSubComponentSlot> var = { } ;     \
+        return var; \
     }
 
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \

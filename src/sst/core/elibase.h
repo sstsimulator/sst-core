@@ -59,12 +59,13 @@ struct ElementInfoPort2 {
     const std::vector<std::string> validEvents;	/*!< List of fully-qualified event types that this Port expects to send or receive */
 };
 
-struct ElementInfoSubComponentHook {
+struct ElementInfoSubComponentSlot {
     const char * name;
     const char * description;
     const char * superclass;
 };
 
+typedef ElementInfoSubComponentSlot ElementInfoSubComponentHook;
 
 } //namespace SST
 

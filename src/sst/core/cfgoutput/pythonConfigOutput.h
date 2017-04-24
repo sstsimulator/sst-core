@@ -25,7 +25,7 @@ public:
     PythonConfigGraphOutput(const char* path);
 
     virtual void generate(const Config* cfg,
-            ConfigGraph* graph) throw(ConfigGraphOutputException);
+            ConfigGraph* graph) throw(ConfigGraphOutputException) override;
 
 protected:
     ConfigGraph* getGraph() { return graph; }
@@ -33,6 +33,7 @@ protected:
     void generateCommonComponent( const char* objName, const ConfigComponent &comp);
     void generateSubComponent( const char* owner, const ConfigComponent &comp );
     void generateComponent( const ConfigComponent &comp );
+    void generateStatGroup(const ConfigGraph* graph, const ConfigStatGroup &grp);
 
     const std::string& getLinkObject(LinkId_t id);
 

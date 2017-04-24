@@ -30,11 +30,11 @@ public:
 	TimeVortex();
     ~TimeVortex();
 
-    bool empty();
-    int size();
-    void insert(Activity* activity);
-    Activity* pop();
-    Activity* front();
+    bool empty() override;
+    int size() override;
+    void insert(Activity* activity) override;
+    Activity* pop() override;
+    Activity* front() override;
 
     /** Print the state of the TimeVortex */
     void print(Output &out) const;

@@ -27,28 +27,28 @@ public:
     ~ThreadSyncQueue() {}
 
     /** Returns true if the queue is empty */
-    bool empty() {
+    bool empty() override {
         return activities.empty();
     }
     
     /** Returns the number of activities in the queue */
-    int size() {
+    int size() override {
         return activities.size();
     }
     
     /** Not supported */
-    Activity* pop() {
+    Activity* pop() override {
         // Need to fatal
         return NULL;
     }
     
     /** Insert a new activity into the queue */
-    void insert(Activity* activity) {
+    void insert(Activity* activity) override {
         activities.push_back(activity);
     }
     
     /** Not supported */
-    Activity* front() {
+    Activity* front() override {
         // Need to fatal
         return NULL;
     }

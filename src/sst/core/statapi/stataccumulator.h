@@ -13,9 +13,13 @@
 #ifndef _H_SST_CORE_ACCUMULATOR_STATISTIC_
 #define _H_SST_CORE_ACCUMULATOR_STATISTIC_
 
+#include <cmath>
+
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 
 #include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/statoutput.h>
 
 namespace SST {
 namespace Statistics {
@@ -41,10 +45,9 @@ namespace Statistics {
 template <typename NumberBase>
 class AccumulatorStatistic : public Statistic<NumberBase> 
 {
-private:
-    friend class SST::BaseComponent;
+public:
 
-    AccumulatorStatistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams) 
+    AccumulatorStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<NumberBase>(comp, statName, statSubId, statParams)
     {
         m_sum = 0;
@@ -61,13 +64,13 @@ protected:
         Present a new value to the class to be included in the statistics.
         @param value New value to be presented
     */
-    void addData_impl(NumberBase value) 
+    void addData_impl(NumberBase value) override
     {
         m_sum += value;
         m_sum_sq += (value * value);
     }
-    
-private:    
+
+public:
     /**
         Provides the sum of the values presented so far.
         @return The sum of values presented to the class so far.
@@ -124,28 +127,28 @@ private:
         return this->getCollectionCount();
     }
     
-    void clearStatisticData()
+    void clearStatisticData() override
     {
         m_sum = 0;
         m_sum_sq =0;
         this->setCollectionCount(0);
     }
     
-    void registerOutputFields(StatisticOutput* statOutput)
+    void registerOutputFields(StatisticOutput* statOutput) override
     {
         Field1 = statOutput->registerField<NumberBase>("Sum");
         Field2 = statOutput->registerField<NumberBase>("SumSQ");
         Field3 = statOutput->registerField<uint64_t>  ("Count");
     }
     
-    void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag __attribute__((unused)))
+    void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
         statOutput->outputField(Field1, m_sum);
         statOutput->outputField(Field2, m_sum_sq);  
         statOutput->outputField(Field3, getCount());  
     }
     
-    bool isStatModeSupported(StatisticBase::StatMode_t mode) const 
+    bool isStatModeSupported(StatisticBase::StatMode_t mode) const override
     {
         if (mode == StatisticBase::STAT_MODE_COUNT) {
             return true;

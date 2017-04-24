@@ -44,14 +44,14 @@ public:
         message = msg;
     }
 
-    void execute() {
+    void execute() override {
         if ( print_message ) {
             Output::getDefaultObject().output("%s\n", message.c_str());
         }
         endSimulation();
     }
 
-    void print(const std::string &header, Output &out) const {
+    void print(const std::string &header, Output &out) const override {
         out.output("%s StopAction to be delivered at %" PRIu64 "\n", header.c_str(), getDeliveryTime());
     }
 

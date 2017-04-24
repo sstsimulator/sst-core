@@ -12,6 +12,7 @@
 
 #include "sst_config.h"
 #include <sst/core/simulation.h>
+#include <sst/core/warnmacros.h>
 
 #include <utility>
 
@@ -38,6 +39,7 @@
 #include <sst/core/timeLord.h>
 #include <sst/core/timeVortex.h>
 #include <sst/core/unitAlgebra.h>
+#include <sst/core/statapi/statengine.h>
 
 #define SST_SIMTIME_MAX  0xffffffffffffffff
 
@@ -51,23 +53,10 @@ TimeConverter* Simulation::minPartToTC(SimTime_t cycles) const {
     return getTimeLord()->getTimeConverter(cycles);
 }
 
-void Simulation::signalStatisticsBegin() {
-    statisticsOutput->startOfSimulation();
-}
-
-
-void Simulation::signalStatisticsEnd() {
-    statisticsOutput->endOfSimulation();
-}
-
-
 
 Simulation::~Simulation()
 {
     // Clean up as best we can
-
-    // Delete the Statistic Objects
-    delete statisticsEngine;
 
     // Delete the timeVortex first.  This will delete all events left
     // in the queue, as well as the Sync, Exit and Clock objects.
@@ -149,9 +138,6 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
     output_directory = "";
 
-    // Create the Statistic Processing Engine
-    statisticsEngine = new StatisticProcessingEngine();
-
     timeVortex = new TimeVortex;
     if( my_rank.thread == 0 ) {
         // m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), num_ranks.rank == 1 );
@@ -221,7 +207,7 @@ Simulation::getLocalMinimumNextActivityTime()
 }
 
 void
-Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank __attribute__((unused)), SimTime_t min_part )
+Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank), SimTime_t min_part )
 {
     // TraceFunction trace(CALL_INFO_LONG);    
     // Set minPartTC (only thread 0 will do this)
@@ -303,11 +289,13 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& myRank __attri
     // if ( independent ) std::cout << "thread " << my_rank.thread <<  " is independent" << std::endl;
 }
     
-int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part __attribute__((unused)))
+int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
     // TraceFunction trace(CALL_INFO_LONG);    
     
-    // Create the Statistics Output
+    // Create the Statistics Engine
+    if ( myRank.thread == 0 ) {
+    }
 
     // Params objects should now start verifying parameters
     Params::enableVerify();
@@ -321,10 +309,9 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     {
         ConfigComponent* ccomp = &(*iter);
         if ( ccomp->rank == myRank ) {
-            compInfoMap.insert(new ComponentInfo(ccomp, new LinkMap()));
+            compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, new LinkMap()));
         }
     }
-
 
     // We will go through all the links and create LinkPairs for each
     // link.  We will also create a LinkMap for each component and put
@@ -525,7 +512,8 @@ void Simulation::run() {
     }
     
     // Tell the Statistics Engine that the simulation is beginning
-    statisticsEngine->startOfSimulation();
+    if ( my_rank.thread == 0 )
+        StatisticProcessingEngine::getInstance()->startOfSimulation();
 
     // wait_my_turn_start(runBarrier, my_rank.thread, num_ranks.thread);
     // sim_output.output("%d: Start main event loop\n",my_rank.thread);
@@ -630,7 +618,9 @@ void Simulation::finish() {
     }
 
     // Tell the Statistics Engine that the simulation is ending
-    statisticsEngine->endOfSimulation();
+    if ( my_rank.thread == 0 ) {
+        StatisticProcessingEngine::getInstance()->endOfSimulation();
+    }
 }
 
 const SimTime_t&
@@ -702,88 +692,82 @@ void Simulation::printStatus(bool fullStatus)
 
 }
 
-TimeConverter* Simulation::registerClock( std::string freq, Clock::HandlerBase* handler )
+TimeConverter* Simulation::registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority)
 {
-//     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
-    
     TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
-
-    if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
-        Clock* ce = new Clock( tcFreq );
-        clockMap[ tcFreq->getFactor() ] = ce; 
-        
-        // ce->setDeliveryTime( currentSimCycle + tcFreq->getFactor() );
-        // timeVortex->insert( ce );
-        ce->schedule();
-    }
-    clockMap[ tcFreq->getFactor() ]->registerHandler( handler );
-    return tcFreq;    
+    return registerClock(tcFreq, handler, priority);
 }
 
-TimeConverter* Simulation::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler)
+TimeConverter* Simulation::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority)
 {
     TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
-    
-    if ( clockMap.find( tcFreq->getFactor() ) == clockMap.end() ) {
-        Clock* ce = new Clock( tcFreq );
-        clockMap[ tcFreq->getFactor() ] = ce; 
+    return registerClock(tcFreq, handler, priority);
+}
+
+TimeConverter* Simulation::registerClock(TimeConverter *tcFreq, Clock::HandlerBase* handler, int priority)
+{
+    clockMap_t::key_type mapKey = std::make_pair(tcFreq->getFactor(), priority);
+    if ( clockMap.find( mapKey ) == clockMap.end() ) {
+        Clock* ce = new Clock( tcFreq, priority );
+        clockMap[ mapKey ] = ce;
 
         ce->schedule();
     }
-    clockMap[ tcFreq->getFactor() ]->registerHandler( handler );
+    clockMap[ mapKey ]->registerHandler( handler );
     return tcFreq;
 }
 
-Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* handler )
+
+Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* handler, int priority )
 {
-    if ( clockMap.find( tc->getFactor() ) == clockMap.end() ) {
+    clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
+    if ( clockMap.find( mapKey ) == clockMap.end() ) {
         Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
         out.fatal(CALL_INFO, 1, "Tried to reregister with a clock that was not previously registered, exiting...\n");
     }
-    clockMap[ tc->getFactor() ]->registerHandler( handler );
-    return clockMap[tc->getFactor()]->getNextCycle();
-    
+    clockMap[ mapKey ]->registerHandler( handler );
+    return clockMap[ mapKey ]->getNextCycle();
 }
 
-Cycle_t Simulation::getNextClockCycle(TimeConverter* tc) {
-    if ( clockMap.find( tc->getFactor() ) == clockMap.end() ) {
-	Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-	out.fatal(CALL_INFO, -1,
-		  "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
+Cycle_t Simulation::getNextClockCycle(TimeConverter* tc, int priority) {
+    clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
+    if ( clockMap.find( mapKey ) == clockMap.end() ) {
+        Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
+        out.fatal(CALL_INFO, -1,
+                "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
     }
-    return clockMap[tc->getFactor()]->getNextCycle();
+    return clockMap[ mapKey ]->getNextCycle();
 }
 
-void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
-//     _SIM_DBG("freq=%f handler=%p\n", frequency, handler );
-    
-    if ( clockMap.find( tc->getFactor() ) != clockMap.end() ) {
-	bool empty;
-	clockMap[ tc->getFactor() ]->unregisterHandler( handler, empty );
-	
+void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority) {
+    clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
+    if ( clockMap.find( mapKey ) != clockMap.end() ) {
+        bool empty;
+        clockMap[ mapKey ]->unregisterHandler( handler, empty );
     }
 }
 
-TimeConverter* Simulation::registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler)
+TimeConverter* Simulation::registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler, int priority)
 {
-    return registerOneShot(UnitAlgebra(timeDelay), handler);
+    return registerOneShot(UnitAlgebra(timeDelay), handler, priority);
 }
 
-TimeConverter* Simulation::registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler)
+TimeConverter* Simulation::registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority)
 {
     TimeConverter* tcTimeDelay = timeLord.getTimeConverter(timeDelay);
+    clockMap_t::key_type mapKey = std::make_pair(tcTimeDelay->getFactor(), priority);
 
     // Search the oneShot map for a oneShot with the associated timeDelay factor
-    if (oneShotMap.find(tcTimeDelay->getFactor()) == oneShotMap.end()) {
-        // OneShot with the specific timeDelay not found, 
+    if (oneShotMap.find( mapKey ) == oneShotMap.end()) {
+        // OneShot with the specific timeDelay not found,
         // create a new one and add it to the map of OneShots
-        OneShot* ose = new OneShot(tcTimeDelay);
-        oneShotMap[tcTimeDelay->getFactor()] = ose; 
+        OneShot* ose = new OneShot(tcTimeDelay, priority);
+        oneShotMap[ mapKey ] = ose;
     }
-    
+
     // Add the handler to the OneShots list of handlers, Also the
     // registerHandler will schedule the oneShot to fire in the future
-    oneShotMap[tcTimeDelay->getFactor()]->registerHandler(handler);
+    oneShotMap[ mapKey ]->registerHandler(handler);
     return tcTimeDelay;
 }
 
@@ -805,10 +789,14 @@ uint64_t Simulation::getSyncQueueDataSize() const {
     return syncManager->getDataSize();
 }
 
-    
+Statistics::StatisticProcessingEngine* Simulation::getStatisticsProcessingEngine(void) const
+{
+    return Statistics::StatisticProcessingEngine::getInstance();
+}
+
 // Function to allow for easy serialization of threads while debugging
 // code
-void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads __attribute__((unused))) {
+void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int UNUSED(total_threads)) {
     // Everyone barriers
     barrier.wait();
     // Now barrier until it's my turn
@@ -840,7 +828,6 @@ void Simulation::resizeBarriers(uint32_t nthr) {
 /* Define statics */
 Factory* Simulation::factory;
 TimeLord Simulation::timeLord;
-Statistics::StatisticOutput* Simulation::statisticsOutput;
 Output Simulation::sim_output;
 Core::ThreadSafe::Barrier Simulation::initBarrier;
 Core::ThreadSafe::Barrier Simulation::setupBarrier;

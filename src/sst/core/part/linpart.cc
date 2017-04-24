@@ -10,12 +10,14 @@
 // distribution.
 
 #include <sst_config.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/part/linpart.h>
 #include <sst/core/output.h>
+#include <sst/core/configGraph.h>
 
 using namespace std;
 
-SSTLinearPartition::SSTLinearPartition(RankInfo mpiranks, RankInfo my_rank __attribute__((unused)), int verbosity) {
+SSTLinearPartition::SSTLinearPartition(RankInfo mpiranks, RankInfo UNUSED(my_rank), int verbosity) {
 	rankcount = mpiranks;
 	partOutput = new Output("LinearPartition ", verbosity, 0, SST::Output::STDOUT);
 }

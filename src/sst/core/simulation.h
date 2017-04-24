@@ -79,8 +79,8 @@ public:
         BOTH        /*!< Default.  Both initialize and Run the simulation */
     } Mode_t;
 
-    typedef std::map<SimTime_t, Clock*>   clockMap_t;              /*!< Map of times to clocks */
-    typedef std::map<SimTime_t, OneShot*> oneShotMap_t;            /*!< Map of times to OneShots */
+    typedef std::map<std::pair<SimTime_t, int>, Clock*>   clockMap_t;              /*!< Map of times to clocks */
+    typedef std::map<std::pair<SimTime_t, int>, OneShot*> oneShotMap_t;            /*!< Map of times to OneShots */
     // typedef std::map< unsigned int, Sync* > SyncMap_t; /*!< Map of times to Sync Objects */
 
     ~Simulation();
@@ -141,23 +141,24 @@ public:
     /** Get the number of parallel ranks in the simulation */
     RankInfo getNumRanks() const {return num_ranks;}
     /** Register a handler to be called on a set frequency */
-    TimeConverter* registerClock(std::string freq, Clock::HandlerBase* handler);
-    TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler);
+    TimeConverter* registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority);
+    TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority);
+    TimeConverter* registerClock(TimeConverter *tcFreq, Clock::HandlerBase* handler, int priority);
     /** Remove a clock handler from the list of active clock handlers */
-    void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
+    void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority);
     /** Reactivate an existing clock and handler.
      * @return time when handler will next fire
      */
-    Cycle_t reregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
+    Cycle_t reregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority);
     /** Returns the next Cycle that the TImeConverter would fire. */
-    Cycle_t getNextClockCycle(TimeConverter* tc);
+    Cycle_t getNextClockCycle(TimeConverter* tc, int priority = CLOCKPRIORITY);
 
     /** Register a OneShot event to be called after a time delay
         Note: OneShot cannot be canceled, and will always callback after
               the timedelay.
     */
-    TimeConverter* registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler);
-    TimeConverter* registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
+    TimeConverter* registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler, int priority);
+    TimeConverter* registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority);
     
     /** Insert an activity to fire at a specified time */
     void insertActivity(SimTime_t time, Activity* ev);
@@ -174,17 +175,12 @@ public:
     /** Return the base simulation Output class instance */
     static Output& getSimulationOutput() { return sim_output; };
 
-    static Statistics::StatisticOutput* getStatisticsOutput() { return statisticsOutput; }
-    static void signalStatisticsBegin();
-    static void signalStatisticsEnd();
-
     uint64_t getTimeVortexMaxDepth() const;
     uint64_t getTimeVortexCurrentDepth() const;
     uint64_t getSyncQueueDataSize() const;
 
-
     /** Return the Statistic Processing Engine associated with this Simulation */
-    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const { return statisticsEngine; }
+    Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const;
 
     /** Return pointer to map of links for a given component id */
     LinkMap* getComponentLinkMap(ComponentId_t id) const {
@@ -298,8 +294,6 @@ private:
     static Factory *factory;
     /** TimeLord of the simulation */
     static TimeLord timeLord;
-    /** Statistics Output of the simulation */
-    static Statistics::StatisticOutput* statisticsOutput;
     /** Output */
     static Output sim_output;
     static void resizeBarriers(uint32_t nthr);
@@ -363,8 +357,6 @@ private:
     std::string      output_directory;
     static SharedRegionManager* sharedRegionManager;
     bool             wireUpFinished;
-    /** Statistics Timing Engine of the simulation */
-    Statistics::StatisticProcessingEngine* statisticsEngine;
 
     static std::unordered_map<std::thread::id, Simulation*> instanceMap;
     static std::vector<Simulation*> instanceVec;

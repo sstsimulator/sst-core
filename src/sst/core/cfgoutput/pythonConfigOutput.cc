@@ -13,6 +13,8 @@
 #include <sst_config.h>
 
 #include "pythonConfigOutput.h"
+#include <sst/core/simulation.h>
+#include <sst/core/config.h>
 
 using namespace SST::Core;
 
@@ -73,22 +75,30 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
         fprintf(outputFile, ")\n");
     }
 
-    for ( size_t statIndex = 0 ; statIndex < comp.enabledStatistics.size() ; statIndex++ ) {
-        if ( comp.enabledStatistics[statIndex] == STATALLFLAG ) {
+    fprintf(outputFile, "%s.setCoordinates(", objName);
+    bool first = true;
+    for ( double d : comp.coords ) {
+        fprintf(outputFile, first ? "%lg" : ", %lg", d);
+        first = false;
+    }
+    fprintf(outputFile, ")\n");
+
+    for ( auto &si : comp.enabledStatistics ) {
+        if ( si.name == STATALLFLAG ) {
             fprintf(outputFile, "%s.enableAllStatistics(", objName);
-            if ( !comp.enabledStatParams[statIndex].empty() ) {
-                generateParams(comp.enabledStatParams[statIndex]);
+            if ( !si.params.empty() ) {
+                generateParams(si.params);
             }
             fprintf(outputFile, ")\n");
         } else {
-            char* esStatName = makeEscapeSafe(comp.enabledStatistics[statIndex].c_str());
+            char* esStatName = makeEscapeSafe(si.name.c_str());
 
             fprintf(outputFile, "%s.enableStatistics([\"%s\"]", objName, esStatName);
 
             // Output the Statistic Parameters
-            if( !comp.enabledStatParams[statIndex].empty() ) {
+            if( !si.params.empty() ) {
                 fprintf(outputFile, ", ");
-                generateParams(comp.enabledStatParams[statIndex]);
+                generateParams(si.params);
             }
             fprintf(outputFile, ")\n");
 
@@ -111,7 +121,7 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
 
 
     for ( auto & subComp : comp.subComponents ) {
-        generateSubComponent(objName, subComp.second);
+        generateSubComponent(objName, subComp);
     }
 
 }
@@ -124,8 +134,8 @@ void PythonConfigGraphOutput::generateSubComponent( const char* owner, const Con
     char* pyCompName = makePythonSafeWithPrefix(comp.name.c_str(), combName);
     char* esCompName = makeEscapeSafe(comp.name.c_str());
 
-    fprintf(outputFile, "%s = %s.setSubComponent(\"%s\", \"%s\")\n",
-            pyCompName, owner, esCompName, comp.type.c_str());
+    fprintf(outputFile, "%s = %s.setSubComponent(\"%s\", \"%s\", %d)\n",
+            pyCompName, owner, esCompName, comp.type.c_str(), comp.slot_num);
 
     generateCommonComponent( pyCompName, comp );
 
@@ -150,6 +160,46 @@ void PythonConfigGraphOutput::generateComponent( const ConfigComponent &comp )
 }
 
 
+void PythonConfigGraphOutput::generateStatGroup(const ConfigGraph* graph, const ConfigStatGroup &grp)
+{
+    char *pyGroupName = makePythonSafeWithPrefix(grp.name.c_str(), "statGroup_");
+    char *esGroupName = makeEscapeSafe(grp.name.c_str());
+
+    fprintf(outputFile, "%s = sst.StatisticGroup(\"%s\")\n", pyGroupName, esGroupName);
+    if ( grp.outputFrequency.getValue() != 0 ) {
+        fprintf(outputFile, "%s.setFrequency(\"%s\")\n", pyGroupName, grp.outputFrequency.toStringBestSI().c_str());
+    }
+    if ( grp.outputID != 0 ) {
+        const ConfigStatOutput &out = graph->getStatOutput(grp.outputID);
+        fprintf(outputFile, "%s.setOutput(sst.StatisticOutput(\"%s\"",
+                pyGroupName, out.type.c_str());
+        if ( !out.params.empty() ) {
+            fprintf(outputFile, ", ");
+            generateParams(out.params);
+        }
+		fprintf(outputFile, "))\n");
+    }
+
+    for ( auto &i : grp.statMap ) {
+        fprintf(outputFile, "%s.addStatistic(\"%s\"", pyGroupName, i.first.c_str());
+        if ( !i.second.empty() ) {
+            fprintf(outputFile, ", ");
+            generateParams(i.second);
+        }
+		fprintf(outputFile, ")\n");
+    }
+
+    for ( ComponentId_t id : grp.components ) {
+        const ConfigComponent *comp = graph->findComponent(id);
+        char* pyCompName = makePythonSafeWithPrefix(comp->name.c_str(), "comp_");
+        fprintf(outputFile, "%s.addComponent(%s)\n", pyGroupName, pyCompName);
+        free(pyCompName);
+    }
+
+    free(esGroupName);
+    free(pyGroupName);
+
+}
 
 void PythonConfigGraphOutput::generate(const Config* cfg,
 	ConfigGraph* graph) throw(ConfigGraphOutputException) {
@@ -185,15 +235,23 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 		fprintf(outputFile, "sst.setStatisticLoadLevel(%" PRIu64 ")\n",
 			(uint64_t) graph->getStatLoadLevel());
 	}
-	if( !graph->getStatOutput().empty() ) {
-		fprintf(outputFile, "sst.setStatisticOutput(\"%s\"", graph->getStatOutput().c_str());
-        const Params &outParams = graph->getStatOutputParams();
+	if( !graph->getStatOutput().type.empty() ) {
+		fprintf(outputFile, "sst.setStatisticOutput(\"%s\"", graph->getStatOutput().type.c_str());
+        const Params &outParams = graph->getStatOutput().params;
         if ( !outParams.empty() ) {
             fprintf(outputFile, ", ");
             generateParams(outParams);
         }
 		fprintf(outputFile, ")\n");
 	}
+
+    // Check for statisitc groups
+    if ( !graph->getStatGroups().empty() ) {
+        fprintf(outputFile, "\n# Statistic Groups:\n");
+        for ( auto &grp : graph->getStatGroups() ) {
+            generateStatGroup(graph, grp.second);
+        }
+    }
 
 	fprintf(outputFile, "# End of generated output.\n\n");
 

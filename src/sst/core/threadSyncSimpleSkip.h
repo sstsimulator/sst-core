@@ -38,18 +38,18 @@ public:
 
     void setMaxPeriod(TimeConverter* period);
     
-    void before();
-    void after();
-    void execute(void);
+    void before() override;
+    void after() override;
+    void execute(void) override;
 
     /** Cause an exchange of Initialization Data to occur */
-    void processLinkInitData();
+    void processLinkInitData() override;
     /** Finish link configuration */
-    void finalizeLinkConfigurations();
+    void finalizeLinkConfigurations() override;
 
     /** Register a Link which this Sync Object is responsible for */
-    void registerLink(LinkId_t link_id, Link* link);
-    ActivityQueue* getQueueForThread(int tid);
+    void registerLink(LinkId_t link_id, Link* link) override;
+    ActivityQueue* getQueueForThread(int tid) override;
 
     uint64_t getDataSize() const;
 

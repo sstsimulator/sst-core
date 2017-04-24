@@ -14,6 +14,7 @@
 #include <sst/core/configGraph.h>
 
 #include <fstream>
+#include <algorithm>
 
 #include <sst/core/component.h>
 #include <sst/core/config.h>
@@ -22,10 +23,6 @@
 #include <sst/core/factory.h>
 
 #include <string.h>
-
-#ifdef SST_CONFIG_HAVE_MPI
-#include <mpi.h>
-#endif
 
 using namespace std;
 
@@ -39,8 +36,74 @@ void ConfigLink::updateLatencies(TimeLord *timeLord)
 }
 
 
+bool ConfigStatGroup::addComponent(ComponentId_t id)
+{
+    if ( std::find(components.begin(), components.end(), id) == components.end() ) {
+        components.push_back(id);
+    }
+    return true;
+}
+
+
+bool ConfigStatGroup::addStatistic(const std::string &name, Params &p)
+{
+    statMap[name] = p;
+    if ( outputFrequency.getRoundedValue() == 0 ) {
+        /* aka, not yet really set to anything other than 0 */
+        setFrequency(p.find<std::string>("rate", "0ns"));
+    }
+    return true;
+}
+
+
+bool ConfigStatGroup::setOutput(size_t id)
+{
+    outputID = id;
+    return true;
+}
+
+
+bool ConfigStatGroup::setFrequency(const std::string &freq)
+{
+    UnitAlgebra uaFreq(freq);
+    if ( uaFreq.hasUnits("s") || uaFreq.hasUnits("hz") ) {
+        outputFrequency = uaFreq;
+        return true;
+    }
+    return false;
+}
+
+
+std::pair<bool, std::string> ConfigStatGroup::verifyStatsAndComponents(const ConfigGraph *graph)
+{
+    for ( auto & id : components ) {
+        const ConfigComponent* comp = graph->findComponent(id);
+        if ( !comp ) {
+            std::stringstream ss;
+            ss << "Component id " << id << " is not a valid component";
+            return std::make_pair(false, ss.str());
+        }
+        for ( auto & statKV : statMap ) {
+
+            bool ok = SUBCOMPONENT_ID_MASK(comp->id) == 0 ?
+                Factory::getFactory()->DoesComponentInfoStatisticNameExist(comp->type, statKV.first) :
+                Factory::getFactory()->DoesSubComponentInfoStatisticNameExist(comp->type, statKV.first);
+
+            if ( !ok ) {
+                std::stringstream ss;
+                ss << "Component " << comp->name << " does not support statistic " << statKV.first;
+                return std::make_pair(false, ss.str());
+            }
+        }
+    }
+
+    return std::make_pair(true, "");
+}
+
+
 void ConfigComponent::print(std::ostream &os) const {
     os << "Component " << name << " (id = " << id << ")" << std::endl;
+    os << "  slot_num = " << slot_num << std::endl;
     os << "  type = " << type << std::endl;
     os << "  weight = " << weight << std::endl;
     os << "  rank = " << rank.rank << std::endl;
@@ -53,14 +116,14 @@ void ConfigComponent::print(std::ostream &os) const {
     os << "  Params:" << std::endl;
     params.print_all_params(os, "    ");
     os << "  Statistics:" << std::endl;
-    for (size_t x = 0 ; x != enabledStatistics.size() ; ++x) {
-        os << "    " << enabledStatistics[x] << std::endl;
+    for ( auto & si : enabledStatistics ) {
+        os << "    " << si.name << std::endl;
         os << "      Params:" << std::endl;
-        enabledStatParams[x].print_all_params(os, "      ");
+        si.params.print_all_params(os, "      ");
     }
     os << "  SubComponents:\n";
     for ( auto & sc : subComponents ) {
-        sc.second.print(os);
+        sc.print(os);
     }
 }
 
@@ -70,14 +133,15 @@ ConfigComponent::cloneWithoutLinks() const
     ConfigComponent ret;
     ret.id = id;
     ret.name = name;
+    ret.slot_num = slot_num;
     ret.type = type;
     ret.weight = weight;
     ret.rank = rank;
     ret.params = params;
     ret.enabledStatistics = enabledStatistics;
-    ret.enabledStatParams = enabledStatParams;
+    ret.coords = coords;
     for ( auto &i : subComponents ) {
-        ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinks());
+        ret.subComponents.emplace_back(i.cloneWithoutLinks());
     }
     return ret;
 }
@@ -89,13 +153,14 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ConfigComponent ret;
     ret.id = id;
     ret.name = name;
+    ret.slot_num = slot_num;
     ret.type = type;
     ret.weight = weight;
     ret.rank = rank;
     ret.enabledStatistics = enabledStatistics;
-    ret.enabledStatParams = enabledStatParams;
+    ret.coords = coords;
     for ( auto &i : subComponents ) {
-        ret.subComponents.emplace_back(i.first, i.second.cloneWithoutLinksOrParams());
+        ret.subComponents.emplace_back(i.cloneWithoutLinksOrParams());
     }
     return ret;
 }
@@ -105,7 +170,7 @@ void ConfigComponent::setRank(RankInfo r)
 {
     rank = r;
     for ( auto &i : subComponents ) {
-        i.second.setRank(r);
+        i.setRank(r);
     }
 
 }
@@ -115,8 +180,16 @@ void ConfigComponent::setWeight(double w)
 {
     weight = w;
     for ( auto &i : subComponents ) {
-        i.second.setWeight(w);
+        i.setWeight(w);
     }
+}
+
+void ConfigComponent::setCoordinates(const std::vector<double> &c)
+{
+    coords = c;
+    /* Maintain minimum of 3D information */
+    while ( coords.size() < 3 )
+        coords.push_back(0.0);
 }
 
 
@@ -141,28 +214,25 @@ void ConfigComponent::enableStatistic(const std::string &statisticName)
         if (false == enabledStatistics.empty()) {
             // The vector is populated, so see if the STATALLFLAG
             // already exists if it does, we are done
-            if (STATALLFLAG != enabledStatistics.back()) {
+            if (STATALLFLAG != enabledStatistics.back().name) {
                 // Add a STATALLFLAG to end of the vector
-                enabledStatistics.push_back(STATALLFLAG);
-                enabledStatParams.push_back(Params());
+                enabledStatistics.emplace_back(STATALLFLAG);
             }
         } else {
             // Add a STATALLFLAG to end of the vector
-            enabledStatistics.push_back(STATALLFLAG);
-            enabledStatParams.push_back(Params());
+            enabledStatistics.emplace_back(STATALLFLAG);
         }
     } else {
         // Check to see if the stat is already in the list
-        for (std::vector<std::string>::iterator iter = enabledStatistics.begin(); iter != enabledStatistics.end(); ++iter) {
-            if (statisticName == *iter) {
+        for ( auto & si : enabledStatistics ) {
+            if ( statisticName == si.name ) {
                 // We found the name already in the enabledStatistics list, do nothing
                 return;
             }
         }
 
         // statisticName not in list, so add statistic and params to top of the vectors
-        enabledStatistics.insert(enabledStatistics.begin(), statisticName);
-        enabledStatParams.insert(enabledStatParams.begin(), Params());
+        enabledStatistics.emplace(enabledStatistics.begin(), statisticName);
     }
 }
 
@@ -174,37 +244,54 @@ void ConfigComponent::addStatisticParameter(const std::string &statisticName, co
     //       lists will always be the same size.
 
     // Scan the enabledStatistics list for the statistic name
-    for (size_t x = 0; x < enabledStatistics.size(); x++) {
+    for ( auto & si : enabledStatistics ) {
         // Check to see if the names match.  NOTE this also works for the STATALLFLAG
-        if (statisticName == enabledStatistics.at(x)) {
+        if ( statisticName == si.name ) {
             // Add/set the parameter
-            enabledStatParams.at(x).insert(std::string(param),std::string(value));
+            si.params.insert(param, value);
         }
     }
 }
 
-ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string &name, const std::string &type)
+
+void ConfigComponent::setStatisticParameters(const std::string &statisticName, const Params &params)
+{
+    for ( auto & si : enabledStatistics ) {
+        // Check to see if the names match.  NOTE this also works for the STATALLFLAG
+        if ( statisticName == si.name ) {
+            si.params.insert(params);
+        }
+    }
+
+}
+
+
+
+ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string &name, const std::string &type, int slot_num)
 {
     /* Check for existing subComponent with this name */
     for ( auto &i : subComponents ) {
-        if ( i.first == name )
+        if ( i.name == name && i.slot_num == slot_num )
             return NULL;
     }
 
     subComponents.emplace_back(
-            std::make_pair(
-                name,
-                ConfigComponent(sid, name, type, this->weight, this->rank)));
+        ConfigComponent(sid, name, slot_num, type, this->weight, this->rank));
 
-    return &(subComponents.back().second);
+    return &(subComponents.back());
 }
 
 ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid)
 {
+    return const_cast<ConfigComponent*>(const_cast<const ConfigComponent*>(this)->findSubComponent(sid));
+}
+
+const ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid) const
+{
     if ( sid == this->id ) return this;
 
     for ( auto &s : subComponents ) {
-        ConfigComponent* res = s.second.findSubComponent(sid);
+        const ConfigComponent* res = s.findSubComponent(sid);
         if ( res != NULL )
             return res;
     }
@@ -217,7 +304,7 @@ std::vector<LinkId_t> ConfigComponent::allLinks() const {
     std::vector<LinkId_t> res;
     res.insert(res.end(), links.begin(), links.end());
     for ( auto& sc : subComponents ) {
-        std::vector<LinkId_t> s = sc.second.allLinks();
+        std::vector<LinkId_t> s = sc.allLinks();
         res.insert(res.end(), s.begin(), s.end());
     }
     return res;
@@ -339,10 +426,9 @@ ConfigGraph::checkForStructuralErrors()
                     if (!Factory::getFactory()->isPortNameValid(ccomp->type, link.port[j]) ) {
                         // For now this is not a fatal error
                         // found_error = true;
-                        output.output("WARNING:  Attempling to connect to undocumented port: %s, "
-                                      "in component %s of type %s.  The most likely "
-                                      "outcome is a segfault.\n", link.port[j].c_str(),
-                                      ccomp->name.c_str(), ccomp->type.c_str());
+                        output.fatal(CALL_INFO, 1, "ERROR:  Attempling to connect to unknown port: %s, "
+                                      "in component %s of type %s.\n",
+                                      link.port[j].c_str(), ccomp->name.c_str(), ccomp->type.c_str());
                         count--;
                     }
                 }
@@ -392,19 +478,19 @@ ConfigGraph::addComponent(ComponentId_t id, std::string name, std::string type)
 void
 ConfigGraph::setStatisticOutput(const std::string &name)
 {
-    statOutputName = name;
+    statOutputs[0].type = name;
 }
 
 void
 ConfigGraph::setStatisticOutputParams(const Params& p)
 {
-    statOutputParams = p;
+    statOutputs[0].params = p;
 }
 
 void
 ConfigGraph::addStatisticOutputParameter(const std::string& param, const std::string& value)
 {
-    statOutputParams.insert(param, value);
+    statOutputs[0].params.insert(param, value);
 }
 
 void
@@ -500,7 +586,17 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 }
 
 
+
+bool ConfigGraph::containsComponent(ComponentId_t id) const {
+    return comps.contains(id);
+}
+
 ConfigComponent* ConfigGraph::findComponent(ComponentId_t id)
+{
+    return const_cast<ConfigComponent*>(const_cast<const ConfigGraph*>(this)->findComponent(id));
+}
+
+const ConfigComponent* ConfigGraph::findComponent(ComponentId_t id) const
 {
     /* Check to make sure we're part of the same component */
     if ( COMPONENT_ID_MASK(id) == id ) {
@@ -508,7 +604,6 @@ ConfigComponent* ConfigGraph::findComponent(ComponentId_t id)
     }
 
     return comps[COMPONENT_ID_MASK(id)].findSubComponent(id);
-
 }
 
 
@@ -573,8 +668,16 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     }
 
     // Copy the statistic configuration to the sub-graph
-    graph->setStatisticOutput(this->statOutputName.c_str());
-    graph->setStatisticOutputParams(this->getStatOutputParams());
+    graph->statOutputs = this->statOutputs;
+    /* Only need to copy StatGroups which are referenced in this subgraph */
+    for ( auto & kv : this->statGroups ) {
+        for ( auto & id : kv.second.components ) {
+            if ( graph->containsComponent(id) ) {
+                graph->statGroups.insert(std::make_pair(kv.first, kv.second));
+                break;
+            }
+        }
+    }
     graph->setStatisticLoadLevel(this->getStatLoadLevel());
 
     return graph;
@@ -741,6 +844,7 @@ PartitionComponent::print(std::ostream &os, const PartitionGraph* graph) const
         graph->getLink(*it).print(os);
     }
 }
+
 
 } // namespace SST
 

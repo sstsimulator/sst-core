@@ -20,6 +20,7 @@
 #include <atomic>
 
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/subcomponent.h>
 #include <sst/core/params.h>
 #include <sst/core/link.h>
@@ -278,7 +279,7 @@ public:
 
 
     /** Constructor, designed to be used via 'loadSubComponent'. */
-    SimpleMem(SST::Component *comp, Params &params __attribute__((unused))) :
+    SimpleMem(SST::Component *comp, Params &UNUSED(params)) :
         SubComponent(comp)
         { }
 

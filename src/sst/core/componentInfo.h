@@ -13,26 +13,28 @@
 #define SST_CORE_COMPONENTINFO_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/params.h>
 
 #include <unordered_set>
 #include <string>
 #include <functional>
-
-#include <sst/core/configGraph.h>
-
 
 namespace SST {
 
 class LinkMap;
 class BaseComponent;
 
+class ConfigComponent;
 class ComponentInfoMap;
+
+namespace Statistics {
+class StatisticInfo;
+}
 
 class ComponentInfo {
 
 public:
-    typedef std::vector<std::string>      statEnableList_t;        /*!< List of Enabled Statistics */
-    typedef std::vector<Params>           statParamsList_t;        /*!< List of Enabled Statistics Parameters */
+    typedef std::vector<Statistics::StatisticInfo>      statEnableList_t;        /*!< List of Enabled Statistics */
 
 private:
     friend class Simulation;
@@ -40,14 +42,17 @@ private:
     friend class ComponentInfoMap;
     const ComponentId_t id;
     const std::string name;
+    const std::string slot_name;
+    int slot_num;
     const std::string type;
     LinkMap* link_map;
     BaseComponent* component;
-    std::map<std::string, ComponentInfo> subComponents;
+    // std::map<std::string, ComponentInfo> subComponents;
+    std::vector<ComponentInfo> subComponents;
     const Params *params;
 
     statEnableList_t * enabledStats;
-    statParamsList_t * statParams;
+    std::vector<double> coordinates;
 
     inline void setComponent(BaseComponent* comp) { component = comp; }
 
@@ -60,13 +65,17 @@ public:
     ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent);
 
     /* New ELI Style */
-    ComponentInfo(ConfigComponent *ccomp, LinkMap* link_map);
+    ComponentInfo(ConfigComponent *ccomp, const std::string& name, LinkMap* link_map);
     ComponentInfo(ComponentInfo &&o);
     ~ComponentInfo();
 
     inline ComponentId_t getID() const { return id; }
 
     inline const std::string& getName() const { return name; }
+
+    inline const std::string& getSlotName() const { return slot_name; }
+
+    inline int getSlotNum() const { return slot_num; }
 
     inline const std::string& getType() const { return type; }
 
@@ -76,18 +85,14 @@ public:
 
     inline const Params* getParams() const { return params; }
 
-    inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
+    // inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
+    inline std::vector<ComponentInfo>& getSubComponents() { return subComponents; }
 
-    void setStatEnablement(statEnableList_t * enabled, statParamsList_t * params) {
-        enabledStats = enabled;
-        statParams = params;
-    }
-
+    ComponentInfo* findSubComponent(std::string slot, int slot_num);
     ComponentInfo* findSubComponent(ComponentId_t id);
     std::vector<LinkId_t> getAllLinkIds() const;
 
     statEnableList_t* getStatEnableList() { return enabledStats; }
-    statParamsList_t* getStatParams() { return statParams; }
 
     struct HashName {
         size_t operator() (const ComponentInfo* info) const {

@@ -44,7 +44,7 @@ public:
     void registerLink(LinkId_t link_id, Link* link);
     ActivityQueue* getQueueForThread(int tid);
 
-    void execute(void);
+    void execute(void) override;
 
     /** Cause an exchange of Initialization Data to occur */
     void processLinkInitData();
@@ -53,7 +53,7 @@ public:
 
     uint64_t getDataSize() const;
 
-    void print(const std::string& header, Output &out) const;
+    void print(const std::string& header, Output &out) const override;
 
     static void disable() { disabled = true; barrier.disable(); }
 

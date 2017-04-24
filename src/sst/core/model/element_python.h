@@ -59,7 +59,7 @@ public:
         {
         }
 
-    void* load() {
+    void* load() override {
         return (*func)();
     }
 };

@@ -41,7 +41,7 @@ private:
     SimulatorHeartbeat() { };
     SimulatorHeartbeat(const SimulatorHeartbeat&);
     void operator=(SimulatorHeartbeat const&);
-    void execute(void);
+    void execute(void) override;
     int rank;
     TimeConverter*  m_period;
     double lastTime;

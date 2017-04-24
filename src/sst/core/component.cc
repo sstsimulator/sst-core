@@ -68,24 +68,12 @@ Component::primaryComponentOKToEndSim()
 
 
 
-bool Component::doesComponentInfoStatisticExist(const std::string &statisticName)
+bool Component::doesComponentInfoStatisticExist(const std::string &statisticName) const
 {
     const std::string& type = my_info->getType();
     return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
 }
 
-
-uint8_t Component::getComponentInfoStatisticEnableLevel(const std::string &statisticName)
-{
-    const std::string& type = my_info->getType();
-    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
-}
-
-std::string Component::getComponentInfoStatisticUnits(const std::string &statisticName)
-{
-    const std::string& type = my_info->getType();
-    return Factory::getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
-}
 
 } // namespace SST
 

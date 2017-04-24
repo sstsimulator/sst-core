@@ -12,16 +12,42 @@
 #ifndef _H_SST_CORE_STATISTICS_BASE
 #define _H_SST_CORE_STATISTICS_BASE
 
+#include <string>
+
 #include <sst/core/sst_types.h>
+#include <sst/core/warnmacros.h>
 #include <sst/core/params.h>
 #include <sst/core/oneshot.h>
 #include <sst/core/statapi/statfieldinfo.h>
+#include <sst/core/serialization/serializable.h>
 
 namespace SST {
 class BaseComponent;
+class Factory;
 namespace Statistics {
 class StatisticOutput;
 class StatisticProcessingEngine;
+class StatisticGroup;
+
+
+class StatisticInfo : public SST::Core::Serialization::serializable {
+public:
+    std::string name;
+    Params params;
+
+    StatisticInfo(const std::string &name) : name(name) { }
+    StatisticInfo(const std::string &name, const Params &params) : name(name), params(params) { }
+    StatisticInfo() { } /* DO NOT USE:  For serialization */
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+        ser & name;
+        ser & params;
+    }
+
+    ImplementSerializable(SST::Statistics::StatisticInfo)
+};
+
+
 
 /**
     \class StatisticBase
@@ -148,9 +174,11 @@ public:
     /** Indicate if the Statistic is a NullStatistic */
     virtual bool isNullStatistic() const {return false;} 
 
-protected:  
+protected:
     friend class SST::Statistics::StatisticProcessingEngine;
-    
+    friend class SST::Statistics::StatisticOutput;
+    friend class SST::Statistics::StatisticGroup;
+
     /** Construct a StatisticBase
       * @param comp - Pointer to the parent constructor.
       * @param statName - Name of the statistic to be registered.  This name must
@@ -159,7 +187,7 @@ protected:
       * @param statParams - The parameters for this statistic
       */
     // Constructors:
-    StatisticBase(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams);
+    StatisticBase(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams);
 
     // Destructor
     virtual ~StatisticBase() {}
@@ -202,7 +230,7 @@ private:
       * by default, both modes are supported.
       * @param mode - Mode to test
       */
-    virtual bool isStatModeSupported(StatMode_t mode __attribute__((unused))) const {return true;}      // Default is to accept all modes
+    virtual bool isStatModeSupported(StatMode_t UNUSED(mode)) const {return true;}      // Default is to accept all modes
 
     /** Verify that the statistic names match */
     bool operator==(StatisticBase& checkStat); 
@@ -218,34 +246,38 @@ private:
     void delayOutputExpiredHandler();                               // Enable Output in handler
     void delayCollectionExpiredHandler();                           // Enable Collection in Handler
 
-private:     
+    const StatisticGroup* getGroup() const { return m_group; }
+    void setGroup(const StatisticGroup *group ) { m_group = group; }
+
+private:
     StatisticBase(); // For serialization only
-    
+
 private:
     BaseComponent*        m_component;
     std::string           m_statName;
     std::string           m_statSubId;
     std::string           m_statFullName;
-    std::string           m_statTypeName;    
+    std::string           m_statTypeName;
     Params                m_statParams;
     StatMode_t            m_registeredCollectionMode;
     uint64_t              m_currentCollectionCount;
     uint64_t              m_collectionCountLimit;
-    StatisticFieldInfo::fieldType_t m_statDataType;    
-                          
+    StatisticFieldInfo::fieldType_t m_statDataType;
+
     bool                  m_statEnabled;
     bool                  m_outputEnabled;
     bool                  m_resetCountOnOutput;
     bool                  m_clearDataOnOutput;
     bool                  m_outputAtEndOfSim;
-                          
+
     bool                  m_outputDelayed;
     bool                  m_collectionDelayed;
     bool                  m_savedStatEnabled;
     bool                  m_savedOutputEnabled;
     OneShot::HandlerBase* m_outputDelayedHandler;
     OneShot::HandlerBase* m_collectionDelayedHandler;
-    
+    const StatisticGroup* m_group;
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -275,8 +307,9 @@ public:
             incrementCollectionCount();
         }
     }
-    
-protected:    
+
+protected:
+    friend class SST::Factory;
     friend class SST::BaseComponent;
     /** Construct a Statistic
       * @param comp - Pointer to the parent constructor.
@@ -285,14 +318,14 @@ protected:
       * @param statSubId - Additional name of the statistic 
       * @param statParams - The parameters for this statistic
       */
-    Statistic(BaseComponent* comp, std::string& statName, std::string& statSubId, Params& statParams) :
+    Statistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
         StatisticBase(comp, statName, statSubId, statParams)
     {
         setStatisticDataType(StatisticFieldInfo::getFieldTypeFromTemplate<T>());
     }
-        
+
     virtual ~Statistic(){}
-    
+
 private:     
     Statistic(){}; // For serialization only
 

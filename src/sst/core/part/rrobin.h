@@ -29,10 +29,10 @@ public:
        Performs a partition of an SST simulation configuration
        \param graph The simulation configuration to partition
     */
-	void performPartition(PartitionGraph* graph);
+	void performPartition(PartitionGraph* graph) override;
 
-    bool requiresConfigGraph() { return false; }
-    bool spawnOnAllRanks() { return false; }
+    bool requiresConfigGraph() override { return false; }
+    bool spawnOnAllRanks() override { return false; }
     
         
     SST_ELI_REGISTER_PARTITIONER(SSTRoundRobinPartition,"sst","roundrobin","Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.")

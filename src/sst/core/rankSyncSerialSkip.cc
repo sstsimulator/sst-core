@@ -22,11 +22,14 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/profile.h"
 
+#include <sst/core/warnmacros.h>
 #ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
-#define UNUSED_WO_MPI
+REENABLE_WARNING
+#define UNUSED_WO_MPI(x) x
 #else
-#define UNUSED_WO_MPI __attribute__((unused))
+#define UNUSED_WO_MPI(x) UNUSED(x)
 #endif
 
 
@@ -36,7 +39,7 @@ namespace SST {
 SimTime_t RankSyncSerialSkip::myNextSyncTime = 0;
 
 
-RankSyncSerialSkip::RankSyncSerialSkip(TimeConverter* minPartTC __attribute__((unused))) :
+RankSyncSerialSkip::RankSyncSerialSkip(TimeConverter* UNUSED(minPartTC)) :
     NewRankSync(),
     mpiWaitTime(0.0),
     deserializeTime(0.0)
@@ -61,7 +64,7 @@ RankSyncSerialSkip::~RankSyncSerialSkip()
         Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "RankSyncSerialSkip mpiWait: %lg sec  deserializeWait:  %lg sec\n", mpiWaitTime, deserializeTime);
 }
     
-ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& from_rank __attribute__((unused)), LinkId_t link_id, Link* link)
+ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& UNUSED(from_rank), LinkId_t link_id, Link* link)
 {
     // TraceFunction trace(CALL_INFO_LONG);
     SyncQueue* queue;
@@ -262,7 +265,7 @@ RankSyncSerialSkip::exchange(void)
 }
 
 void
-RankSyncSerialSkip::exchangeLinkInitData(int thread UNUSED_WO_MPI, std::atomic<int>& msg_count UNUSED_WO_MPI)
+RankSyncSerialSkip::exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count))
 {
     // TraceFunction trace(CALL_INFO_LONG);
 #ifdef SST_CONFIG_HAVE_MPI

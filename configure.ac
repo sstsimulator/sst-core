@@ -79,10 +79,10 @@ AM_CONDITIONAL([HAVE_DOXYGEN], [test "$DOXYGEN" = "doxygen"])
 
 SST_CHECK_OSX()
 SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
-SST_CHECK_BOOST([], [AC_MSG_ERROR([Could not find Boost, this is required for SST to build])])
+SST_CHECK_BOOST([], [])
 
 SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
-SST_CHECK_LIBZ()
+SST_CHECK_LIBZ([have_zlib="yes"],[have_zlib="no"],[AC_MSG_ERROR([zlib was requested but could not be found.])])
 SST_CHECK_HDF5()
 SST_CHECK_MEM_POOL()
 
@@ -215,16 +215,32 @@ printf "%38s : %s\n" "C++ Standard Compliance" "C++11"
 fi
 
 printf "%38s : %s\n" "Linker Options" "$LDFLAGS"
-printf "%38s : %s\n" "Boost Library Preprocessor" "$BOOST_CPPFLAGS"
-printf "%38s : %s\n" "Boost Library Linker Options" "$BOOST_LDFLAGS"
 echo "-------------------------------------------------------"
 echo "Configuration Information (Dependencies):"
 echo ""
+
+if test "x$sst_check_boost_happy" = "xyes" ; then
+    printf "%38s : YES\n" "Boost Library"
+    printf "%38s : %s\n" "Boost Library Preprocessor" "$BOOST_CPPFLAGS"
+    printf "%38s : %s\n" "Boost Library Linker Options" "$BOOST_LDFLAGS"
+else
+    printf "%38s : No\n" "Boost Library"
+fi
 
 if test "x$sst_check_zoltan_happy" = "xyes" ; then
     printf "%38s : YES\n" "Zoltan Partitioner"
 else
     printf "%38s : No\n" "Zoltan Partitioner"
+fi
+if test "x$sst_check_hdf5_happy" = "xyes" ; then
+    printf "%38s : YES\n" "HDF5 Support"
+else
+    printf "%38s : No\n" "HDF5 Support"
+fi
+if test "x$sst_check_libz_happy" = "xyes" ; then
+    printf "%38s : YES\n" "libz compression library"
+else
+    printf "%38s : No\n" "libz compression library"
 fi
 
 echo "-------------------------------------------------------" 

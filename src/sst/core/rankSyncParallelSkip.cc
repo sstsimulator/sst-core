@@ -10,6 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
+#include <sst/core/warnmacros.h>
 #include "sst/core/rankSyncParallelSkip.h"
 
 #include "sst/core/serialization/serializer.h"
@@ -23,10 +24,9 @@
 #include "sst/core/profile.h"
 
 #ifdef SST_CONFIG_HAVE_MPI
-#include <mpi.h>
-#define UNUSED_WO_MPI
+#define UNUSED_WO_MPI(x) x
 #else
-#define UNUSED_WO_MPI __attribute__((unused))
+#define UNUSED_WO_MPI(x) UNUSED(x)
 #endif
 
 
@@ -38,7 +38,7 @@ SimTime_t RankSyncParallelSkip::myNextSyncTime = 0;
 
 ///// RankSyncParallelSkip class /////
     
-RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC __attribute__((unused))) :
+RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* UNUSED(minPartTC)) :
     NewRankSync(),
     mpiWaitTime(0.0),
     deserializeTime(0.0),
@@ -218,7 +218,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
 }
 
 void
-RankSyncParallelSkip::exchange_master(int thread __attribute__((unused)))
+RankSyncParallelSkip::exchange_master(int UNUSED(thread))
 {
     // TraceFunction trace(CALL_INFO_LONG);
     // Simulation::getSimulation()->getSimulationOutput().output("Entering RankSyncParallelSkip::execute()\n");
@@ -396,7 +396,7 @@ RankSyncParallelSkip::exchange_master(int thread __attribute__((unused)))
 }
 
 void
-RankSyncParallelSkip::exchangeLinkInitData(int thread UNUSED_WO_MPI, std::atomic<int>& msg_count UNUSED_WO_MPI)
+RankSyncParallelSkip::exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count))
 {
     // TraceFunction trace(CALL_INFO_LONG);
 #ifdef SST_CONFIG_HAVE_MPI
