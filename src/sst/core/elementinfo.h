@@ -17,6 +17,7 @@
 #include <sst/core/params.h>
 
 #include <string>
+#include <vector>
 
 #include <sst/core/elibase.h>
 
@@ -34,7 +35,24 @@ class SSTElementPythonModule;
    Base classes for templated documentation classes
 *****************************************************/
 
+const std::vector<int> SST_ELI_VERSION = {0, 9, 0};
+
 class BaseElementInfo {
+
+public:
+    virtual const std::string getLibrary() = 0;
+    virtual const std::string getDescription() = 0;
+    virtual const std::string getName() = 0;
+    virtual const std::vector<int>& getVersion() = 0;
+    virtual const std::string getCompileFile() = 0;
+    virtual const std::string getCompileDate() = 0;
+    
+    virtual const std::vector<int>& getELICompiledVersion() = 0;
+
+    std::string getELIVersionString();
+};
+
+class BaseParamsElementInfo : public BaseElementInfo {
 
 protected:
     Params::KeySet_t allowedKeys;
@@ -43,9 +61,6 @@ protected:
     
 public:
 
-    virtual const std::string getDescription() = 0;
-    virtual const std::string getName() = 0;
-    virtual const std::string getLibrary() = 0;
     virtual const std::vector<ElementInfoParam>& getValidParams() = 0;
 
     const Params::KeySet_t& getParamNames() { return allowedKeys; }
@@ -54,7 +69,7 @@ public:
 
 };
 
-class BaseComponentElementInfo : public BaseElementInfo {
+class BaseComponentElementInfo : public BaseParamsElementInfo {
 
 protected:
     std::vector<std::string> portnames;
@@ -102,7 +117,7 @@ public:
 };
 
 
-class ModuleElementInfo : public BaseElementInfo {
+class ModuleElementInfo : public BaseParamsElementInfo {
 
 protected:
 
@@ -115,23 +130,19 @@ public:
 };
 
 
-class PartitionerElementInfo {
+class PartitionerElementInfo : public BaseElementInfo {
 public:
     virtual Partition::SSTPartitioner* create(RankInfo total_ranks, RankInfo my_rank, int verbosity) = 0;
     
-    virtual const std::string getDescription() = 0;
-    virtual const std::string getName() = 0;
-    virtual const std::string getLibrary() = 0;
-
     std::string toString();
 };
 
-class PythonModuleElementInfo {
+class PythonModuleElementInfo : public BaseElementInfo {
 public:
     virtual SSTElementPythonModule* create() = 0;
-    
-    virtual const std::string getLibrary() = 0;
- };
+    const std::string getDescription()  { return getLibrary() + " python module"; };
+    const std::string getName() { return getLibrary(); }    
+};
  
 
 class LibraryInfo {
@@ -265,7 +276,7 @@ public:
     
     Component* create(ComponentId_t id, Params& params) {
         // return new T(id, params);
-        return T::create(id,params);
+        return T::ELI_create(id,params);
     }
 
     static bool isLoaded() { return loaded; }
@@ -277,6 +288,10 @@ public:
     const std::vector<ElementInfoPort2>& getValidPorts() { return T::ELI_getPorts(); }
     const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return T::ELI_getSubComponentSlots(); }
     uint32_t getCategory() { return T::ELI_getCategory(); };
+    const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
+    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::string getCompileFile() { return T::ELI_getCompileFile(); }
+    const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
 
@@ -302,7 +317,7 @@ public:
 
     SubComponent* create(Component* comp, Params& params) {
         // return new T(comp,params);
-        return T::create(comp,params);
+        return T::ELI_create(comp,params);
     }
 
     static bool isLoaded() { return loaded; }
@@ -314,7 +329,10 @@ public:
     const std::vector<ElementInfoPort2>& getValidPorts() { return T::ELI_getPorts(); }
     const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return T::ELI_getSubComponentSlots(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
-
+    const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
+    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::string getCompileFile() { return T::ELI_getCompileFile(); }
+    const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
 template<class T> const bool SubComponentDoc<T>::loaded = ElementLibraryDatabase::addSubComponent(new SubComponentDoc<T>());
@@ -351,6 +369,10 @@ public:
     const std::string getDescription() { return T::ELI_getDescription(); }
     const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
+    const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
+    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::string getCompileFile() { return T::ELI_getCompileFile(); }
+    const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
 template <class T>
@@ -374,6 +396,10 @@ public:
     const std::string getDescription() { return T::ELI_getDescription(); }
     const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
+    const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
+    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::string getCompileFile() { return T::ELI_getCompileFile(); }
+    const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
 template <class T>
@@ -397,6 +423,10 @@ public:
     const std::string getDescription() { return T::ELI_getDescription(); }
     const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
+    const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
+    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::string getCompileFile() { return T::ELI_getCompileFile(); }
+    const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
 
@@ -446,6 +476,10 @@ public:
     const std::string getDescription() override { return T::ELI_getDescription(); }
     const std::string getName() override { return T::ELI_getName(); }
     const std::string getLibrary() override { return T::ELI_getLibrary(); }
+    const std::vector<int>& getELICompiledVersion() override { return T::ELI_getELICompiledVersion(); }
+    const std::vector<int>& getVersion() override { return T::ELI_getVersion(); }
+    const std::string getCompileFile() override { return T::ELI_getCompileFile(); }
+    const std::string getCompileDate() override { return T::ELI_getCompileDate(); }
 };
 
 template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase::addPartitioner(new PartitionerDoc<T>());
@@ -471,6 +505,10 @@ public:
     
     static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
+    const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
+    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::string getCompileFile() { return T::ELI_getCompileFile(); }
+    const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
 template<class T> T* PythonModuleDoc<T>::instance = NULL;
@@ -479,6 +517,27 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
 /**************************************************************************
   Macros used by elements to add element documentation
 **************************************************************************/
+
+#define SST_ELI_INSERT_COMPILE_INFO() \
+    static const std::string& ELI_getCompileDate() { \
+        static std::string time = __TIME__; \
+        static std::string date = __DATE__; \
+        static std::string date_time = date + " " + time; \
+        return date_time;                                 \
+    } \
+    static const std::string ELI_getCompileFile() { \
+        return __FILE__; \
+    } \
+    static const std::vector<int>& ELI_getELICompiledVersion() { \
+        static const std::vector<int> var(SST_ELI_VERSION);      \
+        return var; \
+    } \
+    static const std::vector<int>& ELI_getVersion() { \
+        static const std::vector<int> var = {1}; \
+        return var; \
+    }
+// This last is only needed here until we add the version macro to all the elements
+
 
 #define SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)   \
     friend class ComponentDoc<cls>; \
@@ -496,15 +555,25 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const uint32_t ELI_getCategory() {  \
       return cat; \
-    } 
+    } \
+    SST_ELI_INSERT_COMPILE_INFO()
 
 #define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat) \
-    static Component* create(ComponentId_t id, Params& params) { \
+    static Component* ELI_create(ComponentId_t id, Params& params) { \
       return new cls(id,params); \
     } \
     SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)
 
 
+// For now, just an empty macro.  After adding to elements, will put
+// the real one in.  The required function is in a different macro for
+// now.
+#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)
+// #define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)  \
+//     static const std::vector<int>& ELI_getVersion() { \
+//         static std::vector<int> var = { major, minor, tertiary } ; \
+//         return var; \
+//     }
 
 #define SST_ELI_DOCUMENT_PARAMS(...)                              \
     static const std::vector<ElementInfoParam>& ELI_getParams() { \
@@ -549,10 +618,11 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const std::string ELI_getInterface() {  \
       return interface; \
-    }
+    } \
+    SST_ELI_INSERT_COMPILE_INFO()
 
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \
-    static SubComponent* create(Component* comp, Params& params) { \
+    static SubComponent* ELI_create(Component* comp, Params& params) { \
     return new cls(comp,params); \
     } \
     SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)
@@ -574,7 +644,9 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const std::string ELI_getInterface() {  \
       return interface; \
-    }
+    } \
+    SST_ELI_INSERT_COMPILE_INFO()
+
 
 
 #define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,desc) \
@@ -590,7 +662,9 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const std::string ELI_getDescription() {  \
       return desc; \
-    }
+    } \
+    SST_ELI_INSERT_COMPILE_INFO()
+    
 
 
 #define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib) \
@@ -600,7 +674,9 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
-    }
+    } \
+    SST_ELI_INSERT_COMPILE_INFO()
+
 
 } //namespace SST
 

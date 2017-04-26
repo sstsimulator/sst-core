@@ -22,8 +22,23 @@ std::map<std::string,LibraryInfo*> SST::ElementLibraryDatabase::libraries;
 /**************************************************************************
   BaseElementInfo class functions
 **************************************************************************/
+std::string
+BaseElementInfo::getELIVersionString() {
+    std::stringstream stream;
+    bool first = true;
+    for ( int item : getELICompiledVersion() ) {
+        if ( first ) first = false;
+        else stream << ".";
+        stream << item;
+    }
+    return stream.str();    
+}
+
+/**************************************************************************
+  BaseParamsElementInfo class functions
+**************************************************************************/
 void
-BaseElementInfo::initialize_allowedKeys()
+BaseParamsElementInfo::initialize_allowedKeys()
 {
     // Get the valid parameters into the right data structure for
     // created the components.
@@ -35,7 +50,7 @@ BaseElementInfo::initialize_allowedKeys()
 }
 
 std::string
-BaseElementInfo::getParametersString() {
+BaseParamsElementInfo::getParametersString() {
     std::stringstream stream;
     stream << "      Parameters (" << getValidParams().size() << " total):"<<  std::endl;
     for ( auto item : getValidParams() ) {
@@ -122,6 +137,8 @@ ComponentElementInfo::toString()
 {
     std::stringstream stream;
     stream << "    " << getName() << ": " << getDescription() << std::endl;
+    stream << "    Using ELI version " << getELIVersionString() << std::endl;
+    stream << "    Compiled on: " << getCompileDate() << ", using file: " << getCompileFile() << std::endl;
     stream << getParametersString();
     stream << getStatisticsString();
     stream << getPortsString();
