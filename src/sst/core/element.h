@@ -121,10 +121,14 @@ struct ElementInfoGenerator {
 
 /** Describes all the parts of the Element Library
  */
+#ifdef SST_ELI_COMPILE_OLD_ELI_WITHOUT_DEPRECATION_WARNINGS
+struct ElementLibraryInfo {
+#else
 #if SST_BUILDING_CORE
 struct ElementLibraryInfo {
 #else
-struct __attribute__ ((deprecated("Please use new ELI defined in sst/core/elementinfo.h"))) ElementLibraryInfo {
+struct __attribute__ ((deprecated("Old ELI support (defined in sst/core/element.h) will be removed in version 8.0, but is still the preferred API until version 7.1.  New ELI support (defined in sst/core/elementinfo.h) is available, but experimental and subject to change until version 7.1."))) ElementLibraryInfo {
+#endif
 #endif
     const char *name;										/*!< Name of the Library. */
     const char *description;								/*!< Brief description of the Library */
