@@ -362,6 +362,11 @@ BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& par
 {
     // auto infoItr = my_info->getSubComponents().find(name);
     // if ( infoItr == my_info->getSubComponents().end() ) return NULL;
+    if ( !Factory::getFactory()->DoesSubComponentSlotExist(my_info->type, name) ) {
+        SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
+        outXX.output(CALL_INFO, "Warning: SubComponentSlot \"%s\" is undocumented.\n", name.c_str());
+    }
+    
     ComponentInfo* sub_info = my_info->findSubComponent(name,slot_num);
     if ( sub_info == NULL ) return NULL;
     
