@@ -531,12 +531,7 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     static const std::vector<int>& ELI_getELICompiledVersion() { \
         static const std::vector<int> var(SST_ELI_VERSION);      \
         return var; \
-    } \
-    static const std::vector<int>& ELI_getVersion() { \
-        static const std::vector<int> var = {1}; \
-        return var; \
     }
-// This last is only needed here until we add the version macro to all the elements
 
 
 #define SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)   \
@@ -565,15 +560,11 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)
 
 
-// For now, just an empty macro.  After adding to elements, will put
-// the real one in.  The required function is in a different macro for
-// now.
-#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)
-// #define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)  \
-//     static const std::vector<int>& ELI_getVersion() { \
-//         static std::vector<int> var = { major, minor, tertiary } ; \
-//         return var; \
-//     }
+#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)  \
+    static const std::vector<int>& ELI_getVersion() { \
+        static std::vector<int> var = { major, minor, tertiary } ; \
+        return var; \
+    }
 
 #define SST_ELI_DOCUMENT_PARAMS(...)                              \
     static const std::vector<ElementInfoParam>& ELI_getParams() { \

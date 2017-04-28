@@ -48,6 +48,7 @@ public:
 
     SST_ELI_REGISTER_PARTITIONER(SimplePartitioner,"sst","simple","Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.")
     
+    SST_ELI_DOCUMENT_VERSION(1,0,0)
 };
 
 } // namespace partition

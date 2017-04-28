@@ -48,6 +48,9 @@ public:
     
 
     SST_ELI_REGISTER_PARTITIONER(SSTSelfPartition,"sst","self","Used when partitioning is already specified in the configuration file.")
+
+    SST_ELI_DOCUMENT_VERSION(1,0,0)
+
 };
 
 }
