@@ -952,6 +952,7 @@ void Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
 const ElementLibraryInfo*
 Factory::findLibrary(std::string elemlib, bool showErrors)
 {
+    if ( elemlib == "sst" ) return NULL;
     const ElementLibraryInfo *eli = NULL;
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
@@ -1041,6 +1042,7 @@ Factory::parseLoadName(const std::string& wholename)
 
 const ElementLibraryInfo* Factory::loadLibrary(std::string name, bool showErrors)
 {
+    if ( name == "sst" ) return NULL;
     const ElementLibraryInfo* eli = loader->loadLibrary(name, showErrors);
 
     if ( NULL == eli ) {

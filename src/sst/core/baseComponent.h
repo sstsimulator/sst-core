@@ -321,7 +321,7 @@ public:
     SubComponent* loadNamedSubComponent(std::string name);
     SubComponent* loadNamedSubComponent(std::string name, Params& params);
 
-protected:
+private:
     SubComponent* loadNamedSubComponent(std::string name, int slot_num);
     SubComponent* loadNamedSubComponent(std::string name, int slot_num, Params& params);
 public:

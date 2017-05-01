@@ -343,11 +343,27 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
 SubComponent*
 BaseComponent::loadNamedSubComponent(std::string name) {
     Params empty;
-    return loadNamedSubComponent(name, 0, empty);
+    return loadNamedSubComponent(name, empty);
 }
 
 SubComponent*
 BaseComponent::loadNamedSubComponent(std::string name, Params& params) {
+    // Get list of ComponentInfo objects and make sure that there is
+    // only one SubComponent put into this slot
+    const std::vector<ComponentInfo>& subcomps = my_info->getSubComponents();
+    int sub_count = 0;
+    for ( auto &ci : subcomps ) {
+        if ( ci.getSlotName() == name ) {
+            sub_count++;
+        }
+    }
+    
+    if ( sub_count > 1 ) {
+        SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
+        outXX.fatal(CALL_INFO, 1, "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
+                    name.c_str(), my_info->getType().c_str(), sub_count);
+    }
+    
     return loadNamedSubComponent(name, 0, params);
 }
 
