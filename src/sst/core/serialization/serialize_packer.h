@@ -31,6 +31,11 @@ class ser_packer :
     *buf = t;
   }
 
+  /**
+   * @brief pack_buffer
+   * @param buf  Must be non-null
+   * @param size Must be non-zero
+   */
   void
   pack_buffer(void* buf, int size);
 
