@@ -11,7 +11,7 @@
 
 #include <sst/core/serialization/serializer.h>
 #include <sst/core/serialization/serializable.h>
-
+#include <sst/core/output.h>
 
 namespace SST {
 namespace Core {
@@ -21,27 +21,28 @@ namespace pvt {
 void
 ser_unpacker::unpack_buffer(void* buf, int size)
 {
+  if (size == 0){
+    Output &output = Output::getDefaultObject();
+    output.fatal(__LINE__, __FILE__, "ser_unpacker::unpack_bufffer", 1,
+                 "trying to unpack buffer of size 0");
+  }
   //void* only for convenience... actually a void**
   void** bufptr = (void**) buf;
-  if (size == 0){
-    buf = 0;
-  } else {
-    *bufptr = new char[size];
-    char* charstr = next_str(size);
-    ::memcpy(*bufptr, charstr, size);
-  }
+  *bufptr = new char[size];
+  char* charstr = next_str(size);
+  ::memcpy(*bufptr, charstr, size);
 }
 
 void
 ser_packer::pack_buffer(void* buf, int size)
 {
-  if (buf && size != 0){
-    char* charstr = next_str(size);
-    ::memcpy(charstr, buf, size);
-  } else {
-    int nullsize = 0;
-    pack(nullsize);
+  if (buf == nullptr){
+    Output &output = Output::getDefaultObject();
+    output.fatal(__LINE__, __FILE__, "ser_packer::pack_bufffer", 1,
+                 "trying to pack nullptr buffer");
   }
+  char* charstr = next_str(size);
+  ::memcpy(charstr, buf, size);
 }
 
 void
