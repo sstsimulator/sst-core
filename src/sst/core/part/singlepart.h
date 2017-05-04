@@ -47,6 +47,8 @@ public:
     
     
     SST_ELI_REGISTER_PARTITIONER(SSTSinglePartition,"sst","single","Allocates all components to rank 0.  Automatically selected for serial jobs.")
+
+    SST_ELI_DOCUMENT_VERSION(1,0,0)
 };
 
 }

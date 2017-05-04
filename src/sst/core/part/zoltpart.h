@@ -71,6 +71,8 @@ public:
     bool spawnOnAllRanks() override { return true; }
     
     SST_ELI_REGISTER_PARTITIONER(SSTZoltanPartition,"sst","zoltan","zoltan parallel partitioner")
+
+    SST_ELI_DOCUMENT_VERSION(1,0,0)
 };
 
 }

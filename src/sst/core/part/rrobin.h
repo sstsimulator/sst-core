@@ -37,6 +37,7 @@ public:
         
     SST_ELI_REGISTER_PARTITIONER(SSTRoundRobinPartition,"sst","roundrobin","Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.")
 
+    SST_ELI_DOCUMENT_VERSION(1,0,0)
 };
 
 } // namespace Partition

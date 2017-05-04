@@ -146,40 +146,35 @@ public:
             break;
         }
         case PACK: {
-            packer_.pack(size);
-            packer_.pack_buffer(buffer, size*sizeof(T));
+            if (buffer){
+              packer_.pack(size);
+              packer_.pack_buffer(buffer, size*sizeof(T));
+            } else {
+              Int nullsize = 0;
+              packer_.pack(nullsize);
+            }
             break;
         }
         case UNPACK: {
             unpacker_.unpack(size);
-            unpacker_.unpack_buffer(&buffer, size*sizeof(T));
+            if (size != 0){
+              unpacker_.unpack_buffer(&buffer, size*sizeof(T));
+            } else {
+              buffer = nullptr;
+            }
             break;
         }
         }
     }
 
-    // For void*, we get sizeof(void), which errors.  Specialize for
-    // void*.
+    // For void*, we get sizeof(void), which errors.
+    // Create a wrapper that casts to char* and uses above
     template <typename Int>
     void
     binary(void*& buffer, Int& size){
-        switch (mode_) {
-        case SIZER: {
-            sizer_.add(sizeof(Int));
-            sizer_.add(size);
-            break;
-        }
-        case PACK: {
-            packer_.pack(size);
-            packer_.pack_buffer(buffer, size);
-            break;
-        }
-        case UNPACK: {
-            unpacker_.unpack(size);
-            unpacker_.unpack_buffer(&buffer, size);
-            break;
-        }
-        }
+      char* tmp = (char*) buffer;
+      binary<char>(tmp, size);
+      buffer = tmp;
     }
   
     void

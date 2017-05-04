@@ -68,6 +68,8 @@ public:
     // }
     
     SST_ELI_REGISTER_PARTITIONER(SSTLinearPartition,"sst","linear","Partitions components by dividing Component ID space into roughly equal portions.  Components with sequential IDs will be placed close together.")
+
+    SST_ELI_DOCUMENT_VERSION(1,0,0)
 };
 
 }

@@ -343,11 +343,27 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
 SubComponent*
 BaseComponent::loadNamedSubComponent(std::string name) {
     Params empty;
-    return loadNamedSubComponent(name, 0, empty);
+    return loadNamedSubComponent(name, empty);
 }
 
 SubComponent*
 BaseComponent::loadNamedSubComponent(std::string name, Params& params) {
+    // Get list of ComponentInfo objects and make sure that there is
+    // only one SubComponent put into this slot
+    const std::vector<ComponentInfo>& subcomps = my_info->getSubComponents();
+    int sub_count = 0;
+    for ( auto &ci : subcomps ) {
+        if ( ci.getSlotName() == name ) {
+            sub_count++;
+        }
+    }
+    
+    if ( sub_count > 1 ) {
+        SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
+        outXX.fatal(CALL_INFO, 1, "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
+                    name.c_str(), my_info->getType().c_str(), sub_count);
+    }
+    
     return loadNamedSubComponent(name, 0, params);
 }
 
@@ -362,6 +378,11 @@ BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& par
 {
     // auto infoItr = my_info->getSubComponents().find(name);
     // if ( infoItr == my_info->getSubComponents().end() ) return NULL;
+    if ( !Factory::getFactory()->DoesSubComponentSlotExist(my_info->type, name) ) {
+        SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
+        outXX.output(CALL_INFO, "Warning: SubComponentSlot \"%s\" is undocumented.\n", name.c_str());
+    }
+    
     ComponentInfo* sub_info = my_info->findSubComponent(name,slot_num);
     if ( sub_info == NULL ) return NULL;
     

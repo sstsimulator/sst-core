@@ -30,6 +30,11 @@ class ser_unpacker :
     t = *bufptr;
   }
 
+  /**
+   * @brief unpack_buffer
+   * @param buf   Must unpack to non-null buffer
+   * @param size  Must be non-zero
+   */
   void
   unpack_buffer(void* buf, int size);
 
