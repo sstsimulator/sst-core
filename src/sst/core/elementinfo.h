@@ -295,7 +295,7 @@ public:
 };
 
 
-template<class T> const bool ComponentDoc<T>::loaded = ElementLibraryDatabase::addComponent(new ComponentDoc<T>());
+template<class T> const bool SST::ComponentDoc<T>::loaded = SST::ElementLibraryDatabase::addComponent(new SST::ComponentDoc<T>());
 
 
 /**************************************************************************
@@ -529,15 +529,15 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
         return __FILE__; \
     } \
     static const std::vector<int>& ELI_getELICompiledVersion() { \
-        static const std::vector<int> var(SST_ELI_VERSION);      \
+        static const std::vector<int> var(SST::SST_ELI_VERSION);      \
         return var; \
     }
 
 
 #define SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)   \
-    friend class ComponentDoc<cls>; \
+    friend class SST::ComponentDoc<cls>; \
     bool ELI_isLoaded() {                           \
-        return ComponentDoc<cls>::isLoaded();     \
+        return SST::ComponentDoc<cls>::isLoaded();     \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
@@ -554,7 +554,7 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     SST_ELI_INSERT_COMPILE_INFO()
 
 #define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat) \
-    static Component* ELI_create(ComponentId_t id, Params& params) { \
+    static SST::Component* ELI_create(SST::ComponentId_t id, SST::Params& params) { \
       return new cls(id,params); \
     } \
     SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)
@@ -567,36 +567,36 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     }
 
 #define SST_ELI_DOCUMENT_PARAMS(...)                              \
-    static const std::vector<ElementInfoParam>& ELI_getParams() { \
-        static std::vector<ElementInfoParam> var = { __VA_ARGS__ } ; \
+    static const std::vector<SST::ElementInfoParam>& ELI_getParams() { \
+        static std::vector<SST::ElementInfoParam> var = { __VA_ARGS__ } ; \
         return var; \
     }
 
 
 #define SST_ELI_DOCUMENT_STATISTICS(...)                                \
-    static const std::vector<ElementInfoStatistic>& ELI_getStatistics() {  \
-        static std::vector<ElementInfoStatistic> var = { __VA_ARGS__ } ;  \
+    static const std::vector<SST::ElementInfoStatistic>& ELI_getStatistics() {  \
+        static std::vector<SST::ElementInfoStatistic> var = { __VA_ARGS__ } ;  \
         return var; \
     }
 
 
 #define SST_ELI_DOCUMENT_PORTS(...)                              \
-    static const std::vector<ElementInfoPort2>& ELI_getPorts() { \
-        static std::vector<ElementInfoPort2> var = { __VA_ARGS__ } ;      \
+    static const std::vector<SST::ElementInfoPort2>& ELI_getPorts() { \
+        static std::vector<SST::ElementInfoPort2> var = { __VA_ARGS__ } ;      \
         return var; \
     }
 
 #define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)                              \
-    static const std::vector<ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
-    static std::vector<ElementInfoSubComponentSlot> var = { __VA_ARGS__ } ; \
+    static const std::vector<SST::ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
+    static std::vector<SST::ElementInfoSubComponentSlot> var = { __VA_ARGS__ } ; \
         return var; \
     }
 
 
 #define SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)   \
-    friend class SubComponentDoc<cls>; \
+    friend class SST::SubComponentDoc<cls>; \
     bool ELI_isLoaded() {                           \
-      return SubComponentDoc<cls>::isLoaded(); \
+      return SST::SubComponentDoc<cls>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
@@ -613,16 +613,16 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     SST_ELI_INSERT_COMPILE_INFO()
 
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \
-    static SubComponent* ELI_create(Component* comp, Params& params) { \
+    static SST::SubComponent* ELI_create(SST::Component* comp, SST::Params& params) { \
     return new cls(comp,params); \
     } \
     SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)
 
 
 #define SST_ELI_REGISTER_MODULE(cls,lib,name,desc,interface) \
-    friend class ModuleDoc<cls>; \
+    friend class SST::ModuleDoc<cls>; \
     bool ELI_isLoaded() {                           \
-      return ModuleDoc<cls>::isLoaded(); \
+      return SST::ModuleDoc<cls>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
@@ -641,9 +641,9 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
 
 
 #define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,desc) \
-    friend class PartitionerDoc<cls>; \
+    friend class SST::PartitionerDoc<cls>; \
     bool ELI_isLoaded() { \
-      return PartitionerDoc<cls>::isLoaded(); \
+      return SST::PartitionerDoc<cls>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
@@ -659,9 +659,9 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
 
 
 #define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib) \
-    friend class PythonModuleDoc<cls>; \
+    friend class SST::PythonModuleDoc<cls>; \
     bool ELI_isLoaded() { \
-      return PythonModuleDoc<cls>::isLoaded(); \
+      return SST::PythonModuleDoc<cls>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
