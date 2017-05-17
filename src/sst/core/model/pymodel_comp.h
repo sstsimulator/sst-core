@@ -15,6 +15,7 @@
 #define SST_CORE_MODEL_PYMODEL_COMP_H
 
 #include <sst/core/sst_types.h>
+#include <sst/core/configGraph.h>
 
 extern "C" {
 
@@ -27,22 +28,22 @@ struct ComponentHolder {
 	char *name;
     ComponentHolder(ComponentPy_t *pobj) : pobj(pobj), name(NULL) { }
     virtual ~ComponentHolder() { free(name); }
-    virtual ConfigComponent* getComp() = 0;
+    virtual SST::ConfigComponent* getComp() = 0;
     virtual PyComponent* getBaseObj() = 0;
     virtual int compare(ComponentHolder *other) = 0;
     virtual const char* getName() const = 0;
-    ComponentId_t getID();
-    ConfigComponent* getSubComp(const std::string &name, int slot_num);
+    SST::ComponentId_t getID();
+    SST::ConfigComponent* getSubComp(const std::string &name, int slot_num);
 };
 
 struct PyComponent : ComponentHolder {
-    ComponentId_t id;
+    SST::ComponentId_t id;
     uint16_t subCompId;
 
     PyComponent(ComponentPy_t *pobj) : ComponentHolder(pobj), subCompId(0) { }
     ~PyComponent() {}
     const char* getName() const override;
-    ConfigComponent* getComp() override;
+    SST::ConfigComponent* getComp() override;
     PyComponent* getBaseObj() override;
     int compare(ComponentHolder *other) override;
 };
@@ -55,7 +56,7 @@ struct PySubComponent : ComponentHolder {
     PySubComponent(ComponentPy_t *pobj) : ComponentHolder(pobj) { }
     ~PySubComponent() {}
     const char* getName() const override;
-    ConfigComponent* getComp() override;
+    SST::ConfigComponent* getComp() override;
     PyComponent* getBaseObj() override;
     int compare(ComponentHolder *other) override;
     int getSlot() const;
@@ -70,8 +71,8 @@ struct ComponentPy_t {
 extern PyTypeObject PyModel_ComponentType;
 extern PyTypeObject PyModel_SubComponentType;
 
-static inline ConfigComponent* getComp(PyObject *pobj) {
-    ConfigComponent *c = ((ComponentPy_t*)pobj)->obj->getComp();
+static inline SST::ConfigComponent* getComp(PyObject *pobj) {
+    SST::ConfigComponent *c = ((ComponentPy_t*)pobj)->obj->getComp();
     if ( c == NULL ) {
         PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent");
     }

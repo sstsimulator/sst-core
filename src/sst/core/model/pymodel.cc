@@ -27,6 +27,7 @@ REENABLE_WARNING
 
 #include <sst/core/sst_types.h>
 #include <sst/core/model/pymodel.h>
+#include <sst/core/model/elemlib.h>
 #include <sst/core/model/pymodel_comp.h>
 #include <sst/core/model/pymodel_link.h>
 #include <sst/core/model/pymodel_statgroup.h>
@@ -140,19 +141,22 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
         // Check for the existence of a library
         char *modName = name+4;
         if ( Factory::getFactory()->hasLibrary(modName) ) {
-            // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
-            SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
-            if ( pymod ) {
-                Py_INCREF(self);
-                return self;
-            }
+            Py_INCREF(self);
+            return self;
         }
     }
 
     Py_RETURN_NONE;
 }
 
+static PyObject* demoFunc(PyObject* UNUSED(self), PyObject* UNUSED(args))
+{
+    return PyLong_FromLong(0);
+}
 static PyMethodDef emptyModMethods[] = {
+    {   "demo",
+        demoFunc, METH_NOARGS,
+        "Demo function.  Does nothing." },
     {NULL, NULL, 0, NULL }
 };
 
@@ -169,13 +173,13 @@ static PyObject* mlLoadModule(PyObject *UNUSED(self), PyObject *args)
 
     char *modName = name+4; // sst.<modName>
 
-    //fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
-    // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
+    PyObject* mod = Py_InitModule(name, emptyModMethods);
+    /* Load dynamic information */
+    PyModel::LibraryDef::findLibraryDefinition(name).loadModule(mod);
+
     SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
-    PyObject* mod = NULL;
-    if ( !pymod ) {
-        mod = Py_InitModule(name, emptyModMethods);
-    } else {
+    if ( pymod ) {
+        /* NOTE: Current leaks current value of mod */
         mod = static_cast<PyObject*>(pymod->load());
     }
 
