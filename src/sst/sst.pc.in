@@ -7,6 +7,6 @@ Name: @PACKAGE_NAME@
 Description: Structural Simulation Toolkit (SST) Parallel Discrete Event Core
 Version: @PACKAGE_VERSION@
 URL: http://www.sst-simulator.org/
-Libs: -L${libdir}/sst -L${libdir} -Wl,-undefined -Wl,dynamic_lookup
-Cflags: -DHAVE_CONFIG_H -I${includedir} -I${includedir}/sst @MPI_CPPFLAGS@ @BOOST_CPPFLAGS@
+Libs: -Wl,-undefined -Wl,dynamic_lookup
+Cflags: -DHAVE_CONFIG_H -I${includedir} -I${includedir}/sst @MPI_CPPFLAGS@
 
