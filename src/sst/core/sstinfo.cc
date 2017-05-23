@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -50,6 +50,18 @@ public:
     void outputXML(int Index, TiXmlNode* XMLParentElement);
 } g_Outputter;
 
+ElementLibraryInfo info_empty_eli = {
+    "",
+    "",
+    NULL,
+    NULL,   // Events
+    NULL,   // Introspectors
+    NULL,
+    NULL,
+    NULL, // partitioners,
+    NULL,  // Python Module Generator
+    NULL // generators,
+};
 
 // Forward Declarations
 void initLTDL(std::string searchPath);
@@ -106,12 +118,21 @@ static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
     const ElementLibraryInfo* pELI = (lib == "sst") ?
         loader.loadCoreInfo() :
         loader.loadLibrary(lib, g_configuration.debugEnabled());
+
+    if ( NULL == pELI ) {
+        // Check to see if this library loaded into the new ELI
+        // Database
+        if ( NULL != ElementLibraryDatabase::getLibraryInfo(lib) ) {
+            pELI = &info_empty_eli;
+        }
+    }
+    
     if ( pELI != NULL ) {
         if ( g_configuration.debugEnabled() )
             fprintf(stdout, "Found!\n");
         // Build
         g_fileProcessedCount++;
-        g_libInfoArray.emplace_back(pELI);
+        g_libInfoArray.emplace_back(lib, pELI);
     } else if ( !optional ) {
         fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s\n", lib.c_str());
     } else if ( g_configuration.debugEnabled() ) {
@@ -435,7 +456,7 @@ void SSTInfoElement_LibraryInfo::populateLibraryInfo()
         }
     }
 
-    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(m_eli->name);
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(m_name);
     if ( lib ) {
         for ( auto &i : lib->components )
             addInfoComponent(i.second);

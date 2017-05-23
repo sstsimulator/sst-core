@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -568,14 +568,16 @@ public:
     /** Create a new SSTInfoElement_LibraryInfo object.
      * @param eli Pointer to an ElementLibraryInfo object.
      */
-    SSTInfoElement_LibraryInfo(const ElementLibraryInfo* eli)
+    SSTInfoElement_LibraryInfo(const std::string& name, const ElementLibraryInfo* eli) :
+        m_name(name)
     {
         m_eli = eli;
         populateLibraryInfo();
     }
 
     /** Return the Name of the Library. */
-    std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
+    // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
+    std::string getLibraryName() {return m_name; }
 
     /** Return the Description of the Library. */
     std::string getLibraryDescription() {if (m_eli && m_eli->description) return m_eli->description; else return ""; }
@@ -651,7 +653,8 @@ private:
     template<typename T> void addInfoPartitioner(const T* eip) {m_PartitionerArray.emplace_back(const_cast<T*>(eip));}
     template<typename T> void addInfoGenerator(const T* eig) {m_GeneratorArray.emplace_back(const_cast<T*>(eig));}
 
-    const ElementLibraryInfo*                 m_eli;
+    const ElementLibraryInfo*                    m_eli;
+    const std::string                            m_name;
     std::vector<SSTInfoElement_ComponentInfo>    m_ComponentArray;
     std::vector<SSTInfoElement_EventInfo>        m_EventArray;
     std::vector<SSTInfoElement_ModuleInfo>       m_ModuleArray;
