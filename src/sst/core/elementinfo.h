@@ -823,7 +823,7 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
 //         return var; \
 //     }
 
-#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)
+#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary) static_assert(0,"ouch");
 
 
 #define SST_ELI_DOCUMENT_PARAMS(...)                              \
@@ -887,7 +887,7 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
       return "Description temporarily unavailable"; \
     } \
     static const std::string ELI_getInterface() {  \
-                                                 return "Interface temporarily unavailable"; \
+      return "Interface temporarily unavailable"; \
     } \
     static const std::vector<int>& ELI_getVersion() { \
         static std::vector<int> var = { 0, 0, 0 } ; \
@@ -991,7 +991,7 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
 //     } \
 //     SST_ELI_INSERT_COMPILE_INFO()
 
-#define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib) \
+#define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib,...)    \
     friend class SST::PythonModuleDoc<cls>; \
     bool ELI_isLoaded() { \
       return SST::PythonModuleDoc<cls>::isLoaded(); \
