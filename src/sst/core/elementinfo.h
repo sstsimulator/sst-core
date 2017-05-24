@@ -824,7 +824,7 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
 //         return var; \
 //     }
 
-#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary) static_assert(0,"ouch");
+#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)
 
 
 #define SST_ELI_DOCUMENT_PARAMS(...)                              \
