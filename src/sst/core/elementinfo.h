@@ -795,6 +795,7 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
 
 // For now, description and category will be unavailable
 #define SST_ELI_REGISTER_COMPONENT(cls,lib,name,...)    \
+    friend class SST::ComponentDoc<cls>; \
     bool ELI_isLoaded() {                           \
         return SST::ComponentDoc<cls>::isLoaded(); \
     } \
@@ -874,6 +875,7 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
 
 // Description and interface will be temporarily unavailable
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,...)   \
+    friend class SST::SubComponentDoc<cls>; \
     bool ELI_isLoaded() {                           \
       return SST::SubComponentDoc<cls>::isLoaded(); \
     } \
