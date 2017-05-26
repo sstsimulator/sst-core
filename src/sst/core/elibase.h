@@ -57,6 +57,33 @@ struct ElementInfoPort2 {
     const char *name;			/*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter */
     const char *description;	/*!< Brief description of the port (ie, what it is used for) */
     const std::vector<std::string> validEvents;	/*!< List of fully-qualified event types that this Port expects to send or receive */
+
+    // For backwards compatibility, convert from ElementInfoPort to ElementInfoPort2
+private:
+    std::vector<std::string> createVector(const char** events) {
+        std::vector<std::string> vec;
+        if ( events == NULL ) return vec;
+        const char** ev = events;
+        while ( NULL != *ev ) {
+            vec.push_back(*ev);
+            ev++;
+        }
+        return vec;
+    }
+
+public:
+    
+    ElementInfoPort2(const ElementInfoPort* port) :
+        name(port->name),
+        description(port->description),
+        validEvents(createVector(port->validEvents))
+        {}
+
+    ElementInfoPort2(const char* name, const char* description, const std::vector<std::string> validEvents) :
+        name(name),
+        description(description),
+        validEvents(validEvents)
+        {}
 };
 
 struct ElementInfoSubComponentSlot {

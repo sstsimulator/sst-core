@@ -257,6 +257,246 @@ public:
 
 
 /**************************************************************************
+  Class to check for an ELI_getParams Function
+**************************************************************************/
+template <class T>
+class checkForELI_getParamsFunction
+{
+    template <typename F, F> struct check;
+
+    typedef char Match;
+    typedef long NotMatch;
+
+    typedef const std::vector<ElementInfoParam>& (*functionsig)();
+
+    template <typename F> static Match HasFunction(check<functionsig, &F::ELI_getParams >*);
+    template <typename F> static NotMatch HasFunction(...);
+
+public:
+    static bool const value = (sizeof(HasFunction<T>(0)) == sizeof(Match) );
+};
+
+
+template<class T>
+typename std::enable_if<checkForELI_getParamsFunction<T>::value, const std::vector<ElementInfoParam>& >::type
+ELI_templatedGetParams() {
+    return T::ELI_getParams();
+}
+
+template<class T>
+typename std::enable_if<not checkForELI_getParamsFunction<T>::value, std::vector<ElementInfoParam>& >::type
+ELI_templatedGetParams() {
+    static std::vector<ElementInfoParam> var;
+    return var;
+}
+
+
+/**************************************************************************
+  Class to check for an ELI_getStatistics Function
+**************************************************************************/
+template <class T>
+class checkForELI_getStatisticsFunction
+{
+    template <typename F, F> struct check;
+
+    typedef char Match;
+    typedef long NotMatch;
+
+    typedef const std::vector<ElementInfoStatistic>& (*functionsig)();
+
+    template <typename F> static Match HasFunction(check<functionsig, &F::ELI_getStatistics>*);
+    template <typename F> static NotMatch HasFunction(...);
+
+public:
+    static bool const value = (sizeof(HasFunction<T>(0)) == sizeof(Match) );
+};
+
+template<class T>
+typename std::enable_if<checkForELI_getStatisticsFunction<T>::value, const std::vector<ElementInfoStatistic>& >::type
+ELI_templatedGetStatistics() {
+    return T::ELI_getStatistics();
+}
+
+template<class T>
+typename std::enable_if<not checkForELI_getStatisticsFunction<T>::value, const std::vector<ElementInfoStatistic>& >::type
+ELI_templatedGetStatistics() {
+    static std::vector<ElementInfoStatistic> var;
+    return var;
+}
+
+
+/**************************************************************************
+  Class to check for an ELI_getPorts Function
+**************************************************************************/
+template <class T>
+class checkForELI_getPortsFunction
+{
+    template <typename F, F> struct check;
+
+    typedef char Match;
+    typedef long NotMatch;
+
+    typedef const std::vector<ElementInfoPort2>& (*functionsig)();
+
+    template <typename F> static Match HasFunction(check<functionsig, &F::ELI_getPorts>*);
+    template <typename F> static NotMatch HasFunction(...);
+
+public:
+    static bool const value = (sizeof(HasFunction<T>(0)) == sizeof(Match) );
+};
+
+template<class T>
+typename std::enable_if<checkForELI_getPortsFunction<T>::value, const std::vector<ElementInfoPort2>& >::type
+ELI_templatedGetPorts() {
+    return T::ELI_getPorts();
+}
+
+template<class T>
+typename std::enable_if<not checkForELI_getPortsFunction<T>::value, const std::vector<ElementInfoPort2>& >::type
+ELI_templatedGetPorts() {
+    static std::vector<ElementInfoPort2> var;
+    return var;
+}
+
+
+/**************************************************************************
+  Class to check for an ELI_getSubComponentSlots Function
+**************************************************************************/
+template <class T>
+class checkForELI_getSubComponentSlotsFunction
+{
+    template <typename F, F> struct check;
+
+    typedef char Match;
+    typedef long NotMatch;
+
+    typedef const std::vector<ElementInfoSubComponentSlot>& (*functionsig)();
+
+    template <typename F> static Match HasFunction(check<functionsig, &F::ELI_getSubComponentSlots>*);
+    template <typename F> static NotMatch HasFunction(...);
+
+public:
+    static bool const value = (sizeof(HasFunction<T>(0)) == sizeof(Match) );
+};
+
+template<class T>
+typename std::enable_if<checkForELI_getSubComponentSlotsFunction<T>::value, const std::vector<ElementInfoSubComponentSlot>& >::type
+ELI_templatedGetSubComponentSlots() {
+    return T::ELI_getSubComponentSlots();
+}
+
+template<class T>
+typename std::enable_if<not checkForELI_getSubComponentSlotsFunction<T>::value, const std::vector<ElementInfoSubComponentSlot>& >::type
+ELI_templatedGetSubComponentSlots() {
+    static std::vector<ElementInfoSubComponentSlot> var;
+    return var;
+}
+
+
+/**************************************************************************
+  Class to check for an ELI_CustomCreate Function for Components
+**************************************************************************/
+template <class T>
+class checkForELI_CustomCreateFunctionforComponent
+{
+    template <typename F, F> struct check;
+
+    typedef char Match;
+    typedef long NotMatch;
+
+    typedef Component* (*functionsig)(ComponentId_t, Params&);
+
+    template <typename F> static Match HasFunction(check<functionsig, &F::ELI_CustomCreate>*);
+    template <typename F> static NotMatch HasFunction(...);
+
+public:
+    static bool const value = (sizeof(HasFunction<T>(0)) == sizeof(Match) );
+};
+
+template<class T>
+typename std::enable_if<checkForELI_CustomCreateFunctionforComponent<T>::value, Component* >::type
+ELI_templatedCreateforComponent(ComponentId_t id, Params& params) {
+    return T::ELI_CustomCreate(id, params);
+}
+
+template<class T>
+typename std::enable_if<not checkForELI_CustomCreateFunctionforComponent<T>::value, Component* >::type
+ELI_templatedCreateforComponent(ComponentId_t id, Params& params) {
+    return new T(id, params);
+}
+
+/**************************************************************************
+  Class to check for an ELI_CustomCreate Function for SubComponents
+**************************************************************************/
+template <class T>
+class checkForELI_CustomCreateFunctionforSubComponent
+{
+    template <typename F, F> struct check;
+
+    typedef char Match;
+    typedef long NotMatch;
+
+    struct FunctionSignature
+    {
+        typedef SubComponent* (*function)(Component*, Params&);
+    };
+
+    template <typename F> static Match HasFunction(check< typename FunctionSignature::function, &F::ELI_CustomCreate>*);
+    template <typename F> static NotMatch HasFunction(...);
+
+public:
+    static bool const value = (sizeof(HasFunction<T>(0)) == sizeof(Match) );
+};
+
+template<class T>
+typename std::enable_if<checkForELI_CustomCreateFunctionforSubComponent<T>::value, SubComponent* >::type
+ELI_templatedCreateforSubComponent(Component* comp, Params& params) {
+    return T::ELI_CustomCreate(comp, params);
+}
+
+template<class T>
+typename std::enable_if<not checkForELI_CustomCreateFunctionforSubComponent<T>::value, SubComponent* >::type
+ELI_templatedCreateforSubComponent(Component* comp, Params& params) {
+    return new T(comp, params);
+}
+
+
+#if 0
+
+// This has code for looking for non-static class functions
+template <class T>
+class checkForCustomCreateComponent
+{
+    template <typename F, F> struct check;
+
+    typedef char Match;
+    typedef long NotMatch;
+
+    // Used for non-static
+    // template <typename F>
+    // struct FunctionSignature
+    // {
+    //     typedef Component* (F::*function)(ComponentId_t,Params&);
+    // };
+        
+    struct FunctionSignature
+    {
+        typedef Component* (*function)(ComponentId_t,Params&);
+    };
+
+    // Used for non-static functions
+    // template <typename F> static Match HasCustomCreate(check< typename FunctionSignature<F>::function, &F::ELI_Custom_Create >*);
+    template <typename F> static Match HasCustomCreate(check< typename FunctionSignature::function, &F::ELI_Custom_Create >*);
+    template <typename F> static NotMatch HasCustomCreate(...);
+
+public:
+    static bool const value = (sizeof(HasCustomCreate<T>(0)) == sizeof(Match) );
+};
+
+#endif
+
+
+/**************************************************************************
   Classes to support Components
 **************************************************************************/
 
@@ -265,7 +505,7 @@ template <class T>
 class ComponentDoc : public ComponentElementInfo {
 private:
     static const bool loaded;
-    
+
 public:
 
     ComponentDoc() : ComponentElementInfo() {
@@ -276,17 +516,17 @@ public:
     
     Component* create(ComponentId_t id, Params& params) {
         // return new T(id, params);
-        return T::ELI_create(id,params);
+        return ELI_templatedCreateforComponent<T>(id,params);
     }
 
     static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
-    const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
-    const std::vector<ElementInfoStatistic>& getValidStats() { return T::ELI_getStatistics(); }
-    const std::vector<ElementInfoPort2>& getValidPorts() { return T::ELI_getPorts(); }
-    const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return T::ELI_getSubComponentSlots(); }
+    const std::vector<ElementInfoParam>& getValidParams() { return ELI_templatedGetParams<T>(); }
+    const std::vector<ElementInfoStatistic>& getValidStats() { return ELI_templatedGetStatistics<T>(); }
+    const std::vector<ElementInfoPort2>& getValidPorts() { return ELI_templatedGetPorts<T>(); }
+    const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return ELI_templatedGetSubComponentSlots<T>(); }
     uint32_t getCategory() { return T::ELI_getCategory(); };
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
     const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
@@ -295,6 +535,7 @@ public:
 };
 
 
+// template<class T, int A> const bool SST::ComponentDoc<T, A>::loaded = SST::ElementLibraryDatabase::addComponent(new SST::ComponentDoc<T,T::ELI_getMajorVersion()>());
 template<class T> const bool SST::ComponentDoc<T>::loaded = SST::ElementLibraryDatabase::addComponent(new SST::ComponentDoc<T>());
 
 
@@ -317,17 +558,17 @@ public:
 
     SubComponent* create(Component* comp, Params& params) {
         // return new T(comp,params);
-        return T::ELI_create(comp,params);
+        return ELI_templatedCreateforSubComponent<T>(comp,params);
     }
 
     static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
-    const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
-    const std::vector<ElementInfoStatistic>& getValidStats() { return T::ELI_getStatistics(); }
-    const std::vector<ElementInfoPort2>& getValidPorts() { return T::ELI_getPorts(); }
-    const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return T::ELI_getSubComponentSlots(); }
+    const std::vector<ElementInfoParam>& getValidParams() { return ELI_templatedGetParams<T>(); }
+    const std::vector<ElementInfoStatistic>& getValidStats() { return ELI_templatedGetStatistics<T>(); }
+    const std::vector<ElementInfoPort2>& getValidPorts() { return ELI_templatedGetPorts<T>(); }
+    const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return ELI_templatedGetSubComponentSlots<T>(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
     const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
@@ -367,7 +608,7 @@ public:
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
-    const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
+    const std::vector<ElementInfoParam>& getValidParams() { return ELI_templatedGetParams<T>(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
     const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
@@ -394,7 +635,7 @@ public:
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
-    const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
+    const std::vector<ElementInfoParam>& getValidParams() { return ELI_templatedGetParams<T>(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
     const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
@@ -421,7 +662,7 @@ public:
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::string getName() { return T::ELI_getName(); }
     const std::string getDescription() { return T::ELI_getDescription(); }
-    const std::vector<ElementInfoParam>& getValidParams() { return T::ELI_getParams(); }
+    const std::vector<ElementInfoParam>& getValidParams() { return ELI_templatedGetParams<T>(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
     const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
@@ -534,10 +775,29 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     }
 
 
-#define SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)   \
+// #define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat) \
+//     bool ELI_isLoaded() {                           \
+//         return SST::ComponentDoc<cls>::isLoaded(); \
+//     } \
+//     static const std::string ELI_getLibrary() { \
+//       return lib; \
+//     } \
+//     static const std::string ELI_getName() { \
+//       return name; \
+//     } \
+//     static const std::string ELI_getDescription() {  \
+//       return desc; \
+//     } \
+//     static const uint32_t ELI_getCategory() {  \
+//       return cat; \
+//     } \
+//     SST_ELI_INSERT_COMPILE_INFO()
+
+// For now, description and category will be unavailable
+#define SST_ELI_REGISTER_COMPONENT(cls,lib,name,...)    \
     friend class SST::ComponentDoc<cls>; \
     bool ELI_isLoaded() {                           \
-        return SST::ComponentDoc<cls>::isLoaded();     \
+        return SST::ComponentDoc<cls>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
@@ -546,25 +806,26 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
       return name; \
     } \
     static const std::string ELI_getDescription() {  \
-      return desc; \
+      return "Description temporarily unavailable"; \
     } \
     static const uint32_t ELI_getCategory() {  \
-      return cat; \
+      return COMPONENT_CATEGORY_UNCATEGORIZED; \
+    } \
+    static const std::vector<int>& ELI_getVersion() { \
+        static std::vector<int> var = { 0, 0, 0 } ; \
+        return var; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
 
-#define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat) \
-    static SST::Component* ELI_create(SST::ComponentId_t id, SST::Params& params) { \
-      return new cls(id,params); \
-    } \
-    SST_ELI_REGISTER_COMPONENT_CUSTOM_CREATE(cls,lib,name,desc,cat)
 
+// #define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)  \
+//     static const std::vector<int>& ELI_getVersion() { \
+//         static std::vector<int> var = { major, minor, tertiary } ; \
+//         return var; \
+//     }
 
-#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)  \
-    static const std::vector<int>& ELI_getVersion() { \
-        static std::vector<int> var = { major, minor, tertiary } ; \
-        return var; \
-    }
+#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)
+
 
 #define SST_ELI_DOCUMENT_PARAMS(...)                              \
     static const std::vector<SST::ElementInfoParam>& ELI_getParams() { \
@@ -593,7 +854,27 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     }
 
 
-#define SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)   \
+// #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \
+//     bool ELI_isLoaded() {                           \
+//       return SST::SubComponentDoc<cls>::isLoaded(); \
+//     } \
+//     static const std::string ELI_getLibrary() { \
+//       return lib; \
+//     } \
+//     static const std::string ELI_getName() { \
+//       return name; \
+//     } \
+//     static const std::string ELI_getDescription() {  \
+//       return desc; \
+//     } \
+//     static const std::string ELI_getInterface() {  \
+//       return interface; \
+//     } \
+//     SST_ELI_INSERT_COMPILE_INFO()
+
+
+// Description and interface will be temporarily unavailable
+#define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,...)   \
     friend class SST::SubComponentDoc<cls>; \
     bool ELI_isLoaded() {                           \
       return SST::SubComponentDoc<cls>::isLoaded(); \
@@ -605,21 +886,40 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
       return name; \
     } \
     static const std::string ELI_getDescription() {  \
-      return desc; \
+      return "Description temporarily unavailable"; \
     } \
     static const std::string ELI_getInterface() {  \
-      return interface; \
+      return "Interface temporarily unavailable"; \
+    } \
+    static const std::vector<int>& ELI_getVersion() { \
+        static std::vector<int> var = { 0, 0, 0 } ; \
+        return var; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
 
-#define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \
-    static SST::SubComponent* ELI_create(SST::Component* comp, SST::Params& params) { \
-    return new cls(comp,params); \
-    } \
-    SST_ELI_REGISTER_SUBCOMPONENT_CUSTOM_CREATE(cls,lib,name,desc,interface)
+
+// #define SST_ELI_REGISTER_MODULE(cls,lib,name,desc,interface) \
+//     friend class SST::ModuleDoc<cls>; \
+//     bool ELI_isLoaded() {                           \
+//       return SST::ModuleDoc<cls>::isLoaded(); \
+//     } \
+//     static const std::string ELI_getLibrary() { \
+//       return lib; \
+//     } \
+//     static const std::string ELI_getName() { \
+//       return name; \
+//     } \
+//     static const std::string ELI_getDescription() {  \
+//     return desc; \
+//     } \
+//     static const std::string ELI_getInterface() {  \
+//         return interface;                          \
+//     } \
+//     SST_ELI_INSERT_COMPILE_INFO()
 
 
-#define SST_ELI_REGISTER_MODULE(cls,lib,name,desc,interface) \
+// Description and interface will be temporarily unavailable
+#define SST_ELI_REGISTER_MODULE(cls,lib,name,...)  \
     friend class SST::ModuleDoc<cls>; \
     bool ELI_isLoaded() {                           \
       return SST::ModuleDoc<cls>::isLoaded(); \
@@ -631,16 +931,37 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
       return name; \
     } \
     static const std::string ELI_getDescription() {  \
-      return desc; \
+      return "Description temporarily unavailable"; \
     } \
     static const std::string ELI_getInterface() {  \
-      return interface; \
+        return "Interface temporarily unavailable"; \
+    } \
+    static const std::vector<int>& ELI_getVersion() { \
+        static std::vector<int> var = { 0, 0, 0 } ; \
+        return var; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
 
 
 
-#define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,desc) \
+// #define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,desc) \
+//     friend class SST::PartitionerDoc<cls>; \
+//     bool ELI_isLoaded() { \
+//       return SST::PartitionerDoc<cls>::isLoaded(); \
+//     } \
+//     static const std::string ELI_getLibrary() { \
+//       return lib; \
+//     } \
+//     static const std::string ELI_getName() { \
+//       return name; \
+//     } \
+//     static const std::string ELI_getDescription() {  \
+//       return desc; \
+//     } \
+//     SST_ELI_INSERT_COMPILE_INFO()
+
+// Description wiil be temporarily unavailable
+#define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,...) \
     friend class SST::PartitionerDoc<cls>; \
     bool ELI_isLoaded() { \
       return SST::PartitionerDoc<cls>::isLoaded(); \
@@ -652,19 +973,37 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
       return name; \
     } \
     static const std::string ELI_getDescription() {  \
-      return desc; \
+      return "Description temporarily unavailable"; \
+    } \
+    static const std::vector<int>& ELI_getVersion() { \
+        static std::vector<int> var = { 0, 0, 0 } ; \
+        return var; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
     
 
 
-#define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib) \
+// #define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib) \
+//     friend class SST::PythonModuleDoc<cls>; \
+//     bool ELI_isLoaded() { \
+//       return SST::PythonModuleDoc<cls>::isLoaded(); \
+//     } \
+//     static const std::string ELI_getLibrary() { \
+//       return lib; \
+//     } \
+//     SST_ELI_INSERT_COMPILE_INFO()
+
+#define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib,...)    \
     friend class SST::PythonModuleDoc<cls>; \
     bool ELI_isLoaded() { \
       return SST::PythonModuleDoc<cls>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
+    } \
+    static const std::vector<int>& ELI_getVersion() { \
+        static std::vector<int> var = { 0, 0, 0 } ; \
+        return var; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
 
