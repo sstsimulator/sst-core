@@ -22,6 +22,15 @@ namespace Partition{
 
 class SimplePartitioner : public SST::Partition::SSTPartitioner {
 
+public:
+
+    SST_ELI_REGISTER_PARTITIONER(
+        SimplePartitioner,
+        "sst",
+        "simple",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.")
+    
 private:
     RankInfo world_size;
     uint32_t total_parts;
@@ -46,9 +55,6 @@ public:
     bool requiresConfigGraph() override { return false; }
     bool spawnOnAllRanks() override { return false; }
 
-    SST_ELI_REGISTER_PARTITIONER(SimplePartitioner,"sst","simple","Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.")
-    
-    SST_ELI_DOCUMENT_VERSION(1,0,0)
 };
 
 } // namespace partition

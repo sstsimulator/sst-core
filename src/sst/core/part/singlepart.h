@@ -31,6 +31,13 @@ namespace Partition {
 class SSTSinglePartition : public SST::Partition::SSTPartitioner {
 
 public:
+    SST_ELI_REGISTER_PARTITIONER(
+        SSTSinglePartition,
+        "sst",
+        "single",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Allocates all components to rank 0.  Automatically selected for serial jobs.")
+
     /**
        Creates a new single partition scheme.
     */
@@ -46,9 +53,6 @@ public:
     bool spawnOnAllRanks() override { return false; }
     
     
-    SST_ELI_REGISTER_PARTITIONER(SSTSinglePartition,"sst","single","Allocates all components to rank 0.  Automatically selected for serial jobs.")
-
-    SST_ELI_DOCUMENT_VERSION(1,0,0)
 };
 
 }
