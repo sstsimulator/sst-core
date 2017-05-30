@@ -90,6 +90,8 @@ SST_ENABLE_DEBUG_OUTPUT()
 SST_ENABLE_DEBUG_EVENT_TRACKING()
 SST_ENABLE_CORE_PROFILE()
 
+SST_CHECK_FPIC()
+
 SST_CHECK_ZOLTAN([have_zoltan=1],[have_zoltan=0],[AC_MSG_ERROR([Zoltan requested but not found])])
 AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],
 	[Define if you have the Zoltan library.])])
