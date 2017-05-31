@@ -44,6 +44,15 @@ namespace Partition {
 */
 class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 
+public:
+
+    SST_ELI_REGISTER_PARTITIONER(
+        SSTZoltanPartition,
+        "sst",
+        "zoltan",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "zoltan parallel partitioner")
+
 protected:
     void initZoltan();
     RankInfo rankcount;
@@ -70,9 +79,6 @@ public:
     
     bool spawnOnAllRanks() override { return true; }
     
-    SST_ELI_REGISTER_PARTITIONER(SSTZoltanPartition,"sst","zoltan","zoltan parallel partitioner")
-
-    SST_ELI_DOCUMENT_VERSION(1,0,0)
 };
 
 }
