@@ -32,6 +32,13 @@ namespace Partition {
 class SSTSelfPartition : public SST::Partition::SSTPartitioner {
 
 public:
+    SST_ELI_REGISTER_PARTITIONER(
+        SSTSelfPartition,
+        "sst",
+        "self",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Used when partitioning is already specified in the configuration file.")
+
     /**
        Creates a new self partition scheme.
     */
@@ -46,10 +53,6 @@ public:
     bool requiresConfigGraph() { return true; }
     bool spawnOnAllRanks() { return false; }
     
-
-    SST_ELI_REGISTER_PARTITIONER(SSTSelfPartition,"sst","self","Used when partitioning is already specified in the configuration file.")
-
-    SST_ELI_DOCUMENT_VERSION(1,0,0)
 
 };
 

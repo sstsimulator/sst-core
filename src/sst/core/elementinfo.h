@@ -501,7 +501,7 @@ public:
 **************************************************************************/
 
 
-template <class T>
+template <class T, unsigned V1, unsigned V2, unsigned V3>
 class ComponentDoc : public ComponentElementInfo {
 private:
     static const bool loaded;
@@ -529,21 +529,22 @@ public:
     const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return ELI_templatedGetSubComponentSlots<T>(); }
     uint32_t getCategory() { return T::ELI_getCategory(); };
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
-    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::vector<int>& getVersion() { static std::vector<int> var = {V1,V2,V3}; return var; }
     const std::string getCompileFile() { return T::ELI_getCompileFile(); }
     const std::string getCompileDate() { return T::ELI_getCompileDate(); }
+
 };
 
 
 // template<class T, int A> const bool SST::ComponentDoc<T, A>::loaded = SST::ElementLibraryDatabase::addComponent(new SST::ComponentDoc<T,T::ELI_getMajorVersion()>());
-template<class T> const bool SST::ComponentDoc<T>::loaded = SST::ElementLibraryDatabase::addComponent(new SST::ComponentDoc<T>());
+template<class T, unsigned V1, unsigned V2, unsigned V3> const bool SST::ComponentDoc<T,V1,V2,V3>::loaded = SST::ElementLibraryDatabase::addComponent(new SST::ComponentDoc<T,V1,V2,V3>());
 
 
 /**************************************************************************
   Classes to support SubComponents
 **************************************************************************/
 
-template <class T>
+template <class T, unsigned V1, unsigned V2, unsigned V3>
 class SubComponentDoc : public SubComponentElementInfo {
 private:
     static const bool loaded;
@@ -571,12 +572,12 @@ public:
     const std::vector<ElementInfoSubComponentSlot>& getSubComponentSlots() { return ELI_templatedGetSubComponentSlots<T>(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
-    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::vector<int>& getVersion() { static std::vector<int> var = {V1,V2,V3}; return var; }
     const std::string getCompileFile() { return T::ELI_getCompileFile(); }
     const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
-template<class T> const bool SubComponentDoc<T>::loaded = ElementLibraryDatabase::addSubComponent(new SubComponentDoc<T>());
+template<class T, unsigned V1, unsigned V2, unsigned V3> const bool SubComponentDoc<T,V1,V2,V3>::loaded = ElementLibraryDatabase::addSubComponent(new SubComponentDoc<T,V1,V2,V3>());
 
 
 /**************************************************************************
@@ -585,7 +586,7 @@ template<class T> const bool SubComponentDoc<T>::loaded = ElementLibraryDatabase
   versions of constructors that can exist.
 **************************************************************************/
 
-template <class T>
+template <class T, unsigned V1, unsigned V2, unsigned V3>
 class ModuleDoc : public ModuleElementInfo {
 private:
     static const bool loaded;
@@ -611,12 +612,12 @@ public:
     const std::vector<ElementInfoParam>& getValidParams() { return ELI_templatedGetParams<T>(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
-    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::vector<int>& getVersion() { static std::vector<int> var = {V1,V2,V3}; return var; }
     const std::string getCompileFile() { return T::ELI_getCompileFile(); }
     const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
-template <class T>
+template <class T, unsigned V1, unsigned V2, unsigned V3>
 class ModuleDocWithComponent : public ModuleElementInfo {
 private:
     static const bool loaded;
@@ -638,12 +639,12 @@ public:
     const std::vector<ElementInfoParam>& getValidParams() { return ELI_templatedGetParams<T>(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
-    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::vector<int>& getVersion() { static std::vector<int> var = {V1,V2,V3}; return var; }
     const std::string getCompileFile() { return T::ELI_getCompileFile(); }
     const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
-template <class T>
+template <class T, unsigned V1, unsigned V2, unsigned V3>
 class ModuleDocWithoutComponent : public ModuleElementInfo {
 private:
     static const bool loaded;
@@ -665,7 +666,7 @@ public:
     const std::vector<ElementInfoParam>& getValidParams() { return ELI_templatedGetParams<T>(); }
     const std::string getInterface() { return T::ELI_getInterface(); }
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
-    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::vector<int>& getVersion() { static std::vector<int> var = {V1,V2,V3}; return var; }
     const std::string getCompileFile() { return T::ELI_getCompileFile(); }
     const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
@@ -673,28 +674,28 @@ public:
 
 // These static functions choose between the custom and not custom
 // create versions by looking for ELI_Custom_Create
-template<class T>
+template<class T, unsigned V1, unsigned V2, unsigned V3>
 typename std::enable_if<std::is_constructible<T,Component*,Params&>::value &&
                         std::is_constructible<T,Params&>::value, ModuleElementInfo*>::type
 createModuleDoc() {
-    return new ModuleDoc<T>();
+    return new ModuleDoc<T,V1,V2,V3>();
 }
 
-template<class T>
+template<class T, unsigned V1, unsigned V2, unsigned V3>
 typename std::enable_if<std::is_constructible<T,Component*,Params&>::value &&
                         not std::is_constructible<T,Params&>::value, ModuleElementInfo*>::type
 createModuleDoc() {
-    return new ModuleDocWithComponent<T>();
+    return new ModuleDocWithComponent<T,V1,V2,V3>();
 }
 
-template<class T>
+template<class T, unsigned V1, unsigned V2, unsigned V3>
 typename std::enable_if<not std::is_constructible<T,Component*,Params&>::value &&
                         std::is_constructible<T,Params&>::value, ModuleElementInfo*>::type
 createModuleDoc() {
-    return new ModuleDocWithoutComponent<T>();
+    return new ModuleDocWithoutComponent<T,V1,V2,V3>();
 }
 
-template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addModule(createModuleDoc<T>());
+template<class T, unsigned V1, unsigned V2, unsigned V3> const bool ModuleDoc<T,V1,V2,V3>::loaded = ElementLibraryDatabase::addModule(createModuleDoc<T,V1,V2,V3>());
 // template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addModule(new ModuleDoc<T>());
 
 
@@ -702,7 +703,7 @@ template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addM
   Classes to support partitioners
 **************************************************************************/
 
-template <class T>
+template <class T, unsigned V1, unsigned V2, unsigned V3>
 class PartitionerDoc : PartitionerElementInfo {
 private:
     static const bool loaded;
@@ -718,18 +719,18 @@ public:
     const std::string getName() override { return T::ELI_getName(); }
     const std::string getLibrary() override { return T::ELI_getLibrary(); }
     const std::vector<int>& getELICompiledVersion() override { return T::ELI_getELICompiledVersion(); }
-    const std::vector<int>& getVersion() override { return T::ELI_getVersion(); }
+    const std::vector<int>& getVersion() override { static std::vector<int> var = {V1,V2,V3}; return var; }
     const std::string getCompileFile() override { return T::ELI_getCompileFile(); }
     const std::string getCompileDate() override { return T::ELI_getCompileDate(); }
 };
 
-template<class T> const bool PartitionerDoc<T>::loaded = ElementLibraryDatabase::addPartitioner(new PartitionerDoc<T>());
+template<class T, unsigned V1, unsigned V2, unsigned V3> const bool PartitionerDoc<T,V1,V2,V3>::loaded = ElementLibraryDatabase::addPartitioner(new PartitionerDoc<T,V1,V2,V3>());
 
 
 /**************************************************************************
   Classes to support element python modules
 **************************************************************************/
-template <class T>
+template <class T, unsigned V1, unsigned V2, unsigned V3>
 class PythonModuleDoc : public PythonModuleElementInfo {
 private:
     static const bool loaded;
@@ -747,13 +748,42 @@ public:
     static bool isLoaded() { return loaded; }
     const std::string getLibrary() { return T::ELI_getLibrary(); }
     const std::vector<int>& getELICompiledVersion() { return T::ELI_getELICompiledVersion(); }
-    const std::vector<int>& getVersion() { return T::ELI_getVersion(); }
+    const std::vector<int>& getVersion() { static std::vector<int> var = {V1,V2,V3}; return var; }
     const std::string getCompileFile() { return T::ELI_getCompileFile(); }
     const std::string getCompileDate() { return T::ELI_getCompileDate(); }
 };
 
-template<class T> T* PythonModuleDoc<T>::instance = NULL;
-template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase::addPythonModule(new PythonModuleDoc<T>());
+template<class T, unsigned V1, unsigned V2, unsigned V3> T* PythonModuleDoc<T,V1,V2,V3>::instance = NULL;
+template<class T, unsigned V1, unsigned V2, unsigned V3> const bool PythonModuleDoc<T,V1,V2,V3>::loaded = ElementLibraryDatabase::addPythonModule(new PythonModuleDoc<T,V1,V2,V3>());
+
+
+
+/**************************************************************************
+  Class and constexpr functions to extract integers from version number.
+**************************************************************************/
+
+struct SST_ELI_element_version_extraction {
+    const unsigned major;
+    const unsigned minor;
+    const unsigned tertiary;
+
+    constexpr unsigned getMajor() { return major; }
+    constexpr unsigned getMinor() { return minor; }
+    constexpr unsigned getTertiary() { return tertiary; }
+};
+
+constexpr unsigned SST_ELI_getMajorNumberFromVersion(SST_ELI_element_version_extraction ver) {
+    return ver.getMajor();
+}
+
+constexpr unsigned SST_ELI_getMinorNumberFromVersion(SST_ELI_element_version_extraction ver) {
+    return ver.getMinor();
+}
+
+constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_extraction ver) {
+    return ver.getTertiary();
+}
+
 
 /**************************************************************************
   Macros used by elements to add element documentation
@@ -775,29 +805,9 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     }
 
 
-// #define SST_ELI_REGISTER_COMPONENT(cls,lib,name,desc,cat) \
-//     bool ELI_isLoaded() {                           \
-//         return SST::ComponentDoc<cls>::isLoaded(); \
-//     } \
-//     static const std::string ELI_getLibrary() { \
-//       return lib; \
-//     } \
-//     static const std::string ELI_getName() { \
-//       return name; \
-//     } \
-//     static const std::string ELI_getDescription() {  \
-//       return desc; \
-//     } \
-//     static const uint32_t ELI_getCategory() {  \
-//       return cat; \
-//     } \
-//     SST_ELI_INSERT_COMPILE_INFO()
-
-// For now, description and category will be unavailable
-#define SST_ELI_REGISTER_COMPONENT(cls,lib,name,...)    \
-    friend class SST::ComponentDoc<cls>; \
+#define SST_ELI_REGISTER_COMPONENT(cls,lib,name,version,desc,cat)   \
     bool ELI_isLoaded() {                           \
-        return SST::ComponentDoc<cls>::isLoaded(); \
+        return SST::ComponentDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
@@ -806,25 +816,14 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
       return name; \
     } \
     static const std::string ELI_getDescription() {  \
-      return "Description temporarily unavailable"; \
+      return desc; \
     } \
     static const uint32_t ELI_getCategory() {  \
-      return COMPONENT_CATEGORY_UNCATEGORIZED; \
-    } \
-    static const std::vector<int>& ELI_getVersion() { \
-        static std::vector<int> var = { 0, 0, 0 } ; \
-        return var; \
+      return cat; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
 
-
-// #define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)  \
-//     static const std::vector<int>& ELI_getVersion() { \
-//         static std::vector<int> var = { major, minor, tertiary } ; \
-//         return var; \
-//     }
-
-#define SST_ELI_DOCUMENT_VERSION(major,minor,tertiary)
+#define SST_ELI_ELEMENT_VERSION(...) {__VA_ARGS__}
 
 
 #define SST_ELI_DOCUMENT_PARAMS(...)                              \
@@ -854,30 +853,9 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
     }
 
 
-// #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,desc,interface)   \
-//     bool ELI_isLoaded() {                           \
-//       return SST::SubComponentDoc<cls>::isLoaded(); \
-//     } \
-//     static const std::string ELI_getLibrary() { \
-//       return lib; \
-//     } \
-//     static const std::string ELI_getName() { \
-//       return name; \
-//     } \
-//     static const std::string ELI_getDescription() {  \
-//       return desc; \
-//     } \
-//     static const std::string ELI_getInterface() {  \
-//       return interface; \
-//     } \
-//     SST_ELI_INSERT_COMPILE_INFO()
-
-
-// Description and interface will be temporarily unavailable
-#define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,...)   \
-    friend class SST::SubComponentDoc<cls>; \
+#define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,version,desc,interface)   \
     bool ELI_isLoaded() {                           \
-      return SST::SubComponentDoc<cls>::isLoaded(); \
+        return SST::SubComponentDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
@@ -886,43 +864,22 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
       return name; \
     } \
     static const std::string ELI_getDescription() {  \
-      return "Description temporarily unavailable"; \
+      return desc; \
     } \
     static const std::string ELI_getInterface() {  \
-      return "Interface temporarily unavailable"; \
+      return interface; \
     } \
     static const std::vector<int>& ELI_getVersion() { \
-        static std::vector<int> var = { 0, 0, 0 } ; \
+        static std::vector<int> var = version ; \
         return var; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
 
 
-// #define SST_ELI_REGISTER_MODULE(cls,lib,name,desc,interface) \
-//     friend class SST::ModuleDoc<cls>; \
-//     bool ELI_isLoaded() {                           \
-//       return SST::ModuleDoc<cls>::isLoaded(); \
-//     } \
-//     static const std::string ELI_getLibrary() { \
-//       return lib; \
-//     } \
-//     static const std::string ELI_getName() { \
-//       return name; \
-//     } \
-//     static const std::string ELI_getDescription() {  \
-//     return desc; \
-//     } \
-//     static const std::string ELI_getInterface() {  \
-//         return interface;                          \
-//     } \
-//     SST_ELI_INSERT_COMPILE_INFO()
 
-
-// Description and interface will be temporarily unavailable
-#define SST_ELI_REGISTER_MODULE(cls,lib,name,...)  \
-    friend class SST::ModuleDoc<cls>; \
+#define SST_ELI_REGISTER_MODULE(cls,lib,name,version,desc,interface)    \
     bool ELI_isLoaded() {                           \
-      return SST::ModuleDoc<cls>::isLoaded(); \
+        return SST::ModuleDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
@@ -931,40 +888,22 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
       return name; \
     } \
     static const std::string ELI_getDescription() {  \
-      return "Description temporarily unavailable"; \
+    return desc; \
     } \
     static const std::string ELI_getInterface() {  \
-        return "Interface temporarily unavailable"; \
+        return interface;                          \
     } \
     static const std::vector<int>& ELI_getVersion() { \
-        static std::vector<int> var = { 0, 0, 0 } ; \
+        static std::vector<int> var = version ; \
         return var; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
 
 
 
-// #define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,desc) \
-//     friend class SST::PartitionerDoc<cls>; \
-//     bool ELI_isLoaded() { \
-//       return SST::PartitionerDoc<cls>::isLoaded(); \
-//     } \
-//     static const std::string ELI_getLibrary() { \
-//       return lib; \
-//     } \
-//     static const std::string ELI_getName() { \
-//       return name; \
-//     } \
-//     static const std::string ELI_getDescription() {  \
-//       return desc; \
-//     } \
-//     SST_ELI_INSERT_COMPILE_INFO()
-
-// Description wiil be temporarily unavailable
-#define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,...) \
-    friend class SST::PartitionerDoc<cls>; \
+#define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,version,desc) \
     bool ELI_isLoaded() { \
-      return SST::PartitionerDoc<cls>::isLoaded(); \
+        return SST::PartitionerDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
@@ -973,36 +912,24 @@ template<class T> const bool PythonModuleDoc<T>::loaded = ElementLibraryDatabase
       return name; \
     } \
     static const std::string ELI_getDescription() {  \
-      return "Description temporarily unavailable"; \
+      return desc; \
     } \
     static const std::vector<int>& ELI_getVersion() { \
-        static std::vector<int> var = { 0, 0, 0 } ; \
+        static std::vector<int> var = version ; \
         return var; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
-    
 
 
-// #define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib) \
-//     friend class SST::PythonModuleDoc<cls>; \
-//     bool ELI_isLoaded() { \
-//       return SST::PythonModuleDoc<cls>::isLoaded(); \
-//     } \
-//     static const std::string ELI_getLibrary() { \
-//       return lib; \
-//     } \
-//     SST_ELI_INSERT_COMPILE_INFO()
-
-#define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib,...)    \
-    friend class SST::PythonModuleDoc<cls>; \
+#define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib,version)    \
     bool ELI_isLoaded() { \
-      return SST::PythonModuleDoc<cls>::isLoaded(); \
+        return SST::PythonModuleDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
     static const std::string ELI_getLibrary() { \
       return lib; \
     } \
     static const std::vector<int>& ELI_getVersion() { \
-        static std::vector<int> var = { 0, 0, 0 } ; \
+        static std::vector<int> var = version ; \
         return var; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
