@@ -18,7 +18,7 @@
 #include <stdio.h>
 #include <string>
 
-#include <elibase.h>
+#include <sst/core/elibase.h>
 
 namespace SST {
 class Component;
