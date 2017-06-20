@@ -194,6 +194,19 @@ private:
     int rank;
 	int numRanks;
 
+    bool isFileNameOnly(const std::string name) {
+	bool nameOnly = true;
+
+	for( size_t i = 0; i < name.size(); ++i ) {
+		if( '/' == name[i] ) {
+			nameOnly = false;
+			break;
+		}
+	}
+
+	return nameOnly;
+    }
+
     ImplementSerializable(SST::Config)
 };
 
