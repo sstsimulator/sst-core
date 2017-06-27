@@ -92,49 +92,59 @@ void StatisticOutputJSON::startOfSimulation()
         printIndent();
     	fprintf(m_hFile, "\"rank\" : %d\n\n", thisRank);
     }
-    
+
+    printIndent();
+    fprintf(m_hFile, "\"components\" : [\n");
+    m_curIndentLevel++;
 }
 
-void StatisticOutputJSON::endOfSimulation() 
+void StatisticOutputJSON::endOfSimulation()
 {
 	if(m_processedAnyStats) {
 		fprintf(m_hFile, "\n");
+		m_curIndentLevel--;
 		printIndent();
 		fprintf(m_hFile, "]\n");
 		m_curIndentLevel--;
 		printIndent();
 		fprintf(m_hFile, "}\n");
+		m_curIndentLevel--;
 	}
-	
+
+	printIndent();
+	fprintf(m_hFile, "]\n");
 	fprintf(m_hFile, "}\n");
 
     // Close the file
     closeFile();
 }
 
-void StatisticOutputJSON::implStartOutputEntries(StatisticBase* statistic) 
+void StatisticOutputJSON::implStartOutputEntries(StatisticBase* statistic)
 {
 	if( m_currentComponentName != statistic->getCompName() ) {
 		if(m_currentComponentName != "") {
 			m_curIndentLevel--;
-		
+
 			fprintf(m_hFile, "\n");
 			printIndent();
-			fprintf(m_hFile, "],\n");
+			fprintf(m_hFile, "]\n");
 			m_curIndentLevel--;
 			printIndent();
-			fprintf(m_hFile, "}\n");
+			fprintf(m_hFile, "},\n");
 		}
 
 		printIndent();
-		fprintf(m_hFile, "{ \"component\" : \"%s\",\n");
-		m_curIndentLevel++;	
+		fprintf(m_hFile, "{\n");
+		m_curIndentLevel++;
 		printIndent();
-		fprintf(m_hFile, "[\n", statistic->getCompName().c_str());
+		fprintf(m_hFile, "\"name\" : \"%s\",\n", statistic->getCompName().c_str());
 
-		m_curIndentLevel++;	
+		printIndent();
+		fprintf(m_hFile, "\"statistics\" : [\n");
+
+		m_curIndentLevel++;
 		m_firstEntry = true;
-		
+
 	}
 
     // Save the current Component and Statistic Names for when we stop output and send to file
