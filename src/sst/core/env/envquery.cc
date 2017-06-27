@@ -130,7 +130,13 @@ SST::Core::Environment::EnvironmentConfiguration*
 	EnvironmentConfiguration* envConfig = new EnvironmentConfiguration();
 
 	// LOWEST PRIORITY - GLOBAL INSTALL CONFIG
-	std::string prefixConfig = SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf";
+	std::string prefixConfig = "";
+
+	if( SST_INSTALL_PREFIX == "NONE" ) {
+		prefixConfig = "/usr/local/etc/sst/sstsimulator.conf";
+	} else {
+		prefixConfig = SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf";
+	}
 
 	SST::Core::Environment::populateEnvironmentConfig(prefixConfig, envConfig, true);
 
