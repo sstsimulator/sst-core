@@ -171,73 +171,67 @@ void StatisticOutputJSON::implStopOutputEntries()
 	fprintf(m_hFile, " ] }");
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t fieldHandle, int32_t data)
+void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int32_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
 	}
 	
-	StatisticFieldInfo* fieldInfo = getRegisteredField(fieldHandle);
 	fprintf(m_hFile, "%" PRId32 , data);
 	
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t fieldHandle, uint32_t data)
+void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uint32_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
 	}
 	
-	StatisticFieldInfo* fieldInfo = getRegisteredField(fieldHandle);
 	fprintf(m_hFile, "%" PRIu32 , data);
 	
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t fieldHandle, int64_t data)
+void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int64_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
 	}
 	
-	StatisticFieldInfo* fieldInfo = getRegisteredField(fieldHandle);
 	fprintf(m_hFile, "%" PRId64 , data);
 	
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t fieldHandle, uint64_t data) 
+void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uint64_t data) 
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
 	}
 	
-	StatisticFieldInfo* fieldInfo = getRegisteredField(fieldHandle);
 	fprintf(m_hFile, "%" PRIu64 , data);
 	
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t fieldHandle, float data)
+void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), float data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
 	}
 	
-	StatisticFieldInfo* fieldInfo = getRegisteredField(fieldHandle);
 	fprintf(m_hFile, "%f ", data);
 	
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t fieldHandle, double data)
+void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), double data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
 	}
 
-	StatisticFieldInfo* fieldInfo = getRegisteredField(fieldHandle);
 	fprintf(m_hFile, "%f ", data);
 	
 	m_firstField = false;
