@@ -29,6 +29,7 @@
 #include <sst/core/statapi/statoutputconsole.h>
 #include <sst/core/statapi/statoutputtxt.h>
 #include <sst/core/statapi/statoutputcsv.h>
+#include <sst/core/statapi/statoutputjson.h>
 #ifdef HAVE_HDF5
 #include <sst/core/statapi/statoutputhdf5.h>
 #endif
@@ -485,6 +486,10 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
     // Names of sst.xxx Statistic Output Modules
     if (0 == ::strcasecmp("statoutputcsv", type.c_str())) {
         return new StatisticOutputCSV(params, false);
+    }
+
+    if (0 == ::strcasecmp("statoutputjson", type.c_str())) {
+        return new StatisticOutputJSON(params);
     }
 
     if (0 == ::strcasecmp("statoutputcsvgz", type.c_str())) {

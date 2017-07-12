@@ -6,6 +6,7 @@ AC_PREREQ([2.59])
 
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([config])
+AC_PREFIX_DEFAULT([/usr/local])
 AM_INIT_AUTOMAKE([1.9.6 foreign dist-bzip2 subdir-objects no-define tar-pax])
 
 # If Automake supports silent rules, enable them.
@@ -97,8 +98,6 @@ AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],
 	[Define if you have the Zoltan library.])])
 AM_CONDITIONAL([HAVE_ZOLTAN], [test "$have_zoltan" = 1])
 
-AC_DEFINE_UNQUOTED([SST_INSTALL_PREFIX], ["$prefix"], [Defines the location SST will be installed in])
-
 AC_DEFINE_UNQUOTED([SST_CPPFLAGS], ["$CPPFLAGS"], [Defines the CPPFLAGS used to build SST])
 AC_DEFINE_UNQUOTED([SST_CFLAGS], ["$CFLAGS"], [Defines the CFLAGS used to build SST])
 AC_DEFINE_UNQUOTED([SST_CXXFLAGS], ["$CXXFLAGS"], [Defines the CXXFLAGS used to build SST])
@@ -160,6 +159,10 @@ AC_SUBST(CC_VERSION)
 
 MPICC_VERSION=`$MPICC --version | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/%/g' | awk -F'%' '{print $1}'`
 AC_SUBST(MPICC_VERSION)
+
+AC_CACHE_SAVE
+
+AC_DEFINE_UNQUOTED([SST_INSTALL_PREFIX], ["$prefix"], [Defines the location SST will be installed in])
 
 AC_CACHE_SAVE
 
