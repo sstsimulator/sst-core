@@ -258,15 +258,17 @@ void OverallOutputter::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentE
         g_libInfoArray[x].outputXML(x, XMLTopLevelElement);
     }
 
-	// General Info on the Data
-    xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
-    xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
 
 
 	// Add the entries into the XML Document
     // XML Declaration
 	TiXmlDeclaration* XMLDecl = new TiXmlDeclaration("1.0", "", "");
 	XMLDocument.LinkEndChild(XMLDecl);
+    //
+	// General Info on the Data
+    xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
+    xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
+
 	XMLDocument.LinkEndChild(XMLTopLevelElement);
 
     // Save the XML Document
