@@ -27,6 +27,7 @@ namespace SST {
 // CONFIGURATION BITS    
 #define CFG_OUTPUTHUMAN 0x00000001
 #define CFG_OUTPUTXML   0x00000002
+#define CFG_VERBOSE     0x00000004
 
 /**
  * The SSTInfo Configuration class.
@@ -68,6 +69,7 @@ public:
     /** Is debugging output enabled? */
     bool                      debugEnabled() const { return m_debugEnabled; }
     bool                      processAllElements() const { return m_filters.empty(); }
+    bool                      doVerbose() const { return m_optionBits & CFG_VERBOSE; }
 
 private:
     void outputUsage();

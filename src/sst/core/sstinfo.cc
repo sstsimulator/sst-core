@@ -44,6 +44,21 @@ std::string                              g_searchPath;
 std::vector<SSTInfoElement_LibraryInfo>  g_libInfoArray;
 SSTInfoConfig                            g_configuration;
 
+
+
+
+void dprintf(FILE *fp, const char *fmt, ...) {
+    if ( g_configuration.doVerbose() ) {
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(fp, fmt, args);
+        va_end(args);
+    }
+}
+
+
+
+
 class OverallOutputter : public SSTInfoElement_Outputter {
 public:
     void outputHumanReadable(int index);
@@ -208,31 +223,16 @@ void OverallOutputter::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentE
     char                    TimeStamp[32];
     std::time_t             now = std::time(NULL);
     std::tm*                ptm = std::localtime(&now);
-    FILE* pFile;
 
-    // Check to see that the file path is valid by trying to create the file
-    pFile = fopen (g_configuration.getXMLFilePath().c_str() , "w+");
-    if (pFile == NULL) {
-        fprintf(stderr, "\n");
-        fprintf(stderr, "================================================================================\n");
-        fprintf(stderr, "ERROR: Unable to create XML File %s\n", g_configuration.getXMLFilePath().c_str());
-        fprintf(stderr, "================================================================================\n");
-        fprintf(stderr, "\n");
-        fprintf(stderr, "\n");
-        return;
-    } else {
-     fclose (pFile);
-    }
-    
     // Create a Timestamp Format: 2015.02.15_20:20:00
     std::strftime(TimeStamp, 32, "%Y.%m.%d_%H:%M:%S", ptm);
     
-    fprintf(stdout, "\n");
-    fprintf(stdout, "================================================================================\n");
-    fprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.getXMLFilePath().c_str());
-    fprintf(stdout, "================================================================================\n");
-    fprintf(stdout, "\n");
-    fprintf(stdout, "\n");
+    dprintf(stdout, "\n");
+    dprintf(stdout, "================================================================================\n");
+    dprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.getXMLFilePath().c_str());
+    dprintf(stdout, "================================================================================\n");
+    dprintf(stdout, "\n");
+    dprintf(stdout, "\n");
     
     // Create the XML Document     
     TiXmlDocument XMLDocument;
@@ -278,7 +278,7 @@ void OverallOutputter::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentE
 
 SSTInfoConfig::SSTInfoConfig()
 {
-    m_optionBits = CFG_OUTPUTHUMAN;  // Enable normal output by default
+    m_optionBits = CFG_OUTPUTHUMAN|CFG_VERBOSE;  // Enable normal output by default
     m_XMLFilePath = "./SSTInfo.xml"; // Default XML File Path
     m_debugEnabled = false;
 }
@@ -311,6 +311,7 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 
     static const struct option longOpts[] = {
         {"help",        no_argument,        0, 'h'},
+        {"quiet",       no_argument,        0, 'q'},
         {"version",     no_argument,        0, 'v'},
         {"debug",       no_argument,        0, 'd'},
         {"nodisplay",   no_argument,        0, 'n'},
@@ -322,7 +323,7 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
     };
     while (1) {
         int opt_idx = 0;
-        char c = getopt_long(argc, argv, "hvdnxo:l:", longOpts, &opt_idx);
+        char c = getopt_long(argc, argv, "hvqdnxo:l:", longOpts, &opt_idx);
         if ( c == -1 )
             break;
 
@@ -333,6 +334,9 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
         case 'v':
             outputVersion();
             return 1;
+        case 'q':
+            m_optionBits &= ~CFG_VERBOSE;
+            break;
         case 'd':
             m_debugEnabled = true;
             break;
