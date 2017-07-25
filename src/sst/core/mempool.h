@@ -81,7 +81,10 @@ public:
         while ( !ret ) {
             bool ok = allocPool();
             if ( !ok ) return NULL;
+#if ( defined( __amd64 ) || defined( __amd64__ ) || \
+        defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
+#endif
             ret = freeList.try_remove();
         }
         ++numAlloc;
