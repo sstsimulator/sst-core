@@ -84,6 +84,8 @@ public:
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
         defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
+#elif defined(__PPC64__)
+       	    asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
             ret = freeList.try_remove();
         }
