@@ -94,6 +94,8 @@ public:
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
         defined( __x86_64 ) || defined( __x86_64__ ) )
                         _mm_pause();
+#elif defined(__PPC64__)
+       	asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
 		    } else if ( count < (1024*1024) ) {
                         std::this_thread::yield();
@@ -136,6 +138,8 @@ public:
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
         defined( __x86_64 ) || defined( __x86_64__ ) )
                 _mm_pause();
+#elif defined(__PPC64__)
+       	asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
             } while ( latch.load(std::memory_order_acquire) );
         }
@@ -253,6 +257,8 @@ public:
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
         defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
+#elif defined(__PPC64__)
+       	asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
         }
     }
@@ -316,6 +322,8 @@ public:
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
         defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
+#elif defined(__PPC64__)
+       	asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
         }
     }
