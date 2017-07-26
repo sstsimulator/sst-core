@@ -323,9 +323,11 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
     };
     while (1) {
         int opt_idx = 0;
-        char c = getopt_long(argc, argv, "hvqdnxo:l:", longOpts, &opt_idx);
-        if ( c == -1 )
+        const int intC = getopt_long(argc, argv, "hvqdnxo:l:", longOpts, &opt_idx);
+        if ( intC == -1 )
             break;
+
+  	const char c = static_cast<char>(intC);
 
         switch (c) {
         case 'h':
