@@ -594,7 +594,7 @@ void SSTInfoElement_LibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentEle
     SSTInfoElement_ComponentInfo*    eic;
     SSTInfoElement_EventInfo*        eie;
     SSTInfoElement_ModuleInfo*       eim;
-//    SSTInfoElement_SubComponentInfo* eisc;
+    SSTInfoElement_SubComponentInfo* eisc;
     SSTInfoElement_PartitionerInfo*  eip;
     SSTInfoElement_GeneratorInfo*    eig;
 
@@ -628,12 +628,12 @@ void SSTInfoElement_LibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentEle
 
 // TODO: Dump SubComponent info to XML.  Turned off for 5.0 since SSTWorkbench
 //       chokes if format is changed.  
-//    numObjects = getNumberOfLibrarySubComponents();
-//    xmlComment(XMLLibraryElement, "NUM SUBCOMPONENTS = %d", numObjects);
-//    for (x = 0; x < numObjects; x++) {
-//        eisc = getInfoSubComponent(x);
-//        eisc->generateSubComponentInfoXMLData(x, XMLLibraryElement);
-//    }
+    numObjects = getNumberOfLibrarySubComponents();
+    xmlComment(XMLLibraryElement, "NUM SUBCOMPONENTS = %d", numObjects);
+    for (x = 0; x < numObjects; x++) {
+        eisc = getInfoSubComponent(x);
+        eisc->outputXML(x, XMLLibraryElement);
+    }
 
     numObjects = getNumberOfLibraryPartitioners();  
     xmlComment(XMLLibraryElement, "NUM PARTITIONERS = %d", numObjects);
