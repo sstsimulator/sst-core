@@ -231,9 +231,12 @@ Config::parseCmdLine(int argc, char* argv[]) {
     bool ok = true;
     while (ok) {
         int option_index = 0;
-        char c = getopt_long(argc, argv, sst_short_options, sst_long_options, &option_index);
-        if ( c == -1 ) /* We're done */
+        const int intC = getopt_long(argc, argv, sst_short_options, sst_long_options, &option_index);
+
+        if ( intC == -1 ) /* We're done */
             break;
+
+	const char c = static_cast<char>(intC);
 
         switch (c) {
         case 0:
@@ -260,6 +263,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
         case 'h':
         case '?':
         default:
+	    
             ok = usage();
         }
     }
