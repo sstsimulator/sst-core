@@ -253,7 +253,7 @@ private:
 
 
 /**
- * The SSTInfo representation of ElementInfoPort object.
+ * The SSTInfo representation of StatisticInfo object.
  *
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoPort objects. 
@@ -291,6 +291,37 @@ private:
 };
 
 
+/**
+ * The SSTInfo representation of SubComponentSlotINfo object.
+ */
+class SSTInfoElement_SubCompSlotInfo : public SSTInfoElement_BaseInfo {
+public:
+    /** Create a new SSTInfoElement_StatisticInfo object.
+     * @param elstat Pointer to an ElementInfoStatistic object.
+     */
+    SSTInfoElement_SubCompSlotInfo(const ElementInfoSubComponentSlot* els) :
+        SSTInfoElement_BaseInfo(els),
+        m_interface(els->superclass)
+    { }
+
+    /** Return the Interface which is requires */
+    const std::string& getInterface() {return m_interface;}
+
+    /** Output the Statistic Information.
+     * @param Index The Index of the Statistic.
+     */
+    void outputHumanReadable(int Index) override;
+
+    /** Create the formatted XML data of the Statistic.
+     * @param Index The Index of the Statistic.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
+
+private:
+    std::string m_interface;
+};
+
 
 
 /**
@@ -310,6 +341,7 @@ public:
         m_ParamArray = convertFromELI<SSTInfoElement_ParamInfo>(elc->params);
         m_PortArray = convertFromELI<SSTInfoElement_PortInfo>(elc->ports);
         m_StatisticArray = convertFromELI<SSTInfoElement_StatisticInfo>(elc->stats);
+        m_SubCompSlotArray = convertFromELI<SSTInfoElement_SubCompSlotInfo>(elc->subComponents);
     }
 
     SSTInfoElement_ComponentInfo(ComponentElementInfo* elc) :
@@ -318,6 +350,7 @@ public:
         m_ParamArray = convertFromDB<SSTInfoElement_ParamInfo>(elc->getValidParams());
         m_PortArray = convertFromDB<SSTInfoElement_PortInfo>(elc->getValidPorts());
         m_StatisticArray = convertFromDB<SSTInfoElement_StatisticInfo>(elc->getValidStats());
+        m_SubCompSlotArray = convertFromDB<SSTInfoElement_SubCompSlotInfo>(elc->getSubComponentSlots());
     }
 
     /** Return a Parameter Info Object. 
@@ -357,6 +390,7 @@ private:
     std::vector<SSTInfoElement_ParamInfo>             m_ParamArray;
     std::vector<SSTInfoElement_PortInfo>              m_PortArray;
     std::vector<SSTInfoElement_StatisticInfo>         m_StatisticArray;
+    std::vector<SSTInfoElement_SubCompSlotInfo>       m_SubCompSlotArray;
 };
 
 
@@ -448,19 +482,21 @@ public:
      * @param elsc Pointer to an ElementInfoComponent object.
      */
     SSTInfoElement_SubComponentInfo(const ElementInfoSubComponent* elsc) :
-        SSTInfoElement_BaseInfo(elsc)
+        SSTInfoElement_BaseInfo(elsc), m_Provides(elsc->provides)
     {
         m_ParamArray = convertFromELI<SSTInfoElement_ParamInfo>(elsc->params);
         m_PortArray = convertFromELI<SSTInfoElement_PortInfo>(elsc->ports);
         m_StatisticArray = convertFromELI<SSTInfoElement_StatisticInfo>(elsc->stats);
+        m_SubCompSlotArray = convertFromELI<SSTInfoElement_SubCompSlotInfo>(elsc->subComponents);
     }
 
     SSTInfoElement_SubComponentInfo(SubComponentElementInfo* elc) :
-        SSTInfoElement_BaseInfo(*elc)
+        SSTInfoElement_BaseInfo(*elc), m_Provides(elc->getInterface())
     {
         m_ParamArray = convertFromDB<SSTInfoElement_ParamInfo>(elc->getValidParams());
         m_PortArray = convertFromDB<SSTInfoElement_PortInfo>(elc->getValidPorts());
         m_StatisticArray = convertFromDB<SSTInfoElement_StatisticInfo>(elc->getValidStats());
+        m_SubCompSlotArray = convertFromDB<SSTInfoElement_SubCompSlotInfo>(elc->getSubComponentSlots());
     }
 
     /** Return a Parameter Info Object. 
@@ -489,10 +525,14 @@ public:
      */
     void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
+    const std::string& getProvides() const { return m_Provides; }
+
 private:
     std::vector<SSTInfoElement_ParamInfo>             m_ParamArray;
     std::vector<SSTInfoElement_PortInfo>              m_PortArray;
     std::vector<SSTInfoElement_StatisticInfo>         m_StatisticArray;
+    std::vector<SSTInfoElement_SubCompSlotInfo>       m_SubCompSlotArray;
+    std::string                                       m_Provides;
 };
 
 /**
