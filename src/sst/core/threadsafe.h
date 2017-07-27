@@ -146,8 +146,13 @@ public:
     }
 
     inline void unlock() {
+#if ( defined( __amd64 ) || defined( __amd64__ ) || \
+        defined( __x86_64 ) || defined( __x86_64__ ) )
         /* TODO:  Understand why latch.store(0) breaks */
         --latch;
+#elif defined(__PPC64__)
+        latch.store(0, std::memory_order_release);
+#endif
     }
 };
 
