@@ -121,40 +121,31 @@ public:
 };
 
 
+#if 0
+typedef std::mutex Spinlock;
+#else
 class Spinlock {
-    std::atomic<int> latch;
+    std::atomic_flag latch = ATOMIC_FLAG_INIT;
 public:
-    Spinlock() : latch(0)
-    { }
+    Spinlock() { }
 
     inline void lock() {
-        //while ( latch.exchange(1, std::memory_order_acquire) ) {
-        int zero = 0;
-        while ( !latch.compare_exchange_weak(zero, 1,
-                    std::memory_order_acquire,
-                    std::memory_order_relaxed) && zero) {
-            do {
-                zero = 0;
+        while ( latch.test_and_set(std::memory_order_acquire) ) {
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
         defined( __x86_64 ) || defined( __x86_64__ ) )
                 _mm_pause();
 #elif defined(__PPC64__)
-       	asm volatile( "or 27, 27, 27" ::: "memory" );
+                asm volatile( "or 27, 27, 27" ::: "memory" );
+                __sync_synchronize();
 #endif
-            } while ( latch.load(std::memory_order_acquire) );
         }
     }
 
     inline void unlock() {
-#if ( defined( __amd64 ) || defined( __amd64__ ) || \
-        defined( __x86_64 ) || defined( __x86_64__ ) )
-        /* TODO:  Understand why latch.store(0) breaks */
-        --latch;
-#elif defined(__PPC64__)
-        latch.store(0, std::memory_order_release);
-#endif
+        latch.clear(std::memory_order_release);
     }
 };
+#endif
 
 
 
