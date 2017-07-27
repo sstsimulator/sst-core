@@ -717,18 +717,31 @@ void SSTInfoElement_StatisticInfo::outputHumanReadable(int index)
 
 void SSTInfoElement_StatisticInfo::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentElement))
 {
-// TODO: Dump Statistic info to XML.  Turned off for 5.0 since SSTWorkbench
-//       chokes if format is changed.  
-//    // Build the Element to Represent the Parameter
-//    TiXmlElement* XMLStatElement = new TiXmlElement("Statistic");
-//    XMLStatElement->SetAttribute("Index", Index);
-//    XMLStatElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
-//    XMLStatElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
-//    XMLStatElement->SetAttribute("Units", (NULL == getUnits()) ? "" : getUnits());
-//    XMLStatElement->SetAttribute("EnableLevel", getEnableLevel());
-//
-//    // Add this Parameter Element to the Parent Element
-//    XMLParentElement->LinkEndChild(XMLStatElement);
+    // Build the Element to Represent the Parameter
+    TiXmlElement* XMLStatElement = new TiXmlElement("Statistic");
+    XMLStatElement->SetAttribute("Index", Index);
+    XMLStatElement->SetAttribute("Name", m_name);
+    XMLStatElement->SetAttribute("Description", m_desc);
+    XMLStatElement->SetAttribute("Units", m_units);
+    XMLStatElement->SetAttribute("EnableLevel", getEnableLevel());
+
+    // Add this Parameter Element to the Parent Element
+    XMLParentElement->LinkEndChild(XMLStatElement);
+}
+
+
+void SSTInfoElement_SubCompSlotInfo::outputHumanReadable(int index) {
+    fprintf(stdout, "            SUB COMPONENT SLOT %d = %s (%s) [%s]\n", index, getName().c_str(), getDesc().c_str(), m_interface.c_str());
+}
+
+void SSTInfoElement_SubCompSlotInfo::outputXML(int Index, TiXmlNode* XMLParentElement) {
+    TiXmlElement* element = new TiXmlElement("SubComponentSlot");
+    element->SetAttribute("Index", Index);
+    element->SetAttribute("Name", m_name);
+    element->SetAttribute("Description", m_desc);
+    element->SetAttribute("Interface", m_interface);
+
+    XMLParentElement->LinkEndChild(element);
 }
 
 void SSTInfoElement_ComponentInfo::outputHumanReadable(int index)
@@ -752,6 +765,11 @@ void SSTInfoElement_ComponentInfo::outputHumanReadable(int index)
     fprintf(stdout, "         NUM STATISTICS = %ld\n", m_StatisticArray.size());
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
         getStatisticInfo(x)->outputHumanReadable(x);
+    }
+
+    fprintf(stdout, "         NUM SUBCOMPONENT SLOTS = %ld\n", m_SubCompSlotArray.size());
+    for (unsigned int x = 0; x < m_SubCompSlotArray.size(); x++) {
+        m_SubCompSlotArray[x].outputHumanReadable(x);
     }
 }
 
@@ -784,6 +802,12 @@ void SSTInfoElement_ComponentInfo::outputXML(int Index, TiXmlNode* XMLParentElem
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
         getStatisticInfo(x)->outputXML(x, XMLComponentElement);
     }
+
+    xmlComment(XMLComponentElement, "NUM SUBCOMPONENT SLOTS = %zu", m_SubCompSlotArray.size());
+    for (unsigned int x = 0; x < m_SubCompSlotArray.size(); x++) {
+        m_SubCompSlotArray[x].outputXML(x, XMLComponentElement);
+    }
+
 
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLComponentElement);
@@ -872,6 +896,8 @@ void SSTInfoElement_SubComponentInfo::outputHumanReadable(int index)
     // Print out the Component Info
     fprintf(stdout, "      SUBCOMPONENT %d = %s (%s)\n", index, getName().c_str(), getDesc().c_str());
 
+    fprintf(stdout, "         PROVIDES INTERFACE = %s\n", m_Provides.c_str());
+
     // Print out the Parameter Info
     fprintf(stdout, "         NUM PARAMETERS = %zu\n", m_ParamArray.size());
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
@@ -883,6 +909,11 @@ void SSTInfoElement_SubComponentInfo::outputHumanReadable(int index)
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
         getStatisticInfo(x)->outputHumanReadable(x);
     }
+
+    fprintf(stdout, "         NUM SUBCOMPONENT SLOTS = %ld\n", m_SubCompSlotArray.size());
+    for (unsigned int x = 0; x < m_SubCompSlotArray.size(); x++) {
+        m_SubCompSlotArray[x].outputHumanReadable(x);
+    }
 }
 
 void SSTInfoElement_SubComponentInfo::outputXML(int Index, TiXmlNode* XMLParentElement)
@@ -892,6 +923,7 @@ void SSTInfoElement_SubComponentInfo::outputXML(int Index, TiXmlNode* XMLParentE
 	XMLSubComponentElement->SetAttribute("Index", Index);
 	XMLSubComponentElement->SetAttribute("Name", getName().c_str());
 	XMLSubComponentElement->SetAttribute("Description", getDesc().c_str());
+    XMLSubComponentElement->SetAttribute("Interface", getProvides().c_str());
 
 	// Get the Num Parameters and Display an XML comment about them
     xmlComment(XMLSubComponentElement, "NUM PARAMETERS = %zu", m_ParamArray.size());
@@ -905,6 +937,11 @@ void SSTInfoElement_SubComponentInfo::outputXML(int Index, TiXmlNode* XMLParentE
 
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
         getStatisticInfo(x)->outputXML(x, XMLSubComponentElement);
+    }
+
+    xmlComment(XMLSubComponentElement, "NUM SUBCOMPONENT SLOTS = %zu", m_SubCompSlotArray.size());
+    for (unsigned int x = 0; x < m_SubCompSlotArray.size(); x++) {
+        m_SubCompSlotArray[x].outputXML(x, XMLSubComponentElement);
     }
 
     // Add this Element to the Parent Element
