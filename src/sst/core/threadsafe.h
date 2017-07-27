@@ -125,10 +125,9 @@ public:
 typedef std::mutex Spinlock;
 #else
 class Spinlock {
-    std::atomic_flag latch;
+    std::atomic_flag latch = ATOMIC_FLAG_INIT;
 public:
-    Spinlock() : latch(ATOMIC_FLAG_INIT)
-    { }
+    Spinlock() { }
 
     inline void lock() {
         while ( latch.test_and_set(std::memory_order_acquire) ) {
