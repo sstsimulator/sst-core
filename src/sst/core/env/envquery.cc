@@ -32,7 +32,7 @@ void SST::Core::Environment::configReadLine(FILE* theFile, char* lineBuffer) {
 		const int next      = std::fgetc(theFile);
 		const char nextChar = static_cast<char>(next);
 
-		if(EOF == nextChar) {
+		if(EOF == next) {
 			lineBuffer[bufferIndex] = '\0';
 			break;
 		} else {
@@ -132,7 +132,7 @@ SST::Core::Environment::EnvironmentConfiguration*
 	// LOWEST PRIORITY - GLOBAL INSTALL CONFIG
 	std::string prefixConfig = "";
 
-	if( SST_INSTALL_PREFIX == "NONE" ) {
+	if( 0 == strcmp(SST_INSTALL_PREFIX, "NONE") ) {
 		prefixConfig = "/usr/local/etc/sst/sstsimulator.conf";
 	} else {
 		prefixConfig = SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf";
