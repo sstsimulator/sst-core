@@ -131,6 +131,12 @@ void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {
 
 Event* Link::recv() 
 {
+    // Check to make sure this is a polling link
+    if ( UNLIKELY( type != POLL ) ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
+        
+    }
+    
     Event* event = NULL;
     Simulation *simulation = Simulation::getSimulation();
 
