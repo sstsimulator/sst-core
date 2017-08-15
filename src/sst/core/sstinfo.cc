@@ -905,6 +905,12 @@ void SSTInfoElement_SubComponentInfo::outputHumanReadable(int index)
     }
 
     // Print out the Port Info
+    fprintf(stdout, "         NUM PORTS = %ld\n", m_PortArray.size());
+    for (unsigned int x = 0; x < m_PortArray.size(); x++) {
+        getPortInfo(x)->outputHumanReadable(x);
+    }
+
+    // Print out the Statistics Info
     fprintf(stdout, "         NUM STATISTICS = %zu\n", m_StatisticArray.size());
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
         getStatisticInfo(x)->outputHumanReadable(x);
@@ -930,6 +936,13 @@ void SSTInfoElement_SubComponentInfo::outputXML(int Index, TiXmlNode* XMLParentE
 
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
         getParamInfo(x)->outputXML(x, XMLSubComponentElement);
+    }
+
+    // Get the Num Ports and Display an XML comment about them
+    xmlComment(XMLSubComponentElement, "NUM PORTS = %ld", m_PortArray.size());
+
+    for (unsigned int x = 0; x < m_PortArray.size(); x++) {
+        getPortInfo(x)->outputXML(x, XMLSubComponentElement);
     }
 
 	// Get the Num Statistics and Display an XML comment about them
