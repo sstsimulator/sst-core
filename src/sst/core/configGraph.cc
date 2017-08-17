@@ -200,11 +200,17 @@ void ConfigComponent::addParameter(const std::string &key, const std::string &va
     params.enableVerify(bk);
 }
 
-void ConfigComponent::enableStatistic(const std::string &statisticName)
+void ConfigComponent::enableStatistic(const std::string &statisticName, bool recursively)
 {
     // NOTE: For every statistic in the enabledStatistics List, there must be
     //       a coresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
+
+    if ( recursively ) {
+        for ( auto &sc : subComponents ) {
+            sc.enableStatistic(statisticName, true);
+        }
+    }
 
     // Check for Enable All Statistics
     if (statisticName == STATALLFLAG) {
@@ -237,11 +243,17 @@ void ConfigComponent::enableStatistic(const std::string &statisticName)
 }
 
 
-void ConfigComponent::addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value)
+void ConfigComponent::addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value, bool recursively)
 {
     // NOTE: For every statistic in the enabledStatistics List, there must be
     //       a coresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
+    if ( recursively ) {
+        for ( auto &sc : subComponents ) {
+            sc.addStatisticParameter(statisticName, param, value, true);
+        }
+    }
+
 
     // Scan the enabledStatistics list for the statistic name
     for ( auto & si : enabledStatistics ) {
@@ -254,8 +266,14 @@ void ConfigComponent::addStatisticParameter(const std::string &statisticName, co
 }
 
 
-void ConfigComponent::setStatisticParameters(const std::string &statisticName, const Params &params)
+void ConfigComponent::setStatisticParameters(const std::string &statisticName, const Params &params, bool recursively)
 {
+    if ( recursively ) {
+        for ( auto &sc : subComponents ) {
+            sc.setStatisticParameters(statisticName, params, true);
+        }
+    }
+
     for ( auto & si : enabledStatistics ) {
         // Check to see if the names match.  NOTE this also works for the STATALLFLAG
         if ( statisticName == si.name ) {
@@ -500,6 +518,7 @@ ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
 }
 
 
+
 void
 ConfigGraph::enableStatisticForComponentName(string ComponentName, string statisticName)
 {
@@ -510,22 +529,43 @@ ConfigGraph::enableStatisticForComponentName(string ComponentName, string statis
         // Check to see if the names match or All components are selected
         found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
         if (true == found) {
-            comps[iter->id].enableStatistic(statisticName);
+            comps[iter->id].enableStatistic(statisticName, (ComponentName == STATALLFLAG));
         }
     }
 }
 
+
+
+
+
+template <class PredicateFunc, class UnaryFunc>
+size_t for_each_subcomp_if(ConfigComponent &c, PredicateFunc p, UnaryFunc f) {
+    size_t count = 0;
+    if ( p(c) ) {
+        count++;
+        f(c);
+    }
+    for ( auto &sc : c.subComponents ) {
+        count += for_each_subcomp_if(sc, p, f);
+    }
+    return count;
+}
+
+
 void
 ConfigGraph::enableStatisticForComponentType(string ComponentType, string statisticName)
 {
-    bool found;
-
-    // Search all the components for a matching type
-    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
-        // Check to see if the types match or All components are selected
-        found = ((ComponentType == iter->type) || (ComponentType == STATALLFLAG));
-        if (true == found) {
-            comps[iter->id].enableStatistic(statisticName);
+    if ( ComponentType == STATALLFLAG ) {
+        for ( auto &c : comps ) {
+            for_each_subcomp_if(c,
+                    [](ConfigComponent & UNUSED(c)) -> bool {return true;},
+                    [statisticName](ConfigComponent &c){ c.enableStatistic(statisticName); } );
+        }
+    } else {
+        for ( auto &c : comps ) {
+            for_each_subcomp_if(c,
+                    [ComponentType](ConfigComponent &c) -> bool { return c.type == ComponentType; },
+                    [statisticName](ConfigComponent &c){ c.enableStatistic(statisticName);} );
         }
     }
 }
@@ -540,7 +580,7 @@ ConfigGraph::addStatisticParameterForComponentName(const std::string &ComponentN
         // Check to see if the names match or All components are selected
         found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
         if (true == found) {
-            comps[iter->id].addStatisticParameter(statisticName, param, value);
+            comps[iter->id].addStatisticParameter(statisticName, param, value, (ComponentName == STATALLFLAG));
         }
     }
 }
@@ -548,14 +588,17 @@ ConfigGraph::addStatisticParameterForComponentName(const std::string &ComponentN
 void
 ConfigGraph::addStatisticParameterForComponentType(const std::string &ComponentType, const std::string &statisticName, const std::string &param, const std::string &value)
 {
-    bool found;
-
-    // Search all the components for a matching type
-    for (ConfigComponentMap_t::iterator iter = comps.begin(); iter != comps.end(); ++iter) {
-        // Check to see if the types match or All components are selected
-        found = ((ComponentType == iter->type) || (ComponentType == STATALLFLAG));
-        if (true == found) {
-            comps[iter->id].addStatisticParameter(statisticName, param, value);
+    if ( ComponentType == STATALLFLAG ) {
+        for ( auto &c : comps ) {
+            for_each_subcomp_if(c,
+                    [](ConfigComponent & UNUSED(c)) -> bool {return true;},
+                    [statisticName, param, value](ConfigComponent &c){ c.addStatisticParameter(statisticName, param, value); } );
+        }
+    } else {
+        for ( auto &c : comps ) {
+            for_each_subcomp_if(c,
+                    [ComponentType](ConfigComponent &c) -> bool { return c.type == ComponentType; },
+                    [statisticName, param, value](ConfigComponent &c){ c.addStatisticParameter(statisticName, param, value);} );
         }
     }
 }
