@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -131,6 +131,12 @@ void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {
 
 Event* Link::recv() 
 {
+    // Check to make sure this is a polling link
+    if ( UNLIKELY( type != POLL ) ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
+        
+    }
+    
     Event* event = NULL;
     Simulation *simulation = Simulation::getSimulation();
 

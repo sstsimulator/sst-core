@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -59,7 +59,16 @@ Config::Config(RankInfo rankInfo)
     generator   = "NONE";
     generator_options   = "";
     dump_component_graph_file = "";
+
+    char* wd_buf = (char*) malloc( sizeof(char) * PATH_MAX );
+    getcwd(wd_buf, PATH_MAX);
+
     output_directory = "";
+    if( NULL != wd_buf ) {
+	output_directory.append(wd_buf);
+        free(wd_buf);
+    }
+
     model_options = "";
     verbose     = 0;
     world_size.rank = rankInfo.rank;
@@ -222,9 +231,12 @@ Config::parseCmdLine(int argc, char* argv[]) {
     bool ok = true;
     while (ok) {
         int option_index = 0;
-        char c = getopt_long(argc, argv, sst_short_options, sst_long_options, &option_index);
-        if ( c == -1 ) /* We're done */
+        const int intC = getopt_long(argc, argv, sst_short_options, sst_long_options, &option_index);
+
+        if ( intC == -1 ) /* We're done */
             break;
+
+	const char c = static_cast<char>(intC);
 
         switch (c) {
         case 0:
@@ -251,6 +263,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
         case 'h':
         case '?':
         default:
+	    
             ok = usage();
         }
     }
@@ -268,7 +281,6 @@ Config::parseCmdLine(int argc, char* argv[]) {
 
     if ( !ok ) return 1;
 
-
     /* Sanity check, and other duties */
     Output::setFileName( debugFile != "/dev/null" ? debugFile : "sst_output" );
 
@@ -276,6 +288,34 @@ Config::parseCmdLine(int argc, char* argv[]) {
         cout << "ERROR: no sdl-file and no generator specified" << endl;
         cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
         return -1;
+    }
+
+    // Ensure output directory ends with a directory separator
+    if( output_directory.size() > 0 ) {
+	if( '/' != output_directory[output_directory.size() - 1] ) {
+		output_directory.append("/");
+	}
+    }
+
+    // Now make sure all the files we are generating go into a directory
+    if( output_config_graph.size() > 0 && isFileNameOnly(output_config_graph) ) {
+	output_config_graph.insert( 0, output_directory );
+    }
+
+    if( output_dot.size() > 0 && isFileNameOnly(output_dot) ) {
+	output_dot.insert( 0, output_directory );
+    }
+
+    if( output_xml.size() > 0 && isFileNameOnly(output_xml) ) {
+	output_xml.insert( 0, output_directory );
+    }
+
+    if( output_json.size() > 0 && isFileNameOnly(output_json) ) {
+	output_json.insert( 0, output_directory );
+    }
+
+    if( debugFile.size() > 0 && isFileNameOnly(debugFile) ) {
+	debugFile.insert( 0, output_directory );
     }
 
     return 0;

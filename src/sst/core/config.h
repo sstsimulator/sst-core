@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -193,6 +193,19 @@ private:
 
     int rank;
 	int numRanks;
+
+    bool isFileNameOnly(const std::string name) {
+	bool nameOnly = true;
+
+	for( size_t i = 0; i < name.size(); ++i ) {
+		if( '/' == name[i] ) {
+			nameOnly = false;
+			break;
+		}
+	}
+
+	return nameOnly;
+    }
 
     ImplementSerializable(SST::Config)
 };

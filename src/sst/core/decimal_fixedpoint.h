@@ -1,7 +1,7 @@
 // -*- c++ -*-
 
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -101,9 +101,9 @@ private:
 
         // See if we have an exponent
         size_t exponent_pos = init.find_last_of("eE");
-        uint32_t exponent = 0;
+        int32_t exponent = 0;
         if ( exponent_pos != init.npos ) {
-            exponent = static_cast<uint32_t>(SST::Core::from_string<double>(init.substr(exponent_pos+1,init.npos)));
+            exponent = static_cast<int32_t>(SST::Core::from_string<double>(init.substr(exponent_pos+1,init.npos)));
             init = init.substr(0,exponent_pos);
         }
 

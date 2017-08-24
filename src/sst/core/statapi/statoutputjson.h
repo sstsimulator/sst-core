@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_STATISTICS_OUTPUTCONSOLE
-#define _H_SST_CORE_STATISTICS_OUTPUTCONSOLE
+#ifndef _H_SST_CORE_STATISTICS_OUTPUT_JSON
+#define _H_SST_CORE_STATISTICS_OUTPUT_JSON
 
 #include "sst/core/sst_types.h"
 
@@ -20,18 +20,17 @@ namespace SST {
 namespace Statistics {
 
 /**
-    \class StatisticOutputConsole
+    \class StatisticOutputJSON
 
-	The class for statistics output to the console.  This will be the
-	default statistic output in SST.
+	The class for statistics output to a JSON formatted file
 */
-class StatisticOutputConsole : public StatisticOutput
+class StatisticOutputJSON : public StatisticOutput
 {
-public:
-    /** Construct a StatOutputConsole
+public:    
+    /** Construct a StatOutputJSON
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputConsole(Params& outputParameters);
+    StatisticOutputJSON(Params& outputParameters);
 
 protected:
     /** Perform a check of provided parameters
@@ -79,12 +78,29 @@ protected:
     void implOutputField(fieldHandle_t fieldHandle, uint64_t data) override;
     void implOutputField(fieldHandle_t fieldHandle, float data) override;
     void implOutputField(fieldHandle_t fieldHandle, double data) override;
+    
+    void printIndent();
 
-protected: 
-    StatisticOutputConsole() {;} // For serialization
+protected:
+    StatisticOutputJSON() {;} // For serialization
+
+private:
+    bool openFile();
+    void closeFile();
     
 private:
-    std::string m_OutputBuffer;
+    FILE*                    m_hFile;
+    std::string              m_FilePath;
+    std::string              m_currentComponentName;
+    std::string              m_currentStatisticName;
+    std::string              m_currentStatisticSubId;
+    std::string              m_currentStatisticType;
+    bool                     m_outputSimTime;
+    bool                     m_outputRank;
+    bool					 m_firstEntry;
+    bool					 m_firstField;
+    bool 					 m_processedAnyStats;
+    int						 m_curIndentLevel;
 
 };
 

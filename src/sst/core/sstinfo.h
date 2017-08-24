@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -27,6 +27,7 @@ namespace SST {
 // CONFIGURATION BITS    
 #define CFG_OUTPUTHUMAN 0x00000001
 #define CFG_OUTPUTXML   0x00000002
+#define CFG_VERBOSE     0x00000004
 
 /**
  * The SSTInfo Configuration class.
@@ -68,6 +69,7 @@ public:
     /** Is debugging output enabled? */
     bool                      debugEnabled() const { return m_debugEnabled; }
     bool                      processAllElements() const { return m_filters.empty(); }
+    bool                      doVerbose() const { return m_optionBits & CFG_VERBOSE; }
 
 private:
     void outputUsage();
@@ -251,7 +253,7 @@ private:
 
 
 /**
- * The SSTInfo representation of ElementInfoPort object.
+ * The SSTInfo representation of StatisticInfo object.
  *
  * This class is used internally by SSTInfo to load and process  
  * ElementInfoPort objects. 
@@ -289,6 +291,37 @@ private:
 };
 
 
+/**
+ * The SSTInfo representation of SubComponentSlotINfo object.
+ */
+class SSTInfoElement_SubCompSlotInfo : public SSTInfoElement_BaseInfo {
+public:
+    /** Create a new SSTInfoElement_StatisticInfo object.
+     * @param elstat Pointer to an ElementInfoStatistic object.
+     */
+    SSTInfoElement_SubCompSlotInfo(const ElementInfoSubComponentSlot* els) :
+        SSTInfoElement_BaseInfo(els),
+        m_interface(els->superclass)
+    { }
+
+    /** Return the Interface which is requires */
+    const std::string& getInterface() {return m_interface;}
+
+    /** Output the Statistic Information.
+     * @param Index The Index of the Statistic.
+     */
+    void outputHumanReadable(int Index) override;
+
+    /** Create the formatted XML data of the Statistic.
+     * @param Index The Index of the Statistic.
+     * @param XMLParentElement The parent element to receive the XML data.
+     */
+    void outputXML(int Index, TiXmlNode* XMLParentElement) override;
+
+private:
+    std::string m_interface;
+};
+
 
 
 /**
@@ -308,6 +341,7 @@ public:
         m_ParamArray = convertFromELI<SSTInfoElement_ParamInfo>(elc->params);
         m_PortArray = convertFromELI<SSTInfoElement_PortInfo>(elc->ports);
         m_StatisticArray = convertFromELI<SSTInfoElement_StatisticInfo>(elc->stats);
+        m_SubCompSlotArray = convertFromELI<SSTInfoElement_SubCompSlotInfo>(elc->subComponents);
     }
 
     SSTInfoElement_ComponentInfo(ComponentElementInfo* elc) :
@@ -316,6 +350,7 @@ public:
         m_ParamArray = convertFromDB<SSTInfoElement_ParamInfo>(elc->getValidParams());
         m_PortArray = convertFromDB<SSTInfoElement_PortInfo>(elc->getValidPorts());
         m_StatisticArray = convertFromDB<SSTInfoElement_StatisticInfo>(elc->getValidStats());
+        m_SubCompSlotArray = convertFromDB<SSTInfoElement_SubCompSlotInfo>(elc->getSubComponentSlots());
     }
 
     /** Return a Parameter Info Object. 
@@ -355,6 +390,7 @@ private:
     std::vector<SSTInfoElement_ParamInfo>             m_ParamArray;
     std::vector<SSTInfoElement_PortInfo>              m_PortArray;
     std::vector<SSTInfoElement_StatisticInfo>         m_StatisticArray;
+    std::vector<SSTInfoElement_SubCompSlotInfo>       m_SubCompSlotArray;
 };
 
 
@@ -446,19 +482,21 @@ public:
      * @param elsc Pointer to an ElementInfoComponent object.
      */
     SSTInfoElement_SubComponentInfo(const ElementInfoSubComponent* elsc) :
-        SSTInfoElement_BaseInfo(elsc)
+        SSTInfoElement_BaseInfo(elsc), m_Provides(elsc->provides)
     {
         m_ParamArray = convertFromELI<SSTInfoElement_ParamInfo>(elsc->params);
         m_PortArray = convertFromELI<SSTInfoElement_PortInfo>(elsc->ports);
         m_StatisticArray = convertFromELI<SSTInfoElement_StatisticInfo>(elsc->stats);
+        m_SubCompSlotArray = convertFromELI<SSTInfoElement_SubCompSlotInfo>(elsc->subComponents);
     }
 
     SSTInfoElement_SubComponentInfo(SubComponentElementInfo* elc) :
-        SSTInfoElement_BaseInfo(*elc)
+        SSTInfoElement_BaseInfo(*elc), m_Provides(elc->getInterface())
     {
         m_ParamArray = convertFromDB<SSTInfoElement_ParamInfo>(elc->getValidParams());
         m_PortArray = convertFromDB<SSTInfoElement_PortInfo>(elc->getValidPorts());
         m_StatisticArray = convertFromDB<SSTInfoElement_StatisticInfo>(elc->getValidStats());
+        m_SubCompSlotArray = convertFromDB<SSTInfoElement_SubCompSlotInfo>(elc->getSubComponentSlots());
     }
 
     /** Return a Parameter Info Object. 
@@ -487,10 +525,14 @@ public:
      */
     void outputXML(int Index, TiXmlNode* XMLParentElement) override;
 
+    const std::string& getProvides() const { return m_Provides; }
+
 private:
     std::vector<SSTInfoElement_ParamInfo>             m_ParamArray;
     std::vector<SSTInfoElement_PortInfo>              m_PortArray;
     std::vector<SSTInfoElement_StatisticInfo>         m_StatisticArray;
+    std::vector<SSTInfoElement_SubCompSlotInfo>       m_SubCompSlotArray;
+    std::string                                       m_Provides;
 };
 
 /**
@@ -568,14 +610,16 @@ public:
     /** Create a new SSTInfoElement_LibraryInfo object.
      * @param eli Pointer to an ElementLibraryInfo object.
      */
-    SSTInfoElement_LibraryInfo(const ElementLibraryInfo* eli)
+    SSTInfoElement_LibraryInfo(const std::string& name, const ElementLibraryInfo* eli) :
+        m_name(name)
     {
         m_eli = eli;
         populateLibraryInfo();
     }
 
     /** Return the Name of the Library. */
-    std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
+    // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
+    std::string getLibraryName() {return m_name; }
 
     /** Return the Description of the Library. */
     std::string getLibraryDescription() {if (m_eli && m_eli->description) return m_eli->description; else return ""; }
@@ -651,7 +695,8 @@ private:
     template<typename T> void addInfoPartitioner(const T* eip) {m_PartitionerArray.emplace_back(const_cast<T*>(eip));}
     template<typename T> void addInfoGenerator(const T* eig) {m_GeneratorArray.emplace_back(const_cast<T*>(eig));}
 
-    const ElementLibraryInfo*                 m_eli;
+    const ElementLibraryInfo*                    m_eli;
+    const std::string                            m_name;
     std::vector<SSTInfoElement_ComponentInfo>    m_ComponentArray;
     std::vector<SSTInfoElement_EventInfo>        m_EventArray;
     std::vector<SSTInfoElement_ModuleInfo>       m_ModuleArray;

@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -44,12 +44,39 @@ std::string                              g_searchPath;
 std::vector<SSTInfoElement_LibraryInfo>  g_libInfoArray;
 SSTInfoConfig                            g_configuration;
 
+
+
+
+void dprintf(FILE *fp, const char *fmt, ...) {
+    if ( g_configuration.doVerbose() ) {
+        va_list args;
+        va_start(args, fmt);
+        vfprintf(fp, fmt, args);
+        va_end(args);
+    }
+}
+
+
+
+
 class OverallOutputter : public SSTInfoElement_Outputter {
 public:
     void outputHumanReadable(int index);
     void outputXML(int Index, TiXmlNode* XMLParentElement);
 } g_Outputter;
 
+ElementLibraryInfo info_empty_eli = {
+    "",
+    "",
+    NULL,
+    NULL,   // Events
+    NULL,   // Introspectors
+    NULL,
+    NULL,
+    NULL, // partitioners,
+    NULL,  // Python Module Generator
+    NULL // generators,
+};
 
 // Forward Declarations
 void initLTDL(std::string searchPath);
@@ -106,12 +133,21 @@ static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
     const ElementLibraryInfo* pELI = (lib == "sst") ?
         loader.loadCoreInfo() :
         loader.loadLibrary(lib, g_configuration.debugEnabled());
+
+    if ( NULL == pELI ) {
+        // Check to see if this library loaded into the new ELI
+        // Database
+        if ( NULL != ElementLibraryDatabase::getLibraryInfo(lib) ) {
+            pELI = &info_empty_eli;
+        }
+    }
+    
     if ( pELI != NULL ) {
         if ( g_configuration.debugEnabled() )
             fprintf(stdout, "Found!\n");
         // Build
         g_fileProcessedCount++;
-        g_libInfoArray.emplace_back(pELI);
+        g_libInfoArray.emplace_back(lib, pELI);
     } else if ( !optional ) {
         fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s\n", lib.c_str());
     } else if ( g_configuration.debugEnabled() ) {
@@ -187,31 +223,16 @@ void OverallOutputter::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentE
     char                    TimeStamp[32];
     std::time_t             now = std::time(NULL);
     std::tm*                ptm = std::localtime(&now);
-    FILE* pFile;
 
-    // Check to see that the file path is valid by trying to create the file
-    pFile = fopen (g_configuration.getXMLFilePath().c_str() , "w+");
-    if (pFile == NULL) {
-        fprintf(stderr, "\n");
-        fprintf(stderr, "================================================================================\n");
-        fprintf(stderr, "ERROR: Unable to create XML File %s\n", g_configuration.getXMLFilePath().c_str());
-        fprintf(stderr, "================================================================================\n");
-        fprintf(stderr, "\n");
-        fprintf(stderr, "\n");
-        return;
-    } else {
-     fclose (pFile);
-    }
-    
     // Create a Timestamp Format: 2015.02.15_20:20:00
     std::strftime(TimeStamp, 32, "%Y.%m.%d_%H:%M:%S", ptm);
     
-    fprintf(stdout, "\n");
-    fprintf(stdout, "================================================================================\n");
-    fprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.getXMLFilePath().c_str());
-    fprintf(stdout, "================================================================================\n");
-    fprintf(stdout, "\n");
-    fprintf(stdout, "\n");
+    dprintf(stdout, "\n");
+    dprintf(stdout, "================================================================================\n");
+    dprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.getXMLFilePath().c_str());
+    dprintf(stdout, "================================================================================\n");
+    dprintf(stdout, "\n");
+    dprintf(stdout, "\n");
     
     // Create the XML Document     
     TiXmlDocument XMLDocument;
@@ -237,15 +258,17 @@ void OverallOutputter::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentE
         g_libInfoArray[x].outputXML(x, XMLTopLevelElement);
     }
 
-	// General Info on the Data
-    xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
-    xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
 
 
 	// Add the entries into the XML Document
     // XML Declaration
 	TiXmlDeclaration* XMLDecl = new TiXmlDeclaration("1.0", "", "");
 	XMLDocument.LinkEndChild(XMLDecl);
+    //
+	// General Info on the Data
+    xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
+    xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
+
 	XMLDocument.LinkEndChild(XMLTopLevelElement);
 
     // Save the XML Document
@@ -255,7 +278,7 @@ void OverallOutputter::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentE
 
 SSTInfoConfig::SSTInfoConfig()
 {
-    m_optionBits = CFG_OUTPUTHUMAN;  // Enable normal output by default
+    m_optionBits = CFG_OUTPUTHUMAN|CFG_VERBOSE;  // Enable normal output by default
     m_XMLFilePath = "./SSTInfo.xml"; // Default XML File Path
     m_debugEnabled = false;
 }
@@ -288,6 +311,7 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 
     static const struct option longOpts[] = {
         {"help",        no_argument,        0, 'h'},
+        {"quiet",       no_argument,        0, 'q'},
         {"version",     no_argument,        0, 'v'},
         {"debug",       no_argument,        0, 'd'},
         {"nodisplay",   no_argument,        0, 'n'},
@@ -299,9 +323,11 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
     };
     while (1) {
         int opt_idx = 0;
-        char c = getopt_long(argc, argv, "hvdnxo:l:", longOpts, &opt_idx);
-        if ( c == -1 )
+        const int intC = getopt_long(argc, argv, "hvqdnxo:l:", longOpts, &opt_idx);
+        if ( intC == -1 )
             break;
+
+  	const char c = static_cast<char>(intC);
 
         switch (c) {
         case 'h':
@@ -310,6 +336,9 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
         case 'v':
             outputVersion();
             return 1;
+        case 'q':
+            m_optionBits &= ~CFG_VERBOSE;
+            break;
         case 'd':
             m_debugEnabled = true;
             break;
@@ -435,7 +464,7 @@ void SSTInfoElement_LibraryInfo::populateLibraryInfo()
         }
     }
 
-    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(m_eli->name);
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(m_name);
     if ( lib ) {
         for ( auto &i : lib->components )
             addInfoComponent(i.second);
@@ -565,7 +594,7 @@ void SSTInfoElement_LibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentEle
     SSTInfoElement_ComponentInfo*    eic;
     SSTInfoElement_EventInfo*        eie;
     SSTInfoElement_ModuleInfo*       eim;
-//    SSTInfoElement_SubComponentInfo* eisc;
+    SSTInfoElement_SubComponentInfo* eisc;
     SSTInfoElement_PartitionerInfo*  eip;
     SSTInfoElement_GeneratorInfo*    eig;
 
@@ -599,12 +628,12 @@ void SSTInfoElement_LibraryInfo::outputXML(int LibIndex, TiXmlNode* XMLParentEle
 
 // TODO: Dump SubComponent info to XML.  Turned off for 5.0 since SSTWorkbench
 //       chokes if format is changed.  
-//    numObjects = getNumberOfLibrarySubComponents();
-//    xmlComment(XMLLibraryElement, "NUM SUBCOMPONENTS = %d", numObjects);
-//    for (x = 0; x < numObjects; x++) {
-//        eisc = getInfoSubComponent(x);
-//        eisc->generateSubComponentInfoXMLData(x, XMLLibraryElement);
-//    }
+    numObjects = getNumberOfLibrarySubComponents();
+    xmlComment(XMLLibraryElement, "NUM SUBCOMPONENTS = %d", numObjects);
+    for (x = 0; x < numObjects; x++) {
+        eisc = getInfoSubComponent(x);
+        eisc->outputXML(x, XMLLibraryElement);
+    }
 
     numObjects = getNumberOfLibraryPartitioners();  
     xmlComment(XMLLibraryElement, "NUM PARTITIONERS = %d", numObjects);
@@ -688,18 +717,31 @@ void SSTInfoElement_StatisticInfo::outputHumanReadable(int index)
 
 void SSTInfoElement_StatisticInfo::outputXML(int UNUSED(Index), TiXmlNode* UNUSED(XMLParentElement))
 {
-// TODO: Dump Statistic info to XML.  Turned off for 5.0 since SSTWorkbench
-//       chokes if format is changed.  
-//    // Build the Element to Represent the Parameter
-//    TiXmlElement* XMLStatElement = new TiXmlElement("Statistic");
-//    XMLStatElement->SetAttribute("Index", Index);
-//    XMLStatElement->SetAttribute("Name", (NULL == getName()) ? "" : getName());
-//    XMLStatElement->SetAttribute("Description", (NULL == getDesc()) ? "" : getDesc());
-//    XMLStatElement->SetAttribute("Units", (NULL == getUnits()) ? "" : getUnits());
-//    XMLStatElement->SetAttribute("EnableLevel", getEnableLevel());
-//
-//    // Add this Parameter Element to the Parent Element
-//    XMLParentElement->LinkEndChild(XMLStatElement);
+    // Build the Element to Represent the Parameter
+    TiXmlElement* XMLStatElement = new TiXmlElement("Statistic");
+    XMLStatElement->SetAttribute("Index", Index);
+    XMLStatElement->SetAttribute("Name", m_name);
+    XMLStatElement->SetAttribute("Description", m_desc);
+    XMLStatElement->SetAttribute("Units", m_units);
+    XMLStatElement->SetAttribute("EnableLevel", getEnableLevel());
+
+    // Add this Parameter Element to the Parent Element
+    XMLParentElement->LinkEndChild(XMLStatElement);
+}
+
+
+void SSTInfoElement_SubCompSlotInfo::outputHumanReadable(int index) {
+    fprintf(stdout, "            SUB COMPONENT SLOT %d = %s (%s) [%s]\n", index, getName().c_str(), getDesc().c_str(), m_interface.c_str());
+}
+
+void SSTInfoElement_SubCompSlotInfo::outputXML(int Index, TiXmlNode* XMLParentElement) {
+    TiXmlElement* element = new TiXmlElement("SubComponentSlot");
+    element->SetAttribute("Index", Index);
+    element->SetAttribute("Name", m_name);
+    element->SetAttribute("Description", m_desc);
+    element->SetAttribute("Interface", m_interface);
+
+    XMLParentElement->LinkEndChild(element);
 }
 
 void SSTInfoElement_ComponentInfo::outputHumanReadable(int index)
@@ -723,6 +765,11 @@ void SSTInfoElement_ComponentInfo::outputHumanReadable(int index)
     fprintf(stdout, "         NUM STATISTICS = %ld\n", m_StatisticArray.size());
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
         getStatisticInfo(x)->outputHumanReadable(x);
+    }
+
+    fprintf(stdout, "         NUM SUBCOMPONENT SLOTS = %ld\n", m_SubCompSlotArray.size());
+    for (unsigned int x = 0; x < m_SubCompSlotArray.size(); x++) {
+        m_SubCompSlotArray[x].outputHumanReadable(x);
     }
 }
 
@@ -755,6 +802,12 @@ void SSTInfoElement_ComponentInfo::outputXML(int Index, TiXmlNode* XMLParentElem
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
         getStatisticInfo(x)->outputXML(x, XMLComponentElement);
     }
+
+    xmlComment(XMLComponentElement, "NUM SUBCOMPONENT SLOTS = %zu", m_SubCompSlotArray.size());
+    for (unsigned int x = 0; x < m_SubCompSlotArray.size(); x++) {
+        m_SubCompSlotArray[x].outputXML(x, XMLComponentElement);
+    }
+
 
     // Add this Element to the Parent Element
     XMLParentElement->LinkEndChild(XMLComponentElement);
@@ -843,6 +896,8 @@ void SSTInfoElement_SubComponentInfo::outputHumanReadable(int index)
     // Print out the Component Info
     fprintf(stdout, "      SUBCOMPONENT %d = %s (%s)\n", index, getName().c_str(), getDesc().c_str());
 
+    fprintf(stdout, "         PROVIDES INTERFACE = %s\n", m_Provides.c_str());
+
     // Print out the Parameter Info
     fprintf(stdout, "         NUM PARAMETERS = %zu\n", m_ParamArray.size());
     for (unsigned int x = 0; x < m_ParamArray.size(); x++) {
@@ -850,9 +905,20 @@ void SSTInfoElement_SubComponentInfo::outputHumanReadable(int index)
     }
 
     // Print out the Port Info
+    fprintf(stdout, "         NUM PORTS = %ld\n", m_PortArray.size());
+    for (unsigned int x = 0; x < m_PortArray.size(); x++) {
+        getPortInfo(x)->outputHumanReadable(x);
+    }
+
+    // Print out the Statistics Info
     fprintf(stdout, "         NUM STATISTICS = %zu\n", m_StatisticArray.size());
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
         getStatisticInfo(x)->outputHumanReadable(x);
+    }
+
+    fprintf(stdout, "         NUM SUBCOMPONENT SLOTS = %ld\n", m_SubCompSlotArray.size());
+    for (unsigned int x = 0; x < m_SubCompSlotArray.size(); x++) {
+        m_SubCompSlotArray[x].outputHumanReadable(x);
     }
 }
 
@@ -863,6 +929,7 @@ void SSTInfoElement_SubComponentInfo::outputXML(int Index, TiXmlNode* XMLParentE
 	XMLSubComponentElement->SetAttribute("Index", Index);
 	XMLSubComponentElement->SetAttribute("Name", getName().c_str());
 	XMLSubComponentElement->SetAttribute("Description", getDesc().c_str());
+    XMLSubComponentElement->SetAttribute("Interface", getProvides().c_str());
 
 	// Get the Num Parameters and Display an XML comment about them
     xmlComment(XMLSubComponentElement, "NUM PARAMETERS = %zu", m_ParamArray.size());
@@ -871,11 +938,23 @@ void SSTInfoElement_SubComponentInfo::outputXML(int Index, TiXmlNode* XMLParentE
         getParamInfo(x)->outputXML(x, XMLSubComponentElement);
     }
 
+    // Get the Num Ports and Display an XML comment about them
+    xmlComment(XMLSubComponentElement, "NUM PORTS = %ld", m_PortArray.size());
+
+    for (unsigned int x = 0; x < m_PortArray.size(); x++) {
+        getPortInfo(x)->outputXML(x, XMLSubComponentElement);
+    }
+
 	// Get the Num Statistics and Display an XML comment about them
     xmlComment(XMLSubComponentElement, "NUM STATISTICS = %zu", m_StatisticArray.size());
 
     for (unsigned int x = 0; x < m_StatisticArray.size(); x++) {
         getStatisticInfo(x)->outputXML(x, XMLSubComponentElement);
+    }
+
+    xmlComment(XMLSubComponentElement, "NUM SUBCOMPONENT SLOTS = %zu", m_SubCompSlotArray.size());
+    for (unsigned int x = 0; x < m_SubCompSlotArray.size(); x++) {
+        m_SubCompSlotArray[x].outputXML(x, XMLSubComponentElement);
     }
 
     // Add this Element to the Parent Element

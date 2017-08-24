@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -32,7 +32,7 @@ void SST::Core::Environment::configReadLine(FILE* theFile, char* lineBuffer) {
 		const int next      = std::fgetc(theFile);
 		const char nextChar = static_cast<char>(next);
 
-		if(EOF == nextChar) {
+		if(EOF == next) {
 			lineBuffer[bufferIndex] = '\0';
 			break;
 		} else {
@@ -130,7 +130,13 @@ SST::Core::Environment::EnvironmentConfiguration*
 	EnvironmentConfiguration* envConfig = new EnvironmentConfiguration();
 
 	// LOWEST PRIORITY - GLOBAL INSTALL CONFIG
-	std::string prefixConfig = SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf";
+	std::string prefixConfig = "";
+
+	if( 0 == strcmp(SST_INSTALL_PREFIX, "NONE") ) {
+		prefixConfig = "/usr/local/etc/sst/sstsimulator.conf";
+	} else {
+		prefixConfig = SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf";
+	}
 
 	SST::Core::Environment::populateEnvironmentConfig(prefixConfig, envConfig, true);
 

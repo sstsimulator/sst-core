@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
 // Copyright (c) 2009-2014, Sandia Corporation
@@ -12,7 +12,10 @@
 #ifndef SST_CORE_CORE_THREADSAFE_H
 #define SST_CORE_CORE_THREADSAFE_H
 
+#if ( defined( __amd64 ) || defined( __amd64__ ) || \
+        defined( __x86_64 ) || defined( __x86_64__ ) )
 #include <x86intrin.h>
+#endif
 
 #include <thread>
 #include <atomic>
@@ -87,11 +90,16 @@ public:
                 uint32_t count = 0;
                 do {
                     count++;
-                    if ( count < 1024 )
+                    if ( count < 1024 ) {
+#if ( defined( __amd64 ) || defined( __amd64__ ) || \
+        defined( __x86_64 ) || defined( __x86_64__ ) )
                         _mm_pause();
-                    else if ( count < (1024*1024) ) 
+#elif defined(__PPC64__)
+       	asm volatile( "or 27, 27, 27" ::: "memory" );
+#endif
+		    } else if ( count < (1024*1024) ) {
                         std::this_thread::yield();
-                    else {
+                    } else {
                         struct timespec ts;
                         ts.tv_sec = 0;
                         ts.tv_nsec = 1000;
@@ -113,30 +121,31 @@ public:
 };
 
 
+#if 0
+typedef std::mutex Spinlock;
+#else
 class Spinlock {
-    std::atomic<int> latch;
+    std::atomic_flag latch = ATOMIC_FLAG_INIT;
 public:
-    Spinlock() : latch(0)
-    { }
+    Spinlock() { }
 
     inline void lock() {
-        //while ( latch.exchange(1, std::memory_order_acquire) ) {
-        int zero = 0;
-        while ( !latch.compare_exchange_weak(zero, 1,
-                    std::memory_order_acquire,
-                    std::memory_order_relaxed) && zero) {
-            do {
-                zero = 0;
+        while ( latch.test_and_set(std::memory_order_acquire) ) {
+#if ( defined( __amd64 ) || defined( __amd64__ ) || \
+        defined( __x86_64 ) || defined( __x86_64__ ) )
                 _mm_pause();
-            } while ( latch.load(std::memory_order_acquire) );
+#elif defined(__PPC64__)
+                asm volatile( "or 27, 27, 27" ::: "memory" );
+                __sync_synchronize();
+#endif
         }
     }
 
     inline void unlock() {
-        /* TODO:  Understand why latch.store(0) breaks */
-        --latch;
+        latch.clear(std::memory_order_release);
     }
 };
+#endif
 
 
 
@@ -241,7 +250,12 @@ public:
             if ( try_remove(res) ) {
                 return res;
             }
+#if ( defined( __amd64 ) || defined( __amd64__ ) || \
+        defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
+#elif defined(__PPC64__)
+       	asm volatile( "or 27, 27, 27" ::: "memory" );
+#endif
         }
     }
 };
@@ -301,7 +315,12 @@ public:
             if ( try_remove(res) ) {
                 return res;
             }
+#if ( defined( __amd64 ) || defined( __amd64__ ) || \
+        defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
+#elif defined(__PPC64__)
+       	asm volatile( "or 27, 27, 27" ::: "memory" );
+#endif
         }
     }
 

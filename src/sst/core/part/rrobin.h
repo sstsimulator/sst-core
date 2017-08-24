@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -19,6 +19,14 @@ namespace Partition {
 
 class SSTRoundRobinPartition : public SST::Partition::SSTPartitioner {
 
+public:
+    SST_ELI_REGISTER_PARTITIONER(
+        SSTRoundRobinPartition,
+        "sst",
+        "roundrobin",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.")
+
 private:
     RankInfo world_size;
 
@@ -35,9 +43,6 @@ public:
     bool spawnOnAllRanks() override { return false; }
     
         
-    SST_ELI_REGISTER_PARTITIONER(SSTRoundRobinPartition,"sst","roundrobin","Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.")
-
-    SST_ELI_DOCUMENT_VERSION(1,0,0)
 };
 
 } // namespace Partition

@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -81,7 +81,12 @@ public:
         while ( !ret ) {
             bool ok = allocPool();
             if ( !ok ) return NULL;
+#if ( defined( __amd64 ) || defined( __amd64__ ) || \
+        defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
+#elif defined(__PPC64__)
+       	    asm volatile( "or 27, 27, 27" ::: "memory" );
+#endif
             ret = freeList.try_remove();
         }
         ++numAlloc;

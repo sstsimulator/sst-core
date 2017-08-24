@@ -1,7 +1,7 @@
 // -*- c++ -*-
 
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 // 
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -188,49 +188,6 @@ public:
     ImplementSerializable(SST::ConfigStatOutput)
 };
 
-// class ConfigComponent;
-
-// class SubComponentSlotDefinition : public SST::Core::Serialization::serializable {
-
-//     std::string name;
-//     std::vector<ConfigComponent*> slots;
-    
-// public:
-
-//     SubComponentSlotDefinition() {}
-//     SubComponentSlotDefinition(const SubComponentSlotDefinition& init) :
-//         name(init.name)
-//     {
-//         for ( auto &cc : init.slots ) {
-//             slots.push_back
-//         }
-//     }
-
-
-//     const std::string& getName() const { return name; }
-
-//     ConfigComponent* getSlot(uint32_t slot) const {
-//         if ( slot <= slots.size() ) return slots[slot];
-//         return NULL;
-//     }
-    
-//     int getMaxPopulatedSlotNumber() const { return slots.size(); }
-//     bool isPopulated(int slot_num) const;
-
-//     // bool isAllPopulated() const;
-
-//     // SubComponent* create(int slot_num, Params& params);
-//     // std::vector<SubComponent*> createAll(Params& params);
-
-
-//     void serialize_order(SST::Core::Serialization::serializer &ser) {
-//         ser & name;
-//         ser & slots;
-//     }
-
-//     ImplementSerializable(SST::SubComponentSlotDefinition)
-// };
-
 
 typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 
@@ -267,9 +224,9 @@ public:
     ConfigComponent* addSubComponent(ComponentId_t, const std::string &name, const std::string &type, int slot);
     ConfigComponent* findSubComponent(ComponentId_t);
     const ConfigComponent* findSubComponent(ComponentId_t) const;
-    void enableStatistic(const std::string &statisticName);
-    void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value);
-    void setStatisticParameters(const std::string &statisticName, const Params &params);
+    void enableStatistic(const std::string &statisticName, bool recursively = false);
+    void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value, bool recursively = false);
+    void setStatisticParameters(const std::string &statisticName, const Params &params, bool recursively = false);
 
     std::vector<LinkId_t> allLinks() const;
 

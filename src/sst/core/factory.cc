@@ -1,5 +1,5 @@
 // Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-AC04-94AL85000 with Sandia Corporation, the U.S.
+// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
 // Government retains certain rights in this software.
 //
 // Copyright (c) 2009-2017, Sandia Corporation
@@ -29,6 +29,7 @@
 #include <sst/core/statapi/statoutputconsole.h>
 #include <sst/core/statapi/statoutputtxt.h>
 #include <sst/core/statapi/statoutputcsv.h>
+#include <sst/core/statapi/statoutputjson.h>
 #ifdef HAVE_HDF5
 #include <sst/core/statapi/statoutputhdf5.h>
 #endif
@@ -43,6 +44,8 @@ using namespace SST::Statistics;
 namespace SST {
 
 Factory* Factory::instance = NULL;
+SSTElementPythonModuleOldELI* PythonModuleDocOldELI::instance = NULL;
+
 
 ElementLibraryInfo empty_eli = {
     "empty-eli",
@@ -134,18 +137,6 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
     }
     
     std::string tmp = elemlib + "." + elem;
-    if ( portNames == NULL ) {
-        // now look for component
-
-
-        eic_map_t::iterator eii = found_components.find(tmp);
-        eis_map_t::iterator esii = found_subcomponents.find(tmp);
-        if ( eii != found_components.end() ) {
-            portNames = &eii->second.ports;
-        } else if ( esii != found_subcomponents.end() ) {
-            portNames = &esii->second.ports;
-        }
-    }
 
     if ( portNames == NULL ) {
         out.fatal(CALL_INFO, -1,"can't find requested component or subcomponent %s.\n ", tmp.c_str());
@@ -190,31 +181,9 @@ Factory::CreateComponent(ComponentId_t id,
             return ret;
         }
     }
-
-    // now look for component in old ELI
-    std::string tmp = elemlib + "." + elem;
-
-    eic_map_t::iterator eii = found_components.find(tmp);
-    if (eii == found_components.end()) {
-        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
-        return NULL;
-    }
-
-    const ComponentInfo ci = eii->second;
-
-    LinkMap *lm = Simulation::getSimulation()->getComponentLinkMap(id);
-    lm->setAllowedPorts(&ci.ports);
-    // lm->setAllowedPorts(GetComponentAllowedPorts(type));
-
-    loadingComponentType = type;    
-    params.pushAllowedKeys(ci.params);
-    Component *ret = ci.component->alloc(id, params);
-    params.popAllowedKeys();
-    loadingComponentType = "";
-
-    // if (NULL == ret) return ret;
-
-    return ret;
+    // If we make it to here, component not found
+    out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", type.c_str());
+    return NULL;
 }
 
 StatisticOutput* 
@@ -300,9 +269,6 @@ bool
 Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& slotName)
 {
     std::string compTypeToLoad = type;
-    // if (true == type.empty()) { 
-    //     compTypeToLoad = loadingComponentType;
-    // }
     
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
@@ -327,35 +293,8 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
         }
     }
 
-    // now look for subcomponent
-    std::string tmp = elemlib + "." + elem;
-
-    eic_map_t::iterator eici = found_components.find(tmp);
-    eis_map_t::iterator eisi = found_subcomponents.find(tmp);
-    if (eici != found_components.end()) {
-        const ComponentInfo ci = eici->second;
-
-        // See if the slot exists
-        for ( auto item : ci.subcomponentslots ) {
-            if ( slotName == item ) {
-                return true;
-            }
-        }
-    }
-    else if (eisi != found_subcomponents.end()) {
-        const SubComponentInfo ci = eisi->second;
-
-        // See if the slot exists
-        for ( auto item : ci.subcomponentslots ) {
-            if ( slotName == item ) {
-                return true;
-            }
-        }
-    }
-    else {
-        out.fatal(CALL_INFO, -1,"can't find requested component/subcomponent %s.\n ", tmp.c_str());
-        return false;
-    }
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, -1,"can't find requested component/subcomponent %s.\n ", type.c_str());
     return false;
 }
 
@@ -391,23 +330,8 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
     }
 
     
-    // now look for component
-    std::string tmp = elemlib + "." + elem;
-
-    eic_map_t::iterator eii = found_components.find(tmp);
-    if (eii == found_components.end()) {
-        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
-        return false;
-    }
-
-    const ComponentInfo ci = eii->second;
-
-    // See if the statistic exists
-    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-        if (statisticName == ci.statNames[x]) {
-            return true;
-        }
-    }
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", type.c_str());
     return false;
 }
 
@@ -442,23 +366,8 @@ Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const s
         }
     }
 
-    // now look for subcomponent
-    std::string tmp = elemlib + "." + elem;
-
-    eis_map_t::iterator eii = found_subcomponents.find(tmp);
-    if (eii == found_subcomponents.end()) {
-        out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", tmp.c_str());
-        return false;
-    }
-
-    const SubComponentInfo ci = eii->second;
-
-    // See if the statistic exists
-    for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-        if (statisticName == ci.statNames[x]) {
-            return true;
-        }
-    }
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", type.c_str());
     return false;
 }
 
@@ -493,33 +402,8 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
         }
     }
 
-    // now look for component
-    std::string tmp = elemlib + "." + elem;
-
-    eic_map_t::iterator eici = found_components.find(tmp);
-    eis_map_t::iterator eisi = found_subcomponents.find(tmp);
-    if (eici != found_components.end()) {
-        const ComponentInfo ci = eici->second;
-
-        // See if the statistic exists, if so return the enable level
-        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-            if (statisticName == ci.statNames[x]) {
-                return ci.statEnableLevels[x];
-            }
-        }
-    } else if (eisi != found_subcomponents.end()) {
-        const SubComponentInfo ci = eisi->second;
-
-        // See if the statistic exists, if so return the enable level
-        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-            if (statisticName == ci.statNames[x]) {
-                return ci.statEnableLevels[x];
-            }
-        }
-    } else {
-        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
-        return 0;
-    }
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", type.c_str());
     return 0;
 }
 
@@ -552,32 +436,8 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
         }
     }
 
-    // now look for component
-    std::string tmp = elemlib + "." + elem;
-    eic_map_t::iterator eici = found_components.find(tmp);
-    eis_map_t::iterator eisi = found_subcomponents.find(tmp);
-    if (eici != found_components.end()) {
-        const ComponentInfo ci = eici->second;
-
-        // See if the statistic exists, if so return the enable level
-        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-            if (statisticName == ci.statNames[x]) {
-                return ci.statUnits[x];
-            }
-        }
-    } else if (eisi != found_subcomponents.end()) {
-        const SubComponentInfo ci = eisi->second;
-
-        // See if the statistic exists, if so return the enable level
-        for (uint32_t x = 0; x <  ci.statNames.size(); x++) {
-            if (statisticName == ci.statNames[x]) {
-                return ci.statUnits[x];
-            }
-        }
-    } else {
-        out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", tmp.c_str());
-        return 0;
-    }
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", type.c_str());
     return 0;
 }
 
@@ -614,22 +474,9 @@ Factory::CreateModule(std::string type, Params& params)
     }
 
     
-    // now look for module
-    std::string tmp = elemlib + "." + elem;
-    
-    // std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-    eim_map_t::iterator eim = found_modules.find(tmp);
-    if (eim == found_modules.end()) {
-        out.fatal(CALL_INFO, -1, "can't find requested module %s.\n ", tmp.c_str());
-        return NULL;
-    }
-    
-    const ModuleInfo mi = eim->second;
-    
-    params.pushAllowedKeys(mi.params);
-    Module *ret = mi.module->alloc(params);
-    params.popAllowedKeys();
-    return ret;
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, -1, "can't find requested module %s.\n ", type.c_str());
+    return NULL;
 }
 
 
@@ -639,6 +486,10 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
     // Names of sst.xxx Statistic Output Modules
     if (0 == ::strcasecmp("statoutputcsv", type.c_str())) {
         return new StatisticOutputCSV(params, false);
+    }
+
+    if (0 == ::strcasecmp("statoutputjson", type.c_str())) {
+        return new StatisticOutputJSON(params);
     }
 
     if (0 == ::strcasecmp("statoutputcsvgz", type.c_str())) {
@@ -729,22 +580,9 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
         }
     }
 
-    // now look for module
-    std::string tmp = elemlib + "." + elem;
-    
-    
-    eim_map_t::iterator eim = found_modules.find(tmp);
-    if (eim == found_modules.end()) {
-        out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", tmp.c_str());
-        return NULL;
-    }
-    
-    const ModuleInfo mi = eim->second;
-    
-    params.pushAllowedKeys(mi.params);
-    Module *ret = mi.module->alloc_with_comp(comp, params);
-    params.popAllowedKeys();
-    return ret;
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", type.c_str());
+    return NULL;
 }
 
 
@@ -754,10 +592,6 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
-
-    // if("sst" == elemlib) {
-    //     return CreateCoreModuleWithComponent(elem, comp, params);
-    // } else {
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -776,21 +610,9 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
         }
     }
 
-    // now look for module
-    std::string tmp = elemlib + "." + elem;
-
-    eis_map_t::iterator eis = found_subcomponents.find(tmp);
-    if (eis == found_subcomponents.end()) {
-        out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", tmp.c_str());
-        return NULL;
-    }
-
-    const SubComponentInfo si = eis->second;
-
-    params.pushAllowedKeys(si.params);
-    SubComponent* ret = si.subcomponent->alloc(comp, params);
-    params.popAllowedKeys();
-    return ret;
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", type.c_str());
+    return NULL;
 }
 
 
@@ -803,14 +625,17 @@ Factory::RequireEvent(std::string eventname)
     // ensure library is already loaded...
     requireLibrary(elemlib);
 
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    // All we really need to do is make sure the library is loaded.
+    // We no longer have events in the ELI
 
-    // initializer fires at library load time, so all we have to do is
-    // make sure the event actually exists...
-    if (found_events.find(eventname) == found_events.end()) {
-        out.fatal(CALL_INFO, -1,"can't find event %s in %s\n ", eventname.c_str(),
-               searchPaths.c_str() );
-    }
+    // std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+    // // initializer fires at library load time, so all we have to do is
+    // // make sure the event actually exists...
+    // if (found_events.find(eventname) == found_events.end()) {
+    //     out.fatal(CALL_INFO, -1,"can't find event %s in %s\n ", eventname.c_str(),
+    //            searchPaths.c_str() );
+    // }
 }
 
 Partition::SSTPartitioner*
@@ -832,17 +657,9 @@ Factory::CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_r
         }
     }
 
-    // Look for the partitioner
-    std::string tmp = elemlib + "." + elem;
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-    eip_map_t::iterator eii = found_partitioners.find(tmp);
-    if ( eii == found_partitioners.end() ) {
-        out.fatal(CALL_INFO, -1,"Error: Unable to find requested partitioner %s, check --help for information on partitioners.\n ", tmp.c_str());
-        return NULL;
-    }
-
-    const ElementInfoPartitioner *ei = eii->second;
-    return ei->func(total_ranks, my_rank, verbosity);
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, -1,"Error: Unable to find requested partitioner %s, check --help for information on partitioners.\n ", name.c_str());
+    return NULL;
 }
 
 generateFunction
@@ -860,7 +677,7 @@ Factory::GetGenerator(std::string name)
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
     eig_map_t::iterator eii = found_generators.find(tmp);
     if ( eii == found_generators.end() ) {
-        out.fatal(CALL_INFO, -1,"can't find requested partitioner %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, -1,"can't find requested generator %s.\n ", tmp.c_str());
         return NULL;
     }
 
@@ -886,34 +703,7 @@ Factory::getPythonModule(std::string name)
         }
     }
 
-    // Didn't find it in new ELI, so look in old.
-    const ElementLibraryInfo *eli = findLibrary(elemlib, false);
-    if ( eli ) {
-        if ( eli->pythonModuleGenerator != NULL ) {
-            // This could create a small memory leak, but will go away
-            // once old ELI is dropped and shouldn't create a big
-            // enough leak to be a problem.  Could add a cache in the
-            // factory so that only one is created.
-            return new SSTElementPythonModuleOldELI(eli->pythonModuleGenerator);
-        }
-    }
     return NULL;
-}
-
-
-
-Params::KeySet_t Factory::create_params_set(const ElementInfoParam *params)
-{
-    Params::KeySet_t retset;
-
-    if (NULL != params) {
-        while (NULL != params->name) {
-            retset.insert(params->name);
-            params++;
-        }
-    }
-
-    return retset;
 }
 
 
@@ -964,33 +754,35 @@ Factory::findLibrary(std::string elemlib, bool showErrors)
     eli = loadLibrary(elemlib, showErrors);
     if (NULL == eli) return NULL;
 
+
+
+    // Convert the old ELI data structures into the new ELI data
+    // structures
     loaded_libraries[elemlib] = eli;
 
     if (NULL != eli->components) {
         const ElementInfoComponent *eic = eli->components;
         while (NULL != eic->name) {
-            std::string tmp = elemlib + "." + eic->name;
-            found_components[tmp] = ComponentInfo(eic, create_params_set(eic->params));
+            ElementLibraryDatabase::addComponent(new ComponentDocOldELI(elemlib, eic));
             eic++;
         }
     }
 
-    if (NULL != eli->events) {
-        const ElementInfoEvent *eie = eli->events;
-        while (NULL != eie->name) {
-            std::string tmp = elemlib + "." + eie->name;
-            found_events[tmp] = eie;
-            if (eie->init != NULL) eie->init();
-            eie++;
-        }
-    }
+    // if (NULL != eli->events) {
+    //     const ElementInfoEvent *eie = eli->events;
+    //     while (NULL != eie->name) {
+    //         std::string tmp = elemlib + "." + eie->name;
+    //         found_events[tmp] = eie;
+    //         if (eie->init != NULL) eie->init();
+    //         eie++;
+    //     }
+    // }
 
 
     if (NULL != eli->modules) {
         const ElementInfoModule *eim = eli->modules;
         while (NULL != eim->name) {
-            std::string tmp = elemlib + "." + eim->name;
-            found_modules[tmp] = ModuleInfo(eim, create_params_set(eim->params));
+            ElementLibraryDatabase::addModule(new ModuleDocOldELI(elemlib, eim));
             eim++;
         }
     }
@@ -998,8 +790,7 @@ Factory::findLibrary(std::string elemlib, bool showErrors)
     if (NULL != eli->subcomponents ) {
         const ElementInfoSubComponent *eis = eli->subcomponents;
         while (NULL != eis->name) {
-            std::string tmp = elemlib + "." + eis->name;
-            found_subcomponents[tmp] = SubComponentInfo(eis, create_params_set(eis->params));
+            ElementLibraryDatabase::addSubComponent(new SubComponentDocOldELI(elemlib, eis));
             eis++;
         }
     }
@@ -1007,8 +798,7 @@ Factory::findLibrary(std::string elemlib, bool showErrors)
     if (NULL != eli->partitioners) {
         const ElementInfoPartitioner *eip = eli->partitioners;
         while (NULL != eip->name) {
-            std::string tmp = elemlib + "." + eip->name;
-            found_partitioners[tmp] = eip;
+            ElementLibraryDatabase::addPartitioner(new PartitionerDocOldELI(elemlib, eip));
             eip++;
         }
     }
@@ -1022,6 +812,10 @@ Factory::findLibrary(std::string elemlib, bool showErrors)
         }
     }
 
+    if (NULL != eli->pythonModuleGenerator ) {
+        ElementLibraryDatabase::addPythonModule(new PythonModuleDocOldELI(elemlib, eli->pythonModuleGenerator));
+    }
+    
     return eli;
 }
 
