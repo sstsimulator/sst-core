@@ -298,11 +298,19 @@ public:
         std::string value = i->second;
         // String should start with [ and end with ], we need to cut
         // these out
+        // Test the value for correct [...] formatting
+        if( (value.find("[") == std::string::npos) ||
+            (value.find("]") == std::string::npos) ){
+          std::string msg =
+            "Params::find_array(): Invalid formatting: String must be enclosed by brackets [str]";
+          std::invalid_argument t(msg);
+          throw t;
+        }
         value = value.substr(0,value.size()-1);
         value = value.substr(1);
-        
+
         std::stringstream ss(value);
-        
+
         while( ss.good() ) {
             std::string substr;
             getline( ss, substr, ',' );
