@@ -432,13 +432,12 @@ void Simulation::initialize() {
     if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
 
     do {
-
         initBarrier.wait();
         if ( my_rank.thread == 0 ) init_msg_count = 0;
         initBarrier.wait();
-        
-        
+                
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
+            // printf("Calling init on %s: %p\n",(*iter)->getName().c_str(),(*iter)->getComponent());
             (*iter)->getComponent()->init(init_phase);
         }
 
@@ -605,6 +604,8 @@ void Simulation::finish() {
         (*iter)->getComponent()->finish();
     }
 
+    finishBarrier.wait();
+    
     switch ( shutdown_mode ) {
     case SHUTDOWN_CLEAN:
         break;
@@ -617,6 +618,8 @@ void Simulation::finish() {
                 my_rank.rank, my_rank.thread);
     }
 
+    finishBarrier.wait();
+    
     // Tell the Statistics Engine that the simulation is ending
     if ( my_rank.thread == 0 ) {
         StatisticProcessingEngine::getInstance()->endOfSimulation();
@@ -822,6 +825,7 @@ void Simulation::resizeBarriers(uint32_t nthr) {
     setupBarrier.resize(nthr);
     runBarrier.resize(nthr);
     exitBarrier.resize(nthr);
+    finishBarrier.resize(nthr);
 }
 
 
@@ -833,6 +837,7 @@ Core::ThreadSafe::Barrier Simulation::initBarrier;
 Core::ThreadSafe::Barrier Simulation::setupBarrier;
 Core::ThreadSafe::Barrier Simulation::runBarrier;
 Core::ThreadSafe::Barrier Simulation::exitBarrier;
+Core::ThreadSafe::Barrier Simulation::finishBarrier;
 std::mutex Simulation::simulationMutex;
 TimeConverter* Simulation::minPartTC = NULL;
 SimTime_t Simulation::minPart;

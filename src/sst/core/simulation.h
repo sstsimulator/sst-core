@@ -301,6 +301,7 @@ private:
     static Core::ThreadSafe::Barrier setupBarrier;
     static Core::ThreadSafe::Barrier runBarrier;
     static Core::ThreadSafe::Barrier exitBarrier;
+    static Core::ThreadSafe::Barrier finishBarrier;
     static std::mutex simulationMutex;
 
 
