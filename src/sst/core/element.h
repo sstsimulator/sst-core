@@ -127,7 +127,7 @@ struct ElementLibraryInfo {
 #if SST_BUILDING_CORE
 struct ElementLibraryInfo {
 #else
-struct __attribute__ ((deprecated("Old ELI support (defined in sst/core/element.h) will be removed in version 8.0, but is still the preferred API until version 7.1.  New ELI support (defined in sst/core/elementinfo.h) is available, but experimental and subject to change until version 7.1."))) ElementLibraryInfo {
+struct __attribute__ ((deprecated("Old ELI support (defined in sst/core/element.h) will be removed in version 8.0.  Please convert to new ELI (defined in sst/core/elementinfo.h)."))) ElementLibraryInfo {
 #endif
 #endif
     const char *name;										/*!< Name of the Library. */
