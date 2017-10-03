@@ -64,7 +64,8 @@ public:
             TxEnd,          /*!< End the current lowest transaction */
             TxResp,
             TxAbort,
-            TxCommit
+            TxCommit,
+            CustomCmd       /*!< Custom memory command: Must also set custCmd opcode */
         } Command;
 
         /**
@@ -92,11 +93,12 @@ public:
         id_t id;            /*!< Unique ID to identify responses with requests */
         Addr instrPtr;      /*!< Instruction pointer associated with the operation */
         Addr virtualAddr;   /*!< Virtual address associated with the operation */
+        uint32_t custOpc;   /*!< Custom command opcode for CustomdCmd type commands */
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, dataVec &data, flags_t flags = 0, flags_t memFlags = 0) :
             cmd(cmd), addr(addr), size(size), data(data), flags(flags), memFlags(memFlags),
-            instrPtr(0), virtualAddr(0)
+            instrPtr(0), virtualAddr(0), custOpc(0xFFFF)
         {
             addrs.push_back(addr);
             id = main_id++;
@@ -105,7 +107,25 @@ public:
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, flags_t flags = 0, flags_t memFlags = 0) :
             cmd(cmd), addr(addr), size(size), flags(flags), memFlags(memFlags),
-            instrPtr(0), virtualAddr(0)
+            instrPtr(0), virtualAddr(0), custOpc(0xFFFF)
+        {
+            addrs.push_back(addr);
+            id = main_id++;
+        }
+
+        /** Constructor */
+        Request(Command cmd, Addr addr, size_t size, dataVec &data, uint32_t Opc, flags_t flags = 0, flags_t memFlags = 0) :
+            cmd(cmd), addr(addr), size(size), data(data), flags(flags), memFlags(memFlags),
+            instrPtr(0), virtualAddr(0), custOpc(Opc)
+        {
+            addrs.push_back(addr);
+            id = main_id++;
+        }
+
+        /** Constructor */
+        Request(Command cmd, Addr addr, size_t size, uint32_t Opc, flags_t flags = 0, flags_t memFlags = 0) :
+            cmd(cmd), addr(addr), size(size), flags(flags), memFlags(memFlags),
+            instrPtr(0), virtualAddr(0), custOpc(Opc)
         {
             addrs.push_back(addr);
             id = main_id++;
@@ -206,6 +226,13 @@ public:
         */
         flags_t getMemFlags(void) {
                 return memFlags;
+        }
+
+        /**
+         * @returns the custom opcode for custom request types
+         */
+        uint32_t getCustomOpc(void){
+                return custOpc;
         }
 
 
