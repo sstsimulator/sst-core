@@ -74,8 +74,13 @@ TimeConverter* TimeLord::getTimeConverter(const UnitAlgebra& ts) {
     if ( uaFactor.getValue() > static_cast<uint64_t>(MAX_SIMTIME_T) ) {
         abort.fatal(CALL_INFO,1,"Error:  Attempting to get TimeConverter for a time (%s) "
                     "which is too large for the timebase (%s)\n",
-                    ts.toString().c_str(),timeBase.toStringBestSI().c_str());
-
+                    ts.toStringBestSI().c_str(),timeBase.toStringBestSI().c_str());
+    }
+    // Check to see if period is too short (0 is special cased to not fail)
+    if ( uaFactor.getValue() < 1 && uaFactor.getValue() != 0 ) {
+        abort.fatal(CALL_INFO,1,"Error:  Attempting to get TimeConverter for a time (%s) "
+                    "which has too small of a period to be represented by the timebase (%s)\n",
+                    ts.toStringBestSI().c_str(),timeBase.toStringBestSI().c_str());
     }
     simCycles = uaFactor.getRoundedValue();
     TimeConverter* tc = getTimeConverter(simCycles);
