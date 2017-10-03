@@ -275,7 +275,6 @@ void SharedRegionManagerImpl::updateState(bool finalize)
 {
     std::lock_guard<std::mutex> lock(mtx);
     
-    // if ( finalize ) {
 #ifdef SST_CONFIG_HAVE_MPI
     // Exchange data between ranks
     int myRank = Simulation::getSimulation()->getRank().rank;
@@ -375,7 +374,6 @@ void SharedRegionManagerImpl::updateState(bool finalize)
 
     }
 #endif
-    // }
 
     for ( auto &&rii = regions.begin() ; rii != regions.end() ; ++rii ) {
         RegionInfo &ri = rii->second;
