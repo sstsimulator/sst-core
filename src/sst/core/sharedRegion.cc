@@ -275,106 +275,105 @@ void SharedRegionManagerImpl::updateState(bool finalize)
 {
     std::lock_guard<std::mutex> lock(mtx);
     
-    if ( finalize ) {
 #ifdef SST_CONFIG_HAVE_MPI
-        int myRank = Simulation::getSimulation()->getRank().rank;
-        if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) {
+    // Exchange data between ranks
+    int myRank = Simulation::getSimulation()->getRank().rank;
+    if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) {
 
-            std::map<std::string, CommInfo_t> commInfo;
+        std::map<std::string, CommInfo_t> commInfo;
 
-            std::set<std::pair<std::string, size_t> > myKeys;
-            std::vector<std::set<std::pair<std::string, size_t> > > allKeysVec;
-            for ( auto &&rii = regions.begin() ; rii != regions.end() ; ++rii ) {
-                if ( rii->second.shouldMerge() ) {
-                    CommInfo_t ci;
-                    ci.region = &(rii->second);
+        std::set<std::pair<std::string, size_t> > myKeys;
+        std::vector<std::set<std::pair<std::string, size_t> > > allKeysVec;
+        for ( auto &&rii = regions.begin() ; rii != regions.end() ; ++rii ) {
+            if ( rii->second.shouldMerge() ) {
+                CommInfo_t ci;
+                ci.region = &(rii->second);
 
-                    RegionInfo::RegionMergeInfo *rmi = rii->second.getMergeInfo();
-                    ci.sendBuffer = Comms::serialize(rmi);
+                RegionInfo::RegionMergeInfo *rmi = rii->second.getMergeInfo();
+                ci.sendBuffer = Comms::serialize(rmi);
 
-                    myKeys.insert(std::make_pair(rii->first, ci.sendBuffer.size()));
-                    commInfo[rii->first] = ci;
+                myKeys.insert(std::make_pair(rii->first, ci.sendBuffer.size()));
+                commInfo[rii->first] = ci;
+            }
+        }
+
+        Comms::all_gather(myKeys, allKeysVec);
+
+        size_t numRecv = 0;
+        for ( size_t rank = 0 ; rank < allKeysVec.size() ; rank++ ) {
+            if ( rank == (size_t)myRank ) continue;
+            // Foreach key in not-me-rank, see if I have it, too.
+            // If so, record as such for future merging
+            for ( auto && j = allKeysVec[rank].begin() ; j != allKeysVec[rank].end() ; ++j ) {
+                auto mItr = regions.find(j->first);
+                if ( mItr != regions.end() ) {
+                    numRecv++;
                 }
             }
+        }
 
-            Comms::all_gather(myKeys, allKeysVec);
+        if ( numRecv > 0 ) {
 
-            size_t numRecv = 0;
+            std::vector<std::vector<char> > receives(numRecv);
+            MPI_Request recvReqs[numRecv];
+            MPI_Request sendReqs[numRecv];
+            size_t req = 0;
             for ( size_t rank = 0 ; rank < allKeysVec.size() ; rank++ ) {
                 if ( rank == (size_t)myRank ) continue;
-                // Foreach key in not-me-rank, see if I have it, too.
+                // Foreach key in rank, see if I have it, too.
                 // If so, record as such for future merging
                 for ( auto && j = allKeysVec[rank].begin() ; j != allKeysVec[rank].end() ; ++j ) {
                     auto mItr = regions.find(j->first);
                     if ( mItr != regions.end() ) {
-                        numRecv++;
-                    }
-                }
-            }
+                        CommInfo_t &ci = commInfo[mItr->first];
+                        ci.tgtRanks.push_back(rank);
 
-            if ( numRecv > 0 ) {
-
-                std::vector<std::vector<char> > receives(numRecv);
-                MPI_Request recvReqs[numRecv];
-                MPI_Request sendReqs[numRecv];
-                size_t req = 0;
-                for ( size_t rank = 0 ; rank < allKeysVec.size() ; rank++ ) {
-                     if ( rank == (size_t)myRank ) continue;
-                    // Foreach key in rank, see if I have it, too.
-                    // If so, record as such for future merging
-                    for ( auto && j = allKeysVec[rank].begin() ; j != allKeysVec[rank].end() ; ++j ) {
-                        auto mItr = regions.find(j->first);
-                        if ( mItr != regions.end() ) {
-                            CommInfo_t &ci = commInfo[mItr->first];
-                            ci.tgtRanks.push_back(rank);
-
-                            // Post receive
-                            receives[req].resize(j->second);
-                            MPI_Irecv(receives[req].data(), receives[req].size(), MPI_BYTE, rank, 0, MPI_COMM_WORLD, &recvReqs[req]);
-                            ++req;
-                        }
-                    }
-                }
-
-                // Sends merge information
-                req = 0;
-                for ( auto && ciItr = commInfo.begin() ; ciItr != commInfo.end() ; ++ciItr ) {
-                    CommInfo_t &ci = ciItr->second;
-                    for ( auto && rank = ci.tgtRanks.begin() ; rank != ci.tgtRanks.end() ; ++rank ) {
-                        MPI_Isend(ci.sendBuffer.data(), ci.sendBuffer.size(), MPI_BYTE, *rank, 0, MPI_COMM_WORLD, &sendReqs[req]);
+                        // Post receive
+                        receives[req].resize(j->second);
+                        MPI_Irecv(receives[req].data(), receives[req].size(), MPI_BYTE, rank, 0, MPI_COMM_WORLD, &recvReqs[req]);
                         ++req;
                     }
                 }
-
-                // Wait for Recvs, and merge
-                for ( size_t i = 0 ; i < numRecv ; i++ ) {
-                    int index;
-                    MPI_Status status;
-                    MPI_Waitany(numRecv, recvReqs, &index, &status);
-
-                    RegionInfo::RegionMergeInfo *rmi = Comms::deserialize<RegionInfo::RegionMergeInfo>(receives[index]);
-                    RegionInfo& ri = regions[rmi->getKey()];
-                    ri.setProtected(false);
-                    rmi->merge(&ri);
-
-                    delete rmi;
-                }
-
-                // WaitAll on sends
-                MPI_Waitall(numRecv, sendReqs, MPI_STATUSES_IGNORE);
-
             }
 
-            // Print out the regions
-            if ( myRank == 0 ) {
-                for ( auto it = regions.begin(); it != regions.end(); ++it) {
-                    
+            // Sends merge information
+            req = 0;
+            for ( auto && ciItr = commInfo.begin() ; ciItr != commInfo.end() ; ++ciItr ) {
+                CommInfo_t &ci = ciItr->second;
+                for ( auto && rank = ci.tgtRanks.begin() ; rank != ci.tgtRanks.end() ; ++rank ) {
+                    MPI_Isend(ci.sendBuffer.data(), ci.sendBuffer.size(), MPI_BYTE, *rank, 0, MPI_COMM_WORLD, &sendReqs[req]);
+                    ++req;
                 }
             }
+
+            // Wait for Recvs, and merge
+            for ( size_t i = 0 ; i < numRecv ; i++ ) {
+                int index;
+                MPI_Status status;
+                MPI_Waitany(numRecv, recvReqs, &index, &status);
+
+                RegionInfo::RegionMergeInfo *rmi = Comms::deserialize<RegionInfo::RegionMergeInfo>(receives[index]);
+                RegionInfo& ri = regions[rmi->getKey()];
+                ri.setProtected(false);
+                rmi->merge(&ri);
+
+                delete rmi;
+            }
+
+            // WaitAll on sends
+            MPI_Waitall(numRecv, sendReqs, MPI_STATUSES_IGNORE);
 
         }
-#endif
+
+        // Print out the regions
+        if ( myRank == 0 ) {
+            for ( auto it = regions.begin(); it != regions.end(); ++it) {
+                    
+            }
+        }
+
     }
+#endif
 
     for ( auto &&rii = regions.begin() ; rii != regions.end() ; ++rii ) {
         RegionInfo &ri = rii->second;
