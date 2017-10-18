@@ -25,6 +25,15 @@
 #include "sst/core/rankSyncParallelSkip.h"
 #include "sst/core/threadSyncSimpleSkip.h"
 
+#ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
+#include <mpi.h>
+REENABLE_WARNING
+#define UNUSED_WO_MPI(x) x
+#else
+#define UNUSED_WO_MPI(x) UNUSED(x)
+#endif
+
 namespace SST {
 
 // Static data members
@@ -44,7 +53,24 @@ public:
     ActivityQueue* registerLink(const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), LinkId_t UNUSED(link_id), Link* UNUSED(link)) override { return NULL; }
 
     void execute(int UNUSED(thread)) override {}
-    void exchangeLinkInitData(int UNUSED(thread), std::atomic<int>& UNUSED(msg_count)) override {}
+    void exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count)) override {
+        // Even though there are no links crossing ranks, we still
+        // need to make sure every rank does the same number of init
+        // cycles so the shared memory regions intialization works.
+        
+#ifdef SST_CONFIG_HAVE_MPI
+        if ( thread != 0 ) {
+            return;
+        }
+        
+        // Do an allreduce to see if there were any messages sent
+        int input = msg_count;
+
+        int count;
+        MPI_Allreduce( &input, &count, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );
+        msg_count = count;
+#endif
+    }
     void finalizeLinkConfigurations() override {}
 
     SimTime_t getNextSyncTime() override { return nextSyncTime; }

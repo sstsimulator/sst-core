@@ -17,6 +17,9 @@
 
 #include "sst/core/model/element_python.h"
 
+#include "sst/core/output.h"
+#include "sst/core/simulation.h"
+
 namespace SST {
 
 SSTElementPythonModule::SSTElementPythonModule(std::string library) :
@@ -34,7 +37,7 @@ SSTElementPythonModule::addPrimaryModule(char* file)
         primary_module = file;
     }
     else {
-        // Need to fatal
+        Simulation::getSimulationOutput().fatal(CALL_INFO,1,"SSTElementPythonModule::addPrimaryModule: Attempt to add second primary module.\n");
     }
 }
 
@@ -47,6 +50,9 @@ SSTElementPythonModule::addSubModule(std::string name, char* file)
 void*
 SSTElementPythonModule::load()
 {
+    if ( primary_module == NULL ) {
+        Simulation::getSimulationOutput().fatal(CALL_INFO,1,"SSTElementPythonModule: Primary module not set.  Use addPrimaryModule().\n");
+    }
     PyObject *code = Py_CompileString(primary_module, pylibrary.c_str(), Py_file_input);
     PyObject *module = PyImport_ExecCodeModule(const_cast<char*>(sstlibrary.c_str()), code);
     
