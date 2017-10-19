@@ -85,8 +85,7 @@ ThreadSync::execute()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                printf("Link not found in map!\n");
-                abort();
+                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 SimTime_t delay = ev->getDeliveryTime() - sim->getCurrentSimCycle();
                 link->second->send(delay,ev);
@@ -96,7 +95,6 @@ ThreadSync::execute()
     }
 
     Exit* exit = sim->getExit();
-    // std::cout << "ThreadSync(" << Simulation::getSimulation()->getRank().thread << ")::ref_count = " << exit->getRefCount() << std::endl;
     if ( single_rank && exit->getRefCount() == 0 ) {
         endSimulation(exit->getEndTime());
     }
@@ -108,7 +106,7 @@ ThreadSync::execute()
 }
 
 void
-ThreadSync::processLinkInitData()
+ThreadSync::processLinkUntimedData()
 {
     // Need to walk through all the queues and send the data to the
     // correct links
@@ -119,10 +117,9 @@ ThreadSync::processLinkInitData()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                printf("Link not found in map!\n");
-                abort();
+                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
-                link->second->sendInitData_sync(ev);
+                link->second->sendUntimedData_sync(ev);
             }
         }
         queue->clear();

@@ -42,10 +42,11 @@ public:
     void after() override;
     void execute(void) override;
 
-    /** Cause an exchange of Initialization Data to occur */
-    void processLinkInitData() override;
+    /** Cause an exchange of Untimed Data to occur */
+    void processLinkUntimedData() override;
     /** Finish link configuration */
     void finalizeLinkConfigurations() override;
+    void prepareForComplete() override;
 
     /** Register a Link which this Sync Object is responsible for */
     void registerLink(LinkId_t link_id, Link* link) override;
@@ -63,7 +64,6 @@ private:
     int thread;
     static SimTime_t localMinimumNextActivityTime;
     Simulation* sim;
-    // static bool disabled;
     static Core::ThreadSafe::Barrier barrier[3];
     double totalWaitTime;
     bool single_rank;

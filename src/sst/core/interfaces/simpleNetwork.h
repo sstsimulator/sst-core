@@ -272,6 +272,29 @@ public:
      */
     virtual Request* recvInitData() = 0;
 
+    /**
+     * Sends a network request during the init() or complete() phase
+     *
+     * For now, simply call sendInitData.  Once that call is
+     * deprecated and removed, this will become a pure virtual
+     * function.
+     */
+    virtual void sendUntimedData(Request *req) {
+        sendInitData(req);
+    }
+        
+    /**
+     * Receive any data during the init() or complete() phase.
+     * @see SST::Link::recvInitData()
+     *
+     * For now, simply call recvInitData.  Once that call is
+     * deprecated and removed, this will become a pure virtual
+     * function.
+     */
+    virtual Request* recvUntimedData() {
+        return recvInitData();
+    }
+
     // /**
     //  * Returns a handle to the underlying SST::Link
     //  */
@@ -296,6 +319,7 @@ public:
 
     virtual void setup() override {}
     virtual void init(unsigned int UNUSED(phase)) override {}
+    virtual void complete(unsigned int UNUSED(phase)) override {}
     virtual void finish() override {}
 
     /**

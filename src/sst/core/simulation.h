@@ -117,6 +117,8 @@ public:
     void setStopAtCycle( Config* cfg );
     /** Perform the init() phase of simulation */
     void initialize();
+    /** Perform the complete() phase of simulation */
+    void complete();
     /** Perform the setup() and run phases of the simulation. */
     void setup();
     void run();
@@ -298,6 +300,7 @@ private:
     static Output sim_output;
     static void resizeBarriers(uint32_t nthr);
     static Core::ThreadSafe::Barrier initBarrier;
+    static Core::ThreadSafe::Barrier completeBarrier;
     static Core::ThreadSafe::Barrier setupBarrier;
     static Core::ThreadSafe::Barrier runBarrier;
     static Core::ThreadSafe::Barrier exitBarrier;
@@ -350,11 +353,10 @@ private:
     RankInfo         my_rank;
     RankInfo         num_ranks;
     bool             independent; // true if no links leave thread (i.e. no syncs required)
-    static std::atomic<int>       init_msg_count;
-    unsigned int     init_phase;
+    static std::atomic<int>       untimed_msg_count;
+    unsigned int     untimed_phase;
     volatile sig_atomic_t lastRecvdSignal;
     ShutdownMode_t   shutdown_mode;
-    // std::map<ComponentId_t,LinkMap*> component_links;
     std::string      output_directory;
     static SharedRegionManager* sharedRegionManager;
     bool             wireUpFinished;
