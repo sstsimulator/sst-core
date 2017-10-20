@@ -28,9 +28,10 @@
 
 namespace SST { 
 
-ActivityQueue* Link::uninitQueue = NULL;
-ActivityQueue* Link::afterInitQueue = NULL;
-ActivityQueue* Link::afterRunQueue = NULL;
+// ActivityQueue* Link::uninitQueue = NULL;
+ActivityQueue* Link::uninitQueue = new UninitializedQueue("ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before setup.");
+ActivityQueue* Link::afterInitQueue = new UninitializedQueue("ERROR: Trying to call sendUntimedData/sendInitData or recvUntimedData/recvInitData during the run phase.");
+ActivityQueue* Link::afterRunQueue = new UninitializedQueue("ERROR: Trying to call send or recv during complete phase.");
     
 Link::Link(LinkId_t id) :
     rFunctor( NULL ),
@@ -39,14 +40,6 @@ Link::Link(LinkId_t id) :
     type(HANDLER),
     id(id)
 {
-    if ( uninitQueue == NULL )
-	uninitQueue = new UninitializedQueue("ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before setup.");
-    if ( afterInitQueue == NULL )
-	afterRunQueue = new UninitializedQueue("ERROR: Trying to call sendInitData or recvInitData after initialziation phase.");
-    
-    if ( afterRunQueue == NULL )
-	afterRunQueue = new UninitializedQueue("ERROR: Trying to call send or recv during complete phase.");
-    
     recvQueue = uninitQueue;
     untimedQueue = NULL;
     configuredQueue = Simulation::getSimulation()->getTimeVortex();
@@ -59,14 +52,6 @@ Link::Link() :
     type(HANDLER),
     id(-1)
 {
-    if ( uninitQueue == NULL )
-	uninitQueue = new UninitializedQueue("ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before setup.");
-    if ( afterInitQueue == NULL )
-	afterInitQueue = new UninitializedQueue("ERROR: Trying to call sendInitData or recvInitData after initialziation phase.");
-    
-    if ( afterRunQueue == NULL )
-	afterRunQueue = new UninitializedQueue("ERROR: Trying to call send or recv during complete phase.");
-
     recvQueue = uninitQueue;
     untimedQueue = NULL;
     configuredQueue = Simulation::getSimulation()->getTimeVortex();

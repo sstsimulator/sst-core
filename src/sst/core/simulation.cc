@@ -458,6 +458,7 @@ void Simulation::initialize() {
 
 void Simulation::complete() {
 
+    completeBarrier.wait();
     untimed_phase = 0;
     // Walk through all the links and call prepareForComplete()
     for ( auto &i : compInfoMap ) {

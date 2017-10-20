@@ -317,31 +317,23 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
 #endif
         }
         barrier.wait();
-        
-        sim->initialize();
 
+        sim->initialize();
         barrier.wait();
         
-        /* Run Simulation */
+        /* Run Set */
         sim->setup();
         barrier.wait();
 
         /* Run Simulation */
         sim->run();
-
         barrier.wait();
-
 
         sim->complete();
-
         barrier.wait();
-
 
         sim->finish();
-
         barrier.wait();
-    // fprintf(stderr, "thread %u release from finish() finish barrier\n", tid);
-
     }
 
     barrier.wait();
@@ -630,9 +622,6 @@ main(int argc, char *argv[])
             your_ranks.clear();
             delete your_graph;
         }
-
-        if ( *my_ranks.begin() != myRank.rank) printf("ERROR\n");
-
     }
 #endif
     ////// End Broadcast Graph //////
