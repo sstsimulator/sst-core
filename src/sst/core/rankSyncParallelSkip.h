@@ -33,7 +33,6 @@ class TimeConverter;
 class RankSyncParallelSkip : public NewRankSync {
 public:
     /** Create a new Sync object which fires with a specified period */
-    // Sync(TimeConverter* period);
     RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC);
     virtual ~RankSyncParallelSkip();
     
@@ -41,10 +40,12 @@ public:
     ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) override;
     void execute(int thread) override;
 
-    /** Cause an exchange of Initialization Data to occur */
-    void exchangeLinkInitData(int thread, std::atomic<int>& msg_count) override;
+    /** Cause an exchange of Untimed Data to occur */
+    void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) override;
     /** Finish link configuration */
     void finalizeLinkConfigurations() override;
+    /** Prepare for complete() stage */
+    void prepareForComplete() override;
 
     SimTime_t getNextSyncTime() override { return myNextSyncTime; }
     
@@ -77,7 +78,6 @@ private:
 #endif   
     };
     
-    // typedef std::map<int, std::pair<SyncQueueC*, std::vector<char>* > > comm_map_t;
     typedef std::map<RankInfo, comm_send_pair > comm_send_map_t;
     typedef std::map<RankInfo, comm_recv_pair > comm_recv_map_t;
     typedef std::map<LinkId_t, Link*> link_map_t;

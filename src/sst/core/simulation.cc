@@ -130,7 +130,7 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
     endSim(false),
     my_rank(my_rank),
     num_ranks(num_ranks),
-    init_phase(0),
+    untimed_phase(0),
     lastRecvdSignal(0),
     shutdown_mode(SHUTDOWN_CLEAN),
     wireUpFinished(false)
@@ -140,7 +140,6 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
 
     timeVortex = new TimeVortex;
     if( my_rank.thread == 0 ) {
-        // m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), num_ranks.rank == 1 );
         m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), min_part == MAX_SIMTIME_T );
     }
 
@@ -209,7 +208,6 @@ Simulation::getLocalMinimumNextActivityTime()
 void
 Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank), SimTime_t min_part )
 {
-    // TraceFunction trace(CALL_INFO_LONG);    
     // Set minPartTC (only thread 0 will do this)
     Simulation::minPart = min_part;
     if ( my_rank.thread == 0 ) {
@@ -274,25 +272,16 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank)
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.
-    // if ( min_part == MAX_SIMTIME_T ) {
-    //     independent = true;
-    //     for ( int i = 0; i < num_ranks.thread; i++ ) {
-    //         if ( interThreadLatencies[i] != MAX_SIMTIME_T ) independent = false;
-    //     }
-    // }
     if ( min_part == MAX_SIMTIME_T && cross_thread_links == 0 ) {
         independent = true;
     }
     else {
         independent = false;
     }
-    // if ( independent ) std::cout << "thread " << my_rank.thread <<  " is independent" << std::endl;
 }
     
 int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
-    // TraceFunction trace(CALL_INFO_LONG);    
-    
     // Create the Statistics Engine
     if ( myRank.thread == 0 ) {
     }
@@ -388,7 +377,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
             ActivityQueue* sync_q = syncManager->registerLink(rank[remote],rank[local],clink.id,lp.getRight());
 
             lp.getRight()->configuredQueue = sync_q;
-            lp.getRight()->initQueue = sync_q;
+            lp.getRight()->untimedQueue = sync_q;
         }
 
     }
@@ -426,29 +415,28 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 }
 
 void Simulation::initialize() {
-    // TraceFunction trace(CALL_INFO_LONG);    
     bool done = false;
     initBarrier.wait();
     if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
 
     do {
         initBarrier.wait();
-        if ( my_rank.thread == 0 ) init_msg_count = 0;
+        if ( my_rank.thread == 0 ) untimed_msg_count = 0;
         initBarrier.wait();
                 
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
             // printf("Calling init on %s: %p\n",(*iter)->getName().c_str(),(*iter)->getComponent());
-            (*iter)->getComponent()->init(init_phase);
+            (*iter)->getComponent()->init(untimed_phase);
         }
 
         initBarrier.wait();
-        syncManager->exchangeLinkInitData(init_msg_count);
+        syncManager->exchangeLinkUntimedData(untimed_msg_count);
         initBarrier.wait();
         // We're done if no new messages were sent
-        if ( init_msg_count == 0 ) done = true;
+        if ( untimed_msg_count == 0 ) done = true;
         if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
 
-        init_phase++;
+        untimed_phase++;
     } while ( !done);
 
     // Walk through all the links and call finalizeConfiguration
@@ -468,10 +456,42 @@ void Simulation::initialize() {
 
 }
 
-void Simulation::setup() {  
+void Simulation::complete() {
 
-    // TraceFunction(CALL_INFO_LONG);    
-    // Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
+    completeBarrier.wait();
+    untimed_phase = 0;
+    // Walk through all the links and call prepareForComplete()
+    for ( auto &i : compInfoMap ) {
+        i->prepareForComplete();
+    }
+
+    syncManager->prepareForComplete();
+
+    bool done = false;
+    completeBarrier.wait();
+
+    do {
+        completeBarrier.wait();
+        if ( my_rank.thread == 0 ) untimed_msg_count = 0;
+        completeBarrier.wait();
+                
+        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
+            (*iter)->getComponent()->complete(untimed_phase);
+        }
+
+        completeBarrier.wait();
+        syncManager->exchangeLinkUntimedData(untimed_msg_count);
+        completeBarrier.wait();
+        // We're done if no new messages were sent
+        if ( untimed_msg_count == 0 ) done = true;
+
+        untimed_phase++;
+    } while ( !done);
+
+
+}
+
+void Simulation::setup() {  
 
     setupBarrier.wait();
     
@@ -487,8 +507,6 @@ void Simulation::setup() {
 }
 
 void Simulation::run() {
-    // TraceFunction trace(CALL_INFO_LONG);
-
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.
     // In general, this shouldn't happen, especially for parallel
@@ -514,18 +532,14 @@ void Simulation::run() {
     if ( my_rank.thread == 0 )
         StatisticProcessingEngine::getInstance()->startOfSimulation();
 
-    // wait_my_turn_start(runBarrier, my_rank.thread, num_ranks.thread);
-    // sim_output.output("%d: Start main event loop\n",my_rank.thread);
     std::string header = SST::to_string(my_rank.rank);
     header += ", ";
     header += SST::to_string(my_rank.thread);
     header += ":  ";
-    // wait_my_turn_end(runBarrier, my_rank.thread, num_ranks.thread);
     while( LIKELY( ! endSim ) ) {
         currentSimCycle = timeVortex->front()->getDeliveryTime();
         currentPriority = timeVortex->front()->getPriority();
         current_activity = timeVortex->pop();
-        //current_activity->print(header, sim_output);
         current_activity->execute();
 
 
@@ -552,9 +566,7 @@ void Simulation::run() {
     /* We shouldn't need to do this, but to be safe... */
     ThreadSync::disable();
 
-    // fprintf(stderr, "thread %u waiting on runLoop finish barrier\n", my_rank.thread);
     runBarrier.wait();  // TODO<- Is this needed?
-    // fprintf(stderr, "thread %u released from runLoop finish barrier\n", my_rank.thread);
     if (num_ranks.rank != 1 && num_ranks.thread == 0) delete m_exit;
 }
 
@@ -822,6 +834,7 @@ void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_
 
 void Simulation::resizeBarriers(uint32_t nthr) {
     initBarrier.resize(nthr);
+    completeBarrier.resize(nthr);
     setupBarrier.resize(nthr);
     runBarrier.resize(nthr);
     exitBarrier.resize(nthr);
@@ -834,6 +847,7 @@ Factory* Simulation::factory;
 TimeLord Simulation::timeLord;
 Output Simulation::sim_output;
 Core::ThreadSafe::Barrier Simulation::initBarrier;
+Core::ThreadSafe::Barrier Simulation::completeBarrier;
 Core::ThreadSafe::Barrier Simulation::setupBarrier;
 Core::ThreadSafe::Barrier Simulation::runBarrier;
 Core::ThreadSafe::Barrier Simulation::exitBarrier;
@@ -848,7 +862,7 @@ SimTime_t Simulation::minPart;
 SharedRegionManager* Simulation::sharedRegionManager = new SharedRegionManagerImpl();
 std::unordered_map<std::thread::id, Simulation*> Simulation::instanceMap;
 std::vector<Simulation*> Simulation::instanceVec;
-std::atomic<int> Simulation::init_msg_count;
+std::atomic<int> Simulation::untimed_msg_count;
 Exit* Simulation::m_exit;
 
 

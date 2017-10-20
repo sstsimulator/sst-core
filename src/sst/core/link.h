@@ -119,9 +119,18 @@ public:
     LinkId_t getId() { return id; }
 
     /** Send data during the init() phase. */
-    void sendInitData(Event* init_data);
+    void sendUntimedData(Event* data);
     /** Receive an event (if any) during the init() phase */
-    Event* recvInitData();
+    Event* recvUntimedData();
+    
+    /** Send data during the complete() phase. */
+    void sendInitData(Event* init_data) {
+        sendUntimedData(init_data);
+    }
+    /** Receive an event (if any) during the complete() phase */
+    Event* recvInitData() {
+        return recvUntimedData();
+    }
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     void setSendingComponentInfo(const std::string& comp_in, const std::string& type_in, const std::string& port_in) {
@@ -135,8 +144,6 @@ public:
     const std::string& getSendingPort() { return port; }
 
 #endif
-    // UnitAlgebra getTotalInputLatency();
-    // UnitAlgebra getTotalOutputLatency();
 
 protected:
     Link();
@@ -144,13 +151,15 @@ protected:
     /** Queue of events to be received by the owning component */
     ActivityQueue* recvQueue;
     /** Queue of events to be received during init by the owning component */
-    ActivityQueue* initQueue;
+    ActivityQueue* untimedQueue;
     /** Currently active Queue */
     ActivityQueue* configuredQueue;
     /** Unitialized queue.  Used for error detection */
     static ActivityQueue* uninitQueue;
     /** Unitialized queue.  Used for error detection */
     static ActivityQueue* afterInitQueue;
+    /** Unitialized queue.  Used for error detection */
+    static ActivityQueue* afterRunQueue;
 
     /** Recieve functor. This functor is set when the link is connected.
       Determines what the receiver wants to be called
@@ -176,8 +185,9 @@ protected:
 private:
     Link( const Link& l );
 
-    void sendInitData_sync(Event* init_data);
+    void sendUntimedData_sync(Event* data);
     void finalizeConfiguration();
+    void prepareForComplete();
     
     Type_t type;
     LinkId_t id;
@@ -187,8 +197,6 @@ private:
     std::string ctype;
     std::string port;
 #endif
-    
-    //    friend class SST::Sync;
     
 };
 

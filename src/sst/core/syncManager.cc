@@ -39,7 +39,7 @@ namespace SST {
 // Static data members
 NewRankSync* SyncManager::rankSync = NULL;
 Core::ThreadSafe::Barrier SyncManager::RankExecBarrier[6];
-Core::ThreadSafe::Barrier SyncManager::LinkInitBarrier[3];
+Core::ThreadSafe::Barrier SyncManager::LinkUntimedBarrier[3];
 SimTime_t SyncManager::next_rankSync = MAX_SIMTIME_T;
 
 class EmptyRankSync : public NewRankSync {
@@ -53,7 +53,7 @@ public:
     ActivityQueue* registerLink(const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), LinkId_t UNUSED(link_id), Link* UNUSED(link)) override { return NULL; }
 
     void execute(int UNUSED(thread)) override {}
-    void exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count)) override {
+    void exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count)) override {
         // Even though there are no links crossing ranks, we still
         // need to make sure every rank does the same number of init
         // cycles so the shared memory regions intialization works.
@@ -73,6 +73,8 @@ public:
     }
     void finalizeLinkConfigurations() override {}
 
+    void prepareForComplete() override {}
+
     SimTime_t getNextSyncTime() override { return nextSyncTime; }
 
     TimeConverter* getMaxPeriod() {return max_period;}
@@ -90,8 +92,9 @@ public:
     void before() override {}
     void after() override {}
     void execute() override {}
-    void processLinkInitData() override {}
+    void processLinkUntimedData() override {}
     void finalizeLinkConfigurations() override {}
+    void prepareForComplete() override {}
 
     /** Register a Link which this Sync Object is responsible for */
     void registerLink(LinkId_t UNUSED(link_id), Link* UNUSED(link)) override {}
@@ -106,15 +109,12 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeCo
     threadSync(NULL),
     min_part(min_part)
 {
-    // TraceFunction trace(CALL_INFO_LONG);    
-
     sim = Simulation::getSimulation();
 
 
     if ( rank.thread == 0  ) {
-        // if ( num_ranks.rank > 1 ) {
         for ( auto &b : RankExecBarrier ) { b.resize(num_ranks.thread); }
-        for ( auto &b : LinkInitBarrier ) { b.resize(num_ranks.thread); }
+        for ( auto &b : LinkUntimedBarrier ) { b.resize(num_ranks.thread); }
         if ( min_part != MAX_SIMTIME_T ) {
             if ( num_ranks.thread == 1 ) {
                 rankSync = new RankSyncSerialSkip(/*num_ranks,*/ minPartTC);
@@ -151,14 +151,11 @@ SyncManager::~SyncManager() {}
 ActivityQueue*
 SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link)
 {
-    // TraceFunction trace(CALL_INFO_LONG);    
     if ( to_rank == from_rank ) {
-        // trace.getOutput().output(CALL_INFO, "The impossible happened\n");
         return NULL;  // This should never happen
     }
 
     if ( to_rank.rank == from_rank.rank ) {
-        // TraceFunction trace2(CALL_INFO);
         // Same rank, different thread.  Need to send the right data
         // to the two ThreadSync objects for the threads on either
         // side of the link
@@ -168,7 +165,6 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Li
 
         // Need to get target queue from the remote ThreadSync
         NewThreadSync* remoteSync = Simulation::instanceVec[to_rank.thread]->syncManager->threadSync;
-        // trace.getOutput().output(CALL_INFO,"queue = %p\n",remoteSync->getQueueForThread(from_rank.thread));
         return remoteSync->getQueueForThread(from_rank.thread);
     }
     else {
@@ -180,8 +176,6 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Li
 void
 SyncManager::execute(void)
 {
-    // TraceFunction trace(CALL_INFO_LONG);    
-    // trace.getOutput().output(CALL_INFO, "next_sync_type @ switch = %d\n", next_sync_type);
     switch ( next_sync_type ) {
     case RANK:
         // Need to make sure all threads have reached the sync to
@@ -201,15 +195,12 @@ SyncManager::execute(void)
         RankExecBarrier[1].wait();
         
         // Now call the actual RankSync
-        // trace.getOutput().output(CALL_INFO, "About to enter rankSync->execute()\n");
         rankSync->execute(rank.thread);
-        // trace.getOutput().output(CALL_INFO, "Complete rankSync->execute()\n");
 
         RankExecBarrier[2].wait();
 
         // Now call the threadSync after() call
         threadSync->after();
-        // trace.getOutput().output(CALL_INFO, "Complete threadSync->after()\n");
 
         RankExecBarrier[3].wait();
         
@@ -231,34 +222,31 @@ SyncManager::execute(void)
                 endSimulation(exit->getEndTime());
             }
         }
-        // if ( exit != NULL ) exit->check();
         
         break;
     default:
         break;
     }
     computeNextInsert();
-    // trace.getOutput().output(CALL_INFO, "next_sync_type = %d\n", next_sync_type);
     RankExecBarrier[5].wait();
 }
 
-/** Cause an exchange of Initialization Data to occur */
+/** Cause an exchange of Untimed Data to occur */
 void
-SyncManager::exchangeLinkInitData(std::atomic<int>& msg_count)
+SyncManager::exchangeLinkUntimedData(std::atomic<int>& msg_count)
 {
     // TraceFunction trace(CALL_INFO_LONG);    
-    LinkInitBarrier[0].wait();
-    threadSync->processLinkInitData();
-    LinkInitBarrier[1].wait();
-    rankSync->exchangeLinkInitData(rank.thread, msg_count);
-    LinkInitBarrier[2].wait();
+    LinkUntimedBarrier[0].wait();
+    threadSync->processLinkUntimedData();
+    LinkUntimedBarrier[1].wait();
+    rankSync->exchangeLinkUntimedData(rank.thread, msg_count);
+    LinkUntimedBarrier[2].wait();
 }
 
 /** Finish link configuration */
 void
 SyncManager::finalizeLinkConfigurations()
 {
-    // TraceFunction trace(CALL_INFO_LONG);    
     threadSync->finalizeLinkConfigurations();
     // Only thread 0 should call finalize on rankSync
     if ( rank.thread == 0 ) rankSync->finalizeLinkConfigurations();
@@ -268,21 +256,25 @@ SyncManager::finalizeLinkConfigurations()
     computeNextInsert();
 }
 
+/** Prepare for complete() phase */
+void
+SyncManager::prepareForComplete()
+{
+    threadSync->prepareForComplete();
+    // Only thread 0 should call finalize on rankSync
+    if ( rank.thread == 0 ) rankSync->prepareForComplete();
+}
+
 void
 SyncManager::computeNextInsert()
 {
-    // TraceFunction trace(CALL_INFO_LONG);    
-    // trace.getOutput().output(CALL_INFO,"%" PRIu64 ", %" PRIu64 ", %" PRIu64 "\n",
-    //                          sim->getCurrentSimCycle(), rankSync->getNextSyncTime(), threadSync->getNextSyncTime());
     if ( rankSync->getNextSyncTime() <= threadSync->getNextSyncTime() ) {
         next_sync_type = RANK;
         sim->insertActivity(rankSync->getNextSyncTime(), this);
-        // sim->getSimulationOutput().output(CALL_INFO,"Next insert at: %" PRIu64 " (rank)\n",rankSync->getNextSyncTime());
     }
     else {
         next_sync_type = THREAD;
         sim->insertActivity(threadSync->getNextSyncTime(), this);
-        // sim->getSimulationOutput().output(CALL_INFO,"Next insert at: %" PRIu64 " (thread)\n",threadSync->getNextSyncTime());
     }
 }
 

@@ -317,26 +317,23 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
 #endif
         }
         barrier.wait();
-        
-        sim->initialize();
 
+        sim->initialize();
         barrier.wait();
         
-        /* Run Simulation */
+        /* Run Set */
         sim->setup();
         barrier.wait();
 
         /* Run Simulation */
         sim->run();
-    // fprintf(stderr, "thread %u waiting on run finish barrier\n", tid);
         barrier.wait();
-    // fprintf(stderr, "thread %u release from run finish barrier\n", tid);
+
+        sim->complete();
+        barrier.wait();
 
         sim->finish();
-    // fprintf(stderr, "thread %u waiting on finish() finish barrier\n", tid);
         barrier.wait();
-    // fprintf(stderr, "thread %u release from finish() finish barrier\n", tid);
-
     }
 
     barrier.wait();
@@ -349,7 +346,6 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
 
     info.max_tv_depth = sim->getTimeVortexMaxDepth();
     info.current_tv_depth = sim->getTimeVortexCurrentDepth();
-//    info.sync_data_size = sim->getSyncQueueDataSize();
 
     delete sim;
 
@@ -561,7 +557,6 @@ main(int argc, char *argv[])
         //     min_part = Simulation::getTimeLord()->getSimCycles("1us","");
         // }
 
-        // broadcast(world, min_part, 0);
         Comms::broadcast(min_part, 0);
 #endif
     }
@@ -627,9 +622,6 @@ main(int argc, char *argv[])
             your_ranks.clear();
             delete your_graph;
         }
-
-        if ( *my_ranks.begin() != myRank.rank) cout << "ERROR" << endl;
-
     }
 #endif
     ////// End Broadcast Graph //////
@@ -694,7 +686,6 @@ main(int argc, char *argv[])
     double total_end_time = sst_get_cpu_time();
 
     for ( uint32_t i = 1 ; i < world_size.thread ; i++ ) {
-        // g_output.output(CALL_INFO,"simulated_time = %s, %s\n",threadInfo[0].simulated_time.toStringBestSI().c_str(),threadInfo[1].simulated_time.toStringBestSI().c_str());
         threadInfo[0].simulated_time = std::max(threadInfo[0].simulated_time, threadInfo[i].simulated_time);
         threadInfo[0].run_time = std::max(threadInfo[0].run_time, threadInfo[i].run_time);
         threadInfo[0].build_time = std::max(threadInfo[0].build_time, threadInfo[i].build_time);
@@ -840,7 +831,6 @@ main(int argc, char *argv[])
 
 
 #ifdef SST_CONFIG_HAVE_MPI
-    // delete mpiEnv;
     MPI_Finalize();
 #endif
 

@@ -66,7 +66,6 @@ RankSyncSerialSkip::~RankSyncSerialSkip()
     
 ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& UNUSED(from_rank), LinkId_t link_id, Link* link)
 {
-    // TraceFunction trace(CALL_INFO_LONG);
     SyncQueue* queue;
     if ( comm_map.count(to_rank.rank) == 0 ) {
         queue = comm_map[to_rank.rank].squeue = new SyncQueue();
@@ -81,16 +80,20 @@ ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const R
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     link->setSendingComponentInfo("SYNC", "SYNC", "");
 #endif
-    // trace.getOutput().output(CALL_INFO,"queue = %p\n",queue);
     return queue;
 }
 
 void
 RankSyncSerialSkip::finalizeLinkConfigurations() {
-    // TraceFunction trace(CALL_INFO_LONG);
     for (link_map_t::iterator i = link_map.begin() ; i != link_map.end() ; ++i) {
-        // i->second->finalizeConfiguration();
         finalizeConfiguration(i->second);
+    }
+}
+
+void
+RankSyncSerialSkip::prepareForComplete() {
+    for (link_map_t::iterator i = link_map.begin() ; i != link_map.end() ; ++i) {
+        prepareForCompleteInt(i->second);
     }
 }
 
@@ -109,20 +112,12 @@ RankSyncSerialSkip::execute(int thread)
 {
     if ( thread == 0 ) {
         exchange();
-        // SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
-        // Simulation::getSimulation()->insertActivity( next, this );
-    }
-    else {
-        // SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + period->getFactor();
-        // Simulation::getSimulation()->insertActivity( next, this );
     }
 }
 
 void
 RankSyncSerialSkip::exchange(void)
 {
-    // Simulation::getSimulation()->getSimulationOutput().output("Entering RankSyncSerialSkip::execute()\n");
-    // static Output tmp_debug("@r: @t:  ",5,-1,Output::FILE);
 #ifdef SST_CONFIG_HAVE_MPI
     
     //Maximum number of outstanding requests is 3 times the number
@@ -174,7 +169,6 @@ RankSyncSerialSkip::exchange(void)
         char* buffer = i->second.rbuf;
         
         SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(buffer);
-//            int count = hdr->count;
         unsigned int size = hdr->buffer_size;
         int mode = hdr->mode;
         
@@ -206,8 +200,7 @@ RankSyncSerialSkip::exchange(void)
             Event* ev = static_cast<Event*>(activities[j]);
             link_map_t::iterator link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                printf("Link not found in map!\n");
-                abort();
+                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 // Need to figure out what the "delay" is for this event.
                 SimTime_t delay = ev->getDeliveryTime() - current_cycle;
@@ -217,20 +210,6 @@ RankSyncSerialSkip::exchange(void)
 
         activities.clear();
 
-        // for ( int j = 0; j < count; j++ ) {
-        //     Event* ev;
-        //     ia >> ev;
-        
-        //     link_map_t::iterator link = link_map.find(ev->getLinkId());
-        //     if (link == link_map.end()) {
-        //         printf("Link not found in map!\n");
-        //         abort();
-        //     } else {
-        //         // Need to figure out what the "delay" is for this event.
-        //         SimTime_t delay = ev->getDeliveryTime() - current_cycle;
-        //         link->second->send(delay,ev);
-        //     }
-        // }
     }
 
     // Clear the SyncQueues used to send the data after all the sends have completed
@@ -256,24 +235,18 @@ RankSyncSerialSkip::exchange(void)
     MPI_Allreduce( &input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD );
 
     myNextSyncTime = min_time + max_period->getFactor();
-    
-    // tmp_debug.output(CALL_INFO,"  my_time: %" PRIu64 ", min_time: %" PRIu64 "\n",input, min_time);
-    
-    // SimTime_t next = min_time + max_period->getFactor();
-    // sim->insertActivity( next, this );
 #endif
 }
 
 void
-RankSyncSerialSkip::exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count))
+RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count))
 {
-    // TraceFunction trace(CALL_INFO_LONG);
 #ifdef SST_CONFIG_HAVE_MPI
     if ( thread != 0 ) {
         return;
     }
-    //Maximum number of outstanding requests is 3 times the number
-    // of ranks I communicate with (1 recv, 2 sends per rank)
+    // Maximum number of outstanding requests is 3 times the number of
+    // ranks I communicate with (1 recv, 2 sends per rank)
     MPI_Request sreqs[2 * comm_map.size()];
     MPI_Request rreqs[comm_map.size()];
     int rreq_count = 0;
@@ -289,10 +262,8 @@ RankSyncSerialSkip::exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<
         int tag = 1;
         // Check to see if remote queue is big enough for data
         if ( i->second.remote_size < hdr->buffer_size ) {
-            // std::cout << i->second.remote_size << ", " << hdr->buffer_size << std::endl;
             // not big enough, send message that will tell remote side to get larger buffer
             hdr->mode = 1;
-            // std::cout << "MPI_Isend of header only to " << i->first << " with tag " << tag << std::endl;
             MPI_Isend(send_buffer, sizeof(SyncQueue::Header), MPI_BYTE, i->first/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
             i->second.remote_size = hdr->buffer_size;
             tag = 2;
@@ -300,7 +271,6 @@ RankSyncSerialSkip::exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<
         else {
             hdr->mode = 0;
         }
-        // std::cout << "MPI_Isend of whole buffer to " << i->first << " with tag " << tag << std::endl;
         MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE, i->first/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
         
         // Post all the receives
@@ -309,9 +279,7 @@ RankSyncSerialSkip::exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<
     }
     
     // Wait for all recvs to complete
-    // std::cout << "Start waitall" << std::endl;
     MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
-    // std::cout << "End waitall" << std::endl;
     
     
     for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
@@ -320,7 +288,6 @@ RankSyncSerialSkip::exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<
         char* buffer = i->second.rbuf;
         
         SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(buffer);
-//            int count = hdr->count;
         unsigned int size = hdr->buffer_size;
         int mode = hdr->mode;
         
@@ -345,30 +312,13 @@ RankSyncSerialSkip::exchangeLinkInitData(int UNUSED_WO_MPI(thread), std::atomic<
             Event* ev = static_cast<Event*>(activities[j]);
             link_map_t::iterator link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                printf("Link not found in map!\n");
-                abort();
+                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
-                sendInitData_sync(link->second,ev);
+                sendUntimedData_sync(link->second,ev);
             }
         }
         
         
-        // for ( int j = 0; j < count; j++ ) {
-        //     Event* ev;
-        //     ia >> ev;
-        
-        
-        //     link_map_t::iterator link = link_map.find(ev->getLinkId());
-        //     if (link == link_map.end()) {
-        //         printf("Link not found in map!\n");
-        //         abort();
-        //     } else {
-        //         sendInitData_sync(link->second,ev);
-        //     }
-        // }
-        
-        // Clear the receive vector
-        // tmp->clear();
     }
     
     // Clear the SyncQueues used to send the data after all the sends have completed

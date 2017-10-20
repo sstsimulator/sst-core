@@ -47,7 +47,7 @@ private:
     const std::string type;
     LinkMap* link_map;
     BaseComponent* component;
-    // std::map<std::string, ComponentInfo> subComponents;
+    
     std::vector<ComponentInfo> subComponents;
     const Params *params;
 
@@ -59,6 +59,7 @@ private:
     /* Lookup Key style constructor */
     ComponentInfo(ComponentId_t id, const std::string &name);
     void finalizeLinkConfiguration();
+    void prepareForComplete();
 
 public:
     /* Old ELI Style subcomponent constructor */

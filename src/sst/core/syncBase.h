@@ -40,17 +40,13 @@ public:
     /** Register a Link which this Sync Object is responsible for */
     virtual ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) = 0;
 
-    // void execute(void);
-
-    /** Cause an exchange of Initialization Data to occur */
-    virtual int exchangeLinkInitData(int msg_count) = 0;
+    /** Cause an exchange of Untimed Data to occur */
+    virtual int exchangeLinkUntimedData(int msg_count) = 0;
     /** Finish link configuration */
     virtual void finalizeLinkConfigurations() = 0;
 
     virtual void setExit(Exit* ex) { exit = ex; }
     virtual void setMaxPeriod(TimeConverter* period);
-
-    // void print(const std::string& header, Output &out) const;
 
     virtual uint64_t getDataSize() const = 0;
 
@@ -61,7 +57,7 @@ protected:
     Exit* exit;
     TimeConverter* max_period;
 
-    void sendInitData_sync(Link* link, Event* init_data);
+    void sendUntimedData_sync(Link* link, Event* data);
     void finalizeConfiguration(Link* link);
     
 
