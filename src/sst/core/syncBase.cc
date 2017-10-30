@@ -26,16 +26,12 @@ void
 SyncBase::setMaxPeriod(TimeConverter* period)
 {
     max_period = period;
-    // Simulation *sim = Simulation::getSimulation();
-    // SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
-    // setPriority(SYNCPRIORITY);
-    // sim->insertActivity( next, this );        
 }
     
 void
-SyncBase::sendInitData_sync(Link* link, Event* init_data)
+SyncBase::sendUntimedData_sync(Link* link, Event* data)
 {
-    link->sendInitData_sync(init_data);
+    link->sendUntimedData_sync(data);
 }
     
 void

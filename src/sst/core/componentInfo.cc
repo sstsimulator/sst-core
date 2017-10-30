@@ -112,6 +112,15 @@ void ComponentInfo::finalizeLinkConfiguration() {
     }
 }
 
+void ComponentInfo::prepareForComplete() {
+    for ( auto & i : link_map->getLinkMap() ) {
+        i.second->prepareForComplete();
+    }
+    for ( auto &s : subComponents ) {
+        s.prepareForComplete();
+    }
+}
+
 ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id)
 {
     /* See if it is us */

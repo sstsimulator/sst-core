@@ -39,8 +39,9 @@ public:
     virtual ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) = 0;
 
     virtual void execute(int thread) = 0;
-    virtual void exchangeLinkInitData(int thread, std::atomic<int>& msg_count) = 0;
+    virtual void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) = 0;
     virtual void finalizeLinkConfigurations() = 0;
+    virtual void prepareForComplete() = 0;
 
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
 
@@ -57,8 +58,12 @@ protected:
         link->finalizeConfiguration();
     }
    
-    void sendInitData_sync(Link* link, Event* init_data) {
-        link->sendInitData_sync(init_data);
+    void prepareForCompleteInt(Link* link) {
+        link->prepareForComplete();
+    }
+   
+    void sendUntimedData_sync(Link* link, Event* data) {
+        link->sendUntimedData_sync(data);
     }
 
 private:
@@ -73,8 +78,9 @@ public:
     virtual void before() = 0;
     virtual void after() = 0;
     virtual void execute() = 0;
-    virtual void processLinkInitData() = 0;
+    virtual void processLinkUntimedData() = 0;
     virtual void finalizeLinkConfigurations() = 0;
+    virtual void prepareForComplete() = 0;
 
     virtual SimTime_t getNextSyncTime() { return nextSyncTime; }
 
@@ -93,8 +99,12 @@ protected:
         link->finalizeConfiguration();
     }
    
-    void sendInitData_sync(Link* link, Event* init_data) {
-        link->sendInitData_sync(init_data);
+    void prepareForCompleteInt(Link* link) {
+        link->prepareForComplete();
+    }
+   
+    void sendUntimedData_sync(Link* link, Event* data) {
+        link->sendUntimedData_sync(data);
     }
 
 private:
@@ -110,9 +120,10 @@ public:
     void execute(void) override;
 
     /** Cause an exchange of Initialization Data to occur */
-    void exchangeLinkInitData(std::atomic<int>& msg_count);
+    void exchangeLinkUntimedData(std::atomic<int>& msg_count);
     /** Finish link configuration */
     void finalizeLinkConfigurations();
+    void prepareForComplete();
 
     void print(const std::string& header, Output &out) const override;
 
@@ -124,7 +135,7 @@ private:
     RankInfo rank;
     RankInfo num_ranks;
     static Core::ThreadSafe::Barrier RankExecBarrier[6];
-    static Core::ThreadSafe::Barrier LinkInitBarrier[3];
+    static Core::ThreadSafe::Barrier LinkUntimedBarrier[3];
     // static SimTime_t min_next_time;
     // static int min_count;
     

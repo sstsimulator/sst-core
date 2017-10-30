@@ -46,8 +46,8 @@ public:
 
     void execute(void) override;
 
-    /** Cause an exchange of Initialization Data to occur */
-    void processLinkInitData();
+    /** Cause an exchange of Untimed Data to occur */
+    void processLinkUntimedData();
     /** Finish link configuration */
     void finalizeLinkConfigurations();
 

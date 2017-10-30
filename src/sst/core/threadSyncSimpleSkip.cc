@@ -51,7 +51,6 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
 
 ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
 {
-    // TraceFunction trace(CALL_INFO_LONG);
     if ( totalWaitTime > 0.0 )
         Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "ThreadSyncSimpleSkip total wait time: %lg seconds.\n", totalWaitTime);
     for ( int i = 0; i < num_threads; i++ ) {
@@ -60,34 +59,21 @@ ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
     queues.clear();
 }
 
-// void
-// ThreadSyncSimpleSkip::setMaxPeriod(TimeConverter* period)
-// {
-//     max_period = period;
-//     SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
-//     setPriority(THREADSYNCPRIORITY);
-//     sim->insertActivity( next, this );
-// }
-
 void
 ThreadSyncSimpleSkip::registerLink(LinkId_t link_id, Link* link)
 {
-    // TraceFunction trace(CALL_INFO_LONG);
     link_map[link_id] = link;
 }
 
 ActivityQueue*
 ThreadSyncSimpleSkip::getQueueForThread(int tid)
 {
-    // TraceFunction trace(CALL_INFO_LONG);
     return queues[tid];
 }
 
 void
 ThreadSyncSimpleSkip::before()
 {
-    // TraceFunction trace(CALL_INFO_LONG);
-
     // Empty all the queues and send events on the links
     for ( size_t i = 0; i < queues.size(); i++ ) {
         ThreadSyncQueue* queue = queues[i];
@@ -96,8 +82,7 @@ ThreadSyncSimpleSkip::before()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                printf("Link not found in map!\n");
-                abort();
+                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 SimTime_t delay = ev->getDeliveryTime() - sim->getCurrentSimCycle();
                 link->second->send(delay,ev);
@@ -110,15 +95,11 @@ ThreadSyncSimpleSkip::before()
 void
 ThreadSyncSimpleSkip::after()
 {
-    // TraceFunction trace(CALL_INFO_LONG);
-
     // Use this nextSyncTime computation for no skip
     // nextSyncTime = sim->getCurrentSimCycle() + max_period;
 
     // Use this nextSyncTime computation for skipping
 
-    // if ( thread == 0 ) localMinimumNextActivityTime = sim->getLocalMinimumNextActivityTime();
-    // nextSyncTime = localMinimumNextActivityTime + max_period;
     auto nextmin = sim->getLocalMinimumNextActivityTime();
     auto nextminPlus = nextmin + my_max_period;
     nextSyncTime = nextmin > nextminPlus ? nextmin : nextminPlus;
@@ -127,8 +108,6 @@ ThreadSyncSimpleSkip::after()
 void
 ThreadSyncSimpleSkip::execute()
 {
-    // TraceFunction trace(CALL_INFO_LONG);
-
     totalWaitTime = barrier[0].wait();
     before();
     totalWaitTime = barrier[1].wait();
@@ -137,9 +116,8 @@ ThreadSyncSimpleSkip::execute()
 }
 
 void
-ThreadSyncSimpleSkip::processLinkInitData()
+ThreadSyncSimpleSkip::processLinkUntimedData()
 {
-    // TraceFunction trace(CALL_INFO_LONG);
     // Need to walk through all the queues and send the data to the
     // correct links
     for ( int i = 0; i < num_threads; i++ ) {
@@ -149,11 +127,9 @@ ThreadSyncSimpleSkip::processLinkInitData()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                printf("Link not found in map!\n");
-                abort();
+                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
-                // link->second->sendInitData_sync(ev);
-                sendInitData_sync(link->second,ev);
+                sendUntimedData_sync(link->second,ev);
             }
         }
         queue->clear();
@@ -162,31 +138,25 @@ ThreadSyncSimpleSkip::processLinkInitData()
 
 void
 ThreadSyncSimpleSkip::finalizeLinkConfigurations() {
-    // TraceFunction trace(CALL_INFO_LONG);
     for (auto i = link_map.begin() ; i != link_map.end() ; ++i) {
-        // i->second->finalizeConfiguration();
         finalizeConfiguration(i->second);
+    }
+}
+
+void
+ThreadSyncSimpleSkip::prepareForComplete() {
+    for (auto i = link_map.begin() ; i != link_map.end() ; ++i) {
+        prepareForCompleteInt(i->second);
     }
 }
 
 uint64_t
 ThreadSyncSimpleSkip::getDataSize() const {
-    // TraceFunction trace(CALL_INFO_LONG);
     size_t count = 0;
     return count;
 }
 
 
-// void
-// ThreadSyncSimpleSkip::print(const std::string& header, Output &out) const
-// {
-//     out.output("%s ThreadSyncSimpleSkip with period %" PRIu64 " to be delivered at %" PRIu64
-//                " with priority %d\n",
-//                header.c_str(), max_period->getFactor(), getDeliveryTime(), getPriority());
-// }
-
-
-// bool ThreadSyncSimpleSkip::disabled = false;
 Core::ThreadSafe::Barrier ThreadSyncSimpleSkip::barrier[3];
 
 } // namespace SST
