@@ -4,6 +4,7 @@
 
 sst_core_sources += \
 	part/selfpart.h \
+	part/selfpart.cc \
 	part/singlepart.cc \
 	part/singlepart.h \
 	part/simplepart.cc \
