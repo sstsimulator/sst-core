@@ -73,7 +73,8 @@ class SSTPythonModelDefinition : public SSTModelDescription {
             return ( itr != compNameMap.end() ) ? itr->second : UNSET_COMPONENT_ID;
         }
 
-        void addLink(ComponentId_t id, const char *name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, name, port, latency, no_cut); }
+        void addLink(ComponentId_t id, const char *link_name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, link_name, port, latency, no_cut); }
+        void setLinkNoCut(const char *link_name) const {graph->setLinkNoCut(link_name); }
 
         void pushNamePrefix(const char *name);
         void popNamePrefix(void);

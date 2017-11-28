@@ -628,6 +628,16 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
 	findComponent(comp_id)->links.push_back(link.id);
 }
 
+void
+ConfigGraph::setLinkNoCut(string link_name)
+{
+    // If link doesn't exist, return
+    if ( link_names.find(link_name) == link_names.end() ) return;
+
+    ConfigLink &link = links[link_names[link_name]];
+    link.no_cut = true;
+}
+
 
 
 bool ConfigGraph::containsComponent(ComponentId_t id) const {
