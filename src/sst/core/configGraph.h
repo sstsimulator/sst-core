@@ -353,6 +353,9 @@ public:
     /** Add a Link to a Component on a given Port */
     void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str, bool no_cut = false);
 
+    /** Set a Link to be no-cut */
+    void setLinkNoCut(std::string link_name);
+
     /** Perform any post-creation cleanup processes */
     void postCreationCleanup();
 

@@ -443,7 +443,7 @@ void SSTInfoElement_LibraryInfo::populateLibraryInfo()
     }
 
     // Are there any Partitioners
-    if (NULL != m_eli->partitioners) {
+    if (m_name != "sst" && NULL != m_eli->partitioners) {
         // Get a pointer to the array
         eip = m_eli->partitioners;
         // If the name is NULL, we have reached the last item

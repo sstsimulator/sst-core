@@ -116,6 +116,7 @@ static PyObject* linkSetNoCut(PyObject* self, PyObject *UNUSED(args))
     LinkPy_t *link = (LinkPy_t*)self;
     bool prev = link->no_cut;
     link->no_cut = true;
+    gModel->setLinkNoCut(link->name);
     return PyBool_FromLong(prev ? 1 : 0);
 }
 
