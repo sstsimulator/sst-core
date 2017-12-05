@@ -26,6 +26,11 @@ void update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(ar
 	char* new_ld_path      = (char*) malloc(sizeof(char) * 32768);
 	char* new_ld_path_copy = (char*) malloc(sizeof(char) * 32768);
 
+	for(size_t i = 0; i < 32768; ++i) {
+		new_ld_path[i] = '\0';
+		new_ld_path_copy[i] = '\0';
+	}
+
 	if(NULL != current_ld_path) {
 		sprintf(new_ld_path, "%s", current_ld_path);
 	}
@@ -35,7 +40,7 @@ void update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(ar
 
 	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
 		SST::Core::Environment::EnvironmentConfigGroup* currentGroup = envConfig->getGroupByName(*groupItr);
-		
+
 		std::set<std::string> keys = currentGroup->getKeys();
 
 		for(auto configItr = keys.begin(); configItr != keys.end(); configItr++) {
