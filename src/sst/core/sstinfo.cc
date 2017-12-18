@@ -826,7 +826,7 @@ std::string SSTInfoElement_ComponentInfo::getCategoryString() const
     };
     std::string res;
 
-    // Build a string list of the component catagories assigned to the component
+    // Build a string list of the component categories assigned to the component
     if (0 < m_category) {
         for ( size_t i = 0 ; i < (sizeof(table)/sizeof(table[0])); i++ ) {
             if ( m_category & table[i].key ) {

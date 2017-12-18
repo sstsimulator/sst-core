@@ -85,7 +85,7 @@ public:
    Version of serialize that works for pointers to fundamental types
    and enums. Note that there is no pointer tracking.  This only
    copies the value pointed to into the buffer.  If multiple objects
-   point to the same location, they will each have an independant copy
+   point to the same location, they will each have an independent copy
    after deserialization.
  */
 template <class T>

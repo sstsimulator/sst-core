@@ -243,7 +243,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank)
             if ( rank[0].rank != rank[1].rank ) continue;
 
             // At this point, we know that both endpoints are on this
-            // rank, but on diffrent threads.  Therefore, they
+            // rank, but on different threads.  Therefore, they
             // contribute to the interThreadMinLatency.
             cross_thread_links++;
             if ( clink.getMinLatency() < interThreadMinLatency ) {
@@ -405,7 +405,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
             cinfo->setComponent(tmp);
         }
     } // end for all vertex
-    // Done with verticies, delete them;
+    // Done with vertices, delete them;
     /*  TODO:  THREADING:  Clear only once everybody is done.
     graph.comps.clear();
     */
@@ -512,7 +512,7 @@ void Simulation::run() {
     // In general, this shouldn't happen, especially for parallel
     // simulations. If it happens in a parallel simulation the 
     // simulation will likely deadlock as only some of the ranks
-    // will hit the anomoly.
+    // will hit the anomaly.
     StopAction* sa = new StopAction("*** Event queue empty, exiting simulation... ***");
     sa->setDeliveryTime(SST_SIMTIME_MAX);
     timeVortex->insert(sa);

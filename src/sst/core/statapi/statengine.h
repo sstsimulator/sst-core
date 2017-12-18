@@ -56,7 +56,7 @@ public:
 
     /** Called by the Components and Subcomponent to perform a statistic Output.
       * @param stat - Pointer to the statistic.
-      * @param EndOfSimFlag - Indicates that the output is occuring at the end of simulation.
+      * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
       */
     void performStatisticOutput(StatisticBase* stat, bool endOfSimFlag = false);
 

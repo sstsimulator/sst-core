@@ -17,7 +17,7 @@
 
 namespace SST {
 
-/** Always unitialized queue
+/** Always uninitialized queue
  * @brief Used for debugging, and preventing accidentally sending messages
  * into an incorrect queue
  */

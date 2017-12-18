@@ -107,7 +107,7 @@ struct ElementInfoPartitioner {
     const char *name;					/*!< Name of the Partitioner */
     const char *description;			/*!< Brief description of the partitioner */
     void (*printHelp)(FILE *output);	/*!< Pointer to a function that will print additional documentation about the partitioner. (optional) */
-    partitionFunction func;				/*!< Function to be called to perform the paritioning */
+    partitionFunction func;				/*!< Function to be called to perform the partitioning */
 };
 
 /** Describes a Generator

@@ -252,7 +252,7 @@ public:
 
 /**************************************************************************
   Templated classes that are used to actually implement the element info
-  documenation in the database.
+  documentation in the database.
 **************************************************************************/
 
 

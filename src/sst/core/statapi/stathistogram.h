@@ -24,11 +24,11 @@ namespace Statistics {
 
 // NOTE: When calling base class members in classes derived from 
 //       a templated base class.  The user must use "this->" in 
-//       order to call base class members (to avoid a compilier 
+//       order to call base class members (to avoid a compiler 
 //       error) because they are "nondependant named" and the 
 //       templated base class is a "dependant named".  The 
-//       compilier will not look in dependant named base classes 
-//       when looking up independant names.
+//       compiler will not look in dependant named base classes 
+//       when looking up independent names.
 // See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
 
 /**

@@ -104,7 +104,7 @@ static PyObject* sgAddComp(PyObject *self, PyObject *args)
             PyObject_TypeCheck(args, &PyModel_SubComponentType) ) {
         csg->addComponent(((ComponentPy_t*)args)->obj->getID());
     } else {
-        PyErr_SetString(PyExc_TypeError, "Expected Componet or SubComponent type");
+        PyErr_SetString(PyExc_TypeError, "Expected Component or SubComponent type");
         return NULL;
     }
 

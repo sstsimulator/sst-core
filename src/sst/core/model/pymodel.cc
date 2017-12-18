@@ -568,7 +568,7 @@ static PyMethodDef sstModuleMethods[] = {
         "Sets multiple Statistic output options from a dict."},
     {   "enableAllStatisticsForAllComponents",
         enableAllStatisticsForAllComponents, METH_VARARGS,
-        "Enables all statistics on all components with output at end of simuation."},
+        "Enables all statistics on all components with output at end of simulation."},
     {   "enableAllStatisticsForComponentName",
         enableAllStatisticsForComponentName, METH_VARARGS,
         "Enables all statistics on a component with output occurring at defined rate."},
@@ -833,7 +833,7 @@ char* SSTPythonModelDefinition::addNamePrefix(const char *name) const
     return buf;
 }
 
-/* Utilties */
+/* Utilities */
 std::map<std::string,std::string> SST::Core::generateStatisticParameters(PyObject* statParamDict)
 {
     PyObject*     pykey = NULL;

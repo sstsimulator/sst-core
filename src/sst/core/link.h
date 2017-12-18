@@ -154,20 +154,20 @@ protected:
     ActivityQueue* untimedQueue;
     /** Currently active Queue */
     ActivityQueue* configuredQueue;
-    /** Unitialized queue.  Used for error detection */
+    /** Uninitialized queue.  Used for error detection */
     static ActivityQueue* uninitQueue;
-    /** Unitialized queue.  Used for error detection */
+    /** Uninitialized queue.  Used for error detection */
     static ActivityQueue* afterInitQueue;
-    /** Unitialized queue.  Used for error detection */
+    /** Uninitialized queue.  Used for error detection */
     static ActivityQueue* afterRunQueue;
 
-    /** Recieve functor. This functor is set when the link is connected.
+    /** Receive functor. This functor is set when the link is connected.
       Determines what the receiver wants to be called
     */
     Event::HandlerBase*  rFunctor;
 
     /** Timebase used if no other timebase is specified. Used to specify
-      the untits for added delays when sending, such as in
+      the units for added delays when sending, such as in
       Link::send(). Often set by the Component::registerClock()
       function if the regAll argument is true.
       */

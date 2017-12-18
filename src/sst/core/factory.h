@@ -68,13 +68,13 @@ public:
      */
     void RequireEvent(std::string eventname);
 
-    /** Instatiate a new Module
+    /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param params - Parameters to pass to the Module's constructor
      */
     Module* CreateModule(std::string type, Params& params);
 
-    /** Instatiate a new Module
+    /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param comp - Component instance to pass to the Module's constructor
      * @param params - Parameters to pass to the Module's constructor
@@ -93,7 +93,7 @@ public:
      */
     Module* CreateCoreModuleWithComponent(std::string type, Component* comp, Params& params);
 
-    /** Instatiate a new Module
+    /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param comp - Component instance to pass to the SubComponent's constructor
      * @param params - Parameters to pass to the SubComponent's constructor
@@ -111,7 +111,7 @@ public:
     generateFunction GetGenerator(std::string name);
 
 
-    /** Instatiate a new Statistic
+    /** Instantiate a new Statistic
      * @param comp - Owning component
      * @param type - Fully qualified elementlibname.statisticname type
      * @param statName - Name of the statistic

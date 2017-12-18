@@ -112,11 +112,11 @@ static void setupSignals(uint32_t threadRank)
 static void dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo &size) {
 
 	///////////////////////////////////////////////////////////////////////	
-	// If the user asks us to dump the partionned graph.
+	// If the user asks us to dump the partitioned graph.
 	if(cfg.dump_component_graph_file != "") {
 		if(cfg.verbose) {
 			g_output.verbose(CALL_INFO, 1, 0,
-				"# Dumping partitionned component graph to %s\n",
+				"# Dumping partitioned component graph to %s\n",
 				cfg.dump_component_graph_file.c_str());
 		}
 
@@ -505,7 +505,7 @@ main(int argc, char *argv[])
     if ( myRank.rank == 0 ) {
         if ( !graph->checkRanks( world_size ) ) {
             g_output.fatal(CALL_INFO, 1,
-                    "ERROR: Bad partitionning; partition included unknown ranks.\n");
+                    "ERROR: Bad partitioning; partition included unknown ranks.\n");
         }
     }
     double end_part = sst_get_cpu_time();
@@ -563,7 +563,7 @@ main(int argc, char *argv[])
     ////// End Calculate Minimum Partitioning //////
 
     if(cfg.enable_sig_handling) {
-        g_output.verbose(CALL_INFO, 1, 0, "Signal handers will be registed for USR1, USR2, INT and TERM...\n");
+        g_output.verbose(CALL_INFO, 1, 0, "Signal handlers will be registered for USR1, USR2, INT and TERM...\n");
         setupSignals(0);
     } else {
 		// Print out to say disabled?
@@ -816,7 +816,7 @@ main(int argc, char *argv[])
         Output out("",0,0,Output::FILE, cfg.event_dump_file);
         if ( cfg.event_dump_file == "STDOUT" || cfg.event_dump_file == "stdout" ) out.setOutputLocation(Output::STDOUT);
         if ( cfg.event_dump_file == "STDERR" || cfg.event_dump_file == "stderr" ) out.setOutputLocation(Output::STDERR);
-        Activity::printUndeletedActivites("",out, MAX_SIMTIME_T);
+        Activity::printUndeletedActivities("",out, MAX_SIMTIME_T);
     }
 #endif
     

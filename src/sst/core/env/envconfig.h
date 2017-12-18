@@ -94,7 +94,7 @@ about the number of groups provided (zero or more). The user should
 make no assumptions in this case.
 
 If the EnvironmentConfiguration is loaded via the SST precedence
-ordered mechnaisms, then the "default" and "SSTCore" groups will be
+ordered mechanisms, then the "default" and "SSTCore" groups will be
 provided.
 
 Although it may seem logical to provide a map structure of group
