@@ -97,7 +97,7 @@ void boot_sst_executable(const char* binary, const int verbose, char* argv[], co
 		printf("Launching SST executable (%s)...\n", real_binary_path);
 	}
 	
-	// Flush standard out incase binary crashes
+	// Flush standard out in case binary crashes
 	fflush(stdout);
 
 	int launch_sst = execve(real_binary_path, argv, environ);
@@ -117,7 +117,7 @@ void boot_sst_executable(const char* binary, const int verbose, char* argv[], co
 			break;
 
 		case EIO:
-			fprintf(stderr, "Unable to launch SST, an error occured in the I/O system reading the executable.\n");
+			fprintf(stderr, "Unable to launch SST, an error occurred in the I/O system reading the executable.\n");
 			break;
 
 		case ENAMETOOLONG:

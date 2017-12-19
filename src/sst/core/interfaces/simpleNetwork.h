@@ -85,7 +85,7 @@ public:
         /**
            Returns the payload for the request for inspection.  This
            call does not set the payload to NULL, so deleting the
-           reqeust will also delete the payload.  If the request is
+           request will also delete the payload.  If the request is
            going to be deleted, use takePayload instead.
            @return Event that was set as payload of the request.
         */
@@ -172,7 +172,7 @@ public:
          *  The ID uniquely identifies the component in which this
          *  subcomponent is instantiated.  It does not uniquely define
          *  this particular NetworkInspector, and all NetworkInspectors
-         *  instantiated in the smae component will get the same ID.  If
+         *  instantiated in the same component will get the same ID.  If
          *  registering statistics, the ID is intended to be used as the
          *  subfield of the statistic.
          */
@@ -334,7 +334,7 @@ public:
 
     /**
      * Checks if there is sufficient space to send on the specified
-     * virtual netork
+     * virtual network
      * @param vn Virtual network to check
      * @param num_bits Minimum size in bits required to have space
      * to send
@@ -363,7 +363,7 @@ public:
     /**
      * Registers a functor which will fire when a request is
      * sent to the network.  Note, this only tells you when data
-     * is sent, it does not guarentee any specified amount of
+     * is sent, it does not guarantee any specified amount of
      * available space.
      * @param functor Functor to call when request is sent
      */

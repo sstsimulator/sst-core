@@ -14,7 +14,7 @@
 #define _H_SST_CORE_COMP_REG_STAT__
 
 // THIS IS THE IMPLEMENTATION OF Component::registerStatistic(...) code.
-// It is placed in this implemenation file to provide a clean interface for 
+// It is placed in this implementation file to provide a clean interface for 
 // the class Component.
 
 //template <typename T>
@@ -72,7 +72,7 @@
             allowedKeySet.insert("resetOnRead");
             si.params.pushAllowedKeys(allowedKeySet);
 
-            // We found an acceptible name... Now check its critical Parameters
+            // We found an acceptable name... Now check its critical Parameters
             // Note: If parameter not found, defaults will be provided
             statTypeParam = si.params.find<std::string>("type", "sst.AccumulatorStatistic");
             statRateParam = si.params.find<std::string>("rate", "0ns");

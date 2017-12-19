@@ -304,7 +304,7 @@ public:
         }
     }
     
-    static void printUndeletedActivites(const std::string& header, Output &out, SimTime_t before = MAX_SIMTIME_T) {
+    static void printUndeletedActivities(const std::string& header, Output &out, SimTime_t before = MAX_SIMTIME_T) {
         for ( auto && entry : Activity::memPools ) {
             const std::list<uint8_t*>& arenas = entry.pool->getArenas();
             size_t arenaSize = entry.pool->getArenaSize();
@@ -342,7 +342,7 @@ protected:
     }
 
     // Function used by derived classes to serialize data members.
-    // This class is not serializable, becuase not all class that
+    // This class is not serializable, because not all class that
     // inherit from it need to be serializable.
     void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & queue_order;

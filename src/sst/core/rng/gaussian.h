@@ -75,7 +75,7 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
     }
 
 		/**
-			Gets the next double value in the distributon
+			Gets the next double value in the distribution
 			\return The next double value of the distribution (in this case a Gaussian distribution)
 		*/
     double getNextDouble()  {
@@ -99,11 +99,11 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
                 gauss_v *= -1.0;
             }
             
-            double multipler = sqrt(-2.0 * log(sq_sum) / sq_sum);
-            unusedPair = mean + stddev * gauss_v * multipler;
+            double multiplier = sqrt(-2.0 * log(sq_sum) / sq_sum);
+            unusedPair = mean + stddev * gauss_v * multiplier;
             usePair = true;
             
-            return mean + stddev * gauss_u * multipler;
+            return mean + stddev * gauss_u * multiplier;
         }
     }
 

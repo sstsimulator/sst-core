@@ -41,8 +41,8 @@ class StatisticGroup;
 	Forms the base class for statistics output generation within the SST core. 
 	Statistics are gathered by the statistic objects and then processed sent to 
 	the derived output object either periodically or by event and/or also at 
-	the end of the simuation.  A single statistic output will be created by the 
-	simuation (per node) and will collect the data per its design.
+	the end of the simulation.  A single statistic output will be created by the 
+	simulation (per node) and will collect the data per its design.
 */
 class StatisticOutput : public Module
 {
@@ -74,7 +74,7 @@ public:
 public:
     /** Register a field to be output (templated function)
      * @param fieldName - The name of the field.
-     * @return The handle of the registerd field or -1 if type is not supported.
+     * @return The handle of the registered field or -1 if type is not supported.
      * Note: Any field names (of the same data type) that are previously  
      *       registered by a statistic will return the previously
      *       handle.
@@ -93,7 +93,7 @@ public:
         return res;
     }
     
-//    /** Adjust the heirarchy of the fields (FUTURE SUPPORT)
+//    /** Adjust the hierarchy of the fields (FUTURE SUPPORT)
 //     * @param fieldHandle - The handle of the field to adjust.
 //     * @param Level - The level of the field.
 //     * @param parent - The parent field of the field.
@@ -113,7 +113,7 @@ public:
      * @param fieldName - The name of the field .
      * @return Pointer to the registered field info.
      */
-    // Get Registerd Fields
+    // Get Registered Fields
     // ONLY SUPPORTED TYPES ARE int32_t, uint32_t, int64_t, uint64_t, float, double
     template<typename T>
     StatisticFieldInfo* getRegisteredField(const char* statisticName, const char* fieldName)

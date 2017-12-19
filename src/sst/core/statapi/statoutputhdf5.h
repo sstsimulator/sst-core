@@ -77,8 +77,8 @@ protected:
 
     /** Implementation function for the end of output.
      * This will be called by the Statistic Processing Engine to indicate that
-     * a Statistic is finished sendind data to the Statistic Output for processing.
-     * The Statisic Output can perform any output related functions here.
+     * a Statistic is finished sending data to the Statistic Output for processing.
+     * The Statistic Output can perform any output related functions here.
      */
     void implStopOutputEntries() override;
 

@@ -56,7 +56,7 @@ public:
     void exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count)) override {
         // Even though there are no links crossing ranks, we still
         // need to make sure every rank does the same number of init
-        // cycles so the shared memory regions intialization works.
+        // cycles so the shared memory regions initialization works.
         
 #ifdef SST_CONFIG_HAVE_MPI
         if ( thread != 0 ) {
@@ -185,7 +185,7 @@ SyncManager::execute(void)
         
         // For a rank sync, we will force a thread sync first.  This
         // will ensure that all events sent between threads will be
-        // flushed into their repective TimeVortices.  We need to do
+        // flushed into their respective TimeVortices.  We need to do
         // this to enable any skip ahead optimizations.
         threadSync->before();
         // trace.getOutput().output(CALL_INFO, "Complete threadSync->before()\n");

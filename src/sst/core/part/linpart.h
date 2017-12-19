@@ -34,7 +34,7 @@ into approximately equal parts. A "part" is generated for each MPI rank performi
 the simulation. This means Components with sequential ids will be placed close together.
 In general this scheme provides a very effective partition for most parallel
 simulations which generate man similar components of interest close together in the input
-Python configuration. It is also very fast to compute a linear partiton scheme. For
+Python configuration. It is also very fast to compute a linear partition scheme. For
 more aggressive partition schemes users should try either a simple or Zoltan-based
 partitioner.
 */

@@ -174,7 +174,7 @@ public:
             }
             catch ( const std::invalid_argument& e ) {
                 std::string msg = "Params::find(): No conversion for value: key = " + k + ", value =  " + i->second +
-                    ".  Oringal error: " + e.what();
+                    ".  Original error: " + e.what();
                 std::invalid_argument t(msg);
                 throw t;
             }
@@ -320,7 +320,7 @@ public:
             }
             catch ( const std::invalid_argument& e ) {
                 std::string msg = "Params::find(): No conversion for value: key = " + k + ", value =  " + substr +
-                    ".  Oringal error: " + e.what();
+                    ".  Original error: " + e.what();
                 std::invalid_argument t(msg);
                 throw t;
             }

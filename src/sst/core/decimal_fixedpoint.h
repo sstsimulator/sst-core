@@ -717,7 +717,7 @@ public:
        @param v Number to multiply to this one
      */
     decimal_fixedpoint& operator*= (const decimal_fixedpoint& v) {
-        // Need to do the multiply accumlate for each digit.
+        // Need to do the multiply accumulate for each digit.
         decimal_fixedpoint<whole_words,fraction_words> me(*this);
         
         // The first "fraction_words" digits only matter as far as
@@ -789,7 +789,7 @@ public:
         // save.
         int digits_of_prec = std::numeric_limits<double>::digits10 / 2;
         
-        // Number of digits of precision doubles with each iterataion
+        // Number of digits of precision doubles with each iteration
         for ( int i = digits_of_prec; i <= (whole_words + fraction_words) * digits_per_word; i *= 2 ) {
             decimal_fixedpoint temp(inv);
             temp *= me;

@@ -198,7 +198,7 @@ public:
     std::string                   name;              /*!< Name of this component, or slot name for subcomp */
     int                           slot_num;          /*!< Slot number.  Only valid for subcomponents */
     std::string                   type;              /*!< Type of this component */
-    float                         weight;            /*!< Parititoning weight for this component */
+    float                         weight;            /*!< Partitioning weight for this component */
     RankInfo                      rank;              /*!< Parallel Rank for this component */
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
@@ -319,14 +319,14 @@ public:
     bool checkRanks(RankInfo ranks);
 
 
-    // API for programatic initialization
+    // API for programmatic initialization
     /** Create a new component with weight and rank */
     ComponentId_t addComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank);
     /** Create a new component */
     ComponentId_t addComponent(ComponentId_t id, std::string name, std::string type);
 
 
-    /** Set the statistic ouput module */
+    /** Set the statistic output module */
     void setStatisticOutput(const std::string &name);
 
     /** Add parameter to the statistic output module */

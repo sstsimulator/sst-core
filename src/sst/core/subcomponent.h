@@ -24,7 +24,7 @@ namespace SST {
    SubComponent is a class loadable through the factory which allows
    dynamic functionality to be added to a Component.  The
    SubComponent API is nearly identical to the Component API and all
-   the calls are proxied to the parent Compoent.
+   the calls are proxied to the parent Component.
 */
 class SubComponent : public Module, public BaseComponent {
 
@@ -37,7 +37,7 @@ public:
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
     virtual void init(unsigned int UNUSED(phase)) override {}
-    /** Called after all components have been constructed and inialization has
+    /** Called after all components have been constructed and initialization has
 	completed, but before simulation time has begun. */
     virtual void setup( ) override { }
     /** Called after simulation completes, but before objects are

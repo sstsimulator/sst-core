@@ -102,7 +102,7 @@ class serialize<T[N], typename std::enable_if<!std::is_fundamental<T>::value && 
     }
 };
 
-/***  For dynamaically allocated arrays ***/
+/***  For dynamically allocated arrays ***/
 
 /**
    Version of serialize that works for dynamically allocated arrays of

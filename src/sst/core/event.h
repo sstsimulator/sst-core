@@ -33,7 +33,7 @@ public:
 
     /** Type definition of unique identifiers */
     typedef std::pair<uint64_t, int> id_type;
-    /** Constatn, default value for id_types */
+    /** Constant, default value for id_types */
     static const id_type NO_ID;
 
 

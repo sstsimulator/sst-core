@@ -47,7 +47,7 @@ namespace SST {
 #endif
 
 /**
- * Output object provides consistant method for outputing data to
+ * Output object provides consistent method for outputting data to
  * stdout, stderr and/or sst debug file.  All components should
  * use this class to log any information.
  */
@@ -86,7 +86,7 @@ public:
                - \@X Rank information of the calling process.  Will be [0.0] if
                   number of MPI ranks and number of threads are both 1
                   Same as [\@R:\@I]
-               - \@t Simulation time.  Will be the raw simulaton cycle time
+               - \@t Simulation time.  Will be the raw simulation cycle time
                   retrieved from the SST Core.
         @param verbose_level Debugging output level.  Calls to debug(),
                verbose() and fatal() are only output if their output_level
@@ -97,7 +97,7 @@ public:
                message if the set bits of the output_bits parameter
                are set in the verbose_mask of the object.  It uses this logic:
                if (~verbose_mask & output_bits == 0) then output is enabled.
-        @param location Output location.  Ouput will be directed to STDOUT,
+        @param location Output location.  Output will be directed to STDOUT,
                STDERR, FILE, or NONE.  If FILE output is selected, the
                output will be directed to the file defined by the
                --debug runtime parameter, or to the file 'sst_output' if the
@@ -145,7 +145,7 @@ public:
                - \@X Rank information of the calling process.  Will be [0.0] if
                   number of MPI ranks and number of threads are both 1
                   Same as [\@R:\@I]
-               - \@t Simulation time.  Will be the raw simulaton cycle time
+               - \@t Simulation time.  Will be the raw simulation cycle time
                   retrieved from the SST Core.
         @param verbose_level Debugging output level.  Calls to debug(),
                verbose() and fatal() are only output if their output_level
@@ -156,7 +156,7 @@ public:
                message if the set bits of the output_bits parameter
                are set in the verbose_mask of the object.  It uses this logic:
                if (~verbose_mask & output_bits == 0) then output is enabled.
-        @param location Output location.  Ouput will be directed to STDOUT,
+        @param location Output location.  Output will be directed to STDOUT,
                STDERR, FILE, or NONE.  If FILE output is selected, the
                output will be directed to the file defined by the
                --debug runtime parameter, or to the file 'sst_output' if the
@@ -293,7 +293,7 @@ public:
         parameter. Output will only occur if specified output_level and
         output_bits meet criteria defined by object.  The output will be
         prepended with the expanded prefix set in the object.
-        NOTE: Debug ouputs will only occur if the __SST_DEBUG_OUTPUT__ is defined.
+        NOTE: Debug outputs will only occur if the __SST_DEBUG_OUTPUT__ is defined.
               this define can be set in source code or by setting the
               --enable-debug option during SST configuration.
         @param line Line number of calling function (use CALL_INFO macro)
@@ -346,7 +346,7 @@ public:
         @param line Line number of calling function (use CALL_INFO macro)
         @param file File name calling function (use CALL_INFO macro)
         @param func Function name calling function (use CALL_INFO macro)
-        @param exit_code The exit code used for termination of simuation.
+        @param exit_code The exit code used for termination of simulation.
                will be passed to MPI_Abort()
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
@@ -382,7 +382,7 @@ public:
                - \@X Rank information of the calling process.  Will be [0.0] if
                   number of MPI ranks and number of threads are both 1
                   Same as [\@R:\@I]
-               - \@t Simulation time.  Will be the raw simulaton cycle time
+               - \@t Simulation time.  Will be the raw simulation cycle time
                   retrieved from the SST Core.
     */
     void setPrefix(const std::string& prefix);
@@ -414,7 +414,7 @@ public:
     uint32_t getVerboseLevel() const;
 
     /** Sets object output location
-        @param location Output location.  Ouput will be directed to STDOUT,
+        @param location Output location.  Output will be directed to STDOUT,
                STDERR, FILE, or NONE.  If FILE output is selected, the
                output will be directed to the file defined by the
                --debug runtime parameter, or to the file 'sst_output' if the
@@ -498,7 +498,7 @@ private:
     std::FILE**       m_targetOutputRef;
 
     // m_targetFileHandleRef, m_targetFileNameRef, and m_targetFileAccessCount
-    // are pointers to their assocted types.  These point to either the local 
+    // are pointers to their associated types.  These point to either the local 
     // output file information or to the global simulation output file information.
     std::FILE**        m_targetFileHandleRef;
     std::string*       m_targetFileNameRef;

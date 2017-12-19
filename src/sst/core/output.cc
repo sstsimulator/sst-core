@@ -218,7 +218,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
 {
     // This method will be called by the SST core during startup parameter 
-    // checking to set the output file name.  It is not inteded to be called 
+    // checking to set the output file name.  It is not intended to be called 
     // by the SST components.
     //
     // NOTE: This method can be called only once  
@@ -234,7 +234,7 @@ void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
     if (0 == m_sstGlobalSimFileName.length()) {
         m_sstGlobalSimFileName = filename;
     } else {
-        printf("ERROR: Output::setFileName() - Filename is already set to %s, and canot be changed.\n", m_sstGlobalSimFileName.c_str());
+        printf("ERROR: Output::setFileName() - Filename is already set to %s, and cannot be changed.\n", m_sstGlobalSimFileName.c_str());
         exit(-1);
     }
 }

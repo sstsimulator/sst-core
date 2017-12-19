@@ -38,7 +38,7 @@ namespace Partition {
 
 /**
 	\class SSTZoltanPartition creates a partitioner interface to the
-	Zoltan partioner library developed by Sandia National Labs. This is
+	Zoltan partitioner library developed by Sandia National Labs. This is
 	an option to partition simulations if the user has configured SST
 	to find and compile with the Zoltan external dependency.
 */

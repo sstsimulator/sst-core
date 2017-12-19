@@ -66,7 +66,7 @@ public:
     // Static data members and functions
     /** Create a new Base Unit type */
     static void registerBaseUnit(std::string u);
-    /** Create a new Compount Unit type */
+    /** Create a new Compound Unit type */
     static void registerCompoundUnit(std::string u, std::string v);
 
     // Non-static data members and functions

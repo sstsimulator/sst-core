@@ -356,7 +356,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
             return NULL;
         }
 
-        // Get the Number of Stats in the list, and enable them separatly,
+        // Get the Number of Stats in the list, and enable them separately,
         // also set their parameters
         numStats = PyList_Size(statList);
         for (uint32_t x = 0; x < numStats; x++) {

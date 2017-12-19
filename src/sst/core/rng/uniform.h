@@ -45,7 +45,7 @@ class SSTUniformDistribution : public SSTRandomDistribution {
 
     /**
         Creates a Uniform distribution with a specific number of bins and user supplied
-	random number generaotr
+	random number generator
         \param probsCount Number of probability bins in the distribution
         \param baseDist The base random number generator to take the distribution from.
     */
