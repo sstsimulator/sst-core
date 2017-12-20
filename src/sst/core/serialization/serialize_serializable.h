@@ -111,7 +111,7 @@ public:
     }
 };
 
-// Hold off on trivailly_serializable for now, as it's not really safe
+// Hold off on trivially_serializable for now, as it's not really safe
 // in the case of inheritance
 //
 // template <class T>

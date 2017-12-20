@@ -329,13 +329,13 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
 {
     /* Old Style SubComponents end up with their parent's Id, name, etc. */
     ComponentInfo *sub_info = new ComponentInfo(type, &params, comp->my_info);
-    ComponentInfo *oldLoadingSubCopmonent = getTrueComponent()->currentlyLoadingSubComponent;
+    ComponentInfo *oldLoadingSubcomponent = getTrueComponent()->currentlyLoadingSubComponent;
     /* By "magic", the new component will steal ownership of this pointer */
     getTrueComponent()->currentlyLoadingSubComponent = sub_info;
 
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
     sub_info->setComponent(ret);
-    getTrueComponent()->currentlyLoadingSubComponent = oldLoadingSubCopmonent;
+    getTrueComponent()->currentlyLoadingSubComponent = oldLoadingSubcomponent;
     return ret;
 }
 
@@ -386,7 +386,7 @@ BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& par
     ComponentInfo* sub_info = my_info->findSubComponent(name,slot_num);
     if ( sub_info == NULL ) return NULL;
     
-    ComponentInfo *oldLoadingSubCopmonent = getTrueComponent()->currentlyLoadingSubComponent;
+    ComponentInfo *oldLoadingSubcomponent = getTrueComponent()->currentlyLoadingSubComponent;
     // ComponentInfo *sub_info = &(infoItr->second);
     getTrueComponent()->currentlyLoadingSubComponent = sub_info;
 
@@ -398,7 +398,7 @@ BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& par
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponent(), myParams);
     sub_info->setComponent(ret);
 
-    getTrueComponent()->currentlyLoadingSubComponent = oldLoadingSubCopmonent;
+    getTrueComponent()->currentlyLoadingSubComponent = oldLoadingSubcomponent;
     return ret;
 }
 
@@ -413,7 +413,7 @@ BaseComponent::getSubComponentSlotInfo(std::string name, bool fatalOnEmptyIndex)
     if ( !info->isAllPopulated() && fatalOnEmptyIndex ) {
         Simulation::getSimulationOutput().
             fatal(CALL_INFO,1,
-                  "SubComponent slot %s requires a dense allocation of SubCompents and did not get one.\n",
+                  "SubComponent slot %s requires a dense allocation of SubComponents and did not get one.\n",
                   name.c_str());
     }
     return info;

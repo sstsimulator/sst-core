@@ -574,7 +574,7 @@ StatisticBase* StatisticProcessingEngine::isStatisticInCompStatMap(const std::st
         return NULL;
     }
     
-    // The CompStatMap has Component ID registered, get the array assocated with it    
+    // The CompStatMap has Component ID registered, get the array associated with it    
     statArray = m_CompStatMap[compId];
     
     // Look for the Statistic in this array 
@@ -605,7 +605,7 @@ void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat, S
         m_CompStatMap[compId] = statArray; 
     }
 
-    // The CompStatMap has Component ID registered, get the array assocated with it    
+    // The CompStatMap has Component ID registered, get the array associated with it    
     statArray = m_CompStatMap[compId];
 
     // Add the statistic to the lists of statistics registered to this component   

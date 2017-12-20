@@ -88,7 +88,7 @@ public:
     
     // Essentially insert with a hint to look at end first.  This is
     // just here for backward compatibility for now.  Will be replaced
-    // with insert() onced things stabilize.
+    // with insert() once things stabilize.
     void push_back(const classT& val)
     {
         // First look to see if it goes on the end.  If not, then find
@@ -216,7 +216,7 @@ public:
     
     // Essentially insert with a hint to look at end first.  This is
     // just here for backward compatibility for now.  Will be replaced
-    // with insert() onced things stabilize.
+    // with insert() once things stabilize.
     void push_back(const keyT& val)
     {
         // First look to see if it goes on the end.  If not, then find

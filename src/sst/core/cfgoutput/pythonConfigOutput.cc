@@ -245,7 +245,7 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 		fprintf(outputFile, ")\n");
 	}
 
-    // Check for statisitc groups
+    // Check for statistic groups
     if ( !graph->getStatGroups().empty() ) {
         fprintf(outputFile, "\n# Statistic Groups:\n");
         for ( auto &grp : graph->getStatGroups() ) {

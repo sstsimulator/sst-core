@@ -36,7 +36,7 @@ public:
     SSTPartitioner() {}
     virtual ~SSTPartitioner() {}
     
-    /** Function to be overriden by subclasses
+    /** Function to be overridden by subclasses
      *
      * Performs the partitioning of the Graph using the PartitionGraph object.
      *
@@ -45,7 +45,7 @@ public:
      */
     virtual void performPartition(PartitionGraph* UNUSED(graph)) {}
 
-    /** Function to be overriden by subclasses
+    /** Function to be overridden by subclasses
      *
      * Performs the partitioning of the Graph using the ConfigGraph
      * object.  The consequence of using ConfigGraphs is that no-cut

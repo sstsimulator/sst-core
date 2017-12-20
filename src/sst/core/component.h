@@ -45,7 +45,7 @@ public:
         increments a global counter. Calls to
         Component::unregisterExit() decrements the counter. The
         simulation cannot end unless this counter reaches zero, or the
-        simulation time limit is reached. This counter is synchonized
+        simulation time limit is reached. This counter is synchronized
         periodically with the other nodes.
 
         @sa Component::unregisterExit()
@@ -59,8 +59,8 @@ public:
     bool unregisterExit();
 
     /** Register as a primary component, which allows the component to
-        specifiy when it is and is not OK to end simulation.  The
-        simulator will not end simulation natuarally (through use of
+        specify when it is and is not OK to end simulation.  The
+        simulator will not end simulation naturally (through use of
         the Exit object) while any primary component has specified
         primaryComponentDoNotEndSim().  However, it is still possible
         for Actions other than Exit to end simulation.  Once all

@@ -130,7 +130,7 @@ public:
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
     virtual void complete(unsigned int UNUSED(phase)) {}
-    /** Called after all components have been constructed and inialization has
+    /** Called after all components have been constructed and initialization has
 	completed, but before simulation time has begun. */
     virtual void setup( ) { }
     /** Called after simulation completes, but before objects are
@@ -196,7 +196,7 @@ public:
         @param freq Frequency for the clock in SI units
         @param handler Pointer to Clock::HandlerBase which is to be invoked
         at the specified interval
-        @param regAll Should this clock perioud be used as the default
+        @param regAll Should this clock period be used as the default
         time base for all of the links connected to this component
     */
     TimeConverter* registerClock( std::string freq, Clock::HandlerBase* handler,
@@ -228,7 +228,7 @@ public:
         components which do not have a clock, but would like a default
         timebase.
         @param base Frequency for the clock in SI units
-        @param regAll Should this clock perioud be used as the default
+        @param regAll Should this clock period be used as the default
         time base for all of the links connected to this component
     */
     TimeConverter* registerTimeBase( std::string base, bool regAll = true);
@@ -238,7 +238,7 @@ public:
 
     /** return the time since the simulation began in units specified by
         the parameter.
-        @param tc TimeConverter specificing the units */
+        @param tc TimeConverter specifying the units */
     SimTime_t getCurrentSimTime(TimeConverter *tc) const;
     /** return the time since the simulation began in the default timebase */
     inline SimTime_t getCurrentSimTime()  const{

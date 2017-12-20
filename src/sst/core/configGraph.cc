@@ -203,7 +203,7 @@ void ConfigComponent::addParameter(const std::string &key, const std::string &va
 void ConfigComponent::enableStatistic(const std::string &statisticName, bool recursively)
 {
     // NOTE: For every statistic in the enabledStatistics List, there must be
-    //       a coresponding params entry in enabledStatParams list.  The two
+    //       a corresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
 
     if ( recursively ) {
@@ -246,7 +246,7 @@ void ConfigComponent::enableStatistic(const std::string &statisticName, bool rec
 void ConfigComponent::addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value, bool recursively)
 {
     // NOTE: For every statistic in the enabledStatistics List, there must be
-    //       a coresponding params entry in enabledStatParams list.  The two
+    //       a corresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
     if ( recursively ) {
         for ( auto &sc : subComponents ) {
@@ -444,7 +444,7 @@ ConfigGraph::checkForStructuralErrors()
                     if (!Factory::getFactory()->isPortNameValid(ccomp->type, link.port[j]) ) {
                         // For now this is not a fatal error
                         // found_error = true;
-                        output.fatal(CALL_INFO, 1, "ERROR:  Attempling to connect to unknown port: %s, "
+                        output.fatal(CALL_INFO, 1, "ERROR:  Attempting to connect to unknown port: %s, "
                                       "in component %s of type %s.\n",
                                       link.port[j].c_str(), ccomp->name.c_str(), ccomp->type.c_str());
                         count--;
@@ -462,7 +462,7 @@ ConfigGraph::checkForStructuralErrors()
         // }
         // else {
         //     found_error = true;
-        //     output.output("Found duplicate component nane: %s\n",ccomp->name.c_str());
+        //     output.output("Found duplicate component name: %s\n",ccomp->name.c_str());
         //     count--;
         //     if ( count == 0 ) {
         //         output.output("Maximum name clashes reached, no more checks will be made.\n");
@@ -791,7 +791,7 @@ ConfigGraph::getCollapsedPartitionGraph()
 
 
         // Check to see if this has already been put in map.  Do this
-        // by seeing if the first item in the connected componets is
+        // by seeing if the first item in the connected components is
         // the current ID.  If not, then it's already in the list.
         if ( *group.begin() == comp.id ) {
             ComponentId_t id = pcomps.size();
@@ -830,7 +830,7 @@ ConfigGraph::getCollapsedPartitionGraph()
     // Just need to fix up the component fields for the links.  Do
     // this by walking through the components and checking each of it
     // links to see if it points to something in the group.  If so,
-    // chsnge ID to point to super group.
+    // change ID to point to super group.
     for ( PartitionComponentMap_t::iterator i = pcomps.begin(); i != pcomps.end(); ++i ) {
         PartitionComponent& pcomp = *i;
         for ( LinkIdMap_t::iterator j = pcomp.links.begin(); j != pcomp.links.end(); ++j ) {

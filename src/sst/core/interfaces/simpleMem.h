@@ -311,7 +311,7 @@ public:
         { }
 
     /** Second half of building the interface.
-     * Intialize with link name name, and handler, if any
+     * Initialize with link name name, and handler, if any
      * @return true if the link was able to be configured.
      */
     virtual bool initialize(const std::string &linkName, HandlerBase *handler = NULL) = 0;

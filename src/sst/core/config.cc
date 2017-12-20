@@ -131,7 +131,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARGOPT("stop-at",           "TIME",         "set time at which simulation will end execution", &Config::setStopAt),
     DEF_ARGOPT("heartbeat-period",  "PERIOD",       "set time for heartbeats to be published (these are approximate timings, published by the core, to update on progress), default is every 10000 simulated seconds", &Config::setHeartbeat),
     DEF_ARGOPT("timebase",          "TIMEBASE",     "sets the base time step of the simulation (default: 1ps)", &Config::setTimebase),
-    DEF_ARGOPT("partitioner",       "PARTITIONER",  "select the partioner to be used. <lib.partitionerName>", &Config::setPartitioner),
+    DEF_ARGOPT("partitioner",       "PARTITIONER",  "select the partitioner to be used. <lib.partitionerName>", &Config::setPartitioner),
     DEF_ARGOPT("generator",         "GENERATOR",    "select the generator to be used to build simulation <lib.generatorName>", &Config::setGenerator),
     DEF_ARGOPT("gen-options",       "OPTSTIRNG",    "options to be passed to generator function", &Config::setGeneratorOptions),
     DEF_ARGOPT("output-directory",  "DIR",          "directory into which all SST output files should reside", &Config::setOutputDir),
@@ -139,7 +139,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARGOPT("output-dot",        "FILE",         "file to write SST configuration graph (in GraphViz format)", &Config::setWriteDot),
     DEF_ARGOPT("output-xml",        "FILE",         "file to write SST configuration graph (in XML format)", &Config::setWriteXML),
     DEF_ARGOPT("output-json",       "FILE",         "file to write SST configuration graph (in JSON format)", &Config::setWriteJSON),
-    DEF_ARGOPT("output-partition",  "FILE",         "file to write SST compoenent partitioning information", &Config::setWritePartition),
+    DEF_ARGOPT("output-partition",  "FILE",         "file to write SST component partitioning information", &Config::setWritePartition),
     DEF_ARGOPT("output-prefix-core","STR",          "set the SST::Output prefix for the core", &Config::setOutputPrefix),
 #ifdef USE_MEMPOOL
     DEF_ARGOPT("output-undeleted-events",   "FILE", "file to write information about all undeleted events at the end of simulation (STDOUT and STDERR can be used to output to console)", &Config::setWriteUndeleted),

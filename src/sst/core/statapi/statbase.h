@@ -221,12 +221,12 @@ private:
     /** Called by the system to tell the Statistic to send its data to the 
       * StatisticOutput to be output.
       * @param statOutput - Pointer to the statistic output
-      * @param EndOfSimFlag - Indicates that the output is occuring at the end of simulation.
+      * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
       */
     virtual void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag) = 0;
 
     /** Indicate if the Statistic Mode is supported.
-      * This allows Statistics to suport STAT_MODE_COUNT and STAT_MODE_PERIODIC modes.
+      * This allows Statistics to support STAT_MODE_COUNT and STAT_MODE_PERIODIC modes.
       * by default, both modes are supported.
       * @param mode - Mode to test
       */
@@ -300,7 +300,7 @@ public:
      */
     void addData(T data)
     {
-        // Call the Derived Statistic's implemenation 
+        // Call the Derived Statistic's implementation 
         //  of addData and increment the count
         if (true == isEnabled()) {
             addData_impl(data);

@@ -228,7 +228,7 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
 	}
 	assert(rankcount.rank > 0);
 	
-	partOutput->verbose(CALL_INFO, 1, 0, "# Preparing partitionning...\n");
+	partOutput->verbose(CALL_INFO, 1, 0, "# Preparing partitioning...\n");
 	
 	// Register the call backs for this class
   	Zoltan_Set_Num_Obj_Fn(zolt_config, sst_zoltan_count_vertices, graph);

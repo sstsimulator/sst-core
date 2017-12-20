@@ -226,7 +226,7 @@ Units::Units(std::string units, sst_big_num& multiplier)
     if ( slash_index != string::npos ) s_denominator = units.substr(slash_index+1);
 
     // Have numerator and denominator, now split each of those into
-    // individual units, which will be seperated with '-'
+    // individual units, which will be separated with '-'
     // cout << "Numerator: " << s_numerator << endl;
     vector<string> tokens;
     split(s_numerator, "-", tokens);
@@ -412,7 +412,7 @@ UnitAlgebra::toStringBestSI() const
     for ( map<string,sst_big_num>::iterator it = si_unit_map.begin();
          it != si_unit_map.end(); ++it ) {
         // Divide by the value, if it's between 1 and 1000, we have
-        // the most natual SI unit
+        // the most natural SI unit
         if ( it->first.length() == 2 ) continue;  // Don't do power of 2 units
         temp = value / it->second;
         if ( temp >= 1 && temp < 1000 ) {
