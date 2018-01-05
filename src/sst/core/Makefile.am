@@ -138,12 +138,12 @@ nobase_dist_sst_HEADERS = \
 	statapi/componentregisterstat_impl.h \
 	threadsafe.h \
 	cputimer.h \
-	sst_config.h \
 	warnmacros.h \
 	model/element_python.h
 
 nobase_nodist_sst_HEADERS = \
-	build_info.h
+	build_info.h \
+	sst_config.h
 
 sst_core_sources = \
 	action.cc \
