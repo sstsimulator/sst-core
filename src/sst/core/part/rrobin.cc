@@ -29,7 +29,6 @@ SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo UNU
 }
 
 void SSTRoundRobinPartition::performPartition(PartitionGraph* graph) {
-    std::cout << "Round robin partitioning" << std::endl;
     PartitionComponentMap_t& compMap = graph->getComponentMap();
     RankInfo rank(0, 0);
 
