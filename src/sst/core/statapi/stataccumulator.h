@@ -167,16 +167,22 @@ public:
     	h_min   = statOutput->registerField<NumberBase>("Min");
      	h_max   = statOutput->registerField<NumberBase>("Max");
     }
-    
+
     void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
         statOutput->outputField(h_sum, m_sum);
         statOutput->outputField(h_sumsq, m_sum_sq);
         statOutput->outputField(h_count, getCount());
- 	statOutput->outputField(h_min, m_min);
- 	statOutput->outputField(h_max, m_max);
+
+	if( 0 == getCount() ) {
+ 		statOutput->outputField(h_min, 0);
+ 		statOutput->outputField(h_max, 0);
+	} else {
+ 		statOutput->outputField(h_min, m_min);
+ 		statOutput->outputField(h_max, m_max);
+	}
     }
-    
+
     bool isStatModeSupported(StatisticBase::StatMode_t mode) const override
     {
         if (mode == StatisticBase::STAT_MODE_COUNT) {
