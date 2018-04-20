@@ -453,8 +453,12 @@ Factory::CreateModule(std::string type, Params& params)
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
 
+    // Check for legacy core modules.  These consist only of
+    // StatisticsOutputs at this point.  These should be moved to the
+    // new ELI infrastructure
     if("sst" == elemlib) {
-        return CreateCoreModule(elem, params);
+        Module* ret = CreateCoreModule(elem, params);
+        if ( ret != NULL ) return ret;
     }
 
     requireLibrary(elemlib);
@@ -528,21 +532,8 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 
 Module*
 Factory::CreateCoreModule(std::string type, Params& params) {
-    // Try to load the core modules    
-    Module* rtnModule = NULL;
-
-    // Check each type of Core Module to load them
-    if (NULL == rtnModule) {
-        rtnModule = LoadCoreModule_StatisticOutputs(type, params);
-    }
-    
-    // Try to load other core modules here...
-    
-    // Did we succeed in loading a core module? 
-    if (NULL == rtnModule) {
-        out.fatal(CALL_INFO, -1, "can't find requested core module %s\n", type.c_str());
-    }
-    return rtnModule;
+    // Try to load the legacy core modules    
+    return LoadCoreModule_StatisticOutputs(type, params);
 }
 
 Module*

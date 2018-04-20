@@ -138,7 +138,8 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
     output_directory = "";
 
-    timeVortex = new TimeVortex;
+    Params p;
+    timeVortex = static_cast<TimeVortex*>(factory->CreateModule(cfg->timeVortex,p));
     if( my_rank.thread == 0 ) {
         m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), min_part == MAX_SIMTIME_T );
     }
