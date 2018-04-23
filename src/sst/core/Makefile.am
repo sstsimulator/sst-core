@@ -183,7 +183,6 @@ sst_core_sources = \
 	threadSyncSimpleSkip.cc \
 	sharedRegion.cc \
 	timeLord.cc \
-	timeVortex.cc \
 	uninitializedQueue.cc \
 	unitAlgebra.cc \
 	serialization/serializable.cc \
@@ -295,6 +294,7 @@ sstinfo_x_LDFLAGS = \
 include tinyxml/Makefile.inc
 include part/Makefile.inc
 include model/Makefile.inc
+include impl/Makefile.inc
 
 if USE_LIBZ
 sstsim_x_LDADD += $(LIBZ_LIBS)

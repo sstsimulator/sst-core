@@ -12,11 +12,8 @@
 #ifndef SST_CORE_TIMEVORTEX_H
 #define SST_CORE_TIMEVORTEX_H
 
-#include <functional>
-#include <queue>
-#include <vector>
-
 #include <sst/core/activityQueue.h>
+#include <sst/core/module.h>
 
 namespace SST {
 
@@ -25,33 +22,27 @@ class Output;
 /**
  * Primary Event Queue
  */
-class TimeVortex : public ActivityQueue {
+class TimeVortex : public ActivityQueue, public Module {
 public:
-	TimeVortex();
-    ~TimeVortex();
+	TimeVortex() {
+        max_depth = MAX_SIMTIME_T;
+    }
+    ~TimeVortex() {}
 
-    bool empty() override;
-    int size() override;
-    void insert(Activity* activity) override;
-    Activity* pop() override;
-    Activity* front() override;
+    // Inherited from ActivityQueue
+    virtual bool empty() override = 0;
+    virtual int size() override = 0;
+    virtual void insert(Activity* activity) override = 0;
+    virtual Activity* pop() override = 0;
+    virtual Activity* front() override = 0;
 
     /** Print the state of the TimeVortex */
-    void print(Output &out) const;
+    virtual void print(Output &out) const = 0;
+    virtual uint64_t getMaxDepth() const { return max_depth; }
+    virtual uint64_t getCurrentDepth() const = 0;
 
-    uint64_t getCurrentDepth() const { return current_depth; }
-    uint64_t getMaxDepth() const { return max_depth; }
     
-private:
-#ifdef SST_ENFORCE_EVENT_ORDERING
-    typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::pq_less_time_priority_order> dataType_t;
-#else
-    typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::pq_less_time_priority> dataType_t;
-#endif
-    dataType_t data;
-    uint64_t insertOrder;
-
-    uint64_t current_depth;
+protected:
     uint64_t max_depth;
     
 };
