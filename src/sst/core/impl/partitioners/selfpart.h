@@ -10,16 +10,15 @@
 // distribution.
 
 
-#ifndef SST_CORE_PART_SELF
-#define SST_CORE_PART_SELF
+#ifndef SST_CORE_IMPL_PARTITONERS_SELF_H
+#define SST_CORE_IMPL_PARTITONERS_SELF_H
 
-#include <sst/core/part/sstpart.h>
+#include <sst/core/sstpart.h>
+
 #include <sst/core/elementinfo.h>
 
-using namespace SST;
-using namespace SST::Partition;
-
 namespace SST {
+namespace IMPL {
 namespace Partition {
 
 
@@ -56,6 +55,7 @@ public:
 
 };
 
+}
 }
 }
 

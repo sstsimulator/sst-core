@@ -10,7 +10,8 @@
 // distribution.
 
 #include <sst_config.h>
-#include "sst/core/part/rrobin.h"
+#include "sst/core/impl/partitioners/rrobin.h"
+
 #include <sst/core/warnmacros.h>
 
 #include <string>
@@ -20,6 +21,7 @@
 using namespace std;
 
 namespace SST {
+namespace IMPL {
 namespace Partition {
 
 SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
@@ -47,4 +49,5 @@ void SSTRoundRobinPartition::performPartition(PartitionGraph* graph) {
 }
 
 } // namespace Partition
+} // namespace IMPL
 } // namespace SST

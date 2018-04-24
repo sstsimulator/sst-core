@@ -11,13 +11,15 @@
 
 #include <sst_config.h>
 
-#include <sst/core/configGraph.h>
-#include <sst/core/part/singlepart.h>
+#include <sst/core/impl/partitioners/singlepart.h>
+
 #include <sst/core/warnmacros.h>
+
+#include <sst/core/configGraph.h>
 
 using namespace std;
 
-using namespace SST::Partition;
+using namespace SST::IMPL::Partition;
 
 SSTSinglePartition::SSTSinglePartition(RankInfo UNUSED(total_ranks), RankInfo UNUSED(my_rank), int UNUSED(verbosity)) {}
 

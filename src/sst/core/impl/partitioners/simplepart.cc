@@ -10,7 +10,8 @@
 // distribution.
 
 #include <sst_config.h>
-#include "sst/core/part/simplepart.h"
+#include "sst/core/impl/partitioners/simplepart.h"
+
 #include <sst/core/warnmacros.h>
 
 #include <string>
@@ -23,6 +24,7 @@
 using namespace std;
 
 namespace SST {
+namespace IMPL {
 namespace Partition {
 
 SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
@@ -245,4 +247,5 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
 		}
 	}
 } // namespace partition
+} // namespace IMPL
 } // namespace SST
