@@ -10,13 +10,13 @@
 // distribution.
 
 
-#ifndef SST_CORE_PART_ZOLT
-#define SST_CORE_PART_ZOLT
+#ifndef SST_CORE_IMPL_PARTITONERS_ZOLTPART_H
+#define SST_CORE_IMPL_PARTITONERS_ZOLTPART_H
 
 
 #ifdef HAVE_ZOLTAN
 
-#include <sst/core/part/sstpart.h>
+#include <sst/core/sstpart.h>
 #include <sst/core/output.h>
 #include <sst/core/elementinfo.h>
 
@@ -30,10 +30,8 @@
 #define SST_CONFIG_HAVE_MPI
 #endif
 
-using namespace SST;
-using namespace SST::Partition;
-
 namespace SST {
+namespace IMPL {
 namespace Partition {
 
 /**
@@ -83,7 +81,7 @@ public:
 
 }
 }
-
+}
 #endif // End of HAVE_ZOLTAN
 
 #endif
