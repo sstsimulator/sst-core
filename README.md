@@ -2,7 +2,7 @@
 
 # Structural Simulation Toolkit (SST)
 
-#### Copyright (c) 2009-2018, Sandia Corporation
+#### Copyright (c) 2009-2018, National Technology and Engineering Solutions of Sandia, LLC (NTESS)
 
 ---
 
