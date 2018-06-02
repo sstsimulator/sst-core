@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -10,7 +10,8 @@
 // distribution.
 
 #include <sst_config.h>
-#include "sst/core/part/simplepart.h"
+#include "sst/core/impl/partitioners/simplepart.h"
+
 #include <sst/core/warnmacros.h>
 
 #include <string>
@@ -23,6 +24,7 @@
 using namespace std;
 
 namespace SST {
+namespace IMPL {
 namespace Partition {
 
 SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
@@ -245,4 +247,5 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
 		}
 	}
 } // namespace partition
+} // namespace IMPL
 } // namespace SST

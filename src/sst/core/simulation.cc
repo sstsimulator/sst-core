@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -138,7 +138,8 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
     output_directory = "";
 
-    timeVortex = new TimeVortex;
+    Params p;
+    timeVortex = static_cast<TimeVortex*>(factory->CreateModule(cfg->timeVortex,p));
     if( my_rank.thread == 0 ) {
         m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), min_part == MAX_SIMTIME_T );
     }

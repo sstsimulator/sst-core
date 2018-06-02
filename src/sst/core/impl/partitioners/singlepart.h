@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -10,16 +10,14 @@
 // distribution.
 
 
-#ifndef SST_CORE_PART_SINGLE
-#define SST_CORE_PART_SINGLE
+#ifndef SST_CORE_IMPL_PARTITONERS_SINGLEPART_H
+#define SST_CORE_IMPL_PARTITONERS_SINGLEPART_H
 
-#include <sst/core/part/sstpart.h>
+#include <sst/core/sstpart.h>
 #include <sst/core/elementinfo.h>
 
-using namespace SST;
-using namespace SST::Partition;
-
 namespace SST {
+namespace IMPL {
 namespace Partition {
 
 
@@ -55,6 +53,7 @@ public:
     
 };
 
+}
 }
 }
 

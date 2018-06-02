@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -66,6 +66,7 @@ public:
     std::string     partitioner;        /*!< Partitioner to use */
     std::string     generator;          /*!< Generator to use */
     std::string     generator_options;  /*!< Options to pass to the generator */
+    std::string     timeVortex;         /*!< TimeVortex implementation to use */
     std::string     output_config_graph;  /*!< File to dump configuration graph */
     std::string     output_dot;         /*!< File to dump dot output */
     std::string     output_xml;         /*!< File to dump XML output */
@@ -109,6 +110,7 @@ public:
     bool setPartitioner(const std::string &arg);
     bool setGenerator(const std::string &arg);
     bool setGeneratorOptions(const std::string &arg);
+    bool setTimeVortex(const std::string &arg);
     bool setOutputDir(const std::string &arg);
     bool setWriteConfig(const std::string &arg);
     bool setWriteDot(const std::string &arg);

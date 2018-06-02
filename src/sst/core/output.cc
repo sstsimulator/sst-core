@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -196,9 +196,9 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
     size_t backtrace_count = backtrace(backtrace_elements, backtrace_max_count);
     backtrace_names = backtrace_symbols(backtrace_elements, backtrace_max_count);
 
-    printf("SST Fatal Backtrace Information:\n");
+    fprintf(stderr, "SST Fatal Backtrace Information:\n");
     for(size_t i = 0; i < backtrace_count; ++i) {
-	printf("%5" PRIu64 " : %s\n", (uint64_t) i, backtrace_names[i]);
+	fprintf(stderr, "%5" PRIu64 " : %s\n", (uint64_t) i, backtrace_names[i]);
     }
 
     free(backtrace_names);
@@ -226,7 +226,7 @@ void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
     // Make sure we do not have a empty string from the user.
     if (0 == filename.length()) {
         // We need to abort here, this is an illegal condition
-        printf("ERROR: Output::setFileName(filename) - Parameter filename cannot be an empty string.\n");
+        fprintf(stderr, "ERROR: Output::setFileName(filename) - Parameter filename cannot be an empty string.\n");
         exit(-1);
     }
     
@@ -234,7 +234,7 @@ void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
     if (0 == m_sstGlobalSimFileName.length()) {
         m_sstGlobalSimFileName = filename;
     } else {
-        printf("ERROR: Output::setFileName() - Filename is already set to %s, and cannot be changed.\n", m_sstGlobalSimFileName.c_str());
+        fprintf(stderr, "ERROR: Output::setFileName() - Filename is already set to %s, and cannot be changed.\n", m_sstGlobalSimFileName.c_str());
         exit(-1);
     }
 }
@@ -305,7 +305,7 @@ void Output::openSSTTargetFile() const
                     *m_targetFileHandleRef = handle;
                 } else {
                     // We got an error of some sort
-                    printf("ERROR: Output::openSSTTargetFile() - Problem opening File %s - %s\n", tempFileName.c_str(), strerror(errno));
+                    fprintf(stderr, "ERROR: Output::openSSTTargetFile() - Problem opening File %s - %s\n", tempFileName.c_str(), strerror(errno));
                     exit(-1);
                 }
             }

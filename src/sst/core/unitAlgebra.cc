@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -448,6 +448,32 @@ UnitAlgebra::operator/= (const UnitAlgebra& v)
     return *this;
 }
 
+UnitAlgebra&
+UnitAlgebra::operator+= (const UnitAlgebra& v)
+{
+    if ( unit != v.unit ) {
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Error: Attempting to add UnitAlgebra values "
+                    "with non-matching units: %s, %s\n",
+                    toString().c_str(), v.toString().c_str());
+    }
+    value += v.value;
+    return *this;
+}
+
+UnitAlgebra&
+UnitAlgebra::operator-= (const UnitAlgebra& v)
+{
+    if ( unit != v.unit ) {
+        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        abort.fatal(CALL_INFO,1,"Error: Attempting to subtract UnitAlgebra values "
+                    "with non-matching units: %s, %s\n",
+                    toString().c_str(), v.toString().c_str());
+    }
+    value -= v.value;
+    return *this;
+}
+
 bool
 UnitAlgebra::operator> (const UnitAlgebra& v) const
 {
@@ -530,44 +556,3 @@ UnitAlgebra::getRoundedValue() const
     // return llround(value);
     return value.toLong();
 }
-
-
-// template <typename T>
-// UnitAlgebra operator* (UnitAlgebra lhs, const T& rhs)
-// {
-//     lhs *= rhs;
-//     return lhs;
-// }
-
-// template <typename T>
-// UnitAlgebra operator* (const T& lhs, UnitAlgebra rhs)
-// {
-//     rhs *= lhs;
-//     return rhs;
-// }
-
-// UnitAlgebra operator* (UnitAlgebra& lhs, const UnitAlgebra rhs)
-// {
-//     lhs *= rhs;
-//     return lhs;
-// }
-
-// template <typename T>
-// UnitAlgebra operator/ (UnitAlgebra lhs, const T& rhs)
-// {
-//     lhs /= rhs;
-//     return lhs;
-// }
-
-// std::ostream& operator<< (std::ostream& os, const UnitAlgebra& r)
-// {
-//     os << r.toString();
-//     return os;
-// }
-
-// std::ostream& operator<< (std::ostream& os, const Units& r)
-// {
-//     os << r.toString();
-//     return os;
-// }
-//

@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -58,6 +58,7 @@ Config::Config(RankInfo rankInfo)
     partitioner = "sst.linear";
     generator   = "NONE";
     generator_options   = "";
+    timeVortex  = "sst.timevortex.priority_queue";
     dump_component_graph_file = "";
 
     char* wd_buf = (char*) malloc( sizeof(char) * PATH_MAX );
@@ -134,6 +135,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARGOPT("partitioner",       "PARTITIONER",  "select the partitioner to be used. <lib.partitionerName>", &Config::setPartitioner),
     DEF_ARGOPT("generator",         "GENERATOR",    "select the generator to be used to build simulation <lib.generatorName>", &Config::setGenerator),
     DEF_ARGOPT("gen-options",       "OPTSTIRNG",    "options to be passed to generator function", &Config::setGeneratorOptions),
+    DEF_ARGOPT("timeVortex ",       "MODULE",       "select TimeVortex implementation <lib.timevortex>", &Config::setTimeVortex),
     DEF_ARGOPT("output-directory",  "DIR",          "directory into which all SST output files should reside", &Config::setOutputDir),
     DEF_ARGOPT("output-config",     "FILE",         "file to write SST configuration (in Python format)", &Config::setWriteConfig),
     DEF_ARGOPT("output-dot",        "FILE",         "file to write SST configuration graph (in GraphViz format)", &Config::setWriteDot),
@@ -455,6 +457,11 @@ bool Config::setGeneratorOptions(const std::string &arg) {
         generator_options = arg;
     else
         generator_options += std::string(" \"") + arg + std::string("\"");
+    return true;
+}
+
+bool Config::setTimeVortex(const std::string &arg) {
+    timeVortex = arg;
     return true;
 }
 

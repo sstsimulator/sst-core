@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -10,7 +10,8 @@
 // distribution.
 
 #include <sst_config.h>
-#include "sst/core/part/rrobin.h"
+#include "sst/core/impl/partitioners/rrobin.h"
+
 #include <sst/core/warnmacros.h>
 
 #include <string>
@@ -20,6 +21,7 @@
 using namespace std;
 
 namespace SST {
+namespace IMPL {
 namespace Partition {
 
 SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo UNUSED(my_rank), int UNUSED(verbosity)) :
@@ -29,7 +31,6 @@ SSTRoundRobinPartition::SSTRoundRobinPartition(RankInfo world_size, RankInfo UNU
 }
 
 void SSTRoundRobinPartition::performPartition(PartitionGraph* graph) {
-    std::cout << "Round robin partitioning" << std::endl;
     PartitionComponentMap_t& compMap = graph->getComponentMap();
     RankInfo rank(0, 0);
 
@@ -48,4 +49,5 @@ void SSTRoundRobinPartition::performPartition(PartitionGraph* graph) {
 }
 
 } // namespace Partition
+} // namespace IMPL
 } // namespace SST

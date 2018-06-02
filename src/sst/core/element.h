@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -121,14 +121,10 @@ struct ElementInfoGenerator {
 
 /** Describes all the parts of the Element Library
  */
-#ifdef SST_ELI_COMPILE_OLD_ELI_WITHOUT_DEPRECATION_WARNINGS
-struct ElementLibraryInfo {
-#else
 #if SST_BUILDING_CORE
 struct ElementLibraryInfo {
 #else
-struct __attribute__ ((deprecated("Old ELI support (defined in sst/core/element.h) will be removed in version 8.0.  Please convert to new ELI (defined in sst/core/elementinfo.h)."))) ElementLibraryInfo {
-#endif
+struct __attribute__ ((deprecated("Old ELI support (defined in sst/core/element.h) will be removed in version 9.0.  Please convert to new ELI (defined in sst/core/elementinfo.h)."))) ElementLibraryInfo {
 #endif
     const char *name;										/*!< Name of the Library. */
     const char *description;								/*!< Brief description of the Library */

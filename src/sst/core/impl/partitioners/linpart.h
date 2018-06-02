@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -10,23 +10,19 @@
 // distribution.
 
 
-#ifndef SST_CORE_PART_LINEAR
-#define SST_CORE_PART_LINEAR
+#ifndef SST_CORE_IMPL_PARTITONERS_LINPART_H
+#define SST_CORE_IMPL_PARTITONERS_LINPART_H
 
-#include <sst/core/part/sstpart.h>
+#include <sst/core/sstpart.h>
 #include <sst/core/elementinfo.h>
-
-using namespace SST;
-using namespace SST::Partition;
 
 namespace SST {
 
 class Output;
 
+namespace IMPL {
 namespace Partition {
 
-
-    
 /**
 Performs a linear partition scheme of an SST simulation configuration. In this
 scheme a list of components (supplied as a graph) are grouped by slicing the list
@@ -71,12 +67,9 @@ public:
     bool requiresConfigGraph() override { return false; }
     bool spawnOnAllRanks() override { return false; }
     
-    // static SSTPartitioner* allocate(RankInfo total_ranks, RankInfo my_rank, int verbosity) {
-    //     return new SSTLinearPartition(total_ranks, my_rank, verbosity);
-    // }
-    
 };
 
+}
 }
 }
 

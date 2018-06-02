@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -163,6 +163,24 @@ public:
         return *this;
     }
 
+    /** Add an argument; */
+    UnitAlgebra& operator+= (const UnitAlgebra& v);
+    /** Multiply by an argument; */
+    template <typename T>
+    UnitAlgebra& operator+= (const T& v) {
+        value += v;
+        return *this;
+    }
+
+    /** Subtract an argument; */
+    UnitAlgebra& operator-= (const UnitAlgebra& v);
+    /** Divide by an argument; */
+    template <typename T>
+    UnitAlgebra& operator-= (const T& v) {
+        value -= v;
+        return *this;
+    }
+
     /** Compare if this object is greater than the argument */
     bool operator> (const UnitAlgebra& v) const;
     /** Compare if this object is greater than, or equal to, the argument */
@@ -232,14 +250,14 @@ UnitAlgebra operator* (UnitAlgebra lhs, const T& rhs)
     return lhs;
 }
 
-template <typename T>
-UnitAlgebra operator* (const T& lhs, UnitAlgebra rhs)
-{
-    rhs *= lhs;
-    return rhs;
-}
+// template <typename T>
+// UnitAlgebra operator* (const T& lhs, UnitAlgebra rhs)
+// {
+//     rhs *= lhs;
+//     return rhs;
+// }
 
-inline UnitAlgebra operator* (UnitAlgebra& lhs, const UnitAlgebra rhs)
+inline UnitAlgebra operator* (UnitAlgebra lhs, const UnitAlgebra& rhs)
 {
     lhs *= rhs;
     return lhs;
@@ -251,6 +269,39 @@ UnitAlgebra operator/ (UnitAlgebra lhs, const T& rhs)
     lhs /= rhs;
     return lhs;
 }
+
+inline UnitAlgebra operator/ (UnitAlgebra lhs, const UnitAlgebra& rhs)
+{
+    lhs /= rhs;
+    return lhs;
+}
+
+template <typename T>
+UnitAlgebra operator+ (UnitAlgebra lhs, const T& rhs)
+{
+    lhs += rhs;
+    return lhs;
+}
+
+inline UnitAlgebra operator+ (UnitAlgebra lhs, const UnitAlgebra& rhs)
+{
+    lhs += rhs;
+    return lhs;
+}
+
+template <typename T>
+UnitAlgebra operator- (UnitAlgebra lhs, const T& rhs)
+{
+    lhs -= rhs;
+    return lhs;
+}
+
+inline UnitAlgebra operator- (UnitAlgebra lhs, const UnitAlgebra& rhs)
+{
+    lhs -= rhs;
+    return lhs;
+}
+
 
 inline std::ostream& operator<< (std::ostream& os, const UnitAlgebra& r)
 {

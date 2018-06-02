@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -14,6 +14,7 @@
 #define _H_SST_CORE_ACCUMULATOR_STATISTIC_
 
 #include <cmath>
+#include <limits>
 
 #include <sst/core/sst_types.h>
 #include <sst/core/warnmacros.h>
@@ -50,8 +51,10 @@ public:
     AccumulatorStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<NumberBase>(comp, statName, statSubId, statParams)
     {
-        m_sum = 0;
-        m_sum_sq = 0;
+        m_sum = static_cast<NumberBase>(0);
+        m_sum_sq = static_cast<NumberBase>(0);
+	m_min = std::numeric_limits<NumberBase>::max();
+	m_max = std::numeric_limits<NumberBase>::min();
 
         // Set the Name of this Statistic
         this->setStatisticTypeName("Accumulator");
@@ -68,6 +71,8 @@ protected:
     {
         m_sum += value;
         m_sum_sq += (value * value);
+	m_min = ( value < m_min ) ? value : m_min;
+	m_max = ( value > m_max ) ? value : m_max;
     }
 
 public:
@@ -78,6 +83,24 @@ public:
     NumberBase getSum() 
     {
         return m_sum;
+    }
+
+    /**
+	Provides the maxmimum value presented so far.
+	@return The maximum of values presented to the class so far
+    */
+    NumberBase getMax()
+    {
+	return m_max;
+    }
+
+    /**
+	Provides the minimum value presented so far.
+	@return The minimum of values presented to the class so far
+    */
+    NumberBase getMin()
+    {
+	return m_min;
     }
 
     /**
@@ -131,23 +154,35 @@ public:
     {
         m_sum = 0;
         m_sum_sq =0;
+	m_min = std::numeric_limits<NumberBase>::max();
+	m_max = std::numeric_limits<NumberBase>::min();
         this->setCollectionCount(0);
     }
     
     void registerOutputFields(StatisticOutput* statOutput) override
     {
-        Field1 = statOutput->registerField<NumberBase>("Sum");
-        Field2 = statOutput->registerField<NumberBase>("SumSQ");
-        Field3 = statOutput->registerField<uint64_t>  ("Count");
+        h_sum   = statOutput->registerField<NumberBase>("Sum");
+        h_sumsq = statOutput->registerField<NumberBase>("SumSQ");
+        h_count = statOutput->registerField<uint64_t>  ("Count");
+    	h_min   = statOutput->registerField<NumberBase>("Min");
+     	h_max   = statOutput->registerField<NumberBase>("Max");
     }
-    
+
     void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
-        statOutput->outputField(Field1, m_sum);
-        statOutput->outputField(Field2, m_sum_sq);  
-        statOutput->outputField(Field3, getCount());  
+        statOutput->outputField(h_sum, m_sum);
+        statOutput->outputField(h_sumsq, m_sum_sq);
+        statOutput->outputField(h_count, getCount());
+
+	if( 0 == getCount() ) {
+ 		statOutput->outputField(h_min, 0);
+ 		statOutput->outputField(h_max, 0);
+	} else {
+ 		statOutput->outputField(h_min, m_min);
+ 		statOutput->outputField(h_max, m_max);
+	}
     }
-    
+
     bool isStatModeSupported(StatisticBase::StatMode_t mode) const override
     {
         if (mode == StatisticBase::STAT_MODE_COUNT) {
@@ -162,8 +197,14 @@ public:
 private:
     NumberBase m_sum;
     NumberBase m_sum_sq;
+    NumberBase m_min;
+    NumberBase m_max;
 
-    StatisticOutput::fieldHandle_t Field1, Field2, Field3;
+    StatisticOutput::fieldHandle_t h_sum;
+    StatisticOutput::fieldHandle_t h_sumsq;
+    StatisticOutput::fieldHandle_t h_count;
+    StatisticOutput::fieldHandle_t h_max;
+    StatisticOutput::fieldHandle_t h_min;
 };
 
 } //namespace Statistics

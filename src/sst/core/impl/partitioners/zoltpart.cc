@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -10,16 +10,20 @@
 // distribution.
 
 #include <sst_config.h>
+#include <sst/core/impl/partitioners/zoltpart.h>
+
 #include <sst/core/warnmacros.h>
-#include <sst/core/part/zoltpart.h>
 #include <sst/core/configGraph.h>
 
 #ifdef HAVE_ZOLTAN
 
 using namespace std;
-using namespace SST;
 
 static SST::Output* partOutput;
+
+namespace SST {
+namespace IMPL {
+namespace Partition {
 
 extern "C" {
 static int sst_zoltan_count_vertices(void* data, int* UNUSED(ierr)) {
@@ -164,7 +168,7 @@ static void sst_zoltan_get_edge_list(void *data, int UNUSED(sizeGID), int UNUSED
 		return;
 	}
 }
-}
+} // extern "C"
 
 SSTZoltanPartition::SSTZoltanPartition(RankInfo world_size, RankInfo my_rank, int verbosity) {
 	// Get info for MPI.
@@ -314,6 +318,10 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
   	Zoltan_LB_Free_Part(&export_global_ids, &export_local_ids,
   		&export_ranks, &export_part);
   	partOutput->verbose(CALL_INFO, 1, 0, "Partitioning is complete.\n");
+}
+
+}
+}
 }
 
 #endif

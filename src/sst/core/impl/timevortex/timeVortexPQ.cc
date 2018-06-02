@@ -1,8 +1,8 @@
-// Copyright 2009-2017 Sandia Corporation. Under the terms
-// of Contract DE-NA0003525 with Sandia Corporation, the U.S.
+// Copyright 2009-2018 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2017, Sandia Corporation
+// Copyright (c) 2009-2018, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -12,24 +12,26 @@
 
 #include "sst_config.h"
 
-#include <sst/core/timeVortex.h>
+#include <sst/core/impl/timevortex/timeVortexPQ.h>
+
 #include <sst/core/output.h>
 
 #include <sst/core/clock.h>
 #include <sst/core/simulation.h>
 
 namespace SST {
+namespace IMPL {
 
-TimeVortex::TimeVortex() :
-    ActivityQueue(),
+TimeVortexPQ::TimeVortexPQ(Params& UNUSED(params)) :
+    TimeVortex(),
     insertOrder(0),
     current_depth(0),
     max_depth(0)
 {}
 
-TimeVortex::~TimeVortex()
+TimeVortexPQ::~TimeVortexPQ()
 {
-    // Activities in TimeVortex all need to be deleted
+    // Activities in TimeVortexPQ all need to be deleted
     while ( !data.empty() ) {
         Activity *it = data.top();
         delete it;
@@ -37,17 +39,17 @@ TimeVortex::~TimeVortex()
     }
 }
 
-bool TimeVortex::empty()
+bool TimeVortexPQ::empty()
 {
     return data.empty();
 }
 
-int TimeVortex::size()
+int TimeVortexPQ::size()
 {
     return data.size();
 }
 
-void TimeVortex::insert(Activity* activity)
+void TimeVortexPQ::insert(Activity* activity)
 {
     activity->setQueueOrder(insertOrder++);
     data.push(activity);
@@ -57,7 +59,7 @@ void TimeVortex::insert(Activity* activity)
     }
 }
 
-Activity* TimeVortex::pop()
+Activity* TimeVortexPQ::pop()
 {
     if ( data.empty() ) return NULL;
     Activity* ret_val = data.top();
@@ -67,12 +69,12 @@ Activity* TimeVortex::pop()
 
 }
 
-Activity* TimeVortex::front()
+Activity* TimeVortexPQ::front()
 {
     return data.top();
 }
 
-void TimeVortex::print(Output &out) const
+void TimeVortexPQ::print(Output &out) const
 {
     out.output("TimeVortex state:\n");
 
@@ -85,5 +87,5 @@ void TimeVortex::print(Output &out) const
 }
 
 
-
+} // namespace IMPL
 } // namespace SST
