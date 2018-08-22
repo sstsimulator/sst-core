@@ -141,18 +141,19 @@ public:
     FieldInfoArray_t& getFieldInfoArray() {return m_outputFieldInfoArray;}
 
 /////////////////
-    /** Output field data.  
+    // Methods for Outputting Fields  (Called by Statistic Objects)
+    // Output fields (will call virtual functions of Derived Output classes)
+    // These aren't really part of a generic interface - optimization purposes only
+    /** Output field data.
      * @param fieldHandle - The handle of the registered field.
      * @param data - The data to be output.
      */
-    // Methods for Outputting Fields  (Called by Statistic Objects)
-    // Output fields (will call virtual functions of Derived Output classes)
-    void outputField(fieldHandle_t fieldHandle, int32_t data);  
-    void outputField(fieldHandle_t fieldHandle, uint32_t data);  
-    void outputField(fieldHandle_t fieldHandle, int64_t data);  
-    void outputField(fieldHandle_t fieldHandle, uint64_t data);  
-    void outputField(fieldHandle_t fieldHandle, float data);  
-    void outputField(fieldHandle_t fieldHandle, double data);
+    virtual void outputField(fieldHandle_t fieldHandle, int32_t data);
+    virtual void outputField(fieldHandle_t fieldHandle, uint32_t data);
+    virtual void outputField(fieldHandle_t fieldHandle, int64_t data);
+    virtual void outputField(fieldHandle_t fieldHandle, uint64_t data);
+    virtual void outputField(fieldHandle_t fieldHandle, float data);
+    virtual void outputField(fieldHandle_t fieldHandle, double data);
     
     /** Output field data.  
      * @param type - The field type to get name of.
@@ -201,15 +202,6 @@ protected:
     virtual void implStopRegisterGroup() {}
     virtual void implStartOutputGroup(StatisticGroup* UNUSED(group)) {}
     virtual void implStopOutputGroup() {}
-    // Field Outputs
-    /** Implementation of outputField() for derived classes.  
-      * Perform the actual implementation of the output. */ 
-    virtual void implOutputField(fieldHandle_t fieldHandle, int32_t data) = 0;  
-    virtual void implOutputField(fieldHandle_t fieldHandle, uint32_t data) = 0;  
-    virtual void implOutputField(fieldHandle_t fieldHandle, int64_t data) = 0;  
-    virtual void implOutputField(fieldHandle_t fieldHandle, uint64_t data) = 0;  
-    virtual void implOutputField(fieldHandle_t fieldHandle, float data) = 0;  
-    virtual void implOutputField(fieldHandle_t fieldHandle, double data) = 0;
 
 
 private:
@@ -229,6 +221,8 @@ private:
     void outputGroup(StatisticGroup* group, bool endOfSimFlag);
     void startOutputGroup(StatisticGroup* group);
     void stopOutputGroup();
+
+    void castError();
 
     // Other support functions
     StatisticFieldInfo* addFieldToLists(const char* fieldName, fieldType_t fieldType);
@@ -251,7 +245,7 @@ private:
     std::string      m_currentFieldStatName;
     std::recursive_mutex  m_lock;
 
-};                          
+};
 
 class StatisticOutputBuilderBase {
  public:

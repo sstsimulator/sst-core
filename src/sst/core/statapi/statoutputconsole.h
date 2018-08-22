@@ -75,12 +75,12 @@ protected:
      * @param fieldHandle - The handle to the registered statistic field.
      * @param data - The data related to the registered field to be output.
      */
-    void implOutputField(fieldHandle_t fieldHandle, int32_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, uint32_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, int64_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, uint64_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, float data) override;
-    void implOutputField(fieldHandle_t fieldHandle, double data) override;
+    void outputField(fieldHandle_t fieldHandle, int32_t data) override;
+    void outputField(fieldHandle_t fieldHandle, uint32_t data) override;
+    void outputField(fieldHandle_t fieldHandle, int64_t data) override;
+    void outputField(fieldHandle_t fieldHandle, uint64_t data) override;
+    void outputField(fieldHandle_t fieldHandle, float data) override;
+    void outputField(fieldHandle_t fieldHandle, double data) override;
 
 protected: 
     StatisticOutputConsole() {;} // For serialization

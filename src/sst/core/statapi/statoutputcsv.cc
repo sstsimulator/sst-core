@@ -226,42 +226,42 @@ void StatisticOutputCSV::implStopOutputEntries()
     print("\n");
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, int32_t data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
     char buffer[256];
     sprintf(buffer, "%" PRId32, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, uint32_t data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
     char buffer[256];
     sprintf(buffer, "%" PRIu32, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, int64_t data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
     char buffer[256];
     sprintf(buffer, "%" PRId64, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, uint64_t data) 
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
     char buffer[256];
     sprintf(buffer, "%" PRIu64, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, float data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, float data)
 {
     char buffer[256];
     sprintf(buffer, "%f", data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, double data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, double data)
 {
     char buffer[256];
     sprintf(buffer, "%f", data);

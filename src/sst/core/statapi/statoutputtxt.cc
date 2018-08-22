@@ -190,7 +190,7 @@ void StatisticOutputTxt::implStopOutputEntries()
     print("%s\n", m_outputBuffer.c_str());
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, int32_t data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -208,7 +208,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, int32_t data
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, uint32_t data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -226,7 +226,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, uint32_t dat
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, int64_t data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -244,7 +244,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, int64_t data
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, uint64_t data) 
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -262,7 +262,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, uint64_t dat
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, float data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, float data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -280,7 +280,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, float data)
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, double data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, double data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);

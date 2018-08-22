@@ -175,13 +175,13 @@ public:
         statOutput->outputField(h_sumsq, m_sum_sq);
         statOutput->outputField(h_count, getCount());
 
-	if( 0 == getCount() ) {
- 		statOutput->outputField(h_min, 0);
- 		statOutput->outputField(h_max, 0);
-	} else {
- 		statOutput->outputField(h_min, m_min);
- 		statOutput->outputField(h_max, m_max);
-	}
+        if( 0 == getCount() ) {
+          statOutput->outputField(h_min, 0);
+          statOutput->outputField(h_max, 0);
+        } else {
+          statOutput->outputField(h_min, m_min);
+          statOutput->outputField(h_max, m_max);
+        }
     }
 
     bool isStatModeSupported(StatisticBase::StatMode_t mode) const override

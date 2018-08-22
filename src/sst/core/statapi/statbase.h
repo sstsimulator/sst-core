@@ -326,7 +326,7 @@ public:
         // Call the Derived Statistic's implementation 
         //  of addData and increment the count
         if (isEnabled()) {
-            addData_impl(data);
+            addData_impl(std::forward<U>(data));
             incrementCollectionCount();
         }
     }

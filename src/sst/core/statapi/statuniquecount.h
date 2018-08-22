@@ -57,17 +57,17 @@ protected:
 private:
     void clearStatisticData() override
     {
-	uniqueSet.clear();
+      uniqueSet.clear();
     }
 
     void registerOutputFields(StatisticOutput* statOutput) override
     {
-	uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
+      uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
     }
 
     void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
-	statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
+      statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
     }
 
 private:

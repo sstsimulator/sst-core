@@ -114,6 +114,54 @@ StatisticFieldInfo* StatisticOutput::getRegisteredField(fieldHandle_t fieldHandl
     return NULL;
 }
 
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), double UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support double output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), float UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support float output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support int32_t output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support uint32_t output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support int64_t output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support uint64_t output",
+      getStatisticOutputName().c_str());
+}
+
 void StatisticOutput::outputEntries(StatisticBase* statistic, bool endOfSimFlag)
 {
     this->lock();
@@ -162,42 +210,6 @@ void StatisticOutput::stopOutputGroup()
     m_currentFieldStatName = "";
     // Call the Derived class method
     implStopOutputGroup();
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, int32_t data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, uint32_t data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, int64_t data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, uint64_t data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, float data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, double data)
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
 }
 
 const char* StatisticOutput::getFieldTypeShortName(fieldType_t type)

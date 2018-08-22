@@ -37,56 +37,62 @@ namespace Statistics {
 
 	@tparam T A template for holding the main data type of this statistic
 */
+template <class T, bool B = std::is_fundamental<T>::value>
+struct NullStatisticBase {};
 
-template <typename T>
-class NullStatistic : public Statistic<T>
-{
-public:
+template <class T>
+struct NullStatisticBase<T,true> : public Statistic<T> {
+
+  NullStatisticBase(BaseComponent* comp, const std::string& statName,
+                    const std::string& statSubId, Params& statParams)
+  : Statistic<T>(comp, statName, statSubId, statParams)
+  {
+      // Set the Name of this Statistic
+      this->setStatisticTypeName("NULL");
+  }
+
+  void addData_impl(T UNUSED(data)) override {}
+};
+
+template <class T>
+struct NullStatistic : public NullStatisticBase<T> {
+
   SST_ELI_REGISTER_STATISTIC_TEMPLATE(NullStatistic)
 
-    NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
-		: Statistic<T>(comp, statName, statSubId, statParams)
-    {
-        // Set the Name of this Statistic
-        this->setStatisticTypeName("NULL");
-    }
+  NullStatistic(BaseComponent* comp, const std::string& statName,
+                const std::string& statSubId, Params& statParam)
+      : NullStatisticBase<T>(comp, statName, statSubId, statParam)
+  {}
 
-    ~NullStatistic(){};
+  ~NullStatistic(){}
 
-    void clearStatisticData() override
-    {
-        // Do Nothing
-    }
+  void clearStatisticData() override
+  {
+      // Do Nothing
+  }
 
-    void registerOutputFields(StatisticOutput* UNUSED(statOutput)) override
-    {
-        // Do Nothing
-    }
+  void registerOutputFields(StatisticOutput* UNUSED(statOutput)) override
+  {
+      // Do Nothing
+  }
 
-    void outputStatisticData(StatisticOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
-    {
-        // Do Nothing
-    }
+  void outputStatisticData(StatisticOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
+  {
+      // Do Nothing
+  }
 
-    bool isReady() const override
-    {
-        return true;
-    }
+  bool isReady() const override
+  {
+      return true;
+  }
 
-    bool isNullStatistic() const override
-    {
-        return true;
-    }
-
-protected:
-    void addData_impl(T UNUSED(data)) override
-    {
-        // Do Nothing
-    }
-
-
-private:
+  bool isNullStatistic() const override
+  {
+      return true;
+  }
 };
+
+
 
 } //namespace Statistics
 } //namespace SST
