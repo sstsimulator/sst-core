@@ -55,6 +55,21 @@ struct NullStatisticBase<T,true> : public Statistic<T> {
 };
 
 template <class T>
+struct NullStatisticBase<T,false> : public Statistic<T> {
+
+  NullStatisticBase(BaseComponent* comp, const std::string& statName,
+                    const std::string& statSubId, Params& statParams)
+  : Statistic<T>(comp, statName, statSubId, statParams)
+  {
+      // Set the Name of this Statistic
+      this->setStatisticTypeName("NULL");
+  }
+
+  void addData_impl(T&& UNUSED(data)) override {}
+  void addData_impl(const T& UNUSED(data)) override {}
+};
+
+template <class T>
 struct NullStatistic : public NullStatisticBase<T> {
 
   SST_ELI_REGISTER_STATISTIC_TEMPLATE(NullStatistic)
