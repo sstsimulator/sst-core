@@ -42,7 +42,7 @@ IntegerType allocateEnum() {
 
 class StatisticFieldTypeBase {
  public:
-  template <class T> static void registerField(FieldId_t id);
+  template <class T> static void registerField();
 
   virtual const char* fieldName() const = 0;
   virtual const char* shortName() const = 0;
@@ -91,13 +91,14 @@ template <class T> const char* StatisticFieldType<T>::fieldName_ = nullptr;
 template <class T> const char* StatisticFieldType<T>::shortName_ = nullptr;
 
 template <class T> void
-StatisticFieldTypeBase::registerField(FieldId_t id){
+StatisticFieldTypeBase::registerField(){
+  FieldId_t id = StatisticFieldType<T>::id();
   if (!fields_){
     fields_ = new std::map<FieldId_t,StatisticFieldTypeBase*>;
   }
   auto iter = fields_->find(id);
   if (iter == fields_->end()){
-    fields_[id] = new StatisticFieldType<T>;
+    (*fields_)[id] = new StatisticFieldType<T>;
   }
 }
 
@@ -169,11 +170,12 @@ template <class FieldType>
 struct StatisticFieldRegister {
   StatisticFieldRegister(const char* longName, const char* shortName){
     StatisticFieldType<FieldType>::registerName(longName, shortName);
+    StatisticFieldTypeBase::registerField<FieldType>();
   }
 };
 
 #define SST_REGISTER_STATISTIC_FIELD(fullName, shortName) \
-  static StatisticFieldRegister<fullName> register_##shortName(#fullName, #shortName)
+  static SST::Statistics::StatisticFieldRegister<fullName> register_##shortName(#fullName, #shortName)
     
 } //namespace Statistics
 } //namespace SST

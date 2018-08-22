@@ -54,12 +54,6 @@ StatisticFieldTypeBase::getField(FieldId_t id)
   return iter->second;
 }
 
-SST_REGISTER_STATISTIC_FIELD(int32_t, i32);
-SST_REGISTER_STATISTIC_FIELD(uint32_t, u32);
-SST_REGISTER_STATISTIC_FIELD(int64_t, i64);
-SST_REGISTER_STATISTIC_FIELD(uint64_t, u64);
-SST_REGISTER_STATISTIC_FIELD(float, f);
-SST_REGISTER_STATISTIC_FIELD(double, d);
 
 } //namespace Statistics
 } //namespace SST

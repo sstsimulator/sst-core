@@ -280,6 +280,26 @@ private:
 
 };
 
+/**
+ \class StatisticCollector
+ * Base type that creates the virtual addData(...) interface
+ * Used for distinguishing fundamental types (collected by value)
+ * and composite struct types (collected by reference)
+ */
+template <class T, bool F=std::is_fundamental<T>::value>
+struct StatisticCollector { };
+
+template <class T>
+struct StatisticCollector<T,true> {
+ virtual void addData_impl(T data) = 0;
+};
+
+template <class T>
+struct StatisticCollector<T,false> {
+ virtual void addData_impl(T&& data) = 0;
+ virtual void addData_impl(const T& data) = 0;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -290,19 +310,22 @@ private:
 	@tparam T A template for the basic numerical data stored by this Statistic
 */
 
+
 template <typename T>
-class Statistic : public StatisticBase
+class Statistic : public StatisticBase, public StatisticCollector<T>
 {
 public:
+    using StatisticCollector<T>::addData_impl;
     // The main method to add data to the statistic 
     /** Add data to the Statistic
       * This will call the addData_impl() routine in the derived Statistic.
      */
-    void addData(T data)
+    template <class U> //use a universal reference here
+    void addData(U&& data)
     {
         // Call the Derived Statistic's implementation 
         //  of addData and increment the count
-        if (true == isEnabled()) {
+        if (isEnabled()) {
             addData_impl(data);
             incrementCollectionCount();
         }
@@ -327,12 +350,8 @@ protected:
     virtual ~Statistic(){}
 
 private:     
-    Statistic(){}; // For serialization only
+    Statistic(){} // For serialization only
 
-    // Required Templated Virtual Methods:
-    virtual void addData_impl(T data) = 0;
-
-private:
 };
 
 class StatisticFactory {
@@ -384,7 +403,7 @@ class StatisticFieldFactory : public StatisticFactory {
   }
 
   static FieldId_t fieldId(){
-    return StatisticFieldType<FieldType>::fieldId();
+    return StatisticFieldType<FieldType>::id();
   }
 
   template <template <class> class StatCollector>
@@ -431,6 +450,7 @@ void StatisticFieldFactory<FieldType>::registerTemplateBuilder(const std::string
   auto iter = infos_->find(name);
   if (iter == infos_->end()){
     //these can get added redundantly
+    //(*infos_)[name] = new StatisticBuilder<StatCollector<FieldType>, FieldType>;
     (*infos_)[name] = new StatisticBuilder<StatCollector<FieldType>, FieldType>;
   }
   StatisticFactory::registerField<FieldType>();
@@ -445,7 +465,7 @@ void StatisticFieldFactory<FieldType>::registerBuilder(const std::string& name){
   auto iter = infos_->find(name);
   if (iter == infos_->end()){
     //these can get added redundantly
-    infos_[name] = new StatisticBuilder<StatCollector, FieldType>;
+    (*infos_)[name] = new StatisticBuilder<StatCollector, FieldType>;
   }
   StatisticFactory::registerField<FieldType>();
 }
@@ -496,11 +516,12 @@ struct StatBuilderRegistration {
   constexpr bool isRegistered() const { return true; }
 };
 
-template <class T, class Field>
-bool isStatRegistered() {
-  static StatBuilderRegistration<T,Field> builder;
-  return builder.isRegistered();
-}
+template <class T, class FieldType> struct MakeStatRegistered {
+  static StatBuilderRegistration<T, FieldType> instantiater;
+  static bool isRegistered(){ return instantiater.isRegistered(); }
+};
+template <class T, class FieldType> StatBuilderRegistration<T,FieldType>
+  MakeStatRegistered<T, FieldType>::instantiater;
 
 template <template <class> class Stat, class Field>
 struct StatInstantiate {
@@ -571,31 +592,28 @@ bool registerTemplateStatType(Params* p){
   return s.isRegistered();
 }
 
-template <class T> class FieldIdGetter {};
+template <class T> class TemplateStatisticFieldIdInfo {};
 template <template <class> class StatisticType, class Field>
-struct FieldIdGetter<StatisticType<Field>> {
+struct TemplateStatisticFieldIdInfo<StatisticType<Field>> {
   static FieldId_t getId() { return StatisticFieldType<Field>::fieldId(); }
 };
 
-template <class T> //T is a full type Statistic<T>
-FieldId_t getStatFieldId() {
-  return FieldIdGetter<T>::getId();
-}
-
 #define SST_ELI_REGISTER_STATISTIC_TEMPLATE(cls)   \
-  static Statistics::FieldId_t fieldId(){ return getStatFieldId<cls>(); } \
+  static SST::Statistics::FieldId_t fieldId(){ \
+    return SST::Statistics::TemplateStatisticFieldIdInfo<cls>::getId(); \
+  } \
   static const char* factoryName(){ return #cls; } \
   static bool isRegistered(){ \
-    return MakeTemplateStatRegistered<cls>::isRegistered(); \
+    return SST::Statistics::MakeTemplateStatRegistered<cls>::isRegistered(); \
   }
 
-#define SST_ELI_REGISTER_STATISTIC(cls,field,fieldName,shortName) \
-  static Statistics::FieldId_t fieldId(){ return StatisticFactoryBase<field>::fieldId(); } \
+#define SST_ELI_REGISTER_STATISTIC(cls,field) \
+  static SST::Statistics::FieldId_t fieldId(){ \
+    return SST::Statistics::StatisticFieldFactory<field>::fieldId(); \
+  } \
   static const char* factoryName(){ return #cls; } \
-  static const char* fieldName(){ return fieldName; } \
-  static const char* fieldShortName(){ return fieldShortName; } \
   static bool isRegistered(){ \
-    return isStatRegistered<cls>(); \
+    return SST::Statistics::MakeStatRegistered<cls,field>::isRegistered(); \
   }
 
 #define SST_ELI_INSTANTIATE_STATISTIC(cls,allowedFields,unique_id) \

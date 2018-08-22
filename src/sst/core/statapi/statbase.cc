@@ -172,18 +172,3 @@ std::map<FieldId_t,StatisticFactory*>* StatisticFactory::factories_;
 } //namespace Statistics
 } //namespace SST
 
-#include "stataccumulator.h"
-#include "statuniquecount.h"
-#include "statnull.h"
-#include "stathistogram.h"
-
-namespace SST {
-namespace Statistics {
-
-SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic,any_numeric_type,sst_core)
-SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic,any_integer_type,sst_core)
-SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic,any_numeric_type,sst_core)
-SST_ELI_INSTANTIATE_STATISTIC(NullStatistic,any_numeric_type,sst_core)
-
-}
-}
