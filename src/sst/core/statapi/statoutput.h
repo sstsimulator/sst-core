@@ -84,13 +84,12 @@ public:
     template<typename T>
     fieldHandle_t registerField(const char* fieldName)
     {
-        StatisticFieldInfo::fieldType_t FieldType = StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
-        if ( FieldType == StatisticFieldInfo::UNDEFINED )
-            return -1;
+      StatisticFieldInfo::fieldType_t FieldType =
+          StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
 
-        auto res = generateFileHandle(addFieldToLists(fieldName, FieldType));
-        implRegisteredField(res);
-        return res;
+      auto res = generateFileHandle(addFieldToLists(fieldName, FieldType));
+      implRegisteredField(res);
+      return res;
     }
     
 //    /** Adjust the hierarchy of the fields (FUTURE SUPPORT)
@@ -253,6 +252,57 @@ private:
     std::recursive_mutex  m_lock;
 
 };                          
+
+class StatisticOutputBuilderBase {
+ public:
+  virtual StatisticOutput* build(Params& outputParameters) = 0;
+};
+
+template <class T>
+class StatisticOutputBuilder : public StatisticOutputBuilderBase {
+ public:
+  StatisticOutput* build(Params& params){
+    return new T(params);
+  }
+};
+
+class StatisticOutputFactory {
+ public:
+  template <class T> static void
+  registerBuilder(const std::string& name){
+    registerBuilder(new StatisticOutputBuilder<T>, name);
+  }
+
+  static StatisticOutput* build(const std::string& name, Params& params);
+
+ private:
+  static void registerBuilder(StatisticOutputBuilderBase* builder, const std::string& name);
+
+  static std::map<std::string, StatisticOutputBuilderBase*>* builders_;
+
+};
+
+template <class OutputType>
+struct StatOutputBuilderRegistration {
+  StatOutputBuilderRegistration(){
+    const char* name = OutputType::factoryName();
+    StatisticOutputFactory::registerBuilder<OutputType>(name);
+  }
+
+  constexpr bool isRegistered() const { return true; }
+};
+
+template <class T>
+bool isStatOutputRegistered() {
+  static StatOutputBuilderRegistration<T> builder;
+  return builder.isRegistered();
+}
+
+#define SST_ELI_REGISTER_STATISTIC_OUTPUT(cls)   \
+  static const char* factoryName(){ return #cls; } \
+  static bool isRegistered(){ \
+    return isStatOutputRegistered<cls>(); \
+  }
 
 } //namespace Statistics
 } //namespace SST

@@ -82,15 +82,6 @@ StatisticProcessingEngine::~StatisticProcessingEngine()
     }
 }
 
-
-
-StatisticBase* StatisticProcessingEngine::createStatistic(BaseComponent* comp, const std::string &type,
-            const std::string &statName, const std::string &statSubId,
-            Params &params, StatisticFieldInfo::fieldType_t fieldType)
-{
-    return Factory::getFactory()->CreateStatistic(comp, type, statName, statSubId, params, fieldType);
-}
-
 bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 {
     if ( stat->isNullStatistic() )
@@ -563,7 +554,10 @@ void StatisticProcessingEngine::handleStatisticEngineStopTimeEvent(SimTime_t tim
     }
 }
 
-StatisticBase* StatisticProcessingEngine::isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType)
+StatisticBase*
+StatisticProcessingEngine::isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId,
+                                                    std::string& statName, std::string& statSubId,
+                                                    StatisticFieldInfo::fieldType_t fieldType)
 {
     StatArray_t*        statArray;
     StatisticBase*      TestStat;
@@ -593,7 +587,8 @@ StatisticBase* StatisticProcessingEngine::isStatisticInCompStatMap(const std::st
     return NULL;
 }
 
-void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t UNUSED(fieldType))
+void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat,
+           StatisticFieldInfo::fieldType_t UNUSED(fieldType))
 {
     StatArray_t*        statArray;
     ComponentId_t compId = Stat->getComponent()->getId();

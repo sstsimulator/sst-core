@@ -18,10 +18,11 @@
 namespace SST {
 namespace Statistics {
 
-StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters, bool compressed)
-    : StatisticOutput (outputParameters), m_useCompression(compressed)
+StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters)
+    : StatisticOutput (outputParameters)
 {
-    // Announce this output object's name
+    m_useCompression = outputParameters.find<bool>("compressed");
+  // Announce this output object's name
     Output &out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputCSV enabled...\n");
     setStatisticOutputName("StatisticOutputCSV");

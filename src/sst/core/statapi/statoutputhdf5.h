@@ -35,6 +35,7 @@ namespace Statistics {
 class StatisticOutputHDF5 : public StatisticOutput
 {
 public:
+  SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputHDF5)
     /** Construct a StatOutputHDF5
      * @param outputParameters - Parameters used for this Statistic Output
      */

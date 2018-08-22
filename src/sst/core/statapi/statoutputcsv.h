@@ -30,11 +30,13 @@ namespace Statistics {
 */
 class StatisticOutputCSV : public StatisticOutput
 {
-public:    
+public:
+  SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputCSV)
+
     /** Construct a StatOutputCSV
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputCSV(Params& outputParameters, bool compressed);
+    StatisticOutputCSV(Params& outputParameters);
 
 protected:
     /** Perform a check of provided parameters

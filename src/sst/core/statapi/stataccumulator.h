@@ -47,6 +47,7 @@ template <typename NumberBase>
 class AccumulatorStatistic : public Statistic<NumberBase> 
 {
 public:
+  SST_ELI_REGISTER_STATISTIC_TEMPLATE(AccumulatorStatistic)
 
     AccumulatorStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<NumberBase>(comp, statName, statSubId, statParams)
@@ -206,6 +207,7 @@ private:
     StatisticOutput::fieldHandle_t h_max;
     StatisticOutput::fieldHandle_t h_min;
 };
+
 
 } //namespace Statistics
 } //namespace SST

@@ -15,6 +15,7 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/warnmacros.h>
 #include <sst/core/params.h>
+#include <sst/core/statapi/statbase.h>
 
 #include <string>
 #include <vector>

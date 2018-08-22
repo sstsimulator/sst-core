@@ -28,6 +28,8 @@ namespace Statistics {
 class StatisticOutputConsole : public StatisticOutput
 {
 public:
+    SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputConsole)
+
     /** Construct a StatOutputConsole
      * @param outputParameters - Parameters used for this Statistic Output
      */

@@ -153,5 +153,37 @@ void StatisticBase::delayCollectionExpiredHandler()
     m_collectionDelayed = false;
 }
 
+StatisticBase*
+StatisticFactory::create(FieldId_t id, BaseComponent* comp,
+                     const std::string& type, const std::string& statName,
+                     const std::string& statId, Params& params)
+{
+  auto iter = factories_->find(id);
+  if (iter == factories_->end()){
+    Output::getDefaultObject().fatal(CALL_INFO,
+      1, "No statistics are registered for field %d building stat of type %s, name %s",
+      int(id), type.c_str(), statName.c_str());
+  }
+  return iter->second->build(comp, type, statName, statId, params);
+}
+
+std::map<FieldId_t,StatisticFactory*>* StatisticFactory::factories_;
+
 } //namespace Statistics
 } //namespace SST
+
+#include "stataccumulator.h"
+#include "statuniquecount.h"
+#include "statnull.h"
+#include "stathistogram.h"
+
+namespace SST {
+namespace Statistics {
+
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic,any_numeric_type,sst_core)
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic,any_integer_type,sst_core)
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic,any_numeric_type,sst_core)
+SST_ELI_INSTANTIATE_STATISTIC(NullStatistic,any_numeric_type,sst_core)
+
+}
+}

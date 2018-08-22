@@ -15,6 +15,7 @@
 #include <sst/core/statapi/statoutput.h>
 #include <sst/core/statapi/statgroup.h>
 #include <sst/core/stringize.h>
+#include <sst/core/simulation.h>
 
 namespace SST {
 namespace Statistics {
@@ -203,6 +204,30 @@ const char* StatisticOutput::getFieldTypeShortName(fieldType_t type)
 {
     return StatisticFieldInfo::getFieldTypeShortName(type);
 }
+
+StatisticOutput*
+StatisticOutputFactory::build(const std::string& name, Params& params)
+{
+  auto iter = builders_->find(name);
+  if (iter == builders_->end()){
+    Simulation::getSimulationOutput().fatal(CALL_INFO,1,
+       "Invalid statistic output requested: %s", name.c_str());
+  }
+  return iter->second->build(params);
+}
+
+void
+StatisticOutputFactory::registerBuilder(StatisticOutputBuilderBase* builder, const std::string& name)
+{
+  if (!builders_) builders_ = new std::map<std::string, StatisticOutputBuilderBase*>;
+
+
+  (*builders_)[name] = builder;
+}
+
+
+std::map<std::string, StatisticOutputBuilderBase*>*
+  StatisticOutputFactory::builders_ = nullptr;
 
 } //namespace Statistics
 } //namespace SST

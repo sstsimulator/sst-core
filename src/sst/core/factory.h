@@ -111,19 +111,6 @@ public:
     generateFunction GetGenerator(std::string name);
 
 
-    /** Instantiate a new Statistic
-     * @param comp - Owning component
-     * @param type - Fully qualified elementlibname.statisticname type
-     * @param statName - Name of the statistic
-     * @param statSubId - Name of the sub statistic
-     * @param params - Parameters to pass to the Statistics's constructor
-     * @param fieldType - Type of data stored in statistic
-     */
-    Statistics::StatisticBase* CreateStatistic(BaseComponent* comp, const std::string &type,
-            const std::string &statName, const std::string &statSubId,
-            Params &params, Statistics::StatisticFieldInfo::fieldType_t fieldType);
-
-
     /** Return Python Module creation function
      * @param name - Fully qualified elementlibname.pythonModName type name
      */

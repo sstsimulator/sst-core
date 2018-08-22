@@ -18,9 +18,10 @@
 namespace SST {
 namespace Statistics {
 
-StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters, bool compressed)
-    : StatisticOutput (outputParameters), m_useCompression(compressed)
+StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters)
+    : StatisticOutput (outputParameters)
 {
+    m_useCompression = outputParameters.find<bool>("compressed");
     // Announce this output object's name
     Output out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutput%sTxt enabled...\n",

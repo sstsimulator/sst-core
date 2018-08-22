@@ -42,9 +42,10 @@ namespace Statistics {
 template<class BinDataType>
 class HistogramStatistic : public Statistic<BinDataType> 
 {
-public:
+ public:
+  SST_ELI_REGISTER_STATISTIC_TEMPLATE(HistogramStatistic)
 
-    HistogramStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
+  HistogramStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<BinDataType>(comp, statName, statSubId, statParams)
     {
         // Identify what keys are Allowed in the parameters

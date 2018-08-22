@@ -447,6 +447,122 @@ std::string BaseComponent::getComponentInfoStatisticUnits(const std::string &sta
     return Factory::getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
 }
 
+bool
+BaseComponent::checkStat(const std::string& statName, const std::string& statSubId,
+                         StatRegisterConfig& cfg)
+{
+  bool statGood = true;
+  bool nameFound = false;
+
+  // Build a name to report errors against
+  cfg.fullStatName = StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId);
+
+  auto& out = getSimulation()->getSimulationOutput();
+
+  // Make sure that the wireup has not been completed
+  if (getSimulation()->isWireUpFinished()) {
+      // We cannot register statistics AFTER the wireup (after all components have been created)
+      out.fatal(CALL_INFO, 1,
+                "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  "
+                "Statistics must be registered on Component creation.; exiting...\n",
+                cfg.fullStatName.c_str());
+  }
+
+  // // Verify here that name of the stat is one of the registered
+  // // names of the component's ElementInfoStatistic.
+  // if (false == doesComponentInfoStatisticExist(statName)) {
+  //     fprintf(stderr, "Error: Statistic %s name %s is not found in ElementInfoStatistic, exiting...\n", fullStatName.c_str(), statName.c_str());
+  //     exit(1);
+  // }
+
+  // Check each entry in the StatEnableList (from the ConfigGraph via the
+  // Python File) to see if this Statistic is enabled, then check any of
+  // its critical parameters
+  for ( auto & si : *my_info->getStatEnableList() ) {
+      // First check to see if the any entry in the StatEnableList matches
+      // the Statistic Name or the STATALLFLAG.  If so, then this Statistic
+      // will be enabled.  Then check any critical parameters
+      if ((std::string(STATALLFLAG) == si.name) || (statName == si.name)) {
+          // Identify what keys are Allowed in the parameters
+          Params::KeySet_t allowedKeySet;
+          allowedKeySet.insert("type");
+          allowedKeySet.insert("rate");
+          allowedKeySet.insert("startat");
+          allowedKeySet.insert("stopat");
+          allowedKeySet.insert("resetOnRead");
+          si.params.pushAllowedKeys(allowedKeySet);
+
+          // We found an acceptable name... Now check its critical Parameters
+          // Note: If parameter not found, defaults will be provided
+          cfg.statTypeParam = si.params.find<std::string>("type", "sst.AccumulatorStatistic");
+          cfg.statRateParam = si.params.find<std::string>("rate", "0ns");
+
+          cfg.collectionRate = UnitAlgebra(cfg.statRateParam);
+          cfg.statParams = si.params;
+          nameFound = true;
+          break;
+      }
+  }
+
+  // Did we find a matching enable name?
+  if (!nameFound) {
+      statGood = false;
+      out.verbose(CALL_INFO, 1, 0,
+          " Warning: Statistic %s is not enabled in python script, statistic will not be enabled...\n",
+         cfg.fullStatName.c_str());
+  }
+
+  if (statGood) {
+      // Check that the Collection Rate is a valid unit type that we can use
+      if ((cfg.collectionRate.hasUnits("s")) ||
+          (cfg.collectionRate.hasUnits("hz")) ) {
+          // Rate is Periodic Based
+          cfg.statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
+      } else if (cfg.collectionRate.hasUnits("event")) {
+          // Rate is Count Based
+          cfg.statCollectionMode = StatisticBase::STAT_MODE_COUNT;
+      } else if (0 == cfg.collectionRate.getValue()) {
+          // Collection rate is zero and has no units, so make up a periodic flavor
+          cfg.collectionRate = UnitAlgebra("0ns");
+          cfg.statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
+      } else {
+          // collectionRate is a unit type we dont recognize
+          out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n",
+                    cfg.fullStatName.c_str(), cfg.collectionRate.toString().c_str());
+      }
+  }
+
+  return statGood;
+}
+
+bool
+BaseComponent::checkModeSupported(StatisticBase* statistic, const StatRegisterConfig& cfg)
+{
+  auto& out = getSimulation()->getSimulationOutput();
+  if (nullptr == statistic) {
+      out.fatal(CALL_INFO, 1,
+                "ERROR: Unable to instantiate Statistic %s; exiting...\n",
+                cfg.fullStatName.c_str());
+  }
+
+  // Check that the statistic supports this collection rate
+  if (!statistic->isStatModeSupported(cfg.statCollectionMode)) {
+      if (StatisticBase::STAT_MODE_PERIODIC == cfg.statCollectionMode) {
+          out.verbose(CALL_INFO, 1, 0,
+            " Warning: Statistic %s Does not support Periodic Based Collections; Collection Rate = %s\n",
+            cfg.fullStatName.c_str(), cfg.collectionRate.toString().c_str());
+      } else {
+          out.verbose(CALL_INFO, 1, 0,
+            " Warning: Statistic %s Does not support Event Based Collections; Collection Rate = %s\n",
+            cfg.fullStatName.c_str(), cfg.collectionRate.toString().c_str());
+      }
+      return false;
+  } else {
+    return true;
+  }
+}
+
+
 
 } // namespace SST
 

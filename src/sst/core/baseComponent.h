@@ -255,6 +255,7 @@ public:
     /** Utility function to return the time since the simulation began in milliseconds */
     SimTime_t getCurrentSimTimeMilli() const;
 
+
     /** Registers a statistic.
         If Statistic is allowed to run (controlled by Python runtime parameters),
         then a statistic will be created and returned. If not allowed to run,
@@ -283,12 +284,78 @@ public:
             exit(1);
         }
         // Check to see if the Statistic is previously registered with the Statistics Engine
-        StatisticBase* prevStat = StatisticProcessingEngine::getInstance()->isStatisticRegisteredWithEngine<T>(getName(), my_info->getID(), statName, statSubId);
-        if (NULL != prevStat) {
-            // Dynamic cast the base stat to the expected type
-            return dynamic_cast<Statistic<T>*>(prevStat);
+        StatisticBase* base = StatisticProcessingEngine::getInstance()
+            ->isStatisticRegisteredWithEngine(getName(), my_info->getID(), statName, statSubId,
+                                              StatisticFieldType<T>::id());
+        if (base){
+          Statistic<T>* stat = dynamic_cast<Statistic<T>*>(base);
+          if (!stat){
+            Simulation::getSimulationOutput().fatal(CALL_INFO,1,
+               "Statistic %s for Component %s, ID %d did not cast to type %s",
+               statName.c_str(), getName().c_str(), int(my_info->getID()),
+               StatisticFieldType<T>::getFieldName());
+          }
         }
-        return registerStatisticCore<T>(statName, statSubId);
+
+        Statistic<T>* stat = registerStatisticCore<T>(statName, statSubId);
+        return stat;
+    }
+
+    struct StatRegisterConfig {
+      std::string fullStatName;
+      UnitAlgebra collectionRate;
+      Params statParams;
+      std::string statRateParam;
+      std::string statTypeParam;
+      StatisticBase::StatMode_t statCollectionMode;
+
+      StatRegisterConfig() :
+        statCollectionMode(StatisticBase::STAT_MODE_COUNT)
+      {}
+    };
+
+    bool checkModeSupported(StatisticBase* statistic, const StatRegisterConfig& cfg);
+
+    bool checkStat(const std::string& statName, const std::string& statSubId,
+                   StatRegisterConfig& cfg);
+
+    template <class T> Statistic<T>*
+    registerStatisticCore(const std::string& statName,
+                          const std::string& statSubId){
+
+        StatisticProcessingEngine      *engine = StatisticProcessingEngine::getInstance();
+
+        Statistic<T>*                   statistic = nullptr;
+        /* Create the statistic in the "owning" component.  That should just be us,
+         * in the case of 'modern' subcomponents.  For legacy subcomponents, that will
+         * be the owning component.  We've got the ID of that component in 'my_info->getID()'
+         */
+        BaseComponent *owner = this->getStatisticOwner();
+        StatRegisterConfig cfg;
+        bool statGood = checkStat(statName, statSubId, cfg);
+
+        if (statGood) {
+            // Instantiate the Statistic here defined by the type here
+            statistic = engine->createStatistic<T>(owner, cfg.statTypeParam, statName,
+                                                   statSubId, cfg.statParams);
+            statGood = checkModeSupported(statistic, cfg);
+            // Tell the Statistic what collection mode it is in
+            statistic->setRegisteredCollectionMode(cfg.statCollectionMode);
+        }
+        /** statGood can get set to false by checkMode supported*/
+        if (!statGood ) {
+            // Delete the original statistic (if created), and return a NULL statistic instead
+            if (nullptr != statistic) {
+                delete statistic;
+            }
+            // Instantiate the Statistic here defined by the type here
+            statistic = engine->createStatisticType<NullStatistic<T>>(
+                             owner, statName, statSubId, cfg.statParams);
+        }
+        engine->registerStatisticWithEngine(statistic, StatisticFieldType<T>::id());
+
+        // Register the new Statistic with the Statistic Engine
+        return statistic;
     }
 
     template <typename T>
@@ -383,15 +450,8 @@ protected:
 private:
     void addSelfLink(std::string name);
 
-    template <typename T>
-    Statistic<T>* registerStatisticCore(std::string statName, std::string statSubId = "")
-    {
-        // NOTE: Templated Code for implementation of Statistic Registration
-        // is in the componentregisterstat_impl.h file.  This was done
-        // to avoid code bloat in the .h file.
-        #include "sst/core/statapi/componentregisterstat_impl.h"
-    }
-
+    StatisticBase* registerStatisticCore(FieldId_t id, const std::string& statName,
+                                         const std::string& statSubId = "");
 
 };
 

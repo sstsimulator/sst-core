@@ -12,10 +12,13 @@
 #include "sst_config.h"
 
 #include <sst/core/stringize.h>
+#include <sst/core/simulation.h>
 #include <sst/core/statapi/statfieldinfo.h>
 
 namespace SST {
 namespace Statistics {
+
+std::map<FieldId_t,StatisticFieldTypeBase*>* StatisticFieldTypeBase::fields_ = nullptr;
 
 StatisticFieldInfo::StatisticFieldInfo(const char* statName, const char* fieldName, fieldType_t fieldType)
 {
@@ -34,37 +37,29 @@ bool StatisticFieldInfo::operator==(StatisticFieldInfo& FieldInfo1)
 
 std::string StatisticFieldInfo::getFieldUniqueName() const
 {
-    std::string strRtn;
-    strRtn = getFieldName() + ".";
-    strRtn += SST::to_string(getFieldType());
-    return strRtn;
+  std::string strRtn;
+  strRtn = getFieldName() + ".";
+  strRtn += SST::to_string(getFieldType());
+  return strRtn;
 }
 
-const char* StatisticFieldInfo::getFieldTypeShortName(fieldType_t type)
+StatisticFieldTypeBase*
+StatisticFieldTypeBase::getField(FieldId_t id)
 {
-    switch (type) {
-        case StatisticFieldInfo::INT32  : return "i32"; break;
-        case StatisticFieldInfo::UINT32 : return "u32"; break;
-        case StatisticFieldInfo::INT64  : return "i64"; break;
-        case StatisticFieldInfo::UINT64 : return "u64"; break;
-        case StatisticFieldInfo::FLOAT  : return "f32"; break;
-        case StatisticFieldInfo::DOUBLE : return "f64"; break;
-        default: return "INVALID"; break;    
-    }
+  auto iter = fields_->find(id);
+  if (iter == fields_->end()){
+    Simulation::getSimulationOutput().fatal(CALL_INFO,1,
+       "Invalid Field ID: %d", int(id));
+  }
+  return iter->second;
 }
 
-const char* StatisticFieldInfo::getFieldTypeFullName(fieldType_t type)
-{
-    switch (type) {
-        case StatisticFieldInfo::INT32  : return "INT32"; break;
-        case StatisticFieldInfo::UINT32 : return "UINT32"; break;
-        case StatisticFieldInfo::INT64  : return "INT64"; break;
-        case StatisticFieldInfo::UINT64 : return "UINT64"; break;
-        case StatisticFieldInfo::FLOAT  : return "FLOAT"; break;
-        case StatisticFieldInfo::DOUBLE : return "DOUBLE"; break;
-        default: return "INVALID"; break;    
-    }
-}
+SST_REGISTER_STATISTIC_FIELD(int32_t, i32);
+SST_REGISTER_STATISTIC_FIELD(uint32_t, u32);
+SST_REGISTER_STATISTIC_FIELD(int64_t, i64);
+SST_REGISTER_STATISTIC_FIELD(uint64_t, u64);
+SST_REGISTER_STATISTIC_FIELD(float, f);
+SST_REGISTER_STATISTIC_FIELD(double, d);
 
 } //namespace Statistics
 } //namespace SST

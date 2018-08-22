@@ -31,10 +31,12 @@ namespace Statistics {
 class StatisticOutputTxt : public StatisticOutput
 {
 public:    
+  SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputTxt)
+
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputTxt(Params& outputParameters, bool compressed);
+    StatisticOutputTxt(Params& outputParameters);
 
 protected:
     /** Perform a check of provided parameters
