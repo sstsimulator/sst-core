@@ -31,7 +31,7 @@ namespace Statistics {
 class StatisticOutputCSV : public StatisticOutput
 {
 public:
-  SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputCSV)
+  SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputCSV, "statOutputCSV")
 
     /** Construct a StatOutputCSV
      * @param outputParameters - Parameters used for this Statistic Output

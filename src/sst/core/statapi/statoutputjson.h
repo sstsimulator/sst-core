@@ -27,7 +27,7 @@ namespace Statistics {
 class StatisticOutputJSON : public StatisticOutput
 {
 public:    
-  SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputJSON)
+  SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputJSON, "statOutputJSON")
   /** Construct a StatOutputJSON
      * @param outputParameters - Parameters used for this Statistic Output
      */

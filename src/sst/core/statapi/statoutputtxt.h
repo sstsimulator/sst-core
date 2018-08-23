@@ -31,7 +31,7 @@ namespace Statistics {
 class StatisticOutputTxt : public StatisticOutput
 {
 public:    
-  SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputTxt)
+  SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputTxt, "statOutputTxt")
 
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output
