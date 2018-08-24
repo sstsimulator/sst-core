@@ -81,12 +81,11 @@ public:
                                   const std::string &statName, const std::string &statSubId,
                                   Params &params)
     {
-
       StatisticBase* base = createStatistic(Statistic<T>::fieldId(), comp, type, statName,
                                             statSubId, params);
       Statistic<T>* casted = dynamic_cast<Statistic<T>*>(base);
       if (!casted){
-        abort();
+        castError(type, statName, StatisticFieldType<T>::fieldName());
       }
       return casted;
     }
@@ -150,6 +149,7 @@ private:
     void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
     StatisticBase* isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType);
     void addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
+    void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
 
 private:
     typedef std::vector<StatisticBase*>           StatArray_t;       /*!< Array of Statistics */

@@ -419,14 +419,6 @@ Factory::CreateModule(std::string type, Params& params)
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
 
-    // Check for legacy core modules.  These consist only of
-    // StatisticsOutputs at this point.  These should be moved to the
-    // new ELI infrastructure
-    if("sst" == elemlib) {
-        Module* ret = CreateCoreModule(elem, params);
-        if ( ret != NULL ) return ret;
-    }
-
     requireLibrary(elemlib);
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
@@ -457,27 +449,10 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 }
 
 Module*
-Factory::CreateCoreModule(std::string type, Params& params) {
-    // Try to load the legacy core modules    
-    return LoadCoreModule_StatisticOutputs(type, params);
-}
-
-Module*
-Factory::CreateCoreModuleWithComponent(std::string type, Component* UNUSED(comp), Params& UNUSED(params)) {
-    out.fatal(CALL_INFO, -1, "can't find requested core module %s when loading with component\n", type.c_str());
-    return NULL;
-}
-
-
-Module*
 Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& params)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
-
-    if("sst" == elemlib) {
-        return CreateCoreModuleWithComponent(elem, comp, params);
-    }
 
     // ensure library is already loaded...
     requireLibrary(elemlib);

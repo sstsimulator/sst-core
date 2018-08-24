@@ -243,6 +243,14 @@ StatisticProcessingEngine::createStatistic(FieldId_t field, BaseComponent *comp,
   return Factory::getFactory()->CreateStatistic(field, type, comp, statName, statSubId, params);
 }
 
+void
+StatisticProcessingEngine::castError(const std::string& type, const std::string& statName,
+                                     const std::string& fieldName)
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO,1,
+                  "Unable to cast statistic %s of type %s to correct field type %s",
+                  statName.c_str(), type.c_str(), fieldName.c_str());
+}
 
 StatisticOutput* StatisticProcessingEngine::getOutputForStatistic(const StatisticBase *stat) const
 {
