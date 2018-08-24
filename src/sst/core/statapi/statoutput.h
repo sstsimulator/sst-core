@@ -18,6 +18,7 @@
 #include <sst/core/params.h>
 #include <sst/core/statapi/statfieldinfo.h>
 #include <sst/core/statapi/statbase.h>
+#include <sst/core/elementinfo.h>
 #include <unordered_map>
 
 #include <mutex>
@@ -247,58 +248,6 @@ private:
 
 };
 
-class StatisticOutputBuilderBase {
- public:
-  virtual StatisticOutput* build(Params& outputParameters) = 0;
-};
-
-template <class T>
-class StatisticOutputBuilder : public StatisticOutputBuilderBase {
- public:
-  StatisticOutput* build(Params& params){
-    return new T(params);
-  }
-};
-
-class StatisticOutputFactory {
- public:
-  template <class T> static void
-  registerBuilder(const std::string& name){
-    registerBuilder(new StatisticOutputBuilder<T>, name);
-  }
-
-  static StatisticOutput* build(const std::string& name, Params& params);
-
- private:
-  static void registerBuilder(StatisticOutputBuilderBase* builder, const std::string& name);
-
-  static std::map<std::string, StatisticOutputBuilderBase*>* builders_;
-
-};
-
-template <class OutputType>
-struct StatOutputBuilderRegistration {
-  StatOutputBuilderRegistration(){
-    const char* name = OutputType::factoryName();
-    StatisticOutputFactory::registerBuilder<OutputType>(name);
-  }
-
-  constexpr bool isRegistered() const { return true; }
-};
-
-template <class T>
-struct MakeStatOutputRegistered {
-  static StatOutputBuilderRegistration<T> instantiater;
-  static bool isRegistered(){ return instantiater.isRegistered(); }
-};
-template <class T> StatOutputBuilderRegistration<T>
-  MakeStatOutputRegistered<T>::instantiater;
-
-#define SST_ELI_REGISTER_STATISTIC_OUTPUT(cls, name)   \
-  static const char* factoryName(){ return name; } \
-  static bool isRegistered(){ \
-    return SST::Statistics::MakeStatOutputRegistered<cls>::isRegistered(); \
-  }
 
 } //namespace Statistics
 } //namespace SST

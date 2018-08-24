@@ -186,6 +186,34 @@ Factory::CreateComponent(ComponentId_t id,
     return NULL;
 }
 
+Statistics::StatisticBase*
+Factory::CreateStatistic(Statistics::FieldId_t id, std::string type,
+                         BaseComponent* comp, const std::string& statName,
+                         const std::string& stat, Params& params)
+{
+    std::string elemlib, elem;
+
+    std::tie(elemlib, elem) = parseLoadName(type);
+
+    // ensure library is already loaded...
+    requireLibrary(elemlib);
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
+    if ( lib != nullptr ) {
+        StatisticElementInfo* info = lib->getStatistic(id, type);
+        if (comp){
+          StatisticBase* base = info->create(comp, statName, stat, params);
+          return base;
+        }
+    }
+    // If we make it to here, component not found
+    out.fatal(CALL_INFO, -1,"can't find requested statistic %s.\n ", type.c_str());
+    return NULL;
+}
+
 StatisticOutput* 
 Factory::CreateStatisticOutput(const std::string& statOutputType, const Params& statOutputParams)
 {
@@ -380,7 +408,6 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
     return 0;
 }
 
-
 Module*
 Factory::CreateModule(std::string type, Params& params)
 {
@@ -426,7 +453,7 @@ Factory::CreateModule(std::string type, Params& params)
 Module* 
 Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 {
-  return StatisticOutputFactory::build(type, params);
+  return CreateStatisticOutput(type, params);
 }
 
 Module*

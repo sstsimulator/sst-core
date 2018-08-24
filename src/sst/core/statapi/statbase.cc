@@ -153,21 +153,12 @@ void StatisticBase::delayCollectionExpiredHandler()
     m_collectionDelayed = false;
 }
 
-StatisticBase*
-StatisticFactory::create(FieldId_t id, BaseComponent* comp,
-                     const std::string& type, const std::string& statName,
-                     const std::string& statId, Params& params)
-{
-  auto iter = factories_->find(id);
-  if (iter == factories_->end()){
-    Output::getDefaultObject().fatal(CALL_INFO,
-      1, "No statistics are registered for field %d building stat of type %s, name %s",
-      int(id), type.c_str(), statName.c_str());
-  }
-  return iter->second->build(comp, type, statName, statId, params);
+std::string
+StatisticElementInfo::toString() {
+    std::stringstream stream;
+    stream << "    " << getName() << ": " << getDescription() << std::endl;
+    return stream.str();
 }
-
-std::map<FieldId_t,StatisticFactory*>* StatisticFactory::factories_;
 
 } //namespace Statistics
 } //namespace SST

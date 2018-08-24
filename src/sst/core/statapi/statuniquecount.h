@@ -34,7 +34,13 @@ template <typename T>
 class UniqueCountStatistic : public Statistic<T>
 {
 public:
-  SST_ELI_REGISTER_STATISTIC_TEMPLATE(UniqueCountStatistic)
+  SST_ELI_REGISTER_STATISTIC_TEMPLATE(
+      UniqueCountStatistic,
+      "sst",
+      "UniqueCountStatistic",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Track unique occurrences of statistic",
+      "SST::Statistic<T>")
 
     UniqueCountStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<T>(comp, statName, statSubId, statParams)

@@ -21,10 +21,10 @@
 namespace SST {
 namespace Statistics {
 
-SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic,any_numeric_type,sst_core)
-SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic,any_integer_type,sst_core)
-SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic,any_numeric_type,sst_core)
-SST_ELI_INSTANTIATE_STATISTIC(NullStatistic,any_numeric_type,sst_core)
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic,sst,any_numeric_type)
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic,sst,any_integer_type)
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic,sst,any_numeric_type)
+SST_ELI_INSTANTIATE_STATISTIC(NullStatistic,sst,any_numeric_type)
 
 SST_REGISTER_STATISTIC_FIELD(int32_t, i32);
 SST_REGISTER_STATISTIC_FIELD(uint32_t, u32);
@@ -41,7 +41,13 @@ struct CompositeStat {
 
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 struct CompositeStatTester : public Statistic<CompositeStat> {
- SST_ELI_REGISTER_STATISTIC(CompositeStatTester,CompositeStat)
+  SST_ELI_REGISTER_STATISTIC(
+      CompositeStatTester, CompositeStat,
+      "sst",
+      "statCompositeTester",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Test instantiation",
+      "SST::StatisticOutput")
 
  CompositeStatTester(BaseComponent* comp, const std::string& statName,
                      const std::string& statSubId, Params& statParams) :

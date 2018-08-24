@@ -28,7 +28,14 @@ namespace Statistics {
 class StatisticOutputConsole : public StatisticOutput
 {
 public:
-    SST_ELI_REGISTER_STATISTIC_OUTPUT(StatisticOutputConsole, "statOutputConsole")
+    SST_ELI_REGISTER_MODULE(
+        StatisticOutputConsole,
+        "sst",
+        "statOutputConsole",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Output directly to console screen",
+        "SST::StatisticOutput")
+
 
     /** Construct a StatOutputConsole
      * @param outputParameters - Parameters used for this Statistic Output

@@ -15,7 +15,7 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/warnmacros.h>
 #include <sst/core/params.h>
-#include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/statfieldinfo.h>
 
 #include <string>
 #include <vector>
@@ -26,8 +26,14 @@ namespace SST {
 class Component;
 class Module;
 class SubComponent;
+class BaseComponent;
 namespace Partition {
     class SSTPartitioner;
+}
+namespace Statistics {
+  template <class T> class Statistic;
+  class StatisticBase;
+  class StatisticElementInfo;
 }
 class RankInfo;
 class SSTElementPythonModule;
@@ -120,8 +126,6 @@ public:
 
 class ModuleElementInfo : public BaseParamsElementInfo {
 
-protected:
-
 public:
     virtual Module* create(Component* UNUSED(comp), Params& UNUSED(params)) { /* Need to print error */ return NULL; }
     virtual Module* create(Params& UNUSED(params)) { /* Need to print error */ return NULL; }
@@ -150,6 +154,8 @@ class LibraryInfo {
 public:
     std::map<std::string,ComponentElementInfo*> components;
     std::map<std::string,SubComponentElementInfo*> subcomponents;
+    std::map<Statistics::FieldId_t,
+      std::map<std::string,Statistics::StatisticElementInfo*>> statistics;
     std::map<std::string,ModuleElementInfo*> modules;
     std::map<std::string,PartitionerElementInfo*> partitioners;
     PythonModuleElementInfo* python_module;
@@ -168,6 +174,17 @@ public:
     ComponentElementInfo* getComponent(const std::string &name) {
         if ( components.count(name) == 0 ) return NULL;
         return components[name];
+    }
+
+    Statistics::StatisticElementInfo* getStatistic(Statistics::FieldId_t id, const std::string& name) {
+      auto fieldItder = statistics.find(id);
+      if (fieldItder == statistics.end()) return nullptr;
+
+      auto& submap = fieldItder->second;
+      auto nameIter = submap.find(name);
+      if (nameIter == submap.end()) return nullptr;
+
+      return nameIter->second;
     }
 
     SubComponentElementInfo* getSubComponent(const std::string &name) {
@@ -211,6 +228,8 @@ public:
         library->components[comp->getName()] = comp;
         return true;
     }
+
+    static bool addStatistic(Statistics::StatisticElementInfo* info);
 
     static bool addSubComponent(SubComponentElementInfo* comp) {
         LibraryInfo* library = getLibrary(comp->getLibrary());
@@ -698,7 +717,6 @@ createModuleDoc() {
 
 template<class T, unsigned V1, unsigned V2, unsigned V3> const bool ModuleDoc<T,V1,V2,V3>::loaded = ElementLibraryDatabase::addModule(createModuleDoc<T,V1,V2,V3>());
 // template<class T> const bool ModuleDoc<T>::loaded = ElementLibraryDatabase::addModule(new ModuleDoc<T>());
-
 
 /**************************************************************************
   Classes to support partitioners

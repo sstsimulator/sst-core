@@ -19,6 +19,7 @@
 #include <sst/core/params.h>
 #include <sst/core/oneshot.h>
 #include <sst/core/statapi/statfieldinfo.h>
+#include <sst/core/elementinfo.h>
 #include <sst/core/serialization/serializable.h>
 
 namespace SST {
@@ -187,7 +188,8 @@ protected:
       * @param statParams - The parameters for this statistic
       */
     // Constructors:
-    StatisticBase(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams);
+    StatisticBase(BaseComponent* comp, const std::string& statName,
+                  const std::string& statSubId, Params& statParams);
 
     // Destructor
     virtual ~StatisticBase() {}
@@ -331,6 +333,10 @@ public:
         }
     }
 
+    static FieldId_t fieldId() {
+      return StatisticFieldType<T>::id();
+    }
+
 protected:
     friend class SST::Factory;
     friend class SST::BaseComponent;
@@ -354,181 +360,12 @@ private:
 
 };
 
-class StatisticFactory {
- public:
-  virtual StatisticBase* build(BaseComponent* comp, const std::string& type,
-                               const std::string& statName,
-                               const std::string& statId, Params& params) = 0;
-
-  static StatisticBase* create(FieldId_t id, BaseComponent* comp,
-                       const std::string& type, const std::string& statName,
-                       const std::string& statId, Params& params);
-
-  template <class FieldType> static FieldId_t registerField();
-
- private:
-  static std::map<FieldId_t,StatisticFactory*>* factories_;
-
-};
-
-template <class FieldType>
-class StatisticBuilderBase {
- public:
-  virtual Statistic<FieldType>* build(BaseComponent* comp, const std::string& statName,
-                               const std::string& statId, Params& params) = 0;
-};
-
-template <class FieldType>
-class StatisticFieldFactory : public StatisticFactory {
- public:
-  static Statistic<FieldType>* create(BaseComponent* comp, const std::string& type,
-                                      const std::string& statName,
-                                      const std::string& statId, Params& params){
-    if (!infos_){
-      infos_ = new std::map<std::string, StatisticBuilderBase<FieldType>*>;
-    }
-    auto iter = infos_->find(type);
-    if (iter == infos_->end()){
-      Output::getDefaultObject().fatal(CALL_INFO,
-        1, "Invalid statistic object %s requested", statName.c_str());
-    }
-    StatisticBuilderBase<FieldType>* info = iter->second;
-    return info->build(comp, statName, statId, params);
-  }
-
-  StatisticBase* build(BaseComponent *comp, const std::string& type,
-                       const std::string &statName,
-                       const std::string &statId, Params &params) override {
-    return create(comp, type, statName, statId, params);
-  }
-
-  static FieldId_t fieldId(){
-    return StatisticFieldType<FieldType>::id();
-  }
-
-  template <template <class> class StatCollector>
-  static void registerTemplateBuilder(const std::string& name);
-
-  template <class StatCollector>
-  static void registerBuilder(const std::string& name);
-
- private:
-  static std::map<std::string, StatisticBuilderBase<FieldType>*>* infos_;
-};
-template <class FieldType> std::map<std::string, StatisticBuilderBase<FieldType>*>*
-  StatisticFieldFactory<FieldType>::infos_ = nullptr;
-
-
-template <class FieldType>
-FieldId_t StatisticFactory::registerField(){
-  FieldId_t id = StatisticFieldType<FieldType>::id();
-  if (!factories_) factories_ = new std::map<FieldId_t, StatisticFactory*>;
-
-  auto iter = factories_->find(id);
-  if (iter == factories_->end()){
-    (*factories_)[id] = new StatisticFieldFactory<FieldType>;
-  }
-
-  return id;
-}
-
-template <class T, class FieldType>
-class StatisticBuilder : public StatisticBuilderBase<FieldType> {
- public:
-  Statistic<FieldType>* build(BaseComponent* comp, const std::string& statName,
-                              const std::string& statId, Params& params) override {
-    return new T(comp, statName, statId, params);
-  }
-};
-
-template <class FieldType>
-template <template <class> class StatCollector>
-void StatisticFieldFactory<FieldType>::registerTemplateBuilder(const std::string& name){
-  if (!infos_){
-    infos_ = new std::map<std::string, StatisticBuilderBase<FieldType>*>;
-  }
-  auto iter = infos_->find(name);
-  if (iter == infos_->end()){
-    //these can get added redundantly
-    //(*infos_)[name] = new StatisticBuilder<StatCollector<FieldType>, FieldType>;
-    (*infos_)[name] = new StatisticBuilder<StatCollector<FieldType>, FieldType>;
-  }
-  StatisticFactory::registerField<FieldType>();
-}
-
-template <class FieldType>
-template <class StatCollector>
-void StatisticFieldFactory<FieldType>::registerBuilder(const std::string& name){
-  if (!infos_){
-    infos_ = new std::map<std::string, StatisticBuilderBase<FieldType>*>;
-  }
-  auto iter = infos_->find(name);
-  if (iter == infos_->end()){
-    //these can get added redundantly
-    (*infos_)[name] = new StatisticBuilder<StatCollector, FieldType>;
-  }
-  StatisticFactory::registerField<FieldType>();
-}
-
-
-template <template <class> class StatisticType, class FieldType>
-struct TemplateStatsRegistration {
-  static void registerBuilder(const std::string& name){
-    StatisticFieldFactory<FieldType>::template registerTemplateBuilder<StatisticType>(name);
-  }
-};
-
-template <class T> struct TemplateStatBuilderRegistration {};
-
-template <template <class> class StatisticType, class FieldType>
-struct TemplateStatBuilderRegistration<StatisticType<FieldType>> {
-  TemplateStatBuilderRegistration(){
-    const char* name = StatisticType<FieldType>::factoryName();
-    TemplateStatsRegistration<StatisticType,FieldType>::registerBuilder(name);
-    instantiated = true;
-  }
-
-  bool isRegistered() const { return instantiated; }
-
-  bool instantiated;
-};
-
-template <class T> struct MakeTemplateStatRegistered {
-  static TemplateStatBuilderRegistration<T> instantiater;
-  static bool isRegistered(){ return instantiater.isRegistered(); }
-};
-template <class T> TemplateStatBuilderRegistration<T> MakeTemplateStatRegistered<T>::instantiater;
-
-template <class StatisticType, class FieldType>
-struct StatsRegistration {
-  static void registerBuilder(const std::string& name){
-    StatisticFieldFactory<FieldType>::template registerBuilder<StatisticType>(name);
-  }
-};
-
-template <class StatisticType, class FieldType>
-struct StatBuilderRegistration {
-  StatBuilderRegistration(){
-    const char* name = StatisticType::factoryName();
-    StatsRegistration<StatisticType,FieldType>::registerBuilder(name);
-  }
-
-  constexpr bool isRegistered() const { return true; }
-};
-
-template <class T, class FieldType> struct MakeStatRegistered {
-  static StatBuilderRegistration<T, FieldType> instantiater;
-  static bool isRegistered(){ return instantiater.isRegistered(); }
-};
-template <class T, class FieldType> StatBuilderRegistration<T,FieldType>
-  MakeStatRegistered<T, FieldType>::instantiater;
-
 template <template <class> class Stat, class Field>
 struct StatInstantiate {
   StatInstantiate(Params& p) : f(nullptr,"","",p) {}
   Stat<Field> f;
-  bool isRegistered() const {
-    return f.isRegistered();
+  bool isInstantiated() const {
+    return f.isInstantiated();
   }
 };
 
@@ -551,8 +388,8 @@ struct StatInstantiate<Stat, any_integer_type> :
     StatInstantiate<Stat,uint64_t>(p)
   {}
 
-  bool isRegistered() const {
-    return StatInstantiate<Stat,int16_t>::isRegistered();
+  bool isInstantiated() const {
+    return StatInstantiate<Stat,int16_t>::isInstantiated();
   }
 };
 
@@ -566,8 +403,8 @@ struct StatInstantiate<Stat, any_floating_type> :
     StatInstantiate<Stat,double>(p)
   {}
 
-  bool isRegistered() const {
-    return StatInstantiate<Stat,double>::isRegistered();
+  bool isInstantiated() const {
+    return StatInstantiate<Stat,double>::isInstantiated();
   }
 };
 
@@ -581,16 +418,10 @@ struct StatInstantiate<Stat, any_numeric_type> :
     StatInstantiate<Stat,any_floating_type>(p)
   {}
 
-  bool isRegistered() const {
-    return StatInstantiate<Stat,any_integer_type>::isRegistered();
+  bool isInstantiated() const {
+    return StatInstantiate<Stat,any_integer_type>::isInstantiated();
   }
 };
-
-template <template <class> class Stat, class Field>
-bool registerTemplateStatType(Params* p){
-  StatInstantiate<Stat, Field> s(*p);
-  return s.isRegistered();
-}
 
 template <class T> class TemplateStatisticFieldIdInfo {};
 template <template <class> class StatisticType, class Field>
@@ -598,28 +429,127 @@ struct TemplateStatisticFieldIdInfo<StatisticType<Field>> {
   static FieldId_t getId() { return StatisticFieldType<Field>::fieldId(); }
 };
 
-#define SST_ELI_REGISTER_STATISTIC_TEMPLATE(cls)   \
-  static SST::Statistics::FieldId_t fieldId(){ \
-    return SST::Statistics::TemplateStatisticFieldIdInfo<cls>::getId(); \
-  } \
-  static const char* factoryName(){ return #cls; } \
-  static bool isRegistered(){ \
-    return SST::Statistics::MakeTemplateStatRegistered<cls>::isRegistered(); \
-  }
+template <class T> struct TemplateStatInstantiation {};
 
-#define SST_ELI_REGISTER_STATISTIC(cls,field) \
-  static SST::Statistics::FieldId_t fieldId(){ \
-    return SST::Statistics::StatisticFieldFactory<field>::fieldId(); \
-  } \
-  static const char* factoryName(){ return #cls; } \
-  static bool isRegistered(){ \
-    return SST::Statistics::MakeStatRegistered<cls,field>::isRegistered(); \
-  }
+template <template <class> class StatisticType, class FieldType>
+struct TemplateStatInstantiation<StatisticType<FieldType>> {
+  static bool isInstantiated() { return instantiated; }
 
-#define SST_ELI_INSTANTIATE_STATISTIC(cls,allowedFields,unique_id) \
-  bool registerTemplateStat_##cls##_##unique_id(Params* p){ \
+  static bool instantiated;
+};
+template <template <class> class Stat, class T> bool
+  TemplateStatInstantiation<Stat<T>>::instantiated = true;
+
+class StatisticElementInfo : public BaseElementInfo {
+
+public:
+    virtual StatisticBase* create(BaseComponent* UNUSED(comp),
+                                  const std::string& UNUSED(statName),
+                                  const std::string& UNUSED(statSubId),
+                                  Params& UNUSED(statParams)) {
+      return nullptr;
+    }
+
+    virtual const std::string getInterface() = 0;
+
+    std::string toString();
+
+    virtual Statistics::FieldId_t fieldId() const = 0;
+};
+
+template <class T, unsigned V1, unsigned V2, unsigned V3>
+class StatisticDoc : public StatisticElementInfo {
+private:
+    static const bool loaded;
+
+public:
+
+    StatisticDoc() : StatisticElementInfo() {
+        //initialize_allowedKeys();
+    }
+
+    Statistics::FieldId_t fieldId() const override {
+      return T::fieldId();
+    }
+
+    StatisticBase* create(BaseComponent* comp, const std::string& statName,
+                          const std::string& statId, Params& params) override {
+      return new T(comp, statName, statId, params);
+    }
+
+    static bool isLoaded() { return loaded; }
+    const std::string getLibrary() override { return T::ELI_getLibrary(); }
+    const std::string getName() override { return T::ELI_getName(); }
+    const std::string getDescription() override { return T::ELI_getDescription(); }
+    const std::vector<ElementInfoParam>& getValidParams() { return ELI_templatedGetParams<T>(); }
+    const std::string getInterface() override { return T::ELI_getInterface(); }
+    const std::vector<int>& getELICompiledVersion() override { return T::ELI_getELICompiledVersion(); }
+    const std::vector<int>& getVersion() override { static std::vector<int> var = {V1,V2,V3}; return var; }
+    const std::string getCompileFile() override { return T::ELI_getCompileFile(); }
+    const std::string getCompileDate() override { return T::ELI_getCompileDate(); }
+};
+template<class T, unsigned V1, unsigned V2, unsigned V3> const bool StatisticDoc<T,V1,V2,V3>::loaded
+  = ElementLibraryDatabase::addStatistic(new StatisticDoc<T,V1,V2,V3>());
+
+
+#define SST_ELI_REGISTER_STATISTIC_TEMPLATE(cls,lib,name,version,desc,interface)   \
+  bool ELI_isLoaded() { \
+      return SST::Statistics::StatisticDoc<cls, \
+        SST::SST_ELI_getMajorNumberFromVersion(version), \
+        SST::SST_ELI_getMinorNumberFromVersion(version), \
+        SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
+  } \
+  static const std::string ELI_getLibrary() { \
+    return lib; \
+  } \
+  static const std::string ELI_getName() { \
+    return name; \
+  } \
+  static const std::string ELI_getDescription() {  \
+    return desc; \
+  } \
+  static const std::string ELI_getInterface() {  \
+    return interface; \
+  } \
+  static const std::vector<int>& ELI_getVersion() { \
+      static std::vector<int> var = version ; \
+      return var; \
+  } \
+  static bool isInstantiated(){ \
+    return SST::Statistics::TemplateStatInstantiation<cls>::isInstantiated(); \
+  } \
+  SST_ELI_INSERT_COMPILE_INFO()
+
+
+#define SST_ELI_REGISTER_STATISTIC(cls,field,lib,name,version,desc,interface) \
+  bool ELI_isLoaded() { \
+      return SST::Statistics::StatisticDoc<cls,\
+        SST::SST_ELI_getMajorNumberFromVersion(version), \
+        SST::SST_ELI_getMinorNumberFromVersion(version), \
+        SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
+  } \
+  static const std::string ELI_getLibrary() { \
+    return lib; \
+  } \
+  static const std::string ELI_getName() { \
+    return name; \
+  } \
+  static const std::string ELI_getDescription() {  \
+    return desc; \
+  } \
+  static const std::string ELI_getInterface() {  \
+    return interface; \
+  } \
+  static const std::vector<int>& ELI_getVersion() { \
+      static std::vector<int> var = version ; \
+      return var; \
+  } \
+  SST_ELI_INSERT_COMPILE_INFO()
+
+#define SST_ELI_INSTANTIATE_STATISTIC(cls,lib,allowedFields) \
+  bool registerTemplateStat_##cls##_##lib(Params* p){ \
     SST::Statistics::StatInstantiate<cls,allowedFields> s(*p); \
-    return s.isRegistered(); \
+    return s.isInstantiated(); \
   }
 
 

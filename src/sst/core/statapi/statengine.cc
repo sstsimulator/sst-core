@@ -22,6 +22,7 @@
 #include <sst/core/statapi/statoutput.h>
 #include <sst/core/configGraph.h>
 #include <sst/core/baseComponent.h>
+#include <sst/core/elementinfo.h>
 
 namespace SST {
 namespace Statistics {
@@ -234,6 +235,13 @@ StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigSt
     return so;
 }
 
+StatisticBase*
+StatisticProcessingEngine::createStatistic(FieldId_t field, BaseComponent *comp, const std::string &type,
+                              const std::string &statName, const std::string &statSubId,
+                              Params &params)
+{
+  return Factory::getFactory()->CreateStatistic(field, type, comp, statName, statSubId, params);
+}
 
 
 StatisticOutput* StatisticProcessingEngine::getOutputForStatistic(const StatisticBase *stat) const

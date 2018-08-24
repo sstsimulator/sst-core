@@ -100,6 +100,10 @@ public:
      */
     SubComponent* CreateSubComponent(std::string type, Component* comp, Params& params);
 
+    Statistics::StatisticBase* CreateStatistic(Statistics::FieldId_t id, std::string type,
+                                               BaseComponent* comp, const std::string& statName,
+                                               const std::string& stat, Params& params);
+
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */

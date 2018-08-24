@@ -81,15 +81,19 @@ public:
                                   const std::string &statName, const std::string &statSubId,
                                   Params &params)
     {
-      return StatisticFieldFactory<T>::create(comp, type, statName, statSubId, params);
+
+      StatisticBase* base = createStatistic(Statistic<T>::fieldId(), comp, type, statName,
+                                            statSubId, params);
+      Statistic<T>* casted = dynamic_cast<Statistic<T>*>(base);
+      if (!casted){
+        abort();
+      }
+      return casted;
     }
 
     StatisticBase* createStatistic(FieldId_t field, BaseComponent *comp, const std::string &type,
                                   const std::string &statName, const std::string &statSubId,
-                                  Params &params)
-    {
-      return StatisticFactory::create(field, comp, type, statName, statSubId, params);
-    }
+                                  Params &params);
 
     bool registerStatisticWithEngine(StatisticBase* stat, FieldId_t id)
     {

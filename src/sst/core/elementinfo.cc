@@ -12,6 +12,7 @@
 
 #include "sst_config.h"
 #include "sst/core/elementinfo.h"
+#include <sst/core/statapi/statbase.h>
 
 #include <sstream>
 
@@ -242,6 +243,16 @@ ElementLibraryDatabase::toString() {
     }
     return stream.str();
 }
+
+bool
+ElementLibraryDatabase::addStatistic(Statistics::StatisticElementInfo* info)
+{
+  LibraryInfo* library = getLibrary(info->getLibrary());
+  library->statistics[info->fieldId()][info->getName()] = info;
+  return true;
+}
+
+
 
 
 } //namespace SST

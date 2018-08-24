@@ -43,9 +43,16 @@ template<class BinDataType>
 class HistogramStatistic : public Statistic<BinDataType> 
 {
  public:
-  SST_ELI_REGISTER_STATISTIC_TEMPLATE(HistogramStatistic)
+  SST_ELI_REGISTER_STATISTIC_TEMPLATE(
+      HistogramStatistic,
+      "sst",
+      "HistogramStatistic",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Track distribution of statistic across bins",
+      "SST::Statistic<T>")
 
-  HistogramStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
+  HistogramStatistic(BaseComponent* comp, const std::string& statName,
+                     const std::string& statSubId, Params& statParams)
 		: Statistic<BinDataType>(comp, statName, statSubId, statParams)
     {
         // Identify what keys are Allowed in the parameters

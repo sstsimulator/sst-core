@@ -72,7 +72,13 @@ struct NullStatisticBase<T,false> : public Statistic<T> {
 template <class T>
 struct NullStatistic : public NullStatisticBase<T> {
 
-  SST_ELI_REGISTER_STATISTIC_TEMPLATE(NullStatistic)
+  SST_ELI_REGISTER_STATISTIC_TEMPLATE(
+      NullStatistic,
+      "sst",
+      "NullStatistic",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Null object it ignore all collections",
+      "SST::Statistic<T>")
 
   NullStatistic(BaseComponent* comp, const std::string& statName,
                 const std::string& statSubId, Params& statParam)
