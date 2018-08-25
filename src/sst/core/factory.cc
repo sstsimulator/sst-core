@@ -203,8 +203,8 @@ Factory::CreateStatistic(Statistics::FieldId_t id, std::string type,
     // ElementLibraryDatabase
     LibraryInfo* lib = ElementLibraryDatabase::getLibraryInfo(elemlib);
     if ( lib != nullptr ) {
-        StatisticElementInfo* info = lib->getStatistic(id, type);
-        if (comp){
+        StatisticElementInfo* info = lib->getStatistic(id, elem);
+        if (info){
           StatisticBase* base = info->create(comp, statName, stat, params);
           return base;
         }

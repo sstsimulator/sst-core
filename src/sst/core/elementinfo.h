@@ -212,14 +212,18 @@ public:
 
 class ElementLibraryDatabase {
 private:
-    // Database
-    static std::map<std::string,LibraryInfo*> libraries;
+    // Database - needs to be a pointer for static init order
+    static std::unique_ptr<std::map<std::string,LibraryInfo*>> libraries;
 
     static LibraryInfo* getLibrary(const std::string &library) {
-        if ( libraries.count(library) == 0 ) {
-            libraries[library] = new LibraryInfo;
+        if (!libraries) libraries = std::make_unique<std::map<std::string,LibraryInfo*>>();
+        auto iter = libraries->find(library);
+        if (iter != libraries->end()){
+          return iter->second;
         }
-        return libraries[library];
+        LibraryInfo* info = new LibraryInfo;
+        (*libraries)[library] = info;
+        return info;
     }
     
 public:
@@ -263,8 +267,10 @@ public:
     static std::string toString();
 
     static LibraryInfo* getLibraryInfo(const std::string &library) {
-        if ( libraries.count(library) == 0 ) return NULL;
-        return libraries[library];
+      if (!libraries) libraries = std::make_unique<std::map<std::string,LibraryInfo*>>();
+      auto iter = libraries->find(library);
+      if (iter == libraries->end()) return nullptr;
+      else return iter->second;
     }    
 };
 

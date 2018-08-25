@@ -18,7 +18,7 @@
 
 namespace SST {
 
-std::map<std::string,LibraryInfo*> SST::ElementLibraryDatabase::libraries;
+std::unique_ptr<std::map<std::string,LibraryInfo*>> SST::ElementLibraryDatabase::libraries;
 
 /**************************************************************************
   BaseElementInfo class functions
@@ -236,7 +236,7 @@ LibraryInfo::toString()
 std::string
 ElementLibraryDatabase::toString() {
     std::stringstream stream;
-    for ( auto item : libraries ) {
+    for ( auto item : *libraries ) {
         stream << "library : " << item.first << std::endl;
         stream << item.second->toString();
         stream << std::endl;
@@ -247,6 +247,7 @@ ElementLibraryDatabase::toString() {
 bool
 ElementLibraryDatabase::addStatistic(Statistics::StatisticElementInfo* info)
 {
+  info->ensureFieldRegistered();
   LibraryInfo* library = getLibrary(info->getLibrary());
   library->statistics[info->fieldId()][info->getName()] = info;
   return true;

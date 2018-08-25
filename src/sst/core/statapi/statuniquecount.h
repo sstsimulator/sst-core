@@ -82,6 +82,13 @@ private:
 
 };
 
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, int32_t, i32);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint32_t, u32);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, int64_t, i64);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint64_t, u64);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, float, f);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, double, d);
+
 } //namespace Statistics
 } //namespace SST
 

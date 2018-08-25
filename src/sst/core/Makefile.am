@@ -198,7 +198,6 @@ sst_core_sources = \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
 	rng/xorshift.cc \
-  statapi/statinstantiate.cc \
 	statapi/statengine.cc \
 	statapi/statgroup.cc \
 	statapi/statoutput.cc \

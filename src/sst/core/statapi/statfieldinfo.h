@@ -28,7 +28,7 @@ struct FieldEnum {};
 
 template <class T, class IntegerType>
 IntegerType allocateEnum() {
-  static IntegerType counter = 0;
+  static IntegerType counter = 1;
   auto ret = counter;
   ++counter;
   return ret;
@@ -42,23 +42,31 @@ IntegerType allocateEnum() {
 
 class StatisticFieldTypeBase {
  public:
-  template <class T> static void registerField();
-
   virtual const char* fieldName() const = 0;
   virtual const char* shortName() const = 0;
 
   static StatisticFieldTypeBase* getField(FieldId_t id);
 
- private:
+ protected:
   static std::map<FieldId_t,StatisticFieldTypeBase*>* fields_;
 };
 
 template <class T>
 class StatisticFieldType : public StatisticFieldTypeBase {
  public:
-  static void registerName(const char* name, const char* shortName){
-    fieldName_ = name;
-    shortName_ = shortName;
+  static void registerField(const char* name, const char* shortName){
+    if (fieldEnum_ == 0){
+      fieldEnum_ = allocateEnum<FieldEnum,FieldId_t>();
+    }
+    if (!fields_){
+      fields_ = new std::map<FieldId_t,StatisticFieldTypeBase*>;
+    }
+    auto iter = fields_->find(fieldEnum_);
+    if (iter == fields_->end()){
+      fieldName_ = name;
+      shortName_ = shortName;
+      (*fields_)[fieldEnum_] = new StatisticFieldType;
+    }
   }
 
   static const char* getFieldName(){
@@ -86,21 +94,10 @@ class StatisticFieldType : public StatisticFieldTypeBase {
   static const char* fieldName_;
   static const char* shortName_;
 };
-template <class T> FieldId_t StatisticFieldType<T>::fieldEnum_ = allocateEnum<FieldEnum,FieldId_t>();
-template <class T> const char* StatisticFieldType<T>::fieldName_ = nullptr;
-template <class T> const char* StatisticFieldType<T>::shortName_ = nullptr;
+template <class T> FieldId_t StatisticFieldType<T>::fieldEnum_ = 0;
+template <class T> const char* StatisticFieldType<T>::fieldName_ = "None";
+template <class T> const char* StatisticFieldType<T>::shortName_ = "None";
 
-template <class T> void
-StatisticFieldTypeBase::registerField(){
-  FieldId_t id = StatisticFieldType<T>::id();
-  if (!fields_){
-    fields_ = new std::map<FieldId_t,StatisticFieldTypeBase*>;
-  }
-  auto iter = fields_->find(id);
-  if (iter == fields_->end()){
-    (*fields_)[id] = new StatisticFieldType<T>;
-  }
-}
 
 class StatisticFieldInfo
 {
@@ -166,16 +163,6 @@ class StatisticFieldInfo
 
 };
 
-template <class FieldType>
-struct StatisticFieldRegister {
-  StatisticFieldRegister(const char* longName, const char* shortName){
-    StatisticFieldType<FieldType>::registerName(longName, shortName);
-    StatisticFieldTypeBase::registerField<FieldType>();
-  }
-};
-
-#define SST_REGISTER_STATISTIC_FIELD(fullName, shortName) \
-  static SST::Statistics::StatisticFieldRegister<fullName> register_##shortName(#fullName, #shortName)
     
 } //namespace Statistics
 } //namespace SST

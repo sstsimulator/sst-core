@@ -358,87 +358,14 @@ protected:
 private:     
     Statistic(){} // For serialization only
 
+
 };
 
-template <template <class> class Stat, class Field>
-struct StatInstantiate {
-  StatInstantiate(Params& p) : f(nullptr,"","",p) {}
-  Stat<Field> f;
-  bool isInstantiated() const {
-    return f.isInstantiated();
-  }
-};
-
-
-template <template <class> class Stat>
-struct StatInstantiate<Stat, any_integer_type> :
-  public StatInstantiate<Stat,int16_t>,
-  public StatInstantiate<Stat,uint16_t>,
-  public StatInstantiate<Stat,int32_t>,
-  public StatInstantiate<Stat,uint32_t>,
-  public StatInstantiate<Stat,int64_t>,
-  public StatInstantiate<Stat,uint64_t>
-{
-  StatInstantiate(Params& p) :
-    StatInstantiate<Stat,int16_t>(p),
-    StatInstantiate<Stat,uint16_t>(p),
-    StatInstantiate<Stat,int32_t>(p),
-    StatInstantiate<Stat,uint32_t>(p),
-    StatInstantiate<Stat,int64_t>(p),
-    StatInstantiate<Stat,uint64_t>(p)
-  {}
-
-  bool isInstantiated() const {
-    return StatInstantiate<Stat,int16_t>::isInstantiated();
-  }
-};
-
-template <template <class> class Stat>
-struct StatInstantiate<Stat, any_floating_type> :
-  public StatInstantiate<Stat,float>,
-  public StatInstantiate<Stat,double>
-{
-  StatInstantiate(Params& p) :
-    StatInstantiate<Stat,float>(p),
-    StatInstantiate<Stat,double>(p)
-  {}
-
-  bool isInstantiated() const {
-    return StatInstantiate<Stat,double>::isInstantiated();
-  }
-};
-
-template <template <class> class Stat>
-struct StatInstantiate<Stat, any_numeric_type> :
-  public StatInstantiate<Stat,any_integer_type>,
-  public StatInstantiate<Stat,any_floating_type>
-{
-  StatInstantiate(Params& p) :
-    StatInstantiate<Stat,any_integer_type>(p),
-    StatInstantiate<Stat,any_floating_type>(p)
-  {}
-
-  bool isInstantiated() const {
-    return StatInstantiate<Stat,any_integer_type>::isInstantiated();
-  }
-};
-
-template <class T> class TemplateStatisticFieldIdInfo {};
-template <template <class> class StatisticType, class Field>
-struct TemplateStatisticFieldIdInfo<StatisticType<Field>> {
-  static FieldId_t getId() { return StatisticFieldType<Field>::fieldId(); }
-};
-
-template <class T> struct TemplateStatInstantiation {};
-
-template <template <class> class StatisticType, class FieldType>
-struct TemplateStatInstantiation<StatisticType<FieldType>> {
-  static bool isInstantiated() { return instantiated; }
-
+template <class T> struct TemplateStatInstantiation {
+  static bool isInstantiated(){ return instantiated; }
   static bool instantiated;
 };
-template <template <class> class Stat, class T> bool
-  TemplateStatInstantiation<Stat<T>>::instantiated = true;
+template <class T> bool TemplateStatInstantiation<T>::instantiated = true;
 
 class StatisticElementInfo : public BaseElementInfo {
 
@@ -455,21 +382,38 @@ public:
     std::string toString();
 
     virtual Statistics::FieldId_t fieldId() const = 0;
+
+    virtual const char* fieldName() const = 0;
+
+    virtual const char* fieldShortName() const = 0;
+
+    virtual void ensureFieldRegistered() = 0;
 };
 
-template <class T, unsigned V1, unsigned V2, unsigned V3>
+template <class T, class Field, unsigned V1, unsigned V2, unsigned V3>
 class StatisticDoc : public StatisticElementInfo {
 private:
     static const bool loaded;
 
 public:
-
     StatisticDoc() : StatisticElementInfo() {
         //initialize_allowedKeys();
     }
 
+    void ensureFieldRegistered() override {
+      StatisticFieldType<Field>::registerField(fieldName(), fieldShortName());
+    }
+
     Statistics::FieldId_t fieldId() const override {
       return T::fieldId();
+    }
+
+    const char* fieldName() const override {
+      return T::fieldName();
+    }
+
+    const char* fieldShortName() const override {
+      return T::fieldShortName();
     }
 
     StatisticBase* create(BaseComponent* comp, const std::string& statName,
@@ -488,16 +432,19 @@ public:
     const std::string getCompileFile() override { return T::ELI_getCompileFile(); }
     const std::string getCompileDate() override { return T::ELI_getCompileDate(); }
 };
-template<class T, unsigned V1, unsigned V2, unsigned V3> const bool StatisticDoc<T,V1,V2,V3>::loaded
-  = ElementLibraryDatabase::addStatistic(new StatisticDoc<T,V1,V2,V3>());
+template<class T, class Field, unsigned V1, unsigned V2, unsigned V3> const bool StatisticDoc<T,Field,V1,V2,V3>::loaded
+  = ElementLibraryDatabase::addStatistic(new StatisticDoc<T,Field,V1,V2,V3>());
 
 
 #define SST_ELI_REGISTER_STATISTIC_TEMPLATE(cls,lib,name,version,desc,interface)   \
-  bool ELI_isLoaded() { \
-      return SST::Statistics::StatisticDoc<cls, \
-        SST::SST_ELI_getMajorNumberFromVersion(version), \
-        SST::SST_ELI_getMinorNumberFromVersion(version), \
-        SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
+  static constexpr unsigned majorVersion() { \
+    return SST_ELI_getMajorNumberFromVersion(version); \
+  } \
+  static constexpr unsigned minorVersion() { \
+    return SST_ELI_getMinorNumberFromVersion(version); \
+  } \
+  static constexpr unsigned tertiaryVersion() { \
+    return SST_ELI_getTertiaryNumberFromVersion(version); \
   } \
   static const std::string ELI_getLibrary() { \
     return lib; \
@@ -522,8 +469,8 @@ template<class T, unsigned V1, unsigned V2, unsigned V3> const bool StatisticDoc
 
 
 #define SST_ELI_REGISTER_STATISTIC(cls,field,lib,name,version,desc,interface) \
-  bool ELI_isLoaded() { \
-      return SST::Statistics::StatisticDoc<cls,\
+  bool ELI_isLoaded() const { \
+      return SST::Statistics::StatisticDoc<cls,field, \
         SST::SST_ELI_getMajorNumberFromVersion(version), \
         SST::SST_ELI_getMinorNumberFromVersion(version), \
         SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
@@ -544,14 +491,24 @@ template<class T, unsigned V1, unsigned V2, unsigned V3> const bool StatisticDoc
       static std::vector<int> var = version ; \
       return var; \
   } \
+  static const char* fieldName(){ return #field; } \
+  static const char* fieldShortName(){ return #field; } \
   SST_ELI_INSERT_COMPILE_INFO()
 
-#define SST_ELI_INSTANTIATE_STATISTIC(cls,lib,allowedFields) \
-  bool registerTemplateStat_##cls##_##lib(Params* p){ \
-    SST::Statistics::StatInstantiate<cls,allowedFields> s(*p); \
-    return s.isInstantiated(); \
+#define SST_ELI_INSTANTIATE_STATISTIC(cls,field,shortName) \
+  struct cls##_##field##_##shortName : public cls<field> { \
+    cls##_##field##_##shortName(SST::BaseComponent* bc, const std::string& sn, \
+           const std::string& si, SST::Params& p) : cls<field>(bc,sn,si,p) {} \
+    bool ELI_isLoaded() const { \
+        return SST::Statistics::StatisticDoc<cls##_##field##_##shortName,\
+          field, \
+          cls<field>::majorVersion(), \
+          cls<field>::minorVersion(), \
+          cls<field>::tertiaryVersion()>::isLoaded(); \
+    } \
+    static const char* fieldName(){ return #field; } \
+    static const char* fieldShortName(){ return #shortName; } \
   }
-
 
 } //namespace Statistics
 } //namespace SST

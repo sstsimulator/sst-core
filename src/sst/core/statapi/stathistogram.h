@@ -352,6 +352,13 @@ private:
 
 };
 
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, int32_t, i32);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, uint32_t, u32);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, int64_t, i64);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, uint64_t, u64);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, float, f);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, double, d);
+
 } //namespace Statistics
 } //namespace SST
 

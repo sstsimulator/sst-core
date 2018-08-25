@@ -113,6 +113,13 @@ struct NullStatistic : public NullStatisticBase<T> {
   }
 };
 
+SST_ELI_INSTANTIATE_STATISTIC(NullStatistic, int32_t, i32);
+SST_ELI_INSTANTIATE_STATISTIC(NullStatistic, uint32_t, u32);
+SST_ELI_INSTANTIATE_STATISTIC(NullStatistic, int64_t, i64);
+SST_ELI_INSTANTIATE_STATISTIC(NullStatistic, uint64_t, u64);
+SST_ELI_INSTANTIATE_STATISTIC(NullStatistic, float, f);
+SST_ELI_INSTANTIATE_STATISTIC(NullStatistic, double, d);
+
 
 
 } //namespace Statistics

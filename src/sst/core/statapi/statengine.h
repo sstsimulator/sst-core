@@ -85,7 +85,7 @@ public:
                                             statSubId, params);
       Statistic<T>* casted = dynamic_cast<Statistic<T>*>(base);
       if (!casted){
-        castError(type, statName, StatisticFieldType<T>::fieldName());
+        castError(type, statName, StatisticFieldType<T>::getFieldName());
       }
       return casted;
     }
