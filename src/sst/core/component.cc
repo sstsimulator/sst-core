@@ -25,6 +25,7 @@ Component::Component(ComponentId_t id) : BaseComponent(),
     id(id)
 {
     my_info = sim->getComponentInfo(id);
+    currentlyLoadingSubComponent = my_info;
 }
 
 
