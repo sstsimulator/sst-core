@@ -293,6 +293,60 @@ public:
         parameter. Output will only occur if specified output_level and
         output_bits meet criteria defined by object.  The output will be
         prepended with the expanded prefix set in the object.
+        @param tempPrefix For just this call use this prefix
+        @param line Line number of calling function (use CALL_INFO macro)
+        @param file File name calling function (use CALL_INFO macro)
+        @param func Function name calling function (use CALL_INFO macro)
+        @param output_level For output to occur, output_level must be less than
+               or equal to verbose_level set in object
+        @param output_bits The Output object will only output the
+               message if the set bits of the output_bits parameter are set in
+               the verbose_mask of the object.  It uses this logic:
+               if (~verbose_mask & output_bits == 0) then output is enabled.
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.
+     */
+    void debugPrefix(const char* tempPrefix, uint32_t line, const char* file, const char* func,
+                 uint32_t output_level, uint32_t output_bits,
+                 const char* format, ...)
+        __attribute__ ((format (printf, 8, 9)))
+    {
+
+#ifdef __SST_DEBUG_OUTPUT__
+        va_list arg;
+
+        if (true == m_objInitialized && NONE != m_targetLoc ) {
+    	    const std::string normalPrefix = m_outputPrefix;
+            m_outputPrefix = tempPrefix;
+
+            // First check to see if we are allowed to send output based upon the
+            // verbose_mask and verbose_level checks
+            if (((output_bits & ~m_verboseMask) == 0) &&
+                (output_level <= m_verboseLevel)){
+                // Get the argument list and then print it out
+                va_start(arg, format);
+                outputprintf(line, file, func, format, arg);
+                va_end(arg);
+            }
+
+            m_outputPrefix = normalPrefix;
+        }
+#else
+        /* When debug is disabled, silence warnings of unused parameters */
+ 	(void)tempPrefix;
+        (void)line;
+        (void)file;
+        (void)func;
+        (void)output_level;
+        (void)output_bits;
+        (void)format;
+#endif
+    }
+
+    /** Output the debug message with formatting as specified by the format
+        parameter. Output will only occur if specified output_level and
+        output_bits meet criteria defined by object.  The output will be
+        prepended with the expanded prefix set in the object.
         NOTE: Debug outputs will only occur if the __SST_DEBUG_OUTPUT__ is defined.
               this define can be set in source code or by setting the
               --enable-debug option during SST configuration.
