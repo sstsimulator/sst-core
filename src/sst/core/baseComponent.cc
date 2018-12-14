@@ -208,7 +208,8 @@ BaseComponent::configureLink(std::string name, TimeConverter* time_base, Event::
         tmp->setPolling();
     }
     tmp->setFunctor(handler);
-    tmp->setDefaultTimeBase(time_base);
+    if ( time_base != NULL ) tmp->setDefaultTimeBase(time_base);
+    else tmp->setDefaultTimeBase(defaultTimeBase);
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     tmp->setSendingComponentInfo(my_info->getName(), my_info->getType(), name);
 #endif
@@ -224,19 +225,7 @@ BaseComponent::configureLink(std::string name, std::string time_base, Event::Han
 Link*
 BaseComponent::configureLink(std::string name, Event::HandlerBase* handler)
 {
-    LinkMap* myLinks = my_info->getLinkMap();
-    Link* tmp = myLinks->getLink(name);
-    if ( tmp == NULL ) return NULL;
-
-    // If no functor, this is a polling link
-    if ( handler == NULL ) {
-        tmp->setPolling();
-    }
-    tmp->setFunctor(handler);
-#ifdef __SST_DEBUG_EVENT_TRACKING__
-    tmp->setSendingComponentInfo(my_info->getName(), my_info->getType(), name);
-#endif
-    return tmp;
+    return configureLink(name,NULL,handler);
 }
 
 void
@@ -275,17 +264,6 @@ BaseComponent::configureSelfLink( std::string name, Event::HandlerBase* handler)
 {
     addSelfLink(name);
     return configureLink(name,handler);
-}
-
-Link* BaseComponent::selfLink( std::string UNUSED(name), Event::HandlerBase* handler )
-{
-    Link* link = new SelfLink();
-    link->setLatency(0);
-    link->setFunctor(handler);
-    if ( handler == NULL ) {
-        link->setPolling();
-    }
-    return link;
 }
 
 SimTime_t BaseComponent::getCurrentSimTime(TimeConverter *tc) const {
