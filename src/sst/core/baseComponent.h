@@ -152,14 +152,15 @@ public:
 
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.
-     * @param time_base - Time Base of the link
+     * @param time_base - Time Base of the link.  If NULL is passed in, then it
+     * will use the Component defaultTimeBase
      * @param handler - Optional Handler to be called when an Event is received
      * @return A pointer to the configured link, or NULL if an error occured.
      */
     Link* configureLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.
-     * @param time_base - Time Base of the link
+     * @param time_base - Time Base of the link as a string
      * @param handler - Optional Handler to be called when an Event is received
      * @return A pointer to the configured link, or NULL if an error occured.
      */
@@ -173,7 +174,8 @@ public:
 
     /** Configure a SelfLink  (Loopback link)
      * @param name - Name of the self-link port
-     * @param time_base - Time Base of the link
+     * @param time_base - Time Base of the link.  If NULL is passed in, then it
+     * will use the Component defaultTimeBase
      * @param handler - Optional Handler to be called when an Event is received
      * @return A pointer to the configured link, or NULL if an error occured.
      */
@@ -347,9 +349,6 @@ protected:
         BaseComponent::getCurrentSimTime(). Often set by BaseComponent::registerClock()
         function */
     TimeConverter* defaultTimeBase;
-
-    /** Creates a new selfLink */
-    Link* selfLink( std::string name, Event::HandlerBase* handler = NULL );
 
 
     /** Find a lookup table */
