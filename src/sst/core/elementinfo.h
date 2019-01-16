@@ -796,7 +796,7 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
         static std::string date_time = date + " " + time; \
         return date_time;                                 \
     } \
-    static const std::string ELI_getCompileFile() { \
+    static std::string ELI_getCompileFile() { \
         return __FILE__; \
     } \
     static const std::vector<int>& ELI_getELICompiledVersion() { \
@@ -809,16 +809,16 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
     bool ELI_isLoaded() {                           \
         return SST::ComponentDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
-    static const std::string ELI_getLibrary() { \
+    static std::string ELI_getLibrary() { \
       return lib; \
     } \
-    static const std::string ELI_getName() { \
+    static std::string ELI_getName() { \
       return name; \
     } \
-    static const std::string ELI_getDescription() {  \
+    static std::string ELI_getDescription() {  \
       return desc; \
     } \
-    static const uint32_t ELI_getCategory() {  \
+    static uint32_t ELI_getCategory() {  \
       return cat; \
     } \
     SST_ELI_INSERT_COMPILE_INFO()
@@ -857,16 +857,16 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
     bool ELI_isLoaded() {                           \
         return SST::SubComponentDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
-    static const std::string ELI_getLibrary() { \
+    static std::string ELI_getLibrary() { \
       return lib; \
     } \
-    static const std::string ELI_getName() { \
+    static std::string ELI_getName() { \
       return name; \
     } \
-    static const std::string ELI_getDescription() {  \
+    static std::string ELI_getDescription() {  \
       return desc; \
     } \
-    static const std::string ELI_getInterface() {  \
+    static std::string ELI_getInterface() {  \
       return interface; \
     } \
     static const std::vector<int>& ELI_getVersion() { \
@@ -881,16 +881,16 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
     bool ELI_isLoaded() {                           \
         return SST::ModuleDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
-    static const std::string ELI_getLibrary() { \
+    static std::string ELI_getLibrary() { \
       return lib; \
     } \
-    static const std::string ELI_getName() { \
+    static std::string ELI_getName() { \
       return name; \
     } \
-    static const std::string ELI_getDescription() {  \
+    static std::string ELI_getDescription() {  \
     return desc; \
     } \
-    static const std::string ELI_getInterface() {  \
+    static std::string ELI_getInterface() {  \
         return interface;                          \
     } \
     static const std::vector<int>& ELI_getVersion() { \
@@ -905,13 +905,13 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
     bool ELI_isLoaded() { \
         return SST::PartitionerDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
-    static const std::string ELI_getLibrary() { \
+    static std::string ELI_getLibrary() { \
       return lib; \
     } \
-    static const std::string ELI_getName() { \
+    static std::string ELI_getName() { \
       return name; \
     } \
-    static const std::string ELI_getDescription() {  \
+    static std::string ELI_getDescription() {  \
       return desc; \
     } \
     static const std::vector<int>& ELI_getVersion() { \
@@ -925,7 +925,7 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
     bool ELI_isLoaded() { \
         return SST::PythonModuleDoc<cls,SST::SST_ELI_getMajorNumberFromVersion(version),SST::SST_ELI_getMinorNumberFromVersion(version),SST::SST_ELI_getTertiaryNumberFromVersion(version)>::isLoaded(); \
     } \
-    static const std::string ELI_getLibrary() { \
+    static std::string ELI_getLibrary() { \
       return lib; \
     } \
     static const std::vector<int>& ELI_getVersion() { \
