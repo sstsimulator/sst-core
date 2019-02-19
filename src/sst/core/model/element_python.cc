@@ -14,7 +14,11 @@
 #include "sst_config.h"
 
 // Python header files
+#include <sst/core/warnmacros.h>
+
+DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
+REENABLE_WARNING
 #include <traceback.h>
 #include <frameobject.h>
 

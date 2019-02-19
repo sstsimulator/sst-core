@@ -11,9 +11,12 @@
 
 
 #include <sst_config.h>
-#include <Python.h>
-
 #include <sst/core/warnmacros.h>
+
+DISABLE_WARN_DEPRECATED_REGISTER
+#include <Python.h>
+REENABLE_WARNING
+
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>

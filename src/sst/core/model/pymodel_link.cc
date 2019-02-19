@@ -12,12 +12,15 @@
 // distribution.
 
 #include "sst_config.h"
+#include <sst/core/warnmacros.h>
+
+DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
+REENABLE_WARNING
 
 #include <string.h>
 #include <sstream>
 
-#include <sst/core/warnmacros.h>
 #include <sst/core/model/pymodel.h>
 #include <sst/core/model/pymodel_comp.h>
 #include <sst/core/model/pymodel_link.h>
