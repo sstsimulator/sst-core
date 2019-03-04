@@ -190,7 +190,7 @@ class InfoLibraryDatabase {
 
   static Library* getLibrary(const std::string& name){
     if (!libraries){
-      libraries = std::make_unique<std::map<std::string,Library*>>();
+      libraries = std::unique_ptr<std::map<std::string,Library*>>(new std::map<std::string,Library*>);
     }
     auto iter = libraries->find(name);
     if (iter == libraries->end()){
