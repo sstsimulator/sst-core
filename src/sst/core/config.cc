@@ -120,6 +120,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_FLAGOPT("disable-signal-handlers",  0,      "disable SST automatic dynamic library environment configuration", &Config::disableSigHandlers),
     DEF_FLAGOPT("no-env-config",            0,      "disable SST environment configuration", &Config::disableEnvConfig),
     DEF_FLAGOPT("print-timing-info",        0,      "print SST timing information", &Config::enablePrintTiming),
+    DEF_FLAGOPT("print-env",                0,      "print SST environment vairable", &Config::enablePrintEnv),
     /* HiddenNoConfigDesc */
     DEF_ARGOPT("sdl-file",          "FILE",         "SST Configuration file", &Config::setConfigFile),
     DEF_ARGOPT("stopAtCycle",       "TIME",         "set time at which simulation will end execution", &Config::setStopAt),
