@@ -31,7 +31,14 @@ int main(int argc, char* argv[]) {
 	}
 
 	if(print_env != 1) {
-		const char* check_print_env = std::getenv("SST_DISPLAY_ENV");
+		const char* check_print_env   = std::getenv("SST_PRINT_ENV");
+		const char* check_display_env = std::getenv("SST_DISPLAY_ENV");
+
+		if( NULL != check_display_env ) {
+			if(strcmp("1", check_display_env) == 0) {
+				print_env = 1;
+			}
+		}
 
 		if( NULL != check_print_env ) {
 			if(strcmp("1", check_print_env) == 0) {
