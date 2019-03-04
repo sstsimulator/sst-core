@@ -13,6 +13,13 @@
 #include "sst_config.h"
 
 #include "elemLoader.h"
+#include "sst/core/oldELI.h"
+#include "sst/core/elementinfo.h"
+#include "sst/core/component.h"
+#include "sst/core/subcomponent.h"
+#include <sst/core/part/sstpart.h>
+#include <sst/core/sstpart.h>
+#include <sst/core/model/element_python.h>
 
 #include <ltdl.h>
 #include <vector>
@@ -176,6 +183,87 @@ static ElementLibraryInfo* followError(std::string libname, std::string elemlib,
 
 
      return eli;
+}
+
+void
+ElemLoader::loadOldELI(const ElementLibraryInfo* eli,
+                       std::map<std::string, const ElementInfoGenerator*>& found_generators)
+{
+  if (eli == nullptr) return;
+
+  OldELITag tag{eli->name};
+
+  std::string elemlib = eli->name;
+
+  if (NULL != eli->components) {
+    const auto *eic = eli->components;
+    auto* infolib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    auto* factlib = Component::getBuilderLibrary(elemlib);
+    while (NULL != eic->name) {
+      factlib->addBuilder(eic->name, new Component::DerivedBuilder<OldELITag>(eic->alloc));
+      infolib->addInfo(eic->name,new Component::BuilderInfo(elemlib,eic->name,tag,eic));
+    }
+  }
+
+  if (NULL != eli->modules) {
+    const ElementInfoModule *eim = eli->modules;
+    auto* infolib = ELI::InfoDatabase::getLibrary<Module>(elemlib);
+    auto* withlib = ELI::BuilderDatabase::getLibrary<Module,Component*,SST::Params&>(elemlib);
+    auto* wolib = ELI::BuilderDatabase::getLibrary<Module,SST::Params&>(elemlib);
+    while (NULL != eim->name) {
+      auto* info = new Module::BuilderInfo(elemlib,eim->name,tag,eim);
+      infolib->addInfo(eim->name,info);
+
+      auto* withComp = new Module::DerivedBuilder<OldELITag,Component*,SST::Params&>(eim->alloc_with_comp);
+      withlib->addBuilder(eim->name, withComp);
+
+      auto* withoutComp = new Module::DerivedBuilder<OldELITag,SST::Params&>(eim->alloc);
+      wolib->addBuilder(eim->name, withoutComp);
+      eim++;
+    }
+  }
+
+  if (NULL != eli->subcomponents ) {
+    const auto *eis = eli->subcomponents;
+    auto* infolib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    auto* factlib = SubComponent::getBuilderLibrary(elemlib);
+    while (NULL != eis->name) {
+      factlib->addBuilder(eis->name, new SubComponent::DerivedBuilder<OldELITag>(eis->alloc));
+      infolib->addInfo(eis->name,new SubComponent::BuilderInfo(elemlib,eis->name,tag,eis));
+      eis++;
+    }
+  }
+
+  if (NULL != eli->partitioners) {
+    const auto *eis = eli->partitioners;
+    auto* infolib = ELI::InfoDatabase::getLibrary<Partition::SSTPartitioner>(elemlib);
+    auto* factlib = Partition::SSTPartitioner::getBuilderLibrary(elemlib);
+    while (NULL != eis->name) {
+      factlib->addBuilder(eis->name, new Partition::SSTPartitioner::DerivedBuilder<OldELITag>(eis->func));
+      infolib->addInfo(eis->name, new Partition::SSTPartitioner::BuilderInfo(elemlib,eis->name,tag,eis));
+      eis++;
+    }
+  }
+
+  if (NULL != eli->generators) {
+      const ElementInfoGenerator *eig = eli->generators;
+      while (NULL != eig->name) {
+          std::string tmp = elemlib + "." + eig->name;
+          found_generators[tmp] = eig;
+          eig++;
+      }
+  }
+
+  if (NULL != eli->pythonModuleGenerator ) {
+    auto* factLib = SSTElementPythonModule::getBuilderLibrary(elemlib);
+    auto* fact = new SSTElementPythonModule::DerivedBuilder<SSTElementPythonModuleOldELI>(eli->pythonModuleGenerator);
+    factLib->addBuilder(elemlib, fact);
+
+    auto* infoLib = ELI::InfoDatabase::getLibrary<SSTElementPythonModule>(elemlib);
+    auto* info = new SSTElementPythonModule::BuilderInfo(elemlib,elemlib,tag,eli);
+    infoLib->addInfo(elemlib,info);
+  }
+
 }
 
 const ElementLibraryInfo*

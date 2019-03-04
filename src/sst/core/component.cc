@@ -21,6 +21,9 @@ using namespace SST::Statistics;
 
 namespace SST {
 
+SST_ELI_DEFINE_INFO_EXTERN(Component)
+SST_ELI_DEFINE_CTOR_EXTERN(Component)
+
 Component::Component(ComponentId_t id) : BaseComponent(),
     id(id)
 {
@@ -32,8 +35,6 @@ Component::Component(ComponentId_t id) : BaseComponent(),
 Component::~Component()
 {
 }
-
-
 
 bool Component::registerExit()
 {

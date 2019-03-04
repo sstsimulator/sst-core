@@ -36,6 +36,9 @@ public:
      */
     const ElementLibraryInfo* loadLibrary(const std::string &elemlib, bool showErrors);
 
+    void loadOldELI(const ElementLibraryInfo* eli,
+                    std::map<std::string, const ElementInfoGenerator*>& found_generators);
+
     /**
      * Gather ELI information for core-provided features
      */

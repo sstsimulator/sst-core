@@ -94,6 +94,10 @@ struct ElementInfoSubComponentSlot {
 
 typedef ElementInfoSubComponentSlot ElementInfoSubComponentHook;
 
+template <class T> struct MethodDetect { using type=void; };
+
 } //namespace SST
+
+#define ELI_FORWARD_AS_ONE(...) __VA_ARGS__
 
 #endif // SST_CORE_ELIBASE_H
