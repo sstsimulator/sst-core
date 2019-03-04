@@ -42,8 +42,8 @@ class ProvidesParams {
        auto* XMLParameterElement = new XMLNode("Parameter");
        XMLParameterElement->SetAttribute("Index", idx);
        XMLParameterElement->SetAttribute("Name", param.name);
-       XMLParameterElement->SetAttribute("Description", param.description);
-       if (param.defaultValue) XMLParameterElement->SetAttribute("Default", param.defaultValue);
+       XMLParameterElement->SetAttribute("Description", param.description ? param.description : "none");
+       XMLParameterElement->SetAttribute("Default", param.defaultValue ? param.defaultValue : "none");
        node->LinkEndChild(XMLParameterElement);
        ++idx;
      }

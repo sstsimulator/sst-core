@@ -166,8 +166,13 @@ static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
       } else if (!optional){
         fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s\n", lib.c_str());
       } else {
-        fprintf(stdout, "**** Not Found!\n");
+        fprintf(stdout, "**** %s not Found!\n", lib.c_str());
       }
+    }
+
+    if (pELI){
+      g_fileProcessedCount++;
+      g_libInfoArray.emplace_back(lib);
     }
 }
 
@@ -313,7 +318,7 @@ void SSTInfoConfig::outputUsage()
     cout << "  -n, --nodisplay          Do not display output - default is off\n";
     cout << "  -x, --xml                Generate XML data - default is off\n";
     cout << "  -o, --outputxml=FILE     File path to XML file. Default is SSTInfo.xml\n";
-    cout << "  -l, --libs=LIBS          {all, <elementname>} - Element Library9(s) to process\n";
+    cout << "  -l, --libs=LIBS          {all, <elementname>} - Element Library(s) to process\n";
     cout << endl;
 }
 
@@ -440,7 +445,7 @@ void SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
     for (auto& pair : lib->getMap()){
       bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
       if (print){
-        os << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
+        os << "      " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
         pair.second->toString(os);
       }
       ++idx;
@@ -478,7 +483,7 @@ void SSTLibraryInfo::outputXML(TiXmlElement* XMLLibraryElement)
       TiXmlElement* XMLElement = new TiXmlElement("Component");
       XMLElement->SetAttribute("Index", idx);
       pair.second->outputXML(XMLElement);
-      XMLElement->LinkEndChild(XMLLibraryElement);
+      XMLLibraryElement->LinkEndChild(XMLElement);
       idx++;
     }
   } else {

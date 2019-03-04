@@ -50,9 +50,6 @@ class SSTElementPythonModule;
    Base classes for templated documentation classes
 *****************************************************/
 
-
-const std::vector<int> SST_ELI_VERSION = {0, 9, 0};
-
 namespace ELI {
 
 template <class T>
@@ -223,9 +220,7 @@ struct ElementsInfo
   }
 
   template <class T> static bool add(){
-    auto* info = new typename Base::BuilderInfo(T::ELI_getLibrary(), T::ELI_getName(), (T*)nullptr);
-    ElementsInfo<Base>::getLibrary(T::ELI_getLibrary())->addInfo(T::ELI_getName(), info);
-    return true;
+    return Base::template addDerivedInfo<T>(T::ELI_getLibrary(), T::ELI_getName());
   }
 };
 template <class Base, class T>
@@ -315,12 +310,13 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
   }
 
 #define SST_ELI_EXTERN_DERIVED(base,cls,lib,name,version,desc) \
-  static bool ELI_isLoaded(); \
+  bool ELI_isLoaded(); \
   SST_ELI_DEFAULT_INFO(lib,name,ELI_FORWARD_AS_ONE(version),desc)
 
 #define SST_ELI_REGISTER_DERIVED(base,cls,lib,name,version,desc) \
-  static bool ELI_isLoaded() { \
-    return base::addDerivedInfo<cls>(lib,name) && base::addDerivedBuilder<cls>(lib,name); \
+  bool ELI_isLoaded() { \
+    return SST::ELI::InstantiateBuilder<base,cls>::isLoaded() \
+      && SST::ELI::InstantiateBuilderInfo<base,cls>::isLoaded(); \
   } \
   SST_ELI_DEFAULT_INFO(lib,name,ELI_FORWARD_AS_ONE(version),desc)
 

@@ -15,7 +15,13 @@
 
 namespace SST {
 
-SST_ELI_DEFINE_INFO_EXTERN(SubComponent)
+//SST_ELI_DEFINE_INFO_EXTERN(SubComponent)
+
+bool SubComponent::addInfo(const std::string& elemlib, const std::string& elem, BuilderInfo* info){
+  std::cout << "Adding " << elemlib << " " << elem << std::endl;
+  return ::SST::ELI::InfoDatabase::getLibrary<__LocalEliBase>(elemlib)->addInfo(elem,info);
+}
+
 SST_ELI_DEFINE_CTOR_EXTERN(SubComponent)
 
 bool

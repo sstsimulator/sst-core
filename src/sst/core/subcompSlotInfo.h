@@ -40,8 +40,8 @@ class ProvidesSubComponentSlots {
       auto* element = new XMLNode("SubComponentSlot");
       element->SetAttribute("Index", idx);
       element->SetAttribute("Name", slot.name);
-      element->SetAttribute("Description", slot.description);
-      element->SetAttribute("Interface", slot.superclass);
+      element->SetAttribute("Description", slot.description ? slot.description : "none");
+      element->SetAttribute("Interface", slot.superclass ? slot.superclass : "none");
       node->LinkEndChild(element);
       ++idx;
     }

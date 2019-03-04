@@ -28,9 +28,7 @@ class ProvidesDefaultInfo {
   const std::string getCompileDate() const {
     return date_;
   }
-  const std::vector<int>& getELICompiledVersion() const {
-    return compiled_;
-  }
+  const std::vector<int>& getELICompiledVersion() const;
 
   std::string getELIVersionString() const;
 
@@ -46,8 +44,8 @@ class ProvidesDefaultInfo {
     lib_(lib),
     name_(name),
     desc_(u->description),
-    file_("UNKNOWN"),
-    date_("UNKNOWN")
+    file_("Old ELI"),
+    date_("Unknown")
   {
   }
 
@@ -58,8 +56,7 @@ class ProvidesDefaultInfo {
     desc_(T::ELI_getDescription()),
     version_(T::ELI_getVersion()),
     file_(T::ELI_getCompileFile()),
-    date_(T::ELI_getCompileDate()),
-    compiled_(T::ELI_getELICompiledVersion())
+    date_(T::ELI_getCompileDate())
   {
   }
 
@@ -102,10 +99,6 @@ class ProvidesDefaultInfo {
     } \
     static const std::string ELI_getCompileFile() { \
         return __FILE__; \
-    } \
-    static const std::vector<int>& ELI_getELICompiledVersion() { \
-        static const std::vector<int> var(SST::SST_ELI_VERSION);      \
-        return var; \
     }
 
 #define SST_ELI_DEFAULT_INFO(lib,name,version,desc) \

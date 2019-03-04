@@ -44,7 +44,7 @@ class ProvidesPorts {
       auto* XMLPortElement = new XMLNode("Port");
       XMLPortElement->SetAttribute("Index", idx);
       XMLPortElement->SetAttribute("Name", port.name);
-      XMLPortElement->SetAttribute("Description", port.description);
+      XMLPortElement->SetAttribute("Description", port.description ? port.description : "none");
       node->LinkEndChild(XMLPortElement);
       ++idx;
     }

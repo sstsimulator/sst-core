@@ -69,8 +69,8 @@ class ProvidesStats {
       auto* XMLStatElement = new XMLNode("Statistic");
       XMLStatElement->SetAttribute("Index", idx);
       XMLStatElement->SetAttribute("Name", stat.name);
-      XMLStatElement->SetAttribute("Description", stat.description);
-      if (stat.units) XMLStatElement->SetAttribute("Units", stat.units);
+      XMLStatElement->SetAttribute("Description", stat.description ? stat.description : "none");
+      XMLStatElement->SetAttribute("Units", stat.units ? stat.units : "none");
       XMLStatElement->SetAttribute("EnableLevel", stat.enableLevel);
       node->LinkEndChild(XMLStatElement);
       ++idx;

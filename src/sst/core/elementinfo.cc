@@ -24,18 +24,25 @@ namespace SST {
 namespace ELI {
 
 std::unique_ptr<std::set<std::string>> LoadedLibraries::loaded_{};
+static const std::vector<int> SST_ELI_COMPILED_VERSION = {0, 9, 0};
 
 std::string
 ProvidesDefaultInfo::getELIVersionString() const
 {
     std::stringstream stream;
     bool first = true;
-    for ( int item : getELICompiledVersion() ) {
+    for (int item : SST_ELI_COMPILED_VERSION) {
         if ( first ) first = false;
         else stream << ".";
         stream << item;
     }
     return stream.str();    
+}
+
+const std::vector<int>&
+ProvidesDefaultInfo::getELICompiledVersion() const
+{
+  return SST_ELI_COMPILED_VERSION;
 }
 
 void
@@ -122,67 +129,4 @@ ProvidesParams::init()
 }
 
 }
-
-
-
-
-
-/**************************************************************************
-  LibraryInfo class functions
-**************************************************************************/
-#if 0
-std::string
-LibraryInfo::toString()
-{
-    std::stringstream stream;
-    stream << "  Components: " << std::endl;
-    for ( auto item : components ) {
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    if ( components.size() == 0 ) stream << "    <none>" << std::endl;
-    
-    stream << "  SubComponents: " << std::endl;
-    for ( auto item : subcomponents ) {
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    if ( subcomponents.size() == 0 ) stream << "    <none>" << std::endl;
-    
-    stream << "  Modules: " << std::endl;
-    for ( auto item : modules ) {
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    if ( modules.size() == 0 ) stream << "    <none>" << std::endl;
-    
-    stream << "  Partitioners: " << std::endl;
-    for ( auto item : partitioners ) {
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    if ( partitioners.size() == 0 ) stream << "    <none>" << std::endl;
-    
-    stream << "  Python Module: " << std::endl;
-    if ( python_module == NULL ) stream << "    No" << std::endl;
-    else stream << "    Yes" << std::endl;
-    
-    return stream.str();
-}
-
-/**************************************************************************
-  LibraryInfo class functions
-**************************************************************************/
-std::string
-ElementLibraryDatabase::toString() {
-    std::stringstream stream;
-    for ( auto item : *libraries ) {
-        stream << "library : " << item.first << std::endl;
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    return stream.str();
-}
-#endif
-
 } //namespace SST
