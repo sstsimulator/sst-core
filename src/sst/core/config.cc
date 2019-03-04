@@ -78,6 +78,7 @@ Config::Config(RankInfo rankInfo)
     enable_sig_handling = true;
     output_core_prefix = "@x SST Core: ";
     print_timing = false;
+    print_env = false;
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     event_dump_file = "";

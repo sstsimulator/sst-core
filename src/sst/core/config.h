@@ -151,6 +151,7 @@ public:
         std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
         std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
         std::cout << "print_timing=" << print_timing << std::endl;
+	std::cout << "print_env" << print_env << std::endl;
     }
 
 
