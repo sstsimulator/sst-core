@@ -16,6 +16,8 @@
 
 #include <string>
 #include <vector>
+#include <set>
+#include <list>
 
 // Component Category Definitions
 #define COMPONENT_CATEGORY_UNCATEGORIZED  0x00
@@ -94,7 +96,28 @@ struct ElementInfoSubComponentSlot {
 
 typedef ElementInfoSubComponentSlot ElementInfoSubComponentHook;
 
+namespace ELI {
+
 template <class T> struct MethodDetect { using type=void; };
+
+class LoadedLibraries {
+ public:
+  static void addLoaded(const std::string& name);
+
+  static bool isLoaded(const std::string& name);
+
+  static bool addLoader(std::function<void()>&& loader);
+
+  static const std::list<std::function<void()>>& getLoaders(){
+    return loaders_;
+  }
+
+ private:
+  static std::unique_ptr<std::set<std::string>> loaded_;
+  static std::list<std::function<void()>> loaders_;
+};
+
+} //namespace ELI
 
 } //namespace SST
 

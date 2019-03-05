@@ -129,27 +129,6 @@ struct InstantiateBuilderInfo {
   static const bool loaded;
 };
 
-class LoadedLibraries {
- public:
-  static void addLoaded(const std::string& name){
-    if (!loaded_){
-      loaded_ = std::unique_ptr<std::set<std::string>>(new std::set<std::string>);
-    }
-    loaded_->insert(name);
-  }
-
-  static bool isLoaded(const std::string& name){
-    if (loaded_){
-      return loaded_->find(name) != loaded_->end();
-    } else {
-      return false; //nothing loaded yet
-    }
-  }
-
- private:
-  static std::unique_ptr<std::set<std::string>> loaded_;
-};
-
 template <class Base> class InfoLibrary
 {
  public:
@@ -181,16 +160,35 @@ template <class Base> class InfoLibrary
   std::map<std::string, BaseInfo*> infos_;
 };
 
+template <class Library> struct ELIMap {
+  ~ELIMap(){}
+
+  typename std::map<std::string,Library*>::const_iterator
+  find(const std::string& name) const {
+    return map_.find(name);
+  }
+
+  typename std::map<std::string,Library*>::const_iterator
+  end() const {
+    return map_.end();
+  }
+
+  void insert(const std::string& name, Library* lib) {
+    map_[name] = lib;
+  }
+  std::map<std::string,Library*> map_;
+};
 
 template <class Base>
 class InfoLibraryDatabase {
  public:
   using Library=InfoLibrary<Base>;
   using BaseInfo=typename Library::BaseInfo;
+  using Map=std::map<std::string,Library*>;
 
   static Library* getLibrary(const std::string& name){
     if (!libraries){
-      libraries = std::unique_ptr<std::map<std::string,Library*>>(new std::map<std::string,Library*>);
+      libraries = std::unique_ptr<Map>(new Map);
     }
     auto iter = libraries->find(name);
     if (iter == libraries->end()){
@@ -205,11 +203,13 @@ class InfoLibraryDatabase {
 
  private:
   // Database - needs to be a pointer for static init order
-  static std::unique_ptr<std::map<std::string,Library*>> libraries;
+  static std::unique_ptr<Map> libraries;
 };
 
-template <class Base>
- std::unique_ptr<std::map<std::string,InfoLibrary<Base>*>>
+
+
+
+template <class Base> std::unique_ptr<typename InfoLibraryDatabase<Base>::Map>
   InfoLibraryDatabase<Base>::libraries;
 
 template <class Base>
@@ -223,8 +223,8 @@ struct ElementsInfo
     return Base::template addDerivedInfo<T>(T::ELI_getLibrary(), T::ELI_getName());
   }
 };
-template <class Base, class T>
- const bool InstantiateBuilderInfo<Base,T>::loaded = ElementsInfo<Base>::template add<T>();
+template <class Base, class T> const bool InstantiateBuilderInfo<Base,T>::loaded
+  = LoadedLibraries::addLoader([]{ ElementsInfo<Base>::template add<T>(); });
 
 
 struct InfoDatabase {

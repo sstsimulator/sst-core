@@ -2,7 +2,8 @@
 #ifndef SST_CORE_FACTORY_INFO_H
 #define SST_CORE_FACTORY_INFO_H
 
-#include <oldELI.h>
+#include <sst/core/oldELI.h>
+#include <sst/core/elibase.h>
 #include <type_traits>
 
 namespace SST {
@@ -83,8 +84,8 @@ struct InstantiateBuilder {
   static const bool loaded;
 };
 
-template <class Base, class T>
- const bool InstantiateBuilder<Base,T>::loaded = Base::Ctor::template add<T>(T::ELI_getLibrary(), T::ELI_getName());
+template <class Base, class T> const bool InstantiateBuilder<Base,T>::loaded
+  = LoadedLibraries::addLoader([]{ Base::Ctor::template add<T>(); });
 
 template <class Base, class T, class Enable=void>
 struct Allocator
@@ -174,10 +175,10 @@ struct ElementsBuilder<Base, std::tuple<Args...>>
 template <class Base, class... Args>
 struct SingleCtor
 {
-  template <class T> static bool add(const std::string& elemlib, const std::string& elem){
+  template <class T> static bool add(){
     //if abstract, force an allocation to generate meaningful errors
     auto* fact = new DerivedBuilder<Base,T,Args...>;
-    Base::addBuilder(elemlib,elem,fact);
+    Base::addBuilder(T::ELI_getLibrary(),T::ELI_getName(),fact);
     return true;
   }
 };
@@ -188,47 +189,18 @@ struct CtorList : public CtorList<Base,Ctors...>
 {
   template <class T, int NumValid=0, class U=T>
   static typename std::enable_if<std::is_abstract<U>::value || is_tuple_constructible<U,Ctor>::value, bool>::type
-  add(const std::string& elemlib, const std::string& elem){
+  add(){
     //if abstract, force an allocation to generate meaningful errors
     auto* fact = ElementsBuilder<Base,Ctor>::template makeBuilder<U>();
-    Base::addBuilder(elemlib,elem,fact);
-    return CtorList<Base,Ctors...>::template add<T,NumValid+1>(elemlib,elem);
+    Base::addBuilder(T::ELI_getLibrary(),T::ELI_getName(),fact);
+    return CtorList<Base,Ctors...>::template add<T,NumValid+1>();
   }
 
   template <class T, int NumValid=0, class U=T>
   static typename std::enable_if<!std::is_abstract<U>::value && !is_tuple_constructible<U,Ctor>::value, bool>::type
-  add(const std::string& elemlib, const std::string& elem){
-    return CtorList<Base,Ctors...>::template add<T,NumValid>(elemlib,elem);
+  add(){
+    return CtorList<Base,Ctors...>::template add<T,NumValid>();
   }
-
-  /**
-  //Ctor is a tuple
-  template <class... InArgs>
-  typename std::enable_if<std::is_convertible<std::tuple<InArgs&&...>, Ctor>::value, Base*>::type
-  operator()(const std::string& elemlib, const std::string& name, InArgs&&... args){
-    auto* lib = ElementsBuilder<Base,Ctor>::getLibrary(elemlib);
-    if (lib){
-      auto* fact = lib->getBuilder(name);
-      if (fact){
-        return fact->create(std::forward<InArgs>(args)...);
-      }
-      std::cerr << "For library '" << elemlib << "', " << Base::ELI_baseName()
-               << " '" << name << "' is not registered with matching constructor"
-               << std::endl;
-    }
-    std::cerr << "Nothing registerd in library '" << elemlib
-              << "' for base " << Base::ELI_baseName() << std::endl;
-    abort();
-  }
-
-  //Ctor is a tuple
-  template <class... InArgs>
-  typename std::enable_if<!std::is_convertible<std::tuple<InArgs&&...>, Ctor>::value, Base*>::type
-  operator()(const std::string& elemlib, const std::string& name, InArgs&&... args){
-    //I don't match - pass it up
-    return CtorList<Base,Ctors...>::operator()(elemlib, name, std::forward<InArgs>(args)...);
-  }
-  */
 
 };
 
@@ -242,7 +214,7 @@ template <> class NoValidConstructorsForDerivedType<0> {};
 template <class Base> struct CtorList<Base,void>
 {
   template <class T,int numValidCtors>
-  static bool add(const std::string& UNUSED(lib), const std::string& UNUSED(elem)){
+  static bool add(){
     return NoValidConstructorsForDerivedType<numValidCtors>::atLeastOneValidCtor;
   }
 };
@@ -309,6 +281,7 @@ template <class Base> struct CtorList<Base,void>
   }
 
 #define SST_ELI_DEFAULT_CTOR_COMMON() \
+  using Ctor = ::SST::ELI::SingleCtor<__LocalEliBase>; \
   using BaseBuilder = ::SST::ELI::Builder<__LocalEliBase>; \
   using BuilderLibrary = ::SST::ELI::BuilderLibrary<__LocalEliBase>; \
   template <class __TT> using DerivedBuilder = ::SST::ELI::DerivedBuilder<__LocalEliBase,__TT>;
@@ -316,7 +289,7 @@ template <class Base> struct CtorList<Base,void>
 //I can make some extra using typedefs because I have only a single ctor
 #define SST_ELI_DECLARE_DEFAULT_CTOR() \
   SST_ELI_DEFAULT_CTOR_COMMON() \
-  static BuilderLibrary<>* getBuilderLibrary(const std::string& name){ \
+  static BuilderLibrary* getBuilderLibrary(const std::string& name){ \
     return SST::ELI::BuilderDatabase::getLibrary<__LocalEliBase>(name); \
   } \
   static bool addBuilder(const std::string& elemlib, const std::string& elem, BaseBuilder* builder){ \
