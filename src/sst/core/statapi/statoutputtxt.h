@@ -31,10 +31,19 @@ namespace Statistics {
 class StatisticOutputTxt : public StatisticOutput
 {
 public:    
+  SST_ELI_REGISTER_DERIVED(
+      StatisticOutput,
+      StatisticOutputTxt,
+      "sst",
+      "statOutputTxt",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Output directly to console screen"
+   )
+
     /** Construct a StatOutputTxt
      * @param outputParameters - Parameters used for this Statistic Output
      */
-    StatisticOutputTxt(Params& outputParameters, bool compressed);
+    StatisticOutputTxt(Params& outputParameters);
 
 protected:
     /** Perform a check of provided parameters
@@ -76,12 +85,12 @@ protected:
      * @param fieldHandle - The handle to the registered statistic field.
      * @param data - The data related to the registered field to be output.
      */
-    void implOutputField(fieldHandle_t fieldHandle, int32_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, uint32_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, int64_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, uint64_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, float data) override;
-    void implOutputField(fieldHandle_t fieldHandle, double data) override;
+    void outputField(fieldHandle_t fieldHandle, int32_t data) override;
+    void outputField(fieldHandle_t fieldHandle, uint32_t data) override;
+    void outputField(fieldHandle_t fieldHandle, int64_t data) override;
+    void outputField(fieldHandle_t fieldHandle, uint64_t data) override;
+    void outputField(fieldHandle_t fieldHandle, float data) override;
+    void outputField(fieldHandle_t fieldHandle, double data) override;
 
 protected:
     StatisticOutputTxt() {;} // For serialization

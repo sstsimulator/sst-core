@@ -120,7 +120,6 @@ class LoadedLibraries {
  private:
   static std::unique_ptr<LibraryMap> loaders_;
 
-
 };
 
 } //namespace ELI

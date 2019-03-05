@@ -22,6 +22,7 @@
 #include <sst/core/statapi/statoutput.h>
 #include <sst/core/configGraph.h>
 #include <sst/core/baseComponent.h>
+#include <sst/core/elementinfo.h>
 
 namespace SST {
 namespace Statistics {
@@ -80,15 +81,6 @@ StatisticProcessingEngine::~StatisticProcessingEngine()
             delete stat;
         }
     }
-}
-
-
-
-StatisticBase* StatisticProcessingEngine::createStatistic(BaseComponent* comp, const std::string &type,
-            const std::string &statName, const std::string &statSubId,
-            Params &params, StatisticFieldInfo::fieldType_t fieldType)
-{
-    return Factory::getFactory()->CreateStatistic(comp, type, statName, statSubId, params, fieldType);
 }
 
 bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
@@ -225,7 +217,8 @@ void StatisticProcessingEngine::endOfSimulation()
 
 StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigStatOutput &cfg)
 {
-    StatisticOutput *so = Factory::getFactory()->CreateStatisticOutput(cfg.type, cfg.params);
+    auto& unsafeParams = const_cast<SST::Params&>(cfg.params);
+    StatisticOutput *so = Factory::getFactory()->Create<StatisticOutput>(cfg.type, unsafeParams, unsafeParams);
     if (NULL == so) {
         m_output.fatal(CALL_INFO, Output::PrintAll, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
     }
@@ -243,7 +236,14 @@ StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigSt
     return so;
 }
 
-
+void
+StatisticProcessingEngine::castError(const std::string& type, const std::string& statName,
+                                     const std::string& fieldName)
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO,1,
+                  "Unable to cast statistic %s of type %s to correct field type %s",
+                  statName.c_str(), type.c_str(), fieldName.c_str());
+}
 
 StatisticOutput* StatisticProcessingEngine::getOutputForStatistic(const StatisticBase *stat) const
 {
@@ -563,7 +563,10 @@ void StatisticProcessingEngine::handleStatisticEngineStopTimeEvent(SimTime_t tim
     }
 }
 
-StatisticBase* StatisticProcessingEngine::isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType)
+StatisticBase*
+StatisticProcessingEngine::isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId,
+                                                    const std::string& statName, const std::string& statSubId,
+                                                    StatisticFieldInfo::fieldType_t fieldType)
 {
     StatArray_t*        statArray;
     StatisticBase*      TestStat;
@@ -593,7 +596,8 @@ StatisticBase* StatisticProcessingEngine::isStatisticInCompStatMap(const std::st
     return NULL;
 }
 
-void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t UNUSED(fieldType))
+void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat,
+           StatisticFieldInfo::fieldType_t UNUSED(fieldType))
 {
     StatArray_t*        statArray;
     ComponentId_t compId = Stat->getComponent()->getId();

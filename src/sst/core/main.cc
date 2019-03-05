@@ -435,7 +435,7 @@ main(int argc, char *argv[])
             graph = modelGen->createConfigGraph();
         }
     }
-    
+
 #ifdef SST_CONFIG_HAVE_MPI
     // Config is done - broadcast it
     if ( world_size.rank > 1 ) {

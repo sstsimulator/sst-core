@@ -139,7 +139,8 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
     output_directory = "";
 
     Params p;
-    timeVortex = factory->Create<TimeVortex>(cfg->timeVortex,p);
+    //params get passed twice - both the params and a ctor argument
+    timeVortex = factory->Create<TimeVortex>(cfg->timeVortex,p,p);
     if( my_rank.thread == 0 ) {
         m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), min_part == MAX_SIMTIME_T );
     }

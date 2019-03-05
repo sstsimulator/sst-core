@@ -171,7 +171,7 @@ void StatisticOutputJSON::implStopOutputEntries()
 	fprintf(m_hFile, " ] }");
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int32_t data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -182,7 +182,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uint32_t data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -193,7 +193,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uin
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int64_t data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -204,7 +204,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uint64_t data) 
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -215,7 +215,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uin
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), float data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), float data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -226,7 +226,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), flo
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), double data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), double data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");

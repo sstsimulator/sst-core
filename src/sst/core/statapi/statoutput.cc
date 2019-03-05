@@ -15,6 +15,7 @@
 #include <sst/core/statapi/statoutput.h>
 #include <sst/core/statapi/statgroup.h>
 #include <sst/core/stringize.h>
+#include <sst/core/simulation.h>
 
 namespace SST {
 namespace Statistics {
@@ -29,6 +30,9 @@ StatisticOutput::StatisticOutput(Params& outputParameters)
     m_highestFieldHandle = 0;
     m_currentFieldStatName = "";
 }
+
+SST_ELI_DEFINE_CTOR_EXTERN(StatisticOutput)
+SST_ELI_DEFINE_INFO_EXTERN(StatisticOutput)
 
 StatisticOutput::~StatisticOutput()
 {
@@ -65,22 +69,22 @@ void StatisticOutput::stopRegisterFields()
 
 StatisticFieldInfo* StatisticOutput::addFieldToLists(const char* fieldName, fieldType_t fieldType)
 {
-    StatisticFieldInfo* NewStatFieldInfo;
-    StatisticFieldInfo* ExistingStatFieldInfo;
 
-    // Create a new Instance of a StatisticFieldInfo
-    NewStatFieldInfo = new StatisticFieldInfo(m_currentFieldStatName.c_str(), fieldName, fieldType);
-    
-    // Now search the FieldNameMap_t of type for a matching entry
-    FieldNameMap_t::const_iterator found = m_outputFieldNameMap.find(NewStatFieldInfo->getFieldUniqueName());
-    if (found != m_outputFieldNameMap.end()) {
-        // We found a map entry, now get the StatFieldInfo from the m_outputFieldInfoArray at the index given by the map
-        // and then delete the NewStatFieldInfo to prevent a leak
-        ExistingStatFieldInfo = m_outputFieldInfoArray[found->second];
-        delete NewStatFieldInfo;
-        return ExistingStatFieldInfo;
+    auto iter = m_outputFieldNameMap.find(fieldName);
+    if (iter != m_outputFieldNameMap.end()){
+      fieldHandle_t id = iter->second;
+      StatisticFieldInfo* ExistingStatFieldInfo = m_outputFieldInfoArray[id];
+      if (ExistingStatFieldInfo->getFieldType() != fieldType){
+        Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+            "StatisticOutput %s registering the same column (%s) with two different types",
+            getStatisticOutputName().c_str(), fieldName);
+      }
+      return ExistingStatFieldInfo;
     }
 
+
+    // Create a new Instance of a StatisticFieldInfo
+    StatisticFieldInfo* NewStatFieldInfo = new StatisticFieldInfo(m_currentFieldStatName.c_str(), fieldName, fieldType);
     // If we get here, then the New StatFieldInfo does not exist so add it to both
     // the Array and to the map
     m_outputFieldInfoArray.push_back(NewStatFieldInfo);
@@ -89,7 +93,7 @@ StatisticFieldInfo* StatisticOutput::addFieldToLists(const char* fieldName, fiel
     return NewStatFieldInfo;
 }
 
-StatisticOutput::fieldHandle_t StatisticOutput::generateFileHandle(StatisticFieldInfo* FieldInfo)
+StatisticOutput::fieldHandle_t StatisticOutput::generateFieldHandle(StatisticFieldInfo* FieldInfo)
 {
     // Check to see if this field info has a handle assigned
     if (-1 == FieldInfo->getFieldHandle()) {
@@ -111,6 +115,54 @@ StatisticFieldInfo* StatisticOutput::getRegisteredField(fieldHandle_t fieldHandl
         return m_outputFieldInfoArray[fieldHandle];
     }
     return NULL;
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), double UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support double output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), float UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support float output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support int32_t output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support uint32_t output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support int64_t output",
+      getStatisticOutputName().c_str());
+}
+
+void
+StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t UNUSED(data))
+{
+  Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
+      "StatisticOutput %s does not support uint64_t output",
+      getStatisticOutputName().c_str());
 }
 
 void StatisticOutput::outputEntries(StatisticBase* statistic, bool endOfSimFlag)
@@ -161,42 +213,6 @@ void StatisticOutput::stopOutputGroup()
     m_currentFieldStatName = "";
     // Call the Derived class method
     implStopOutputGroup();
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, int32_t data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, uint32_t data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, int64_t data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, uint64_t data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, float data)  
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
-}
-
-void StatisticOutput::outputField(fieldHandle_t fieldHandle, double data)
-{
-    // Call the Derived class method
-    implOutputField(fieldHandle, data);
 }
 
 const char* StatisticOutput::getFieldTypeShortName(fieldType_t type)

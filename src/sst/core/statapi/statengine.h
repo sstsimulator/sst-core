@@ -15,10 +15,13 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/statapi/statfieldinfo.h>
 #include <sst/core/statapi/statgroup.h>
+#include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/statnull.h>
 #include <sst/core/unitAlgebra.h>
 #include <sst/core/clock.h>
 #include <sst/core/oneshot.h>
 #include <sst/core/threadsafe.h>
+#include <sst/core/factory.h>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
@@ -35,8 +38,8 @@ class Params;
 
 namespace Statistics {
 
-template<typename T> class Statistic;
-class StatisticBase;
+//template<typename T> class Statistic;
+//class StatisticBase;
 class StatisticOutput;
 
 /**
@@ -67,32 +70,30 @@ public:
      */
     void performGlobalStatisticOutput(bool endOfSimFlag = false);
 
-
-    template<typename T>
-    Statistic<T>* createStatistic(BaseComponent *comp, const std::string &type, const std::string &statName, const std::string &statSubId, Params &params)
+    template <class T>
+    Statistic<T>* createStatistic(BaseComponent *comp, const std::string &type,
+                                  const std::string &statName, const std::string &statSubId,
+                                  Params &params)
     {
-        StatisticFieldInfo::fieldType_t fieldType = StatisticFieldInfo::getFieldTypeFromTemplate<T>();
-        return dynamic_cast<Statistic<T>*>(createStatistic(comp, type, statName, statSubId, params, fieldType));
+
+      return Factory::getFactory()->Create<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
 
-    template<typename T>
-    bool registerStatisticWithEngine(StatisticBase* stat)
+    bool registerStatisticWithEngine(StatisticBase* stat, FieldId_t id)
     {
         bool ok;
-        if ( true == (ok = registerStatisticCore(stat)) ) {
-            StatisticFieldInfo::fieldType_t fieldType = StatisticFieldInfo::getFieldTypeFromTemplate<T>();
-            addStatisticToCompStatMap(stat, fieldType);
+        if ((ok = registerStatisticCore(stat))) {
+            addStatisticToCompStatMap(stat, id);
         }
         return ok;
     }
 
-    template<typename T>
-    StatisticBase* isStatisticRegisteredWithEngine(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId)
+    StatisticBase* isStatisticRegisteredWithEngine(const std::string& compName, const ComponentId_t& compId,
+                                                   const std::string& statName, const std::string& statSubId,
+                                                   FieldId_t fieldId)
     {
-        StatisticFieldInfo::fieldType_t fieldType = StatisticFieldInfo::getFieldTypeFromTemplate<T>();
-        return isStatisticInCompStatMap(compName, compId, statName, statSubId, fieldType);
+      return isStatisticInCompStatMap(compName, compId, statName, statSubId, fieldId);
     }
-
 
     const std::vector<StatisticOutput*>& getStatOutputs() const { return m_statOutputs; }
 
@@ -109,9 +110,6 @@ private:
 
     StatisticOutput* createStatisticOutput(const ConfigStatOutput &cfg);
 
-    StatisticBase* createStatistic(BaseComponent* comp, const std::string &type,
-            const std::string &statName, const std::string &statSubId,
-            Params &params, StatisticFieldInfo::fieldType_t fieldType);
     bool registerStatisticCore(StatisticBase* stat);
 
     StatisticOutput* getOutputForStatistic(const StatisticBase *stat) const;
@@ -134,8 +132,11 @@ private:
     bool handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group);
     void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
     void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
-    StatisticBase* isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId, std::string& statName, std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType);
+    StatisticBase* isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId,
+                                            const std::string& statName, const std::string& statSubId,
+                                            StatisticFieldInfo::fieldType_t fieldType);
     void addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
+    void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
 
 private:
     typedef std::vector<StatisticBase*>           StatArray_t;       /*!< Array of Statistics */

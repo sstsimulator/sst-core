@@ -423,7 +423,9 @@ public:
      /** Returns a new parameter object with parameters that match
      * the specified prefix.
      */
-    Params find_prefix_params(std::string prefix) const;
+    Params find_prefix_params(const std::string& prefix) const;
+
+    Params find_scoped_params(const std::string& scope, const char* delims = ".:") const;
 
     /**
      * @param k   Key to search for
