@@ -302,6 +302,17 @@ ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
         //     }
         // }
     }
+
+    //loading a library can "wipe" previously loaded libraries depending
+    //on how weak symbol resolution works in dlopen
+    //rerun the loaders to make sure everything is still registered
+    for (auto& libpair : ELI::LoadedLibraries::getLoaders()){
+      for (auto& elempair : libpair.second){
+        //call the loader function
+        elempair.second();
+      }
+    }
+
     return eli;
 }
 

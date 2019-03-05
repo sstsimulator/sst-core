@@ -134,6 +134,11 @@ template <class Base> class InfoLibrary
  public:
   using BaseInfo = typename Base::BuilderInfo;
 
+  InfoLibrary(const std::string& name) :
+    name_(name)
+  {
+  }
+
   BaseInfo* getInfo(const std::string& name) {
     auto iter = infos_.find(name);
     if (iter == infos_.end()){
@@ -141,6 +146,10 @@ template <class Base> class InfoLibrary
     } else {
       return iter->second;
     }
+  }
+
+  bool hasInfo(const std::string& name) const {
+    return infos_.find(name) != infos_.end();
   }
 
   int numEntries() const {
@@ -151,32 +160,23 @@ template <class Base> class InfoLibrary
     return infos_;
   }
 
-  bool addInfo(const std::string& name, BaseInfo* info){
+  void readdInfo(const std::string& name, BaseInfo* info){
     infos_[name] = info;
+  }
+
+  bool addInfo(const std::string& elem, BaseInfo* info){
+    readdInfo(elem, info);
+    //dlopen might thrash this later - add a loader to put it back in case
+    addLoader(name_, elem, info);
     return true;
   }
 
  private:
+  void addLoader(const std::string& lib, const std::string& name, BaseInfo* info);
+
   std::map<std::string, BaseInfo*> infos_;
-};
 
-template <class Library> struct ELIMap {
-  ~ELIMap(){}
-
-  typename std::map<std::string,Library*>::const_iterator
-  find(const std::string& name) const {
-    return map_.find(name);
-  }
-
-  typename std::map<std::string,Library*>::const_iterator
-  end() const {
-    return map_.end();
-  }
-
-  void insert(const std::string& name, Library* lib) {
-    map_[name] = lib;
-  }
-  std::map<std::string,Library*> map_;
+  std::string name_;
 };
 
 template <class Base>
@@ -188,12 +188,12 @@ class InfoLibraryDatabase {
 
   static Library* getLibrary(const std::string& name){
     if (!libraries){
-      libraries = std::unique_ptr<Map>(new Map);
+      libraries = new Map;
     }
     auto iter = libraries->find(name);
     if (iter == libraries->end()){
       LoadedLibraries::addLoaded(name);
-      auto* info = new Library;
+      auto* info = new Library(name);
       (*libraries)[name] = info;
       return info;
     } else {
@@ -203,17 +203,23 @@ class InfoLibraryDatabase {
 
  private:
   // Database - needs to be a pointer for static init order
-  static std::unique_ptr<Map> libraries;
+  static Map* libraries;
 };
 
+template <class Base> typename InfoLibraryDatabase<Base>::Map*
+  InfoLibraryDatabase<Base>::libraries = nullptr;
 
+template <class Base> void InfoLibrary<Base>::addLoader(const std::string& elemlib, const std::string& elem,
+                                                  BaseInfo* info){
+  LoadedLibraries::addLoader(elemlib, elem, [=]{
+      auto* lib = InfoLibraryDatabase<Base>::getLibrary(elemlib);
+      if (!lib->hasInfo(elem)){
+        lib->readdInfo(elem, info);
+      }
+  });
+}
 
-
-template <class Base> std::unique_ptr<typename InfoLibraryDatabase<Base>::Map>
-  InfoLibraryDatabase<Base>::libraries;
-
-template <class Base>
-struct ElementsInfo
+template <class Base> struct ElementsInfo
 {
   static InfoLibrary<Base>* getLibrary(const std::string& name){
     return InfoLibraryDatabase<Base>::getLibrary(name);
@@ -224,7 +230,7 @@ struct ElementsInfo
   }
 };
 template <class Base, class T> const bool InstantiateBuilderInfo<Base,T>::loaded
-  = LoadedLibraries::addLoader([]{ ElementsInfo<Base>::template add<T>(); });
+  = ElementsInfo<Base>::template add<T>();
 
 
 struct InfoDatabase {

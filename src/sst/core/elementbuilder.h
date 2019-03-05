@@ -23,6 +23,11 @@ class BuilderLibrary
  public:
   using BaseBuilder = Builder<Base,CtorArgs...>;
 
+  BuilderLibrary(const std::string& name) :
+    name_(name)
+  {
+  }
+
   BaseBuilder* getBuilder(const std::string &name) {
     auto iter = factories_.find(name);
     if (iter == factories_.end()){
@@ -36,13 +41,22 @@ class BuilderLibrary
     return factories_;
   }
 
-  bool addBuilder(const std::string& name, BaseBuilder* fact){
+  void readdBuilder(const std::string& name, BaseBuilder* fact){
     factories_[name] = fact;
+  }
+
+  bool addBuilder(const std::string& elem, BaseBuilder* fact){
+    readdBuilder(elem, fact);
+    addLoader(name_, elem, fact);
     return true;
   }
 
  private:
+  void addLoader(const std::string& elemlib, const std::string& elem, BaseBuilder* fact);
+
   std::map<std::string, BaseBuilder*> factories_;
+
+  std::string name_;
 };
 
 template <class Base, class... CtorArgs>
@@ -50,14 +64,15 @@ class BuilderLibraryDatabase {
  public:
   using Library=BuilderLibrary<Base,CtorArgs...>;
   using BaseFactory=typename Library::BaseBuilder;
+  using Map=std::map<std::string,Library*>;
 
   static Library* getLibrary(const std::string& name){
     if (!libraries){
-      libraries = std::unique_ptr<std::map<std::string,Library*>>(new std::map<std::string,Library*>);
+      libraries = new std::map<std::string,Library*>;
     }
     auto iter = libraries->find(name);
     if (iter == libraries->end()){
-      auto* info = new Library;
+      auto* info = new Library(name);
       (*libraries)[name] = info;
       return info;
     } else {
@@ -67,13 +82,18 @@ class BuilderLibraryDatabase {
 
  private:
   // Database - needs to be a pointer for static init order
-  static std::unique_ptr<std::map<std::string,Library*>> libraries;
+  static Map* libraries;
 };
 
-template <class Base, class... CtorArgs>
- std::unique_ptr<std::map<std::string,BuilderLibrary<Base,CtorArgs...>*>>
-  BuilderLibraryDatabase<Base,CtorArgs...>::libraries;
+template <class Base, class... CtorArgs> typename BuilderLibraryDatabase<Base,CtorArgs...>::Map*
+  BuilderLibraryDatabase<Base,CtorArgs...>::libraries = nullptr;
 
+template <class Base, class... CtorArgs>
+void BuilderLibrary<Base,CtorArgs...>::addLoader(const std::string &elemlib, const std::string &elem, BaseBuilder *fact){
+  ELI::LoadedLibraries::addLoader(elemlib, elem, [=]{
+      BuilderLibraryDatabase<Base,CtorArgs...>::getLibrary(elemlib)->readdBuilder(elem,fact);
+  });
+}
 
 template <class Base, class T>
 struct InstantiateBuilder {
@@ -85,7 +105,7 @@ struct InstantiateBuilder {
 };
 
 template <class Base, class T> const bool InstantiateBuilder<Base,T>::loaded
-  = LoadedLibraries::addLoader([]{ Base::Ctor::template add<T>(); });
+  = Base::Ctor::template add<T>();
 
 template <class Base, class T, class Enable=void>
 struct Allocator

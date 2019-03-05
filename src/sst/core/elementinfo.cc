@@ -24,6 +24,8 @@ namespace SST {
 namespace ELI {
 
 std::unique_ptr<std::set<std::string>> LoadedLibraries::loaded_{};
+std::unique_ptr<LoadedLibraries::LibraryMap> LoadedLibraries::loaders_{};
+
 static const std::vector<int> SST_ELI_COMPILED_VERSION = {0, 9, 0};
 
 void
@@ -34,6 +36,15 @@ LoadedLibraries::addLoaded(const std::string& name){
   loaded_->insert(name);
 }
 
+void
+LoadedLibraries::addLoader(const std::string &lib, const std::string &name, std::function<void()> &&loader)
+{
+  if (!loaders_){
+    loaders_ = std::unique_ptr<LibraryMap>(new LibraryMap);
+  }
+  (*loaders_)[lib].emplace(name, std::move(loader));
+}
+
 bool
 LoadedLibraries::isLoaded(const std::string& name){
   if (loaded_){
@@ -42,15 +53,6 @@ LoadedLibraries::isLoaded(const std::string& name){
     return false; //nothing loaded yet
   }
 }
-
-bool
-LoadedLibraries::addLoader(std::function<void ()> &&loader)
-{
-  loaders_.emplace_back(std::move(loader));
-  return true;
-}
-
-std::list<std::function<void()>> LoadedLibraries::loaders_;
 
 std::string
 ProvidesDefaultInfo::getELIVersionString() const

@@ -435,10 +435,6 @@ main(int argc, char *argv[])
             graph = modelGen->createConfigGraph();
         }
     }
-
-    for (auto loader : ELI::LoadedLibraries::getLoaders()){
-      loader();
-    }
     
 #ifdef SST_CONFIG_HAVE_MPI
     // Config is done - broadcast it
