@@ -34,6 +34,13 @@ template <typename T>
 class UniqueCountStatistic : public Statistic<T>
 {
 public:
+  SST_ELI_DECLARE_STATISTIC_TEMPLATE(
+      UniqueCountStatistic,
+      "sst",
+      "UniqueCountStatistic",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Track unique occurrences of statistic",
+      "SST::Statistic<T>")
 
     UniqueCountStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<T>(comp, statName, statSubId, statParams)
@@ -56,17 +63,17 @@ protected:
 private:
     void clearStatisticData() override
     {
-	uniqueSet.clear();
+      uniqueSet.clear();
     }
 
     void registerOutputFields(StatisticOutput* statOutput) override
     {
-	uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
+      uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
     }
 
     void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
-	statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
+      statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
     }
 
 private:
@@ -74,6 +81,7 @@ private:
     StatisticOutput::fieldHandle_t uniqueCountField;
 
 };
+
 
 } //namespace Statistics
 } //namespace SST

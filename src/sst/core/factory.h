@@ -81,18 +81,6 @@ public:
      */
     Module* CreateModuleWithComponent(std::string type, Component* comp, Params& params);
 
-    /** Instantiate a new Module from within the SST core
-     * @param type - Name of the module to load (just modulename, not element.modulename)
-     * @param params - Parameters to pass to the module at constructor time
-     */
-    Module* CreateCoreModule(std::string type, Params& params);
-
-    /** Instantiate a new Module from within the SST core
-     * @param type - Name of the module to load (just modulename, not element.modulename)
-     * @param params - Parameters to pass to the module at constructor time
-     */
-    Module* CreateCoreModuleWithComponent(std::string type, Component* comp, Params& params);
-
     /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param comp - Component instance to pass to the SubComponent's constructor
@@ -116,8 +104,8 @@ public:
      * @param params
      * @param args Constructor arguments
      */
-    template <class Base>
-    Base* Create(const std::string& type, SST::Params& params){
+    template <class Base, class... CtorArgs>
+    Base* Create(const std::string& type, SST::Params& params, CtorArgs&&... args){
       std::string elemlib, elem;
       std::tie(elemlib, elem) = parseLoadName(type);
 
@@ -133,7 +121,7 @@ public:
             auto* fact = builderLib->getBuilder(elem);
             if (fact){
               params.pushAllowedKeys(info->getParamNames());
-              Base* ret = fact->create(params);
+              Base* ret = fact->create(std::forward<CtorArgs>(args)...);
               params.popAllowedKeys();
               return ret;
             }
@@ -152,9 +140,27 @@ public:
      * @param params - Parameters to pass to the Statistics's constructor
      * @param fieldType - Type of data stored in statistic
      */
-    Statistics::StatisticBase* CreateStatistic(BaseComponent* comp, const std::string &type,
-            const std::string &statName, const std::string &statSubId,
-            Params &params, Statistics::StatisticFieldInfo::fieldType_t fieldType);
+    template <class T, class... Args>
+    Statistics::Statistic<T>* CreateStatistic(std::string type,
+                                   BaseComponent* comp, const std::string& statName,
+                                   const std::string& stat, Params& params,
+                                   Args... args){
+      std::string elemlib, elem;
+      std::tie(elemlib, elem) = parseLoadName(type);
+      // ensure library is already loaded...
+      requireLibrary(elemlib);
+
+      auto* lib = ELI::BuilderDatabase::getLibrary<Statistics::Statistic<T>, Args...>(elemlib);
+      if (lib){
+        auto* fact = lib->getFactory(elem);
+        if (fact){
+          return fact->create(comp, statName, stat, params, std::forward<Args>(args)...);
+        }
+      }
+      // If we make it to here, component not found
+      out.fatal(CALL_INFO, -1,"can't find requested statistic %s.\n ", type.c_str());
+      return NULL;
+    }
 
 
     /** Return Python Module creation function
@@ -168,13 +174,6 @@ public:
 
     void getLoadedLibraryNames(std::set<std::string>& lib_names);
     void loadUnloadedLibraries(const std::set<std::string>& lib_names);
-
-    /** Attempt to create a new Statistic Output instantiation
-     * @param statOutputType - The name of the Statistic Output to create (Module Name)
-     * @param statOutputParams - The params to pass to the statistic output's constructor
-     * @return Newly created Statistic Output
-     */
-    Statistics::StatisticOutput* CreateStatisticOutput(const std::string& statOutputType, const Params& statOutputParams);
 
     /** Determine if a SubComponentSlot is defined in a components ElementInfoStatistic
      * @param type - The name of the component/subcomponent
@@ -212,8 +211,6 @@ public:
     std::string GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName);
 
 private:
-    Module* LoadCoreModule_StatisticOutputs(std::string& type, Params& params);
-
     friend int ::main(int argc, char **argv);
 
     void notFound(const std::string& baseName, const std::string& type);
