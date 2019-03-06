@@ -15,6 +15,7 @@
 
 #include <sst/core/rankInfo.h>
 #include <sst/core/warnmacros.h>
+#include <sst/core/elementinfo.h>
 
 #include <map>
 
@@ -32,6 +33,9 @@ class SSTPartitioner
 {
 
 public:
+    SST_ELI_DECLARE_BASE(SSTPartitioner)
+    SST_ELI_DECLARE_DEFAULT_INFO_EXTERN()
+    SST_ELI_DECLARE_CTOR_EXTERN(RankInfo,RankInfo,int)
 
     SSTPartitioner() {}
     virtual ~SSTPartitioner() {}
@@ -66,5 +70,11 @@ public:
 
 }
 }
+
+#ifndef SST_ELI_REGISTER_PARTITIONER
+#define SST_ELI_REGISTER_PARTITIONER(cls,lib,name,version,desc) \
+    SST_ELI_REGISTER_DERIVED(SST::Partition::SSTPartitioner,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc)
+
+#endif
 
 #endif

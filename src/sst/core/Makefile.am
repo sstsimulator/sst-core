@@ -13,6 +13,8 @@ AM_CPPFLAGS =  \
 	$(PYTHON_CPPFLAGS) \
 	$(LTDLINCL)
 
+
+
 DIST_SUBDIRS = libltdl .
 SUBDIRS = libltdl .
 EXTRA_DIST = mainpage.dox
@@ -85,6 +87,15 @@ nobase_dist_sst_HEADERS = \
 	uninitializedQueue.h \
 	unitAlgebra.h \
 	part/sstpart.h \
+  categoryInfo.h \
+  defaultInfo.h \
+  elementbuilder.h \
+  interfaceInfo.h \
+  oldELI.h \
+  paramsInfo.h \
+  portsInfo.h \
+  statsInfo.h \
+  subcompSlotInfo.h \
 	serialization/ser_ptr_type.h \
 	serialization/serializable.h \
 	serialization/serializable_fwd.h \
@@ -186,6 +197,9 @@ sst_core_sources = \
 	timeLord.cc \
 	uninitializedQueue.cc \
 	unitAlgebra.cc \
+  module.cc \
+  sstpart.cc \
+  timeVortex.cc \
 	serialization/serializable.cc \
 	serialization/serialize_serializable.cc \
 	serialization/serializer.cc \

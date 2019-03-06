@@ -32,13 +32,13 @@ namespace IMPL {
 class TimeVortexPQ : public TimeVortex {
 
 public:
-    SST_ELI_REGISTER_MODULE(
+    SST_ELI_REGISTER_DERIVED(
+        TimeVortex,
         TimeVortexPQ,
         "sst",
         "timevortex.priority_queue",
         SST_ELI_ELEMENT_VERSION(1,0,0),
-        "TimeVortex based on std::priority_queue.",
-        "SST::TimeVortex")
+        "TimeVortex based on std::priority_queue.")
 
 
 public:

@@ -16,6 +16,9 @@
 
 #include <string>
 #include <vector>
+#include <set>
+#include <list>
+#include <map>
 
 // Component Category Definitions
 #define COMPONENT_CATEGORY_UNCATEGORIZED  0x00
@@ -94,6 +97,35 @@ struct ElementInfoSubComponentSlot {
 
 typedef ElementInfoSubComponentSlot ElementInfoSubComponentHook;
 
+namespace ELI {
+
+template <class T> struct MethodDetect { using type=void; };
+
+class LoadedLibraries {
+ public:
+  using InfoMap=std::map<std::string, std::function<void()>>;
+  using LibraryMap=std::map<std::string,InfoMap>;
+  static void addLoaded(const std::string& name);
+
+  static bool isLoaded(const std::string& name);
+
+  static void addLoader(const std::string& lib, const std::string& name,
+                        std::function<void()>&& loader);
+
+  static const LibraryMap& getLoaders(){
+    return *loaders_;
+  }
+
+ private:
+  static std::unique_ptr<std::set<std::string>> loaded_;
+  static std::unique_ptr<LibraryMap> loaders_;
+
+
+};
+
+} //namespace ELI
 } //namespace SST
+
+#define ELI_FORWARD_AS_ONE(...) __VA_ARGS__
 
 #endif // SST_CORE_ELIBASE_H

@@ -15,7 +15,7 @@
 
 #include <vector>
 #include <string>
-
+#include <sst/core/elementinfo.h>
 
 namespace SST {
 
@@ -139,6 +139,10 @@ protected:
     SSTElementPythonModule() {}
     
 public:
+    SST_ELI_DECLARE_BASE(SSTElementPythonModule)
+    SST_ELI_DECLARE_DEFAULT_INFO_EXTERN()
+    SST_ELI_DECLARE_CTOR_EXTERN(const std::string&)
+
     virtual ~SSTElementPythonModule() {}
     
     //! Constructor for SSTElementPythonModule.  Must be called by derived class
@@ -175,10 +179,10 @@ public:
 class SSTElementPythonModuleOldELI : public SSTElementPythonModule {
 private:
     genPythonModuleFunction func;
-    
+
 public:
-    SSTElementPythonModuleOldELI(genPythonModuleFunction func) :
-        SSTElementPythonModule(),
+    SSTElementPythonModuleOldELI(const std::string& lib, genPythonModuleFunction func) :
+        SSTElementPythonModule(lib),
         func(func)
         {
         }
@@ -188,6 +192,31 @@ public:
     }
 };
 
-}
+namespace ELI {
+template <class T> struct Allocator<SSTElementPythonModule,T> :
+ public CachedAllocator<SSTElementPythonModule,T>
+{
+};
+
+template <>
+struct DerivedBuilder<SSTElementPythonModule,SSTElementPythonModuleOldELI,const std::string&> :
+  public Builder<SSTElementPythonModule,const std::string&>
+{
+  SSTElementPythonModule* create(const std::string& lib) override {
+    return new SSTElementPythonModuleOldELI(lib, func_);
+  }
+
+  DerivedBuilder(genPythonModuleFunction func) :
+    func_(func)
+  {}
+
+  genPythonModuleFunction func_;
+};
+
+} //end ELI
+} //end SST
+
+#define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib,version)    \
+  SST_ELI_REGISTER_DERIVED(SST::SSTElementPythonModule,cls,lib,lib,ELI_FORWARD_AS_ONE(version),"Python module " #cls)
 
 #endif // SST_CORE_MODEL_ELEMENT_PYTHON_H

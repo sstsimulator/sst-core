@@ -18,7 +18,7 @@
 #include <string>
 
 #include <sst/core/baseComponent.h>
-
+#include <sst/core/elementinfo.h>
 
 using namespace SST::Statistics;
 
@@ -31,6 +31,15 @@ class SubComponent;
  */
 class Component: public BaseComponent {
 public:
+    SST_ELI_DECLARE_BASE(Component)
+    //declare extern to limit compile times
+    SST_ELI_DECLARE_CTOR_EXTERN(ComponentId_t,SST::Params&)
+    SST_ELI_DECLARE_INFO_EXTERN( 
+      ELI::ProvidesParams,
+      ELI::ProvidesSubComponentSlots,
+      ELI::ProvidesPorts,
+      ELI::ProvidesStats,
+      ELI::ProvidesCategory)
 
     /** Constructor. Generally only called by the factory class.
         @param id Unique component ID
@@ -120,5 +129,9 @@ private:
 };
 
 } //namespace SST
+
+#define SST_ELI_REGISTER_COMPONENT(cls,lib,name,version,desc,cat)   \
+    SST_ELI_REGISTER_DERIVED(SST::Component,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+    SST_ELI_CATEGORY_INFO(cat)
 
 #endif // SST_CORE_COMPONENT_H
