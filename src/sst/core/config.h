@@ -81,6 +81,7 @@ public:
     bool	        no_env_config;      /*!< Bypass compile-time environmental configuration */
     bool            enable_sig_handling; /*!< Enable signal handling */
     bool            print_timing;       /*!< Print SST timing information */
+    bool            print_env;          /*!< Print SST environment */
 
 #ifdef USE_MEMPOOL
     std::string     event_dump_file;    /*!< File to dump undeleted events to */
@@ -97,6 +98,7 @@ public:
     bool disableSigHandlers()   { enable_sig_handling = false; return true;}
     bool disableEnvConfig()     { no_env_config = true; return true;}
     bool enablePrintTiming()    { print_timing = true; return true;}
+    bool enablePrintEnv()       { print_env = true; return true; }
 
     bool setConfigFile(const std::string &arg);
     bool setDebugFile(const std::string &arg);
@@ -149,6 +151,7 @@ public:
         std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
         std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
         std::cout << "print_timing=" << print_timing << std::endl;
+	std::cout << "print_env" << print_env << std::endl;
     }
 
 
