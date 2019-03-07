@@ -12,21 +12,54 @@
 
 #include "sst_config.h"
 #include "sst/core/elementinfo.h"
+#include <sst/core/statapi/statbase.h>
 
 #include <sstream>
 
 namespace SST {
 
-std::map<std::string,LibraryInfo*> SST::ElementLibraryDatabase::libraries;
-
 /**************************************************************************
   BaseElementInfo class functions
 **************************************************************************/
+namespace ELI {
+
+std::unique_ptr<std::set<std::string>> LoadedLibraries::loaded_{};
+std::unique_ptr<LoadedLibraries::LibraryMap> LoadedLibraries::loaders_{};
+
+static const std::vector<int> SST_ELI_COMPILED_VERSION = {0, 9, 0};
+
+void
+LoadedLibraries::addLoaded(const std::string& name){
+  if (!loaded_){
+    loaded_ = std::unique_ptr<std::set<std::string>>(new std::set<std::string>);
+  }
+  loaded_->insert(name);
+}
+
+void
+LoadedLibraries::addLoader(const std::string &lib, const std::string &name, std::function<void()> &&loader)
+{
+  if (!loaders_){
+    loaders_ = std::unique_ptr<LibraryMap>(new LibraryMap);
+  }
+  (*loaders_)[lib].emplace(name, std::move(loader));
+}
+
+bool
+LoadedLibraries::isLoaded(const std::string& name){
+  if (loaded_){
+    return loaded_->find(name) != loaded_->end();
+  } else {
+    return false; //nothing loaded yet
+  }
+}
+
 std::string
-BaseElementInfo::getELIVersionString() {
+ProvidesDefaultInfo::getELIVersionString() const
+{
     std::stringstream stream;
     bool first = true;
-    for ( int item : getELICompiledVersion() ) {
+    for (int item : SST_ELI_COMPILED_VERSION) {
         if ( first ) first = false;
         else stream << ".";
         stream << item;
@@ -34,214 +67,94 @@ BaseElementInfo::getELIVersionString() {
     return stream.str();    
 }
 
-/**************************************************************************
-  BaseParamsElementInfo class functions
-**************************************************************************/
-void
-BaseParamsElementInfo::initialize_allowedKeys()
+const std::vector<int>&
+ProvidesDefaultInfo::getELICompiledVersion() const
 {
-    // Get the valid parameters into the right data structure for
-    // created the components.
-    // const std::vector<ElementInfoParam>& params = getValidParams();
-    const auto& params = getValidParams();
-    for ( auto item : params ) {
-        allowedKeys.insert(item.name);
-    }
+  return SST_ELI_COMPILED_VERSION;
 }
 
-std::string
-BaseParamsElementInfo::getParametersString() {
-    std::stringstream stream;
-    stream << "      Parameters (" << getValidParams().size() << " total):"<<  std::endl;
-    for ( auto item : getValidParams() ) {
-        stream << "        " << item.name << ": "
-               << (item.description == NULL ? "<empty>" : item.description)
-               << " ("
-               << (item.defaultValue == NULL ? "<required>" : item.defaultValue)
-               << ")" << std::endl;
-    }
-    return stream.str();
-}
-
-
-/**************************************************************************
-  BaseComponentElementInfo class functions
-**************************************************************************/
 void
-BaseComponentElementInfo::initialize_portnames()
+ProvidesParams::toString(std::ostream& os) const
 {
-    // Need to create the vector of just the port names so we can
-    // set allowed ports
-    // const std::vector<ElementInfoPort2>& ports = getValidPorts();
-    const auto& ports = getValidPorts();
-    for ( auto item : ports ) {
-        portnames.push_back(item.name);
+    os << "         NUM PARAMETERS = " << getValidParams().size() << "\n";
+    int index = 0;
+    for (const ElementInfoParam& item : getValidParams() ) {
+      os << "            PARAMETER " << index
+         << " = " << item.name
+         << " (" << (item.description == NULL ? "<empty>" : item.description) << ")"
+         << " [" << (item.defaultValue == NULL ? "<required>" : item.defaultValue) << "]\n";
+      index++;
     }
 }
 
 void
-BaseComponentElementInfo::initialize_statnames()
+ProvidesPorts::toString(std::ostream& os) const
 {
-    // Need to create the vector of just the stat names
-    // const std::vector<ElementInfoStatistic>& stats = getValidStats();
-    const auto& stats = getValidStats();
-    for ( auto item : stats ) {
-        statnames.push_back(item.name);
+    os << "         NUM PORTS = " << getValidPorts().size() << "\n";
+    int index = 0;
+    for ( auto& item : getValidPorts() ) {
+      os << "            PORT " << index
+         << " = " << item.name
+         << " (" << (item.description == NULL ? "<empty>" : item.description) << ")\n";
+      ++index;
     }
 }
 
-
-std::string
-BaseComponentElementInfo::getPortsString() {
-    std::stringstream stream;    
-    stream << "      Ports (" << getValidPorts().size() << " total):"<<  std::endl;
-    for ( auto item : getValidPorts() ) {
-        stream << "        " << item.name << ": "
-               << (item.description == NULL ? "<empty>" : item.description)
-               << std::endl;
-    }
-    return stream.str();
-}
-
-std::string
-BaseComponentElementInfo::getSubComponentSlotString() {
-    std::stringstream stream;    
-    stream << "      SubComponentSlots (" << getSubComponentSlots().size() << " total):"<<  std::endl;
-    for ( auto item : getSubComponentSlots() ) {
-        stream << "        " << item.name << ": "
-               << (item.description == NULL ? "<empty>" : item.description)
-               << std::endl;
-    }
-    return stream.str();
-}
-
-std::string
-BaseComponentElementInfo::getStatisticsString() {
-    std::stringstream stream;    
-    stream << "      Statistics (" << getValidStats().size() << " total):"<<  std::endl;
-    for ( auto item : getValidStats() ) {
-        stream << "        " << item.name << ": "
-               << (item.description == NULL ? "<empty>" : item.description)
-               << " ("
-               << (item.units == NULL ? "<empty>" : item.units)
-               << ").  Enable level = " << (int16_t)item.enableLevel << std::endl;
-    }
-    return stream.str();
-}
-
-/**************************************************************************
-  ComponentElementInfo class functions
-**************************************************************************/
-std::string
-ComponentElementInfo::toString()
+void
+ProvidesSubComponentSlots::toString(std::ostream& os) const
 {
-    std::stringstream stream;
-    stream << "    " << getName() << ": " << getDescription() << std::endl;
-    stream << "    Using ELI version " << getELIVersionString() << std::endl;
-    stream << "    Compiled on: " << getCompileDate() << ", using file: " << getCompileFile() << std::endl;
-    stream << getParametersString();
-    stream << getStatisticsString();
-    stream << getPortsString();
-    stream << getSubComponentSlotString();
-    return stream.str();
+    os << "         NUM SUBCOMPONENT SLOTS = " << getSubComponentSlots().size() << "\n";
+    int index = 0;
+    for ( auto& item : getSubComponentSlots() ) {
+      os << "            SUB COMPONENT SLOT " << index
+         << " = " << item.name
+         << " (" << (item.description == NULL ? "<empty>" : item.description) << ")"
+         << " [" << (item.superclass == NULL ? "<none>" : item.superclass) << "]\n";
+      ++index;
+    }
 }
 
-
-/**************************************************************************
-  SubComponentElementInfo class functions
-**************************************************************************/
-std::string
-SubComponentElementInfo::toString()
+void
+ProvidesStats::toString(std::ostream& os) const
 {
-    std::stringstream stream;
-    stream << "    " << getName() << ": " << getDescription() << std::endl;
-    stream << getParametersString();
-    stream << getStatisticsString();
-    stream << getPortsString();
-    stream << getSubComponentSlotString();
-    return stream.str();
+    os << "         NUM STATISTICS = " << getValidStats().size() << "\n";
+    int index = 0;
+    for ( auto& item : getValidStats() ) {
+      os << "            STATISTIC " << index
+         << " = " << item.name
+         << " [" << (item.description == NULL ? "<empty>" : item.description) << "]"
+         << " (" << (item.units == NULL ? "<empty>" : item.units) << ")"
+         << " Enable level = " << (int16_t)item.enableLevel << "\n";
+    }
+    ++index;
 }
 
-
-/**************************************************************************
-  ModuleElementInfo class functions
-**************************************************************************/
-std::string
-ModuleElementInfo::toString() {
-    std::stringstream stream;
-    stream << "    " << getName() << ": " << getDescription() << std::endl;
-    stream << getParametersString();
-    return stream.str();
-}
-
-
-/**************************************************************************
-  PartitionerElementInfo class functions
-**************************************************************************/
-std::string
-PartitionerElementInfo::toString() {
-    std::stringstream stream;
-    stream << "    " << getName() << ": " << getDescription() << std::endl;
-    return stream.str();
-}
-
-
-/**************************************************************************
-  LibraryInfo class functions
-**************************************************************************/
-std::string
-LibraryInfo::toString()
+void
+ProvidesDefaultInfo::toString(std::ostream &os) const
 {
-    std::stringstream stream;
-    stream << "  Components: " << std::endl;
-    for ( auto item : components ) {
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    if ( components.size() == 0 ) stream << "    <none>" << std::endl;
-    
-    stream << "  SubComponents: " << std::endl;
-    for ( auto item : subcomponents ) {
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    if ( subcomponents.size() == 0 ) stream << "    <none>" << std::endl;
-    
-    stream << "  Modules: " << std::endl;
-    for ( auto item : modules ) {
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    if ( modules.size() == 0 ) stream << "    <none>" << std::endl;
-    
-    stream << "  Partitioners: " << std::endl;
-    for ( auto item : partitioners ) {
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    if ( partitioners.size() == 0 ) stream << "    <none>" << std::endl;
-    
-    stream << "  Python Module: " << std::endl;
-    if ( python_module == NULL ) stream << "    No" << std::endl;
-    else stream << "    Yes" << std::endl;
-    
-    return stream.str();
+  os << "    " << getName() << ": " << getDescription() << std::endl;
+  os << "    Using ELI version " << getELIVersionString() << std::endl;
+  os << "    Compiled on: " << getCompileDate() << ", using file: "
+         << getCompileFile() << std::endl;
 }
 
 
-/**************************************************************************
-  LibraryInfo class functions
-**************************************************************************/
-std::string
-ElementLibraryDatabase::toString() {
-    std::stringstream stream;
-    for ( auto item : libraries ) {
-        stream << "library : " << item.first << std::endl;
-        stream << item.second->toString();
-        stream << std::endl;
-    }
-    return stream.str();
+void
+ProvidesPorts::init()
+{
+  for (auto& item : ports_) {
+    portnames.push_back(item.name);
+  }
 }
 
 
+void
+ProvidesParams::init()
+{
+  for (auto& item : params_){
+    allowedKeys.insert(item.name);
+  }
+}
+
+}
 } //namespace SST

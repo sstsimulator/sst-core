@@ -29,6 +29,16 @@ namespace SST {
 class SubComponent : public Module, public BaseComponent {
 
 public:
+    SST_ELI_DECLARE_BASE(SubComponent)
+    //declare extern to limit compile times
+    SST_ELI_DECLARE_CTOR_EXTERN(Component*,SST::Params&)
+    SST_ELI_DECLARE_INFO_EXTERN( 
+      ELI::ProvidesParams,
+      ELI::ProvidesSubComponentSlots,
+      ELI::ProvidesPorts,
+      ELI::ProvidesStats,
+      ELI::ProvidesInterface)
+
 	SubComponent(Component* parent) : BaseComponent(), parent(parent) {
         my_info = parent->currentlyLoadingSubComponent;
     };
@@ -74,5 +84,8 @@ private:
 
 } //namespace SST
 
+#define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,version,desc,interface)   \
+  SST_ELI_REGISTER_DERIVED(SST::SubComponent,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+  SST_ELI_INTERFACE_INFO(interface)
 
 #endif // SST_CORE_SUBCOMPONENT_H

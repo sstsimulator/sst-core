@@ -29,6 +29,9 @@ REENABLE_WARNING
 
 namespace SST {
 
+SST_ELI_DEFINE_CTOR_EXTERN(SSTElementPythonModule)
+SST_ELI_DEFINE_INFO_EXTERN(SSTElementPythonModule)
+
 // Utility function to parse the python exceptions from loading
 // modules and format and print them on abort.
 void abortOnPyErr(uint32_t line, const char* file, const char* func,
