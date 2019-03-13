@@ -163,32 +163,32 @@ void StatisticOutputHDF5::implStopOutputGroup()
 
 
 
-void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, int32_t data)
+void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).i32 = data;
 }
 
-void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, uint32_t data)
+void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).u32 = data;
 }
 
-void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, int64_t data)
+void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).i64 = data;
 }
 
-void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, uint64_t data)
+void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).u64 = data;
 }
 
-void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, float data)
+void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, float data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).f = data;
 }
 
-void StatisticOutputHDF5::implOutputField(fieldHandle_t fieldHandle, double data)
+void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, double data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).d = data;
 }
@@ -262,18 +262,22 @@ void StatisticOutputHDF5::StatisticInfo::registerField(StatisticFieldInfo *fi)
 
 
 static H5::DataType getMemTypeForStatType(StatisticOutput::fieldType_t type) {
-    switch ( type ) {
-    default:
-    case StatisticFieldInfo::UNDEFINED:
-        Output::getDefaultObject().fatal(CALL_INFO, -1, "Unhandled UNDEFINED datatype.\n");
-        return H5::PredType::NATIVE_UINT32;
-    case StatisticFieldInfo::UINT32: return H5::PredType::NATIVE_UINT32;
-    case StatisticFieldInfo::UINT64: return H5::PredType::NATIVE_UINT64;
-    case StatisticFieldInfo::INT32:  return H5::PredType::NATIVE_INT32;
-    case StatisticFieldInfo::INT64:  return H5::PredType::NATIVE_INT64;
-    case StatisticFieldInfo::FLOAT:  return H5::PredType::NATIVE_FLOAT;
-    case StatisticFieldInfo::DOUBLE: return H5::PredType::NATIVE_DOUBLE;
-    }
+   static std::map<StatisticOutput::fieldType_t,H5::DataType> sst_hdf5_map;
+   if (sst_hdf5_map.empty()){
+    sst_hdf5_map[StatisticFieldType<uint32_t>::id()] = H5::PredType::NATIVE_UINT32;
+    sst_hdf5_map[StatisticFieldType<uint64_t>::id()] = H5::PredType::NATIVE_UINT64;
+    sst_hdf5_map[StatisticFieldType<int32_t>::id()]  = H5::PredType::NATIVE_INT32;
+    sst_hdf5_map[StatisticFieldType<int64_t>::id()]  = H5::PredType::NATIVE_INT64;
+    sst_hdf5_map[StatisticFieldType<float>::id()]    = H5::PredType::NATIVE_FLOAT;
+    sst_hdf5_map[StatisticFieldType<double>::id()]   = H5::PredType::NATIVE_DOUBLE;
+   }
+
+   auto iter = sst_hdf5_map.find(type);
+   if (iter == sst_hdf5_map.end()){
+     Output::getDefaultObject().fatal(CALL_INFO, -1, "Unhandled UNDEFINED datatype.\n");
+   }
+
+   return iter->second;
 }
 
 
