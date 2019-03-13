@@ -103,7 +103,7 @@ template <class T> const char* StatisticFieldType<T>::shortName_ = "None";
 class StatisticFieldInfo
 {
  public:
-  using fieldType_t = fieldType_t;
+  using fieldType_t = ::SST::Statistics::fieldType_t;
   using fieldHandle_t = int32_t;
 
  public:

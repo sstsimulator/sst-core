@@ -242,63 +242,65 @@ Params::getKey(const std::string &str)
 }
 
 
-// template<>
-// uint32_t Params::find(const std::string &k) const
-// {
-//     bool tmp;
-//     uint32_t default_value = uint32_t();
-//     return find(k, default_value, tmp);
-// }
+#if 0
+ template<>
+ uint32_t Params::find(const std::string &k) const
+ {
+     bool tmp;
+     uint32_t default_value = uint32_t();
+     return find(k, default_value, tmp);
+ }
 
 
-// #define SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(type) \
-//     template<> \
-//     type Params::find(const std::string &k, type default_value, bool &found) const { \
-//         std::cout << "******* specialized" << std::endl; \
-//         return find_impl<type>(k,default_value,found);  \
-//     } \
-//     template<> \
-//     type Params::find(const std::string &k, std::string default_value, bool &found) const {  \
-//         std::cout << "******* specialized" << std::endl; \
-//         return find_impl<type>(k,default_value,found); \
-//     } \
-//     template <> \
-//     type Params::find(const std::string &k, type default_value ) const { \
-//         std::cout << "******* specialized" << std::endl; \
-//         bool tmp; \
-//         return find_impl<type>(k, default_value, tmp); \
-//     } \
-//     template <> \
-//     type Params::find(const std::string &k, std::string default_value ) const { \
-//         std::cout << "******* specialized" << std::endl; \
-//         bool tmp; \
-//         return find_impl<type>(k, default_value, tmp); \
-//     } \
-//     template <> \
-//     type Params::find(const std::string &k) const {      \
-//         std::cout << "******* specialized" << std::endl; \
-//         bool tmp; \
-//         type default_value = type(); \
-//         return find_impl<type>(k, default_value, tmp); \
-//     }
-    
+ #define SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(type) \
+     template<> \
+     type Params::find(const std::string &k, type default_value, bool &found) const { \
+         std::cout << "******* specialized" << std::endl; \
+         return find_impl<type>(k,default_value,found);  \
+     } \
+     template<> \
+     type Params::find(const std::string &k, std::string default_value, bool &found) const {  \
+         std::cout << "******* specialized" << std::endl; \
+         return find_impl<type>(k,default_value,found); \
+     } \
+     template <> \
+     type Params::find(const std::string &k, type default_value ) const { \
+         std::cout << "******* specialized" << std::endl; \
+         bool tmp; \
+         return find_impl<type>(k, default_value, tmp); \
+     } \
+     template <> \
+     type Params::find(const std::string &k, std::string default_value ) const { \
+         std::cout << "******* specialized" << std::endl; \
+         bool tmp; \
+         return find_impl<type>(k, default_value, tmp); \
+     } \
+     template <> \
+     type Params::find(const std::string &k) const {      \
+         std::cout << "******* specialized" << std::endl; \
+         bool tmp; \
+         type default_value = type(); \
+         return find_impl<type>(k, default_value, tmp); \
+     }
+  
 
-// SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(int32_t)
-// SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(uint32_t)
-// SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(int64_t)
-// SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(uint64_t)
-// SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(bool)
-// SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(float)
-// SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(double)
-// SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(UnitAlgebra)
+ SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(int32_t)
+ SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(uint32_t)
+ SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(int64_t)
+ SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(uint64_t)
+ SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(bool)
+ SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(float)
+ SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(double)
+ SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(UnitAlgebra)
 
-// // std::string has to be special cased because of signature conflicts
-// //SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(std::string)
-// template<>
-// std::string Params::find<std::string>(const std::string &k, std::string default_value, bool &found) const {
-//     std::cout << "******* specialized" << std::endl;
-//     return find_impl<std::string>(k,default_value,found);
-// }
+ // std::string has to be special cased because of signature conflicts
+ //SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(std::string)
+ template<>
+ std::string Params::find<std::string>(const std::string &k, std::string default_value, bool &found) const {
+     std::cout << "******* specialized" << std::endl;
+     return find_impl<std::string>(k,default_value,found);
+ }
+#endif
 
 std::map<std::string, uint32_t> Params::keyMap;
 std::vector<std::string> Params::keyMapReverse;
