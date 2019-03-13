@@ -18,7 +18,7 @@
 namespace SST {
 namespace Statistics {
 
-std::map<FieldId_t,StatisticFieldTypeBase*>* StatisticFieldTypeBase::fields_ = nullptr;
+std::map<fieldType_t,StatisticFieldTypeBase*>* StatisticFieldTypeBase::fields_ = nullptr;
 
 StatisticFieldInfo::StatisticFieldInfo(const char* statName, const char* fieldName, fieldType_t fieldType)
 {
@@ -44,7 +44,7 @@ std::string StatisticFieldInfo::getFieldUniqueName() const
 }
 
 StatisticFieldTypeBase*
-StatisticFieldTypeBase::getField(FieldId_t id)
+StatisticFieldTypeBase::getField(fieldType_t id)
 {
   auto iter = fields_->find(id);
   if (iter == fields_->end()){

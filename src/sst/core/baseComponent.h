@@ -415,7 +415,7 @@ private:
 
     StatisticBase* registerStatisticCore(SST::Params& params,
                                          const std::string& statName, const std::string& statSubId,
-                                         FieldId_t id, CreateFxn&& fxn);
+                                         fieldType_t fieldType, CreateFxn&& fxn);
 
 
 };

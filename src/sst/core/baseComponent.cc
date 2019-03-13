@@ -430,7 +430,7 @@ std::string BaseComponent::getComponentInfoStatisticUnits(const std::string &sta
 
 StatisticBase* 
 BaseComponent::registerStatisticCore(SST::Params& params, const std::string& statName, const std::string& statSubId,
-                                     FieldId_t fieldId, CreateFxn&& create)
+                                     fieldType_t fieldType, CreateFxn&& create)
 {
     SST::Params statParams = params.find_prefix_params(statName);
     std::string                     fullStatName; 
@@ -545,7 +545,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
 
     // If Stat is good, Add it to the Statistic Processing Engine
     if (true == statGood) {
-        statGood = engine->registerStatisticWithEngine(statistic,fieldId);
+        statGood = engine->registerStatisticWithEngine(statistic,fieldType);
     }
 
     if (false == statGood ) {
@@ -561,7 +561,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
             statGood = false;
             out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
         }
-        engine->registerStatisticWithEngine(statistic, fieldId);
+        engine->registerStatisticWithEngine(statistic, fieldType);
     }
 
     // Register the new Statistic with the Statistic Engine
