@@ -18,7 +18,7 @@
 namespace SST {
 namespace Statistics {
 
-using FieldId_t = uint32_t;
+using fieldType_t = uint32_t;
 
 struct any_numeric_type {};
 struct any_integer_type {};
@@ -45,21 +45,21 @@ class StatisticFieldTypeBase {
   virtual const char* fieldName() const = 0;
   virtual const char* shortName() const = 0;
 
-  static StatisticFieldTypeBase* getField(FieldId_t id);
+  static StatisticFieldTypeBase* getField(fieldType_t fieldType);
 
  protected:
-  static std::map<FieldId_t,StatisticFieldTypeBase*>* fields_;
+  static std::map<fieldType_t,StatisticFieldTypeBase*>* fields_;
 };
 
 template <class T>
 class StatisticFieldType : public StatisticFieldTypeBase {
  public:
-  static FieldId_t registerField(const char* name, const char* shortName){
+  static fieldType_t registerField(const char* name, const char* shortName){
     if (fieldEnum_ == 0){
-      fieldEnum_ = allocateEnum<FieldEnum,FieldId_t>();
+      fieldEnum_ = allocateEnum<FieldEnum,fieldType_t>();
     }
     if (!fields_){
-      fields_ = new std::map<FieldId_t,StatisticFieldTypeBase*>;
+      fields_ = new std::map<fieldType_t,StatisticFieldTypeBase*>;
     }
     auto iter = fields_->find(fieldEnum_);
     if (iter == fields_->end()){
@@ -78,7 +78,7 @@ class StatisticFieldType : public StatisticFieldTypeBase {
     return shortName_;
   }
 
-  static FieldId_t id() {
+  static fieldType_t id() {
     return fieldEnum_;
   }
 
@@ -91,11 +91,11 @@ class StatisticFieldType : public StatisticFieldTypeBase {
   }
 
  private:
-  static Statistics::FieldId_t fieldEnum_;
+  static Statistics::fieldType_t fieldEnum_;
   static const char* fieldName_;
   static const char* shortName_;
 };
-template <class T> FieldId_t StatisticFieldType<T>::fieldEnum_ = 0;
+template <class T> fieldType_t StatisticFieldType<T>::fieldEnum_ = 0;
 template <class T> const char* StatisticFieldType<T>::fieldName_ = "None";
 template <class T> const char* StatisticFieldType<T>::shortName_ = "None";
 
@@ -103,7 +103,7 @@ template <class T> const char* StatisticFieldType<T>::shortName_ = "None";
 class StatisticFieldInfo
 {
  public:
-  using fieldType_t = FieldId_t;
+  using fieldType_t = fieldType_t;
   using fieldHandle_t = int32_t;
 
  public:
@@ -149,7 +149,7 @@ class StatisticFieldInfo
   }
 
   template<typename T>
-  static FieldId_t getFieldTypeFromTemplate(){
+  static fieldType_t getFieldTypeFromTemplate(){
     return StatisticFieldType<T>::id();
   }
     

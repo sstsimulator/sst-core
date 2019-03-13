@@ -348,7 +348,7 @@ class Statistic : public StatisticBase, public StatisticCollector<T>
 
 
 
-    static FieldId_t fieldId() {
+    static fieldType_t fieldId() {
       return StatisticFieldType<T>::id();
     }
 
@@ -386,7 +386,7 @@ struct ImplementsStatFields {
  public:
   std::string toString() const;
 
-  Statistics::FieldId_t fieldId() const {
+  Statistics::fieldType_t fieldId() const {
     return field_;
   }
 
@@ -409,7 +409,7 @@ struct ImplementsStatFields {
  private:
   const char* field_name_;
   const char* short_name_;
-  Statistics::FieldId_t field_;
+  Statistics::fieldType_t field_;
 
 };
 
@@ -457,7 +457,7 @@ struct ImplementsStatFields {
         SST::Statistics::Statistic<field>, \
         SST::Statistics::NullStatistic<field>>::isLoaded(); \
   } \
-   static FieldId_t ELI_registerField(const char* name, const char* shortNameStr){ \
+   static fieldType_t ELI_registerField(const char* name, const char* shortNameStr){ \
      return StatisticFieldType<field>::registerField(name, shortNameStr); \
    }\
   };
@@ -498,7 +498,7 @@ struct ImplementsStatFields {
     } \
     static const char* ELI_fieldName(){ return #tuple; } \
     static const char* ELI_fieldShortName(){ return #tuple; } \
-    static FieldId_t ELI_registerField(const char* name, const char* shortNameStr){ \
+    static fieldType_t ELI_registerField(const char* name, const char* shortNameStr){ \
       return StatisticFieldType<tuple>::registerField(name, shortNameStr); \
     } \
   };

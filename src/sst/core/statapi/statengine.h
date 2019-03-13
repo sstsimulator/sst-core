@@ -79,18 +79,18 @@ public:
       return Factory::getFactory()->Create<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
 
-    bool registerStatisticWithEngine(StatisticBase* stat, FieldId_t id)
+    bool registerStatisticWithEngine(StatisticBase* stat, fieldType_t fieldType)
     {
         bool ok;
         if ((ok = registerStatisticCore(stat))) {
-            addStatisticToCompStatMap(stat, id);
+            addStatisticToCompStatMap(stat, fieldType);
         }
         return ok;
     }
 
     StatisticBase* isStatisticRegisteredWithEngine(const std::string& compName, const ComponentId_t& compId,
                                                    const std::string& statName, const std::string& statSubId,
-                                                   FieldId_t fieldId)
+                                                   fieldType_t fieldId)
     {
       return isStatisticInCompStatMap(compName, compId, statName, statSubId, fieldId);
     }
