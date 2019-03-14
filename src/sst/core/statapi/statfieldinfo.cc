@@ -19,6 +19,7 @@ namespace SST {
 namespace Statistics {
 
 std::map<fieldType_t,StatisticFieldTypeBase*>* StatisticFieldTypeBase::fields_ = nullptr;
+fieldType_t StatisticFieldTypeBase::enumCounter_ = 0;
 
 StatisticFieldInfo::StatisticFieldInfo(const char* statName, const char* fieldName, fieldType_t fieldType)
 {
@@ -52,6 +53,33 @@ StatisticFieldTypeBase::getField(fieldType_t id)
        "Invalid Field ID: %d", int(id));
   }
   return iter->second;
+}
+
+void
+StatisticFieldTypeBase::addField(fieldType_t id, StatisticFieldTypeBase *base)
+{
+  if (!fields_){
+    fields_ = new std::map<fieldType_t,StatisticFieldTypeBase*>;
+  }
+  (*fields_)[id] = base;
+}
+
+void
+StatisticFieldTypeBase::checkRegisterConflict(const char *oldName, const char *newName)
+{
+  if (oldName && ::strcmp(oldName, newName)){
+    Simulation::getSimulationOutput().fatal(CALL_INFO,1,
+       "Conflicting names registered for field: %s != %s",
+       oldName, newName);
+  }
+}
+
+fieldType_t
+StatisticFieldTypeBase::allocateFieldEnum()
+{
+  //increment first, start counting from zero
+  enumCounter_++;
+  return enumCounter_;
 }
 
 
