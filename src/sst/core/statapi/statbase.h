@@ -440,7 +440,7 @@ struct ImplementsStatFields {
   static const char* ELI_fieldShortName(){ return #field; }
 
 
-#define SST_ELI_INSTANTIATE_STATISTIC(cls,field,shortName) \
+#define SST_ELI_INSTANTIATE_STATISTIC(cls,field) \
   struct cls##_##field##_##shortName : public cls<field> { \
     cls##_##field##_##shortName(SST::BaseComponent* bc, const std::string& sn, \
            const std::string& si, SST::Params& p) : \
@@ -456,10 +456,7 @@ struct ImplementsStatFields {
          && SST::ELI::InstantiateBuilder< \
         SST::Statistics::Statistic<field>, \
         SST::Statistics::NullStatistic<field>>::isLoaded(); \
-  } \
-   static fieldType_t ELI_registerField(const char* name, const char* shortNameStr){ \
-     return StatisticFieldType<field>::registerField(name, shortNameStr); \
-   }\
+   } \
   };
 
 

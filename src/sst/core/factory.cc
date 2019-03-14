@@ -123,6 +123,7 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    std::stringstream err;
     if (lib) {
       auto* compInfo = lib->getInfo(elem);
       if (compInfo){
@@ -134,16 +135,27 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
         auto* subcompInfo = lib->getInfo(elemlib);
         if (subcompInfo){
           portNames = &subcompInfo->getPortnames();
-
+        } else {
+          //this is going to fail
+          err << "Valid SubComponents: ";
+          for (auto& pair : lib->getMap()){
+            err << pair.first << "\n";
+          }
         }
       }
     }
+
     
     std::string tmp = elemlib + "." + elem;
 
-    if ( portNames == NULL ) {
-        out.fatal(CALL_INFO, -1,"can't find requested component or subcomponent %s.\n ", tmp.c_str());
-        return false;
+    if (portNames == NULL) {
+      err << "Valid Components: ";
+      for (auto& pair : lib->getMap()){
+        err << pair.first << "\n";
+      }
+      std::cerr << err.str() << std::endl;
+      out.fatal(CALL_INFO, -1,"can't find requested component or subcomponent %s.\n ", tmp.c_str());
+      return false;
     }
 
     for ( auto p : *portNames ) {

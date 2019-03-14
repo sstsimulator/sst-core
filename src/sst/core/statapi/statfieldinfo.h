@@ -19,20 +19,6 @@ namespace SST {
 namespace Statistics {
 
 using fieldType_t = uint32_t;
-
-struct any_numeric_type {};
-struct any_integer_type {};
-struct any_floating_type {};
-
-struct FieldEnum {};
-
-template <class T, class IntegerType>
-IntegerType allocateEnum() {
-  static IntegerType counter = 1;
-  auto ret = counter;
-  ++counter;
-  return ret;
-}
     
 /**
     \class StatisticFieldInfo
@@ -45,29 +31,38 @@ class StatisticFieldTypeBase {
   virtual const char* fieldName() const = 0;
   virtual const char* shortName() const = 0;
 
+  virtual ~StatisticFieldTypeBase(){}
+
   static StatisticFieldTypeBase* getField(fieldType_t fieldType);
 
+  static void checkRegisterConflict(const char* oldName, const char* newName);
+
+  static fieldType_t allocateFieldEnum();
+
  protected:
+  static void addField(fieldType_t id, StatisticFieldTypeBase* base);
+
+ private:
   static std::map<fieldType_t,StatisticFieldTypeBase*>* fields_;
+  static fieldType_t enumCounter_;
 };
 
 template <class T>
 class StatisticFieldType : public StatisticFieldTypeBase {
  public:
-  static fieldType_t registerField(const char* name, const char* shortName){
+  //constructor for initializing data
+  StatisticFieldType(const char* name, const char* shortName){
+    checkRegisterConflict(fieldName_, name);
+    checkRegisterConflict(shortName_, shortName);
+    fieldName_ = name;
+    shortName_ = shortName;
     if (fieldEnum_ == 0){
-      fieldEnum_ = allocateEnum<FieldEnum,fieldType_t>();
+      fieldEnum_ = allocateFieldEnum();
     }
-    if (!fields_){
-      fields_ = new std::map<fieldType_t,StatisticFieldTypeBase*>;
-    }
-    auto iter = fields_->find(fieldEnum_);
-    if (iter == fields_->end()){
-      fieldName_ = name;
-      shortName_ = shortName;
-      (*fields_)[fieldEnum_] = new StatisticFieldType;
-    }
-    return fieldEnum_;
+
+    fieldName_ = name;
+    shortName_ = shortName;
+    addField(fieldEnum_, this);
   }
 
   static const char* getFieldName(){
@@ -96,8 +91,8 @@ class StatisticFieldType : public StatisticFieldTypeBase {
   static const char* shortName_;
 };
 template <class T> fieldType_t StatisticFieldType<T>::fieldEnum_ = 0;
-template <class T> const char* StatisticFieldType<T>::fieldName_ = "None";
-template <class T> const char* StatisticFieldType<T>::shortName_ = "None";
+template <class T> const char* StatisticFieldType<T>::fieldName_ = nullptr;
+template <class T> const char* StatisticFieldType<T>::shortName_ = nullptr;
 
 
 class StatisticFieldInfo
@@ -163,6 +158,7 @@ class StatisticFieldInfo
   fieldHandle_t m_fieldHandle;
 
 };
+
 
     
 } //namespace Statistics

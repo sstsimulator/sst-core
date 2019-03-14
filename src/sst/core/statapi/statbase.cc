@@ -170,26 +170,33 @@ void StatisticBase::delayCollectionExpiredHandler()
 }
 
 
-SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int32_t, i32);
-SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, uint32_t, u32);
-SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int64_t, i64);
-SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, uint64_t, u64);
-SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, float, f);
-SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, double, d);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int32_t);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, uint32_t);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int64_t);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, uint64_t);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, float);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, double);
 
-SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, int32_t, i32);
-SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, uint32_t, u32);
-SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, int64_t, i64);
-SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, uint64_t, u64);
-SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, float, f);
-SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, double, d);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, int32_t);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, uint32_t);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, int64_t);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, uint64_t);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, float);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, double);
 
-SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, int32_t, i32);
-SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint32_t, u32);
-SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, int64_t, i64);
-SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint64_t, u64);
-SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, float, f);
-SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, double, d);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, int32_t);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint32_t);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, int64_t);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint64_t);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, float);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, double);
+
+static StatisticFieldType<int32_t>  int32_register("int32_t", "i32");
+static StatisticFieldType<int64_t>  int64_register("int64_t", "i64");
+static StatisticFieldType<uint32_t> uint32_register("uint32_t", "u32");
+static StatisticFieldType<uint64_t> uint64_register("uint64_t", "u64");
+static StatisticFieldType<float>    float_register("float", "f");
+static StatisticFieldType<double>   double_register("double", "d");
 
 } //namespace Statistics
 } //namespace SST
