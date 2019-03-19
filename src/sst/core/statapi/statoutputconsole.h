@@ -32,7 +32,7 @@ public:
         StatisticOutput,
         StatisticOutputConsole,
         "sst",
-        "statOutputConsole",
+        "statoutputconsole",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Output directly to console screen"
      )

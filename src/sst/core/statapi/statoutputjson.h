@@ -31,7 +31,7 @@ class StatisticOutputJSON : public StatisticOutput
       StatisticOutput,
       StatisticOutputJSON,
       "sst",
-      "statOutputJSON",
+      "statoutputjson",
       SST_ELI_ELEMENT_VERSION(1,0,0),
       "Output to a JSON file")
 

@@ -24,6 +24,9 @@
 #include <sst/core/baseComponent.h>
 #include <sst/core/elementinfo.h>
 
+#include <algorithm>
+#include <string>
+
 namespace SST {
 namespace Statistics {
 
@@ -218,7 +221,9 @@ void StatisticProcessingEngine::endOfSimulation()
 StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigStatOutput &cfg)
 {
     auto& unsafeParams = const_cast<SST::Params&>(cfg.params);
-    StatisticOutput *so = Factory::getFactory()->Create<StatisticOutput>(cfg.type, unsafeParams, unsafeParams);
+    auto lcType = cfg.type;
+    std::transform(lcType.begin(), lcType.end(), lcType.begin(), ::tolower);
+    StatisticOutput *so = Factory::getFactory()->Create<StatisticOutput>(lcType, unsafeParams, unsafeParams);
     if (NULL == so) {
         m_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
     }
