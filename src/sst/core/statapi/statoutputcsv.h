@@ -35,7 +35,7 @@ public:
       StatisticOutput,
       StatisticOutputCSV,
       "sst",
-      "statOutputCSV",
+      "statoutputcsv",
       SST_ELI_ELEMENT_VERSION(1,0,0),
       "Output directly to console screen"
    )
