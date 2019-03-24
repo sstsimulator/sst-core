@@ -191,13 +191,6 @@ SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint64_t);
 SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, float);
 SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, double);
 
-static StatisticFieldType<int32_t>  int32_register("int32_t", "i32");
-static StatisticFieldType<int64_t>  int64_register("int64_t", "i64");
-static StatisticFieldType<uint32_t> uint32_register("uint32_t", "u32");
-static StatisticFieldType<uint64_t> uint64_register("uint64_t", "u64");
-static StatisticFieldType<float>    float_register("float", "f");
-static StatisticFieldType<double>   double_register("double", "d");
-
 } //namespace Statistics
 } //namespace SST
 

@@ -82,6 +82,13 @@ StatisticFieldTypeBase::allocateFieldEnum()
   return enumCounter_;
 }
 
+static StatisticFieldType<int32_t>  int32_register("int32_t", "i32");
+static StatisticFieldType<int64_t>  int64_register("int64_t", "i64");
+static StatisticFieldType<uint32_t> uint32_register("uint32_t", "u32");
+static StatisticFieldType<uint64_t> uint64_register("uint64_t", "u64");
+static StatisticFieldType<float>    float_register("float", "f32");
+static StatisticFieldType<double>   double_register("double", "f64");
+
 
 } //namespace Statistics
 } //namespace SST
