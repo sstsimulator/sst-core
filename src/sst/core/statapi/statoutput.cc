@@ -69,9 +69,11 @@ void StatisticOutput::stopRegisterFields()
 
 StatisticFieldInfo* StatisticOutput::addFieldToLists(const char* fieldName, fieldType_t fieldType)
 {
-
-    auto iter = m_outputFieldNameMap.find(fieldName);
+    // Create a new (perhaps temporary) Instance of a StatisticFieldInfo
+    StatisticFieldInfo* NewStatFieldInfo = new StatisticFieldInfo(m_currentFieldStatName.c_str(), fieldName, fieldType);
+    auto iter = m_outputFieldNameMap.find(NewStatFieldInfo->getFieldUniqueName());
     if (iter != m_outputFieldNameMap.end()){
+      delete NewStatFieldInfo;
       fieldHandle_t id = iter->second;
       StatisticFieldInfo* ExistingStatFieldInfo = m_outputFieldInfoArray[id];
       if (ExistingStatFieldInfo->getFieldType() != fieldType){
@@ -82,9 +84,6 @@ StatisticFieldInfo* StatisticOutput::addFieldToLists(const char* fieldName, fiel
       return ExistingStatFieldInfo;
     }
 
-
-    // Create a new Instance of a StatisticFieldInfo
-    StatisticFieldInfo* NewStatFieldInfo = new StatisticFieldInfo(m_currentFieldStatName.c_str(), fieldName, fieldType);
     // If we get here, then the New StatFieldInfo does not exist so add it to both
     // the Array and to the map
     m_outputFieldInfoArray.push_back(NewStatFieldInfo);

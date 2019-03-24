@@ -493,11 +493,6 @@ struct ImplementsStatFields {
         SST::Statistics::Statistic<tuple>, \
         SST::Statistics::NullStatistic<tuple>>::isLoaded(); \
     } \
-    static const char* ELI_fieldName(){ return #tuple; } \
-    static const char* ELI_fieldShortName(){ return #tuple; } \
-    static fieldType_t ELI_registerField(const char* name, const char* shortNameStr){ \
-      return StatisticFieldType<tuple>::registerField(name, shortNameStr); \
-    } \
   };
 
 #define SST_ELI_INSTANTIATE_MULTI_STATISTIC(cls,...) \

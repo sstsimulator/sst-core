@@ -39,7 +39,7 @@ public:
       StatisticOutput,
       StatisticOutputHDF5,
       "sst",
-      "statOutputHDF5",
+      "statoutputhdf5",
       SST_ELI_ELEMENT_VERSION(1,0,0),
       "Output to an HDF5 file")
 
