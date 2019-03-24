@@ -13,6 +13,14 @@
 
 #include <sst/core/baseComponent.h>
 #include <sst/core/statapi/statbase.h>
+#include <sst/core/statapi/stataccumulator.h>
+#include <sst/core/statapi/stathistogram.h>
+#include <sst/core/statapi/statnull.h>
+#include <sst/core/statapi/statuniquecount.h>
+#include <sst/core/statapi/statoutputconsole.h>
+#include <sst/core/statapi/statoutputcsv.h>
+#include <sst/core/statapi/statoutputjson.h>
+#include <sst/core/statapi/statoutputtxt.h>
 
 namespace SST {
 namespace Statistics {
@@ -30,6 +38,14 @@ StatisticBase::StatisticBase(BaseComponent* comp, const std::string& statName, c
     m_clearDataOnOutput = statParams.find<bool>("resetOnRead", false);
 
 }
+
+const std::vector<ElementInfoParam>&
+StatisticBase::ELI_getParams()
+{
+  static std::vector<ElementInfoParam> empty;
+  return empty;
+}
+
 
 const std::string& StatisticBase::getCompName() const
 {
@@ -153,5 +169,28 @@ void StatisticBase::delayCollectionExpiredHandler()
     m_collectionDelayed = false;
 }
 
+
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int32_t);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, uint32_t);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, int64_t);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, uint64_t);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, float);
+SST_ELI_INSTANTIATE_STATISTIC(AccumulatorStatistic, double);
+
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, int32_t);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, uint32_t);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, int64_t);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, uint64_t);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, float);
+SST_ELI_INSTANTIATE_STATISTIC(HistogramStatistic, double);
+
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, int32_t);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint32_t);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, int64_t);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, uint64_t);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, float);
+SST_ELI_INSTANTIATE_STATISTIC(UniqueCountStatistic, double);
+
 } //namespace Statistics
 } //namespace SST
+

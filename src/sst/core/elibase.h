@@ -121,7 +121,6 @@ class LoadedLibraries {
   static std::unique_ptr<std::set<std::string>> loaded_;
   static std::unique_ptr<LibraryMap> loaders_;
 
-
 };
 
 } //namespace ELI

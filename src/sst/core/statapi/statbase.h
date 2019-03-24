@@ -19,11 +19,13 @@
 #include <sst/core/params.h>
 #include <sst/core/oneshot.h>
 #include <sst/core/statapi/statfieldinfo.h>
+#include <sst/core/elementinfo.h>
 #include <sst/core/serialization/serializable.h>
 
 namespace SST {
 class BaseComponent;
 class Factory;
+
 namespace Statistics {
 class StatisticOutput;
 class StatisticProcessingEngine;
@@ -92,6 +94,8 @@ public:
      *  If Set, the collection count will be reset when statistic is output. 
      */
     void setFlagResetCountOnOutput(bool flag) {m_resetCountOnOutput = flag;}
+
+    static const std::vector<ElementInfoParam>& ELI_getParams();
 
     /** Set the Clear Data On Output flag.
      *  If Set, the data in the statistic will be cleared by calling 
@@ -187,7 +191,8 @@ protected:
       * @param statParams - The parameters for this statistic
       */
     // Constructors:
-    StatisticBase(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams);
+    StatisticBase(BaseComponent* comp, const std::string& statName,
+                  const std::string& statSubId, Params& statParams);
 
     // Destructor
     virtual ~StatisticBase() {}
@@ -280,6 +285,30 @@ private:
 
 };
 
+/**
+ \class StatisticCollector
+ * Base type that creates the virtual addData(...) interface
+ * Used for distinguishing fundamental types (collected by value)
+ * and composite struct types (collected by reference)
+ */
+template <class T, bool F=std::is_fundamental<T>::value>
+struct StatisticCollector { };
+
+template <class T>
+struct StatisticCollector<T,true> {
+ virtual void addData_impl(T data) = 0;
+};
+
+template <class... Args>
+struct StatisticCollector<std::tuple<Args...>,false> {
+ virtual void addData_impl(Args... args) = 0;
+
+ template <class... InArgs>
+ void addData(InArgs&&... args){
+    addData_impl(std::make_tuple(std::forward<InArgs>(args)...));
+ }
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 
 /**
@@ -291,21 +320,36 @@ private:
 */
 
 template <typename T>
-class Statistic : public StatisticBase
+class Statistic : public StatisticBase, public StatisticCollector<T>
 {
-public:
+ public:
+  SST_ELI_DECLARE_BASE(Statistic)
+  SST_ELI_DECLARE_INFO(
+    ELI::ProvidesInterface,
+    ELI::ProvidesParams)
+  SST_ELI_DECLARE_CTOR(BaseComponent*,const std::string&, const std::string&, SST::Params&)
+
+    using Datum = T;
+    using StatisticCollector<T>::addData_impl;
     // The main method to add data to the statistic 
     /** Add data to the Statistic
       * This will call the addData_impl() routine in the derived Statistic.
      */
-    void addData(T data)
+    template <class... InArgs> //use a universal reference here
+    void addData(InArgs&&... args)
     {
         // Call the Derived Statistic's implementation 
         //  of addData and increment the count
-        if (true == isEnabled()) {
-            addData_impl(data);
+        if (isEnabled()) {
+            addData_impl(std::forward<InArgs>(args)...);
             incrementCollectionCount();
         }
+    }
+
+
+
+    static fieldType_t fieldId() {
+      return StatisticFieldType<T>::id();
     }
 
 protected:
@@ -318,7 +362,9 @@ protected:
       * @param statSubId - Additional name of the statistic 
       * @param statParams - The parameters for this statistic
       */
-    Statistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
+
+    Statistic(BaseComponent* comp, const std::string& statName,
+              const std::string& statSubId, Params& statParams) :
         StatisticBase(comp, statName, statSubId, statParams)
     {
         setStatisticDataType(StatisticFieldInfo::getFieldTypeFromTemplate<T>());
@@ -327,15 +373,137 @@ protected:
     virtual ~Statistic(){}
 
 private:     
-    Statistic(){}; // For serialization only
+    Statistic(){} // For serialization only
 
-    // Required Templated Virtual Methods:
-    virtual void addData_impl(T data) = 0;
 
-private:
 };
+
+template <class... Args>
+using MultiStatistic = Statistic<std::tuple<Args...>>;
+
+
+struct ImplementsStatFields {
+ public:
+  std::string toString() const;
+
+  Statistics::fieldType_t fieldId() const {
+    return field_;
+  }
+
+  const char* fieldName() const {
+    return field_name_;
+  }
+
+  const char* fieldShortName() const {
+    return short_name_;
+  }
+
+ protected:
+  template <class T> ImplementsStatFields(T* UNUSED(t)) :
+    field_name_(T::ELI_fieldName()),
+    short_name_(T::ELI_fieldShortName()),
+    field_(T::ELI_registerField(T::ELI_fieldName(), T::ELI_fieldShortName()))
+  {
+  }
+
+ private:
+  const char* field_name_;
+  const char* short_name_;
+  Statistics::fieldType_t field_;
+
+};
+
+#define SST_ELI_DECLARE_STATISTIC_TEMPLATE(cls,lib,name,version,desc,interface)   \
+  SST_ELI_DEFAULT_INFO(lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+  SST_ELI_INTERFACE_INFO(interface)
+
+#define SST_ELI_REGISTER_CUSTOM_STATISTIC(parent,cls,lib,name,version,desc) \
+  bool ELI_isLoaded() const { \
+   return SST::ELI::InstantiateBuilderInfo<parent,cls>::isLoaded() \
+    && SST::ELI::InstantiateBuilder<parent,cls>::isLoaded(); \
+  } \
+  SST_ELI_DEFAULT_INFO(lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+  SST_ELI_INTERFACE_INFO(#parent) \
+  static const char* ELI_fieldName(){ return #parent "Data"; } \
+  static const char* ELI_fieldShortName(){ return #parent "Data"; }
+
+#define SST_ELI_DECLARE_STATISTIC(cls,field,lib,name,version,desc,interface) \
+  static bool ELI_isLoaded() { \
+   return SST::Statistics::Statistic<field>::template addDerivedInfo<cls>(lib,name) \
+    && SST::Statistics::Statistic<field>::template addDerivedBuilder<cls>(lib,name) \
+    && SST::Statistics::Statistic<field>::template addDerivedInfo<SST::Statistics::NullStatistic<field>>(lib,name) \
+    && SST::Statistics::Statistic<field>::template addDerivedBuilder<SST::Statistics::NullStatistic<field>>(lib,name); \
+  } \
+  SST_ELI_DEFAULT_INFO(lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+  SST_ELI_INTERFACE_INFO(interface) \
+  static const char* ELI_fieldName(){ return #field; } \
+  static const char* ELI_fieldShortName(){ return #field; }
+
+
+#define SST_ELI_INSTANTIATE_STATISTIC(cls,field) \
+  struct cls##_##field##_##shortName : public cls<field> { \
+    cls##_##field##_##shortName(SST::BaseComponent* bc, const std::string& sn, \
+           const std::string& si, SST::Params& p) : \
+      cls<field>(bc,sn,si,p) {} \
+  static bool ELI_isLoaded() { \
+     return SST::ELI::InstantiateBuilderInfo< \
+        SST::Statistics::Statistic<field>,cls##_##field##_##shortName>::isLoaded() \
+         && SST::ELI::InstantiateBuilder< \
+        SST::Statistics::Statistic<field>,cls##_##field##_##shortName>::isLoaded() \
+         && SST::ELI::InstantiateBuilderInfo< \
+        SST::Statistics::Statistic<field>, \
+        SST::Statistics::NullStatistic<field>>::isLoaded() \
+         && SST::ELI::InstantiateBuilder< \
+        SST::Statistics::Statistic<field>, \
+        SST::Statistics::NullStatistic<field>>::isLoaded(); \
+   } \
+  };
+
+
+#define PP_NARG(...) PP_NARG_(__VA_ARGS__, PP_NSEQ())
+#define PP_NARG_(...) PP_ARG_N(__VA_ARGS__)
+#define PP_ARG_N(_1,_2,_3,_4,_5,N,...) N
+#define PP_NSEQ() 5,4,3,2,1,0
+
+#define PP_GLUE(X,Y) PP_GLUE_I(X,Y)
+#define PP_GLUE_I(X,Y) X##Y
+
+#define STAT_NAME1(base,a) base##a
+#define STAT_NAME2(base,a,b) base##a##b
+#define STAT_NAME3(base,a,b,c) base##a##b##c
+#define STAT_NAME4(base,a,b,c,d) base##a##b##c##d
+
+#define STAT_GLUE_NAME(base,...) PP_GLUE(STAT_NAME,PP_NARG(__VA_ARGS__))(base,__VA_ARGS__)
+#define STAT_TUPLE(...) std::tuple<__VA_ARGS__>
+
+#define MAKE_MULTI_STATISTIC(cls,name,tuple,...) \
+  struct name : public cls<__VA_ARGS__> { \
+    name(SST::BaseComponent* bc, const std::string& sn, \
+         const std::string& si, SST::Params& p) : \
+      cls<__VA_ARGS__>(bc,sn,si,p) {} \
+    bool ELI_isLoaded() const { \
+     return SST::ELI::InstantiateBuilderInfo< \
+        SST::Statistics::Statistic<tuple>,name>::isLoaded() \
+         && SST::ELI::InstantiateBuilder< \
+        SST::Statistics::Statistic<tuple>,name>::isLoaded() \
+         && SST::ELI::InstantiateBuilderInfo< \
+        SST::Statistics::Statistic<tuple>, \
+        SST::Statistics::NullStatistic<tuple>>::isLoaded() \
+         && SST::ELI::InstantiateBuilder< \
+        SST::Statistics::Statistic<tuple>, \
+        SST::Statistics::NullStatistic<tuple>>::isLoaded(); \
+    } \
+  };
+
+#define SST_ELI_INSTANTIATE_MULTI_STATISTIC(cls,...) \
+  MAKE_MULTI_STATISTIC(cls,STAT_GLUE_NAME(cls,__VA_ARGS__),STAT_TUPLE(__VA_ARGS__),__VA_ARGS__)
+
+
 
 } //namespace Statistics
 } //namespace SST
+
+//we need to make sure null stats are instantiated for whatever types we use
+#include <sst/core/statapi/statnull.h>
 
 #endif

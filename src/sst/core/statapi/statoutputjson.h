@@ -26,8 +26,16 @@ namespace Statistics {
 */
 class StatisticOutputJSON : public StatisticOutput
 {
-public:    
-    /** Construct a StatOutputJSON
+ public:
+  SST_ELI_REGISTER_DERIVED(
+      StatisticOutput,
+      StatisticOutputJSON,
+      "sst",
+      "statoutputjson",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Output to a JSON file")
+
+  /** Construct a StatOutputJSON
      * @param outputParameters - Parameters used for this Statistic Output
      */
     StatisticOutputJSON(Params& outputParameters);
@@ -72,12 +80,12 @@ protected:
      * @param fieldHandle - The handle to the registered statistic field.
      * @param data - The data related to the registered field to be output.
      */
-    void implOutputField(fieldHandle_t fieldHandle, int32_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, uint32_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, int64_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, uint64_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, float data) override;
-    void implOutputField(fieldHandle_t fieldHandle, double data) override;
+    void outputField(fieldHandle_t fieldHandle, int32_t data) override;
+    void outputField(fieldHandle_t fieldHandle, uint32_t data) override;
+    void outputField(fieldHandle_t fieldHandle, int64_t data) override;
+    void outputField(fieldHandle_t fieldHandle, uint64_t data) override;
+    void outputField(fieldHandle_t fieldHandle, float data) override;
+    void outputField(fieldHandle_t fieldHandle, double data) override;
     
     void printIndent();
 

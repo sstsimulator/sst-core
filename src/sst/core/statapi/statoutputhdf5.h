@@ -35,6 +35,14 @@ namespace Statistics {
 class StatisticOutputHDF5 : public StatisticOutput
 {
 public:
+    SST_ELI_REGISTER_DERIVED(
+      StatisticOutput,
+      StatisticOutputHDF5,
+      "sst",
+      "statoutputhdf5",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Output to an HDF5 file")
+
     /** Construct a StatOutputHDF5
      * @param outputParameters - Parameters used for this Statistic Output
      */
@@ -91,12 +99,12 @@ protected:
      * @param fieldHandle - The handle to the registered statistic field.
      * @param data - The data related to the registered field to be output.
      */
-    void implOutputField(fieldHandle_t fieldHandle, int32_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, uint32_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, int64_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, uint64_t data) override;
-    void implOutputField(fieldHandle_t fieldHandle, float data) override;
-    void implOutputField(fieldHandle_t fieldHandle, double data) override;
+    void outputField(fieldHandle_t fieldHandle, int32_t data) override;
+    void outputField(fieldHandle_t fieldHandle, uint32_t data) override;
+    void outputField(fieldHandle_t fieldHandle, int64_t data) override;
+    void outputField(fieldHandle_t fieldHandle, uint64_t data) override;
+    void outputField(fieldHandle_t fieldHandle, float data) override;
+    void outputField(fieldHandle_t fieldHandle, double data) override;
 
 protected:
     StatisticOutputHDF5() {;} // For serialization
@@ -155,7 +163,7 @@ private:
         StatisticInfo(StatisticBase *stat, H5::H5File *file) :
             DataSet(file), statistic(stat), nEntries(0)
         {
-            typeList.push_back(StatisticFieldInfo::UINT64);
+            typeList.push_back(StatisticFieldType<uint64_t>::id());
             indexMap.push_back(-1);
             fieldNames.push_back("SimTime");
         }

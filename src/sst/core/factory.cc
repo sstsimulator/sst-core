@@ -123,6 +123,7 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    std::stringstream err;
     if (lib) {
       auto* compInfo = lib->getInfo(elem);
       if (compInfo){
@@ -134,16 +135,27 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
         auto* subcompInfo = lib->getInfo(elemlib);
         if (subcompInfo){
           portNames = &subcompInfo->getPortnames();
-
+        } else {
+          //this is going to fail
+          err << "Valid SubComponents: ";
+          for (auto& pair : lib->getMap()){
+            err << pair.first << "\n";
+          }
         }
       }
     }
+
     
     std::string tmp = elemlib + "." + elem;
 
-    if ( portNames == NULL ) {
-        out.fatal(CALL_INFO, -1,"can't find requested component or subcomponent %s.\n ", tmp.c_str());
-        return false;
+    if (portNames == NULL) {
+      err << "Valid Components: ";
+      for (auto& pair : lib->getMap()){
+        err << pair.first << "\n";
+      }
+      std::cerr << err.str() << std::endl;
+      out.fatal(CALL_INFO, -1,"can't find requested component or subcomponent %s.\n ", tmp.c_str());
+      return false;
     }
 
     for ( auto p : *portNames ) {
@@ -194,84 +206,6 @@ Factory::CreateComponent(ComponentId_t id,
     return NULL;
 }
 
-StatisticOutput* 
-Factory::CreateStatisticOutput(const std::string& statOutputType, const Params& statOutputParams)
-{
-    Module*           tempModule;
-    StatisticOutput*  rtnStatOut = NULL;
-    
-    // Load the Statistic Output as a module first;  This allows 
-    // us to provide StatisticOutputs as part of a element
-    tempModule = CreateModule(statOutputType, const_cast<Params&>(statOutputParams));
-    if (NULL != tempModule) {
-        // Dynamic Cast the Module into a Statistic Output, if the module is not
-        // a StatisticOutput, then return NULL
-        rtnStatOut = dynamic_cast<StatisticOutput*>(tempModule);
-    }
-    
-    return rtnStatOut;
-}
-
-
-
-template<typename T>
-static Statistic<T>* buildStatistic(BaseComponent *comp, const std::string &type, const std::string &statName, const std::string &statSubId, Params &params)
-{
-        if (0 == ::strcasecmp("sst.nullstatistic", type.c_str())) {
-            return new NullStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if (0 == ::strcasecmp("sst.accumulatorstatistic", type.c_str())) {
-            return new AccumulatorStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if (0 == ::strcasecmp("sst.histogramstatistic", type.c_str())) {
-            return new HistogramStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        if(0 == ::strcasecmp("sst.uniquecountstatistic", type.c_str())) {
-            return new UniqueCountStatistic<T>(comp, statName, statSubId, params);
-        }
-
-        return NULL;
-}
-
-
-StatisticBase* Factory::CreateStatistic(BaseComponent* comp, const std::string &type,
-        const std::string &statName, const std::string &statSubId,
-        Params &params, StatisticFieldInfo::fieldType_t fieldType)
-{
-    StatisticBase * res = NULL;
-    switch (fieldType) {
-    case StatisticFieldInfo::UINT32:
-        res = buildStatistic<uint32_t>(comp, type, statName, statSubId, params);
-        break;
-    case StatisticFieldInfo::UINT64:
-        res = buildStatistic<uint64_t>(comp, type, statName, statSubId, params);
-        break;
-    case StatisticFieldInfo::INT32:
-        res = buildStatistic<int32_t>(comp, type, statName, statSubId, params);
-        break;
-    case StatisticFieldInfo::INT64:
-        res = buildStatistic<int64_t>(comp, type, statName, statSubId, params);
-        break;
-    case StatisticFieldInfo::FLOAT:
-        res = buildStatistic<float>(comp, type, statName, statSubId, params);
-        break;
-    case StatisticFieldInfo::DOUBLE:
-        res = buildStatistic<double>(comp, type, statName, statSubId, params);
-        break;
-    default:
-        break;
-    }
-    if ( res == NULL ) {
-        // We did not find this statistic
-        out.fatal(CALL_INFO, 1, "ERROR: Statistic %s is not supported by the SST Core...\n", type.c_str());
-    }
-
-    return res;
-
-}
 
 bool
 Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& slotName)
@@ -482,6 +416,7 @@ Factory::CreateModule(std::string type, Params& params)
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
 
+    /**
     // Check for legacy core modules.  These consist only of
     // StatisticsOutputs at this point.  These should be moved to the
     // new ELI infrastructure
@@ -489,6 +424,7 @@ Factory::CreateModule(std::string type, Params& params)
         Module* ret = CreateCoreModule(elem, params);
         if ( ret != NULL ) return ret;
     }
+    */
 
     requireLibrary(elemlib);
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
@@ -519,64 +455,6 @@ Factory::CreateModule(std::string type, Params& params)
 }
 
 
-Module* 
-Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
-{
-    // Names of sst.xxx Statistic Output Modules
-    if (0 == ::strcasecmp("statoutputcsv", type.c_str())) {
-        return new StatisticOutputCSV(params, false);
-    }
-
-    if (0 == ::strcasecmp("statoutputjson", type.c_str())) {
-        return new StatisticOutputJSON(params);
-    }
-
-    if (0 == ::strcasecmp("statoutputcsvgz", type.c_str())) {
-#ifdef HAVE_LIBZ
-	return new StatisticOutputCSV(params, true);
-#else
-	out.fatal(CALL_INFO, -1, "Statistics output requested compressed CSV but SST does not have LIBZ compiled.\n");
-#endif
-    }
-
-    if (0 == ::strcasecmp("statoutputtxtgz", type.c_str())) {
-#ifdef HAVE_LIBZ
-	return new StatisticOutputTxt(params, true);
-#else
-	out.fatal(CALL_INFO, -1, "Statistics output requested compressed TXT but SST does not have LIBZ compiled.\n");
-#endif
-    }
-
-#ifdef HAVE_HDF5
-    if (0 == ::strcasecmp("statoutputhdf5", type.c_str())) {
-        return new StatisticOutputHDF5(params);
-    }
-#endif
-
-    if (0 == ::strcasecmp("statoutputtxt", type.c_str())) {
-        return new StatisticOutputTxt(params, false);
-    }
-
-    if (0 == ::strcasecmp("statoutputconsole", type.c_str())) {
-        return new StatisticOutputConsole(params);
-    }
-
-
-    return NULL;
-}
-
-Module*
-Factory::CreateCoreModule(std::string type, Params& params) {
-    // Try to load the legacy core modules    
-    return LoadCoreModule_StatisticOutputs(type, params);
-}
-
-Module*
-Factory::CreateCoreModuleWithComponent(std::string type, Component* UNUSED(comp), Params& UNUSED(params)) {
-    out.fatal(CALL_INFO, -1, "can't find requested core module %s when loading with component\n", type.c_str());
-    return NULL;
-}
-
 
 Module*
 Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& params)
@@ -584,9 +462,11 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
 
+    /** This was just stat outputs - not needed anymore
     if("sst" == elemlib) {
         return CreateCoreModuleWithComponent(elem, comp, params);
     }
+    */
 
     // ensure library is already loaded...
     requireLibrary(elemlib);

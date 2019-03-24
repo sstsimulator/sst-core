@@ -423,7 +423,9 @@ public:
      /** Returns a new parameter object with parameters that match
      * the specified prefix.
      */
-    Params find_prefix_params(std::string prefix) const;
+    Params find_prefix_params(const std::string& prefix) const;
+
+    Params find_scoped_params(const std::string& scope, const char* delims = ".:") const;
 
     /**
      * @param k   Key to search for
@@ -480,34 +482,36 @@ private:
 
 };
 
-// class UnitAlgebra;
+#if 0
+ class UnitAlgebra;
 
-// #define SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(type) \
-//     template<> \
-//     type Params::find(const std::string &k, type default_value, bool &found) const; \
-//     template<> \
-//     type Params::find(const std::string &k, std::string default_value, bool &found) const; \
-//     template <> \
-//     type Params::find(const std::string &k, type default_value ) const; \
-//     template <> \
-//     type Params::find(const std::string &k, std::string default_value ) const; \
-//     template <> \
-//     type Params::find(const std::string &k) const;
-    
-   
-// SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(int32_t)
-// SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(uint32_t)
-// SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(int64_t)
-// SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(uint64_t)
-// SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(bool)
-// SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(float)
-// SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(double)
-// SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(UnitAlgebra)
+ #define SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(type) \
+     template<> \
+     type Params::find(const std::string &k, type default_value, bool &found) const; \
+     template<> \
+     type Params::find(const std::string &k, std::string default_value, bool &found) const; \
+     template <> \
+     type Params::find(const std::string &k, type default_value ) const; \
+     template <> \
+     type Params::find(const std::string &k, std::string default_value ) const; \
+     template <> \
+     type Params::find(const std::string &k) const;
+  
+ 
+ SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(int32_t)
+ SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(uint32_t)
+ SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(int64_t)
+ SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(uint64_t)
+ SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(bool)
+ SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(float)
+ SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(double)
+ SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(UnitAlgebra)
 
-// // std::string has to be special cased because of signature conflicts
-// // SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(std::string)
-// template<>
-// std::string Params::find<std::string>(const std::string &k, std::string default_value, bool &found) const;
+ // std::string has to be special cased because of signature conflicts
+ // SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(std::string)
+ template<>
+ std::string Params::find<std::string>(const std::string &k, std::string default_value, bool &found) const;
+#endif
 
 
 
