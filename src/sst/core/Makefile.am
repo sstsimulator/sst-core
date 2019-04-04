@@ -38,7 +38,6 @@ nobase_dist_sst_HEADERS = \
 	decimal_fixedpoint.h \
 	env/envquery.h \
 	env/envconfig.h \
-	element.h \
 	elementinfo.h \
 	elemLoader.h \
 	elibase.h \
@@ -87,15 +86,14 @@ nobase_dist_sst_HEADERS = \
 	uninitializedQueue.h \
 	unitAlgebra.h \
 	part/sstpart.h \
-  categoryInfo.h \
-  defaultInfo.h \
-  elementbuilder.h \
-  interfaceInfo.h \
-  oldELI.h \
-  paramsInfo.h \
-  portsInfo.h \
-  statsInfo.h \
-  subcompSlotInfo.h \
+	categoryInfo.h \
+	defaultInfo.h \
+	elementbuilder.h \
+	interfaceInfo.h \
+	paramsInfo.h \
+	portsInfo.h \
+	statsInfo.h \
+	subcompSlotInfo.h \
 	serialization/ser_ptr_type.h \
 	serialization/serializable.h \
 	serialization/serializable_fwd.h \

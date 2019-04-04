@@ -32,9 +32,9 @@ REENABLE_WARNING
 #include <sst/core/model/pymodel_comp.h>
 #include <sst/core/model/pymodel_link.h>
 #include <sst/core/model/pymodel_statgroup.h>
+#include <sst/core/model/element_python.h>
 
 #include <sst/core/simulation.h>
-#include <sst/core/element.h>
 #include <sst/core/factory.h>
 #include <sst/core/component.h>
 #include <sst/core/configGraph.h>

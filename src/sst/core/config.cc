@@ -56,8 +56,6 @@ Config::Config(RankInfo rankInfo)
     timeBase    = "1 ps";
     heartbeatPeriod = "N";
     partitioner = "sst.linear";
-    generator   = "NONE";
-    generator_options   = "";
     timeVortex  = "sst.timevortex.priority_queue";
     dump_component_graph_file = "";
 
@@ -135,8 +133,6 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARGOPT("heartbeat-period",  "PERIOD",       "set time for heartbeats to be published (these are approximate timings, published by the core, to update on progress), default is every 10000 simulated seconds", &Config::setHeartbeat),
     DEF_ARGOPT("timebase",          "TIMEBASE",     "sets the base time step of the simulation (default: 1ps)", &Config::setTimebase),
     DEF_ARGOPT("partitioner",       "PARTITIONER",  "select the partitioner to be used. <lib.partitionerName>", &Config::setPartitioner),
-    DEF_ARGOPT("generator",         "GENERATOR",    "select the generator to be used to build simulation <lib.generatorName>", &Config::setGenerator),
-    DEF_ARGOPT("gen-options",       "OPTSTIRNG",    "options to be passed to generator function", &Config::setGeneratorOptions),
     DEF_ARGOPT("timeVortex ",       "MODULE",       "select TimeVortex implementation <lib.timevortex>", &Config::setTimeVortex),
     DEF_ARGOPT("output-directory",  "DIR",          "directory into which all SST output files should reside", &Config::setOutputDir),
     DEF_ARGOPT("output-config",     "FILE",         "file to write SST configuration (in Python format)", &Config::setWriteConfig),
@@ -288,8 +284,8 @@ Config::parseCmdLine(int argc, char* argv[]) {
     /* Sanity check, and other duties */
     Output::setFileName( debugFile != "/dev/null" ? debugFile : "sst_output" );
 
-    if ( configFile == "NONE" && generator == "NONE" ) {
-        cout << "ERROR: no sdl-file and no generator specified" << endl;
+    if ( configFile == "NONE" ) {
+        cout << "ERROR: no sdl-file specified" << endl;
         cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
         return -1;
     }
@@ -449,16 +445,6 @@ bool Config::setPartitioner(const std::string &arg) {
     if ( partitioner.find('.') == partitioner.npos ) {
         partitioner = "sst." + partitioner;
     }
-    return true;
-}
-/* TODO: Error checking */
-bool Config::setGenerator(const std::string &arg) { generator = arg; return true; }
-
-bool Config::setGeneratorOptions(const std::string &arg) {
-    if ( generator_options.empty() )
-        generator_options = arg;
-    else
-        generator_options += std::string(" \"") + arg + std::string("\"");
     return true;
 }
 

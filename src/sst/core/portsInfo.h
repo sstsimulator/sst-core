@@ -5,7 +5,6 @@
 #include <string>
 
 #include <sst/core/elibase.h>
-#include <sst/core/oldELI.h>
 
 namespace SST {
 namespace ELI {
@@ -54,16 +53,6 @@ class ProvidesPorts {
   template <class T> ProvidesPorts(T* UNUSED(t)) :
     ports_(InfoPorts<T>::get())
   {
-    init();
-  }
-
-  template <class U> ProvidesPorts(OldELITag& UNUSED(tag), U* u)
-  {
-    auto* po = u->ports;
-    while ( NULL != po && NULL != po->name ) {
-        portnames.emplace_back(po->name);
-        po++;
-    }
     init();
   }
 

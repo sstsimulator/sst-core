@@ -4,7 +4,6 @@
 #include <vector>
 #include <string>
 #include <sst/core/elibase.h>
-#include <sst/core/oldELI.h>
 
 namespace SST {
 namespace ELI {
@@ -43,15 +42,6 @@ class ProvidesStats {
     init();
   }
 
-  template <class U> ProvidesStats(OldELITag& UNUSED(tag), U* u)
-  {
-    auto *s = u->stats;
-    while ( NULL != s && NULL != s->name ) {
-        stats_.emplace_back(*s);
-        s++;
-    }
-    init();
-  }
 
  public:
   const std::vector<ElementInfoStatistic>& getValidStats() const {

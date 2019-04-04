@@ -12,8 +12,6 @@
 #include "sst_config.h"
 #include "TestEvent.h"
 
-#include "sst/core/element.h"
-
 
 using namespace SST;
 using namespace SST::Interfaces;

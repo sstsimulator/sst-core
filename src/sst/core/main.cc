@@ -428,12 +428,7 @@ main(int argc, char *argv[])
 
     // Only rank 0 will populate the graph
     if ( myRank.rank == 0 ) {
-        if ( cfg.generator != "NONE" ) {
-            generateFunction func = factory->GetGenerator(cfg.generator);
-            func(graph,cfg.generator_options, world_size.rank);
-        } else {
-            graph = modelGen->createConfigGraph();
-        }
+        graph = modelGen->createConfigGraph();
     }
 
 #ifdef SST_CONFIG_HAVE_MPI
