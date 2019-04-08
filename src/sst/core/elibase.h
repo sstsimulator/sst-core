@@ -19,6 +19,7 @@
 #include <set>
 #include <list>
 #include <map>
+#include <functional>
 
 // Component Category Definitions
 #define COMPONENT_CATEGORY_UNCATEGORIZED  0x00
@@ -105,19 +106,18 @@ class LoadedLibraries {
  public:
   using InfoMap=std::map<std::string, std::function<void()>>;
   using LibraryMap=std::map<std::string,InfoMap>;
-  static void addLoaded(const std::string& name);
 
   static bool isLoaded(const std::string& name);
 
-  static void addLoader(const std::string& lib, const std::string& name,
+  /**
+		@return A boolean indicated successfully added
+	*/
+  static bool addLoader(const std::string& lib, const std::string& name,
                         std::function<void()>&& loader);
 
-  static const LibraryMap& getLoaders(){
-    return *loaders_;
-  }
+  static const LibraryMap& getLoaders();
 
  private:
-  static std::unique_ptr<std::set<std::string>> loaded_;
   static std::unique_ptr<LibraryMap> loaders_;
 
 

@@ -105,7 +105,7 @@ void Link::addRecvLatency(SimTime_t cycles, TimeConverter* timebase) {
     
 void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {  
     if ( tc == NULL ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Cannot send an event on Link with NULL TimeConverter\n");
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::PrintAll, "Cannot send an event on Link with NULL TimeConverter\n");
     }
     
     Cycle_t cycle = Simulation::getSimulation()->getCurrentSimCycle() +
@@ -131,7 +131,7 @@ Event* Link::recv()
 {
     // Check to make sure this is a polling link
     if ( UNLIKELY( type != POLL ) ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::PrintAll, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
         
     }
     

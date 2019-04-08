@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <typeinfo>
 #include <stdint.h>
+#include <limits>
 
 namespace SST {
 namespace Core {
@@ -109,6 +110,8 @@ constexpr uint32_t ct_hash(const char* str)
 class serializable
 {
 public:
+		static constexpr uint32_t NullClsId = std::numeric_limits<uint32_t>::max(); 
+
     virtual const char*
     cls_name() const = 0;
 
@@ -149,7 +152,7 @@ class serializable_type
   virtual uint32_t \
   cls_id() const override { \
     throw_exc(); \
-    return -1; \
+    return NullClsId; \
   } \
   static obj* \
   construct_deserialize_stub() { \

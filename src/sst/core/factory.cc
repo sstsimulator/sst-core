@@ -65,7 +65,7 @@ Factory::Factory(std::string searchPaths) :
     searchPaths(searchPaths),
     out(Output::getDefaultObject())
 {
-    if ( instance ) out.fatal(CALL_INFO, -1, "Already initialized a factory.\n");
+    if ( instance ) out.fatal(CALL_INFO, out.PrintAll, "Already initialized a factory.\n");
     instance = this;
     loader = new ElemLoader(searchPaths);
 }
@@ -142,7 +142,7 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
     std::string tmp = elemlib + "." + elem;
 
     if ( portNames == NULL ) {
-        out.fatal(CALL_INFO, -1,"can't find requested component or subcomponent %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, out.PrintAll,"can't find requested component or subcomponent %s.\n ", tmp.c_str());
         return false;
     }
 
@@ -190,7 +190,7 @@ Factory::CreateComponent(ComponentId_t id,
       }
     }
     // If we make it to here, component not found
-    out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component %s.\n ", type.c_str());
     return NULL;
 }
 
@@ -310,7 +310,7 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, -1,"can't find requested component/subcomponent %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component/subcomponent %s.\n ", type.c_str());
     return false;
 }
 
@@ -347,7 +347,7 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
 
     
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component %s.\n ", type.c_str());
     return false;
 }
 
@@ -383,7 +383,7 @@ Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const s
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested subcomponent %s.\n ", type.c_str());
     return false;
 }
 
@@ -432,7 +432,7 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component %s.\n ", type.c_str());
     return 0;
 }
 
@@ -466,7 +466,7 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, -1,"can't find requested component %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component %s.\n ", type.c_str());
     return 0;
 }
 
@@ -476,7 +476,7 @@ Factory::CreateModule(std::string type, Params& params)
 {
     if("" == type) {
         Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,
-                -1, "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
+                Output::PrintAll, "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
     }
 
     std::string elemlib, elem;
@@ -514,7 +514,7 @@ Factory::CreateModule(std::string type, Params& params)
 
     
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, -1, "can't find requested module %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested module %s.\n ", type.c_str());
     return NULL;
 }
 
@@ -535,7 +535,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 #ifdef HAVE_LIBZ
 	return new StatisticOutputCSV(params, true);
 #else
-	out.fatal(CALL_INFO, -1, "Statistics output requested compressed CSV but SST does not have LIBZ compiled.\n");
+	out.fatal(CALL_INFO, out.PrintAll, "Statistics output requested compressed CSV but SST does not have LIBZ compiled.\n");
 #endif
     }
 
@@ -543,7 +543,7 @@ Factory::LoadCoreModule_StatisticOutputs(std::string& type, Params& params)
 #ifdef HAVE_LIBZ
 	return new StatisticOutputTxt(params, true);
 #else
-	out.fatal(CALL_INFO, -1, "Statistics output requested compressed TXT but SST does not have LIBZ compiled.\n");
+	out.fatal(CALL_INFO, out.PrintAll, "Statistics output requested compressed TXT but SST does not have LIBZ compiled.\n");
 #endif
     }
 
@@ -573,7 +573,7 @@ Factory::CreateCoreModule(std::string type, Params& params) {
 
 Module*
 Factory::CreateCoreModuleWithComponent(std::string type, Component* UNUSED(comp), Params& UNUSED(params)) {
-    out.fatal(CALL_INFO, -1, "can't find requested core module %s when loading with component\n", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested core module %s when loading with component\n", type.c_str());
     return NULL;
 }
 
@@ -613,7 +613,7 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, -1,"can't find requested module %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested module %s.\n ", type.c_str());
     return NULL;
 }
 
@@ -649,7 +649,7 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, -1,"can't find requested subcomponent %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "can't find requested subcomponent %s.\n ", type.c_str());
     return NULL;
 }
 
@@ -702,7 +702,7 @@ Factory::CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_r
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, -1,"Error: Unable to find requested partitioner %s, check --help for information on partitioners.\n ", name.c_str());
+    out.fatal(CALL_INFO, out.PrintAll, "Error: Unable to find requested partitioner %s, check --help for information on partitioners.\n ", name.c_str());
     return NULL;
 }
 
@@ -721,7 +721,7 @@ Factory::GetGenerator(std::string name)
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
     eig_map_t::iterator eii = found_generators.find(tmp);
     if ( eii == found_generators.end() ) {
-        out.fatal(CALL_INFO, -1,"can't find requested generator %s.\n ", tmp.c_str());
+        out.fatal(CALL_INFO, out.PrintAll, "can't find requested generator %s.\n ", tmp.c_str());
         return NULL;
     }
 
@@ -834,7 +834,7 @@ Factory::parseLoadName(const std::string& wholename)
 void
 Factory::notFound(const std::string &baseName, const std::string &type)
 {
-  out.fatal(CALL_INFO, -1,"can't find requested %s %s.\n ", baseName.c_str(), type.c_str());
+  out.fatal(CALL_INFO, out.PrintAll, "can't find requested %s %s.\n ", baseName.c_str(), type.c_str());
 }
 
 const ElementLibraryInfo* Factory::loadLibrary(std::string name, bool showErrors)

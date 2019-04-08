@@ -47,7 +47,7 @@ public:
      * Result of this function is that every ConfigComponent in
      * graph has a Rank applied to it.
      */
-    virtual void performPartition(PartitionGraph* UNUSED(graph)) {}
+    virtual void performPartition(PartitionGraph* graph);
 
     /** Function to be overridden by subclasses
      *
@@ -58,7 +58,7 @@ public:
      * Result of this function is that every ConfigComponent in
      * graph has a Rank applied to it.
      */
-    virtual void performPartition(ConfigGraph* UNUSED(graph)) {}
+    virtual void performPartition(ConfigGraph* graph);
     
     virtual bool requiresConfigGraph() { return false; }
     

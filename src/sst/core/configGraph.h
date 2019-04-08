@@ -206,6 +206,8 @@ public:
     std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
 
+		static constexpr ComponentId_t null_id = std::numeric_limits<ComponentId_t>::max();
+
     inline const ComponentId_t& key()const { return id; }
 
     /** Print Component information */
@@ -215,7 +217,7 @@ public:
     ConfigComponent cloneWithoutLinksOrParams() const;
 
     ~ConfigComponent() {}
-    ConfigComponent() : id(-1) {}
+    ConfigComponent() : id(null_id) {}
 
     void setRank(RankInfo r);
     void setWeight(double w);

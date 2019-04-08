@@ -6,7 +6,7 @@ namespace ELI {
 
 class ProvidesInterface {
  public:
-  const std::string getInterface() const {
+  const std::string& getInterface() const {
     return iface_;
   }
 

@@ -227,7 +227,7 @@ StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigSt
 {
     StatisticOutput *so = Factory::getFactory()->CreateStatisticOutput(cfg.type, cfg.params);
     if (NULL == so) {
-        m_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
+        m_output.fatal(CALL_INFO, Output::PrintAll, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
     }
 
     if (false == so->checkOutputParameters()) {
@@ -238,7 +238,7 @@ StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigSt
 
         m_output.output("Statistic Output Parameters Provided:\n");
         cfg.params.print_all_params(Output::getDefaultObject(), "  ");
-        m_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
+        m_output.fatal(CALL_INFO, Output::PrintAll, " - Required Statistic Output Parameters not set\n");
     }
     return so;
 }

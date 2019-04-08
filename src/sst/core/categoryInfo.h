@@ -51,7 +51,7 @@ class ProvidesCategory {
 };
 
 #define SST_ELI_CATEGORY_INFO(cat) \
-  static const uint32_t ELI_getCategory() {  \
+  static uint32_t ELI_getCategory() {  \
     return cat; \
   }
 

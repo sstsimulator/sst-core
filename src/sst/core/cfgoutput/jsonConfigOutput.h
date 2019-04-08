@@ -23,7 +23,7 @@ class JSONConfigGraphOutput : public ConfigGraphOutput {
 public:
         JSONConfigGraphOutput(const char* path);
 	virtual void generate(const Config* cfg,
-                ConfigGraph* graph) throw(ConfigGraphOutputException) override;
+                ConfigGraph* graph) throw() override;
 protected:
 	void generateJSON(const std::string indent, const ConfigComponent& comp,
                 const ConfigLinkMap_t& linkMap) const;

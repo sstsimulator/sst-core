@@ -49,7 +49,7 @@ public:
 	}
 
 	virtual void generate(const Config* cfg,
-		ConfigGraph* graph) throw(ConfigGraphOutputException) = 0;
+		ConfigGraph* graph) throw() = 0;
 protected:
 	FILE* outputFile;
 

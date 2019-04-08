@@ -87,19 +87,19 @@ static void setupSignals(uint32_t threadRank)
 {
     if ( 0 == threadRank ) {
 		if(SIG_ERR == signal(SIGUSR1, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, -1, "Installation of SIGUSR1 signal handler failed.\n");
+			g_output.fatal(CALL_INFO, Output::PrintAll, "Installation of SIGUSR1 signal handler failed.\n");
 		}
 		if(SIG_ERR == signal(SIGUSR2, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, -1, "Installation of SIGUSR2 signal handler failed\n");
+			g_output.fatal(CALL_INFO, Output::PrintAll, "Installation of SIGUSR2 signal handler failed\n");
 		}
 		if(SIG_ERR == signal(SIGINT, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, -1, "Installation of SIGINT signal handler failed\n");
+			g_output.fatal(CALL_INFO, Output::PrintAll, "Installation of SIGINT signal handler failed\n");
 		}
 		if(SIG_ERR == signal(SIGALRM, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, -1, "Installation of SIGALRM signal handler failed\n");
+			g_output.fatal(CALL_INFO, Output::PrintAll, "Installation of SIGALRM signal handler failed\n");
 		}
 		if(SIG_ERR == signal(SIGTERM, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, -1, "Installation of SIGTERM signal handler failed\n");
+			g_output.fatal(CALL_INFO, Output::PrintAll, "Installation of SIGTERM signal handler failed\n");
 		}
 
 		g_output.verbose(CALL_INFO, 1, 0, "Signal handler registration is completed\n");
@@ -451,7 +451,7 @@ main(int argc, char *argv[])
 
         // Check config graph to see if there are structural errors.
         if ( graph->checkForStructuralErrors() ) {
-            g_output.fatal(CALL_INFO, -1, "Structure errors found in the ConfigGraph.\n");
+            g_output.fatal(CALL_INFO, Output::PrintAll, "Structure errors found in the ConfigGraph.\n");
         }
     }
 

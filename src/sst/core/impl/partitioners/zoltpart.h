@@ -72,6 +72,10 @@ public:
        \param graph An SST partition graph
     */
     void performPartition(PartitionGraph* graph) override;
+
+		void performPartition(ConfigGraph* graph) override {
+			SST::Partition::SSTPartitioner::performPartition(graph);
+		}
     
     bool requiresConfigGraph() override { return false; }
     
