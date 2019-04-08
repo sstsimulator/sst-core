@@ -199,6 +199,11 @@ ElemLoader::loadOldELI(const ElementLibraryInfo* eli,
     const auto *eic = eli->components;
     auto* infolib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
     auto* factlib = Component::getBuilderLibrary(elemlib);
+    if (!infolib || !factlib){
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1,
+                               "failed loading old ELI '%s' component info", elemlib.c_str());
+    }
+
     while (NULL != eic->name) {
       factlib->addBuilder(eic->name, new Component::DerivedBuilder<OldELITag>(eic->alloc));
       infolib->addInfo(eic->name,new Component::BuilderInfo(elemlib,eic->name,tag,eic));
@@ -210,6 +215,11 @@ ElemLoader::loadOldELI(const ElementLibraryInfo* eli,
     auto* infolib = ELI::InfoDatabase::getLibrary<Module>(elemlib);
     auto* withlib = ELI::BuilderDatabase::getLibrary<Module,Component*,SST::Params&>(elemlib);
     auto* wolib = ELI::BuilderDatabase::getLibrary<Module,SST::Params&>(elemlib);
+    if (!infolib || !withlib || !wolib){
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1,
+                               "failed loading old ELI '%s' module info", elemlib.c_str());
+    }
+
     while (NULL != eim->name) {
       auto* info = new Module::BuilderInfo(elemlib,eim->name,tag,eim);
       infolib->addInfo(eim->name,info);
@@ -227,6 +237,11 @@ ElemLoader::loadOldELI(const ElementLibraryInfo* eli,
     const auto *eis = eli->subcomponents;
     auto* infolib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
     auto* factlib = SubComponent::getBuilderLibrary(elemlib);
+    if (!infolib || !factlib){
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1,
+                               "failed loading old ELI '%s' subcomponent info", elemlib.c_str());
+    }
+
     while (NULL != eis->name) {
       factlib->addBuilder(eis->name, new SubComponent::DerivedBuilder<OldELITag>(eis->alloc));
       infolib->addInfo(eis->name,new SubComponent::BuilderInfo(elemlib,eis->name,tag,eis));
@@ -238,6 +253,10 @@ ElemLoader::loadOldELI(const ElementLibraryInfo* eli,
     const auto *eis = eli->partitioners;
     auto* infolib = ELI::InfoDatabase::getLibrary<Partition::SSTPartitioner>(elemlib);
     auto* factlib = Partition::SSTPartitioner::getBuilderLibrary(elemlib);
+    if (!infolib || !factlib){
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1,
+                               "failed loading old ELI '%s' partitioner info", elemlib.c_str());
+    }
     while (NULL != eis->name) {
       factlib->addBuilder(eis->name, new Partition::SSTPartitioner::DerivedBuilder<OldELITag>(eis->func));
       infolib->addInfo(eis->name, new Partition::SSTPartitioner::BuilderInfo(elemlib,eis->name,tag,eis));
@@ -255,13 +274,20 @@ ElemLoader::loadOldELI(const ElementLibraryInfo* eli,
   }
 
   if (NULL != eli->pythonModuleGenerator ) {
-    auto* factLib = SSTElementPythonModule::getBuilderLibrary(elemlib);
-    auto* fact = new SSTElementPythonModule::DerivedBuilder<SSTElementPythonModuleOldELI>(eli->pythonModuleGenerator);
-    factLib->addBuilder(elemlib, fact);
+    auto* factlib = SSTElementPythonModule::getBuilderLibrary(elemlib);
+    auto* infolib = ELI::InfoDatabase::getLibrary<SSTElementPythonModule>(elemlib);
 
-    auto* infoLib = ELI::InfoDatabase::getLibrary<SSTElementPythonModule>(elemlib);
+    if (!infolib || !factlib){
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1,
+                               "failed loading old ELI '%s' Python module info", elemlib.c_str());
+    }
+
+    auto* fact = new SSTElementPythonModule::DerivedBuilder<SSTElementPythonModuleOldELI>(eli->pythonModuleGenerator);
+    factlib->addBuilder(elemlib, fact);
+
+
     auto* info = new SSTElementPythonModule::BuilderInfo(elemlib,elemlib,tag,eli);
-    infoLib->addInfo(elemlib,info);
+    infolib->addInfo(elemlib,info);
   }
 
 }
