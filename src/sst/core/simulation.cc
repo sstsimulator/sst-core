@@ -599,7 +599,6 @@ void Simulation::endSimulation(SimTime_t end)
     // must enter and set flag before any will exit.
     // exitBarrier.wait();
 
-    // if ( my_rank.thread == 1 ) sim_output.fatal(CALL_INFO,-1,"endSimulation called with end = %llu\n", end);
     endSimCycle = end;
     endSim = true;
 
@@ -750,7 +749,7 @@ Cycle_t Simulation::getNextClockCycle(TimeConverter* tc, int priority) {
     clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
     if ( clockMap.find( mapKey ) == clockMap.end() ) {
         Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-        out.fatal(CALL_INFO, out.PrintAll,
+        out.fatal(CALL_INFO, 1,
                 "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
     }
     return clockMap[ mapKey ]->getNextCycle();

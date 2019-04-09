@@ -131,7 +131,7 @@ static void sst_zoltan_get_edge_list(void *data, int UNUSED(sizeGID), int UNUSED
 			fprintf(stderr, "Zoltan did not request edges for the correct number of vertices.\n");
 			fprintf(stderr, "Expected request for %d vertices but got %d\n",
 				(int) c_graph->getComponentMap().size(), num_obj);
-			exit(-1);
+			exit(1);
 		}
 
 		ZOLTAN_ID_PTR next_nbor_entry = nborGID;
@@ -196,7 +196,7 @@ void SSTZoltanPartition::initZoltan() {
 	int z_rc = Zoltan_Initialize(argc, argv, &zolt_ver);
 
 	if(ZOLTAN_OK != z_rc) {
-		partOutput->fatal(CALL_INFO, -1, "Error initializing the Zoltan interface to SST (return code = %d)\n", z_rc);
+		partOutput->fatal(CALL_INFO, 1, "Error initializing the Zoltan interface to SST (return code = %d)\n", z_rc);
 	} else {
 		partOutput->verbose(CALL_INFO, 1, 0, "Zoltan interface was initialized successfully.\n");
 	}
@@ -274,7 +274,7 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
         &export_part);  /* Partition to which each vertex will belong */
 
   	if (zolt_rc != ZOLTAN_OK){
-		partOutput->fatal(CALL_INFO, -1, "# Error using Zoltan, partition could not be formed correctly.\n");
+		partOutput->fatal(CALL_INFO, 1, "# Error using Zoltan, partition could not be formed correctly.\n");
   	} else {
   		partOutput->verbose(CALL_INFO, 1, 0, "# Zoltan partition returned successfully.\n");
   	}

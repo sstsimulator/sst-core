@@ -245,7 +245,7 @@ bool StatisticOutputJSON::openFile(void)
 	if (NULL == m_hFile) {
 		// We got an error of some sort
 		Output out = Simulation::getSimulation()->getSimulationOutput();
-		out.fatal(CALL_INFO, out.PrintAll, " : StatisticOutputJSON - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+		out.fatal(CALL_INFO, 1, " : StatisticOutputJSON - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
 		return false;
 	}
 	
