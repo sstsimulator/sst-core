@@ -715,7 +715,7 @@ Factory::parseLoadName(const std::string& wholename)
 void
 Factory::notFound(const std::string &baseName, const std::string &type)
 {
-  out.fatal(CALL_INFO, out.PrintAll, "can't find requested element library'%s' with element type '%s'\n ",
+  out.fatal(CALL_INFO, out.PrintAll, "can't find requested element library '%s' with element type '%s'\n ",
             baseName.c_str(), type.c_str());
 }
 
