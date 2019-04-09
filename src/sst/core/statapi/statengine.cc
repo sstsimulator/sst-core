@@ -225,7 +225,7 @@ StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigSt
     std::transform(lcType.begin(), lcType.end(), lcType.begin(), ::tolower);
     StatisticOutput *so = Factory::getFactory()->Create<StatisticOutput>(lcType, unsafeParams, unsafeParams);
     if (NULL == so) {
-        m_output.fatal(CALL_INFO, -1, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
+        m_output.fatal(CALL_INFO, Output::DefaultErrorRC, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
     }
 
     if (false == so->checkOutputParameters()) {
@@ -236,7 +236,7 @@ StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigSt
 
         m_output.output("Statistic Output Parameters Provided:\n");
         cfg.params.print_all_params(Output::getDefaultObject(), "  ");
-        m_output.fatal(CALL_INFO, -1, " - Required Statistic Output Parameters not set\n");
+        m_output.fatal(CALL_INFO, Output::DefaultErrorRC, " - Required Statistic Output Parameters not set\n");
     }
     return so;
 }

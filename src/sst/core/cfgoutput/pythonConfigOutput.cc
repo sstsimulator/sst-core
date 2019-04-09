@@ -202,7 +202,7 @@ void PythonConfigGraphOutput::generateStatGroup(const ConfigGraph* graph, const 
 }
 
 void PythonConfigGraphOutput::generate(const Config* cfg,
-	ConfigGraph* graph) throw(ConfigGraphOutputException) {
+	ConfigGraph* graph) throw() {
 
 	if(NULL == outputFile) {
 		throw ConfigGraphOutputException("Input file is not open for output writing");

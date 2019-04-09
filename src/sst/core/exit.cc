@@ -97,7 +97,7 @@ bool Exit::refDec( ComponentId_t id, uint32_t thread )
 
 
     if ( m_refCount == 0 ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "refCount is already 0\n" );
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::DefaultErrorRC, "refCount is already 0\n" );
         return true;
     }
 

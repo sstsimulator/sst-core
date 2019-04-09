@@ -750,7 +750,7 @@ Cycle_t Simulation::getNextClockCycle(TimeConverter* tc, int priority) {
     clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
     if ( clockMap.find( mapKey ) == clockMap.end() ) {
         Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-        out.fatal(CALL_INFO, -1,
+        out.fatal(CALL_INFO, out.PrintAll,
                 "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
     }
     return clockMap[ mapKey ]->getNextCycle();

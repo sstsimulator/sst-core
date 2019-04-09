@@ -26,8 +26,9 @@ serializable_factory::builder_map* serializable_factory::builders_ = 0;
 void
 serializable::serializable_abort(uint32_t line, const char* file, const char* func, const char* obj)
 {
-    SST::Output ser_abort("", 5, -1, SST::Output::STDERR);
-    ser_abort.fatal(line, file, func, -1, "ERROR: type %s should not be serialized\n",obj);
+    SST::Output ser_abort("", 5, SST::Output::PrintAll, SST::Output::STDERR);
+    ser_abort.fatal(line, file, func, SST::Output::PrintAll,
+							      "ERROR: type %s should not be serialized\n",obj);
 }
 
 uint32_t

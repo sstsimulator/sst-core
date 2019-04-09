@@ -10,22 +10,22 @@ namespace ELI {
 class ProvidesDefaultInfo {
   friend class ModuleDocOldEli;
  public:
-  const std::string getLibrary() const {
+  const std::string& getLibrary() const {
     return lib_;
   }
-  const std::string getDescription() const {
+  const std::string& getDescription() const {
     return desc_;
   }
-  const std::string getName() const {
+  const std::string& getName() const {
     return name_;
   }
   const std::vector<int>& getVersion() const {
     return version_;
   }
-  const std::string getCompileFile() const {
+  const std::string& getCompileFile() const {
     return file_;
   }
-  const std::string getCompileDate() const {
+  const std::string& getCompileDate() const {
     return date_;
   }
   const std::vector<int>& getELICompiledVersion() const;
@@ -116,13 +116,13 @@ class ProvidesDefaultInfo {
   static std::vector<int> var = version; \
       return var; \
   } \
-  static const std::string ELI_getLibrary() { \
+  static const char* ELI_getLibrary() { \
     return lib; \
   } \
-  static const std::string ELI_getName() { \
+  static const char* ELI_getName() { \
     return name; \
   } \
-  static const std::string ELI_getDescription() {  \
+  static const char* ELI_getDescription() {  \
     return desc; \
   }
 

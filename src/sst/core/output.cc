@@ -153,7 +153,7 @@ Output::output_location_t Output::getOutputLocation() const
 
 
 void Output::fatal(uint32_t line, const char* file, const char* func,
-                   uint32_t exit_code, 
+                   int exit_code,
                    const char* format, ...) const
 {
     va_list     arg1;

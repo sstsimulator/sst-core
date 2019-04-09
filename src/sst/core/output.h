@@ -63,6 +63,9 @@ public:
         FILE        /*!< Print to a file */
     };
 
+		static constexpr uint32_t PrintAll = std::numeric_limits<uint32_t>::max();
+    static constexpr int DefaultErrorRC = 1;
+
     /** Constructor.  Set up output configuration.
         @param prefix Prefix to be prepended to all strings emitted by calls to
                debug(), verbose(), fatal() and possibly output().
@@ -406,7 +409,7 @@ public:
         @param ... Arguments for format.
      */
     void fatal(uint32_t line, const char* file, const char* func,
-               uint32_t exit_code,
+               int exit_code,
                const char* format, ...)    const
                   __attribute__ ((format (printf, 6, 7))) ;
 

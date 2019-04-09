@@ -156,7 +156,7 @@ template <class Base> class InfoLibrary
     return infos_.size();
   }
 
-  const std::map<std::string, BaseInfo*> getMap() const {
+  const std::map<std::string, BaseInfo*>& getMap() const {
     return infos_;
   }
 
@@ -192,7 +192,6 @@ class InfoLibraryDatabase {
     }
     auto iter = libraries->find(name);
     if (iter == libraries->end()){
-      LoadedLibraries::addLoaded(name);
       auto* info = new Library(name);
       (*libraries)[name] = info;
       return info;
@@ -218,6 +217,7 @@ template <class Base> void InfoLibrary<Base>::addLoader(const std::string& eleml
       }
   });
 }
+
 
 template <class Base> struct ElementsInfo
 {

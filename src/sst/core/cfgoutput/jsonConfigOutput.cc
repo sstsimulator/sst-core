@@ -29,7 +29,7 @@ JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) :
 }
 
 void JSONConfigGraphOutput::generate(const Config* UNUSED(cfg),
-                ConfigGraph* graph) throw(ConfigGraphOutputException) {
+                ConfigGraph* graph) throw() {
 
 	if(NULL == outputFile) {
 		throw ConfigGraphOutputException("Output file is not open for writing");

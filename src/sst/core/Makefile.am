@@ -170,6 +170,7 @@ sst_core_sources = \
 	cfgoutput/jsonConfigOutput.cc \
 	env/envquery.cc \
 	env/envconfig.cc \
+	elibase.cc \
 	elementinfo.cc \
 	elemLoader.cc \
 	event.cc \
