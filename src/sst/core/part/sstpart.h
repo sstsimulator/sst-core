@@ -15,7 +15,7 @@
 
 #include <sst/core/rankInfo.h>
 #include <sst/core/warnmacros.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 #include <map>
 

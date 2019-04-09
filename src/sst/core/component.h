@@ -18,7 +18,7 @@
 #include <string>
 
 #include <sst/core/baseComponent.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 using namespace SST::Statistics;
 

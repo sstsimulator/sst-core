@@ -38,9 +38,7 @@ nobase_dist_sst_HEADERS = \
 	decimal_fixedpoint.h \
 	env/envquery.h \
 	env/envconfig.h \
-	elementinfo.h \
 	elemLoader.h \
-	elibase.h \
 	event.h \
 	exit.h \
 	factory.h \
@@ -86,14 +84,16 @@ nobase_dist_sst_HEADERS = \
 	uninitializedQueue.h \
 	unitAlgebra.h \
 	part/sstpart.h \
-	categoryInfo.h \
-	defaultInfo.h \
-	elementbuilder.h \
-	interfaceInfo.h \
-	paramsInfo.h \
-	portsInfo.h \
-	statsInfo.h \
-	subcompSlotInfo.h \
+	eli/elementinfo.h \
+	eli/elibase.h \
+	eli/categoryInfo.h \
+	eli/defaultInfo.h \
+	eli/elementbuilder.h \
+	eli/interfaceInfo.h \
+	eli/paramsInfo.h \
+	eli/portsInfo.h \
+	eli/statsInfo.h \
+	eli/subcompSlotInfo.h \
 	serialization/ser_ptr_type.h \
 	serialization/serializable.h \
 	serialization/serializable_fwd.h \
@@ -168,8 +168,8 @@ sst_core_sources = \
 	cfgoutput/jsonConfigOutput.cc \
 	env/envquery.cc \
 	env/envconfig.cc \
-	elibase.cc \
-	elementinfo.cc \
+	eli/elibase.cc \
+	eli/elementinfo.cc \
 	elemLoader.cc \
 	event.cc \
 	exit.cc \

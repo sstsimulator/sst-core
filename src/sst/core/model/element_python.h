@@ -15,7 +15,7 @@
 
 #include <vector>
 #include <string>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 namespace SST {
 

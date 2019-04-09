@@ -22,7 +22,7 @@
 #include <sst/core/statapi/statoutput.h>
 #include <sst/core/configGraph.h>
 #include <sst/core/baseComponent.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 #include <algorithm>
 #include <string>

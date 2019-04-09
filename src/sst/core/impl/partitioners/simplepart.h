@@ -16,7 +16,7 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/sstpart.h>
 
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 #include <sst/core/configGraph.h>
 
 namespace SST {

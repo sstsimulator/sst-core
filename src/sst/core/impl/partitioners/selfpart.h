@@ -15,7 +15,7 @@
 
 #include <sst/core/sstpart.h>
 
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 namespace SST {
 namespace IMPL {

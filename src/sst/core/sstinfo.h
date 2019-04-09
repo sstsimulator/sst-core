@@ -17,7 +17,7 @@
 #include <vector>
 #include <set>
 
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 class TiXmlNode;
 

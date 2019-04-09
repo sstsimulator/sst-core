@@ -23,7 +23,7 @@
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/part/sstpart.h"
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 #include "sst/core/params.h"
 #include "sst/core/linkMap.h"
 #include <sst/core/model/element_python.h>

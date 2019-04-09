@@ -60,7 +60,7 @@ REENABLE_WARNING
 #include <sst/core/cfgoutput/xmlConfigOutput.h>
 #include <sst/core/cfgoutput/jsonConfigOutput.h>
 
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 using namespace SST::Core;
 using namespace SST::Partition;

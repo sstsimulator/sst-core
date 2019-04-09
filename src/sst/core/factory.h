@@ -18,7 +18,7 @@
 #include <mutex>
 
 #include <sst/core/params.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);

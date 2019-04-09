@@ -2,7 +2,7 @@
 #ifndef SST_CORE_FACTORY_INFO_H
 #define SST_CORE_FACTORY_INFO_H
 
-#include <sst/core/elibase.h>
+#include <sst/core/eli/elibase.h>
 #include <type_traits>
 
 namespace SST {

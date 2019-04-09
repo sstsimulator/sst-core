@@ -13,7 +13,7 @@
 #include "sst_config.h"
 
 #include "elemLoader.h"
-#include "sst/core/elementinfo.h"
+#include "sst/core/eli/elementinfo.h"
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
 #include <sst/core/part/sstpart.h>

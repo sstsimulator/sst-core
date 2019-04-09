@@ -17,19 +17,19 @@
 #include <sst/core/params.h>
 #include <sst/core/statapi/statfieldinfo.h>
 
-#include <sst/core/paramsInfo.h>
-#include <sst/core/statsInfo.h>
-#include <sst/core/defaultInfo.h>
-#include <sst/core/portsInfo.h>
-#include <sst/core/subcompSlotInfo.h>
-#include <sst/core/interfaceInfo.h>
-#include <sst/core/categoryInfo.h>
-#include <sst/core/elementbuilder.h>
+#include <sst/core/eli/paramsInfo.h>
+#include <sst/core/eli/statsInfo.h>
+#include <sst/core/eli/defaultInfo.h>
+#include <sst/core/eli/portsInfo.h>
+#include <sst/core/eli/subcompSlotInfo.h>
+#include <sst/core/eli/interfaceInfo.h>
+#include <sst/core/eli/categoryInfo.h>
+#include <sst/core/eli/elementbuilder.h>
 
 #include <string>
 #include <vector>
 
-#include <sst/core/elibase.h>
+#include <sst/core/eli/elibase.h>
 
 namespace SST {
 class Component;

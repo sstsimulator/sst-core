@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 #include <sst/core/params.h>
-#include <sst/core/elibase.h>
+#include <sst/core/eli/elibase.h>
 
 namespace SST {
 namespace ELI {
