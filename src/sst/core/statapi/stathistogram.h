@@ -90,22 +90,22 @@ protected:
         Adds a new value to the histogram. The correct bin is identified and then incremented. If no bin can be found
         to hold the value then a new bin is created.
     */
-    void addData_impl(BinDataType value) override
+    void addData_impl_Ntimes(uint64_t N, BinDataType value) override
     {
         // Check to see if the value is above or below the min/max values
         if (value < getBinsMinValue()) {   
-            m_OOBMinCount++;
+            m_OOBMinCount+=N;
             return; 
         }
         if (value > getBinsMaxValue()) {
-            m_OOBMaxCount++;
+            m_OOBMaxCount+=N;
             return; 
         } 
 
         // This value is to be binned...
         // Add the "in limits" value to the total summation's 
-        m_totalSummed += value;
-        m_totalSummedSqr += (value * value);
+        m_totalSummed += N*value;
+        m_totalSummedSqr += N*(value * value);
         
         // Increment the Binned count (note this <= to the Statistics added Item Count)
         m_itemsBinnedCount++;
@@ -125,11 +125,15 @@ protected:
         // Was the bin found?
         if(bin_itr == m_binsMap.end()) {
             // No, Create the bin and set a value of 1 to it
-            m_binsMap.insert(std::pair<BinDataType, CountType>(bin_start, (CountType) 1));
+            m_binsMap.insert(std::pair<BinDataType, CountType>(bin_start, (CountType) N));
         } else {
             // Yes, Increment the specific bin's count
-            bin_itr->second++;
+            bin_itr->second += N;
         }
+    }
+
+    void addData_impl(BinDataType value) override {
+      addData_impl_Ntimes(1, value);
     }
 
 private:    
