@@ -81,7 +81,7 @@ public:
     virtual void resetCollectionCount();
     
     /** Increment current collection count */
-    virtual void incrementCollectionCount();  
+    virtual void incrementCollectionCount(uint64_t increment);
     
     /** Set the current collection count to a defined value */
     virtual void setCollectionCount(uint64_t newCount);
@@ -296,17 +296,42 @@ struct StatisticCollector { };
 
 template <class T>
 struct StatisticCollector<T,true> {
- virtual void addData_impl(T data) = 0;
+  virtual void addData_impl(T data) = 0;
+
+  /**
+  * @brief addData_impl_Ntimes Add the same data N times in a row
+  *        By default, this just calls the addData function N times
+  * @param N    The number of consecutive times
+  * @param args The arguments to pass in
+  */
+  virtual void addData_impl_Ntimes(uint64_t N, T data){
+    for (uint64_t i=0; i < N; ++i){
+      addData_impl(data);
+    }
+  }
 };
 
 template <class... Args>
 struct StatisticCollector<std::tuple<Args...>,false> {
  virtual void addData_impl(Args... args) = 0;
 
+  /**
+  * @brief addData_impl_Ntimes Add the same data N times in a row
+  *        By default, this just calls the addData function N times
+  * @param N    The number of consecutive times
+  * @param args The arguments to pass in
+  */
+ virtual void addData_impl_Ntimes(uint64_t N, Args... args){
+  for (uint64_t i=0; i < N; ++i){
+    addData_impl(args...);
+  }
+ }
+
  template <class... InArgs>
  void addData(InArgs&&... args){
     addData_impl(std::make_tuple(std::forward<InArgs>(args)...));
  }
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -342,10 +367,20 @@ class Statistic : public StatisticBase, public StatisticCollector<T>
         //  of addData and increment the count
         if (isEnabled()) {
             addData_impl(std::forward<InArgs>(args)...);
-            incrementCollectionCount();
+            incrementCollectionCount(1);
         }
     }
 
+    template <class... InArgs> //use a universal reference here
+    void addDataNTimes(uint64_t N, InArgs&&... args)
+    {
+        // Call the Derived Statistic's implementation
+        //  of addData and increment the count
+        if (isEnabled()) {
+            addData_impl_Ntimes(N, std::forward<InArgs>(args)...);
+            incrementCollectionCount(N);
+        }
+    }
 
 
     static fieldType_t fieldId() {

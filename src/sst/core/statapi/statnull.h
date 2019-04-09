@@ -52,6 +52,8 @@ struct NullStatisticBase<T,true> : public Statistic<T> {
   }
 
   void addData_impl(T UNUSED(data)) override {}
+
+  void addData_impl_Ntimes(uint64_t UNUSED(N), T UNUSED(data)) override {}
 };
 
 template <class... Args>
@@ -66,6 +68,8 @@ struct NullStatisticBase<std::tuple<Args...>,false> : public Statistic<std::tupl
   }
 
   void addData_impl(Args... UNUSED(data)) override {}
+
+  void addData_impl_Ntimes(uint64_t UNUSED(N), Args... UNUSED(data)) override {}
 };
 
 template <class T>
@@ -81,6 +85,9 @@ struct NullStatisticBase<T,false> : public Statistic<T> {
 
   void addData_impl(T&& UNUSED(data)) override {}
   void addData_impl(const T& UNUSED(data)) override {}
+
+  void addData_impl(uint64_t UNUSED(N), T&& UNUSED(data)) override {}
+  void addData_impl(uint64_t UNUSED(N), const T& UNUSED(data)) override {}
 };
 
 template <class T>
