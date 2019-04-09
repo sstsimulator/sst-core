@@ -52,9 +52,9 @@ const std::string& StatisticBase::getCompName() const
     return m_component->getName();
 }
 
-void StatisticBase::incrementCollectionCount()  
+void StatisticBase::incrementCollectionCount(uint64_t increment)
 {
-    m_currentCollectionCount++;
+    m_currentCollectionCount += increment;
     checkEventForOutput();
 }                       
 
