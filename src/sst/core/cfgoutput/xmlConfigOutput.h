@@ -23,7 +23,7 @@ class XMLConfigGraphOutput : public ConfigGraphOutput {
 public:
         XMLConfigGraphOutput(const char* path);
 	virtual void generate(const Config* cfg,
-                ConfigGraph* graph) throw() override;
+                ConfigGraph* graph) override;
 protected:
         void generateXML(const std::string indent, const ConfigComponent& comp,
 		const ConfigLinkMap_t& linkMap) const;

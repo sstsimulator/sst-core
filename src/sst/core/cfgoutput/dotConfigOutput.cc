@@ -23,7 +23,7 @@ DotConfigGraphOutput::DotConfigGraphOutput(const char* path) :
 }
 
 void DotConfigGraphOutput::generate(const Config* cfg,
-                ConfigGraph* graph) throw() {
+                ConfigGraph* graph) {
 
 	if ( NULL == outputFile ) {
 		throw ConfigGraphOutputException("Output file is not open for writing");
