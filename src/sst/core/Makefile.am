@@ -38,7 +38,9 @@ nobase_dist_sst_HEADERS = \
 	decimal_fixedpoint.h \
 	env/envquery.h \
 	env/envconfig.h \
+	elementinfo.h \
 	elemLoader.h \
+	elibase.h \
 	event.h \
 	exit.h \
 	factory.h \
