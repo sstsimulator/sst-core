@@ -225,9 +225,9 @@ SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string &k
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
-        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::PrintAll, "Mismatched Sizes!\n");
+        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::DefaultErrorRC, "Mismatched Sizes!\n");
     } else {
-        if ( false == ri.initialize(key, size, initByte, NULL) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::PrintAll, "Shared Region Initialized Failed!\n");
+        if ( false == ri.initialize(key, size, initByte, NULL) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::DefaultErrorRC, "Shared Region Initialized Failed!\n");
     }
     return ri.addSharer(this);
 }
@@ -238,9 +238,9 @@ SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string &
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
-        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::PrintAll, "Mismatched Sizes!\n");
+        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::DefaultErrorRC, "Mismatched Sizes!\n");
     } else {
-        if ( false == ri.initialize(key, size, initByte, merger) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::PrintAll, "Shared Region Initialized Failed!\n");
+        if ( false == ri.initialize(key, size, initByte, merger) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, Output::DefaultErrorRC, "Shared Region Initialized Failed!\n");
     }
     return ri.addSharer(this);
 }

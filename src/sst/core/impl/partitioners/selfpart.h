@@ -51,8 +51,8 @@ public:
 
     void performPartition(PartitionGraph* UNUSED(graph)) override { return; }
     
-    bool requiresConfigGraph() { return true; }
-    bool spawnOnAllRanks() { return false; }
+    bool requiresConfigGraph() override { return true; }
+    bool spawnOnAllRanks() override { return false; }
     
 
 };
