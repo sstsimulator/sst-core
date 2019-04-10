@@ -84,7 +84,7 @@ private:
      *  \param parent_module parent module (passed as PyObject*)to load this module under
      *  \return pointer (as PyObject*) to the created module
      */
-    void* load(void* parent_module);
+    virtual void* load(void* parent_module);
  
     //! Vector of sub_modules
     std::vector<SSTElementPythonModuleCode*> sub_modules;
