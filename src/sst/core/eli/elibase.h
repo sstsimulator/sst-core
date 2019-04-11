@@ -21,6 +21,7 @@
 #include <list>
 #include <map>
 #include <functional>
+#include <memory>
 
 // Component Category Definitions
 #define COMPONENT_CATEGORY_UNCATEGORIZED  0x00
