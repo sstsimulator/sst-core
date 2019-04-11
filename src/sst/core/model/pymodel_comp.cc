@@ -28,7 +28,6 @@ REENABLE_WARNING
 
 #include <sst/core/sst_types.h>
 #include <sst/core/simulation.h>
-#include <sst/core/element.h>
 #include <sst/core/component.h>
 #include <sst/core/subcomponent.h>
 #include <sst/core/configGraph.h>

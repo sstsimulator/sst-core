@@ -18,7 +18,7 @@
 #include <sst/core/params.h>
 #include <sst/core/statapi/statfieldinfo.h>
 #include <sst/core/statapi/statbase.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 #include <unordered_map>
 
 #include <mutex>

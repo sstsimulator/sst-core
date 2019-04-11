@@ -39,16 +39,6 @@ class ProvidesDefaultInfo {
     node->SetAttribute("Description", getDescription().c_str());
   }
 
-  template <class U> ProvidesDefaultInfo(const std::string& lib, const std::string& name,
-                                         OldELITag& UNUSED(tag), U* u) :
-    lib_(lib),
-    name_(name),
-    desc_(u->description),
-    file_("Old ELI"),
-    date_("Unknown")
-  {
-  }
-
   template <class T> ProvidesDefaultInfo(const std::string& lib,
                                          const std::string& name,
                                          T* UNUSED(t)) :
@@ -63,16 +53,6 @@ class ProvidesDefaultInfo {
  protected:
   template <class T> ProvidesDefaultInfo(T* t) :
    ProvidesDefaultInfo(T::ELI_getLibrary(), T::ELI_getName(), t)
-  {
-  }
-
-  template <class U> ProvidesDefaultInfo(OldELITag&& tag, U* u) :
-    ProvidesDefaultInfo(tag,u)
-  {
-  }
-
-  template <class U> ProvidesDefaultInfo(OldELITag& tag, U* u) :
-    ProvidesDefaultInfo(tag.lib, u->name, tag, u)
   {
   }
 

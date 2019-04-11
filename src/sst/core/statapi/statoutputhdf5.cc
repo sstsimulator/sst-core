@@ -228,7 +228,7 @@ StatisticOutputHDF5::StatData_u& StatisticOutputHDF5::StatisticInfo::getFieldLoc
         if ( indexMap[i] == fieldHandle )
             return currentData[i];
     }
-    Output::getDefaultObject().fatal(CALL_INFO, -1, "Attempting to access unregistered Field Handle\n");
+    Output::getDefaultObject().fatal(CALL_INFO, 1, "Attempting to access unregistered Field Handle\n");
     // Not reached
     return currentData[0];
 }
@@ -274,7 +274,7 @@ static H5::DataType getMemTypeForStatType(StatisticOutput::fieldType_t type) {
 
    auto iter = sst_hdf5_map.find(type);
    if (iter == sst_hdf5_map.end()){
-     Output::getDefaultObject().fatal(CALL_INFO, -1, "Unhandled UNDEFINED datatype.\n");
+     Output::getDefaultObject().fatal(CALL_INFO, 1, "Unhandled UNDEFINED datatype.\n");
    }
 
    return iter->second;

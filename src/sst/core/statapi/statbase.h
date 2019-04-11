@@ -19,7 +19,7 @@
 #include <sst/core/params.h>
 #include <sst/core/oneshot.h>
 #include <sst/core/statapi/statfieldinfo.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 #include <sst/core/serialization/serializable.h>
 
 namespace SST {

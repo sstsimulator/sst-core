@@ -10,14 +10,14 @@ void
 SSTPartitioner::performPartition(PartitionGraph* UNUSED(graph))
 {
   Output &output = Output::getDefaultObject();
-	output.fatal(CALL_INFO, output.PrintAll, "ERROR: chosen partitioner does not support PartitionGraph");
+  output.fatal(CALL_INFO, 1, "ERROR: chosen partitioner does not support PartitionGraph");
 }
 
 void
 SSTPartitioner::performPartition(ConfigGraph* UNUSED(graph))
 {
   Output &output = Output::getDefaultObject();
-	output.fatal(CALL_INFO, output.PrintAll, "ERROR: chosen partitioner does not support ConfigGraph");
+  output.fatal(CALL_INFO, 1, "ERROR: chosen partitioner does not support ConfigGraph");
 }
 
 }

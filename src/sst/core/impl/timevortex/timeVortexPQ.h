@@ -17,7 +17,7 @@
 #include <vector>
 
 #include <sst/core/timeVortex.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 namespace SST {
 

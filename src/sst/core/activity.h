@@ -233,7 +233,7 @@ public:
 
 #ifdef USE_MEMPOOL
     /** Allocates memory from a memory pool for a new Activity */
-	void* operator new(std::size_t size) throw()
+	void* operator new(std::size_t size) noexcept
     {
         /* 1) Find memory pool
          * 1.5) If not found, create new

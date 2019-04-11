@@ -18,11 +18,7 @@
 #include <mutex>
 
 #include <sst/core/params.h>
-#include <sst/core/elemLoader.h>
-#include <sst/core/element.h>
-#include <sst/core/elementinfo.h>
-#include <sst/core/model/element_python.h>
-#include <sst/core/statapi/statfieldinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
@@ -37,6 +33,8 @@ class Module;
 class Component;
 class BaseComponent;
 class SubComponent;
+class ElemLoader;
+class SSTElementPythonModule;
 
 /**
  * Class for instantiating Components, Links and the like out
@@ -93,11 +91,7 @@ public:
      */
     Partition::SSTPartitioner* CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
 
-    /** Return generator function
-     * @param name - Fully qualified elementlibname.generator type name
-     */
-    generateFunction GetGenerator(std::string name);
-
+    
     /**
      * General function for a given base class
      * @param type
@@ -166,7 +160,6 @@ public:
     /** Return Python Module creation function
      * @param name - Fully qualified elementlibname.pythonModName type name
      */
-    // genPythonModuleFunction getPythonModule(std::string name);
     SSTElementPythonModule* getPythonModule(std::string name);
     /** Checks to see if library exists and can be loaded */
     bool hasLibrary(std::string elemlib);
@@ -215,10 +208,6 @@ private:
 
     void notFound(const std::string& baseName, const std::string& type);
 
-    typedef std::map<std::string, const ElementLibraryInfo*> eli_map_t;
-
-    // Need to keep generator info for now
-    typedef std::map<std::string, const ElementInfoGenerator*> eig_map_t;
 
     Factory(std::string searchPaths);
     ~Factory();
@@ -230,12 +219,11 @@ private:
     static Factory *instance;
 
     // find library information for name
-    const ElementLibraryInfo* findLibrary(std::string name, bool showErrors=true);
+    bool findLibrary(std::string name, bool showErrors=true);
     // handle low-level loading of name
-    const ElementLibraryInfo* loadLibrary(std::string name, bool showErrors=true);
+    bool loadLibrary(std::string name, bool showErrors=true);
 
-    eli_map_t loaded_libraries;
-    eig_map_t found_generators;
+    std::set<std::string> loaded_libraries;
 
     std::string searchPaths;
 

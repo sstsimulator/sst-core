@@ -30,7 +30,7 @@ public:
 		std::strcpy(exMsg, msg);
 	}
 
-	virtual const char* what() const throw() override {
+	virtual const char* what() const noexcept override {
 		return exMsg;
 	}
 
@@ -49,7 +49,7 @@ public:
 	}
 
 	virtual void generate(const Config* cfg,
-		ConfigGraph* graph) throw() = 0;
+		ConfigGraph* graph) = 0;
 protected:
 	FILE* outputFile;
 

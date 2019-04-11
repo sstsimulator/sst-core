@@ -32,9 +32,9 @@ REENABLE_WARNING
 #include <sst/core/model/pymodel_comp.h>
 #include <sst/core/model/pymodel_link.h>
 #include <sst/core/model/pymodel_statgroup.h>
+#include <sst/core/model/element_python.h>
 
 #include <sst/core/simulation.h>
-#include <sst/core/element.h>
 #include <sst/core/factory.h>
 #include <sst/core/component.h>
 #include <sst/core/configGraph.h>
@@ -597,7 +597,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
     output = new Output("SSTPythonModel ", verbosity, 0, SST::Output::STDOUT);
 
     if ( gModel ) {
-        output->fatal(CALL_INFO, output->PrintAll, "A Python Config Model is already in progress.\n");
+        output->fatal(CALL_INFO, 1, "A Python Config Model is already in progress.\n");
     }
     gModel = this;
 
@@ -638,7 +638,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
          ( PyType_Ready(&PyModel_StatGroupType) < 0 ) ||
          ( PyType_Ready(&PyModel_StatOutputType) < 0 ) ||
          ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
-        output->fatal(CALL_INFO, output->PrintAll, "Error loading Python types.\n");
+        output->fatal(CALL_INFO, 1, "Error loading Python types.\n");
     }
 
     // Add our built in methods to the Python engine
@@ -757,7 +757,7 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
 
     FILE *fp = fopen(scriptName.c_str(), "r");
     if ( !fp ) {
-        output->fatal(CALL_INFO, output->PrintAll,
+        output->fatal(CALL_INFO, 1,
                 "Unable to open python script %s\n", scriptName.c_str());
     }
     int createReturn = PyRun_AnyFileEx(fp, scriptName.c_str(), 1);
@@ -765,11 +765,11 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
     if(NULL != PyErr_Occurred()) {
         // Print the Python error and then let SST exit as a fatal-stop.
         PyErr_Print();
-        output->fatal(CALL_INFO, output->PrintAll,
+        output->fatal(CALL_INFO, 1,
             "Error occurred executing the Python SST model script.\n");
     }
     if(-1 == createReturn) {
-        output->fatal(CALL_INFO, output->PrintAll,
+        output->fatal(CALL_INFO, 1,
             "Execution of model construction function failed.\n");
     }
 
@@ -778,7 +778,7 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
 
     if(NULL != PyErr_Occurred()) {
         PyErr_Print();
-	output->fatal(CALL_INFO, output->PrintAll, "Error occured handling the creation of the component graph in Python.\n");
+        output->fatal(CALL_INFO, 1, "Error occured handling the creation of the component graph in Python.\n");
     }
 
     return graph;

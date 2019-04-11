@@ -4,8 +4,7 @@
 #include <vector>
 #include <string>
 #include <sst/core/params.h>
-#include <sst/core/elibase.h>
-#include <sst/core/oldELI.h>
+#include <sst/core/eli/elibase.h>
 
 namespace SST {
 namespace ELI {
@@ -60,17 +59,8 @@ class ProvidesParams {
    init();
   }
 
-  template <class U> ProvidesParams(OldELITag& UNUSED(tag), U* u)
-  {
-     auto *p = u->params;
-     while (NULL != p && NULL != p->name) {
-      params_.emplace_back(*p);
-      p++;
-     }
-     init();
-  }
 
- private:
+private:
   void init();
 
   Params::KeySet_t allowedKeys;

@@ -60,7 +60,7 @@ REENABLE_WARNING
 #include <sst/core/cfgoutput/xmlConfigOutput.h>
 #include <sst/core/cfgoutput/jsonConfigOutput.h>
 
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 using namespace SST::Core;
 using namespace SST::Partition;
@@ -87,19 +87,19 @@ static void setupSignals(uint32_t threadRank)
 {
     if ( 0 == threadRank ) {
 		if(SIG_ERR == signal(SIGUSR1, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, Output::DefaultErrorRC, "Installation of SIGUSR1 signal handler failed.\n");
+			g_output.fatal(CALL_INFO, 1, "Installation of SIGUSR1 signal handler failed.\n");
 		}
 		if(SIG_ERR == signal(SIGUSR2, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, Output::DefaultErrorRC, "Installation of SIGUSR2 signal handler failed\n");
+			g_output.fatal(CALL_INFO, 1, "Installation of SIGUSR2 signal handler failed\n");
 		}
 		if(SIG_ERR == signal(SIGINT, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, Output::DefaultErrorRC, "Installation of SIGINT signal handler failed\n");
+			g_output.fatal(CALL_INFO, 1, "Installation of SIGINT signal handler failed\n");
 		}
 		if(SIG_ERR == signal(SIGALRM, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, Output::DefaultErrorRC, "Installation of SIGALRM signal handler failed\n");
+			g_output.fatal(CALL_INFO, 1, "Installation of SIGALRM signal handler failed\n");
 		}
 		if(SIG_ERR == signal(SIGTERM, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, Output::DefaultErrorRC, "Installation of SIGTERM signal handler failed\n");
+			g_output.fatal(CALL_INFO, 1, "Installation of SIGTERM signal handler failed\n");
 		}
 
 		g_output.verbose(CALL_INFO, 1, 0, "Signal handler registration is completed\n");
@@ -428,12 +428,7 @@ main(int argc, char *argv[])
 
     // Only rank 0 will populate the graph
     if ( myRank.rank == 0 ) {
-        if ( cfg.generator != "NONE" ) {
-            generateFunction func = factory->GetGenerator(cfg.generator);
-            func(graph,cfg.generator_options, world_size.rank);
-        } else {
-            graph = modelGen->createConfigGraph();
-        }
+        graph = modelGen->createConfigGraph();
     }
 
 #ifdef SST_CONFIG_HAVE_MPI
@@ -451,7 +446,7 @@ main(int argc, char *argv[])
 
         // Check config graph to see if there are structural errors.
         if ( graph->checkForStructuralErrors() ) {
-            g_output.fatal(CALL_INFO, Output::DefaultErrorRC, "Structure errors found in the ConfigGraph.\n");
+            g_output.fatal(CALL_INFO, 1, "Structure errors found in the ConfigGraph.\n");
         }
     }
 

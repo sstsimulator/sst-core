@@ -27,7 +27,7 @@ void
 serializable::serializable_abort(uint32_t line, const char* file, const char* func, const char* obj)
 {
     SST::Output ser_abort("", 5, SST::Output::PrintAll, SST::Output::STDERR);
-    ser_abort.fatal(line, file, func, SST::Output::PrintAll,
+    ser_abort.fatal(line, file, func, 1,
 							      "ERROR: type %s should not be serialized\n",obj);
 }
 

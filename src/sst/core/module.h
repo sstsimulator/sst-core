@@ -13,7 +13,7 @@
 #ifndef SST_CORE_MODULE_H
 #define SST_CORE_MODULE_H
 
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 namespace SST {
   /**

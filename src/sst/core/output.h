@@ -63,8 +63,7 @@ public:
         FILE        /*!< Print to a file */
     };
 
-		static constexpr uint32_t PrintAll = std::numeric_limits<uint32_t>::max();
-    static constexpr int DefaultErrorRC = 1;
+    static constexpr uint32_t PrintAll = std::numeric_limits<uint32_t>::max();
 
     /** Constructor.  Set up output configuration.
         @param prefix Prefix to be prepended to all strings emitted by calls to

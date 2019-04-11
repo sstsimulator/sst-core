@@ -11,7 +11,7 @@
 
 
 #include "sst_config.h"
-#include "sst/core/elementinfo.h"
+#include "sst/core/eli/elementinfo.h"
 #include <sst/core/statapi/statbase.h>
 
 #include <sstream>

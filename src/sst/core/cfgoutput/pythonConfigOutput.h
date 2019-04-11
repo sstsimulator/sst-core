@@ -25,7 +25,7 @@ public:
     PythonConfigGraphOutput(const char* path);
 
     virtual void generate(const Config* cfg,
-            ConfigGraph* graph) throw() override;
+            ConfigGraph* graph) override;
 
 protected:
     ConfigGraph* getGraph() { return graph; }

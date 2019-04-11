@@ -18,14 +18,15 @@
 #include <tuple>
 #include <stdio.h>
 
+#include <sst/core/elemLoader.h>
 #include "sst/core/simulation.h"
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/part/sstpart.h"
-#include "sst/core/element.h"
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 #include "sst/core/params.h"
 #include "sst/core/linkMap.h"
+#include <sst/core/model/element_python.h>
 
 // Statistic Output Objects
 #include <sst/core/statapi/statoutputconsole.h>
@@ -47,27 +48,15 @@ namespace SST {
 
 Factory* Factory::instance = NULL;
 
-ElementLibraryInfo empty_eli = {
-    "empty-eli",
-    "ELI that gets returned when new ELI is used",
-    NULL,
-    NULL,   // Events
-    NULL,   // Introspectors
-    NULL,
-    NULL,
-    NULL, // partitioners,
-    NULL,  // Python Module Generator
-    NULL // generators,
-};
-
 
 Factory::Factory(std::string searchPaths) :
     searchPaths(searchPaths),
     out(Output::getDefaultObject())
 {
-    if ( instance ) out.fatal(CALL_INFO, out.PrintAll, "Already initialized a factory.\n");
+    if ( instance ) out.fatal(CALL_INFO, 1, "Already initialized a factory.\n");
     instance = this;
     loader = new ElemLoader(searchPaths);
+    loaded_libraries.insert("sst");
 }
 
 
@@ -154,7 +143,7 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
         err << pair.first << "\n";
       }
       std::cerr << err.str() << std::endl;
-      out.fatal(CALL_INFO, out.PrintAll, "can't find requested component or subcomponent '%s'\n ", tmp.c_str());
+      out.fatal(CALL_INFO, 1, "can't find requested component or subcomponent '%s'\n ", tmp.c_str());
       return false;
     }
 
@@ -203,7 +192,7 @@ Factory::CreateComponent(ComponentId_t id,
       }
     }
     // If we make it to here, component not found
-    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component '%s'\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n ", type.c_str());
     return NULL;
 }
 
@@ -245,7 +234,7 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component/subcomponent '%s'\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n ", type.c_str());
     return false;
 }
 
@@ -282,7 +271,7 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
 
     
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component '%s'\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n ", type.c_str());
     return false;
 }
 
@@ -318,7 +307,7 @@ Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const s
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, out.PrintAll, "can't find requested subcomponent '%s'\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested subcomponent '%s'\n ", type.c_str());
     return false;
 }
 
@@ -367,7 +356,7 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component '%s'\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n ", type.c_str());
     return 0;
 }
 
@@ -401,7 +390,7 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, out.PrintAll, "can't find requested component '%s'\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n ", type.c_str());
     return 0;
 }
 
@@ -411,21 +400,11 @@ Factory::CreateModule(std::string type, Params& params)
 {
     if("" == type) {
         Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,
-                Output::PrintAll, "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
+                1, "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
     }
 
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
-
-    /**
-    // Check for legacy core modules.  These consist only of
-    // StatisticsOutputs at this point.  These should be moved to the
-    // new ELI infrastructure
-    if("sst" == elemlib) {
-        Module* ret = CreateCoreModule(elem, params);
-        if ( ret != NULL ) return ret;
-    }
-    */
 
     requireLibrary(elemlib);
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
@@ -448,10 +427,9 @@ Factory::CreateModule(std::string type, Params& params)
         }
       }
     }
-
     
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, out.PrintAll, "can't find requested module '%s'\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n ", type.c_str());
     return NULL;
 }
 
@@ -460,12 +438,6 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
-
-    /** This was just stat outputs - not needed anymore
-    if("sst" == elemlib) {
-        return CreateCoreModuleWithComponent(elem, comp, params);
-    }
-    */
 
     // ensure library is already loaded...
     requireLibrary(elemlib);
@@ -492,7 +464,7 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, out.PrintAll, "can't find requested module '%s'\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n ", type.c_str());
     return NULL;
 }
 
@@ -526,7 +498,7 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, out.PrintAll, "can't find requested subcomponent '%s'\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested subcomponent '%s'\n ", type.c_str());
     return NULL;
 }
 
@@ -537,20 +509,9 @@ Factory::RequireEvent(std::string eventname)
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(eventname);
 
-    // ensure library is already loaded...
-    requireLibrary(elemlib);
-
     // All we really need to do is make sure the library is loaded.
     // We no longer have events in the ELI
-
-    // std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-
-    // // initializer fires at library load time, so all we have to do is
-    // // make sure the event actually exists...
-    // if (found_events.find(eventname) == found_events.end()) {
-    //     out.fatal(CALL_INFO, -1,"can't find event %s in %s\n ", eventname.c_str(),
-    //            searchPaths.c_str() );
-    // }
+    requireLibrary(elemlib);
 }
 
 Partition::SSTPartitioner*
@@ -579,31 +540,8 @@ Factory::CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_r
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, out.PrintAll, "Error: Unable to find requested partitioner '%s', check --help for information on partitioners.\n ", name.c_str());
+    out.fatal(CALL_INFO, 1, "Error: Unable to find requested partitioner '%s', check --help for information on partitioners.\n ", name.c_str());
     return NULL;
-}
-
-generateFunction
-Factory::GetGenerator(std::string name)
-{
-    std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(name);
-
-    // ensure library is already loaded...
-    requireLibrary(elemlib);
-
-    // Look for the generator
-    std::string tmp = elemlib + "." + elem;
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-    eig_map_t::iterator eii = found_generators.find(tmp);
-    if ( eii == found_generators.end() ) {
-        out.fatal(CALL_INFO, out.PrintAll, "can't find requested generator '%s'\n ", tmp.c_str());
-        return NULL;
-    }
-
-    const ElementInfoGenerator *ei = eii->second;
-    return ei->func;
 }
 
 
@@ -638,24 +576,24 @@ Factory::getPythonModule(std::string name)
 
 bool Factory::hasLibrary(std::string elemlib)
 {
-    return (NULL != findLibrary(elemlib, false));
+    return findLibrary(elemlib, false);
 }
 
 
 void Factory::requireLibrary(std::string &elemlib)
 {
     if ( elemlib == "sst" ) return;
-    (void)findLibrary(elemlib, true);
+    findLibrary(elemlib, true);
 }
 
 
 void Factory::getLoadedLibraryNames(std::set<std::string>& lib_names)
 {
-    for ( eli_map_t::const_iterator i = loaded_libraries.begin();
-          i != loaded_libraries.end(); ++i)
-        {
-            lib_names.insert(i->first);
-        }
+
+    for ( auto& lib : loaded_libraries ) {
+        lib_names.insert(lib);
+    }
+    
 }
 
 void Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
@@ -667,30 +605,15 @@ void Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
         }
 }
     
-const ElementLibraryInfo*
+
+bool
 Factory::findLibrary(std::string elemlib, bool showErrors)
 {
-    if ( elemlib == "sst" ) return NULL;
-    const ElementLibraryInfo *eli = NULL;
+
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    if ( loaded_libraries.count(elemlib) == 1 ) return true;
 
-    eli_map_t::iterator elii = loaded_libraries.find(elemlib);
-    if (elii != loaded_libraries.end()) return elii->second;
-
-
-    // eli = loader->loadLibrary(elemlib, showErrors);
-    eli = loadLibrary(elemlib, showErrors);
-    if (NULL == eli) return NULL;
-
-
-
-    // Convert the old ELI data structures into the new ELI data
-    // structures
-    loaded_libraries[elemlib] = eli;
-
-    if (eli) loader->loadOldELI(eli, found_generators);
-
-    return eli;
+    return loadLibrary(elemlib, showErrors);
 }
 
 
@@ -715,31 +638,22 @@ Factory::parseLoadName(const std::string& wholename)
 void
 Factory::notFound(const std::string &baseName, const std::string &type)
 {
-  out.fatal(CALL_INFO, out.PrintAll, "can't find requested element library '%s' with element type '%s'\n ",
+    out.fatal(CALL_INFO, 1, "can't find requested element library '%s' with element type '%s'\n ",
             baseName.c_str(), type.c_str());
 }
 
-const ElementLibraryInfo* Factory::loadLibrary(std::string name, bool showErrors)
-{
-    if ( name == "sst" ) return NULL;
-    const ElementLibraryInfo* eli = loader->loadLibrary(name, showErrors);
 
-    if ( NULL == eli ) {
-        // Check to see if this library loaded into the new ELI
-        // Database
-        if (ELI::LoadedLibraries::isLoaded(name)) {
-            // Need to just return the empty ElementLibraryInfo
-            return &empty_eli;
-        }
+bool Factory::loadLibrary(std::string name, bool showErrors)
+{
+    loader->loadLibrary(name, showErrors);
+
+    if (!ELI::LoadedLibraries::isLoaded(name)) {
+        return false;
     }
-    
-    if (NULL == eli) {
-        if (showErrors) {
-            fprintf(stderr, "Could not find ELI block %s_eli in %s\n",
-                    name.c_str(), name.c_str());
-        }
-    }
-    return eli;
+
+    // The library was loaded, put it in loadedlibraries
+    loaded_libraries.insert(name);
+    return true;
 }
 
 } //namespace SST

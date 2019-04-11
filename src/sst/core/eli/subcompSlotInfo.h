@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 
-#include <sst/core/elibase.h>
-#include <sst/core/oldELI.h>
+#include <sst/core/eli/elibase.h>
 
 namespace SST {
 namespace ELI {
@@ -51,15 +50,6 @@ class ProvidesSubComponentSlots {
   template <class T> ProvidesSubComponentSlots(T* UNUSED(t)) :
     slots_(InfoSubs<T>::get())
   {
-  }
-
-  template <class U> ProvidesSubComponentSlots(OldELITag& UNUSED(tag), U* u)
-  {
-    auto *s = u->subComponents;
-    while ( NULL != s && NULL != s->name ) {
-      slots_.emplace_back(*s);
-      s++;
-    }
   }
 
  private:

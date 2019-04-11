@@ -24,11 +24,6 @@ class ProvidesInterface {
   {
   }
 
-  template <class U> ProvidesInterface(OldELITag& UNUSED(tag), U* u) :
-    iface_(u->provides)
-  {
-  }
-
  private:
   std::string iface_;
 };

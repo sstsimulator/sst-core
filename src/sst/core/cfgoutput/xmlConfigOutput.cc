@@ -23,7 +23,7 @@ XMLConfigGraphOutput::XMLConfigGraphOutput(const char* path) :
 }
 
 void XMLConfigGraphOutput::generate(const Config* UNUSED(cfg),
-                ConfigGraph* graph) throw() {
+                ConfigGraph* graph) {
 
 	if(NULL == outputFile) {
 		throw ConfigGraphOutputException("Output file is not open for writing");
