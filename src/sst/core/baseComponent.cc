@@ -788,7 +788,8 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
             // Rate is Count Based
             statCollectionMode = StatisticBase::STAT_MODE_COUNT;
         } else if (0 == collectionRate.getValue()) {
-            // Collection rate is zero and has no units, so make up a periodic flavor
+            // Collection rate is zero and has no units
+            // so we just dump at beginning and end
             collectionRate = UnitAlgebra("0ns");
             statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
         } else {
