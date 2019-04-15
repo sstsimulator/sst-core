@@ -15,6 +15,8 @@
 #include "pythonConfigOutput.h"
 #include <sst/core/simulation.h>
 #include <sst/core/config.h>
+#include <sst/core/timeLord.h>
+#include <sst/core/timeConverter.h>
 
 using namespace SST::Core;
 
@@ -106,15 +108,19 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
         }
     }
 
+    UnitAlgebra tb = Simulation::getTimeLord()->getTimeBase();
+
     for ( auto linkID : comp.links ) {
         const ConfigLink & link = getGraph()->getLinkMap()[linkID];
         int idx = link.component[0] == comp.id ? 0 : 1;
         SimTime_t latency = link.latency[idx];
+        auto tmp = tb * latency;
+        std::string latencyStr = link.latency_str[idx];
         char * esPortName = makeEscapeSafe(link.port[idx].c_str());
 
         const std::string& linkName = getLinkObject(linkID);
-        fprintf(outputFile, "%s.addLink(%s, \"%s\", \"%" PRIu64 "ps\")\n",
-                objName, linkName.c_str(), esPortName, latency);
+        fprintf(outputFile, "%s.addLink(%s, \"%s\", \"%s\")\n",
+                objName, linkName.c_str(), esPortName, tmp.toStringBestSI().c_str());
 
         free(esPortName);
     }
