@@ -28,6 +28,7 @@ class Factory;
 
 namespace Statistics {
 class StatisticOutput;
+class StatisticFieldsOutput;
 class StatisticProcessingEngine;
 class StatisticGroup;
 
@@ -182,6 +183,7 @@ protected:
     friend class SST::Statistics::StatisticProcessingEngine;
     friend class SST::Statistics::StatisticOutput;
     friend class SST::Statistics::StatisticGroup;
+    friend class SST::Statistics::StatisticFieldsOutput;
 
     /** Construct a StatisticBase
       * @param comp - Pointer to the parent constructor.
@@ -221,14 +223,14 @@ private:
       * by calling statOutput->registerField(...)
       * @param statOutput - Pointer to the statistic output
       */
-    virtual void registerOutputFields(StatisticOutput* statOutput) = 0;  
+    virtual void registerOutputFields(StatisticFieldsOutput* statOutput);
 
     /** Called by the system to tell the Statistic to send its data to the 
       * StatisticOutput to be output.
       * @param statOutput - Pointer to the statistic output
       * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
       */
-    virtual void outputStatisticData(StatisticOutput* statOutput, bool EndOfSimFlag) = 0;
+    virtual void outputStatisticData(StatisticFieldsOutput* statOutput, bool EndOfSimFlag);
 
     /** Indicate if the Statistic Mode is supported.
       * This allows Statistics to support STAT_MODE_COUNT and STAT_MODE_PERIODIC modes.

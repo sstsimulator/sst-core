@@ -25,7 +25,7 @@ namespace Statistics {
 	The class for statistics output to the console.  This will be the
 	default statistic output in SST.
 */
-class StatisticOutputConsole : public StatisticOutput
+class StatisticOutputConsole : public StatisticFieldsOutput
 {
 public:
     SST_ELI_REGISTER_DERIVED(

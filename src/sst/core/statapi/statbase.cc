@@ -52,6 +52,22 @@ const std::string& StatisticBase::getCompName() const
     return m_component->getName();
 }
 
+void
+StatisticBase::outputStatisticData(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag))
+{
+  Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+    "statistic %s, type %s for component %s does not support outputing fields",
+    m_statTypeName.c_str(), m_statFullName.c_str(), m_component->getName().c_str());
+}
+
+void
+StatisticBase::registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput))
+{
+  Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+    "statistic %s, type %s for component %s does not support outputing fields",
+    m_statTypeName.c_str(), m_statFullName.c_str(), m_component->getName().c_str());
+}
+
 void StatisticBase::incrementCollectionCount(uint64_t increment)
 {
     m_currentCollectionCount += increment;

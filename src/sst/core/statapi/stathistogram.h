@@ -239,7 +239,7 @@ private:
         this->setCollectionCount(0);
     }
     
-    void registerOutputFields(StatisticOutput* statOutput) override
+    void registerOutputFields(StatisticFieldsOutput* statOutput) override
     {
         // Check to see if we have registered the Startup Fields        
         m_Fields.push_back(statOutput->registerField<BinDataType>("BinsMinValue"));
@@ -274,7 +274,7 @@ private:
         }
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
+    void outputStatisticData(StatisticFieldsOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
         uint32_t x = 0;
         statOutput->outputField(m_Fields[x++], getBinsMinValue());

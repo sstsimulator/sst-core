@@ -28,7 +28,7 @@ namespace Statistics {
 
 	The class for statistics output to a comma separated file.  
 */
-class StatisticOutputCSV : public StatisticOutput
+class StatisticOutputCSV : public StatisticFieldsOutput
 {
 public:
   SST_ELI_REGISTER_DERIVED(

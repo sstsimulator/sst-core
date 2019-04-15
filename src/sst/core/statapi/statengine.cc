@@ -427,7 +427,7 @@ void StatisticProcessingEngine::performStatisticOutputImpl(StatisticBase* stat, 
             return;
         }
 
-        statOutput->outputEntries(stat, endOfSimFlag);
+        statOutput->output(stat, endOfSimFlag);
 
         if (false == endOfSimFlag) {
             // Check to see if the Statistic Count needs to be reset

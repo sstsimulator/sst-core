@@ -113,12 +113,12 @@ struct NullStatistic : public NullStatisticBase<T> {
       // Do Nothing
   }
 
-  void registerOutputFields(StatisticOutput* UNUSED(statOutput)) override
+  void registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput)) override
   {
       // Do Nothing
   }
 
-  void outputStatisticData(StatisticOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
+  void outputStatisticData(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
   {
       // Do Nothing
   }

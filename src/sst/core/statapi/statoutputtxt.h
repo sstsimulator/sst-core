@@ -28,7 +28,7 @@ namespace Statistics {
 
 	The class for statistics output to a text file.  
 */
-class StatisticOutputTxt : public StatisticOutput
+class StatisticOutputTxt : public StatisticFieldsOutput
 {
 public:    
   SST_ELI_REGISTER_DERIVED(

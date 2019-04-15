@@ -66,12 +66,12 @@ private:
       uniqueSet.clear();
     }
 
-    void registerOutputFields(StatisticOutput* statOutput) override
+    void registerOutputFields(StatisticFieldsOutput* statOutput) override
     {
       uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
+    void outputStatisticData(StatisticFieldsOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
       statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
     }

@@ -32,7 +32,7 @@ namespace Statistics {
 
 	The class for statistics output to a comma separated file.
 */
-class StatisticOutputHDF5 : public StatisticOutput
+class StatisticOutputHDF5 : public StatisticFieldsOutput
 {
 public:
     SST_ELI_REGISTER_DERIVED(
@@ -49,7 +49,7 @@ public:
     StatisticOutputHDF5(Params& outputParameters);
 
     bool acceptsGroups() const override { return true; }
-protected:
+private:
     /** Perform a check of provided parameters
      * @return True if all required parameters and options are acceptable
      */
@@ -58,12 +58,12 @@ protected:
     /** Print out usage for this Statistic Output */
     void printUsage() override;
 
-    void implStartRegisterFields(StatisticBase *stat) override;
+    void startRegisterFields(StatisticBase *stat) override;
     void implRegisteredField(fieldHandle_t fieldHandle) override;
-    void implStopRegisterFields() override;
+    void stopRegisterFields() override;
 
-    void implStartRegisterGroup(StatisticGroup* group ) override;
-    void implStopRegisterGroup() override;
+    void startRegisterGroup(StatisticGroup* group ) override;
+    void stopRegisterGroup() override;
 
     /** Indicate to Statistic Output that simulation started.
      *  Statistic output may perform any startup code here as necessary.
@@ -90,8 +90,8 @@ protected:
      */
     void implStopOutputEntries() override;
 
-    void implStartOutputGroup(StatisticGroup* group) override;
-    void implStopOutputGroup() override;
+    void startOutputGroup(StatisticGroup* group) override;
+    void stopOutputGroup() override;
 
     /** Implementation functions for output.
      * These will be called by the statistic to provide Statistic defined
