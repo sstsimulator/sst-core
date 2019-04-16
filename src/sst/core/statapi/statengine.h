@@ -116,6 +116,7 @@ private:
     StatisticGroup& getGroupForStatistic(const StatisticBase *stat) const;
     bool addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
     bool addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
+    bool addEndOfSimStatistic(StatisticBase* Stat);
     UnitAlgebra getParamTime(StatisticBase *stat, const std::string& pName) const;
     void setStatisticStartTime(StatisticBase* Stat);
     void setStatisticStopTime(StatisticBase* Stat);
@@ -145,6 +146,7 @@ private:
 
     StatArray_t                               m_EventStatisticArray;  /*!< Array of Event Based Statistics */
     StatMap_t                                 m_PeriodicStatisticMap; /*!< Map of Array's of Periodic Based Statistics */
+    StatArray_t                               m_EndOfSimArray;          /*!< Stats that dump at the end of the simulation */
     StatMap_t                                 m_StartTimeMap;         /*!< Map of Array's of Statistics that are started at a sim time */
     StatMap_t                                 m_StopTimeMap;          /*!< Map of Array's of Statistics that are stopped at a sim time */
     CompStatMap_t                             m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */  

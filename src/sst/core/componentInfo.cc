@@ -26,7 +26,6 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
     link_map(NULL),
     component(NULL),
     params(NULL),
-    enabledStats(NULL),
     coordinates(3, 0.0)
 {
 }
@@ -54,7 +53,8 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, const std::string& name, Li
     link_map(link_map),
     component(NULL),
     params(&ccomp->params),
-    enabledStats(&ccomp->enabledStatistics),
+    //copy construct this so it's permanent
+    enabledStats(ccomp->enabledStatistics),
     coordinates(ccomp->coords)
 {
 

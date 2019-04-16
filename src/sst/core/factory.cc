@@ -638,8 +638,8 @@ Factory::parseLoadName(const std::string& wholename)
 void
 Factory::notFound(const std::string &baseName, const std::string &type)
 {
-    out.fatal(CALL_INFO, 1, "can't find requested element library '%s' with element type '%s'\n ",
-            baseName.c_str(), type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested element type '%s' for base '%s'\n ",
+            type.c_str(), baseName.c_str());
 }
 
 

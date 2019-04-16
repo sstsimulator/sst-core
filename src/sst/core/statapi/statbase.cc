@@ -53,19 +53,19 @@ const std::string& StatisticBase::getCompName() const
 }
 
 void
-StatisticBase::outputStatisticData(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag))
+Statistic<void>::outputStatisticData(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag))
 {
   Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
-    "statistic %s, type %s for component %s does not support outputing fields",
-    m_statTypeName.c_str(), m_statFullName.c_str(), m_component->getName().c_str());
+    "void statistic %s, type %s for component %s does not support outputing fields",
+    getStatTypeName().c_str(), getFullStatName().c_str(), getComponent()->getName().c_str());
 }
 
 void
-StatisticBase::registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput))
+Statistic<void>::registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput))
 {
   Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
-    "statistic %s, type %s for component %s does not support outputing fields",
-    m_statTypeName.c_str(), m_statFullName.c_str(), m_component->getName().c_str());
+    "void statistic %s, type %s for component %s does not support outputing fields",
+    getStatTypeName().c_str(), getFullStatName().c_str(), getComponent()->getName().c_str());
 }
 
 void StatisticBase::incrementCollectionCount(uint64_t increment)

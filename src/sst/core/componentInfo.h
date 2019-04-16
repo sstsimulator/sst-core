@@ -51,7 +51,7 @@ private:
     std::vector<ComponentInfo> subComponents;
     const Params *params;
 
-    statEnableList_t * enabledStats;
+    statEnableList_t enabledStats;
     std::vector<double> coordinates;
 
     inline void setComponent(BaseComponent* comp) { component = comp; }
@@ -93,7 +93,7 @@ public:
     ComponentInfo* findSubComponent(ComponentId_t id);
     std::vector<LinkId_t> getAllLinkIds() const;
 
-    statEnableList_t* getStatEnableList() { return enabledStats; }
+    statEnableList_t& getStatEnableList() { return enabledStats; }
 
     struct HashName {
         size_t operator() (const ComponentInfo* info) const {

@@ -448,12 +448,6 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
     // Build a name to report errors against
     fullStatName = StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId);
 
-    // Make sure that the wireup has not been completed
-    if (true == getSimulation()->isWireUpFinished()) {
-        // We cannot register statistics AFTER the wireup (after all components have been created) 
-        out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
-    }
-
     /* Create the statistic in the "owning" component.  That should just be us, 
      * in the case of 'modern' subcomponents.  For legacy subcomponents, that will
      * be the owning component.  We've got the ID of that component in 'my_info->getID()'
@@ -470,7 +464,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
     // Check each entry in the StatEnableList (from the ConfigGraph via the 
     // Python File) to see if this Statistic is enabled, then check any of 
     // its critical parameters
-    for ( auto & si : *my_info->getStatEnableList() ) {
+    for ( auto & si : my_info->getStatEnableList() ) {
         // First check to see if the any entry in the StatEnableList matches 
         // the Statistic Name or the STATALLFLAG.  If so, then this Statistic
         // will be enabled.  Then check any critical parameters   
@@ -512,9 +506,10 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
             // Rate is Count Based
             statCollectionMode = StatisticBase::STAT_MODE_COUNT;
         } else if (0 == collectionRate.getValue()) {
-            // Collection rate is zero and has no units, so make up a periodic flavor
+            // Collection rate is zero and has no units
+            // so we just dump at beginning and end
             collectionRate = UnitAlgebra("0ns");
-            statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
+            statCollectionMode = StatisticBase::STAT_MODE_DUMP_AT_END;
         } else {
             // collectionRate is a unit type we dont recognize 
             out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
