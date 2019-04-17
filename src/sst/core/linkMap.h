@@ -29,7 +29,7 @@ class LinkMap {
 
 private:
     std::map<std::string,Link*> linkMap;
-    const std::vector<std::string> * allowedPorts;
+    // const std::vector<std::string> * allowedPorts;
     std::vector<std::string> selfPorts;
 
     // bool checkPort(const char *def, const char *offered) const
@@ -119,7 +119,7 @@ private:
     // }
 
 public:
-    LinkMap() : allowedPorts(NULL) {}
+    LinkMap() /*: allowedPorts(NULL)*/ {}
     ~LinkMap() {
         // Delete all the links in the map
         for ( std::map<std::string,Link*>::iterator it = linkMap.begin(); it != linkMap.end(); ++it ) {
@@ -128,13 +128,15 @@ public:
         linkMap.clear();
     }
 
-    /**
-     * Set the list of allowed port names from the ElementInfoPort
-     */
-    void setAllowedPorts(const std::vector<std::string> *p)
-    {
-        allowedPorts = p;
-    }
+    // /**
+    //  * Set the list of allowed port names from the ElementInfoPort
+    //  */
+    // void setAllowedPorts(const std::vector<std::string> *p)
+    // {
+    //     allowedPorts = p;
+    // }
+
+
 
     /**
      * Add a port name to the list of allowed ports.
@@ -161,6 +163,10 @@ public:
         linkMap.insert(std::pair<std::string,Link*>(name,link));
     }
 
+    void removeLink(std::string name) {
+        linkMap.erase(name);
+    }
+    
     /** Returns a Link pointer for a given name */
     Link* getLink(std::string name) {
 //         if ( !checkPort(name) ) {

@@ -24,11 +24,10 @@ namespace SST {
 SST_ELI_DEFINE_INFO_EXTERN(Component)
 SST_ELI_DEFINE_CTOR_EXTERN(Component)
 
-Component::Component(ComponentId_t id) : BaseComponent(),
-    id(id)
+Component::Component(ComponentId_t id) : BaseComponent(id)
 {
-    my_info = sim->getComponentInfo(id);
-    currentlyLoadingSubComponent = my_info;
+    // my_info = sim->getComponentInfo(id);
+    // currentlyLoadingSubComponent = my_info;
 }
 
 
@@ -72,7 +71,7 @@ Component::primaryComponentOKToEndSim()
 
 bool Component::doesComponentInfoStatisticExist(const std::string &statisticName) const
 {
-    const std::string& type = my_info->getType();
+    const std::string& type = getType();
     return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
 }
 

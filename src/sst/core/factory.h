@@ -51,6 +51,12 @@ public:
      */
     bool isPortNameValid(const std::string &type, const std::string port_name);
 
+    /** Get a list of allowed param keys for a given component type.
+     * @param type - Name of component in lib.name format
+     * @return True if this is a valid portname
+     */
+    const Params::KeySet_t& getParamNames(const std::string &type);
+
 
     /** Attempt to create a new Component instantiation
      * @param id - The unique ID of the component instantiation
@@ -86,6 +92,9 @@ public:
      */
     SubComponent* CreateSubComponent(std::string type, Component* comp, Params& params);
 
+
+    bool doesSubComponentExist(std::string type);
+    
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */

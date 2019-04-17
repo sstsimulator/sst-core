@@ -132,6 +132,15 @@ public:
         return recvUntimedData();
     }
 
+
+    void setAsConfigured() {
+        configured = true;
+    }
+
+    bool isConfigured() {
+        return configured;
+    }
+
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     void setSendingComponentInfo(const std::string& comp_in, const std::string& type_in, const std::string& port_in) {
         comp = comp_in;
@@ -191,7 +200,8 @@ private:
     
     Type_t type;
     LinkId_t id;
-
+    bool configured;
+    
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     std::string comp;
     std::string ctype;

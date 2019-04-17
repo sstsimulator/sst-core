@@ -40,9 +40,16 @@ public:
       ELI::ProvidesStats,
       ELI::ProvidesInterface)
 
-	SubComponent(Component* parent) : BaseComponent(), parent(parent) {
-        my_info = parent->currentlyLoadingSubComponent;
-    };
+	SubComponent(Component* parent) :
+        BaseComponent(parent->getCurrentlyLoadingSubComponentID()),
+        parent(parent)
+        {}
+
+	SubComponent(ComponentId_t id) :
+        BaseComponent(id),
+        parent(getTrueComponent())
+        {}
+
 	virtual ~SubComponent() {};
 
     /** Used during the init phase.  The method will be called each phase of initialization.
@@ -68,10 +75,11 @@ protected:
 
     /* Deprecate?   Old ELI style*/
     SubComponent* loadSubComponent(std::string type, Params& params) {
-        return parent->loadSubComponent(type, parent, params);
+        // return parent->loadSubComponent(type, parent, params);
+        return BaseComponent::loadSubComponent(type, getTrueComponent(), params);
     }
 
-    // Does the statisticName exist in the ElementInfoStatistic
+    // // Does the statisticName exist in the ElementInfoStatistic
     virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final override;
 
 private:

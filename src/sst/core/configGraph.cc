@@ -85,9 +85,7 @@ std::pair<bool, std::string> ConfigStatGroup::verifyStatsAndComponents(const Con
         }
         for ( auto & statKV : statMap ) {
 
-            bool ok = SUBCOMPONENT_ID_MASK(comp->id) == 0 ?
-                Factory::getFactory()->DoesComponentInfoStatisticNameExist(comp->type, statKV.first) :
-                Factory::getFactory()->DoesSubComponentInfoStatisticNameExist(comp->type, statKV.first);
+            bool ok = Factory::getFactory()->DoesComponentInfoStatisticNameExist(comp->type, statKV.first);
 
             if ( !ok ) {
                 std::stringstream ss;
@@ -102,7 +100,7 @@ std::pair<bool, std::string> ConfigStatGroup::verifyStatsAndComponents(const Con
 
 
 void ConfigComponent::print(std::ostream &os) const {
-    os << "Component " << name << " (id = " << id << ")" << std::endl;
+    os << "Component " << name << " (id = " << std::hex << id << std::dec << ")" << std::endl;
     os << "  slot_num = " << slot_num << std::endl;
     os << "  type = " << type << std::endl;
     os << "  weight = " << weight << std::endl;
