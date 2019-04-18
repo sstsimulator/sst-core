@@ -235,7 +235,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
     if ( NULL == lat ) return NULL;
 
 
-	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s\n", id, link->name);
+	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s (lat: %s)\n", id, link->name, lat);
     gModel->addLink(id, link->name, port, lat, link->no_cut);
 
     return PyInt_FromLong(0);
