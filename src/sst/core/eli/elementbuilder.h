@@ -155,6 +155,8 @@ struct BuilderDatabase {
   }
 };
 
+
+
 template <class Base, class CtorTuple>
 struct ElementsBuilder {};
 
@@ -217,6 +219,22 @@ template <class Base> struct CtorList<Base,void>
   }
 };
 
+template <class Base, class CtorTuple>
+struct AddBuilderHelper { };
+
+template <class Base, class... Args>
+struct AddBuilderHelper<Base,std::tuple<Args...>> {
+  using Ctor = ::SST::ELI::SingleCtor<Base,Args...>; 
+  using BaseBuilder = ::SST::ELI::Builder<Base,Args...>; 
+  using BuilderLibrary = ::SST::ELI::BuilderLibrary<Base,Args...>; 
+  using BuilderLibraryDatabase = ::SST::ELI::BuilderLibraryDatabase<Base,Args...>; 
+  template <class __TT> using DerivedBuilder = ::SST::ELI::DerivedBuilder<Base,__TT,Args...>; 
+  template <class __TT> static bool addDerivedBuilder(const std::string& elemlib, const std::string& elem){ 
+    auto* builder = new DerivedBuilder<__TT>;
+    return BuilderLibraryDatabase::getLibrary(elemlib)->addBuilder(elem, builder);
+  }
+};
+
 }
 }
 
@@ -247,6 +265,7 @@ template <class Base> struct CtorList<Base,void>
 
 #define SST_ELI_CTOR_COMMON(...) \
   using Ctor = ::SST::ELI::SingleCtor<__LocalEliBase,__VA_ARGS__>; \
+  using CtorTuple = std::tuple<__VA_ARGS__>; \
   using BaseBuilder = ::SST::ELI::Builder<__LocalEliBase,__VA_ARGS__>; \
   using BuilderLibrary = ::SST::ELI::BuilderLibrary<__LocalEliBase,__VA_ARGS__>; \
   using BuilderLibraryDatabase = ::SST::ELI::BuilderLibraryDatabase<__LocalEliBase,__VA_ARGS__>; \

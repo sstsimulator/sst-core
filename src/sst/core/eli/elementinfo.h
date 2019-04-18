@@ -334,6 +334,23 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
       && SST::ELI::InstantiateBuilderInfo<base,cls>::isLoaded(); \
   }
 
+#define SST_ELI_EXTENDS_BASE(Base,Derived) \
+  using __LocalEliBase = Derived; \
+  using Base::CtorTuple; \
+  template <class InfoImpl> static bool addInfo(const std::string& elemlib, const std::string& elem, \
+                                                InfoImpl* info){ \
+    return Base::addInfo(elemlib, elem, info) \
+      && ::SST::ELI::InfoDatabase::getLibrary<__LocalEliBase>(elemlib)->addInfo(elem,info); \
+  } \
+  static bool addBuilder(const std::string& elemlib, const std::string& elem, BaseBuilder* builder){ \
+    return getBuilderLibrary(elemlib)->addBuilder(elem,builder); \
+  } \
+  template <class __TT> static bool addDerivedBuilder(const std::string& lib, const std::string& elem){ \
+    return Base::addDerivedBuilder<__TT>(lib,elem) && \
+      SST::ELI::AddBuilderHelper<Derived,CtorTuple>::addDerivedBuilder<__TT>(lib,elem); \
+  }
+
+
 } //namespace SST
 
 #endif // SST_CORE_ELEMENTINFO_H
