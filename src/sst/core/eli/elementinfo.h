@@ -274,12 +274,8 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
   Macros used by elements to add element documentation
 **************************************************************************/
 
-#define SST_ELI_DECLARE_BASE(Base) \
-  using __LocalEliBase = Base; \
-  using InfoLibrary = ::SST::ELI::InfoLibrary<Base>; \
-  static const char* ELI_baseName(){ return #Base; }
-
 #define SST_ELI_DECLARE_INFO_COMMON() \
+  using InfoLibrary = ::SST::ELI::InfoLibrary<__LocalEliBase>; \
   template <class __TT> static bool addDerivedInfo(const std::string& lib, const std::string& elem){ \
     return addInfo(lib,elem,new BuilderInfo(lib,elem,(__TT*)nullptr)); \
   }
@@ -332,22 +328,6 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
   bool cls::ELI_isLoaded(){ \
     return SST::ELI::InstantiateBuilder<base,cls>::isLoaded() \
       && SST::ELI::InstantiateBuilderInfo<base,cls>::isLoaded(); \
-  }
-
-#define SST_ELI_EXTENDS_BASE(Base,Derived) \
-  using __LocalEliBase = Derived; \
-  using Base::CtorTuple; \
-  template <class InfoImpl> static bool addInfo(const std::string& elemlib, const std::string& elem, \
-                                                InfoImpl* info){ \
-    return Base::addInfo(elemlib, elem, info) \
-      && ::SST::ELI::InfoDatabase::getLibrary<__LocalEliBase>(elemlib)->addInfo(elem,info); \
-  } \
-  static bool addBuilder(const std::string& elemlib, const std::string& elem, BaseBuilder* builder){ \
-    return getBuilderLibrary(elemlib)->addBuilder(elem,builder); \
-  } \
-  template <class __TT> static bool addDerivedBuilder(const std::string& lib, const std::string& elem){ \
-    return Base::addDerivedBuilder<__TT>(lib,elem) && \
-      SST::ELI::AddBuilderHelper<Derived,CtorTuple>::addDerivedBuilder<__TT>(lib,elem); \
   }
 
 

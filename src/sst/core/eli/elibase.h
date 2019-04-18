@@ -129,4 +129,18 @@ class LoadedLibraries {
 
 #define ELI_FORWARD_AS_ONE(...) __VA_ARGS__
 
+#define SST_ELI_DECLARE_BASE(Base) \
+  using __LocalEliBase = Base; \
+  static const char* ELI_baseName(){ return #Base; }
+
+#define SST_ELI_DECLARE_NEW_BASE(OldBase,NewBase) \
+  using __LocalEliBase = NewBase; \
+  using __ParentEliBase = OldBase; \
+  template <class InfoImpl> static bool addInfo(const std::string& elemlib, const std::string& elem, \
+                                                InfoImpl* info){ \
+    return OldBase::addInfo(elemlib, elem, info) \
+      && ::SST::ELI::InfoDatabase::getLibrary<NewBase>(elemlib)->addInfo(elem,info); \
+  }
+
+
 #endif // SST_CORE_ELIBASE_H

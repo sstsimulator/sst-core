@@ -20,9 +20,12 @@
 namespace SST {
 namespace Statistics {
 
+#if 0
 class NewStatOutput : public StatisticOutput
 {
-  SST_ELI_EXTENDS_BASE(StatisticOutput,NewStatOutput)
+ public:
+  SST_ELI_DECLARE_NEW_BASE(StatisticOutput,NewStatOutput) 
+  SST_ELI_NEW_BASE_CTOR(int,int) 
 };
 
 class MyOutputTest : public NewStatOutput
@@ -37,6 +40,8 @@ class MyOutputTest : public NewStatOutput
     "Make sure eli works"
  )
     MyOutputTest(Params& outputParameters){}
+
+    MyOutputTest(int a, int b){}
 
     bool checkOutputParameters() override {}
 
@@ -93,6 +98,7 @@ class MyOutputTest : public NewStatOutput
 
 
 };
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////    
