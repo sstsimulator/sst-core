@@ -175,7 +175,7 @@ struct ElementsBuilder<Base, std::tuple<Args...>>
   }
 
   template <class T> static Builder<Base,Args...>* makeBuilder(){
-    return new DerivedBuilder<Base,T,Args...>();
+    return new DerivedBuilder<T,Base,Args...>();
   }
 
 };
