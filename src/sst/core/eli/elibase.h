@@ -133,9 +133,16 @@ class LoadedLibraries {
   using __LocalEliBase = Base; \
   static const char* ELI_baseName(){ return #Base; }
 
+#define SST_ELI_DECLARE_INFO_COMMON() \
+  using InfoLibrary = ::SST::ELI::InfoLibrary<__LocalEliBase>; \
+  template <class __TT> static bool addDerivedInfo(const std::string& lib, const std::string& elem){ \
+    return addInfo(lib,elem,new BuilderInfo(lib,elem,(__TT*)nullptr)); \
+  }
+
 #define SST_ELI_DECLARE_NEW_BASE(OldBase,NewBase) \
   using __LocalEliBase = NewBase; \
   using __ParentEliBase = OldBase; \
+  SST_ELI_DECLARE_INFO_COMMON() \
   template <class InfoImpl> static bool addInfo(const std::string& elemlib, const std::string& elem, \
                                                 InfoImpl* info){ \
     return OldBase::addInfo(elemlib, elem, info) \
