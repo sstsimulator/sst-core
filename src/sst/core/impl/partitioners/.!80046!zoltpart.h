@@ -8,20 +8,15 @@
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
-//
-#include "sst_config.h"
 
-#include "sst/core/interfaces/simpleNetwork.h"
 
-#include "sst/core/objectComms.h"
+#ifndef SST_CORE_IMPL_PARTITONERS_ZOLTPART_H
+#define SST_CORE_IMPL_PARTITONERS_ZOLTPART_H
 
-using namespace std;
 
-namespace SST {
-namespace Interfaces {
+#ifdef HAVE_ZOLTAN
 
-const SimpleNetwork::nid_t SimpleNetwork::INIT_BROADCAST_ADDR = 0xffffffffffffffffl;
-
-} // namespace Interfaces
-} // namespace SST
+#include <sst/core/sstpart.h>
+#include <sst/core/output.h>
+#include <sst/core/eli/elementinfo.h>
 
