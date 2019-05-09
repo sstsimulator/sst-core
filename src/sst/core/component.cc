@@ -68,14 +68,6 @@ Component::primaryComponentOKToEndSim()
 }
 
 
-
-bool Component::doesComponentInfoStatisticExist(const std::string &statisticName) const
-{
-    const std::string& type = getType();
-    return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
-}
-
-
 } // namespace SST
 
 

@@ -47,6 +47,47 @@ BaseComponent::~BaseComponent()
 }
 
 void
+BaseComponent::setDefaultTimeBaseForParentLinks(TimeConverter* tc) {
+    LinkMap* myLinks = my_info->getLinkMap();
+    if (NULL != myLinks) {
+        for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
+            // if ( NULL == p.second->getDefaultTimeBase() ) {
+            if ( NULL == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
+                p.second->setDefaultTimeBase(tc);
+            }
+        }
+    }
+
+    // Need to look through up through my parent chain, if I'm
+    // anonymous.
+    if ( my_info->isAnonymousSubComponent() ) {
+        my_info->parent_info->component->setDefaultTimeBaseForParentLinks(tc);
+    }
+}
+void
+BaseComponent::setDefaultTimeBaseForChildLinks(TimeConverter* tc) {
+    LinkMap* myLinks = my_info->getLinkMap();
+    if (NULL != myLinks) {
+        for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
+            // if ( NULL == p.second->getDefaultTimeBase() ) {
+            if ( NULL == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
+                p.second->setDefaultTimeBase(tc);
+            }
+        }
+    }
+
+    // Need to look through my child subcomponents and for all
+    // anonymously loaded subcomponents, set the default time base for
+    // any links they have.  These links would have been moved from
+    // the parent to the child.
+    for ( auto &sub : my_info->subComponents ) {
+        if ( sub.second.isAnonymousSubComponent() ) {
+            sub.second.component->setDefaultTimeBaseForChildLinks(tc);
+        }
+    }    
+}
+
+void
 BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
     LinkMap* myLinks = my_info->getLinkMap();
     if (NULL != myLinks) {
@@ -67,7 +108,13 @@ BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
             sub.second.component->setDefaultTimeBaseForLinks(tc);
         }
     }
-    
+
+    // Need to look through up through my parent chain, if I'm
+    // anonymous.
+    if ( my_info->isAnonymousSubComponent() ) {
+        my_info->parent_info->component->setDefaultTimeBaseForParentLinks(tc);
+    }
+
 }
 
 void
@@ -199,7 +246,6 @@ BaseComponent::configureLink(std::string name, TimeConverter* time_base, Event::
 {
     LinkMap* myLinks = my_info->getLinkMap();
 
-
     Link* tmp = NULL;
     
     // If I have a linkmap, check to see if a link was connected to
@@ -207,7 +253,6 @@ BaseComponent::configureLink(std::string name, TimeConverter* time_base, Event::
     if ( NULL != myLinks ) {
         tmp = myLinks->getLink(name);
     }
-
     // If tmp is NULL, then I didn't have the port connected, check
     // with parents if sharing is turned on
     if ( NULL == tmp ) {
@@ -321,11 +366,11 @@ SimTime_t BaseComponent::getCurrentSimTimeMilli() const {
     return getCurrentSimTime(getSimulation()->getTimeLord()->getMilli());
 }
 
-// bool BaseComponent::doesComponentInfoStatisticExist(const std::string &statisticName) const
-// {
-//     const std::string& type = my_info->getType();
-//     return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
-// }
+bool BaseComponent::doesComponentInfoStatisticExist(const std::string &statisticName) const
+{
+    const std::string& type = my_info->getType();
+    return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
+}
 
 
 Module*
@@ -477,16 +522,8 @@ SharedRegion* BaseComponent::getGlobalSharedRegion(const std::string &key, size_
 
 uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string &statisticName) const
 {
-    const std::string& type = getStatisticOwner()->my_info->getType();
-    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(type, statisticName);
+    return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(my_info->type, statisticName);
 }
-
-std::string BaseComponent::getComponentInfoStatisticUnits(const std::string &statisticName) const
-{
-    const std::string& type = getStatisticOwner()->my_info->getType();
-    return Factory::getFactory()->GetComponentInfoStatisticUnits(type, statisticName);
-}
-
 
 
 StatisticBase* 
@@ -534,24 +571,13 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
         out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
     }
 
-    /* Create the statistic in the "owning" component.  That should just be us, 
-     * in the case of 'modern' subcomponents.  For legacy subcomponents, that will
-     * be the owning component.  We've got the ID of that component in 'my_info->getID()'
-     */
-    // BaseComponent *owner = this->getStatisticOwner();
-
-    // // Verify here that name of the stat is one of the registered
-    // // names of the component's ElementInfoStatistic.
-    // if (false == doesComponentInfoStatisticExist(statName)) {
-    //     fprintf(stderr, "Error: Statistic %s name %s is not found in ElementInfoStatistic, exiting...\n", fullStatName.c_str(), statName.c_str());
-    //     exit(1);
-    // }
 
     // Need to check my enabled statistics and if it's not there, then
     // I need to check up my parent tree as long as insertStatistics
     // is enabled.
     curr_info = my_info;
     ComponentInfo* next_info = my_info;
+    // uint8_t stat_load_level;
     do {
         curr_info = next_info;
         // Check each entry in the StatEnableList (from the ConfigGraph via the 
@@ -583,6 +609,8 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
                     
                     collectionRate = UnitAlgebra(statRateParam);
                     statParams = si.params;
+                    // Get the load level from the component
+                    // stat_load_level = curr_info->component->getComponentInfoStatisticEnableLevel(si.name);
                     nameFound = true;
                     break;
                 }

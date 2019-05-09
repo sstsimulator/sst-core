@@ -18,10 +18,5 @@ namespace SST {
 SST_ELI_DEFINE_INFO_EXTERN(SubComponent)
 SST_ELI_DEFINE_CTOR_EXTERN(SubComponent)
 
-bool
-SubComponent::doesComponentInfoStatisticExist(const std::string &statisticName) const
-{
-    return Factory::getFactory()->DoesSubComponentInfoStatisticNameExist(getType(), statisticName);
-}
 
 } // namespace SST

@@ -43,12 +43,12 @@ public:
 	SubComponent(Component* parent) :
         BaseComponent(parent->getCurrentlyLoadingSubComponentID()),
         parent(parent)
-        {}
+     {}
 
 	SubComponent(ComponentId_t id) :
         BaseComponent(id),
         parent(getTrueComponent())
-        {}
+    {}
 
 	virtual ~SubComponent() {};
 
@@ -65,22 +65,12 @@ public:
 protected:
     Component* const parent;
 
-    Component* getTrueComponent() const final override { return parent; }
-    BaseComponent* getStatisticOwner() const final override {
-        /* If our ID == parent ID, then we're a legacy subcomponent that doesn't own stats. */
-        if ( this->getId() == parent->getId() )
-            return parent;
-        return const_cast<SubComponent*>(this);
-    }
-
     /* Deprecate?   Old ELI style*/
     SubComponent* loadSubComponent(std::string type, Params& params) {
         // return parent->loadSubComponent(type, parent, params);
         return BaseComponent::loadSubComponent(type, getTrueComponent(), params);
     }
 
-    // // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final override;
 
 private:
     /** Component's type, set by the factory when the object is created.
@@ -93,8 +83,16 @@ private:
 
 } //namespace SST
 
+#define SST_ELI_REGISTER_SUBCOMPONENT_API(cls,...) \
+    SST_ELI_DECLARE_NEW_BASE(SST::SubComponent,::cls)           \
+    SST_ELI_NEW_BASE_CTOR(ComponentId_t,Params&,##__VA_ARGS__)
+
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,version,desc,interface)   \
   SST_ELI_REGISTER_DERIVED(SST::SubComponent,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
   SST_ELI_INTERFACE_INFO(interface)
+
+#define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(cls,lib,name,version,desc,interface)   \
+    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+  SST_ELI_INTERFACE_INFO(#interface)
 
 #endif // SST_CORE_SUBCOMPONENT_H

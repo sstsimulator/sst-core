@@ -221,8 +221,6 @@ Factory::CreateComponent(ComponentId_t id,
         if (compLib){
           auto* fact = compLib->getBuilder(elem);
           if (fact){
-            // LinkMap *lm = Simulation::getSimulation()->getComponentLinkMap(id);
-            // lm->setAllowedPorts(&(compInfo->getPortnames()));
             loadingComponentType = type;
             params.pushAllowedKeys(compInfo->getParamNames());
             Component* ret = fact->create(id,params);
@@ -298,55 +296,32 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
 
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
-    auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if (lib){
-      auto* info = lib->getInfo(elem);
-      if (info){
-        for (auto& item : info->getStatnames()) {
-            if (statisticName == item) {
-                return true;
+    auto* sublib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    if (sublib){
+        auto* info = sublib->getInfo(elem);
+        if (info){
+            for ( auto& item : info->getStatnames() ) {
+                if ( statisticName == item ) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
-      }
     }
 
-    
-    // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n ", type.c_str());
-    return false;
-}
-
-bool 
-Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName)
-{
-    std::string compTypeToLoad = type;
-    if (true == type.empty()) { 
-        compTypeToLoad = loadingComponentType;
-    }
-    
-    std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
-
-    // ensure library is already loaded...
-    requireLibrary(elemlib);
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-
-    // Check to see if library is loaded into new
-    // ElementLibraryDatabase
-    auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if (lib){
-      auto* info = lib->getInfo(elem);
-      if (info){
-        for ( auto& item : info->getStatnames() ) {
-            if ( statisticName == item ) {
-                return true;
+    auto* complib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    if (complib){
+        auto* info = complib->getInfo(elem);
+        if (info){
+            for ( auto& item : info->getStatnames() ) {
+                if ( statisticName == item ) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
-      }
     }
+    
 
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested subcomponent '%s'\n ", type.c_str());

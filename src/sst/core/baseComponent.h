@@ -263,12 +263,13 @@ public:
         // Check to see if the Statistic is previously registered with the Statistics Engine
         auto* engine = StatisticProcessingEngine::getInstance();
         StatisticBase* stat = engine->isStatisticRegisteredWithEngine(getName(), my_info->getID(), statName, statSubId, StatisticFieldType<T>::id());
+
         if (!stat){
             //stat does not exist yet
             auto makeInstance = [=](const std::string& type, BaseComponent* comp,
                                     const std::string& name, const std::string& subName,
                                     SST::Params& params) -> StatisticBase* {
-              return engine->createStatistic<T>(comp, type, name, subName, params);
+                return engine->createStatistic<T>(comp, type, name, subName, params);
             };
             stat = registerStatisticCore(params, statName, statSubId, StatisticFieldType<T>::id(),
                                          std::move(makeInstance));
@@ -342,18 +343,9 @@ public:
         //This shouldn't happen since we just put it in, but just in case
         if ( sub_info == NULL ) return NULL;
 
-        
-        // Check to see if this is documented, and if so, try to load it through the ElementBuilder
-        if ( doesSubComponentExist(sub_info->getType()) ) {            
-            // Need to set the valid params
-            pushValidParams(params, type);
-            auto ret = T::ELI_ElementBuilder.build(sub_info->getType(),sub_info->id,params,args...);
-            params.popAllowedKeys();
-            return ret;
-        }
+        auto ret = Factory::getFactory()->Create<T>(type, params, sub_info->id, params, args...);
 
-        return nullptr;        
-        
+        return ret;        
     }
 
     
@@ -403,6 +395,11 @@ private:
     SubComponent* loadNamedSubComponent(std::string name, int slot_num, Params& params);
 
 
+    // These two functions are only need for backward compatibility
+    // for anonymous subcomponents.
+    void setDefaultTimeBaseForParentLinks(TimeConverter* tc);
+    void setDefaultTimeBaseForChildLinks(TimeConverter* tc);
+
     void setDefaultTimeBaseForLinks(TimeConverter* tc);
 
     void pushValidParams(Params& params, const std::string& type);
@@ -416,20 +413,13 @@ private:
         sub_info->parent_info = my_info;
         
         // Check to see if this is documented, and if so, try to load it through the ElementBuilder
-        if ( doesSubComponentExist(sub_info->getType()) ) {
-            Params myParams;
-            if ( sub_info->getParams() != NULL ) {
-                myParams.insert(*sub_info->getParams());
-            }
-            
-            pushValidParams(myParams, sub_info->getType());
-            auto ret = T::ELI_ElementBuilder.build(sub_info->getType(),sub_info->id,myParams,args...);
-            myParams.popAllowedKeys();
-
-            return ret;
+        Params myParams;
+        if ( sub_info->getParams() != NULL ) {
+            myParams.insert(*sub_info->getParams());
         }
-
-        return nullptr;        
+        auto ret = Factory::getFactory()->Create<T>(sub_info->type, myParams, sub_info->id, myParams, args...);
+        return ret;
+        // return nullptr;        
     }
 
 
@@ -475,19 +465,15 @@ protected:
     Simulation* getSimulation() const { return sim; }
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const = 0;
+    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const;
     // Return the EnableLevel for the statisticName from the ElementInfoStatistic
     uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) const;
     // Return the Units for the statisticName from the ElementInfoStatistic
-    std::string getComponentInfoStatisticUnits(const std::string &statisticName) const;
+    // std::string getComponentInfoStatisticUnits(const std::string &statisticName) const;
 
-    virtual Component* getTrueComponent() const = 0;
-    /**
-     * Returns self if Component
-     * If sub-component, returns self if a "modern" subcomponent
-     *    otherwise, return base component.
-     */
-    virtual BaseComponent* getStatisticOwner() const = 0;
+    Component* getTrueComponent() const;
+    
+
 
 protected:
     Simulation *sim;

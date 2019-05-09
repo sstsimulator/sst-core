@@ -274,16 +274,6 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
   Macros used by elements to add element documentation
 **************************************************************************/
 
-#define SST_ELI_DECLARE_BASE(Base) \
-  using __LocalEliBase = Base; \
-  using InfoLibrary = ::SST::ELI::InfoLibrary<Base>; \
-  static const char* ELI_baseName(){ return #Base; }
-
-#define SST_ELI_DECLARE_INFO_COMMON() \
-  template <class __TT> static bool addDerivedInfo(const std::string& lib, const std::string& elem){ \
-    return addInfo(lib,elem,new BuilderInfo(lib,elem,(__TT*)nullptr)); \
-  }
-
 #define SST_ELI_DECLARE_INFO(...) \
   using BuilderInfo = ::SST::ELI::BuilderInfoImpl<__VA_ARGS__,SST::ELI::ProvidesDefaultInfo,void>; \
   template <class BuilderImpl> static bool addInfo(const std::string& elemlib, const std::string& elem, \
@@ -333,6 +323,7 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
     return SST::ELI::InstantiateBuilder<base,cls>::isLoaded() \
       && SST::ELI::InstantiateBuilderInfo<base,cls>::isLoaded(); \
   }
+
 
 } //namespace SST
 

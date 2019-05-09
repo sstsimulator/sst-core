@@ -114,18 +114,6 @@ protected:
     friend class SubComponent;
     Component() {} // Unused, but previously available
 
-    Component* getTrueComponent() const final override { return const_cast<Component*>(this); }
-    BaseComponent* getStatisticOwner() const final override { return const_cast<Component*>(this); }
-
-
-    // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final override;
-
-private:
-
-    /** Unique ID */
-    // ComponentId_t   id;
-
 };
 
 } //namespace SST

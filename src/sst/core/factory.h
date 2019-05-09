@@ -109,30 +109,31 @@ public:
      */
     template <class Base, class... CtorArgs>
     Base* Create(const std::string& type, SST::Params& params, CtorArgs&&... args){
-      std::string elemlib, elem;
-      std::tie(elemlib, elem) = parseLoadName(type);
+        std::string elemlib, elem;
+        std::tie(elemlib, elem) = parseLoadName(type);
 
-      requireLibrary(elemlib);
-      std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+        requireLibrary(elemlib);
+        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
-      auto* lib = ELI::InfoDatabase::getLibrary<Base>(elemlib);
-      if (lib){
-        auto* info = lib->getInfo(elem);
-        if (info){
-          auto* builderLib = Base::getBuilderLibrary(elemlib);
-          if (builderLib){
-            auto* fact = builderLib->getBuilder(elem);
-            if (fact){
-              params.pushAllowedKeys(info->getParamNames());
-              Base* ret = fact->create(std::forward<CtorArgs>(args)...);
-              params.popAllowedKeys();
-              return ret;
+        auto* lib = ELI::InfoDatabase::getLibrary<Base>(elemlib);
+        if (lib){
+            auto map = lib->getMap();
+            auto* info = lib->getInfo(elem);
+            if (info){
+                auto* builderLib = Base::getBuilderLibrary(elemlib);
+                if (builderLib){
+                    auto* fact = builderLib->getBuilder(elem);
+                    if (fact){
+                        params.pushAllowedKeys(info->getParamNames());
+                        Base* ret = fact->create(std::forward<CtorArgs>(args)...);
+                        params.popAllowedKeys();
+                        return ret;
+                    }
+                }
             }
-          }
         }
-      }
-      notFound(Base::ELI_baseName(), type);
-      return nullptr;
+        notFound(Base::ELI_baseName(), type);
+        return nullptr;
     }
 
     /** Instantiate a new Statistic
@@ -196,7 +197,7 @@ public:
      * @param statisticName - The name of the statistic 
      * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
-    bool DoesSubComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
+    // bool DoesSubComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
 
     /** Get the enable level of a statistic defined in the component's ElementInfoStatistic
      * @param componentname - The name of the component
