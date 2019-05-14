@@ -35,11 +35,7 @@ BaseComponent::BaseComponent(ComponentId_t id) :
     my_info(Simulation::getSimulation()->getComponentInfo(id)),
     currentlyLoadingSubComponent(NULL)
 {
-    // If the component field is already set, then this is a direct
-    // load subcomponent, and we don't need to reset it.
-    if ( my_info->component == NULL )
-        my_info->component = this;
-}    
+}
 
 
 BaseComponent::~BaseComponent()
@@ -58,9 +54,9 @@ BaseComponent::setDefaultTimeBaseForParentLinks(TimeConverter* tc) {
         }
     }
 
-    // Need to look through up through my parent chain, if I'm
+    // Need to look through up through my parent chain, if I'm legacy
     // anonymous.
-    if ( my_info->isAnonymousSubComponent() ) {
+    if ( my_info->isLegacySubComponent() ) {
         my_info->parent_info->component->setDefaultTimeBaseForParentLinks(tc);
     }
 }
@@ -76,12 +72,12 @@ BaseComponent::setDefaultTimeBaseForChildLinks(TimeConverter* tc) {
         }
     }
 
-    // Need to look through my child subcomponents and for all
+    // Need to look through my child subcomponents and for all legacy
     // anonymously loaded subcomponents, set the default time base for
     // any links they have.  These links would have been moved from
     // the parent to the child.
     for ( auto &sub : my_info->subComponents ) {
-        if ( sub.second.isAnonymousSubComponent() ) {
+        if ( sub.second.isLegacySubComponent() ) {
             sub.second.component->setDefaultTimeBaseForChildLinks(tc);
         }
     }    
@@ -104,14 +100,14 @@ BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
     // any links they have.  These links would have been moved from
     // the parent to the child.
     for ( auto &sub : my_info->subComponents ) {
-        if ( sub.second.isAnonymousSubComponent() ) {
+        if ( sub.second.isLegacySubComponent() ) {
             sub.second.component->setDefaultTimeBaseForLinks(tc);
         }
     }
 
     // Need to look through up through my parent chain, if I'm
     // anonymous.
-    if ( my_info->isAnonymousSubComponent() ) {
+    if ( my_info->isLegacySubComponent() ) {
         my_info->parent_info->component->setDefaultTimeBaseForParentLinks(tc);
     }
 
@@ -270,7 +266,7 @@ BaseComponent::configureLink(std::string name, TimeConverter* time_base, Event::
                 // except in the case of this being an Anonymously
                 // loadeed SubComponent, then for backward
                 // compatibility, we leave it as is.
-                if ( !my_info->isAnonymousSubComponent() ) {
+                if ( !my_info->isLegacySubComponent() ) {
                     tmp->setDefaultTimeBase(NULL);
                 }
             }
@@ -395,8 +391,8 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
     // /* By "magic", the new component will steal ownership of this pointer */
     // currentlyLoadingSubComponent = sub_info;
     ComponentId_t cid = comp->currentlyLoadingSubComponentID;
-    comp->currentlyLoadingSubComponentID = my_info->addComponentDefinedSubComponent(my_info, type, "ANONYMOUS", 0,
-          ComponentInfo::SHARE_PORTS | ComponentInfo::SHARE_STATS | ComponentInfo::INSERT_STATS | ComponentInfo::IS_ANONYMOUS_SUBCOMPONENT);
+    comp->currentlyLoadingSubComponentID = my_info->addAnonymousSubComponent(my_info, type, "LEGACY", 0,
+          ComponentInfo::SHARE_PORTS | ComponentInfo::SHARE_STATS | ComponentInfo::INSERT_STATS | ComponentInfo::IS_LEGACY_SUBCOMPONENT);
     
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
     comp->currentlyLoadingSubComponentID = cid;
@@ -587,7 +583,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
         // Only check for stat enables if I'm a not a component
         // defined SubComponet, because component defined
         // SubComponents don't have a stat enable list.
-        if ( !curr_info->isComponentDefined() ) {
+        if ( !curr_info->isAnonymous() ) {
             for ( auto & si : *curr_info->getStatEnableList() ) {
                 // First check to see if the any entry in the StatEnableList matches 
                 // the Statistic Name or the STATALLFLAG.  If so, then this Statistic

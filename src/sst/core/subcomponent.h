@@ -40,7 +40,7 @@ public:
       ELI::ProvidesStats,
       ELI::ProvidesInterface)
 
-	SubComponent(Component* parent) :
+	SubComponent(Component* parent) __attribute__ ((deprecated("This version of SubComponent constructor will be removed in SST version 10.0.  Please switch to new API which uses SubComponent(ComponentId_t)."))) :
         BaseComponent(parent->getCurrentlyLoadingSubComponentID()),
         parent(parent)
      {}

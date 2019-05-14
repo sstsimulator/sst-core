@@ -55,7 +55,7 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
 // }
 
 
-// Constructor used for ComponentDefined SubComponents
+// Constructor used for Anonymous SubComponents
 ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string &type,
                              const std::string& slot_name, int slot_num, uint64_t share_flags/*, const Params& params_in*/) :
     id(id),
@@ -145,7 +145,7 @@ ComponentInfo::~ComponentInfo() {
     if ( component ) {
         // For backward compatibility, don't delete component defined
         // (anonymous) subcomponents since they weren't before.
-        if ( !isComponentDefined() ) {
+        if ( !isAnonymous() ) {
             delete component;
         }
     }
@@ -159,8 +159,8 @@ ComponentInfo::getLinkMap() {
 
 
 ComponentId_t
-ComponentInfo::addComponentDefinedSubComponent(ComponentInfo* parent_info, const std::string& type, const std::string& slot_name,
-                                               int slot_num, uint64_t share_flags)
+ComponentInfo::addAnonymousSubComponent(ComponentInfo* parent_info, const std::string& type, const std::string& slot_name,
+                                        int slot_num, uint64_t share_flags)
 {
     // First, get the next subIDIndex by working our way up to the
     // actual component (parent pointer will be NULL).

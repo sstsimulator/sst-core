@@ -42,6 +42,7 @@ class UnitAlgebra;
 class SharedRegion;
 class SharedRegionMerger;
 class Component;
+class ComponentExtension;
 class SubComponent;
 class SubComponentSlotInfo;
 
@@ -55,7 +56,6 @@ class BaseComponent {
 
 public:
 
-    BaseComponent(Component* parent);
     BaseComponent(ComponentId_t id);
     BaseComponent() {}
     virtual ~BaseComponent();
@@ -321,23 +321,21 @@ public:
     Module* loadModuleWithComponent(std::string type, Component* comp, Params& params);
 
 
-    // When you direct load, the subcomponent does not need any ELI
-    // information and if it has any, it will be ignored.  The
-    // subcomponent will be loaded as if it were part of the part
+    // When you direct load, the ComponentExtension does not need any
+    // ELI information and if it has any, it will be ignored.  The
+    // extension will be loaded as if it were part of the part
     // BaseComponent and will share all that components ELI
     // information.
     template <class T, class... ARGS>
-    T* directLoadSubComponent(ARGS... args) {
-        T* ret = new T(my_info->id, args...);
-        return ret;
+    T* loadComponentExtension(ARGS... args) {
+        ComponentExtension* ret = new T(my_info->id, args...);
+        return static_cast<T*>(ret);
     }
 
-    
-
     template <class T, class... ARGS>
-    T* loadComponentDefinedSubComponent(std::string type, std::string slot_name, int slot_num, uint64_t share_flags, Params& params, ARGS... args) {
+    T* loadAnonymousSubComponent(std::string type, std::string slot_name, int slot_num, uint64_t share_flags, Params& params, ARGS... args) {
 
-        ComponentId_t cid = my_info->addComponentDefinedSubComponent(my_info, type, slot_name, slot_num, share_flags);
+        ComponentId_t cid = my_info->addAnonymousSubComponent(my_info, type, slot_name, slot_num, share_flags);
         ComponentInfo* sub_info = my_info->findSubComponent(cid);
 
         //This shouldn't happen since we just put it in, but just in case
@@ -350,12 +348,12 @@ public:
 
     
     template <class T, class... ARGS>
-    T* loadPythonDefinedSubComponent(std::string slot_name, ARGS... args) {
-        return loadPythonDefinedSubComponent<T,ARGS...>(slot_name, ComponentInfo::SHARE_NONE, args...);
+    T* loadUserSubComponent(std::string slot_name, ARGS... args) {
+        return loadUserSubComponent<T,ARGS...>(slot_name, ComponentInfo::SHARE_NONE, args...);
     }
     
     template <class T, class... ARGS>
-    T* loadPythonDefinedSubComponent(std::string slot_name, int share_flags, ARGS... args) {
+    T* loadUserSubComponent(std::string slot_name, int share_flags, ARGS... args) {
 
         // Get list of ComponentInfo objects and make sure that there is
         // only one SubComponent put into this slot
@@ -376,7 +374,7 @@ public:
                         slot_name.c_str(), my_info->getType().c_str(), sub_count);
         }
         
-        return loadPythonDefinedSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);        
+        return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);        
     }
         
     /** Loads a SubComponent from an element Library
@@ -385,12 +383,16 @@ public:
      * @param params Parameters the module should use for configuration
      * @return handle to new instance of SubComponent, or NULL on failure.
      */
-    SubComponent* loadSubComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new python defined API (LoadPythonDefinedSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadSubComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new python defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+
     /* New ELI style */
-    SubComponent* loadNamedSubComponent(std::string name);
-    SubComponent* loadNamedSubComponent(std::string name, Params& params);
+    SubComponent* loadNamedSubComponent(std::string name) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new python defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadNamedSubComponent(std::string name, Params& params) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new python defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
 
 private:
+
+    bool direct_load_sub;
+    
     SubComponent* loadNamedSubComponent(std::string name, int slot_num);
     SubComponent* loadNamedSubComponent(std::string name, int slot_num, Params& params);
 
@@ -405,7 +407,7 @@ private:
     void pushValidParams(Params& params, const std::string& type);
     
     template <class T, class... ARGS>
-    T* loadPythonDefinedSubComponentByIndex(std::string slot_name, int slot_num, int share_flags, ARGS... args) {
+    T* loadUserSubComponentByIndex(std::string slot_name, int slot_num, int share_flags, ARGS... args) {
         // Check to see if the slot exists
         ComponentInfo* sub_info = my_info->findSubComponent(slot_name,slot_num);
         if ( sub_info == NULL ) return NULL;
@@ -437,12 +439,12 @@ public:
 protected:
     friend class SST::Statistics::StatisticProcessingEngine;
 
-    bool isComponentDefined() {
-        return my_info->isComponentDefined();
+    bool isAnonymous() {
+        return my_info->isAnonymous();
     }
 
-    bool isPythonDefined() {
-        return my_info->isPythonDefined();
+    bool isUser() {
+        return my_info->isUser();
     }
     
     /** Manually set the default detaulTimeBase */
@@ -605,7 +607,7 @@ public:
 
     template <class T, class... ARGS>
     T* create(int slot_num, int share_flags, ARGS... args) const {
-        return comp->loadPythonDefinedSubComponentByIndex<T,ARGS...>(slot_name,slot_num, share_flags, args...);
+        return comp->loadUserSubComponentByIndex<T,ARGS...>(slot_name,slot_num, share_flags, args...);
     }
 
     template <typename T, class... ARGS>
