@@ -40,7 +40,7 @@ public:
       ELI::ProvidesStats,
       ELI::ProvidesInterface)
 
-	SubComponent(Component* parent) __attribute__ ((deprecated("This version of SubComponent constructor will be removed in SST version 10.0.  Please switch to new API which uses SubComponent(ComponentId_t)."))) :
+	SubComponent(Component* parent) :
         BaseComponent(parent->getCurrentlyLoadingSubComponentID()),
         parent(parent)
      {}
@@ -63,13 +63,10 @@ public:
     virtual void finish( ) override { }
 
 protected:
-    Component* const parent;
+    Component* const parent __attribute__ ((deprecated("The parent data member will be removed in SST version 10.0.  With the sbcomponent structure, direct access to your parent is not allowed.")));
 
     /* Deprecate?   Old ELI style*/
-    SubComponent* loadSubComponent(std::string type, Params& params) {
-        // return parent->loadSubComponent(type, parent, params);
-        return BaseComponent::loadSubComponent(type, getTrueComponent(), params);
-    }
+    SubComponent* loadSubComponent(std::string type, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
 
 
 private:
@@ -88,11 +85,11 @@ private:
     SST_ELI_NEW_BASE_CTOR(ComponentId_t,Params&,##__VA_ARGS__)
 
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,version,desc,interface)   \
-  SST_ELI_REGISTER_DERIVED(SST::SubComponent,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
-  SST_ELI_INTERFACE_INFO(interface)
+    SST_ELI_REGISTER_DERIVED(SST::SubComponent,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+    SST_ELI_INTERFACE_INFO(interface)
 
 #define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(cls,lib,name,version,desc,interface)   \
     SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
-  SST_ELI_INTERFACE_INFO(#interface)
+    SST_ELI_INTERFACE_INFO(#interface)
 
 #endif // SST_CORE_SUBCOMPONENT_H

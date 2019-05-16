@@ -383,11 +383,11 @@ public:
      * @param params Parameters the module should use for configuration
      * @return handle to new instance of SubComponent, or NULL on failure.
      */
-    SubComponent* loadSubComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new python defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadSubComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
 
     /* New ELI style */
-    SubComponent* loadNamedSubComponent(std::string name) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new python defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-    SubComponent* loadNamedSubComponent(std::string name, Params& params) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new python defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadNamedSubComponent(std::string name) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadNamedSubComponent(std::string name, Params& params) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
 
 private:
 

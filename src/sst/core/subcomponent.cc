@@ -18,5 +18,10 @@ namespace SST {
 SST_ELI_DEFINE_INFO_EXTERN(SubComponent)
 SST_ELI_DEFINE_CTOR_EXTERN(SubComponent)
 
+SubComponent*
+SubComponent::loadSubComponent(std::string type, Params& params)
+{
+    return BaseComponent::loadSubComponent(type, getTrueComponent(), params);
+}
 
 } // namespace SST
