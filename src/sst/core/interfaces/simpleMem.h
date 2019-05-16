@@ -38,6 +38,7 @@ namespace Interfaces {
 class SimpleMem : public SubComponent {
 
 public:
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleMem)
     /** All Addresses can be 64-bit */
     typedef uint64_t Addr;
 
@@ -308,6 +309,11 @@ public:
     /** Constructor, designed to be used via 'loadSubComponent'. */
     SimpleMem(SST::Component *comp, Params &UNUSED(params)) :
         SubComponent(comp)
+        { }
+
+    /** Constructor, designed to be used via 'loadUserSubComponent and loadAnonymousSubComponent'. */
+    SimpleMem(SST::ComponentId_t id, Params &UNUSED(params)) :
+        SubComponent(id)
         { }
 
     /** Second half of building the interface.
