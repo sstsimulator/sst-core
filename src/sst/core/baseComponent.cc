@@ -35,6 +35,7 @@ BaseComponent::BaseComponent(ComponentId_t id) :
     my_info(Simulation::getSimulation()->getComponentInfo(id)),
     currentlyLoadingSubComponent(NULL)
 {
+    my_info->component = this;
 }
 
 
@@ -453,7 +454,7 @@ BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& par
         SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
         outXX.output(CALL_INFO, "Warning: SubComponentSlot \"%s\" is undocumented.\n", name.c_str());
     }
-    
+
     ComponentInfo* sub_info = my_info->findSubComponent(name,slot_num);
     if ( sub_info == NULL ) return NULL;
     sub_info->share_flags = ComponentInfo::SHARE_NONE;
