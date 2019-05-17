@@ -18,6 +18,17 @@ namespace SST {
 SST_ELI_DEFINE_INFO_EXTERN(SubComponent)
 SST_ELI_DEFINE_CTOR_EXTERN(SubComponent)
 
+SubComponent::SubComponent(Component* parent) :
+    BaseComponent(parent->getCurrentlyLoadingSubComponentID()),
+    parent(parent)
+{}
+
+SubComponent::SubComponent(ComponentId_t id) :
+    BaseComponent(id),
+    parent(getTrueComponent())
+{}
+
+
 SubComponent*
 SubComponent::loadSubComponent(std::string type, Params& params)
 {
