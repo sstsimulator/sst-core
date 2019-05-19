@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -24,7 +24,6 @@
 #include <ctime>
 
 #include <sst/core/elemLoader.h>
-#include <sst/core/element.h>
 #include <sst/core/component.h>
 #include <sst/core/subcomponent.h>
 #include <sst/core/part/sstpart.h>
@@ -87,18 +86,6 @@ public:
     void outputXML();
 } g_Outputter;
 
-ElementLibraryInfo info_empty_eli = {
-    "",
-    "",
-    NULL,
-    NULL,   // Events
-    NULL,   // Introspectors
-    NULL,
-    NULL,
-    NULL, // partitioners,
-    NULL,  // Python Module Generator
-    NULL // generators,
-};
 
 // Forward Declarations
 void initLTDL(std::string searchPath);
@@ -152,28 +139,19 @@ static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
     if ( g_configuration.debugEnabled() )
         fprintf (stdout, "Looking for library \"%s\"\n", lib.c_str());
 
-    const ElementLibraryInfo* pELI = (lib == "sst") ?
-        loader.loadCoreInfo() :
-        loader.loadLibrary(lib, g_configuration.debugEnabled());
+    loader.loadLibrary(lib, g_configuration.debugEnabled());
 
-    if (pELI) {
-      loader.loadOldELI(pELI, g_foundGenerators);
-    } else {
-      // Check to see if this library loaded into the new ELI
-      // Database
-      if (ELI::LoadedLibraries::isLoaded(lib)) {
-          pELI = &info_empty_eli;
-      } else if (!optional){
+    // Check to see if this library loaded into the new ELI
+    // Database
+    if (ELI::LoadedLibraries::isLoaded(lib)) {
+        g_fileProcessedCount++;
+        g_libInfoArray.emplace_back(lib);
+    } else if (!optional){
         fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s\n", lib.c_str());
-      } else {
+    } else {
         fprintf(stdout, "**** %s not Found!\n", lib.c_str());
-      }
     }
 
-    if (pELI){
-      g_fileProcessedCount++;
-      g_libInfoArray.emplace_back(lib);
-    }
 }
 
 
@@ -189,7 +167,6 @@ static void processSSTElementFiles()
     if ( processLibs.empty() ) {
         for ( auto & i : potentialLibs )
             processLibs.insert(i);
-        processLibs.insert("sst"); // Core libraries
     }
 
     for ( auto l : processLibs ) {

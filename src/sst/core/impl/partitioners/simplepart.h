@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -16,7 +16,7 @@
 #include <sst/core/sst_types.h>
 #include <sst/core/sstpart.h>
 
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 #include <sst/core/configGraph.h>
 
 namespace SST {
@@ -54,6 +54,10 @@ public:
     ~SimplePartitioner() {}
 
     void performPartition(PartitionGraph* graph) override;
+
+		void performPartition(ConfigGraph* graph) override {
+			SST::Partition::SSTPartitioner::performPartition(graph);
+		}
 
     bool requiresConfigGraph() override { return false; }
     bool spawnOnAllRanks() override { return false; }

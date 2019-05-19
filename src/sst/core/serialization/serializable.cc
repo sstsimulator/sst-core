@@ -1,7 +1,7 @@
 /*
  *  This file is part of SST/macroscale:
  *               The macroscale architecture simulator from the SST suite.
- *  Copyright (c) 2009-2018 NTESS.
+ *  Copyright (c) 2009-2019 NTESS.
  *  This software is distributed under the BSD License.
  *  Under the terms of Contract DE-NA0003525 with NTESS,
  *  the U.S. Government retains certain rights in this software.
@@ -26,8 +26,9 @@ serializable_factory::builder_map* serializable_factory::builders_ = 0;
 void
 serializable::serializable_abort(uint32_t line, const char* file, const char* func, const char* obj)
 {
-    SST::Output ser_abort("", 5, -1, SST::Output::STDERR);
-    ser_abort.fatal(line, file, func, -1, "ERROR: type %s should not be serialized\n",obj);
+    SST::Output ser_abort("", 5, SST::Output::PrintAll, SST::Output::STDERR);
+    ser_abort.fatal(line, file, func, 1,
+							      "ERROR: type %s should not be serialized\n",obj);
 }
 
 uint32_t

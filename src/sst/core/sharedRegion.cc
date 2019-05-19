@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -225,9 +225,9 @@ SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string &k
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
-        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Mismatched Sizes!\n");
+        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Mismatched Sizes!\n");
     } else {
-        if ( false == ri.initialize(key, size, initByte, NULL) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Shared Region Initialized Failed!\n");
+        if ( false == ri.initialize(key, size, initByte, NULL) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Shared Region Initialized Failed!\n");
     }
     return ri.addSharer(this);
 }
@@ -238,9 +238,9 @@ SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string &
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
-        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Mismatched Sizes!\n");
+        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Mismatched Sizes!\n");
     } else {
-        if ( false == ri.initialize(key, size, initByte, merger) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Shared Region Initialized Failed!\n");
+        if ( false == ri.initialize(key, size, initByte, merger) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Shared Region Initialized Failed!\n");
     }
     return ri.addSharer(this);
 }

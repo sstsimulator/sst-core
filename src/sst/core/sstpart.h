@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -15,7 +15,7 @@
 
 #include <sst/core/rankInfo.h>
 #include <sst/core/warnmacros.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 #include <map>
 
@@ -47,7 +47,7 @@ public:
      * Result of this function is that every ConfigComponent in
      * graph has a Rank applied to it.
      */
-    virtual void performPartition(PartitionGraph* UNUSED(graph)) {}
+    virtual void performPartition(PartitionGraph* graph);
 
     /** Function to be overridden by subclasses
      *
@@ -58,7 +58,7 @@ public:
      * Result of this function is that every ConfigComponent in
      * graph has a Rank applied to it.
      */
-    virtual void performPartition(ConfigGraph* UNUSED(graph)) {}
+    virtual void performPartition(ConfigGraph* graph);
     
     virtual bool requiresConfigGraph() { return false; }
     

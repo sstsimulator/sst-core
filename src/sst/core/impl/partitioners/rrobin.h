@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -12,7 +12,7 @@
 #define SST_CORE_IMPL_PARTITONERS_RROBIN_H
 
 #include <sst/core/sstpart.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 namespace SST {
 namespace IMPL {
@@ -38,7 +38,11 @@ public:
        Performs a partition of an SST simulation configuration
        \param graph The simulation configuration to partition
     */
-	void performPartition(PartitionGraph* graph) override;
+	  void performPartition(PartitionGraph* graph) override;
+
+    void performPartition(ConfigGraph* graph) override {
+			SST::Partition::SSTPartitioner::performPartition(graph);
+		}
 
     bool requiresConfigGraph() override { return false; }
     bool spawnOnAllRanks() override { return false; }

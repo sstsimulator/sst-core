@@ -2,8 +2,7 @@
 #ifndef SST_CORE_FACTORY_INFO_H
 #define SST_CORE_FACTORY_INFO_H
 
-#include <sst/core/oldELI.h>
-#include <sst/core/elibase.h>
+#include <sst/core/eli/elibase.h>
 #include <type_traits>
 
 namespace SST {
@@ -47,12 +46,11 @@ class BuilderLibrary
 
   bool addBuilder(const std::string& elem, BaseBuilder* fact){
     readdBuilder(elem, fact);
-    addLoader(name_, elem, fact);
-    return true;
+    return addLoader(name_, elem, fact);
   }
 
  private:
-  void addLoader(const std::string& elemlib, const std::string& elem, BaseBuilder* fact);
+  bool addLoader(const std::string& elemlib, const std::string& elem, BaseBuilder* fact);
 
   std::map<std::string, BaseBuilder*> factories_;
 
@@ -89,8 +87,8 @@ template <class Base, class... CtorArgs> typename BuilderLibraryDatabase<Base,Ct
   BuilderLibraryDatabase<Base,CtorArgs...>::libraries = nullptr;
 
 template <class Base, class... CtorArgs>
-void BuilderLibrary<Base,CtorArgs...>::addLoader(const std::string &elemlib, const std::string &elem, BaseBuilder *fact){
-  ELI::LoadedLibraries::addLoader(elemlib, elem, [=]{
+bool BuilderLibrary<Base,CtorArgs...>::addLoader(const std::string &elemlib, const std::string &elem, BaseBuilder *fact){
+  return ELI::LoadedLibraries::addLoader(elemlib, elem, [=]{
       BuilderLibraryDatabase<Base,CtorArgs...>::getLibrary(elemlib)->readdBuilder(elem,fact);
   });
 }
@@ -140,25 +138,6 @@ struct DerivedBuilder : public Builder<Base,Args...>
   }
 };
 
-template <class Base, class... Args>
-struct DerivedBuilder<Base,OldELITag,Args...> :
-  public Builder<Base,Args...>
-{
-  using typename Builder<Base,Args...>::createFxn;
-
-  DerivedBuilder(createFxn fxn) :
-    create_(fxn)
-  {
-  }
-
-  Base* create(Args... ctorArgs) override {
-    return create_(std::forward<Args>(ctorArgs)...);
-  }
-
- private:
-  createFxn create_;
-
-};
 
 template <class T, class U>
 struct is_tuple_constructible : public std::false_type {};
@@ -198,8 +177,7 @@ struct SingleCtor
   template <class T> static bool add(){
     //if abstract, force an allocation to generate meaningful errors
     auto* fact = new DerivedBuilder<Base,T,Args...>;
-    Base::addBuilder(T::ELI_getLibrary(),T::ELI_getName(),fact);
-    return true;
+    return Base::addBuilder(T::ELI_getLibrary(),T::ELI_getName(),fact);
   }
 };
 

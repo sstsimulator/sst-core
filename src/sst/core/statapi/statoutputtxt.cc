@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -18,9 +18,10 @@
 namespace SST {
 namespace Statistics {
 
-StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters, bool compressed)
-    : StatisticOutput (outputParameters), m_useCompression(compressed)
+StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters)
+    : StatisticOutput (outputParameters)
 {
+    m_useCompression = outputParameters.find<bool>("compressed");
     // Announce this output object's name
     Output out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutput%sTxt enabled...\n",
@@ -189,7 +190,7 @@ void StatisticOutputTxt::implStopOutputEntries()
     print("%s\n", m_outputBuffer.c_str());
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, int32_t data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -207,7 +208,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, int32_t data
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, uint32_t data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -225,7 +226,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, uint32_t dat
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, int64_t data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -243,7 +244,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, int64_t data
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, uint64_t data) 
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -261,7 +262,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, uint64_t dat
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, float data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, float data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -279,7 +280,7 @@ void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, float data)
     }
 }
 
-void StatisticOutputTxt::implOutputField(fieldHandle_t fieldHandle, double data)
+void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, double data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -306,7 +307,7 @@ bool StatisticOutputTxt::openFile(void)
         if (NULL == m_gzFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
-            out.fatal(CALL_INFO, -1, " : StatisticOutputCompressedTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+            out.fatal(CALL_INFO, 1, " : StatisticOutputCompressedTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;
         }
 #else
@@ -317,7 +318,7 @@ bool StatisticOutputTxt::openFile(void)
         if (NULL == m_hFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
-            out.fatal(CALL_INFO, -1, " : StatisticOutputTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+            out.fatal(CALL_INFO, 1, " : StatisticOutputTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;;
         }
     }

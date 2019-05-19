@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -105,7 +105,7 @@ void Link::addRecvLatency(SimTime_t cycles, TimeConverter* timebase) {
     
 void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {  
     if ( tc == NULL ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Cannot send an event on Link with NULL TimeConverter\n");
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Cannot send an event on Link with NULL TimeConverter\n");
     }
     
     Cycle_t cycle = Simulation::getSimulation()->getCurrentSimCycle() +
@@ -131,7 +131,7 @@ Event* Link::recv()
 {
     // Check to make sure this is a polling link
     if ( UNLIKELY( type != POLL ) ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
         
     }
     

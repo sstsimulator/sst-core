@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -18,10 +18,11 @@
 namespace SST {
 namespace Statistics {
 
-StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters, bool compressed)
-    : StatisticOutput (outputParameters), m_useCompression(compressed)
+StatisticOutputCSV::StatisticOutputCSV(Params& outputParameters)
+    : StatisticOutput (outputParameters)
 {
-    // Announce this output object's name
+    m_useCompression = outputParameters.find<bool>("compressed");
+  // Announce this output object's name
     Output &out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputCSV enabled...\n");
     setStatisticOutputName("StatisticOutputCSV");
@@ -225,42 +226,42 @@ void StatisticOutputCSV::implStopOutputEntries()
     print("\n");
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, int32_t data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
     char buffer[256];
     sprintf(buffer, "%" PRId32, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, uint32_t data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
     char buffer[256];
     sprintf(buffer, "%" PRIu32, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, int64_t data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
     char buffer[256];
     sprintf(buffer, "%" PRId64, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, uint64_t data) 
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
     char buffer[256];
     sprintf(buffer, "%" PRIu64, data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, float data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, float data)
 {
     char buffer[256];
     sprintf(buffer, "%f", data);
     m_OutputBufferArray[fieldHandle] = buffer;
 }
 
-void StatisticOutputCSV::implOutputField(fieldHandle_t fieldHandle, double data)
+void StatisticOutputCSV::outputField(fieldHandle_t fieldHandle, double data)
 {
     char buffer[256];
     sprintf(buffer, "%f", data);
@@ -276,7 +277,8 @@ bool StatisticOutputCSV::openFile(void)
         if (NULL == m_gzFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
-            out.fatal(CALL_INFO, -1, " : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+            out.fatal(CALL_INFO, 1, 
+							" : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;
         }
 #else
@@ -287,7 +289,8 @@ bool StatisticOutputCSV::openFile(void)
         if (NULL == m_hFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
-            out.fatal(CALL_INFO, -1, " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+            out.fatal(CALL_INFO, 1, 
+						  " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;;
         }
     }

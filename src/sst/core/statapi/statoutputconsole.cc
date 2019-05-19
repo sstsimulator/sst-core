@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -69,7 +69,7 @@ void StatisticOutputConsole::implStopOutputEntries()
     printf(" %s\n", m_OutputBuffer.c_str());
 }
 
-void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, int32_t data)
+void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -82,7 +82,7 @@ void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, int32_t 
     }
 }
 
-void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, uint32_t data)
+void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -95,7 +95,7 @@ void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, uint32_t
     }
 }
 
-void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, int64_t data)
+void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -108,7 +108,7 @@ void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, int64_t 
     }
 }
 
-void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, uint64_t data) 
+void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -121,7 +121,7 @@ void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, uint64_t
     }
 }
 
-void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, float data)
+void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, float data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
@@ -134,7 +134,7 @@ void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, float da
     }
 }
 
-void StatisticOutputConsole::implOutputField(fieldHandle_t fieldHandle, double data)
+void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, double data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);

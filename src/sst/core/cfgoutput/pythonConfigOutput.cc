@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -15,6 +15,8 @@
 #include "pythonConfigOutput.h"
 #include <sst/core/simulation.h>
 #include <sst/core/config.h>
+#include <sst/core/timeLord.h>
+#include <sst/core/timeConverter.h>
 
 using namespace SST::Core;
 
@@ -106,15 +108,19 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
         }
     }
 
+    UnitAlgebra tb = Simulation::getTimeLord()->getTimeBase();
+
     for ( auto linkID : comp.links ) {
         const ConfigLink & link = getGraph()->getLinkMap()[linkID];
         int idx = link.component[0] == comp.id ? 0 : 1;
         SimTime_t latency = link.latency[idx];
+        auto tmp = tb * latency;
+        std::string latencyStr = link.latency_str[idx];
         char * esPortName = makeEscapeSafe(link.port[idx].c_str());
 
         const std::string& linkName = getLinkObject(linkID);
-        fprintf(outputFile, "%s.addLink(%s, \"%s\", \"%" PRIu64 "ps\")\n",
-                objName, linkName.c_str(), esPortName, latency);
+        fprintf(outputFile, "%s.addLink(%s, \"%s\", \"%s\")\n",
+                objName, linkName.c_str(), esPortName, tmp.toStringBestSI().c_str());
 
         free(esPortName);
     }
@@ -202,7 +208,7 @@ void PythonConfigGraphOutput::generateStatGroup(const ConfigGraph* graph, const 
 }
 
 void PythonConfigGraphOutput::generate(const Config* cfg,
-	ConfigGraph* graph) throw(ConfigGraphOutputException) {
+	ConfigGraph* graph) {
 
 	if(NULL == outputFile) {
 		throw ConfigGraphOutputException("Input file is not open for output writing");

@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -47,6 +47,13 @@ template <typename NumberBase>
 class AccumulatorStatistic : public Statistic<NumberBase> 
 {
 public:
+  SST_ELI_DECLARE_STATISTIC_TEMPLATE(
+      AccumulatorStatistic,
+      "sst",
+      "AccumulatorStatistic",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Accumulate all contributions to a statistic",
+      "SST::Statistic<T>")
 
     AccumulatorStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
 		: Statistic<NumberBase>(comp, statName, statSubId, statParams)
@@ -174,13 +181,13 @@ public:
         statOutput->outputField(h_sumsq, m_sum_sq);
         statOutput->outputField(h_count, getCount());
 
-	if( 0 == getCount() ) {
- 		statOutput->outputField(h_min, 0);
- 		statOutput->outputField(h_max, 0);
-	} else {
- 		statOutput->outputField(h_min, m_min);
- 		statOutput->outputField(h_max, m_max);
-	}
+        if( 0 == getCount() ) {
+          statOutput->outputField(h_min, 0);
+          statOutput->outputField(h_max, 0);
+        } else {
+          statOutput->outputField(h_min, m_min);
+          statOutput->outputField(h_max, m_max);
+        }
     }
 
     bool isStatModeSupported(StatisticBase::StatMode_t mode) const override
@@ -206,6 +213,7 @@ private:
     StatisticOutput::fieldHandle_t h_max;
     StatisticOutput::fieldHandle_t h_min;
 };
+
 
 } //namespace Statistics
 } //namespace SST

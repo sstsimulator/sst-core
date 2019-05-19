@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -171,7 +171,7 @@ void StatisticOutputJSON::implStopOutputEntries()
 	fprintf(m_hFile, " ] }");
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int32_t data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -182,7 +182,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uint32_t data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -193,7 +193,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uin
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int64_t data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -204,7 +204,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), int
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uint64_t data) 
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -215,7 +215,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), uin
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), float data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), float data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -226,7 +226,7 @@ void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), flo
 	m_firstField = false;
 }
 
-void StatisticOutputJSON::implOutputField(fieldHandle_t UNUSED(fieldHandle), double data)
+void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), double data)
 {
 	if( ! m_firstField) {
 		fprintf(m_hFile, ", ");
@@ -245,7 +245,7 @@ bool StatisticOutputJSON::openFile(void)
 	if (NULL == m_hFile) {
 		// We got an error of some sort
 		Output out = Simulation::getSimulation()->getSimulationOutput();
-		out.fatal(CALL_INFO, -1, " : StatisticOutputJSON - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+		out.fatal(CALL_INFO, 1, " : StatisticOutputJSON - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
 		return false;
 	}
 	

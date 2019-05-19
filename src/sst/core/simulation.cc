@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -139,7 +139,8 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
     output_directory = "";
 
     Params p;
-    timeVortex = factory->Create<TimeVortex>(cfg->timeVortex,p);
+    //params get passed twice - both the params and a ctor argument
+    timeVortex = factory->Create<TimeVortex>(cfg->timeVortex,p,p);
     if( my_rank.thread == 0 ) {
         m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), min_part == MAX_SIMTIME_T );
     }
@@ -598,7 +599,6 @@ void Simulation::endSimulation(SimTime_t end)
     // must enter and set flag before any will exit.
     // exitBarrier.wait();
 
-    // if ( my_rank.thread == 1 ) sim_output.fatal(CALL_INFO,-1,"endSimulation called with end = %llu\n", end);
     endSimCycle = end;
     endSim = true;
 
@@ -749,7 +749,7 @@ Cycle_t Simulation::getNextClockCycle(TimeConverter* tc, int priority) {
     clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
     if ( clockMap.find( mapKey ) == clockMap.end() ) {
         Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
-        out.fatal(CALL_INFO, -1,
+        out.fatal(CALL_INFO, 1,
                 "Call to getNextClockCycle() on a clock that was not previously registered, exiting...\n");
     }
     return clockMap[ mapKey ]->getNextCycle();

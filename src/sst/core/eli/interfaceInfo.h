@@ -6,7 +6,7 @@ namespace ELI {
 
 class ProvidesInterface {
  public:
-  const std::string getInterface() const {
+  const std::string& getInterface() const {
     return iface_;
   }
 
@@ -21,11 +21,6 @@ class ProvidesInterface {
  protected:
   template <class T> ProvidesInterface(T* UNUSED(t)) :
     iface_(T::ELI_getInterface())
-  {
-  }
-
-  template <class U> ProvidesInterface(OldELITag& UNUSED(tag), U* u) :
-    iface_(u->provides)
   {
   }
 

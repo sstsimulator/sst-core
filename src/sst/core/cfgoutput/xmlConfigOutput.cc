@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -23,7 +23,7 @@ XMLConfigGraphOutput::XMLConfigGraphOutput(const char* path) :
 }
 
 void XMLConfigGraphOutput::generate(const Config* UNUSED(cfg),
-                ConfigGraph* graph) throw(ConfigGraphOutputException) {
+                ConfigGraph* graph) {
 
 	if(NULL == outputFile) {
 		throw ConfigGraphOutputException("Output file is not open for writing");

@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -11,7 +11,7 @@
 
 
 #include "sst_config.h"
-#include "sst/core/elementinfo.h"
+#include "sst/core/eli/elementinfo.h"
 #include <sst/core/statapi/statbase.h>
 
 #include <sstream>
@@ -23,36 +23,7 @@ namespace SST {
 **************************************************************************/
 namespace ELI {
 
-std::unique_ptr<std::set<std::string>> LoadedLibraries::loaded_{};
-std::unique_ptr<LoadedLibraries::LibraryMap> LoadedLibraries::loaders_{};
-
 static const std::vector<int> SST_ELI_COMPILED_VERSION = {0, 9, 0};
-
-void
-LoadedLibraries::addLoaded(const std::string& name){
-  if (!loaded_){
-    loaded_ = std::unique_ptr<std::set<std::string>>(new std::set<std::string>);
-  }
-  loaded_->insert(name);
-}
-
-void
-LoadedLibraries::addLoader(const std::string &lib, const std::string &name, std::function<void()> &&loader)
-{
-  if (!loaders_){
-    loaders_ = std::unique_ptr<LibraryMap>(new LibraryMap);
-  }
-  (*loaders_)[lib].emplace(name, std::move(loader));
-}
-
-bool
-LoadedLibraries::isLoaded(const std::string& name){
-  if (loaded_){
-    return loaded_->find(name) != loaded_->end();
-  } else {
-    return false; //nothing loaded yet
-  }
-}
 
 std::string
 ProvidesDefaultInfo::getELIVersionString() const

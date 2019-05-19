@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -153,7 +153,7 @@ Output::output_location_t Output::getOutputLocation() const
 
 
 void Output::fatal(uint32_t line, const char* file, const char* func,
-                   uint32_t exit_code, 
+                   int exit_code,
                    const char* format, ...) const
 {
     va_list     arg1;

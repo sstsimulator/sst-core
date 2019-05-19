@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -13,8 +13,7 @@
 #include "sst_config.h"
 
 #include "elemLoader.h"
-#include "sst/core/oldELI.h"
-#include "sst/core/elementinfo.h"
+#include "sst/core/eli/elementinfo.h"
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
 #include <sst/core/part/sstpart.h>
@@ -141,7 +140,7 @@ static std::vector<std::string> splitPath(const std::string & searchPaths)
 }
 
 
-static ElementLibraryInfo* followError(std::string libname, std::string elemlib, ElementLibraryInfo* eli, std::string searchPaths)
+static void followError(std::string libname, std::string elemlib, std::string searchPaths)
 {
 
     // dlopen case
@@ -168,108 +167,12 @@ static ElementLibraryInfo* followError(std::string libname, std::string elemlib,
         fprintf(stderr,
             "Opening and resolving references for element library %s failed:\n"
             "\t%s\n", elemlib.c_str(), dlerror());
-        return NULL;
     }
-
-    std::string infoname = elemlib;
-    infoname.append("_eli");
-    eli = (ElementLibraryInfo*) dlsym(handle, infoname.c_str());
-    if (NULL == eli) {
-        char *old_error = strdup(dlerror());
-
-        fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
-                infoname.c_str(), libname.c_str(), old_error);
-    }
-
-
-     return eli;
 }
 
 void
-ElemLoader::loadOldELI(const ElementLibraryInfo* eli,
-                       std::map<std::string, const ElementInfoGenerator*>& found_generators)
-{
-  if (eli == nullptr) return;
-
-  OldELITag tag{eli->name};
-
-  std::string elemlib = eli->name;
-
-  if (NULL != eli->components) {
-    const auto *eic = eli->components;
-    auto* infolib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    auto* factlib = Component::getBuilderLibrary(elemlib);
-    while (NULL != eic->name) {
-      factlib->addBuilder(eic->name, new Component::DerivedBuilder<OldELITag>(eic->alloc));
-      infolib->addInfo(eic->name,new Component::BuilderInfo(elemlib,eic->name,tag,eic));
-    }
-  }
-
-  if (NULL != eli->modules) {
-    const ElementInfoModule *eim = eli->modules;
-    auto* infolib = ELI::InfoDatabase::getLibrary<Module>(elemlib);
-    auto* withlib = ELI::BuilderDatabase::getLibrary<Module,Component*,SST::Params&>(elemlib);
-    auto* wolib = ELI::BuilderDatabase::getLibrary<Module,SST::Params&>(elemlib);
-    while (NULL != eim->name) {
-      auto* info = new Module::BuilderInfo(elemlib,eim->name,tag,eim);
-      infolib->addInfo(eim->name,info);
-
-      auto* withComp = new Module::DerivedBuilder<OldELITag,Component*,SST::Params&>(eim->alloc_with_comp);
-      withlib->addBuilder(eim->name, withComp);
-
-      auto* withoutComp = new Module::DerivedBuilder<OldELITag,SST::Params&>(eim->alloc);
-      wolib->addBuilder(eim->name, withoutComp);
-      eim++;
-    }
-  }
-
-  if (NULL != eli->subcomponents ) {
-    const auto *eis = eli->subcomponents;
-    auto* infolib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    auto* factlib = SubComponent::getBuilderLibrary(elemlib);
-    while (NULL != eis->name) {
-      factlib->addBuilder(eis->name, new SubComponent::DerivedBuilder<OldELITag>(eis->alloc));
-      infolib->addInfo(eis->name,new SubComponent::BuilderInfo(elemlib,eis->name,tag,eis));
-      eis++;
-    }
-  }
-
-  if (NULL != eli->partitioners) {
-    const auto *eis = eli->partitioners;
-    auto* infolib = ELI::InfoDatabase::getLibrary<Partition::SSTPartitioner>(elemlib);
-    auto* factlib = Partition::SSTPartitioner::getBuilderLibrary(elemlib);
-    while (NULL != eis->name) {
-      factlib->addBuilder(eis->name, new Partition::SSTPartitioner::DerivedBuilder<OldELITag>(eis->func));
-      infolib->addInfo(eis->name, new Partition::SSTPartitioner::BuilderInfo(elemlib,eis->name,tag,eis));
-      eis++;
-    }
-  }
-
-  if (NULL != eli->generators) {
-      const ElementInfoGenerator *eig = eli->generators;
-      while (NULL != eig->name) {
-          std::string tmp = elemlib + "." + eig->name;
-          found_generators[tmp] = eig;
-          eig++;
-      }
-  }
-
-  if (NULL != eli->pythonModuleGenerator ) {
-    auto* factLib = SSTElementPythonModule::getBuilderLibrary(elemlib);
-    auto* fact = new SSTElementPythonModule::DerivedBuilder<SSTElementPythonModuleOldELI>(eli->pythonModuleGenerator);
-    factLib->addBuilder(elemlib, fact);
-
-    auto* infoLib = ELI::InfoDatabase::getLibrary<SSTElementPythonModule>(elemlib);
-    auto* info = new SSTElementPythonModule::BuilderInfo(elemlib,elemlib,tag,eli);
-    infoLib->addInfo(elemlib,info);
-  }
-
-}
-
-const ElementLibraryInfo*
 ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
 {
-    ElementLibraryInfo *eli = NULL;
     std::string libname = "lib" + elemlib;
     lt_dlhandle lt_handle;
 
@@ -282,27 +185,10 @@ ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
         if (showErrors) {
             fprintf(stderr, "Opening element library %s failed: %s\n",
                     elemlib.c_str(), lt_dlerror());
-            eli = followError(libname, elemlib, eli, searchPaths);
-        } else {
-	    // fprintf(stderr, "Unable to open: \'%s\', not found in search paths: \'%s\'\n",
-		// elemlib.c_str(), searchPaths.c_str());
-		}
-    } else {
-        // look for an info block
-        std::string infoname = elemlib + "_eli";
-        eli = (ElementLibraryInfo*) lt_dlsym(lt_handle, infoname.c_str());
-
-        // Will not longer show this error here, will show it is Factory::loadLibrary()
-        // if (NULL == eli) {
-        //     if (showErrors) {
-        //         char *old_error = strdup(lt_dlerror());
-        //         fprintf(stderr, "Could not find ELI block %s in %s: %s\n",
-        //                 infoname.c_str(), libname.c_str(), old_error);
-        //         free(old_error);
-        //     }
-        // }
+            followError(libname, elemlib, searchPaths);
+        }
     }
-
+        
     //loading a library can "wipe" previously loaded libraries depending
     //on how weak symbol resolution works in dlopen
     //rerun the loaders to make sure everything is still registered
@@ -313,49 +199,8 @@ ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
       }
     }
 
-    return eli;
+    return;
 }
-
-
-const ElementLibraryInfo*
-ElemLoader::loadCoreInfo()
-{
-    static const ElementInfoEvent events[] = {
-        {NULL, NULL, NULL, 0}
-    };
-
-    static const ElementInfoModule modules[] = {
-        {NULL, NULL, NULL, NULL, NULL, NULL, NULL}
-    };
-
-    static const ElementInfoPartitioner partitioners[] = {
-        {"linear", "Partitions components by dividing Component ID space into roughly equal portions.  Components with sequential IDs will be placed close together.", NULL, NULL},
-        {"roundrobin", "Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.", NULL, NULL},
-        {"simple", "Simple partitioning scheme which attempts to partition on high latency links while balancing number of components per rank.", NULL, NULL},
-        {"self", "Used when partitioning is already specified in the configuration.", NULL, NULL},
-#ifdef HAVE_ZOLTAN
-        {"zoltan", "Zoltan parallel partitioner", NULL, NULL},
-#endif
-
-        {NULL, NULL, NULL, NULL}
-    };
-
-
-    static const ElementLibraryInfo eli = {
-        .name = "sst",
-        .description = "SST Core elements",
-        .components = NULL,
-        .events = events,
-        .introspectors = NULL,
-        .modules = modules,
-        .subcomponents = NULL,
-        .partitioners = partitioners,
-        .pythonModuleGenerator = NULL,
-        .generators = NULL
-    };
-    return &eli;
-}
-
 
 extern "C" {
 static int elemCB(const char *fname, void *vd)

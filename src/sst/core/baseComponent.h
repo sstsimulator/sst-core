@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -274,7 +274,7 @@ public:
                 depending upon runtime settings.
     */
     template <typename T>
-    Statistic<T>* registerStatistic(std::string statName, std::string statSubId = "")
+    Statistic<T>* registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "")
     {
         // Verify here that name of the stat is one of the registered
         // names of the component's ElementInfoStatistic.
@@ -285,12 +285,40 @@ public:
             exit(1);
         }
         // Check to see if the Statistic is previously registered with the Statistics Engine
-        StatisticBase* prevStat = StatisticProcessingEngine::getInstance()->isStatisticRegisteredWithEngine<T>(getName(), my_info->getID(), statName, statSubId);
-        if (NULL != prevStat) {
-            // Dynamic cast the base stat to the expected type
-            return dynamic_cast<Statistic<T>*>(prevStat);
+        auto* engine = StatisticProcessingEngine::getInstance();
+        StatisticBase* stat = engine->isStatisticRegisteredWithEngine(getName(), my_info->getID(), statName, statSubId, StatisticFieldType<T>::id());
+        if (!stat){
+          //stat does not exist yet
+          auto makeInstance = [=](const std::string& type, BaseComponent* comp,
+                                  const std::string& name, const std::string& subName,
+                                  SST::Params& params) -> StatisticBase* {
+            return engine->createStatistic<T>(comp, type, name, subName, params);
+          };
+          stat = registerStatisticCore(params, statName, statSubId, StatisticFieldType<T>::id(),
+                                       std::move(makeInstance));
         }
-        return registerStatisticCore<T>(statName, statSubId);
+        return dynamic_cast<Statistic<T>*>(stat);
+    }
+
+    template <typename T>
+    Statistic<T>* registerStatistic(const std::string& statName, const std::string& statSubId = "")
+    {
+      SST::Params empty{};
+      return registerStatistic<T>(empty, statName, statSubId);
+    }
+
+    template <typename... Args>
+    Statistic<std::tuple<Args...>>* registerMultiStatistic(const std::string& statName, const std::string& statSubId = "")
+    {
+      SST::Params empty{};
+      return registerStatistic<std::tuple<Args...>>(empty, statName, statSubId);
+    }
+
+    template <typename... Args>
+    Statistic<std::tuple<Args...>>* registerMultiStatistic(SST::Params& params, const std::string& statName,
+                                                           const std::string& statSubId = "")
+    {
+      return registerStatistic<std::tuple<Args...>>(params, statName, statSubId);
     }
 
     template <typename T>
@@ -382,14 +410,12 @@ protected:
 private:
     void addSelfLink(std::string name);
 
-    template <typename T>
-    Statistic<T>* registerStatisticCore(std::string statName, std::string statSubId = "")
-    {
-        // NOTE: Templated Code for implementation of Statistic Registration
-        // is in the componentregisterstat_impl.h file.  This was done
-        // to avoid code bloat in the .h file.
-        #include "sst/core/statapi/componentregisterstat_impl.h"
-    }
+    using CreateFxn = std::function<StatisticBase*(const std::string&,
+                            BaseComponent*,const std::string&, const std::string&, SST::Params&)>;
+
+    StatisticBase* registerStatisticCore(SST::Params& params,
+                                         const std::string& statName, const std::string& statSubId,
+                                         fieldType_t fieldType, CreateFxn&& fxn);
 
 
 };

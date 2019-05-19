@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 // 
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 // 
 // This file is part of the SST software package. For license
@@ -64,8 +64,6 @@ public:
     std::string     heartbeatPeriod;    /*!< Sets the heartbeat period for the simulation */
     std::string     timeBase;           /*!< Timebase of simulation */
     std::string     partitioner;        /*!< Partitioner to use */
-    std::string     generator;          /*!< Generator to use */
-    std::string     generator_options;  /*!< Options to pass to the generator */
     std::string     timeVortex;         /*!< TimeVortex implementation to use */
     std::string     output_config_graph;  /*!< File to dump configuration graph */
     std::string     output_dot;         /*!< File to dump dot output */
@@ -110,8 +108,6 @@ public:
     bool setHeartbeat(const std::string &arg);
     bool setTimebase(const std::string &arg);
     bool setPartitioner(const std::string &arg);
-    bool setGenerator(const std::string &arg);
-    bool setGeneratorOptions(const std::string &arg);
     bool setTimeVortex(const std::string &arg);
     bool setOutputDir(const std::string &arg);
     bool setWriteConfig(const std::string &arg);
@@ -139,8 +135,6 @@ public:
         std::cout << "stopAfterSec = " << stopAfterSec << std::endl;
         std::cout << "timeBase = " << timeBase << std::endl;
         std::cout << "partitioner = " << partitioner << std::endl;
-        std::cout << "generator = " << generator << std::endl;
-        std::cout << "gen_options = " << generator_options << std::endl;
         std::cout << "output_config_graph = " << output_config_graph << std::endl;
         std::cout << "output_xml = " << output_xml << std::endl;
         std::cout << "no_env_config = " << no_env_config << std::endl;
@@ -177,8 +171,6 @@ public:
         ser & stopAfterSec;
         ser & timeBase;
         ser & partitioner;
-        ser & generator;
-        ser & generator_options;
         ser & dump_component_graph_file;
         ser & output_config_graph;
         ser & output_xml;

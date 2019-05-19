@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -37,54 +37,103 @@ namespace Statistics {
 
 	@tparam T A template for holding the main data type of this statistic
 */
+template <class T, bool B = std::is_fundamental<T>::value>
+struct NullStatisticBase {};
 
-template <typename T>
-class NullStatistic : public Statistic<T>
-{
-public:
-    NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
-		: Statistic<T>(comp, statName, statSubId, statParams)
-    {
-        // Set the Name of this Statistic
-        this->setStatisticTypeName("NULL");
-    }
+template <class T>
+struct NullStatisticBase<T,true> : public Statistic<T> {
 
-    ~NullStatistic(){};
+  NullStatisticBase(BaseComponent* comp, const std::string& statName,
+                    const std::string& statSubId, Params& statParams)
+  : Statistic<T>(comp, statName, statSubId, statParams)
+  {
+      // Set the Name of this Statistic
+      this->setStatisticTypeName("NULL");
+  }
 
-    void clearStatisticData() override
-    {
-        // Do Nothing
-    }
-
-    void registerOutputFields(StatisticOutput* UNUSED(statOutput)) override
-    {
-        // Do Nothing
-    }
-
-    void outputStatisticData(StatisticOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
-    {
-        // Do Nothing
-    }
-
-    bool isReady() const override
-    {
-        return true;
-    }
-
-    bool isNullStatistic() const override
-    {
-        return true;
-    }
-
-protected:
-    void addData_impl(T UNUSED(data)) override
-    {
-        // Do Nothing
-    }
-
-
-private:
+  void addData_impl(T UNUSED(data)) override {}
 };
+
+template <class... Args>
+struct NullStatisticBase<std::tuple<Args...>,false> : public Statistic<std::tuple<Args...>> {
+
+  NullStatisticBase(BaseComponent* comp, const std::string& statName,
+                    const std::string& statSubId, Params& statParams)
+    : Statistic<std::tuple<Args...>>(comp, statName, statSubId, statParams)
+  {
+      // Set the Name of this Statistic
+      this->setStatisticTypeName("NULL");
+  }
+
+  void addData_impl(Args... UNUSED(data)) override {}
+};
+
+template <class T>
+struct NullStatisticBase<T,false> : public Statistic<T> {
+
+  NullStatisticBase(BaseComponent* comp, const std::string& statName,
+                    const std::string& statSubId, Params& statParams)
+  : Statistic<T>(comp, statName, statSubId, statParams)
+  {
+      // Set the Name of this Statistic
+      this->setStatisticTypeName("NULL");
+  }
+
+  void addData_impl(T&& UNUSED(data)) override {}
+  void addData_impl(const T& UNUSED(data)) override {}
+};
+
+template <class T>
+struct NullStatistic : public NullStatisticBase<T> {
+
+  SST_ELI_DECLARE_STATISTIC_TEMPLATE(
+      NullStatistic,
+      "sst",
+      "NullStatistic",
+      SST_ELI_ELEMENT_VERSION(1,0,0),
+      "Null object it ignore all collections",
+      "SST::Statistic<T>")
+
+  NullStatistic(BaseComponent* comp, const std::string& statName,
+                const std::string& statSubId, Params& statParam)
+      : NullStatisticBase<T>(comp, statName, statSubId, statParam)
+  {}
+
+  ~NullStatistic(){}
+
+  void clearStatisticData() override
+  {
+      // Do Nothing
+  }
+
+  void registerOutputFields(StatisticOutput* UNUSED(statOutput)) override
+  {
+      // Do Nothing
+  }
+
+  void outputStatisticData(StatisticOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
+  {
+      // Do Nothing
+  }
+
+  bool isReady() const override
+  {
+      return true;
+  }
+
+  bool isNullStatistic() const override
+  {
+      return true;
+  }
+
+  static bool isLoaded() {
+    return loaded_;
+  }
+ private:
+  static bool loaded_;
+};
+
+template <class T> bool NullStatistic<T>::loaded_ = true;
 
 } //namespace Statistics
 } //namespace SST

@@ -41,17 +41,12 @@ class ProvidesCategory {
   {
   }
 
-  template <class U> ProvidesCategory(OldELITag UNUSED(tag), U* u) :
-    cat_(u->category)
-  {
-  }
-
  private:
   uint32_t cat_;
 };
 
 #define SST_ELI_CATEGORY_INFO(cat) \
-  static const uint32_t ELI_getCategory() {  \
+  static uint32_t ELI_getCategory() {  \
     return cat; \
   }
 

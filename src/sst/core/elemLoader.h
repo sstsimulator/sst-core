@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -14,11 +14,12 @@
 
 #include <string>
 #include <vector>
-#include <sst/core/element.h>
+#include <map>
 
 namespace SST {
 
 struct LoaderData;
+struct ElementInfoGenerator;
 
 /** Class to load Element Libraries */
 class ElemLoader {
@@ -34,15 +35,7 @@ public:
      * @param showErrors - Print errors associated with attempting to find and load the library
      * @return Informational structure of the library, or NULL if it failed to load.
      */
-    const ElementLibraryInfo* loadLibrary(const std::string &elemlib, bool showErrors);
-
-    void loadOldELI(const ElementLibraryInfo* eli,
-                    std::map<std::string, const ElementInfoGenerator*>& found_generators);
-
-    /**
-     * Gather ELI information for core-provided features
-     */
-    const ElementLibraryInfo* loadCoreInfo();
+    void loadLibrary(const std::string &elemlib, bool showErrors);
 
     /**
      * Returns a list of potential element libraries in the search path

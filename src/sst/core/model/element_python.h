@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -15,7 +15,7 @@
 
 #include <vector>
 #include <string>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 namespace SST {
 
@@ -84,7 +84,7 @@ private:
      *  \param parent_module parent module (passed as PyObject*)to load this module under
      *  \return pointer (as PyObject*) to the created module
      */
-    void* load(void* parent_module);
+    virtual void* load(void* parent_module);
  
     //! Vector of sub_modules
     std::vector<SSTElementPythonModuleCode*> sub_modules;

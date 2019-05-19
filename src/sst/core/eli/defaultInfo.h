@@ -10,22 +10,22 @@ namespace ELI {
 class ProvidesDefaultInfo {
   friend class ModuleDocOldEli;
  public:
-  const std::string getLibrary() const {
+  const std::string& getLibrary() const {
     return lib_;
   }
-  const std::string getDescription() const {
+  const std::string& getDescription() const {
     return desc_;
   }
-  const std::string getName() const {
+  const std::string& getName() const {
     return name_;
   }
   const std::vector<int>& getVersion() const {
     return version_;
   }
-  const std::string getCompileFile() const {
+  const std::string& getCompileFile() const {
     return file_;
   }
-  const std::string getCompileDate() const {
+  const std::string& getCompileDate() const {
     return date_;
   }
   const std::vector<int>& getELICompiledVersion() const;
@@ -37,16 +37,6 @@ class ProvidesDefaultInfo {
   template <class XMLNode> void outputXML(XMLNode* node) const {
     node->SetAttribute("Name", getName().c_str());
     node->SetAttribute("Description", getDescription().c_str());
-  }
-
-  template <class U> ProvidesDefaultInfo(const std::string& lib, const std::string& name,
-                                         OldELITag& UNUSED(tag), U* u) :
-    lib_(lib),
-    name_(name),
-    desc_(u->description),
-    file_("Old ELI"),
-    date_("Unknown")
-  {
   }
 
   template <class T> ProvidesDefaultInfo(const std::string& lib,
@@ -63,16 +53,6 @@ class ProvidesDefaultInfo {
  protected:
   template <class T> ProvidesDefaultInfo(T* t) :
    ProvidesDefaultInfo(T::ELI_getLibrary(), T::ELI_getName(), t)
-  {
-  }
-
-  template <class U> ProvidesDefaultInfo(OldELITag&& tag, U* u) :
-    ProvidesDefaultInfo(tag,u)
-  {
-  }
-
-  template <class U> ProvidesDefaultInfo(OldELITag& tag, U* u) :
-    ProvidesDefaultInfo(tag.lib, u->name, tag, u)
   {
   }
 
@@ -116,13 +96,13 @@ class ProvidesDefaultInfo {
   static std::vector<int> var = version; \
       return var; \
   } \
-  static const std::string ELI_getLibrary() { \
+  static const char* ELI_getLibrary() { \
     return lib; \
   } \
-  static const std::string ELI_getName() { \
+  static const char* ELI_getName() { \
     return name; \
   } \
-  static const std::string ELI_getDescription() {  \
+  static const char* ELI_getDescription() {  \
     return desc; \
   }
 

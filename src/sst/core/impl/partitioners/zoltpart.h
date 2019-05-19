@@ -18,7 +18,7 @@
 
 #include <sst/core/sstpart.h>
 #include <sst/core/output.h>
-#include <sst/core/elementinfo.h>
+#include <sst/core/eli/elementinfo.h>
 
 // SST and ZOLTANÕs configurations are conflicting on the SST_CONFIG_HAVE_MPI definition.  
 // So temporarily shut down SSTÕs SST_CONFIG_HAVE_MPI, then allow ZOLTANÕs SST_CONFIG_HAVE_MPI to 
@@ -72,6 +72,10 @@ public:
        \param graph An SST partition graph
     */
     void performPartition(PartitionGraph* graph) override;
+
+		void performPartition(ConfigGraph* graph) override {
+			SST::Partition::SSTPartitioner::performPartition(graph);
+		}
     
     bool requiresConfigGraph() override { return false; }
     
