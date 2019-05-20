@@ -335,6 +335,7 @@ public:
     template <class T, class... ARGS>
     T* loadAnonymousSubComponent(std::string type, std::string slot_name, int slot_num, uint64_t share_flags, Params& params, ARGS... args) {
 
+        share_flags = share_flags & ComponentInfo::USER_FLAGS;
         ComponentId_t cid = my_info->addAnonymousSubComponent(my_info, type, slot_name, slot_num, share_flags);
         ComponentInfo* sub_info = my_info->findSubComponent(cid);
 
@@ -353,7 +354,7 @@ public:
     }
     
     template <class T, class... ARGS>
-    T* loadUserSubComponent(std::string slot_name, int share_flags, ARGS... args) {
+    T* loadUserSubComponent(std::string slot_name, uint64_t share_flags, ARGS... args) {
 
         // Get list of ComponentInfo objects and make sure that there is
         // only one SubComponent put into this slot
@@ -408,6 +409,9 @@ private:
     
     template <class T, class... ARGS>
     T* loadUserSubComponentByIndex(std::string slot_name, int slot_num, int share_flags, ARGS... args) {
+
+        share_flags = share_flags & ComponentInfo::USER_FLAGS;
+        
         // Check to see if the slot exists
         ComponentInfo* sub_info = my_info->findSubComponent(slot_name,slot_num);
         if ( sub_info == NULL ) return NULL;
@@ -606,12 +610,12 @@ public:
 
 
     template <class T, class... ARGS>
-    T* create(int slot_num, int share_flags, ARGS... args) const {
+    T* create(int slot_num, uint64_t share_flags, ARGS... args) const {
         return comp->loadUserSubComponentByIndex<T,ARGS...>(slot_name,slot_num, share_flags, args...);
     }
 
     template <typename T, class... ARGS>
-    void createAll(std::vector<T*>& vec, bool insertNulls, int share_flags, ARGS... args) const {
+    void createAll(std::vector<T*>& vec, bool insertNulls, uint64_t share_flags, ARGS... args) const {
         for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
             T* sub = create<T>(i, share_flags, args...);
             if ( sub != NULL || insertNulls ) vec.push_back(sub);
@@ -619,7 +623,7 @@ public:
     }
 
     template <typename T, class... ARGS>
-    void createAll(std::vector<T*>& vec, int share_flags, ARGS... args) const {
+    void createAll(std::vector<T*>& vec, uint64_t share_flags, ARGS... args) const {
         createAll<T,ARGS...>(vec,true,share_flags,args...);
     }
 

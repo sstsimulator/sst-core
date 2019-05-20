@@ -40,17 +40,21 @@ public:
 
 
     // Share Flags for SubComponent loading
-    static const int SHARE_PORTS = 0x1;
-    static const int SHARE_STATS = 0x2;
-    static const int INSERT_STATS = 0x4;
+    static const uint64_t SHARE_PORTS = 0x1;
+    static const uint64_t SHARE_STATS = 0x2;
+    static const uint64_t INSERT_STATS = 0x4;
 
     // Temporary, only for backward compatibility with loadSubComponent
-    static const int IS_LEGACY_SUBCOMPONENT = 0x32;
+    static const uint64_t IS_LEGACY_SUBCOMPONENT = 0x32;
 
-    static const int SHARE_NONE = 0x0;
+    static const uint64_t SHARE_NONE = 0x0;
 
 private:
 
+    // Mask to make sure users are only setting the flags that are
+    // available to them
+    static const uint64_t USER_FLAGS = 0x7;
+    
     // Friend classes
     friend class Simulation;
     friend class BaseComponent;
