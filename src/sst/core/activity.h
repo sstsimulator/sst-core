@@ -188,12 +188,12 @@ public:
     class less_time {
     public:
         /** Compare pointers */
-        inline bool operator()(const Activity* lhs, const Activity* rhs) {
+        inline bool operator()(const Activity* lhs, const Activity* rhs) const {
             return lhs->delivery_time < rhs->delivery_time;
         }
 
         /** Compare references */
-        inline bool operator()(const Activity& lhs, const Activity& rhs) {
+        inline bool operator()(const Activity& lhs, const Activity& rhs) const {
             return lhs.delivery_time < rhs.delivery_time;
         }
     };
