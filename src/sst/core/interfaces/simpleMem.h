@@ -32,13 +32,15 @@ class Event;
 
 namespace Interfaces {
 
+class HandlerBase;
+
 /**
  * Simplified, generic interface to Memory models
  */
 class SimpleMem : public SubComponent {
 
 public:
-    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleMem)
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleMem,HandlerBase*)
     /** All Addresses can be 64-bit */
     typedef uint64_t Addr;
 
