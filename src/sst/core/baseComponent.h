@@ -319,7 +319,7 @@ public:
      * @param params Parameters the module should use for configuration
      * @return handle to new instance of module, or NULL on failure.
      */
-    Module* loadModuleWithComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("loadModuleWithComponent will be removed in SST version 10.0.  If the module needs access to the parent component, please use SubComponents instead of Modules.")));;
+    Module* loadModuleWithComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("loadModuleWithComponent will be removed in SST version 10.0.  If the module needs access to the parent component, please use SubComponents instead of Modules.")));
 
 
     /** Loads a SubComponent from an element Library
@@ -574,26 +574,30 @@ public:
 
     // Create functions that support the legacy API
     template <typename T>
-    T* create(int slot_num, Params& params) const __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags.")))
+    __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags.")))
+    T* create(int slot_num, Params& params) const 
     {
         return private_create<T>(slot_num,params);
     }
 
     template <typename T>
-    void createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const __attribute__ ((deprecated("This version of createAll will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))
+    __attribute__ ((deprecated("This version of createAll will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))
+    void createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const 
     {
         return private_createAll<T>(params, vec, insertNulls);
     }
 
      template <typename T>
-    T* create(int slot_num) const __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))
+     __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))    T* create(int slot_num) const 
     {
         Params empty;
         return private_create<T>(slot_num, empty);
     }
 
     template <typename T>
-    void createAll(std::vector<T*>& vec, bool insertNulls = true) const __attribute__ ((deprecated("This version of createAll will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments."))) {
+    __attribute__ ((deprecated("This version of createAll will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))
+    void createAll(std::vector<T*>& vec, bool insertNulls = true) const 
+    {
         Params empty;
         return private_createAll<T>(empty, vec, insertNulls);
     }
