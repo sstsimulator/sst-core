@@ -37,11 +37,11 @@ class Module;
 class SubComponent;
 class BaseComponent;
 namespace Partition {
-    class SSTPartitioner;
+class SSTPartitioner;
 }
 namespace Statistics {
-  template <class T> class Statistic;
-  class StatisticBase;
+template <class T> class Statistic;
+class StatisticBase;
 }
 class RankInfo;
 class SSTElementPythonModule;
@@ -54,32 +54,32 @@ namespace ELI {
 
 template <class T>
 class DataBase {
- public:
-  static T* get(const std::string& elemlib, const std::string& elem){
-    if (!infos_) return nullptr;
+public:
+    static T* get(const std::string& elemlib, const std::string& elem){
+        if (!infos_) return nullptr;
 
-    auto libiter = infos_->find(elemlib);
-    if (libiter != infos_->end()){
-      auto& submap = libiter->second;
-      auto elemiter = submap.find(elem);
-      if (elemiter != submap.end()){
-        return elemiter->second;
-      }
-    }
-    return nullptr;
-  }
-
-  static void add(const std::string& elemlib, const std::string& elem, T* info){
-    if (!infos_){
-      infos_ = std::unique_ptr<std::map<std::string, std::map<std::string, T*>>>(
-                  new std::map<std::string, std::map<std::string, T*>>);
+        auto libiter = infos_->find(elemlib);
+        if (libiter != infos_->end()){
+            auto& submap = libiter->second;
+            auto elemiter = submap.find(elem);
+            if (elemiter != submap.end()){
+                return elemiter->second;
+            }
+        }
+        return nullptr;
     }
 
-    (*infos_)[elemlib][elem] = info;
-  }
+    static void add(const std::string& elemlib, const std::string& elem, T* info){
+        if (!infos_){
+            infos_ = std::unique_ptr<std::map<std::string, std::map<std::string, T*>>>(
+                new std::map<std::string, std::map<std::string, T*>>);
+        }
 
- private:
-  static std::unique_ptr<std::map<std::string, std::map<std::string, T*>>> infos_;
+        (*infos_)[elemlib][elem] = info;
+    }
+
+private:
+    static std::unique_ptr<std::map<std::string, std::map<std::string, T*>>> infos_;
 };
 template <class T> std::unique_ptr<std::map<std::string,std::map<std::string,T*>>> DataBase<T>::infos_;
 
@@ -87,157 +87,157 @@ template <class T> std::unique_ptr<std::map<std::string,std::map<std::string,T*>
 template <class Policy, class... Policies>
 class BuilderInfoImpl : public Policy, public BuilderInfoImpl<Policies...>
 {
-  using Parent=BuilderInfoImpl<Policies...>;
- public:
-  template <class... Args> BuilderInfoImpl(const std::string& elemlib,
-                                           const std::string& elem,
-                                           Args&&... args)
-    : Policy(args...), Parent(elemlib, elem, args...) //forward as l-values
-  {
-    DataBase<Policy>::add(elemlib,elem,this);
-  }
+    using Parent=BuilderInfoImpl<Policies...>;
+public:
+    template <class... Args> BuilderInfoImpl(const std::string& elemlib,
+                                             const std::string& elem,
+                                             Args&&... args)
+        : Policy(args...), Parent(elemlib, elem, args...) //forward as l-values
+        {
+            DataBase<Policy>::add(elemlib,elem,this);
+        }
 
-  template <class XMLNode> void outputXML(XMLNode* node){
-    Policy::outputXML(node);
-    Parent::outputXML(node);
-  }
+    template <class XMLNode> void outputXML(XMLNode* node){
+        Policy::outputXML(node);
+        Parent::outputXML(node);
+    }
 
-  void toString(std::ostream& os) const {
-    Parent::toString(os);
-    Policy::toString(os);
-  }
+    void toString(std::ostream& os) const {
+        Parent::toString(os);
+        Policy::toString(os);
+    }
 };
 
 template <> class BuilderInfoImpl<void> {
- protected:
-  template <class... Args> BuilderInfoImpl(Args&&... UNUSED(args))
-  {
-  }
+protected:
+    template <class... Args> BuilderInfoImpl(Args&&... UNUSED(args))
+        {
+        }
 
-  template <class XMLNode> void outputXML(XMLNode* UNUSED(node)){}
+    template <class XMLNode> void outputXML(XMLNode* UNUSED(node)){}
 
-  void toString(std::ostream& UNUSED(os)) const {}
+    void toString(std::ostream& UNUSED(os)) const {}
 
 };
 
 template <class Base, class T>
 struct InstantiateBuilderInfo {
-  static bool isLoaded() {
-    return loaded;
-  }
+    static bool isLoaded() {
+        return loaded;
+    }
 
-  static const bool loaded;
+    static const bool loaded;
 };
 
 template <class Base> class InfoLibrary
 {
- public:
-  using BaseInfo = typename Base::BuilderInfo;
+public:
+    using BaseInfo = typename Base::BuilderInfo;
 
-  InfoLibrary(const std::string& name) :
-    name_(name)
-  {
-  }
+    InfoLibrary(const std::string& name) :
+        name_(name)
+        {
+        }
 
-  BaseInfo* getInfo(const std::string& name) {
-    auto iter = infos_.find(name);
-    if (iter == infos_.end()){
-      return nullptr;
-    } else {
-      return iter->second;
+    BaseInfo* getInfo(const std::string& name) {
+        auto iter = infos_.find(name);
+        if (iter == infos_.end()){
+            return nullptr;
+        } else {
+            return iter->second;
+        }
     }
-  }
 
-  bool hasInfo(const std::string& name) const {
-    return infos_.find(name) != infos_.end();
-  }
+    bool hasInfo(const std::string& name) const {
+        return infos_.find(name) != infos_.end();
+    }
 
-  int numEntries() const {
-    return infos_.size();
-  }
+    int numEntries() const {
+        return infos_.size();
+    }
 
-  const std::map<std::string, BaseInfo*>& getMap() const {
-    return infos_;
-  }
+    const std::map<std::string, BaseInfo*>& getMap() const {
+        return infos_;
+    }
 
-  void readdInfo(const std::string& name, BaseInfo* info){
-    infos_[name] = info;
-  }
+    void readdInfo(const std::string& name, BaseInfo* info){
+        infos_[name] = info;
+    }
 
-  bool addInfo(const std::string& elem, BaseInfo* info){
-    readdInfo(elem, info);
-    //dlopen might thrash this later - add a loader to put it back in case
-    addLoader(name_, elem, info);
-    return true;
-  }
+    bool addInfo(const std::string& elem, BaseInfo* info){
+        readdInfo(elem, info);
+        //dlopen might thrash this later - add a loader to put it back in case
+        addLoader(name_, elem, info);
+        return true;
+    }
 
- private:
-  void addLoader(const std::string& lib, const std::string& name, BaseInfo* info);
+private:
+    void addLoader(const std::string& lib, const std::string& name, BaseInfo* info);
 
-  std::map<std::string, BaseInfo*> infos_;
+    std::map<std::string, BaseInfo*> infos_;
 
-  std::string name_;
+    std::string name_;
 };
 
 template <class Base>
 class InfoLibraryDatabase {
- public:
-  using Library=InfoLibrary<Base>;
-  using BaseInfo=typename Library::BaseInfo;
-  using Map=std::map<std::string,Library*>;
+public:
+    using Library=InfoLibrary<Base>;
+    using BaseInfo=typename Library::BaseInfo;
+    using Map=std::map<std::string,Library*>;
 
-  static Library* getLibrary(const std::string& name){
-    if (!libraries){
-      libraries = new Map;
+    static Library* getLibrary(const std::string& name){
+        if (!libraries){
+            libraries = new Map;
+        }
+        auto iter = libraries->find(name);
+        if (iter == libraries->end()){
+            auto* info = new Library(name);
+            (*libraries)[name] = info;
+            return info;
+        } else {
+            return iter->second;
+        }
     }
-    auto iter = libraries->find(name);
-    if (iter == libraries->end()){
-      auto* info = new Library(name);
-      (*libraries)[name] = info;
-      return info;
-    } else {
-      return iter->second;
-    }
-  }
 
- private:
-  // Database - needs to be a pointer for static init order
-  static Map* libraries;
+private:
+    // Database - needs to be a pointer for static init order
+    static Map* libraries;
 };
 
 template <class Base> typename InfoLibraryDatabase<Base>::Map*
-  InfoLibraryDatabase<Base>::libraries = nullptr;
+InfoLibraryDatabase<Base>::libraries = nullptr;
 
 template <class Base> void InfoLibrary<Base>::addLoader(const std::string& elemlib, const std::string& elem,
-                                                  BaseInfo* info){
-  LoadedLibraries::addLoader(elemlib, elem, [=]{
-      auto* lib = InfoLibraryDatabase<Base>::getLibrary(elemlib);
-      if (!lib->hasInfo(elem)){
-        lib->readdInfo(elem, info);
-      }
-  });
+                                                        BaseInfo* info){
+    LoadedLibraries::addLoader(elemlib, elem, [=]{
+                                                  auto* lib = InfoLibraryDatabase<Base>::getLibrary(elemlib);
+                                                  if (!lib->hasInfo(elem)){
+                                                      lib->readdInfo(elem, info);
+                                                  }
+                                              });
 }
 
 
 template <class Base> struct ElementsInfo
 {
-  static InfoLibrary<Base>* getLibrary(const std::string& name){
-    return InfoLibraryDatabase<Base>::getLibrary(name);
-  }
+    static InfoLibrary<Base>* getLibrary(const std::string& name){
+        return InfoLibraryDatabase<Base>::getLibrary(name);
+    }
 
-  template <class T> static bool add(){
-    return Base::template addDerivedInfo<T>(T::ELI_getLibrary(), T::ELI_getName());
-  }
+    template <class T> static bool add(){
+        return Base::template addDerivedInfo<T>(T::ELI_getLibrary(), T::ELI_getName());
+    }
 };
 template <class Base, class T> const bool InstantiateBuilderInfo<Base,T>::loaded
-  = ElementsInfo<Base>::template add<T>();
+= ElementsInfo<Base>::template add<T>();
 
 
 struct InfoDatabase {
-  template <class T>
-  static InfoLibrary<T>* getLibrary(const std::string& name){
-    return InfoLibraryDatabase<T>::getLibrary(name);
-  }
+    template <class T>
+    static InfoLibrary<T>* getLibrary(const std::string& name){
+        return InfoLibraryDatabase<T>::getLibrary(name);
+    }
 };
 
 } //namespace ELI

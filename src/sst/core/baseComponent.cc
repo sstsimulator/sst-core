@@ -412,6 +412,15 @@ BaseComponent::getTrueComponent() const {
     return static_cast<Component* const>(info->component);
 }
 
+Component*
+BaseComponent::getTrueComponentPrivate() const {
+    // Walk up the parent tree until we hit the base Component.  We
+    // know we're the base Component when parent is NULL.
+    ComponentInfo* info = my_info;
+    while ( info->parent_info != NULL ) info = info->parent_info;
+    return static_cast<Component* const>(info->component);
+}
+
 /* New ELI style */
 SubComponent*
 BaseComponent::loadNamedSubComponent(std::string name) {
@@ -460,22 +469,22 @@ BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& par
     sub_info->share_flags = ComponentInfo::SHARE_NONE;
     sub_info->parent_info = my_info;
     
-    // ComponentInfo *oldLoadingSubcomponent = getTrueComponent()->currentlyLoadingSubComponent;
+    // ComponentInfo *oldLoadingSubcomponent = getTrueComponentPrivate()->currentlyLoadingSubComponent;
     // // ComponentInfo *sub_info = &(infoItr->second);
-    // getTrueComponent()->currentlyLoadingSubComponent = sub_info;
+    // getTrueComponentPrivate()->currentlyLoadingSubComponent = sub_info;
 
-    ComponentId_t cid = getTrueComponent()->currentlyLoadingSubComponentID;
-    getTrueComponent()->currentlyLoadingSubComponentID = sub_info->id;
+    ComponentId_t cid = getTrueComponentPrivate()->currentlyLoadingSubComponentID;
+    getTrueComponentPrivate()->currentlyLoadingSubComponentID = sub_info->id;
         
     Params myParams;
     if ( sub_info->getParams() != NULL )
         myParams.insert(*sub_info->getParams());
     myParams.insert(params);
 
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponent(), myParams);
+    SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponentPrivate(), myParams);
     sub_info->setComponent(ret);
 
-    getTrueComponent()->currentlyLoadingSubComponentID = cid;
+    getTrueComponentPrivate()->currentlyLoadingSubComponentID = cid;
     return ret;
 }
 

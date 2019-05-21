@@ -25,14 +25,14 @@ SubComponent::SubComponent(Component* parent) :
 
 SubComponent::SubComponent(ComponentId_t id) :
     BaseComponent(id),
-    parent(getTrueComponent())
+    parent(getTrueComponentPrivate())
 {}
 
 
 SubComponent*
 SubComponent::loadSubComponent(std::string type, Params& params)
 {
-    return BaseComponent::loadSubComponent(type, getTrueComponent(), params);
+    return BaseComponent::loadSubComponent(type, getTrueComponentPrivate(), params);
 }
 
 } // namespace SST

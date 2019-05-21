@@ -61,7 +61,8 @@ public:
     virtual ~BaseComponent();
 
     /** Returns a pointer to the parent BaseComponent */
-    BaseComponent* getParent() const { return my_info->parent_info->component; }
+    BaseComponent* getParent() const __attribute__ ((deprecated("getParent() will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent is not allowed.")))
+        { return my_info->parent_info->component; }
 
     const std::string& getType() const { return my_info->getType(); }
     
@@ -318,9 +319,23 @@ public:
      * @param params Parameters the module should use for configuration
      * @return handle to new instance of module, or NULL on failure.
      */
-    Module* loadModuleWithComponent(std::string type, Component* comp, Params& params);
+    Module* loadModuleWithComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("loadModuleWithComponent will be removed in SST version 10.0.  If the module needs access to the parent component, please use SubComponents instead of Modules.")));;
 
 
+    /** Loads a SubComponent from an element Library
+     * @param type Fully Qualified library.moduleName
+     * @param comp Pointer to component to pass to SuBaseComponent's constructor
+     * @param params Parameters the module should use for configuration
+     * @return handle to new instance of SubComponent, or NULL on failure.
+     */
+    SubComponent* loadSubComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+
+    /* New ELI style */
+    SubComponent* loadNamedSubComponent(std::string name) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadNamedSubComponent(std::string name, Params& params) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+
+    
+protected:
     // When you direct load, the ComponentExtension does not need any
     // ELI information and if it has any, it will be ignored.  The
     // extension will be loaded as if it were part of the part
@@ -378,22 +393,8 @@ public:
         return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);        
     }
         
-    /** Loads a SubComponent from an element Library
-     * @param type Fully Qualified library.moduleName
-     * @param comp Pointer to component to pass to SuBaseComponent's constructor
-     * @param params Parameters the module should use for configuration
-     * @return handle to new instance of SubComponent, or NULL on failure.
-     */
-    SubComponent* loadSubComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-
-    /* New ELI style */
-    SubComponent* loadNamedSubComponent(std::string name) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-    SubComponent* loadNamedSubComponent(std::string name, Params& params) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-
 private:
 
-    bool direct_load_sub;
-    
     SubComponent* loadNamedSubComponent(std::string name, int slot_num);
     SubComponent* loadNamedSubComponent(std::string name, int slot_num, Params& params);
 
@@ -428,12 +429,12 @@ private:
         // return nullptr;        
     }
 
+    ComponentInfo* getCurrentlyLoadingSubComponentInfo() { return currentlyLoadingSubComponent; }
+    ComponentId_t getCurrentlyLoadingSubComponentID() { return currentlyLoadingSubComponentID; }
 
 
 public:
     SubComponentSlotInfo* getSubComponentSlotInfo(std::string name, bool fatalOnEmptyIndex = false);
-    ComponentInfo* getCurrentlyLoadingSubComponentInfo() { return currentlyLoadingSubComponent; }
-    ComponentId_t getCurrentlyLoadingSubComponentID() { return currentlyLoadingSubComponentID; }
 
     /** Retrieve the X,Y,Z coordinates of this component */
     const std::vector<double>& getCoordinates() const {
@@ -477,8 +478,8 @@ protected:
     // Return the Units for the statisticName from the ElementInfoStatistic
     // std::string getComponentInfoStatisticUnits(const std::string &statisticName) const;
 
-    Component* getTrueComponent() const;
     
+    Component* getTrueComponent() const __attribute__ ((deprecated("getTrueParent will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent component is not allowed.")));
 
 
 protected:
@@ -501,6 +502,7 @@ private:
                                          const std::string& statName, const std::string& statSubId,
                                          fieldType_t fieldType, CreateFxn&& fxn);
 
+    Component* getTrueComponentPrivate() const;
 
 };
 
@@ -568,9 +570,62 @@ public:
     int getMaxPopulatedSlotNumber() const {
         return max_slot_index;
     }
-        
+
+
+    // Create functions that support the legacy API
     template <typename T>
-    T* create(int slot_num, Params& params) const {
+    T* create(int slot_num, Params& params) const __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags.")))
+    {
+        return private_create<T>(slot_num,params);
+    }
+
+    template <typename T>
+    void createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const __attribute__ ((deprecated("This version of createAll will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))
+    {
+        return private_createAll<T>(params, vec, insertNulls);
+    }
+
+     template <typename T>
+    T* create(int slot_num) const __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))
+    {
+        Params empty;
+        return private_create<T>(slot_num, empty);
+    }
+
+    template <typename T>
+    void createAll(std::vector<T*>& vec, bool insertNulls = true) const __attribute__ ((deprecated("This version of createAll will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments."))) {
+        Params empty;
+        return private_createAll<T>(empty, vec, insertNulls);
+    }
+
+
+    // Create functions that support the new API
+    template <class T, class... ARGS>
+    T* create(int slot_num, uint64_t share_flags, ARGS... args) const {
+        return comp->loadUserSubComponentByIndex<T,ARGS...>(slot_name,slot_num, share_flags, args...);
+    }
+
+    template <typename T, class... ARGS>
+    void createAll(std::vector<T*>& vec, bool insertNulls, uint64_t share_flags, ARGS... args) const {
+        for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
+            T* sub = create<T>(i, share_flags, args...);
+            if ( sub != NULL || insertNulls ) vec.push_back(sub);
+        }
+    }
+
+    template <typename T, class... ARGS>
+    void createAll(std::vector<T*>& vec, uint64_t share_flags, ARGS... args) const {
+        createAll<T,ARGS...>(vec,true,share_flags,args...);
+    }
+
+private:
+
+    // Extra versions of the calls supporting the legacy API to avoid
+    // deprecation warnings in every file that include this file
+    template <typename T>
+    T* private_create(int slot_num, Params& params) const
+    {
+        TraceFunction trace(CALL_INFO_LONG);
         SubComponent* sub = protected_create(slot_num, params);
         if ( sub == NULL ) {
             // Nothing populated at this index, simply return NULL
@@ -588,43 +643,13 @@ public:
     }
 
     template <typename T>
-    void createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const {
+    void private_createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const 
+    {
+        TraceFunction trace(CALL_INFO_LONG);
         for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
             T* sub = create<T>(i, params);
             if ( sub != NULL || insertNulls ) vec.push_back(sub);
         }
-    }
-
-    template <typename T>
-    T* create(int slot_num) const {
-        Params empty;
-        return create<T>(slot_num, empty);
-    }
-
-    template <typename T>
-    void createAll(std::vector<T*>& vec, bool insertNulls = true) const {
-        Params empty;
-        return createAll<T>(empty, vec, insertNulls);
-    }
-
-
-
-    template <class T, class... ARGS>
-    T* create(int slot_num, uint64_t share_flags, ARGS... args) const {
-        return comp->loadUserSubComponentByIndex<T,ARGS...>(slot_name,slot_num, share_flags, args...);
-    }
-
-    template <typename T, class... ARGS>
-    void createAll(std::vector<T*>& vec, bool insertNulls, uint64_t share_flags, ARGS... args) const {
-        for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
-            T* sub = create<T>(i, share_flags, args...);
-            if ( sub != NULL || insertNulls ) vec.push_back(sub);
-        }
-    }
-
-    template <typename T, class... ARGS>
-    void createAll(std::vector<T*>& vec, uint64_t share_flags, ARGS... args) const {
-        createAll<T,ARGS...>(vec,true,share_flags,args...);
     }
 
 };
