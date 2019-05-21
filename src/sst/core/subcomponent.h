@@ -69,13 +69,22 @@ private:
 
 } //namespace SST
 
-#define SST_ELI_REGISTER_SUBCOMPONENT_API(cls,...) \
-    SST_ELI_DECLARE_NEW_BASE(SST::SubComponent,::cls)           \
-    SST_ELI_NEW_BASE_CTOR(ComponentId_t,Params&,##__VA_ARGS__)
 
+// Legacy version of subcomponent registration
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,version,desc,interface)   \
     SST_ELI_REGISTER_DERIVED(SST::SubComponent,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
     SST_ELI_INTERFACE_INFO(interface)
+
+// New way to register subcomponents.  Must register an interface
+// (API) first, then you can register a subcomponent that implements
+// it
+#define SST_ELI_REGISTER_SUBCOMPONENT_API(cls,...)              \
+    SST_ELI_DECLARE_NEW_BASE(SST::SubComponent,::cls)           \
+    SST_ELI_NEW_BASE_CTOR(ComponentId_t,Params&,##__VA_ARGS__)
+
+#define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API(cls,base,...) \
+    SST_ELI_DECLARE_NEW_BASE(::base,::cls)                          \
+    SST_ELI_NEW_BASE_CTOR(ComponentId_t,Params&,##__VA_ARGS__)
 
 #define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(cls,lib,name,version,desc,interface)   \
     SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
