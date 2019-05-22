@@ -42,7 +42,7 @@ class SimpleMem : public SubComponent {
 public:
     class HandlerBase;
 
-    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleMem,HandlerBase*)
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleMem,TimeConverter*,HandlerBase*)
     /** All Addresses can be 64-bit */
     typedef uint64_t Addr;
 
