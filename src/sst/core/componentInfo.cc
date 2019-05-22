@@ -145,7 +145,8 @@ ComponentInfo::~ComponentInfo() {
     if ( component ) {
         // For backward compatibility, don't delete component defined
         // (anonymous) subcomponents since they weren't before.
-        if ( !isAnonymous() ) {
+        if ( !isLegacySubComponent() ) {
+            component->my_info = nullptr;
             delete component;
         }
     }

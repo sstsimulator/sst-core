@@ -41,6 +41,38 @@ BaseComponent::BaseComponent(ComponentId_t id) :
 
 BaseComponent::~BaseComponent()
 {
+
+    // Need to cleanup my ComponentInfo and delete all my children.
+
+    // If my_info is nullptr, then we are being deleted by our
+    // ComponentInfo object.  This happens at the end of execution
+    // when the simulation destructor fires.
+    if ( !my_info ) return;
+
+    // Start by deleting children    
+    std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();
+    for ( auto &ci : subcomps ) {
+        // Delete the subcomponent
+        delete ci.second.component;
+        ci.second.component = nullptr;
+    }
+    // Now clear the map.  This will delete all the ComponentInfo
+    // objects; since the component field was set to nullptr, it will
+    // not try to delete the component again.
+    subcomps.clear();
+
+    // Now for the tricky part, I need to remove myself from my
+    // parent's subcomponent map (if I have a parent).
+    my_info->component = nullptr;
+    if ( my_info->parent_info ) {
+        std::map<ComponentId_t,ComponentInfo>& parent_subcomps = my_info->parent_info->getSubComponents();
+        size_t deleted = parent_subcomps.erase(my_info->id);
+        if ( deleted != 1 ) {
+            // Should never happen, but issue warning just in case
+            Simulation::getSimulationOutput().
+                output("Warning:  BaseComponent destructor failed to remove ComponentInfo from parent.\n");
+        }
+    }
 }
 
 void

@@ -53,7 +53,8 @@ class BaseComponent {
 
     friend class SubComponentSlotInfo;
     friend class SubComponent;
-
+    friend class ComponentInfo;
+    
 public:
 
     BaseComponent(ComponentId_t id);
