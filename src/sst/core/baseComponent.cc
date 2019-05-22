@@ -68,9 +68,14 @@ BaseComponent::~BaseComponent()
         std::map<ComponentId_t,ComponentInfo>& parent_subcomps = my_info->parent_info->getSubComponents();
         size_t deleted = parent_subcomps.erase(my_info->id);
         if ( deleted != 1 ) {
-            // Should never happen, but issue warning just in case
-            Simulation::getSimulationOutput().
-                output("Warning:  BaseComponent destructor failed to remove ComponentInfo from parent.\n");
+            // This can't be checked while we still have backward
+            // compatibility to the old subcomponent API.  Making
+            // calls directly on a subcomponent/component makes the
+            // structure imperfect.
+
+            // // Should never happen, but issue warning just in case
+            // Simulation::getSimulationOutput().
+            //     output("Warning:  BaseComponent destructor failed to remove ComponentInfo from parent.\n");
         }
     }
 }
