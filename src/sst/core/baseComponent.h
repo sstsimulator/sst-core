@@ -630,7 +630,6 @@ private:
     template <typename T>
     T* private_create(int slot_num, Params& params) const
     {
-        TraceFunction trace(CALL_INFO_LONG);
         SubComponent* sub = protected_create(slot_num, params);
         if ( sub == NULL ) {
             // Nothing populated at this index, simply return NULL
@@ -650,7 +649,6 @@ private:
     template <typename T>
     void private_createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const 
     {
-        TraceFunction trace(CALL_INFO_LONG);
         for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
             T* sub = create<T>(i, params);
             if ( sub != NULL || insertNulls ) vec.push_back(sub);
