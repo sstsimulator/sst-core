@@ -35,7 +35,11 @@ BaseComponent::BaseComponent(ComponentId_t id) :
     my_info(Simulation::getSimulation()->getComponentInfo(id)),
     currentlyLoadingSubComponent(NULL)
 {
-    my_info->component = this;
+    if ( my_info->component == nullptr ) {
+        // If it's already set, then this is a ComponentExtension and
+        // we shouldn't reset it.
+        my_info->component = this;
+    }
 }
 
 
