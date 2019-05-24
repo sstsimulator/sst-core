@@ -495,6 +495,8 @@ public:
     static Output& getDefaultObject() { return m_defaultObject; }
 
 private:
+
+    friend class TraceFunction;
     // Support Methods
     void setTargetOutput(output_location_t location);
     void openSSTTargetFile() const;
@@ -578,19 +580,32 @@ private:
 
 // Class to easily trace function enter and exit
 class TraceFunction {
+
+    static int trace_level;
+    static std::vector<char> indent_array;
+    
 public:
-    TraceFunction(uint32_t line, const char* file, const char* func);
+    TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info = true);
     ~TraceFunction();
 
-    Output& getOutput() {return output;}
+    Output& getOutput() {return output_obj;}
+
+    /** Output the message with formatting as specified by the format parameter.
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.
+     */
+    void output(const char* format, ...) const
+        __attribute__ ((format (printf, 2, 3)));
+
     
 private:
-    Output output;
+    Output output_obj;
     uint32_t line;
     std::string file;
     std::string function;
-    uint32_t rank;
-    uint32_t thread;
+    // uint32_t rank;
+    // uint32_t thread;
+    int indent_length;
 };
 
 

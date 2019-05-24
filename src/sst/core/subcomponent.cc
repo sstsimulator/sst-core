@@ -18,10 +18,21 @@ namespace SST {
 SST_ELI_DEFINE_INFO_EXTERN(SubComponent)
 SST_ELI_DEFINE_CTOR_EXTERN(SubComponent)
 
-bool
-SubComponent::doesComponentInfoStatisticExist(const std::string &statisticName) const
+SubComponent::SubComponent(Component* parent) :
+    BaseComponent(parent->getCurrentlyLoadingSubComponentID()),
+    parent(parent)
+{}
+
+SubComponent::SubComponent(ComponentId_t id) :
+    BaseComponent(id),
+    parent(getTrueComponentPrivate())
+{}
+
+
+SubComponent*
+SubComponent::loadSubComponent(std::string type, Params& params)
 {
-    return Factory::getFactory()->DoesSubComponentInfoStatisticNameExist(my_info->getType(), statisticName);
+    return BaseComponent::loadSubComponent(type, getTrueComponentPrivate(), params);
 }
 
 } // namespace SST

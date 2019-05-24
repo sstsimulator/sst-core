@@ -154,6 +154,48 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
     return false;
 }
 
+const Params::KeySet_t&
+Factory::getParamNames(const std::string &type)
+{
+    // This is only needed so we can return something in the error
+    // case.  It is never used.
+    static Params::KeySet_t empty_keyset;
+
+    std::string elemlib, elem;
+    std::tie(elemlib, elem) = parseLoadName(type);
+    // ensure library is already loaded...
+    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
+        findLibrary(elemlib);
+    }
+    
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    if (lib) {
+        auto* compInfo = lib->getInfo(elem);
+        if ( compInfo ) return compInfo->getParamNames();
+    }
+    else {
+        auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+        if ( lib ) {
+            auto* compInfo = lib->getInfo(elem);
+            if ( compInfo ) return compInfo->getParamNames();
+        }
+        else {
+            auto* lib = ELI::InfoDatabase::getLibrary<Module>(elemlib);
+            if ( lib ) {
+                auto* compInfo = lib->getInfo(elem);
+                if ( compInfo ) return compInfo->getParamNames();
+            }
+        }
+    }
+    // If we made it to here we didn't find an element that has params
+    // with the given name
+    out.fatal(CALL_INFO, 1,"can't find requested element %s.\n ", type.c_str());
+    return empty_keyset;
+}
+
+
 
 Component*
 Factory::CreateComponent(ComponentId_t id, 
@@ -179,8 +221,6 @@ Factory::CreateComponent(ComponentId_t id,
         if (compLib){
           auto* fact = compLib->getBuilder(elem);
           if (fact){
-            LinkMap *lm = Simulation::getSimulation()->getComponentLinkMap(id);
-            lm->setAllowedPorts(&(compInfo->getPortnames()));
             loadingComponentType = type;
             params.pushAllowedKeys(compInfo->getParamNames());
             Component* ret = fact->create(id,params);
@@ -213,24 +253,24 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
     // Check to see if library is loaded into new ElementLibraryDatabase
     auto* compLib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
     if (compLib){
-      auto* info = compLib->getInfo(elem);
-      if (info){
-        for (auto& item : info->getSubComponentSlots()){
-          if (item.name == slotName) return true;
+        auto* info = compLib->getInfo(elem);
+        if (info){
+            for (auto& item : info->getSubComponentSlots()){
+                if (item.name == slotName) return true;
+            }
+            return false;
         }
-      }
-      return false;
     }
 
     auto* subLib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
     if (subLib){
-      auto* info = subLib->getInfo(elem);
-      if (info){
-        for (auto& item : info->getSubComponentSlots()){
-          if (item.name == slotName) return true;
+        auto* info = subLib->getInfo(elem);
+        if (info){
+            for (auto& item : info->getSubComponentSlots()){
+                if (item.name == slotName) return true;
+            }
+            return false;
         }
-      }
-      return false;
     }
 
     // If we get to here, element doesn't exist
@@ -256,55 +296,32 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
 
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
-    auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if (lib){
-      auto* info = lib->getInfo(elem);
-      if (info){
-        for (auto& item : info->getStatnames()) {
-            if (statisticName == item) {
-                return true;
+    auto* sublib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    if (sublib){
+        auto* info = sublib->getInfo(elem);
+        if (info){
+            for ( auto& item : info->getStatnames() ) {
+                if ( statisticName == item ) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
-      }
     }
 
-    
-    // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n ", type.c_str());
-    return false;
-}
-
-bool 
-Factory::DoesSubComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName)
-{
-    std::string compTypeToLoad = type;
-    if (true == type.empty()) { 
-        compTypeToLoad = loadingComponentType;
-    }
-    
-    std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
-
-    // ensure library is already loaded...
-    requireLibrary(elemlib);
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-
-    // Check to see if library is loaded into new
-    // ElementLibraryDatabase
-    auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if (lib){
-      auto* info = lib->getInfo(elem);
-      if (info){
-        for ( auto& item : info->getStatnames() ) {
-            if ( statisticName == item ) {
-                return true;
+    auto* complib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    if (complib){
+        auto* info = complib->getInfo(elem);
+        if (info){
+            for ( auto& item : info->getStatnames() ) {
+                if ( statisticName == item ) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
-      }
     }
+    
 
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested subcomponent '%s'\n ", type.c_str());
@@ -502,6 +519,28 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
     return NULL;
 }
 
+
+bool
+Factory::doesSubComponentExist(std::string type)
+{
+    std::string elemlib, elem;
+    std::tie(elemlib, elem) = parseLoadName(type);
+
+    // ensure library is already loaded...
+    requireLibrary(elemlib);
+
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    if (lib){
+      auto* info = lib->getInfo(elem);
+      if ( info ) return true;
+    }
+
+    // If we get to here, element doesn't exist
+    return false;
+}
 
 void
 Factory::RequireEvent(std::string eventname)

@@ -105,22 +105,22 @@ namespace ELI {
 template <class T> struct MethodDetect { using type=void; };
 
 class LoadedLibraries {
- public:
-  using InfoMap=std::map<std::string, std::function<void()>>;
-  using LibraryMap=std::map<std::string,InfoMap>;
+public:
+    using InfoMap=std::map<std::string, std::function<void()>>;
+    using LibraryMap=std::map<std::string,InfoMap>;
 
-  static bool isLoaded(const std::string& name);
+    static bool isLoaded(const std::string& name);
 
-  /**
-		@return A boolean indicated successfully added
+    /**
+       @return A boolean indicated successfully added
 	*/
-  static bool addLoader(const std::string& lib, const std::string& name,
-                        std::function<void()>&& loader);
+    static bool addLoader(const std::string& lib, const std::string& name,
+                          std::function<void()>&& loader);
 
-  static const LibraryMap& getLoaders();
+    static const LibraryMap& getLoaders();
 
- private:
-  static std::unique_ptr<LibraryMap> loaders_;
+private:
+    static std::unique_ptr<LibraryMap> loaders_;
 
 };
 
@@ -128,5 +128,27 @@ class LoadedLibraries {
 } //namespace SST
 
 #define ELI_FORWARD_AS_ONE(...) __VA_ARGS__
+
+#define SST_ELI_DECLARE_BASE(Base) \
+  using __LocalEliBase = Base; \
+  static const char* ELI_baseName(){ return #Base; }
+
+#define SST_ELI_DECLARE_INFO_COMMON()                          \
+  using InfoLibrary = ::SST::ELI::InfoLibrary<__LocalEliBase>; \
+  template <class __TT> static bool addDerivedInfo(const std::string& lib, const std::string& elem){ \
+    return addInfo(lib,elem,new BuilderInfo(lib,elem,(__TT*)nullptr)); \
+  }
+
+#define SST_ELI_DECLARE_NEW_BASE(OldBase,NewBase) \
+  using __LocalEliBase = NewBase; \
+  using __ParentEliBase = OldBase; \
+  SST_ELI_DECLARE_INFO_COMMON() \
+  static const char* ELI_baseName(){ return #NewBase; } \
+  template <class InfoImpl> static bool addInfo(const std::string& elemlib, const std::string& elem, \
+                                                InfoImpl* info){ \
+    return OldBase::addInfo(elemlib, elem, info) \
+      && ::SST::ELI::InfoDatabase::getLibrary<NewBase>(elemlib)->addInfo(elem,info); \
+  }
+
 
 #endif // SST_CORE_ELIBASE_H

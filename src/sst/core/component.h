@@ -59,13 +59,13 @@ public:
 
         @sa Component::unregisterExit()
     */
-    bool registerExit();
+    bool registerExit() __attribute__ ((deprecated("registerExit is deprecated and will be removed in SST version 10.0.  Please use registerAsPrimaryComponent() and primaryComponentDoNotEndSim() instead.")));
 
     /** Indicate permission for the simulation to end. This function is
         the mirror of Component::registerExit(). It decrements the
         global counter, which, upon reaching zero, indicates that the
         simulation can terminate. @sa Component::registerExit() */
-    bool unregisterExit();
+    bool unregisterExit() __attribute__ ((deprecated("unregisterExit is deprecated and will be removed in SST version 10.0.  Please use primaryComponentOKToEndSim() instead.")));
 
     /** Register as a primary component, which allows the component to
         specify when it is and is not OK to end simulation.  The
@@ -113,18 +113,6 @@ public:
 protected:
     friend class SubComponent;
     Component() {} // Unused, but previously available
-
-    Component* getTrueComponent() const final override { return const_cast<Component*>(this); }
-    BaseComponent* getStatisticOwner() const final override { return const_cast<Component*>(this); }
-
-
-    // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final override;
-
-private:
-
-    /** Unique ID */
-    ComponentId_t   id;
 
 };
 

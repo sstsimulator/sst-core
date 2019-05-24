@@ -14,6 +14,9 @@ struct Builder
   typedef Base* (*createFxn)(Args...);
 
   virtual Base* create(Args... ctorArgs) = 0;
+
+  template <class NewBase>
+  using ChangeBase = Builder<NewBase,Args...>;
 };
 
 template <class Base, class... CtorArgs>
@@ -49,6 +52,9 @@ class BuilderLibrary
     return addLoader(name_, elem, fact);
   }
 
+  template <class NewBase>
+  using ChangeBase = BuilderLibrary<NewBase,CtorArgs...>;
+
  private:
   bool addLoader(const std::string& elemlib, const std::string& elem, BaseBuilder* fact);
 
@@ -77,6 +83,9 @@ class BuilderLibraryDatabase {
       return iter->second;
     }
   }
+
+  template <class NewBase>
+  using ChangeBase = BuilderLibraryDatabase<NewBase,CtorArgs...>;
 
  private:
   // Database - needs to be a pointer for static init order
@@ -130,7 +139,7 @@ struct CachedAllocator
 template <class Base, class T>
   Base* CachedAllocator<Base,T>::cached_ = nullptr;
 
-template <class Base, class T, class... Args>
+template <class T, class Base, class... Args>
 struct DerivedBuilder : public Builder<Base,Args...>
 {
   Base* create(Args... ctorArgs) override {
@@ -166,9 +175,24 @@ struct ElementsBuilder<Base, std::tuple<Args...>>
   }
 
   template <class T> static Builder<Base,Args...>* makeBuilder(){
-    return new DerivedBuilder<Base,T,Args...>();
+    return new DerivedBuilder<T,Base,Args...>();
   }
 
+};
+
+template <class NewCtor, class OldCtor>
+struct ExtendedCtor
+{
+  template <class T> static bool add(){
+      //if abstract, force an allocation to generate meaningful errors
+    return NewCtor::template add<T>() && OldCtor::template add<T>();
+  }
+
+  template <class __NewCtor>
+  using ExtendCtor = ExtendedCtor<__NewCtor, ExtendedCtor<NewCtor,OldCtor>>;
+
+  template <class NewBase>
+  using ChangeBase = typename NewCtor::template ChangeBase<NewBase>;
 };
 
 template <class Base, class... Args>
@@ -176,9 +200,15 @@ struct SingleCtor
 {
   template <class T> static bool add(){
     //if abstract, force an allocation to generate meaningful errors
-    auto* fact = new DerivedBuilder<Base,T,Args...>;
+    auto* fact = new DerivedBuilder<T,Base,Args...>;
     return Base::addBuilder(T::ELI_getLibrary(),T::ELI_getName(),fact);
   }
+
+  template <class NewBase>
+  using ChangeBase = SingleCtor<NewBase, Args...>;
+
+  template <class NewCtor>
+  using ExtendCtor = ExtendedCtor<NewCtor, SingleCtor<Base,Args...>>;
 };
 
 
@@ -199,6 +229,9 @@ struct CtorList : public CtorList<Base,Ctors...>
   add(){
     return CtorList<Base,Ctors...>::template add<T,NumValid>();
   }
+
+  template <class NewBase>
+  using ChangeBase = CtorList<NewBase, Ctor, Ctors...>;
 
 };
 
@@ -245,30 +278,37 @@ template <class Base> struct CtorList<Base,void>
 #define SST_ELI_DECLARE_CTORS_EXTERN(...) \
   SST_ELI_CTORS_COMMON(ELI_FORWARD_AS_ONE(__VA_ARGS__))
 
-#define SST_ELI_CTOR_COMMON(...) \
-  using Ctor = ::SST::ELI::SingleCtor<__LocalEliBase,__VA_ARGS__>; \
-  using BaseBuilder = ::SST::ELI::Builder<__LocalEliBase,__VA_ARGS__>; \
-  using BuilderLibrary = ::SST::ELI::BuilderLibrary<__LocalEliBase,__VA_ARGS__>; \
-  using BuilderLibraryDatabase = ::SST::ELI::BuilderLibraryDatabase<__LocalEliBase,__VA_ARGS__>; \
-  template <class __TT> using DerivedBuilder = ::SST::ELI::DerivedBuilder<__LocalEliBase,__TT,__VA_ARGS__>; \
-  template <class __TT> static bool addDerivedBuilder(const std::string& lib, const std::string& elem){ \
-    return addBuilder(lib,elem,new DerivedBuilder<__TT>); \
-  }
+//VA_ARGS here 
+// 0) Base name
+// 1) List of ctor args
+#define SST_ELI_BUILDER_TYPEDEFS(...) \
+  using BaseBuilder = ::SST::ELI::Builder<__VA_ARGS__>; \
+  using BuilderLibrary = ::SST::ELI::BuilderLibrary<__VA_ARGS__>; \
+  using BuilderLibraryDatabase = ::SST::ELI::BuilderLibraryDatabase<__VA_ARGS__>; \
+  template <class __TT> using DerivedBuilder = ::SST::ELI::DerivedBuilder<__TT,__VA_ARGS__>; 
 
-//I can make some extra using typedefs because I have only a single ctor
-#define SST_ELI_DECLARE_CTOR(...) \
-  SST_ELI_CTOR_COMMON(__VA_ARGS__) \
+#define SST_ELI_BUILDER_FXNS() \
   static BuilderLibrary* getBuilderLibrary(const std::string& name){ \
-    return SST::ELI::BuilderDatabase::getLibrary<__LocalEliBase,__VA_ARGS__>(name); \
+    return BuilderLibraryDatabase::getLibrary(name); \
   } \
   static bool addBuilder(const std::string& elemlib, const std::string& elem, BaseBuilder* builder){ \
     return getBuilderLibrary(elemlib)->addBuilder(elem,builder); \
   }
 
-#define SST_ELI_DECLARE_CTOR_EXTERN(...) \
-  SST_ELI_CTOR_COMMON(__VA_ARGS__) \
+//I can make some extra using typedefs because I have only a single ctor
+#define SST_ELI_DECLARE_CTOR(...) \
+  using Ctor = ::SST::ELI::SingleCtor<__LocalEliBase,__VA_ARGS__>; \
+  SST_ELI_BUILDER_TYPEDEFS(__LocalEliBase,__VA_ARGS__) \
+  SST_ELI_BUILDER_FXNS()
+
+#define SST_ELI_BUILDER_FXNS_EXTERN() \
   static BuilderLibrary* getBuilderLibrary(const std::string& name); \
   static bool addBuilder(const std::string& elemlib, const std::string& elem, BaseBuilder* builder);
+
+#define SST_ELI_DECLARE_CTOR_EXTERN(...) \
+  using Ctor = ::SST::ELI::SingleCtor<__LocalEliBase,__VA_ARGS__>; \
+  SST_ELI_BUILDER_TYPEDEFS(__LocalEliBase,__VA_ARGS__); \
+  SST_ELI_BUILDER_FXNS_EXTERN()
 
 #define SST_ELI_DEFINE_CTOR_EXTERN(base) \
   bool base::addBuilder(const std::string& elemlib, const std::string& elem, BaseBuilder* builder){ \
@@ -278,26 +318,38 @@ template <class Base> struct CtorList<Base,void>
     return BuilderLibraryDatabase::getLibrary(elemlib); \
   }
 
-#define SST_ELI_DEFAULT_CTOR_COMMON() \
-  using Ctor = ::SST::ELI::SingleCtor<__LocalEliBase>; \
-  using BaseBuilder = ::SST::ELI::Builder<__LocalEliBase>; \
-  using BuilderLibrary = ::SST::ELI::BuilderLibrary<__LocalEliBase>; \
-  template <class __TT> using DerivedBuilder = ::SST::ELI::DerivedBuilder<__LocalEliBase,__TT>;
-
 //I can make some extra using typedefs because I have only a single ctor
 #define SST_ELI_DECLARE_DEFAULT_CTOR() \
-  SST_ELI_DEFAULT_CTOR_COMMON() \
-  static BuilderLibrary* getBuilderLibrary(const std::string& name){ \
-    return SST::ELI::BuilderDatabase::getLibrary<__LocalEliBase>(name); \
-  } \
-  static bool addBuilder(const std::string& elemlib, const std::string& elem, BaseBuilder* builder){ \
-    return getBuilderLibrary(elemlib)->addBuilder(elem,builder); \
-  }
+  using Ctor = ::SST::ELI::SingleCtor<__LocalEliBase>; \
+  SST_ELI_BUILDER_TYPEDEFS(__LocalEliBase) \
+  SST_ELI_BUILDER_FXNS() 
 
 #define SST_ELI_DECLARE_DEFAULT_CTOR_EXTERN() \
   SST_ELI_DEFAULT_CTOR_COMMON() \
-  static BuilderLibrary<>* getBuilderLibrary(const std::string& name); \
-  static bool addBuilder(const std::string& elemlib, const std::string& elem, BaseBuilder* builder);
+  SST_ELI_BUILDER_FXNS_EXTERN()
+
+#define SST_ELI_EXTEND_CTOR() \
+  using Ctor = ::SST::ELI::ExtendedCtor<LocalCtor, __ParentEliBase::Ctor>;
+
+#define SST_ELI_SAME_BASE_CTOR() \
+  using LocalCtor = __ParentEliBase::Ctor::ChangeBase<__LocalEliBase>; \
+  SST_ELI_EXTEND_CTOR() \
+  using BaseBuilder = typename __ParentEliBase::BaseBuilder::template ChangeBase<__LocalEliBase>; \
+  using BuilderLibrary = __ParentEliBase::BuilderLibrary::ChangeBase<__LocalEliBase>; \
+  using BuilderLibraryDatabase = __ParentEliBase::BuilderLibraryDatabase::ChangeBase<__LocalEliBase>; \
+  SST_ELI_BUILDER_FXNS()
+
+#define SST_ELI_NEW_BASE_CTOR(...) \
+  using LocalCtor = ::SST::ELI::SingleCtor<__LocalEliBase,__VA_ARGS__>; \
+  SST_ELI_EXTEND_CTOR() \
+  SST_ELI_BUILDER_TYPEDEFS(__LocalEliBase, __VA_ARGS__) \
+  SST_ELI_BUILDER_FXNS()
+
+#define SST_ELI_DEFAULT_BASE_CTOR() \
+  using LocalCtor = ::SST::ELI::SingleCtor<__LocalEliBase>; \
+  SST_ELI_EXTEND_CTOR() \
+  SST_ELI_BUILDER_TYPEDEFS(__LocalEliBase)  \
+  SST_ELI_BUILDER_FXNS()
 
 
 #endif
