@@ -480,19 +480,62 @@ uint32_t Output::getThreadRank() const {
 }
 
 
+std::vector<char> TraceFunction::indent_array(100,' '); 
+// std::vector<char> TraceFunction::indent_array;
+int TraceFunction::trace_level = 0;
 
-TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func) {
-    output.init("@R, @I (@t): " /*prefix*/, 0, 0, Output::STDOUT);               
-    this->line = line;
-    this->file.append(file);
-    function.append(func);
-    rank = Simulation::getSimulation()->getRank().rank;
-    thread = Simulation::getSimulation()->getRank().thread;
-    output.output(line,file,func,"%s enter function\n",function.c_str());
+TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info) :
+    line(line),
+    file(file),
+    function(func),
+    indent_length(2)
+{
+    if ( print_sim_info ) {
+        RankInfo ri = Simulation::getSimulation()->getNumRanks();
+        if ( ri.rank > 1 || ri.thread > 1 ) {
+            output_obj.init("@R, @I (@t): " /*prefix*/, 0, 0, Output::STDOUT);
+        }
+        else {
+            output_obj.init("(@t): ", 0, 0, Output::STDOUT);
+        }
+        // rank = Simulation::getSimulation()->getRank().rank;
+        // thread = Simulation::getSimulation()->getRank().thread;
+    }
+    else {
+        output_obj.init("" /*prefix*/, 0, 0, Output::STDOUT);
+    }
+
+    // Set up the indent
+    int indent = trace_level * indent_length;
+    indent_array[indent] = '\0';
+    output_obj.output(line,file,func,"%s%s enter function\n",indent_array.data(),function.c_str());
+    indent_array[indent] = ' ';
+    trace_level++;
 }
 
 TraceFunction::~TraceFunction() {
-    output.output(line, file.c_str(), function.c_str(), "%s exit function\n",function.c_str());
+    trace_level--;
+    int indent = trace_level * indent_length;
+    indent_array[indent] = '\0';
+    output_obj.output(line, file.c_str(), function.c_str(), "%s%s exit function\n",indent_array.data(),function.c_str());
+    indent_array[indent] = ' ';
+}
+
+void TraceFunction::output(const char* format, ...) const
+{
+    
+    // Need to add the indent
+    char buf[200];
+
+    int indent = trace_level * indent_length;
+    indent_array[indent] = '\0';
+    sprintf(buf,"%s%s",indent_array.data(),format);
+    indent_array[indent] = ' ';
+    
+    va_list arg;
+    va_start(arg, format);
+    output_obj.outputprintf(line,file.c_str(),function.c_str(), buf, arg);
+    va_end(arg);
 }
 
 

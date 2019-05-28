@@ -91,6 +91,7 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
     if ( stat->isNullStatistic() )
         return true;
 
+
     if ( 0 == m_statLoadLevel ) {
         m_output.verbose(CALL_INFO, 1, 0,
                 " Warning: Statistic Load Level = 0 (all statistics disabled); statistic %s is disabled...\n",

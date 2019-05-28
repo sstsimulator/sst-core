@@ -38,7 +38,8 @@ Link::Link(LinkId_t id) :
     defaultTimeBase( NULL ),
     latency(1),
     type(HANDLER),
-    id(id)
+    id(id),
+    configured(false)
 {
     recvQueue = uninitQueue;
     untimedQueue = NULL;
@@ -50,7 +51,8 @@ Link::Link() :
     defaultTimeBase( NULL ),
     latency(1),
     type(HANDLER),
-    id(-1)
+    id(-1),
+    configured(false)
 {
     recvQueue = uninitQueue;
     untimedQueue = NULL;

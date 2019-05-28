@@ -27,6 +27,7 @@ nobase_dist_sst_HEADERS = \
 	clock.h \
 	baseComponent.h \
 	component.h \
+	componentExtension.h \
 	componentInfo.h \
 	config.h \
 	configGraph.h \

@@ -40,9 +40,9 @@ public:
       ELI::ProvidesStats,
       ELI::ProvidesInterface)
 
-	SubComponent(Component* parent) : BaseComponent(), parent(parent) {
-        my_info = parent->currentlyLoadingSubComponent;
-    };
+	SubComponent(Component* parent);
+	SubComponent(ComponentId_t id);
+
 	virtual ~SubComponent() {};
 
     /** Used during the init phase.  The method will be called each phase of initialization.
@@ -56,37 +56,38 @@ public:
     virtual void finish( ) override { }
 
 protected:
-    Component* const parent;
-
-    Component* getTrueComponent() const final override { return parent; }
-    BaseComponent* getStatisticOwner() const final override {
-        /* If our ID == parent ID, then we're a legacy subcomponent that doesn't own stats. */
-        if ( this->getId() == parent->getId() )
-            return parent;
-        return const_cast<SubComponent*>(this);
-    }
+    Component* const parent __attribute__ ((deprecated("The parent data member will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent is not allowed.")));
 
     /* Deprecate?   Old ELI style*/
-    SubComponent* loadSubComponent(std::string type, Params& params) {
-        return parent->loadSubComponent(type, parent, params);
-    }
+    SubComponent* loadSubComponent(std::string type, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
 
-    // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const final override;
 
 private:
-    /** Component's type, set by the factory when the object is created.
-        It is identical to the configuration string used to create the
-        component. I.e. the XML "<component id="aFoo"><foo>..." would
-        set component::type to "foo" */
     friend class Component;
 
 };
 
 } //namespace SST
 
+
+// Legacy version of subcomponent registration
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,version,desc,interface)   \
-  SST_ELI_REGISTER_DERIVED(SST::SubComponent,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
-  SST_ELI_INTERFACE_INFO(interface)
+    SST_ELI_REGISTER_DERIVED(SST::SubComponent,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+    SST_ELI_INTERFACE_INFO(interface)
+
+// New way to register subcomponents.  Must register an interface
+// (API) first, then you can register a subcomponent that implements
+// it
+#define SST_ELI_REGISTER_SUBCOMPONENT_API(cls,...)              \
+    SST_ELI_DECLARE_NEW_BASE(SST::SubComponent,::cls)           \
+    SST_ELI_NEW_BASE_CTOR(ComponentId_t,Params&,##__VA_ARGS__)
+
+#define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API(cls,base,...) \
+    SST_ELI_DECLARE_NEW_BASE(::base,::cls)                          \
+    SST_ELI_NEW_BASE_CTOR(ComponentId_t,Params&,##__VA_ARGS__)
+
+#define SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(cls,lib,name,version,desc,interface)   \
+    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+    SST_ELI_INTERFACE_INFO(#interface)
 
 #endif // SST_CORE_SUBCOMPONENT_H

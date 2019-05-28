@@ -39,6 +39,9 @@ namespace Interfaces {
 class SimpleNetwork : public SubComponent {
 
 public:
+
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork,int)
+    
     /** All Addresses can be 64-bit */
     typedef int64_t nid_t;
 
@@ -56,6 +59,7 @@ public:
         size_t size_in_bits;  /*!< Size of packet in bits */
         bool   head;          /*!< True if this is the head of a stream */
         bool   tail;          /*!< True if this is the tail of a steram */
+        bool   allow_adaptive; /*!< Indicates whether adaptive routing is allowed or not. */
         
     private:
         Event* payload;       /*!< Payload of the request */
@@ -105,14 +109,14 @@ public:
 
         /** Constructor */
         Request() :
-            dest(0), src(0), size_in_bits(0), head(false), tail(false), payload(NULL),
-            trace(NONE), traceID(0)
+            dest(0), src(0), size_in_bits(0), head(false), tail(false), allow_adaptive(true),
+            payload(NULL), trace(NONE), traceID(0)
         {}
 
         Request(nid_t dest, nid_t src, size_t size_in_bits,
                 bool head, bool tail, Event* payload = NULL) :
-            dest(dest), src(src), size_in_bits(size_in_bits), head(head), tail(tail), payload(payload),
-            trace(NONE), traceID(0)
+            dest(dest), src(src), size_in_bits(size_in_bits), head(head), tail(tail), allow_adaptive(true),
+            payload(payload), trace(NONE), traceID(0)
         {
         }
 
@@ -144,6 +148,7 @@ public:
             ser & payload;
             ser & trace;
             ser & traceID;
+            ser & allow_adaptive;
         }
         
     protected:
@@ -246,6 +251,11 @@ public:
     /** Constructor, designed to be used via 'loadSubComponent'. */
     SimpleNetwork(SST::Component *comp) :
         SubComponent(comp)
+    { }
+
+    /** Constructor, designed to be used via 'loadUserSubComponent or loadAnonymousSubComponent'. */
+    SimpleNetwork(SST::ComponentId_t id) :
+        SubComponent(id)
     { }
 
     /** Second half of building the interface.
