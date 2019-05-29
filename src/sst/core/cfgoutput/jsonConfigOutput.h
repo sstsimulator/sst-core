@@ -20,13 +20,14 @@ namespace SST {
 namespace Core {
 
 class JSONConfigGraphOutput : public ConfigGraphOutput {
+
 public:
-        JSONConfigGraphOutput(const char* path);
-	virtual void generate(const Config* cfg,
-                ConfigGraph* graph) override;
+	JSONConfigGraphOutput(const char* path);
+	virtual void generate(const Config* cfg, ConfigGraph* graph) throw(ConfigGraphOutputException) override;
+
 protected:
-	void generateJSON(const std::string indent, const ConfigComponent& comp,
-                const ConfigLinkMap_t& linkMap) const;
+	void generateJSON(const std::string indent, const ConfigComponent& comp, const ConfigLinkMap_t& linkMap) const;
+  void generateJSON(const ConfigLink& link, const ConfigComponentMap_t& compMap) const;
 };
 
 }
