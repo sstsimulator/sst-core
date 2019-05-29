@@ -28,16 +28,15 @@ JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) :
 
 }
 
-void JSONConfigGraphOutput::generate(const Config* UNUSED(cfg),
-				ConfigGraph* graph) throw(ConfigGraphOutputException) {
+void JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph) {
 
 	int num = 0;
 	if(NULL == outputFile) {
 		throw ConfigGraphOutputException("Output file is not open for writing");
 	}
 
-	const auto compMap = graph->getComponentMap();
-	const auto linkMap = graph->getLinkMap();
+	auto compMap = graph->getComponentMap();
+	auto linkMap = graph->getLinkMap();
 	
 	num = compMap.size();
 	fprintf(outputFile, "{\n\t\"components\" : [\n");
