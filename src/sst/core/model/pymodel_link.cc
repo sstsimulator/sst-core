@@ -13,7 +13,6 @@
 
 #include "sst_config.h"
 #include <sst/core/warnmacros.h>
-
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
@@ -53,7 +52,7 @@ static void linkDealloc(LinkPy_t *self)
 {
     if ( self->name ) free(self->name);
     if ( self->latency ) free(self->latency);
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 
@@ -109,7 +108,7 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
     gModel->addLink(id1, link->name, port1, lat1, link->no_cut);
 
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -137,8 +136,7 @@ static PyMethodDef linkMethods[] = {
 
 
 PyTypeObject PyModel_LinkType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "sst.Link",                /* tp_name */
     sizeof(LinkPy_t),          /* tp_basicsize */
     0,                         /* tp_itemsize */

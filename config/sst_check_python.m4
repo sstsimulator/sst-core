@@ -9,7 +9,7 @@ AC_DEFUN([SST_CHECK_PYTHON], [
   FOUND_PYTHON="no"
   PYTHON_CONFIG_EXE=""
 
-  AC_PATH_PROG([PYTHON_CONFIG_EXE], ["python-config"], 
+  AC_PATH_PROG([PYTHON_CONFIG_EXE], ["python3-config"], 
 		["NOTFOUND"])
 
   AS_IF([test -n "$with_python"],
@@ -40,9 +40,7 @@ AC_DEFUN([SST_CHECK_PYTHON], [
 
   AC_MSG_CHECKING([python libraries])
   AS_IF([test -n "$with_python" -a -z "$PYTHON_LIBS" ],
-	[AC_CHECK_LIB([python2.6], [Py_Initialize], [PYTHON_LIBS="-lpython2.6"], [PYTHON_LIBS=""])])
-  AS_IF([test -n "$with_python" -a -z "$PYTHON_LIBS" ],
-	[AC_CHECK_LIB([python2.7], [Py_Initialize], [PYTHON_LIBS="-lpython2.7"], [PYTHON_LIBS=""])])
+	[AC_CHECK_LIB([python3], [Py_Initialize], [PYTHON_LIBS="-lpython3"], [PYTHON_LIBS=""])])
   
   AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
 	[PYTHON_PREFIX=`$PYTHON_CONFIG_EXE --prefix`], [PYTHON_PREFIX=""])
@@ -52,9 +50,7 @@ AC_DEFUN([SST_CHECK_PYTHON], [
 	 PYTHON_LDFLAGS="$PYTHON_LDFLAGS -L$PYTHON_PREFIX/lib64"])
 
   AS_IF([test -n "$with_python" -a -z "$PYTHON_LIBS" ],
-	[AC_CHECK_LIB([python2.6], [Py_Initialize], [PYTHON_LIBS="-lpython2.6"], [PYTHON_LIBS=""])])
-  AS_IF([test -n "$with_python" -a -z "$PYTHON_LIBS" ],
-	[AC_CHECK_LIB([python2.7], [Py_Initialize], [PYTHON_LIBS="-lpython2.7"], [PYTHON_LIBS=""])])
+	[AC_CHECK_LIB([python3], [Py_Initialize], [PYTHON_LIBS="-lpython3"], [PYTHON_LIBS=""])])
 
   AC_MSG_RESULT([$PYTHON_LIBS])
   AC_LANG_POP(C++)

@@ -64,18 +64,18 @@ void abortOnPyErr(uint32_t line, const char* file, const char* func,
     PyTracebackObject* ptb = (PyTracebackObject*)tb;
     while ( ptb != NULL ) {
         // Filename
-        stream << "File \"" << PyString_AsString(ptb->tb_frame->f_code->co_filename) << "\", ";
+        stream << "File \"" << PyBytes_AsString(ptb->tb_frame->f_code->co_filename) << "\", ";
         // Line number
         stream << "line " << ptb->tb_lineno << ", ";
         // Module name
-        stream << PyString_AsString(ptb->tb_frame->f_code->co_name) << "\n";
+        stream << PyBytes_AsString(ptb->tb_frame->f_code->co_name) << "\n";
         
         // Get the next line
         ptb = ptb->tb_next;
     }
 
     // Add in the other error information
-    stream << exc_name << ": " << PyString_AsString(PyObject_Str(val)) << "\n";
+    stream << exc_name << ": " << PyBytes_AsString(PyObject_Str(val)) << "\n";
 
     Simulation::getSimulationOutput().fatal(line, file, func, exit_code, "%s\n", stream.str().c_str());
 

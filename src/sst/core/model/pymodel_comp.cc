@@ -13,11 +13,9 @@
 
 #include "sst_config.h"
 #include <sst/core/warnmacros.h>
-
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
-
 
 #include <string.h>
 #include <sstream>
@@ -132,7 +130,7 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 static void compDealloc(ComponentPy_t *self)
 {
     if ( self->obj ) delete self->obj;
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 
@@ -147,11 +145,11 @@ static PyObject* compAddParam(PyObject *self, PyObject *args)
     ConfigComponent *c = getComp(self);
     if ( NULL == c ) return NULL;
 
-    PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", NULL);
-    c->addParameter(param, PyString_AsString(vstr), true);
+    PyObject *vstr = PyObject_Str(value);
+    c->addParameter(param, PyUnicode_AsUTF8(vstr), true);
     Py_XDECREF(vstr);
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -169,14 +167,14 @@ static PyObject* compAddParams(PyObject *self, PyObject *args)
     long count = 0;
 
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", NULL);
-        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", NULL);
-        c->addParameter(PyString_AsString(kstr), PyString_AsString(vstr), true);
+        PyObject *kstr = PyObject_Str(key);
+        PyObject *vstr = PyObject_Str(val);
+        c->addParameter(PyUnicode_AsUTF8(kstr), PyUnicode_AsUTF8(vstr), true);
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
         count++;
     }
-    return PyInt_FromLong(count);
+    return PyLong_FromLong(count);
 }
 
 
@@ -196,7 +194,7 @@ static PyObject* compSetRank(PyObject *self, PyObject *args)
 
     c->setRank(RankInfo(rank, thread));
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -214,7 +212,7 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg)
 
     c->setWeight(weight);
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -238,17 +236,30 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s (lat: %s)\n", id, link->name, lat);
     gModel->addLink(id, link->name, port, lat, link->no_cut);
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
 static PyObject* compGetFullName(PyObject *self, PyObject *UNUSED(args))
 {
-    return PyString_FromString(getComp(self)->name.c_str());
+    return PyBytes_FromString(getComp(self)->name.c_str());
 }
 
-static int compCompare(PyObject *obj0, PyObject *obj1) {
-    return ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj);
+
+static PyObject* compCompare(PyObject *obj0, PyObject * obj1, int op){
+    // Py_RETURN_RICHCOMPARE only works with Python3.7, so manually implementing here for compatibility
+    //Py_RETURN_RICHCOMPARE(((ComponentPy_t*)obj0)->obj, ((ComponentPy_t*)obj1)->obj, op);
+    
+    switch (op) {
+        case Py_EQ: if (((ComponentPy_t*)obj0)->obj == ((ComponentPy_t*)obj1)->obj) Py_RETURN_TRUE; Py_RETURN_FALSE;
+        case Py_NE: if (((ComponentPy_t*)obj0)->obj != ((ComponentPy_t*)obj1)->obj) Py_RETURN_TRUE; Py_RETURN_FALSE;
+        case Py_LT: if (((ComponentPy_t*)obj0)->obj <  ((ComponentPy_t*)obj1)->obj) Py_RETURN_TRUE; Py_RETURN_FALSE;
+        case Py_GT: if (((ComponentPy_t*)obj0)->obj >  ((ComponentPy_t*)obj1)->obj) Py_RETURN_TRUE; Py_RETURN_FALSE;
+        case Py_LE: if (((ComponentPy_t*)obj0)->obj <= ((ComponentPy_t*)obj1)->obj) Py_RETURN_TRUE; Py_RETURN_FALSE;
+        case Py_GE: if (((ComponentPy_t*)obj0)->obj >= ((ComponentPy_t*)obj1)->obj) Py_RETURN_TRUE; Py_RETURN_FALSE;
+        default:
+            Py_UNREACHABLE();
+    }
 }
 
 
@@ -306,7 +317,7 @@ error:
     if ( NULL == c ) return NULL;
     c->setCoordinates(coords);
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
@@ -332,7 +343,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
         // ParseTuple Failed, return NULL for error
         return NULL;
     }
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -365,11 +376,11 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
             PyObject* pylistitem = PyList_GetItem(statList, x);
             PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", NULL);
 
-            c->enableStatistic(PyString_AsString(pyname));
+            c->enableStatistic(PyBytes_AsString(pyname));
 
             // Add the parameters
             for ( auto p : params ) {
-                c->addStatisticParameter(PyString_AsString(pyname), p.first, p.second);
+                c->addStatisticParameter(PyBytes_AsString(pyname), p.first, p.second);
             }
 
             Py_XDECREF(pyname);
@@ -378,7 +389,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
         // ParseTuple Failed, return NULL for error
         return NULL;
     }
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -418,8 +429,7 @@ static PyMethodDef componentMethods[] = {
 
 
 PyTypeObject PyModel_ComponentType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "sst.Component",           /* tp_name */
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -427,7 +437,7 @@ PyTypeObject PyModel_ComponentType = {
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
-    compCompare,               /* tp_compare */
+    0,//compCompare,               /* tp_compare */
     0,                         /* tp_repr */
     0,                         /* tp_as_number */
     0,                         /* tp_as_sequence */
@@ -442,7 +452,7 @@ PyTypeObject PyModel_ComponentType = {
     "SST Component",           /* tp_doc */
     0,                         /* tp_traverse */
     0,                         /* tp_clear */
-    0,                         /* tp_richcompare */
+    compCompare,//0,                         /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
     0,                         /* tp_iter */
     0,                         /* tp_iternext */
@@ -503,7 +513,7 @@ static void subCompDealloc(ComponentPy_t *self)
         Py_XDECREF(obj->parent->pobj);
         delete self->obj;
     }
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 
@@ -535,8 +545,7 @@ static PyMethodDef subComponentMethods[] = {
 
 
 PyTypeObject PyModel_SubComponentType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "sst.SubComponent",        /* tp_name */
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -544,7 +553,7 @@ PyTypeObject PyModel_SubComponentType = {
     0,                         /* tp_print */
     0,                         /* tp_getattr */
     0,                         /* tp_setattr */
-    compCompare,               /* tp_compare */
+    0,//compCompare,               /* tp_compare */
     0,                         /* tp_repr */
     0,                         /* tp_as_number */
     0,                         /* tp_as_sequence */
@@ -559,7 +568,7 @@ PyTypeObject PyModel_SubComponentType = {
     "SST SubComponent",        /* tp_doc */
     0,                         /* tp_traverse */
     0,                         /* tp_clear */
-    0,                         /* tp_richcompare */
+    compCompare,//0,                         /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
     0,                         /* tp_iter */
     0,                         /* tp_iternext */

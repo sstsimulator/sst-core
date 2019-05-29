@@ -13,7 +13,6 @@
 
 #include "sst_config.h"
 #include <sst/core/warnmacros.h>
-
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
@@ -65,7 +64,7 @@ static int sgInit(StatGroupPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 
 static void sgDealloc(StatGroupPy_t *self)
 {
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject* sgAddStat(PyObject *self, PyObject *args)
@@ -141,10 +140,10 @@ static PyObject* sgSetOutput(PyObject *self, PyObject *args)
 
 static PyObject* sgSetFreq(PyObject *self, PyObject *args)
 {
-    if ( !PyString_Check(args) ) {
+    if ( !PyMapping_Check(args) ) {
         return NULL;
     }
-    if ( !((StatGroupPy_t*)self)->ptr->setFrequency(PyString_AsString(args)) ) {
+    if ( !((StatGroupPy_t*)self)->ptr->setFrequency(PyBytes_AsString(args)) ) {
         PyErr_SetString(PyExc_RuntimeError, "Invalid frequency");
         return NULL;
     }
@@ -169,8 +168,7 @@ static PyMethodDef sgMethods[] = {
 
 
 PyTypeObject PyModel_StatGroupType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "sst.StatisticGroup",      /* tp_name */
     sizeof(StatGroupPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -245,7 +243,7 @@ static int soInit(StatOutputPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 
 static void soDealloc(StatOutputPy_t *self)
 {
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject* soAddParam(PyObject *self, PyObject *args)
@@ -259,10 +257,10 @@ static PyObject* soAddParam(PyObject *self, PyObject *args)
     if ( NULL == so ) return NULL;
 
     PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", NULL);
-    so->addParameter(param, PyString_AsString(vstr));
+    so->addParameter(param, PyBytes_AsString(vstr));
     Py_XDECREF(vstr);
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -282,12 +280,12 @@ static PyObject* soAddParams(PyObject *self, PyObject *args)
     while ( PyDict_Next(args, &pos, &key, &val) ) {
         PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", NULL);
         PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", NULL);
-        so->addParameter(PyString_AsString(kstr), PyString_AsString(vstr));
+        so->addParameter(PyBytes_AsString(kstr), PyBytes_AsString(vstr));
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
         count++;
     }
-    return PyInt_FromLong(count);
+    return PyLong_FromLong(count);
 }
 
 
@@ -304,8 +302,7 @@ static PyMethodDef soMethods[] = {
 
 
 PyTypeObject PyModel_StatOutputType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(NULL, 0)
     "sst.StatisticOutput",     /* tp_name */
     sizeof(StatOutputPy_t),    /* tp_basicsize */
     0,                         /* tp_itemsize */
