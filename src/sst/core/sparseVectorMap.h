@@ -146,7 +146,7 @@ public:
     }
     
     void clear() { data.clear(); }
-    size_t size() { return data.size(); }
+    size_t size() const { return data.size(); }
 
 };
 

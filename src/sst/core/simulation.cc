@@ -322,7 +322,13 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
         // Same rank, same thread
         else if ( rank[0] == rank[1] ) {
             // Create a LinkPair to represent this link
-            LinkPair lp(clink.id);
+            LinkPair lp;
+            if (clink.component[0] == clink.component[1]){
+               lp = LinkPair(clink.id, true);
+            }else{
+               lp = LinkPair(clink.id);
+            }
+
 
             lp.getLeft()->setLatency(clink.latency[0]);
             lp.getRight()->setLatency(clink.latency[1]);

@@ -23,17 +23,22 @@ namespace SST {
  */
 class LinkPair {
 public:
+    LinkPair() {}
+
     /** Create a new LinkPair with specified ID */
-    LinkPair(LinkId_t id) :
+    LinkPair(LinkId_t id, bool selfLink = false) :
         left(new Link(id)),
-        right(new Link(id))
+        right(new Link(id)),
+        link(new Link(id))
     {
         my_id = id;
-
+        self = selfLink;
+        
         left->pair_link = right;
         right->pair_link = left;
-
+        link->pair_link = link;
     }
+    
     virtual ~LinkPair() {}
 
     /** return the ID of the LinkPair */
@@ -42,14 +47,17 @@ public:
     }
 
     /** Return the Left Link */
-    inline Link* getLeft() {return left;}
+    inline Link* getLeft() {return self ? link : left;}
     /** Return the Right Link */
-    inline Link* getRight() {return right;}
+    inline Link* getRight() {return self ? link : right;}
 
 private:
 
+    bool self;
+    
     Link* left;
     Link* right;
+    Link* link;
 
     LinkId_t my_id;
 
