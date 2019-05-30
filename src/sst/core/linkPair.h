@@ -28,15 +28,14 @@ public:
     /** Create a new LinkPair with specified ID */
     LinkPair(LinkId_t id, bool selfLink = false) :
         left(new Link(id)),
-        right(new Link(id)),
-        link(new Link(id))
+        right(selfLink ? nullptr : new Link(id)),
+        my_id(id)
     {
-        my_id = id;
-        self = selfLink;
-        
+        if (selfLink) {
+        	right = left;
+        }
         left->pair_link = right;
         right->pair_link = left;
-        link->pair_link = link;
     }
     
     virtual ~LinkPair() {}
@@ -47,20 +46,14 @@ public:
     }
 
     /** Return the Left Link */
-    inline Link* getLeft() {return self ? link : left;}
+    inline Link* getLeft() {return left;}
     /** Return the Right Link */
-    inline Link* getRight() {return self ? link : right;}
+    inline Link* getRight() {return right;}
 
 private:
-
-    bool self;
-    
     Link* left;
     Link* right;
-    Link* link;
-
     LinkId_t my_id;
-
 };
 
 } //namespace SST
