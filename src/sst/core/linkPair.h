@@ -26,7 +26,7 @@ public:
     LinkPair() {}
 
     /** Create a new LinkPair with specified ID */
-    LinkPair(LinkId_t id, bool selfLink = false) :
+    LinkPair(LinkId_t id, bool selfLink) :
         left(new Link(id)),
         right(selfLink ? nullptr : new Link(id)),
         my_id(id)
