@@ -100,6 +100,36 @@ public:
      */
     Partition::SSTPartitioner* CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
 
+
+    /**
+       Check to see if a given element type is loadable with a particular API
+       @param name - Name of element to check in lib.name format
+       @return True if loadable as the API specified as the template parameter
+     */
+    template <class Base>
+    bool isSubComponentLoadableUsingAPI(std::string type) {
+        std::string elemlib, elem;
+        std::tie(elemlib, elem) = parseLoadName(type);
+
+        requireLibrary(elemlib);
+        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+        auto* lib = ELI::InfoDatabase::getLibrary<Base>(elemlib);
+        if (lib){
+            auto map = lib->getMap();
+            auto* info = lib->getInfo(elem);
+            if (info){
+                auto* builderLib = Base::getBuilderLibrary(elemlib);
+                if (builderLib){
+                    auto* fact = builderLib->getBuilder(elem);
+                    if (fact){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     
     /**
      * General function for a given base class

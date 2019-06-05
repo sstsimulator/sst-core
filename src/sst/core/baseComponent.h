@@ -384,9 +384,15 @@ protected:
         //This shouldn't happen since we just put it in, but just in case
         if ( sub_info == NULL ) return NULL;
 
-        auto ret = Factory::getFactory()->Create<T>(type, params, sub_info->id, params, args...);
-
-        return ret;        
+        // Check to see if this can be loaded with new API or if we have to fallback to old
+        if ( isSubComponentLoadableUsingAPI<T>(type) ) {
+            auto ret = Factory::getFactory()->Create<T>(type, params, sub_info->id, params, args...);
+            return ret;
+        }
+        else {
+            SubComponent* ret = loadLegacySubComponentPrivate(cid,type,params);
+            return dynamic_cast<T*>(ret);
+        }
     }
 
 
@@ -449,6 +455,11 @@ private:
     SubComponent* loadNamedSubComponent(std::string name, int slot_num);
     SubComponent* loadNamedSubComponent(std::string name, int slot_num, Params& params);
 
+    SubComponent* loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Params& params);
+
+    
+    SubComponent* loadLegacySubComponentPrivate(ComponentId_t cid, const std::string& type, Params& params);
+
 
     // These two functions are only need for backward compatibility
     // for anonymous subcomponents.
@@ -475,8 +486,16 @@ private:
         if ( sub_info->getParams() != NULL ) {
             myParams.insert(*sub_info->getParams());
         }
-        auto ret = Factory::getFactory()->Create<T>(sub_info->type, myParams, sub_info->id, myParams, args...);
-        return ret;
+
+        if ( isSubComponentLoadableUsingAPI<T>(sub_info->type) ) {
+            auto ret = Factory::getFactory()->Create<T>(sub_info->type, myParams, sub_info->id, myParams, args...);
+            return ret;
+        }
+        else {
+            SubComponent* ret = loadNamedSubComponentLegacyPrivate(sub_info,myParams);
+            return dynamic_cast<T*>(ret);
+        }
+        
         // return nullptr;        
     }
 
@@ -537,6 +556,25 @@ protected:
     Simulation *sim;
 
 
+private:
+
+    // Only need temporarily to help with backward compatibility
+    // implementation in elements.
+    bool loadedWithLegacyAPI;
+
+public:
+
+    /**
+       Temporary function to help provide backward compatibility to
+       old SubComponent API.
+       
+       @return true if subcomponent loaded with old API, false if
+       loaded with new
+     */
+    bool wasLoadedWithLegacyAPI() const {
+        return loadedWithLegacyAPI;
+    }
+    
 private:
 
     ComponentInfo* my_info;
@@ -665,10 +703,11 @@ public:
        fallback to old if unsuccessful.
     */
     template <typename T>
-     __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))    T* create(int slot_num) const 
+    T* create(int slot_num) const 
     {
         Params empty;
-        return private_create<T>(slot_num, empty);
+        return comp->loadUserSubComponentByIndex<T>(slot_name, slot_num, ComponentInfo::SHARE_NONE);
+        // return private_create<T>(slot_num, empty);
     }
 
     

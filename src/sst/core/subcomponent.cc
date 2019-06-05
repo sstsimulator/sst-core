@@ -21,7 +21,9 @@ SST_ELI_DEFINE_CTOR_EXTERN(SubComponent)
 SubComponent::SubComponent(Component* parent) :
     BaseComponent(parent->getCurrentlyLoadingSubComponentID()),
     parent(parent)
-{}
+{
+    loadedWithLegacyAPI = true;
+}
 
 SubComponent::SubComponent(ComponentId_t id) :
     BaseComponent(id),
