@@ -348,6 +348,32 @@ protected:
         return static_cast<T*>(ret);
     }
 
+    /**
+       Check to see if a given element type is loadable with a particular API
+       @param name - Name of element to check in lib.name format
+       @return True if loadable as the API specified as the template parameter
+     */
+    template <class T>
+    bool isSubComponentLoadableUsingAPI(std::string type) {
+        return Factory::getFactory()->isSubComponentLoadableUsingAPI<T>(type);
+    }
+    
+    /**
+       Loads an anonymous subcomponent (not defined in input file to
+       SST run).
+
+       @param type tyupe of subcomponent to load in lib.name format
+       @param slot_name name of the slot to load subcomponent into
+       @param slot_num  index of the slot to load subcomponent into
+       @param share_flags Share flags to be used by subcomponent
+       @param params Params object to be passed to subcomponent
+       @param args Arguments to be passed to constructor.  This
+       signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will
+       try to load using new API and will fallback to old if
+       unsuccessful.
+    */
     template <class T, class... ARGS>
     T* loadAnonymousSubComponent(std::string type, std::string slot_name, int slot_num, uint64_t share_flags, Params& params, ARGS... args) {
 
@@ -363,12 +389,36 @@ protected:
         return ret;        
     }
 
-    
-    template <class T, class... ARGS>
-    T* loadUserSubComponent(std::string slot_name, ARGS... args) {
-        return loadUserSubComponent<T,ARGS...>(slot_name, ComponentInfo::SHARE_NONE, args...);
+
+    /**
+       Loads a user defined subcomponent (defined in input file to SST
+       run).  This version does not allow share flags (set to
+       SHARE_NONE) or constructor arguments.
+
+       @param slot_name name of the slot to load subcomponent into
+
+       For ease in backward compatibility to old API, this call will
+       try to load using new API and will fallback to old if
+       unsuccessful.
+    */
+    template <class T>
+    T* loadUserSubComponent(std::string slot_name) {
+        return loadUserSubComponent<T>(slot_name, ComponentInfo::SHARE_NONE);
     }
     
+    /**
+       Loads a user defined subcomponent (defined in input file to SST
+       run).
+
+       @param slot_name name of the slot to load subcomponent into
+       @param share_flags Share flags to be used by subcomponent
+       @param args Arguments to be passed to constructor.  This
+       signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will
+       try to load using new API and will fallback to old if
+       unsuccessful.
+    */
     template <class T, class... ARGS>
     T* loadUserSubComponent(std::string slot_name, uint64_t share_flags, ARGS... args) {
 
@@ -393,7 +443,7 @@ protected:
         
         return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);        
     }
-        
+    
 private:
 
     SubComponent* loadNamedSubComponent(std::string name, int slot_num);
@@ -574,6 +624,7 @@ public:
 
 
     // Create functions that support the legacy API
+
     template <typename T>
     __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags.")))
     T* create(int slot_num, Params& params) const 
@@ -588,13 +639,6 @@ public:
         return private_createAll<T>(params, vec, insertNulls);
     }
 
-     template <typename T>
-     __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))    T* create(int slot_num) const 
-    {
-        Params empty;
-        return private_create<T>(slot_num, empty);
-    }
-
     template <typename T>
     __attribute__ ((deprecated("This version of createAll will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))
     void createAll(std::vector<T*>& vec, bool insertNulls = true) const 
@@ -605,22 +649,121 @@ public:
 
 
     // Create functions that support the new API
+
+    /**
+       Create a user defined subcomponent (defined in input file to
+       SST run).  This call will pass SHARE_NONE to the new
+       subcomponent and will not take constructor arguments.  If
+       constructor arguments are needed for the API that is being
+       loaded, the full call to create will need to be used
+       create(slot_num, share_flags, args...).
+
+       @param slot_num Slot index from which to load subcomponent
+
+       This function supports the new API, but is identical to an
+       existing API call.  It will try to load using new API and will
+       fallback to old if unsuccessful.
+    */
+    template <typename T>
+     __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))    T* create(int slot_num) const 
+    {
+        Params empty;
+        return private_create<T>(slot_num, empty);
+    }
+
+    
+    /**
+       Create a user defined subcomponent (defined in input file to SST
+       run).
+
+       @param slot_num Slot index from which to load subcomponent
+       @param share_flags Share flags to be used by subcomponent
+       @param args Arguments to be passed to constructor.  This
+       signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will
+       try to load using new API and will fallback to old if
+       unsuccessful.
+    */
     template <class T, class... ARGS>
     T* create(int slot_num, uint64_t share_flags, ARGS... args) const {
         return comp->loadUserSubComponentByIndex<T,ARGS...>(slot_name,slot_num, share_flags, args...);
     }
 
+    
+    /**
+       Create all user defined subcomponents (defined in input file to SST
+       run) for the slot.
+
+       @param vec Vector of T* that will hold the pointers to the new
+       subcomponents.  If an index is not occupied, a nullptr will be
+       put in it's place.  All components will be added to the end of
+       the vector, so index N will be at vec.length() + N, where
+       vec.length() is the length of the vector when it is passed to
+       the call.
+       @param share_flags Share flags to be used by subcomponent
+       @param args Arguments to be passed to constructor.  This
+       signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will
+       try to load using new API and will fallback to old if
+       unsuccessful.
+    */
     template <typename T, class... ARGS>
-    void createAll(std::vector<T*>& vec, bool insertNulls, uint64_t share_flags, ARGS... args) const {
+    void createAll(std::vector<T*>& vec, uint64_t share_flags, ARGS... args) const {
         for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
             T* sub = create<T>(i, share_flags, args...);
-            if ( sub != NULL || insertNulls ) vec.push_back(sub);
+            vec.push_back(sub);
         }
     }
 
+    /**
+       Create all user defined subcomponents (defined in input file to SST
+       run) for the slot.
+
+       @param vec Vector of pair<int,T*> that will hold the pointers
+       to the new subcomponents.  The int will hold the index from
+       which the subcomponent wass loaded.  Unoccupied indexes will be
+       skipped.  All components will be added to the end of the
+       vector.
+       @param share_flags Share flags to be used by subcomponent
+       @param args Arguments to be passed to constructor.  This
+       signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will
+       try to load using new API and will fallback to old if
+       unsuccessful.
+    */
     template <typename T, class... ARGS>
-    void createAll(std::vector<T*>& vec, uint64_t share_flags, ARGS... args) const {
-        createAll<T,ARGS...>(vec,true,share_flags,args...);
+    void createAllSparse(std::vector<std::pair<int,T*> >& vec, uint64_t share_flags, ARGS... args) const {
+        for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
+            T* sub = create<T>(i, share_flags, args...);
+            vec.push_back(i,sub);
+        }
+    }
+
+    /**
+       Create all user defined subcomponents (defined in input file to SST
+       run) for the slot.
+
+       @param vec Vector of T* that will hold the pointers
+       to the new subcomponents.  Unoccupied indexes will be
+       skipped.  All components will be added to the end of the
+       vector.
+       @param share_flags Share flags to be used by subcomponent
+       @param args Arguments to be passed to constructor.  This
+       signature is defined in the API definition
+
+       For ease in backward compatibility to old API, this call will
+       try to load using new API and will fallback to old if
+       unsuccessful.
+    */
+    template <typename T, class... ARGS>
+    void createAllSparse(std::vector<T*>& vec, uint64_t share_flags, ARGS... args) const {
+        for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
+            T* sub = create<T>(i, share_flags, args...);
+            vec.push_back(sub);
+        }
     }
 
 private:
