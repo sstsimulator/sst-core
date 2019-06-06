@@ -54,6 +54,7 @@ class BaseComponent {
     friend class SubComponentSlotInfo;
     friend class SubComponent;
     friend class ComponentInfo;
+    friend class ComponentExtension;
     
 public:
 
@@ -580,7 +581,8 @@ private:
     ComponentInfo* my_info;
     ComponentInfo* currentlyLoadingSubComponent;
     ComponentId_t currentlyLoadingSubComponentID;
-
+    bool isExtension;
+    
     void addSelfLink(std::string name);
     Link* getLinkFromParentSharedPort(const std::string& port);
 
@@ -777,7 +779,7 @@ public:
     void createAllSparse(std::vector<std::pair<int,T*> >& vec, uint64_t share_flags, ARGS... args) const {
         for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
             T* sub = create<T>(i, share_flags, args...);
-            vec.push_back(i,sub);
+            if ( sub != nullptr ) vec.push_back(i,sub);
         }
     }
 
@@ -801,7 +803,7 @@ public:
     void createAllSparse(std::vector<T*>& vec, uint64_t share_flags, ARGS... args) const {
         for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
             T* sub = create<T>(i, share_flags, args...);
-            vec.push_back(sub);
+            if ( sub != nullptr ) vec.push_back(sub);
         }
     }
 

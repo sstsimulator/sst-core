@@ -34,7 +34,8 @@ BaseComponent::BaseComponent(ComponentId_t id) :
     sim(Simulation::getSimulation()),
     loadedWithLegacyAPI(false),
     my_info(Simulation::getSimulation()->getComponentInfo(id)),
-    currentlyLoadingSubComponent(NULL)
+    currentlyLoadingSubComponent(NULL),
+    isExtension(false)
 {
     if ( my_info->component == nullptr ) {
         // If it's already set, then this is a ComponentExtension and
@@ -53,6 +54,7 @@ BaseComponent::~BaseComponent()
     // ComponentInfo object.  This happens at the end of execution
     // when the simulation destructor fires.
     if ( !my_info ) return;
+    if ( isExtension ) return;
 
     // Start by deleting children    
     std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();

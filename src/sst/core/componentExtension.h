@@ -30,9 +30,7 @@ class ComponentExtension : public BaseComponent {
 
 public:
 
-    ComponentExtension(ComponentId_t id) :
-        BaseComponent(id)
-    {}
+    ComponentExtension(ComponentId_t id);
 
 	virtual ~ComponentExtension() {};
 
