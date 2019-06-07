@@ -29,7 +29,7 @@ class ProvidesCategory {
   }
 
   void toString(std::ostream& UNUSED(os)) const {
-    os << "CATEGORY: " << categoryName(cat_) << "\n";
+    os << "      CATEGORY: " << categoryName(cat_) << "\n";
   }
 
   template <class XMLNode> void outputXML(XMLNode* UNUSED(node)){

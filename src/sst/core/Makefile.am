@@ -162,6 +162,7 @@ sst_core_sources = \
 	clock.cc \
 	baseComponent.cc \
 	component.cc \
+	componentExtension.cc \
 	componentInfo.cc \
 	config.cc \
 	configGraph.cc \
