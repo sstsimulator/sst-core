@@ -19,3 +19,9 @@ sst_core_sources += \
 	impl/partitioners/zoltpart.h \
 	impl/partitioners/zoltpart.cc
 endif
+
+if HAVE_PARMETIS 
+sst_core_sources += \
+	impl/partitioners/parmetispart.h \
+	impl/partitioners/parmetispart.cc
+endif

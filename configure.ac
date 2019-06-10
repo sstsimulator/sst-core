@@ -93,6 +93,16 @@ SST_ENABLE_CORE_PROFILE()
 
 SST_CHECK_FPIC()
 
+SST_CHECK_METIS([have_metis=1],[have_metis=0],[AC_MSG_ERROR([METIS requested but not found])])
+AS_IF([test "x$have_metis" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_METIS], [1],
+	[Define if you have the METIS library.])])
+AM_CONDITIONAL([HAVE_METIS], [test "$have_metis" = 1])
+
+SST_CHECK_PARMETIS([have_parmetis=1],[have_parmetis=0],[AC_MSG_ERROR([ParMETIS requested but not found])])
+AS_IF([test "x$have_parmetis" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_PARMETIS], [1],
+	[Define if you have the ParMETIS library.])])
+AM_CONDITIONAL([HAVE_PARMETIS], [test "$have_parmetis" = 1])
+
 SST_CHECK_ZOLTAN([have_zoltan=1],[have_zoltan=0],[AC_MSG_ERROR([Zoltan requested but not found])])
 AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],
 	[Define if you have the Zoltan library.])])
@@ -232,11 +242,24 @@ else
     printf "%38s : No\n" "Boost Library"
 fi
 
+if test "x$sst_check_metis_happy" = "xyes" ; then
+    printf "%38s : YES\n" "METIS Partitioner"
+else
+    printf "%38s : No\n" "METIS Partitioner"
+fi
+
+if test "x$sst_check_parmetis_happy" = "xyes" ; then
+    printf "%38s : YES\n" "ParMETIS Partitioner"
+else
+    printf "%38s : No\n" "ParMETIS Partitioner"
+fi
+
 if test "x$sst_check_zoltan_happy" = "xyes" ; then
     printf "%38s : YES\n" "Zoltan Partitioner"
 else
     printf "%38s : No\n" "Zoltan Partitioner"
 fi
+
 if test "x$sst_check_hdf5_happy" = "xyes" ; then
     printf "%38s : YES\n" "HDF5 Support"
 else

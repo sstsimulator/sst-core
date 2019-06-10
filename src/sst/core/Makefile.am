@@ -11,6 +11,8 @@ AM_CPPFLAGS =  \
 	$(BOOST_CPPFLAGS) \
 	$(ZOLTAN_CPPFLAGS) \
 	$(PYTHON_CPPFLAGS) \
+	$(PARMETIS_CPPFLAGS) \
+	$(METIS_CPPFLAGS) \
 	$(LTDLINCL)
 
 
@@ -276,6 +278,7 @@ sstsim_x_LDADD = \
 	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
+	$(METIS_LIB) \
 	$(BOOST_LIBS) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
@@ -284,6 +287,8 @@ sstsim_x_LDADD = \
 sstsim_x_LDFLAGS = \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
+	$(PARMETIS_LDFLAGS) \
+	$(METIS_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
 	$(BOOST_LDFLAGS) \
         $(PYTHON_LDFLAGS) \
@@ -294,6 +299,7 @@ sstinfo_x_LDADD = \
 	$(LIBLTDL) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
+	$(METIS_LIB) \
 	$(BOOST_LIBS) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
@@ -302,6 +308,8 @@ sstinfo_x_LDADD = \
 sstinfo_x_LDFLAGS = \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
+	$(PARMETIS_LDFLAGS) \
+        $(METIS_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
 	$(BOOST_LDFLAGS) \
         $(PYTHON_LDFLAGS) \
