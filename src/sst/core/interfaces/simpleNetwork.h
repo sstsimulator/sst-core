@@ -165,8 +165,14 @@ public:
     class NetworkInspector : public SubComponent {
 
     public:
+        SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork::NetworkInspector,std::string)
+
         NetworkInspector(Component* parent) :
             SubComponent(parent)
+        {}
+
+        NetworkInspector(ComponentId_t id) :
+            SubComponent(id)
         {}
 
         virtual ~NetworkInspector() {}

@@ -11,7 +11,7 @@ class ProvidesInterface {
   }
 
   void toString(std::ostream& os) const {
-    os << "Interface: " << iface_ << "\n";
+    os << "      Interface: " << iface_ << "\n";
   }
 
   template <class XMLNode> void outputXML(XMLNode* node) const {

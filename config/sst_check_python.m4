@@ -9,8 +9,12 @@ AC_DEFUN([SST_CHECK_PYTHON], [
   FOUND_PYTHON="no"
   PYTHON_CONFIG_EXE=""
 
-  AC_PATH_PROG([PYTHON_CONFIG_EXE], ["python3-config"], 
+  AC_PATH_PROG([PYTHON_CONFIG_EXE], ["python3-config"],
 		["NOTFOUND"])
+
+  AS_IF([test "$PYTHON_CONFIG_EXE" = "NOTFOUND"],
+	[AC_PATH_PROG([PYTHON_CONFIG_EXE], ["python3-config"],
+		["NOTFOUND"])],[PYTHON_CONFIG_EXE="$PYTHON_CONFIG_EXE"])
 
   AS_IF([test -n "$with_python"],
         [PYTHON_CPPFLAGS="-I$with_python/include"],

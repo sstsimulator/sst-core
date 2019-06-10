@@ -32,8 +32,10 @@ namespace SST {
 
 BaseComponent::BaseComponent(ComponentId_t id) :
     sim(Simulation::getSimulation()),
+    loadedWithLegacyAPI(false),
     my_info(Simulation::getSimulation()->getComponentInfo(id)),
-    currentlyLoadingSubComponent(NULL)
+    currentlyLoadingSubComponent(NULL),
+    isExtension(false)
 {
     if ( my_info->component == nullptr ) {
         // If it's already set, then this is a ComponentExtension and
@@ -52,6 +54,7 @@ BaseComponent::~BaseComponent()
     // ComponentInfo object.  This happens at the end of execution
     // when the simulation destructor fires.
     if ( !my_info ) return;
+    if ( isExtension ) return;
 
     // Start by deleting children    
     std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();
@@ -439,8 +442,17 @@ BaseComponent::loadSubComponent(std::string type, Component* comp, Params& param
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
     comp->currentlyLoadingSubComponentID = cid;
 
-    // sub_info->setComponent(ret);
-    // currentlyLoadingSubComponent = NULL;
+    return ret;
+}
+
+SubComponent*
+BaseComponent::loadLegacySubComponentPrivate(ComponentId_t cid, const std::string& type, Params& params) {
+    Component* comp = getTrueComponentPrivate();
+    ComponentId_t old_cid = comp->currentlyLoadingSubComponentID;
+    comp->currentlyLoadingSubComponentID = cid;
+    
+    SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
+    comp->currentlyLoadingSubComponentID = old_cid;
     return ret;
 }
 
@@ -525,6 +537,24 @@ BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& par
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponentPrivate(), myParams);
     sub_info->setComponent(ret);
 
+    getTrueComponentPrivate()->currentlyLoadingSubComponentID = cid;
+    return ret;
+}
+
+SubComponent*
+BaseComponent::loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Params& params)
+{
+    ComponentId_t cid = getTrueComponentPrivate()->currentlyLoadingSubComponentID;
+    getTrueComponentPrivate()->currentlyLoadingSubComponentID = sub_info->id;
+    
+    Params myParams;
+    if ( sub_info->getParams() != NULL )
+        myParams.insert(*sub_info->getParams());
+    myParams.insert(params);
+    
+    SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponentPrivate(), myParams);
+    sub_info->setComponent(ret);
+    
     getTrueComponentPrivate()->currentlyLoadingSubComponentID = cid;
     return ret;
 }
