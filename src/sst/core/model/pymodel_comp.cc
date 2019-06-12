@@ -247,7 +247,7 @@ static PyObject* compGetFullName(PyObject *self, PyObject *UNUSED(args))
 
 
 static PyObject* compCompare(PyObject *obj0, PyObject * obj1, int op){
-    // Py_RETURN_RICHCOMPARE only works with Python3.7, so manually implementing here for compatibility
+    // Py_RETURN_RICHCOMPARE only works with Python3.7, so manually implementing here for compatibility. Also Py_UNREACHABLE() is new in Python3.7 so using abort() directly
     //Py_RETURN_RICHCOMPARE(((ComponentPy_t*)obj0)->obj, ((ComponentPy_t*)obj1)->obj, op);
     
     switch (op) {
@@ -258,7 +258,7 @@ static PyObject* compCompare(PyObject *obj0, PyObject * obj1, int op){
         case Py_LE: if (((ComponentPy_t*)obj0)->obj <= ((ComponentPy_t*)obj1)->obj) Py_RETURN_TRUE; Py_RETURN_FALSE;
         case Py_GE: if (((ComponentPy_t*)obj0)->obj >= ((ComponentPy_t*)obj1)->obj) Py_RETURN_TRUE; Py_RETURN_FALSE;
         default:
-            Py_UNREACHABLE();
+            abort();
     }
 }
 
