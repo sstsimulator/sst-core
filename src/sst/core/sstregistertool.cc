@@ -39,15 +39,41 @@ bool validModel(std::string s);
 //Global constants
 const std::string START_DELIMITER = "[";
 const std::string STOP_DELIMITER = "]";
+//Global path to configuration file
+char* cfgPath;
 
 int main(int argc, char* argv[]) {
 	int option = 0;
 	std::vector<std::string> elementsArray;
-
+	cfgPath = (char*) malloc(sizeof(char) * PATH_MAX);
+	
 	if(argc < 2) {
 		print_usage();
 		exit(-1);
 	}
+	
+	//Check for configuration file
+	sprintf(cfgPath, SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf");
+	FILE* cfgFile = fopen(cfgPath, "r+");
+	if(NULL == cfgFile) {
+		char* envHome = getenv("HOME");
+
+		if(NULL == envHome) {
+			sprintf(cfgPath, "~/.sst/sstsimulator.conf");
+		} else {
+			sprintf(cfgPath, "%s/.sst/sstsimulator.conf", envHome);
+		}
+
+		cfgFile = fopen(cfgPath, "r+");
+
+		if(NULL == cfgFile) {
+			fprintf(stderr, "Unable to open configuration at either: %s or %s, one of these files must be editable.\n",
+				SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", cfgPath);
+			exit(-1);
+		}
+	}
+	fclose(cfgFile);
+	
 	if(!strcmp(argv[1],"-u")){ //Unregister
 		std::string element = argv[2];
 		sstUnregister(element);
@@ -66,11 +92,12 @@ int main(int argc, char* argv[]) {
 	else if(!strcmp(argv[1],"-au")){ //auto-unregister invalid components
 		autoUnregister();
 	}
-	else if(!strcmp(argv[1],"-h"))
+	else if(!strcmp(argv[1],"-h") || !strcmp(argv[1],"--help"))
 		print_usage();
 	else
 		sstRegister(argv);
 
+	free(cfgPath);
 	return 0;
 }
 
@@ -95,29 +122,7 @@ void sstRegister(char* argv[]){
 	SST::Core::Environment::EnvironmentConfiguration* database = new
 		SST::Core::Environment::EnvironmentConfiguration();
 
-	char* cfgPath = (char*) malloc(sizeof(char) * PATH_MAX);
-
-	sprintf(cfgPath, SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf");
 	FILE* cfgFile = fopen(cfgPath, "r+");
-
-	if(NULL == cfgFile) {
-		char* envHome = getenv("HOME");
-
-		if(NULL == envHome) {
-			sprintf(cfgPath, "~/.sst/sstsimulator.conf");
-		} else {
-			sprintf(cfgPath, "%s/.sst/sstsimulator.conf", envHome);
-		}
-
-		cfgFile = fopen(cfgPath, "r+");
-
-		if(NULL == cfgFile) {
-			fprintf(stderr, "Unable to open configuration at either: %s or %s, one of these files must be editable.\n",
-				SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", cfgPath);
-			exit(-1);
-		}
-	}
-
 	populateEnvironmentConfig(cfgFile, database, true);
 
 	database->getGroupByName(groupName)->setValue(key, value);
@@ -134,7 +139,6 @@ void sstRegister(char* argv[]){
 	database->writeTo(cfgFile);
 
 	fclose(cfgFile);
-	free(cfgPath);
 }
 
 //sstUnregister
@@ -144,18 +148,14 @@ void sstRegister(char* argv[]){
 void sstUnregister(std::string element){
 	std::string str1;
 	std::string s = "";
-	std::string sstconf;
 	std::string tempfile;
 	int found = 0;
 
 	//setup element names to look for
 	str1 = START_DELIMITER + element + STOP_DELIMITER;
-	// Find directories to modify
-	const std::string coreDir = getenv("SST_CORE_HOME");	
-	sstconf = coreDir + "/etc/sst/sstsimulator.conf";
-	tempfile = coreDir + "/etc/sst/tmp.txt";
+	tempfile = "/tmp/sstsimulator.conf";
 
-	std::ifstream infile(sstconf);
+	std::ifstream infile(cfgPath);
 	std::ofstream outfile(tempfile);
 
 	//grab each line and compare to element name stored in str1
@@ -176,7 +176,7 @@ void sstUnregister(std::string element){
 
 	infile.close();
 	outfile.close();
-	rename(tempfile.c_str(),sstconf.c_str());
+	rename(tempfile.c_str(), cfgPath);
 }
 
 //listModels
@@ -187,17 +187,13 @@ void sstUnregister(std::string element){
 //	option == 2: a vector containing only the INVALID components
 //Returns: a vector of strings.
 std::vector<std::string> listModels(int option){
-	const std::string coreDir = getenv("SST_CORE_HOME");
 	std::string s = "";
 	std::string strNew;
-	std::string sstconf;
 	std::vector<std::string> elements;
 	int found = 0, count = 1;
 	
-	//save the configuration file path to sstconf
-	sstconf = coreDir + "/etc/sst/sstsimulator.conf";
-	std::ifstream infile;
-	infile.open(sstconf);
+	
+	std::ifstream infile(cfgPath);
 
 	//Begin search of sstconf for models
 	std::cout << "\nList of registered models:\n";
