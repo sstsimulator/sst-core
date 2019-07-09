@@ -623,7 +623,11 @@ ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, strin
     link.latency_str[index] = latency_str;
     link.no_cut = link.no_cut | no_cut;
 
-	findComponent(comp_id)->links.push_back(link.id);
+	// Check to make sure the link doesn't already exist in the component
+	auto compLinks = &findComponent(comp_id)->links;
+	if (std::find(compLinks->begin(), compLinks->end(), link.id) == compLinks->end()){
+		compLinks->push_back(link.id);
+	}
 }
 
 void
