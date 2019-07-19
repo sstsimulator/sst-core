@@ -149,7 +149,7 @@ static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
     } else if (!optional){
         fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s\n", lib.c_str());
     } else {
-        fprintf(stdout, "**** %s not Found!\n", lib.c_str());
+        fprintf(stderr, "**** %s not Found!\n", lib.c_str());
     }
 
 }
