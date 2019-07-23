@@ -44,6 +44,9 @@
 #define DISABLE_WARN_MISSING_OVERRIDE \
     DIAG_DISABLE(inconsistent-missing-override)
 
+#define DISABLE_WARN_DEPRECATED_DECLARATION \
+    DIAG_DISABLE(deprecated-declarations)
+
 
 #elif defined(__GNUC__)
 #define DIAG_COMPILER GCC
@@ -59,6 +62,9 @@
 #else
 #define DISABLE_WARN_MISSING_OVERRIDE
 #endif
+
+#define DISABLE_WARN_DEPRECATED_DECLARATION \
+    DIAG_DISABLE(deprecated-declarations)
 
 #else
 
