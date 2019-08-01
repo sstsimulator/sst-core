@@ -38,4 +38,20 @@ namespace SST {
   SST_ELI_REGISTER_DERIVED(SST::Module,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
   SST_ELI_INTERFACE_INFO(interface)
 
+
+// New way to register modules.  Must register an interface (API)
+// first, then you can register a module that implements it
+#define SST_ELI_REGISTER_MODULE_API(cls,...)              \
+    SST_ELI_DECLARE_NEW_BASE(SST::Module,::cls)           \
+    SST_ELI_NEW_BASE_CTOR(Params&,##__VA_ARGS__)
+
+#define SST_ELI_REGISTER_MODULE_DERIVED_API(cls,base,...) \
+    SST_ELI_DECLARE_NEW_BASE(::base,::cls)                          \
+    SST_ELI_NEW_BASE_CTOR(Params&,##__VA_ARGS__)
+
+#define SST_ELI_REGISTER_MODULE_DERIVED(cls,lib,name,version,desc,interface)   \
+    SST_ELI_REGISTER_DERIVED(::interface,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+    SST_ELI_INTERFACE_INFO(#interface)
+
+
 #endif // SST_CORE_ACTION_H
