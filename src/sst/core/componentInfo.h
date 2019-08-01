@@ -195,7 +195,7 @@ public:
     inline ComponentId_t getID() const { return id; }
 
     inline const std::string& getName() const {
-        if ( name.empty() ) return parent_info->getName();
+        if ( name.empty() && parent_info ) return parent_info->getName();
         return name;
     }
 

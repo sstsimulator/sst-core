@@ -324,6 +324,20 @@ public:
     Module* loadModuleWithComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("loadModuleWithComponent will be removed in SST version 10.0.  If the module needs access to the parent component, please use SubComponents instead of Modules.")));
 
 
+    /** Loads a module from an element Library
+     * @param type Fully Qualified library.moduleName
+     * @param params Parameters the module should use for configuration
+     * @return handle to new instance of module, or NULL on failure.
+     */
+    template <class T, class... ARGS>
+    T* loadModule(std::string type, Params& params, ARGS... args) {
+
+        // Check to see if this can be loaded with new API or if we have to fallback to old
+        return Factory::getFactory()->Create<T>(type, params, params, args...);
+    }
+
+    
+
     /** Loads a SubComponent from an element Library
      * @param type Fully Qualified library.moduleName
      * @param comp Pointer to component to pass to SuBaseComponent's constructor
