@@ -260,9 +260,10 @@ protected:
 
 private:
     bool master;
-    int fd;
-    std::string filename;
     void *shmPtr;
+    int fd;
+    
+    std::string filename;
     uint8_t *nextAllocPtr;
     size_t shmSize;
     InternalSharedData *isd;
