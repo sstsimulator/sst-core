@@ -457,7 +457,7 @@ void SSTLibraryInfo::outputXML(TiXmlElement* XMLLibraryElement)
     xmlComment(XMLLibraryElement, "Num %ss = %d", BaseType::ELI_baseName(), numObjects);
     int idx = 0;
     for (auto& pair : lib->getMap()){
-      TiXmlElement* XMLElement = new TiXmlElement("Component");
+      TiXmlElement* XMLElement = new TiXmlElement(BaseType::ELI_baseName());
       XMLElement->SetAttribute("Index", idx);
       pair.second->outputXML(XMLElement);
       XMLLibraryElement->LinkEndChild(XMLElement);

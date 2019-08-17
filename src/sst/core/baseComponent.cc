@@ -47,7 +47,6 @@ BaseComponent::BaseComponent(ComponentId_t id) :
 
 BaseComponent::~BaseComponent()
 {
-
     // Need to cleanup my ComponentInfo and delete all my children.
 
     // If my_info is nullptr, then we are being deleted by our
@@ -60,6 +59,11 @@ BaseComponent::~BaseComponent()
     std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();
     for ( auto &ci : subcomps ) {
         // Delete the subcomponent
+
+        // Remove the parent info from the child so that it won't try
+        // to delete itself out of the map.  We'll clear the map
+        // after deleting everything.
+        ci.second.parent_info = nullptr;
         delete ci.second.component;
         ci.second.component = nullptr;
     }
