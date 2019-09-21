@@ -96,8 +96,8 @@ ProvidesStats::toString(std::ostream& os) const
          << " [" << (item.description == NULL ? "<empty>" : item.description) << "]"
          << " (" << (item.units == NULL ? "<empty>" : item.units) << ")"
          << " Enable level = " << (int16_t)item.enableLevel << "\n";
+        ++index;
     }
-    ++index;
 }
 
 void

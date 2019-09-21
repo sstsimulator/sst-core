@@ -296,6 +296,7 @@ void SSTInfoConfig::outputUsage()
     cout << "  -x, --xml                Generate XML data - default is off\n";
     cout << "  -o, --outputxml=FILE     File path to XML file. Default is SSTInfo.xml\n";
     cout << "  -l, --libs=LIBS          {all, <elementname>} - Element Library(s) to process\n";
+    cout << "  -q, --quiet              Quiet/print summary only\n";
     cout << endl;
 }
 
@@ -310,11 +311,11 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 
     static const struct option longOpts[] = {
         {"help",        no_argument,        0, 'h'},
-        {"quiet",       no_argument,        0, 'q'},
         {"version",     no_argument,        0, 'v'},
         {"debug",       no_argument,        0, 'd'},
         {"nodisplay",   no_argument,        0, 'n'},
         {"xml",         no_argument,        0, 'x'},
+        {"quiet",       no_argument,        0, 'q'},
         {"outputxml",   required_argument,  0, 'o'},
         {"libs",        required_argument,  0, 'l'},
         {"elemenfilt",  required_argument,  0, 0},
@@ -423,7 +424,8 @@ void SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
       bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
       if (print){
         os << "      " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
-        pair.second->toString(os);
+        if ( g_configuration.doVerbose() )
+            pair.second->toString(os);
       }
       ++idx;
     }
