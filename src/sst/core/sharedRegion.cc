@@ -47,18 +47,19 @@ bool SharedRegionMerger::merge(uint8_t *target, size_t size, const std::vector<C
     std::vector<ChangeSet> sorted = changeSets;
     std::sort(sorted.begin(), sorted.end(), compareRange);
     
-    for ( size_t n = 1 ; n < sorted.size() ; n++ ) {
+    for ( size_t n = 0 ; n < sorted.size() ; n++ ) {
         const ChangeSet &cs = sorted[n];
         /* Check for overlap */
-        if (sorted[n-1].offset + sorted[n-1].length > cs.offset ) {
-            Output::getDefaultObject().output(CALL_INFO,
-                    "Overlapping SharedRegion ChangeSets detected.\n"
-                    "[0x%zx - 0x%zx] overlaps with [0x%zx - 0x%zx]\n",
-                    cs.offset, cs.offset + cs.length,
-                    sorted[n-1].offset, sorted[n-1].offset + changeSets[n-1].length);
-            return false;
+        if (n > 0) {
+            if (sorted[n-1].offset + sorted[n-1].length > cs.offset ) {
+                Output::getDefaultObject().output(CALL_INFO,
+                        "Overlapping SharedRegion ChangeSets detected.\n"
+                        "[0x%zx - 0x%zx] overlaps with [0x%zx - 0x%zx]\n",
+                        cs.offset, cs.offset + cs.length,
+                        sorted[n-1].offset, sorted[n-1].offset + changeSets[n-1].length);
+                return false;
+            }
         }
-        
         if ( cs.offset + cs.length > size ) {
             Output::getDefaultObject().output(CALL_INFO,
                     "Shared Region changeSet [0x%zx - 0x%zx] out of range (0x%zx)\n",
