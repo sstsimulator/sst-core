@@ -62,7 +62,7 @@ void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigC
 	
 	int num = 0;
 	std::string temp = indent + "\"name\" : \"" + comp.name + "\",\n" + indent + "\"type\" : \"" + comp.type + "\",\n";
-	fprintf(outputFile,	temp.c_str());
+	fprintf(outputFile, "%s", temp.c_str());
 	
 	num = comp.links.size();
 	if (num > 0){
@@ -93,13 +93,13 @@ void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigC
 		fprintf(outputFile, "%s\"statistics\" : [\n", indent.c_str());
 		for (auto &statItr : comp.enabledStatistics) {
 			temp = indent + "\t{\n" + indent + "\t\t\"name\" : \"" + statItr.name + "\"";
-			fprintf(outputFile, temp.c_str());
+			fprintf(outputFile, "%s", temp.c_str());
 			int num2 = statItr.params.size();
 			if (num2 > 0){
 				fprintf(outputFile, ",\n%s\t\t\"params\" : [\n", indent.c_str());
 				for(auto &paramsItr : statItr.params.getKeys()) {
 					temp = indent + "\t\t\t{ \"name\" : \"" + paramsItr + "\", \"value\" : \"" + statItr.params.find<std::string>(paramsItr) + "\" }";
-					fprintf(outputFile, temp.c_str());
+					fprintf(outputFile, "%s", temp.c_str());
 					num2--; (num2 > 0) ? fprintf(outputFile, ",\n") : fprintf(outputFile, "\n");
 				}
 				fprintf(outputFile, "%s\t\t]\n", indent.c_str());
@@ -114,7 +114,7 @@ void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigC
 	fprintf(outputFile, "%s\"params\" : [\n", indent.c_str());
 	for(auto &paramsItr : comp.params.getKeys()) {
 		temp = indent + "\t{ \"name\" : \"" + paramsItr + "\", \"value\" : \"" + comp.params.find<std::string>(paramsItr) + "\" }";
-		fprintf(outputFile, temp.c_str());
+		fprintf(outputFile, "%s", temp.c_str());
 		num--; (num > 0) ? fprintf(outputFile, ",\n") : fprintf(outputFile, "\n");
 	}
 	fprintf(outputFile, "%s]\n", indent.c_str());
@@ -128,5 +128,5 @@ void JSONConfigGraphOutput::generateJSON(const ConfigLink& link, const ConfigCom
 		"\t\t\t\"right\" : \"" + compMap[link.component[1]].name + "\",\n" + 
 		"\t\t\t\"rightPort\" : \"" + link.port[1] + "\",\n" + 
 		"\t\t\t\"latency\" : \"" + link.latency_str[minLatIdx] + "\"\n";
-	fprintf(outputFile, temp.c_str());
+	fprintf(outputFile, "%s", temp.c_str());
 }

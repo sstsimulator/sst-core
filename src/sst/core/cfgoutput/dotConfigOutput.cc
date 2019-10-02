@@ -33,7 +33,7 @@ void DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph) {
 	const auto compMap = graph->getComponentMap();
 	const auto linkMap = graph->getLinkMap();
 	for ( auto compItr : compMap ) {
-		fprintf(outputFile, "subgraph cluster_%lu {\n", compItr.id);
+		fprintf(outputFile, "subgraph cluster_%" PRIu64 " {\n", compItr.id);
 		generateDot( compItr, linkMap );
 		fprintf(outputFile, "}\n\n");
 	}
@@ -72,7 +72,7 @@ void DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph) {
 
 
 void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const ConfigLinkMap_t& linkMap) const {
-	fprintf(outputFile, "%lu [label=\"{<main> %s\\n%s", comp.id, comp.name.c_str(), comp.type.c_str());
+	fprintf(outputFile, "%" PRIu64 " [label=\"{<main> %s\\n%s", comp.id, comp.name.c_str(), comp.type.c_str());
 	int j = comp.links.size();
 	if(j != 0){
 		fprintf(outputFile, " |\n");
@@ -88,7 +88,7 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
 	}
 	fprintf(outputFile, "}\"];\n\n");
 	for ( auto &sc : comp.subComponents ) {
-		fprintf(outputFile, "%lu [color=gray,label=\"{<main> %s\\n%s", sc.id, sc.name.c_str(), sc.type.c_str());
+		fprintf(outputFile, "%" PRIu64 " [color=gray,label=\"{<main> %s\\n%s", sc.id, sc.name.c_str(), sc.type.c_str());
 		j = sc.links.size();
 		if(j != 0){
 			fprintf(outputFile, " |\n");
@@ -103,7 +103,7 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
 			j--;
 		}
 		fprintf(outputFile, "}\"];\n");
-		fprintf(outputFile, "%lu:\"main\" -- %lu:\"main\" [style=dotted];\n\n", comp.id, sc.id);
+		fprintf(outputFile, "%" PRIu64 ":\"main\" -- %" PRIu64 ":\"main\" [style=dotted];\n\n", comp.id, sc.id);
 	}
 }
 
@@ -111,7 +111,7 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
 void DotConfigGraphOutput::generateDot(const ConfigLink& link) const {
 
 	int minLatIdx = (link.latency[0] <= link.latency[1]) ? 0 : 1;
-	fprintf(outputFile, "%lu:\"%s\" -- %lu:\"%s\" [label=\"%s\\n%s\"]; \n",
+	fprintf(outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\" [label=\"%s\\n%s\"]; \n",
 		link.component[0], link.port[0].c_str(),
 		link.component[1], link.port[1].c_str(),
 		link.name.c_str(),
