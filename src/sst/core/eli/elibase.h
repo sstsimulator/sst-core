@@ -104,9 +104,14 @@ namespace ELI {
 
 template <class T> struct MethodDetect { using type=void; };
 
+struct LibraryLoader {
+  virtual void load() = 0;
+  virtual ~LibraryLoader(){}
+};
+
 class LoadedLibraries {
 public:
-    using InfoMap=std::map<std::string, std::function<void()>>;
+    using InfoMap=std::map<std::string,std::list<LibraryLoader*>>;
     using LibraryMap=std::map<std::string,InfoMap>;
 
     static bool isLoaded(const std::string& name);
@@ -115,7 +120,7 @@ public:
        @return A boolean indicated successfully added
 	*/
     static bool addLoader(const std::string& lib, const std::string& name,
-                          std::function<void()>&& loader);
+                          LibraryLoader* loader);
 
     static const LibraryMap& getLoaders();
 

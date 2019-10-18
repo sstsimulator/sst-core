@@ -29,12 +29,13 @@ std::unique_ptr<LoadedLibraries::LibraryMap> LoadedLibraries::loaders_{};
 static const std::vector<int> SST_ELI_COMPILED_VERSION = {0, 9, 0};
 
 bool
-LoadedLibraries::addLoader(const std::string &lib, const std::string &name, std::function<void()> &&loader)
+LoadedLibraries::addLoader(const std::string &lib, const std::string &name,
+                           LibraryLoader* loader)
 {
   if (!loaders_){
     loaders_ = std::unique_ptr<LibraryMap>(new LibraryMap);
   }
-  (*loaders_)[lib].emplace(name, std::move(loader));
+  (*loaders_)[lib][name].push_back(loader);
 	return true; 
 }
 
