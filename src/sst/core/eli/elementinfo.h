@@ -208,14 +208,32 @@ private:
 template <class Base> typename InfoLibraryDatabase<Base>::Map*
 InfoLibraryDatabase<Base>::libraries = nullptr;
 
+template <class Base, class Info>
+struct InfoLoader : public LibraryLoader {
+  InfoLoader(const std::string& elemlib,
+                        const std::string& elem,
+                        Info* info) :
+    elemlib_(elemlib), elem_(elem), info_(info)
+  {
+  }
+
+  void load() override {
+    auto* lib = InfoLibraryDatabase<Base>::getLibrary(elemlib_);
+    if (!lib->hasInfo(elem_)){
+        lib->readdInfo(elem_, info_);
+    }
+  }
+ private:
+  std::string elemlib_;
+  std::string elem_;
+  Info* info_;
+};
+
 template <class Base> void InfoLibrary<Base>::addLoader(const std::string& elemlib, const std::string& elem,
                                                         BaseInfo* info){
-    LoadedLibraries::addLoader(elemlib, elem, [=]{
-                                                  auto* lib = InfoLibraryDatabase<Base>::getLibrary(elemlib);
-                                                  if (!lib->hasInfo(elem)){
-                                                      lib->readdInfo(elem, info);
-                                                  }
-                                              });
+
+   auto loader = new InfoLoader<Base,BaseInfo>(elemlib, elem, info);
+   LoadedLibraries::addLoader(elemlib, elem, loader);
 }
 
 
