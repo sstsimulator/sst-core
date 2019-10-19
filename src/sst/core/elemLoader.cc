@@ -193,12 +193,14 @@ ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
     //on how weak symbol resolution works in dlopen
     //rerun the loaders to make sure everything is still registered
     for (auto& libpair : ELI::LoadedLibraries::getLoaders()){
+      //loop all the elements in the element lib
       for (auto& elempair : libpair.second){
-        //call the loader function
-        elempair.second();
+        //loop all the loaders in the element
+        for (auto* loader : elempair.second){
+          loader->load();
+        }
       }
     }
-
     return;
 }
 
