@@ -95,11 +95,31 @@ class BuilderLibraryDatabase {
 template <class Base, class... CtorArgs> typename BuilderLibraryDatabase<Base,CtorArgs...>::Map*
   BuilderLibraryDatabase<Base,CtorArgs...>::libraries = nullptr;
 
+template <class Base, class Builder, class... CtorArgs>
+struct BuilderLoader : public LibraryLoader {
+  BuilderLoader(const std::string& elemlib,
+                const std::string& elem,
+                Builder* builder) :
+    elemlib_(elemlib), elem_(elem), builder_(builder)
+  {
+  }
+
+  void load() override {
+    BuilderLibraryDatabase<Base,CtorArgs...>::getLibrary(elemlib_)
+        ->readdBuilder(elem_,builder_);
+  }
+
+ private:
+  std::string elemlib_;
+  std::string elem_;
+  Builder* builder_;
+};
+
 template <class Base, class... CtorArgs>
-bool BuilderLibrary<Base,CtorArgs...>::addLoader(const std::string &elemlib, const std::string &elem, BaseBuilder *fact){
-  return ELI::LoadedLibraries::addLoader(elemlib, elem, [=]{
-      BuilderLibraryDatabase<Base,CtorArgs...>::getLibrary(elemlib)->readdBuilder(elem,fact);
-  });
+bool BuilderLibrary<Base,CtorArgs...>::addLoader(const std::string &elemlib, const std::string &elem,
+                                                 BaseBuilder *fact){
+  auto loader = new BuilderLoader<Base,BaseBuilder,CtorArgs...>(elemlib, elem, fact);
+  return ELI::LoadedLibraries::addLoader(elemlib, elem, loader);
 }
 
 template <class Base, class T>
