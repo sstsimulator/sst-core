@@ -127,8 +127,10 @@ static PyTypeObject ModuleLoaderType = {
 };
 
 
-
-
+// I hate having to do this through a global variable
+// but there's really no other way to communicate errors from the importer
+// to the parent simulator process
+static std::string loadErrors;
 
 static PyObject* mlFindModule(PyObject *self, PyObject *args)
 {
@@ -137,20 +139,31 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
     if ( !PyArg_ParseTuple(args, "s|O", &name, &path) )
         return NULL;
 
+    //reset any previous load errors, they apparently didn't matter
+    loadErrors = "";
+
+    std::stringstream err_sstr;
     if ( !strncmp(name, "sst.", 4) ) {
         // We know how to handle only sst.<module>
         // Check for the existence of a library
         char *modName = name+4;
-        if ( Factory::getFactory()->hasLibrary(modName) ) {
+        if ( Factory::getFactory()->hasLibrary(modName, err_sstr) ) {
             // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
             SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
             if ( pymod ) {
                 Py_INCREF(self);
                 return self;
+            } else {
+                loadErrors += std::string("Succeeded in loading library for ") + (const char*) modName
+                       + " but library does not contain a Python module\n";
+                loadErrors += err_sstr.str();
             }
+        } else {
+          loadErrors += std::string("No component or Python model registered for ")
+                   + (const char*) modName + "\n";
+          loadErrors += err_sstr.str();
         }
     }
-
     Py_RETURN_NONE;
 }
 
@@ -770,7 +783,8 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
     }
     if(-1 == createReturn) {
         output->fatal(CALL_INFO, 1,
-            "Execution of model construction function failed.\n");
+            "Execution of model construction function failed\n%s",
+             loadErrors.c_str());
     }
 
 
