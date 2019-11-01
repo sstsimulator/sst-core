@@ -188,6 +188,9 @@ ElemLoader::loadLibrary(const std::string &elemlib, std::ostream& err_os)
                 elemlib.c_str(), lt_dlerror());
         err_os << (const char*) err_str.data();
         followError(libname, elemlib, searchPaths, err_os);
+    } else {
+      const lt_dlinfo* info = lt_dlgetinfo(lt_handle);
+      err_os << "Located " << elemlib << " at " << info->filename << "\n";
     }
         
     //loading a library can "wipe" previously loaded libraries depending

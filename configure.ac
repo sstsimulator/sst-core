@@ -93,6 +93,8 @@ SST_ENABLE_CORE_PROFILE()
 
 SST_CHECK_FPIC()
 
+SST_CHECK_COVERAGE()
+
 SST_CHECK_ZOLTAN([have_zoltan=1],[have_zoltan=0],[AC_MSG_ERROR([Zoltan requested but not found])])
 AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],
 	[Define if you have the Zoltan library.])])
@@ -116,6 +118,11 @@ AC_DEFINE_UNQUOTED([SST_PYTHON_CPPFLAGS], ["$PYTHON_CPPFLAGS"],
 	[Defines the CPPFLAGS needed to compile Python into SST])
 AC_DEFINE_UNQUOTED([SST_PYTHON_LDFLAGS], ["$PYTHON_LDFLAGS"],
 	[Defines the LDFLAGS needed to compile Python into SST])
+
+AC_DEFINE_UNQUOTED([SST_COVERAGE_CXXFLAGS], ["$COVERAGE_CXXFLAGS"],
+	[Defines the CXXFLAGS needed to compile code coverage into SST])
+AC_DEFINE_UNQUOTED([LCOV_EXE], ["$LCOV_EXE"],
+  [Defines the path to the lcov executable])
 
 AC_DEFINE_UNQUOTED([SST_BOOST_CPPFLAGS], ["$BOOST_CPPFLAGS"],
 	[Defines the CPPFLAGS needed to compile Boost into SST])
@@ -183,6 +190,7 @@ AC_CONFIG_FILES([
   src/sst/core/Makefile
   src/sst/core/libltdl/Makefile
   src/sst/core/build_info.h:src/sst/core/build_info.h.in
+  test/Makefile
 ])
 AC_OUTPUT
 
@@ -224,28 +232,36 @@ echo "-------------------------------------------------------"
 echo "Configuration Information (Dependencies):"
 echo ""
 
+if test "x$enable_coverage" = "xyes"; then
+   printf "%38s : YES\n" "Code coverage"
+   printf "%38s : %s\n" "Code coverage flags" "$COVERAGE_CXXFLAGS"
+   printf "%38s : %s\n" "Found LCOV" "$LCOV_EXE"
+else
+   printf "%38s : NO\n" "Code coverage"
+fi
+
 if test "x$sst_check_boost_happy" = "xyes" ; then
     printf "%38s : YES\n" "Boost Library"
     printf "%38s : %s\n" "Boost Library Preprocessor" "$BOOST_CPPFLAGS"
     printf "%38s : %s\n" "Boost Library Linker Options" "$BOOST_LDFLAGS"
 else
-    printf "%38s : No\n" "Boost Library"
+    printf "%38s : NO\n" "Boost Library"
 fi
 
 if test "x$sst_check_zoltan_happy" = "xyes" ; then
     printf "%38s : YES\n" "Zoltan Partitioner"
 else
-    printf "%38s : No\n" "Zoltan Partitioner"
+    printf "%38s : NO\n" "Zoltan Partitioner"
 fi
 if test "x$sst_check_hdf5_happy" = "xyes" ; then
     printf "%38s : YES\n" "HDF5 Support"
 else
-    printf "%38s : No\n" "HDF5 Support"
+    printf "%38s : NO\n" "HDF5 Support"
 fi
 if test "x$sst_check_libz_happy" = "xyes" ; then
     printf "%38s : YES\n" "libz compression library"
 else
-    printf "%38s : No\n" "libz compression library"
+    printf "%38s : NO\n" "libz compression library"
 fi
 
 echo "-------------------------------------------------------" 

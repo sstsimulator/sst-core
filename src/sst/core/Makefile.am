@@ -13,7 +13,8 @@ AM_CPPFLAGS =  \
 	$(PYTHON_CPPFLAGS) \
 	$(LTDLINCL)
 
-
+AM_CXXFLAGS = \
+  $(COVERAGE_CXXFLAGS)
 
 DIST_SUBDIRS = libltdl .
 SUBDIRS = libltdl .
