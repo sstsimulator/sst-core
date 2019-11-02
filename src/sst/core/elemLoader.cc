@@ -140,11 +140,10 @@ static std::vector<std::string> splitPath(const std::string & searchPaths)
 }
 
 
-static void followError(std::string libname, std::string elemlib, std::string searchPaths)
+static void followError(const std::string& libname, const std::string& elemlib, const std::string& searchPaths,
+                        std::ostream& err_os)
 {
-
-    // dlopen case
-    libname.append(".so");
+    std::string so_path = libname + ".so";
     std::string fullpath;
     void *handle;
 
@@ -154,7 +153,7 @@ static void followError(std::string libname, std::string elemlib, std::string se
         struct stat sbuf;
         int ret;
 
-        fullpath = path + "/" + libname;
+        fullpath = path + "/" + so_path;
         ret = stat(fullpath.c_str(), &sbuf);
         if (ret == 0) break;
     }
@@ -164,29 +163,31 @@ static void followError(std::string libname, std::string elemlib, std::string se
     // from dlopen, which is a useful error message for the user.
     handle = dlopen(fullpath.c_str(), RTLD_NOW|RTLD_GLOBAL);
     if (NULL == handle) {
-        fprintf(stderr,
-            "Opening and resolving references for element library %s failed:\n"
-            "\t%s\n", elemlib.c_str(), dlerror());
+        std::vector<char> err_str(1e6); //make darn sure we fit the str
+        sprintf(err_str.data(),
+          "Opening and resolving references for element library %s failed:\n" "\t%s\n",
+        elemlib.c_str(), dlerror());
+        err_os << (const char*) err_str.data();
     }
 }
 
 void
-ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
+ElemLoader::loadLibrary(const std::string &elemlib, std::ostream& err_os)
 {
     std::string libname = "lib" + elemlib;
     lt_dlhandle lt_handle;
-
     lt_handle = lt_dlopenadvise(libname.c_str(), loaderData->advise_handle);
     if (NULL == lt_handle) {
-        // So this sucks.  the preopen module runs last and if the
+      // The preopen module runs last and if the
         // component was found earlier, but has a missing symbol or
         // the like, we just get an amorphous "file not found" error,
         // which is totally useless...
-        if (showErrors) {
-            fprintf(stderr, "Opening element library %s failed: %s\n",
-                    elemlib.c_str(), lt_dlerror());
-            followError(libname, elemlib, searchPaths);
-        }
+        //Make darn sure we have enough space to hold the error message
+        std::vector<char> err_str(1e6);
+        sprintf(err_str.data(), "Opening element library %s failed: %s\n",
+                elemlib.c_str(), lt_dlerror());
+        err_os << (const char*) err_str.data();
+        followError(libname, elemlib, searchPaths, err_os);
     }
         
     //loading a library can "wipe" previously loaded libraries depending

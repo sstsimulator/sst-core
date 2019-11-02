@@ -139,7 +139,8 @@ static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
     if ( g_configuration.debugEnabled() )
         fprintf (stdout, "Looking for library \"%s\"\n", lib.c_str());
 
-    loader.loadLibrary(lib, g_configuration.debugEnabled());
+    std::stringstream err_sstr;
+    loader.loadLibrary(lib, err_sstr);
 
     // Check to see if this library loaded into the new ELI
     // Database
@@ -148,8 +149,13 @@ static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
         g_libInfoArray.emplace_back(lib);
     } else if (!optional){
         fprintf(stderr, "**** WARNING - UNABLE TO PROCESS LIBRARY = %s\n", lib.c_str());
+        if (g_configuration.debugEnabled()){
+          std::cerr << err_sstr.str() << std::endl;
+        }
     } else {
         fprintf(stderr, "**** %s not Found!\n", lib.c_str());
+        //regardless of debug - force error printing
+        std::cerr << err_sstr.str() << std::endl;
     }
 
 }

@@ -107,7 +107,7 @@ public:
        @return True if loadable as the API specified as the template parameter
      */
     template <class Base>
-    bool isSubComponentLoadableUsingAPI(std::string type) {
+    bool isSubComponentLoadableUsingAPI(const std::string& type) {
         std::string elemlib, elem;
         std::tie(elemlib, elem) = parseLoadName(type);
 
@@ -142,7 +142,8 @@ public:
         std::string elemlib, elem;
         std::tie(elemlib, elem) = parseLoadName(type);
 
-        requireLibrary(elemlib);
+        std::stringstream err_os;
+        requireLibrary(elemlib, err_os);
         std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
         auto* lib = ELI::InfoDatabase::getLibrary<Base>(elemlib);
@@ -162,7 +163,7 @@ public:
                 }
             }
         }
-        notFound(Base::ELI_baseName(), type);
+        notFound(Base::ELI_baseName(), type, err_os.str());
         return nullptr;
     }
 
@@ -182,7 +183,8 @@ public:
       std::string elemlib, elem;
       std::tie(elemlib, elem) = parseLoadName(type);
       // ensure library is already loaded...
-      requireLibrary(elemlib);
+      std::stringstream sstr;
+      requireLibrary(elemlib, sstr);
 
       auto* lib = ELI::BuilderDatabase::getLibrary<Statistics::Statistic<T>, Args...>(elemlib);
       if (lib){
@@ -192,7 +194,8 @@ public:
         }
       }
       // If we make it to here, component not found
-      out.fatal(CALL_INFO, -1,"can't find requested statistic %s.\n ", type.c_str());
+      out.fatal(CALL_INFO, -1,"can't find requested statistic %s.\n%s\n",
+                type.c_str(), sstr.str().c_str());
       return NULL;
     }
 
@@ -200,10 +203,21 @@ public:
     /** Return Python Module creation function
      * @param name - Fully qualified elementlibname.pythonModName type name
      */
-    SSTElementPythonModule* getPythonModule(std::string name);
-    /** Checks to see if library exists and can be loaded */
-    bool hasLibrary(std::string elemlib);
-    void requireLibrary(std::string &elemlib);
+    SSTElementPythonModule* getPythonModule(const std::string& name);
+
+    /**
+     * @brief hasLibrary Checks to see if library exists and can be loaded
+     * @param elemlib
+     * @param err_os Stream to print error messages to
+     * @return whether the library was found
+     */
+    bool hasLibrary(const std::string& elemlib, std::ostream& err_os);
+    void requireLibrary(const std::string &elemlib, std::ostream& err_os);
+    /**
+     * @brief requireLibrary Throws away error messages
+     * @param elemlib
+     */
+    void requireLibrary(const std::string &elemlib);
 
     void getLoadedLibraryNames(std::set<std::string>& lib_names);
     void loadUnloadedLibraries(const std::set<std::string>& lib_names);
@@ -246,7 +260,8 @@ public:
 private:
     friend int ::main(int argc, char **argv);
 
-    void notFound(const std::string& baseName, const std::string& type);
+    void notFound(const std::string& baseName, const std::string& type,
+                  const std::string& errorMsg);
 
 
     Factory(std::string searchPaths);
@@ -259,9 +274,9 @@ private:
     static Factory *instance;
 
     // find library information for name
-    bool findLibrary(std::string name, bool showErrors=true);
+    bool findLibrary(const std::string& name, std::ostream& err_os = std::cerr);
     // handle low-level loading of name
-    bool loadLibrary(std::string name, bool showErrors=true);
+    bool loadLibrary(const std::string& name, std::ostream& err_os = std::cerr);
 
     std::set<std::string> loaded_libraries;
 

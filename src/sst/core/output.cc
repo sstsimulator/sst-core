@@ -178,7 +178,9 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
         openSSTTargetFile();
         
         // Check to make sure output location is not NONE
-        if (NONE != m_targetLoc) {
+        // Also make sure we are not redundantly printing to screen
+        // We have already printed to stderr
+        if (NONE != m_targetLoc && STDERR != m_targetLoc && STDOUT != m_targetLoc) {
             std::vfprintf(*m_targetOutputRef, newFmt.c_str(), arg2);
         }
 

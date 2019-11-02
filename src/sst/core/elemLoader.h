@@ -32,10 +32,10 @@ public:
 
     /** Attempt to load a library
      * @param elemlib - The name of the Element Library to load
-     * @param showErrors - Print errors associated with attempting to find and load the library
+     * @param err_os - Where to print errors associated with attempting to find and load the library
      * @return Informational structure of the library, or NULL if it failed to load.
      */
-    void loadLibrary(const std::string &elemlib, bool showErrors);
+    void loadLibrary(const std::string &elemlib, std::ostream& err_os);
 
     /**
      * Returns a list of potential element libraries in the search path
