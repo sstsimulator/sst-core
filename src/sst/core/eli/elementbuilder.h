@@ -200,12 +200,36 @@ struct ElementsBuilder<Base, std::tuple<Args...>>
 
 };
 
+
+/**
+ @class ExtendedCtor
+ Implements a constructor for a derived base as usually happens with subcomponents, e.g.
+ class U extends API extends Subcomponent. You can construct U as either an API*
+ or a Subcomponent* depending on usage.
+*/
 template <class NewCtor, class OldCtor>
 struct ExtendedCtor
 {
-  template <class T> static bool add(){
+  template <class T>
+  using is_constructible = typename NewCtor::template is_constructible<T>;
+
+  /**
+    The derived Ctor can "block" the more abstract Ctor, meaning an object
+    should only be instantiated as the most derived type. enable_if here
+    checks if both the derived API and the parent API are still valid
+  */
+  template <class T>
+  static typename std::enable_if<OldCtor::template is_constructible<T>::value,bool>::type
+  add(){
       //if abstract, force an allocation to generate meaningful errors
     return NewCtor::template add<T>() && OldCtor::template add<T>();
+  }
+
+  template <class T>
+  static typename std::enable_if<!OldCtor::template is_constructible<T>::value,bool>::type
+  add(){
+      //if abstract, force an allocation to generate meaningful errors
+    return NewCtor::template add<T>();
   }
 
   template <class __NewCtor>
@@ -218,6 +242,9 @@ struct ExtendedCtor
 template <class Base, class... Args>
 struct SingleCtor
 {
+  template <class T>
+  using is_constructible = std::is_constructible<T,Args...>;
+
   template <class T> static bool add(){
     //if abstract, force an allocation to generate meaningful errors
     auto* fact = new DerivedBuilder<T,Base,Args...>;
@@ -231,10 +258,15 @@ struct SingleCtor
   using ExtendCtor = ExtendedCtor<NewCtor, SingleCtor<Base,Args...>>;
 };
 
-
 template <class Base, class Ctor, class... Ctors>
 struct CtorList : public CtorList<Base,Ctors...>
 {
+  template <class T>  //if T is constructible with Ctor arguments
+  using is_constructible = typename std::conditional<is_tuple_constructible<T,Ctor>::value,
+                 std::true_type, //yes, constructible
+                 typename CtorList<Base,Ctors...>::template is_constructible<T> //not constructible here but maybe later
+               >::type;
+
   template <class T, int NumValid=0, class U=T>
   static typename std::enable_if<std::is_abstract<U>::value || is_tuple_constructible<U,Ctor>::value, bool>::type
   add(){
@@ -264,6 +296,9 @@ template <> class NoValidConstructorsForDerivedType<0> {};
 
 template <class Base> struct CtorList<Base,void>
 {
+  template <class T>
+  using is_constructible = std::false_type;
+
   template <class T,int numValidCtors>
   static bool add(){
     return NoValidConstructorsForDerivedType<numValidCtors>::atLeastOneValidCtor;
