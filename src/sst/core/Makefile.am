@@ -17,7 +17,7 @@ AM_CPPFLAGS =  \
 
 DIST_SUBDIRS = libltdl .
 SUBDIRS = libltdl .
-EXTRA_DIST = mainpage.dox
+EXTRA_DIST = mainpage.dox eli/README.md
 
 sstdir = $(includedir)/sst/core
 nobase_dist_sst_HEADERS = \
