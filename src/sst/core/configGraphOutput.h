@@ -15,7 +15,6 @@
 #include <configGraph.h>
 
 #include <exception>
-#include <cstring>
 #include <cstdio>
 
 namespace SST {

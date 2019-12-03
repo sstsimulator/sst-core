@@ -9,7 +9,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
 
 #include "mersenne.h"
 
@@ -26,7 +26,7 @@ MersenneRNG::MersenneRNG() {
 	numbers = (uint32_t*) malloc(sizeof(uint32_t) * 624);
 
 	struct timeval now;
-	gettimeofday(&now, NULL);
+	gettimeofday(&now, nullptr);
 
 	numbers[0] = (uint32_t) now.tv_usec;
 	index = 0;

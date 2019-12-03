@@ -12,25 +12,23 @@
 // distribution.
 
 #include "sst_config.h"
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
 
-
 #include <string.h>
-#include <sstream>
 
-#include <sst/core/model/pymodel.h>
-#include <sst/core/model/pymodel_comp.h>
-#include <sst/core/model/pymodel_link.h>
+#include "sst/core/model/pymodel.h"
+#include "sst/core/model/pymodel_comp.h"
+#include "sst/core/model/pymodel_link.h"
 
-#include <sst/core/sst_types.h>
-#include <sst/core/simulation.h>
-#include <sst/core/component.h>
-#include <sst/core/subcomponent.h>
-#include <sst/core/configGraph.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/simulation.h"
+#include "sst/core/component.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/configGraph.h"
 
 using namespace SST::Core;
 extern SST::Core::SSTPythonModelDefinition *gModel;
@@ -39,7 +37,7 @@ extern SST::Core::SSTPythonModelDefinition *gModel;
 extern "C" {
 
 
-ConfigComponent* ComponentHolder::getSubComp(const std::string &name, int slot_num)
+ConfigComponent* ComponentHolder::getSubComp(const std::string& name, int slot_num)
 {
     for ( auto &sc : getComp()->subComponents ) {
         if ( sc.name == name && sc.slot_num == slot_num)

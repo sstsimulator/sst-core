@@ -13,7 +13,7 @@
 #ifndef SST_CORE_UNINITIALIZEDQUEUE_H
 #define SST_CORE_UNINITIALIZEDQUEUE_H
 
-#include <sst/core/activityQueue.h>
+#include "sst/core/activityQueue.h"
 
 namespace SST {
 
@@ -26,7 +26,7 @@ public:
     /** Create a new Queue
      * @param message - Message to print when something attempts to use this Queue
      */
-    UninitializedQueue(std::string message);
+    UninitializedQueue(const std::string& message);
     UninitializedQueue(); // Only used for serialization
     ~UninitializedQueue();
 

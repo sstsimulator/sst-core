@@ -9,12 +9,12 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef INTERFACES_STRINGEVENT_H
-#define INTERFACES_STRINGEVENT_H
+#ifndef SST_CORE_INTERFACES_STRINGEVENT_H
+#define SST_CORE_INTERFACES_STRINGEVENT_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
-#include <sst/core/event.h>
+#include "sst/core/event.h"
 
 namespace SST {
 namespace Interfaces {
@@ -29,7 +29,7 @@ public:
     /** Create a new StringEvent
      * @param str - The String contents of this event
      */
-	StringEvent(const std::string &str) :
+	StringEvent(const std::string& str) :
 		SST::Event(), str(str)
 	{ }
 
@@ -37,14 +37,14 @@ public:
 	StringEvent(const StringEvent &me) : SST::Event()
 	{
 		str = me.str;
-		setDeliveryLink(me.getLinkId(), NULL);
+		setDeliveryLink(me.getLinkId(), nullptr);
 	}
 
     /** Copies an existing StringEvent */
 	StringEvent(const StringEvent *me) : SST::Event()
 	{
 		str = me->str;
-		setDeliveryLink(me->getLinkId(), NULL);
+		setDeliveryLink(me->getLinkId(), nullptr);
 	}
 
     /** Returns the contents of this Event */

@@ -8,10 +8,11 @@
  *  For more information, see the LICENSE file in the top
  *  SST/macroscale directory.
  */
+#include "sst_config.h"
 
-#include <sst/core/serialization/serializable.h>
-#include <sst/core/serialization/statics.h>
-#include <sst/core/output.h>
+#include "sst/core/serialization/serializable.h"
+#include "sst/core/serialization/statics.h"
+#include "sst/core/output.h"
 
 #include <cstring>
 #include <iostream>

@@ -10,9 +10,10 @@
 // distribution.
 //
 
-#include <sst_config.h>
-#include <sst/core/warnmacros.h>
-#include <sst/core/configGraphOutput.h>
+#include "sst_config.h"
+#include "sst/core/configGraphOutput.h"
+
+#include "sst/core/warnmacros.h"
 #include "xmlConfigOutput.h"
 
 using namespace SST::Core;
@@ -25,7 +26,7 @@ XMLConfigGraphOutput::XMLConfigGraphOutput(const char* path) :
 void XMLConfigGraphOutput::generate(const Config* UNUSED(cfg),
                 ConfigGraph* graph) {
 
-	if(NULL == outputFile) {
+	if(nullptr == outputFile) {
 		throw ConfigGraphOutputException("Output file is not open for writing");
 	}
 
@@ -48,7 +49,7 @@ void XMLConfigGraphOutput::generate(const Config* UNUSED(cfg),
 	fprintf(outputFile, "</component>\n");
 }
 
-void XMLConfigGraphOutput::generateXML(const std::string indent, const ConfigComponent& comp,
+void XMLConfigGraphOutput::generateXML(const std::string& indent, const ConfigComponent& comp,
                 const ConfigLinkMap_t& UNUSED(linkMap)) const {
 
 	fprintf(outputFile, "%s<component id=\"system.%s\" name=\"%s\" type=\"%s\">\n",
@@ -68,7 +69,7 @@ void XMLConfigGraphOutput::generateXML(const std::string indent, const ConfigCom
 	fprintf(outputFile, "%s</component>\n", indent.c_str());
 }
 
-void XMLConfigGraphOutput::generateXML(const std::string indent, const ConfigLink& link,
+void XMLConfigGraphOutput::generateXML(const std::string& indent, const ConfigLink& link,
 	const ConfigComponentMap_t& compMap) const {
 
 	const ConfigComponent* link_left  = &compMap[link.component[0]];

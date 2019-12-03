@@ -15,7 +15,7 @@
 #define SST_CORE_SPARSEVECTORMAP_H
 
 #include "sst/core/sst_types.h"
-#include <sst/core/serialization/serializable.h>
+#include "sst/core/serialization/serializable.h"
 
 #include <vector>
 

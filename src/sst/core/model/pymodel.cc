@@ -12,7 +12,7 @@
 // distribution.
 
 #include "sst_config.h"
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
@@ -25,19 +25,18 @@ REENABLE_WARNING
 #endif
 
 #include <string.h>
-#include <sstream>
 
-#include <sst/core/sst_types.h>
-#include <sst/core/model/pymodel.h>
-#include <sst/core/model/pymodel_comp.h>
-#include <sst/core/model/pymodel_link.h>
-#include <sst/core/model/pymodel_statgroup.h>
-#include <sst/core/model/element_python.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/model/pymodel.h"
+#include "sst/core/model/pymodel_comp.h"
+#include "sst/core/model/pymodel_link.h"
+#include "sst/core/model/pymodel_statgroup.h"
+#include "sst/core/model/element_python.h"
 
-#include <sst/core/simulation.h>
-#include <sst/core/factory.h>
-#include <sst/core/component.h>
-#include <sst/core/configGraph.h>
+#include "sst/core/simulation.h"
+#include "sst/core/factory.h"
+#include "sst/core/component.h"
+#include "sst/core/configGraph.h"
 DISABLE_WARN_STRICT_ALIASING
 
 using namespace SST::Core;
@@ -605,7 +604,7 @@ static PyMethodDef sstModuleMethods[] = {
 }  /* extern C */
 
 
-void SSTPythonModelDefinition::initModel(const std::string script_file, int verbosity, Config* UNUSED(config), int argc, char** argv)
+void SSTPythonModelDefinition::initModel(const std::string& script_file, int verbosity, Config* UNUSED(config), int argc, char** argv)
 {
     output = new Output("SSTPythonModel ", verbosity, 0, SST::Output::STDOUT);
 
@@ -683,7 +682,7 @@ void SSTPythonModelDefinition::initModel(const std::string script_file, int verb
 
 }
 
-SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* configObj) :
+SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* configObj) :
 	SSTModelDescription(), scriptName(script_file), config(configObj), namePrefix(NULL), namePrefixLen(0)
 {
 	std::vector<std::string> argv_vector;
@@ -749,7 +748,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file
 	free(argv);
 }
 
-SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string script_file, int verbosity,
+SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_file, int verbosity,
     Config* configObj, int argc, char **argv) :
     SSTModelDescription(), scriptName(script_file), config(configObj)
 {

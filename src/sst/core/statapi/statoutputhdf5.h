@@ -14,8 +14,8 @@
 
 #include "sst/core/sst_types.h"
 
-#include <sst/core/statapi/statoutput.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/statapi/statoutput.h"
+#include "sst/core/warnmacros.h"
 
 DISABLE_WARN_MISSING_OVERRIDE
 #include "H5Cpp.h"

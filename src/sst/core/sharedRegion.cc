@@ -10,8 +10,9 @@
 // distribution.
 
 
-#include <sst_config.h>
-#include <sst/core/warnmacros.h>
+#include "sst_config.h"
+#include "sst/core/sharedRegionImpl.h"
+#include "sst/core/warnmacros.h"
 
 #include <unistd.h>
 #include <string>
@@ -23,9 +24,8 @@
 
 #include <sys/types.h>
 
-#include <sst/core/simulation.h>
-#include <sst/core/sharedRegionImpl.h>
-#include <sst/core/objectComms.h>
+#include "sst/core/simulation.h"
+#include "sst/core/objectComms.h"
 
 
 namespace SST {
@@ -88,21 +88,21 @@ RegionInfo::~RegionInfo(void)
     if ( memory ) {
         setProtected(false);
         free(memory);
-        memory = NULL;
+        memory = nullptr;
     }
     initialized = ready = false;
     size_t nSharers = sharers.size();
     for ( size_t i = 0 ; i < nSharers ; i++ ) {
         if ( sharers[i] ) {
             delete sharers[i];
-            sharers[i] = NULL;
+            sharers[i] = nullptr;
             --shareCount;
         }
     }
 }
 
 
-bool RegionInfo::initialize(const std::string &key, size_t size, uint8_t initByte, SharedRegionMerger *mergeObj)
+bool RegionInfo::initialize(const std::string& key, size_t size, uint8_t initByte, SharedRegionMerger *mergeObj)
 {
     if ( initialized ) return true;
 
@@ -144,7 +144,7 @@ void RegionInfo::removeSharer(SharedRegionImpl *sri)
     for ( size_t i = 0 ; i < nShare ; i++ ) {
         if ( sharers[i] == sri ) {
             delete sri;
-            sharers[i] = NULL;
+            sharers[i] = nullptr;
             shareCount--;
         }
     }
@@ -219,20 +219,20 @@ SharedRegionManagerImpl::~SharedRegionManagerImpl()
 
 
 
-SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte)
+SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string& key, size_t size, uint8_t initByte)
 {
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
         if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Mismatched Sizes!\n");
     } else {
-        if ( false == ri.initialize(key, size, initByte, NULL) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Shared Region Initialized Failed!\n");
+        if ( false == ri.initialize(key, size, initByte, nullptr) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Shared Region Initialized Failed!\n");
     }
     return ri.addSharer(this);
 }
 
 
-SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger, uint8_t initByte)
+SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger *merger, uint8_t initByte)
 {
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];

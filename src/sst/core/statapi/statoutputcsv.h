@@ -14,7 +14,7 @@
 
 #include "sst/core/sst_types.h"
 
-#include <sst/core/statapi/statoutput.h>
+#include "sst/core/statapi/statoutput.h"
 
 #ifdef HAVE_LIBZ
 #include <zlib.h>

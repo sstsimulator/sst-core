@@ -16,9 +16,9 @@
 
 #ifdef HAVE_ZOLTAN
 
-#include <sst/core/sstpart.h>
-#include <sst/core/output.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/sstpart.h"
+#include "sst/core/output.h"
+#include "sst/core/eli/elementinfo.h"
 
 // SST and ZOLTANÕs configurations are conflicting on the SST_CONFIG_HAVE_MPI definition.  
 // So temporarily shut down SSTÕs SST_CONFIG_HAVE_MPI, then allow ZOLTANÕs SST_CONFIG_HAVE_MPI to 

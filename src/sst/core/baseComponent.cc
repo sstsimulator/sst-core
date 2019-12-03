@@ -9,23 +9,24 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
-#include <sst/core/warnmacros.h>
+#include "sst_config.h"
+#include "sst/core/baseComponent.h"
+
+#include "sst/core/warnmacros.h"
 
 #include <string>
 
-#include <sst/core/baseComponent.h>
-#include <sst/core/component.h>
-#include <sst/core/subcomponent.h>
-#include <sst/core/unitAlgebra.h>
-#include <sst/core/factory.h>
-#include <sst/core/link.h>
-#include <sst/core/linkMap.h>
-#include <sst/core/simulation.h>
-#include <sst/core/timeConverter.h>
-#include <sst/core/timeLord.h>
-#include <sst/core/unitAlgebra.h>
-#include <sst/core/sharedRegion.h>
+#include "sst/core/component.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/unitAlgebra.h"
+#include "sst/core/factory.h"
+#include "sst/core/link.h"
+#include "sst/core/linkMap.h"
+#include "sst/core/simulation.h"
+#include "sst/core/timeConverter.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/unitAlgebra.h"
+#include "sst/core/sharedRegion.h"
 
 namespace SST {
 
@@ -34,7 +35,7 @@ BaseComponent::BaseComponent(ComponentId_t id) :
     sim(Simulation::getSimulation()),
     loadedWithLegacyAPI(false),
     my_info(Simulation::getSimulation()->getComponentInfo(id)),
-    currentlyLoadingSubComponent(NULL),
+    currentlyLoadingSubComponent(nullptr),
     isExtension(false)
 {
     if ( my_info->component == nullptr ) {
@@ -94,10 +95,10 @@ BaseComponent::~BaseComponent()
 void
 BaseComponent::setDefaultTimeBaseForParentLinks(TimeConverter* tc) {
     LinkMap* myLinks = my_info->getLinkMap();
-    if (NULL != myLinks) {
+    if (nullptr != myLinks) {
         for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
-            // if ( NULL == p.second->getDefaultTimeBase() ) {
-            if ( NULL == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
+            // if ( nullptr == p.second->getDefaultTimeBase() ) {
+            if ( nullptr == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
                 p.second->setDefaultTimeBase(tc);
             }
         }
@@ -112,10 +113,10 @@ BaseComponent::setDefaultTimeBaseForParentLinks(TimeConverter* tc) {
 void
 BaseComponent::setDefaultTimeBaseForChildLinks(TimeConverter* tc) {
     LinkMap* myLinks = my_info->getLinkMap();
-    if (NULL != myLinks) {
+    if (nullptr != myLinks) {
         for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
-            // if ( NULL == p.second->getDefaultTimeBase() ) {
-            if ( NULL == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
+            // if ( nullptr == p.second->getDefaultTimeBase() ) {
+            if ( nullptr == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
                 p.second->setDefaultTimeBase(tc);
             }
         }
@@ -135,10 +136,10 @@ BaseComponent::setDefaultTimeBaseForChildLinks(TimeConverter* tc) {
 void
 BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
     LinkMap* myLinks = my_info->getLinkMap();
-    if (NULL != myLinks) {
+    if (nullptr != myLinks) {
         for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
-            // if ( NULL == p.second->getDefaultTimeBase() ) {
-            if ( NULL == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
+            // if ( nullptr == p.second->getDefaultTimeBase() ) {
+            if ( nullptr == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
                 p.second->setDefaultTimeBase(tc);
             }
         }
@@ -170,7 +171,7 @@ BaseComponent::pushValidParams(Params& params, const std::string& type)
 }
 
 
-TimeConverter* BaseComponent::registerClock( std::string freq, Clock::HandlerBase* handler, bool regAll) {
+TimeConverter* BaseComponent::registerClock( const std::string& freq, Clock::HandlerBase* handler, bool regAll) {
     TimeConverter* tc = getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
 
     // if regAll is true set tc as the default for the component and
@@ -206,7 +207,7 @@ void BaseComponent::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handl
     getSimulation()->unregisterClock(tc, handler, CLOCKPRIORITY);
 }
 
-TimeConverter* BaseComponent::registerOneShot( std::string timeDelay, OneShot::HandlerBase* handler) {
+TimeConverter* BaseComponent::registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler) {
     return getSimulation()->registerOneShot(timeDelay, handler, ONESHOTPRIORITY);
 }
 
@@ -214,7 +215,7 @@ TimeConverter* BaseComponent::registerOneShot( const UnitAlgebra& timeDelay, One
     return getSimulation()->registerOneShot(timeDelay, handler, ONESHOTPRIORITY);
 }
 
-TimeConverter* BaseComponent::registerTimeBase( std::string base, bool regAll) {
+TimeConverter* BaseComponent::registerTimeBase( const std::string& base, bool regAll) {
     TimeConverter* tc = getSimulation()->getTimeLord()->getTimeConverter(base);
 
     // if regAll is true set tc as the default for the component and
@@ -240,9 +241,9 @@ BaseComponent::getTimeConverter( const UnitAlgebra& base )
 
 
 bool
-BaseComponent::isPortConnected(const std::string &name) const
+BaseComponent::isPortConnected(const std::string& name) const
 {
-    return (my_info->getLinkMap()->getLink(name) != NULL);
+    return (my_info->getLinkMap()->getLink(name) != nullptr);
 }
 
 
@@ -259,9 +260,9 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port)
     // See if the link is found, and if not see if my parent shared
     // their ports with me
     
-    if ( NULL != myLinks ) {
+    if ( nullptr != myLinks ) {
         Link* tmp = myLinks->getLink(port);
-        if ( NULL != tmp ) {
+        if ( nullptr != tmp ) {
             // Found the link in my linkmap
 
             // Check to see if it has been configured.  If not, remove
@@ -281,56 +282,56 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port)
         return my_info->parent_info->component->getLinkFromParentSharedPort(port);
     }
     else {
-        return NULL;
+        return nullptr;
     }    
 }
 
 
 Link*
-BaseComponent::configureLink(std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
+BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
     LinkMap* myLinks = my_info->getLinkMap();
 
-    Link* tmp = NULL;
+    Link* tmp = nullptr;
     
     // If I have a linkmap, check to see if a link was connected to
     // port "name"
-    if ( NULL != myLinks ) {
+    if ( nullptr != myLinks ) {
         tmp = myLinks->getLink(name);
     }
-    // If tmp is NULL, then I didn't have the port connected, check
+    // If tmp is nullptr, then I didn't have the port connected, check
     // with parents if sharing is turned on
-    if ( NULL == tmp ) {
+    if ( nullptr == tmp ) {
         if ( my_info->sharesPorts() ) {
             tmp = my_info->parent_info->component->getLinkFromParentSharedPort(name);
             // If I got a link from my parent, I need to put it in my
             // link map
-            if ( NULL != tmp ) {
-                if ( NULL == myLinks ) {
+            if ( nullptr != tmp ) {
+                if ( nullptr == myLinks ) {
                     myLinks = new LinkMap();
                     my_info->link_map = myLinks;
                 }
                 myLinks->insertLink(name,tmp);
-                // Need to set the link's defaultTimeBase to NULL,
+                // Need to set the link's defaultTimeBase to nullptr,
                 // except in the case of this being an Anonymously
                 // loadeed SubComponent, then for backward
                 // compatibility, we leave it as is.
                 if ( !my_info->isLegacySubComponent() ) {
-                    tmp->setDefaultTimeBase(NULL);
+                    tmp->setDefaultTimeBase(nullptr);
                 }
             }
         }
     }
 
     // If I got a link, configure it
-    if ( NULL != tmp ) {
+    if ( nullptr != tmp ) {
         
         // If no functor, this is a polling link
-        if ( handler == NULL ) {
+        if ( handler == nullptr ) {
             tmp->setPolling();
         }
         tmp->setFunctor(handler);
-        if ( NULL != time_base ) tmp->setDefaultTimeBase(time_base);
+        if ( nullptr != time_base ) tmp->setDefaultTimeBase(time_base);
         else tmp->setDefaultTimeBase(my_info->defaultTimeBase);
         tmp->setAsConfigured();
 #ifdef __SST_DEBUG_EVENT_TRACKING__
@@ -341,23 +342,23 @@ BaseComponent::configureLink(std::string name, TimeConverter* time_base, Event::
 }
 
 Link*
-BaseComponent::configureLink(std::string name, std::string time_base, Event::HandlerBase* handler)
+BaseComponent::configureLink(const std::string& name, const std::string& time_base, Event::HandlerBase* handler)
 {
     return configureLink(name,getSimulation()->getTimeLord()->getTimeConverter(time_base),handler);
 }
 
 Link*
-BaseComponent::configureLink(std::string name, Event::HandlerBase* handler)
+BaseComponent::configureLink(const std::string& name, Event::HandlerBase* handler)
 {
-    return configureLink(name,NULL,handler);
+    return configureLink(name,nullptr,handler);
 }
 
 void
-BaseComponent::addSelfLink(std::string name)
+BaseComponent::addSelfLink(const std::string& name)
 {
     LinkMap* myLinks = my_info->getLinkMap();
     myLinks->addSelfPort(name);
-    if ( myLinks->getLink(name) != NULL ) {
+    if ( myLinks->getLink(name) != nullptr ) {
         printf("Attempting to add self link with duplicate name: %s\n",name.c_str());
         abort();
     }
@@ -370,21 +371,21 @@ BaseComponent::addSelfLink(std::string name)
 }
 
 Link*
-BaseComponent::configureSelfLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler)
+BaseComponent::configureSelfLink( const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler)
 {
     addSelfLink(name);
     return configureLink(name,time_base,handler);
 }
 
 Link*
-BaseComponent::configureSelfLink( std::string name, std::string time_base, Event::HandlerBase* handler)
+BaseComponent::configureSelfLink( const std::string& name,  const std::string& time_base, Event::HandlerBase* handler)
 {
     addSelfLink(name);
     return configureLink(name,time_base,handler);
 }
 
 Link*
-BaseComponent::configureSelfLink( std::string name, Event::HandlerBase* handler)
+BaseComponent::configureSelfLink( const std::string& name, Event::HandlerBase* handler)
 {
     addSelfLink(name);
     return configureLink(name,handler);
@@ -394,7 +395,7 @@ SimTime_t BaseComponent::getCurrentSimTime(TimeConverter *tc) const {
     return tc->convertFromCoreTime(getSimulation()->getCurrentSimCycle());
 }
 
-SimTime_t BaseComponent::getCurrentSimTime(std::string base) {
+SimTime_t BaseComponent::getCurrentSimTime(const std::string& base) {
     return getCurrentSimTime(getSimulation()->getTimeLord()->getTimeConverter(base));
 
 }
@@ -411,7 +412,7 @@ SimTime_t BaseComponent::getCurrentSimTimeMilli() const {
     return getCurrentSimTime(getSimulation()->getTimeLord()->getMilli());
 }
 
-bool BaseComponent::doesComponentInfoStatisticExist(const std::string &statisticName) const
+bool BaseComponent::doesComponentInfoStatisticExist(const std::string& statisticName) const
 {
     const std::string& type = my_info->getType();
     return Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName);
@@ -419,20 +420,20 @@ bool BaseComponent::doesComponentInfoStatisticExist(const std::string &statistic
 
 
 Module*
-BaseComponent::loadModule(std::string type, Params& params)
+BaseComponent::loadModule(const std::string& type, Params& params)
 {
     return Factory::getFactory()->CreateModule(type,params);
 }
 
 Module*
-BaseComponent::loadModuleWithComponent(std::string type, Component* comp, Params& params)
+BaseComponent::loadModuleWithComponent(const std::string& type, Component* comp, Params& params)
 {
     return Factory::getFactory()->CreateModuleWithComponent(type,comp,params);
 }
 
 /* Old ELI style */
 SubComponent*
-BaseComponent::loadSubComponent(std::string type, Component* comp, Params& params)
+BaseComponent::loadSubComponent(const std::string& type, Component* comp, Params& params)
 {
     // /* Old Style SubComponents end up with their parent's Id, name, etc. */
     // ComponentInfo *sub_info = new ComponentInfo(type, &params, my_info);
@@ -463,30 +464,30 @@ BaseComponent::loadLegacySubComponentPrivate(ComponentId_t cid, const std::strin
 Component*
 BaseComponent::getTrueComponent() const {
     // Walk up the parent tree until we hit the base Component.  We
-    // know we're the base Component when parent is NULL.
+    // know we're the base Component when parent is nullptr.
     ComponentInfo* info = my_info;
-    while ( info->parent_info != NULL ) info = info->parent_info;
+    while ( info->parent_info != nullptr ) info = info->parent_info;
     return static_cast<Component* const>(info->component);
 }
 
 Component*
 BaseComponent::getTrueComponentPrivate() const {
     // Walk up the parent tree until we hit the base Component.  We
-    // know we're the base Component when parent is NULL.
+    // know we're the base Component when parent is nullptr.
     ComponentInfo* info = my_info;
-    while ( info->parent_info != NULL ) info = info->parent_info;
+    while ( info->parent_info != nullptr ) info = info->parent_info;
     return static_cast<Component* const>(info->component);
 }
 
 /* New ELI style */
 SubComponent*
-BaseComponent::loadNamedSubComponent(std::string name) {
+BaseComponent::loadNamedSubComponent(const std::string& name) {
     Params empty;
     return loadNamedSubComponent(name, empty);
 }
 
 SubComponent*
-BaseComponent::loadNamedSubComponent(std::string name, Params& params) {
+BaseComponent::loadNamedSubComponent(const std::string& name, Params& params) {
     // Get list of ComponentInfo objects and make sure that there is
     // only one SubComponent put into this slot
     const std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();
@@ -507,14 +508,14 @@ BaseComponent::loadNamedSubComponent(std::string name, Params& params) {
 }
 
 SubComponent*
-BaseComponent::loadNamedSubComponent(std::string name, int slot_num) {
+BaseComponent::loadNamedSubComponent(const std::string& name, int slot_num) {
     Params empty;
     return loadNamedSubComponent(name, slot_num, empty);
 }
 
 // Private
 SubComponent*
-BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& params)
+BaseComponent::loadNamedSubComponent(const std::string& name, int slot_num, Params& params)
 {
     if ( !Factory::getFactory()->DoesSubComponentSlotExist(my_info->type, name) ) {
         SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
@@ -522,7 +523,7 @@ BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& par
     }
 
     ComponentInfo* sub_info = my_info->findSubComponent(name,slot_num);
-    if ( sub_info == NULL ) return NULL;
+    if ( sub_info == nullptr ) return nullptr;
     sub_info->share_flags = ComponentInfo::SHARE_NONE;
     sub_info->parent_info = my_info;
     
@@ -534,7 +535,7 @@ BaseComponent::loadNamedSubComponent(std::string name, int slot_num, Params& par
     getTrueComponentPrivate()->currentlyLoadingSubComponentID = sub_info->id;
         
     Params myParams;
-    if ( sub_info->getParams() != NULL )
+    if ( sub_info->getParams() != nullptr )
         myParams.insert(*sub_info->getParams());
     myParams.insert(params);
 
@@ -552,7 +553,7 @@ BaseComponent::loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Param
     getTrueComponentPrivate()->currentlyLoadingSubComponentID = sub_info->id;
     
     Params myParams;
-    if ( sub_info->getParams() != NULL )
+    if ( sub_info->getParams() != nullptr )
         myParams.insert(*sub_info->getParams());
     myParams.insert(params);
     
@@ -564,12 +565,12 @@ BaseComponent::loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Param
 }
 
 SubComponentSlotInfo*
-BaseComponent::getSubComponentSlotInfo(std::string name, bool fatalOnEmptyIndex) {
+BaseComponent::getSubComponentSlotInfo(const std::string& name, bool fatalOnEmptyIndex) {
     SubComponentSlotInfo* info = new SubComponentSlotInfo(this, name);
     if ( info->getMaxPopulatedSlotNumber() < 0 ) {
         // Nothing registered on this slot
         delete info;
-        return NULL;
+        return nullptr;
     }
     if ( !info->isAllPopulated() && fatalOnEmptyIndex ) {
         Simulation::getSimulationOutput().
@@ -581,19 +582,19 @@ BaseComponent::getSubComponentSlotInfo(std::string name, bool fatalOnEmptyIndex)
 }
 
 bool
-BaseComponent::doesSubComponentExist(std::string type)
+BaseComponent::doesSubComponentExist(const std::string& type)
 {
     return Factory::getFactory()->doesSubComponentExist(type);
 }
 
-SharedRegion* BaseComponent::getLocalSharedRegion(const std::string &key, size_t size)
+SharedRegion* BaseComponent::getLocalSharedRegion(const std::string& key, size_t size)
 {
     SharedRegionManager *mgr = Simulation::getSharedRegionManager();
     return mgr->getLocalSharedRegion(key, size);
 }
 
 
-SharedRegion* BaseComponent::getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger)
+SharedRegion* BaseComponent::getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger *merger)
 {
     SharedRegionManager *mgr = Simulation::getSharedRegionManager();
     return mgr->getGlobalSharedRegion(key, size, merger);
@@ -601,7 +602,7 @@ SharedRegion* BaseComponent::getGlobalSharedRegion(const std::string &key, size_
 
 
 
-uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string &statisticName) const
+uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& statisticName) const
 {
     return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(my_info->type, statisticName);
 }
@@ -621,7 +622,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
     UnitAlgebra                     collectionRate;
     std::string                     statRateParam;
     std::string                     statTypeParam;
-    StatisticBase*                   statistic = NULL;
+    StatisticBase*                   statistic = nullptr;
 
 
     // First check to see if this is an "inserted" statistic that has
@@ -635,7 +636,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
         // if so return the cached copy
         StatisticBase* prevStat = StatisticProcessingEngine::getInstance()->isStatisticRegisteredWithEngine(
             curr_info->parent_info->getName(), curr_info->parent_info->getID(), statName, statSubId, fieldType);
-        if (NULL != prevStat) {
+        if (nullptr != prevStat) {
             // Dynamic cast the base stat to the expected type
             return prevStat;
         }
@@ -730,7 +731,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
         // Instantiate the Statistic here defined by the type here
         //statistic = engine->createStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
         statistic = create(statTypeParam, curr_info->component, statName, statSubId, statParams);
-        if (NULL == statistic) {
+        if (nullptr == statistic) {
             out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
         }
 
@@ -755,14 +756,14 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
 
     if (false == statGood ) {
         // Delete the original statistic (if created), and return a NULL statistic instead
-        if (NULL != statistic) {
+        if (nullptr != statistic) {
             delete statistic;
         }
 
         // Instantiate the Statistic here defined by the type here
         statTypeParam = "sst.NullStatistic";
         statistic = create(statTypeParam, curr_info->component, statName, statSubId, statParams);
-        if (NULL == statistic) {
+        if (nullptr == statistic) {
             statGood = false;
             out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
         }

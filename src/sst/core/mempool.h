@@ -17,7 +17,6 @@
 
 #include <cstddef>
 #include <cstdlib>
-#include <cstring>
 #include <cinttypes>
 #include <cstdint>
 #include <sys/mman.h>
@@ -44,7 +43,7 @@ class MemPool
 
         inline void* try_remove() {
             std::lock_guard<LOCK_t> lock(mtx);
-            if ( list.empty() ) return NULL;
+            if ( list.empty() ) return nullptr;
             void *p = list.back();
             list.pop_back();
             return p;
@@ -80,7 +79,7 @@ public:
         void *ret = freeList.try_remove();
         while ( !ret ) {
             bool ok = allocPool();
-            if ( !ok ) return NULL;
+            if ( !ok ) return nullptr;
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
         defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();

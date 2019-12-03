@@ -9,7 +9,7 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
 
 #include "xorshift.h"
 #include <cstdlib>
@@ -23,7 +23,7 @@ using namespace SST::RNG;
 */
 XORShiftRNG::XORShiftRNG() {
 	struct timeval now;
-	gettimeofday(&now, NULL);
+	gettimeofday(&now, nullptr);
 
 	x = (uint32_t) now.tv_usec;
 	y = (uint32_t) now.tv_sec;

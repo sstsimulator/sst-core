@@ -15,7 +15,7 @@
 
 #include <vector>
 #include <string>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/eli/elementinfo.h"
 
 namespace SST {
 
@@ -29,7 +29,7 @@ class SSTElementPythonModuleCode {
 
 private:
     //! Pointer to parent module.
-    /** Parent module.  This will be NULL if this is the primary module (i.e. sst.*) */
+    /** Parent module.  This will be nullptr if this is the primary module (i.e. sst.*) */
     SSTElementPythonModuleCode* parent;
 
     //! Simple name of the module.
@@ -62,7 +62,7 @@ private:
      *  \param filename filname used when reporting errors
      *  \sa parent, module_name, code, filename
      */
-    SSTElementPythonModuleCode(SSTElementPythonModuleCode* parent, const std::string& module_name, char* code = NULL, std::string filename = "") :
+    SSTElementPythonModuleCode(SSTElementPythonModuleCode* parent, const std::string& module_name, char* code = nullptr, std::string filename = "") :
         parent(parent),
         module_name(module_name),
         code(code),
@@ -105,7 +105,7 @@ public:
     /// \param filename filname used when reporting errors
     ///
     /// 
-    SSTElementPythonModuleCode* addSubModule(const std::string& module_name, char* code = NULL, std::string filename = "");
+    SSTElementPythonModuleCode* addSubModule(const std::string& module_name, char* code = nullptr, const std::string& filename = "");
 
     //! Get the full name of the module
     /**
@@ -151,14 +151,14 @@ public:
      * of.  Primary module name will be sst.library and submodules
      * under this can also be created.
      */ 
-    SSTElementPythonModule(std::string library);
+    SSTElementPythonModule(const std::string& library);
 
     
     __attribute__ ((deprecated("Support for addPrimaryModule will be removed in version 9.0.  Please use createPrimaryModule().")))
     void addPrimaryModule(char* file);
 
     __attribute__ ((deprecated("Support for addPrimaryModule will be removed in version 9.0.  Please use createPrimaryModule() to get an SSTElementPythonModuleCode object then use it's addSubModule() method.")))
-    void addSubModule(std::string name, char* file);
+    void addSubModule(const std::string& name, char* file);
 
     virtual void* load();
 
@@ -171,7 +171,7 @@ public:
     /// \param filename filname used when reporting errors
     ///
     ///     
-    SSTElementPythonModuleCode* createPrimaryModule(char* code = NULL, std::string filename = "");
+    SSTElementPythonModuleCode* createPrimaryModule(char* code = nullptr, const std::string& filename = "");
 
 };
 

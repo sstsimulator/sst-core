@@ -9,11 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
-#include <sst/core/impl/partitioners/zoltpart.h>
+#include "sst_config.h"
+#include "sst/core/impl/partitioners/zoltpart.h"
 
-#include <sst/core/warnmacros.h>
-#include <sst/core/configGraph.h>
+#include "sst/core/warnmacros.h"
+#include "sst/core/configGraph.h"
 
 #ifdef HAVE_ZOLTAN
 
@@ -228,7 +228,7 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
 
 
 	if(0 == rank.rank) {
-		assert(NULL != graph);
+		assert(nullptr != graph);
 	}
 	assert(rankcount.rank > 0);
 	

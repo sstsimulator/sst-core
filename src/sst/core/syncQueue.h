@@ -12,12 +12,10 @@
 #ifndef SST_CORE_SYNCQUEUE_H
 #define SST_CORE_SYNCQUEUE_H
 
-//#include <sst/core/serialization.h>
-
 #include <vector>
 
-#include <sst/core/activityQueue.h>
-#include <sst/core/threadsafe.h>
+#include "sst/core/activityQueue.h"
+#include "sst/core/threadsafe.h"
 
 namespace SST {
 

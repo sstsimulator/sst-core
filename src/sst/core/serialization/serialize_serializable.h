@@ -12,10 +12,9 @@
 #ifndef SERIALIZE_SERIALIZABLE_H
 #define SERIALIZE_SERIALIZABLE_H
 
-#include <sst/core/serialization/serializable.h>
-#include <sst/core/serialization/serializer.h>
-#include <sst/core/serialization/serialize.h>
-//#include <sprockit/ptr_type.h>
+#include "sst/core/serialization/serializable.h"
+#include "sst/core/serialization/serializer.h"
+#include "sst/core/serialization/serialize.h"
 #include <iostream>
 
 namespace SST {

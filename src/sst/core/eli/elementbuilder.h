@@ -1,8 +1,18 @@
+// Copyright 2009-2019 NTESS. Under the terms
+// of Contract DE-NA0003525 with NTESS, the U.S.
+// Government retains certain rights in this software.
+//
+// Copyright (c) 2009-2019, NTESS
+// All rights reserved.
+//
+// This file is part of the SST software package. For license
+// information, see the LICENSE file in the top level directory of the
+// distribution.
 
 #ifndef SST_CORE_FACTORY_INFO_H
 #define SST_CORE_FACTORY_INFO_H
 
-#include <sst/core/eli/elibase.h>
+#include "sst/core/eli/elibase.h"
 #include <type_traits>
 
 namespace SST {
@@ -30,7 +40,7 @@ class BuilderLibrary
   {
   }
 
-  BaseBuilder* getBuilder(const std::string &name) {
+  BaseBuilder* getBuilder(const std::string& name) {
     auto iter = factories_.find(name);
     if (iter == factories_.end()){
       return nullptr;
@@ -116,7 +126,7 @@ struct BuilderLoader : public LibraryLoader {
 };
 
 template <class Base, class... CtorArgs>
-bool BuilderLibrary<Base,CtorArgs...>::addLoader(const std::string &elemlib, const std::string &elem,
+bool BuilderLibrary<Base,CtorArgs...>::addLoader(const std::string& elemlib, const std::string& elem,
                                                  BaseBuilder *fact){
   auto loader = new BuilderLoader<Base,BaseBuilder,CtorArgs...>(elemlib, elem, fact);
   return ELI::LoadedLibraries::addLoader(elemlib, elem, loader);

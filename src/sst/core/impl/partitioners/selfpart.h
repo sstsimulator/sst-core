@@ -13,9 +13,9 @@
 #ifndef SST_CORE_IMPL_PARTITONERS_SELF_H
 #define SST_CORE_IMPL_PARTITONERS_SELF_H
 
-#include <sst/core/sstpart.h>
+#include "sst/core/sstpart.h"
 
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/eli/elementinfo.h"
 
 namespace SST {
 namespace IMPL {

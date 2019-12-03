@@ -9,7 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "envquery.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -18,8 +19,7 @@
 #include <string>
 #include <sys/file.h>
 
-#include <sst/core/warnmacros.h>
-#include "envquery.h"
+#include "sst/core/warnmacros.h"
 #include "envconfig.h"
 
 void SST::Core::Environment::configReadLine(FILE* theFile, char* lineBuffer) {
@@ -112,7 +112,7 @@ void SST::Core::Environment::populateEnvironmentConfig(const std::string& path, 
 	const char* configFilePath = path.c_str();
 	FILE* configFile = fopen(configFilePath, "r");
 
-	if(NULL == configFile) {
+	if(nullptr == configFile) {
 		if(errorOnNotOpen) {
 			std::cerr << "SST: Unable to open configuration file \'" <<
 				path << "\'" << std::endl;
@@ -144,7 +144,7 @@ SST::Core::Environment::EnvironmentConfiguration*
 	char* homeConfigPath = (char*) malloc( sizeof(char) * PATH_MAX );
 	char* userHome = getenv("HOME");
 
-	if(NULL == userHome) {
+	if(nullptr == userHome) {
 		sprintf(homeConfigPath, "~/.sst/sstsimulator.conf");
 	} else {
 		sprintf(homeConfigPath, "%s/.sst/sstsimulator.conf", userHome);
@@ -161,19 +161,19 @@ SST::Core::Environment::EnvironmentConfiguration*
 
 	// If this isn't specified by the environment, we will default to UNIX ":" to be
 	// safe.
-	if( NULL == envConfigPathSep ) {
+	if( nullptr == envConfigPathSep ) {
 		envConfigPathSep = ":";
 	}
 
-	if( NULL != envConfigPaths ) {
+	if( nullptr != envConfigPaths ) {
 		char* envConfigPathBuffer = (char*) malloc( sizeof(char) * (strlen(envConfigPaths) + 1) );
 		strcpy(envConfigPathBuffer, envConfigPaths);
 
 		char* nextToken = strtok(envConfigPathBuffer, envConfigPathSep);
 
-		while( NULL != nextToken ) {
+		while( nullptr != nextToken ) {
 			populateEnvironmentConfig(nextToken, envConfig, true);
-			nextToken = strtok(NULL, envConfigPathSep);
+			nextToken = strtok(nullptr, envConfigPathSep);
 		}
 
 		free(envConfigPathBuffer);

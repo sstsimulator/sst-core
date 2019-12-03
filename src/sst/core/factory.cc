@@ -11,7 +11,7 @@
 
 
 #include "sst_config.h"
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 #include "sst/core/factory.h"
 
 #include <set>
@@ -19,38 +19,38 @@
 #include <stdio.h>
 #include <fstream>
 
-#include <sst/core/elemLoader.h>
+#include "sst/core/elemLoader.h"
 #include "sst/core/simulation.h"
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/part/sstpart.h"
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/eli/elementinfo.h"
 #include "sst/core/params.h"
 #include "sst/core/linkMap.h"
-#include <sst/core/model/element_python.h>
+#include "sst/core/model/element_python.h"
 
 // Statistic Output Objects
-#include <sst/core/statapi/statoutputconsole.h>
-#include <sst/core/statapi/statoutputtxt.h>
-#include <sst/core/statapi/statoutputcsv.h>
-#include <sst/core/statapi/statoutputjson.h>
+#include "sst/core/statapi/statoutputconsole.h"
+#include "sst/core/statapi/statoutputtxt.h"
+#include "sst/core/statapi/statoutputcsv.h"
+#include "sst/core/statapi/statoutputjson.h"
 #ifdef HAVE_HDF5
-#include <sst/core/statapi/statoutputhdf5.h>
+#include "sst/core/statapi/statoutputhdf5.h"
 #endif
-#include <sst/core/statapi/statbase.h>
-#include <sst/core/statapi/stataccumulator.h>
-#include <sst/core/statapi/stathistogram.h>
-#include <sst/core/statapi/statnull.h>
-#include <sst/core/statapi/statuniquecount.h>
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/statapi/stataccumulator.h"
+#include "sst/core/statapi/stathistogram.h"
+#include "sst/core/statapi/statnull.h"
+#include "sst/core/statapi/statuniquecount.h"
 
 using namespace SST::Statistics;
 
 namespace SST {
 
-Factory* Factory::instance = NULL;
+Factory* Factory::instance = nullptr;
 
 
-Factory::Factory(std::string searchPaths) :
+Factory::Factory(const std::string& searchPaths) :
     searchPaths(searchPaths),
     out(Output::getDefaultObject())
 {
@@ -68,7 +68,7 @@ Factory::~Factory()
 
 
 
-static bool checkPort(const std::string &def, const std::string &offered)
+static bool checkPort(const std::string& def, const std::string& offered)
 {
     const char * x = def.c_str();
     const char * y = offered.c_str();
@@ -95,11 +95,11 @@ static bool checkPort(const std::string &def, const std::string &offered)
         x++;
         y++;
     } while ( *x && *y );
-    if ( *x != *y ) return false; // aka, both NULL
+    if ( *x != *y ) return false; // aka, both nullptr
     return true;
 }
 
-bool Factory::isPortNameValid(const std::string &type, const std::string port_name)
+bool Factory::isPortNameValid(const std::string& type, const std::string& port_name)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
@@ -108,7 +108,7 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
         findLibrary(elemlib);
     }
 
-    const std::vector<std::string> *portNames = NULL;
+    const std::vector<std::string> *portNames = nullptr;
 
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
@@ -138,7 +138,7 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
     
     std::string tmp = elemlib + "." + elem;
 
-    if (portNames == NULL) {
+    if (portNames == nullptr) {
       err << "Valid Components: ";
       for (auto& pair : lib->getMap()){
         err << pair.first << "\n";
@@ -156,7 +156,7 @@ bool Factory::isPortNameValid(const std::string &type, const std::string port_na
 }
 
 const Params::KeySet_t&
-Factory::getParamNames(const std::string &type)
+Factory::getParamNames(const std::string& type)
 {
     // This is only needed so we can return something in the error
     // case.  It is never used.
@@ -200,7 +200,7 @@ Factory::getParamNames(const std::string &type)
 
 Component*
 Factory::CreateComponent(ComponentId_t id, 
-                         std::string &type, 
+                         const std::string& type, 
                          Params& params)
 {
     std::string elemlib, elem;
@@ -236,7 +236,7 @@ Factory::CreateComponent(ComponentId_t id,
     // If we make it to here, component not found
     out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n",
               type.c_str(), sstr.str().c_str());
-    return NULL;
+    return nullptr;
 }
 
 
@@ -424,7 +424,7 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
 
 
 Module*
-Factory::CreateModule(std::string type, Params& params)
+Factory::CreateModule(const std::string& type, Params& params)
 {
     if("" == type) {
         Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,
@@ -460,11 +460,11 @@ Factory::CreateModule(std::string type, Params& params)
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n%s\n",
               type.c_str(), error_os.str().c_str());
-    return NULL;
+    return nullptr;
 }
 
 Module*
-Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& params)
+Factory::CreateModuleWithComponent(const std::string& type, Component* comp, Params& params)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
@@ -497,11 +497,11 @@ Factory::CreateModuleWithComponent(std::string type, Component* comp, Params& pa
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n%s\n",
               type.c_str(), error_os.str().c_str());
-    return NULL;
+    return nullptr;
 }
 
 SubComponent*
-Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
+Factory::CreateSubComponent(const std::string& type, Component* comp, Params& params)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
@@ -533,12 +533,12 @@ Factory::CreateSubComponent(std::string type, Component* comp, Params& params)
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested subcomponent '%s'\n%s\n",
               type.c_str(), error_os.str().c_str());
-    return NULL;
+    return nullptr;
 }
 
 
 bool
-Factory::doesSubComponentExist(std::string type)
+Factory::doesSubComponentExist(const std::string& type)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
@@ -560,7 +560,7 @@ Factory::doesSubComponentExist(std::string type)
 }
 
 void
-Factory::RequireEvent(std::string eventname)
+Factory::RequireEvent(const std::string& eventname)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(eventname);
@@ -571,7 +571,7 @@ Factory::RequireEvent(std::string eventname)
 }
 
 Partition::SSTPartitioner*
-Factory::CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity)
+Factory::CreatePartitioner(const std::string& name, RankInfo total_ranks, RankInfo my_rank, int verbosity)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(name);
@@ -600,7 +600,7 @@ Factory::CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_r
     out.fatal(CALL_INFO, 1,
               "Error: Unable to find requested partitioner '%s', check --help for information on partitioners.\n%s\n",
               name.c_str(), error_os.str().c_str());
-    return NULL;
+    return nullptr;
 }
 
 
@@ -628,7 +628,7 @@ Factory::getPythonModule(const std::string& name)
       }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -707,7 +707,7 @@ Factory::parseLoadName(const std::string& wholename)
 }
 
 void
-Factory::notFound(const std::string &baseName, const std::string &type,
+Factory::notFound(const std::string& baseName, const std::string& type,
                   const std::string& error_msg)
 {
     out.fatal(CALL_INFO, 1, "can't find requested element library '%s' with element type '%s'\n%s\n",

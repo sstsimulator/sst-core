@@ -9,12 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
 #include "sst/core/impl/partitioners/simplepart.h"
 
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 
-#include <string>
 #include <vector>
 #include <map>
 #include <stdlib.h>
@@ -228,7 +227,6 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
 					setB[indexB++] = theComponent;
 				}
 
-				// vector<string> component_links = (*compItr).links;
 				LinkIdMap_t component_links = (*compItr).links;
 
                 PartitionLinkMap_t& linkMap = graph->getLinkMap();

@@ -13,8 +13,8 @@
 #ifndef _H_SST_CORE_CONFIG_OUTPUT_PYTHON
 #define _H_SST_CORE_CONFIG_OUTPUT_PYTHON
 
-#include <sst/core/configGraph.h>
-#include <sst/core/configGraphOutput.h>
+#include "sst/core/configGraph.h"
+#include "sst/core/configGraphOutput.h"
 #include <map>
 
 namespace SST {
@@ -37,12 +37,12 @@ protected:
 
     const std::string& getLinkObject(LinkId_t id);
 
-    char* makePythonSafeWithPrefix(const std::string name, const std::string prefix) const;
+    char* makePythonSafeWithPrefix(const std::string& name, const std::string& prefix) const;
     void makeBufferPythonSafe(char* buffer) const;
-    char* makeEscapeSafe(const std::string input) const;
+    char* makeEscapeSafe(const std::string& input) const;
     bool strncmp(const char* a, const char* b, const size_t n) const;
     bool isMultiLine(const char* check) const;
-    bool isMultiLine(const std::string check) const;
+    bool isMultiLine(const std::string& check) const;
 
 private:
     ConfigGraph *graph;

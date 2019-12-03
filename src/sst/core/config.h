@@ -12,13 +12,13 @@
 #ifndef SST_CORE_CONFIG_H
 #define SST_CORE_CONFIG_H
 
-#include <sst/core/sst_types.h>
-#include <sst/core/simulation.h>
-#include <sst/core/rankInfo.h>
-#include <sst/core/env/envquery.h>
-#include <sst/core/env/envconfig.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/simulation.h"
+#include "sst/core/rankInfo.h"
+#include "sst/core/env/envquery.h"
+#include "sst/core/env/envconfig.h"
 
-#include <sst/core/serialization/serializable.h>
+#include "sst/core/serialization/serializable.h"
 
 #include <string>
 
@@ -42,17 +42,13 @@ public:
     /** Parse command-line arguments to update configuration values */
     int parseCmdLine( int argc, char* argv[] );
     /** Set a configuration string to update configuration values */
-    bool setConfigEntryFromModel( const std::string &entryName, const std::string &value );
+    bool setConfigEntryFromModel( const std::string& entryName, const std::string& value );
     /** Return the current Verbosity level */
     uint32_t getVerboseLevel();
 
     /** Print the SST core timing information */
     bool printTimingInfo();
 
-    /** Set the cycle at which to stop the simulation */
-    void setStopAt(std::string stopAtStr);
-    /** Sets the default timebase of the simulation */
-    void setTimeBase(std::string timeBase);
     /** Print the current configuration to stdout */
     void Print();
 
@@ -87,40 +83,40 @@ public:
 
 
     typedef bool (Config::*flagFunction)(void);
-    typedef bool (Config::*argFunction)(const std::string &arg);
+    typedef bool (Config::*argFunction)(const std::string& arg);
 
     bool usage();
     bool printVersion();
     bool incrVerbose()          { verbose++; return true;}
-    bool setVerbosity(const std::string &arg);
+    bool setVerbosity(const std::string& arg);
     bool disableSigHandlers()   { enable_sig_handling = false; return true;}
     bool disableEnvConfig()     { no_env_config = true; return true;}
     bool enablePrintTiming()    { print_timing = true; return true;}
     bool enablePrintEnv()       { print_env = true; return true; }
 
-    bool setConfigFile(const std::string &arg);
-    bool setDebugFile(const std::string &arg);
-    bool setLibPath(const std::string &arg);
-    bool addLibPath(const std::string &arg);
-    bool setRunMode(const std::string &arg);
-    bool setStopAt(const std::string &arg);
-    bool setStopAfter(const std::string &arg);
-    bool setHeartbeat(const std::string &arg);
-    bool setTimebase(const std::string &arg);
-    bool setPartitioner(const std::string &arg);
-    bool setTimeVortex(const std::string &arg);
-    bool setOutputDir(const std::string &arg);
-    bool setWriteConfig(const std::string &arg);
-    bool setWriteDot(const std::string &arg);
-    bool setWriteXML(const std::string &arg);
-    bool setWriteJSON(const std::string &arg);
-    bool setWritePartition(const std::string &arg);
-    bool setOutputPrefix(const std::string &arg);
+    bool setConfigFile(const std::string& arg);
+    bool setDebugFile(const std::string& arg);
+    bool setLibPath(const std::string& arg);
+    bool addLibPath(const std::string& arg);
+    bool setRunMode(const std::string& arg);
+    bool setStopAt(const std::string& arg);
+    bool setStopAfter(const std::string& arg);
+    bool setHeartbeat(const std::string& arg);
+    bool setTimebase(const std::string& arg);
+    bool setPartitioner(const std::string& arg);
+    bool setTimeVortex(const std::string& arg);
+    bool setOutputDir(const std::string& arg);
+    bool setWriteConfig(const std::string& arg);
+    bool setWriteDot(const std::string& arg);
+    bool setWriteXML(const std::string& arg);
+    bool setWriteJSON(const std::string& arg);
+    bool setWritePartition(const std::string& arg);
+    bool setOutputPrefix(const std::string& arg);
 #ifdef USE_MEMPOOL
-    bool setWriteUndeleted(const std::string &arg);
+    bool setWriteUndeleted(const std::string& arg);
 #endif
-    bool setModelOptions(const std::string &arg);
-    bool setNumThreads(const std::string &arg);
+    bool setModelOptions(const std::string& arg);
+    bool setNumThreads(const std::string& arg);
 
 
     Simulation::Mode_t getRunMode() { return runMode; }
@@ -191,7 +187,7 @@ private:
     int rank;
 	int numRanks;
 
-    bool isFileNameOnly(const std::string name) {
+    bool isFileNameOnly(const std::string& name) {
 	bool nameOnly = true;
 
 	for( size_t i = 0; i < name.size(); ++i ) {

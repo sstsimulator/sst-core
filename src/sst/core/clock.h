@@ -13,13 +13,10 @@
 #ifndef SST_CORE_CLOCK_H
 #define SST_CORE_CLOCK_H
 
-//#include <deque>
-//#include <list>
 #include <vector>
 #include <cinttypes>
 
-#include <sst/core/action.h>
-//#include <sst/core/clockHandler.h>
+#include "sst/core/action.h"
 
 #define _CLE_DBG( fmt, args...)__DBG( DBG_CLOCK, Clock, fmt, ## args )
 

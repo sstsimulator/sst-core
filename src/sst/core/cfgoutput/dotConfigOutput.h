@@ -13,8 +13,8 @@
 #ifndef _H_SST_CORE_CONFIG_OUTPUT_DOT
 #define _H_SST_CORE_CONFIG_OUTPUT_DOT
 
-#include <sst/core/configGraph.h>
-#include <sst/core/configGraphOutput.h>
+#include "sst/core/configGraph.h"
+#include "sst/core/configGraphOutput.h"
 
 namespace SST {
 namespace Core {

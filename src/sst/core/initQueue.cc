@@ -12,7 +12,7 @@
 
 #include "sst_config.h"
 
-#include <sst/core/initQueue.h>
+#include "sst/core/initQueue.h"
 
 namespace SST {
 
@@ -43,7 +43,7 @@ namespace SST {
     
     Activity* InitQueue::pop()
     {
-	if ( data.size() == 0 ) return NULL;
+	if ( data.size() == 0 ) return nullptr;
 	Activity* ret_val = data.front();
 	data.pop_front();
 	return ret_val;
@@ -51,7 +51,7 @@ namespace SST {
 
     Activity* InitQueue::front()
     {
-	if ( data.size() == 0 ) return NULL;
+	if ( data.size() == 0 ) return nullptr;
 	return data.front();
     }
 

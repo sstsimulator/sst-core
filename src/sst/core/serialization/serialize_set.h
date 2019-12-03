@@ -13,7 +13,7 @@
 #define SERIALIZE_SET_H
 
 #include <set>
-#include <sst/core/serialization/serializer.h>
+#include "sst/core/serialization/serializer.h"
 
 namespace SST {
 namespace Core {

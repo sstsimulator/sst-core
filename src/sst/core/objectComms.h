@@ -13,14 +13,14 @@
 #ifndef SST_CORE_OBJECTCOMMS_H
 #define SST_CORE_OBJECTCOMMS_H
 
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
 REENABLE_WARNING
 #endif
 
-#include <sst/core/serialization/serializer.h>
+#include "sst/core/serialization/serializer.h"
 
 #include <typeinfo>
 
@@ -76,7 +76,7 @@ std::vector<char> serialize(dataType &data)
 template <typename dataType>
 dataType* deserialize(std::vector<char> &buffer)
 {
-    dataType *tgt = NULL;
+    dataType *tgt = nullptr;
 
     SST::Core::Serialization::serializer ser;
 

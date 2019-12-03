@@ -12,8 +12,8 @@
 #ifndef SST_CORE_SERIALIZATION_SERIALIZABLE_H
 #define SST_CORE_SERIALIZATION_SERIALIZABLE_H
 
-#include <sst/core/serialization/serializer.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/serialization/serializer.h"
+#include "sst/core/warnmacros.h"
 #include <unordered_map>
 #include <typeinfo>
 #include <stdint.h>
@@ -304,7 +304,7 @@ template<class T> const uint32_t serializable_builder_impl<T>::cls_id_
 #define DeclareSerializable(obj)
 
 
-#include <sst/core/serialization/serialize_serializable.h>
+#include "sst/core/serialization/serialize_serializable.h"
 
 #endif
 

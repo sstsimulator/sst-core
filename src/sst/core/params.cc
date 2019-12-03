@@ -10,9 +10,9 @@
 // distribution.
 //
 
-#include <sst_config.h>
-#include <sst/core/params.h>
-#include <sst/core/unitAlgebra.h>
+#include "sst_config.h"
+#include "sst/core/params.h"
+#include "sst/core/unitAlgebra.h"
 
 #include <map>
 #include <vector>
@@ -79,7 +79,7 @@ Params::count(const key_type& k)
 }
 
 void
-Params::print_all_params(std::ostream &os, std::string prefix) const
+Params::print_all_params(std::ostream &os, const std::string& prefix) const
 {
     for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
         os << prefix << "key=" << keyMapReverse[i->first] << ", value=" << i->second << std::endl;
@@ -87,7 +87,7 @@ Params::print_all_params(std::ostream &os, std::string prefix) const
 }
 
 void
-Params::print_all_params(Output &out, std::string prefix) const
+Params::print_all_params(Output &out, const std::string& prefix) const
 {
     for (const_iterator i = data.begin() ; i != data.end() ; ++i) {
         out.output("%s%s = %s\n", prefix.c_str(), keyMapReverse[i->first].c_str(), i->second.c_str());
@@ -96,7 +96,7 @@ Params::print_all_params(Output &out, std::string prefix) const
 
 
 void
-Params::insert(std::string key, std::string value, bool overwrite)
+Params::insert(const std::string& key, const std::string& value, bool overwrite)
 {
     if ( overwrite ) {
         data[getKey(key)] = value;
@@ -216,7 +216,7 @@ Params::serialize_order(SST::Core::Serialization::serializer &ser)
 }    
 
 uint32_t
-Params::getKey(const std::string &str) const
+Params::getKey(const std::string& str) const
 {
     std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(keyLock);
     std::map<std::string, uint32_t>::iterator i = keyMap.find(str);
@@ -227,7 +227,7 @@ Params::getKey(const std::string &str) const
 }
 
 uint32_t
-Params::getKey(const std::string &str)
+Params::getKey(const std::string& str)
 {
     std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(keyLock);
     std::map<std::string, uint32_t>::iterator i = keyMap.find(str);
@@ -244,7 +244,7 @@ Params::getKey(const std::string &str)
 
 #if 0
  template<>
- uint32_t Params::find(const std::string &k) const
+ uint32_t Params::find(const std::string& k) const
  {
      bool tmp;
      uint32_t default_value = uint32_t();
@@ -254,30 +254,25 @@ Params::getKey(const std::string &str)
 
  #define SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(type) \
      template<> \
-     type Params::find(const std::string &k, type default_value, bool &found) const { \
-         std::cout << "******* specialized" << std::endl; \
+     type Params::find(const std::string& k, type default_value, bool &found) const { \
          return find_impl<type>(k,default_value,found);  \
      } \
      template<> \
-     type Params::find(const std::string &k, std::string default_value, bool &found) const {  \
-         std::cout << "******* specialized" << std::endl; \
+     type Params::find(const std::string& k, const std::string& default_value, bool &found) const {  \
          return find_impl<type>(k,default_value,found); \
      } \
      template <> \
-     type Params::find(const std::string &k, type default_value ) const { \
-         std::cout << "******* specialized" << std::endl; \
+     type Params::find(const std::string& k, type default_value ) const { \
          bool tmp; \
          return find_impl<type>(k, default_value, tmp); \
      } \
      template <> \
-     type Params::find(const std::string &k, std::string default_value ) const { \
-         std::cout << "******* specialized" << std::endl; \
+     type Params::find(const std::string& k, const std::string& default_value ) const { \
          bool tmp; \
          return find_impl<type>(k, default_value, tmp); \
      } \
      template <> \
-     type Params::find(const std::string &k) const {      \
-         std::cout << "******* specialized" << std::endl; \
+     type Params::find(const std::string& k) const {      \
          bool tmp; \
          type default_value = type(); \
          return find_impl<type>(k, default_value, tmp); \
@@ -296,8 +291,7 @@ Params::getKey(const std::string &str)
  // std::string has to be special cased because of signature conflicts
  //SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(std::string)
  template<>
- std::string Params::find<std::string>(const std::string &k, std::string default_value, bool &found) const {
-     std::cout << "******* specialized" << std::endl;
+ std::string Params::find<std::string>(const std::string& k, const std::string& default_value, bool &found) const {
      return find_impl<std::string>(k,default_value,found);
  }
 #endif

@@ -13,9 +13,9 @@
 #define SST_CORE_RANKSYNCPARALLELSKIP_H
 
 #include "sst/core/sst_types.h"
-#include <sst/core/syncManager.h>
-#include <sst/core/threadsafe.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/syncManager.h"
+#include "sst/core/threadsafe.h"
+#include "sst/core/warnmacros.h"
 
 #include <map>
 

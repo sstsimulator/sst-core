@@ -38,7 +38,7 @@ distribution.
 #include <string.h>
 #include <assert.h>
 
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 DISABLE_WARN_MISSING_OVERRIDE
 
 // Help out windows:

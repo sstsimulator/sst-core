@@ -9,13 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
 
-#include <sst/core/simulation.h>
-#include <sst/core/statapi/statoutputcsv.h>
-#include <sst/core/stringize.h>
+#include "sst/core/statapi/statoutputjson.h"
 
-#include <sst/core/statapi/statoutputjson.h>
+#include "sst/core/simulation.h"
+#include "sst/core/statapi/statoutputcsv.h"
+#include "sst/core/stringize.h"
 
 namespace SST {
 namespace Statistics {
@@ -242,7 +242,7 @@ bool StatisticOutputJSON::openFile(void)
 {
 	m_hFile = fopen(m_FilePath.c_str(), "w");
 	
-	if (NULL == m_hFile) {
+	if (nullptr == m_hFile) {
 		// We got an error of some sort
 		Output out = Simulation::getSimulation()->getSimulationOutput();
 		out.fatal(CALL_INFO, 1, " : StatisticOutputJSON - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));

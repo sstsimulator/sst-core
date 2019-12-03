@@ -9,9 +9,10 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
 
 #include "marsaglia.h"
+
 #include <cstdlib>
 #include <cstring>
 
@@ -32,7 +33,7 @@ MarsagliaRNG::MarsagliaRNG(unsigned int initial_z, unsigned int initial_w) {
 */
 MarsagliaRNG::MarsagliaRNG() {
 	struct timeval now;
-        gettimeofday(&now, NULL);
+        gettimeofday(&now, nullptr);
 
         m_z = (uint32_t) now.tv_usec;
 	m_w = (uint32_t) now.tv_sec;

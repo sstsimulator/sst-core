@@ -14,7 +14,7 @@
 #ifndef SST_CORE_MODEL_PYMODEL_STATGROUP_H
 #define SST_CORE_MODEL_PYMODEL_STATGROUP_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 namespace SST {
     class ConfigStatGroup;

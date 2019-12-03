@@ -10,7 +10,8 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
+
 #include "poisson.h"
 
 using namespace SST::RNG;

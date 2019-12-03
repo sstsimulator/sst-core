@@ -11,14 +11,14 @@
 
 
 #include "sst_config.h"
+#include "bootshared.h"
 
 #include <climits>
 #include <map>
 #include <cstring>
 #include <string>
 
-#include "bootshared.h"
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 #include "sst/core/env/envquery.h"
 
 void update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(argv[]), const int UNUSED(argc)) {
@@ -31,7 +31,7 @@ void update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(ar
 		new_ld_path_copy[i] = '\0';
 	}
 
-	if(NULL != current_ld_path) {
+	if(nullptr != current_ld_path) {
 		sprintf(new_ld_path, "%s", current_ld_path);
 	}
 	std::vector<std::string> configFiles;
@@ -65,7 +65,7 @@ void update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(ar
 	// Set the SST_ROOT information
 #ifdef SST_INSTALL_PREFIX
 	// If SST_ROOT not previous set, then we will provide our own
-	if(NULL == getenv("SST_ROOT")) {
+	if(nullptr == getenv("SST_ROOT")) {
 		setenv("SST_ROOT", SST_INSTALL_PREFIX, 1);
 	}
 #endif
@@ -87,7 +87,7 @@ void boot_sst_executable(const char* binary, const int verbose, char* argv[], co
 
 	if(verbose) {
 		char** check_env = environ;
-		while(NULL != check_env && NULL != check_env[0]) {
+		while(nullptr != check_env && nullptr != check_env[0]) {
 			printf("SST Environment Variable: %s\n", check_env[0]);
 			check_env++;
 		}

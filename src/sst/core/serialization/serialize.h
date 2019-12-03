@@ -12,8 +12,8 @@
 #ifndef SERIALIZE_H
 #define SERIALIZE_H
 
-#include <sst/core/serialization/serializer.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/serialization/serializer.h"
+#include "sst/core/warnmacros.h"
 //#include <sprockit/debug.h>
 //DeclareDebugSlot(serialize);
 
@@ -129,12 +129,12 @@ operator&(serializer& ser, T& t){
 }
 }
 
-#include <sst/core/serialization/serialize_array.h>
-#include <sst/core/serialization/serialize_deque.h>
-#include <sst/core/serialization/serialize_list.h>
-#include <sst/core/serialization/serialize_map.h>
-#include <sst/core/serialization/serialize_set.h>
-#include <sst/core/serialization/serialize_vector.h>
-#include <sst/core/serialization/serialize_string.h>
+#include "sst/core/serialization/serialize_array.h"
+#include "sst/core/serialization/serialize_deque.h"
+#include "sst/core/serialization/serialize_list.h"
+#include "sst/core/serialization/serialize_map.h"
+#include "sst/core/serialization/serialize_set.h"
+#include "sst/core/serialization/serialize_vector.h"
+#include "sst/core/serialization/serialize_string.h"
 
 #endif // SERIALIZE_H

@@ -14,6 +14,7 @@
 
 #include "sst/core/sst_types.h"
 #include <map>
+#include <string>
 
 namespace SST {
 namespace Statistics {

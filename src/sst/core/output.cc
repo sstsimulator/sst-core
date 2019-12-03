@@ -25,7 +25,7 @@
 
 // Core Headers
 #include "sst/core/simulation.h"
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
@@ -48,7 +48,7 @@ int Output::m_mpiRank = 0;
 
 Output::Output(const std::string& prefix, uint32_t verbose_level,   
                uint32_t verbose_mask,output_location_t location, 
-               std::string localoutputfilename /*=""*/)
+               const std::string& localoutputfilename /*=""*/)
 {
     m_objInitialized = false;
 
@@ -70,7 +70,7 @@ Output::Output()
 
 void Output::init(const std::string& prefix, uint32_t verbose_level,  
                   uint32_t verbose_mask, output_location_t location, 
-                  std::string localoutputfilename /*=""*/)
+                  const std::string& localoutputfilename /*=""*/)
 {
     // Only initialize if the object has not yet been initialized.
     if (false == m_objInitialized) {
@@ -303,7 +303,7 @@ void Output::openSSTTargetFile() const
                 
                 // Now try to open the file
                 handle = fopen(tempFileName.c_str(), "w");
-                if (NULL != handle){
+                if (nullptr != handle){
                     *m_targetFileHandleRef = handle;
                 } else {
                     // We got an error of some sort
@@ -434,8 +434,8 @@ std::string Output::buildPrefixString(uint32_t line, const std::string& file, co
 }
 
 
-void Output::outputprintf(uint32_t line, const std::string &file,
-                          const std::string &func, const char* format, va_list arg) const
+void Output::outputprintf(uint32_t line, const std::string& file,
+                          const std::string& func, const char* format, va_list arg) const
 {
     std::string newFmt;
     

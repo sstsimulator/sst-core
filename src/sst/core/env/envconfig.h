@@ -61,11 +61,11 @@ SST releases.
 class EnvironmentConfigGroup {
 
 public:
-	EnvironmentConfigGroup(std::string name) : groupName(name) {}
+	EnvironmentConfigGroup(const std::string& name) : groupName(name) {}
 	std::string getName() const;
 	std::set<std::string> getKeys() const;
-	std::string getValue(std::string key);
-	void setValue(std::string key, std::string value);
+	std::string getValue(const std::string& key);
+	void setValue(const std::string& key, const std::string& value);
 	void print();
 	void writeTo(FILE* outFile);
 
@@ -110,12 +110,12 @@ public:
 	EnvironmentConfiguration();
 	~EnvironmentConfiguration();
 
-	EnvironmentConfigGroup* createGroup(std::string groupName);
-	void removeGroup(std::string groupName);
+	EnvironmentConfigGroup* createGroup(const std::string& groupName);
+	void removeGroup(const std::string& groupName);
 	std::set<std::string> getGroupNames();
-	EnvironmentConfigGroup* getGroupByName(std::string groupName);
+	EnvironmentConfigGroup* getGroupByName(const std::string& groupName);
 	void print();
-	void writeTo(std::string filePath);
+	void writeTo(const std::string& filePath);
 	void writeTo(FILE* outFile);
 
 private:

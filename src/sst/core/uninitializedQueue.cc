@@ -11,15 +11,15 @@
 
 
 #include "sst_config.h"
+#include "sst/core/uninitializedQueue.h"
 
 #include <ostream>
 
-#include <sst/core/warnmacros.h>
-#include <sst/core/uninitializedQueue.h>
+#include "sst/core/warnmacros.h"
 
 namespace SST {
 
-    UninitializedQueue::UninitializedQueue(std::string message) :
+    UninitializedQueue::UninitializedQueue(const std::string& message) :
 	ActivityQueue(), message(message) {}
 
     UninitializedQueue::UninitializedQueue() :

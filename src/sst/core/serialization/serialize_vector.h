@@ -13,7 +13,7 @@
 #define SERIALIZE_VECTOR_H
 
 #include <vector>
-#include <sst/core/serialization/serializer.h>
+#include "sst/core/serialization/serializer.h"
 
 namespace SST {
 namespace Core {

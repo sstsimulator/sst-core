@@ -22,7 +22,7 @@
 #include "sst/core/timeConverter.h"
 #include "sst/core/profile.h"
 
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
@@ -222,7 +222,7 @@ RankSyncSerialSkip::exchange(void)
     }
     
     // If we have an Exit object, fire it to see if we need end simulation
-    // if ( exit != NULL ) exit->check();
+    // if ( exit != nullptr ) exit->check();
     
     // Check to see when the next event is scheduled, then do an
     // all_reduce with min operator and set next sync time to be

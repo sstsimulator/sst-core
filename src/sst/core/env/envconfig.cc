@@ -39,12 +39,12 @@ std::set<std::string> SST::Core::Environment::EnvironmentConfigGroup::getKeys() 
 	return retKeys;
 }
 
-std::string SST::Core::Environment::EnvironmentConfigGroup::getValue(std::string key) {
+std::string SST::Core::Environment::EnvironmentConfigGroup::getValue(const std::string& key) {
 	return (params.find(key) == params.end()) ?
 		"" : params[key];
 }
 
-void SST::Core::Environment::EnvironmentConfigGroup::setValue(std::string key, std::string value) {
+void SST::Core::Environment::EnvironmentConfigGroup::setValue(const std::string& key, const std::string& value) {
 	auto paramsItr = params.find(key);
 
 	if(paramsItr != params.end()) {
@@ -91,8 +91,8 @@ SST::Core::Environment::EnvironmentConfiguration::~EnvironmentConfiguration() {
 	}
 }
 
-SST::Core::Environment::EnvironmentConfigGroup* SST::Core::Environment::EnvironmentConfiguration::createGroup(std::string groupName) {
-	EnvironmentConfigGroup* newGroup = NULL;
+SST::Core::Environment::EnvironmentConfigGroup* SST::Core::Environment::EnvironmentConfiguration::createGroup(const std::string& groupName) {
+	EnvironmentConfigGroup* newGroup = nullptr;
 
 	if(groups.find(groupName) == groups.end()) {
 		newGroup = new EnvironmentConfigGroup(groupName);
@@ -104,7 +104,7 @@ SST::Core::Environment::EnvironmentConfigGroup* SST::Core::Environment::Environm
 	return newGroup;
 }
 
-void SST::Core::Environment::EnvironmentConfiguration::removeGroup(std::string groupName) {
+void SST::Core::Environment::EnvironmentConfiguration::removeGroup(const std::string& groupName) {
 	auto theGroup = groups.find(groupName);
 
 	if(theGroup != groups.end()) {
@@ -122,7 +122,7 @@ std::set<std::string> SST::Core::Environment::EnvironmentConfiguration::getGroup
 	return groupNames;
 }
 
-SST::Core::Environment::EnvironmentConfigGroup* SST::Core::Environment::EnvironmentConfiguration::getGroupByName(std::string groupName) {
+SST::Core::Environment::EnvironmentConfigGroup* SST::Core::Environment::EnvironmentConfiguration::getGroupByName(const std::string& groupName) {
 	return createGroup(groupName);
 }
 
@@ -132,10 +132,10 @@ void SST::Core::Environment::EnvironmentConfiguration::print() {
 	}
 }
 
-void SST::Core::Environment::EnvironmentConfiguration::writeTo(std::string filePath) {
+void SST::Core::Environment::EnvironmentConfiguration::writeTo(const std::string& filePath) {
 	FILE* output = fopen(filePath.c_str(), "w+");
 
-	if(NULL == output) {
+	if(nullptr == output) {
 		fprintf(stderr, "Unable to open file: %s\n", filePath.c_str());
 		exit(-1);
 	}

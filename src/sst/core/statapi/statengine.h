@@ -12,16 +12,16 @@
 #ifndef _H_SST_CORE_STATISTICS_ENGINE
 #define _H_SST_CORE_STATISTICS_ENGINE
 
-#include <sst/core/sst_types.h>
-#include <sst/core/statapi/statfieldinfo.h>
-#include <sst/core/statapi/statgroup.h>
-#include <sst/core/statapi/statbase.h>
-#include <sst/core/statapi/statnull.h>
-#include <sst/core/unitAlgebra.h>
-#include <sst/core/clock.h>
-#include <sst/core/oneshot.h>
-#include <sst/core/threadsafe.h>
-#include <sst/core/factory.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/statapi/statfieldinfo.h"
+#include "sst/core/statapi/statgroup.h"
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/statapi/statnull.h"
+#include "sst/core/unitAlgebra.h"
+#include "sst/core/clock.h"
+#include "sst/core/oneshot.h"
+#include "sst/core/threadsafe.h"
+#include "sst/core/factory.h"
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
@@ -71,8 +71,8 @@ public:
     void performGlobalStatisticOutput(bool endOfSimFlag = false);
 
     template <class T>
-    Statistic<T>* createStatistic(BaseComponent *comp, const std::string &type,
-                                  const std::string &statName, const std::string &statSubId,
+    Statistic<T>* createStatistic(BaseComponent *comp, const std::string& type,
+                                  const std::string& statName, const std::string& statSubId,
                                   Params &params)
     {
 

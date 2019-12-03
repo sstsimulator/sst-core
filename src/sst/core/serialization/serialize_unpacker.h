@@ -12,7 +12,7 @@
 #ifndef SERIALIZE_UNPACKER_H
 #define SERIALIZE_UNPACKER_H
 
-#include <sst/core/serialization/serialize_buffer_accessor.h>
+#include "sst/core/serialization/serialize_buffer_accessor.h"
 
 namespace SST {
 namespace Core {

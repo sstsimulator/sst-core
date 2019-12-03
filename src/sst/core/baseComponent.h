@@ -12,20 +12,20 @@
 #ifndef SST_CORE_BASECOMPONENT_H
 #define SST_CORE_BASECOMPONENT_H
 
-#include <sst/core/sst_types.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
 
 #include <map>
 #include <string>
 
-#include <sst/core/statapi/statengine.h>
-#include <sst/core/statapi/statbase.h>
-#include <sst/core/event.h>
-#include <sst/core/clock.h>
-#include <sst/core/oneshot.h>
-#include <sst/core/componentInfo.h>
-#include <sst/core/simulation.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/statapi/statengine.h"
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/event.h"
+#include "sst/core/clock.h"
+#include "sst/core/oneshot.h"
+#include "sst/core/componentInfo.h"
+#include "sst/core/simulation.h"
+#include "sst/core/eli/elementinfo.h"
 
 using namespace SST::Statistics;
 
@@ -106,51 +106,51 @@ public:
     virtual void printStatus(Output &UNUSED(out)) { return; }
 
     /** Determine if a port name is connected to any links */
-    bool isPortConnected(const std::string &name) const;
+    bool isPortConnected(const std::string& name) const;
 
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.
-     * @param time_base - Time Base of the link.  If NULL is passed in, then it
+     * @param time_base - Time Base of the link.  If nullptr is passed in, then it
      * will use the Component defaultTimeBase
      * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
+     * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link* configureLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
+    Link* configureLink( const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.
      * @param time_base - Time Base of the link as a string
      * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
+     * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link* configureLink( std::string name, std::string time_base, Event::HandlerBase* handler = NULL);
+    Link* configureLink( const std::string& name, const std::string& time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.
      * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
+     * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link* configureLink( std::string name, Event::HandlerBase* handler = NULL);
+    Link* configureLink( const std::string& name, Event::HandlerBase* handler = nullptr);
 
     /** Configure a SelfLink  (Loopback link)
      * @param name - Name of the self-link port
-     * @param time_base - Time Base of the link.  If NULL is passed in, then it
+     * @param time_base - Time Base of the link.  If nullptr is passed in, then it
      * will use the Component defaultTimeBase
      * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
+     * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link* configureSelfLink( std::string name, TimeConverter* time_base, Event::HandlerBase* handler = NULL);
+    Link* configureSelfLink( const std::string& name, TimeConverter* time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a SelfLink  (Loopback link)
      * @param name - Name of the self-link port
      * @param time_base - Time Base of the link
      * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
+     * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link* configureSelfLink( std::string name, std::string time_base, Event::HandlerBase* handler = NULL);
+    Link* configureSelfLink( const std::string& name, const std::string& time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a SelfLink  (Loopback link)
      * @param name - Name of the self-link port
      * @param handler - Optional Handler to be called when an Event is received
-     * @return A pointer to the configured link, or NULL if an error occured.
+     * @return A pointer to the configured link, or nullptr if an error occured.
      */
-    Link* configureSelfLink( std::string name, Event::HandlerBase* handler = NULL);
+    Link* configureSelfLink( const std::string& name, Event::HandlerBase* handler = nullptr);
 
     /** Registers a clock for this component.
         @param freq Frequency for the clock in SI units
@@ -159,7 +159,7 @@ public:
         @param regAll Should this clock period be used as the default
         time base for all of the links connected to this component
     */
-    TimeConverter* registerClock( std::string freq, Clock::HandlerBase* handler,
+    TimeConverter* registerClock( const std::string& freq, Clock::HandlerBase* handler,
                                   bool regAll = true);
     TimeConverter* registerClock( const UnitAlgebra& freq, Clock::HandlerBase* handler,
                                   bool regAll = true);
@@ -180,7 +180,7 @@ public:
         @param handler Pointer to OneShot::HandlerBase which is to be invoked
         at the specified interval
     */
-    TimeConverter* registerOneShot( std::string timeDelay, OneShot::HandlerBase* handler);
+    TimeConverter* registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler);
     TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
 
     /** Registers a default time base for the component and optionally
@@ -191,7 +191,7 @@ public:
         @param regAll Should this clock period be used as the default
         time base for all of the links connected to this component
     */
-    TimeConverter* registerTimeBase( std::string base, bool regAll = true);
+    TimeConverter* registerTimeBase( const std::string& base, bool regAll = true);
 
     TimeConverter* getTimeConverter( const std::string& base );
     TimeConverter* getTimeConverter( const UnitAlgebra& base );
@@ -206,7 +206,7 @@ public:
     }
     /** return the time since the simulation began in timebase specified
         @param base Timebase frequency in SI Units */
-    SimTime_t getCurrentSimTime(std::string base);
+    SimTime_t getCurrentSimTime(const std::string& base);
 
     /** Utility function to return the time since the simulation began in nanoseconds */
     SimTime_t getCurrentSimTimeNano() const;
@@ -311,26 +311,26 @@ public:
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName
      * @param params Parameters the module should use for configuration
-     * @return handle to new instance of module, or NULL on failure.
+     * @return handle to new instance of module, or nullptr on failure.
      */
-    Module* loadModule(std::string type, Params& params);
+    Module* loadModule(const std::string& type, Params& params);
 
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName
      * @param comp Pointer to component to pass to Module's constructor
      * @param params Parameters the module should use for configuration
-     * @return handle to new instance of module, or NULL on failure.
+     * @return handle to new instance of module, or nullptr on failure.
      */
-    Module* loadModuleWithComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("loadModuleWithComponent will be removed in SST version 10.0.  If the module needs access to the parent component, please use SubComponents instead of Modules.")));
+    Module* loadModuleWithComponent(const std::string& type, Component* comp, Params& params) __attribute__ ((deprecated("loadModuleWithComponent will be removed in SST version 10.0.  If the module needs access to the parent component, please use SubComponents instead of Modules.")));
 
 
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName
      * @param params Parameters the module should use for configuration
-     * @return handle to new instance of module, or NULL on failure.
+     * @return handle to new instance of module, or nullptr on failure.
      */
     template <class T, class... ARGS>
-    T* loadModule(std::string type, Params& params, ARGS... args) {
+    T* loadModule(const std::string& type, Params& params, ARGS... args) {
 
         // Check to see if this can be loaded with new API or if we have to fallback to old
         return Factory::getFactory()->Create<T>(type, params, params, args...);
@@ -342,13 +342,13 @@ public:
      * @param type Fully Qualified library.moduleName
      * @param comp Pointer to component to pass to SuBaseComponent's constructor
      * @param params Parameters the module should use for configuration
-     * @return handle to new instance of SubComponent, or NULL on failure.
+     * @return handle to new instance of SubComponent, or nullptr on failure.
      */
-    SubComponent* loadSubComponent(std::string type, Component* comp, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadSubComponent(const std::string& type, Component* comp, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
 
     /* New ELI style */
-    SubComponent* loadNamedSubComponent(std::string name) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-    SubComponent* loadNamedSubComponent(std::string name, Params& params) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadNamedSubComponent(const std::string& name) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadNamedSubComponent(const std::string& name, Params& params) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
 
     
 protected:
@@ -369,7 +369,7 @@ protected:
        @return True if loadable as the API specified as the template parameter
      */
     template <class T>
-    bool isSubComponentLoadableUsingAPI(std::string type) {
+    bool isSubComponentLoadableUsingAPI(const std::string& type) {
         return Factory::getFactory()->isSubComponentLoadableUsingAPI<T>(type);
     }
     
@@ -390,14 +390,14 @@ protected:
        unsuccessful.
     */
     template <class T, class... ARGS>
-    T* loadAnonymousSubComponent(std::string type, std::string slot_name, int slot_num, uint64_t share_flags, Params& params, ARGS... args) {
+    T* loadAnonymousSubComponent(const std::string& type, const std::string& slot_name, int slot_num, uint64_t share_flags, Params& params, ARGS... args) {
 
         share_flags = share_flags & ComponentInfo::USER_FLAGS;
         ComponentId_t cid = my_info->addAnonymousSubComponent(my_info, type, slot_name, slot_num, share_flags);
         ComponentInfo* sub_info = my_info->findSubComponent(cid);
 
         //This shouldn't happen since we just put it in, but just in case
-        if ( sub_info == NULL ) return NULL;
+        if ( sub_info == nullptr ) return nullptr;
 
         // Check to see if this can be loaded with new API or if we have to fallback to old
         if ( isSubComponentLoadableUsingAPI<T>(type) ) {
@@ -423,7 +423,7 @@ protected:
        unsuccessful.
     */
     template <class T>
-    T* loadUserSubComponent(std::string slot_name) {
+    T* loadUserSubComponent(const std::string& slot_name) {
         return loadUserSubComponent<T>(slot_name, ComponentInfo::SHARE_NONE);
     }
     
@@ -441,7 +441,7 @@ protected:
        unsuccessful.
     */
     template <class T, class... ARGS>
-    T* loadUserSubComponent(std::string slot_name, uint64_t share_flags, ARGS... args) {
+    T* loadUserSubComponent(const std::string& slot_name, uint64_t share_flags, ARGS... args) {
 
         // Get list of ComponentInfo objects and make sure that there is
         // only one SubComponent put into this slot
@@ -467,8 +467,8 @@ protected:
     
 private:
 
-    SubComponent* loadNamedSubComponent(std::string name, int slot_num);
-    SubComponent* loadNamedSubComponent(std::string name, int slot_num, Params& params);
+    SubComponent* loadNamedSubComponent(const std::string& name, int slot_num);
+    SubComponent* loadNamedSubComponent(const std::string& name, int slot_num, Params& params);
 
     SubComponent* loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Params& params);
 
@@ -486,19 +486,19 @@ private:
     void pushValidParams(Params& params, const std::string& type);
     
     template <class T, class... ARGS>
-    T* loadUserSubComponentByIndex(std::string slot_name, int slot_num, int share_flags, ARGS... args) {
+    T* loadUserSubComponentByIndex(const std::string& slot_name, int slot_num, int share_flags, ARGS... args) {
 
         share_flags = share_flags & ComponentInfo::USER_FLAGS;
         
         // Check to see if the slot exists
         ComponentInfo* sub_info = my_info->findSubComponent(slot_name,slot_num);
-        if ( sub_info == NULL ) return NULL;
+        if ( sub_info == nullptr ) return nullptr;
         sub_info->share_flags = share_flags;
         sub_info->parent_info = my_info;
         
         // Check to see if this is documented, and if so, try to load it through the ElementBuilder
         Params myParams;
-        if ( sub_info->getParams() != NULL ) {
+        if ( sub_info->getParams() != nullptr ) {
             myParams.insert(*sub_info->getParams());
         }
 
@@ -519,7 +519,7 @@ private:
 
 
 public:
-    SubComponentSlotInfo* getSubComponentSlotInfo(std::string name, bool fatalOnEmptyIndex = false);
+    SubComponentSlotInfo* getSubComponentSlotInfo(const std::string& name, bool fatalOnEmptyIndex = false);
 
     /** Retrieve the X,Y,Z coordinates of this component */
     const std::vector<double>& getCoordinates() const {
@@ -546,22 +546,22 @@ protected:
         return my_info->defaultTimeBase;
     }
 
-    bool doesSubComponentExist(std::string type);
+    bool doesSubComponentExist(const std::string& type);
 
 
     /** Find a lookup table */
-    SharedRegion* getLocalSharedRegion(const std::string &key, size_t size);
-    SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL);
+    SharedRegion* getLocalSharedRegion(const std::string& key, size_t size);
+    SharedRegion* getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger *merger = nullptr);
 
     /* Get the Simulation */
     Simulation* getSimulation() const { return sim; }
 
     // Does the statisticName exist in the ElementInfoStatistic
-    virtual bool doesComponentInfoStatisticExist(const std::string &statisticName) const;
+    virtual bool doesComponentInfoStatisticExist(const std::string& statisticName) const;
     // Return the EnableLevel for the statisticName from the ElementInfoStatistic
-    uint8_t getComponentInfoStatisticEnableLevel(const std::string &statisticName) const;
+    uint8_t getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
     // Return the Units for the statisticName from the ElementInfoStatistic
-    // std::string getComponentInfoStatisticUnits(const std::string &statisticName) const;
+    // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
 
     
     Component* getTrueComponent() const __attribute__ ((deprecated("getTrueParent will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent component is not allowed.")));
@@ -597,7 +597,7 @@ private:
     ComponentId_t currentlyLoadingSubComponentID;
     bool isExtension;
     
-    void addSelfLink(std::string name);
+    void addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port);
 
     using CreateFxn = std::function<StatisticBase*(const std::string&,
@@ -626,7 +626,7 @@ class SubComponentSlotInfo {
 protected:
     
     SubComponent* protected_create(int slot_num, Params& params) const {
-        if ( slot_num > max_slot_index ) return NULL;
+        if ( slot_num > max_slot_index ) return nullptr;
 
         return comp->loadNamedSubComponent(slot_name, slot_num, params);
     }    
@@ -638,7 +638,7 @@ public:
     ~SubComponentSlotInfo() {}
     
 
-    SubComponentSlotInfo(BaseComponent* comp, std::string slot_name) :
+    SubComponentSlotInfo(BaseComponent* comp, const std::string& slot_name) :
         comp(comp),
         slot_name(slot_name)
     {
@@ -661,13 +661,13 @@ public:
 
     bool isPopulated(int slot_num) const {
         if ( slot_num > max_slot_index ) return false;
-        if ( comp->my_info->findSubComponent(slot_name,slot_num) == NULL ) return false;
+        if ( comp->my_info->findSubComponent(slot_name,slot_num) == nullptr ) return false;
         return true;
     }
 
     bool isAllPopulated() const {
         for ( int i = 0; i < max_slot_index; ++i ) {
-            if ( comp->my_info->findSubComponent(slot_name,i) == NULL ) return false;
+            if ( comp->my_info->findSubComponent(slot_name,i) == nullptr ) return false;
         }
         return true;
     }
@@ -829,12 +829,12 @@ private:
     T* private_create(int slot_num, Params& params) const
     {
         SubComponent* sub = protected_create(slot_num, params);
-        if ( sub == NULL ) {
-            // Nothing populated at this index, simply return NULL
-            return NULL;
+        if ( sub == nullptr ) {
+            // Nothing populated at this index, simply return nullptr
+            return nullptr;
         }
         T* cast_sub = dynamic_cast<T*>(sub);
-        if ( cast_sub == NULL ) {
+        if ( cast_sub == nullptr ) {
             // SubComponent not castable to the correct class,
             // fatal
             Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Attempt to load SubComponent into slot "
@@ -849,7 +849,7 @@ private:
     {
         for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
             T* sub = create<T>(i, params);
-            if ( sub != NULL || insertNulls ) vec.push_back(sub);
+            if ( sub != nullptr || insertNulls ) vec.push_back(sub);
         }
     }
 

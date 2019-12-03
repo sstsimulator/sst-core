@@ -10,7 +10,7 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
 #include "cputimer.h"
 
 double sst_get_cpu_time() {

@@ -12,9 +12,9 @@
 #ifndef _H_SST_CORE_ENV_QUERY_H
 #define _H_SST_CORE_ENV_QUERY_H
 
-#include <sst_config.h>
+#include "sst_config.h"
 
-#include <sst/core/env/envconfig.h>
+#include "sst/core/env/envconfig.h"
 
 #include <cstdio>
 #include <cstdlib>

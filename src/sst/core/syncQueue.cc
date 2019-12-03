@@ -11,12 +11,11 @@
 
 
 #include "sst_config.h"
-#include <sst/core/serialization/serializer.h>
-#include <sst/core/syncQueue.h>
+#include "sst/core/syncQueue.h"
 
-#include <sst/core/event.h>
-
-#include <sst/core/simulation.h>
+#include "sst/core/serialization/serializer.h"
+#include "sst/core/event.h"
+#include "sst/core/simulation.h"
 
 
 namespace SST {
@@ -25,7 +24,7 @@ using namespace Core::ThreadSafe;
 using namespace Core::Serialization;
 
 SyncQueue::SyncQueue() :
-    ActivityQueue(), buffer(NULL), buf_size(0)
+    ActivityQueue(), buffer(nullptr), buf_size(0)
 {
 }
 
@@ -58,19 +57,19 @@ Activity*
 SyncQueue::pop()
 {
     // NEED TO FATAL
-	// if ( data.size() == 0 ) return NULL;
+	// if ( data.size() == 0 ) return nullptr;
 	// std::vector<Activity*>::iterator it = data.begin();
 	// Activity* ret_val = (*it);
 	// data.erase(it);
 	// return ret_val;
-    return NULL;
+    return nullptr;
 }
 
 Activity*
 SyncQueue::front()
 {
     // NEED TO FATAL
-	return NULL;
+	return nullptr;
 }
 
 void
@@ -94,7 +93,7 @@ SyncQueue::getData()
     size_t size = ser.size();
 
     if ( buf_size < ( size + sizeof(SyncQueue::Header) ) ) {
-        if ( buffer != NULL ) {
+        if ( buffer != nullptr ) {
             delete[] buffer;
         }
         

@@ -9,18 +9,18 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/statapi/statbase.h"
 
-#include <sst/core/baseComponent.h>
-#include <sst/core/statapi/statbase.h>
-#include <sst/core/statapi/stataccumulator.h>
-#include <sst/core/statapi/stathistogram.h>
-#include <sst/core/statapi/statnull.h>
-#include <sst/core/statapi/statuniquecount.h>
-#include <sst/core/statapi/statoutputconsole.h>
-#include <sst/core/statapi/statoutputcsv.h>
-#include <sst/core/statapi/statoutputjson.h>
-#include <sst/core/statapi/statoutputtxt.h>
+#include "sst/core/baseComponent.h"
+#include "sst/core/statapi/stataccumulator.h"
+#include "sst/core/statapi/stathistogram.h"
+#include "sst/core/statapi/statnull.h"
+#include "sst/core/statapi/statuniquecount.h"
+#include "sst/core/statapi/statoutputconsole.h"
+#include "sst/core/statapi/statoutputcsv.h"
+#include "sst/core/statapi/statoutputjson.h"
+#include "sst/core/statapi/statoutputtxt.h"
 
 namespace SST {
 namespace Statistics {

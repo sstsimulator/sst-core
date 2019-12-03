@@ -10,14 +10,14 @@
 // distribution.
 //
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/cfgoutput/jsonConfigOutput.h"
 
-#include <sst/core/warnmacros.h>
-#include <sst/core/config.h>
-#include <sst/core/configGraph.h>
-#include <sst/core/configGraphOutput.h>
-#include <sst/core/params.h>
-#include <sst/core/cfgoutput/jsonConfigOutput.h>
+#include "sst/core/warnmacros.h"
+#include "sst/core/config.h"
+#include "sst/core/configGraph.h"
+#include "sst/core/configGraphOutput.h"
+#include "sst/core/params.h"
 
 #include <map>
 
@@ -31,7 +31,7 @@ JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) :
 void JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph) {
 
 	int num = 0;
-	if(NULL == outputFile) {
+	if(nullptr == outputFile) {
 		throw ConfigGraphOutputException("Output file is not open for writing");
 	}
 
@@ -58,7 +58,7 @@ void JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* gra
 }
 
 
-void JSONConfigGraphOutput::generateJSON(const std::string indent, const ConfigComponent& comp, const ConfigLinkMap_t& linkMap) const {
+void JSONConfigGraphOutput::generateJSON(const std::string& indent, const ConfigComponent& comp, const ConfigLinkMap_t& linkMap) const {
 	
 	int num = 0;
 	std::string temp = indent + "\"name\" : \"" + comp.name + "\",\n" + indent + "\"type\" : \"" + comp.type + "\",\n";

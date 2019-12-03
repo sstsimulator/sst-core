@@ -12,7 +12,7 @@
 #ifndef SST_CORE_CORE_SHAREDREGION_H
 #define SST_CORE_CORE_SHAREDREGION_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <string>
 #include <vector>
@@ -66,8 +66,8 @@ protected:
     virtual const void* getConstPtr(const SharedRegion* sr) const = 0;
 
 public:
-    virtual SharedRegion* getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte = 0) = 0;
-    virtual SharedRegion* getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger = NULL, uint8_t initByte = 0) = 0;
+    virtual SharedRegion* getLocalSharedRegion(const std::string& key, size_t size, uint8_t initByte = 0) = 0;
+    virtual SharedRegion* getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger *merger = nullptr, uint8_t initByte = 0) = 0;
 
     virtual void publishRegion(SharedRegion*) = 0;
     virtual bool isRegionReady(const SharedRegion*) = 0;
