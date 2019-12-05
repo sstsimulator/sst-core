@@ -10,10 +10,11 @@
 // distribution.
 //
 
-#include <sst_config.h>
-#include <sst/core/configGraphOutput.h>
-#include <sst/core/config.h>
+#include "sst_config.h"
 #include "dotConfigOutput.h"
+
+#include "sst/core/configGraphOutput.h"
+#include "sst/core/config.h"
 
 using namespace SST::Core;
 
@@ -24,7 +25,7 @@ DotConfigGraphOutput::DotConfigGraphOutput(const char* path) :
 
 void DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph) {
 
-	if ( NULL == outputFile ) {
+	if ( nullptr == outputFile ) {
 		throw ConfigGraphOutputException("Output file is not open for writing");
 	}
 

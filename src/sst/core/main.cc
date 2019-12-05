@@ -10,8 +10,8 @@
 // distribution.
 
 
-#include <sst_config.h>
-#include <sst/core/warnmacros.h>
+#include "sst_config.h"
+#include "sst/core/warnmacros.h"
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
@@ -30,37 +30,37 @@ REENABLE_WARNING
 #include <signal.h>
 #include <time.h>
 
-#include <sst/core/activity.h>
-#include <sst/core/config.h>
-#include <sst/core/configGraph.h>
-#include <sst/core/factory.h>
-#include <sst/core/rankInfo.h>
-#include <sst/core/threadsafe.h>
-#include <sst/core/simulation.h>
-#include <sst/core/timeLord.h>
-#include <sst/core/timeVortex.h>
-#include <sst/core/part/sstpart.h>
-#include <sst/core/statapi/statengine.h>
+#include "sst/core/activity.h"
+#include "sst/core/config.h"
+#include "sst/core/configGraph.h"
+#include "sst/core/factory.h"
+#include "sst/core/rankInfo.h"
+#include "sst/core/threadsafe.h"
+#include "sst/core/simulation.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/timeVortex.h"
+#include "sst/core/part/sstpart.h"
+#include "sst/core/statapi/statengine.h"
 
-#include <sst/core/cputimer.h>
+#include "sst/core/cputimer.h"
 
-#include <sst/core/model/sstmodel.h>
-#include <sst/core/model/pymodel.h>
-#include <sst/core/memuse.h>
-#include <sst/core/iouse.h>
+#include "sst/core/model/sstmodel.h"
+#include "sst/core/model/pymodel.h"
+#include "sst/core/memuse.h"
+#include "sst/core/iouse.h"
 
 #include <sys/resource.h>
 
-#include <sst/core/objectComms.h>
+#include "sst/core/objectComms.h"
 
 // Configuration Graph Generation Options
-#include <sst/core/configGraphOutput.h>
-#include <sst/core/cfgoutput/pythonConfigOutput.h>
-#include <sst/core/cfgoutput/dotConfigOutput.h>
-#include <sst/core/cfgoutput/xmlConfigOutput.h>
-#include <sst/core/cfgoutput/jsonConfigOutput.h>
+#include "sst/core/configGraphOutput.h"
+#include "sst/core/cfgoutput/pythonConfigOutput.h"
+#include "sst/core/cfgoutput/dotConfigOutput.h"
+#include "sst/core/cfgoutput/xmlConfigOutput.h"
+#include "sst/core/cfgoutput/jsonConfigOutput.h"
 
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/eli/elementinfo.h"
 
 using namespace SST::Core;
 using namespace SST::Partition;
@@ -107,7 +107,7 @@ static void setupSignals(uint32_t threadRank)
         /* Other threads don't want to receive the signal */
         sigset_t maskset;
         sigfillset(&maskset);
-        pthread_sigmask(SIG_BLOCK, &maskset, NULL);
+        pthread_sigmask(SIG_BLOCK, &maskset, nullptr);
     }
 }
 
@@ -268,7 +268,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
         if ( info.config->verbose && 0 == tid ) {
             g_output.verbose(CALL_INFO, 1, 0, "# Starting main event loop\n");
 
-            time_t the_time = time(0);
+            time_t the_time = time(nullptr);
             struct tm* now = localtime( &the_time );
 
             g_output.verbose(CALL_INFO, 1, 0, "# Start time: %04u/%02u/%02u at: %02u:%02u:%02u\n",
@@ -381,7 +381,7 @@ main(int argc, char *argv[])
     }
     world_size.thread = cfg.getNumThreads();
 
-    SSTModelDescription* modelGen = 0;
+    SSTModelDescription* modelGen = nullptr;
 
     if ( cfg.configFile != "NONE" ) {
         string file_ext = "";
@@ -421,7 +421,7 @@ main(int argc, char *argv[])
     const uint64_t pre_graph_create_rss = maxGlobalMemSize();
 
     ////// Start ConfigGraph Creation //////
-    ConfigGraph* graph = NULL;
+    ConfigGraph* graph = nullptr;
 
     double start_graph_gen = sst_get_cpu_time();
     graph = new ConfigGraph();
@@ -452,7 +452,7 @@ main(int argc, char *argv[])
 
     // Delete the model generator
     delete modelGen;
-    modelGen = NULL;
+    modelGen = nullptr;
 
     double end_graph_gen = sst_get_cpu_time();
 

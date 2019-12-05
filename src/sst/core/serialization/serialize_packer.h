@@ -12,7 +12,7 @@
 #ifndef SERIALIZE_PACKER_H
 #define SERIALIZE_PACKER_H
 
-#include <sst/core/serialization/serialize_buffer_accessor.h>
+#include "sst/core/serialization/serialize_buffer_accessor.h"
 #include <string>
 
 namespace SST {

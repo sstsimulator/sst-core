@@ -9,8 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
-#include <sst/core/warnmacros.h>
+
+#include "sst_config.h"
+#include "sst/core/sstinfo.h"
+
+#include "sst/core/warnmacros.h"
 
 #include <cstdio>
 #include <cerrno>
@@ -23,18 +26,15 @@
 #include <getopt.h>
 #include <ctime>
 
-#include <sst/core/elemLoader.h>
-#include <sst/core/component.h>
-#include <sst/core/subcomponent.h>
-#include <sst/core/part/sstpart.h>
-#include <sst/core/sstpart.h>
+#include "sst/core/elemLoader.h"
+#include "sst/core/component.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/part/sstpart.h"
+#include "sst/core/sstpart.h"
 #include "sst/core/build_info.h"
 
 #include "sst/core/env/envquery.h"
 #include "sst/core/env/envconfig.h"
-
-#include <sst/core/tinyxml/tinyxml.h>
-#include <sst/core/sstinfo.h>
 
 
 using namespace std;
@@ -88,7 +88,7 @@ public:
 
 
 // Forward Declarations
-void initLTDL(std::string searchPath);
+void initLTDL(const std::string& searchPath);
 void shutdownLTDL();
 static void processSSTElementFiles();
 void outputSSTElementInfo();
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 }
 
 
-static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
+static void addELI(ElemLoader &loader, const std::string& lib, bool optional)
 {
 
     if ( g_configuration.debugEnabled() )
@@ -226,7 +226,7 @@ void OverallOutputter::outputXML()
 {
     unsigned int            x;
     char                    TimeStamp[32];
-    std::time_t             now = std::time(NULL);
+    std::time_t             now = std::time(nullptr);
     std::tm*                ptm = std::localtime(&now);
 
     // Create a Timestamp Format: 2015.02.15_20:20:00
@@ -316,16 +316,16 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
     m_AppName = argv[0];
 
     static const struct option longOpts[] = {
-        {"help",        no_argument,        0, 'h'},
-        {"version",     no_argument,        0, 'v'},
-        {"debug",       no_argument,        0, 'd'},
-        {"nodisplay",   no_argument,        0, 'n'},
-        {"xml",         no_argument,        0, 'x'},
-        {"quiet",       no_argument,        0, 'q'},
-        {"outputxml",   required_argument,  0, 'o'},
-        {"libs",        required_argument,  0, 'l'},
-        {"elemenfilt",  required_argument,  0, 0},
-        {NULL, 0, 0, 0}
+        {"help",        no_argument,        nullptr, 'h'},
+        {"version",     no_argument,        nullptr, 'v'},
+        {"debug",       no_argument,        nullptr, 'd'},
+        {"nodisplay",   no_argument,        nullptr, 'n'},
+        {"xml",         no_argument,        nullptr, 'x'},
+        {"quiet",       no_argument,        nullptr, 'q'},
+        {"outputxml",   required_argument,  nullptr, 'o'},
+        {"libs",        required_argument,  nullptr, 'l'},
+        {"elemenfilt",  required_argument,  nullptr, 0},
+        {nullptr, 0, nullptr, 0}
     };
     while (1) {
         int opt_idx = 0;
@@ -378,8 +378,9 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 }
 
 
-void SSTInfoConfig::addFilter(std::string name)
+void SSTInfoConfig::addFilter(const std::string& name_str)
 {
+    std::string name(name_str);
     if ( name.size() > 3 && name.substr(0, 3) == "lib" )
         name = name.substr(3);
 
@@ -395,7 +396,7 @@ void SSTInfoConfig::addFilter(std::string name)
 }
 
 
-bool doesLibHaveFilters(const std::string &libName)
+bool doesLibHaveFilters(const std::string& libName)
 {
     auto range = g_configuration.getFilterMap().equal_range(libName);
     for ( auto x = range.first ; x != range.second ; ++x ) {
@@ -405,7 +406,7 @@ bool doesLibHaveFilters(const std::string &libName)
     return false;
 }
 
-bool shouldPrintElement(const std::string &libName, const std::string elemName)
+bool shouldPrintElement(const std::string& libName, const std::string& elemName)
 {
     auto range = g_configuration.getFilterMap().equal_range(libName);
     if ( range.first == range.second )

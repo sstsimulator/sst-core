@@ -10,9 +10,9 @@
 // distribution.
 
 #include "sst_config.h"
-
-#include <sst/core/warnmacros.h>
 #include "sst/core/syncManager.h"
+
+#include "sst/core/warnmacros.h"
 
 #include "sst/core/exit.h"
 #include "sst/core/simulation.h"
@@ -37,7 +37,7 @@ REENABLE_WARNING
 namespace SST {
 
 // Static data members
-NewRankSync* SyncManager::rankSync = NULL;
+NewRankSync* SyncManager::rankSync = nullptr;
 Core::ThreadSafe::Barrier SyncManager::RankExecBarrier[6];
 Core::ThreadSafe::Barrier SyncManager::LinkUntimedBarrier[3];
 SimTime_t SyncManager::next_rankSync = MAX_SIMTIME_T;
@@ -50,7 +50,7 @@ public:
     ~EmptyRankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), LinkId_t UNUSED(link_id), Link* UNUSED(link)) override { return NULL; }
+    ActivityQueue* registerLink(const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), LinkId_t UNUSED(link_id), Link* UNUSED(link)) override { return nullptr; }
 
     void execute(int UNUSED(thread)) override {}
     void exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count)) override {
@@ -98,7 +98,7 @@ public:
 
     /** Register a Link which this Sync Object is responsible for */
     void registerLink(LinkId_t UNUSED(link_id), Link* UNUSED(link)) override {}
-    ActivityQueue* getQueueForThread(int UNUSED(tid)) override { return NULL; }
+    ActivityQueue* getQueueForThread(int UNUSED(tid)) override { return nullptr; }
 };
 
 
@@ -106,7 +106,7 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeCo
     Action(),
     rank(rank),
     num_ranks(num_ranks),
-    threadSync(NULL),
+    threadSync(nullptr),
     min_part(min_part)
 {
     sim = Simulation::getSimulation();
@@ -152,7 +152,7 @@ ActivityQueue*
 SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link)
 {
     if ( to_rank == from_rank ) {
-        return NULL;  // This should never happen
+        return nullptr;  // This should never happen
     }
 
     if ( to_rank.rank == from_rank.rank ) {
@@ -204,7 +204,7 @@ SyncManager::execute(void)
 
         RankExecBarrier[3].wait();
         
-        if ( exit != NULL && rank.thread == 0 ) exit->check();
+        if ( exit != nullptr && rank.thread == 0 ) exit->check();
 
         RankExecBarrier[4].wait();
 

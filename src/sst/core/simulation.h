@@ -23,13 +23,13 @@
 
 #include <unordered_map>
 
-#include <sst/core/output.h>
-#include <sst/core/clock.h>
-#include <sst/core/oneshot.h>
-#include <sst/core/unitAlgebra.h>
-#include <sst/core/rankInfo.h>
+#include "sst/core/output.h"
+#include "sst/core/clock.h"
+#include "sst/core/oneshot.h"
+#include "sst/core/unitAlgebra.h"
+#include "sst/core/rankInfo.h"
 
-#include <sst/core/componentInfo.h>
+#include "sst/core/componentInfo.h"
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
@@ -159,7 +159,7 @@ public:
         Note: OneShot cannot be canceled, and will always callback after
               the timedelay.
     */
-    TimeConverter* registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler, int priority);
+    TimeConverter* registerOneShot(const std::string& timeDelay, OneShot::HandlerBase* handler, int priority);
     TimeConverter* registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority);
     
     /** Insert an activity to fire at a specified time */
@@ -187,8 +187,8 @@ public:
     /** Return pointer to map of links for a given component id */
     LinkMap* getComponentLinkMap(ComponentId_t id) const {
         ComponentInfo* info = compInfoMap.getByID(id);
-        if ( NULL == info ) {
-            return NULL;
+        if ( nullptr == info ) {
+            return nullptr;
         } else {
             return info->getLinkMap();
         }
@@ -207,7 +207,7 @@ public:
     {
 		ComponentInfo* i = compInfoMap.getByID(id);
 		// CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-		if ( NULL != i ) {
+		if ( nullptr != i ) {
 			return i->getComponent();
 		} else {
             printf("Simulation::getComponent() couldn't find component with id = %" PRIu64 "\n", id);
@@ -220,7 +220,7 @@ public:
     {        
 		ComponentInfo* i = compInfoMap.getByID(id);
 		// CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-		if ( NULL != i ) {
+		if ( nullptr != i ) {
 			return i;
 		} else {
             printf("Simulation::getComponentInfo() couldn't find component with id = %" PRIu64 "\n", id);
@@ -234,8 +234,8 @@ public:
 	Set the output directory for this simulation
 	@param outDir Path of directory to place simulation outputs in
     */
-    void setOutputDirectory(std::string& outDir) {
-	output_directory = outDir;
+    void setOutputDirectory(const std::string& outDir) {
+        output_directory = outDir;
     }
 
     /**
@@ -243,14 +243,14 @@ public:
 	@return Directory in which simulation outputs are placed
     */
     std::string& getOutputDirectory() {
-	return output_directory;
+        return output_directory;
     }
 
     /** Signifies that an event type is required for this simulation
      *  Causes to Factory to verify that the required event type can be found.
      *  @param name fully qualified libraryName.EventName
      */
-    void requireEvent(std::string name);
+    void requireEvent(const std::string& name);
 
     /**
      * Returns the time of the next item to be executed
@@ -309,7 +309,7 @@ private:
 
 
 
-    Component* createComponent(ComponentId_t id, std::string &name, 
+    Component* createComponent(ComponentId_t id, const std::string& name, 
                                Params &params);
 
     TimeVortex* getTimeVortex() const { return timeVortex; }

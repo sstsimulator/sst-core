@@ -12,8 +12,8 @@
 #ifndef SST_CORE_TIMEVORTEX_H
 #define SST_CORE_TIMEVORTEX_H
 
-#include <sst/core/activityQueue.h>
-#include <sst/core/module.h>
+#include "sst/core/activityQueue.h"
+#include "sst/core/module.h"
 
 namespace SST {
 

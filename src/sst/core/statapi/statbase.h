@@ -14,13 +14,13 @@
 
 #include <string>
 
-#include <sst/core/sst_types.h>
-#include <sst/core/warnmacros.h>
-#include <sst/core/params.h>
-#include <sst/core/oneshot.h>
-#include <sst/core/statapi/statfieldinfo.h>
-#include <sst/core/eli/elementinfo.h>
-#include <sst/core/serialization/serializable.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
+#include "sst/core/params.h"
+#include "sst/core/oneshot.h"
+#include "sst/core/statapi/statfieldinfo.h"
+#include "sst/core/eli/elementinfo.h"
+#include "sst/core/serialization/serializable.h"
 
 namespace SST {
 class BaseComponent;
@@ -37,8 +37,8 @@ public:
     std::string name;
     Params params;
 
-    StatisticInfo(const std::string &name) : name(name) { }
-    StatisticInfo(const std::string &name, const Params &params) : name(name), params(params) { }
+    StatisticInfo(const std::string& name) : name(name) { }
+    StatisticInfo(const std::string& name, const Params &params) : name(name), params(params) { }
     StatisticInfo() { } /* DO NOT USE:  For serialization */
 
     void serialize_order(SST::Core::Serialization::serializer &ser) override {
@@ -504,6 +504,6 @@ struct ImplementsStatFields {
 } //namespace SST
 
 //we need to make sure null stats are instantiated for whatever types we use
-#include <sst/core/statapi/statnull.h>
+#include "sst/core/statapi/statnull.h"
 
 #endif

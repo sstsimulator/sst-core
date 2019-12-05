@@ -12,7 +12,7 @@
 #ifndef SST_CORE_ELIBASE_H
 #define SST_CORE_ELIBASE_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <functional>
 #include <string>
@@ -46,7 +46,7 @@ struct ElementInfoStatistic {
 struct ElementInfoParam {
     const char *name;			/*!< Name of the parameter */
     const char *description;	/*!< Brief description of the parameter (ie, what it controls) */
-    const char *defaultValue;	/*!< Default value (if any) NULL == required parameter with no default, "" == optional parameter, blank default, "foo" == default value */
+    const char *defaultValue;	/*!< Default value (if any) nullptr == required parameter with no default, "" == optional parameter, blank default, "foo" == default value */
 };
 
 /** Describes Ports that the Component can use
@@ -68,9 +68,9 @@ struct ElementInfoPort2 {
 private:
     std::vector<std::string> createVector(const char** events) {
         std::vector<std::string> vec;
-        if ( events == NULL ) return vec;
+        if ( events == nullptr ) return vec;
         const char** ev = events;
-        while ( NULL != *ev ) {
+        while ( nullptr != *ev ) {
             vec.push_back(*ev);
             ev++;
         }

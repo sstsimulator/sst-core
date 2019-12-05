@@ -12,23 +12,22 @@
 // distribution.
 
 #include "sst_config.h"
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
 
 #include <string.h>
-#include <sstream>
 
-#include <sst/core/model/pymodel.h>
-#include <sst/core/model/pymodel_comp.h>
-#include <sst/core/model/pymodel_link.h>
+#include "sst/core/model/pymodel.h"
+#include "sst/core/model/pymodel_comp.h"
+#include "sst/core/model/pymodel_link.h"
 
-#include <sst/core/sst_types.h>
-#include <sst/core/simulation.h>
-#include <sst/core/component.h>
-#include <sst/core/configGraph.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/simulation.h"
+#include "sst/core/component.h"
+#include "sst/core/configGraph.h"
 
 using namespace SST::Core;
 extern SST::Core::SSTPythonModelDefinition *gModel;
@@ -38,12 +37,12 @@ extern "C" {
 
 static int linkInit(LinkPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
-    char *name = NULL, *lat = NULL;
+    char *name = nullptr, *lat = nullptr;
     if ( !PyArg_ParseTuple(args, "s|s", &name, &lat) ) return -1;
 
     self->name = gModel->addNamePrefix(name);
     self->no_cut = false;
-    self->latency = lat ? strdup(lat) : NULL;
+    self->latency = lat ? strdup(lat) : nullptr;
 	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
 
     return 0;
@@ -63,12 +62,12 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
     if ( !PyArg_ParseTuple(args, "O!O!",
                 &PyTuple_Type, &t0,
                 &PyTuple_Type, &t1) ) {
-        return NULL;
+        return nullptr;
     }
 
     PyObject *c0, *c1;
     char *port0, *port1;
-    char *lat0 = NULL, *lat1 = NULL;
+    char *lat0 = nullptr, *lat1 = nullptr;
 
     LinkPy_t *link = (LinkPy_t*)self;
 
@@ -77,10 +76,10 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
         PyErr_Clear();
         if ( !PyArg_ParseTuple(t0, "O!s|s",
                     &PyModel_SubComponentType, &c0, &port0, &lat0) ) {
-            return NULL;
+            return nullptr;
         }
     }
-    if ( NULL == lat0 )
+    if ( nullptr == lat0 )
         lat0 = link->latency;
 
     if ( !PyArg_ParseTuple(t1, "O!s|s",
@@ -88,15 +87,15 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
         PyErr_Clear();
         if ( !PyArg_ParseTuple(t1, "O!s|s",
                     &PyModel_SubComponentType, &c1, &port1, &lat1) ) {
-            return NULL;
+            return nullptr;
         }
     }
-    if ( NULL == lat1 )
+    if ( nullptr == lat1 )
         lat1 = link->latency;
 
-    if ( NULL == lat0 || NULL == lat1 ) {
+    if ( nullptr == lat0 || nullptr == lat1 ) {
         gModel->getOutput()->fatal(CALL_INFO, 1, "No Latency specified for link %s\n", link->name);
-        return NULL;
+        return nullptr;
     }
 
     ComponentId_t id0, id1;
@@ -132,58 +131,58 @@ static PyMethodDef linkMethods[] = {
     {   "setNoCut",
         linkSetNoCut, METH_NOARGS,
         "Specifies that this link should not be partitioned across"},
-    {   NULL, NULL, 0, NULL }
+    {   nullptr, nullptr, 0, nullptr }
 };
 
 
 PyTypeObject PyModel_LinkType = {
-    PyObject_HEAD_INIT(NULL)
+    PyObject_HEAD_INIT(nullptr)
     0,                         /* ob_size */
     "sst.Link",                /* tp_name */
     sizeof(LinkPy_t),          /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)linkDealloc,   /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_compare */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
+    nullptr,                   /* tp_print */
+    nullptr,                   /* tp_getattr */
+    nullptr,                   /* tp_setattr */
+    nullptr,                   /* tp_compare */
+    nullptr,                   /* tp_repr */
+    nullptr,                   /* tp_as_number */
+    nullptr,                   /* tp_as_sequence */
+    nullptr,                   /* tp_as_mapping */
+    nullptr,                   /* tp_hash */
+    nullptr,                   /* tp_call */
+    nullptr,                   /* tp_str */
+    nullptr,                   /* tp_getattro */
+    nullptr,                   /* tp_setattro */
+    nullptr,                   /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "SST Link",                /* tp_doc */
-    0,                         /* tp_traverse */
-    0,                         /* tp_clear */
-    0,                         /* tp_richcompare */
+    nullptr,                   /* tp_traverse */
+    nullptr,                   /* tp_clear */
+    nullptr,                   /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */
+    nullptr,                   /* tp_iter */
+    nullptr,                   /* tp_iternext */
     linkMethods,               /* tp_methods */
-    0,                         /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    nullptr,                   /* tp_members */
+    nullptr,                   /* tp_getset */
+    nullptr,                   /* tp_base */
+    nullptr,                   /* tp_dict */
+    nullptr,                   /* tp_descr_get */
+    nullptr,                   /* tp_descr_set */
     0,                         /* tp_dictoffset */
     (initproc)linkInit,        /* tp_init */
-    0,                         /* tp_alloc */
-    0,                         /* tp_new */
-    0,                         /* tp_free */
-    0,                         /* tp_is_gc */
-    0,                         /* tp_bases */
-    0,                         /* tp_mro */
-    0,                         /* tp_cache */
-    0,                         /* tp_subclasses */
-    0,                         /* tp_weaklist */
-    0,                         /* tp_del */
+    nullptr,                   /* tp_alloc */
+    nullptr,                   /* tp_new */
+    nullptr,                   /* tp_free */
+    nullptr,                   /* tp_is_gc */
+    nullptr,                   /* tp_bases */
+    nullptr,                   /* tp_mro */
+    nullptr,                   /* tp_cache */
+    nullptr,                   /* tp_subclasses */
+    nullptr,                   /* tp_weaklist */
+    nullptr,                   /* tp_del */
     0,                         /* tp_version_tag */
 };
 

@@ -14,6 +14,6 @@
 
 #warning "This file has been moved, however, in most situations you will no longer need to include it as it is now included in other SST core header files used for creating elements.  If you still need to include it independently, it has been moved to sst/core/eli/elibase.h.  This temporary file will be reomved in SST 10."
 
-#include <sst/core/eli/elibase.h>
+#include "sst/core/eli/elibase.h"
 
 #endif

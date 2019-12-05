@@ -14,7 +14,7 @@
 
 #include <deque>
 
-#include <sst/core/activityQueue.h>
+#include "sst/core/activityQueue.h"
 
 namespace SST {
 

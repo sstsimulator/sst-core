@@ -12,7 +12,7 @@
 
 #include "sst_config.h"
 
-#include <sst/core/pollingLinkQueue.h>
+#include "sst/core/pollingLinkQueue.h"
 
 namespace SST {
 
@@ -43,7 +43,7 @@ namespace SST {
     
     Activity* PollingLinkQueue::pop()
     {
-	if ( data.size() == 0 ) return NULL;
+	if ( data.size() == 0 ) return nullptr;
 	std::multiset<Activity*,Activity::less_time>::iterator it = data.begin();
 	Activity* ret_val = (*it);
 	data.erase(it);
@@ -52,7 +52,7 @@ namespace SST {
 
     Activity* PollingLinkQueue::front()
     {
-	if ( data.size() == 0 ) return NULL;
+	if ( data.size() == 0 ) return nullptr;
 	return *data.begin();
     }
 

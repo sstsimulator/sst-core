@@ -12,13 +12,13 @@
 #ifndef SST_CORE_CORE_EVENT_H
 #define SST_CORE_CORE_EVENT_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <atomic>
 #include <string>
 #include <cinttypes>
 
-#include <sst/core/activity.h>
+#include "sst/core/activity.h"
 
 namespace SST {
 
@@ -69,7 +69,7 @@ public:
 
     /** For use by SST Core only */
     inline void setRemoteEvent() {
-        delivery_link = NULL;
+        delivery_link = nullptr;
     }
 
     /** Gets the link id associated with this event.  For use by SST Core only */

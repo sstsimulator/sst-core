@@ -10,7 +10,7 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
 #include "sst/core/config.h"
 #include "sst/core/part/sstpart.h"
 
@@ -26,7 +26,7 @@
 #include <iostream>
 #include <cstdlib>
 
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
@@ -63,7 +63,7 @@ Config::Config(RankInfo rankInfo)
     getcwd(wd_buf, PATH_MAX);
 
     output_directory = "";
-    if( NULL != wd_buf ) {
+    if( nullptr != wd_buf ) {
 	output_directory.append(wd_buf);
         free(wd_buf);
     }
@@ -99,14 +99,14 @@ struct sstLongOpts_s {
 
 
 #define DEF_FLAGOPTVAL(longName, shortName, text, func, valFunc) \
-    {{longName, no_argument, 0, shortName}, NULL, text, func, valFunc}
+    {{longName, no_argument, 0, shortName}, nullptr, text, func, valFunc}
 
 #define DEF_FLAGOPT(longName, shortName, text, func) \
-    DEF_FLAGOPTVAL(longName, shortName, text, func, NULL)
+    DEF_FLAGOPTVAL(longName, shortName, text, func, nullptr)
 
 
 #define DEF_ARGOPT_SHORT(longName, shortName, argName, text, func) \
-    {{longName, required_argument, 0, shortName}, argName, text, NULL, func}
+    {{longName, required_argument, 0, shortName}, argName, text, nullptr, func}
 
 #define DEF_ARGOPT(longName, argName, text, func) \
     DEF_ARGOPT_SHORT(longName, 0, argName, text, func)
@@ -146,7 +146,7 @@ static const struct sstLongOpts_s sstOptions[] = {
 #endif
     DEF_ARGOPT("model-options",     "STR",          "provide options to the python configuration script", &Config::setModelOptions),
     DEF_ARGOPT_SHORT("num_threads", 'n',   "NUM",   "number of parallel threads to use per rank", &Config::setNumThreads),
-    {{NULL, 0, 0, 0}, NULL, NULL, NULL, NULL}
+    {{nullptr, 0, nullptr, 0}, nullptr, nullptr, nullptr, nullptr}
 };
 static const size_t nLongOpts = (sizeof(sstOptions) / sizeof(sstLongOpts_s)) -1;
 
@@ -168,7 +168,7 @@ bool Config::usage() {
 
     if ( getenv("COLUMNS") ) {
         errno = E_OK;
-        uint32_t x = strtoul(getenv("COLUMNS"), 0, 0);
+        uint32_t x = strtoul(getenv("COLUMNS"), nullptr, 0);
         if ( errno == E_OK ) MAX_WIDTH = x;
     }
 
@@ -196,7 +196,7 @@ bool Config::usage() {
 
 
         const char *text = sstOptions[i].desc;
-        while ( text != NULL  && *text != '\0' ) {
+        while ( text != nullptr  && *text != '\0' ) {
             /* Advance to offset */
             while ( npos < desc_start ) npos += fprintf(stderr, " ");
 
@@ -224,7 +224,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
     for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
         sst_long_options[i] = sstOptions[i].opt;
     }
-    sst_long_options[nLongOpts] = {NULL, 0 ,0, 0};
+    sst_long_options[nLongOpts] = {nullptr, 0 ,nullptr, 0};
 
     run_name = argv[0];
 
@@ -241,7 +241,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
         switch (c) {
         case 0:
             /* Long option, no short option */
-            if ( optarg == NULL ) {
+            if ( optarg == nullptr ) {
                 ok = (this->*sstOptions[option_index].flagFunc)();
             } else {
                 ok = (this->*sstOptions[option_index].argFunc)(optarg);
@@ -322,11 +322,11 @@ Config::parseCmdLine(int argc, char* argv[]) {
 }
 
 
-bool Config::setConfigEntryFromModel(const string &entryName, const string &value)
+bool Config::setConfigEntryFromModel(const string& entryName, const string& value)
 {
     for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
         if ( !entryName.compare(sstOptions[i].opt.name) ) {
-            if ( NULL != sstOptions[i].argFunc ) {
+            if ( nullptr != sstOptions[i].argFunc ) {
                 return (this->*sstOptions[i].argFunc)(value);
             } else {
                 return (this->*sstOptions[i].flagFunc)();
@@ -351,10 +351,10 @@ bool Config::printVersion() {
 }
 
 
-bool Config::setConfigFile(const std::string &arg) {
+bool Config::setConfigFile(const std::string& arg) {
     struct stat sb;
-    char *fqpath = realpath(arg.c_str(), NULL);
-    if ( NULL == fqpath ) {
+    char *fqpath = realpath(arg.c_str(), nullptr);
+    if ( nullptr == fqpath ) {
         fprintf(stderr, "Failed to canonicalize path [%s]:  %s\n", arg.c_str(), strerror(errno));
         return false;
     }
@@ -378,15 +378,15 @@ bool Config::setConfigFile(const std::string &arg) {
 }
 
 
-bool Config::setDebugFile(const std::string &arg) { debugFile = arg; return true; }
+bool Config::setDebugFile(const std::string& arg) { debugFile = arg; return true; }
 
 /* TODO: Error checking */
-bool Config::setLibPath(const std::string &arg) { libpath = arg; return true; }
+bool Config::setLibPath(const std::string& arg) { libpath = arg; return true; }
 /* TODO: Error checking */
-bool Config::addLibPath(const std::string &arg) { libpath += std::string(":") + arg; return true; }
+bool Config::addLibPath(const std::string& arg) { libpath += std::string(":") + arg; return true; }
 
 
-bool Config::setRunMode(const std::string &arg) {
+bool Config::setRunMode(const std::string& arg) {
     if( ! arg.compare( "init" ) ) runMode =  Simulation::INIT;
     else if( ! arg.compare( "run" ) )  runMode =  Simulation::RUN;
     else if( ! arg.compare( "both" ) ) runMode =  Simulation::BOTH;
@@ -397,9 +397,9 @@ bool Config::setRunMode(const std::string &arg) {
 
 
 /* TODO: Error checking */
-bool Config::setStopAt(const std::string &arg) { stopAtCycle = arg;  return true; }
+bool Config::setStopAt(const std::string& arg) { stopAtCycle = arg;  return true; }
 /* TODO: Error checking */
-bool Config::setStopAfter(const std::string &arg) {
+bool Config::setStopAfter(const std::string& arg) {
     errno = 0;
 
     static const char *templates[] = {
@@ -418,7 +418,7 @@ bool Config::setStopAfter(const std::string &arg) {
         memset(&res, '\0', sizeof(res));
         p = strptime(arg.c_str(), templates[i], &res);
         fprintf(stderr, "**** [%s]  p = %p ; *p = '%c', %u:%u:%u\n", templates[i], p, (p) ? *p : '\0', res.tm_hour, res.tm_min, res.tm_sec);
-        if ( p != NULL && *p == '\0' ) {
+        if ( p != nullptr && *p == '\0' ) {
             stopAfterSec = res.tm_sec;
             stopAfterSec += res.tm_min * 60;
             stopAfterSec += res.tm_hour * 60 * 60;
@@ -435,12 +435,12 @@ bool Config::setStopAfter(const std::string &arg) {
     return false;
 }
 /* TODO: Error checking */
-bool Config::setHeartbeat(const std::string &arg) { heartbeatPeriod = arg;  return true; }
+bool Config::setHeartbeat(const std::string& arg) { heartbeatPeriod = arg;  return true; }
 /* TODO: Error checking */
-bool Config::setTimebase(const std::string &arg) { timeBase = arg;  return true; }
+bool Config::setTimebase(const std::string& arg) { timeBase = arg;  return true; }
 
 /* TODO: Error checking */
-bool Config::setPartitioner(const std::string &arg) {
+bool Config::setPartitioner(const std::string& arg) {
     partitioner = arg;
     if ( partitioner.find('.') == partitioner.npos ) {
         partitioner = "sst." + partitioner;
@@ -448,23 +448,23 @@ bool Config::setPartitioner(const std::string &arg) {
     return true;
 }
 
-bool Config::setTimeVortex(const std::string &arg) {
+bool Config::setTimeVortex(const std::string& arg) {
     timeVortex = arg;
     return true;
 }
 
-bool Config::setOutputDir(const std::string &arg) { output_directory = arg ;  return true; }
-bool Config::setWriteConfig(const std::string &arg) { output_config_graph = arg;  return true; }
-bool Config::setWriteDot(const std::string &arg) { output_dot = arg; return true; }
-bool Config::setWriteXML(const std::string &arg){ output_xml = arg; return true; }
-bool Config::setWriteJSON(const std::string &arg) { output_json = arg; return true; }
-bool Config::setWritePartition(const std::string &arg) { dump_component_graph_file = arg; return true; }
-bool Config::setOutputPrefix(const std::string &arg) { output_core_prefix = arg; return true; }
+bool Config::setOutputDir(const std::string& arg) { output_directory = arg ;  return true; }
+bool Config::setWriteConfig(const std::string& arg) { output_config_graph = arg;  return true; }
+bool Config::setWriteDot(const std::string& arg) { output_dot = arg; return true; }
+bool Config::setWriteXML(const std::string& arg){ output_xml = arg; return true; }
+bool Config::setWriteJSON(const std::string& arg) { output_json = arg; return true; }
+bool Config::setWritePartition(const std::string& arg) { dump_component_graph_file = arg; return true; }
+bool Config::setOutputPrefix(const std::string& arg) { output_core_prefix = arg; return true; }
 #ifdef USE_MEMPOOL
-bool Config::setWriteUndeleted(const std::string &arg) { event_dump_file = arg; return true; }
+bool Config::setWriteUndeleted(const std::string& arg) { event_dump_file = arg; return true; }
 #endif
 
-bool Config::setModelOptions(const std::string &arg) {
+bool Config::setModelOptions(const std::string& arg) {
     if ( model_options.empty() )
         model_options = arg;
     else
@@ -473,9 +473,9 @@ bool Config::setModelOptions(const std::string &arg) {
 }
 
 
-bool Config::setVerbosity(const std::string &arg) {
+bool Config::setVerbosity(const std::string& arg) {
     errno = E_OK;
-    unsigned long val = strtoul(arg.c_str(), NULL, 0);
+    unsigned long val = strtoul(arg.c_str(), nullptr, 0);
     if ( errno == E_OK ) {
         verbose = val;
         return true;
@@ -485,9 +485,9 @@ bool Config::setVerbosity(const std::string &arg) {
 }
 
 
-bool Config::setNumThreads(const std::string &arg) {
+bool Config::setNumThreads(const std::string& arg) {
     errno = E_OK;
-    unsigned long nthr = strtoul(arg.c_str(), NULL, 0);
+    unsigned long nthr = strtoul(arg.c_str(), nullptr, 0);
     if ( errno == E_OK ) {
         world_size.thread = nthr;
         return true;
@@ -546,7 +546,7 @@ std::string Config::getLibPath(void) const {
     // Clean up and delete the configuration we just loaded up
     delete envConfig;
 
-    if(NULL != envpath) {
+    if(nullptr != envpath) {
         fullLibPath.clear();
         fullLibPath.append(envpath);
     }

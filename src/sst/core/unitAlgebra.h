@@ -14,17 +14,17 @@
 #ifndef SST_CORE_UNITALGEBRA_H
 #define SST_CORE_UNITALGEBRA_H
 
-#include <sst/core/sst_types.h>
-#include <sst/core/serialization/serializable.h>
-#include <sst/core/serialization/serializer.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/serialization/serializable.h"
+#include "sst/core/serialization/serializer.h"
 
 #include <string>
 #include <map>
 #include <vector>
 #include <mutex>
 
-#include <sst/core/warnmacros.h>
-#include <sst/core/decimal_fixedpoint.h>
+#include "sst/core/warnmacros.h"
+#include "sst/core/decimal_fixedpoint.h"
 
 
 namespace SST {
@@ -60,21 +60,21 @@ private:
 
     void reduce();
     // Used in constructor to incrementally build up unit from string
-    void addUnit(std::string, sst_big_num& multiplier, bool invert);
+    void addUnit(const std::string&, sst_big_num& multiplier, bool invert);
 
 public:
     // Static data members and functions
     /** Create a new Base Unit type */
-    static void registerBaseUnit(std::string u);
+    static void registerBaseUnit(const std::string& u);
     /** Create a new Compound Unit type */
-    static void registerCompoundUnit(std::string u, std::string v);
+    static void registerCompoundUnit(const std::string& u, const std::string& v);
 
     // Non-static data members and functions
     /** Create a new instantiation of a Units with a base unit string, and multiplier
      * \param units String representing the new unit
      * \param multiplier Value by which to multiply to get to this unit
      */
-    Units(std::string units, sst_big_num& multiplier);
+    Units(const std::string& units, sst_big_num& multiplier);
     Units() {}
     virtual ~Units() {}
 
@@ -107,8 +107,8 @@ private:
     Units unit;
     sst_big_num value;
 
-    static std::string trim(std::string str);
-    void init(std::string val);
+    static std::string trim(const std::string& str);
+    void init(const std::string& val);
 
 public:
     UnitAlgebra() {}
@@ -127,7 +127,7 @@ public:
      COMPUNIT   := {Hz,hz,Bps,bps,event}
      \endcode
      */
-    UnitAlgebra(std::string val);
+    UnitAlgebra(const std::string& val);
     virtual ~UnitAlgebra();
 
     /** Print to an ostream the value */
@@ -195,7 +195,7 @@ public:
     /** Returns true if the units in the parameter string are found
      * in this object.
      */
-    bool hasUnits(std::string u) const;
+    bool hasUnits(const std::string& u) const;
     /** Return the raw value */
     sst_big_num getValue() const {return value;}
     /** Return the rounded value as a 64bit integer */

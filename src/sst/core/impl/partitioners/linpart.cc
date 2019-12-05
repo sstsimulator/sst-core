@@ -9,13 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
-#include <sst/core/impl/partitioners/linpart.h>
+#include "sst_config.h"
+#include "sst/core/impl/partitioners/linpart.h"
 
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 
-#include <sst/core/output.h>
-#include <sst/core/configGraph.h>
+#include "sst/core/output.h"
+#include "sst/core/configGraph.h"
 
 using namespace std;
 using namespace SST::IMPL::Partition;

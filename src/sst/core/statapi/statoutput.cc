@@ -10,12 +10,12 @@
 // distribution.
 
 #include "sst_config.h"
+#include "sst/core/statapi/statoutput.h"
 
 #include "sst/core/output.h"
-#include <sst/core/statapi/statoutput.h>
-#include <sst/core/statapi/statgroup.h>
-#include <sst/core/stringize.h>
-#include <sst/core/simulation.h>
+#include "sst/core/statapi/statgroup.h"
+#include "sst/core/stringize.h"
+#include "sst/core/simulation.h"
 
 namespace SST {
 namespace Statistics {
@@ -113,7 +113,7 @@ StatisticFieldInfo* StatisticOutput::getRegisteredField(fieldHandle_t fieldHandl
     if (fieldHandle <= m_highestFieldHandle) {
         return m_outputFieldInfoArray[fieldHandle];
     }
-    return NULL;
+    return nullptr;
 }
 
 void

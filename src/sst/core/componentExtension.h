@@ -13,8 +13,8 @@
 #ifndef SST_CORE_COMPONENTEXTENSION_H
 #define SST_CORE_COMPONENTEXTENSION_H
 
-#include <sst/core/warnmacros.h>
-#include <sst/core/baseComponent.h>
+#include "sst/core/warnmacros.h"
+#include "sst/core/baseComponent.h"
 
 namespace SST {
 

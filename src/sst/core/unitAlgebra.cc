@@ -11,23 +11,20 @@
 
 #include "sst_config.h"
 
+#include "unitAlgebra.h"
+
 #include <string>
 #include <iostream>
 #include <algorithm>
 
-#include "unitAlgebra.h"
-
-#include <sst/core/output.h>
-#include <sst/core/simulation.h>
-
-// #include <boost/assign.hpp>
-
+#include "sst/core/output.h"
+#include "sst/core/simulation.h"
 
 using namespace std;
 using namespace SST;
 
 // Helper functions and data structures used only in this file
-static void split(string input, string delims, vector<string>& tokens) {
+static void split(const std::string& input, const std::string& delims, vector<string>& tokens) {
     if ( input.length() == 0 ) return;
     size_t start = 0;
     size_t stop = 0;;
@@ -120,7 +117,7 @@ Units::reduce()
 }
 
 void
-Units::addUnit(std::string units, sst_big_num& multiplier, bool invert)
+Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
 {
     std::lock_guard<std::recursive_mutex> lock(unit_lock);
     // Check to see if the unit matches one of the registered unit
@@ -193,7 +190,7 @@ Units::addUnit(std::string units, sst_big_num& multiplier, bool invert)
 }
 
 void
-Units::registerBaseUnit(string u)
+Units::registerBaseUnit(const std::string& u)
 {
     std::lock_guard<std::recursive_mutex> lock(unit_lock);
     if ( valid_base_units.find(u) != valid_base_units.end() ) return;
@@ -204,7 +201,7 @@ Units::registerBaseUnit(string u)
 }
 
 void
-Units::registerCompoundUnit(string u, string v)
+Units::registerCompoundUnit(const std::string& u, const std::string& v)
 {
     std::lock_guard<std::recursive_mutex> lock(unit_lock);
     if ( valid_compound_units.find(u) != valid_compound_units.end() ) return;
@@ -214,7 +211,7 @@ Units::registerCompoundUnit(string u, string v)
     return;
 }
 
-Units::Units(std::string units, sst_big_num& multiplier)
+Units::Units(const std::string& units, sst_big_num& multiplier)
 {   
     // Get the numerator and the denominator
     string s_numerator;
@@ -330,7 +327,7 @@ Units::toString() const
 // UnitAlgebra
 
 string
-UnitAlgebra::trim(std::string str)
+UnitAlgebra::trim(const std::string& str)
 {
     // Find whitespace in front
     int front_index = 0;
@@ -344,7 +341,7 @@ UnitAlgebra::trim(std::string str)
 }
 
 void
-UnitAlgebra::init(std::string val)
+UnitAlgebra::init(const std::string& val)
 {
     //Trim off all whitespace on front and back
     string parse = trim(val);
@@ -377,7 +374,7 @@ UnitAlgebra::init(std::string val)
 }
     
 
-UnitAlgebra::UnitAlgebra(std::string val)
+UnitAlgebra::UnitAlgebra(const std::string& val)
 {
     init(val);
 }
@@ -533,7 +530,7 @@ UnitAlgebra::invert()
 }
 
 bool
-UnitAlgebra::hasUnits(std::string u) const
+UnitAlgebra::hasUnits(const std::string& u) const
 {
     sst_big_num multiplier = 1;
     Units check_units(u,multiplier);

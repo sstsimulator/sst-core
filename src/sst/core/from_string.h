@@ -25,16 +25,16 @@ typename std::enable_if<std::is_integral<T>::value, T >::type
 {
     if ( std::is_signed<T>::value ) {
         if ( std::is_same<int,T>::value ) {
-            return std::stoi(input,0,0);
+            return std::stoi(input,nullptr,0);
         }
         else if ( std::is_same<long,T>::value ) {
-            return std::stol(input,0,0);
+            return std::stol(input,nullptr,0);
         }
         else if ( std::is_same<long long, T>::value ) {
-            return std::stoll(input,0,0);
+            return std::stoll(input,nullptr,0);
         }
         else {  // Smaller than 32-bit
-            return static_cast<T>(std::stol(input,0,0));
+            return static_cast<T>(std::stol(input,nullptr,0));
         }
     }
     else {
@@ -52,13 +52,13 @@ typename std::enable_if<std::is_integral<T>::value, T >::type
             }
         }
         else if ( std::is_same<unsigned long, T>::value ) {
-            return std::stoul(input,0,0);
+            return std::stoul(input,nullptr,0);
         }
         else if ( std::is_same<unsigned long long, T>::value ) {
-            return std::stoull(input,0,0);
+            return std::stoull(input,nullptr,0);
         }
         else {  // Smaller than 32-bit
-            return static_cast<T>(std::stoul(input,0,0));
+            return static_cast<T>(std::stoul(input,nullptr,0));
         }
     }
 }

@@ -11,7 +11,7 @@
 
 #ifndef SST_CORE_RNG_MARSAGLIA_H
 #define SST_CORE_RNG_MARSAGLIA_H
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <stdint.h>
 #include <sys/time.h>

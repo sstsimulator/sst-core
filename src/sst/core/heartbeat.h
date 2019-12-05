@@ -12,13 +12,13 @@
 #ifndef SST_CORE_CORE_HEARTBEAT_H
 #define SST_CORE_CORE_HEARTBEAT_H
 
-#include <sst/core/sst_types.h>
-#include <sst/core/output.h>
-#include <sst/core/config.h>
-#include <sst/core/cputimer.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/output.h"
+#include "sst/core/config.h"
+#include "sst/core/cputimer.h"
 
 #include <set>
-#include <sst/core/action.h>
+#include "sst/core/action.h"
 
 namespace SST {
 

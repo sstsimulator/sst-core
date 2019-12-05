@@ -9,13 +9,12 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
-#include <string>
+#include "sst_config.h"
+#include "sst/core/component.h"
 
-#include <sst/core/component.h>
-#include <sst/core/exit.h>
-#include <sst/core/simulation.h>
-#include <sst/core/factory.h>
+#include "sst/core/exit.h"
+#include "sst/core/simulation.h"
+#include "sst/core/factory.h"
 
 using namespace SST::Statistics;
 

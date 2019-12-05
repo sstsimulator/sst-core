@@ -12,24 +12,23 @@
 #ifndef SST_CORE_ELEMENTINFO_H
 #define SST_CORE_ELEMENTINFO_H
 
-#include <sst/core/sst_types.h>
-#include <sst/core/warnmacros.h>
-#include <sst/core/params.h>
-#include <sst/core/statapi/statfieldinfo.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
+#include "sst/core/params.h"
 
-#include <sst/core/eli/paramsInfo.h>
-#include <sst/core/eli/statsInfo.h>
-#include <sst/core/eli/defaultInfo.h>
-#include <sst/core/eli/portsInfo.h>
-#include <sst/core/eli/subcompSlotInfo.h>
-#include <sst/core/eli/interfaceInfo.h>
-#include <sst/core/eli/categoryInfo.h>
-#include <sst/core/eli/elementbuilder.h>
+#include "sst/core/eli/paramsInfo.h"
+#include "sst/core/eli/statsInfo.h"
+#include "sst/core/eli/defaultInfo.h"
+#include "sst/core/eli/portsInfo.h"
+#include "sst/core/eli/subcompSlotInfo.h"
+#include "sst/core/eli/interfaceInfo.h"
+#include "sst/core/eli/categoryInfo.h"
+#include "sst/core/eli/elementbuilder.h"
 
 #include <string>
 #include <vector>
 
-#include <sst/core/eli/elibase.h>
+#include "sst/core/eli/elibase.h"
 
 namespace SST {
 class Component;

@@ -12,13 +12,12 @@
 #ifndef SST_CORE_COMPONENT_H
 #define SST_CORE_COMPONENT_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <map>
-#include <string>
 
-#include <sst/core/baseComponent.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/baseComponent.h"
+#include "sst/core/eli/elementinfo.h"
 
 using namespace SST::Statistics;
 

@@ -12,7 +12,7 @@
 #ifndef SERIALIZE_SIZER_H
 #define SERIALIZE_SIZER_H
 
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 namespace SST {
 namespace Core {
 namespace Serialization {

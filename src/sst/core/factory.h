@@ -12,13 +12,13 @@
 #ifndef _SST_CORE_FACTORY_H
 #define _SST_CORE_FACTORY_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <stdio.h>
 #include <mutex>
 
-#include <sst/core/params.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/params.h"
+#include "sst/core/eli/elementinfo.h"
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
@@ -49,13 +49,13 @@ public:
      * @param type - Name of component in lib.name format
      * @return True if this is a valid portname
      */
-    bool isPortNameValid(const std::string &type, const std::string port_name);
+    bool isPortNameValid(const std::string& type, const std::string& port_name);
 
     /** Get a list of allowed param keys for a given component type.
      * @param type - Name of component in lib.name format
      * @return True if this is a valid portname
      */
-    const Params::KeySet_t& getParamNames(const std::string &type);
+    const Params::KeySet_t& getParamNames(const std::string& type);
 
 
     /** Attempt to create a new Component instantiation
@@ -64,41 +64,41 @@ public:
      * @param params - The params to pass to the component's constructor
      * @return Newly created component
      */
-    Component* CreateComponent(ComponentId_t id, std::string &componentname,
+    Component* CreateComponent(ComponentId_t id, const std::string& componentname,
                                Params& params);
 
     /** Ensure that an element library containing the required event is loaded
      * @param eventname - The fully qualified elementlibname.eventname type
      */
-    void RequireEvent(std::string eventname);
+    void RequireEvent(const std::string& eventname);
 
     /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param params - Parameters to pass to the Module's constructor
      */
-    Module* CreateModule(std::string type, Params& params);
+    Module* CreateModule(const std::string& type, Params& params);
 
     /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param comp - Component instance to pass to the Module's constructor
      * @param params - Parameters to pass to the Module's constructor
      */
-    Module* CreateModuleWithComponent(std::string type, Component* comp, Params& params);
+    Module* CreateModuleWithComponent(const std::string& type, Component* comp, Params& params);
 
     /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param comp - Component instance to pass to the SubComponent's constructor
      * @param params - Parameters to pass to the SubComponent's constructor
      */
-    SubComponent* CreateSubComponent(std::string type, Component* comp, Params& params);
+    SubComponent* CreateSubComponent(const std::string& type, Component* comp, Params& params);
 
 
-    bool doesSubComponentExist(std::string type);
+    bool doesSubComponentExist(const std::string& type);
     
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */
-    Partition::SSTPartitioner* CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
+    Partition::SSTPartitioner* CreatePartitioner(const std::string& name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
 
 
     /**
@@ -176,7 +176,7 @@ public:
      * @param fieldType - Type of data stored in statistic
      */
     template <class T, class... Args>
-    Statistics::Statistic<T>* CreateStatistic(std::string type,
+    Statistics::Statistic<T>* CreateStatistic(const std::string& type,
                                    BaseComponent* comp, const std::string& statName,
                                    const std::string& stat, Params& params,
                                    Args... args){
@@ -196,7 +196,7 @@ public:
       // If we make it to here, component not found
       out.fatal(CALL_INFO, -1,"can't find requested statistic %s.\n%s\n",
                 type.c_str(), sstr.str().c_str());
-      return NULL;
+      return nullptr;
     }
 
 
@@ -212,12 +212,12 @@ public:
      * @return whether the library was found
      */
     bool hasLibrary(const std::string& elemlib, std::ostream& err_os);
-    void requireLibrary(const std::string &elemlib, std::ostream& err_os);
+    void requireLibrary(const std::string& elemlib, std::ostream& err_os);
     /**
      * @brief requireLibrary Throws away error messages
      * @param elemlib
      */
-    void requireLibrary(const std::string &elemlib);
+    void requireLibrary(const std::string& elemlib);
 
     void getLoadedLibraryNames(std::set<std::string>& lib_names);
     void loadUnloadedLibraries(const std::set<std::string>& lib_names);
@@ -264,7 +264,7 @@ private:
                   const std::string& errorMsg);
 
 
-    Factory(std::string searchPaths);
+    Factory(const std::string& searchPaths);
     ~Factory();
 
     Factory();                      // Don't Implement

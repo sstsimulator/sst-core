@@ -13,11 +13,11 @@
 #ifndef SST_CORE_SUBCOMPONENT_H
 #define SST_CORE_SUBCOMPONENT_H
 
-#include <sst/core/warnmacros.h>
-#include <sst/core/baseComponent.h>
-#include <sst/core/component.h>
-#include <sst/core/module.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/warnmacros.h"
+#include "sst/core/baseComponent.h"
+#include "sst/core/component.h"
+#include "sst/core/module.h"
+#include "sst/core/eli/elementinfo.h"
 
 namespace SST {
 
@@ -59,7 +59,7 @@ protected:
     Component* const parent __attribute__ ((deprecated("The parent data member will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent is not allowed.")));
 
     /* Deprecate?   Old ELI style*/
-    SubComponent* loadSubComponent(std::string type, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
+    SubComponent* loadSubComponent(const std::string& type, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
 
 
 private:

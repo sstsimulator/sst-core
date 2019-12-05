@@ -10,18 +10,18 @@
 // distribution.
 //
 
-#include <sst_config.h>
-
+#include "sst_config.h"
 #include "pythonConfigOutput.h"
-#include <sst/core/simulation.h>
-#include <sst/core/config.h>
-#include <sst/core/timeLord.h>
-#include <sst/core/timeConverter.h>
+
+#include "sst/core/simulation.h"
+#include "sst/core/config.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/timeConverter.h"
 
 using namespace SST::Core;
 
 PythonConfigGraphOutput::PythonConfigGraphOutput(const char* path) :
-	ConfigGraphOutput(path), graph(NULL) {
+	ConfigGraphOutput(path), graph(nullptr) {
 
 }
 
@@ -210,7 +210,7 @@ void PythonConfigGraphOutput::generateStatGroup(const ConfigGraph* graph, const 
 void PythonConfigGraphOutput::generate(const Config* cfg,
 	ConfigGraph* graph) {
 
-	if(NULL == outputFile) {
+	if(nullptr == outputFile) {
 		throw ConfigGraphOutputException("Input file is not open for output writing");
 	}
 
@@ -261,11 +261,11 @@ void PythonConfigGraphOutput::generate(const Config* cfg,
 
 	fprintf(outputFile, "# End of generated output.\n\n");
 
-    this->graph = NULL;
+    this->graph = nullptr;
     linkMap.clear();
 }
 
-bool PythonConfigGraphOutput::isMultiLine(const std::string check) const {
+bool PythonConfigGraphOutput::isMultiLine(const std::string& check) const {
 	bool isMultiLine = false;
 
 	for(size_t i = 0; i < check.size(); i++) {
@@ -292,11 +292,11 @@ bool PythonConfigGraphOutput::isMultiLine(const char* check) const {
 	return isMultiLine;
 }
 
-char* PythonConfigGraphOutput::makePythonSafeWithPrefix(const std::string name,
-	const std::string prefix) const {
+char* PythonConfigGraphOutput::makePythonSafeWithPrefix(const std::string& name,
+	const std::string& prefix) const {
 
 	const auto nameLength = name.size();
-	char* buffer = NULL;
+	char* buffer = nullptr;
 
 	if( nameLength > 0 && isdigit(name.at(0)) ) {
 		if( name.size() > prefix.size() ) {
@@ -367,7 +367,7 @@ bool PythonConfigGraphOutput::strncmp(const char* a, const char* b,
 	return matched;
 };
 
-char* PythonConfigGraphOutput::makeEscapeSafe(const std::string input) const {
+char* PythonConfigGraphOutput::makeEscapeSafe(const std::string& input) const {
 
 	std::string escapedInput = "";
 	auto inputLength = input.size();

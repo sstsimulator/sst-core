@@ -16,7 +16,6 @@
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
 #include "sst/core/simulation.h"
-//#include "sst/core/syncQueue.h"
 #include "sst/core/timeConverter.h"
 
 namespace SST {

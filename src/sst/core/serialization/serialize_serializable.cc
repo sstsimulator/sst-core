@@ -9,9 +9,9 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-//#include <sprockit/ptr_type.h>
-//#include <sprockit/spkt_string.h>
-#include <sst/core/serialization/serialize_serializable.h>
+#include "sst_config.h"
+#include "sst/core/serialization/serialize_serializable.h"
+
 #include <iostream>
 
 namespace SST {
@@ -53,7 +53,7 @@ unpack_serializable(serializable*& s, serializer& ser){
   ser.unpack(cls_id);
   if (cls_id == null_ptr_id) {
     // debug_printf(dbg::serialize, "null pointer object");
-      s = NULL;
+      s = nullptr;
   }
   else {
     // debug_printf(dbg::serialize, "unpacking class id %ld", cls_id);

@@ -9,9 +9,9 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
-#include <sst/core/subcomponent.h>
-#include <sst/core/factory.h>
+#include "sst_config.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/factory.h"
 
 namespace SST {
 
@@ -32,7 +32,7 @@ SubComponent::SubComponent(ComponentId_t id) :
 
 
 SubComponent*
-SubComponent::loadSubComponent(std::string type, Params& params)
+SubComponent::loadSubComponent(const std::string& type, Params& params)
 {
     return BaseComponent::loadSubComponent(type, getTrueComponentPrivate(), params);
 }

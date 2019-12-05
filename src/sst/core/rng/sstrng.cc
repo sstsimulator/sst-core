@@ -10,6 +10,6 @@
 // distribution.
 
 
-#include <sst_config.h>
+#include "sst_config.h"
 #include "sstrng.h"
 

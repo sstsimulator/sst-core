@@ -14,7 +14,7 @@
 #ifndef SST_CORE_RANKINFO_H
 #define SST_CORE_RANKINFO_H
 
-#include <sst/core/serialization/serializable.h>
+#include "sst/core/serialization/serializable.h"
 
 namespace SST {
 

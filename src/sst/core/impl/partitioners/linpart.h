@@ -13,8 +13,8 @@
 #ifndef SST_CORE_IMPL_PARTITONERS_LINPART_H
 #define SST_CORE_IMPL_PARTITONERS_LINPART_H
 
-#include <sst/core/sstpart.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/sstpart.h"
+#include "sst/core/eli/elementinfo.h"
 
 namespace SST {
 

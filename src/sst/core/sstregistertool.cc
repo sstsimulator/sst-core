@@ -30,11 +30,11 @@
 //Function declarations
 static void print_usage();
 void sstRegister(char* argv[]);
-void sstUnregister(std::string element);
+void sstUnregister(const std::string& element);
 std::vector<std::string> listModels(int option);
 void sstUnregisterMultiple(std::vector<std::string> elementsArray);
 void autoUnregister();
-bool validModel(std::string s);
+bool validModel(const std::string& s);
 
 //Global constants
 const std::string START_DELIMITER = "[";
@@ -55,10 +55,10 @@ int main(int argc, char* argv[]) {
 	//Check for configuration file
 	sprintf(cfgPath, SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf");
 	FILE* cfgFile = fopen(cfgPath, "r+");
-	if(NULL == cfgFile) {
+	if(nullptr == cfgFile) {
 		char* envHome = getenv("HOME");
 
-		if(NULL == envHome) {
+		if(nullptr == envHome) {
 			sprintf(cfgPath, "~/.sst/sstsimulator.conf");
 		} else {
 			sprintf(cfgPath, "%s/.sst/sstsimulator.conf", envHome);
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 
 		cfgFile = fopen(cfgPath, "r+");
 
-		if(NULL == cfgFile) {
+		if(nullptr == cfgFile) {
 			fprintf(stderr, "Unable to open configuration at either: %s or %s, one of these files must be editable.\n",
 				SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf", cfgPath);
 			exit(-1);
@@ -130,7 +130,7 @@ void sstRegister(char* argv[]){
 
 	cfgFile = fopen(cfgPath, "w+");
 
-	if(NULL == cfgFile) {
+	if(nullptr == cfgFile) {
 		fprintf(stderr, "Unable to open: %s for writing.\n",
 			cfgPath);
 		exit(-1);
@@ -145,7 +145,7 @@ void sstRegister(char* argv[]){
 //Takes a string argument and searches the sstsimulator config file for that name.
 //Removes the component from the file - unregistering it from SST
 //Input: command line arguments
-void sstUnregister(std::string element){
+void sstUnregister(const std::string& element){
 	std::string str1;
 	std::string s = "";
 	std::string tempfile;
@@ -182,7 +182,7 @@ void sstUnregister(std::string element){
 //listModels
 //Prints to STDOUT all of the registered models
 //Input: an int option that determines what will be returned:
-//	option == 0: NULL vector
+//	option == 0: nullptr vector
 //	option == 1: a vector containing all of the registered components (both valid and invalid)
 //	option == 2: a vector containing only the INVALID components
 //Returns: a vector of strings.
@@ -267,7 +267,7 @@ void sstUnregisterMultiple(std::vector<std::string> elementsArray){
 //Checks the path of the model to determine if it physically exists on the drive
 //Input: a string containing the path
 //Returns: a true or false
-bool validModel(std::string s){
+bool validModel(const std::string& s){
 	std::size_t locationStart = s.find("/");
 	std::string str1 = s.substr(locationStart);//grabs the rest of the line from / to the end
 	char* path = new char[str1.length() + 1];

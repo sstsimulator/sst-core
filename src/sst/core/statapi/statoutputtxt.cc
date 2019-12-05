@@ -9,11 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/statapi/statoutputtxt.h"
 
-#include <sst/core/simulation.h>
-#include <sst/core/statapi/statoutputtxt.h>
-#include <sst/core/stringize.h>
+#include "sst/core/simulation.h"
+#include "sst/core/stringize.h"
 
 namespace SST {
 namespace Statistics {
@@ -195,7 +195,7 @@ void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int32_t data)
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
     
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if (true == m_outputInlineHeader) {
@@ -213,7 +213,7 @@ void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint32_t data)
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if (true == m_outputInlineHeader) {
@@ -231,7 +231,7 @@ void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int64_t data)
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if (true == m_outputInlineHeader) {
@@ -249,7 +249,7 @@ void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint64_t data)
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if (true == m_outputInlineHeader) {
@@ -267,7 +267,7 @@ void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, float data)
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if (true == m_outputInlineHeader) {
@@ -285,7 +285,7 @@ void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, double data)
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if (true == m_outputInlineHeader) {
@@ -304,7 +304,7 @@ bool StatisticOutputTxt::openFile(void)
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
         m_gzFile = gzopen(m_FilePath.c_str(), "w");
-        if (NULL == m_gzFile){
+        if (nullptr == m_gzFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
             out.fatal(CALL_INFO, 1, " : StatisticOutputCompressedTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
@@ -315,7 +315,7 @@ bool StatisticOutputTxt::openFile(void)
 #endif
     } else {
         m_hFile = fopen(m_FilePath.c_str(), "w");
-        if (NULL == m_hFile){
+        if (nullptr == m_hFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
             out.fatal(CALL_INFO, 1, " : StatisticOutputTxt - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));

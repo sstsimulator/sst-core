@@ -13,10 +13,10 @@
 #ifndef _H_SST_CORE_UNIQUE_COUNT_STATISTIC_
 #define _H_SST_CORE_UNIQUE_COUNT_STATISTIC_
 
-#include <sst/core/sst_types.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
 
-#include <sst/core/statapi/statbase.h>
+#include "sst/core/statapi/statbase.h"
 
 namespace SST {
 class BaseComponent;

@@ -16,8 +16,8 @@
 #include <queue>
 #include <vector>
 
-#include <sst/core/timeVortex.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/timeVortex.h"
+#include "sst/core/eli/elementinfo.h"
 
 namespace SST {
 

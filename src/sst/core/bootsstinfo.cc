@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
-#include <sst/core/bootshared.h>
+#include "sst_config.h"
+#include "sst/core/bootshared.h"
 
 int main(int argc, char* argv[]) {
 	int config_env = 1;

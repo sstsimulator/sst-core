@@ -10,8 +10,9 @@
 // distribution.
 
 #include "sst_config.h"
-#include <sst/core/warnmacros.h>
 #include "sst/core/rankSyncParallelSkip.h"
+
+#include "sst/core/warnmacros.h"
 
 #include "sst/core/serialization/serializer.h"
 

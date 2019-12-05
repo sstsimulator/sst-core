@@ -16,11 +16,11 @@
 #include <cmath>
 #include <limits>
 
-#include <sst/core/sst_types.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
 
-#include <sst/core/statapi/statbase.h>
-#include <sst/core/statapi/statoutput.h>
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/statapi/statoutput.h"
 
 namespace SST {
 namespace Statistics {

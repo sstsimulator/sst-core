@@ -12,12 +12,12 @@
 #ifndef SST_CORE_CORE_EXIT_H
 #define SST_CORE_CORE_EXIT_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <unordered_set>
 #include <cinttypes>
 
-#include <sst/core/action.h>
+#include "sst/core/action.h"
 
 namespace SST{
 

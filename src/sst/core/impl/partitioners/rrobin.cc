@@ -9,12 +9,10 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
 #include "sst/core/impl/partitioners/rrobin.h"
 
-#include <sst/core/warnmacros.h>
-
-#include <string>
+#include "sst/core/warnmacros.h"
 
 #include "sst/core/configGraph.h"
 

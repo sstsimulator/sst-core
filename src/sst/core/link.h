@@ -12,10 +12,9 @@
 #ifndef SST_CORE_LINK_H
 #define SST_CORE_LINK_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
-#include <sst/core/event.h>
-// #include <sst/core/eventFunctor.h>
+#include "sst/core/event.h"
 
 namespace SST { 
 
@@ -54,7 +53,7 @@ public:
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
      */
-    void addRecvLatency(int cycles, std::string timebase);
+    void addRecvLatency(int cycles, const std::string& timebase);
     /** Set additional Latency to be added on to events coming in on this link.
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
@@ -99,7 +98,7 @@ public:
 
     /** Retrieve a pending event from the Link. For links which do not
       have a set event handler, they can be polled with this function.
-      Returns NULL if there is no pending event.
+      Returns nullptr if there is no pending event.
     */
     Event* recv();
 

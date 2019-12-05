@@ -9,13 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
 
-#include <sst/core/impl/partitioners/singlepart.h>
+#include "sst/core/impl/partitioners/singlepart.h"
 
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 
-#include <sst/core/configGraph.h>
+#include "sst/core/configGraph.h"
 
 using namespace std;
 

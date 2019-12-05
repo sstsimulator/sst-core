@@ -13,21 +13,19 @@
 #ifndef SST_CORE_ACTIVITY_H
 #define SST_CORE_ACTIVITY_H
 
-#include <sst/core/sst_types.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
 
-#include <sst/core/serialization/serializable.h>
+#include "sst/core/serialization/serializable.h"
 
-#include <sst/core/output.h>
-#include <sst/core/mempool.h>
+#include "sst/core/output.h"
+#include "sst/core/mempool.h"
 
 #include <unordered_map>
 #include <cinttypes>
 #include <cstring>
 
 #include <errno.h>
-
-// #include <sst/core/serialization/serializable.h>
 
 // Default Priority Settings
 #define STOPACTIONPRIORITY     01
@@ -240,7 +238,7 @@ public:
          * 2) Alloc item from pool
          * 3) Append PoolID to item, increment pointer
          */
-        Core::MemPool *pool = NULL;
+        Core::MemPool *pool = nullptr;
         size_t nPools = memPools.size();
         std::thread::id tid = std::this_thread::get_id();
         for ( size_t i = 0 ; i < nPools ; i++ ) {
@@ -250,7 +248,7 @@ public:
                 break;
             }
         }
-        if ( NULL == pool ) {
+        if ( nullptr == pool ) {
             /* Still can't find it, alloc a new one */
             pool = new Core::MemPool(size+sizeof(PoolData_t));
 
@@ -261,7 +259,7 @@ public:
         PoolData_t *ptr = (PoolData_t*)pool->malloc();
         if ( !ptr ) {
             fprintf(stderr, "Memory Pool failed to allocate a new object.  Error: %s\n", strerror(errno));
-            return NULL;
+            return nullptr;
         }
         *ptr = pool;
         return (void*)(ptr+1);
@@ -273,24 +271,24 @@ public:
     {
         /* 1) Decrement pointer
          * 2) Determine Pool Pointer
-         * 2b) Set Pointer field to NULL to allow tracking
+         * 2b) Set Pointer field to nullptr to allow tracking
          * 3) Return to pool
          */
         PoolData_t *ptr8 = ((PoolData_t*)ptr) - 1;
         Core::MemPool* pool = *ptr8;
-        *ptr8 = NULL;
+        *ptr8 = nullptr;
 
         pool->free(ptr8);
     }
     void operator delete(void* ptr, std::size_t UNUSED(sz)){
         /* 1) Decrement pointer
          * 2) Determine Pool Pointer
-         * 2b) Set Pointer field to NULL to allow tracking
+         * 2b) Set Pointer field to nullptr to allow tracking
          * 3) Return to pool
          */
         PoolData_t *ptr8 = ((PoolData_t*)ptr) - 1;
         Core::MemPool* pool = *ptr8;
-        *ptr8 = NULL;
+        *ptr8 = nullptr;
 
         pool->free(ptr8);
     };
@@ -313,7 +311,7 @@ public:
             for ( auto iter = arenas.begin(); iter != arenas.end(); ++iter ) {
                 for ( size_t j = 0; j < nelem; j++ ) {
                     PoolData_t* ptr = (PoolData_t*)((*iter) + (elemSize*j));
-                    if ( *ptr != NULL ) {
+                    if ( *ptr != nullptr ) {
                         Activity* act = (Activity*)(ptr + 1);
                         if ( act->delivery_time <= before ) {
                             act->print(header, out);

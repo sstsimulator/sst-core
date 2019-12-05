@@ -10,10 +10,10 @@
 // distribution.
 
 
-#ifndef INTERFACES_TEST_EVENT_H
-#define INTERFACES_TEST_EVENT_H
+#ifndef SST_CORE_INTERFACES_TEST_EVENT_H
+#define SST_CORE_INTERFACES_TEST_EVENT_H
 
-#include <sst/core/event.h>
+#include "sst/core/event.h"
 
 namespace SST{
 namespace Interfaces {
