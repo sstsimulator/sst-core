@@ -22,7 +22,7 @@ namespace Core {
 namespace Serialization {
 
 static need_delete_statics<serializable_factory> del_statics;
-serializable_factory::builder_map* serializable_factory::builders_ = 0;
+serializable_factory::builder_map* serializable_factory::builders_ = nullptr;
 
 void
 serializable::serializable_abort(uint32_t line, const char* file, const char* func, const char* obj)
@@ -36,7 +36,7 @@ uint32_t
 // serializable_factory::add_builder(serializable_builder* builder, uint32_t cls_id)
 serializable_factory::add_builder(serializable_builder* builder, const char* name)
 {
-  if (builders_ == 0) {
+  if (builders_ == nullptr) {
     builders_ = new builder_map;
   }
 
@@ -55,7 +55,7 @@ serializable_factory::add_builder(serializable_builder* builder, const char* nam
 
   builder_map& bmap = *builders_;
   serializable_builder*& current = bmap[hash];
-  if (current != 0){
+  if (current != nullptr){
     // std::cerr << sprockit::printf(
     //   "amazingly %s and %s both hash to same serializable id %u",
     //   current->name(), builder->name(), hash) << std::endl;

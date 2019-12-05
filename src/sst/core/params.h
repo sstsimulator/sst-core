@@ -267,7 +267,7 @@ public:
     template <class T>
     typename std::enable_if<std::is_same<bool,T>::value, T>::type
     find(const std::string& k, const char* default_value, bool &found ) const {
-        if ( 0 == default_value ) {
+        if ( nullptr == default_value ) {
             return find_impl<T>(k, static_cast<T>(0), found);
         }
         return find_impl<T>(k, std::string(default_value), found);
@@ -316,7 +316,7 @@ public:
     typename std::enable_if<std::is_same<bool,T>::value, T>::type
     find(const std::string& k, const char* default_value ) const {
         bool tmp;
-        if ( 0 == default_value ) {
+        if ( nullptr == default_value ) {
             return find_impl<T>(k, static_cast<T>(0), tmp);
         }
         return find_impl<T>(k, std::string(default_value), tmp);

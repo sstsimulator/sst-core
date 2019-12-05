@@ -146,7 +146,7 @@ static const struct sstLongOpts_s sstOptions[] = {
 #endif
     DEF_ARGOPT("model-options",     "STR",          "provide options to the python configuration script", &Config::setModelOptions),
     DEF_ARGOPT_SHORT("num_threads", 'n',   "NUM",   "number of parallel threads to use per rank", &Config::setNumThreads),
-    {{nullptr, 0, 0, 0}, nullptr, nullptr, nullptr, nullptr}
+    {{nullptr, 0, nullptr, 0}, nullptr, nullptr, nullptr, nullptr}
 };
 static const size_t nLongOpts = (sizeof(sstOptions) / sizeof(sstLongOpts_s)) -1;
 
@@ -168,7 +168,7 @@ bool Config::usage() {
 
     if ( getenv("COLUMNS") ) {
         errno = E_OK;
-        uint32_t x = strtoul(getenv("COLUMNS"), 0, 0);
+        uint32_t x = strtoul(getenv("COLUMNS"), nullptr, 0);
         if ( errno == E_OK ) MAX_WIDTH = x;
     }
 
@@ -224,7 +224,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
     for ( size_t i = 0 ; i < nLongOpts ; i++ ) {
         sst_long_options[i] = sstOptions[i].opt;
     }
-    sst_long_options[nLongOpts] = {nullptr, 0 ,0, 0};
+    sst_long_options[nLongOpts] = {nullptr, 0 ,nullptr, 0};
 
     run_name = argv[0];
 

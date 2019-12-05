@@ -268,7 +268,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
         if ( info.config->verbose && 0 == tid ) {
             g_output.verbose(CALL_INFO, 1, 0, "# Starting main event loop\n");
 
-            time_t the_time = time(0);
+            time_t the_time = time(nullptr);
             struct tm* now = localtime( &the_time );
 
             g_output.verbose(CALL_INFO, 1, 0, "# Start time: %04u/%02u/%02u at: %02u:%02u:%02u\n",
@@ -381,7 +381,7 @@ main(int argc, char *argv[])
     }
     world_size.thread = cfg.getNumThreads();
 
-    SSTModelDescription* modelGen = 0;
+    SSTModelDescription* modelGen = nullptr;
 
     if ( cfg.configFile != "NONE" ) {
         string file_ext = "";

@@ -223,7 +223,7 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(T init, typename std::enable_if<std::is_unsigned<T>::value >::type* = 0) {
+    decimal_fixedpoint(T init, typename std::enable_if<std::is_unsigned<T>::value >::type* = nullptr) {
         from_uint64(init);
     }
 
@@ -235,7 +235,7 @@ public:
      */
     template <class T>
     decimal_fixedpoint(T init, typename std::enable_if<std::is_signed<T>::value &&
-                       std::is_integral<T>::value >::type* = 0) {
+                       std::is_integral<T>::value >::type* = nullptr) {
         if ( init < 0 ) {
             from_uint64(-init);
             negative = true;
@@ -251,7 +251,7 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(const T init, typename std::enable_if<std::is_floating_point<T>::value >::type* = 0) {
+    decimal_fixedpoint(const T init, typename std::enable_if<std::is_floating_point<T>::value >::type* = nullptr) {
         from_double(init);
     }
 

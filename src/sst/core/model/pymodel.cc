@@ -41,7 +41,7 @@ DISABLE_WARN_STRICT_ALIASING
 
 using namespace SST::Core;
 
-SST::Core::SSTPythonModelDefinition *gModel = NULL;
+SST::Core::SSTPythonModelDefinition *gModel = nullptr;
 
 extern "C" {
 
@@ -70,58 +70,58 @@ static PyObject* mlLoadModule(PyObject *self, PyObject *args);
 static PyMethodDef mlMethods[] = {
     {   "find_module", mlFindModule, METH_VARARGS, "Finds an SST Element Module"},
     {   "load_module", mlLoadModule, METH_VARARGS, "Loads an SST Element Module"},
-    {   NULL, NULL, 0, NULL }
+    {   nullptr, nullptr, 0, nullptr }
 };
 
 
 static PyTypeObject ModuleLoaderType = {
-    PyObject_HEAD_INIT(NULL)
+    PyObject_HEAD_INIT(nullptr)
     0,                         /* ob_size */
-    "ModuleLoader",        /* tp_name */
+    "ModuleLoader",            /* tp_name */
     sizeof(ModuleLoaderPy_t),  /* tp_basicsize */
     0,                         /* tp_itemsize */
-    0,                         /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_compare */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
+    nullptr,                   /* tp_dealloc */
+    nullptr,                   /* tp_print */
+    nullptr,                   /* tp_getattr */
+    nullptr,                   /* tp_setattr */
+    nullptr,                   /* tp_compare */
+    nullptr,                   /* tp_repr */
+    nullptr,                   /* tp_as_number */
+    nullptr,                   /* tp_as_sequence */
+    nullptr,                   /* tp_as_mapping */
+    nullptr,                   /* tp_hash */
+    nullptr,                   /* tp_call */
+    nullptr,                   /* tp_str */
+    nullptr,                   /* tp_getattro */
+    nullptr,                   /* tp_setattro */
+    nullptr,                   /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "SST Module Loader",       /* tp_doc */
-    0,                         /* tp_traverse */
-    0,                         /* tp_clear */
-    0,                         /* tp_richcompare */
+    nullptr,                   /* tp_traverse */
+    nullptr,                   /* tp_clear */
+    nullptr,                   /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */
+    nullptr,                   /* tp_iter */
+    nullptr,                   /* tp_iternext */
     mlMethods,                 /* tp_methods */
-    0,                         /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    nullptr,                   /* tp_members */
+    nullptr,                   /* tp_getset */
+    nullptr,                   /* tp_base */
+    nullptr,                   /* tp_dict */
+    nullptr,                   /* tp_descr_get */
+    nullptr,                   /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,                         /* tp_init */
-    0,                         /* tp_alloc */
-    0,                         /* tp_new */
-    0,                         /* tp_free */
-    0,                         /* tp_is_gc */
-    0,                         /* tp_bases */
-    0,                         /* tp_mro */
-    0,                         /* tp_cache */
-    0,                         /* tp_subclasses */
-    0,                         /* tp_weaklist */
-    0,                         /* tp_del */
+    nullptr,                   /* tp_init */
+    nullptr,                   /* tp_alloc */
+    nullptr,                   /* tp_new */
+    nullptr,                   /* tp_free */
+    nullptr,                   /* tp_is_gc */
+    nullptr,                   /* tp_bases */
+    nullptr,                   /* tp_mro */
+    nullptr,                   /* tp_cache */
+    nullptr,                   /* tp_subclasses */
+    nullptr,                   /* tp_weaklist */
+    nullptr,                   /* tp_del */
     0,                         /* tp_version_tag */
 };
 
@@ -136,7 +136,7 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
     char *name;
     PyObject *path;
     if ( !PyArg_ParseTuple(args, "s|O", &name, &path) )
-        return NULL;
+        return nullptr;
 
     //reset any previous load errors, they apparently didn't matter
     loadErrors = "";
@@ -167,18 +167,18 @@ static PyObject* mlFindModule(PyObject *self, PyObject *args)
 }
 
 static PyMethodDef emptyModMethods[] = {
-    {NULL, NULL, 0, NULL }
+    {nullptr, nullptr, 0, nullptr }
 };
 
 static PyObject* mlLoadModule(PyObject *UNUSED(self), PyObject *args)
 {
     char *name;
     if ( !PyArg_ParseTuple(args, "s", &name) )
-        return NULL;
+        return nullptr;
 
     if ( strncmp(name, "sst.", 4) ) {
         // We know how to handle only sst.<module>
-        return NULL; // ERROR!
+        return nullptr; // ERROR!
     }
 
     char *modName = name+4; // sst.<modName>
@@ -186,7 +186,7 @@ static PyObject* mlLoadModule(PyObject *UNUSED(self), PyObject *args)
     //fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
     // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
     SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
-    PyObject* mod = NULL;
+    PyObject* mod = nullptr;
     if ( !pymod ) {
         mod = Py_InitModule(name, emptyModMethods);
     } else {
@@ -230,7 +230,7 @@ static PyObject* setProgramOption(PyObject* UNUSED(self), PyObject* args)
         else
             Py_RETURN_FALSE;
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -238,7 +238,7 @@ static PyObject* setProgramOption(PyObject* UNUSED(self), PyObject* args)
 static PyObject* setProgramOptions(PyObject* UNUSED(self), PyObject* args)
 {
     if ( !PyDict_Check(args) ) {
-        return NULL;
+        return nullptr;
     }
     Py_ssize_t pos = 0;
     PyObject *key, *val;
@@ -283,14 +283,14 @@ static PyObject* getProgramOptions(PyObject*UNUSED(self), PyObject *UNUSED(args)
 
 static PyObject* pushNamePrefix(PyObject* UNUSED(self), PyObject* arg)
 {
-    char *name = NULL;
+    char *name = nullptr;
     PyErr_Clear();
     name = PyString_AsString(arg);
 
-    if ( name != NULL ) {
+    if ( name != nullptr ) {
         gModel->pushNamePrefix(name);
     } else {
-        return NULL;
+        return nullptr;
     }
     return PyInt_FromLong(0);
 }
@@ -306,7 +306,7 @@ static PyObject* popNamePrefix(PyObject* UNUSED(self), PyObject* UNUSED(args))
 static PyObject* exitsst(PyObject* UNUSED(self), PyObject* UNUSED(args))
 {
     exit(-1);
-    return NULL;
+    return nullptr;
 }
 
 static PyObject* getSSTMPIWorldSize(PyObject* UNUSED(self), PyObject* UNUSED(args)) {
@@ -336,7 +336,7 @@ static PyObject* setStatisticOutput(PyObject* UNUSED(self), PyObject* args)
 {
     char*      statOutputName;
     int        argOK = 0;
-    PyObject*  outputParamDict = NULL;
+    PyObject*  outputParamDict = nullptr;
 
     PyErr_Clear();
 
@@ -351,7 +351,7 @@ static PyObject* setStatisticOutput(PyObject* UNUSED(self), PyObject* args)
             gModel->addStatisticOutputParameter(p.first, p.second);
         }
     } else {
-        return NULL;
+        return nullptr;
     }
     return PyInt_FromLong(0);
 }
@@ -369,7 +369,7 @@ static PyObject* setStatisticOutputOption(PyObject* UNUSED(self), PyObject* args
     if (argOK) {
         gModel->addStatisticOutputParameter(param, value);
     } else {
-        return NULL;
+        return nullptr;
     }
     return PyInt_FromLong(0);
 }
@@ -380,7 +380,7 @@ static PyObject* setStatisticOutputOptions(PyObject* UNUSED(self), PyObject* arg
     PyErr_Clear();
 
     if ( !PyDict_Check(args) ) {
-        return NULL;
+        return nullptr;
     }
 
     // Generate and Add the Statistic Output Parameters
@@ -410,7 +410,7 @@ static PyObject* setStatisticLoadLevel(PyObject* UNUSED(self), PyObject* arg)
 static PyObject* enableAllStatisticsForAllComponents(PyObject* UNUSED(self), PyObject* args)
 {
     int           argOK = 0;
-    PyObject*     statParamDict = NULL;
+    PyObject*     statParamDict = nullptr;
 
     PyErr_Clear();
 
@@ -426,7 +426,7 @@ static PyObject* enableAllStatisticsForAllComponents(PyObject* UNUSED(self), PyO
         }
     } else {
         // ParseTuple Failed, return NULL for error
-        return NULL;
+        return nullptr;
     }
 
     return PyInt_FromLong(0);
@@ -436,8 +436,8 @@ static PyObject* enableAllStatisticsForAllComponents(PyObject* UNUSED(self), PyO
 static PyObject* enableAllStatisticsForComponentName(PyObject *UNUSED(self), PyObject *args)
 {
     int           argOK = 0;
-    char*         compName = NULL;
-    PyObject*     statParamDict = NULL;
+    char*         compName = nullptr;
+    PyObject*     statParamDict = nullptr;
 
     PyErr_Clear();
 
@@ -454,7 +454,7 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *UNUSED(self), PyO
 
     } else {
         // ParseTuple Failed, return NULL for error
-        return NULL;
+        return nullptr;
     }
     return PyInt_FromLong(0);
 }
@@ -463,8 +463,8 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *UNUSED(self), PyO
 static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyObject *args)
 {
     int           argOK = 0;
-    char*         compType = NULL;
-    PyObject*     statParamDict = NULL;
+    char*         compType = nullptr;
+    PyObject*     statParamDict = nullptr;
 
     PyErr_Clear();
 
@@ -480,7 +480,7 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyO
         }
     } else {
         // ParseTuple Failed, return NULL for error
-        return NULL;
+        return nullptr;
     }
     return PyInt_FromLong(0);
 }
@@ -489,9 +489,9 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyO
 static PyObject* enableStatisticForComponentName(PyObject *UNUSED(self), PyObject *args)
 {
     int           argOK = 0;
-    char*         compName = NULL;
-    char*         statName = NULL;
-    PyObject*     statParamDict = NULL;
+    char*         compName = nullptr;
+    char*         statName = nullptr;
+    PyObject*     statParamDict = nullptr;
 
     PyErr_Clear();
 
@@ -507,7 +507,7 @@ static PyObject* enableStatisticForComponentName(PyObject *UNUSED(self), PyObjec
         }
     } else {
         // ParseTuple Failed, return NULL for error
-        return NULL;
+        return nullptr;
     }
     return PyInt_FromLong(0);
 }
@@ -516,9 +516,9 @@ static PyObject* enableStatisticForComponentName(PyObject *UNUSED(self), PyObjec
 static PyObject* enableStatisticForComponentType(PyObject *UNUSED(self), PyObject *args)
 {
     int           argOK = 0;
-    char*         compType = NULL;
-    char*         statName = NULL;
-    PyObject*     statParamDict = NULL;
+    char*         compType = nullptr;
+    char*         statName = nullptr;
+    PyObject*     statParamDict = nullptr;
 
     PyErr_Clear();
 
@@ -534,7 +534,7 @@ static PyObject* enableStatisticForComponentType(PyObject *UNUSED(self), PyObjec
         }
     } else {
         // ParseTuple Failed, return NULL for error
-        return NULL;
+        return nullptr;
     }
     return PyInt_FromLong(0);
 }
@@ -598,7 +598,7 @@ static PyMethodDef sstModuleMethods[] = {
     {   "findComponentByName",
         findComponentByName, METH_O,
         "Looks up to find a previously created component, based off of its name.  Returns None if none are to be found."},
-    {   NULL, NULL, 0, NULL }
+    {   nullptr, nullptr, 0, nullptr }
 };
 
 }  /* extern C */
@@ -683,7 +683,7 @@ void SSTPythonModelDefinition::initModel(const std::string& script_file, int ver
 }
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* configObj) :
-	SSTModelDescription(), scriptName(script_file), config(configObj), namePrefix(NULL), namePrefixLen(0)
+	SSTModelDescription(), scriptName(script_file), config(configObj), namePrefix(nullptr), namePrefixLen(0)
 {
 	std::vector<std::string> argv_vector;
 	argv_vector.push_back("sstsim.x");
@@ -757,9 +757,9 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_fil
 
 SSTPythonModelDefinition::~SSTPythonModelDefinition() {
     delete output;
-    gModel = NULL;
+    gModel = nullptr;
 
-    if ( NULL != namePrefix ) free(namePrefix);
+    if ( nullptr != namePrefix ) free(namePrefix);
 }
 
 
@@ -774,7 +774,7 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
     }
     int createReturn = PyRun_AnyFileEx(fp, scriptName.c_str(), 1);
 
-    if(NULL != PyErr_Occurred()) {
+    if(nullptr != PyErr_Occurred()) {
         // Print the Python error and then let SST exit as a fatal-stop.
         PyErr_Print();
         output->fatal(CALL_INFO, 1,
@@ -789,7 +789,7 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
 
     output->verbose(CALL_INFO, 1, 0, "Construction of config graph with Python is complete.\n");
 
-    if(NULL != PyErr_Occurred()) {
+    if(nullptr != PyErr_Occurred()) {
         PyErr_Print();
         output->fatal(CALL_INFO, 1, "Error occured handling the creation of the component graph in Python.\n");
     }
@@ -800,7 +800,7 @@ ConfigGraph* SSTPythonModelDefinition::createConfigGraph()
 
 void SSTPythonModelDefinition::pushNamePrefix(const char *name)
 {
-    if ( NULL == namePrefix ) {
+    if ( nullptr == namePrefix ) {
         namePrefix = (char*)calloc(128, 1);
         namePrefixLen = 128;
     }
@@ -851,22 +851,22 @@ char* SSTPythonModelDefinition::addNamePrefix(const char *name) const
 /* Utilities */
 std::map<std::string,std::string> SST::Core::generateStatisticParameters(PyObject* statParamDict)
 {
-    PyObject*     pykey = NULL;
-    PyObject*     pyval = NULL;
+    PyObject*     pykey = nullptr;
+    PyObject*     pyval = nullptr;
     Py_ssize_t    pos = 0;
 
     std::map<std::string,std::string> p;
 
     // If the user did not include a dict for the parameters
     // the variable statParamDict will be NULL.
-    if (NULL != statParamDict) {
+    if (nullptr != statParamDict) {
         // Make sure it really is a Dict
         if (true == PyDict_Check(statParamDict)) {
 
             // Extract the Key and Value for each parameter and put them into the vectors 
             while ( PyDict_Next(statParamDict, &pos, &pykey, &pyval) ) {
-                PyObject* pyparam = PyObject_CallMethod(pykey, (char*)"__str__", NULL);
-                PyObject* pyvalue = PyObject_CallMethod(pyval, (char*)"__str__", NULL);
+                PyObject* pyparam = PyObject_CallMethod(pykey, (char*)"__str__", nullptr);
+                PyObject* pyvalue = PyObject_CallMethod(pyval, (char*)"__str__", nullptr);
 
                 p[PyString_AsString(pyparam)] = PyString_AsString(pyvalue);
 

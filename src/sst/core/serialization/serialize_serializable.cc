@@ -53,7 +53,7 @@ unpack_serializable(serializable*& s, serializer& ser){
   ser.unpack(cls_id);
   if (cls_id == null_ptr_id) {
     // debug_printf(dbg::serialize, "null pointer object");
-      s = NULL;
+      s = nullptr;
   }
   else {
     // debug_printf(dbg::serialize, "unpacking class id %ld", cls_id);

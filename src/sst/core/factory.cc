@@ -413,13 +413,13 @@ Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::stri
             }
         }
       }
-      return 0;
+      return nullptr;
     }
 
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n",
               type.c_str(), error_os.str().c_str());
-    return 0;
+    return nullptr;
 }
 
 

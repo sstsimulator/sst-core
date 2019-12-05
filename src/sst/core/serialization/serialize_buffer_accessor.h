@@ -71,7 +71,7 @@ class ser_buffer_accessor {
 
   void
   clear(){
-    bufstart_ = bufptr_ = 0;
+    bufstart_ = bufptr_ = nullptr;
     max_size_ = size_ = 0;
   }
 
@@ -83,8 +83,8 @@ class ser_buffer_accessor {
 
  protected:
   ser_buffer_accessor() :
-    bufstart_(0),
-    bufptr_(0),
+    bufstart_(nullptr),
+    bufptr_(nullptr),
     size_(0)
   {
   }

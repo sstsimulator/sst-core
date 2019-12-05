@@ -38,7 +38,7 @@ namespace SST {
 // Initialize The Static Member Variables
 Output      Output::m_defaultObject;
 std::string Output::m_sstGlobalSimFileName = "";
-std::FILE*  Output::m_sstGlobalSimFileHandle = 0;
+std::FILE*  Output::m_sstGlobalSimFileHandle = nullptr;
 uint32_t    Output::m_sstGlobalSimFileAccessCount = 0;
 
 std::unordered_map<std::thread::id, uint32_t> Output::m_threadMap;
@@ -80,11 +80,11 @@ void Output::init(const std::string& prefix, uint32_t verbose_level,
         m_verboseLevel = verbose_level;
         m_verboseMask  = verbose_mask;
         m_sstLocalFileName = localoutputfilename;
-        m_sstLocalFileHandle = 0;
+        m_sstLocalFileHandle = nullptr;
         m_sstLocalFileAccessCount = 0;
-        m_targetFileHandleRef = 0;
-        m_targetFileNameRef = 0;
-        m_targetFileAccessCountRef = 0;
+        m_targetFileHandleRef = nullptr;
+        m_targetFileNameRef = nullptr;
+        m_targetFileAccessCountRef = nullptr;
     
         setTargetOutput(location);
 
@@ -289,10 +289,10 @@ void Output::openSSTTargetFile() const
 
     if (true == m_objInitialized) {
         // If the target output is a file, See if the output file is created and opened
-        if ((FILE == m_targetLoc) && (0 == *m_targetFileHandleRef)) {
+        if ((FILE == m_targetLoc) && (nullptr == *m_targetFileHandleRef)) {
   
             // Check to see if the File has not been opened.
-            if ((*m_targetFileAccessCountRef > 0) && (0 == *m_targetFileHandleRef)) {
+            if ((*m_targetFileAccessCountRef > 0) && (nullptr == *m_targetFileHandleRef)) {
                 tempFileName = *m_targetFileNameRef;
                 
                 // Append the rank to file name if MPI_COMM_WORLD is GT 1
@@ -326,7 +326,7 @@ void Output::closeSSTTargetFile()
 
         // If the access count is zero, and the file has been opened, then close it
         if ((0 == *m_targetFileAccessCountRef) && 
-            (0 != *m_targetFileHandleRef) &&
+            (nullptr != *m_targetFileHandleRef) &&
             (FILE == m_targetLoc)) {
             fclose (*m_targetFileHandleRef);
         }

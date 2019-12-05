@@ -316,16 +316,16 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
     m_AppName = argv[0];
 
     static const struct option longOpts[] = {
-        {"help",        no_argument,        0, 'h'},
-        {"version",     no_argument,        0, 'v'},
-        {"debug",       no_argument,        0, 'd'},
-        {"nodisplay",   no_argument,        0, 'n'},
-        {"xml",         no_argument,        0, 'x'},
-        {"quiet",       no_argument,        0, 'q'},
-        {"outputxml",   required_argument,  0, 'o'},
-        {"libs",        required_argument,  0, 'l'},
-        {"elemenfilt",  required_argument,  0, 0},
-        {nullptr, 0, 0, 0}
+        {"help",        no_argument,        nullptr, 'h'},
+        {"version",     no_argument,        nullptr, 'v'},
+        {"debug",       no_argument,        nullptr, 'd'},
+        {"nodisplay",   no_argument,        nullptr, 'n'},
+        {"xml",         no_argument,        nullptr, 'x'},
+        {"quiet",       no_argument,        nullptr, 'q'},
+        {"outputxml",   required_argument,  nullptr, 'o'},
+        {"libs",        required_argument,  nullptr, 'l'},
+        {"elemenfilt",  required_argument,  nullptr, 0},
+        {nullptr, 0, nullptr, 0}
     };
     while (1) {
         int opt_idx = 0;
