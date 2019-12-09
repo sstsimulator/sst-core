@@ -56,11 +56,12 @@ public:
     virtual void finish( ) override { }
 
 protected:
+#ifndef SST_ENABLE_PREVIEW_BUILD
     Component* const parent __attribute__ ((deprecated("The parent data member will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent is not allowed.")));
 
     /* Deprecate?   Old ELI style*/
     SubComponent* loadSubComponent(const std::string& type, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-
+#endif
 
 private:
     friend class Component;
@@ -70,10 +71,12 @@ private:
 } //namespace SST
 
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
 // Legacy version of subcomponent registration
 #define SST_ELI_REGISTER_SUBCOMPONENT(cls,lib,name,version,desc,interface)   \
     SST_ELI_REGISTER_DERIVED(SST::SubComponent,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
     SST_ELI_INTERFACE_INFO(interface)
+#endif
 
 // New way to register subcomponents.  Must register an interface
 // (API) first, then you can register a subcomponent that implements

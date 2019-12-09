@@ -33,9 +33,13 @@ namespace SST {
 
 BaseComponent::BaseComponent(ComponentId_t id) :
     sim(Simulation::getSimulation()),
+#ifndef SST_ENABLE_PREVIEW_BUILD
     loadedWithLegacyAPI(false),
+#endif
     my_info(Simulation::getSimulation()->getComponentInfo(id)),
+#ifndef SST_ENABLE_PREVIEW_BUILD
     currentlyLoadingSubComponent(nullptr),
+#endif
     isExtension(false)
 {
     if ( my_info->component == nullptr ) {
@@ -92,6 +96,7 @@ BaseComponent::~BaseComponent()
     }
 }
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
 void
 BaseComponent::setDefaultTimeBaseForParentLinks(TimeConverter* tc) {
     LinkMap* myLinks = my_info->getLinkMap();
@@ -132,6 +137,7 @@ BaseComponent::setDefaultTimeBaseForChildLinks(TimeConverter* tc) {
         }
     }    
 }
+#endif
 
 void
 BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
@@ -144,7 +150,8 @@ BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
             }
         }
     }
-
+    
+#ifndef SST_ENABLE_PREVIEW_BUILD
     // Need to look through my child subcomponents and for all
     // anonymously loaded subcomponents, set the default time base for
     // any links they have.  These links would have been moved from
@@ -160,7 +167,7 @@ BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
     if ( my_info->isLegacySubComponent() ) {
         my_info->parent_info->component->setDefaultTimeBaseForParentLinks(tc);
     }
-
+#endif
 }
 
 void
@@ -312,6 +319,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                     my_info->link_map = myLinks;
                 }
                 myLinks->insertLink(name,tmp);
+#ifndef SST_ENABLE_PREVIEW_BUILD
                 // Need to set the link's defaultTimeBase to nullptr,
                 // except in the case of this being an Anonymously
                 // loadeed SubComponent, then for backward
@@ -319,6 +327,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                 if ( !my_info->isLegacySubComponent() ) {
                     tmp->setDefaultTimeBase(nullptr);
                 }
+#endif
             }
         }
     }
@@ -425,6 +434,7 @@ BaseComponent::loadModule(const std::string& type, Params& params)
     return Factory::getFactory()->CreateModule(type,params);
 }
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
 Module*
 BaseComponent::loadModuleWithComponent(const std::string& type, Component* comp, Params& params)
 {
@@ -450,6 +460,16 @@ BaseComponent::loadSubComponent(const std::string& type, Component* comp, Params
     return ret;
 }
 
+Component*
+BaseComponent::getTrueComponent() const {
+    // Walk up the parent tree until we hit the base Component.  We
+    // know we're the base Component when parent is nullptr.
+    ComponentInfo* info = my_info;
+    while ( info->parent_info != nullptr ) info = info->parent_info;
+    return static_cast<Component* const>(info->component);
+}
+
+
 SubComponent*
 BaseComponent::loadLegacySubComponentPrivate(ComponentId_t cid, const std::string& type, Params& params) {
     Component* comp = getTrueComponentPrivate();
@@ -459,15 +479,6 @@ BaseComponent::loadLegacySubComponentPrivate(ComponentId_t cid, const std::strin
     SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
     comp->currentlyLoadingSubComponentID = old_cid;
     return ret;
-}
-
-Component*
-BaseComponent::getTrueComponent() const {
-    // Walk up the parent tree until we hit the base Component.  We
-    // know we're the base Component when parent is nullptr.
-    ComponentInfo* info = my_info;
-    while ( info->parent_info != nullptr ) info = info->parent_info;
-    return static_cast<Component* const>(info->component);
 }
 
 Component*
@@ -563,6 +574,8 @@ BaseComponent::loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Param
     getTrueComponentPrivate()->currentlyLoadingSubComponentID = cid;
     return ret;
 }
+#endif
+
 
 SubComponentSlotInfo*
 BaseComponent::getSubComponentSlotInfo(const std::string& name, bool fatalOnEmptyIndex) {
