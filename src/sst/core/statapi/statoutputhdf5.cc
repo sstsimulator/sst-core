@@ -542,6 +542,10 @@ void StatisticOutputHDF5::GroupInfo::finishGroupEntry()
     }
 }
 
+const std::string& StatisticOutputHDF5::GroupInfo::getName() const
+{
+    return m_statGroup->name;
+}
 
 
 
