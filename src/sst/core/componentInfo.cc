@@ -150,6 +150,9 @@ ComponentInfo::~ComponentInfo() {
             component->my_info = nullptr;
             delete component;
         }
+#else
+        component->my_info = nullptr;
+        delete component;
 #endif
     }
 }
