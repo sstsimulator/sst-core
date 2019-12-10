@@ -40,7 +40,9 @@ public:
       ELI::ProvidesStats,
       ELI::ProvidesInterface)
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
 	SubComponent(Component* parent);
+#endif
 	SubComponent(ComponentId_t id);
 
 	virtual ~SubComponent() {};
