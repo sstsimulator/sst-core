@@ -32,7 +32,11 @@ class SubComponent : public Module, public BaseComponent {
 public:
     SST_ELI_DECLARE_BASE(SubComponent)
     //declare extern to limit compile times
+#ifndef SST_ENABLE_PREVIEW_BUILD
     SST_ELI_DECLARE_CTOR_EXTERN(Component*,SST::Params&)
+#else
+    SST_ELI_DECLARE_CTOR_EXTERN(ComponentId_t)
+#endif
     SST_ELI_DECLARE_INFO_EXTERN( 
       ELI::ProvidesParams,
       ELI::ProvidesSubComponentSlots,

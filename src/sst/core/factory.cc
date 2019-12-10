@@ -500,6 +500,7 @@ Factory::CreateModuleWithComponent(const std::string& type, Component* comp, Par
     return nullptr;
 }
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
 SubComponent*
 Factory::CreateSubComponent(const std::string& type, Component* comp, Params& params)
 {
@@ -535,7 +536,7 @@ Factory::CreateSubComponent(const std::string& type, Component* comp, Params& pa
               type.c_str(), error_os.str().c_str());
     return nullptr;
 }
-
+#endif
 
 bool
 Factory::doesSubComponentExist(const std::string& type)
