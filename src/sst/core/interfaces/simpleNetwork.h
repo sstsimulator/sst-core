@@ -167,10 +167,12 @@ public:
     public:
         SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork::NetworkInspector,std::string)
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
         NetworkInspector(Component* parent) :
             SubComponent(parent)
         {}
-
+#endif
+        
         NetworkInspector(ComponentId_t id) :
             SubComponent(id)
         {}
@@ -254,11 +256,12 @@ public:
 
 public:
     
+#ifndef SST_ENABLE_PREVIEW_BUILD
     /** Constructor, designed to be used via 'loadSubComponent'. */
     SimpleNetwork(SST::Component *comp) :
         SubComponent(comp)
     { }
-
+#endif
     /** Constructor, designed to be used via 'loadUserSubComponent or loadAnonymousSubComponent'. */
     SimpleNetwork(SST::ComponentId_t id) :
         SubComponent(id)

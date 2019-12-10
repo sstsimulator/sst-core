@@ -143,12 +143,17 @@ ComponentInfo::ComponentInfo(ComponentInfo &&o) :
 ComponentInfo::~ComponentInfo() {
     if ( link_map ) delete link_map;
     if ( component ) {
+#ifndef SST_ENABLE_PREVIEW_BUILD        
         // For backward compatibility, don't delete component defined
         // (anonymous) subcomponents since they weren't before.
         if ( !isLegacySubComponent() ) {
             component->my_info = nullptr;
             delete component;
         }
+#else
+        component->my_info = nullptr;
+        delete component;
+#endif
     }
 }
 

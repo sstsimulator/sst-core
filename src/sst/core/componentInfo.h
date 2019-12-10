@@ -153,10 +153,11 @@ private:
         return (share_flags & INSERT_STATS) != 0;
     }
     
+#ifndef SST_ENABLE_PREVIEW_BUILD
     bool isLegacySubComponent() {
         return (share_flags & IS_LEGACY_SUBCOMPONENT) != 0;
     }
-    
+#endif    
 
     inline void setComponent(BaseComponent* comp) { component = comp; }
     // inline void setParent(BaseComponent* comp) { parent = comp; }

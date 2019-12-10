@@ -310,11 +310,13 @@ public:
     };
 
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     /** Constructor, designed to be used via 'loadSubComponent'. */
     SimpleMem(SST::Component *comp, Params &UNUSED(params)) :
         SubComponent(comp)
         { }
-
+#endif
+    
     /** Constructor, designed to be used via 'loadUserSubComponent and loadAnonymousSubComponent'. */
     SimpleMem(SST::ComponentId_t id, Params &UNUSED(params)) :
         SubComponent(id)

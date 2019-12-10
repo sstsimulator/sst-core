@@ -78,7 +78,7 @@ AC_CACHE_SAVE
 AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen])
 AM_CONDITIONAL([HAVE_DOXYGEN], [test "$DOXYGEN" = "doxygen"])
 
-SST_CHECK_DEPRECATED()
+SST_CHECK_PREVIEW_BUILD()
 
 SST_CHECK_OSX()
 SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])

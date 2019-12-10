@@ -62,10 +62,12 @@ public:
     BaseComponent() {}
     virtual ~BaseComponent();
 
+#ifndef SST_ENABLE_PREVIEW_BUILD    
     /** Returns a pointer to the parent BaseComponent */
     BaseComponent* getParent() const __attribute__ ((deprecated("getParent() will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent is not allowed.")))
         { return my_info->parent_info->component; }
-
+#endif
+    
     const std::string& getType() const { return my_info->getType(); }
     
     /** Returns unique component ID */
@@ -105,6 +107,10 @@ public:
      */
     virtual void printStatus(Output &UNUSED(out)) { return; }
 
+#ifdef SST_ENABLE_PREVIEW_BUILD
+protected:
+#endif
+    
     /** Determine if a port name is connected to any links */
     bool isPortConnected(const std::string& name) const;
 
@@ -182,7 +188,7 @@ public:
     */
     TimeConverter* registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler);
     TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
-
+    
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
         components which do not have a clock, but would like a default
@@ -317,15 +323,6 @@ public:
 
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName
-     * @param comp Pointer to component to pass to Module's constructor
-     * @param params Parameters the module should use for configuration
-     * @return handle to new instance of module, or nullptr on failure.
-     */
-    Module* loadModuleWithComponent(const std::string& type, Component* comp, Params& params) __attribute__ ((deprecated("loadModuleWithComponent will be removed in SST version 10.0.  If the module needs access to the parent component, please use SubComponents instead of Modules.")));
-
-
-    /** Loads a module from an element Library
-     * @param type Fully Qualified library.moduleName
      * @param params Parameters the module should use for configuration
      * @return handle to new instance of module, or nullptr on failure.
      */
@@ -337,6 +334,15 @@ public:
     }
 
     
+#ifndef SST_ENABLE_PREVIEW_BUILD    
+    /** Loads a module from an element Library
+     * @param type Fully Qualified library.moduleName
+     * @param comp Pointer to component to pass to Module's constructor
+     * @param params Parameters the module should use for configuration
+     * @return handle to new instance of module, or nullptr on failure.
+     */
+    Module* loadModuleWithComponent(const std::string& type, Component* comp, Params& params) __attribute__ ((deprecated("loadModuleWithComponent will be removed in SST version 10.0.  If the module needs access to the parent component, please use SubComponents instead of Modules.")));
+
 
     /** Loads a SubComponent from an element Library
      * @param type Fully Qualified library.moduleName
@@ -349,7 +355,7 @@ public:
     /* New ELI style */
     SubComponent* loadNamedSubComponent(const std::string& name) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
     SubComponent* loadNamedSubComponent(const std::string& name, Params& params) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-
+#endif
     
 protected:
     // When you direct load, the ComponentExtension does not need any
@@ -404,10 +410,14 @@ protected:
             auto ret = Factory::getFactory()->Create<T>(type, params, sub_info->id, params, args...);
             return ret;
         }
+#ifndef SST_ENABLE_PREVIEW_BUILD
         else {
             SubComponent* ret = loadLegacySubComponentPrivate(cid,type,params);
             return dynamic_cast<T*>(ret);
         }
+#else
+        return nullptr;
+#endif
     }
 
 
@@ -467,19 +477,18 @@ protected:
     
 private:
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     SubComponent* loadNamedSubComponent(const std::string& name, int slot_num);
     SubComponent* loadNamedSubComponent(const std::string& name, int slot_num, Params& params);
 
     SubComponent* loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Params& params);
-
-    
     SubComponent* loadLegacySubComponentPrivate(ComponentId_t cid, const std::string& type, Params& params);
-
 
     // These two functions are only need for backward compatibility
     // for anonymous subcomponents.
     void setDefaultTimeBaseForParentLinks(TimeConverter* tc);
     void setDefaultTimeBaseForChildLinks(TimeConverter* tc);
+#endif
 
     void setDefaultTimeBaseForLinks(TimeConverter* tc);
 
@@ -506,17 +515,20 @@ private:
             auto ret = Factory::getFactory()->Create<T>(sub_info->type, myParams, sub_info->id, myParams, args...);
             return ret;
         }
+#ifndef SST_ENABLE_PREVIEW_BUILD
         else {
             SubComponent* ret = loadNamedSubComponentLegacyPrivate(sub_info,myParams);
             return dynamic_cast<T*>(ret);
         }
-        
-        // return nullptr;        
+#else
+        return nullptr;        
+#endif        
     }
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     ComponentInfo* getCurrentlyLoadingSubComponentInfo() { return currentlyLoadingSubComponent; }
     ComponentId_t getCurrentlyLoadingSubComponentID() { return currentlyLoadingSubComponentID; }
-
+#endif
 
 public:
     SubComponentSlotInfo* getSubComponentSlotInfo(const std::string& name, bool fatalOnEmptyIndex = false);
@@ -563,20 +575,21 @@ protected:
     // Return the Units for the statisticName from the ElementInfoStatistic
     // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
 
-    
+#ifndef SST_ENABLE_PREVIEW_BUILD    
     Component* getTrueComponent() const __attribute__ ((deprecated("getTrueParent will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent component is not allowed.")));
-
+#endif
 
 protected:
     Simulation *sim;
 
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
 private:
 
     // Only need temporarily to help with backward compatibility
     // implementation in elements.
     bool loadedWithLegacyAPI;
-
+    
 public:
 
     /**
@@ -589,12 +602,15 @@ public:
     bool wasLoadedWithLegacyAPI() const {
         return loadedWithLegacyAPI;
     }
+#endif
     
 private:
 
     ComponentInfo* my_info;
+#ifndef SST_ENABLE_PREVIEW_BUILD
     ComponentInfo* currentlyLoadingSubComponent;
     ComponentId_t currentlyLoadingSubComponentID;
+#endif
     bool isExtension;
     
     void addSelfLink(const std::string& name);
@@ -607,8 +623,9 @@ private:
                                          const std::string& statName, const std::string& statSubId,
                                          fieldType_t fieldType, CreateFxn&& fxn);
 
+#ifndef SST_ENABLE_PREVIEW_BUILD    
     Component* getTrueComponentPrivate() const;
-
+#endif
 };
 
 
@@ -623,6 +640,8 @@ class SubComponentSlotInfo {
     std::string slot_name;
     int max_slot_index;
 
+
+#ifndef SST_ENABLE_PREVIEW_BUILD    
 protected:
     
     SubComponent* protected_create(int slot_num, Params& params) const {
@@ -630,7 +649,7 @@ protected:
 
         return comp->loadNamedSubComponent(slot_name, slot_num, params);
     }    
-
+#endif
 
 
     
@@ -677,8 +696,9 @@ public:
     }
 
 
+    
+#ifndef SST_ENABLE_PREVIEW_BUILD
     // Create functions that support the legacy API
-
     template <typename T>
     __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags.")))
     T* create(int slot_num, Params& params) const 
@@ -700,7 +720,7 @@ public:
         Params empty;
         return private_createAll<T>(empty, vec, insertNulls);
     }
-
+#endif
 
     // Create functions that support the new API
 
@@ -823,6 +843,7 @@ public:
 
 private:
 
+#ifndef SST_ENABLE_PREVIEW_BUILD    
     // Extra versions of the calls supporting the legacy API to avoid
     // deprecation warnings in every file that include this file
     template <typename T>
@@ -852,7 +873,7 @@ private:
             if ( sub != nullptr || insertNulls ) vec.push_back(sub);
         }
     }
-
+#endif
 };
 
 

@@ -85,13 +85,14 @@ public:
      */
     Module* CreateModuleWithComponent(const std::string& type, Component* comp, Params& params);
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param comp - Component instance to pass to the SubComponent's constructor
      * @param params - Parameters to pass to the SubComponent's constructor
      */
     SubComponent* CreateSubComponent(const std::string& type, Component* comp, Params& params);
-
+#endif
 
     bool doesSubComponentExist(const std::string& type);
     
