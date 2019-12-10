@@ -319,14 +319,16 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                     my_info->link_map = myLinks;
                 }
                 myLinks->insertLink(name,tmp);
+                // Need to set the link's defaultTimeBase to nullptr
 #ifndef SST_ENABLE_PREVIEW_BUILD
-                // Need to set the link's defaultTimeBase to nullptr,
                 // except in the case of this being an Anonymously
                 // loadeed SubComponent, then for backward
                 // compatibility, we leave it as is.
                 if ( !my_info->isLegacySubComponent() ) {
                     tmp->setDefaultTimeBase(nullptr);
                 }
+#else
+                tmp->setDefaultTimeBase(nullptr);
 #endif
             }
         }
