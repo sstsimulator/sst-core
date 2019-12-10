@@ -237,7 +237,7 @@ private:
         void finishGroupEntry() override;
         size_t getNumComponents() const { return m_components.size(); }
 
-        const std::string& getName() const { return m_statGroup->name; }
+        const std::string& getName() const;
     };
 
 
