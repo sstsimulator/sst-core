@@ -75,8 +75,7 @@ static PyMethodDef mlMethods[] = {
 
 
 static PyTypeObject ModuleLoaderType = {
-    PyObject_HEAD_INIT(nullptr)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(nullptr, 0)
     "ModuleLoader",            /* tp_name */
     sizeof(ModuleLoaderPy_t),  /* tp_basicsize */
     0,                         /* tp_itemsize */

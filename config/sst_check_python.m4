@@ -8,28 +8,46 @@ AC_DEFUN([SST_CHECK_PYTHON], [
 
   FOUND_PYTHON="no"
   PYTHON_CONFIG_EXE=""
+  PYTHON2_DEF_CONFIG_EXE=""
+  PYTHON3_DEF_CONFIG_EXE=""
+  PYTHON_DEF_CONFIG_EXE=""
+  PYTHON_VERSION3="no"
+  PYTHON_DEF_VERSION3="no"
+  
+  AC_PATH_PROGS([PYTHON2_DEF_CONFIG_EXE], ["python2.6-config" "python2.7-config"], ["NOTFOUND"])
 
-  AC_PATH_PROG([PYTHON2_CONFIG_EXE], ["python2-config"], 
-		["NOTFOUND"])
+  AS_IF([test $PYTHON2_DEF_CONFIG_EXE = "NOTFOUND"], 
+        [AC_PATH_PROGS([PYTHON3_DEF_CONFIG_EXE], ["python3.5-config" "python3.6-config"], ["NOTFOUND"])])
 
-  AS_IF([test "$PYTHON2_CONFIG_EXE" = "NOTFOUND"],
-	[AC_PATH_PROG([PYTHON_CONFIG_EXE], ["python-config"], 
-		["NOTFOUND"])],[PYTHON_CONFIG_EXE="$PYTHON2_CONFIG_EXE"])
+  AS_IF([test $PYTHON2_DEF_CONFIG_EXE = "NOTFOUND"],
+        [AS_IF([test $PYTHON3_DEF_CONFIG_EXE != "NOTFOUND"], 
+                [PYTHON_DEF_VERSION3="yes"],
+                [AC_PATH_PROG([PYTHON2_DEF_CONFIG_EXE], ["python-config"], ["NOTFOUND"])])])
+
+  AS_IF([test "$PYTHON2_DEF_CONFIG_EXE" != "NOTFOUND"], 
+        [PYTHON_DEF_CONFIG_EXE=$PYTHON2_DEF_CONFIG_EXE], 
+        [PYTHON_DEF_CONFIG_EXE=$PYTHON3_DEF_CONFIG_EXE])
 
   AS_IF([test -n "$with_python"],
-        [PYTHON_CPPFLAGS="-I$with_python/include"],
-        [AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-                [PYTHON_CPPFLAGS=`$PYTHON_CONFIG_EXE --includes`])])
+       [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3.5-config" "python3.6-config"], [""], ["$with_python/bin"])])
 
-  AS_IF([test -n "$with_python"],
-        [PYTHON_LDFLAGS="-L$with_python/lib"],
-        [AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-                [PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --ldflags`])])
+  AS_IF([test -n "$PYTHON_CONFIG_EXE"], [PYTHON_VERSION3="yes"])
+  
+  AS_IF([test -n "$with_python" -a -z "$PYTHON_CONFIG_EXE"], 
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2.6-config" "python2.7-config" "python-config"], [""], ["$with_python/bin$PATH_SEPARATOR$with_python"])])
 
-  AS_IF([test -n "$with_python"],
-        [PYTHON_LIBS=""],
-        [AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-                [PYTHON_LIBS=`$PYTHON_CONFIG_EXE --libs`])])
+  AS_IF([test -z "$PYTHON_CONFIG_EXE"], [PYTHON_CONFIG_EXE=$PYTHON_DEF_CONFIG_EXE; PYTHON_VERSION3=$PYTHON_DEF_VERSION3])
+
+  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
+        [PYTHON_CPPFLAGS=`$PYTHON_CONFIG_EXE --includes`])
+  
+  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
+        [PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --ldflags`])
+        
+  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
+        [PYTHON_LIBS=`$PYTHON_CONFIG_EXE --libs`])
+  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
+        [PYTHON_PREFIX=`$PYTHON_CONFIG_EXE --prefix`])
 
   CPPFLAGS_saved="$CPPFLAGS"
   LDFLAGS_saved="$LDFLAGS"
@@ -40,27 +58,9 @@ AC_DEFUN([SST_CHECK_PYTHON], [
   LIBS="$PYTHON_LIBS $LIBS"
 
   AC_LANG_PUSH(C++)
-  AC_CHECK_HEADERS([Python.h], [sst_check_python_happy="yes"], [sst_check_python_happy="no"])
-
-  AC_MSG_CHECKING([python libraries])
-  AS_IF([test -n "$with_python" -a -z "$PYTHON_LIBS" ],
-	[AC_CHECK_LIB([python2.6], [Py_Initialize], [PYTHON_LIBS="-lpython2.6"], [PYTHON_LIBS=""])])
-  AS_IF([test -n "$with_python" -a -z "$PYTHON_LIBS" ],
-	[AC_CHECK_LIB([python2.7], [Py_Initialize], [PYTHON_LIBS="-lpython2.7"], [PYTHON_LIBS=""])])
   
-  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
-	[PYTHON_PREFIX=`$PYTHON_CONFIG_EXE --prefix`], [PYTHON_PREFIX=""])
-
-  AS_IF([test -n "$PYTHON_PREFIX" -a -z "$PYTHON_LIBS"],
-	[LDFLAGS="$LDFLAGS -L$PYTHON_PREFIX/lib64"
-	 PYTHON_LDFLAGS="$PYTHON_LDFLAGS -L$PYTHON_PREFIX/lib64"])
-
-  AS_IF([test -n "$with_python" -a -z "$PYTHON_LIBS" ],
-	[AC_CHECK_LIB([python2.6], [Py_Initialize], [PYTHON_LIBS="-lpython2.6"], [PYTHON_LIBS=""])])
-  AS_IF([test -n "$with_python" -a -z "$PYTHON_LIBS" ],
-	[AC_CHECK_LIB([python2.7], [Py_Initialize], [PYTHON_LIBS="-lpython2.7"], [PYTHON_LIBS=""])])
-
-  AC_MSG_RESULT([$PYTHON_LIBS])
+  AC_CHECK_HEADERS([Python.h], [sst_check_python_happy="yes"], [sst_check_python_happy="no"])
+  
   AC_LANG_POP(C++)
 
   CPPFLAGS="$CPPFLAGS_saved"
@@ -71,9 +71,12 @@ AC_DEFUN([SST_CHECK_PYTHON], [
   AC_SUBST([PYTHON_CPPFLAGS])
   AC_SUBST([PYTHON_LDFLAGS])
   AC_SUBST([PYTHON_CONFIG_EXE])
+  AC_SUBST([PYTHON_VERSION3])
 
   AM_CONDITIONAL([SST_CONFIG_HAVE_PYTHON], [test "$sst_check_python_happy" = "yes"])
 
+  AS_IF([test "$PYTHON_VERSION3" = "yes"], 
+        [AC_DEFINE([SST_CONFIG_HAVE_PYTHON3], [1], [Set to 1 if Python version is 3])])
   AS_IF([test "$sst_check_python_happy" = "yes"],
         [AC_DEFINE([SST_CONFIG_HAVE_PYTHON], [1], [Set to 1 if Python was found])])
   AS_IF([test "$sst_check_python_happy" != "yes"],
