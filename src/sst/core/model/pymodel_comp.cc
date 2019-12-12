@@ -416,8 +416,7 @@ static PyMethodDef componentMethods[] = {
 
 
 PyTypeObject PyModel_ComponentType = {
-    PyObject_HEAD_INIT(nullptr)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(nullptr, 0)
     "sst.Component",           /* tp_name */
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -533,8 +532,7 @@ static PyMethodDef subComponentMethods[] = {
 
 
 PyTypeObject PyModel_SubComponentType = {
-    PyObject_HEAD_INIT(nullptr)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(nullptr, 0)
     "sst.SubComponent",        /* tp_name */
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */

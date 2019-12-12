@@ -136,8 +136,7 @@ static PyMethodDef linkMethods[] = {
 
 
 PyTypeObject PyModel_LinkType = {
-    PyObject_HEAD_INIT(nullptr)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(nullptr, 0)
     "sst.Link",                /* tp_name */
     sizeof(LinkPy_t),          /* tp_basicsize */
     0,                         /* tp_itemsize */

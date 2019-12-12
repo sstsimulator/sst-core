@@ -168,8 +168,7 @@ static PyMethodDef sgMethods[] = {
 
 
 PyTypeObject PyModel_StatGroupType = {
-    PyObject_HEAD_INIT(nullptr)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(nullptr, 0)
     "sst.StatisticGroup",      /* tp_name */
     sizeof(StatGroupPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
@@ -303,8 +302,7 @@ static PyMethodDef soMethods[] = {
 
 
 PyTypeObject PyModel_StatOutputType = {
-    PyObject_HEAD_INIT(nullptr)
-    0,                           /* ob_size */
+    PyVarObject_HEAD_INIT(nullptr, 0)
     "sst.StatisticOutput",       /* tp_name */
     sizeof(StatOutputPy_t),      /* tp_basicsize */
     0,                           /* tp_itemsize */
