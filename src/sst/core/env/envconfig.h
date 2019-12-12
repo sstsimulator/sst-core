@@ -61,17 +61,17 @@ SST releases.
 class EnvironmentConfigGroup {
 
 public:
-	EnvironmentConfigGroup(const std::string& name) : groupName(name) {}
-	std::string getName() const;
-	std::set<std::string> getKeys() const;
-	std::string getValue(const std::string& key);
-	void setValue(const std::string& key, const std::string& value);
-	void print();
-	void writeTo(FILE* outFile);
+    EnvironmentConfigGroup(const std::string& name) : groupName(name) {}
+    std::string getName() const;
+    std::set<std::string> getKeys() const;
+    std::string getValue(const std::string& key);
+    void setValue(const std::string& key, const std::string& value);
+    void print();
+    void writeTo(FILE* outFile);
 
 protected:
-	std::string groupName;
-	std::map<std::string, std::string> params;
+    std::string groupName;
+    std::map<std::string, std::string> params;
 
 };
 
@@ -107,19 +107,19 @@ with SST releases.
 class EnvironmentConfiguration {
 
 public:
-	EnvironmentConfiguration();
-	~EnvironmentConfiguration();
+    EnvironmentConfiguration();
+    ~EnvironmentConfiguration();
 
-	EnvironmentConfigGroup* createGroup(const std::string& groupName);
-	void removeGroup(const std::string& groupName);
-	std::set<std::string> getGroupNames();
-	EnvironmentConfigGroup* getGroupByName(const std::string& groupName);
-	void print();
-	void writeTo(const std::string& filePath);
-	void writeTo(FILE* outFile);
+    EnvironmentConfigGroup* createGroup(const std::string& groupName);
+    void removeGroup(const std::string& groupName);
+    std::set<std::string> getGroupNames();
+    EnvironmentConfigGroup* getGroupByName(const std::string& groupName);
+    void print();
+    void writeTo(const std::string& filePath);
+    void writeTo(FILE* outFile);
 
 private:
-	std::map<std::string, EnvironmentConfigGroup*> groups;
+    std::map<std::string, EnvironmentConfigGroup*> groups;
 
 };
 

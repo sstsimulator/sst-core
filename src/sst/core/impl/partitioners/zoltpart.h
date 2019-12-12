@@ -35,10 +35,10 @@ namespace IMPL {
 namespace Partition {
 
 /**
-	\class SSTZoltanPartition creates a partitioner interface to the
-	Zoltan partitioner library developed by Sandia National Labs. This is
-	an option to partition simulations if the user has configured SST
-	to find and compile with the Zoltan external dependency.
+    \class SSTZoltanPartition creates a partitioner interface to the
+    Zoltan partitioner library developed by Sandia National Labs. This is
+    an option to partition simulations if the user has configured SST
+    to find and compile with the Zoltan external dependency.
 */
 class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 
@@ -73,9 +73,9 @@ public:
     */
     void performPartition(PartitionGraph* graph) override;
 
-		void performPartition(ConfigGraph* graph) override {
-			SST::Partition::SSTPartitioner::performPartition(graph);
-		}
+        void performPartition(ConfigGraph* graph) override {
+            SST::Partition::SSTPartitioner::performPartition(graph);
+        }
     
     bool requiresConfigGraph() override { return false; }
     

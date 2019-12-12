@@ -61,7 +61,7 @@ Simulation::~Simulation()
 
     // Delete all the components
     // for ( CompMap_t::iterator it = compMap.begin(); it != compMap.end(); ++it ) {
-	// delete it->second;
+    // delete it->second;
     // }
     // compMap.clear();
     
@@ -144,7 +144,7 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
 
     if(strcmp(cfg->heartbeatPeriod.c_str(), "N") != 0 && my_rank.thread == 0) {
         sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeatPeriod.c_str());
-    	m_heartbeat = new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeatPeriod) );
+        m_heartbeat = new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeatPeriod) );
     }
 
     // Need to create the thread sync if there is more than one thread
@@ -158,9 +158,9 @@ Simulation::setStopAtCycle( Config* cfg )
 {
     SimTime_t stopAt = timeLord.getSimCycles(cfg->stopAtCycle,"StopAction configure");
     if ( stopAt != 0 ) {
-	StopAction* sa = new StopAction();
-	sa->setDeliveryTime(stopAt);
-	timeVortex->insert(sa);
+    StopAction* sa = new StopAction();
+    sa->setDeliveryTime(stopAt);
+    timeVortex->insert(sa);
     }
 }
 

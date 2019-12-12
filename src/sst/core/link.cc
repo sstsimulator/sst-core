@@ -141,11 +141,11 @@ Event* Link::recv()
     Simulation *simulation = Simulation::getSimulation();
 
     if ( !recvQueue->empty() ) {
-	Activity* activity = recvQueue->front();
-	if ( activity->getDeliveryTime() <=  simulation->getCurrentSimCycle() ) {
-	    event = static_cast<Event*>(activity);
-	    recvQueue->pop();
-	}
+    Activity* activity = recvQueue->front();
+    if ( activity->getDeliveryTime() <=  simulation->getCurrentSimCycle() ) {
+        event = static_cast<Event*>(activity);
+        recvQueue->pop();
+    }
     }
     return event;
 } 
@@ -182,11 +182,11 @@ Event* Link::recvUntimedData()
 
     Event* event = nullptr;
     if ( !untimedQueue->empty() ) {
-	Activity* activity = untimedQueue->front();
-	if ( activity->getDeliveryTime() <= Simulation::getSimulation()->untimed_phase ) {
-	    event = static_cast<Event*>(activity);
-	    untimedQueue->pop();
-	}
+    Activity* activity = untimedQueue->front();
+    if ( activity->getDeliveryTime() <= Simulation::getSimulation()->untimed_phase ) {
+        event = static_cast<Event*>(activity);
+        untimedQueue->pop();
+    }
     }
     return event;
 }

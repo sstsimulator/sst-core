@@ -23,22 +23,22 @@ namespace RNG {
  */
 class SSTRandomDistribution {
 
-	public:
-		/**
-			Obtains the next double from the distribution
-			\return The next double in the distribution being sampled
-		*/
-		virtual double getNextDouble() = 0;
+    public:
+        /**
+            Obtains the next double from the distribution
+            \return The next double in the distribution being sampled
+        */
+        virtual double getNextDouble() = 0;
 
-		/** 
-			Destroys the distribution
-		*/
-		virtual ~SSTRandomDistribution() {};
+        /** 
+            Destroys the distribution
+        */
+        virtual ~SSTRandomDistribution() {};
 
-		/**
-			Creates the base (abstract) class of a distribution
-		*/
-		SSTRandomDistribution() {};
+        /**
+            Creates the base (abstract) class of a distribution
+        */
+        SSTRandomDistribution() {};
 
 };
 

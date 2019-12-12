@@ -33,8 +33,8 @@ namespace Statistics {
 
 /**
     \class HistogramStatistic
-	Holder of data grouped into pre-determined width bins.
-	\tparam BinDataType is the type of the data held in each bin (i.e. what data type described the width of the bin)
+    Holder of data grouped into pre-determined width bins.
+    \tparam BinDataType is the type of the data held in each bin (i.e. what data type described the width of the bin)
 */
 #define CountType   uint64_t
 #define NumBinsType uint32_t
@@ -53,7 +53,7 @@ class HistogramStatistic : public Statistic<BinDataType>
 
   HistogramStatistic(BaseComponent* comp, const std::string& statName,
                      const std::string& statSubId, Params& statParams)
-		: Statistic<BinDataType>(comp, statName, statSubId, statParams)
+        : Statistic<BinDataType>(comp, statName, statSubId, statParams)
     {
         // Identify what keys are Allowed in the parameters
         Params::KeySet_t allowedKeySet;
@@ -217,8 +217,8 @@ private:
     }
 
     /**
-	Sum up every squared value entered into the Histogram.
-	\return The sum of all values added after squaring into the Histogram
+    Sum up every squared value entered into the Histogram.
+    \return The sum of all values added after squaring into the Histogram
     */
     BinDataType getValuesSquaredSummed() {
         return m_totalSummedSqr;
@@ -260,7 +260,7 @@ private:
             
             for (uint32_t y = 0; y < getNumBins(); y++) {
                 // Figure out the upper and lower values for this bin
-	        binLL = (y * (uint64_t)getBinWidth()) + getBinsMinValue(); // Force full 64-bit multiply -mpf 10/8/15
+            binLL = (y * (uint64_t)getBinWidth()) + getBinsMinValue(); // Force full 64-bit multiply -mpf 10/8/15
                 binUL = binLL + getBinWidth() - 1;
                 // Build the string name for this bin and add it as a field
                 std::stringstream ss;
@@ -339,7 +339,7 @@ private:
     BinDataType m_totalSummed;
 
     // The sum of values added to the Histogram squared. Allows calculation of derivative statistic
-	// values such as variance. 
+    // values such as variance. 
     BinDataType m_totalSummedSqr;
 
     // A map of the the bin starts to the bin counts 

@@ -23,18 +23,18 @@ namespace SST {
 namespace RNG {
 
 /**
-	\class SSTGaussianDistribution gaussian.h "sst/core/rng/gaussian.h"
+    \class SSTGaussianDistribution gaussian.h "sst/core/rng/gaussian.h"
 
-	Creates a Gaussian (normal) distribution for which to sample
+    Creates a Gaussian (normal) distribution for which to sample
 */
 class SSTGaussianDistribution : public SSTRandomDistribution {
 
-	public:
-		/**
-			Creates a new distribution with a predefined random number generator with a specified mean and standard deviation.
-			\param mn The mean of the Gaussian distribution
-			\param sd The standard deviation of the Gaussian distribution
-		*/
+    public:
+        /**
+            Creates a new distribution with a predefined random number generator with a specified mean and standard deviation.
+            \param mn The mean of the Gaussian distribution
+            \param sd The standard deviation of the Gaussian distribution
+        */
     SSTGaussianDistribution(double mn, double sd)  :
     SSTRandomDistribution() {
         
@@ -47,12 +47,12 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
         deleteDistrib = true;
     }
 
-		/**
-			Creates a new distribution with a predefined random number generator with a specified mean and standard deviation.
-			\param mn The mean of the Gaussian distribution
-			\param sd The standard deviation of the Gaussian distribution
-			\param baseRNG The random number generator as the base of the distribution
-		*/
+        /**
+            Creates a new distribution with a predefined random number generator with a specified mean and standard deviation.
+            \param mn The mean of the Gaussian distribution
+            \param sd The standard deviation of the Gaussian distribution
+            \param baseRNG The random number generator as the base of the distribution
+        */
     SSTGaussianDistribution(double mn, double sd, SSTRandom* baseRNG)  :
     SSTRandomDistribution() {
         
@@ -65,19 +65,19 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
         deleteDistrib = false;
     }
 
-		/**
-			Destroys the Gaussian distribution.
-		*/
+        /**
+            Destroys the Gaussian distribution.
+        */
     ~SSTGaussianDistribution()  {
         if(deleteDistrib) {
             delete baseDistrib;
         }
     }
 
-		/**
-			Gets the next double value in the distribution
-			\return The next double value of the distribution (in this case a Gaussian distribution)
-		*/
+        /**
+            Gets the next double value in the distribution
+            \return The next double value of the distribution (in this case a Gaussian distribution)
+        */
     double getNextDouble()  {
         if(usePair) {
             usePair = false;
@@ -107,48 +107,48 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
         }
     }
 
-		/**
-			Gets the mean of the distribution
-			\return The mean of the Guassian distribution
-		*/
+        /**
+            Gets the mean of the distribution
+            \return The mean of the Guassian distribution
+        */
     double getMean()  {
         return mean;
     }
 
-		/**
-			Gets the standard deviation of the distribution
-			\return The standard deviation of the Gaussian distribution
-		*/
+        /**
+            Gets the standard deviation of the distribution
+            \return The standard deviation of the Gaussian distribution
+        */
     double getStandardDev()  {
         return stddev;
     }
 
-	protected:
-		/**
-			The mean of the Gaussian distribution
-		*/
-		double mean;
-		/**
-			The standard deviation of the Gaussian distribution
-		*/
-		double stddev;
-		/**
-			The base random number generator for the distribution
-		*/
-		SSTRandom* baseDistrib;
-		/**
-			Random numbers for the distribution are read in pairs, this stores the second of the pair
-		*/
-		double unusedPair;
-		/**
-			Random numbers for the distribution are read in pairs, this tells the code to use the second of the pair
-		*/
-		bool usePair;
+    protected:
+        /**
+            The mean of the Gaussian distribution
+        */
+        double mean;
+        /**
+            The standard deviation of the Gaussian distribution
+        */
+        double stddev;
+        /**
+            The base random number generator for the distribution
+        */
+        SSTRandom* baseDistrib;
+        /**
+            Random numbers for the distribution are read in pairs, this stores the second of the pair
+        */
+        double unusedPair;
+        /**
+            Random numbers for the distribution are read in pairs, this tells the code to use the second of the pair
+        */
+        bool usePair;
 
-		/**
-			Controls whether the destructor deletes the distribution (we need to ensure we do this IF we created the distribution)
-		*/
-		bool deleteDistrib;
+        /**
+            Controls whether the destructor deletes the distribution (we need to ensure we do this IF we created the distribution)
+        */
+        bool deleteDistrib;
 };
 
 }

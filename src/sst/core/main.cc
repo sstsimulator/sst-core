@@ -86,23 +86,23 @@ SimulationSigHandler(int sig)
 static void setupSignals(uint32_t threadRank)
 {
     if ( 0 == threadRank ) {
-		if(SIG_ERR == signal(SIGUSR1, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, 1, "Installation of SIGUSR1 signal handler failed.\n");
-		}
-		if(SIG_ERR == signal(SIGUSR2, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, 1, "Installation of SIGUSR2 signal handler failed\n");
-		}
-		if(SIG_ERR == signal(SIGINT, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, 1, "Installation of SIGINT signal handler failed\n");
-		}
-		if(SIG_ERR == signal(SIGALRM, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, 1, "Installation of SIGALRM signal handler failed\n");
-		}
-		if(SIG_ERR == signal(SIGTERM, SimulationSigHandler)) {
-			g_output.fatal(CALL_INFO, 1, "Installation of SIGTERM signal handler failed\n");
-		}
+        if(SIG_ERR == signal(SIGUSR1, SimulationSigHandler)) {
+            g_output.fatal(CALL_INFO, 1, "Installation of SIGUSR1 signal handler failed.\n");
+        }
+        if(SIG_ERR == signal(SIGUSR2, SimulationSigHandler)) {
+            g_output.fatal(CALL_INFO, 1, "Installation of SIGUSR2 signal handler failed\n");
+        }
+        if(SIG_ERR == signal(SIGINT, SimulationSigHandler)) {
+            g_output.fatal(CALL_INFO, 1, "Installation of SIGINT signal handler failed\n");
+        }
+        if(SIG_ERR == signal(SIGALRM, SimulationSigHandler)) {
+            g_output.fatal(CALL_INFO, 1, "Installation of SIGALRM signal handler failed\n");
+        }
+        if(SIG_ERR == signal(SIGTERM, SimulationSigHandler)) {
+            g_output.fatal(CALL_INFO, 1, "Installation of SIGTERM signal handler failed\n");
+        }
 
-		g_output.verbose(CALL_INFO, 1, 0, "Signal handler registration is completed\n");
+        g_output.verbose(CALL_INFO, 1, 0, "Signal handler registration is completed\n");
     } else {
         /* Other threads don't want to receive the signal */
         sigset_t maskset;
@@ -114,14 +114,14 @@ static void setupSignals(uint32_t threadRank)
 
 static void dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo &size) {
 
-	///////////////////////////////////////////////////////////////////////	
-	// If the user asks us to dump the partitioned graph.
-	if(cfg.dump_component_graph_file != "") {
-		if(cfg.verbose) {
-			g_output.verbose(CALL_INFO, 1, 0,
-				"# Dumping partitioned component graph to %s\n",
-				cfg.dump_component_graph_file.c_str());
-		}
+    ///////////////////////////////////////////////////////////////////////    
+    // If the user asks us to dump the partitioned graph.
+    if(cfg.dump_component_graph_file != "") {
+        if(cfg.verbose) {
+            g_output.verbose(CALL_INFO, 1, 0,
+                "# Dumping partitioned component graph to %s\n",
+                cfg.dump_component_graph_file.c_str());
+        }
 
         ofstream graph_file(cfg.dump_component_graph_file.c_str());
         ConfigComponentMap_t& component_map = graph->getComponentMap();
@@ -564,8 +564,8 @@ main(int argc, char *argv[])
         g_output.verbose(CALL_INFO, 1, 0, "Signal handlers will be registered for USR1, USR2, INT and TERM...\n");
         setupSignals(0);
     } else {
-		// Print out to say disabled?
-		g_output.verbose(CALL_INFO, 1, 0, "Signal handlers are disabled by user input\n");
+        // Print out to say disabled?
+        g_output.verbose(CALL_INFO, 1, 0, "Signal handlers are disabled by user input\n");
     }
 
     ////// Broadcast Graph //////

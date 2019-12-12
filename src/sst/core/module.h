@@ -28,8 +28,8 @@ namespace SST {
       ELI_CTOR(Component*,SST::Params&)
     )
     SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams)
-	Module() {}
-	virtual ~Module() {}
+    Module() {}
+    virtual ~Module() {}
 
     };
 } //namespace SST

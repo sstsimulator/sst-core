@@ -22,13 +22,13 @@ namespace Core {
 class XMLConfigGraphOutput : public ConfigGraphOutput {
 public:
         XMLConfigGraphOutput(const char* path);
-	virtual void generate(const Config* cfg,
+    virtual void generate(const Config* cfg,
                 ConfigGraph* graph) override;
 protected:
         void generateXML(const std::string& indent, const ConfigComponent& comp,
-		const ConfigLinkMap_t& linkMap) const;
+        const ConfigLinkMap_t& linkMap) const;
         void generateXML(const std::string& indent, const ConfigLink& link,
-		const ConfigComponentMap_t& compMap) const;
+        const ConfigComponentMap_t& compMap) const;
 };
 
 }

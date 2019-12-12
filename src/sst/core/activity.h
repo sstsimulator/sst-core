@@ -69,10 +69,10 @@ public:
                     /* TODO:  Handle 64-bit wrap-around */
                     return lhs->enforce_link_order > rhs->enforce_link_order;
                 } else {
-               	    return lhs->priority > rhs->priority;
+                       return lhs->priority > rhs->priority;
                 }
             } else {
-            	return lhs->delivery_time > rhs->delivery_time;
+                return lhs->delivery_time > rhs->delivery_time;
             }
         }
 
@@ -86,7 +86,7 @@ public:
                     return lhs.priority > rhs.priority;
                 }
             } else {
-            	return lhs.delivery_time > rhs.delivery_time;
+                return lhs.delivery_time > rhs.delivery_time;
             }
         }
     };
@@ -106,10 +106,10 @@ public:
                         return lhs->enforce_link_order > rhs->enforce_link_order;
                     }
                 } else {
-               	    return lhs->priority > rhs->priority;
+                       return lhs->priority > rhs->priority;
                 }
             } else {
-            	return lhs->delivery_time > rhs->delivery_time;
+                return lhs->delivery_time > rhs->delivery_time;
             }
         }
 
@@ -127,7 +127,7 @@ public:
                     return lhs.priority > rhs.priority;
                 }
             } else {
-            	return lhs.delivery_time > rhs.delivery_time;
+                return lhs.delivery_time > rhs.delivery_time;
             }
         }
     };
@@ -160,10 +160,10 @@ public:
                     /* TODO:  Handle 64-bit wrap-around */
                     return lhs->queue_order > rhs->queue_order;
                 } else {
-               	    return lhs->priority > rhs->priority;
+                       return lhs->priority > rhs->priority;
                 }
             } else {
-            	return lhs->delivery_time > rhs->delivery_time;
+                return lhs->delivery_time > rhs->delivery_time;
             }
         }
 
@@ -177,7 +177,7 @@ public:
                     return lhs.priority > rhs.priority;
                 }
             } else {
-            	return lhs.delivery_time > rhs.delivery_time;
+                return lhs.delivery_time > rhs.delivery_time;
             }
         }
     };
@@ -231,7 +231,7 @@ public:
 
 #ifdef USE_MEMPOOL
     /** Allocates memory from a memory pool for a new Activity */
-	void* operator new(std::size_t size) noexcept
+    void* operator new(std::size_t size) noexcept
     {
         /* 1) Find memory pool
          * 1.5) If not found, create new
@@ -267,7 +267,7 @@ public:
 
 
     /** Returns memory for this Activity to the appropriate memory pool */
-	void operator delete(void* ptr)
+    void operator delete(void* ptr)
     {
         /* 1) Decrement pointer
          * 2) Determine Pool Pointer
@@ -371,7 +371,7 @@ private:
         { }
     };
     static std::mutex poolMutex;
-	static std::vector<PoolInfo_t> memPools;
+    static std::vector<PoolInfo_t> memPools;
 #endif
 };
 

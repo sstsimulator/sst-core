@@ -24,7 +24,7 @@ struct PyComponent;
 
 struct ComponentHolder {
     ComponentPy_t *pobj;
-	char *name;
+    char *name;
     ComponentHolder(ComponentPy_t *pobj) : pobj(pobj), name(nullptr) { }
     virtual ~ComponentHolder() { free(name); }
     virtual ConfigComponent* getComp() = 0;

@@ -22,7 +22,7 @@ namespace Statistics {
 /**
     \class StatisticOutputJSON
 
-	The class for statistics output to a JSON formatted file
+    The class for statistics output to a JSON formatted file
 */
 class StatisticOutputJSON : public StatisticOutput
 {
@@ -105,10 +105,10 @@ private:
     std::string              m_currentStatisticType;
     bool                     m_outputSimTime;
     bool                     m_outputRank;
-    bool					 m_firstEntry;
-    bool					 m_firstField;
-    bool 					 m_processedAnyStats;
-    int						 m_curIndentLevel;
+    bool                     m_firstEntry;
+    bool                     m_firstField;
+    bool                      m_processedAnyStats;
+    int                         m_curIndentLevel;
 
 };
 

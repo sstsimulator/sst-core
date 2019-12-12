@@ -36,19 +36,19 @@ namespace Core {
 
 class SSTPythonModelDefinition : public SSTModelDescription {
 
-	public:
-		SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config, int argc, char **argv);
-		SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config);
-		virtual ~SSTPythonModelDefinition();
+    public:
+        SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config, int argc, char **argv);
+        SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config);
+        virtual ~SSTPythonModelDefinition();
 
-		ConfigGraph* createConfigGraph() override;
+        ConfigGraph* createConfigGraph() override;
 
-	protected:
-		void initModel(const std::string& script_file, int verbosity, Config* config, int argc, char** argv);
-		std::string scriptName;
-		Output* output;
-		Config* config;
-		ConfigGraph *graph;
+    protected:
+        void initModel(const std::string& script_file, int verbosity, Config* config, int argc, char** argv);
+        std::string scriptName;
+        Output* output;
+        Config* config;
+        ConfigGraph *graph;
         char *namePrefix;
         size_t namePrefixLen;
         std::vector<size_t> nameStack;
@@ -56,10 +56,10 @@ class SSTPythonModelDefinition : public SSTModelDescription {
         ComponentId_t nextComponentId;
 
 
-	public:  /* Public, but private.  Called only from Python functions */
-		Config* getConfig(void) const { return config; }
-		ConfigGraph* getGraph(void) const { return graph; }
-		Output* getOutput() const { return output; }
+    public:  /* Public, but private.  Called only from Python functions */
+        Config* getConfig(void) const { return config; }
+        ConfigGraph* getGraph(void) const { return graph; }
+        Output* getOutput() const { return output; }
         ComponentId_t getNextComponentId() { return nextComponentId++; }
         ComponentId_t addComponent(const char *name, const char *type) {
             ComponentId_t id = getNextComponentId();

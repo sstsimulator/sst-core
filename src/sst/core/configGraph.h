@@ -296,12 +296,12 @@ class PartitionGraph;
 class ConfigGraph : public SST::Core::Serialization::serializable {
 public:
     /** Print the configuration graph */
-	void print(std::ostream &os) const {
-		os << "Printing graph" << std::endl;
-		for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-			i->print(os);
-		}
-	}
+    void print(std::ostream &os) const {
+        os << "Printing graph" << std::endl;
+        for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+            i->print(os);
+        }
+    }
 
     ConfigGraph() {
         links.clear();
@@ -398,13 +398,13 @@ public:
     void getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group);
 
     void serialize_order(SST::Core::Serialization::serializer &ser) override
-	{
-		ser & links;
-		ser & comps;
-		ser & statOutputs;
-		ser & statLoadLevel;
+    {
+        ser & links;
+        ser & comps;
+        ser & statOutputs;
+        ser & statLoadLevel;
         ser & statGroups;
-	}
+    }
 
 private:
     friend class Simulation;
@@ -496,12 +496,12 @@ private:
 
 public:
     /** Print the configuration graph */
-	void print(std::ostream &os) const {
-		os << "Printing graph" << std::endl;
-		for (PartitionComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-			i->print(os,this);
-		}
-	}
+    void print(std::ostream &os) const {
+        os << "Printing graph" << std::endl;
+        for (PartitionComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+            i->print(os,this);
+        }
+    }
 
     PartitionComponentMap_t& getComponentMap() {
         return comps;

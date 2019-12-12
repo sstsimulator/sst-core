@@ -110,7 +110,7 @@ constexpr uint32_t ct_hash(const char* str)
 class serializable
 {
 public:
-		static constexpr uint32_t NullClsId = std::numeric_limits<uint32_t>::max(); 
+        static constexpr uint32_t NullClsId = std::numeric_limits<uint32_t>::max(); 
 
     virtual const char*
     cls_name() const = 0;

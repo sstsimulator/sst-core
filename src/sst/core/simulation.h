@@ -205,42 +205,42 @@ public:
     /** returns the component with the given ID */
     BaseComponent* getComponent(const ComponentId_t &id) const
     {
-		ComponentInfo* i = compInfoMap.getByID(id);
-		// CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-		if ( nullptr != i ) {
-			return i->getComponent();
-		} else {
+        ComponentInfo* i = compInfoMap.getByID(id);
+        // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
+        if ( nullptr != i ) {
+            return i->getComponent();
+        } else {
             printf("Simulation::getComponent() couldn't find component with id = %" PRIu64 "\n", id);
             exit(1);
-		}
+        }
     }
 
 
     ComponentInfo* getComponentInfo(const ComponentId_t &id) const
     {        
-		ComponentInfo* i = compInfoMap.getByID(id);
-		// CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-		if ( nullptr != i ) {
-			return i;
-		} else {
+        ComponentInfo* i = compInfoMap.getByID(id);
+        // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
+        if ( nullptr != i ) {
+            return i;
+        } else {
             printf("Simulation::getComponentInfo() couldn't find component with id = %" PRIu64 "\n", id);
             exit(1);
-		}
+        }
     }
 
 
 
     /**
-	Set the output directory for this simulation
-	@param outDir Path of directory to place simulation outputs in
+    Set the output directory for this simulation
+    @param outDir Path of directory to place simulation outputs in
     */
     void setOutputDirectory(const std::string& outDir) {
         output_directory = outDir;
     }
 
     /**
-	Returns the output directory of the simulation
-	@return Directory in which simulation outputs are placed
+    Returns the output directory of the simulation
+    @return Directory in which simulation outputs are placed
     */
     std::string& getOutputDirectory() {
         return output_directory;
@@ -348,7 +348,7 @@ private:
     SimTime_t        endSimCycle;
     int              currentPriority;
     static Exit*     m_exit;
-    SimulatorHeartbeat*	m_heartbeat;
+    SimulatorHeartbeat*    m_heartbeat;
     bool             endSim;
     RankInfo         my_rank;
     RankInfo         num_ranks;

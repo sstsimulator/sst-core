@@ -76,8 +76,8 @@ typename std::enable_if<std::is_floating_point<T>::value, T >::type
     else if ( std::is_same<long double, T>::value ) {
         return stold(input);
     } else { //make compiler happy
-			return stod(input);
-		}
+            return stod(input);
+        }
 }
 
 template<class T>

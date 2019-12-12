@@ -42,8 +42,8 @@ public:
 
 
 public:
-	// TimeVortexPQ();
-	TimeVortexPQ(Params& params);
+    // TimeVortexPQ();
+    TimeVortexPQ(Params& params);
     ~TimeVortexPQ();
 
     bool empty() override;

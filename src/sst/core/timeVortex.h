@@ -28,7 +28,7 @@ public:
   SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams)
   SST_ELI_DECLARE_CTOR_EXTERN(SST::Params&)
 
-	TimeVortex() {
+    TimeVortex() {
         max_depth = MAX_SIMTIME_T;
     }
     ~TimeVortex() {}

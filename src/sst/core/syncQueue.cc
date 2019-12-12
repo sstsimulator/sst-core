@@ -36,7 +36,7 @@ bool
 SyncQueue::empty()
 {
     std::lock_guard<Spinlock> lock(slock);
-	return activities.empty();
+    return activities.empty();
 }
 
 int
@@ -57,11 +57,11 @@ Activity*
 SyncQueue::pop()
 {
     // NEED TO FATAL
-	// if ( data.size() == 0 ) return nullptr;
-	// std::vector<Activity*>::iterator it = data.begin();
-	// Activity* ret_val = (*it);
-	// data.erase(it);
-	// return ret_val;
+    // if ( data.size() == 0 ) return nullptr;
+    // std::vector<Activity*>::iterator it = data.begin();
+    // Activity* ret_val = (*it);
+    // data.erase(it);
+    // return ret_val;
     return nullptr;
 }
 
@@ -69,7 +69,7 @@ Activity*
 SyncQueue::front()
 {
     // NEED TO FATAL
-	return nullptr;
+    return nullptr;
 }
 
 void

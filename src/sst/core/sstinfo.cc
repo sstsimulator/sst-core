@@ -243,19 +243,19 @@ void OverallOutputter::outputXML()
     TiXmlDocument XMLDocument;
 
 
-	// Set the Top Level Element
-	TiXmlElement* XMLTopLevelElement = new TiXmlElement("SSTInfoXML");
+    // Set the Top Level Element
+    TiXmlElement* XMLTopLevelElement = new TiXmlElement("SSTInfoXML");
 
-	// Set the File Information
-	TiXmlElement* XMLFileInfoElement = new TiXmlElement("FileInfo");
-	XMLFileInfoElement->SetAttribute("SSTInfoVersion", PACKAGE_VERSION);
-	XMLFileInfoElement->SetAttribute("FileFormat", "1.0");
-	XMLFileInfoElement->SetAttribute("TimeStamp", TimeStamp);
-	XMLFileInfoElement->SetAttribute("FilesProcessed", g_fileProcessedCount);
-	XMLFileInfoElement->SetAttribute("SearchPath", g_searchPath.c_str());
+    // Set the File Information
+    TiXmlElement* XMLFileInfoElement = new TiXmlElement("FileInfo");
+    XMLFileInfoElement->SetAttribute("SSTInfoVersion", PACKAGE_VERSION);
+    XMLFileInfoElement->SetAttribute("FileFormat", "1.0");
+    XMLFileInfoElement->SetAttribute("TimeStamp", TimeStamp);
+    XMLFileInfoElement->SetAttribute("FilesProcessed", g_fileProcessedCount);
+    XMLFileInfoElement->SetAttribute("SearchPath", g_searchPath.c_str());
 
-	// Add the File Information to the Top Level Element
-	XMLTopLevelElement->LinkEndChild(XMLFileInfoElement);
+    // Add the File Information to the Top Level Element
+    XMLTopLevelElement->LinkEndChild(XMLFileInfoElement);
 
     // Now Generate the XML Data that represents the Library Info, 
     // and add the data to the Top Level Element
@@ -265,19 +265,19 @@ void OverallOutputter::outputXML()
 
 
 
-	// Add the entries into the XML Document
+    // Add the entries into the XML Document
     // XML Declaration
-	TiXmlDeclaration* XMLDecl = new TiXmlDeclaration("1.0", "", "");
-	XMLDocument.LinkEndChild(XMLDecl);
+    TiXmlDeclaration* XMLDecl = new TiXmlDeclaration("1.0", "", "");
+    XMLDocument.LinkEndChild(XMLDecl);
     //
-	// General Info on the Data
+    // General Info on the Data
   xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
   xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
 
-	XMLDocument.LinkEndChild(XMLTopLevelElement);
+    XMLDocument.LinkEndChild(XMLTopLevelElement);
 
     // Save the XML Document
-	XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
+    XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
 }
 
 
@@ -333,7 +333,7 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
         if ( intC == -1 )
             break;
 
-  	const char c = static_cast<char>(intC);
+      const char c = static_cast<char>(intC);
 
         switch (c) {
         case 'h':

@@ -30,7 +30,7 @@ namespace Statistics {
 /**
     \class StatisticOutputHDF5
 
-	The class for statistics output to a comma separated file.
+    The class for statistics output to a comma separated file.
 */
 class StatisticOutputHDF5 : public StatisticOutput
 {

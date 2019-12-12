@@ -35,12 +35,12 @@ namespace Statistics {
 // See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
 
 /**
-	\class AccumulatorStatistic
+    \class AccumulatorStatistic
 
-	Allows the online gathering of statistical information about a single quantity. The basic 
-	statistics are captured online removing the need to keep a copy of the values of interest.
+    Allows the online gathering of statistical information about a single quantity. The basic 
+    statistics are captured online removing the need to keep a copy of the values of interest.
 
-	@tparam NumberBase A template for the basic numerical type of values
+    @tparam NumberBase A template for the basic numerical type of values
 */
 
 template <typename NumberBase>
@@ -56,12 +56,12 @@ public:
       "SST::Statistic<T>")
 
     AccumulatorStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
-		: Statistic<NumberBase>(comp, statName, statSubId, statParams)
+        : Statistic<NumberBase>(comp, statName, statSubId, statParams)
     {
         m_sum = static_cast<NumberBase>(0);
         m_sum_sq = static_cast<NumberBase>(0);
-	m_min = std::numeric_limits<NumberBase>::max();
-	m_max = std::numeric_limits<NumberBase>::min();
+    m_min = std::numeric_limits<NumberBase>::max();
+    m_max = std::numeric_limits<NumberBase>::min();
 
         // Set the Name of this Statistic
         this->setStatisticTypeName("Accumulator");
@@ -78,8 +78,8 @@ protected:
     {
         m_sum += value;
         m_sum_sq += (value * value);
-	m_min = ( value < m_min ) ? value : m_min;
-	m_max = ( value > m_max ) ? value : m_max;
+    m_min = ( value < m_min ) ? value : m_min;
+    m_max = ( value > m_max ) ? value : m_max;
     }
 
 public:
@@ -93,21 +93,21 @@ public:
     }
 
     /**
-	Provides the maxmimum value presented so far.
-	@return The maximum of values presented to the class so far
+    Provides the maxmimum value presented so far.
+    @return The maximum of values presented to the class so far
     */
     NumberBase getMax()
     {
-	return m_max;
+    return m_max;
     }
 
     /**
-	Provides the minimum value presented so far.
-	@return The minimum of values presented to the class so far
+    Provides the minimum value presented so far.
+    @return The minimum of values presented to the class so far
     */
     NumberBase getMin()
     {
-	return m_min;
+    return m_min;
     }
 
     /**
@@ -161,8 +161,8 @@ public:
     {
         m_sum = 0;
         m_sum_sq =0;
-	m_min = std::numeric_limits<NumberBase>::max();
-	m_max = std::numeric_limits<NumberBase>::min();
+    m_min = std::numeric_limits<NumberBase>::max();
+    m_max = std::numeric_limits<NumberBase>::min();
         this->setCollectionCount(0);
     }
     
@@ -171,8 +171,8 @@ public:
         h_sum   = statOutput->registerField<NumberBase>("Sum");
         h_sumsq = statOutput->registerField<NumberBase>("SumSQ");
         h_count = statOutput->registerField<uint64_t>  ("Count");
-    	h_min   = statOutput->registerField<NumberBase>("Min");
-     	h_max   = statOutput->registerField<NumberBase>("Max");
+        h_min   = statOutput->registerField<NumberBase>("Min");
+         h_max   = statOutput->registerField<NumberBase>("Max");
     }
 
     void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
