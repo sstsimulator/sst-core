@@ -51,8 +51,8 @@ public:
     bool merge(uint8_t *target, const uint8_t *newData, size_t size) override;
 
     bool merge(uint8_t *target, size_t size, const std::vector<ChangeSet> &changeSets) override {
-            return SharedRegionMerger::merge(target,size,changeSets);
-        }
+        return SharedRegionMerger::merge(target,size,changeSets);
+    }
 
 };
 
@@ -85,8 +85,9 @@ private:
     size_t size;
 
 protected:
-    SharedRegion(SharedRegionManager *manager, size_t id,
-            size_t size) : manager(manager), id(id),
+    SharedRegion(SharedRegionManager *manager, size_t id, size_t size) :
+        manager(manager),
+        id(id),
         size(size)
     { }
 

@@ -33,70 +33,70 @@ namespace RNG {
 */
 class MersenneRNG : public SSTRandom {
 
-    public:
+public:
     /**
-        Create a new Mersenne RNG with a specified seed
-        @param[in] seed The seed for this RNG
+       Create a new Mersenne RNG with a specified seed
+       @param[in] seed The seed for this RNG
     */
-        MersenneRNG(unsigned int seed);
+    MersenneRNG(unsigned int seed);
+    
+    /**
+       Creates a new Mersenne using a random seed which is obtained from the system
+       clock. Note this will give different results on different platforms and between
+       runs.
+    */
+    MersenneRNG();
 
     /**
-        Creates a new Mersenne using a random seed which is obtained from the system
-        clock. Note this will give different results on different platforms and between
-        runs.
-    */
-        MersenneRNG();
-
-    /**
-        Generates the next random number as a double value between 0 and 1.
+       Generates the next random number as a double value between 0 and 1.
     */
     double   nextUniform() override;
 
     /**
-        Generates the next random number as an unsigned 32-bit integer
+       Generates the next random number as an unsigned 32-bit integer
     */
     uint32_t generateNextUInt32() override;
 
     /**
-        Generates the next random number as an unsigned 64-bit integer
+       Generates the next random number as an unsigned 64-bit integer
     */
     uint64_t generateNextUInt64() override;
 
     /**
-        Generates the next random number as a signed 64-bit integer
+       Generates the next random number as a signed 64-bit integer
     */
     int64_t  generateNextInt64() override;
 
     /**
-        Generates the next random number as a signed 32-bit integer
+       Generates the next random number as a signed 32-bit integer
     */
-        int32_t  generateNextInt32() override;
+    int32_t  generateNextInt32() override;
 
-        /**
-        Seed the XOR RNG
+    /**
+       Seed the XOR RNG
     */
     void seed(uint64_t newSeed);
 
     /**
-        Destructor for Mersenne
+       Destructor for Mersenne
     */
     ~MersenneRNG();
 
     private:
     /**
-        Generates the next batch of random numbers
+       Generates the next batch of random numbers
     */
-        void  generateNextBatch();
+    void  generateNextBatch();
 
     /**
-        Stores the next set of random numbers
+       Stores the next set of random numbers
     */
-        uint32_t* numbers;
+    uint32_t* numbers;
 
     /**
-        Tells us what index of the random number list the next returnable number should come from
+       Tells us what index of the random number list the next returnable number should come from
     */
-        int index;
+    int index;
 
 };
 

@@ -203,8 +203,7 @@ public:
 
 
     /** returns the component with the given ID */
-    BaseComponent* getComponent(const ComponentId_t &id) const
-    {
+    BaseComponent* getComponent(const ComponentId_t &id) const {
         ComponentInfo* i = compInfoMap.getByID(id);
         // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
         if ( nullptr != i ) {
@@ -216,8 +215,7 @@ public:
     }
 
 
-    ComponentInfo* getComponentInfo(const ComponentId_t &id) const
-    {        
+    ComponentInfo* getComponentInfo(const ComponentId_t &id) const {        
         ComponentInfo* i = compInfoMap.getByID(id);
         // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
         if ( nullptr != i ) {

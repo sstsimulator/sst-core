@@ -42,18 +42,18 @@ namespace Statistics {
 template<class BinDataType>
 class HistogramStatistic : public Statistic<BinDataType> 
 {
- public:
-  SST_ELI_DECLARE_STATISTIC_TEMPLATE(
-      HistogramStatistic,
-      "sst",
-      "HistogramStatistic",
-      SST_ELI_ELEMENT_VERSION(1,0,0),
-      "Track distribution of statistic across bins",
-      "SST::Statistic<T>")
+public:
+    SST_ELI_DECLARE_STATISTIC_TEMPLATE(
+        HistogramStatistic,
+        "sst",
+        "HistogramStatistic",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Track distribution of statistic across bins",
+        "SST::Statistic<T>")
 
-  HistogramStatistic(BaseComponent* comp, const std::string& statName,
-                     const std::string& statSubId, Params& statParams)
-        : Statistic<BinDataType>(comp, statName, statSubId, statParams)
+    HistogramStatistic(BaseComponent* comp, const std::string& statName,
+                       const std::string& statSubId, Params& statParams) :
+        Statistic<BinDataType>(comp, statName, statSubId, statParams)
     {
         // Identify what keys are Allowed in the parameters
         Params::KeySet_t allowedKeySet;
@@ -249,8 +249,8 @@ private:
         m_Fields.push_back(statOutput->registerField<CountType>  ("NumItemsBinned"));
 
         if (true == m_includeOutOfBounds) {
-                m_Fields.push_back(statOutput->registerField<CountType>("NumOutOfBounds-MinValue"));
-                m_Fields.push_back(statOutput->registerField<CountType>("NumOutOfBounds-MaxValue"));
+            m_Fields.push_back(statOutput->registerField<CountType>("NumOutOfBounds-MinValue"));
+            m_Fields.push_back(statOutput->registerField<CountType>("NumOutOfBounds-MaxValue"));
         }
 
         // Do we also need to dump the bin counts on output
@@ -260,7 +260,7 @@ private:
             
             for (uint32_t y = 0; y < getNumBins(); y++) {
                 // Figure out the upper and lower values for this bin
-            binLL = (y * (uint64_t)getBinWidth()) + getBinsMinValue(); // Force full 64-bit multiply -mpf 10/8/15
+                binLL = (y * (uint64_t)getBinWidth()) + getBinsMinValue(); // Force full 64-bit multiply -mpf 10/8/15
                 binUL = binLL + getBinWidth() - 1;
                 // Build the string name for this bin and add it as a field
                 std::stringstream ss;

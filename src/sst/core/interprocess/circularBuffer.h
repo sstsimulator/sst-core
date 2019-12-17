@@ -28,27 +28,26 @@ public:
         writeIndex = 0;
     }
 
-    void setBufferSize(const size_t bufferSize)
-        {
-            if ( buffSize != 0 ) {
-                fprintf(stderr, "Already specified size for buffer\n");
-                exit(1);
-            }
-
-            buffSize = bufferSize;
-        __sync_synchronize();
+    void setBufferSize(const size_t bufferSize) {
+        if ( buffSize != 0 ) {
+            fprintf(stderr, "Already specified size for buffer\n");
+            exit(1);
         }
+        
+        buffSize = bufferSize;
+        __sync_synchronize();
+    }
 
     T read() {
         int loop_counter = 0;
-
+        
         while( true ) {
             bufferMutex.lock();
-
+            
             if( readIndex != writeIndex ) {
                 const T result = buffer[readIndex];
                 readIndex = (readIndex + 1) % buffSize;
-
+                
                 bufferMutex.unlock();
                 return result;
             }
@@ -63,20 +62,20 @@ public:
             if( readIndex != writeIndex ) {
                 *result = buffer[readIndex];
                 readIndex = (readIndex + 1) % buffSize;
-
+                
                 bufferMutex.unlock();
                 return true;
-            } 
-
+            }
+            
             bufferMutex.unlock();
         }
-
+        
         return false;
     }
 
     void write(const T& v) {
         int loop_counter = 0;
-    
+        
         while( true ) {
             bufferMutex.lock();
 

@@ -26,16 +26,16 @@ namespace Statistics {
 */
 class StatisticOutputJSON : public StatisticOutput
 {
- public:
-  SST_ELI_REGISTER_DERIVED(
-      StatisticOutput,
-      StatisticOutputJSON,
-      "sst",
-      "statoutputjson",
-      SST_ELI_ELEMENT_VERSION(1,0,0),
-      "Output to a JSON file")
-
-  /** Construct a StatOutputJSON
+public:
+    SST_ELI_REGISTER_DERIVED(
+        StatisticOutput,
+        StatisticOutputJSON,
+        "sst",
+        "statoutputjson",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Output to a JSON file")
+    
+    /** Construct a StatOutputJSON
      * @param outputParameters - Parameters used for this Statistic Output
      */
     StatisticOutputJSON(Params& outputParameters);
@@ -107,8 +107,8 @@ private:
     bool                     m_outputRank;
     bool                     m_firstEntry;
     bool                     m_firstField;
-    bool                      m_processedAnyStats;
-    int                         m_curIndentLevel;
+    bool                     m_processedAnyStats;
+    int                      m_curIndentLevel;
 
 };
 

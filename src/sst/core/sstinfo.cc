@@ -271,8 +271,8 @@ void OverallOutputter::outputXML()
     XMLDocument.LinkEndChild(XMLDecl);
     //
     // General Info on the Data
-  xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
-  xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
+    xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
+    xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
 
     XMLDocument.LinkEndChild(XMLTopLevelElement);
 
@@ -423,22 +423,22 @@ bool shouldPrintElement(const std::string& libName, const std::string& elemName)
 template <class BaseType>
 void SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
 {
-  auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
-  if (lib){
-    os << "Num " << BaseType::ELI_baseName() << "s = " << lib->numEntries() << "\n";
-    int idx = 0;
-    for (auto& pair : lib->getMap()){
-      bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
-      if (print){
-        os << "      " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
-        if ( g_configuration.doVerbose() )
-            pair.second->toString(os);
-      }
-      ++idx;
+    auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
+    if (lib){
+        os << "Num " << BaseType::ELI_baseName() << "s = " << lib->numEntries() << "\n";
+        int idx = 0;
+        for (auto& pair : lib->getMap()){
+            bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
+            if (print){
+                os << "      " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
+                if ( g_configuration.doVerbose() )
+                    pair.second->toString(os);
+            }
+            ++idx;
+        }
+    } else {
+        os << "No " << BaseType::ELI_baseName() << "s\n";
     }
-  } else {
-    os << "No " << BaseType::ELI_baseName() << "s\n";
-  }
 }
 
 void
@@ -460,36 +460,36 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
 template <class BaseType>
 void SSTLibraryInfo::outputXML(TiXmlElement* XMLLibraryElement)
 {
-  auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
-  if (lib){
-    int numObjects = lib->numEntries();
-    xmlComment(XMLLibraryElement, "Num %ss = %d", BaseType::ELI_baseName(), numObjects);
-    int idx = 0;
-    for (auto& pair : lib->getMap()){
-      TiXmlElement* XMLElement = new TiXmlElement(BaseType::ELI_baseName());
-      XMLElement->SetAttribute("Index", idx);
-      pair.second->outputXML(XMLElement);
-      XMLLibraryElement->LinkEndChild(XMLElement);
-      idx++;
+    auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
+    if (lib){
+        int numObjects = lib->numEntries();
+        xmlComment(XMLLibraryElement, "Num %ss = %d", BaseType::ELI_baseName(), numObjects);
+        int idx = 0;
+        for (auto& pair : lib->getMap()){
+            TiXmlElement* XMLElement = new TiXmlElement(BaseType::ELI_baseName());
+            XMLElement->SetAttribute("Index", idx);
+            pair.second->outputXML(XMLElement);
+            XMLLibraryElement->LinkEndChild(XMLElement);
+            idx++;
+        }
+    } else {
+        xmlComment(XMLLibraryElement, "No %ss", BaseType::ELI_baseName());
     }
-  } else {
-    xmlComment(XMLLibraryElement, "No %ss", BaseType::ELI_baseName());
-  }
 }
 
 void
 SSTLibraryInfo::outputXML(int LibIndex, TiXmlNode *XMLParentElement)
 {
-  TiXmlElement* XMLLibraryElement = new TiXmlElement("Element");
-  XMLLibraryElement->SetAttribute("Index", LibIndex);
-  XMLLibraryElement->SetAttribute("Name", getLibraryName().c_str());
-  XMLLibraryElement->SetAttribute("Description", getLibraryDescription().c_str());
-
-  outputXML<Component>(XMLLibraryElement);
-  outputXML<SubComponent>(XMLLibraryElement);
-  outputXML<Module>(XMLLibraryElement);
-  outputXML<SST::Partition::SSTPartitioner>(XMLLibraryElement);
-  XMLParentElement->LinkEndChild(XMLLibraryElement);
+    TiXmlElement* XMLLibraryElement = new TiXmlElement("Element");
+    XMLLibraryElement->SetAttribute("Index", LibIndex);
+    XMLLibraryElement->SetAttribute("Name", getLibraryName().c_str());
+    XMLLibraryElement->SetAttribute("Description", getLibraryDescription().c_str());
+    
+    outputXML<Component>(XMLLibraryElement);
+    outputXML<SubComponent>(XMLLibraryElement);
+    outputXML<Module>(XMLLibraryElement);
+    outputXML<SST::Partition::SSTPartitioner>(XMLLibraryElement);
+    XMLParentElement->LinkEndChild(XMLLibraryElement);
 }
 
 

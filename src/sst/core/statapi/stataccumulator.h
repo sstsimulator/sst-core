@@ -60,9 +60,9 @@ public:
     {
         m_sum = static_cast<NumberBase>(0);
         m_sum_sq = static_cast<NumberBase>(0);
-    m_min = std::numeric_limits<NumberBase>::max();
-    m_max = std::numeric_limits<NumberBase>::min();
-
+        m_min = std::numeric_limits<NumberBase>::max();
+        m_max = std::numeric_limits<NumberBase>::min();
+        
         // Set the Name of this Statistic
         this->setStatisticTypeName("Accumulator");
     }
@@ -78,8 +78,8 @@ protected:
     {
         m_sum += value;
         m_sum_sq += (value * value);
-    m_min = ( value < m_min ) ? value : m_min;
-    m_max = ( value > m_max ) ? value : m_max;
+        m_min = ( value < m_min ) ? value : m_min;
+        m_max = ( value > m_max ) ? value : m_max;
     }
 
 public:
@@ -98,7 +98,7 @@ public:
     */
     NumberBase getMax()
     {
-    return m_max;
+        return m_max;
     }
 
     /**
@@ -107,7 +107,7 @@ public:
     */
     NumberBase getMin()
     {
-    return m_min;
+        return m_min;
     }
 
     /**
@@ -161,8 +161,8 @@ public:
     {
         m_sum = 0;
         m_sum_sq =0;
-    m_min = std::numeric_limits<NumberBase>::max();
-    m_max = std::numeric_limits<NumberBase>::min();
+        m_min = std::numeric_limits<NumberBase>::max();
+        m_max = std::numeric_limits<NumberBase>::min();
         this->setCollectionCount(0);
     }
     
@@ -172,7 +172,7 @@ public:
         h_sumsq = statOutput->registerField<NumberBase>("SumSQ");
         h_count = statOutput->registerField<uint64_t>  ("Count");
         h_min   = statOutput->registerField<NumberBase>("Min");
-         h_max   = statOutput->registerField<NumberBase>("Max");
+        h_max   = statOutput->registerField<NumberBase>("Max");
     }
 
     void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
@@ -182,11 +182,11 @@ public:
         statOutput->outputField(h_count, getCount());
 
         if( 0 == getCount() ) {
-          statOutput->outputField(h_min, 0);
-          statOutput->outputField(h_max, 0);
+            statOutput->outputField(h_min, 0);
+            statOutput->outputField(h_max, 0);
         } else {
-          statOutput->outputField(h_min, m_min);
-          statOutput->outputField(h_max, m_max);
+            statOutput->outputField(h_min, m_min);
+            statOutput->outputField(h_max, m_max);
         }
     }
 

@@ -39,7 +39,7 @@ Clock::~Clock()
 
 bool Clock::registerHandler( Clock::HandlerBase* handler )
 {
-    staticHandlerMap.push_back( handler );    
+    staticHandlerMap.push_back( handler );
     if ( !scheduled ) {
         schedule();
     }
@@ -85,7 +85,6 @@ void Clock::execute( void ) {
     currentCycle++;
     
     StaticHandlerMap_t::iterator sop_iter,start_iter,stop_iter;
-    //bool group = false;    //Scoggin(Jan23,2015) fix unused variable warning in build
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
         Clock::HandlerBase* handler = *sop_iter;
         if ( (*handler)(currentCycle) ) sop_iter = staticHandlerMap.erase(sop_iter);

@@ -53,7 +53,7 @@ public:
 private:
     std::string str;
 
-public:    
+public:
     void serialize_order(SST::Core::Serialization::serializer &ser) override {
         Event::serialize_order(ser);
         ser & str;

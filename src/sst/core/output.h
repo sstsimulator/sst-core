@@ -335,7 +335,7 @@ public:
         }
 #else
         /* When debug is disabled, silence warnings of unused parameters */
-     (void)tempPrefix;
+        (void)tempPrefix;
         (void)line;
         (void)file;
         (void)func;

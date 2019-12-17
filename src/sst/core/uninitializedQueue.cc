@@ -19,43 +19,43 @@
 
 namespace SST {
 
-    UninitializedQueue::UninitializedQueue(const std::string& message) :
+UninitializedQueue::UninitializedQueue(const std::string& message) :
     ActivityQueue(), message(message) {}
 
-    UninitializedQueue::UninitializedQueue() :
+UninitializedQueue::UninitializedQueue() :
     ActivityQueue() {}
 
-    UninitializedQueue::~UninitializedQueue() {}
+UninitializedQueue::~UninitializedQueue() {}
 
-    bool UninitializedQueue::empty()
-    {
+bool UninitializedQueue::empty()
+{
     std::cout << message << std::endl;
     abort();
-    }
+}
     
-    int UninitializedQueue::size()
-    {
+int UninitializedQueue::size()
+{
     std::cout << message << std::endl;
     abort();
-    }
-    
-    void UninitializedQueue::insert(Activity* UNUSED(activity))
-    {
-    std::cout << message << std::endl;
-    abort();
-    }
-    
-    Activity* UninitializedQueue::pop()
-    {
-    std::cout << message << std::endl;
-    abort();
-    }
+}
 
-    Activity* UninitializedQueue::front()
-    {
+void UninitializedQueue::insert(Activity* UNUSED(activity))
+{
     std::cout << message << std::endl;
     abort();
-    }
+}
+
+Activity* UninitializedQueue::pop()
+{
+    std::cout << message << std::endl;
+    abort();
+}
+
+Activity* UninitializedQueue::front()
+{
+    std::cout << message << std::endl;
+    abort();
+}
 
 
 } // namespace SST
