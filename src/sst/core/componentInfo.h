@@ -44,9 +44,11 @@ public:
     static const uint64_t SHARE_STATS = 0x2;
     static const uint64_t INSERT_STATS = 0x4;
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     // Temporary, only for backward compatibility with loadSubComponent
     static const uint64_t IS_LEGACY_SUBCOMPONENT = 0x32;
-
+#endif
+    
     static const uint64_t SHARE_NONE = 0x0;
 
 private:
