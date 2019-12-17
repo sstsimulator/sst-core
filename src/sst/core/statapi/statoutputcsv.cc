@@ -278,7 +278,7 @@ bool StatisticOutputCSV::openFile(void)
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
             out.fatal(CALL_INFO, 1, 
-							" : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+                            " : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;
         }
 #else
@@ -290,7 +290,7 @@ bool StatisticOutputCSV::openFile(void)
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
             out.fatal(CALL_INFO, 1, 
-						  " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+                          " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;;
         }
     }

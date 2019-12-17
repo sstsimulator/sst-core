@@ -72,7 +72,7 @@ public:
 
     RankInfo        world_size;         /*!< Number of ranks, threads which should be invoked per rank */
     uint32_t        verbose;            /*!< Verbosity */
-    bool	        no_env_config;      /*!< Bypass compile-time environmental configuration */
+    bool            no_env_config;      /*!< Bypass compile-time environmental configuration */
     bool            enable_sig_handling; /*!< Enable signal handling */
     bool            print_timing;       /*!< Print SST timing information */
     bool            print_env;          /*!< Print SST environment */
@@ -141,7 +141,7 @@ public:
         std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
         std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
         std::cout << "print_timing=" << print_timing << std::endl;
-	std::cout << "print_env" << print_env << std::endl;
+    std::cout << "print_env" << print_env << std::endl;
     }
 
 
@@ -185,19 +185,19 @@ private:
     std::string addlLibPath;
 
     int rank;
-	int numRanks;
+    int numRanks;
 
     bool isFileNameOnly(const std::string& name) {
-	bool nameOnly = true;
+    bool nameOnly = true;
 
-	for( size_t i = 0; i < name.size(); ++i ) {
-		if( '/' == name[i] ) {
-			nameOnly = false;
-			break;
-		}
-	}
+    for( size_t i = 0; i < name.size(); ++i ) {
+        if( '/' == name[i] ) {
+            nameOnly = false;
+            break;
+        }
+    }
 
-	return nameOnly;
+    return nameOnly;
     }
 
     ImplementSerializable(SST::Config)

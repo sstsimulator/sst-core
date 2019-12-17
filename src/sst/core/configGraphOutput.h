@@ -24,33 +24,33 @@ namespace Core {
 
 class ConfigGraphOutputException : public std::exception {
 public:
-	ConfigGraphOutputException(const char* msg) {
-		exMsg = (char*) malloc( sizeof(char) * (strlen(msg) + 1) );
-		std::strcpy(exMsg, msg);
-	}
+    ConfigGraphOutputException(const char* msg) {
+        exMsg = (char*) malloc( sizeof(char) * (strlen(msg) + 1) );
+        std::strcpy(exMsg, msg);
+    }
 
-	virtual const char* what() const noexcept override {
-		return exMsg;
-	}
+    virtual const char* what() const noexcept override {
+        return exMsg;
+    }
 
 protected:
-	char* exMsg;
+    char* exMsg;
 };
 
 class ConfigGraphOutput {
 public:
-	ConfigGraphOutput(const char* path) {
-		outputFile = fopen(path, "wt");
-	}
+    ConfigGraphOutput(const char* path) {
+        outputFile = fopen(path, "wt");
+    }
 
-	virtual ~ConfigGraphOutput() {
-		fclose(outputFile);
-	}
+    virtual ~ConfigGraphOutput() {
+        fclose(outputFile);
+    }
 
-	virtual void generate(const Config* cfg,
-		ConfigGraph* graph) = 0;
+    virtual void generate(const Config* cfg,
+        ConfigGraph* graph) = 0;
 protected:
-	FILE* outputFile;
+    FILE* outputFile;
 
 };
 

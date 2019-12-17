@@ -294,7 +294,7 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
 #define SST_ELI_DECLARE_INFO(...) \
   using BuilderInfo = ::SST::ELI::BuilderInfoImpl<__VA_ARGS__,SST::ELI::ProvidesDefaultInfo,void>; \
   template <class BuilderImpl> static bool addInfo(const std::string& elemlib, const std::string& elem, \
-                                   	     BuilderImpl* info){ \
+                                            BuilderImpl* info){ \
     return ::SST::ELI::InfoDatabase::getLibrary<__LocalEliBase>(elemlib)->addInfo(elem,info); \
   } \
   SST_ELI_DECLARE_INFO_COMMON() 

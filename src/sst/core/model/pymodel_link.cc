@@ -43,7 +43,7 @@ static int linkInit(LinkPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
     self->name = gModel->addNamePrefix(name);
     self->no_cut = false;
     self->latency = lat ? strdup(lat) : nullptr;
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Link %s\n", self->name);
 
     return 0;
 }
@@ -102,8 +102,8 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
     id0 = getComp(c0)->id;
     id1 = getComp(c1)->id;
 
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Connecting components %" PRIu64 " and %" PRIu64 " to Link %s (lat: %s %s)\n",
-			id0, id1, ((LinkPy_t*)self)->name, lat0, lat1);
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Connecting components %" PRIu64 " and %" PRIu64 " to Link %s (lat: %s %s)\n",
+            id0, id1, ((LinkPy_t*)self)->name, lat0, lat1);
     gModel->addLink(id0, link->name, port0, lat0, link->no_cut);
     gModel->addLink(id1, link->name, port1, lat1, link->no_cut);
 

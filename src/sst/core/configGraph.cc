@@ -477,14 +477,14 @@ ConfigGraph::checkForStructuralErrors()
 ComponentId_t
 ConfigGraph::addComponent(ComponentId_t id, const std::string& name, const std::string& type, float weight, RankInfo rank)
 {
-	comps.push_back(ConfigComponent(id, name, type, weight, rank));
+    comps.push_back(ConfigComponent(id, name, type, weight, rank));
     return id;
 }
 
 ComponentId_t
 ConfigGraph::addComponent(ComponentId_t id, const std::string& name, const std::string& type)
 {
-	comps.push_back(ConfigComponent(id, name, type, 1.0f, RankInfo()));
+    comps.push_back(ConfigComponent(id, name, type, 1.0f, RankInfo()));
     return id;
 }
 
@@ -604,30 +604,30 @@ ConfigGraph::addStatisticParameterForComponentType(const std::string& ComponentT
 void
 ConfigGraph::addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port, const std::string& latency_str, bool no_cut)
 {
-	if ( link_names.find(link_name) == link_names.end() ) {
+    if ( link_names.find(link_name) == link_names.end() ) {
         LinkId_t id = links.size();
         link_names[link_name] = id;
         links.insert(ConfigLink(id, link_name));
     }
-	ConfigLink &link = links[link_names[link_name]];
+    ConfigLink &link = links[link_names[link_name]];
     if ( link.current_ref >= 2 ) {
         cout << "ERROR: Parsing SDL file: Link " << link_name << " referenced more than two times" << endl;
         exit(1);
     }
 
-	// Convert the latency string to a number
+    // Convert the latency string to a number
 
-	int index = link.current_ref++;
-	link.component[index] = comp_id;
-	link.port[index] = port;
+    int index = link.current_ref++;
+    link.component[index] = comp_id;
+    link.port[index] = port;
     link.latency_str[index] = latency_str;
     link.no_cut = link.no_cut | no_cut;
 
-	// Check to make sure the link doesn't already exist in the component
-	auto compLinks = &findComponent(comp_id)->links;
-	if (std::find(compLinks->begin(), compLinks->end(), link.id) == compLinks->end()){
-		compLinks->push_back(link.id);
-	}
+    // Check to make sure the link doesn't already exist in the component
+    auto compLinks = &findComponent(comp_id)->links;
+    if (std::find(compLinks->begin(), compLinks->end(), link.id) == compLinks->end()){
+        compLinks->push_back(link.id);
+    }
 }
 
 void

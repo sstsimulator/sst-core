@@ -26,85 +26,85 @@
 namespace SST {
 namespace RNG {
 /**
-	\class MarsagliaRNG marsaglia.h "sst/core/rng/marsaglia.h"
+    \class MarsagliaRNG marsaglia.h "sst/core/rng/marsaglia.h"
 
-	Implements a random number generator using the Marsaglia method. This method is
-	computationally cheap and provides a reasonable distribution of random numbers. If
-	you need additional strength in the random numbers you may want to consider the
-	Mersenne RNG.
+    Implements a random number generator using the Marsaglia method. This method is
+    computationally cheap and provides a reasonable distribution of random numbers. If
+    you need additional strength in the random numbers you may want to consider the
+    Mersenne RNG.
 
         For more information see the Multiply-with-carry Random Number Generator article
-	at Wikipedia (http://en.wikipedia.org/wiki/Multiply-with-carry).
+    at Wikipedia (http://en.wikipedia.org/wiki/Multiply-with-carry).
 */
 class MarsagliaRNG : public SSTRandom {
 
     public:
-	/**
-		Creates a new Marsaglia RNG using the initial seeds.
-		@param[in] initial_z One of the random seed pairs
-		@param[in] initial_w One of the random seed pairs.
-	*/
+    /**
+        Creates a new Marsaglia RNG using the initial seeds.
+        @param[in] initial_z One of the random seed pairs
+        @param[in] initial_w One of the random seed pairs.
+    */
         MarsagliaRNG(unsigned int initial_z,
                 unsigned int initial_w);
 
-	/**
-		Creates a new Marsaglia RNG using random initial seeds (which are
-		read from the system clock). Note that these will create variation
-		between runs and between platforms.
-	*/
+    /**
+        Creates a new Marsaglia RNG using random initial seeds (which are
+        read from the system clock). Note that these will create variation
+        between runs and between platforms.
+    */
         MarsagliaRNG();
 
-	/**
-		Restart the random number generator with new seeds
-		@param[in] new_z A new Z-seed
-		@param[in] new_w A new W-seed
-	*/
-	void	restart(unsigned int new_z, unsigned int new_w);
+    /**
+        Restart the random number generator with new seeds
+        @param[in] new_z A new Z-seed
+        @param[in] new_w A new W-seed
+    */
+    void    restart(unsigned int new_z, unsigned int new_w);
 
-	/**
-		Generates the next random number as a double in the range 0 to 1.
-	*/
-	double   nextUniform() override;
+    /**
+        Generates the next random number as a double in the range 0 to 1.
+    */
+    double   nextUniform() override;
 
-	/**
-		Generates the next random number as an unsigned 32-bit integer.
-	*/
-	uint32_t generateNextUInt32() override;
+    /**
+        Generates the next random number as an unsigned 32-bit integer.
+    */
+    uint32_t generateNextUInt32() override;
 
-	/**
-		Generates the next random number as an unsigned 64-bit integer.
-	*/
-	uint64_t generateNextUInt64() override;
+    /**
+        Generates the next random number as an unsigned 64-bit integer.
+    */
+    uint64_t generateNextUInt64() override;
 
-	/**
-		Generates the next number as a signed 64-bit integer.
-	*/
-	int64_t  generateNextInt64() override;
+    /**
+        Generates the next number as a signed 64-bit integer.
+    */
+    int64_t  generateNextInt64() override;
 
-	/**
-		Generates the next number as a signed 32-bit integer.
-	*/
+    /**
+        Generates the next number as a signed 32-bit integer.
+    */
     int32_t   generateNextInt32() override;
     
     /**
-		Seed the XOR RNG
-	*/
-	void seed(uint64_t newSeed);
+        Seed the XOR RNG
+    */
+    void seed(uint64_t newSeed);
 
     private:
-	/**
-		Generates the next random number
-	*/
+    /**
+        Generates the next random number
+    */
         unsigned int generateNext();
 
-	/**
-		The Z seed of the Marsaglia generator
-	*/
+    /**
+        The Z seed of the Marsaglia generator
+    */
         unsigned int m_z;
 
-	/**
-		The W seed of the Marsaglia generator
-	*/
+    /**
+        The W seed of the Marsaglia generator
+    */
         unsigned int m_w;
 
 };

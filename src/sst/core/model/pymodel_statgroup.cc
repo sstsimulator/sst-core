@@ -56,7 +56,7 @@ static int sgInit(StatGroupPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
     if ( !PyArg_ParseTuple(args, "s", &name) ) return -1;
 
     self->ptr = gModel->getGraph()->getStatGroup(name);
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Stat Group %s\n", name);
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Stat Group %s\n", name);
 
     return 0;
 }
@@ -236,7 +236,7 @@ static int soInit(StatOutputPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
         self->ptr->params = convertToParams(params);
     }
 
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Stat Output %s\n", type);
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Stat Output %s\n", type);
 
     return 0;
 }

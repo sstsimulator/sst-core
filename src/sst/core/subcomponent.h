@@ -45,17 +45,17 @@ public:
       ELI::ProvidesInterface)
 
 #ifndef SST_ENABLE_PREVIEW_BUILD
-	SubComponent(Component* parent);
+    SubComponent(Component* parent);
 #endif
-	SubComponent(ComponentId_t id);
+    SubComponent(ComponentId_t id);
 
-	virtual ~SubComponent() {};
+    virtual ~SubComponent() {};
 
     /** Used during the init phase.  The method will be called each phase of initialization.
      Initialization ends when no components have sent any data. */
     virtual void init(unsigned int UNUSED(phase)) override {}
     /** Called after all components have been constructed and initialization has
-	completed, but before simulation time has begun. */
+    completed, but before simulation time has begun. */
     virtual void setup( ) override { }
     /** Called after simulation completes, but before objects are
         destroyed. A good place to print out statistics. */

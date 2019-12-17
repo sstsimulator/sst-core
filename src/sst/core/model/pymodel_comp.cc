@@ -233,7 +233,7 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
     if ( nullptr == lat ) return nullptr;
 
 
-	gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s (lat: %s)\n", id, link->name, lat);
+    gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s (lat: %s)\n", id, link->name, lat);
     gModel->addLink(id, link->name, port, lat, link->no_cut);
 
     return PyInt_FromLong(0);
@@ -396,9 +396,9 @@ static PyMethodDef componentMethods[] = {
     {   "addLink",
         compAddLink, METH_VARARGS,
         "Connects this component to a Link"},
-	{	"getFullName",
-		compGetFullName, METH_NOARGS,
-		"Returns the full name, after any prefix, of the component."},
+    {    "getFullName",
+        compGetFullName, METH_NOARGS,
+        "Returns the full name, after any prefix, of the component."},
     {   "enableAllStatistics",
         compEnableAllStatistics, METH_VARARGS,
         "Enable all Statistics in the component with optional parameters"},

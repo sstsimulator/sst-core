@@ -26,7 +26,7 @@ namespace Statistics {
 /**
     \class StatisticOutputTxt
 
-	The class for statistics output to a text file.  
+    The class for statistics output to a text file.  
 */
 class StatisticOutputTxt : public StatisticOutput
 {

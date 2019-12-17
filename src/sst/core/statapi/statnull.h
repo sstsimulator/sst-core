@@ -31,11 +31,11 @@ namespace Statistics {
 // See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
 
 /**
-	\class NullStatistic
+    \class NullStatistic
 
-	An empty statistic place holder.
+    An empty statistic place holder.
 
-	@tparam T A template for holding the main data type of this statistic
+    @tparam T A template for holding the main data type of this statistic
 */
 template <class T, bool B = std::is_fundamental<T>::value>
 struct NullStatisticBase {};

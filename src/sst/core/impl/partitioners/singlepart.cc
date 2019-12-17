@@ -25,10 +25,10 @@ SSTSinglePartition::SSTSinglePartition(RankInfo UNUSED(total_ranks), RankInfo UN
 
 void SSTSinglePartition::performPartition(PartitionGraph* graph) {
 
-	PartitionComponentMap_t& compMap = graph->getComponentMap();
+    PartitionComponentMap_t& compMap = graph->getComponentMap();
 
-	for(auto compItr = compMap.begin(); compItr != compMap.end(); compItr++) {
-		compItr->rank = RankInfo(0,0);
-	}
+    for(auto compItr = compMap.begin(); compItr != compMap.end(); compItr++) {
+        compItr->rank = RankInfo(0,0);
+    }
 
 }

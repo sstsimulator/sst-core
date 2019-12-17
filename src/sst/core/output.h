@@ -274,7 +274,7 @@ public:
         va_list arg;
 
         if (true == m_objInitialized && NONE != m_targetLoc ) {
-    	    const std::string normalPrefix = m_outputPrefix;
+            const std::string normalPrefix = m_outputPrefix;
             m_outputPrefix = tempPrefix;
 
             // First check to see if we are allowed to send output based upon the
@@ -318,7 +318,7 @@ public:
         va_list arg;
 
         if (true == m_objInitialized && NONE != m_targetLoc ) {
-    	    const std::string normalPrefix = m_outputPrefix;
+            const std::string normalPrefix = m_outputPrefix;
             m_outputPrefix = tempPrefix;
 
             // First check to see if we are allowed to send output based upon the
@@ -335,7 +335,7 @@ public:
         }
 #else
         /* When debug is disabled, silence warnings of unused parameters */
- 	(void)tempPrefix;
+        (void)tempPrefix;
         (void)line;
         (void)file;
         (void)func;

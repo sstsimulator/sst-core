@@ -32,7 +32,7 @@ public:
 
     ComponentExtension(ComponentId_t id);
 
-	virtual ~ComponentExtension() {};
+    virtual ~ComponentExtension() {};
 
 };
 

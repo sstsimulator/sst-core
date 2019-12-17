@@ -24,7 +24,7 @@ using fieldType_t = uint32_t;
 /**
     \class StatisticFieldInfo
 
-	The class for representing Statistic Output Fields  
+    The class for representing Statistic Output Fields  
 */
 
 class StatisticFieldTypeBase {

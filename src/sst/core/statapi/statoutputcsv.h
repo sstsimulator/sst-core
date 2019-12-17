@@ -26,7 +26,7 @@ namespace Statistics {
 /**
     \class StatisticOutputCSV
 
-	The class for statistics output to a comma separated file.  
+    The class for statistics output to a comma separated file.  
 */
 class StatisticOutputCSV : public StatisticOutput
 {

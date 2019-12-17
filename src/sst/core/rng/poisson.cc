@@ -17,38 +17,38 @@
 using namespace SST::RNG;
 
 SSTPoissonDistribution::SSTPoissonDistribution(const double mn) :
-	SSTRandomDistribution(), lambda(mn) {
+    SSTRandomDistribution(), lambda(mn) {
 
-	baseDistrib = new MersenneRNG();
-	deleteDistrib = true;
+    baseDistrib = new MersenneRNG();
+    deleteDistrib = true;
 }
 
 SSTPoissonDistribution::SSTPoissonDistribution(const double mn, SSTRandom* baseDist) :
-	SSTRandomDistribution(), lambda(mn) {
+    SSTRandomDistribution(), lambda(mn) {
 
-	baseDistrib = baseDist;
-	deleteDistrib = false;
+    baseDistrib = baseDist;
+    deleteDistrib = false;
 }
 
 SSTPoissonDistribution::~SSTPoissonDistribution() {
-	if(deleteDistrib) {
-		delete baseDistrib;
-	}
+    if(deleteDistrib) {
+        delete baseDistrib;
+    }
 }
 
 double SSTPoissonDistribution::getNextDouble() {
-	const double L = exp(-lambda);
-	      double p = 1.0;
-	      int k = 0;
+    const double L = exp(-lambda);
+          double p = 1.0;
+          int k = 0;
 
-	do {
-		k++;
-		p *= baseDistrib->nextUniform();
-	} while(p > L);
+    do {
+        k++;
+        p *= baseDistrib->nextUniform();
+    } while(p > L);
 
-	return k - 1;
+    return k - 1;
 }
 
 double SSTPoissonDistribution::getLambda() {
-	return lambda;
+    return lambda;
 }
