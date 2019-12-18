@@ -436,6 +436,49 @@ BaseComponent::loadModule(const std::string& type, Params& params)
     return Factory::getFactory()->CreateModule(type,params);
 }
 
+void
+BaseComponent::fatal(uint32_t line, const char* file, const char* func,
+                    int exit_code,
+                    const char* format, ...)    const
+{
+    Output abort("Rank: @R,@I, time: @t - fatal() called from file: @f, line: @l, function: @p", 5, -1, Output::STDOUT);
+
+    // Get info about the simulation
+    std::string name = my_info->getName();
+    std::string type = my_info->getType();
+    // Build up the full list of types all the way to parent component
+    std::string type_tree = my_info->getType();
+    ComponentInfo* parent = my_info->parent_info;
+    while ( parent != nullptr ) {
+        type_tree = parent->type + "/" + type_tree;
+        parent = parent->parent_info;
+    }
+
+    char buf[4000];
+
+    sprintf(buf,"\nElement name: %s,  type: %s (full type tree: %s)\n%s",
+            name.c_str(),type.c_str(),type_tree.c_str(),format);
+    
+    
+    va_list arg;
+    va_start(arg, format);
+    abort.fatal(line,file,func,exit_code,buf,arg);
+    va_end(arg);
+}
+    
+void
+BaseComponent::fatal(bool condition, uint32_t line, const char* file, const char* func,
+                     int exit_code,
+                     const char* format, ...)    const
+{    
+    if ( !condition ) {
+        va_list arg;
+        va_start(arg, format);
+        fatal(line,file,func,exit_code,format,arg);
+        va_end(arg);
+    }
+}
+
 #ifndef SST_ENABLE_PREVIEW_BUILD
 Module*
 BaseComponent::loadModuleWithComponent(const std::string& type, Component* comp, Params& params)

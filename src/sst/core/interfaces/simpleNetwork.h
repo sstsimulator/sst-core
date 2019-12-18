@@ -181,6 +181,7 @@ public:
 
         virtual void inspectNetworkData(Request* req) = 0;
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
         /**
          *  The ID uniquely identifies the component in which this
          *  subcomponent is instantiated.  It does not uniquely define
@@ -190,6 +191,7 @@ public:
          *  subfield of the statistic.
          */
         virtual void initialize(std::string id) = 0;
+#endif
     };
 
     /** Functor classes for handling of callbacks */
@@ -267,6 +269,7 @@ public:
         SubComponent(id)
     { }
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     /** Second half of building the interface.
         Initialize network interface
         @param portName - Name of port to connect to
@@ -279,7 +282,7 @@ public:
     virtual bool initialize(const std::string& portName, const UnitAlgebra& link_bw,
                             int vns, const UnitAlgebra& in_buf_size,
                             const UnitAlgebra& out_buf_size) = 0;
-
+#endif
     /**
      * Sends a network request during the init() phase
      */

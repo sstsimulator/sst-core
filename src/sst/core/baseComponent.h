@@ -474,6 +474,62 @@ protected:
         
         return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);        
     }
+
+
+    /** Convenience function for reporting fatal conditions.  The
+        function will create a new Output object and call fatal()
+        using the supplied parameters.  Before calling
+        Output::fatal(), the function will also print other
+        information about the (sub)component that called fatal and
+        about the simulation state.
+
+        From Output::fatal: Message will be sent to the output
+        location and to stderr.  The output will be prepended with the
+        expanded prefix set in the object.
+        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+
+        @param line Line number of calling function (use CALL_INFO macro)
+        @param file File name calling function (use CALL_INFO macro)
+        @param func Function name calling function (use CALL_INFO macro)
+        @param exit_code The exit code used for termination of simulation.
+               will be passed to MPI_Abort()
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.
+     */
+    void fatal(uint32_t line, const char* file, const char* func,
+               int exit_code,
+               const char* format, ...)    const
+                  __attribute__ ((format (printf, 6, 7))) ;
+
+    
+    /** Convenience function for testing for and reporting fatal
+        conditions.  If the condition holds, fatal() will be called,
+        otherwise, the function will return.  The function will create
+        a new Output object and call fatal() using the supplied
+        parameters.  Before calling Output::fatal(), the function will
+        also print other information about the (sub)component that
+        called fatal and about the simulation state.
+
+        From Output::fatal: Message will be sent to the output
+        location and to stderr.  The output will be prepended with the
+        expanded prefix set in the object.
+        NOTE: fatal() will call MPI_Abort(exit_code) to terminate simulation.
+
+        @param condition on which to call fatal(); fatal() is called
+        if the bool is false.
+        @param line Line number of calling function (use CALL_INFO macro)
+        @param file File name calling function (use CALL_INFO macro)
+        @param func Function name calling function (use CALL_INFO macro)
+        @param exit_code The exit code used for termination of simulation.
+               will be passed to MPI_Abort()
+        @param format Format string.  All valid formats for printf are available.
+        @param ... Arguments for format.
+     */
+    void fatal(bool condition, uint32_t line, const char* file, const char* func,
+                      int exit_code,
+                      const char* format, ...)    const
+        __attribute__ ((format (printf, 7, 8)));
+
     
 private:
 
