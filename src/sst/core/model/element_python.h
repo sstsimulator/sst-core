@@ -203,6 +203,7 @@ struct DerivedBuilder<SSTElementPythonModule,SSTElementPythonModuleOldELI,const 
   public Builder<SSTElementPythonModule,const std::string&>
 {
   SSTElementPythonModule* create(const std::string& lib) override {
+      printf("Create python module for %s", lib.c_str());
     return new SSTElementPythonModuleOldELI(lib, func_);
   }
 

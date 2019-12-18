@@ -609,6 +609,7 @@ Factory::CreatePartitioner(const std::string& name, RankInfo total_ranks, RankIn
 SSTElementPythonModule*
 Factory::getPythonModule(const std::string& name)
 {
+    //printf("GetPythonModule: %s\n", name.c_str());
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(name);
 

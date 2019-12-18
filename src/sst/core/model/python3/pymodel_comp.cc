@@ -20,9 +20,9 @@ REENABLE_WARNING
 
 #include <string.h>
 
-#include "sst/core/model/pymodel.h"
-#include "sst/core/model/pymodel_comp.h"
-#include "sst/core/model/pymodel_link.h"
+#include "sst/core/model/python3/pymodel.h"
+#include "sst/core/model/python3/pymodel_comp.h"
+#include "sst/core/model/python3/pymodel_link.h"
 
 #include "sst/core/sst_types.h"
 #include "sst/core/simulation.h"
@@ -130,7 +130,7 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 static void compDealloc(ComponentPy_t *self)
 {
     if ( self->obj ) delete self->obj;
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 
@@ -145,11 +145,11 @@ static PyObject* compAddParam(PyObject *self, PyObject *args)
     ConfigComponent *c = getComp(self);
     if ( nullptr == c ) return nullptr;
 
-    PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
-    c->addParameter(param, PyString_AsString(vstr), true);
+    PyObject *vstr = PyObject_Str(value);
+    c->addParameter(param, PyUnicode_AsUTF8(vstr), true);
     Py_XDECREF(vstr);
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -167,14 +167,14 @@ static PyObject* compAddParams(PyObject *self, PyObject *args)
     long count = 0;
 
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
-        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
-        c->addParameter(PyString_AsString(kstr), PyString_AsString(vstr), true);
+        PyObject *kstr = PyObject_Str(key);
+        PyObject *vstr = PyObject_Str(val);
+        c->addParameter(PyUnicode_AsUTF8(kstr), PyUnicode_AsUTF8(vstr), true);
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
         count++;
     }
-    return PyInt_FromLong(count);
+    return PyLong_FromLong(count);
 }
 
 
@@ -194,7 +194,7 @@ static PyObject* compSetRank(PyObject *self, PyObject *args)
 
     c->setRank(RankInfo(rank, thread));
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -212,7 +212,7 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg)
 
     c->setWeight(weight);
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -236,17 +236,29 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
     gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s (lat: %s)\n", id, link->name, lat);
     gModel->addLink(id, link->name, port, lat, link->no_cut);
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
 static PyObject* compGetFullName(PyObject *self, PyObject *UNUSED(args))
 {
-    return PyString_FromString(getComp(self)->name.c_str());
+    return PyBytes_FromString(getComp(self)->name.c_str());
 }
 
-static int compCompare(PyObject *obj0, PyObject *obj1) {
-    return ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj);
+static PyObject* compCompare(PyObject *obj0, PyObject *obj1, int op) {
+    PyObject *result;
+    bool cmp = false;
+    switch(op) {
+        case Py_LT: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == -1;
+        case Py_LE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != 1;
+        case Py_EQ: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == 0;
+        case Py_NE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != 0;
+        case Py_GT: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == 1;
+        case Py_GE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != -1;
+    }
+    result = cmp ? Py_True : Py_False;
+    Py_INCREF(result);
+    return result;
 }
 
 
@@ -304,7 +316,7 @@ error:
     if ( nullptr == c ) return nullptr;
     c->setCoordinates(coords);
 
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
@@ -330,7 +342,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
         // ParseTuple Failed, return NULL for error
         return nullptr;
     }
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -361,13 +373,13 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
         numStats = PyList_Size(statList);
         for (uint32_t x = 0; x < numStats; x++) {
             PyObject* pylistitem = PyList_GetItem(statList, x);
-            PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
+            PyObject* pyname = PyObject_Str(pylistitem);
 
-            c->enableStatistic(PyString_AsString(pyname));
+            c->enableStatistic(PyUnicode_AsUTF8(pyname));
 
             // Add the parameters
             for ( auto p : params ) {
-                c->addStatisticParameter(PyString_AsString(pyname), p.first, p.second);
+                c->addStatisticParameter(PyBytes_AsString(pyname), p.first, p.second);
             }
 
             Py_XDECREF(pyname);
@@ -376,7 +388,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
         // ParseTuple Failed, return NULL for error
         return nullptr;
     }
-    return PyInt_FromLong(0);
+    return PyLong_FromLong(0);
 }
 
 
@@ -396,7 +408,7 @@ static PyMethodDef componentMethods[] = {
     {   "addLink",
         compAddLink, METH_VARARGS,
         "Connects this component to a Link"},
-    {    "getFullName",
+    {   "getFullName",
         compGetFullName, METH_NOARGS,
         "Returns the full name, after any prefix, of the component."},
     {   "enableAllStatistics",
@@ -421,48 +433,49 @@ PyTypeObject PyModel_ComponentType = {
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)compDealloc,   /* tp_dealloc */
-    nullptr,                         /* tp_print */
-    nullptr,                         /* tp_getattr */
-    nullptr,                         /* tp_setattr */
-    compCompare,               /* tp_compare */
-    nullptr,                         /* tp_repr */
-    nullptr,                         /* tp_as_number */
-    nullptr,                         /* tp_as_sequence */
-    nullptr,                         /* tp_as_mapping */
-    nullptr,                         /* tp_hash */
-    nullptr,                         /* tp_call */
-    nullptr,                         /* tp_str */
-    nullptr,                         /* tp_getattro */
-    nullptr,                         /* tp_setattro */
-    nullptr,                         /* tp_as_buffer */
+    nullptr,                   /* tp_vectorcall_offset */
+    nullptr,                   /* tp_getattr */
+    nullptr,                   /* tp_setattr */
+    nullptr,                   /* tp_as_async */
+    nullptr,                   /* tp_repr */
+    nullptr,                   /* tp_as_number */
+    nullptr,                   /* tp_as_sequence */
+    nullptr,                   /* tp_as_mapping */
+    nullptr,                   /* tp_hash */
+    nullptr,                   /* tp_call */
+    nullptr,                   /* tp_str */
+    nullptr,                   /* tp_getattro */
+    nullptr,                   /* tp_setattro */
+    nullptr,                   /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "SST Component",           /* tp_doc */
-    nullptr,                         /* tp_traverse */
-    nullptr,                         /* tp_clear */
-    nullptr,                         /* tp_richcompare */
+    nullptr,                   /* tp_traverse */
+    nullptr,                   /* tp_clear */
+    compCompare,               /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
-    nullptr,                         /* tp_iter */
-    nullptr,                         /* tp_iternext */
+    nullptr,                   /* tp_iter */
+    nullptr,                   /* tp_iternext */
     componentMethods,          /* tp_methods */
-    nullptr,                         /* tp_members */
-    nullptr,                         /* tp_getset */
-    nullptr,                         /* tp_base */
-    nullptr,                         /* tp_dict */
-    nullptr,                         /* tp_descr_get */
-    nullptr,                         /* tp_descr_set */
+    nullptr,                   /* tp_members */
+    nullptr,                   /* tp_getset */
+    nullptr,                   /* tp_base */
+    nullptr,                   /* tp_dict */
+    nullptr,                   /* tp_descr_get */
+    nullptr,                   /* tp_descr_set */
     0,                         /* tp_dictoffset */
     (initproc)compInit,        /* tp_init */
-    nullptr,                         /* tp_alloc */
-    nullptr,                         /* tp_new */
-    nullptr,                         /* tp_free */
-    nullptr,                         /* tp_is_gc */
-    nullptr,                         /* tp_bases */
-    nullptr,                         /* tp_mro */
-    nullptr,                         /* tp_cache */
-    nullptr,                         /* tp_subclasses */
-    nullptr,                         /* tp_weaklist */
-    nullptr,                         /* tp_del */
+    nullptr,                   /* tp_alloc */
+    nullptr,                   /* tp_new */
+    nullptr,                   /* tp_free */
+    nullptr,                   /* tp_is_gc */
+    nullptr,                   /* tp_bases */
+    nullptr,                   /* tp_mro */
+    nullptr,                   /* tp_cache */
+    nullptr,                   /* tp_subclasses */
+    nullptr,                   /* tp_weaklist */
+    nullptr,                   /* tp_del */
     0,                         /* tp_version_tag */
+    nullptr,                   /* tp_finalize */
 };
 
 
@@ -500,7 +513,7 @@ static void subCompDealloc(ComponentPy_t *self)
         Py_XDECREF(obj->parent->pobj);
         delete self->obj;
     }
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 
@@ -537,48 +550,49 @@ PyTypeObject PyModel_SubComponentType = {
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)subCompDealloc,/* tp_dealloc */
-    nullptr,                         /* tp_print */
-    nullptr,                         /* tp_getattr */
-    nullptr,                         /* tp_setattr */
-    compCompare,               /* tp_compare */
-    nullptr,                         /* tp_repr */
-    nullptr,                         /* tp_as_number */
-    nullptr,                         /* tp_as_sequence */
-    nullptr,                         /* tp_as_mapping */
-    nullptr,                         /* tp_hash */
-    nullptr,                         /* tp_call */
-    nullptr,                         /* tp_str */
-    nullptr,                         /* tp_getattro */
-    nullptr,                         /* tp_setattro */
-    nullptr,                         /* tp_as_buffer */
+    nullptr,                   /* tp_vectorcall_offset */
+    nullptr,                   /* tp_getattr */
+    nullptr,                   /* tp_setattr */
+    nullptr,                   /* tp_as_async */
+    nullptr,                   /* tp_repr */
+    nullptr,                   /* tp_as_number */
+    nullptr,                   /* tp_as_sequence */
+    nullptr,                   /* tp_as_mapping */
+    nullptr,                   /* tp_hash */
+    nullptr,                   /* tp_call */
+    nullptr,                   /* tp_str */
+    nullptr,                   /* tp_getattro */
+    nullptr,                   /* tp_setattro */
+    nullptr,                   /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "SST SubComponent",        /* tp_doc */
-    nullptr,                         /* tp_traverse */
-    nullptr,                         /* tp_clear */
-    nullptr,                         /* tp_richcompare */
+    nullptr,                   /* tp_traverse */
+    nullptr,                   /* tp_clear */
+    compCompare,               /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
-    nullptr,                         /* tp_iter */
-    nullptr,                         /* tp_iternext */
+    nullptr,                   /* tp_iter */
+    nullptr,                   /* tp_iternext */
     subComponentMethods,       /* tp_methods */
-    nullptr,                         /* tp_members */
-    nullptr,                         /* tp_getset */
-    nullptr,                         /* tp_base */
-    nullptr,                         /* tp_dict */
-    nullptr,                         /* tp_descr_get */
-    nullptr,                         /* tp_descr_set */
+    nullptr,                   /* tp_members */
+    nullptr,                   /* tp_getset */
+    nullptr,                   /* tp_base */
+    nullptr,                   /* tp_dict */
+    nullptr,                   /* tp_descr_get */
+    nullptr,                   /* tp_descr_set */
     0,                         /* tp_dictoffset */
     (initproc)subCompInit,     /* tp_init */
-    nullptr,                         /* tp_alloc */
-    nullptr,                         /* tp_new */
-    nullptr,                         /* tp_free */
-    nullptr,                         /* tp_is_gc */
-    nullptr,                         /* tp_bases */
-    nullptr,                         /* tp_mro */
-    nullptr,                         /* tp_cache */
-    nullptr,                         /* tp_subclasses */
-    nullptr,                         /* tp_weaklist */
-    nullptr,                         /* tp_del */
+    nullptr,                   /* tp_alloc */
+    nullptr,                   /* tp_new */
+    nullptr,                   /* tp_free */
+    nullptr,                   /* tp_is_gc */
+    nullptr,                   /* tp_bases */
+    nullptr,                   /* tp_mro */
+    nullptr,                   /* tp_cache */
+    nullptr,                   /* tp_subclasses */
+    nullptr,                   /* tp_weaklist */
+    nullptr,                   /* tp_del */
     0,                         /* tp_version_tag */
+    nullptr,                   /* tp_finalize */
 };
 
 

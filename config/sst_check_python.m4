@@ -17,7 +17,7 @@ AC_DEFUN([SST_CHECK_PYTHON], [
   AC_PATH_PROGS([PYTHON2_DEF_CONFIG_EXE], ["python2.6-config" "python2.7-config"], ["NOTFOUND"])
 
   AS_IF([test $PYTHON2_DEF_CONFIG_EXE = "NOTFOUND"], 
-        [AC_PATH_PROGS([PYTHON3_DEF_CONFIG_EXE], ["python3.5-config" "python3.6-config"], ["NOTFOUND"])])
+        [AC_PATH_PROGS([PYTHON3_DEF_CONFIG_EXE], ["python3.5-config" "python3.6-config" "python3.7-config"], ["NOTFOUND"])])
 
   AS_IF([test $PYTHON2_DEF_CONFIG_EXE = "NOTFOUND"],
         [AS_IF([test $PYTHON3_DEF_CONFIG_EXE != "NOTFOUND"], 
@@ -29,7 +29,7 @@ AC_DEFUN([SST_CHECK_PYTHON], [
         [PYTHON_DEF_CONFIG_EXE=$PYTHON3_DEF_CONFIG_EXE])
 
   AS_IF([test -n "$with_python"],
-       [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3.5-config" "python3.6-config"], [""], ["$with_python/bin"])])
+       [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3.5-config" "python3.6-config" "python3.7-config"], [""], ["$with_python/bin"])])
 
   AS_IF([test -n "$PYTHON_CONFIG_EXE"], [PYTHON_VERSION3="yes"])
   
@@ -74,6 +74,7 @@ AC_DEFUN([SST_CHECK_PYTHON], [
   AC_SUBST([PYTHON_VERSION3])
 
   AM_CONDITIONAL([SST_CONFIG_HAVE_PYTHON], [test "$sst_check_python_happy" = "yes"])
+  AM_CONDITIONAL([SST_CONFIG_HAVE_PYTHON3], [test "$PYTHON_VERSION3" = "yes"])
 
   AS_IF([test "$PYTHON_VERSION3" = "yes"], 
         [AC_DEFINE([SST_CONFIG_HAVE_PYTHON3], [1], [Set to 1 if Python version is 3])])
