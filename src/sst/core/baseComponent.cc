@@ -467,9 +467,9 @@ BaseComponent::fatal(uint32_t line, const char* file, const char* func,
 }
     
 void
-BaseComponent::fatal(bool condition, uint32_t line, const char* file, const char* func,
-                     int exit_code,
-                     const char* format, ...)    const
+BaseComponent::sst_assert(bool condition, uint32_t line, const char* file, const char* func,
+                          int exit_code,
+                          const char* format, ...)    const
 {    
     if ( !condition ) {
         va_list arg;

@@ -525,9 +525,9 @@ protected:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void fatal(bool condition, uint32_t line, const char* file, const char* func,
-                      int exit_code,
-                      const char* format, ...)    const
+    void sst_assert(bool condition, uint32_t line, const char* file, const char* func,
+                    int exit_code,
+                    const char* format, ...)    const
         __attribute__ ((format (printf, 7, 8)));
 
     
