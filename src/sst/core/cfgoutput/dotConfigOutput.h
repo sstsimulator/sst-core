@@ -21,12 +21,12 @@ namespace Core {
 
 class DotConfigGraphOutput : public ConfigGraphOutput {
 public:
-	DotConfigGraphOutput(const char* path);
-	virtual void generate(const Config* cfg, ConfigGraph* graph) override;
+    DotConfigGraphOutput(const char* path);
+    virtual void generate(const Config* cfg, ConfigGraph* graph) override;
 
 protected:
-	void generateDot(const ConfigComponent& comp, const ConfigLinkMap_t& linkMap) const;
-	void generateDot(const ConfigLink& link) const;
+    void generateDot(const ConfigComponent& comp, const ConfigLinkMap_t& linkMap) const;
+    void generateDot(const ConfigLink& link) const;
 };
 
 }

@@ -77,14 +77,14 @@ public:
         primaryComponentOKToEndSim(), the Exit object will trigger and
         end simulation.
 
-	This must be called during simulation wireup (i.e during the
-	constructor for the component).  By default, the state of the
-	primary component is set to OKToEndSim.
+    This must be called during simulation wireup (i.e during the
+    constructor for the component).  By default, the state of the
+    primary component is set to OKToEndSim.
 
-	If no component registers as a primary component, then the
-	Exit object will not be used for that simulation and
-	simulation termination must be accomplished through some other
-	mechanism (e.g. --stopAt flag, or some other Action object).
+    If no component registers as a primary component, then the
+    Exit object will not be used for that simulation and
+    simulation termination must be accomplished through some other
+    mechanism (e.g. --stopAt flag, or some other Action object).
 
         @sa Component::primaryComponentDoNotEndSim()
         @sa Component::primaryComponentOKToEndSim()
@@ -92,8 +92,8 @@ public:
     void registerAsPrimaryComponent();
 
     /** Tells the simulation that it should not exit.  The component
-	will remain in this state until a call to
-	primaryComponentOKToEndSim().
+    will remain in this state until a call to
+    primaryComponentOKToEndSim().
 
         @sa Component::registerAsPrimaryComponent()
         @sa Component::primaryComponentOKToEndSim()
@@ -101,8 +101,8 @@ public:
     void primaryComponentDoNotEndSim();
 
     /** Tells the simulation that it is now OK to end simulation.
-	Simulation will not end until all primary components have
-	called this function.
+    Simulation will not end until all primary components have
+    called this function.
 
         @sa Component::registerAsPrimaryComponent()
         @sa Component::primaryComponentDoNotEndSim()

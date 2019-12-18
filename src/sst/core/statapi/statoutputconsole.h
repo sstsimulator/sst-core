@@ -22,8 +22,8 @@ namespace Statistics {
 /**
     \class StatisticOutputConsole
 
-	The class for statistics output to the console.  This will be the
-	default statistic output in SST.
+    The class for statistics output to the console.  This will be the
+    default statistic output in SST.
 */
 class StatisticOutputConsole : public StatisticOutput
 {

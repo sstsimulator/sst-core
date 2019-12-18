@@ -35,34 +35,34 @@ namespace SST {
 /** Describes Statistics used by a Component.
  */
 struct ElementInfoStatistic {
-    const char* name;		/*!< Name of the Statistic to be Enabled */
-    const char* description;	/*!< Brief description of the Statistic */
+    const char* name;           /*!< Name of the Statistic to be Enabled */
+    const char* description;    /*!< Brief description of the Statistic */
     const char* units;          /*!< Units associated with this Statistic value */
-    const uint8_t enableLevel;	/*!< Level to meet to enable statistic 0 = disabled */
+    const uint8_t enableLevel;  /*!< Level to meet to enable statistic 0 = disabled */
 };
 
 /** Describes Parameters to a Component.
  */
 struct ElementInfoParam {
-    const char *name;			/*!< Name of the parameter */
-    const char *description;	/*!< Brief description of the parameter (ie, what it controls) */
-    const char *defaultValue;	/*!< Default value (if any) nullptr == required parameter with no default, "" == optional parameter, blank default, "foo" == default value */
+    const char *name;           /*!< Name of the parameter */
+    const char *description;    /*!< Brief description of the parameter (ie, what it controls) */
+    const char *defaultValue;   /*!< Default value (if any) nullptr == required parameter with no default, "" == optional parameter, blank default, "foo" == default value */
 };
 
 /** Describes Ports that the Component can use
  */
 struct ElementInfoPort {
-    const char *name;			/*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter */
-    const char *description;	/*!< Brief description of the port (ie, what it is used for) */
-    const char **validEvents;	/*!< List of fully-qualified event types that this Port expects to send or receive */
+    const char *name;           /*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter */
+    const char *description;    /*!< Brief description of the port (ie, what it is used for) */
+    const char **validEvents;   /*!< List of fully-qualified event types that this Port expects to send or receive */
 };
 
 /** Describes Ports that the Component can use
  */
 struct ElementInfoPort2 {
-    const char *name;			/*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter */
-    const char *description;	/*!< Brief description of the port (ie, what it is used for) */
-    const std::vector<std::string> validEvents;	/*!< List of fully-qualified event types that this Port expects to send or receive */
+    const char *name;           /*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter */
+    const char *description;    /*!< Brief description of the port (ie, what it is used for) */
+    const std::vector<std::string> validEvents;    /*!< List of fully-qualified event types that this Port expects to send or receive */
 
     // For backwards compatibility, convert from ElementInfoPort to ElementInfoPort2
 private:
@@ -118,7 +118,7 @@ public:
 
     /**
        @return A boolean indicated successfully added
-	*/
+    */
     static bool addLoader(const std::string& lib, const std::string& name,
                           LibraryLoader* loader);
 

@@ -79,9 +79,9 @@ public:
     virtual void emergencyShutdown(void) {}
 
 
-	/** Returns component Name */
-	/* inline const std::string& getName() const { return name; } */
-	inline const std::string& getName() const { return my_info->getName(); }
+    /** Returns component Name */
+    /* inline const std::string& getName() const { return name; } */
+    inline const std::string& getName() const { return my_info->getName(); }
 
 
     /** Used during the init phase.  The method will be called each phase of initialization.
@@ -91,7 +91,7 @@ public:
      Initialization ends when no components have sent any data. */
     virtual void complete(unsigned int UNUSED(phase)) {}
     /** Called after all components have been constructed and initialization has
-	completed, but before simulation time has begun. */
+    completed, but before simulation time has begun. */
     virtual void setup( ) { }
     /** Called after simulation completes, but before objects are
         destroyed. A good place to print out statistics. */

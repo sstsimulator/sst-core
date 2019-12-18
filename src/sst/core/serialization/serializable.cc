@@ -29,7 +29,7 @@ serializable::serializable_abort(uint32_t line, const char* file, const char* fu
 {
     SST::Output ser_abort("", 5, SST::Output::PrintAll, SST::Output::STDERR);
     ser_abort.fatal(line, file, func, 1,
-							      "ERROR: type %s should not be serialized\n",obj);
+                                  "ERROR: type %s should not be serialized\n",obj);
 }
 
 uint32_t

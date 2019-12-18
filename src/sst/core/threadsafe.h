@@ -95,9 +95,9 @@ public:
         defined( __x86_64 ) || defined( __x86_64__ ) )
                         _mm_pause();
 #elif defined(__PPC64__)
-       	asm volatile( "or 27, 27, 27" ::: "memory" );
+           asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
-		    } else if ( count < (1024*1024) ) {
+            } else if ( count < (1024*1024) ) {
                         std::this_thread::yield();
                     } else {
                         struct timespec ts;
@@ -254,7 +254,7 @@ public:
         defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
 #elif defined(__PPC64__)
-       	asm volatile( "or 27, 27, 27" ::: "memory" );
+           asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
         }
     }
@@ -319,7 +319,7 @@ public:
         defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
 #elif defined(__PPC64__)
-       	asm volatile( "or 27, 27, 27" ::: "memory" );
+           asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
         }
     }

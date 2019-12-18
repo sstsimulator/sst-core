@@ -200,7 +200,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
     fprintf(stderr, "SST Fatal Backtrace Information:\n");
     for(size_t i = 0; i < backtrace_count; ++i) {
-	fprintf(stderr, "%5" PRIu64 " : %s\n", (uint64_t) i, backtrace_names[i]);
+    fprintf(stderr, "%5" PRIu64 " : %s\n", (uint64_t) i, backtrace_names[i]);
     }
 
     free(backtrace_names);

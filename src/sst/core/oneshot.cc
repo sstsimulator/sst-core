@@ -130,10 +130,10 @@ void OneShot::execute(void)
     
     // Walk the list of all handlers, and call them.  
     for (HandlerList_t::iterator it = ptrHandlerList->begin(); it != ptrHandlerList->end(); ++it ) {
-    	handler = *it;
+        handler = *it;
 
-    	// Call the registered Callback handlers 
-    	((*handler)());
+        // Call the registered Callback handlers 
+        ((*handler)());
     }
 
     // Delete the Handler list and remove it from the map

@@ -25,29 +25,29 @@ namespace SST {
 namespace RNG {
 
 /**
-	\class SSTDiscreteDistribution discrete.h "sst/core/rng/discrete.h"
+    \class SSTDiscreteDistribution discrete.h "sst/core/rng/discrete.h"
 
-	Creates a discrete distribution for use within SST. This distribution is the same across
-	platforms and compilers.
+    Creates a discrete distribution for use within SST. This distribution is the same across
+    platforms and compilers.
 */
 class SSTDiscreteDistribution : public SSTRandomDistribution {
 
-	public:
-		/**
-			Creates an exponential distribution with a specific lambda
-			\param lambda The lambda of the exponential distribution
-		*/
+    public:
+        /**
+            Creates an exponential distribution with a specific lambda
+            \param lambda The lambda of the exponential distribution
+        */
     SSTDiscreteDistribution(const double* probs, const uint32_t probsCount) :
         SSTRandomDistribution(),
         probCount(probsCount) {
 
         probabilities = (double*) malloc(sizeof(double) * probsCount);
-	double prob_sum = 0;
+    double prob_sum = 0;
 
-	for(uint32_t i = 0; i < probsCount; i++) {
-		probabilities[i] = prob_sum;
-		prob_sum += probs[i];
-	}
+    for(uint32_t i = 0; i < probsCount; i++) {
+        probabilities[i] = prob_sum;
+        prob_sum += probs[i];
+    }
 
             baseDistrib = new MersenneRNG();
             deleteDistrib = true;
@@ -62,20 +62,20 @@ class SSTDiscreteDistribution : public SSTRandomDistribution {
         probCount(probsCount) {
         
         probabilities = (double*) malloc(sizeof(double) * probsCount);
-	double prob_sum = 0;
+    double prob_sum = 0;
 
-	for(uint32_t i = 0; i < probsCount; i++) {
-		probabilities[i] = prob_sum;
-		prob_sum += probs[i];
-	}
+    for(uint32_t i = 0; i < probsCount; i++) {
+        probabilities[i] = prob_sum;
+        prob_sum += probs[i];
+    }
 
         baseDistrib = baseDist;
             deleteDistrib = false;
     }
 
-		/**
-			Destroys the exponential distribution
-		*/
+        /**
+            Destroys the exponential distribution
+        */
     ~SSTDiscreteDistribution() {
         free(probabilities);
         
@@ -84,10 +84,10 @@ class SSTDiscreteDistribution : public SSTRandomDistribution {
         }
     }
 
-		/**
-			Gets the next (random) double value in the distribution
-			\return The next random double from the discrete distribution, this is the double converted of the index where the probability is located
-		*/
+        /**
+            Gets the next (random) double value in the distribution
+            \return The next random double from the discrete distribution, this is the double converted of the index where the probability is located
+        */
     double getNextDouble() {
         const double nextD = baseDistrib->nextUniform();
 
@@ -102,26 +102,26 @@ class SSTDiscreteDistribution : public SSTRandomDistribution {
         return (double) index;
     }
 
-	protected:
-		/**
-			Sets the base random number generator for the distribution.
-		*/
-		SSTRandom* baseDistrib;
+    protected:
+        /**
+            Sets the base random number generator for the distribution.
+        */
+        SSTRandom* baseDistrib;
 
-		/**
-			Controls whether the base distribution should be deleted when this class is destructed.
-		*/
-		bool deleteDistrib;
+        /**
+            Controls whether the base distribution should be deleted when this class is destructed.
+        */
+        bool deleteDistrib;
 
-		/**
-			The discrete probability list
-		*/
-		double* probabilities;
+        /**
+            The discrete probability list
+        */
+        double* probabilities;
 
-		/**
-			Count of discrete probabilities
-		*/
-		uint32_t probCount;
+        /**
+            Count of discrete probabilities
+        */
+        uint32_t probCount;
 
 };
 

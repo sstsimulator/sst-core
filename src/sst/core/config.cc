@@ -64,7 +64,7 @@ Config::Config(RankInfo rankInfo)
 
     output_directory = "";
     if( nullptr != wd_buf ) {
-	output_directory.append(wd_buf);
+    output_directory.append(wd_buf);
         free(wd_buf);
     }
 
@@ -153,9 +153,9 @@ static const size_t nLongOpts = (sizeof(sstOptions) / sizeof(sstLongOpts_s)) -1;
 
 bool Config::usage() {
 #ifdef SST_CONFIG_HAVE_MPI
-	int this_rank = 0;
-	MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
-	if(this_rank != 0)  return true;
+    int this_rank = 0;
+    MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
+    if(this_rank != 0)  return true;
 #endif
 
     /* Determine screen / description widths */
@@ -236,7 +236,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
         if ( intC == -1 ) /* We're done */
             break;
 
-	const char c = static_cast<char>(intC);
+    const char c = static_cast<char>(intC);
 
         switch (c) {
         case 0:
@@ -263,7 +263,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
         case 'h':
         case '?':
         default:
-	    
+        
             ok = usage();
         }
     }
@@ -292,30 +292,30 @@ Config::parseCmdLine(int argc, char* argv[]) {
 
     // Ensure output directory ends with a directory separator
     if( output_directory.size() > 0 ) {
-	if( '/' != output_directory[output_directory.size() - 1] ) {
-		output_directory.append("/");
-	}
+    if( '/' != output_directory[output_directory.size() - 1] ) {
+        output_directory.append("/");
+    }
     }
 
     // Now make sure all the files we are generating go into a directory
     if( output_config_graph.size() > 0 && isFileNameOnly(output_config_graph) ) {
-	output_config_graph.insert( 0, output_directory );
+    output_config_graph.insert( 0, output_directory );
     }
 
     if( output_dot.size() > 0 && isFileNameOnly(output_dot) ) {
-	output_dot.insert( 0, output_directory );
+    output_dot.insert( 0, output_directory );
     }
 
     if( output_xml.size() > 0 && isFileNameOnly(output_xml) ) {
-	output_xml.insert( 0, output_directory );
+    output_xml.insert( 0, output_directory );
     }
 
     if( output_json.size() > 0 && isFileNameOnly(output_json) ) {
-	output_json.insert( 0, output_directory );
+    output_json.insert( 0, output_directory );
     }
 
     if( debugFile.size() > 0 && isFileNameOnly(debugFile) ) {
-	debugFile.insert( 0, output_directory );
+    debugFile.insert( 0, output_directory );
     }
 
     return 0;
@@ -501,11 +501,11 @@ bool Config::setNumThreads(const std::string& arg) {
 /* Getters */
 
 bool Config::printTimingInfo() {
-	return print_timing;
+    return print_timing;
 }
 
 uint32_t Config::getVerboseLevel() {
-	return verbose;
+    return verbose;
 }
 
 

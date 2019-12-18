@@ -43,10 +43,10 @@ namespace Statistics {
 class StatisticOutput;
 
 /**
-	\class StatisticProcessingEngine
+    \class StatisticProcessingEngine
 
-	An SST core component that handles timing and event processing informing
-	all registered Statistics to generate their outputs at desired rates.
+    An SST core component that handles timing and event processing informing
+    all registered Statistics to generate their outputs at desired rates.
 */
 
 class StatisticProcessingEngine

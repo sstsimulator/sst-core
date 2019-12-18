@@ -265,8 +265,8 @@ static PyObject* getProgramOptions(PyObject*UNUSED(self), PyObject *UNUSED(args)
     PyDict_SetItem(dict, PyString_FromString("output-partition"), PyString_FromString(cfg->dump_component_graph_file.c_str()));
     PyDict_SetItem(dict, PyString_FromString("output-config"), PyString_FromString(cfg->output_config_graph.c_str()));
     PyDict_SetItem(dict, PyString_FromString("output-dot"), PyString_FromString(cfg->output_dot.c_str()));
-	PyDict_SetItem(dict, PyString_FromString("numRanks"), PyLong_FromLong(cfg->getNumRanks()));
-	PyDict_SetItem(dict, PyString_FromString("numThreads"), PyLong_FromLong(cfg->getNumThreads()));
+    PyDict_SetItem(dict, PyString_FromString("numRanks"), PyLong_FromLong(cfg->getNumRanks()));
+    PyDict_SetItem(dict, PyString_FromString("numThreads"), PyLong_FromLong(cfg->getNumThreads()));
 
     const char *runModeStr = "UNKNOWN";
     switch (cfg->runMode) {
@@ -682,76 +682,76 @@ void SSTPythonModelDefinition::initModel(const std::string& script_file, int ver
 }
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* configObj) :
-	SSTModelDescription(), scriptName(script_file), config(configObj), namePrefix(nullptr), namePrefixLen(0)
+    SSTModelDescription(), scriptName(script_file), config(configObj), namePrefix(nullptr), namePrefixLen(0)
 {
-	std::vector<std::string> argv_vector;
-	argv_vector.push_back("sstsim.x");
+    std::vector<std::string> argv_vector;
+    argv_vector.push_back("sstsim.x");
 
-	const int input_len = configObj->model_options.length();
-	std::string temp = "";
-	bool in_string = false;
+    const int input_len = configObj->model_options.length();
+    std::string temp = "";
+    bool in_string = false;
 
-	for(int i = 0; i < input_len; ++i) {
-		if(configObj->model_options.substr(i, 1) == "\"") {
-			if(in_string) {
-				// We are ending a string
-				if(! (temp == "")) {
-					argv_vector.push_back(temp);
-					temp = "";
-				}
+    for(int i = 0; i < input_len; ++i) {
+        if(configObj->model_options.substr(i, 1) == "\"") {
+            if(in_string) {
+                // We are ending a string
+                if(! (temp == "")) {
+                    argv_vector.push_back(temp);
+                    temp = "";
+                }
 
-				in_string = false;
-			} else {
-				// We are starting a string
-				in_string = true;
-			}
-		} else if(configObj->model_options.substr(i, 1) == " ") {
-			if(in_string) {
-				temp += " ";
-			} else {
-				if(! (temp == "")) {
-					argv_vector.push_back(temp);
-				}
+                in_string = false;
+            } else {
+                // We are starting a string
+                in_string = true;
+            }
+        } else if(configObj->model_options.substr(i, 1) == " ") {
+            if(in_string) {
+                temp += " ";
+            } else {
+                if(! (temp == "")) {
+                    argv_vector.push_back(temp);
+                }
 
-				temp = "";
-			}
-		} else {
-			temp += configObj->model_options.substr(i, 1);
-		}
-	}
+                temp = "";
+            }
+        } else {
+            temp += configObj->model_options.substr(i, 1);
+        }
+    }
 
-	// need to handle the last argument with a special case
-	if(temp != "") {
-		if(in_string) {
-			// this maybe en error?
-		} else {
-			if(! (temp == "") ) {
-				argv_vector.push_back(temp);
-			}
-		}
-	}
+    // need to handle the last argument with a special case
+    if(temp != "") {
+        if(in_string) {
+            // this maybe en error?
+        } else {
+            if(! (temp == "") ) {
+                argv_vector.push_back(temp);
+            }
+        }
+    }
 
-	// generate C main style inputs to the Python program based on our processing above.
-	char** argv = (char**) malloc(sizeof(char*) * argv_vector.size());
-	const int argc = argv_vector.size();
+    // generate C main style inputs to the Python program based on our processing above.
+    char** argv = (char**) malloc(sizeof(char*) * argv_vector.size());
+    const int argc = argv_vector.size();
 
-	for(int i = 0; i < argc; ++i) {
-		argv[i] = (char*) malloc(sizeof(char) * argv_vector[i].size() + 1);
-		sprintf(argv[i], "%s", argv_vector[i].c_str());
-	}
+    for(int i = 0; i < argc; ++i) {
+        argv[i] = (char*) malloc(sizeof(char) * argv_vector[i].size() + 1);
+        sprintf(argv[i], "%s", argv_vector[i].c_str());
+    }
 
-	// Init the model
-	initModel(script_file, verbosity, configObj, argc, argv);
+    // Init the model
+    initModel(script_file, verbosity, configObj, argc, argv);
 
-	// Free the vector
-	free(argv);
+    // Free the vector
+    free(argv);
 }
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_file, int verbosity,
     Config* configObj, int argc, char **argv) :
     SSTModelDescription(), scriptName(script_file), config(configObj)
 {
-	initModel(script_file, verbosity, configObj, argc, argv);
+    initModel(script_file, verbosity, configObj, argc, argv);
 }
 
 SSTPythonModelDefinition::~SSTPythonModelDefinition() {

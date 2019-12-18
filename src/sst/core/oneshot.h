@@ -56,7 +56,7 @@ public:
         classT*         object;
         const PtrMember member;
         argT            data;
-	
+    
     public:
         /** Constructor
          * @param object - Pointer to Object upon which to call the handler

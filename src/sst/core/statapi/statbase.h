@@ -54,10 +54,10 @@ public:
 /**
     \class StatisticBase
 
-	Forms the base class for statistics gathering within SST. Statistics are
-	gathered and processed into various (extensible) output forms. Statistics
-	are expected to be named so that they can be located in the simulation 
-	output files.
+    Forms the base class for statistics gathering within SST. Statistics are
+    gathered and processed into various (extensible) output forms. Statistics
+    are expected to be named so that they can be located in the simulation 
+    output files.
 */
 
 class StatisticBase
@@ -314,9 +314,9 @@ struct StatisticCollector<std::tuple<Args...>,false> {
 /**
     \class Statistic
 
-	Forms the template defined base class for statistics gathering within SST. 
+    Forms the template defined base class for statistics gathering within SST. 
 
-	@tparam T A template for the basic numerical data stored by this Statistic
+    @tparam T A template for the basic numerical data stored by this Statistic
 */
 
 template <typename T>

@@ -36,7 +36,7 @@ SimulatorHeartbeat::SimulatorHeartbeat( Config* UNUSED(cfg), int this_rank, Simu
         lastTime = sst_get_cpu_time();
     }
     // if( (0 == this_rank) ) {
-    // 	sim->insertActivity( period->getFactor(), this );
+    //     sim->insertActivity( period->getFactor(), this );
     //     lastTime = sst_get_cpu_time();
     // }
 }
@@ -94,7 +94,7 @@ void SimulatorHeartbeat::execute( void )
 
         
     if ( rank == 0 ) {
-	    char ua_buffer[256];
+        char ua_buffer[256];
         
         sprintf(ua_buffer, "%" PRIu64 "B", global_max_sync_data_size);
         UnitAlgebra global_max_sync_data_size_ua(ua_buffer);

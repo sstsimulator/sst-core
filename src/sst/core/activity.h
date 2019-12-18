@@ -69,10 +69,10 @@ public:
                     /* TODO:  Handle 64-bit wrap-around */
                     return lhs->enforce_link_order > rhs->enforce_link_order;
                 } else {
-               	    return lhs->priority > rhs->priority;
+                    return lhs->priority > rhs->priority;
                 }
             } else {
-            	return lhs->delivery_time > rhs->delivery_time;
+                return lhs->delivery_time > rhs->delivery_time;
             }
         }
 
@@ -86,7 +86,7 @@ public:
                     return lhs.priority > rhs.priority;
                 }
             } else {
-            	return lhs.delivery_time > rhs.delivery_time;
+                return lhs.delivery_time > rhs.delivery_time;
             }
         }
     };
@@ -106,10 +106,10 @@ public:
                         return lhs->enforce_link_order > rhs->enforce_link_order;
                     }
                 } else {
-               	    return lhs->priority > rhs->priority;
+                    return lhs->priority > rhs->priority;
                 }
             } else {
-            	return lhs->delivery_time > rhs->delivery_time;
+                return lhs->delivery_time > rhs->delivery_time;
             }
         }
 
@@ -127,7 +127,7 @@ public:
                     return lhs.priority > rhs.priority;
                 }
             } else {
-            	return lhs.delivery_time > rhs.delivery_time;
+                return lhs.delivery_time > rhs.delivery_time;
             }
         }
     };
@@ -160,13 +160,13 @@ public:
                     /* TODO:  Handle 64-bit wrap-around */
                     return lhs->queue_order > rhs->queue_order;
                 } else {
-               	    return lhs->priority > rhs->priority;
+                    return lhs->priority > rhs->priority;
                 }
             } else {
-            	return lhs->delivery_time > rhs->delivery_time;
+                return lhs->delivery_time > rhs->delivery_time;
             }
         }
-
+        
         /** Compare based off references */
         inline bool operator()(const Activity& lhs, const Activity& rhs) const {
             if ( lhs.delivery_time == rhs.delivery_time ) {
@@ -177,11 +177,11 @@ public:
                     return lhs.priority > rhs.priority;
                 }
             } else {
-            	return lhs.delivery_time > rhs.delivery_time;
+                return lhs.delivery_time > rhs.delivery_time;
             }
         }
     };
-
+    
     /** Comparator class to use with STL container classes. */
     class less_time {
     public:
@@ -216,22 +216,22 @@ public:
      */
     virtual void print(const std::string& header, Output &out) const {
         out.output("%s Generic Activity to be delivered at %" PRIu64 " with priority %d\n",
-                header.c_str(), delivery_time, priority);
+                   header.c_str(), delivery_time, priority);
     }
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     virtual void printTrackingInfo(const std::string& header, Output &out) const {
     }
 #endif
-
+    
     /** Set a new Queue order */
     void setQueueOrder(uint64_t order) {
         queue_order = order;
     }
-
+    
 #ifdef USE_MEMPOOL
     /** Allocates memory from a memory pool for a new Activity */
-	void* operator new(std::size_t size) noexcept
+    void* operator new(std::size_t size) noexcept
     {
         /* 1) Find memory pool
          * 1.5) If not found, create new
@@ -251,7 +251,7 @@ public:
         if ( nullptr == pool ) {
             /* Still can't find it, alloc a new one */
             pool = new Core::MemPool(size+sizeof(PoolData_t));
-
+            
             std::lock_guard<std::mutex> lock(poolMutex);
             memPools.emplace_back(tid, size, pool);
         }
@@ -267,7 +267,7 @@ public:
 
 
     /** Returns memory for this Activity to the appropriate memory pool */
-	void operator delete(void* ptr)
+    void operator delete(void* ptr)
     {
         /* 1) Decrement pointer
          * 2) Determine Pool Pointer
@@ -338,7 +338,7 @@ protected:
     void setPriority(int priority) {
         this->priority = priority;
     }
-
+    
     // Function used by derived classes to serialize data members.
     // This class is not serializable, because not all class that
     // inherit from it need to be serializable.
@@ -371,7 +371,7 @@ private:
         { }
     };
     static std::mutex poolMutex;
-	static std::vector<PoolInfo_t> memPools;
+    static std::vector<PoolInfo_t> memPools;
 #endif
 };
 

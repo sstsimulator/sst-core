@@ -75,7 +75,7 @@ ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const R
     } else {
         queue = comm_map[to_rank.rank].squeue;
     }
-	
+    
     link_map[link_id] = link;
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     link->setSendingComponentInfo("SYNC", "SYNC", "");

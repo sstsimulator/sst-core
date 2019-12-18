@@ -106,7 +106,7 @@ ActivityQueue* RankSyncParallelSkip::registerLink(const RankInfo& to_rank, const
         comm_recv_map[remote_rank_local_thread].rbuf = new char[4096];
         comm_recv_map[remote_rank_local_thread].local_size = 4096;
     }
-	
+    
     link_map[link_id] = link;
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     link->setSendingComponentInfo("SYNC", "SYNC", "");
