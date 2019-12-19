@@ -171,7 +171,12 @@ public:
     /// \param filename filname used when reporting errors
     ///
     ///     
+#ifdef SST_CONFIG_HAVE_PYTHON3
+    // filename is required for python3
+    SSTElementPythonModuleCode* createPrimaryModule(char* code = nullptr, const std::string& filename);
+#else
     SSTElementPythonModuleCode* createPrimaryModule(char* code = nullptr, const std::string& filename = "");
+#endif
 
 };
 
@@ -203,7 +208,6 @@ struct DerivedBuilder<SSTElementPythonModule,SSTElementPythonModuleOldELI,const 
   public Builder<SSTElementPythonModule,const std::string&>
 {
   SSTElementPythonModule* create(const std::string& lib) override {
-      printf("Create python module for %s", lib.c_str());
     return new SSTElementPythonModuleOldELI(lib, func_);
   }
 

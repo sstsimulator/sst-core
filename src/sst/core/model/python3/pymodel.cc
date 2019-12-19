@@ -201,7 +201,6 @@ static PyObject* mlLoadModule(PyObject *UNUSED(self), PyObject *args)
     //fprintf(stderr, "Loading SST module '%s' (from %s)\n", modName, name);
     // genPythonModuleFunction func = Factory::getFactory()->getPythonModule(modName);
     SSTElementPythonModule* pymod = Factory::getFactory()->getPythonModule(modName);
-    //printf("Looking for python module: %s\n", modName);
     PyObject* mod = nullptr;
     if ( !pymod ) {
         mod = PyModule_Create(&emptyModuleDef);
@@ -649,8 +648,7 @@ static PyObject* PyInit_sst(void)
          ( PyType_Ready(&PyModel_StatGroupType) < 0 ) ||
          ( PyType_Ready(&PyModel_StatOutputType) < 0 ) ||
          ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
-        return nullptr;
-//        output->fatal(CALL_INFO, 1, "Error loading Python types.\n"); // TODO figure out how to give a better error message
+        return nullptr; // TODO better error message
     }
 
     // Create the module
@@ -665,25 +663,15 @@ static PyObject* PyInit_sst(void)
     Py_INCREF(&PyModel_StatOutputType);
     Py_INCREF(&ModuleLoaderType);
 
-    // Add submodules
+    // Add the types
     PyModule_AddObject(module, "Link", (PyObject*)&PyModel_LinkType);
     PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
     PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
     PyModule_AddObject(module, "StatisticGroup", (PyObject*)&PyModel_StatGroupType);
     PyModule_AddObject(module, "StatisticOutput", (PyObject*)&PyModel_StatOutputType);
-    PyModule_AddObject(module, "ModuleLoader", (PyObject*)&ModuleLoaderType);   // new
-    PyModule_AddObject(module, "__path__", Py_BuildValue("()"));                // new
+    PyModule_AddObject(module, "ModuleLoader", (PyObject*)&ModuleLoaderType);
+    PyModule_AddObject(module, "__path__", Py_BuildValue("()"));
 
-    // Add our custom loader
-/*  PyObject *main_module = PyImport_ImportModule("__main__");
-    PyModule_AddObject(main_module, "ModuleLoader", (PyObject*)&ModuleLoaderType);
-    PyRun_SimpleString("def loadLoader():\n"
-            "\timport sys\n"
-            "\tsys.meta_path.append(ModuleLoader())\n"
-            "\timport sst\n"
-            "\tsst.__path__ = []\n"  // Must be here or else meta_path won't be questioned
-            "loadLoader()\n");
-*/
     return module;
 }
 
