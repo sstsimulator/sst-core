@@ -173,7 +173,7 @@ public:
     ///     
 #ifdef SST_CONFIG_HAVE_PYTHON3
     // filename is required for python3
-    SSTElementPythonModuleCode* createPrimaryModule(char* code = nullptr, const std::string& filename);
+    SSTElementPythonModuleCode* createPrimaryModule(char* code, const std::string& filename);
 #else
     SSTElementPythonModuleCode* createPrimaryModule(char* code = nullptr, const std::string& filename = "");
 #endif
