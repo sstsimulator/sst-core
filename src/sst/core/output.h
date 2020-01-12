@@ -31,7 +31,7 @@
 
 #include <stdarg.h>
 
-#include <sst/core/rankInfo.h>
+#include "sst/core/rankInfo.h"
 
 extern int main(int argc, char **argv);
 
@@ -114,7 +114,7 @@ public:
     // CONSTRUCTION / DESTRUCTION
     Output(const std::string& prefix, uint32_t verbose_level,
            uint32_t verbose_mask, output_location_t location,
-           std::string localoutputfilename = "");
+           const std::string& localoutputfilename = "");
 
     /** Default Constructor.  User must call init() to properly initialize obj.
         Until init() is called, no output will occur.
@@ -173,7 +173,7 @@ public:
     // INITIALIZATION
     void init(const std::string& prefix, uint32_t verbose_level,
                uint32_t verbose_mask, output_location_t location,
-               std::string localoutputfilename = "");
+               const std::string& localoutputfilename = "");
 
     /** Output the message with formatting as specified by the format parameter.
         The output will be prepended with the expanded prefix set in the object.
@@ -274,7 +274,7 @@ public:
         va_list arg;
 
         if (true == m_objInitialized && NONE != m_targetLoc ) {
-    	    const std::string normalPrefix = m_outputPrefix;
+            const std::string normalPrefix = m_outputPrefix;
             m_outputPrefix = tempPrefix;
 
             // First check to see if we are allowed to send output based upon the
@@ -318,7 +318,7 @@ public:
         va_list arg;
 
         if (true == m_objInitialized && NONE != m_targetLoc ) {
-    	    const std::string normalPrefix = m_outputPrefix;
+            const std::string normalPrefix = m_outputPrefix;
             m_outputPrefix = tempPrefix;
 
             // First check to see if we are allowed to send output based upon the
@@ -335,7 +335,7 @@ public:
         }
 #else
         /* When debug is disabled, silence warnings of unused parameters */
- 	(void)tempPrefix;
+        (void)tempPrefix;
         (void)line;
         (void)file;
         (void)func;
@@ -510,8 +510,8 @@ private:
                                   const std::string& file,
                                   const std::string& func) const;
     void outputprintf(uint32_t line,
-                      const std::string &file,
-                      const std::string &func,
+                      const std::string& file,
+                      const std::string& func,
                       const char *format,
                       va_list arg) const;
     void outputprintf(const char *format, va_list arg) const;
@@ -519,7 +519,7 @@ private:
     friend int ::main(int argc, char **argv);
     static Output& setDefaultObject(const std::string& prefix, uint32_t verbose_level,
                uint32_t verbose_mask, output_location_t location,
-               std::string localoutputfilename = "")
+               const std::string& localoutputfilename = "")
     {
         m_defaultObject.init(prefix, verbose_level, verbose_mask, location, localoutputfilename);
         return getDefaultObject();

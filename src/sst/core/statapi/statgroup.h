@@ -12,8 +12,8 @@
 #ifndef _H_SST_CORE_STATISTICS_GROUP
 #define _H_SST_CORE_STATISTICS_GROUP
 
-#include <sst/core/sst_types.h>
-#include <sst/core/unitAlgebra.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/unitAlgebra.h"
 
 #include <string>
 #include <vector>

@@ -21,16 +21,14 @@
 #include <set>
 #include <climits>
 
-#include <sst/core/sparseVectorMap.h>
-#include <sst/core/params.h>
-#include <sst/core/statapi/statbase.h>
-#include <sst/core/statapi/statoutput.h>
-#include <sst/core/rankInfo.h>
-#include <sst/core/unitAlgebra.h>
+#include "sst/core/sparseVectorMap.h"
+#include "sst/core/params.h"
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/statapi/statoutput.h"
+#include "sst/core/rankInfo.h"
+#include "sst/core/unitAlgebra.h"
 
-#include <sst/core/serialization/serializable.h>
-
-// #include "sst/core/simulation.h"
+#include "sst/core/serialization/serializable.h"
 
 using namespace SST::Statistics;
 
@@ -109,7 +107,7 @@ private:
         component[1] = ULONG_MAX;
     }
 
-    ConfigLink(LinkId_t id, const std::string &n) :
+    ConfigLink(LinkId_t id, const std::string& n) :
         id(id),
         no_cut(false)
     {
@@ -136,14 +134,14 @@ public:
     size_t outputID;
     UnitAlgebra outputFrequency;
 
-    ConfigStatGroup(const std::string &name) : name(name), outputID(0) { }
+    ConfigStatGroup(const std::string& name) : name(name), outputID(0) { }
     ConfigStatGroup() {} /* Do not use */
 
 
     bool addComponent(ComponentId_t id);
-    bool addStatistic(const std::string &name, Params &p);
+    bool addStatistic(const std::string& name, Params &p);
     bool setOutput(size_t id);
-    bool setFrequency(const std::string &freq);
+    bool setFrequency(const std::string& freq);
 
     /**
      * Checks to make sure that all components in the group support all
@@ -173,10 +171,10 @@ public:
     std::string type;
     Params params;
 
-    ConfigStatOutput(const std::string &type) : type(type) { }
+    ConfigStatOutput(const std::string& type) : type(type) { }
     ConfigStatOutput() { }
 
-    void addParameter(const std::string &key, const std::string &val) {
+    void addParameter(const std::string& key, const std::string& val) {
         params.insert(key, val);
     }
 
@@ -224,13 +222,13 @@ public:
     void setRank(RankInfo r);
     void setWeight(double w);
     void setCoordinates(const std::vector<double> &c);
-    void addParameter(const std::string &key, const std::string &value, bool overwrite);
-    ConfigComponent* addSubComponent(ComponentId_t, const std::string &name, const std::string &type, int slot);
+    void addParameter(const std::string& key, const std::string& value, bool overwrite);
+    ConfigComponent* addSubComponent(ComponentId_t, const std::string& name, const std::string& type, int slot);
     ConfigComponent* findSubComponent(ComponentId_t);
     const ConfigComponent* findSubComponent(ComponentId_t) const;
-    void enableStatistic(const std::string &statisticName, bool recursively = false);
-    void addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value, bool recursively = false);
-    void setStatisticParameters(const std::string &statisticName, const Params &params, bool recursively = false);
+    void enableStatistic(const std::string& statisticName, bool recursively = false);
+    void addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively = false);
+    void setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively = false);
 
     std::vector<LinkId_t> allLinks() const;
 
@@ -254,7 +252,7 @@ private:
 
     friend class ConfigGraph;
     /** Create a new Component */
-    ConfigComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank) :
+    ConfigComponent(ComponentId_t id, const std::string& name, const std::string& type, float weight, RankInfo rank) :
         id(id),
         name(name),
         type(type),
@@ -264,7 +262,7 @@ private:
         coords.resize(3, 0.0);
     }
 
-    ConfigComponent(ComponentId_t id, std::string name, int slot_num, std::string type, float weight, RankInfo rank) :
+    ConfigComponent(ComponentId_t id, const std::string& name, int slot_num, const std::string& type, float weight, RankInfo rank) :
         id(id),
         name(name),
         slot_num(slot_num),
@@ -298,12 +296,12 @@ class PartitionGraph;
 class ConfigGraph : public SST::Core::Serialization::serializable {
 public:
     /** Print the configuration graph */
-	void print(std::ostream &os) const {
-		os << "Printing graph" << std::endl;
-		for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-			i->print(os);
-		}
-	}
+    void print(std::ostream &os) const {
+        os << "Printing graph" << std::endl;
+        for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+            i->print(os);
+        }
+    }
 
     ConfigGraph() {
         links.clear();
@@ -325,16 +323,16 @@ public:
 
     // API for programmatic initialization
     /** Create a new component with weight and rank */
-    ComponentId_t addComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank);
+    ComponentId_t addComponent(ComponentId_t id, const std::string& name, const std::string& type, float weight, RankInfo rank);
     /** Create a new component */
-    ComponentId_t addComponent(ComponentId_t id, std::string name, std::string type);
+    ComponentId_t addComponent(ComponentId_t id, const std::string& name, const std::string& type);
 
 
     /** Set the statistic output module */
-    void setStatisticOutput(const std::string &name);
+    void setStatisticOutput(const std::string& name);
 
     /** Add parameter to the statistic output module */
-    void addStatisticOutputParameter(const std::string &param, const std::string &value);
+    void addStatisticOutputParameter(const std::string& param, const std::string& value);
 
     /** Set a set of parameter to the statistic output module */
     void setStatisticOutputParams(const Params& p);
@@ -343,22 +341,22 @@ public:
     void setStatisticLoadLevel(uint8_t loadLevel);
 
     /** Enable a Statistics assigned to a component */
-    void enableStatisticForComponentName(std::string ComponentName, std::string statisticName);
-    void enableStatisticForComponentType(std::string ComponentType, std::string statisticName);
+    void enableStatisticForComponentName(const std::string& ComponentName, const std::string& statisticName);
+    void enableStatisticForComponentType(const std::string& ComponentType, const std::string& statisticName);
 
     /** Add Parameters for a Statistic */
-    void addStatisticParameterForComponentName(const std::string &ComponentName, const std::string &statisticName, const std::string &param, const std::string &value);
-    void addStatisticParameterForComponentType(const std::string &ComponentType, const std::string &statisticName, const std::string &param, const std::string &value);
+    void addStatisticParameterForComponentName(const std::string& ComponentName, const std::string& statisticName, const std::string& param, const std::string& value);
+    void addStatisticParameterForComponentType(const std::string& ComponentType, const std::string& statisticName, const std::string& param, const std::string& value);
 
     std::vector<ConfigStatOutput>& getStatOutputs() {return statOutputs;}
     const ConfigStatOutput& getStatOutput(size_t index = 0) const {return statOutputs[index];}
     long getStatLoadLevel() const {return statLoadLevel;}
 
     /** Add a Link to a Component on a given Port */
-    void addLink(ComponentId_t comp_id, std::string link_name, std::string port, std::string latency_str, bool no_cut = false);
+    void addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port, const std::string& latency_str, bool no_cut = false);
 
     /** Set a Link to be no-cut */
-    void setLinkNoCut(std::string link_name);
+    void setLinkNoCut(const std::string& link_name);
 
     /** Perform any post-creation cleanup processes */
     void postCreationCleanup();
@@ -373,7 +371,7 @@ public:
     }
 
     const std::map<std::string, ConfigStatGroup>& getStatGroups() const { return statGroups; }
-    ConfigStatGroup* getStatGroup(const std::string &name) {
+    ConfigStatGroup* getStatGroup(const std::string& name) {
         auto found = statGroups.find(name);
         if ( found == statGroups.end() ) {
             bool ok;
@@ -400,13 +398,13 @@ public:
     void getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group);
 
     void serialize_order(SST::Core::Serialization::serializer &ser) override
-	{
-		ser & links;
-		ser & comps;
-		ser & statOutputs;
-		ser & statLoadLevel;
+    {
+        ser & links;
+        ser & comps;
+        ser & statOutputs;
+        ser & statLoadLevel;
         ser & statGroups;
-	}
+    }
 
 private:
     friend class Simulation;
@@ -498,12 +496,12 @@ private:
 
 public:
     /** Print the configuration graph */
-	void print(std::ostream &os) const {
-		os << "Printing graph" << std::endl;
-		for (PartitionComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-			i->print(os,this);
-		}
-	}
+    void print(std::ostream &os) const {
+        os << "Printing graph" << std::endl;
+        for (PartitionComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
+            i->print(os,this);
+        }
+    }
 
     PartitionComponentMap_t& getComponentMap() {
         return comps;

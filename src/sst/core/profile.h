@@ -13,7 +13,7 @@
 #define SST_CORE_CORE_PROFILE_H
 
 #include <chrono>
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 
 namespace SST {
 namespace Core {

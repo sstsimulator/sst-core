@@ -12,13 +12,13 @@
 #ifndef SST_CORE_CORE_HEARTBEAT_H
 #define SST_CORE_CORE_HEARTBEAT_H
 
-#include <sst/core/sst_types.h>
-#include <sst/core/output.h>
-#include <sst/core/config.h>
-#include <sst/core/cputimer.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/output.h"
+#include "sst/core/config.h"
+#include "sst/core/cputimer.h"
 
 #include <set>
-#include <sst/core/action.h>
+#include "sst/core/action.h"
 
 namespace SST {
 
@@ -27,12 +27,12 @@ class TimeConverter;
 
 /**
   \class SimulatorHeartbeat
-	An optional heartbeat to show progress in a simulation
+    An optional heartbeat to show progress in a simulation
 */
 class SimulatorHeartbeat : public Action {
 public:
     /**
-	Create a new heartbeat object for the simulation core to show progress
+    Create a new heartbeat object for the simulation core to show progress
     */
     SimulatorHeartbeat( Config* cfg, int this_rank, Simulation* sim, TimeConverter* period);
     ~SimulatorHeartbeat();

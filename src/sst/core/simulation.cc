@@ -11,35 +11,32 @@
 
 
 #include "sst_config.h"
-#include <sst/core/simulation.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/simulation.h"
+#include "sst/core/warnmacros.h"
 
 #include <utility>
 
-//#include <sst/core/archive.h>
-#include <sst/core/clock.h>
-#include <sst/core/config.h>
-#include <sst/core/configGraph.h>
-#include <sst/core/heartbeat.h>
-//#include <sst/core/event.h>
-#include <sst/core/exit.h>
-#include <sst/core/factory.h>
-//#include <sst/core/graph.h>
-#include <sst/core/linkMap.h>
-#include <sst/core/linkPair.h>
-#include <sst/core/sharedRegionImpl.h>
-#include <sst/core/output.h>
-#include <sst/core/stopAction.h>
-#include <sst/core/stringize.h>
-#include <sst/core/syncBase.h>
-#include <sst/core/syncManager.h>
-#include <sst/core/syncQueue.h>
-#include <sst/core/threadSync.h>
-#include <sst/core/timeConverter.h>
-#include <sst/core/timeLord.h>
-#include <sst/core/timeVortex.h>
-#include <sst/core/unitAlgebra.h>
-#include <sst/core/statapi/statengine.h>
+#include "sst/core/clock.h"
+#include "sst/core/config.h"
+#include "sst/core/configGraph.h"
+#include "sst/core/heartbeat.h"
+#include "sst/core/exit.h"
+#include "sst/core/factory.h"
+#include "sst/core/linkMap.h"
+#include "sst/core/linkPair.h"
+#include "sst/core/sharedRegionImpl.h"
+#include "sst/core/output.h"
+#include "sst/core/stopAction.h"
+#include "sst/core/stringize.h"
+#include "sst/core/syncBase.h"
+#include "sst/core/syncManager.h"
+#include "sst/core/syncQueue.h"
+#include "sst/core/threadSync.h"
+#include "sst/core/timeConverter.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/timeVortex.h"
+#include "sst/core/unitAlgebra.h"
+#include "sst/core/statapi/statengine.h"
 
 #define SST_SIMTIME_MAX  0xffffffffffffffff
 
@@ -64,7 +61,7 @@ Simulation::~Simulation()
 
     // Delete all the components
     // for ( CompMap_t::iterator it = compMap.begin(); it != compMap.end(); ++it ) {
-	// delete it->second;
+    // delete it->second;
     // }
     // compMap.clear();
     
@@ -121,9 +118,9 @@ void Simulation::shutdown()
 
 Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTime_t min_part) :
     runMode(cfg->runMode),
-    timeVortex(NULL),
+    timeVortex(nullptr),
     interThreadMinLatency(MAX_SIMTIME_T),
-    threadSync(NULL),
+    threadSync(nullptr),
     currentSimCycle(0),
     endSimCycle(0),
     currentPriority(0),
@@ -147,7 +144,7 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
 
     if(strcmp(cfg->heartbeatPeriod.c_str(), "N") != 0 && my_rank.thread == 0) {
         sim_output.output("# Creating simulation heartbeat at period of %s.\n", cfg->heartbeatPeriod.c_str());
-    	m_heartbeat = new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeatPeriod) );
+        m_heartbeat = new SimulatorHeartbeat(cfg, my_rank.rank, this, timeLord.getTimeConverter(cfg->heartbeatPeriod) );
     }
 
     // Need to create the thread sync if there is more than one thread
@@ -161,9 +158,9 @@ Simulation::setStopAtCycle( Config* cfg )
 {
     SimTime_t stopAt = timeLord.getSimCycles(cfg->stopAtCycle,"StopAction configure");
     if ( stopAt != 0 ) {
-	StopAction* sa = new StopAction();
-	sa->setDeliveryTime(stopAt);
-	timeVortex->insert(sa);
+    StopAction* sa = new StopAction();
+    sa->setDeliveryTime(stopAt);
+    timeVortex->insert(sa);
     }
 }
 
@@ -174,7 +171,7 @@ Simulation::Simulation()
 
 
 Component*
-Simulation::createComponent( ComponentId_t id, std::string &name, 
+Simulation::createComponent( ComponentId_t id, const std::string& name, 
                              Params &params )
 {
     return factory->CreateComponent(id, name, params);
@@ -182,7 +179,7 @@ Simulation::createComponent( ComponentId_t id, std::string &name,
 
 
 void
-Simulation::requireEvent(std::string name)
+Simulation::requireEvent(const std::string& name)
 {
     factory->RequireEvent(name);
 }
@@ -300,7 +297,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     {
         ConfigComponent* ccomp = &(*iter);
         if ( ccomp->rank == myRank ) {
-            compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, NULL, new LinkMap()));
+            compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, nullptr, new LinkMap()));
         }
     }
 
@@ -329,14 +326,14 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 
             // Add this link to the appropriate LinkMap
             ComponentInfo* cinfo = compInfoMap.getByID(clink.component[0]);
-            if ( cinfo == NULL ) {
+            if ( cinfo == nullptr ) {
                 // This shouldn't happen and is an error
                 sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
             }
             cinfo->getLinkMap()->insertLink(clink.port[0],lp.getLeft());
 
             cinfo = compInfoMap.getByID(clink.component[1]);
-            if ( cinfo == NULL ) {
+            if ( cinfo == nullptr ) {
                 // This shouldn't happen and is an error
                 sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
             }
@@ -365,7 +362,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 
             // Add this link to the appropriate LinkMap for the local component
             ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
-            if ( cinfo == NULL ) {
+            if ( cinfo == nullptr ) {
                 // This shouldn't happen and is an error
                 sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
             }
@@ -763,7 +760,7 @@ void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler,
     }
 }
 
-TimeConverter* Simulation::registerOneShot(std::string timeDelay, OneShot::HandlerBase* handler, int priority)
+TimeConverter* Simulation::registerOneShot(const std::string& timeDelay, OneShot::HandlerBase* handler, int priority)
 {
     return registerOneShot(UnitAlgebra(timeDelay), handler, priority);
 }
@@ -854,7 +851,7 @@ Core::ThreadSafe::Barrier Simulation::runBarrier;
 Core::ThreadSafe::Barrier Simulation::exitBarrier;
 Core::ThreadSafe::Barrier Simulation::finishBarrier;
 std::mutex Simulation::simulationMutex;
-TimeConverter* Simulation::minPartTC = NULL;
+TimeConverter* Simulation::minPartTC = nullptr;
 SimTime_t Simulation::minPart;
 
 

@@ -17,7 +17,6 @@
 
 #include <cstddef>
 #include <cstdlib>
-#include <cstring>
 #include <cinttypes>
 #include <cstdint>
 #include <sys/mman.h>
@@ -44,7 +43,7 @@ class MemPool
 
         inline void* try_remove() {
             std::lock_guard<LOCK_t> lock(mtx);
-            if ( list.empty() ) return NULL;
+            if ( list.empty() ) return nullptr;
             void *p = list.back();
             list.pop_back();
             return p;
@@ -59,7 +58,7 @@ public:
      * @param elementSize - Size of each Element
      * @param initialSize - Size of the memory pool (in bytes)
      */
-	MemPool(size_t elementSize, size_t initialSize=(2<<20)) :
+    MemPool(size_t elementSize, size_t initialSize=(2<<20)) :
         numAlloc(0), numFree(0),
         elemSize(elementSize), arenaSize(initialSize),
         allocating(false)
@@ -67,7 +66,7 @@ public:
         allocPool();
     }
 
-	~MemPool()
+    ~MemPool()
     {
         for ( std::list<uint8_t*>::iterator i = arenas.begin() ; i != arenas.end() ; ++i ) {
             ::free(*i);
@@ -75,17 +74,17 @@ public:
     }
 
     /** Allocate a new element from the memory pool */
-	inline void* malloc()
+    inline void* malloc()
     {
         void *ret = freeList.try_remove();
         while ( !ret ) {
             bool ok = allocPool();
-            if ( !ok ) return NULL;
+            if ( !ok ) return nullptr;
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
         defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
 #elif defined(__PPC64__)
-       	    asm volatile( "or 27, 27, 27" ::: "memory" );
+               asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
             ret = freeList.try_remove();
         }
@@ -94,7 +93,7 @@ public:
     }
 
     /** Return an element to the memory pool */
-	inline void free(void *ptr)
+    inline void free(void *ptr)
     {
         // TODO:  Make sure this is in one of our arenas
         freeList.insert(ptr);
@@ -130,14 +129,14 @@ public:
     
 private:
 
-	bool allocPool()
+    bool allocPool()
     {
         /* If already in progress, return */
         if ( allocating.exchange(1, std::memory_order_acquire) ) {
             return true;
         }
 
-        uint8_t *newPool = (uint8_t*)mmap(0, arenaSize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
+        uint8_t *newPool = (uint8_t*)mmap(nullptr, arenaSize, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANON, -1, 0);
         if ( MAP_FAILED == newPool ) {
             allocating.store(0, std::memory_order_release);
             return false;
@@ -157,12 +156,12 @@ private:
         return true;
     }
 
-	size_t elemSize;
-	size_t arenaSize;
+    size_t elemSize;
+    size_t arenaSize;
 
     std::atomic<unsigned int> allocating;
-	FreeList<ThreadSafe::Spinlock> freeList;
-	std::list<uint8_t*> arenas;
+    FreeList<ThreadSafe::Spinlock> freeList;
+    std::list<uint8_t*> arenas;
 
 };
 

@@ -13,9 +13,9 @@
 #define SPROCKIT_COMMON_MESSAGES_spkt_serializer_H_INCLUDED
 
 //#include <sprockit/spkt_config.h>
-#include <sst/core/serialization/serialize_packer.h>
-#include <sst/core/serialization/serialize_sizer.h>
-#include <sst/core/serialization/serialize_unpacker.h>
+#include "sst/core/serialization/serialize_packer.h"
+#include "sst/core/serialization/serialize_sizer.h"
+#include "sst/core/serialization/serialize_unpacker.h"
 #include <typeinfo>
 
 #include <cstring>

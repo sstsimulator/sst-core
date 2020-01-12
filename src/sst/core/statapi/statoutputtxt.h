@@ -14,7 +14,7 @@
 
 #include "sst/core/sst_types.h"
 
-#include <sst/core/statapi/statoutput.h>
+#include "sst/core/statapi/statoutput.h"
 
 #ifdef HAVE_LIBZ
 #include <zlib.h>
@@ -26,7 +26,7 @@ namespace Statistics {
 /**
     \class StatisticOutputTxt
 
-	The class for statistics output to a text file.  
+    The class for statistics output to a text file.  
 */
 class StatisticOutputTxt : public StatisticOutput
 {

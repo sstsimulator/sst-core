@@ -11,18 +11,18 @@
 // distribution.
 //
 
-#ifndef CORE_INTERFACES_SIMPLENETWORK_H_
-#define CORE_INTERFACES_SIMPLENETWORK_H_
+#ifndef SST_CORE_INTERFACES_SIMPLENETWORK_H_
+#define SST_CORE_INTERFACES_SIMPLENETWORK_H_
 
 #include <string>
 #include <unordered_map>
 
-#include <sst/core/sst_types.h>
-#include <sst/core/warnmacros.h>
-#include <sst/core/subcomponent.h>
-#include <sst/core/params.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/params.h"
 
-#include <sst/core/serialization/serializable.h>
+#include "sst/core/serialization/serializable.h"
 
 namespace SST {
 
@@ -76,19 +76,19 @@ public:
         
         /**
            Returns the payload for the request.  This will also set
-           the payload to NULL, so the call will only return valid
+           the payload to nullptr, so the call will only return valid
            data one time after each givePayload call.
            @return Event that was set as payload of the request.
         */
         inline Event* takePayload() {
             Event* ret = payload;
-            payload = NULL;
+            payload = nullptr;
             return ret;
         }
 
         /**
            Returns the payload for the request for inspection.  This
-           call does not set the payload to NULL, so deleting the
+           call does not set the payload to nullptr, so deleting the
            request will also delete the payload.  If the request is
            going to be deleted, use takePayload instead.
            @return Event that was set as payload of the request.
@@ -110,11 +110,11 @@ public:
         /** Constructor */
         Request() :
             dest(0), src(0), size_in_bits(0), head(false), tail(false), allow_adaptive(true),
-            payload(NULL), trace(NONE), traceID(0)
+            payload(nullptr), trace(NONE), traceID(0)
         {}
 
         Request(nid_t dest, nid_t src, size_t size_in_bits,
-                bool head, bool tail, Event* payload = NULL) :
+                bool head, bool tail, Event* payload = nullptr) :
             dest(dest), src(src), size_in_bits(size_in_bits), head(head), tail(tail), allow_adaptive(true),
             payload(payload), trace(NONE), traceID(0)
         {
@@ -122,14 +122,14 @@ public:
 
         virtual ~Request()
         {
-            if ( payload != NULL ) delete payload;
+            if ( payload != nullptr ) delete payload;
         }
         
         inline Request* clone() {
             Request* req = new Request(*this);
             // Copy constructor only makes a shallow copy, need to
             // clone the event.
-            if ( payload != NULL ) req->payload = payload->clone();
+            if ( payload != nullptr ) req->payload = payload->clone();
             return req;
         }
         
@@ -167,10 +167,12 @@ public:
     public:
         SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork::NetworkInspector,std::string)
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
         NetworkInspector(Component* parent) :
             SubComponent(parent)
         {}
-
+#endif
+        
         NetworkInspector(ComponentId_t id) :
             SubComponent(id)
         {}
@@ -179,6 +181,7 @@ public:
 
         virtual void inspectNetworkData(Request* req) = 0;
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
         /**
          *  The ID uniquely identifies the component in which this
          *  subcomponent is instantiated.  It does not uniquely define
@@ -188,6 +191,7 @@ public:
          *  subfield of the statistic.
          */
         virtual void initialize(std::string id) = 0;
+#endif
     };
 
     /** Functor classes for handling of callbacks */
@@ -254,16 +258,18 @@ public:
 
 public:
     
+#ifndef SST_ENABLE_PREVIEW_BUILD
     /** Constructor, designed to be used via 'loadSubComponent'. */
     SimpleNetwork(SST::Component *comp) :
         SubComponent(comp)
     { }
-
+#endif
     /** Constructor, designed to be used via 'loadUserSubComponent or loadAnonymousSubComponent'. */
     SimpleNetwork(SST::ComponentId_t id) :
         SubComponent(id)
     { }
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     /** Second half of building the interface.
         Initialize network interface
         @param portName - Name of port to connect to
@@ -273,10 +279,10 @@ public:
         @param out_buf_size - Size of output buffers (to router)
      * @return true if the link was able to be configured.
      */
-    virtual bool initialize(const std::string &portName, const UnitAlgebra& link_bw,
+    virtual bool initialize(const std::string& portName, const UnitAlgebra& link_bw,
                             int vns, const UnitAlgebra& in_buf_size,
                             const UnitAlgebra& out_buf_size) = 0;
-
+#endif
     /**
      * Sends a network request during the init() phase
      */
@@ -338,7 +344,7 @@ public:
      * Register a handler for push-based notification of responses.
      *
      * @param vn Virtual network to receive on
-     * @return NULL if nothing is available.
+     * @return nullptr if nothing is available.
      * @return Pointer to a Request response (that should be deleted)
      */
     virtual Request* recv(int vn) = 0;

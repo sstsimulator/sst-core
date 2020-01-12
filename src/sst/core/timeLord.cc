@@ -11,21 +11,22 @@
 
 
 #include "sst_config.h"
-#include <sst/core/warnmacros.h>
-#include <sst/core/timeLord.h>
+#include "sst/core/timeLord.h"
+
+#include "sst/core/warnmacros.h"
 
 #include <cstdio>
 #include <cstring>
 
-#include <sst/core/output.h>
-#include <sst/core/linkMap.h>
-#include <sst/core/timeConverter.h>
+#include "sst/core/output.h"
+#include "sst/core/linkMap.h"
+#include "sst/core/timeConverter.h"
 
 namespace SST {
 
 using Core::ThreadSafe::Spinlock;
 
-TimeConverter* TimeLord::getTimeConverter(std::string ts) {
+TimeConverter* TimeLord::getTimeConverter(const std::string& ts) {
     // See if this is in the cache
     std::lock_guard<std::recursive_mutex> lock(slock);
     if ( parseCache.find(ts) == parseCache.end() ) {
@@ -87,7 +88,7 @@ TimeConverter* TimeLord::getTimeConverter(const UnitAlgebra& ts) {
     return tc;
 }
 
-void TimeLord::init(std::string _timeBaseString)
+void TimeLord::init(const std::string& _timeBaseString)
 {
     initialized = true;
     timeBaseString = _timeBaseString;
@@ -110,7 +111,7 @@ TimeLord::~TimeLord() {
     parseCache.clear();
 }
 
-SimTime_t TimeLord::getSimCycles(std::string ts, std::string UNUSED(where))
+SimTime_t TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSED(where))
 {
     // See if this is in the cache
     std::lock_guard<std::recursive_mutex> lock(slock);

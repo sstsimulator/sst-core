@@ -13,7 +13,7 @@
 #define SERIALIZE_LIST_H
 
 #include <list>
-#include <sst/core/serialization/serializer.h>
+#include "sst/core/serialization/serializer.h"
 
 namespace SST {
 namespace Core {

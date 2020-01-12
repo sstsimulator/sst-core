@@ -13,7 +13,7 @@
 #define SERIALIZE_DEQUE_H
 
 #include <deque>
-#include <sst/core/serialization/serializer.h>
+#include "sst/core/serialization/serializer.h"
 
 namespace SST {
 namespace Core {

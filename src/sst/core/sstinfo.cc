@@ -9,8 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
-#include <sst/core/warnmacros.h>
+
+#include "sst_config.h"
+#include "sst/core/sstinfo.h"
+
+#include "sst/core/warnmacros.h"
 
 #include <cstdio>
 #include <cerrno>
@@ -23,18 +26,15 @@
 #include <getopt.h>
 #include <ctime>
 
-#include <sst/core/elemLoader.h>
-#include <sst/core/component.h>
-#include <sst/core/subcomponent.h>
-#include <sst/core/part/sstpart.h>
-#include <sst/core/sstpart.h>
+#include "sst/core/elemLoader.h"
+#include "sst/core/component.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/part/sstpart.h"
+#include "sst/core/sstpart.h"
 #include "sst/core/build_info.h"
 
 #include "sst/core/env/envquery.h"
 #include "sst/core/env/envconfig.h"
-
-#include <sst/core/tinyxml/tinyxml.h>
-#include <sst/core/sstinfo.h>
 
 
 using namespace std;
@@ -88,7 +88,7 @@ public:
 
 
 // Forward Declarations
-void initLTDL(std::string searchPath);
+void initLTDL(const std::string& searchPath);
 void shutdownLTDL();
 static void processSSTElementFiles();
 void outputSSTElementInfo();
@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 }
 
 
-static void addELI(ElemLoader &loader, const std::string &lib, bool optional)
+static void addELI(ElemLoader &loader, const std::string& lib, bool optional)
 {
 
     if ( g_configuration.debugEnabled() )
@@ -226,7 +226,7 @@ void OverallOutputter::outputXML()
 {
     unsigned int            x;
     char                    TimeStamp[32];
-    std::time_t             now = std::time(NULL);
+    std::time_t             now = std::time(nullptr);
     std::tm*                ptm = std::localtime(&now);
 
     // Create a Timestamp Format: 2015.02.15_20:20:00
@@ -243,19 +243,19 @@ void OverallOutputter::outputXML()
     TiXmlDocument XMLDocument;
 
 
-	// Set the Top Level Element
-	TiXmlElement* XMLTopLevelElement = new TiXmlElement("SSTInfoXML");
+    // Set the Top Level Element
+    TiXmlElement* XMLTopLevelElement = new TiXmlElement("SSTInfoXML");
 
-	// Set the File Information
-	TiXmlElement* XMLFileInfoElement = new TiXmlElement("FileInfo");
-	XMLFileInfoElement->SetAttribute("SSTInfoVersion", PACKAGE_VERSION);
-	XMLFileInfoElement->SetAttribute("FileFormat", "1.0");
-	XMLFileInfoElement->SetAttribute("TimeStamp", TimeStamp);
-	XMLFileInfoElement->SetAttribute("FilesProcessed", g_fileProcessedCount);
-	XMLFileInfoElement->SetAttribute("SearchPath", g_searchPath.c_str());
+    // Set the File Information
+    TiXmlElement* XMLFileInfoElement = new TiXmlElement("FileInfo");
+    XMLFileInfoElement->SetAttribute("SSTInfoVersion", PACKAGE_VERSION);
+    XMLFileInfoElement->SetAttribute("FileFormat", "1.0");
+    XMLFileInfoElement->SetAttribute("TimeStamp", TimeStamp);
+    XMLFileInfoElement->SetAttribute("FilesProcessed", g_fileProcessedCount);
+    XMLFileInfoElement->SetAttribute("SearchPath", g_searchPath.c_str());
 
-	// Add the File Information to the Top Level Element
-	XMLTopLevelElement->LinkEndChild(XMLFileInfoElement);
+    // Add the File Information to the Top Level Element
+    XMLTopLevelElement->LinkEndChild(XMLFileInfoElement);
 
     // Now Generate the XML Data that represents the Library Info, 
     // and add the data to the Top Level Element
@@ -265,19 +265,19 @@ void OverallOutputter::outputXML()
 
 
 
-	// Add the entries into the XML Document
+    // Add the entries into the XML Document
     // XML Declaration
-	TiXmlDeclaration* XMLDecl = new TiXmlDeclaration("1.0", "", "");
-	XMLDocument.LinkEndChild(XMLDecl);
+    TiXmlDeclaration* XMLDecl = new TiXmlDeclaration("1.0", "", "");
+    XMLDocument.LinkEndChild(XMLDecl);
     //
-	// General Info on the Data
-  xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
-  xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
+    // General Info on the Data
+    xmlComment(&XMLDocument, "SSTInfo XML Data Generated on %s", TimeStamp);
+    xmlComment(&XMLDocument, "%d .so FILES FOUND IN DIRECTORY(s) %s\n", g_fileProcessedCount, g_searchPath.c_str());
 
-	XMLDocument.LinkEndChild(XMLTopLevelElement);
+    XMLDocument.LinkEndChild(XMLTopLevelElement);
 
     // Save the XML Document
-	XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
+    XMLDocument.SaveFile(g_configuration.getXMLFilePath().c_str());
 }
 
 
@@ -316,16 +316,16 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
     m_AppName = argv[0];
 
     static const struct option longOpts[] = {
-        {"help",        no_argument,        0, 'h'},
-        {"version",     no_argument,        0, 'v'},
-        {"debug",       no_argument,        0, 'd'},
-        {"nodisplay",   no_argument,        0, 'n'},
-        {"xml",         no_argument,        0, 'x'},
-        {"quiet",       no_argument,        0, 'q'},
-        {"outputxml",   required_argument,  0, 'o'},
-        {"libs",        required_argument,  0, 'l'},
-        {"elemenfilt",  required_argument,  0, 0},
-        {NULL, 0, 0, 0}
+        {"help",        no_argument,        nullptr, 'h'},
+        {"version",     no_argument,        nullptr, 'v'},
+        {"debug",       no_argument,        nullptr, 'd'},
+        {"nodisplay",   no_argument,        nullptr, 'n'},
+        {"xml",         no_argument,        nullptr, 'x'},
+        {"quiet",       no_argument,        nullptr, 'q'},
+        {"outputxml",   required_argument,  nullptr, 'o'},
+        {"libs",        required_argument,  nullptr, 'l'},
+        {"elemenfilt",  required_argument,  nullptr, 0},
+        {nullptr, 0, nullptr, 0}
     };
     while (1) {
         int opt_idx = 0;
@@ -333,7 +333,7 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
         if ( intC == -1 )
             break;
 
-  	const char c = static_cast<char>(intC);
+      const char c = static_cast<char>(intC);
 
         switch (c) {
         case 'h':
@@ -378,8 +378,9 @@ int SSTInfoConfig::parseCmdLine(int argc, char* argv[])
 }
 
 
-void SSTInfoConfig::addFilter(std::string name)
+void SSTInfoConfig::addFilter(const std::string& name_str)
 {
+    std::string name(name_str);
     if ( name.size() > 3 && name.substr(0, 3) == "lib" )
         name = name.substr(3);
 
@@ -395,7 +396,7 @@ void SSTInfoConfig::addFilter(std::string name)
 }
 
 
-bool doesLibHaveFilters(const std::string &libName)
+bool doesLibHaveFilters(const std::string& libName)
 {
     auto range = g_configuration.getFilterMap().equal_range(libName);
     for ( auto x = range.first ; x != range.second ; ++x ) {
@@ -405,7 +406,7 @@ bool doesLibHaveFilters(const std::string &libName)
     return false;
 }
 
-bool shouldPrintElement(const std::string &libName, const std::string elemName)
+bool shouldPrintElement(const std::string& libName, const std::string& elemName)
 {
     auto range = g_configuration.getFilterMap().equal_range(libName);
     if ( range.first == range.second )
@@ -422,22 +423,22 @@ bool shouldPrintElement(const std::string &libName, const std::string elemName)
 template <class BaseType>
 void SSTLibraryInfo::outputHumanReadable(std::ostream& os, bool printAll)
 {
-  auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
-  if (lib){
-    os << "Num " << BaseType::ELI_baseName() << "s = " << lib->numEntries() << "\n";
-    int idx = 0;
-    for (auto& pair : lib->getMap()){
-      bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
-      if (print){
-        os << "      " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
-        if ( g_configuration.doVerbose() )
-            pair.second->toString(os);
-      }
-      ++idx;
+    auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
+    if (lib){
+        os << "Num " << BaseType::ELI_baseName() << "s = " << lib->numEntries() << "\n";
+        int idx = 0;
+        for (auto& pair : lib->getMap()){
+            bool print = printAll || shouldPrintElement(getLibraryName(), pair.first);
+            if (print){
+                os << "      " << BaseType::ELI_baseName() << " " << idx << ": " << pair.first << "\n";
+                if ( g_configuration.doVerbose() )
+                    pair.second->toString(os);
+            }
+            ++idx;
+        }
+    } else {
+        os << "No " << BaseType::ELI_baseName() << "s\n";
     }
-  } else {
-    os << "No " << BaseType::ELI_baseName() << "s\n";
-  }
 }
 
 void
@@ -459,36 +460,36 @@ SSTLibraryInfo::outputHumanReadable(std::ostream& os, int LibIndex)
 template <class BaseType>
 void SSTLibraryInfo::outputXML(TiXmlElement* XMLLibraryElement)
 {
-  auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
-  if (lib){
-    int numObjects = lib->numEntries();
-    xmlComment(XMLLibraryElement, "Num %ss = %d", BaseType::ELI_baseName(), numObjects);
-    int idx = 0;
-    for (auto& pair : lib->getMap()){
-      TiXmlElement* XMLElement = new TiXmlElement(BaseType::ELI_baseName());
-      XMLElement->SetAttribute("Index", idx);
-      pair.second->outputXML(XMLElement);
-      XMLLibraryElement->LinkEndChild(XMLElement);
-      idx++;
+    auto* lib = ELI::InfoDatabase::getLibrary<BaseType>(getLibraryName());
+    if (lib){
+        int numObjects = lib->numEntries();
+        xmlComment(XMLLibraryElement, "Num %ss = %d", BaseType::ELI_baseName(), numObjects);
+        int idx = 0;
+        for (auto& pair : lib->getMap()){
+            TiXmlElement* XMLElement = new TiXmlElement(BaseType::ELI_baseName());
+            XMLElement->SetAttribute("Index", idx);
+            pair.second->outputXML(XMLElement);
+            XMLLibraryElement->LinkEndChild(XMLElement);
+            idx++;
+        }
+    } else {
+        xmlComment(XMLLibraryElement, "No %ss", BaseType::ELI_baseName());
     }
-  } else {
-    xmlComment(XMLLibraryElement, "No %ss", BaseType::ELI_baseName());
-  }
 }
 
 void
 SSTLibraryInfo::outputXML(int LibIndex, TiXmlNode *XMLParentElement)
 {
-  TiXmlElement* XMLLibraryElement = new TiXmlElement("Element");
-  XMLLibraryElement->SetAttribute("Index", LibIndex);
-  XMLLibraryElement->SetAttribute("Name", getLibraryName().c_str());
-  XMLLibraryElement->SetAttribute("Description", getLibraryDescription().c_str());
-
-  outputXML<Component>(XMLLibraryElement);
-  outputXML<SubComponent>(XMLLibraryElement);
-  outputXML<Module>(XMLLibraryElement);
-  outputXML<SST::Partition::SSTPartitioner>(XMLLibraryElement);
-  XMLParentElement->LinkEndChild(XMLLibraryElement);
+    TiXmlElement* XMLLibraryElement = new TiXmlElement("Element");
+    XMLLibraryElement->SetAttribute("Index", LibIndex);
+    XMLLibraryElement->SetAttribute("Name", getLibraryName().c_str());
+    XMLLibraryElement->SetAttribute("Description", getLibraryDescription().c_str());
+    
+    outputXML<Component>(XMLLibraryElement);
+    outputXML<SubComponent>(XMLLibraryElement);
+    outputXML<Module>(XMLLibraryElement);
+    outputXML<SST::Partition::SSTPartitioner>(XMLLibraryElement);
+    XMLParentElement->LinkEndChild(XMLLibraryElement);
 }
 
 

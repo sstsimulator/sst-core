@@ -25,49 +25,49 @@ namespace Interprocess {
 class SSTMutex {
 
 public:
-	SSTMutex() {
-		lockVal = SST_CORE_INTERPROCESS_UNLOCKED;
-	}
+    SSTMutex() {
+        lockVal = SST_CORE_INTERPROCESS_UNLOCKED;
+    }
 
-	void processorPause(int currentCount) {
-		if( currentCount < 64 ) {
+    void processorPause(int currentCount) {
+        if( currentCount < 64 ) {
 #if defined(__x86_64__)
-			asm volatile ("pause" : : : "memory");
+            asm volatile ("pause" : : : "memory");
 #else
-			// Put some pause code in here
+            // Put some pause code in here
 #endif
-		} else if( currentCount < 256 ) {
-			sched_yield();
-		} else {
-			struct timespec sleepPeriod;
-			sleepPeriod.tv_sec = 0;
-			sleepPeriod.tv_nsec = 100;
+        } else if( currentCount < 256 ) {
+            sched_yield();
+        } else {
+            struct timespec sleepPeriod;
+            sleepPeriod.tv_sec = 0;
+            sleepPeriod.tv_nsec = 100;
 
-			struct timespec interPeriod;
-			nanosleep(&sleepPeriod, &interPeriod);
-		}
-	}
+            struct timespec interPeriod;
+            nanosleep(&sleepPeriod, &interPeriod);
+        }
+    }
 
-	void lock() {
-		int loop_counter = 0;
+    void lock() {
+        int loop_counter = 0;
 
-		while( ! __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED) ) {
-			processorPause(loop_counter);
-			loop_counter++;
-		}
-	}
+        while( ! __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED) ) {
+            processorPause(loop_counter);
+            loop_counter++;
+        }
+    }
 
-	void unlock() {
-		lockVal = SST_CORE_INTERPROCESS_UNLOCKED;
-		__sync_synchronize();
-	}
+    void unlock() {
+        lockVal = SST_CORE_INTERPROCESS_UNLOCKED;
+        __sync_synchronize();
+    }
 
-	bool try_lock() {
-		return __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED );
-	}
+    bool try_lock() {
+        return __sync_bool_compare_and_swap( &lockVal, SST_CORE_INTERPROCESS_UNLOCKED, SST_CORE_INTERPROCESS_LOCKED );
+    }
 
 private:
-	volatile int lockVal;
+    volatile int lockVal;
 
 };
 

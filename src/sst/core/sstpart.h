@@ -13,9 +13,9 @@
 #ifndef SST_CORE_PART_BASE
 #define SST_CORE_PART_BASE
 
-#include <sst/core/rankInfo.h>
-#include <sst/core/warnmacros.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/rankInfo.h"
+#include "sst/core/warnmacros.h"
+#include "sst/core/eli/elementinfo.h"
 
 #include <map>
 

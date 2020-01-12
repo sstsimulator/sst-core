@@ -21,9 +21,9 @@ class ConfigGraph;
  */
 class SSTModelDescription {
 
-	public:
-		SSTModelDescription();
-		virtual ~SSTModelDescription() {};
+    public:
+        SSTModelDescription();
+        virtual ~SSTModelDescription() {};
         /** Create the ConfigGraph
          *
          * This function should be overridden by subclasses.
@@ -31,7 +31,7 @@ class SSTModelDescription {
          * This function is responsible for reading any configuration
          * files and generating a ConfigGraph object.
          */
-		virtual ConfigGraph* createConfigGraph() = 0;
+        virtual ConfigGraph* createConfigGraph() = 0;
 
 };
 

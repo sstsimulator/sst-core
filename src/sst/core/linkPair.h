@@ -12,9 +12,9 @@
 #ifndef SST_CORE_LINKPAIR_H
 #define SST_CORE_LINKPAIR_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
-#include <sst/core/link.h>
+#include "sst/core/link.h"
 
 namespace SST {
 

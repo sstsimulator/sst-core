@@ -13,10 +13,10 @@
 #ifndef _H_SST_CORE_NULL_STATISTIC_
 #define _H_SST_CORE_NULL_STATISTIC_
 
-#include <sst/core/sst_types.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
 
-#include <sst/core/statapi/statbase.h>
+#include "sst/core/statapi/statbase.h"
 
 namespace SST {
 namespace Statistics {
@@ -31,11 +31,11 @@ namespace Statistics {
 // See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
 
 /**
-	\class NullStatistic
+    \class NullStatistic
 
-	An empty statistic place holder.
+    An empty statistic place holder.
 
-	@tparam T A template for holding the main data type of this statistic
+    @tparam T A template for holding the main data type of this statistic
 */
 template <class T, bool B = std::is_fundamental<T>::value>
 struct NullStatisticBase {};

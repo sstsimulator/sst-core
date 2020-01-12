@@ -9,10 +9,10 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/statapi/statoutputconsole.h"
 
-#include <sst/core/simulation.h>
-#include <sst/core/statapi/statoutputconsole.h>
+#include "sst/core/simulation.h"
 
 namespace SST {
 namespace Statistics {
@@ -74,7 +74,7 @@ void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, int32_t data
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
         sprintf(buffer, "%s.%s = %" PRId32, FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
@@ -87,7 +87,7 @@ void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, uint32_t dat
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
         sprintf(buffer, "%s.%s = %" PRIu32, FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
@@ -100,7 +100,7 @@ void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, int64_t data
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
         sprintf(buffer, "%s.%s = %" PRId64, FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
@@ -113,7 +113,7 @@ void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, uint64_t dat
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
         sprintf(buffer, "%s.%s = %" PRIu64, FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
@@ -126,7 +126,7 @@ void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, float data)
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
         sprintf(buffer, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
@@ -139,7 +139,7 @@ void StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, double data)
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
 
-    if (NULL != FieldInfo) {
+    if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
         sprintf(buffer, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;

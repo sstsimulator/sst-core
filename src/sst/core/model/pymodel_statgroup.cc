@@ -12,23 +12,22 @@
 // distribution.
 
 #include "sst_config.h"
-#include <sst/core/warnmacros.h>
+#include "sst/core/warnmacros.h"
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
 
 #include <string.h>
-#include <sstream>
 
-#include <sst/core/model/pymodel.h>
-#include <sst/core/model/pymodel_comp.h>
-#include <sst/core/model/pymodel_statgroup.h>
+#include "sst/core/model/pymodel.h"
+#include "sst/core/model/pymodel_comp.h"
+#include "sst/core/model/pymodel_statgroup.h"
 
-#include <sst/core/sst_types.h>
-#include <sst/core/simulation.h>
-#include <sst/core/component.h>
-#include <sst/core/configGraph.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/simulation.h"
+#include "sst/core/component.h"
+#include "sst/core/configGraph.h"
 
 using namespace SST::Core;
 extern SST::Core::SSTPythonModelDefinition *gModel;
@@ -40,7 +39,7 @@ extern "C" {
 static Params convertToParams(PyObject *dict)
 {
     Params res;
-    if ( dict != NULL ) {
+    if ( dict != nullptr ) {
         for ( auto p : generateStatisticParameters(dict) ) {
             res.insert(p.first, p.second);
         }
@@ -53,11 +52,11 @@ static Params convertToParams(PyObject *dict)
 
 static int sgInit(StatGroupPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
-    char *name = NULL;
+    char *name = nullptr;
     if ( !PyArg_ParseTuple(args, "s", &name) ) return -1;
 
     self->ptr = gModel->getGraph()->getStatGroup(name);
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Stat Group %s\n", name);
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Stat Group %s\n", name);
 
     return 0;
 }
@@ -72,26 +71,26 @@ static PyObject* sgAddStat(PyObject *self, PyObject *args)
 {
     PyErr_Clear();
 
-    char *statName = NULL;
-    PyObject *paramsDict = NULL;
+    char *statName = nullptr;
+    PyObject *paramsDict = nullptr;
 
     int argOK = PyArg_ParseTuple(args, "s|O!", &statName, &PyDict_Type, &paramsDict);
     if ( !argOK )
-        return NULL;
+        return nullptr;
 
     Params params = convertToParams(paramsDict);
 
     ConfigStatGroup *csg = ((StatGroupPy_t*)self)->ptr;
     if ( !csg->addStatistic(statName, params) ) {
         PyErr_SetString(PyExc_RuntimeError, "Unable to create statistic");
-        return NULL;
+        return nullptr;
     }
     bool verified;
     std::string reason;
     std::tie(verified, reason) = csg->verifyStatsAndComponents(gModel->getGraph());
     if ( !verified ) {
         PyErr_SetString(PyExc_RuntimeError, reason.c_str());
-        return NULL;
+        return nullptr;
     }
     return PyLong_FromLong(0);
 }
@@ -107,7 +106,7 @@ static PyObject* sgAddComp(PyObject *self, PyObject *args)
         csg->addComponent(((ComponentPy_t*)args)->obj->getID());
     } else {
         PyErr_SetString(PyExc_TypeError, "Expected Component or SubComponent type");
-        return NULL;
+        return nullptr;
     }
 
     bool verified;
@@ -115,7 +114,7 @@ static PyObject* sgAddComp(PyObject *self, PyObject *args)
     std::tie(verified, reason) = csg->verifyStatsAndComponents(gModel->getGraph());
     if ( !verified ) {
         PyErr_SetString(PyExc_RuntimeError, reason.c_str());
-        return NULL;
+        return nullptr;
     }
     return PyLong_FromLong(0);
 }
@@ -128,11 +127,11 @@ static PyObject* sgSetOutput(PyObject *self, PyObject *args)
         StatOutputPy_t *out = (StatOutputPy_t*)args;
         if ( !((StatGroupPy_t*)self)->ptr->setOutput(out->id) ) {
             PyErr_SetString(PyExc_RuntimeError, "Unable to set Statistic Output");
-            return NULL;
+            return nullptr;
         }
     } else {
         PyErr_SetString(PyExc_TypeError, "Expected sst.StatisticOutput type");
-        return NULL;
+        return nullptr;
     }
 
     return PyLong_FromLong(0);
@@ -142,11 +141,11 @@ static PyObject* sgSetOutput(PyObject *self, PyObject *args)
 static PyObject* sgSetFreq(PyObject *self, PyObject *args)
 {
     if ( !PyString_Check(args) ) {
-        return NULL;
+        return nullptr;
     }
     if ( !((StatGroupPy_t*)self)->ptr->setFrequency(PyString_AsString(args)) ) {
         PyErr_SetString(PyExc_RuntimeError, "Invalid frequency");
-        return NULL;
+        return nullptr;
     }
 
     return PyLong_FromLong(0);
@@ -164,58 +163,58 @@ static PyMethodDef sgMethods[] = {
         "Configure how the stats should be written" },
     {   "setFrequency", sgSetFreq, METH_O,
         "Set the frequency or rate (ie: \"10ms\", \"25khz\") to write out the statistics" },
-    {   NULL, NULL, 0, NULL }
+    {   nullptr, nullptr, 0, nullptr }
 };
 
 
 PyTypeObject PyModel_StatGroupType = {
-    PyObject_HEAD_INIT(NULL)
+    PyObject_HEAD_INIT(nullptr)
     0,                         /* ob_size */
     "sst.StatisticGroup",      /* tp_name */
     sizeof(StatGroupPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)sgDealloc,     /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_compare */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
+    nullptr,                   /* tp_print */
+    nullptr,                   /* tp_getattr */
+    nullptr,                   /* tp_setattr */
+    nullptr,                   /* tp_compare */
+    nullptr,                   /* tp_repr */
+    nullptr,                   /* tp_as_number */
+    nullptr,                   /* tp_as_sequence */
+    nullptr,                   /* tp_as_mapping */
+    nullptr,                   /* tp_hash */
+    nullptr,                   /* tp_call */
+    nullptr,                   /* tp_str */
+    nullptr,                   /* tp_getattro */
+    nullptr,                   /* tp_setattro */
+    nullptr,                   /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "SST Statistic Group",     /* tp_doc */
-    0,                         /* tp_traverse */
-    0,                         /* tp_clear */
-    0,                         /* tp_richcompare */
+    nullptr,                   /* tp_traverse */
+    nullptr,                   /* tp_clear */
+    nullptr,                   /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */
+    nullptr,                   /* tp_iter */
+    nullptr,                   /* tp_iternext */
     sgMethods,                 /* tp_methods */
-    0,                         /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
+    nullptr,                   /* tp_members */
+    nullptr,                   /* tp_getset */
+    nullptr,                   /* tp_base */
+    nullptr,                   /* tp_dict */
+    nullptr,                   /* tp_descr_get */
+    nullptr,                   /* tp_descr_set */
     0,                         /* tp_dictoffset */
     (initproc)sgInit,          /* tp_init */
-    0,                         /* tp_alloc */
-    0,                         /* tp_new */
-    0,                         /* tp_free */
-    0,                         /* tp_is_gc */
-    0,                         /* tp_bases */
-    0,                         /* tp_mro */
-    0,                         /* tp_cache */
-    0,                         /* tp_subclasses */
-    0,                         /* tp_weaklist */
-    0,                         /* tp_del */
+    nullptr,                   /* tp_alloc */
+    nullptr,                   /* tp_new */
+    nullptr,                   /* tp_free */
+    nullptr,                   /* tp_is_gc */
+    nullptr,                   /* tp_bases */
+    nullptr,                   /* tp_mro */
+    nullptr,                   /* tp_cache */
+    nullptr,                   /* tp_subclasses */
+    nullptr,                   /* tp_weaklist */
+    nullptr,                   /* tp_del */
     0,                         /* tp_version_tag */
 };
 
@@ -223,8 +222,8 @@ PyTypeObject PyModel_StatGroupType = {
 
 static int soInit(StatOutputPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
-    char *type = NULL;
-    PyObject *params = NULL;
+    char *type = nullptr;
+    PyObject *params = nullptr;
     if ( !PyArg_ParseTuple(args, "s|O!", &type, &PyDict_Type, &params) ) return -1;
 
     std::vector<ConfigStatOutput>& vec = gModel->getGraph()->getStatOutputs();
@@ -233,11 +232,11 @@ static int soInit(StatOutputPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
     vec.emplace_back(type);
     self->ptr = &vec.back();
 
-    if ( params != NULL ) {
+    if ( params != nullptr ) {
         self->ptr->params = convertToParams(params);
     }
 
-	gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Stat Output %s\n", type);
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating Stat Output %s\n", type);
 
     return 0;
 }
@@ -250,15 +249,15 @@ static void soDealloc(StatOutputPy_t *self)
 
 static PyObject* soAddParam(PyObject *self, PyObject *args)
 {
-    char *param = NULL;
-    PyObject *value = NULL;
+    char *param = nullptr;
+    PyObject *value = nullptr;
     if ( !PyArg_ParseTuple(args, "sO", &param, &value) )
-        return NULL;
+        return nullptr;
 
     ConfigStatOutput *so = ((StatOutputPy_t*)self)->ptr;
-    if ( NULL == so ) return NULL;
+    if ( nullptr == so ) return nullptr;
 
-    PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", NULL);
+    PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
     so->addParameter(param, PyString_AsString(vstr));
     Py_XDECREF(vstr);
 
@@ -269,10 +268,10 @@ static PyObject* soAddParam(PyObject *self, PyObject *args)
 static PyObject* soAddParams(PyObject *self, PyObject *args)
 {
     ConfigStatOutput *so = ((StatOutputPy_t*)self)->ptr;
-    if ( NULL == so ) return NULL;
+    if ( nullptr == so ) return nullptr;
 
     if ( !PyDict_Check(args) ) {
-        return NULL;
+        return nullptr;
     }
 
     Py_ssize_t pos = 0;
@@ -280,8 +279,8 @@ static PyObject* soAddParams(PyObject *self, PyObject *args)
     long count = 0;
 
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", NULL);
-        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", NULL);
+        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
+        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
         so->addParameter(PyString_AsString(kstr), PyString_AsString(vstr));
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
@@ -299,59 +298,59 @@ static PyMethodDef soMethods[] = {
     { "addParams",
       soAddParams, METH_O,
       "Adds Multiple Parameters from a dict"},
-    { NULL, NULL, 0, NULL }
+    { nullptr, nullptr, 0, nullptr }
 };
 
 
 PyTypeObject PyModel_StatOutputType = {
-    PyObject_HEAD_INIT(NULL)
-    0,                         /* ob_size */
-    "sst.StatisticOutput",     /* tp_name */
-    sizeof(StatOutputPy_t),    /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor)soDealloc,     /* tp_dealloc */
-    0,                         /* tp_print */
-    0,                         /* tp_getattr */
-    0,                         /* tp_setattr */
-    0,                         /* tp_compare */
-    0,                         /* tp_repr */
-    0,                         /* tp_as_number */
-    0,                         /* tp_as_sequence */
-    0,                         /* tp_as_mapping */
-    0,                         /* tp_hash */
-    0,                         /* tp_call */
-    0,                         /* tp_str */
-    0,                         /* tp_getattro */
-    0,                         /* tp_setattro */
-    0,                         /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT,        /* tp_flags */
-    "SST Statistic Output",     /* tp_doc */
-    0,                         /* tp_traverse */
-    0,                         /* tp_clear */
-    0,                         /* tp_richcompare */
-    0,                         /* tp_weaklistoffset */
-    0,                         /* tp_iter */
-    0,                         /* tp_iternext */
-    soMethods,                 /* tp_methods */
-    0,                         /* tp_members */
-    0,                         /* tp_getset */
-    0,                         /* tp_base */
-    0,                         /* tp_dict */
-    0,                         /* tp_descr_get */
-    0,                         /* tp_descr_set */
-    0,                         /* tp_dictoffset */
-    (initproc)soInit,          /* tp_init */
-    0,                         /* tp_alloc */
-    0,                         /* tp_new */
-    0,                         /* tp_free */
-    0,                         /* tp_is_gc */
-    0,                         /* tp_bases */
-    0,                         /* tp_mro */
-    0,                         /* tp_cache */
-    0,                         /* tp_subclasses */
-    0,                         /* tp_weaklist */
-    0,                         /* tp_del */
-    0,                         /* tp_version_tag */
+    PyObject_HEAD_INIT(nullptr)
+    0,                           /* ob_size */
+    "sst.StatisticOutput",       /* tp_name */
+    sizeof(StatOutputPy_t),      /* tp_basicsize */
+    0,                           /* tp_itemsize */
+    (destructor)soDealloc,       /* tp_dealloc */
+    nullptr,                     /* tp_print */
+    nullptr,                     /* tp_getattr */
+    nullptr,                     /* tp_setattr */
+    nullptr,                     /* tp_compare */
+    nullptr,                     /* tp_repr */
+    nullptr,                     /* tp_as_number */
+    nullptr,                     /* tp_as_sequence */
+    nullptr,                     /* tp_as_mapping */
+    nullptr,                     /* tp_hash */
+    nullptr,                     /* tp_call */
+    nullptr,                     /* tp_str */
+    nullptr,                     /* tp_getattro */
+    nullptr,                     /* tp_setattro */
+    nullptr,                     /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,          /* tp_flags */
+    "SST Statistic Output",      /* tp_doc */
+    nullptr,                     /* tp_traverse */
+    nullptr,                     /* tp_clear */
+    nullptr,                     /* tp_richcompare */
+    0,                           /* tp_weaklistoffset */
+    nullptr,                     /* tp_iter */
+    nullptr,                     /* tp_iternext */
+    soMethods,                   /* tp_methods */
+    nullptr,                     /* tp_members */
+    nullptr,                     /* tp_getset */
+    nullptr,                     /* tp_base */
+    nullptr,                     /* tp_dict */
+    nullptr,                     /* tp_descr_get */
+    nullptr,                     /* tp_descr_set */
+    0,                           /* tp_dictoffset */
+    (initproc)soInit,            /* tp_init */
+    nullptr,                     /* tp_alloc */
+    nullptr,                     /* tp_new */
+    nullptr,                     /* tp_free */
+    nullptr,                     /* tp_is_gc */
+    nullptr,                     /* tp_bases */
+    nullptr,                     /* tp_mro */
+    nullptr,                     /* tp_cache */
+    nullptr,                     /* tp_subclasses */
+    nullptr,                     /* tp_weaklist */
+    nullptr,                     /* tp_del */
+    0,                           /* tp_version_tag */
 };
 
 

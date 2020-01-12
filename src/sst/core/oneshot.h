@@ -13,11 +13,11 @@
 #ifndef SST_CORE_ONESHOT_H
 #define SST_CORE_ONESHOT_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <cinttypes>
 
-#include <sst/core/action.h>
+#include "sst/core/action.h"
 
 #define _ONESHOT_DBG(fmt, args...)__DBG(DBG_ONESHOT, OneShot, fmt, ## args)
 
@@ -56,7 +56,7 @@ public:
         classT*         object;
         const PtrMember member;
         argT            data;
-	
+    
     public:
         /** Constructor
          * @param object - Pointer to Object upon which to call the handler

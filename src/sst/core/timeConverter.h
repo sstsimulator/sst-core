@@ -12,7 +12,7 @@
 #ifndef SST_CORE_TIMECONVERTER_H
 #define SST_CORE_TIMECONVERTER_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 namespace SST {
 
@@ -32,7 +32,7 @@ class TimeConverter {
        \param time time to convert to core time
      */
     SimTime_t convertToCoreTime(SimTime_t time) {
-	return time * factor;
+    return time * factor;
     }
     
     /**
@@ -41,14 +41,14 @@ class TimeConverter {
        \param time time to convert from core time
      */
     SimTime_t convertFromCoreTime(SimTime_t time) {
-	return time/factor;
+    return time/factor;
     }
 
     /**
      * Return the factor used for conversions with Core Time
      */
     SimTime_t getFactor() {
-	return factor;
+    return factor;
     }
     
  private:
@@ -58,7 +58,7 @@ class TimeConverter {
     SimTime_t factor;
     
     TimeConverter(SimTime_t fact) {
-	factor = fact;
+    factor = fact;
     }
 
     ~TimeConverter() {

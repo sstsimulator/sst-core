@@ -39,9 +39,7 @@ nobase_dist_sst_HEADERS = \
 	decimal_fixedpoint.h \
 	env/envquery.h \
 	env/envconfig.h \
-	elementinfo.h \
 	elemLoader.h \
-	elibase.h \
 	event.h \
 	exit.h \
 	factory.h \
@@ -152,6 +150,11 @@ nobase_dist_sst_HEADERS = \
 	cputimer.h \
 	warnmacros.h \
 	model/element_python.h
+
+deprecated_nobase_dist_sst_headers = \
+	elibase.h \
+	elementinfo.h
+
 
 nobase_nodist_sst_HEADERS = \
 	build_info.h \
@@ -312,6 +315,12 @@ include tinyxml/Makefile.inc
 include part/Makefile.inc
 include model/Makefile.inc
 include impl/Makefile.inc
+
+if !SST_ENABLE_PREVIEW_BUILD
+nobase_dist_sst_HEADERS += $(deprecated_nobase_dist_sst_headers)
+sst_core_sources += $(deprecated_sst_core_sources)
+endif
+
 
 if USE_LIBZ
 sstsim_x_LDADD += $(LIBZ_LIBS)

@@ -13,7 +13,7 @@
 #ifndef SST_CORE_MODULE_H
 #define SST_CORE_MODULE_H
 
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/eli/elementinfo.h"
 
 namespace SST {
   /**
@@ -28,8 +28,8 @@ namespace SST {
       ELI_CTOR(Component*,SST::Params&)
     )
     SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams)
-	Module() {}
-	virtual ~Module() {}
+    Module() {}
+    virtual ~Module() {}
 
     };
 } //namespace SST

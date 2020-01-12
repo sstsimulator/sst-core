@@ -13,12 +13,13 @@
 #include "sst_config.h"
 
 #include "elemLoader.h"
+
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
-#include <sst/core/part/sstpart.h>
-#include <sst/core/sstpart.h>
-#include <sst/core/model/element_python.h>
+#include "sst/core/part/sstpart.h"
+#include "sst/core/sstpart.h"
+#include "sst/core/model/element_python.h"
 
 #include <ltdl.h>
 #include <vector>
@@ -66,7 +67,7 @@ struct LoaderData {
 };
 
 
-ElemLoader::ElemLoader(const std::string &searchPaths) :
+ElemLoader::ElemLoader(const std::string& searchPaths) :
     searchPaths(searchPaths)
 {
     loaderData = new LoaderData;
@@ -124,14 +125,14 @@ ElemLoader::~ElemLoader()
 }
 
 
-static std::vector<std::string> splitPath(const std::string & searchPaths)
+static std::vector<std::string> splitPath(const std::string& searchPaths)
 {
     std::vector<std::string> paths;
     char * pathCopy = new char [searchPaths.length() + 1];
     std::strcpy(pathCopy, searchPaths.c_str());
-    char *brkb = NULL;
-    char *p = NULL;
-    for ( p = strtok_r(pathCopy, ":", &brkb); p ; p = strtok_r(NULL, ":", &brkb) ) {
+    char *brkb = nullptr;
+    char *p = nullptr;
+    for ( p = strtok_r(pathCopy, ":", &brkb); p ; p = strtok_r(nullptr, ":", &brkb) ) {
         paths.push_back(p);
     }
 
@@ -162,7 +163,7 @@ static void followError(const std::string& libname, const std::string& elemlib, 
     // didn't succeed in the stat, we'll get a file not found error
     // from dlopen, which is a useful error message for the user.
     handle = dlopen(fullpath.c_str(), RTLD_NOW|RTLD_GLOBAL);
-    if (NULL == handle) {
+    if (nullptr == handle) {
         std::vector<char> err_str(1e6); //make darn sure we fit the str
         sprintf(err_str.data(),
           "Opening and resolving references for element library %s failed:\n" "\t%s\n",
@@ -172,12 +173,12 @@ static void followError(const std::string& libname, const std::string& elemlib, 
 }
 
 void
-ElemLoader::loadLibrary(const std::string &elemlib, std::ostream& err_os)
+ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
 {
     std::string libname = "lib" + elemlib;
     lt_dlhandle lt_handle;
     lt_handle = lt_dlopenadvise(libname.c_str(), loaderData->advise_handle);
-    if (NULL == lt_handle) {
+    if (nullptr == lt_handle) {
       // The preopen module runs last and if the
         // component was found earlier, but has a missing symbol or
         // the like, we just get an amorphous "file not found" error,

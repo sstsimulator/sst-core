@@ -13,22 +13,22 @@
 #include "sst_config.h"
 // #include "sst/core/serialization.h"
 
-#include <sst/core/componentInfo.h>
-#include <sst/core/configGraph.h>
-#include <sst/core/linkMap.h>
+#include "sst/core/componentInfo.h"
+#include "sst/core/configGraph.h"
+#include "sst/core/linkMap.h"
 
 namespace SST {
 
-ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
+ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
     id(id),
-    parent_info(NULL),
+    parent_info(nullptr),
     name(name),
     type(""),
-    link_map(NULL),
-    component(NULL),
-    params(NULL),
-    defaultTimeBase(NULL),
-    enabledStats(NULL),
+    link_map(nullptr),
+    component(nullptr),
+    params(nullptr),
+    defaultTimeBase(nullptr),
+    enabledStats(nullptr),
     coordinates(3, 0.0),
     subIDIndex(1),
     slot_name(""),
@@ -38,12 +38,12 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
 }
 
 
-// ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string &type, const Params *params, const ComponentInfo *parent) :
+// ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const Params *params, const ComponentInfo *parent) :
 //     id(parent->id),
 //     name(parent->name),
 //     type(type),
 //     link_map(parent->link_map),
-//     component(NULL),
+//     component(nullptr),
 //     params(params),
 //     enabledStats(parent->enabledStats),
 //     coordinates(parent->coordinates),
@@ -56,17 +56,17 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string &name) :
 
 
 // Constructor used for Anonymous SubComponents
-ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string &type,
+ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type,
                              const std::string& slot_name, int slot_num, uint64_t share_flags/*, const Params& params_in*/) :
     id(id),
     parent_info(parent_info),
     name(""),
     type(type),
-    link_map(NULL),
-    component(NULL),
-    params(/*new Params()*/ NULL),
-    defaultTimeBase(NULL),
-    enabledStats(NULL),
+    link_map(nullptr),
+    component(nullptr),
+    params(/*new Params()*/ nullptr),
+    defaultTimeBase(nullptr),
+    enabledStats(nullptr),
     coordinates(parent_info->coordinates),
     subIDIndex(1),
     slot_name(slot_name),
@@ -83,9 +83,9 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, const std::string& name, Co
     name(name),
     type(ccomp->type),
     link_map(link_map),
-    component(NULL),
+    component(nullptr),
     params(&ccomp->params),
-    defaultTimeBase(NULL),
+    defaultTimeBase(nullptr),
     enabledStats(&ccomp->enabledStatistics),
     coordinates(ccomp->coords),
     subIDIndex(1),
@@ -133,28 +133,33 @@ ComponentInfo::ComponentInfo(ComponentInfo &&o) :
     slot_num(o.slot_num),
     share_flags(o.share_flags)
 {
-    o.parent_info = NULL;
-    o.link_map = NULL;
-    o.component = NULL;
-    o.defaultTimeBase = NULL;
+    o.parent_info = nullptr;
+    o.link_map = nullptr;
+    o.component = nullptr;
+    o.defaultTimeBase = nullptr;
 }
 
 
 ComponentInfo::~ComponentInfo() {
     if ( link_map ) delete link_map;
     if ( component ) {
+#ifndef SST_ENABLE_PREVIEW_BUILD        
         // For backward compatibility, don't delete component defined
         // (anonymous) subcomponents since they weren't before.
         if ( !isLegacySubComponent() ) {
             component->my_info = nullptr;
             delete component;
         }
+#else
+        component->my_info = nullptr;
+        delete component;
+#endif
     }
 }
 
 LinkMap*
 ComponentInfo::getLinkMap() {
-    if ( link_map == NULL ) link_map = new LinkMap();
+    if ( link_map == nullptr ) link_map = new LinkMap();
     return link_map;
 }
 
@@ -164,9 +169,9 @@ ComponentInfo::addAnonymousSubComponent(ComponentInfo* parent_info, const std::s
                                         int slot_num, uint64_t share_flags)
 {
     // First, get the next subIDIndex by working our way up to the
-    // actual component (parent pointer will be NULL).
+    // actual component (parent pointer will be nullptr).
     ComponentInfo* real_comp = this;
-    while ( real_comp->parent_info != NULL) real_comp = real_comp->parent_info;
+    while ( real_comp->parent_info != nullptr) real_comp = real_comp->parent_info;
 
     // Get the subIDIndex and increment it for next time
     uint64_t sub_id = real_comp->subIDIndex++;
@@ -181,7 +186,7 @@ ComponentInfo::addAnonymousSubComponent(ComponentInfo* parent_info, const std::s
 
 
 void ComponentInfo::finalizeLinkConfiguration() const {
-    if ( NULL != link_map ) {
+    if ( nullptr != link_map ) {
         for ( auto & i : link_map->getLinkMap() ) {
             i.second->finalizeConfiguration();
         }
@@ -192,7 +197,7 @@ void ComponentInfo::finalizeLinkConfiguration() const {
 }
 
 void ComponentInfo::prepareForComplete() const {
-    if ( NULL != link_map ) {
+    if ( nullptr != link_map ) {
         for ( auto & i : link_map->getLinkMap() ) {
             i.second->prepareForComplete();
         }
@@ -211,30 +216,30 @@ ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id)
 
     /* Check to make sure we're part of the same component */
     if ( COMPONENT_ID_MASK(id) != COMPONENT_ID_MASK(this->id) )
-        return NULL;
+        return nullptr;
 
     for ( auto &s : subComponents ) {
         ComponentInfo* found = s.second.findSubComponent(id);
-        if ( found != NULL )
+        if ( found != nullptr )
             return found;
     }
-    return NULL;
+    return nullptr;
 }
 
-ComponentInfo* ComponentInfo::findSubComponent(std::string slot, int slot_num) 
+ComponentInfo* ComponentInfo::findSubComponent(const std::string& slot, int slot_num) 
 {
     // Non-recursive, only look in current component
     for ( auto &sc : subComponents ) {
         if ( sc.second.slot_name == slot && sc.second.slot_num == slot_num ) return &sc.second;
     }
-    return NULL;
+    return nullptr;
 }
 
 
 std::vector<LinkId_t> ComponentInfo::getAllLinkIds() const
 {
     std::vector<LinkId_t> res;
-    if ( NULL != link_map ) {
+    if ( nullptr != link_map ) {
         for ( auto & l : link_map->getLinkMap() ) {
             res.push_back(l.second->id);
         }

@@ -11,11 +11,8 @@
 
 
 #include "sst_config.h"
-#include "sst/core/eli/elibase.h"
-#include "sst/core/eli/elementinfo.h"
-#include <sst/core/statapi/statbase.h>
 
-#include <sstream>
+#include "sst/core/eli/elibase.h"
 
 namespace SST {
 
@@ -29,19 +26,19 @@ std::unique_ptr<LoadedLibraries::LibraryMap> LoadedLibraries::loaders_{};
 static const std::vector<int> SST_ELI_COMPILED_VERSION = {0, 9, 0};
 
 bool
-LoadedLibraries::addLoader(const std::string &lib, const std::string &name,
+LoadedLibraries::addLoader(const std::string& lib, const std::string& name,
                            LibraryLoader* loader)
 {
   if (!loaders_){
     loaders_ = std::unique_ptr<LibraryMap>(new LibraryMap);
   }
   (*loaders_)[lib][name].push_back(loader);
-	return true; 
+    return true; 
 }
 
 const LoadedLibraries::LibraryMap&
 LoadedLibraries::getLoaders(){
-	return *loaders_;
+    return *loaders_;
 }
 
 bool

@@ -10,10 +10,10 @@
 // distribution.
 
 #include "sst_config.h"
+#include "sst/core/statapi/statfieldinfo.h"
 
-#include <sst/core/stringize.h>
-#include <sst/core/simulation.h>
-#include <sst/core/statapi/statfieldinfo.h>
+#include "sst/core/stringize.h"
+#include "sst/core/simulation.h"
 
 namespace SST {
 namespace Statistics {

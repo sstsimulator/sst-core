@@ -27,7 +27,7 @@
 
 #include <time.h>
 
-#include <sst/core/profile.h>
+#include "sst/core/profile.h"
 
 namespace SST {
 namespace Core {
@@ -95,15 +95,15 @@ public:
         defined( __x86_64 ) || defined( __x86_64__ ) )
                         _mm_pause();
 #elif defined(__PPC64__)
-       	asm volatile( "or 27, 27, 27" ::: "memory" );
+           asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
-		    } else if ( count < (1024*1024) ) {
+            } else if ( count < (1024*1024) ) {
                         std::this_thread::yield();
                     } else {
                         struct timespec ts;
                         ts.tv_sec = 0;
                         ts.tv_nsec = 1000;
-                        nanosleep(&ts, NULL);
+                        nanosleep(&ts, nullptr);
                     }
                 } while ( gen == generation.load(std::memory_order_acquire) );
             }
@@ -201,7 +201,7 @@ public:
 
     bool try_insert(const T& arg)
     {
-        cell_t *cell = NULL;
+        cell_t *cell = nullptr;
         size_t pos = wPtr.load(std::memory_order_relaxed);
         for (;;) {
             cell = &data[pos % dsize];
@@ -224,7 +224,7 @@ public:
 
     bool try_remove(T &res)
     {
-        cell_t *cell = NULL;
+        cell_t *cell = nullptr;
         size_t pos = rPtr.load(std::memory_order_relaxed);
         for (;;) {
             cell = &data[pos % dsize];
@@ -254,7 +254,7 @@ public:
         defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
 #elif defined(__PPC64__)
-       	asm volatile( "or 27, 27, 27" ::: "memory" );
+           asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
         }
     }
@@ -319,7 +319,7 @@ public:
         defined( __x86_64 ) || defined( __x86_64__ ) )
             _mm_pause();
 #elif defined(__PPC64__)
-       	asm volatile( "or 27, 27, 27" ::: "memory" );
+           asm volatile( "or 27, 27, 27" ::: "memory" );
 #endif
         }
     }

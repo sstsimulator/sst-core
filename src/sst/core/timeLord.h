@@ -14,14 +14,14 @@
 #ifndef SST_CORE_TIMELORD_H
 #define SST_CORE_TIMELORD_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <map>
 #include <string>
 
-#include <sst/core/simulation.h>
-#include <sst/core/unitAlgebra.h>
-#include <sst/core/threadsafe.h>
+#include "sst/core/simulation.h"
+#include "sst/core/unitAlgebra.h"
+#include "sst/core/threadsafe.h"
 
 extern int main(int argc, char **argv);
 
@@ -49,7 +49,7 @@ class TimeLord {
       'm' (milli). Allowable frequency prefixes are 'k' (kilo), 'M'
       (mega), and 'G' (giga).
    */
-    TimeConverter* getTimeConverter(std::string ts);
+    TimeConverter* getTimeConverter(const std::string& ts);
     /**
      * Create a new TimeConverter object using the specified units.
      *
@@ -60,7 +60,7 @@ class TimeLord {
     /** Not a Public API.
      * Returns the number of raw simulation cycles given by a specified time string
      */
-    SimTime_t getSimCycles(std::string timeString, std::string where);
+    SimTime_t getSimCycles(const std::string& timeString, const std::string& where);
     /**
      * Return the Time Base of the TimeLord
      */
@@ -77,7 +77,7 @@ class TimeLord {
     friend class SST::Simulation;
     friend int ::main(int argc, char **argv);
 
-    void init(std::string timeBaseString);
+    void init(const std::string& timeBaseString);
 
     // Needed by the simulator to turn minPart back into a
     // TimeConverter object.

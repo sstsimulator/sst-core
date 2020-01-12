@@ -13,12 +13,12 @@
 #ifndef SST_CORE_ACTION_H
 #define SST_CORE_ACTION_H
 
-#include <sst/core/serialization/serializer.h>
+#include "sst/core/serialization/serializer.h"
 
 #include <cinttypes>
 
-#include <sst/core/activity.h>
-#include <sst/core/output.h>
+#include "sst/core/activity.h"
+#include "sst/core/output.h"
 
 
 

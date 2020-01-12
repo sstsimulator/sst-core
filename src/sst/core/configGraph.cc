@@ -10,17 +10,17 @@
 // distribution.
 
 
-#include <sst_config.h>
-#include <sst/core/configGraph.h>
+#include "sst_config.h"
+#include "sst/core/configGraph.h"
 
 #include <fstream>
 #include <algorithm>
 
-#include <sst/core/component.h>
-#include <sst/core/config.h>
-#include <sst/core/timeLord.h>
-#include <sst/core/simulation.h>
-#include <sst/core/factory.h>
+#include "sst/core/component.h"
+#include "sst/core/config.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/simulation.h"
+#include "sst/core/factory.h"
 
 #include <string.h>
 
@@ -45,7 +45,7 @@ bool ConfigStatGroup::addComponent(ComponentId_t id)
 }
 
 
-bool ConfigStatGroup::addStatistic(const std::string &name, Params &p)
+bool ConfigStatGroup::addStatistic(const std::string& name, Params &p)
 {
     statMap[name] = p;
     if ( outputFrequency.getRoundedValue() == 0 ) {
@@ -63,7 +63,7 @@ bool ConfigStatGroup::setOutput(size_t id)
 }
 
 
-bool ConfigStatGroup::setFrequency(const std::string &freq)
+bool ConfigStatGroup::setFrequency(const std::string& freq)
 {
     UnitAlgebra uaFreq(freq);
     if ( uaFreq.hasUnits("s") || uaFreq.hasUnits("hz") ) {
@@ -191,14 +191,14 @@ void ConfigComponent::setCoordinates(const std::vector<double> &c)
 }
 
 
-void ConfigComponent::addParameter(const std::string &key, const std::string &value, bool overwrite)
+void ConfigComponent::addParameter(const std::string& key, const std::string& value, bool overwrite)
 {
     bool bk = params.enableVerify(false);
     params.insert(key, value, overwrite);
     params.enableVerify(bk);
 }
 
-void ConfigComponent::enableStatistic(const std::string &statisticName, bool recursively)
+void ConfigComponent::enableStatistic(const std::string& statisticName, bool recursively)
 {
     // NOTE: For every statistic in the enabledStatistics List, there must be
     //       a corresponding params entry in enabledStatParams list.  The two
@@ -241,7 +241,7 @@ void ConfigComponent::enableStatistic(const std::string &statisticName, bool rec
 }
 
 
-void ConfigComponent::addStatisticParameter(const std::string &statisticName, const std::string &param, const std::string &value, bool recursively)
+void ConfigComponent::addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively)
 {
     // NOTE: For every statistic in the enabledStatistics List, there must be
     //       a corresponding params entry in enabledStatParams list.  The two
@@ -264,7 +264,7 @@ void ConfigComponent::addStatisticParameter(const std::string &statisticName, co
 }
 
 
-void ConfigComponent::setStatisticParameters(const std::string &statisticName, const Params &params, bool recursively)
+void ConfigComponent::setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively)
 {
     if ( recursively ) {
         for ( auto &sc : subComponents ) {
@@ -283,12 +283,12 @@ void ConfigComponent::setStatisticParameters(const std::string &statisticName, c
 
 
 
-ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string &name, const std::string &type, int slot_num)
+ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string& name, const std::string& type, int slot_num)
 {
     /* Check for existing subComponent with this name */
     for ( auto &i : subComponents ) {
         if ( i.name == name && i.slot_num == slot_num )
-            return NULL;
+            return nullptr;
     }
 
     subComponents.emplace_back(
@@ -308,11 +308,11 @@ const ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid) cons
 
     for ( auto &s : subComponents ) {
         const ConfigComponent* res = s.findSubComponent(sid);
-        if ( res != NULL )
+        if ( res != nullptr )
             return res;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -475,16 +475,16 @@ ConfigGraph::checkForStructuralErrors()
 
 
 ComponentId_t
-ConfigGraph::addComponent(ComponentId_t id, std::string name, std::string type, float weight, RankInfo rank)
+ConfigGraph::addComponent(ComponentId_t id, const std::string& name, const std::string& type, float weight, RankInfo rank)
 {
-	comps.push_back(ConfigComponent(id, name, type, weight, rank));
+    comps.push_back(ConfigComponent(id, name, type, weight, rank));
     return id;
 }
 
 ComponentId_t
-ConfigGraph::addComponent(ComponentId_t id, std::string name, std::string type)
+ConfigGraph::addComponent(ComponentId_t id, const std::string& name, const std::string& type)
 {
-	comps.push_back(ConfigComponent(id, name, type, 1.0f, RankInfo()));
+    comps.push_back(ConfigComponent(id, name, type, 1.0f, RankInfo()));
     return id;
 }
 
@@ -492,7 +492,7 @@ ConfigGraph::addComponent(ComponentId_t id, std::string name, std::string type)
 
 
 void
-ConfigGraph::setStatisticOutput(const std::string &name)
+ConfigGraph::setStatisticOutput(const std::string& name)
 {
     statOutputs[0].type = name;
 }
@@ -518,7 +518,7 @@ ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
 
 
 void
-ConfigGraph::enableStatisticForComponentName(string ComponentName, string statisticName)
+ConfigGraph::enableStatisticForComponentName(const std::string& ComponentName, const std::string& statisticName)
 {
     bool found;
 
@@ -551,7 +551,7 @@ size_t for_each_subcomp_if(ConfigComponent &c, PredicateFunc p, UnaryFunc f) {
 
 
 void
-ConfigGraph::enableStatisticForComponentType(string ComponentType, string statisticName)
+ConfigGraph::enableStatisticForComponentType(const std::string& ComponentType, const std::string& statisticName)
 {
     if ( ComponentType == STATALLFLAG ) {
         for ( auto &c : comps ) {
@@ -569,7 +569,7 @@ ConfigGraph::enableStatisticForComponentType(string ComponentType, string statis
 }
 
 void
-ConfigGraph::addStatisticParameterForComponentName(const std::string &ComponentName, const std::string &statisticName, const std::string &param, const std::string &value)
+ConfigGraph::addStatisticParameterForComponentName(const std::string& ComponentName, const std::string& statisticName, const std::string& param, const std::string& value)
 {
     bool found;
 
@@ -584,7 +584,7 @@ ConfigGraph::addStatisticParameterForComponentName(const std::string &ComponentN
 }
 
 void
-ConfigGraph::addStatisticParameterForComponentType(const std::string &ComponentType, const std::string &statisticName, const std::string &param, const std::string &value)
+ConfigGraph::addStatisticParameterForComponentType(const std::string& ComponentType, const std::string& statisticName, const std::string& param, const std::string& value)
 {
     if ( ComponentType == STATALLFLAG ) {
         for ( auto &c : comps ) {
@@ -602,36 +602,36 @@ ConfigGraph::addStatisticParameterForComponentType(const std::string &ComponentT
 }
 
 void
-ConfigGraph::addLink(ComponentId_t comp_id, string link_name, string port, string latency_str, bool no_cut)
+ConfigGraph::addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port, const std::string& latency_str, bool no_cut)
 {
-	if ( link_names.find(link_name) == link_names.end() ) {
+    if ( link_names.find(link_name) == link_names.end() ) {
         LinkId_t id = links.size();
         link_names[link_name] = id;
         links.insert(ConfigLink(id, link_name));
     }
-	ConfigLink &link = links[link_names[link_name]];
+    ConfigLink &link = links[link_names[link_name]];
     if ( link.current_ref >= 2 ) {
         cout << "ERROR: Parsing SDL file: Link " << link_name << " referenced more than two times" << endl;
         exit(1);
     }
 
-	// Convert the latency string to a number
+    // Convert the latency string to a number
 
-	int index = link.current_ref++;
-	link.component[index] = comp_id;
-	link.port[index] = port;
+    int index = link.current_ref++;
+    link.component[index] = comp_id;
+    link.port[index] = port;
     link.latency_str[index] = latency_str;
     link.no_cut = link.no_cut | no_cut;
 
-	// Check to make sure the link doesn't already exist in the component
-	auto compLinks = &findComponent(comp_id)->links;
-	if (std::find(compLinks->begin(), compLinks->end(), link.id) == compLinks->end()){
-		compLinks->push_back(link.id);
-	}
+    // Check to make sure the link doesn't already exist in the component
+    auto compLinks = &findComponent(comp_id)->links;
+    if (std::find(compLinks->begin(), compLinks->end(), link.id) == compLinks->end()){
+        compLinks->push_back(link.id);
+    }
 }
 
 void
-ConfigGraph::setLinkNoCut(string link_name)
+ConfigGraph::setLinkNoCut(const std::string& link_name)
 {
     // If link doesn't exist, return
     if ( link_names.find(link_name) == link_names.end() ) return;

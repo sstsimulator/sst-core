@@ -14,8 +14,8 @@
 
 #include "sst/core/sst_types.h"
 
-#include <sst/core/statapi/statoutput.h>
-#include <sst/core/warnmacros.h>
+#include "sst/core/statapi/statoutput.h"
+#include "sst/core/warnmacros.h"
 
 DISABLE_WARN_MISSING_OVERRIDE
 #include "H5Cpp.h"
@@ -30,7 +30,7 @@ namespace Statistics {
 /**
     \class StatisticOutputHDF5
 
-	The class for statistics output to a comma separated file.
+    The class for statistics output to a comma separated file.
 */
 class StatisticOutputHDF5 : public StatisticOutput
 {
@@ -237,7 +237,7 @@ private:
         void finishGroupEntry() override;
         size_t getNumComponents() const { return m_components.size(); }
 
-        const std::string& getName() const { return m_statGroup->name; }
+        const std::string& getName() const;
     };
 
 

@@ -18,7 +18,7 @@
 #include <sstream>
 #include <type_traits>
 
-#include <sst/core/from_string.h>
+#include "sst/core/from_string.h"
 
 namespace SST {
 /**
@@ -87,7 +87,8 @@ private:
        the c++ double precision strings.  For example 1.234, -1.234,
        0.234, 1.234e14, 1.234e14, etc.
      */
-    void from_string(std::string init) {
+    void from_string(const std::string& init_str) {
+        std::string init(init_str);
         negative = false;
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
             data[i] = 0;
@@ -211,7 +212,7 @@ public:
        the c++ double precision strings.  For example 1.234, -1.234,
        0.234, 1.234e14, 1.234e14, etc.
      */
-    decimal_fixedpoint(std::string init) {
+    decimal_fixedpoint(const std::string& init) {
         from_string(init);
     }
 
@@ -222,7 +223,7 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(T init, typename std::enable_if<std::is_unsigned<T>::value >::type* = 0) {
+    decimal_fixedpoint(T init, typename std::enable_if<std::is_unsigned<T>::value >::type* = nullptr) {
         from_uint64(init);
     }
 
@@ -234,7 +235,7 @@ public:
      */
     template <class T>
     decimal_fixedpoint(T init, typename std::enable_if<std::is_signed<T>::value &&
-                       std::is_integral<T>::value >::type* = 0) {
+                       std::is_integral<T>::value >::type* = nullptr) {
         if ( init < 0 ) {
             from_uint64(-init);
             negative = true;
@@ -250,7 +251,7 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(const T init, typename std::enable_if<std::is_floating_point<T>::value >::type* = 0) {
+    decimal_fixedpoint(const T init, typename std::enable_if<std::is_floating_point<T>::value >::type* = nullptr) {
         from_double(init);
     }
 
@@ -310,7 +311,7 @@ public:
     /**
        Equal operator for string.
      */
-    decimal_fixedpoint& operator=(std::string v) {
+    decimal_fixedpoint& operator=(const std::string& v) {
         from_string(v);
         return *this;
     }

@@ -13,7 +13,7 @@
 #ifndef SST_CORE_THREADSYNCQUEUE_H
 #define SST_CORE_THREADSYNCQUEUE_H
 
-#include <sst/core/activityQueue.h>
+#include "sst/core/activityQueue.h"
 
 namespace SST {
 
@@ -39,7 +39,7 @@ public:
     /** Not supported */
     Activity* pop() override {
         // Need to fatal
-        return NULL;
+        return nullptr;
     }
     
     /** Insert a new activity into the queue */
@@ -50,7 +50,7 @@ public:
     /** Not supported */
     Activity* front() override {
         // Need to fatal
-        return NULL;
+        return nullptr;
     }
 
     void clear() {

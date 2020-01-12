@@ -25,78 +25,78 @@
 namespace SST {
 namespace RNG {
 /**
-	\class MersenneRNG mersenne.h "sst/core/rng/mersenne.h"
+    \class MersenneRNG mersenne.h "sst/core/rng/mersenne.h"
 
-	Implements a Mersenne-based RNG for use in the SST core or components. The Mersenne
-	RNG provides a better "randomness" to the distribution of outputs but is computationally
-	more expensive than the Marsaglia RNG.
+    Implements a Mersenne-based RNG for use in the SST core or components. The Mersenne
+    RNG provides a better "randomness" to the distribution of outputs but is computationally
+    more expensive than the Marsaglia RNG.
 */
 class MersenneRNG : public SSTRandom {
 
-    public:
-	/**
-		Create a new Mersenne RNG with a specified seed
-		@param[in] seed The seed for this RNG
-	*/
-        MersenneRNG(unsigned int seed);
+public:
+    /**
+       Create a new Mersenne RNG with a specified seed
+       @param[in] seed The seed for this RNG
+    */
+    MersenneRNG(unsigned int seed);
+    
+    /**
+       Creates a new Mersenne using a random seed which is obtained from the system
+       clock. Note this will give different results on different platforms and between
+       runs.
+    */
+    MersenneRNG();
 
-	/**
-		Creates a new Mersenne using a random seed which is obtained from the system
-		clock. Note this will give different results on different platforms and between
-		runs.
-	*/
-        MersenneRNG();
+    /**
+       Generates the next random number as a double value between 0 and 1.
+    */
+    double   nextUniform() override;
 
-	/**
-		Generates the next random number as a double value between 0 and 1.
-	*/
-	double   nextUniform() override;
+    /**
+       Generates the next random number as an unsigned 32-bit integer
+    */
+    uint32_t generateNextUInt32() override;
 
-	/**
-		Generates the next random number as an unsigned 32-bit integer
-	*/
-	uint32_t generateNextUInt32() override;
+    /**
+       Generates the next random number as an unsigned 64-bit integer
+    */
+    uint64_t generateNextUInt64() override;
 
-	/**
-		Generates the next random number as an unsigned 64-bit integer
-	*/
-	uint64_t generateNextUInt64() override;
+    /**
+       Generates the next random number as a signed 64-bit integer
+    */
+    int64_t  generateNextInt64() override;
 
-	/**
-		Generates the next random number as a signed 64-bit integer
-	*/
-	int64_t  generateNextInt64() override;
+    /**
+       Generates the next random number as a signed 32-bit integer
+    */
+    int32_t  generateNextInt32() override;
 
-	/**
-		Generates the next random number as a signed 32-bit integer
-	*/
-    	int32_t  generateNextInt32() override;
+    /**
+       Seed the XOR RNG
+    */
+    void seed(uint64_t newSeed);
 
-    	/**
-		Seed the XOR RNG
-	*/
-	void seed(uint64_t newSeed);
-
-	/**
-		Destructor for Mersenne
-	*/
-	~MersenneRNG();
+    /**
+       Destructor for Mersenne
+    */
+    ~MersenneRNG();
 
     private:
-	/**
-		Generates the next batch of random numbers
-	*/
-    	void  generateNextBatch();
+    /**
+       Generates the next batch of random numbers
+    */
+    void  generateNextBatch();
 
-	/**
-		Stores the next set of random numbers
-	*/
-    	uint32_t* numbers;
+    /**
+       Stores the next set of random numbers
+    */
+    uint32_t* numbers;
 
-	/**
-		Tells us what index of the random number list the next returnable number should come from
-	*/
-        int index;
+    /**
+       Tells us what index of the random number list the next returnable number should come from
+    */
+    int index;
 
 };
 

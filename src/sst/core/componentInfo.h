@@ -12,8 +12,8 @@
 #ifndef SST_CORE_COMPONENTINFO_H
 #define SST_CORE_COMPONENTINFO_H
 
-#include <sst/core/sst_types.h>
-#include <sst/core/params.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/params.h"
 
 #include <unordered_set>
 #include <map>
@@ -44,9 +44,11 @@ public:
     static const uint64_t SHARE_STATS = 0x2;
     static const uint64_t INSERT_STATS = 0x4;
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     // Temporary, only for backward compatibility with loadSubComponent
     static const uint64_t IS_LEGACY_SUBCOMPONENT = 0x32;
-
+#endif
+    
     static const uint64_t SHARE_NONE = 0x0;
 
 private:
@@ -153,16 +155,17 @@ private:
         return (share_flags & INSERT_STATS) != 0;
     }
     
+#ifndef SST_ENABLE_PREVIEW_BUILD
     bool isLegacySubComponent() {
         return (share_flags & IS_LEGACY_SUBCOMPONENT) != 0;
     }
-    
+#endif    
 
     inline void setComponent(BaseComponent* comp) { component = comp; }
     // inline void setParent(BaseComponent* comp) { parent = comp; }
 
     /* Lookup Key style constructor */
-    ComponentInfo(ComponentId_t id, const std::string &name);
+    ComponentInfo(ComponentId_t id, const std::string& name);
     void finalizeLinkConfiguration() const;
     void prepareForComplete() const;
 
@@ -173,7 +176,7 @@ private:
     
 public:
     /* Old ELI Style subcomponent constructor */
-    ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent_info);
+    ComponentInfo(const std::string& type, const Params *params, const ComponentInfo *parent_info);
 
     /* Anonymous SubComponent */
     ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const std::string& slot_name,
@@ -214,7 +217,7 @@ public:
     // inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
     inline std::map<ComponentId_t,ComponentInfo>& getSubComponents() { return subComponents; }
 
-    ComponentInfo* findSubComponent(std::string slot, int slot_num);
+    ComponentInfo* findSubComponent(const std::string& slot, int slot_num);
     ComponentInfo* findSubComponent(ComponentId_t id);
     std::vector<LinkId_t> getAllLinkIds() const;
 
@@ -273,7 +276,7 @@ public:
     ComponentInfo* getByID(const ComponentId_t key) const {
         ComponentInfo infoKey(COMPONENT_ID_MASK(key), "");
         auto value = dataByID.find(&infoKey);
-        if ( value == dataByID.end() ) return NULL;
+        if ( value == dataByID.end() ) return nullptr;
         if ( SUBCOMPONENT_ID_MASK(key) != 0 ) {
             // Looking for a subcomponent
             return (*value)->findSubComponent(key);

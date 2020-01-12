@@ -13,12 +13,12 @@
 #define _H_SST_CORE_STATISTICS_OUTPUT
 
 #include "sst/core/sst_types.h"
-#include <sst/core/warnmacros.h>
-#include <sst/core/module.h>
-#include <sst/core/params.h>
-#include <sst/core/statapi/statfieldinfo.h>
-#include <sst/core/statapi/statbase.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/warnmacros.h"
+#include "sst/core/module.h"
+#include "sst/core/params.h"
+#include "sst/core/statapi/statfieldinfo.h"
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/eli/elementinfo.h"
 #include <unordered_map>
 
 #include <mutex>
@@ -113,7 +113,7 @@ public:
      * @param fieldHandle - The handle of the registered field.
      * @return Pointer to the registered field info.
      */
-    // Get the Field Information object, NULL is returned if not found
+    // Get the Field Information object, nullptr is returned if not found
     StatisticFieldInfo* getRegisteredField(fieldHandle_t fieldHandle);
 
     /** Return the information on a registered field via known names.
@@ -144,7 +144,7 @@ public:
         }
 
         delete NewStatFieldInfo;
-        return NULL;
+        return nullptr;
     }
 
     /** Return the array of registered field infos. */
@@ -241,7 +241,7 @@ private:
 
 protected:
     StatisticOutput() {;} // For serialization only
-    void setStatisticOutputName(std::string name) {m_statOutputName = name;}
+    void setStatisticOutputName(const std::string& name) {m_statOutputName = name;}
 
     void lock() { m_lock.lock(); }
     void unlock() { m_lock.unlock(); }
