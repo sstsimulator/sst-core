@@ -96,6 +96,15 @@ void Link::setLatency(Cycle_t lat) {
     latency = lat;
 }
     
+void Link::addSendLatency(int cycles, const std::string& timebase) {
+    SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase,"addOutputLatency");
+    latency += (cycles * tb);
+}
+    
+void Link::addSendLatency(SimTime_t cycles, TimeConverter* timebase) {
+    latency += timebase->convertToCoreTime(cycles);
+}
+    
 void Link::addRecvLatency(int cycles, const std::string& timebase) {
     SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase,"addOutputLatency");
     pair_link->latency += (cycles * tb);

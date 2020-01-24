@@ -47,13 +47,24 @@ public:
     
     virtual ~Link();
     
-    /** set minimum link latency */
-    void setLatency(Cycle_t lat);
+    /** Set additional Latency to be added to events being sent out of this link
+     * @param cycles Number of Cycles to be added
+     * @param timebase Base Units of cycles
+     */
+    void addSendLatency(int cycles, const std::string& timebase);
+    
+    /** Set additional Latency to be added to events being sent out of this link
+     * @param cycles Number of Cycles to be added
+     * @param timebase Base Units of cycles
+     */
+    void addSendLatency(SimTime_t cycles, TimeConverter* timebase);
+
     /** Set additional Latency to be added on to events coming in on this link.
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
      */
     void addRecvLatency(int cycles, const std::string& timebase);
+    
     /** Set additional Latency to be added on to events coming in on this link.
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
@@ -192,6 +203,9 @@ protected:
 
 private:
     Link( const Link& l );
+    
+    /** Set minimum link latency */
+    void setLatency(Cycle_t lat);
 
     void sendUntimedData_sync(Event* data);
     void finalizeConfiguration();
