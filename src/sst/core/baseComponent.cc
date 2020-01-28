@@ -202,6 +202,18 @@ TimeConverter* BaseComponent::registerClock( const UnitAlgebra& freq, Clock::Han
     return tc;
 }
 
+TimeConverter* BaseComponent::registerClock( TimeConverter* tc, Clock::HandlerBase* handler, bool regAll) {
+    TimeConverter* tcRet = getSimulation()->registerClock(tc, handler, CLOCKPRIORITY);
+
+    // if regAll is true set tc as the default for the component and
+    // for all the links
+    if ( regAll ) {
+        setDefaultTimeBaseForLinks(tcRet);
+        my_info->defaultTimeBase = tcRet;
+    }
+    return tcRet;
+}
+
 Cycle_t BaseComponent::reregisterClock( TimeConverter* freq, Clock::HandlerBase* handler) {
     return getSimulation()->reregisterClock(freq, handler, CLOCKPRIORITY);
 }

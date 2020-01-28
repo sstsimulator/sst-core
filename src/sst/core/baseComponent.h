@@ -164,11 +164,32 @@ protected:
         at the specified interval
         @param regAll Should this clock period be used as the default
         time base for all of the links connected to this component
+        @return the TimeConverter object representing the clock frequency
     */
     TimeConverter* registerClock( const std::string& freq, Clock::HandlerBase* handler,
                                   bool regAll = true);
+    
+    /** Registers a clock for this component.
+        @param freq Frequency for the clock as a UnitAlgebra object
+        @param handler Pointer to Clock::HandlerBase which is to be invoked
+        at the specified interval
+        @param regAll Should this clock period be used as the default
+        time base for all of the links connected to this component
+        @return the TimeConverter object representing the clock frequency
+    */
     TimeConverter* registerClock( const UnitAlgebra& freq, Clock::HandlerBase* handler,
                                   bool regAll = true);
+
+    /** Registers a clock for this component.
+        @param tc TimeConverter object specifying the clock frequency
+        @param handler Pointer to Clock::HandlerBase which is to be invoked
+        at the specified interval
+        @param regAll Should this clock period be used as the default
+        time base for all of the links connected to this component
+        @return the TimeConverter object representing the clock frequency
+    */
+    TimeConverter* registerClock( TimeConverter *tc, Clock::HandlerBase* handler, bool regAll = true);
+    
     /** Removes a clock handler from the component */
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
 
