@@ -19,7 +19,6 @@
 #include "sst/core/subcomponent.h"
 #include "sst/core/part/sstpart.h"
 #include "sst/core/sstpart.h"
-#include "sst/core/model/element_python.h"
 
 #include <ltdl.h>
 #include <vector>

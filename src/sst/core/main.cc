@@ -45,7 +45,11 @@ REENABLE_WARNING
 #include "sst/core/cputimer.h"
 
 #include "sst/core/model/sstmodel.h"
-#include "sst/core/model/pymodel.h"
+#ifdef SST_CONFIG_HAVE_PYTHON3
+#include "sst/core/model/python3/pymodel.h"
+#else
+#include "sst/core/model/python2/pymodel.h"
+#endif
 #include "sst/core/memuse.h"
 #include "sst/core/iouse.h"
 

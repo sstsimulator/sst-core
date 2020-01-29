@@ -20,9 +20,9 @@ REENABLE_WARNING
 
 #include <string.h>
 
-#include "sst/core/model/pymodel.h"
-#include "sst/core/model/pymodel_comp.h"
-#include "sst/core/model/pymodel_link.h"
+#include "sst/core/model/python2/pymodel.h"
+#include "sst/core/model/python2/pymodel_comp.h"
+#include "sst/core/model/python2/pymodel_link.h"
 
 #include "sst/core/sst_types.h"
 #include "sst/core/simulation.h"
@@ -136,8 +136,7 @@ static PyMethodDef linkMethods[] = {
 
 
 PyTypeObject PyModel_LinkType = {
-    PyObject_HEAD_INIT(nullptr)
-    0,                         /* ob_size */
+    PyVarObject_HEAD_INIT(nullptr, 0)
     "sst.Link",                /* tp_name */
     sizeof(LinkPy_t),          /* tp_basicsize */
     0,                         /* tp_itemsize */
