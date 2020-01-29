@@ -62,7 +62,7 @@ private:
      *  \param filename filname used when reporting errors
      *  \sa parent, module_name, code, filename
      */
-    SSTElementPythonModuleCode(SSTElementPythonModuleCode* parent, const std::string& module_name, char* code = nullptr, std::string filename = "") :
+    SSTElementPythonModuleCode(SSTElementPythonModuleCode* parent, const std::string& module_name, char* code, std::string filename) :
         parent(parent),
         module_name(module_name),
         code(code),
@@ -105,7 +105,14 @@ public:
     /// \param filename filname used when reporting errors
     ///
     /// 
-    SSTElementPythonModuleCode* addSubModule(const std::string& module_name, char* code = nullptr, const std::string& filename = "");
+    SSTElementPythonModuleCode* addSubModule(const std::string& module_name, char* code, const std::string& filename);
+
+    //! Add an empty submodule to the module
+    ///
+    /// \param module_name simple name of the module
+    ///
+    /// 
+    SSTElementPythonModuleCode* addSubModule(const std::string& module_name);
 
     //! Get the full name of the module
     /**
@@ -153,13 +160,15 @@ public:
      */ 
     SSTElementPythonModule(const std::string& library);
 
-    
+
+#ifndef SST_ENABLE_PREVIEW_BUILD
     __attribute__ ((deprecated("Support for addPrimaryModule will be removed in version 9.0.  Please use createPrimaryModule().")))
     void addPrimaryModule(char* file);
 
     __attribute__ ((deprecated("Support for addPrimaryModule will be removed in version 9.0.  Please use createPrimaryModule() to get an SSTElementPythonModuleCode object then use it's addSubModule() method.")))
     void addSubModule(const std::string& name, char* file);
-
+#endif
+    
     virtual void* load();
 
     //! Create the top level python module (i.e. the one named sst.library)
@@ -171,15 +180,18 @@ public:
     /// \param filename filname used when reporting errors
     ///
     ///     
-#ifdef SST_CONFIG_HAVE_PYTHON3
-    // filename is required for python3
     SSTElementPythonModuleCode* createPrimaryModule(char* code, const std::string& filename);
-#else
-    SSTElementPythonModuleCode* createPrimaryModule(char* code = nullptr, const std::string& filename = "");
-#endif
+
+
+    //! Create and empty top level python module (i.e. the one named sst.library)
+    ///
+    ///     
+    SSTElementPythonModuleCode* createPrimaryModule();
 
 };
 
+
+#ifndef SST_ENABLE_PREVIEW_BUILD
 // Class to use to support old ELI
 class SSTElementPythonModuleOldELI : public SSTElementPythonModule {
 private:
@@ -219,6 +231,8 @@ struct DerivedBuilder<SSTElementPythonModule,SSTElementPythonModuleOldELI,const 
 };
 
 } //end ELI
+#endif
+
 } //end SST
 
 #define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib,version)    \

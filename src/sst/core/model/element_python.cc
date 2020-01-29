@@ -27,6 +27,10 @@ REENABLE_WARNING
 
 namespace SST {
 
+char empty_code[] = {
+    0x00};
+
+
 SST_ELI_DEFINE_CTOR_EXTERN(SSTElementPythonModule)
 SST_ELI_DEFINE_INFO_EXTERN(SSTElementPythonModule)
 
@@ -100,6 +104,14 @@ SSTElementPythonModuleCode::addSubModule(const std::string& module_name, char* c
     return ret;
 }
 
+SSTElementPythonModuleCode* 
+SSTElementPythonModuleCode::addSubModule(const std::string& module_name)
+{
+    auto ret = new SSTElementPythonModuleCode(this,module_name,empty_code,"empty_module");
+    sub_modules.push_back(ret);
+    return ret;
+}
+
 
 void*
 SSTElementPythonModuleCode::load(void* parent_module)
@@ -143,6 +155,7 @@ SSTElementPythonModule::SSTElementPythonModule(const std::string& library) :
     sstlibrary = "sst." + library;
 }
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
 void
 SSTElementPythonModule::addPrimaryModule(char* file)
 {
@@ -159,7 +172,7 @@ SSTElementPythonModule::addSubModule(const std::string& name, char* file)
 {
     sub_modules.push_back(std::make_pair(name,file));
 }
-
+#endif
 
 void*
 SSTElementPythonModule::load()
@@ -198,6 +211,18 @@ SSTElementPythonModule::createPrimaryModule(char* code, const std::string& filen
 {
     if ( primary_module == nullptr ) {
         primary_code_module = new SSTElementPythonModuleCode(nullptr, sstlibrary, code, filename);
+    }
+    else {
+        Simulation::getSimulationOutput().fatal(CALL_INFO,1,"SSTElementPythonModule::createPrimaryModule: Attempt to create second primary module.\n");
+    }
+    return primary_code_module;
+}
+
+SSTElementPythonModuleCode*
+SSTElementPythonModule::createPrimaryModule()
+{
+    if ( primary_module == nullptr ) {
+        primary_code_module = new SSTElementPythonModuleCode(nullptr, sstlibrary, empty_code, "empty_module");
     }
     else {
         Simulation::getSimulationOutput().fatal(CALL_INFO,1,"SSTElementPythonModule::createPrimaryModule: Attempt to create second primary module.\n");
