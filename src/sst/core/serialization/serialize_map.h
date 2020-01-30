@@ -13,7 +13,7 @@
 #define SERIALIZE_MAP_H
 
 #include <map>
-#include <sst/core/serialization/serializer.h>
+#include "sst/core/serialization/serializer.h"
 
 namespace SST {
 namespace Core {

@@ -12,10 +12,11 @@
 #ifndef SST_CORE_COMPONENTINFO_H
 #define SST_CORE_COMPONENTINFO_H
 
-#include <sst/core/sst_types.h>
-#include <sst/core/params.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/params.h"
 
 #include <unordered_set>
+#include <map>
 #include <string>
 #include <functional>
 
@@ -26,6 +27,7 @@ class BaseComponent;
 
 class ConfigComponent;
 class ComponentInfoMap;
+class TimeConverter;
 
 namespace Statistics {
 class StatisticInfo;
@@ -36,43 +38,169 @@ class ComponentInfo {
 public:
     typedef std::vector<Statistics::StatisticInfo>      statEnableList_t;        /*!< List of Enabled Statistics */
 
+
+    // Share Flags for SubComponent loading
+    static const uint64_t SHARE_PORTS = 0x1;
+    static const uint64_t SHARE_STATS = 0x2;
+    static const uint64_t INSERT_STATS = 0x4;
+
+#ifndef SST_ENABLE_PREVIEW_BUILD
+    // Temporary, only for backward compatibility with loadSubComponent
+    static const uint64_t IS_LEGACY_SUBCOMPONENT = 0x32;
+#endif
+    
+    static const uint64_t SHARE_NONE = 0x0;
+
 private:
+
+    // Mask to make sure users are only setting the flags that are
+    // available to them
+    static const uint64_t USER_FLAGS = 0x7;
+    
+    // Friend classes
     friend class Simulation;
     friend class BaseComponent;
     friend class ComponentInfoMap;
+
+
+    /**
+       Component ID.
+
+       SubComponents share the lower bits (defined by macros in
+       sst_types.h) with their Component parent.  However, every
+       SubComponent has a unique ID.
+    */
     const ComponentId_t id;
+
+
+    ComponentInfo* parent_info;
+    /**
+       Name of the Component/SubComponent.
+     */
     const std::string name;
-    const std::string slot_name;
-    int slot_num;
+
+    /**
+       Type of the Component/SubComponent.
+     */
     const std::string type;
+
+    /**
+       LinkMap containing the links assigned to this
+       Component/SubComponent in the python file.
+
+       This field is not used for SubComponents loaded with
+       loadAnonymousSubComponent().
+     */
     LinkMap* link_map;
+
+    /**
+       Pointer to the Component created using this ComponentInfo.
+     */
     BaseComponent* component;
-    
-    std::vector<ComponentInfo> subComponents;
+
+    /**
+       SubComponents loaded into the Component/SubComponent.
+     */
+    std::map<ComponentId_t,ComponentInfo> subComponents;
+
+    /**
+       Parameters defined in the python file for the (Sub)Component.  
+
+       This field is used for only a short time while loading for
+       SubComponents loaded with loadAnonymousSubComponent().
+       For python defined SubComponents, this field is created during
+       python execution.
+    */
     const Params *params;
 
+    TimeConverter* defaultTimeBase;
+    
     statEnableList_t * enabledStats;
     std::vector<double> coordinates;
 
+    uint64_t subIDIndex;
+    
+
+    // Variables only used by SubComponents
+    
+    /**
+       Name of the slot this SubComponent was loaded into.  This field
+       is not used for Components.
+     */
+    const std::string slot_name;
+
+    /**
+       Index in the slot this SubComponent was loaded into.  This field
+       is not used for Components.
+     */
+    int slot_num;
+
+    /**
+       Sharing flags.
+
+       Determines whether various data is shared from parent to child.
+     */
+    uint64_t share_flags;
+
+
+    bool sharesPorts() {
+        return (share_flags & SHARE_PORTS) != 0;
+    }
+    
+    bool sharesStatistics() {
+        return (share_flags & SHARE_STATS) != 0;
+    }
+    
+    bool canInsertStatistics() {
+        return (share_flags & INSERT_STATS) != 0;
+    }
+    
+#ifndef SST_ENABLE_PREVIEW_BUILD
+    bool isLegacySubComponent() {
+        return (share_flags & IS_LEGACY_SUBCOMPONENT) != 0;
+    }
+#endif    
+
     inline void setComponent(BaseComponent* comp) { component = comp; }
+    // inline void setParent(BaseComponent* comp) { parent = comp; }
 
     /* Lookup Key style constructor */
-    ComponentInfo(ComponentId_t id, const std::string &name);
-    void finalizeLinkConfiguration();
-    void prepareForComplete();
+    ComponentInfo(ComponentId_t id, const std::string& name);
+    void finalizeLinkConfiguration() const;
+    void prepareForComplete() const;
 
+    ComponentId_t addAnonymousSubComponent(ComponentInfo* parent_info, const std::string& type,
+                                           const std::string& slot_name, int slot_num,
+                                           uint64_t share_flags);
+
+    
 public:
     /* Old ELI Style subcomponent constructor */
-    ComponentInfo(const std::string &type, const Params *params, const ComponentInfo *parent);
+    ComponentInfo(const std::string& type, const Params *params, const ComponentInfo *parent_info);
 
+    /* Anonymous SubComponent */
+    ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const std::string& slot_name,
+                  int slot_num, uint64_t share_flags/*, const Params& params_in*/);
+    
     /* New ELI Style */
-    ComponentInfo(ConfigComponent *ccomp, const std::string& name, LinkMap* link_map);
+    ComponentInfo(ConfigComponent *ccomp, const std::string& name, ComponentInfo* parent_info, LinkMap* link_map);
     ComponentInfo(ComponentInfo &&o);
     ~ComponentInfo();
 
+    bool isAnonymous() {
+        return COMPDEFINED_SUBCOMPONENT_ID_MASK(id);
+    }
+
+    bool isUser() {
+        return !COMPDEFINED_SUBCOMPONENT_ID_MASK(id);
+    }
+    
     inline ComponentId_t getID() const { return id; }
 
-    inline const std::string& getName() const { return name; }
+    inline const std::string& getName() const {
+        if ( name.empty() && parent_info ) return parent_info->getName();
+        return name;
+    }
 
     inline const std::string& getSlotName() const { return slot_name; }
 
@@ -82,14 +210,14 @@ public:
 
     inline BaseComponent* getComponent() const { return component; }
 
-    inline LinkMap* getLinkMap() const { return link_map; }
-
+    LinkMap* getLinkMap();
+    
     inline const Params* getParams() const { return params; }
 
     // inline std::map<std::string, ComponentInfo>& getSubComponents() { return subComponents; }
-    inline std::vector<ComponentInfo>& getSubComponents() { return subComponents; }
+    inline std::map<ComponentId_t,ComponentInfo>& getSubComponents() { return subComponents; }
 
-    ComponentInfo* findSubComponent(std::string slot, int slot_num);
+    ComponentInfo* findSubComponent(const std::string& slot, int slot_num);
     ComponentInfo* findSubComponent(ComponentId_t id);
     std::vector<LinkId_t> getAllLinkIds() const;
 
@@ -120,6 +248,7 @@ public:
             return lhs->id == rhs->id;
         }
     };
+
 };
 
 
@@ -147,7 +276,7 @@ public:
     ComponentInfo* getByID(const ComponentId_t key) const {
         ComponentInfo infoKey(COMPONENT_ID_MASK(key), "");
         auto value = dataByID.find(&infoKey);
-        if ( value == dataByID.end() ) return NULL;
+        if ( value == dataByID.end() ) return nullptr;
         if ( SUBCOMPONENT_ID_MASK(key) != 0 ) {
             // Looking for a subcomponent
             return (*value)->findSubComponent(key);

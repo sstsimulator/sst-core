@@ -12,12 +12,12 @@
 
 #include "sst_config.h"
 
-#include <sst/core/impl/timevortex/timeVortexPQ.h>
+#include "sst/core/impl/timevortex/timeVortexPQ.h"
 
-#include <sst/core/output.h>
+#include "sst/core/output.h"
 
-#include <sst/core/clock.h>
-#include <sst/core/simulation.h>
+#include "sst/core/clock.h"
+#include "sst/core/simulation.h"
 
 namespace SST {
 namespace IMPL {
@@ -61,7 +61,7 @@ void TimeVortexPQ::insert(Activity* activity)
 
 Activity* TimeVortexPQ::pop()
 {
-    if ( data.empty() ) return NULL;
+    if ( data.empty() ) return nullptr;
     Activity* ret_val = data.top();
     data.pop();
     current_depth--;

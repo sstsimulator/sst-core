@@ -13,11 +13,11 @@
 
 #include <map>
 
-#include <sst/core/sst_types.h>
-#include <sst/core/sstpart.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/sstpart.h"
 
-#include <sst/core/eli/elementinfo.h>
-#include <sst/core/configGraph.h>
+#include "sst/core/eli/elementinfo.h"
+#include "sst/core/configGraph.h"
 
 namespace SST {
 namespace IMPL {
@@ -42,11 +42,11 @@ private:
         return RankInfo(partNum / world_size.thread, partNum % world_size.thread);
     }
 
-	void simple_partition_step(PartitionComponentMap_t& component_map,
-			ComponentId_t* setA, const int lengthA, int rankA,
-			ComponentId_t* setB, const int lengthB, int rankB,
-			std::map<ComponentId_t, std::map<ComponentId_t, SimTime_t>*> timeTable,
-			int step);
+    void simple_partition_step(PartitionComponentMap_t& component_map,
+            ComponentId_t* setA, const int lengthA, int rankA,
+            ComponentId_t* setB, const int lengthB, int rankB,
+            std::map<ComponentId_t, std::map<ComponentId_t, SimTime_t>*> timeTable,
+            int step);
 public:
 
     SimplePartitioner(RankInfo total_ranks, RankInfo my_rank, int verbosity);
@@ -55,9 +55,9 @@ public:
 
     void performPartition(PartitionGraph* graph) override;
 
-		void performPartition(ConfigGraph* graph) override {
-			SST::Partition::SSTPartitioner::performPartition(graph);
-		}
+    void performPartition(ConfigGraph* graph) override {
+        SST::Partition::SSTPartitioner::performPartition(graph);
+    }
 
     bool requiresConfigGraph() override { return false; }
     bool spawnOnAllRanks() override { return false; }

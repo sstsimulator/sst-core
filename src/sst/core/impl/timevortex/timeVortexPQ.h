@@ -16,8 +16,8 @@
 #include <queue>
 #include <vector>
 
-#include <sst/core/timeVortex.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/timeVortex.h"
+#include "sst/core/eli/elementinfo.h"
 
 namespace SST {
 
@@ -42,8 +42,8 @@ public:
 
 
 public:
-	// TimeVortexPQ();
-	TimeVortexPQ(Params& params);
+    // TimeVortexPQ();
+    TimeVortexPQ(Params& params);
     ~TimeVortexPQ();
 
     bool empty() override;

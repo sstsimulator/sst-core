@@ -78,6 +78,8 @@ AC_CACHE_SAVE
 AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen])
 AM_CONDITIONAL([HAVE_DOXYGEN], [test "$DOXYGEN" = "doxygen"])
 
+SST_CHECK_PREVIEW_BUILD()
+
 SST_CHECK_OSX()
 SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 SST_CHECK_BOOST([], [])
@@ -167,8 +169,8 @@ AC_DEFINE_UNQUOTED([SST_INSTALL_PREFIX], ["$prefix"], [Defines the location SST 
 AC_CACHE_SAVE
 
 dnl Remove flags like -g, -O, and -W, that are not needed by other elements
-SST_EXPORT_CXXFLAGS=`echo "$CXXFLAGS" | sed -E -e 's/ *-(g|O.|W@<:@^\s@:>@+)//g'`
-SST_EXPORT_CFLAGS=`echo "$CFLAGS" | sed -E -e 's/ *-(g|O.|W@<:@^\s@:>@+)//g'`
+SST_EXPORT_CXXFLAGS=`echo "$CXXFLAGS" | sed -E -e 's/ *-(g|O.|W@<:@^@<:@:space:@:>@@:>@+)//g'`
+SST_EXPORT_CFLAGS=`echo "$CFLAGS" | sed -E -e 's/ *-(g|O.|W@<:@^@<:@:space:@:>@@:>@+)//g'`
 AC_SUBST(SST_EXPORT_CXXFLAGS)
 AC_SUBST(SST_EXPORT_CFLAGS)
 

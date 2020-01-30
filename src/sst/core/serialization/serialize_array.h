@@ -12,7 +12,7 @@
 #ifndef SERIALIZE_ARRAY_H
 #define SERIALIZE_ARRAY_H
 
-#include <sst/core/serialization/serializer.h>
+#include "sst/core/serialization/serializer.h"
 
 namespace SST {
 namespace Core {

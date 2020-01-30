@@ -14,7 +14,7 @@
 #ifndef SST_CORE_MODEL_PYMODEL_COMP_H
 #define SST_CORE_MODEL_PYMODEL_COMP_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 extern "C" {
 
@@ -24,15 +24,15 @@ struct PyComponent;
 
 struct ComponentHolder {
     ComponentPy_t *pobj;
-	char *name;
-    ComponentHolder(ComponentPy_t *pobj) : pobj(pobj), name(NULL) { }
+    char *name;
+    ComponentHolder(ComponentPy_t *pobj) : pobj(pobj), name(nullptr) { }
     virtual ~ComponentHolder() { free(name); }
     virtual ConfigComponent* getComp() = 0;
     virtual PyComponent* getBaseObj() = 0;
     virtual int compare(ComponentHolder *other) = 0;
     virtual const char* getName() const = 0;
     ComponentId_t getID();
-    ConfigComponent* getSubComp(const std::string &name, int slot_num);
+    ConfigComponent* getSubComp(const std::string& name, int slot_num);
 };
 
 struct PyComponent : ComponentHolder {
@@ -72,7 +72,7 @@ extern PyTypeObject PyModel_SubComponentType;
 
 static inline ConfigComponent* getComp(PyObject *pobj) {
     ConfigComponent *c = ((ComponentPy_t*)pobj)->obj->getComp();
-    if ( c == NULL ) {
+    if ( c == nullptr ) {
         PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent");
     }
     return c;

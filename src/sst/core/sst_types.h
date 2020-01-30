@@ -12,8 +12,6 @@
 #ifndef SST_CORE_SST_TYPES_H
 #define SST_CORE_SST_TYPES_H
 
-//#include <sst_stdint.h>
-
 #include <cstdint>
 
 namespace SST {
@@ -25,13 +23,15 @@ typedef uint64_t  SimTime_t;
 typedef double          Time_t;
 
 #define MAX_SIMTIME_T 0xFFFFFFFFFFFFFFFFl
-/* Subcomponent IDs are in the high-12 bits of the Component ID */
+/* Subcomponent IDs are in the high-16 bits of the Component ID */
 #define UNSET_COMPONENT_ID 0xFFFFFFFFFFFFFFFFULL
 #define COMPONENT_ID_BITS 48
 #define COMPONENT_ID_MASK(x) ((x) & 0x0000FFFFFFFFFFFFULL)
 #define SUBCOMPONENT_ID_BITS 16
 #define SUBCOMPONENT_ID_MASK(x) ((x) >> COMPONENT_ID_BITS)
 #define SUBCOMPONENT_ID_CREATE(compId, sCompId) ((((uint64_t)sCompId) << COMPONENT_ID_BITS) | compId)
+#define COMPDEFINED_SUBCOMPONENT_ID_CREATE(compId, sCompId) ((((uint64_t)sCompId) << COMPONENT_ID_BITS) | compId | 0x8000000000000000ULL)
+#define COMPDEFINED_SUBCOMPONENT_ID_MASK(x) ((x) >> 63)
 
 typedef double watts;
 typedef double joules;

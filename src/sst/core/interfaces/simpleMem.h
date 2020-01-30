@@ -11,19 +11,19 @@
 // distribution.
 //
 
-#ifndef CORE_INTERFACES_SIMPLEMEM_H_
-#define CORE_INTERFACES_SIMPLEMEM_H_
+#ifndef SST_CORE_INTERFACES_SIMPLEMEM_H_
+#define SST_CORE_INTERFACES_SIMPLEMEM_H_
 
 #include <string>
 #include <utility>
 #include <map>
 #include <atomic>
 
-#include <sst/core/sst_types.h>
-#include <sst/core/warnmacros.h>
-#include <sst/core/subcomponent.h>
-#include <sst/core/params.h>
-#include <sst/core/link.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/params.h"
+#include "sst/core/link.h"
 
 namespace SST {
 
@@ -32,12 +32,17 @@ class Event;
 
 namespace Interfaces {
 
+
 /**
  * Simplified, generic interface to Memory models
  */
 class SimpleMem : public SubComponent {
 
+    
 public:
+    class HandlerBase;
+
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleMem,TimeConverter*,HandlerBase*)
     /** All Addresses can be 64-bit */
     typedef uint64_t Addr;
 
@@ -305,16 +310,23 @@ public:
     };
 
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     /** Constructor, designed to be used via 'loadSubComponent'. */
     SimpleMem(SST::Component *comp, Params &UNUSED(params)) :
         SubComponent(comp)
+        { }
+#endif
+    
+    /** Constructor, designed to be used via 'loadUserSubComponent and loadAnonymousSubComponent'. */
+    SimpleMem(SST::ComponentId_t id, Params &UNUSED(params)) :
+        SubComponent(id)
         { }
 
     /** Second half of building the interface.
      * Initialize with link name name, and handler, if any
      * @return true if the link was able to be configured.
      */
-    virtual bool initialize(const std::string &linkName, HandlerBase *handler = NULL) = 0;
+    virtual bool initialize(const std::string& linkName, HandlerBase *handler = nullptr) = 0;
 
     /**
      * Sends a memory-based request during the init() phase
@@ -350,7 +362,7 @@ public:
      * Use this method for polling-based applications.
      * Register a handler for push-based notification of responses.
      *
-     * @return NULL if nothing is available.
+     * @return nullptr if nothing is available.
      * @return Pointer to a Request response (that should be deleted)
      */
     virtual Request* recvResponse(void) = 0;

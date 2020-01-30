@@ -12,9 +12,9 @@
 #ifndef _H_SST_CORE_ENV_QUERY_H
 #define _H_SST_CORE_ENV_QUERY_H
 
-#include <sst_config.h>
+#include "sst_config.h"
 
-#include <sst/core/env/envconfig.h>
+#include "sst/core/env/envconfig.h"
 
 #include <cstdio>
 #include <cstdlib>
@@ -38,14 +38,14 @@ Opens a configuration file specified and populates an
 EnvironmentConfiguration instance with the contents.
 */
 void populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg,
-	bool errorOnNotOpen);
+    bool errorOnNotOpen);
 
 /**
 Uses an already open file, reads the contents and populates an instance
 of an EnvironmentConfiguration with the contents
 */
 void populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg,
-	bool errorOnNotOpen);
+    bool errorOnNotOpen);
 
 /**
 Provides an SST-guaranteed precedence ordering loading of configuration

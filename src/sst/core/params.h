@@ -12,8 +12,8 @@
 #ifndef SST_CORE_PARAM_H
 #define SST_CORE_PARAM_H
 
-#include <sst/core/output.h>
-#include <sst/core/from_string.h>
+#include "sst/core/output.h"
+#include "sst/core/from_string.h"
 
 #include <cassert>
 #include <inttypes.h>
@@ -23,11 +23,11 @@
 #include <stack>
 #include <stdlib.h>
 #include <utility>
-#include <sst/core/threadsafe.h>
+#include "sst/core/threadsafe.h"
 
-#include <sst/core/serialization/serializable.h>
-#include <sst/core/serialization/serializer.h>
-#include <sst/core/output.h>
+#include "sst/core/serialization/serializable.h"
+#include "sst/core/serialization/serializer.h"
+#include "sst/core/output.h"
 
 int main(int argc, char *argv[]);
 
@@ -100,7 +100,7 @@ NO_VARIABLE:
      * converted to type T, an invalid_argument exception is thrown.
      */
     template <class T>
-    inline T find_impl(const std::string &k, T default_value, bool &found) const {
+    inline T find_impl(const std::string& k, T default_value, bool &found) const {
         verifyParam(k);
         // const_iterator i = data.find(getKey(k));
         const std::string& value = getString(k,found);
@@ -135,7 +135,7 @@ NO_VARIABLE:
      * @param found - set to true if the the parameter was found
      */
     template <class T>
-    inline T find_impl(const std::string &k, std::string default_value, bool &found) const {
+    inline T find_impl(const std::string& k, const std::string& default_value, bool &found) const {
         verifyParam(k);
         const std::string& value = getString(k,found);
         if ( !found ) {
@@ -235,7 +235,7 @@ public:
      */
     template <class T>
     typename std::enable_if<not std::is_same<std::string,T>::value, T>::type
-    find(const std::string &k, T default_value, bool &found) const {
+    find(const std::string& k, T default_value, bool &found) const {
         return find_impl<T>(k,default_value,found);
     }
     
@@ -250,7 +250,7 @@ public:
      * @param found - set to true if the the parameter was found
      */
     template <class T>
-    T find(const std::string &k, std::string default_value, bool &found) const {
+    T find(const std::string& k, const std::string& default_value, bool &found) const {
         return find_impl<T>(k,default_value,found);
     }
     
@@ -266,8 +266,8 @@ public:
      */
     template <class T>
     typename std::enable_if<std::is_same<bool,T>::value, T>::type
-    find(const std::string &k, const char* default_value, bool &found ) const {
-        if ( 0 == default_value ) {
+    find(const std::string& k, const char* default_value, bool &found ) const {
+        if ( nullptr == default_value ) {
             return find_impl<T>(k, static_cast<T>(0), found);
         }
         return find_impl<T>(k, std::string(default_value), found);
@@ -282,7 +282,7 @@ public:
      * @param default_value - Default value to return if parameter isn't found
      */
     template <class T>
-    T find(const std::string &k, T default_value ) const {
+    T find(const std::string& k, T default_value ) const {
         bool tmp;
         return find_impl<T>(k, default_value, tmp);
     }
@@ -297,7 +297,7 @@ public:
      *   specified as a string
      */
     template <class T>
-    T find(const std::string &k, std::string default_value ) const {
+    T find(const std::string& k, const std::string& default_value ) const {
         bool tmp;
         return find_impl<T>(k, default_value, tmp);
     }
@@ -314,9 +314,9 @@ public:
      */
     template <class T>
     typename std::enable_if<std::is_same<bool,T>::value, T>::type
-    find(const std::string &k, const char* default_value ) const {
+    find(const std::string& k, const char* default_value ) const {
         bool tmp;
-        if ( 0 == default_value ) {
+        if ( nullptr == default_value ) {
             return find_impl<T>(k, static_cast<T>(0), tmp);
         }
         return find_impl<T>(k, std::string(default_value), tmp);
@@ -330,7 +330,7 @@ public:
      * @param k - Parameter name
      */
     template <class T>
-    T find(const std::string &k) const {
+    T find(const std::string& k) const {
         bool tmp;
         T default_value = T();
         return find_impl<T>(k, default_value, tmp);
@@ -348,7 +348,7 @@ public:
      */
     template <class T>
     typename std::enable_if<not std::is_same<bool, T>::value, T>::type
-    find(const std::string &k, bool &found) const {
+    find(const std::string& k, bool &found) const {
         T default_value = T();
         return find_impl<T>(k, default_value, found);
     }
@@ -393,7 +393,7 @@ public:
         while( ss.good() ) {
             std::string substr;
             getline( ss, substr, ',' );
-            // vec.push_back(strtol(substr.c_str(), NULL, 0));
+            // vec.push_back(strtol(substr.c_str(), nullptr, 0));
             try {
                 vec.push_back(SST::Core::from_string<T>(substr));
             }
@@ -407,14 +407,14 @@ public:
     }
 
     /** Print all key/value parameter pairs to specified ostream */
-    void print_all_params(std::ostream &os, std::string prefix = "") const;
-    void print_all_params(Output &out, std::string prefix = "") const;
+    void print_all_params(std::ostream &os, const std::string& prefix = "") const;
+    void print_all_params(Output &out, const std::string& prefix = "") const;
 
 
 
     /** Add a key value pair into the param object.
      */
-    void insert(std::string key, std::string value, bool overwrite = true);
+    void insert(const std::string& key, const std::string& value, bool overwrite = true);
 
     void insert(const Params& params);
 
@@ -468,8 +468,8 @@ private:
     bool verify_enabled;
     static bool g_verify_enabled;
 
-    uint32_t getKey(const std::string &str) const;
-    uint32_t getKey(const std::string &str);
+    uint32_t getKey(const std::string& str) const;
+    uint32_t getKey(const std::string& str);
 
     /* Friend main() because it broadcasts the maps */
     friend int ::main(int argc, char *argv[]);
@@ -487,15 +487,15 @@ private:
 
  #define SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(type) \
      template<> \
-     type Params::find(const std::string &k, type default_value, bool &found) const; \
+     type Params::find(const std::string& k, type default_value, bool &found) const; \
      template<> \
-     type Params::find(const std::string &k, std::string default_value, bool &found) const; \
+     type Params::find(const std::string& k, const std::string& default_value, bool &found) const; \
      template <> \
-     type Params::find(const std::string &k, type default_value ) const; \
+     type Params::find(const std::string& k, type default_value ) const; \
      template <> \
-     type Params::find(const std::string &k, std::string default_value ) const; \
+     type Params::find(const std::string& k, const std::string& default_value ) const; \
      template <> \
-     type Params::find(const std::string &k) const;
+     type Params::find(const std::string& k) const;
   
  
  SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(int32_t)
@@ -510,7 +510,7 @@ private:
  // std::string has to be special cased because of signature conflicts
  // SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(std::string)
  template<>
- std::string Params::find<std::string>(const std::string &k, std::string default_value, bool &found) const;
+ std::string Params::find<std::string>(const std::string& k, const std::string& default_value, bool &found) const;
 #endif
 
 

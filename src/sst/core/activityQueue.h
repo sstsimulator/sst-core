@@ -13,7 +13,7 @@
 #ifndef SST_CORE_ACTIVITYQUEUE_H
 #define SST_CORE_ACTIVITYQUEUE_H
 
-#include <sst/core/activity.h>
+#include "sst/core/activity.h"
 
 namespace SST {
 

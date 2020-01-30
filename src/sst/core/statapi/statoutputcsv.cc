@@ -9,11 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/statapi/statoutputcsv.h"
 
-#include <sst/core/simulation.h>
-#include <sst/core/statapi/statoutputcsv.h>
-#include <sst/core/stringize.h>
+#include "sst/core/simulation.h"
+#include "sst/core/stringize.h"
 
 namespace SST {
 namespace Statistics {
@@ -274,11 +274,11 @@ bool StatisticOutputCSV::openFile(void)
     if ( m_useCompression ) {
 #ifdef HAVE_LIBZ
         m_gzFile = gzopen(m_FilePath.c_str(), "w");
-        if (NULL == m_gzFile){
+        if (nullptr == m_gzFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
             out.fatal(CALL_INFO, 1, 
-							" : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+                            " : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;
         }
 #else
@@ -286,11 +286,11 @@ bool StatisticOutputCSV::openFile(void)
 #endif
     } else {
         m_hFile = fopen(m_FilePath.c_str(), "w");
-        if (NULL == m_hFile){
+        if (nullptr == m_hFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
             out.fatal(CALL_INFO, 1, 
-						  " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
+                          " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;;
         }
     }

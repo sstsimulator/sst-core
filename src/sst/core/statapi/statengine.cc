@@ -9,20 +9,20 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#include <sst_config.h>
+#include "sst_config.h"
+#include "sst/core/statapi/statengine.h"
 
-#include <sst/core/warnmacros.h>
-#include <sst/core/output.h>
-#include <sst/core/factory.h>
-#include <sst/core/timeLord.h>
-#include <sst/core/timeConverter.h>
-#include <sst/core/simulation.h>
-#include <sst/core/statapi/statbase.h>
-#include <sst/core/statapi/statengine.h>
-#include <sst/core/statapi/statoutput.h>
-#include <sst/core/configGraph.h>
-#include <sst/core/baseComponent.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/warnmacros.h"
+#include "sst/core/output.h"
+#include "sst/core/factory.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/timeConverter.h"
+#include "sst/core/simulation.h"
+#include "sst/core/statapi/statbase.h"
+#include "sst/core/statapi/statoutput.h"
+#include "sst/core/configGraph.h"
+#include "sst/core/baseComponent.h"
+#include "sst/core/eli/elementinfo.h"
 
 #include <algorithm>
 #include <string>
@@ -90,6 +90,7 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 {
     if ( stat->isNullStatistic() )
         return true;
+
 
     if ( 0 == m_statLoadLevel ) {
         m_output.verbose(CALL_INFO, 1, 0,
@@ -224,7 +225,7 @@ StatisticOutput* StatisticProcessingEngine::createStatisticOutput(const ConfigSt
     auto lcType = cfg.type;
     std::transform(lcType.begin(), lcType.end(), lcType.begin(), ::tolower);
     StatisticOutput *so = Factory::getFactory()->Create<StatisticOutput>(lcType, unsafeParams, unsafeParams);
-    if (NULL == so) {
+    if (nullptr == so) {
         m_output.fatal(CALL_INFO, 1, " - Unable to instantiate Statistic Output %s\n", cfg.type.c_str());
     }
 
@@ -579,7 +580,7 @@ StatisticProcessingEngine::isStatisticInCompStatMap(const std::string& compName,
     // See if the map contains an entry for this Component ID
     if (m_CompStatMap.find(compId) == m_CompStatMap.end() ) {
         // Nope, this component ID has not been registered
-        return NULL;
+        return nullptr;
     }
     
     // The CompStatMap has Component ID registered, get the array associated with it    
@@ -598,7 +599,7 @@ StatisticProcessingEngine::isStatisticInCompStatMap(const std::string& compName,
     }
     
     // We did not find the stat in this component
-    return NULL;
+    return nullptr;
 }
 
 void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat,
@@ -624,7 +625,7 @@ void StatisticProcessingEngine::addStatisticToCompStatMap(StatisticBase* Stat,
 
 
 
-StatisticProcessingEngine* StatisticProcessingEngine::instance = NULL;
+StatisticProcessingEngine* StatisticProcessingEngine::instance = nullptr;
 
 } //namespace Statistics
 } //namespace SST

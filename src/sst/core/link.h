@@ -12,10 +12,9 @@
 #ifndef SST_CORE_LINK_H
 #define SST_CORE_LINK_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
-#include <sst/core/event.h>
-// #include <sst/core/eventFunctor.h>
+#include "sst/core/event.h"
 
 namespace SST { 
 
@@ -48,13 +47,24 @@ public:
     
     virtual ~Link();
     
-    /** set minimum link latency */
-    void setLatency(Cycle_t lat);
+    /** Set additional Latency to be added to events being sent out of this link
+     * @param cycles Number of Cycles to be added
+     * @param timebase Base Units of cycles
+     */
+    void addSendLatency(int cycles, const std::string& timebase);
+    
+    /** Set additional Latency to be added to events being sent out of this link
+     * @param cycles Number of Cycles to be added
+     * @param timebase Base Units of cycles
+     */
+    void addSendLatency(SimTime_t cycles, TimeConverter* timebase);
+
     /** Set additional Latency to be added on to events coming in on this link.
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
      */
-    void addRecvLatency(int cycles, std::string timebase);
+    void addRecvLatency(int cycles, const std::string& timebase);
+    
     /** Set additional Latency to be added on to events coming in on this link.
      * @param cycles Number of Cycles to be added
      * @param timebase Base Units of cycles
@@ -99,7 +109,7 @@ public:
 
     /** Retrieve a pending event from the Link. For links which do not
       have a set event handler, they can be polled with this function.
-      Returns NULL if there is no pending event.
+      Returns nullptr if there is no pending event.
     */
     Event* recv();
 
@@ -130,6 +140,15 @@ public:
     /** Receive an event (if any) during the complete() phase */
     Event* recvInitData() {
         return recvUntimedData();
+    }
+
+
+    void setAsConfigured() {
+        configured = true;
+    }
+
+    bool isConfigured() {
+        return configured;
     }
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
@@ -184,6 +203,9 @@ protected:
 
 private:
     Link( const Link& l );
+    
+    /** Set minimum link latency */
+    void setLatency(Cycle_t lat);
 
     void sendUntimedData_sync(Event* data);
     void finalizeConfiguration();
@@ -191,7 +213,8 @@ private:
     
     Type_t type;
     LinkId_t id;
-
+    bool configured;
+    
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     std::string comp;
     std::string ctype;

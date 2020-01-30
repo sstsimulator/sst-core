@@ -17,7 +17,8 @@
 #include <vector>
 #include <set>
 
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/eli/elementinfo.h"
+#include "sst/core/tinyxml/tinyxml.h"
 
 class TiXmlNode;
 
@@ -73,7 +74,7 @@ public:
 private:
     void outputUsage();
     void outputVersion();
-    void addFilter(std::string name);
+    void addFilter(const std::string& name);
 
 private:
     char*                     m_AppName;

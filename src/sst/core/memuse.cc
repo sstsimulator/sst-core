@@ -11,9 +11,10 @@
 
 
 #include "sst_config.h"
-
 #include "sst/core/memuse.h"
-#include <sst/core/warnmacros.h>
+
+#include "sst/core/warnmacros.h"
+
 #include <sys/resource.h>
 
 #ifdef SST_CONFIG_HAVE_MPI
@@ -27,7 +28,7 @@ using namespace SST::Core;
 
 uint64_t SST::Core::maxLocalMemSize() {
 
-	struct rusage sim_ruse;
+    struct rusage sim_ruse;
     getrusage(RUSAGE_SELF, &sim_ruse);
 
     uint64_t local_max_rss = sim_ruse.ru_maxrss;
@@ -37,15 +38,15 @@ uint64_t SST::Core::maxLocalMemSize() {
 #endif
 
 #ifdef SST_COMPILE_MACOSX
-	return (global_max_rss / 1024);
+    return (global_max_rss / 1024);
 #else
-	return global_max_rss;
+    return global_max_rss;
 #endif
 
 };
 
 uint64_t SST::Core::maxGlobalMemSize() {
-	struct rusage sim_ruse;
+    struct rusage sim_ruse;
     getrusage(RUSAGE_SELF, &sim_ruse);
 
     uint64_t local_max_rss = sim_ruse.ru_maxrss;
@@ -55,15 +56,15 @@ uint64_t SST::Core::maxGlobalMemSize() {
 #endif
 
 #ifdef SST_COMPILE_MACOSX
-	return (global_max_rss / 1024);
+    return (global_max_rss / 1024);
 #else
-	return global_max_rss;
+    return global_max_rss;
 #endif
 
 };
 
 uint64_t SST::Core::maxLocalPageFaults() {
-	struct rusage sim_ruse;
+    struct rusage sim_ruse;
     getrusage(RUSAGE_SELF, &sim_ruse);
     
     uint64_t local_pf = sim_ruse.ru_majflt;
@@ -71,11 +72,11 @@ uint64_t SST::Core::maxLocalPageFaults() {
 #ifdef SST_CONFIG_HAVE_MPI
     MPI_Allreduce(&local_pf, &global_max_pf, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
 #endif
-	return global_max_pf;
+    return global_max_pf;
 };
 
 uint64_t SST::Core::globalPageFaults() {
-	struct rusage sim_ruse;
+    struct rusage sim_ruse;
     getrusage(RUSAGE_SELF, &sim_ruse);
 
     uint64_t local_pf = sim_ruse.ru_majflt;
@@ -84,5 +85,5 @@ uint64_t SST::Core::globalPageFaults() {
     MPI_Allreduce(&local_pf, &global_pf, 1, MPI_UINT64_T, MPI_SUM, MPI_COMM_WORLD );
 #endif
 
-	return global_pf;
+    return global_pf;
 };

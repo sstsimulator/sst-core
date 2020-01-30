@@ -25,6 +25,6 @@ TestEvent::TestEvent() : SST::Event(), print_on_delete(false)
 TestEvent::~TestEvent()
 {
     if ( print_on_delete ) {
-	printf("Deleting TestEvent\n");
+    printf("Deleting TestEvent\n");
     }
 }

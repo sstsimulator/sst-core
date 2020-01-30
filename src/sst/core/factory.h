@@ -12,13 +12,13 @@
 #ifndef _SST_CORE_FACTORY_H
 #define _SST_CORE_FACTORY_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
 
 #include <stdio.h>
 #include <mutex>
 
-#include <sst/core/params.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/params.h"
+#include "sst/core/eli/elementinfo.h"
 
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
@@ -49,7 +49,13 @@ public:
      * @param type - Name of component in lib.name format
      * @return True if this is a valid portname
      */
-    bool isPortNameValid(const std::string &type, const std::string port_name);
+    bool isPortNameValid(const std::string& type, const std::string& port_name);
+
+    /** Get a list of allowed param keys for a given component type.
+     * @param type - Name of component in lib.name format
+     * @return True if this is a valid portname
+     */
+    const Params::KeySet_t& getParamNames(const std::string& type);
 
 
     /** Attempt to create a new Component instantiation
@@ -58,39 +64,73 @@ public:
      * @param params - The params to pass to the component's constructor
      * @return Newly created component
      */
-    Component* CreateComponent(ComponentId_t id, std::string &componentname,
+    Component* CreateComponent(ComponentId_t id, const std::string& componentname,
                                Params& params);
 
     /** Ensure that an element library containing the required event is loaded
      * @param eventname - The fully qualified elementlibname.eventname type
      */
-    void RequireEvent(std::string eventname);
+    void RequireEvent(const std::string& eventname);
 
     /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param params - Parameters to pass to the Module's constructor
      */
-    Module* CreateModule(std::string type, Params& params);
+    Module* CreateModule(const std::string& type, Params& params);
 
     /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param comp - Component instance to pass to the Module's constructor
      * @param params - Parameters to pass to the Module's constructor
      */
-    Module* CreateModuleWithComponent(std::string type, Component* comp, Params& params);
+    Module* CreateModuleWithComponent(const std::string& type, Component* comp, Params& params);
 
+#ifndef SST_ENABLE_PREVIEW_BUILD
     /** Instantiate a new Module
      * @param type - Fully qualified elementlibname.modulename type
      * @param comp - Component instance to pass to the SubComponent's constructor
      * @param params - Parameters to pass to the SubComponent's constructor
      */
-    SubComponent* CreateSubComponent(std::string type, Component* comp, Params& params);
+    SubComponent* CreateSubComponent(const std::string& type, Component* comp, Params& params);
+#endif
 
+    bool doesSubComponentExist(const std::string& type);
+    
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */
-    Partition::SSTPartitioner* CreatePartitioner(std::string name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
+    Partition::SSTPartitioner* CreatePartitioner(const std::string& name, RankInfo total_ranks, RankInfo my_rank, int verbosity);
 
+
+    /**
+       Check to see if a given element type is loadable with a particular API
+       @param name - Name of element to check in lib.name format
+       @return True if loadable as the API specified as the template parameter
+     */
+    template <class Base>
+    bool isSubComponentLoadableUsingAPI(const std::string& type) {
+        std::string elemlib, elem;
+        std::tie(elemlib, elem) = parseLoadName(type);
+
+        requireLibrary(elemlib);
+        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+        auto* lib = ELI::InfoDatabase::getLibrary<Base>(elemlib);
+        if (lib){
+            auto map = lib->getMap();
+            auto* info = lib->getInfo(elem);
+            if (info){
+                auto* builderLib = Base::getBuilderLibrary(elemlib);
+                if (builderLib){
+                    auto* fact = builderLib->getBuilder(elem);
+                    if (fact){
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
     
     /**
      * General function for a given base class
@@ -100,30 +140,32 @@ public:
      */
     template <class Base, class... CtorArgs>
     Base* Create(const std::string& type, SST::Params& params, CtorArgs&&... args){
-      std::string elemlib, elem;
-      std::tie(elemlib, elem) = parseLoadName(type);
+        std::string elemlib, elem;
+        std::tie(elemlib, elem) = parseLoadName(type);
 
-      requireLibrary(elemlib);
-      std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+        std::stringstream err_os;
+        requireLibrary(elemlib, err_os);
+        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
-      auto* lib = ELI::InfoDatabase::getLibrary<Base>(elemlib);
-      if (lib){
-        auto* info = lib->getInfo(elem);
-        if (info){
-          auto* builderLib = Base::getBuilderLibrary(elemlib);
-          if (builderLib){
-            auto* fact = builderLib->getBuilder(elem);
-            if (fact){
-              params.pushAllowedKeys(info->getParamNames());
-              Base* ret = fact->create(std::forward<CtorArgs>(args)...);
-              params.popAllowedKeys();
-              return ret;
+        auto* lib = ELI::InfoDatabase::getLibrary<Base>(elemlib);
+        if (lib){
+            auto map = lib->getMap();
+            auto* info = lib->getInfo(elem);
+            if (info){
+                auto* builderLib = Base::getBuilderLibrary(elemlib);
+                if (builderLib){
+                    auto* fact = builderLib->getBuilder(elem);
+                    if (fact){
+                        params.pushAllowedKeys(info->getParamNames());
+                        Base* ret = fact->create(std::forward<CtorArgs>(args)...);
+                        params.popAllowedKeys();
+                        return ret;
+                    }
+                }
             }
-          }
         }
-      }
-      notFound(Base::ELI_baseName(), type);
-      return nullptr;
+        notFound(Base::ELI_baseName(), type, err_os.str());
+        return nullptr;
     }
 
     /** Instantiate a new Statistic
@@ -135,14 +177,15 @@ public:
      * @param fieldType - Type of data stored in statistic
      */
     template <class T, class... Args>
-    Statistics::Statistic<T>* CreateStatistic(std::string type,
+    Statistics::Statistic<T>* CreateStatistic(const std::string& type,
                                    BaseComponent* comp, const std::string& statName,
                                    const std::string& stat, Params& params,
                                    Args... args){
       std::string elemlib, elem;
       std::tie(elemlib, elem) = parseLoadName(type);
       // ensure library is already loaded...
-      requireLibrary(elemlib);
+      std::stringstream sstr;
+      requireLibrary(elemlib, sstr);
 
       auto* lib = ELI::BuilderDatabase::getLibrary<Statistics::Statistic<T>, Args...>(elemlib);
       if (lib){
@@ -152,18 +195,30 @@ public:
         }
       }
       // If we make it to here, component not found
-      out.fatal(CALL_INFO, -1,"can't find requested statistic %s.\n ", type.c_str());
-      return NULL;
+      out.fatal(CALL_INFO, -1,"can't find requested statistic %s.\n%s\n",
+                type.c_str(), sstr.str().c_str());
+      return nullptr;
     }
 
 
     /** Return Python Module creation function
      * @param name - Fully qualified elementlibname.pythonModName type name
      */
-    SSTElementPythonModule* getPythonModule(std::string name);
-    /** Checks to see if library exists and can be loaded */
-    bool hasLibrary(std::string elemlib);
-    void requireLibrary(std::string &elemlib);
+    SSTElementPythonModule* getPythonModule(const std::string& name);
+
+    /**
+     * @brief hasLibrary Checks to see if library exists and can be loaded
+     * @param elemlib
+     * @param err_os Stream to print error messages to
+     * @return whether the library was found
+     */
+    bool hasLibrary(const std::string& elemlib, std::ostream& err_os);
+    void requireLibrary(const std::string& elemlib, std::ostream& err_os);
+    /**
+     * @brief requireLibrary Throws away error messages
+     * @param elemlib
+     */
+    void requireLibrary(const std::string& elemlib);
 
     void getLoadedLibraryNames(std::set<std::string>& lib_names);
     void loadUnloadedLibraries(const std::set<std::string>& lib_names);
@@ -187,7 +242,7 @@ public:
      * @param statisticName - The name of the statistic 
      * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
-    bool DoesSubComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
+    // bool DoesSubComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
 
     /** Get the enable level of a statistic defined in the component's ElementInfoStatistic
      * @param componentname - The name of the component
@@ -206,10 +261,11 @@ public:
 private:
     friend int ::main(int argc, char **argv);
 
-    void notFound(const std::string& baseName, const std::string& type);
+    void notFound(const std::string& baseName, const std::string& type,
+                  const std::string& errorMsg);
 
 
-    Factory(std::string searchPaths);
+    Factory(const std::string& searchPaths);
     ~Factory();
 
     Factory();                      // Don't Implement
@@ -219,9 +275,9 @@ private:
     static Factory *instance;
 
     // find library information for name
-    bool findLibrary(std::string name, bool showErrors=true);
+    bool findLibrary(const std::string& name, std::ostream& err_os = std::cerr);
     // handle low-level loading of name
-    bool loadLibrary(std::string name, bool showErrors=true);
+    bool loadLibrary(const std::string& name, std::ostream& err_os = std::cerr);
 
     std::set<std::string> loaded_libraries;
 

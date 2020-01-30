@@ -12,9 +12,6 @@
 
 #include "sst_config.h"
 #include "sst/core/eli/elementinfo.h"
-#include <sst/core/statapi/statbase.h>
-
-#include <sstream>
 
 namespace SST {
 
@@ -52,8 +49,8 @@ ProvidesParams::toString(std::ostream& os) const
     for (const ElementInfoParam& item : getValidParams() ) {
       os << "            PARAMETER " << index
          << " = " << item.name
-         << " (" << (item.description == NULL ? "<empty>" : item.description) << ")"
-         << " [" << (item.defaultValue == NULL ? "<required>" : item.defaultValue) << "]\n";
+         << " (" << (item.description == nullptr ? "<empty>" : item.description) << ")"
+         << " [" << (item.defaultValue == nullptr ? "<required>" : item.defaultValue) << "]\n";
       index++;
     }
 }
@@ -66,7 +63,7 @@ ProvidesPorts::toString(std::ostream& os) const
     for ( auto& item : getValidPorts() ) {
       os << "            PORT " << index
          << " = " << item.name
-         << " (" << (item.description == NULL ? "<empty>" : item.description) << ")\n";
+         << " (" << (item.description == nullptr ? "<empty>" : item.description) << ")\n";
       ++index;
     }
 }
@@ -79,8 +76,8 @@ ProvidesSubComponentSlots::toString(std::ostream& os) const
     for ( auto& item : getSubComponentSlots() ) {
       os << "            SUB COMPONENT SLOT " << index
          << " = " << item.name
-         << " (" << (item.description == NULL ? "<empty>" : item.description) << ")"
-         << " [" << (item.superclass == NULL ? "<none>" : item.superclass) << "]\n";
+         << " (" << (item.description == nullptr ? "<empty>" : item.description) << ")"
+         << " [" << (item.superclass == nullptr ? "<none>" : item.superclass) << "]\n";
       ++index;
     }
 }
@@ -93,11 +90,11 @@ ProvidesStats::toString(std::ostream& os) const
     for ( auto& item : getValidStats() ) {
       os << "            STATISTIC " << index
          << " = " << item.name
-         << " [" << (item.description == NULL ? "<empty>" : item.description) << "]"
-         << " (" << (item.units == NULL ? "<empty>" : item.units) << ")"
+         << " [" << (item.description == nullptr ? "<empty>" : item.description) << "]"
+         << " (" << (item.units == nullptr ? "<empty>" : item.units) << ")"
          << " Enable level = " << (int16_t)item.enableLevel << "\n";
+        ++index;
     }
-    ++index;
 }
 
 void

@@ -12,8 +12,8 @@
 #ifndef SST_CORE_TIMEVORTEX_H
 #define SST_CORE_TIMEVORTEX_H
 
-#include <sst/core/activityQueue.h>
-#include <sst/core/module.h>
+#include "sst/core/activityQueue.h"
+#include "sst/core/module.h"
 
 namespace SST {
 
@@ -24,11 +24,11 @@ class Output;
  */
 class TimeVortex : public ActivityQueue {
 public:
-  SST_ELI_DECLARE_BASE(TimeVortex)
-  SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams)
-  SST_ELI_DECLARE_CTOR_EXTERN(SST::Params&)
+    SST_ELI_DECLARE_BASE(TimeVortex)
+    SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams)
+    SST_ELI_DECLARE_CTOR_EXTERN(SST::Params&)
 
-	TimeVortex() {
+    TimeVortex() {
         max_depth = MAX_SIMTIME_T;
     }
     ~TimeVortex() {}

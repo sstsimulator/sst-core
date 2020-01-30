@@ -14,7 +14,7 @@
 
 #include "sst/core/sst_types.h"
 
-#include <sst/core/statapi/statoutput.h>
+#include "sst/core/statapi/statoutput.h"
 
 namespace SST {
 namespace Statistics {
@@ -22,20 +22,20 @@ namespace Statistics {
 /**
     \class StatisticOutputJSON
 
-	The class for statistics output to a JSON formatted file
+    The class for statistics output to a JSON formatted file
 */
 class StatisticOutputJSON : public StatisticOutput
 {
- public:
-  SST_ELI_REGISTER_DERIVED(
-      StatisticOutput,
-      StatisticOutputJSON,
-      "sst",
-      "statoutputjson",
-      SST_ELI_ELEMENT_VERSION(1,0,0),
-      "Output to a JSON file")
-
-  /** Construct a StatOutputJSON
+public:
+    SST_ELI_REGISTER_DERIVED(
+        StatisticOutput,
+        StatisticOutputJSON,
+        "sst",
+        "statoutputjson",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Output to a JSON file")
+    
+    /** Construct a StatOutputJSON
      * @param outputParameters - Parameters used for this Statistic Output
      */
     StatisticOutputJSON(Params& outputParameters);
@@ -105,10 +105,10 @@ private:
     std::string              m_currentStatisticType;
     bool                     m_outputSimTime;
     bool                     m_outputRank;
-    bool					 m_firstEntry;
-    bool					 m_firstField;
-    bool 					 m_processedAnyStats;
-    int						 m_curIndentLevel;
+    bool                     m_firstEntry;
+    bool                     m_firstField;
+    bool                     m_processedAnyStats;
+    int                      m_curIndentLevel;
 
 };
 

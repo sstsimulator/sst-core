@@ -22,140 +22,140 @@
 #include <sys/file.h>
 
 //SST::Core::Environment::EnvironmentConfigGroup(std::string gName) {
-//	groupName(gName);
+//    groupName(gName);
 //}
 
 std::string SST::Core::Environment::EnvironmentConfigGroup::getName() const {
-	return groupName;
+    return groupName;
 }
 
 std::set<std::string> SST::Core::Environment::EnvironmentConfigGroup::getKeys() const {
-	std::set<std::string> retKeys;
+    std::set<std::string> retKeys;
 
-	for(auto mapItr = params.begin(); mapItr != params.end(); mapItr++) {
-		retKeys.insert(mapItr->first);
-	}
+    for(auto mapItr = params.begin(); mapItr != params.end(); mapItr++) {
+        retKeys.insert(mapItr->first);
+    }
 
-	return retKeys;
+    return retKeys;
 }
 
-std::string SST::Core::Environment::EnvironmentConfigGroup::getValue(std::string key) {
-	return (params.find(key) == params.end()) ?
-		"" : params[key];
+std::string SST::Core::Environment::EnvironmentConfigGroup::getValue(const std::string& key) {
+    return (params.find(key) == params.end()) ?
+        "" : params[key];
 }
 
-void SST::Core::Environment::EnvironmentConfigGroup::setValue(std::string key, std::string value) {
-	auto paramsItr = params.find(key);
+void SST::Core::Environment::EnvironmentConfigGroup::setValue(const std::string& key, const std::string& value) {
+    auto paramsItr = params.find(key);
 
-	if(paramsItr != params.end()) {
-		params.erase(paramsItr);
-	}
+    if(paramsItr != params.end()) {
+        params.erase(paramsItr);
+    }
 
-	params.insert(std::pair<std::string, std::string>(key, value));
+    params.insert(std::pair<std::string, std::string>(key, value));
 }
 
 void SST::Core::Environment::EnvironmentConfigGroup::print() {
-	printf("# Group: %s ", groupName.c_str());
+    printf("# Group: %s ", groupName.c_str());
 
-	int remainingLen = 70 - groupName.size();
+    int remainingLen = 70 - groupName.size();
 
-	if(remainingLen < 0) {
-		remainingLen = 0;
-	}
+    if(remainingLen < 0) {
+        remainingLen = 0;
+    }
 
-	for( ; remainingLen >= 0; remainingLen--) {
-		printf("-");
-	}
+    for( ; remainingLen >= 0; remainingLen--) {
+        printf("-");
+    }
 
-	printf("\n");
+    printf("\n");
 
-	for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
-		printf("%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
-	}
+    for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
+        printf("%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
+    }
 }
 
 void SST::Core::Environment::EnvironmentConfigGroup::writeTo(FILE* outFile) {
-	fprintf(outFile, "[%s]\n", groupName.c_str());
+    fprintf(outFile, "[%s]\n", groupName.c_str());
 
-	for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
-		fprintf(outFile, "%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
-	}
+    for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
+        fprintf(outFile, "%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
+    }
 }
 
 SST::Core::Environment::EnvironmentConfiguration::EnvironmentConfiguration() {}
 
 SST::Core::Environment::EnvironmentConfiguration::~EnvironmentConfiguration() {
-	// Delete all the groups we have created
-	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-		delete groupItr->second;
-	}
+    // Delete all the groups we have created
+    for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
+        delete groupItr->second;
+    }
 }
 
-SST::Core::Environment::EnvironmentConfigGroup* SST::Core::Environment::EnvironmentConfiguration::createGroup(std::string groupName) {
-	EnvironmentConfigGroup* newGroup = NULL;
+SST::Core::Environment::EnvironmentConfigGroup* SST::Core::Environment::EnvironmentConfiguration::createGroup(const std::string& groupName) {
+    EnvironmentConfigGroup* newGroup = nullptr;
 
-	if(groups.find(groupName) == groups.end()) {
-		newGroup = new EnvironmentConfigGroup(groupName);
-		groups.insert(std::pair<std::string, EnvironmentConfigGroup*>(groupName, newGroup));
-	} else {
-		newGroup = groups.find(groupName)->second;
-	}
+    if(groups.find(groupName) == groups.end()) {
+        newGroup = new EnvironmentConfigGroup(groupName);
+        groups.insert(std::pair<std::string, EnvironmentConfigGroup*>(groupName, newGroup));
+    } else {
+        newGroup = groups.find(groupName)->second;
+    }
 
-	return newGroup;
+    return newGroup;
 }
 
-void SST::Core::Environment::EnvironmentConfiguration::removeGroup(std::string groupName) {
-	auto theGroup = groups.find(groupName);
+void SST::Core::Environment::EnvironmentConfiguration::removeGroup(const std::string& groupName) {
+    auto theGroup = groups.find(groupName);
 
-	if(theGroup != groups.end()) {
-		groups.erase(theGroup);
-	}
+    if(theGroup != groups.end()) {
+        groups.erase(theGroup);
+    }
 }
 
 std::set<std::string> SST::Core::Environment::EnvironmentConfiguration::getGroupNames() {
-	std::set<std::string> groupNames;
+    std::set<std::string> groupNames;
 
-	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-		groupNames.insert(groupItr->first);
-	}
+    for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
+        groupNames.insert(groupItr->first);
+    }
 
-	return groupNames;
+    return groupNames;
 }
 
-SST::Core::Environment::EnvironmentConfigGroup* SST::Core::Environment::EnvironmentConfiguration::getGroupByName(std::string groupName) {
-	return createGroup(groupName);
+SST::Core::Environment::EnvironmentConfigGroup* SST::Core::Environment::EnvironmentConfiguration::getGroupByName(const std::string& groupName) {
+    return createGroup(groupName);
 }
 
 void SST::Core::Environment::EnvironmentConfiguration::print() {
-	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-		groupItr->second->print();
-	}
+    for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
+        groupItr->second->print();
+    }
 }
 
-void SST::Core::Environment::EnvironmentConfiguration::writeTo(std::string filePath) {
-	FILE* output = fopen(filePath.c_str(), "w+");
+void SST::Core::Environment::EnvironmentConfiguration::writeTo(const std::string& filePath) {
+    FILE* output = fopen(filePath.c_str(), "w+");
 
-	if(NULL == output) {
-		fprintf(stderr, "Unable to open file: %s\n", filePath.c_str());
-		exit(-1);
-	}
+    if(nullptr == output) {
+        fprintf(stderr, "Unable to open file: %s\n", filePath.c_str());
+        exit(-1);
+    }
 
-	const int outputFD = fileno(output);
+    const int outputFD = fileno(output);
 
-	// Lock the file because we are going to write it out (this should be
-	// exclusive since no one else should muck with it)
-	flock(outputFD, LOCK_EX);
+    // Lock the file because we are going to write it out (this should be
+    // exclusive since no one else should muck with it)
+    flock(outputFD, LOCK_EX);
 
-	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-		groupItr->second->writeTo(output);
-	}
+    for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
+        groupItr->second->writeTo(output);
+    }
 
-	flock(outputFD, LOCK_UN);
-	fclose(output);
+    flock(outputFD, LOCK_UN);
+    fclose(output);
 }
 
 void SST::Core::Environment::EnvironmentConfiguration::writeTo(FILE* output) {
-	for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
-		groupItr->second->writeTo(output);
-	}
+    for(auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++) {
+        groupItr->second->writeTo(output);
+    }
 }

@@ -13,12 +13,12 @@
 #include "sst_config.h"
 
 #include "elemLoader.h"
+
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
-#include <sst/core/part/sstpart.h>
-#include <sst/core/sstpart.h>
-#include <sst/core/model/element_python.h>
+#include "sst/core/part/sstpart.h"
+#include "sst/core/sstpart.h"
 
 #include <ltdl.h>
 #include <vector>
@@ -66,7 +66,7 @@ struct LoaderData {
 };
 
 
-ElemLoader::ElemLoader(const std::string &searchPaths) :
+ElemLoader::ElemLoader(const std::string& searchPaths) :
     searchPaths(searchPaths)
 {
     loaderData = new LoaderData;
@@ -124,14 +124,14 @@ ElemLoader::~ElemLoader()
 }
 
 
-static std::vector<std::string> splitPath(const std::string & searchPaths)
+static std::vector<std::string> splitPath(const std::string& searchPaths)
 {
     std::vector<std::string> paths;
     char * pathCopy = new char [searchPaths.length() + 1];
     std::strcpy(pathCopy, searchPaths.c_str());
-    char *brkb = NULL;
-    char *p = NULL;
-    for ( p = strtok_r(pathCopy, ":", &brkb); p ; p = strtok_r(NULL, ":", &brkb) ) {
+    char *brkb = nullptr;
+    char *p = nullptr;
+    for ( p = strtok_r(pathCopy, ":", &brkb); p ; p = strtok_r(nullptr, ":", &brkb) ) {
         paths.push_back(p);
     }
 
@@ -140,11 +140,10 @@ static std::vector<std::string> splitPath(const std::string & searchPaths)
 }
 
 
-static void followError(std::string libname, std::string elemlib, std::string searchPaths)
+static void followError(const std::string& libname, const std::string& elemlib, const std::string& searchPaths,
+                        std::ostream& err_os)
 {
-
-    // dlopen case
-    libname.append(".so");
+    std::string so_path = libname + ".so";
     std::string fullpath;
     void *handle;
 
@@ -154,7 +153,7 @@ static void followError(std::string libname, std::string elemlib, std::string se
         struct stat sbuf;
         int ret;
 
-        fullpath = path + "/" + libname;
+        fullpath = path + "/" + so_path;
         ret = stat(fullpath.c_str(), &sbuf);
         if (ret == 0) break;
     }
@@ -163,42 +162,46 @@ static void followError(std::string libname, std::string elemlib, std::string se
     // didn't succeed in the stat, we'll get a file not found error
     // from dlopen, which is a useful error message for the user.
     handle = dlopen(fullpath.c_str(), RTLD_NOW|RTLD_GLOBAL);
-    if (NULL == handle) {
-        fprintf(stderr,
-            "Opening and resolving references for element library %s failed:\n"
-            "\t%s\n", elemlib.c_str(), dlerror());
+    if (nullptr == handle) {
+        std::vector<char> err_str(1e6); //make darn sure we fit the str
+        sprintf(err_str.data(),
+          "Opening and resolving references for element library %s failed:\n" "\t%s\n",
+        elemlib.c_str(), dlerror());
+        err_os << (const char*) err_str.data();
     }
 }
 
 void
-ElemLoader::loadLibrary(const std::string &elemlib, bool showErrors)
+ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
 {
     std::string libname = "lib" + elemlib;
     lt_dlhandle lt_handle;
-
     lt_handle = lt_dlopenadvise(libname.c_str(), loaderData->advise_handle);
-    if (NULL == lt_handle) {
-        // So this sucks.  the preopen module runs last and if the
+    if (nullptr == lt_handle) {
+      // The preopen module runs last and if the
         // component was found earlier, but has a missing symbol or
         // the like, we just get an amorphous "file not found" error,
         // which is totally useless...
-        if (showErrors) {
-            fprintf(stderr, "Opening element library %s failed: %s\n",
-                    elemlib.c_str(), lt_dlerror());
-            followError(libname, elemlib, searchPaths);
-        }
+        //Make darn sure we have enough space to hold the error message
+        std::vector<char> err_str(1e6);
+        sprintf(err_str.data(), "Opening element library %s failed: %s\n",
+                elemlib.c_str(), lt_dlerror());
+        err_os << (const char*) err_str.data();
+        followError(libname, elemlib, searchPaths, err_os);
     }
         
     //loading a library can "wipe" previously loaded libraries depending
     //on how weak symbol resolution works in dlopen
     //rerun the loaders to make sure everything is still registered
     for (auto& libpair : ELI::LoadedLibraries::getLoaders()){
+      //loop all the elements in the element lib
       for (auto& elempair : libpair.second){
-        //call the loader function
-        elempair.second();
+        //loop all the loaders in the element
+        for (auto* loader : elempair.second){
+          loader->load();
+        }
       }
     }
-
     return;
 }
 

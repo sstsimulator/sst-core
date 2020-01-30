@@ -10,8 +10,9 @@
 // distribution.
 
 
-#include <sst_config.h>
-#include <sst/core/warnmacros.h>
+#include "sst_config.h"
+#include "sst/core/sharedRegionImpl.h"
+#include "sst/core/warnmacros.h"
 
 #include <unistd.h>
 #include <string>
@@ -23,9 +24,8 @@
 
 #include <sys/types.h>
 
-#include <sst/core/simulation.h>
-#include <sst/core/sharedRegionImpl.h>
-#include <sst/core/objectComms.h>
+#include "sst/core/simulation.h"
+#include "sst/core/objectComms.h"
 
 
 namespace SST {
@@ -41,24 +41,23 @@ bool compareRange(const ChangeSet &c0, const ChangeSet &c1) {
     return c0.offset < c1.offset;
 }
 
+
 bool SharedRegionMerger::merge(uint8_t *target, size_t size, const std::vector<ChangeSet> &changeSets)
 {
     std::vector<ChangeSet> sorted = changeSets;
     std::sort(sorted.begin(), sorted.end(), compareRange);
-
+    
     for ( size_t n = 0 ; n < sorted.size() ; n++ ) {
         const ChangeSet &cs = sorted[n];
         /* Check for overlap */
-        if ( n > 0 ) {
-            for ( size_t p = 0 ; p < n ; p++ ) {
-                if ( sorted[p].offset + sorted[p].length > cs.offset ) {
-                    Output::getDefaultObject().output(CALL_INFO,
-                            "Overlapping SharedRegion ChangeSets detected.\n"
-                            "[0x%zx - 0x%zx] overlaps with [0x%zx - 0x%zx]\n",
-                            cs.offset, cs.offset + cs.length,
-                            sorted[p].offset, sorted[p].offset + changeSets[p].length);
-                    return false;
-                }
+        if (n > 0) {
+            if (sorted[n-1].offset + sorted[n-1].length > cs.offset ) {
+                Output::getDefaultObject().output(CALL_INFO,
+                        "Overlapping SharedRegion ChangeSets detected.\n"
+                        "[0x%zx - 0x%zx] overlaps with [0x%zx - 0x%zx]\n",
+                        cs.offset, cs.offset + cs.length,
+                        sorted[n-1].offset, sorted[n-1].offset + changeSets[n-1].length);
+                return false;
             }
         }
         if ( cs.offset + cs.length > size ) {
@@ -89,21 +88,21 @@ RegionInfo::~RegionInfo(void)
     if ( memory ) {
         setProtected(false);
         free(memory);
-        memory = NULL;
+        memory = nullptr;
     }
     initialized = ready = false;
     size_t nSharers = sharers.size();
     for ( size_t i = 0 ; i < nSharers ; i++ ) {
         if ( sharers[i] ) {
             delete sharers[i];
-            sharers[i] = NULL;
+            sharers[i] = nullptr;
             --shareCount;
         }
     }
 }
 
 
-bool RegionInfo::initialize(const std::string &key, size_t size, uint8_t initByte, SharedRegionMerger *mergeObj)
+bool RegionInfo::initialize(const std::string& key, size_t size, uint8_t initByte, SharedRegionMerger *mergeObj)
 {
     if ( initialized ) return true;
 
@@ -145,7 +144,7 @@ void RegionInfo::removeSharer(SharedRegionImpl *sri)
     for ( size_t i = 0 ; i < nShare ; i++ ) {
         if ( sharers[i] == sri ) {
             delete sri;
-            sharers[i] = NULL;
+            sharers[i] = nullptr;
             shareCount--;
         }
     }
@@ -220,20 +219,20 @@ SharedRegionManagerImpl::~SharedRegionManagerImpl()
 
 
 
-SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string &key, size_t size, uint8_t initByte)
+SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string& key, size_t size, uint8_t initByte)
 {
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
     if ( ri.isInitialized() ) {
         if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Mismatched Sizes!\n");
     } else {
-        if ( false == ri.initialize(key, size, initByte, NULL) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Shared Region Initialized Failed!\n");
+        if ( false == ri.initialize(key, size, initByte, nullptr) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Shared Region Initialized Failed!\n");
     }
     return ri.addSharer(this);
 }
 
 
-SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string &key, size_t size, SharedRegionMerger *merger, uint8_t initByte)
+SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger *merger, uint8_t initByte)
 {
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];

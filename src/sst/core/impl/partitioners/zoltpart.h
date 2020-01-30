@@ -1,8 +1,8 @@
-// Copyright 2009-2018 NTESS. Under the terms
+// Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2018, NTESS
+// Copyright (c) 2009-2019, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -16,9 +16,9 @@
 
 #ifdef HAVE_ZOLTAN
 
-#include <sst/core/sstpart.h>
-#include <sst/core/output.h>
-#include <sst/core/eli/elementinfo.h>
+#include "sst/core/sstpart.h"
+#include "sst/core/output.h"
+#include "sst/core/eli/elementinfo.h"
 
 // SST and ZOLTANÕs configurations are conflicting on the SST_CONFIG_HAVE_MPI definition.  
 // So temporarily shut down SSTÕs SST_CONFIG_HAVE_MPI, then allow ZOLTANÕs SST_CONFIG_HAVE_MPI to 
@@ -35,10 +35,10 @@ namespace IMPL {
 namespace Partition {
 
 /**
-	\class SSTZoltanPartition creates a partitioner interface to the
-	Zoltan partitioner library developed by Sandia National Labs. This is
-	an option to partition simulations if the user has configured SST
-	to find and compile with the Zoltan external dependency.
+    \class SSTZoltanPartition creates a partitioner interface to the
+    Zoltan partitioner library developed by Sandia National Labs. This is
+    an option to partition simulations if the user has configured SST
+    to find and compile with the Zoltan external dependency.
 */
 class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
 
@@ -73,9 +73,9 @@ public:
     */
     void performPartition(PartitionGraph* graph) override;
 
-		void performPartition(ConfigGraph* graph) override {
-			SST::Partition::SSTPartitioner::performPartition(graph);
-		}
+        void performPartition(ConfigGraph* graph) override {
+            SST::Partition::SSTPartitioner::performPartition(graph);
+        }
     
     bool requiresConfigGraph() override { return false; }
     

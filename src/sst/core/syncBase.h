@@ -14,7 +14,7 @@
 
 #include "sst/core/sst_types.h"
 
-#include <sst/core/rankInfo.h>
+#include "sst/core/rankInfo.h"
 
 namespace SST {
 

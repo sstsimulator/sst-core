@@ -21,14 +21,13 @@
 
 #include <map>
 #include <string>
-#include <sstream>
 #include <vector>
 
-#include <sst/core/model/sstmodel.h>
-#include <sst/core/config.h>
-#include <sst/core/rankInfo.h>
-#include <sst/core/output.h>
-#include <sst/core/configGraph.h>
+#include "sst/core/model/sstmodel.h"
+#include "sst/core/config.h"
+#include "sst/core/rankInfo.h"
+#include "sst/core/output.h"
+#include "sst/core/configGraph.h"
 
 using namespace SST;
 
@@ -37,19 +36,19 @@ namespace Core {
 
 class SSTPythonModelDefinition : public SSTModelDescription {
 
-	public:
-		SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* config, int argc, char **argv);
-		SSTPythonModelDefinition(const std::string script_file, int verbosity, Config* config);
-		virtual ~SSTPythonModelDefinition();
+    public:
+        SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config, int argc, char **argv);
+        SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config);
+        virtual ~SSTPythonModelDefinition();
 
-		ConfigGraph* createConfigGraph() override;
+        ConfigGraph* createConfigGraph() override;
 
-	protected:
-		void initModel(const std::string script_file, int verbosity, Config* config, int argc, char** argv);
-		std::string scriptName;
-		Output* output;
-		Config* config;
-		ConfigGraph *graph;
+    protected:
+        void initModel(const std::string& script_file, int verbosity, Config* config, int argc, char** argv);
+        std::string scriptName;
+        Output* output;
+        Config* config;
+        ConfigGraph *graph;
         char *namePrefix;
         size_t namePrefixLen;
         std::vector<size_t> nameStack;
@@ -57,10 +56,10 @@ class SSTPythonModelDefinition : public SSTModelDescription {
         ComponentId_t nextComponentId;
 
 
-	public:  /* Public, but private.  Called only from Python functions */
-		Config* getConfig(void) const { return config; }
-		ConfigGraph* getGraph(void) const { return graph; }
-		Output* getOutput() const { return output; }
+    public:  /* Public, but private.  Called only from Python functions */
+        Config* getConfig(void) const { return config; }
+        ConfigGraph* getGraph(void) const { return graph; }
+        Output* getOutput() const { return output; }
         ComponentId_t getNextComponentId() { return nextComponentId++; }
         ComponentId_t addComponent(const char *name, const char *type) {
             ComponentId_t id = getNextComponentId();
@@ -81,14 +80,14 @@ class SSTPythonModelDefinition : public SSTModelDescription {
         char* addNamePrefix(const char *name) const;
 
         void setStatisticOutput(const char* Name) { graph->setStatisticOutput(Name); }
-        void addStatisticOutputParameter(const std::string &param, const std::string &value) { graph->addStatisticOutputParameter(param, value); }
+        void addStatisticOutputParameter(const std::string& param, const std::string& value) { graph->addStatisticOutputParameter(param, value); }
         void setStatisticLoadLevel(uint8_t loadLevel) { graph->setStatisticLoadLevel(loadLevel); }
 
-        void enableStatisticForComponentName(const std::string &compname, const std::string &statname) const { graph->enableStatisticForComponentName(compname, statname); }
-        void enableStatisticForComponentType(const std::string &comptype, const std::string &statname) const  { graph->enableStatisticForComponentType(comptype, statname); }
+        void enableStatisticForComponentName(const std::string& compname, const std::string& statname) const { graph->enableStatisticForComponentName(compname, statname); }
+        void enableStatisticForComponentType(const std::string& comptype, const std::string& statname) const  { graph->enableStatisticForComponentType(comptype, statname); }
 
-        void addStatisticParameterForComponentName(const std::string &compname, const std::string &statname, const std::string &param, const std::string &value) { graph->addStatisticParameterForComponentName(compname, statname, param, value); }
-        void addStatisticParameterForComponentType(const std::string &comptype, const std::string &statname, const std::string &param, const std::string &value) { graph->addStatisticParameterForComponentType(comptype, statname, param, value); }
+        void addStatisticParameterForComponentName(const std::string& compname, const std::string& statname, const std::string& param, const std::string& value) { graph->addStatisticParameterForComponentName(compname, statname, param, value); }
+        void addStatisticParameterForComponentType(const std::string& comptype, const std::string& statname, const std::string& param, const std::string& value) { graph->addStatisticParameterForComponentType(comptype, statname, param, value); }
 };
 
 std::map<std::string,std::string> generateStatisticParameters(PyObject* statParamDict);
