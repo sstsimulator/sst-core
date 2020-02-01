@@ -321,6 +321,11 @@ nobase_dist_sst_HEADERS += $(deprecated_nobase_dist_sst_headers)
 sst_core_sources += $(deprecated_sst_core_sources)
 endif
 
+if SST_CONFIG_HAVE_PYTHON3
+sst_core_sources += $(sst_core_python3_sources)
+else
+sst_core_sources += $(sst_core_python2_sources)
+endif
 
 if USE_LIBZ
 sstsim_x_LDADD += $(LIBZ_LIBS)
