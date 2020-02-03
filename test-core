@@ -1,0 +1,177 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import sys
+import argparse
+import os.path
+import subprocess
+
+#################################################
+
+REQUIRED_PY_MAJ_VER_2 = 2 # Required Major Version Min
+REQUIRED_PY_MAJ_VER_MAX = 3 # Required Major Version Max
+REQUIRED_PY_MAJ_VER_2_MINOR_VER = 7 # Required Minor Version
+HELP_DESC = 'Run SST-Core Tests'
+HELP_EPILOG = ('SST application and testframeworks must be available for testing.  '+
+               'They can be found via the $PATH environment variable or the root ' +
+               'SST-Core directory can be defined with the -c parameter...')
+TESTFRAMEWORKSFILES = ["test_globals.py", "test_support.py", "test_engine.py"]
+TESTMODE_CORE = True  # True to Test Core
+TESTMODE_ELEM = False # False to Test Elements
+
+#HELP_EPILOG = ('TODO: Python files named TestScript*.py ' +
+#               'found at or below the defined test ' +
+#               'path(s) will be run.')
+
+#################################################
+
+def main():
+    # Startup work
+    startup = StartupChecks()
+
+    # Now try to import the test framework
+    sys.path.insert(1, startup.SSTCoreFrameworksDir)
+    import test_engine
+    # Create the Test Engine and run it
+    te = test_engine.TestEngine(TESTMODE_CORE,
+                                startup.parser,
+                                startup.SSTCoreBinDir,
+                                startup.SSTCoreSSTAppPath,
+                                startup.sstStartupTopDir)
+    te.runTests()
+
+#################################################
+
+class StartupChecks():
+    def __init__(self):
+        self.parser = None
+        self.userDefinedCoreDir = None
+        self.SSTCoreBinDir = None
+        self.SSTCoreSSTAppPath = None
+        self.SSTCoreFrameworksDir = None
+
+        self.sstStartupTopDir = os.path.dirname(__file__)
+        self.validatePythonVersion()
+        self.parseArguments()
+        self.verifyCoreIsInstalled()
+        self.verifyTestFrameworkIsAvailable()
+
+###
+
+    def validatePythonVersion(self):
+        ver = sys.version_info
+        if (ver[0] < REQUIRED_PY_MAJ_VER_2) and (ver[0] < REQUIRED_PY_MAJ_VER_MAX):
+            print(("FATAL:\n{0} requires Python major version {1} or {2}\n" +
+                   "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                           REQUIRED_PY_MAJ_VER_2,
+                                                           REQUIRED_PY_MAJ_VER_MAX,
+                                                           sys.version))
+
+        if (ver[0] == REQUIRED_PY_MAJ_VER_2) and (ver[1] < REQUIRED_PY_MAJ_VER_2_MINOR_VER):
+            print(("FATAL:\n{0} requires Python version {1}.{2} or greater\n" +
+                   "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                           REQUIRED_PY_MAJ_VER_2,
+                                                           REQUIRED_PY_MAJ_VER_2_MINOR_VER,
+                                                           sys.version))
+
+            sys.exit(1)
+
+###
+
+    def parseArguments(self):
+        parser = argparse.ArgumentParser(description=HELP_DESC,
+                                         epilog=HELP_EPILOG,
+                                         add_help = False)
+
+        parser.add_argument('-c', '--sst-core-dir', type=str, metavar='dir',
+                            nargs='?', default='',
+                            help = 'Installed Core Directory')
+
+        # NOTE: We pre-parse the existing args, but have disabled the Help
+        # feature.  If we cannot find SST then we will the print the existing
+        # argparse help feature.  Otherwise, we let the parser code in the
+        # test_engine add more args and handle the -h option
+        args = parser.parse_known_args()
+
+        if args[0].sst_core_dir == None:
+            args[0].sst_core_dir = "UNDEFINED_DIR"
+
+        # Extract the Arguments into the class variables
+        self.userDefinedCoreDir = args[0].sst_core_dir
+        self.parser = parser
+
+###
+
+    def verifyCoreIsInstalled(self):
+        # See if we can find the binary version of sst-core in the user
+        # defined path or in the $PATH env var
+
+        foundSSTCoreBinPath = ""
+        if self.userDefinedCoreDir != '':
+            coreBinDir = self.userDefinedCoreDir + "/bin"
+            foundSSTAppPath = coreBinDir + "/sst"
+            if not os.path.isdir(self.userDefinedCoreDir):
+                print (("\nERROR: Unable to find SST Core directory defined " +
+                        "by user at {0}\n".format(self.userDefinedCoreDir)))
+            elif not os.path.isfile(foundSSTAppPath):
+                print (("\nERROR: Unable to find SST application at user " +
+                        "defined path {0}\n".format(foundSSTAppPath)))
+            else:
+                foundSSTCoreBinPath = coreBinDir
+        else:
+            # Try to find the SST Core Bin dir in the $PATH
+            try:
+                searchCmd = ["which", "sst"]
+                foundSSTAppPath = subprocess.check_output(searchCmd)
+                foundSSTCoreBinPath = os.path.dirname(foundSSTAppPath)
+            except subprocess.CalledProcessError as e:
+                pass
+            except OSError as e:
+                print ("Got an OSError on cmd - {0} : {1}".format(searchCmd, e))
+            except Exception as e:
+                print ("Got an Exception on cmd - {0} : {1}".format(searchCmd, e))
+
+            if foundSSTCoreBinPath == "":
+                print (("\nERROR: Unable to find SST application in Core bin ") +
+                       ("directory by searching $PATH\n"))
+
+        if foundSSTCoreBinPath == "":
+            self.parser.print_help()
+            sys.exit(1)
+        else:
+            self.SSTCoreBinDir = foundSSTCoreBinPath
+            self.SSTCoreSSTAppPath = foundSSTAppPath
+            print ("NOTICE - SSTCore bin Dir is Found at {0}".format(self.SSTCoreBinDir))
+            print ("NOTICE - SST Application is Found at {0}".format(self.SSTCoreSSTAppPath.strip("\n")))
+
+
+###
+
+    def verifyTestFrameworkIsAvailable(self):
+        # Verify that the frameworks files exist in the installed core dir
+        frameworksFound = True
+        for filename in TESTFRAMEWORKSFILES:
+            self.SSTCoreFrameworksDir = self.SSTCoreBinDir + "/testframeworks/"
+            filesearchpath =  self.SSTCoreFrameworksDir + filename
+            if not os.path.isfile(filesearchpath):
+                print (("WARNING: Missing test framework file " +
+                        "{0}".format(filesearchpath)))
+                frameworksFound = False
+
+        if not frameworksFound:
+            print ("ERROR: Testing cannot be performed due to missing frameworks files...\n")
+            sys.exit(1)
+
+###
+
+    def verifyElementsIsInstalled(self):
+        # See if we can determine if elements have been installed
+        pass
+
+#################################################
+# Script Entry
+#################################################
+if __name__ == "__main__":
+    # Call the main() subroutine
+    main()
+

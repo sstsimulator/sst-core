@@ -10,6 +10,8 @@ sstconf_DATA = src/sst/sstsimulator.conf
 
 EXTRA_DIST = \
 	autogen.sh \
+	test-core.py \
+	test-elements.py \
 	CONTRIBUTING.md \
 	INSTALL \
 	ISSUES \
@@ -17,4 +19,4 @@ EXTRA_DIST = \
 	PLATFORMS \
 	README.md \
 	VERSION
-	
+
