@@ -269,9 +269,9 @@ struct SST_ELI_element_version_extraction {
     const unsigned minor;
     const unsigned tertiary;
 
-    constexpr unsigned getMajor() { return major; }
-    constexpr unsigned getMinor() { return minor; }
-    constexpr unsigned getTertiary() { return tertiary; }
+    constexpr unsigned getMajor() const { return major; }
+    constexpr unsigned getMinor() const { return minor; }
+    constexpr unsigned getTertiary() const { return tertiary; }
 };
 
 constexpr unsigned SST_ELI_getMajorNumberFromVersion(SST_ELI_element_version_extraction ver) {
