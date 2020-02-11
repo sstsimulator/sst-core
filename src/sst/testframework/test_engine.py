@@ -12,9 +12,9 @@ from test_support import *
 #################################################
 
 HELP_DESC = 'Run {0} Tests'
-HELP_CORE_EPILOG = (("TODO (CLEANUP TEXT): Python files named TestScript*.py found at") +
+HELP_CORE_EPILOG = (("TODO (CLEANUP TEXT): Python files named TestScript*.py found at ") +
                     ("or below the defined test path(s) will be run."))
-HELP_ELEM_EPILOG = (("TODO (CLEANUP TEXT): Python files named TestScript*.py found at") +
+HELP_ELEM_EPILOG = (("TODO (CLEANUP TEXT): Python files named TestScript*.py found at ") +
                     ("or below the defined test path(s) will be run."))
 
 
@@ -24,51 +24,42 @@ class TestEngine():
     def __init__(self, runCoreTests, parentArgParser,
                        SSTCoreBinDir, SSTCoreSSTAppPath,
                        SSTStartupTopDir):
-        self._coreTestMode = runCoreTests
-        if self._coreTestMode:
-            self._testTypeStr = "SST-Core"
-        else:
-            self._testTypeStr = "Elements"
-        # Save off some parameters passed in
+
+        # Init some internal variables
+        self._failfast = False
         self._parentArgParser = parentArgParser
         self._SSTCoreBinDir = SSTCoreBinDir
         self._SSTCoreSSTAppPath = SSTCoreSSTAppPath
         self._SSTStartupTopDir = SSTStartupTopDir
+        self._coreTestMode = runCoreTests
+        self._testTypeStr = "SST-Core" if self._coreTestMode else "Elements"
+        self._sstElementsTopDir = os.path.dirname(__file__)
+        self._sstFullTestSuite = unittest.TestSuite()
 
+        # Initialize the globals & continue parsing the arguments
         test_globals.initTestGlobals()
-        self._initClassVars()
         self._parseArguments()
         print("NOTICE: Test Engine Instantiated - Running tests on {0}\n".format(self._testTypeStr))
 
-    def _initClassVars(self):
-        self.sstElementsTopDir = os.path.dirname(__file__)
-        self._sstFullTestSuite = unittest.TestSuite()
-        self._failfast = False
-        pass
-
     def _parseArguments(self):
-        if self._coreTestMode:
-            # Settings for SST-Core
-            epi = HELP_CORE_EPILOG
-            deflistofpaths = self._SSTStartupTopDir
-        else:
-            # Settings for Elements
-            epi = HELP_ELEM_EPILOG
-            deflistofpaths = self._SSTStartupTopDir
+        epi = HELP_CORE_EPILOG if self._coreTestMode else HELP_ELEM_EPILOG
+        deflistofpaths = self._SSTStartupTopDir if self._coreTestMode else self._SSTStartupTopDir
 
+        # Build a new parser (from the bones of the orig parser passed in) and
+        # populate it with more intresting stuff.
         parser = argparse.ArgumentParser(parents=[self._parentArgParser],
                                          description = HELP_DESC.format(self._testTypeStr),
                                          epilog = epi)
         parser.add_argument('listofpaths', metavar='test_path', nargs='*',
                              default=[deflistofpaths],
                              help='Directories to Test Suites [DEFAULT = .]')
-        group = parser.add_mutually_exclusive_group()
-        group.add_argument('-v', '--verbose', action='store_true',
-                            help = 'Run tests in verbose mode')
-        group.add_argument('-q', '--quiet', action='store_true',
-                            help = 'Run tests in quiet mode')
-        group.add_argument('-d', '--debug', action='store_true',
-                            help='Run tests in test debug output mode')
+        mutgroup = parser.add_mutually_exclusive_group()
+        mutgroup.add_argument('-v', '--verbose', action='store_true',
+                               help = 'Run tests in verbose mode')
+        mutgroup.add_argument('-q', '--quiet', action='store_true',
+                               help = 'Run tests in quiet mode')
+        mutgroup.add_argument('-d', '--debug', action='store_true',
+                               help='Run tests in test debug output mode')
         parser.add_argument('-r', '--ranks', type=int, metavar="XX",
                             nargs=1, default=0,
                             help='Run with XX ranks')
@@ -77,7 +68,6 @@ class TestEngine():
                             help='Run with YY threads')
         parser.add_argument('-f', '--failfast', action='store_true',
                             help = 'Stop testing on failure')
-
         parser.add_argument('-o', '--outdir', type=str, metavar='dir',
                             nargs='?', default='./test_outputs',
                             help = 'Set output directory')
@@ -126,12 +116,13 @@ class TestEngine():
 
 
     def _discoverTests(self):
+        print("TODO: DISCOVER TESTS")
         # Discover tests in each Test Path directory and add to the test suite
         sstPattern = 'testsuite*.py'
 #        for testpath in test_globals.listOfSearchableTestPaths:
 #            sstDiscoveredTests = unittest.TestLoader().discover(start_dir=testpath,
 #                                                                pattern=sstPattern,
-#                                                                top_level_dir=self.sstElementsTopDir)
+#                                                                top_level_dir=self._sstElementsTopDir)
 #            self.sstFullTestSuite.addTests(sstDiscoveredTests)
 #
 #        if test_globals.__TestAppDebug:
@@ -143,7 +134,6 @@ class TestEngine():
 #
 
     def runTests(self):
-        print("TODO: DISCOVER TESTS")
         self._createOutputDirectories()
         self._discoverTests()
 
