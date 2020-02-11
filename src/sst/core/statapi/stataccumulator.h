@@ -82,6 +82,13 @@ protected:
         m_max = ( value > m_max ) ? value : m_max;
     }
 
+    void addData_impl_Ntimes(uint64_t N, NumberBase value) override {
+      m_sum += N * value;
+      m_sum_sq += N * value * value;
+      m_min = ( value < m_min ) ? value : m_min;
+      m_max = ( value > m_max ) ? value : m_max;
+    }
+
 public:
     /**
         Provides the sum of the values presented so far.
