@@ -31,3 +31,4 @@ autom4te.cache
 config.log
 config.status
 libtool
+.DS_Store
