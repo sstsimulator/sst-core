@@ -5,7 +5,7 @@
 * SST-Core is the repository for the Sandia developed SST Simulation Core.  The repository is hosted on [GitHub](https://github.com).
    * An understanding of [git scm](https://git-scm.com/) is essential to developing code for SST.
    * There are 2 primary branches used for SST development
-      * **devel** - Contains the latest offical codeset of SST-Core.  **This branch may be broken at any time.**
+      * **devel** - Contains the latest offical codeset of SST-Core.  **This branch is unstable and may be broken at any time.**
       * **master** - Contains the latest fully tested stable version of SST-Core.
 
 Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-core).
@@ -28,7 +28,7 @@ Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-cor
 * Open a new GitHub pull request from the `issue-fix` branch to the **devel** branch.
    * **CRITICAL: ENSURE THAT PULL REQUEST IS TARGETED TO THE `devel` BRANCH.**
    * Ensure the Pull Request description clearly describes the problem and solution. Include the relevant issue number if applicable.
-   *  **DO NOT ATTEMPT TO MERGE THE `issue-fix` branch, it will be merged automatically.**
+   *  **DO NOT ATTEMPT TO MERGE THE `issue-fix` branch, it will be merged automatically by the autotester if it passes tests.**
 * The AutoTester tool will run and perform testing and merge the Pull Request as described below.
 
 #### **New Feature**
@@ -49,7 +49,7 @@ Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-cor
 #### **SST AutoTester**
 
 * When a Pull Request is created against the **devel** branch, an AutoTester application will automatically run (usually within 30 minutes) and will build and test the source branch of the Pull Request.  
-   * Testing is implemented across a number of different platforms
+   * Testing is performed across a number of different platforms
    * If the test suites pass, then the Pull Request will be setup for manual merging by SST-Core admin staff.  
       * Pull Requests from forks will not be automatially merged.
    * The testing is not all inclusive, it is possible for a bug related to a specific platform to slip in.  See Nightly Testing below.
