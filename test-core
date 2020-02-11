@@ -151,8 +151,8 @@ class StartupChecks():
         else:
             self._SSTCoreBinDir = foundSSTCoreBinPath
             self._SSTCoreSSTAppPath = foundSSTAppPath
-            print ("NOTICE - SSTCore bin Dir is Found at {0}".format(self._SSTCoreBinDir))
-            print ("NOTICE - SST Application is Found at {0}".format(self._SSTCoreSSTAppPath.strip("\n")))
+            print ("NOTICE: SSTCore bin Dir is Found at {0}".format(self._SSTCoreBinDir))
+            print ("NOTICE: SST Application is Found at {0}".format(self._SSTCoreSSTAppPath.strip("\n")))
 
 ###
 
