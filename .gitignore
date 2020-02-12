@@ -32,3 +32,4 @@ config.log
 config.status
 libtool
 .DS_Store
+*.pyc

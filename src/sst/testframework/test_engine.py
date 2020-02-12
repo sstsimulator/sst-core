@@ -50,10 +50,12 @@ class TestEngine():
         self._discoverTests()
 
         # Run all the tests
+        logForced(("\n=== TESTS STARTING ================") +
+                  ("===================================\n"))
         sstTestsResults = unittest.TextTestRunner(verbosity=test_globals.verbosity,
-                                                  failfast=self._failfast).run(self._sstFullTestSuite)
+                                                  failfast=self._failfast). \
+                                                  run(self._sstFullTestSuite)
 ####
-
     def _parseArguments(self):
 
         # Build a new parser (from the bones of the orig parser passed in) and
@@ -76,7 +78,7 @@ class TestEngine():
         mutgroup.add_argument('-q', '--quiet', action='store_true',
                                help = 'Run tests in quiet mode')
         mutgroup.add_argument('-d', '--debug', action='store_true',
-                               help='Run tests in test debug output mode')
+                               help='Run tests in test engine debug mode')
         parser.add_argument('-r', '--ranks', type=int, metavar="XX",
                             nargs=1, default=0,
                             help='Run with XX ranks')
@@ -89,12 +91,10 @@ class TestEngine():
                             nargs='?', default='./test_outputs',
                             help = 'Set output directory')
 
-        # We want this param to be invisible to the user
-        parser.add_argument('-x', '--testappdebug', action='store_true',
-                            help = argparse.SUPPRESS)
-
         args = parser.parse_args()
+        self._decodeParsedArguments(args)
 
+    def _decodeParsedArguments(self, args):
         # Extract the Arguments into the class variables
         test_globals.verbosity = 1
         if args.debug == True:
@@ -110,7 +110,6 @@ class TestEngine():
         self._failfast = args.failfast
         self.topOutputDir = args.outdir
         test_globals.testOutputTopDirPath = args.outdir
-        test_globals.debugMode = args.testappdebug
 
 ####
 
@@ -132,15 +131,13 @@ class TestEngine():
 ####
 
     def _discoverTests(self):
-        logDebug("TODO: DISCOVER TESTS")
-
         # Get the list of paths we are searching for testscripts
         if len(test_globals.listOfSearchableTestPaths) == 0:
             test_globals.listOfSearchableTestPaths = self._buildListOfTestSuiteDirs()
 
-        logForced("SEARCH PATHS FOR TESTSCRIPTS:")
+        logDebug("SEARCH PATHS FOR TESTSCRIPTS:")
         for searchPath in test_globals.listOfSearchableTestPaths:
-            logForced("- {0}".format(searchPath))
+            logDebug("- {0}".format(searchPath))
 
         # Discover tests in each Test Path directory and add to the test suite
         sstPattern = 'testsuite*.py'
@@ -149,10 +146,9 @@ class TestEngine():
                                                                 pattern=sstPattern)
             self._sstFullTestSuite.addTests(sstDiscoveredTests)
 
-        logDebug("Searchable Test Paths = {0}".format(test_globals.listOfSearchableTestPaths))
+        logDebug("DISCOVERED TESTSUITES:")
         for test in self._sstFullTestSuite:
-            logDebug("Discovered Tests = {0}".format(test._tests))
-
+            logDebug(" - {0}".format(test._tests))
 
 ####
 
