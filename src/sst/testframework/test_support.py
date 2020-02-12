@@ -12,6 +12,13 @@ import os
 #import unittest
 import test_globals
 
+
+REQUIRED_PY_MAJ_VER_2 = 2 # Required Major Version Min
+REQUIRED_PY_MAJ_VER_MAX = 3 # Required Major Version Max
+REQUIRED_PY_MAJ_VER_2_MINOR_VER = 7 # Required Minor Version
+
+
+
 ###################################################
 
 #""" This class the the SST Unittest class """
@@ -102,6 +109,23 @@ def logFatal(errstr):
     logForced(finalstr)
     sys.exit(1)
 
+#####################################
+
+def validatePythonVersion():
+    ver = sys.version_info
+    if (ver[0] < REQUIRED_PY_MAJ_VER_2) and (ver[0] < REQUIRED_PY_MAJ_VER_MAX):
+        logFatal(("SST Test Engine requires Python major version {1} or {2}\n" +
+                  "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                       REQUIRED_PY_MAJ_VER_2,
+                                                       REQUIRED_PY_MAJ_VER_MAX,
+                                                       sys.version))
+
+    if (ver[0] == REQUIRED_PY_MAJ_VER_2) and (ver[1] < REQUIRED_PY_MAJ_VER_2_MINOR_VER):
+        logFatal(("SST Test Engine requires Python version {1}.{2} or greater\n" +
+                  "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                       REQUIRED_PY_MAJ_VER_2,
+                                                       REQUIRED_PY_MAJ_VER_2_MINOR_VER,
+                                                       sys.version))
 
 ###################################################
 

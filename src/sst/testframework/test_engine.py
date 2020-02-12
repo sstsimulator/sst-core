@@ -22,48 +22,44 @@ HELP_ELEM_EPILOG = (("TODO (CLEANUP TEXT): Python files named TestScript*.py fou
 #################################################
 
 class TestEngine():
-    def __init__(self, runCoreTests, parentArgParser,
-                       SSTCoreBinDir, SSTCoreSSTAppPath,
-                       SSTStartupTopDir):
 
-        # Init some internal variables
-        self._failfast = False
-        self._parentArgParser = parentArgParser
-        self._SSTCoreBinDir = SSTCoreBinDir
-        self._SSTCoreSSTAppPath = SSTCoreSSTAppPath
-        self._SSTStartupTopDir = SSTStartupTopDir
-        self._coreTestMode = runCoreTests
-        self._testTypeStr = "SST-Core" if self._coreTestMode else "Elements"
-        self._sstElementsTopDir = os.path.dirname(__file__)
-        self._sstFullTestSuite = unittest.TestSuite()
+    def __init__(self, runCoreTestsFlag,
+                       SSTCoreBinDir,
+                       SSTCoreTestFrameworksDir):
 
-        # Initialize the globals & continue parsing the arguments
-        test_globals.initTestGlobals()
-        self._parseArguments()
-        logNotice(("Test Engine Instantiated - Running") +
+        # Perform initial checks that all is well
+        validatePythonVersion()
+        self._initTestEngineVariables(runCoreTestsFlag,
+                                      SSTCoreBinDir,
+                                      SSTCoreTestFrameworksDir)
+        logNotice(("SST Test Engine Instantiated - Running") +
                   (" tests on {0}\n").format(self._testTypeStr))
 
 ####
 
-    def runTests(self):
-        self._createOutputDirectories()
-        self._discoverTests()
+    def _initTestEngineVariables(self, runCoreTestsFlag,
+                                       SSTCoreBinDir,
+                                       SSTCoreTestFrameworksDir):
+        # Init some internal variables
+        self._failfast = False
+        self._SSTCoreBinDir = SSTCoreBinDir
+        self._SSTCoreTestFrameworksDir = SSTCoreTestFrameworksDir
+# TODO - DO WE NEED THIS?       self._SSTStartupTopDir = SSTStartupTopDir
+        self._coreTestMode = runCoreTestsFlag
+        self._testTypeStr = "SST-Core" if \
+           self._coreTestMode else "Registered Elements"
+        self._sstFullTestSuite = unittest.TestSuite()
 
-        # Run all the tests
-        logForced(("\n=== TESTS STARTING ================") +
-                  ("===================================\n"))
-        sstTestsResults = unittest.TextTestRunner(verbosity=test_globals.verbosity,
-                                                  failfast=self._failfast). \
-                                                  run(self._sstFullTestSuite)
+        test_globals.initTestGlobals()
+        self._parseArguments()
+
 ####
     def _parseArguments(self):
 
-        # Build a new parser (from the bones of the orig parser passed in) and
-        # populate it with more intresting stuff.
-        epilog = HELP_CORE_EPILOG if self._coreTestMode else HELP_ELEM_EPILOG
+        # Build a parameter parser, adjust its help based upon the test type
         helpdesc = HELP_DESC.format(self._testTypeStr)
-        parser = argparse.ArgumentParser(parents=[self._parentArgParser],
-                                         description = helpdesc,
+        epilog = HELP_CORE_EPILOG if self._coreTestMode else HELP_ELEM_EPILOG
+        parser = argparse.ArgumentParser(description = helpdesc,
                                          epilog = epilog)
 
         testPathStr = "Dir to SST-Core Testscripts" if \
@@ -94,8 +90,12 @@ class TestEngine():
         args = parser.parse_args()
         self._decodeParsedArguments(args)
 
+####
+
     def _decodeParsedArguments(self, args):
         # Extract the Arguments into the class variables
+        self._failfast = args.failfast
+        self.topOutputDir = args.outdir
         test_globals.verbosity = 1
         if args.debug == True:
             test_globals.verbosity = 3
@@ -107,8 +107,6 @@ class TestEngine():
         test_globals.numRanks = args.ranks
         test_globals.numThreads = args.threads
         test_globals.listOfSearchableTestPaths = args.listofpaths
-        self._failfast = args.failfast
-        self.topOutputDir = args.outdir
         test_globals.testOutputTopDirPath = args.outdir
 
 ####
@@ -204,3 +202,15 @@ class TestEngine():
 
         return finalRtnPaths
 
+####
+
+    def runTests(self):
+        self._createOutputDirectories()
+        self._discoverTests()
+
+        # Run all the tests
+        logForced(("\n=== TESTS STARTING ================") +
+                  ("===================================\n"))
+        sstTestsResults = unittest.TextTestRunner(verbosity=test_globals.verbosity,
+                                                  failfast=self._failfast). \
+                                                  run(self._sstFullTestSuite)
