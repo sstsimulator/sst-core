@@ -113,6 +113,7 @@ class TestEngine():
 
     def _createOutputDirectories(self):
         # Verify that the top Output Directory is valid
+        logForced("TODO: Check output dir first, and then TELL USER WE ARE CREATING THE OUTPUT DIR")
         os.system("mkdir -p {0}".format(test_globals.testOutputTopDirPath))
         if not os.path.isdir(test_globals.testOutputTopDirPath):
             logFatal((("Output Directory {0} - Does not exist and cannot ") +
