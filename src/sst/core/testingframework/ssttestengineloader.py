@@ -27,7 +27,7 @@ def startupAndRun(SSTCoreBinDir, testCoreMode):
     """
     # From the Current directory (this should be the SST-Core/bin dir)
     # set the path of the testframeworks dir
-    SSTCoreTestFrameworksDir = SSTCoreBinDir + "/testframeworks/"
+    SSTCoreTestFrameworksDir = SSTCoreBinDir + "/../libexec/"
 
     _verifyTestFrameworkIsAvailable(SSTCoreTestFrameworksDir)
 
