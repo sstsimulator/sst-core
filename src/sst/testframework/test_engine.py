@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ## Copyright 2009-2020 NTESS. Under the terms
@@ -23,10 +22,31 @@ from test_support import *
 
 #################################################
 
+REQUIRED_PY_MAJ_VER_2 = 2 # Required Major Version Min
+REQUIRED_PY_MAJ_VER_MAX = 3 # Required Major Version Max
+REQUIRED_PY_MAJ_VER_2_MINOR_VER = 7 # Required Minor Version
+
 HELP_DESC = 'Run {0} Tests'
 HELP_EPILOG = (("Python files named TestSuite*.py found at ") +
-               ("or below the defined testsuite_path(s) will be run."))
+               ("or below the defined test directory(s) will be run."))
 
+#################################################
+
+def validatePythonVersion():
+    ver = sys.version_info
+    if (ver[0] < REQUIRED_PY_MAJ_VER_2) and (ver[0] < REQUIRED_PY_MAJ_VER_MAX):
+        logFatal(("SST Test Engine requires Python major version {1} or {2}\n" +
+                  "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                       REQUIRED_PY_MAJ_VER_2,
+                                                       REQUIRED_PY_MAJ_VER_MAX,
+                                                       sys.version))
+
+    if (ver[0] == REQUIRED_PY_MAJ_VER_2) and (ver[1] < REQUIRED_PY_MAJ_VER_2_MINOR_VER):
+        logFatal(("SST Test Engine requires Python version {1}.{2} or greater\n" +
+                  "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                       REQUIRED_PY_MAJ_VER_2,
+                                                       REQUIRED_PY_MAJ_VER_2_MINOR_VER,
+                                                       sys.version))
 
 #################################################
 
@@ -74,9 +94,9 @@ class TestEngine():
         self._coreTestMode     = runCoreTests
         self._sstFullTestSuite = unittest.TestSuite()
         if self._coreTestMode:
-            self._testTypeStr = "SST-Core"
+            self._testTypeStr  = "SST-Core"
         else:
-            self._testTypeStr = "Registered Elements"
+            self._testTypeStr  = "Registered Elements"
 
         test_globals.initTestGlobals()
 
@@ -90,9 +110,9 @@ class TestEngine():
         parser = argparse.ArgumentParser(description = helpdesc,
                                          epilog = HELP_EPILOG)
         if self._coreTestMode:
-            testSuitePathStr = "Dir(s) to SST-Core TestSuites"
+            testSuitePathStr = "Dir(s) to SST-Core Tests"
         else:
-            testSuitePathStr = "Dir(s) to Registered Elements TestSuites"
+            testSuitePathStr = "Dir(s) to Registered Elements Tests"
         parser.add_argument('listofpaths', metavar='testsuite_paths', nargs='*',
                              default=[], help=testSuitePathStr)
         mutgroup = parser.add_mutually_exclusive_group()
@@ -125,14 +145,14 @@ class TestEngine():
         """
         # Extract the Arguments into the class variables
         self._failfast = args.failfast
-        test_globals.verbosity = 1
+        test_globals.verbosity = VERBOSE_NORMAL
         if args.quiet == True:
-            test_globals.verbosity = 0
+            test_globals.verbosity = VERBOSE_QUIET
         if args.verbose == True:
-            test_globals.verbosity = 2
+            test_globals.verbosity = VERBOSE_LOUD
         if args.debug == True:
             test_globals.debugMode = True
-            test_globals.verbosity = 3
+            test_globals.verbosity = VERBOSE_DEBUG
         test_globals.numRanks = args.ranks
         test_globals.numThreads = args.threads
         test_globals.listOfSearchableTestSuitePaths = args.listofpaths
@@ -222,12 +242,12 @@ class TestEngine():
         # Now read the appropriate type of data (Core or Elements)
         try:
             if self._coreTestMode:
-                # Find the testsuites dir in the core
-                cfgPathData = coreConfFileParser.get("SSTCore", "testsuitesdir")
+                # Find the tests dir in the core
+                cfgPathData = coreConfFileParser.get("SSTCore", "testsdir")
                 testSuitePaths.append(cfgPathData)
             else:
                 # Find the testsuites dir for each registered element
-                cfgPathData = coreConfFileParser.items("SST_ELEMENT_TESTSUITES")
+                cfgPathData = coreConfFileParser.items("SST_ELEMENT_TESTS")
                 for pathData in cfgPathData:
                     testSuitePaths.append(pathData[1])
 
@@ -239,12 +259,24 @@ class TestEngine():
         # Now verify each path is valid
         for suitePath in testSuitePaths:
             if not os.path.isdir(suitePath):
-                logWarning((("TestSuite Directory {0} - Does not exist\n - ") +
+                logWarning((("TestSuite Directory {0} - Does not exist; ") +
                             ("No tests will be performed...")).format(suitePath))
             else:
                 finalRtnPaths.append(suitePath)
 
         return finalRtnPaths
+
+####
+
+    def dumpTestSuite(self, suite):
+        """ Recursively log all tests in a TestSuite
+            :param: The current suite to print
+        """
+        if hasattr(suite, '__iter__'):
+            for x in suite:
+                self.dumpTestSuite(x)
+        else:
+            logDebug("- {0}".format(suite))
 
 ####
 
@@ -268,14 +300,12 @@ class TestEngine():
         # Discover tests in each Test Path directory and add to the test suite
         sstPattern = 'testsuite*.py'
         for testSuitePath in test_globals.listOfSearchableTestSuitePaths:
-            sstDiscoveredTests = unittest.TestLoader().discover(start_dir=testSuitePath,
-                                                                pattern=sstPattern)
-            self._sstFullTestSuite.addTests(sstDiscoveredTests)
+            sstTestSuites = unittest.TestLoader().discover(start_dir=testSuitePath,
+                                                           pattern=sstPattern)
+            self._sstFullTestSuite.addTests(sstTestSuites)
 
-        # Debug dump of discovered testsuites
-        logDebug("DISCOVERED TESTSUITES:")
-        for test in self._sstFullTestSuite:
-            logDebug(" - {0}".format(test._tests))
+        logDebug("DISCOVERED TESTS (FROM TESTSUITES):")
+        self.dumpTestSuite(self._sstFullTestSuite)
 
         # Warn the user if no testssuites/testcases are found
         if self._sstFullTestSuite.countTestCases() == 0:

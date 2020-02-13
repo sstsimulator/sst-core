@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 ## Copyright 2009-2020 NTESS. Under the terms
@@ -17,7 +16,6 @@ import os
 """ This is some globals to pass data between the top level test engine
     and the lower level testscripts """
 def initTestGlobals():
-    global __TestAppDebug  # Only used to debug the test application
     global debugMode
     global verbosity
     global numRanks
@@ -28,7 +26,6 @@ def initTestGlobals():
     global testOutputRunDirPath
     global testOutputTmpDirPath
 
-    __TestAppDebug = False
     debugMode = False
     verbosity = 1
     numRanks = 0
