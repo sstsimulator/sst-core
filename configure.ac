@@ -234,6 +234,9 @@ else
     printf "%38s : No\n" "Boost Library"
 fi
 
+printf "%38s : %s\n" "Found Python" "$PYTHON_EXE"
+printf "%38s : %s\n" "Python3" "$PYTHON_VERSION3"
+
 if test "x$sst_check_zoltan_happy" = "xyes" ; then
     printf "%38s : YES\n" "Zoltan Partitioner"
 else
