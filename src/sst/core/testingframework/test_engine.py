@@ -11,14 +11,28 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
+""" This module is the main testing engine.  It will init testing variable,
+    parse the cmd line vars, read the sstsimulator.conf file to find where
+    testsuites should live, and then discover and run tests.
+"""
+
 import sys
 import os
-import ConfigParser
 import unittest
 import argparse
+# ConfigParser module changes name between Py2->Py3
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 import test_globals
-from test_support import *
+from test_support import log_fatal
+from test_support import log_notice
+from test_support import log_debug
+from test_support import log_error
+from test_support import log_warning
+from test_support import log_forced
 
 #################################################
 
@@ -32,285 +46,294 @@ HELP_EPILOG = (("Python files named TestSuite*.py found at ") +
 
 #################################################
 
-def validatePythonVersion():
+def validate_python_version():
+    """ Validate that we are running on a supported Python version.
+    """
     ver = sys.version_info
     if (ver[0] < REQUIRED_PY_MAJ_VER_2) and (ver[0] < REQUIRED_PY_MAJ_VER_MAX):
-        logFatal(("SST Test Engine requires Python major version {1} or {2}\n" +
-                  "Found Python version is:\n{3}").format(os.path.basename(__file__),
-                                                       REQUIRED_PY_MAJ_VER_2,
-                                                       REQUIRED_PY_MAJ_VER_MAX,
-                                                       sys.version))
+        log_fatal(("SST Test Engine requires Python major version {1} or {2}\n" +
+                   "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                           REQUIRED_PY_MAJ_VER_2,
+                                                           REQUIRED_PY_MAJ_VER_MAX,
+                                                           sys.version))
 
     if (ver[0] == REQUIRED_PY_MAJ_VER_2) and (ver[1] < REQUIRED_PY_MAJ_VER_2_MINOR_VER):
-        logFatal(("SST Test Engine requires Python version {1}.{2} or greater\n" +
-                  "Found Python version is:\n{3}").format(os.path.basename(__file__),
-                                                       REQUIRED_PY_MAJ_VER_2,
-                                                       REQUIRED_PY_MAJ_VER_2_MINOR_VER,
-                                                       sys.version))
+        log_fatal(("SST Test Engine requires Python version {1}.{2} or greater\n" +
+                   "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                           REQUIRED_PY_MAJ_VER_2,
+                                                           REQUIRED_PY_MAJ_VER_2_MINOR_VER,
+                                                           sys.version))
 
 #################################################
 
 class TestEngine():
+    """ This is the main Test Engine, it will init arguments, parsed params,
+        create output directories, and then Discover and Run the tests.
+    """
 
-    def __init__(self, SSTCoreBinDir, runCoreTests):
+    def __init__(self, sst_core_bin_dir, run_core_tests):
         """ Initialize the TestEngine object, and parse the user arguments
-            :param: SSTCoreBinDir = The SST-Core binary directory
-            :param: runCoreTests = True for Core Tests, False for Elements tests
+            :param: sst_core_bin_dir = The SST-Core binary directory
+            :param: run_core_tests = True for Core Tests, False for Elements tests
         """
         # Perform initial checks that all is well
-        validatePythonVersion()
-        self._initTestEngineVariables(SSTCoreBinDir, runCoreTests)
-        self._parseArguments()
-        logNotice(("SST Test Engine Instantiated - Running") +
-                  (" tests on {0}").format(self._testTypeStr))
+        validate_python_version()
+        self._init_test_engine_variables(sst_core_bin_dir, run_core_tests)
+        self._parse_arguments()
+        log_notice(("SST Test Engine Instantiated - Running") +
+                   (" tests on {0}").format(self._test_type_str))
+        ver = sys.version_info
+        log_debug("Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
 
 ####
 
-    def runTests(self):
+    def discover_and_run_tests(self):
         """ Create the output directories, then discover the tests, and then
             run them using pythons unittest module
         """
-        self._createAllOutputDirectories()
-        self._discoverTests()
+        self._create_all_output_directories()
+        self._discover_tests()
 
         # Run all the tests
-        logForced(("\n=== TESTS STARTING ================") +
-                  ("===================================\n"))
-        sstTestsResults = unittest.TextTestRunner(verbosity=test_globals.verbosity,
-                                                  failfast=self._failfast). \
-                                                  run(self._sstFullTestSuite)
+        log_forced(("\n=== TESTS STARTING ================") +
+                   ("===================================\n"))
+        sst_tests_results = unittest.TextTestRunner(verbosity=test_globals.VERBOSITY,
+                                                    failfast=self._fail_fast). \
+                                                    run(self._sst_full_test_suite)
 
 #################################################
 
-    def _initTestEngineVariables(self, SSTCoreBinDir, runCoreTests):
+    def _init_test_engine_variables(self, sst_core_bin_dir, run_core_tests):
         """ Initialize the variables needed for testing.  This will also
             initialize the global variables
-            :param: SSTCoreBinDir = The SST-Core binary directory
-            :param: runCoreTests = True for Core Tests, False for Elements Tests
+            :param: sst_core_bin_dir = The SST-Core binary directory
+            :param: run_core_tests = True for Core Tests, False for Elements Tests
         """
         # Init some internal variables
-        self._failfast         = False
-        self._SSTCoreBinDir    = SSTCoreBinDir
-        self._coreTestMode     = runCoreTests
-        self._sstFullTestSuite = unittest.TestSuite()
-        if self._coreTestMode:
-            self._testTypeStr  = "SST-Core"
+        self._fail_fast = False
+        self._list_of_searchable_testsuite_paths = ""
+        self._sst_core_bin_dir = sst_core_bin_dir
+        self._core_test_mode = run_core_tests
+        self._sst_full_test_suite = unittest.TestSuite()
+        if self._core_test_mode:
+            self._test_type_str = "SST-Core"
         else:
-            self._testTypeStr  = "Registered Elements"
+            self._test_type_str = "Registered Elements"
 
-        test_globals.initTestGlobals()
+        test_globals.init_test_globals()
 
 ####
 
-    def _parseArguments(self):
+    def _parse_arguments(self):
         """ Parse the cmd line arguments
         """
         # Build a parameter parser, adjust its help based upon the test type
-        helpdesc = HELP_DESC.format(self._testTypeStr)
-        parser = argparse.ArgumentParser(description = helpdesc,
-                                         epilog = HELP_EPILOG)
-        if self._coreTestMode:
-            testSuitePathStr = "Dir(s) to SST-Core Tests"
+        helpdesc = HELP_DESC.format(self._test_type_str)
+        parser = argparse.ArgumentParser(description=helpdesc,
+                                         epilog=HELP_EPILOG)
+        if self._core_test_mode:
+            testsuite_path_str = "Dir(s) to SST-Core Tests"
         else:
-            testSuitePathStr = "Dir(s) to Registered Elements Tests"
-        parser.add_argument('listofpaths', metavar='testsuite_paths', nargs='*',
-                             default=[], help=testSuitePathStr)
+            testsuite_path_str = "Dir(s) to Registered Elements Tests"
+        parser.add_argument('list_of_paths', metavar='testsuite_paths', nargs='*',
+                            default=[], help=testsuite_path_str)
         mutgroup = parser.add_mutually_exclusive_group()
         mutgroup.add_argument('-v', '--verbose', action='store_true',
-                               help = 'Run tests in verbose mode')
+                              help='Run tests in verbose mode')
         mutgroup.add_argument('-q', '--quiet', action='store_true',
-                               help = 'Run tests in quiet mode')
+                              help='Run tests in quiet mode')
         mutgroup.add_argument('-d', '--debug', action='store_true',
-                               help='Run tests in test engine debug mode')
+                              help='Run tests in test engine debug mode')
         parser.add_argument('-r', '--ranks', type=int, metavar="XX",
                             nargs=1, default=0,
                             help='Run with XX ranks')
         parser.add_argument('-t', '--threads', type=int, metavar="YY",
                             nargs=1, default=0,
                             help='Run with YY threads')
-        parser.add_argument('-f', '--failfast', action='store_true',
-                            help = 'Stop testing on failure')
-        parser.add_argument('-o', '--outdir', type=str, metavar='dir',
+        parser.add_argument('-f', '--fail_fast', action='store_true',
+                            help='Stop testing on failure')
+        parser.add_argument('-o', '--out_dir', type=str, metavar='dir',
                             nargs='?', default='./test_outputs',
-                            help = 'Set output directory')
+                            help='Set output directory')
 
         args = parser.parse_args()
-        self._decodeParsedArguments(args)
+        self._decode_parsed_arguments(args)
 
 ####
 
-    def _decodeParsedArguments(self, args):
+    def _decode_parsed_arguments(self, args):
         """ Decode the parsed arguments into their class or global variables
             :param: args = The arguments from the cmd line parser
         """
         # Extract the Arguments into the class variables
-        self._failfast = args.failfast
-        test_globals.verbosity = VERBOSE_NORMAL
-        if args.quiet == True:
-            test_globals.verbosity = VERBOSE_QUIET
-        if args.verbose == True:
-            test_globals.verbosity = VERBOSE_LOUD
-        if args.debug == True:
-            test_globals.debugMode = True
-            test_globals.verbosity = VERBOSE_DEBUG
-        test_globals.numRanks = args.ranks
-        test_globals.numThreads = args.threads
-        test_globals.listOfSearchableTestSuitePaths = args.listofpaths
-        test_globals.testOutputTopDirPath = args.outdir
-        test_globals.testOutputRunDirPath = "{0}/run_data".format(args.outdir)
-        test_globals.testOutputTmpDirPath = "{0}/tmp_data".format(args.outdir)
+        self._fail_fast = args.fail_fast
+        self._list_of_searchable_testsuite_paths = args.list_of_paths
+        test_globals.VERBOSITY = test_globals.VERBOSE_NORMAL
+        if args.quiet:
+            test_globals.VERBOSITY = test_globals.VERBOSE_QUIET
+        if args.verbose:
+            test_globals.VERBOSITY = test_globals.VERBOSE_LOUD
+        if args.debug:
+            test_globals.DEBUGMODE = True
+            test_globals.VERBOSITY = test_globals.VERBOSE_DEBUG
+        test_globals.NUMRANKS = args.ranks
+        test_globals.NUMTHREADS = args.threads
+        test_globals.TESTOUTPUTTOPDIRPATH = args.out_dir
+        test_globals.TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(args.out_dir)
+        test_globals.TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(args.out_dir)
 
 ####
 
-    def _createOutputDir(self, outDir):
+    def _create_output_dir(self, out_dir):
         """ Look to see if an output dir exists.  If not, try to create it
-            :param: outdir = The path to the output directory
+            :param: out_dir = The path to the output directory
             :return: True if output dir is created (did not exist); else False
         """
         # Is there an directory already existing
-        if not os.path.isdir(outDir):
+        if not os.path.isdir(out_dir):
             try:
-                os.makedirs(outDir, mode=0o744)
+                os.makedirs(out_dir, mode=0o744)
                 return True
-            except OSError as e:
-                logError("os.mkdirs Exception - ({0})".format(e))
-                pass
-            if not os.path.isdir(outDir):
-                logFatal((("Output Directory {0} - Does not exist and ") +
-                          ("cannot be created")).format(outDir))
+            except OSError as exc_e:
+                log_error("os.mkdirs Exception - ({0})".format(exc_e))
+            if not os.path.isdir(out_dir):
+                log_fatal((("Output Directory {0} - Does not exist and ") +
+                           ("cannot be created")).format(out_dir))
         return False
 
 ####
 
-    def _createAllOutputDirectories(self):
+    def _create_all_output_directories(self):
         """ Create the output directories if needed
         """
-        topDir = test_globals.testOutputTopDirPath
-        runDir = test_globals.testOutputRunDirPath
-        tmpDir = test_globals.testOutputTmpDirPath
-        if self._createOutputDir(topDir):
-            logNotice("SST Test Output Dir Created at {0}".format(topDir))
-        self._createOutputDir(runDir)
-        self._createOutputDir(tmpDir)
+        top_dir = test_globals.TESTOUTPUTTOPDIRPATH
+        run_dir = test_globals.TESTOUTPUTRUNDIRPATH
+        tmp_dir = test_globals.TESTOUTPUTTMPDIRPATH
+        if self._create_output_dir(top_dir):
+            log_notice("SST Test Output Dir Created at {0}".format(top_dir))
+        self._create_output_dir(run_dir)
+        self._create_output_dir(tmp_dir)
 
         # Create the test output dir if necessary
-        logDebug("Test Output Top Directory = {0}".format(topDir))
-        logDebug("Test Output Run Directory = {0}".format(runDir))
-        logDebug("Test Output Tmp Directory = {0}".format(tmpDir))
+        log_debug("Test Output Top Directory = {0}".format(top_dir))
+        log_debug("Test Output Run Directory = {0}".format(run_dir))
+        log_debug("Test Output Tmp Directory = {0}".format(tmp_dir))
 
 
 ####
 
-    def _createCoreConfigParser(self):
+    def _create_core_config_parser(self):
         """ Create an Core Configurtion (INI format) parser.  This will allow
             us to search the Core configuration looking for test file paths
             :return: An ConfParser.RawConfigParser object
         """
-        coreConfFileDir = self._SSTCoreBinDir + "/../etc/sst/"
-        coreConfFilePath = coreConfFileDir + "sstsimulator.conf"
-        if not os.path.isdir(coreConfFileDir):
-            logFatal((("SST-Core Directory {0} - Does not exist - ") +
-                      ("testing cannot continue")).format(coreConfFileDir))
-        if not os.path.isfile(coreConfFilePath):
-            logFatal((("SST-Core Configuration File {0} - Does not exist - ") +
-                      ("testing cannot continue")).format(coreConfFilePath))
+        core_conf_file_dir = self._sst_core_bin_dir + "/../etc/sst/"
+        core_conf_file_path = core_conf_file_dir + "sstsimulator.conf"
+        if not os.path.isdir(core_conf_file_dir):
+            log_fatal((("SST-Core Directory {0} - Does not exist - ") +
+                       ("testing cannot continue")).format(core_conf_file_dir))
+        if not os.path.isfile(core_conf_file_path):
+            log_fatal((("SST-Core Configuration File {0} - Does not exist - ") +
+                       ("testing cannot continue")).format(core_conf_file_path))
 
         # Instantiate a ConfigParser to read the data in the config file
         try:
-            coreConfFileParser = ConfigParser.RawConfigParser()
-            coreConfFileParser.read(coreConfFilePath)
-        except ConfigParser.Error as e:
-            logFatal((("Test Engine: Cannot read SST-Core Configuration ") +
-                      ("File:\n{0}\n- testing cannot continue") +
-                      ("({1})")).format(coreConfFilePath, e))
+            core_conf_file_parser = configparser.RawConfigParser()
+            core_conf_file_parser.read(core_conf_file_path)
+        except configparser.Error as exc_e:
+            log_fatal((("Test Engine: Cannot read SST-Core Configuration ") +
+                       ("File:\n{0}\n- testing cannot continue") +
+                       ("({1})")).format(core_conf_file_path, exc_e))
 
-        return coreConfFileParser
+        return core_conf_file_parser
 
 ###
 
-    def _buildListOfTestSuiteDirs(self):
+    def _build_list_of_testsuite_dirs(self):
         """ Using a config file parser, build a list of test Suite Dirs.
             Note: The discovery method of Test Suites is different
                   depending if we are testing core vs registered elements.
         """
-        finalRtnPaths = []
-        testSuitePaths = []
+        final_rtn_paths = []
+        testsuite_paths = []
 
         # Build the Config File Parser
-        coreConfFileParser = self._createCoreConfigParser()
+        core_conf_file_parser = self._create_core_config_parser()
 
         # Now read the appropriate type of data (Core or Elements)
         try:
-            if self._coreTestMode:
+            if self._core_test_mode:
                 # Find the tests dir in the core
-                cfgPathData = coreConfFileParser.get("SSTCore", "testsdir")
-                testSuitePaths.append(cfgPathData)
+                section = "SSTCore"
+                cfg_path_data = core_conf_file_parser.get(section, "testsdir")
+                testsuite_paths.append(cfg_path_data)
             else:
                 # Find the testsuites dir for each registered element
-                cfgPathData = coreConfFileParser.items("SST_ELEMENT_TESTS")
-                for pathData in cfgPathData:
-                    testSuitePaths.append(pathData[1])
+                section = "SST_ELEMENT_TESTS"
+                cfg_path_data = core_conf_file_parser.items(section)
+                for path_data in cfg_path_data:
+                    testsuite_paths.append(path_data[1])
 
-        except ConfigParser.Error as e:
-            errmsg = (("Reading SST-Core Config file ") +
-                     ("{0} - {1} ")).format(coreConfFilePath, e)
-            logError(errmsg)
+        except configparser.Error as exc_e:
+            errmsg = (("Reading SST-Core Config file section") +
+                      ("{0} - {1} ")).format(section, exc_e)
+            log_error(errmsg)
 
         # Now verify each path is valid
-        for suitePath in testSuitePaths:
-            if not os.path.isdir(suitePath):
-                logWarning((("TestSuite Directory {0} - Does not exist; ") +
-                            ("No tests will be performed...")).format(suitePath))
+        for suite_path in testsuite_paths:
+            if not os.path.isdir(suite_path):
+                log_warning((("TestSuite Directory {0} - Does not exist; ") +
+                             ("No tests will be performed...")).format(suite_path))
             else:
-                finalRtnPaths.append(suitePath)
+                final_rtn_paths.append(suite_path)
 
-        return finalRtnPaths
+        return final_rtn_paths
 
 ####
 
-    def dumpTestSuite(self, suite):
+    def _dump_testsuite(self, suite):
         """ Recursively log all tests in a TestSuite
             :param: The current suite to print
         """
         if hasattr(suite, '__iter__'):
-            for x in suite:
-                self.dumpTestSuite(x)
+            for sub_suite in suite:
+                self._dump_testsuite(sub_suite)
         else:
-            logDebug("- {0}".format(suite))
+            log_debug("- {0}".format(suite))
 
 ####
 
-    def _discoverTests(self):
+    def _discover_tests(self):
         """ Figure out the list of paths we are searching for testsuites.  The
             user may have given us a list via the cmd line, so that takes priority
         """
         # Did the user give us any test suite paths in the cmd line
-        if len(test_globals.listOfSearchableTestSuitePaths) == 0:
-            test_globals.listOfSearchableTestSuitePaths = self._buildListOfTestSuiteDirs()
+        if len(self._list_of_searchable_testsuite_paths) == 0:
+            self._list_of_searchable_testsuite_paths = self._build_list_of_testsuite_dirs()
 
-        # Check to see if no Test Suite Paths
-        if len(test_globals.listOfSearchableTestSuitePaths) == 0:
-            logWarning("No TestSuites Paths have been defined/found")
+        # Check again to see if no Test Suite Paths
+        if len(self._list_of_searchable_testsuite_paths) == 0:
+            log_warning("No TestSuites Paths have been defined/found")
 
         # Debug dump of search paths
-        logDebug("SEARCH PATHS FOR TESTSUITES:")
-        for searchPath in test_globals.listOfSearchableTestSuitePaths:
-            logDebug("- {0}".format(searchPath))
+        log_debug("SEARCH PATHS FOR TESTSUITES:")
+        for search_path in self._list_of_searchable_testsuite_paths:
+            log_debug("- {0}".format(search_path))
 
         # Discover tests in each Test Path directory and add to the test suite
-        sstPattern = 'testsuite*.py'
-        for testSuitePath in test_globals.listOfSearchableTestSuitePaths:
-            sstTestSuites = unittest.TestLoader().discover(start_dir=testSuitePath,
-                                                           pattern=sstPattern)
-            self._sstFullTestSuite.addTests(sstTestSuites)
+        sst_pattern = 'testsuite*.py'
+        for testsuite_path in self._list_of_searchable_testsuite_paths:
+            sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
+                                                            pattern=sst_pattern)
+            self._sst_full_test_suite.addTests(sst_testsuites)
 
-        logDebug("DISCOVERED TESTS (FROM TESTSUITES):")
-        self.dumpTestSuite(self._sstFullTestSuite)
+        log_debug("DISCOVERED TESTS (FROM TESTSUITES):")
+        self._dump_testsuite(self._sst_full_test_suite)
 
         # Warn the user if no testssuites/testcases are found
-        if self._sstFullTestSuite.countTestCases() == 0:
-            logWarning(("No TestSuites (with TestCases) have been found ") +
-                       ("- verify the search paths"))
-            logForced("SEARCH PATHS FOR TESTSUITES:")
-            for searchPath in test_globals.listOfSearchableTestSuitePaths:
-                logForced("- {0}".format(searchPath))
+        if self._sst_full_test_suite.countTestCases() == 0:
+            log_warning(("No TestSuites (with TestCases) have been found ") +
+                        ("- verify the search paths"))
+            log_forced("SEARCH PATHS FOR TESTSUITES:")
+            for search_path in self._list_of_searchable_testsuite_paths:
+                log_forced("- {0}".format(search_path))

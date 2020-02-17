@@ -12,15 +12,18 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
+""" This module is the entry point for testing the SST Registerd Elements
+"""
+
 import sys
 import os.path
 import traceback
 
 try:
     import ssttestengineloader
-except Exception as e:
-    print("FATAL: Failed to load ssttestengineloader.py ({0})".format(e))
-    quit(1)
+except ImportError as exc_e:
+    print("FATAL: Failed to load ssttestengineloader.py ({0})".format(exc_e))
+    sys.exit(1)
 
 #################################################
 # Script Entry
@@ -28,16 +31,16 @@ except Exception as e:
 if __name__ == "__main__":
     try:
         # Get the path of where this file is launched
-        SSTCoreBinDir = os.path.dirname(os.path.abspath(__file__))
+        SSTCOREBINDIR = os.path.dirname(os.path.abspath(__file__))
         # Run the test engine in Elements Mode
-        ssttestengineloader.startupAndRun(SSTCoreBinDir, testCoreMode = False)
-    except Exception as e:
+        ssttestengineloader.startup_and_run(SSTCOREBINDIR, test_core_mode=False)
+    except Exception as exc_e:
+        # NOTE: This is a generic catchall handler for any unhandled exception
         print(("FATAL: SST Test Frameworks encountered ") +
-              ("an unexpected exception ({0}))".format(e)))
+              ("an unexpected exception ({0}))".format(exc_e)))
         print("\n=============================================================")
         print("==== TRACEBACK ===============================================")
         print("==============================================================")
         traceback.print_exc(file=sys.stdout)
         print("==============================================================")
         sys.exit(1)
-

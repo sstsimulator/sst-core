@@ -11,27 +11,39 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
-import os
+""" This module is a group of global variables that must be common to all tests
+"""
 
-""" This is some globals to pass data between the top level test engine
-    and the lower level testscripts """
-def initTestGlobals():
-    global debugMode
-    global verbosity
-    global numRanks
-    global numThreads
-    global listOfSearchableTestSuitePaths
-    global testSuiteFilePath
-    global testOutputTopDirPath
-    global testOutputRunDirPath
-    global testOutputTmpDirPath
+VERBOSE_QUIET = 0
+VERBOSE_NORMAL = 1
+VERBOSE_LOUD = 2
+VERBOSE_DEBUG = 3
 
-    debugMode = False
-    verbosity = 1
-    numRanks = 0
-    numThreads = 0
-    listOfSearchableTestPaths = [os.path.dirname(__file__)]
-    testSuiteFilePath = ""
-    testOutputTopDirPath = "./test_outputs"
-    testOutputRunDirPath = "{0}/run_data".format(testOutputTopDirPath)
-    testOutputTmpDirPath = "{0}/tmp_data".format(testOutputTopDirPath)
+DEBUGMODE = None
+VERBOSITY = None
+NUMRANKS = None
+NUMTHREADS = None
+TESTOUTPUTTOPDIRPATH = None
+TESTOUTPUTRUNDIRPATH = None
+TESTOUTPUTTMPDIRPATH = None
+
+
+# These are some globals to pass data between the top level test engine
+# and the lower level testscripts
+def init_test_globals():
+    """ Initialize the test global variables """
+    global DEBUGMODE
+    global VERBOSITY
+    global NUMRANKS
+    global NUMTHREADS
+    global TESTOUTPUTTOPDIRPATH
+    global TESTOUTPUTRUNDIRPATH
+    global TESTOUTPUTTMPDIRPATH
+
+    DEBUGMODE = False
+    VERBOSITY = 1
+    NUMRANKS = 0
+    NUMTHREADS = 0
+    TESTOUTPUTTOPDIRPATH = "./test_outputs"
+    TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(TESTOUTPUTTOPDIRPATH)
+    TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(TESTOUTPUTTOPDIRPATH)
