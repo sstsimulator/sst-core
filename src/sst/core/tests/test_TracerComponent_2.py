@@ -1,13 +1,13 @@
 # Simple SST python tests to demonstrate use of simpleTrace.
 # This test generates a trace of all memory references going to memController
-# Generated Files are -trace: test-2_memory_references_trace.txt, 
+# Generated Files are -trace: test-2_memory_references_trace.txt,
 # stats: test-2_memory_references_stats.txt
 
 ## arch model
 #
 #  comp_cpu <-> comp_l1cache <-> comp_l2cache <-> comp_tracer <-> comp_memory
 #
-## 
+##
 
 import sst
 
@@ -64,9 +64,9 @@ backend.addParams({
     "mem_size"              : "1024MiB",
 })
 
-comp_tracer = sst.Component("tracer", "simpleElementExample.simpleTracerComponent")
+comp_tracer = sst.Component("tracer", "coreTestElement.simpleTracerComponent")
 comp_tracer.addParams({
-    "clock"      : "2 Ghz", 
+    "clock"      : "2 Ghz",
     "debug"      : "8",
     "statistics" : "1",
     "pageSize"   : "4096",

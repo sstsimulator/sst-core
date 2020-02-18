@@ -27,7 +27,7 @@
 #include <sst/core/sharedRegion.h>
 
 namespace SST {
-namespace CoreTestElementExample {
+namespace CoreTestLookupTableComponent {
 
 coreTestLookupTableComponent::coreTestLookupTableComponent(SST::ComponentId_t id, SST::Params &params) : Component(id)
 {

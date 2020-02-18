@@ -8,7 +8,7 @@ params = dict({
     })
 
 for i in range(nitems):
-    comp = sst.Component("Table Comp %d"%i, "simpleElementExample.simpleLookupTableComponent")
+    comp = sst.Component("Table Comp %d"%i, "coreTestElement.simpleLookupTableComponent")
     comp.addParams(params)
     comp.addParam("myid", i)
 

@@ -5,16 +5,16 @@ sst.setProgramOption("stopAtCycle", "10us")
 
 
 # Set up sender using anonymous subcomponent
-loader0 = sst.Component("Loader0", "simpleElementExample.SubComponentLoaderLegacy")
+loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoaderLegacy")
 loader0.addParam("clock", "1.5GHz")
-loader0.addParam("unnamed_subcomponent", "simpleElementExample.SubCompSenderLegacy")
+loader0.addParam("unnamed_subcomponent", "coreTestElement.SubCompSenderLegacy")
 loader0.addParam("sendCount", 15)
 loader0.enableAllStatistics()
 
 # Set up receiver using anonymous subcomponent
-loader1 = sst.Component("Loader1", "simpleElementExample.SubComponentLoaderLegacy")
+loader1 = sst.Component("Loader1", "coreTestElement.SubComponentLoaderLegacy")
 loader1.addParam("clock", "1.0GHz")
-loader1.addParam("unnamed_subcomponent", "simpleElementExample.SubCompReceiverLegacy")
+loader1.addParam("unnamed_subcomponent", "coreTestElement.SubCompReceiverLegacy")
 loader1.enableAllStatistics()
 
 # Set up link

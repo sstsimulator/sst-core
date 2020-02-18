@@ -31,7 +31,7 @@ public:
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestRNGComponent,
-        "coreTestElementExample",
+        "coreTestElement",
         "coreTestRNGComponent",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Random number generation component",

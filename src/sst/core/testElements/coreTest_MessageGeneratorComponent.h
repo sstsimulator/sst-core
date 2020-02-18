@@ -29,7 +29,7 @@ public:
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestMessageGeneratorComponent,
-        "coreTestElementExample",
+        "coreTestElement",
         "coreTestMessageGeneratorComponent",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Messaging rate benchmark component",

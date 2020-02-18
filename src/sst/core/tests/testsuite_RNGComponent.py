@@ -15,7 +15,7 @@ def setUpModule():
 def tearDownModule():
     pass
 
-############
+################################################################################
 
 class testsuite_RNGComponent(SSTUnitTest):
 
@@ -24,6 +24,8 @@ class testsuite_RNGComponent(SSTUnitTest):
 
     def tearDown(self):
         pass
+
+#############################################
 
     def test_RNG_Mersenne(self):
         self.RNG_test_template("mersenne")
@@ -35,15 +37,15 @@ class testsuite_RNGComponent(SSTUnitTest):
     def test_RNG_xorshift(self):
         self.RNG_test_template("xorshift")
 
-###
+################################################################################
 
     def RNG_test_template(self, testcase):
         # Set the various file paths
         sdlfile = "{0}/test_RNGComponent_{1}.py".format(self.get_testsuite_dir(), testcase)
-        reffile = "{0}/refFiles/test_simpleRNGComponent_{1}.out".format(self.get_testsuite_dir(), testcase)
-        outfile = "{0}/test_simpleRNGComponent_{1}.out".format(get_test_output_run_dir(), testcase)
-        tmpfile = "{0}/test_simpleRNGComponent_{1}.tmp".format(get_test_output_run_dir(), testcase)
-        cmpfile = "{0}/test_simpleRNGComponent_{1}.cmp".format(get_test_output_run_dir(), testcase)
+        reffile = "{0}/refFiles/test_RNGComponent_{1}.out".format(self.get_testsuite_dir(), testcase)
+        outfile = "{0}/test_RNGComponent_{1}.out".format(get_test_output_run_dir(), testcase)
+        tmpfile = "{0}/test_RNGComponent_{1}.tmp".format(get_test_output_run_dir(), testcase)
+        cmpfile = "{0}/test_RNGComponent_{1}.cmp".format(get_test_output_run_dir(), testcase)
 
         # TODO: Destroy any outfiles
         # TODO: Validate SST is an executable file

@@ -4,26 +4,26 @@ import sst
 sst.setProgramOption("stopAtCycle", "10us")
 
 # Set up senders using user subcomponents
-loader0 = sst.Component("Loader0", "simpleElementExample.SubComponentLoader")
+loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoader")
 loader0.addParam("clock", "1.5GHz")
 loader0.enableAllStatistics()
 
-sub0_0 = loader0.setSubComponent("mySubComp", "simpleElementExample.SubCompSender",0)
+sub0_0 = loader0.setSubComponent("mySubComp", "coreTestElement.SubCompSender",0)
 sub0_0.addParam("sendCount", 15)
 sub0_0.enableAllStatistics()
 
-sub0_1 = loader0.setSubComponent("mySubComp", "simpleElementExample.SubCompSender",1)
+sub0_1 = loader0.setSubComponent("mySubComp", "coreTestElement.SubCompSender",1)
 sub0_1.addParam("sendCount", 15)
 sub0_1.enableAllStatistics()
 
 # Set up receivers using user subcomponents
-loader1 = sst.Component("Loader1", "simpleElementExample.SubComponentLoader")
+loader1 = sst.Component("Loader1", "coreTestElement.SubComponentLoader")
 loader1.addParam("clock", "1.0GHz")
 
-sub1_0 = loader1.setSubComponent("mySubComp", "simpleElementExample.SubCompReceiver",0)
+sub1_0 = loader1.setSubComponent("mySubComp", "coreTestElement.SubCompReceiver",0)
 sub1_0.enableAllStatistics()
 
-sub1_1 = loader1.setSubComponent("mySubComp", "simpleElementExample.SubCompReceiver",1)
+sub1_1 = loader1.setSubComponent("mySubComp", "coreTestElement.SubCompReceiver",1)
 sub1_1.enableAllStatistics()
 
 # Set up links

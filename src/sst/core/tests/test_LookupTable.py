@@ -8,6 +8,6 @@ params = dict({
     })
 
 for i in range(10):
-    comp = sst.Component("Table Comp %d"%i, "simpleElementExample.simpleLookupTableComponent")
+    comp = sst.Component("Table Comp %d"%i, "coreTestElement.simpleLookupTableComponent")
     comp.addParams(params)
 

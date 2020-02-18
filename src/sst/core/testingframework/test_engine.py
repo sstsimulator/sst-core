@@ -275,7 +275,7 @@ class TestEngine():
                     testsuite_paths.append(path_data[1])
 
         except configparser.Error as exc_e:
-            errmsg = (("Reading SST-Core Config file section") +
+            errmsg = (("Reading SST-Core Config file section ") +
                       ("{0} - {1} ")).format(section, exc_e)
             log_error(errmsg)
 

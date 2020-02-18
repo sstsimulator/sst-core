@@ -21,7 +21,7 @@
 #include <sst/core/sharedRegion.h>
 
 namespace SST {
-namespace CoreTestElementExample {
+namespace CoreTestLookupTableComponent {
 
 class coreTestLookupTableComponent : public SST::Component
 {
@@ -30,7 +30,7 @@ public:
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestLookupTableComponent,
-        "coreTestElementExample",
+        "coreTestElement",
         "coreTestLookupTableComponent",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Demonstrates using a Shared Lookup Table",

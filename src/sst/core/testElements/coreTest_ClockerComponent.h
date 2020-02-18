@@ -28,7 +28,7 @@ public:
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestClockerComponent,
-        "coreTestElementExample",
+        "coreTestElement",
         "coreTestClockerComponent",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Clock Benchmark Component",

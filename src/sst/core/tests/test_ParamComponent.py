@@ -6,7 +6,7 @@ sst.setProgramOption("timebase", "1 ps")
 sst.setProgramOption("stopAtCycle", "25us")
 
 # Define the simulation components
-param_c0 = sst.Component("c0.0", "simpleElementExample.simpleParamComponent")
+param_c0 = sst.Component("c0.0", "coreTestElement.simpleParamComponent")
 param_c0.addParams({
 	"int32t-param" : 2147483647,
 	"uint32t-param" : "4294967295",
@@ -20,7 +20,7 @@ param_c0.addParams({
 })
 
 # Define the simulation components
-param_c1 = sst.Component("c1.0", "simpleElementExample.simpleParamComponent")
+param_c1 = sst.Component("c1.0", "coreTestElement.simpleParamComponent")
 param_c1.addParams({
 	"int32t-param" : -2147483648,
 	"uint32t-param" : 0,
@@ -34,7 +34,7 @@ param_c1.addParams({
 })
 
 # Define the simulation components
-param_c2 = sst.Component("c2.0", "simpleElementExample.simpleParamComponent")
+param_c2 = sst.Component("c2.0", "coreTestElement.simpleParamComponent")
 param_c2.addParams({
 	"int32t-param" : "2147483647",
 	"uint32t-param" : "4294967295",

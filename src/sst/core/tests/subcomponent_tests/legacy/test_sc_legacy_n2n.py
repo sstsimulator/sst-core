@@ -4,31 +4,31 @@ import sst
 sst.setProgramOption("stopAtCycle", "10us")
 
 # Set up sender using slot and user subcomponents
-loader0 = sst.Component("Loader0", "simpleElementExample.SubComponentLoaderLegacy")
+loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoaderLegacy")
 loader0.addParam("clock", "1.5GHz")
 loader0.enableAllStatistics()
 
-sub0 = loader0.setSubComponent("mySubComp", "simpleElementExample.SubCompSlotLegacy",0)
+sub0 = loader0.setSubComponent("mySubComp", "coreTestElement.SubCompSlotLegacy",0)
 
-sub0_0 = sub0.setSubComponent("mySubCompSlot","simpleElementExample.SubCompSenderLegacy",0);
+sub0_0 = sub0.setSubComponent("mySubCompSlot","coreTestElement.SubCompSenderLegacy",0);
 sub0_0.addParam("sendCount", 15)
 sub0_0.enableAllStatistics()
 
-sub0_1 = sub0.setSubComponent("mySubCompSlot","simpleElementExample.SubCompSenderLegacy",1);
+sub0_1 = sub0.setSubComponent("mySubCompSlot","coreTestElement.SubCompSenderLegacy",1);
 sub0_1.addParam("sendCount", 15)
 sub0_1.enableAllStatistics()
 
 
 # Set up receiver using slot and user subcomponent
-loader1 = sst.Component("Loader1", "simpleElementExample.SubComponentLoaderLegacy")
+loader1 = sst.Component("Loader1", "coreTestElement.SubComponentLoaderLegacy")
 loader1.addParam("clock", "1.0GHz")
 
-sub1 = loader1.setSubComponent("mySubComp", "simpleElementExample.SubCompSlotLegacy",0)
+sub1 = loader1.setSubComponent("mySubComp", "coreTestElement.SubCompSlotLegacy",0)
 
-sub1_0 = sub1.setSubComponent("mySubCompSlot", "simpleElementExample.SubCompReceiverLegacy",0)
+sub1_0 = sub1.setSubComponent("mySubCompSlot", "coreTestElement.SubCompReceiverLegacy",0)
 sub1_0.enableAllStatistics()
 
-sub1_1 = sub1.setSubComponent("mySubCompSlot", "simpleElementExample.SubCompReceiverLegacy",1)
+sub1_1 = sub1.setSubComponent("mySubCompSlot", "coreTestElement.SubCompReceiverLegacy",1)
 sub1_1.enableAllStatistics()
 
 

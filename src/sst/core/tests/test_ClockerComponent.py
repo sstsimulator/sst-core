@@ -6,7 +6,7 @@ sst.setProgramOption("timebase", "1 ps")
 sst.setProgramOption("stopAtCycle", "10000s")
 
 # Define the simulation components
-comp_clocker0 = sst.Component("clocker0", "simpleElementExample.simpleClockerComponent")
+comp_clocker0 = sst.Component("clocker0", "coreTestElement.simpleClockerComponent")
 comp_clocker0.addParams({
       "clockcount" : """100000000""",
       "clock" : """1MHz"""

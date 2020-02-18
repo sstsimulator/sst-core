@@ -57,7 +57,7 @@ class SubComponentLoader : public Component
 public:
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(SubComponentLoader,
-                               "coreTestElementExample",
+                               "coreTestElement",
                                "SubComponentLoaderLegacy",
                                SST_ELI_ELEMENT_VERSION(1,0,0),
                                "Demonstrates subcomponents",
@@ -104,7 +104,7 @@ public:
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_SUBCOMPONENT(
         SubCompSlot,
-        "coreTestElementExample",
+        "coreTestElement",
         "SubCompSlotLegacy",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Subcomponent which is just a wrapper for the actual SubComponent to be used",
@@ -155,7 +155,7 @@ public:
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_SUBCOMPONENT(
         SubCompSender,
-        "coreTestElementExample",
+        "coreTestElement",
         "SubCompSenderLegacy",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Sending Subcomponent",
@@ -203,7 +203,7 @@ public:
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_SUBCOMPONENT(
         SubCompReceiver,
-        "coreTestElementExample",
+        "coreTestElement",
         "SubCompReceiverLegacy",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Receiving Subcomponent",

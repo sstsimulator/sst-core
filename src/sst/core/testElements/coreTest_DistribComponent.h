@@ -32,7 +32,7 @@ public:
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestDistribComponent,
-        "coreTestElementExample",
+        "coreTestElement",
         "coreTestDistribComponent",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Random Number Distribution Component",

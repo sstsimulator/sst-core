@@ -32,7 +32,7 @@ public:
 
 	SST_ELI_REGISTER_MODULE(
 		CoreTestModuleExample,
-		"coreTestElementExample",
+		"coreTestElement",
 		"CoreTestModule",
 		SST_ELI_ELEMENT_VERSION(1,0,0),
 		"CoreTest module to demonstrate interface.",

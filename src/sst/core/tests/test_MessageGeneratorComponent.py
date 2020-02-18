@@ -6,13 +6,13 @@ sst.setProgramOption("timebase", "1 ps")
 sst.setProgramOption("stopAtCycle", "10000s")
 
 # Define the simulation components
-comp_msgGen0 = sst.Component("msgGen0", "simpleElementExample.simpleMessageGeneratorComponent")
+comp_msgGen0 = sst.Component("msgGen0", "coreTestElement.simpleMessageGeneratorComponent")
 comp_msgGen0.addParams({
       "outputinfo" : """0""",
       "sendcount" : """100000""",
       "clock" : """1MHz"""
 })
-comp_msgGen1 = sst.Component("msgGen1", "simpleElementExample.simpleMessageGeneratorComponent")
+comp_msgGen1 = sst.Component("msgGen1", "coreTestElement.simpleMessageGeneratorComponent")
 comp_msgGen1.addParams({
       "outputinfo" : """0""",
       "sendcount" : """100000""",

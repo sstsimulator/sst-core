@@ -5,22 +5,22 @@ sst.setProgramOption("stopAtCycle", "10us")
 
 
 # Set up senders using slot and user subcomponents
-loader0 = sst.Component("Loader0", "simpleElementExample.SubComponentLoader")
+loader0 = sst.Component("Loader0", "coreTestElement.SubComponentLoader")
 loader0.addParam("clock", "1.5GHz")
 
-sub0 = loader0.setSubComponent("mySubComp", "simpleElementExample.SubCompSlot",0)
+sub0 = loader0.setSubComponent("mySubComp", "coreTestElement.SubCompSlot",0)
 sub0.addParam("sendCount", 15)
-sub0.addParam("unnamed_subcomponent", "simpleElementExample.SubCompSender")
+sub0.addParam("unnamed_subcomponent", "coreTestElement.SubCompSender")
 sub0.addParam("num_subcomps","2");
 sub0.enableAllStatistics()
 
 
 # Set up receivers using slot and user subcomponents
-loader1 = sst.Component("Loader1", "simpleElementExample.SubComponentLoader")
+loader1 = sst.Component("Loader1", "coreTestElement.SubComponentLoader")
 loader1.addParam("clock", "1.0GHz")
 
-sub1 = loader1.setSubComponent("mySubComp", "simpleElementExample.SubCompSlot",0)
-sub1.addParam("unnamed_subcomponent", "simpleElementExample.SubCompReceiver")
+sub1 = loader1.setSubComponent("mySubComp", "coreTestElement.SubCompSlot",0)
+sub1.addParam("unnamed_subcomponent", "coreTestElement.SubCompReceiver")
 sub1.addParam("num_subcomps","2");
 sub1.enableAllStatistics()
 
