@@ -17,7 +17,7 @@ def tearDownModule():
 
 ############
 
-class testsuite_simpleRNGComponent(SSTUnitTest):
+class testsuite_RNGComponent(SSTUnitTest):
 
     def setUp(self):
         pass
@@ -27,24 +27,6 @@ class testsuite_simpleRNGComponent(SSTUnitTest):
 
     def test_RNG_Mersenne(self):
         self.RNG_test_template("mersenne")
-        log("\n=======================================================")
-
-        log("")
-        log("=== ls cmd")
-        os_ls()
-
-        log("")
-        log("=== cat VERSION file")
-        os_cat("VERSION")
-
-        log("")
-        log("=== Run tail and force a timeout")
-        cmd = "tail".format()
-        rtn = OSCommand(cmd).run(timeout=5)
-        log("Tail (forced Timeout) Rtn = {0}".format(rtn))
-
-        log("\n=======================================================")
-
 
     def test_RNG_Marsaglia(self):
         self.RNG_test_template("marsaglia")
@@ -57,7 +39,7 @@ class testsuite_simpleRNGComponent(SSTUnitTest):
 
     def RNG_test_template(self, testcase):
         # Set the various file paths
-        sdlfile = "{0}/test_simpleRNGComponent_{1}.py".format(self.get_testsuite_dir(), testcase)
+        sdlfile = "{0}/test_RNGComponent_{1}.py".format(self.get_testsuite_dir(), testcase)
         reffile = "{0}/refFiles/test_simpleRNGComponent_{1}.out".format(self.get_testsuite_dir(), testcase)
         outfile = "{0}/test_simpleRNGComponent_{1}.out".format(get_test_output_run_dir(), testcase)
         tmpfile = "{0}/test_simpleRNGComponent_{1}.tmp".format(get_test_output_run_dir(), testcase)
