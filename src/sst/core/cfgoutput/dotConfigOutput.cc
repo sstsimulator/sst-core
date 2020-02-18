@@ -75,14 +75,14 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
 	fprintf(outputFile, "%lu [label=\"{<main> %s\\n%s", comp.id, comp.name.c_str(), comp.type.c_str());
 	int j = comp.links.size();
 	if(j != 0){
-		fprintf(outputFile, " |\n");
+		fprintf(outputFile, " | ");
 	}
 	for(LinkId_t i : comp.links) {
 		const ConfigLink &link = linkMap[i];
 		const int port = (link.component[0] == comp.id) ? 0 : 1;
 		fprintf(outputFile, "<%s> Port: %s", link.port[port].c_str(), link.port[port].c_str());
 		if(j > 1){
-			fprintf(outputFile, " |\n");
+			fprintf(outputFile, " | ");
 		}
 		j--;
 	}
@@ -91,14 +91,14 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
 		fprintf(outputFile, "%lu [color=gray,label=\"{<main> %s\\n%s", sc.id, sc.name.c_str(), sc.type.c_str());
 		j = sc.links.size();
 		if(j != 0){
-			fprintf(outputFile, " |\n");
+			fprintf(outputFile, " | ");
 		}
 		for(LinkId_t i : sc.links) {
 			const ConfigLink &link = linkMap[i];
 			const int port = (link.component[0] == sc.id) ? 0 : 1;
 			fprintf(outputFile, "<%s> Port: %s", link.port[port].c_str(), link.port[port].c_str());
 			if(j > 1){
-				fprintf(outputFile, " |\n");
+				fprintf(outputFile, " | ");
 			}
 			j--;
 		}
