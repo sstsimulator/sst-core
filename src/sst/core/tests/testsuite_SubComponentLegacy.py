@@ -9,22 +9,26 @@ from sst_unittest_support import *
 ################################################################################
 
 def setUpModule():
-    pass
+    test_engine_setup_module()
+    # Put Module based setup code here. it is called before any testcases are run
 
 def tearDownModule():
-    pass
+    # Put Module based teardown code here. it is called after all testcases are run
+    test_engine_teardown_module()
 
 ################################################################################
 
-class testsuite_SubComponentLegacy(SSTUnitTest):
+class testcase_SubComponentLegacy(SSTUnitTestCase):
 
     def setUp(self):
-        pass
+        super(type(self), self).setUp()
+        # Put test based setup code here. it is called once before every test
 
     def tearDown(self):
-        pass
+        # Put test based teardown code here. it is called once after every test
+        super(type(self), self).tearDown()
 
-#############################################
+#####
 
     def test_SubComponentLegacy_sc_2a(self):
         self.subcomponentlegacy_test_template("sc_legacy_2nl")
@@ -63,7 +67,7 @@ class testsuite_SubComponentLegacy(SSTUnitTest):
         self.subcomponentlegacy_test_template("sc_legacy_nn")
 
 
-################################################################################
+#####
 
     def subcomponentlegacy_test_template(self, testtype):
         # Set the various file paths
@@ -71,16 +75,13 @@ class testsuite_SubComponentLegacy(SSTUnitTest):
         reffile = "{0}/subcomponent_tests/legacy/refFiles/test_{1}.out".format(self.get_testsuite_dir(), testtype)
         outfile = "{0}/test_SubComponentlegacy_{1}.out".format(self.get_test_output_run_dir(), testtype)
 
-        # TODO: Destroy any outfiles
-        # TODO: Validate SST is an executable file
-
         self.run_sst(sdlfile, outfile)
 
         # Perform the test
         cmp_result = self.compare_sorted(outfile, reffile)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
 
-###
+#####
 
     def compare_sorted(self, outfile, reffile):
        sorted_outfile = "{0}/coreTestSubComponentLegacy_sorted_outfile".format(self.get_test_output_tmp_dir())

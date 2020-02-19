@@ -21,28 +21,59 @@ import unittest
 
 import test_engine_globals
 from test_engine_support import OSCommand
+from test_engine_support import check_param_type
 
 ################################################################################
 
-class SSTUnitTest(unittest.TestCase):
+class SSTUnitTestCase(unittest.TestCase):
     """ This class the the SST Unittest class """
 
     def __init__(self, methodName):
-        super(SSTUnitTest, self).__init__(methodName)
+        super(SSTUnitTestCase, self).__init__(methodName)
 
         # Save the path of the testsuite that is being run
         parent_module_path = os.path.dirname(sys.modules[self.__module__].__file__)
-        self._TESTSUITEDIRPATH = parent_module_path
+        self._test_suite_dir_path = parent_module_path
+
+###
+
+    def setUp(self):
+        pass
+
+###
+
+    def tearDown(self):
+        pass
+
+###
+
+    @classmethod
+    def setUpClass(cls):
+        test_engine_globals.TESTCASERUNNING = True
+
+###
+
+    @classmethod
+    def tearDownClass(cls):
+        test_engine_globals.TESTCASERUNNING = False
 
 ###
 
     def run_sst(self, sdl_file, out_file, other_params="", timeout=60):
+        check_param_type("sdl_file", sdl_file, str)
+        check_param_type("out_file", out_file, str)
+        check_param_type("other_params", other_params, str)
+        if not (isinstance(timeout, (int, float)) and not isinstance(timeout, bool)):
+            raise ValueError("ERROR: Timeout must be an int or a float")
+
         # TODO Figure out how to set threads and ranks here
         oscmd = "sst {0}".format(sdl_file)
         log_debug("--SST Launch Command = {0}".format(oscmd))
-        rtn = OSCommand(oscmd, out_file).run()
-        self.assertFalse(rtn.timeout(), "SST Timed-Out while running {0}".format(oscmd))
-        self.assertEqual(rtn.result(), 0, "SST returned {0}; while running {1}".format(rtn.result(), oscmd))
+        rtn = OSCommand(oscmd, out_file).run(timeout = timeout)
+        err_str = "SST Timed-Out while running {0}".format(oscmd)
+        self.assertFalse(rtn.timeout(), err_str)
+        err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
+        self.assertEqual(rtn.result(), 0, err_str)
 
 ###
 
@@ -50,7 +81,7 @@ class SSTUnitTest(unittest.TestCase):
         """ Return the directory path of the testsuite that is being run
            :return: str the path
         """
-        return self._TESTSUITEDIRPATH
+        return self._test_suite_dir_path
 
     def get_test_output_run_dir(self):
         """ Return the path of the output run directory
@@ -65,22 +96,16 @@ class SSTUnitTest(unittest.TestCase):
         return test_engine_globals.TESTOUTPUTTMPDIRPATH
 
 ################################################################################
-### OS Basic Commands
+### Module level support
 ################################################################################
 
-def os_ls(directory="."):
-    """ TODO : DOCSTRING
-    """
-    cmd = "ls -lia {0}".format(directory)
-    rtn = OSCommand(cmd).run()
-    log("{0}".format(rtn.output()))
+def test_engine_setup_module():
+    """ Common calls for all modules for setup """
+    pass
 
-def os_cat(filepath):
-    """ TODO : DOCSTRING
-    """
-    cmd = "cat {0}".format(filepath)
-    rtn = OSCommand(cmd).run()
-    log("{0}".format(rtn.output()))
+def test_engine_teardown_module():
+    """ Common calls for all modules for teardown """
+    pass
 
 ################################################################################
 # Information Functions
@@ -108,9 +133,14 @@ def log(logstr):
 
 def log_forced(logstr):
     """ Log a message, no matter what the verbosity is
+        if in the middle of testing, precede with a \n to slip in-between
+        unittest outputs
         :param: logstr = string to be logged
     """
-    print(("{0}".format(logstr)))
+    extra_lf = ""
+    if test_engine_globals.TESTCASERUNNING:
+        extra_lf = "\n"
+    print(("{0}{1}".format(extra_lf, logstr)))
 
 ###
 
@@ -158,5 +188,23 @@ def log_fatal(errstr):
     finalstr = "FATAL: {0}".format(errstr)
     log_forced(finalstr)
     sys.exit(1)
+
+################################################################################
+### OS Basic Commands
+################################################################################
+
+def os_ls(directory="."):
+    """ TODO : DOCSTRING
+    """
+    cmd = "ls -lia {0}".format(directory)
+    rtn = OSCommand(cmd).run()
+    log("{0}".format(rtn.output()))
+
+def os_cat(filepath):
+    """ TODO : DOCSTRING
+    """
+    cmd = "cat {0}".format(filepath)
+    rtn = OSCommand(cmd).run()
+    log("{0}".format(rtn.output()))
 
 ################################################################################

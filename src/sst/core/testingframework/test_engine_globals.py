@@ -13,12 +13,13 @@
 
 """ This module is a group of global variables that must be common to all tests
 """
-
-VERBOSE_QUIET = 0
+# Verbose Defines
+VERBOSE_QUIET  = 0
 VERBOSE_NORMAL = 1
-VERBOSE_LOUD = 2
-VERBOSE_DEBUG = 3
+VERBOSE_LOUD   = 2
+VERBOSE_DEBUG  = 3
 
+# Global Var Defines
 DEBUGMODE = None
 VERBOSITY = None
 NUMRANKS = None
@@ -27,6 +28,7 @@ TESTOUTPUTTOPDIRPATH = None
 TESTOUTPUTRUNDIRPATH = None
 TESTOUTPUTTMPDIRPATH = None
 TESTOUTPUTXMLDIRPATH = None
+TESTCASERUNNING = False
 
 
 # These are some globals to pass data between the top level test engine
@@ -41,6 +43,7 @@ def init_test_engine_globals():
     global TESTOUTPUTRUNDIRPATH
     global TESTOUTPUTTMPDIRPATH
     global TESTOUTPUTXMLDIRPATH
+    global TESTCASERUNNING
 
     DEBUGMODE = False
     VERBOSITY = 1
@@ -50,3 +53,4 @@ def init_test_engine_globals():
     TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(TESTOUTPUTTOPDIRPATH)
     TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(TESTOUTPUTTOPDIRPATH)
     TESTOUTPUTXMLDIRPATH = "{0}/xml_data".format(TESTOUTPUTTOPDIRPATH)
+    TESTCASERUNNING = False

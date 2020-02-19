@@ -34,6 +34,7 @@ from sst_unittest_support import log_debug
 from sst_unittest_support import log_error
 from sst_unittest_support import log_warning
 from sst_unittest_support import log_forced
+#from sst_unittest_support import check_param_type
 
 ################################################################################
 
@@ -78,12 +79,34 @@ class TestEngine():
         self._discover_tests()
         log_forced(("\n=== TESTS STARTING ================") +
                    ("===================================\n"))
-        sst_tests_results = unittest.TextTestRunner(verbosity=test_engine_globals.VERBOSITY,
-                                                    failfast=self._fail_fast).\
-                                                    run(self._sst_full_test_suite)
+        try:
+            sst_tests_results = unittest.TextTestRunner(verbosity=test_engine_globals.VERBOSITY,
+                                                        failfast=self._fail_fast).\
+                                                        run(self._sst_full_test_suite)
+        except KeyboardInterrupt as exc_e:
+            log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
+
+        self._dump_test_results(sst_tests_results)
 
 ################################################################################
 ################################################################################
+
+    def _dump_test_results(self, sst_tests_results):
+        log_forced(("\n=== TEST RESULTS ==================") +
+                   ("===================================\n"))
+        log_forced("Tests Run      = {0}".format(sst_tests_results.testsRun))
+        log_forced("Tests Failures = {0}".format(len(sst_tests_results.failures)))
+        log_forced("Tests Skipped  = {0}".format(len(sst_tests_results.skipped)))
+        log_forced("Tests Errors   = {0}".format(len(sst_tests_results.errors)))
+        if sst_tests_results.wasSuccessful and len(sst_tests_results.errors) == 0:
+            log_forced("\n== TESTING PASSED ==".format(len(sst_tests_results.errors)))
+        else:
+            log_forced("\n== TESTING FAILED ==".format(len(sst_tests_results.errors)))
+        log_forced(("\n===================================") +
+                   ("===================================\n"))
+
+
+####
 
     def _validate_python_version(self):
         """ Validate that we are running on a supported Python version.
