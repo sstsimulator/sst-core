@@ -26,22 +26,30 @@ TESTFRAMEWORKSFILES = ["sst_unittest_support.py", "test_engine.py",
                        "test_engine_globals.py", "test_engine_support.py"]
 
 # AVAILABLE TEST MODES
-MODE_TEST_SST_CORE = 0
-MODE_TEST_REGISTRED_ELEMENTS = 1
+TEST_ELEMENTS = 0
+TEST_SST_CORE = 1
 
 ################################################################################
 
-def startup_and_run(sst_core_bin_dir, test_core_mode):
+def startup_and_run(sst_core_bin_dir, test_mode):
     """ Entry point for loading and running the SST Test Frameworks Engine.
         This will first verify that the frameworks files are available, and
         then load the test_engine.  Then it will tell the test_engine to discover
         and run the tests.
         :param: sst_core_bin_dir = The SST-Core binary directory
-        :param: test_core_mode = True for Core Testing, False for Elements testing
+        :param: test_mode = 1 for Core Testing, 0 for Elements testing
     """
     try:
+        if test_mode != TEST_SST_CORE and \
+           test_mode != TEST_ELEMENTS:
+           print((("FATAL: Unsupported test_mode {0} in ") +
+                 ("startup_and_run()")).format(test_mode))
+           sys.exit(1)
+
+        # Locate the test frameworks dir and verify files are available,
+        # then import the test engine
         sst_core_test_frameworks_dir = sst_core_bin_dir + "/../libexec/"
-        _verify_test_framework_is_available(sst_core_test_frameworks_dir)
+        _verify_test_frameworks_is_available(sst_core_test_frameworks_dir)
 
         sys.path.insert(1, sst_core_test_frameworks_dir)
         try:
@@ -50,7 +58,7 @@ def startup_and_run(sst_core_bin_dir, test_core_mode):
             print("FATAL: Failed to load test_engine.py ({0})".format(exc_e))
             sys.exit(1)
 
-        te = test_engine.TestEngine(sst_core_bin_dir, test_core_mode)
+        te = test_engine.TestEngine(sst_core_bin_dir, test_mode)
         te.discover_and_run_tests()
 
     except Exception as exc_e:
@@ -66,7 +74,7 @@ def startup_and_run(sst_core_bin_dir, test_core_mode):
 
 ###############
 
-def _verify_test_framework_is_available(sst_core_frameworks_dir):
+def _verify_test_frameworks_is_available(sst_core_frameworks_dir):
     """ Ensure that all test framework files are available.
         :param: sst_core_frameworks_dir = Dir of the test frameworks
     """

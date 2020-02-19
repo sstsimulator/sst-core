@@ -114,11 +114,11 @@ def log_forced(logstr):
 
 ###
 
-def log_notice(logstr):
-    """ Log a NOTICE: message, no matter what the verbosity is
+def log_info(logstr):
+    """ Log a INFO: message, no matter what the verbosity is
         :param: logstr = string to be logged
     """
-    finalstr = "NOTICE: {0}".format(logstr)
+    finalstr = "INFO: {0}".format(logstr)
     log_forced(finalstr)
 
 ###
