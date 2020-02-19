@@ -26,15 +26,15 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-import test_globals
-from test_support import log_fatal
-from test_support import log_notice
-from test_support import log_debug
-from test_support import log_error
-from test_support import log_warning
-from test_support import log_forced
+import test_engine_globals
+from sst_unittest_support import log_fatal
+from sst_unittest_support import log_notice
+from sst_unittest_support import log_debug
+from sst_unittest_support import log_error
+from sst_unittest_support import log_warning
+from sst_unittest_support import log_forced
 
-#################################################
+################################################################################
 
 REQUIRED_PY_MAJ_VER_2 = 2 # Required Major Version Min
 REQUIRED_PY_MAJ_VER_MAX = 3 # Required Major Version Max
@@ -44,27 +44,11 @@ HELP_DESC = 'Run {0} Tests'
 HELP_EPILOG = (("Python files named TestSuite*.py found at ") +
                ("or below the defined test directory(s) will be run."))
 
-#################################################
+# AVAILABLE TEST MODES
+MODE_TEST_SST_CORE = 0
+MODE_TEST_REGISTRED_ELEMENTS = 1
 
-def validate_python_version():
-    """ Validate that we are running on a supported Python version.
-    """
-    ver = sys.version_info
-    if (ver[0] < REQUIRED_PY_MAJ_VER_2) and (ver[0] < REQUIRED_PY_MAJ_VER_MAX):
-        log_fatal(("SST Test Engine requires Python major version {1} or {2}\n" +
-                   "Found Python version is:\n{3}").format(os.path.basename(__file__),
-                                                           REQUIRED_PY_MAJ_VER_2,
-                                                           REQUIRED_PY_MAJ_VER_MAX,
-                                                           sys.version))
-
-    if (ver[0] == REQUIRED_PY_MAJ_VER_2) and (ver[1] < REQUIRED_PY_MAJ_VER_2_MINOR_VER):
-        log_fatal(("SST Test Engine requires Python version {1}.{2} or greater\n" +
-                   "Found Python version is:\n{3}").format(os.path.basename(__file__),
-                                                           REQUIRED_PY_MAJ_VER_2,
-                                                           REQUIRED_PY_MAJ_VER_2_MINOR_VER,
-                                                           sys.version))
-
-#################################################
+################################################################################
 
 class TestEngine():
     """ This is the main Test Engine, it will init arguments, parsed params,
@@ -76,13 +60,11 @@ class TestEngine():
             :param: sst_core_bin_dir = The SST-Core binary directory
             :param: run_core_tests = True for Core Tests, False for Elements tests
         """
-        # Perform initial checks that all is well
-        validate_python_version()
+        ver = self._validate_python_version()
         self._init_test_engine_variables(sst_core_bin_dir, run_core_tests)
         self._parse_arguments()
         log_notice(("SST Test Engine Instantiated - Running") +
                    (" tests on {0}").format(self._test_type_str))
-        ver = sys.version_info
         log_debug("Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
 
 ####
@@ -93,15 +75,36 @@ class TestEngine():
         """
         self._create_all_output_directories()
         self._discover_tests()
-
-        # Run all the tests
         log_forced(("\n=== TESTS STARTING ================") +
                    ("===================================\n"))
-        sst_tests_results = unittest.TextTestRunner(verbosity=test_globals.VERBOSITY,
-                                                    failfast=self._fail_fast). \
+        sst_tests_results = unittest.TextTestRunner(verbosity=test_engine_globals.VERBOSITY,
+                                                    failfast=self._fail_fast).\
                                                     run(self._sst_full_test_suite)
 
-#################################################
+################################################################################
+
+    def _validate_python_version(self):
+        """ Validate that we are running on a supported Python version.
+        """
+        ver = sys.version_info
+        # Check for Py2.x or Py3.x Versions
+        if (ver[0] < REQUIRED_PY_MAJ_VER_2) or (ver[0] > REQUIRED_PY_MAJ_VER_MAX):
+            log_fatal(("SST Test Engine requires Python major version {1} or {2}\n" +
+                       "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                               REQUIRED_PY_MAJ_VER_2,
+                                                               REQUIRED_PY_MAJ_VER_MAX,
+                                                               sys.version))
+
+        # Check to ensure minimum Py2.7
+        if (ver[0] == REQUIRED_PY_MAJ_VER_2) and (ver[1] < REQUIRED_PY_MAJ_VER_2_MINOR_VER):
+            log_fatal(("SST Test Engine requires Python version {1}.{2} or greater\n" +
+                       "Found Python version is:\n{3}").format(os.path.basename(__file__),
+                                                               REQUIRED_PY_MAJ_VER_2,
+                                                               REQUIRED_PY_MAJ_VER_2_MINOR_VER,
+                                                               sys.version))
+        return ver
+
+####
 
     def _init_test_engine_variables(self, sst_core_bin_dir, run_core_tests):
         """ Initialize the variables needed for testing.  This will also
@@ -120,7 +123,7 @@ class TestEngine():
         else:
             self._test_type_str = "Registered Elements"
 
-        test_globals.init_test_globals()
+        test_engine_globals.init_test_engine_globals()
 
 ####
 
@@ -132,9 +135,9 @@ class TestEngine():
         parser = argparse.ArgumentParser(description=helpdesc,
                                          epilog=HELP_EPILOG)
         if self._core_test_mode:
-            testsuite_path_str = "Dir(s) to SST-Core Tests"
+            testsuite_path_str = "Files/Dirs to SST-Core TestSuites"
         else:
-            testsuite_path_str = "Dir(s) to Registered Elements Tests"
+            testsuite_path_str = "Files/Dirs to Registered Elements TestSuites"
         parser.add_argument('list_of_paths', metavar='testsuite_paths', nargs='*',
                             default=[], help=testsuite_path_str)
         mutgroup = parser.add_mutually_exclusive_group()
@@ -153,7 +156,7 @@ class TestEngine():
         parser.add_argument('-f', '--fail_fast', action='store_true',
                             help='Stop testing on failure')
         parser.add_argument('-o', '--out_dir', type=str, metavar='dir',
-                            nargs='?', default='./test_outputs',
+                            nargs='?', default='./sst_test_outputs',
                             help='Set output directory')
 
         args = parser.parse_args()
@@ -168,19 +171,19 @@ class TestEngine():
         # Extract the Arguments into the class variables
         self._fail_fast = args.fail_fast
         self._list_of_searchable_testsuite_paths = args.list_of_paths
-        test_globals.VERBOSITY = test_globals.VERBOSE_NORMAL
+        test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_NORMAL
         if args.quiet:
-            test_globals.VERBOSITY = test_globals.VERBOSE_QUIET
+            test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_QUIET
         if args.verbose:
-            test_globals.VERBOSITY = test_globals.VERBOSE_LOUD
+            test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_LOUD
         if args.debug:
-            test_globals.DEBUGMODE = True
-            test_globals.VERBOSITY = test_globals.VERBOSE_DEBUG
-        test_globals.NUMRANKS = args.ranks
-        test_globals.NUMTHREADS = args.threads
-        test_globals.TESTOUTPUTTOPDIRPATH = args.out_dir
-        test_globals.TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(args.out_dir)
-        test_globals.TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(args.out_dir)
+            test_engine_globals.DEBUGMODE = True
+            test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_DEBUG
+        test_engine_globals.NUMRANKS = args.ranks
+        test_engine_globals.NUMTHREADS = args.threads
+        test_engine_globals.TESTOUTPUTTOPDIRPATH = args.out_dir
+        test_engine_globals.TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(args.out_dir)
+        test_engine_globals.TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(args.out_dir)
 
 ####
 
@@ -206,19 +209,19 @@ class TestEngine():
     def _create_all_output_directories(self):
         """ Create the output directories if needed
         """
-        top_dir = test_globals.TESTOUTPUTTOPDIRPATH
-        run_dir = test_globals.TESTOUTPUTRUNDIRPATH
-        tmp_dir = test_globals.TESTOUTPUTTMPDIRPATH
+        top_dir = test_engine_globals.TESTOUTPUTTOPDIRPATH
+        run_dir = test_engine_globals.TESTOUTPUTRUNDIRPATH
+        tmp_dir = test_engine_globals.TESTOUTPUTTMPDIRPATH
+        xml_dir = test_engine_globals.TESTOUTPUTTOPDIRPATH + "/xml_data"
         if self._create_output_dir(top_dir):
             log_notice("SST Test Output Dir Created at {0}".format(top_dir))
         self._create_output_dir(run_dir)
         self._create_output_dir(tmp_dir)
-
-        # Create the test output dir if necessary
-        log_debug("Test Output Top Directory = {0}".format(top_dir))
-        log_debug("Test Output Run Directory = {0}".format(run_dir))
-        log_debug("Test Output Tmp Directory = {0}".format(tmp_dir))
-
+        self._create_output_dir(xml_dir)
+        log_notice("Test Output Directory = {0}".format(top_dir))
+        log_debug(" - Test Output Run Directory = {0}".format(run_dir))
+        log_debug(" - Test Output Tmp Directory = {0}".format(tmp_dir))
+        log_debug(" - Test Output XML Directory = {0}".format(xml_dir))
 
 ####
 
@@ -313,19 +316,27 @@ class TestEngine():
 
         # Check again to see if no Test Suite Paths
         if len(self._list_of_searchable_testsuite_paths) == 0:
-            log_warning("No TestSuites Paths have been defined/found")
+            log_warning("No TestSuite dirs/files have been defined/found")
 
         # Debug dump of search paths
-        log_debug("SEARCH PATHS FOR TESTSUITES:")
+        log_debug("SEARCH DIRS/FILES OF TESTSUITES:")
         for search_path in self._list_of_searchable_testsuite_paths:
             log_debug("- {0}".format(search_path))
 
         # Discover tests in each Test Path directory and add to the test suite
         sst_pattern = 'testsuite*.py'
         for testsuite_path in self._list_of_searchable_testsuite_paths:
-            sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
-                                                            pattern=sst_pattern)
-            self._sst_full_test_suite.addTests(sst_testsuites)
+            # Is this testsuite_path a testsuites dir or a testsuite file?
+            if os.path.isdir(testsuite_path):
+                sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
+                                                                pattern=sst_pattern)
+                self._sst_full_test_suite.addTests(sst_testsuites)
+            if os.path.isfile(testsuite_path):
+                testsuite_dir = os.path.abspath(os.path.dirname(testsuite_path))
+                basename = os.path.basename(testsuite_path)
+                sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_dir,
+                                                                pattern=basename)
+                self._sst_full_test_suite.addTests(sst_testsuites)
 
         log_debug("DISCOVERED TESTS (FROM TESTSUITES):")
         self._dump_testsuite(self._sst_full_test_suite)

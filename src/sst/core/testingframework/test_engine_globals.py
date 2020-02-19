@@ -26,11 +26,12 @@ NUMTHREADS = None
 TESTOUTPUTTOPDIRPATH = None
 TESTOUTPUTRUNDIRPATH = None
 TESTOUTPUTTMPDIRPATH = None
+TESTOUTPUTXMLDIRPATH = None
 
 
 # These are some globals to pass data between the top level test engine
 # and the lower level testscripts
-def init_test_globals():
+def init_test_engine_globals():
     """ Initialize the test global variables """
     global DEBUGMODE
     global VERBOSITY
@@ -39,11 +40,13 @@ def init_test_globals():
     global TESTOUTPUTTOPDIRPATH
     global TESTOUTPUTRUNDIRPATH
     global TESTOUTPUTTMPDIRPATH
+    global TESTOUTPUTXMLDIRPATH
 
     DEBUGMODE = False
     VERBOSITY = 1
     NUMRANKS = 0
     NUMTHREADS = 0
-    TESTOUTPUTTOPDIRPATH = "./test_outputs"
+    TESTOUTPUTTOPDIRPATH = "./sst_test_outputs"
     TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(TESTOUTPUTTOPDIRPATH)
     TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(TESTOUTPUTTOPDIRPATH)
+    TESTOUTPUTXMLDIRPATH = "{0}/xml_data".format(TESTOUTPUTTOPDIRPATH)

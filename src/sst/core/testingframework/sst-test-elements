@@ -17,30 +17,18 @@
 
 import sys
 import os.path
-import traceback
 
 try:
-    import ssttestengineloader
+    import sst_test_engine_loader
 except ImportError as exc_e:
-    print("FATAL: Failed to load ssttestengineloader.py ({0})".format(exc_e))
+    print("FATAL: Failed to load sst_test_engine_loader.py ({0})".format(exc_e))
     sys.exit(1)
 
-#################################################
+################################################################################
 # Script Entry
-#################################################
+################################################################################
 if __name__ == "__main__":
-    try:
-        # Get the path of where this file is launched
-        SSTCOREBINDIR = os.path.dirname(os.path.abspath(__file__))
-        # Run the test engine in Elements Mode
-        ssttestengineloader.startup_and_run(SSTCOREBINDIR, test_core_mode=False)
-    except Exception as exc_e:
-        # NOTE: This is a generic catchall handler for any unhandled exception
-        print(("FATAL: SST Test Frameworks encountered ") +
-              ("an unexpected exception ({0}))".format(exc_e)))
-        print("\n=============================================================")
-        print("==== TRACEBACK ===============================================")
-        print("==============================================================")
-        traceback.print_exc(file=sys.stdout)
-        print("==============================================================")
-        sys.exit(1)
+    # Get the path of where this file is launched
+    SSTCOREBINDIR = os.path.dirname(os.path.abspath(__file__))
+    # Run the test engine in Elements Mode
+    sst_test_engine_loader.startup_and_run(SSTCOREBINDIR, test_core_mode=False)
