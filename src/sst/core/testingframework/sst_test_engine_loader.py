@@ -19,6 +19,8 @@
 import sys
 import os.path
 import traceback
+import logging
+from logging.handlers import RotatingFileHandler
 
 ################################################################################
 
@@ -63,16 +65,45 @@ def startup_and_run(sst_core_bin_dir, test_mode):
 
     except Exception as exc_e:
         # NOTE: This is a generic catchall handler for any unhandled exception
-        print(("FATAL: SST Test Frameworks encountered ") +
-              ("an unexpected exception ({0}))".format(exc_e)))
-        print("\n=============================================================")
-        print("==== TRACEBACK ===============================================")
-        print("==============================================================")
-        traceback.print_exc(file=sys.stdout)
-        print("==============================================================")
-        sys.exit(1)
+        _generic_exception_handler(exc_e)
 
 ###############
+
+def _generic_exception_handler(exc_e):
+
+    # Dump Exception info to the a log file
+    log_filename = "./sst_test_framesworks_crashreport.log"
+    crashlogger = logging.getLogger("SST_TEST_FRAMEWORKS_CRASHLOGGER")
+    log_formatter = logging.Formatter("%(asctime)s: %(message)s", "%Y/%m/%d %H:%M:%S")
+    log_handler = RotatingFileHandler(log_filename, mode='a',
+                                      maxBytes=10*1024*1024,
+                                      backupCount=10,
+                                      encoding=None, delay=0)
+    log_handler.setFormatter(log_formatter)
+    crashlogger.addHandler(log_handler)
+    crashlogger.setLevel(logging.DEBUG)
+
+    traceback_str = traceback.format_exc()
+
+    # Send the data to the generic logger
+    crashlogger.error("")
+    crashlogger.error("")
+    crashlogger.error("=============================================================")
+    crashlogger.error(("FATAL: SST Test Frameworks encountered ") +
+                      ("an unexpected exception ({0}))".format(exc_e)))
+    crashlogger.error("=============================================================")
+    crashlogger.error("==== TRACEBACK ===============================================")
+    crashlogger.error("==============================================================")
+    crashlogger.error("\n" + traceback_str)
+    crashlogger.error("==============================================================")
+
+    # Dump Exception info to the Console
+    print(("FATAL: SST Test Frameworks encountered ") +
+          ("an unexpected exception ({0}))".format(exc_e)))
+    print("SEE FILE {0} FOR TRACE INFORMATION".format(log_filename))
+    sys.exit(1)
+
+####
 
 def _verify_test_frameworks_is_available(sst_core_frameworks_dir):
     """ Ensure that all test framework files are available.

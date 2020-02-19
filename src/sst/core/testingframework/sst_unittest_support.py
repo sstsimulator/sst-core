@@ -117,6 +117,10 @@ def is_testing_in_debug_mode():
     """
     return test_engine_globals.DEBUGMODE
 
+#TODO: Get OS and Version Information Here
+
+#TODO: Get SST-Core Build Information Here
+
 ################################################################################
 # Logging Functions
 ################################################################################
@@ -188,6 +192,10 @@ def log_fatal(errstr):
     finalstr = "FATAL: {0}".format(errstr)
     log_forced(finalstr)
     sys.exit(1)
+
+################################################################################
+### Testing Support
+################################################################################
 
 ################################################################################
 ### OS Basic Commands
