@@ -20,8 +20,11 @@ import os
 import unittest
 
 import test_engine_globals
+import test_engine_support
 from test_engine_support import OSCommand
 from test_engine_support import check_param_type
+from test_engine_support import JUnit_TestCase
+from test_engine_support import JUnit_TestSuite
 
 ################################################################################
 
@@ -34,28 +37,44 @@ class SSTUnitTestCase(unittest.TestCase):
         # Save the path of the testsuite that is being run
         parent_module_path = os.path.dirname(sys.modules[self.__module__].__file__)
         self._test_suite_dir_path = parent_module_path
+        test_engine_globals.JUNITTESTCASELIST = []
 
 ###
 
     def setUp(self):
+        """ Called when the TestCase is starting up """
         pass
 
 ###
 
     def tearDown(self):
+        """ Called when the TestCase is shutting down """
+#        tc = JUnit_TestCase('Test1', 'some.class.name', 123.345, 'I am stdout!', 'I am stderr!')
+        tc = JUnit_TestCase(self._testMethodName, __name__ , 123.345, 'I am stdout!', 'I am stderr!')
+        test_engine_globals.JUNITTESTCASELIST.append(tc)
         pass
 
 ###
 
     @classmethod
     def setUpClass(cls):
+        """ Called when the class is starting up """
         test_engine_globals.TESTCASERUNNING = True
 
 ###
 
     @classmethod
     def tearDownClass(cls):
+        """ Called when the class is shutting down """
         test_engine_globals.TESTCASERUNNING = False
+
+#        test_cases = [JUnit_TestCase('Test1', 'some.class.name', 123.345, 'I am stdout!', 'I am stderr!')]
+#        ts = JUnit_TestSuite("my test suite", test_cases)
+        ts = JUnit_TestSuite("my test suite", test_engine_globals.JUNITTESTCASELIST)
+        # pretty printing is on by default but can be disabled using prettyprint=False
+
+        #TODO: FIGURE THIS OUT
+        #print(JUnit_TestSuite.to_xml_string([ts]))
 
 ###
 

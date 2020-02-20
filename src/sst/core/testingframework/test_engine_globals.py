@@ -29,6 +29,7 @@ TESTOUTPUTRUNDIRPATH = None
 TESTOUTPUTTMPDIRPATH = None
 TESTOUTPUTXMLDIRPATH = None
 TESTCASERUNNING = False
+JUNITTESTCASELIST = []
 
 
 # These are some globals to pass data between the top level test engine
@@ -44,6 +45,7 @@ def init_test_engine_globals():
     global TESTOUTPUTTMPDIRPATH
     global TESTOUTPUTXMLDIRPATH
     global TESTCASERUNNING
+    global JUNITTESTCASELIST
 
     DEBUGMODE = False
     VERBOSITY = 1
@@ -54,3 +56,4 @@ def init_test_engine_globals():
     TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(TESTOUTPUTTOPDIRPATH)
     TESTOUTPUTXMLDIRPATH = "{0}/xml_data".format(TESTOUTPUTTOPDIRPATH)
     TESTCASERUNNING = False
+    JUNITTESTCASELIST = []
