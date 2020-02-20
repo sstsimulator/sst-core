@@ -73,34 +73,55 @@ def _generic_exception_handler(exc_e):
 
     # Dump Exception info to the a log file
     log_filename = "./sst_test_framesworks_crashreport.log"
-    crashlogger = logging.getLogger("SST_TEST_FRAMEWORKS_CRASHLOGGER")
-    log_formatter = logging.Formatter("%(asctime)s: %(message)s", "%Y/%m/%d %H:%M:%S")
-    log_handler = RotatingFileHandler(log_filename, mode='a',
-                                      maxBytes=10*1024*1024,
-                                      backupCount=10,
-                                      encoding=None, delay=0)
-    log_handler.setFormatter(log_formatter)
-    crashlogger.addHandler(log_handler)
-    crashlogger.setLevel(logging.DEBUG)
+    logfile_available = True
+    try:
+        crashlogger = logging.getLogger("SST_TEST_FRAMEWORKS_CRASHLOGGER")
+        log_formatter = logging.Formatter("%(asctime)s: %(message)s", "%Y/%m/%d %H:%M:%S")
+        log_handler = RotatingFileHandler(log_filename, mode='a',
+                                          maxBytes=10*1024*1024,
+                                          backupCount=10,
+                                          encoding=None, delay=0)
+        log_handler.setFormatter(log_formatter)
+        crashlogger.addHandler(log_handler)
+        crashlogger.setLevel(logging.DEBUG)
+    except IOError:
+        logfile_available = False
 
+    # Get the crash trace into a string
     traceback_str = traceback.format_exc()
 
-    # Send the data to the generic logger
-    crashlogger.error("")
-    crashlogger.error("")
-    crashlogger.error("=============================================================")
-    crashlogger.error(("FATAL: SST Test Frameworks encountered ") +
-                      ("an unexpected exception ({0}))".format(exc_e)))
-    crashlogger.error("=============================================================")
-    crashlogger.error("==== TRACEBACK ===============================================")
-    crashlogger.error("==============================================================")
-    crashlogger.error("\n" + traceback_str)
-    crashlogger.error("==============================================================")
+    if logfile_available:
+        # Send the data to the generic logger
+        crashlogger.error("")
+        crashlogger.error("")
+        crashlogger.error("==============================================================")
+        crashlogger.error("==== SST TEST FRAMEWORKS CRASH REPORT ========================")
+        crashlogger.error("==============================================================")
+        crashlogger.error(("FATAL: SST Test Frameworks encountered ") +
+                          ("an unexpected exception ({0}))".format(exc_e)))
+        crashlogger.error("==== TRACEBACK ===============================================")
+        crashlogger.error("\n" + traceback_str)
+        crashlogger.error("==== CRASH REPORT FINISHED ===================================")
 
-    # Dump Exception info to the Console
-    print(("FATAL: SST Test Frameworks encountered ") +
-          ("an unexpected exception ({0}))".format(exc_e)))
-    print("SEE FILE {0} FOR TRACE INFORMATION".format(log_filename))
+        # Dump Exception info to the Console
+        print(("FATAL: SST Test Frameworks encountered ") +
+              ("an unexpected exception ({0}))".format(exc_e)))
+        print("SEE FILE {0} FOR TRACE INFORMATION".format(log_filename))
+    else:
+        # Cannot send crash report to file, so send to console as last resort
+        print("")
+        print("")
+        print("==============================================================")
+        print("==== SST TEST FRAMEWORKS CRASH REPORT ========================")
+        print("==============================================================")
+        print("NOTE: Unable to create/access crash log file {0}".format(log_filename))
+        print("==============================================================")
+        print(("FATAL: SST Test Frameworks encountered ") +
+              ("an unexpected exception ({0}))".format(exc_e)))
+        print("==== TRACEBACK ===============================================")
+        print("\n" + traceback_str)
+        print("==== CRASH REPORT FINISHED ===================================")
+
     sys.exit(1)
 
 ####

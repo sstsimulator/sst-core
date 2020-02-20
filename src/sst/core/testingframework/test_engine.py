@@ -43,8 +43,24 @@ REQUIRED_PY_MAJ_VER_MAX = 3 # Required Major Version Max
 REQUIRED_PY_MAJ_VER_2_MINOR_VER = 7 # Required Minor Version
 
 HELP_DESC = 'Run {0} Tests'
-HELP_EPILOG = (("Python files named TestSuite*.py found at ") +
-               ("or below the defined test directory(s) will be run."))
+HELP_EPILOG = (
+               ("The 'testsuite_paths' argument can be defined as either as  ") +
+               ("directories or specific testsuite files.  If the ") +
+               ("'testsuite_paths' argument is empty, testsuites paths will be ") +
+               ("populated from the sstsimulator.conf ") +
+               ("file located in the <sstcore_install>/etc dir.  ") +
+               ("During operation, the Test Frameworks will create a list of ") +
+               ("runable testsuites.  Files specifed in the 'testsuite_paths' ") +
+               ("argument will be directly added.  Directories specifed in the ") +
+               ("'testsuite_paths' argument will be searched ") +
+               ("and testsuites will be added as follows: ") +
+               ("Files named testsuite_<scenarioname>_*.py found in a ") +
+               ("searched directory(s) will be added.  Scenario Names can be set ") +
+               ("using the -s (--scenario) argument.  By default ") +
+               ("the scenarioname will be = 'default'; and all testsuite_default_*.py ") +
+               ("files will be found.  If <scenarioname> = 'all', then all ") +
+               ("testsuite_*.py files will be found.")
+              )
 
 # AVAILABLE TEST MODES
 MODE_TEST_ELEMENTS = 0
@@ -59,14 +75,19 @@ class TestEngine():
 
     def __init__(self, sst_core_bin_dir, test_mode):
         """ Initialize the TestEngine object, and parse the user arguments
-            :param: sst_core_bin_dir = The SST-Core binary directory
-            :param: test_mode = 1 for Core Testing, 0 for Elements testing
+            :param: sst_core_bin_dir - The SST-Core binary directory
+            :param: test_mode = 1 for Core Testing, 0 for Elements testingt
         """
         ver = self._validate_python_version()
         self._init_test_engine_variables(sst_core_bin_dir, test_mode)
         self._parse_arguments()
         log_info(("SST Test Engine Instantiated - Running") +
                  (" tests on {0}").format(self._test_type_str))
+        if 'all' in self._list_of_scenario_names:
+            log_info("Test Scenario(s) to be run are: ALL TEST SCENARIOS")
+        else:
+            log_info(("Test Scenario(s) to be run are: ") +
+                     ("{0}").format(" ".join(self._list_of_scenario_names)))
         log_debug("Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
 
 ####
@@ -76,35 +97,46 @@ class TestEngine():
             run them using pythons unittest module
         """
         self._create_all_output_directories()
-        self._discover_tests()
+        self._discover_testsuites()
         log_forced(("\n=== TESTS STARTING ================") +
                    ("===================================\n"))
         try:
             sst_tests_results = unittest.TextTestRunner(verbosity=test_engine_globals.VERBOSITY,
                                                         failfast=self._fail_fast).\
                                                         run(self._sst_full_test_suite)
+        # Handlers of unittest.TestRunner exceptions
         except KeyboardInterrupt as exc_e:
             log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
 
-        self._dump_test_results(sst_tests_results)
+        testing_passed = self._get_and_display_test_results(sst_tests_results)
+        if testing_passed:
+            return 0
+        else:
+            return 1
 
 ################################################################################
 ################################################################################
 
-    def _dump_test_results(self, sst_tests_results):
+    def _get_and_display_test_results(self, sst_tests_results):
+        """ Figure out if testing passed, and display the test results
+            :param: sst_tests_results -  A unittest.TestResult object
+            :return: True if all tests passing with no errors, false otherwise
+        """
+        testing_passed = sst_tests_results.wasSuccessful and \
+                         len(sst_tests_results.errors) == 0
         log_forced(("\n=== TEST RESULTS ==================") +
                    ("===================================\n"))
         log_forced("Tests Run      = {0}".format(sst_tests_results.testsRun))
         log_forced("Tests Failures = {0}".format(len(sst_tests_results.failures)))
         log_forced("Tests Skipped  = {0}".format(len(sst_tests_results.skipped)))
         log_forced("Tests Errors   = {0}".format(len(sst_tests_results.errors)))
-        if sst_tests_results.wasSuccessful and len(sst_tests_results.errors) == 0:
+        if testing_passed:
             log_forced("\n== TESTING PASSED ==".format(len(sst_tests_results.errors)))
         else:
             log_forced("\n== TESTING FAILED ==".format(len(sst_tests_results.errors)))
         log_forced(("\n===================================") +
                    ("===================================\n"))
-
+        return testing_passed;
 
 ####
 
@@ -140,7 +172,8 @@ class TestEngine():
         # Init some internal variables
         self._fail_fast = False
         self._keep_output_dir = False
-        self._list_of_searchable_testsuite_paths = ""
+        self._list_of_searchable_testsuite_paths = []
+        self._list_of_scenario_names = []
         self._sst_core_bin_dir = sst_core_bin_dir
         self._test_mode = test_mode
         self._sst_full_test_suite = unittest.TestSuite()
@@ -160,19 +193,13 @@ class TestEngine():
         helpdesc = HELP_DESC.format(self._test_type_str)
         parser = argparse.ArgumentParser(description=helpdesc,
                                          epilog=HELP_EPILOG)
-        if self._test_mode:
-            testsuite_path_str = "Files/Dirs to SST-Core TestSuites"
-        else:
-            testsuite_path_str = "Files/Dirs to Registered Elements TestSuites"
-        parser.add_argument('list_of_paths', metavar='testsuite_paths', nargs='*',
-                            default=[], help=testsuite_path_str)
         mutgroup = parser.add_mutually_exclusive_group()
         mutgroup.add_argument('-v', '--verbose', action='store_true',
                               help='Run tests in verbose mode')
         mutgroup.add_argument('-q', '--quiet', action='store_true',
                               help='Run tests in quiet mode')
         mutgroup.add_argument('-d', '--debug', action='store_true',
-                              help='Run tests in test engine debug mode')
+                              help='Run tests in debug mode')
         parser.add_argument('-r', '--ranks', type=int, metavar="XX",
                             nargs=1, default=0,
                             help='Run with XX ranks [0]')
@@ -184,8 +211,18 @@ class TestEngine():
         parser.add_argument('-k', '--keep_output', action='store_true',
                             help='Dont clean output directory at start [false]')
         parser.add_argument('-o', '--out_dir', type=str, metavar='dir',
-                            nargs='?', default='./sst_test_outputs',
+                            nargs=1, default=['./sst_test_outputs'],
                             help='Set output directory [./sst_test_outputs]')
+        parser.add_argument('-s', '--scenarios', type=str, metavar="name",
+                            nargs="+", default=['default'],
+                            help=(('Name(s) of testing scenario(s)') + \
+                                 (' ("all" will run all scenarios) [default]')))
+        if self._test_mode:
+            testsuite_path_str = "TestSuite Files or Dirs to SST-Core TestSuites"
+        else:
+            testsuite_path_str = "Testsuite Files or Dirs to Registered Elements TestSuites"
+        parser.add_argument('-p', '--list_of_paths', metavar='path',
+                            nargs='*', default=[], help=testsuite_path_str)
 
         args = parser.parse_args()
         self._decode_parsed_arguments(args)
@@ -200,6 +237,7 @@ class TestEngine():
         self._fail_fast = args.fail_fast
         self._keep_output_dir = args.keep_output
         self._list_of_searchable_testsuite_paths = args.list_of_paths
+        self._list_of_scenario_names = args.scenarios
         test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_NORMAL
         if args.quiet:
             test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_QUIET
@@ -210,9 +248,9 @@ class TestEngine():
             test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_DEBUG
         test_engine_globals.NUMRANKS = args.ranks
         test_engine_globals.NUMTHREADS = args.threads
-        test_engine_globals.TESTOUTPUTTOPDIRPATH = args.out_dir
-        test_engine_globals.TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(args.out_dir)
-        test_engine_globals.TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(args.out_dir)
+        test_engine_globals.TESTOUTPUTTOPDIRPATH = args.out_dir[0]
+        test_engine_globals.TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(args.out_dir[0])
+        test_engine_globals.TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(args.out_dir[0])
 
 ####
 
@@ -227,18 +265,18 @@ class TestEngine():
             log_debug("Deleting output directory {0}".format(top_dir))
             shutil.rmtree(top_dir, True)
         if self._create_output_dir(top_dir):
-            log_info("SST Test Output Dir Created at {0}".format(top_dir))
+            log_debug("SST Test Output Dir Created at {0}".format(top_dir))
         self._create_output_dir(run_dir)
         self._create_output_dir(tmp_dir)
         self._create_output_dir(xml_dir)
-        log_info("Test Output Directory = {0}".format(top_dir))
+        log_info("SST Test Output Directory = {0}".format(top_dir))
         log_debug(" - Test Output Run Directory = {0}".format(run_dir))
         log_debug(" - Test Output Tmp Directory = {0}".format(tmp_dir))
         log_debug(" - Test Output XML Directory = {0}".format(xml_dir))
 
 ####
 
-    def _discover_tests(self):
+    def _discover_testsuites(self):
         """ Figure out the list of paths we are searching for testsuites.  The
             user may have given us a list via the cmd line, so that takes priority
         """
@@ -249,27 +287,14 @@ class TestEngine():
 
         # Check again to see if no Test Suite Paths
         if len(self._list_of_searchable_testsuite_paths) == 0:
-            log_warning("No TestSuite dirs/files have been defined or found")
+            log_warning("No TestSuite dirs/files have been found or defined")
 
         # Debug dump of search paths
         log_debug("SEARCH LOCATIONS OF TESTSUITES:")
         for search_path in self._list_of_searchable_testsuite_paths:
             log_debug("- {0}".format(search_path))
 
-        # Discover tests in each Test Path directory and add to the test suite
-        sst_pattern = 'testsuite*.py'
-        for testsuite_path in self._list_of_searchable_testsuite_paths:
-            # Is this testsuite_path a testsuites dir or a specific testsuite file?
-            if os.path.isdir(testsuite_path):
-                sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
-                                                                pattern=sst_pattern)
-                self._sst_full_test_suite.addTests(sst_testsuites)
-            if os.path.isfile(testsuite_path):
-                testsuite_dir = os.path.abspath(os.path.dirname(testsuite_path))
-                basename = os.path.basename(testsuite_path)
-                sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_dir,
-                                                                pattern=basename)
-                self._sst_full_test_suite.addTests(sst_testsuites)
+        self._add_testsuites_from_identifed_paths()
 
         log_debug("DISCOVERED TESTS (FROM TESTSUITES):")
         self._dump_testsuite_list(self._sst_full_test_suite)
@@ -281,6 +306,37 @@ class TestEngine():
             log_forced("SEARCH LOCATIONS FOR TESTSUITES:")
             for search_path in self._list_of_searchable_testsuite_paths:
                 log_forced("- {0}".format(search_path))
+
+####
+
+    def _add_testsuites_from_identifed_paths(self):
+        """ Look at all the searchable testsuite paths in the list.  If its
+            a file, try to add that testsuite directly.  If its a directory;
+            add all testsuites that match the identifed scenarios.  All
+        """
+        # Discover tests in each Test Path directory and add to the test suite
+        # A testsuite_path may be a directory or a file
+        for testsuite_path in self._list_of_searchable_testsuite_paths:
+            if os.path.isdir(testsuite_path):
+                # Find all testsuites that match our pattern(s)
+                if 'all' in self._list_of_scenario_names:
+                    testsuite_pattern = 'testsuite_*.py'
+                    sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
+                                                                    pattern=testsuite_pattern)
+                    self._sst_full_test_suite.addTests(sst_testsuites)
+                else:
+                    for scenario_name in self._list_of_scenario_names:
+                        testsuite_pattern = 'testsuite_{0}_*.py'.format(scenario_name)
+                        sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
+                                                                        pattern=testsuite_pattern)
+                        self._sst_full_test_suite.addTests(sst_testsuites)
+            if os.path.isfile(testsuite_path):
+                # Add a specific testsuite from a filepath
+                testsuite_dir = os.path.abspath(os.path.dirname(testsuite_path))
+                basename = os.path.basename(testsuite_path)
+                sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_dir,
+                                                                pattern=basename)
+                self._sst_full_test_suite.addTests(sst_testsuites)
 
 ####
 
