@@ -10,8 +10,8 @@ AC_DEFUN([SST_CHECK_PYTHON], [
 
 dnl search python2
   AS_IF([test -n "$with_python"],
-    [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config"], ["NOTFOUND"], ["$with_python/bin"])],
-    [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config"], ["NOTFOUND"])])
+    [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config" "python2.7-config" "python2.6-config"], ["NOTFOUND"], ["$with_python/bin"])],
+    [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config" "python2.7-config" "python2.6-config"], ["NOTFOUND"])])
 
 dnl search python3
   AS_IF([test $PYTHON_CONFIG_EXE = "NOTFOUND"],
@@ -73,6 +73,7 @@ dnl Error if python version is < 3.5 but > 3.0
   AC_SUBST([PYTHON_CPPFLAGS])
   AC_SUBST([PYTHON_LDFLAGS])
   AC_SUBST([PYTHON_CONFIG_EXE])
+  AC_SUBST([PYTHON_EXE])
   AC_SUBST([PYTHON_VERSION3])
 
   AM_CONDITIONAL([SST_CONFIG_HAVE_PYTHON], [test "$sst_check_python_happy" = "yes"])
