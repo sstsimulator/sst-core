@@ -34,7 +34,6 @@ from sst_unittest_support import log_debug
 from sst_unittest_support import log_error
 from sst_unittest_support import log_warning
 from sst_unittest_support import log_forced
-#from sst_unittest_support import check_param_type
 
 ################################################################################
 
@@ -43,8 +42,7 @@ REQUIRED_PY_MAJ_VER_MAX = 3 # Required Major Version Max
 REQUIRED_PY_MAJ_VER_2_MINOR_VER = 7 # Required Minor Version
 
 HELP_DESC = 'Run {0} Tests'
-HELP_EPILOG = (
-               ("The 'testsuite_paths' argument can be defined as either as  ") +
+HELP_EPILOG = (("The 'testsuite_paths' argument can be defined as either as  ") +
                ("directories or specific testsuite files.  If the ") +
                ("'testsuite_paths' argument is empty, testsuites paths will be ") +
                ("populated from the sstsimulator.conf ") +
@@ -105,14 +103,13 @@ class TestEngine():
                                                         failfast=self._fail_fast).\
                                                         run(self._sst_full_test_suite)
         # Handlers of unittest.TestRunner exceptions
-        except KeyboardInterrupt as exc_e:
+        except KeyboardInterrupt:
             log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
 
         testing_passed = self._get_and_display_test_results(sst_tests_results)
-        if testing_passed:
-            return 0
-        else:
+        if not testing_passed:
             return 1
+        return 0
 
 ################################################################################
 ################################################################################
@@ -131,12 +128,12 @@ class TestEngine():
         log_forced("Tests Skipped  = {0}".format(len(sst_tests_results.skipped)))
         log_forced("Tests Errors   = {0}".format(len(sst_tests_results.errors)))
         if testing_passed:
-            log_forced("\n== TESTING PASSED ==".format(len(sst_tests_results.errors)))
+            log_forced("\n== TESTING PASSED ==")
         else:
-            log_forced("\n== TESTING FAILED ==".format(len(sst_tests_results.errors)))
+            log_forced("\n== TESTING FAILED ==")
         log_forced(("\n===================================") +
                    ("===================================\n"))
-        return testing_passed;
+        return testing_passed
 
 ####
 
@@ -440,4 +437,3 @@ class TestEngine():
                 self._dump_testsuite_list(sub_suite)
         else:
             log_debug("- {0}".format(suite))
-

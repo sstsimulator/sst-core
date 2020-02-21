@@ -11,7 +11,8 @@ libexec_SCRIPTS += \
 	testingframework/sst_unittest_support.py \
 	testingframework/test_engine.py \
 	testingframework/test_engine_globals.py \
-	testingframework/test_engine_support.py
+	testingframework/test_engine_support.py \
+	testingframework/test_engine_junit.py
 
 EXTRA_DIST += \
 	testingframework/sst-test-core \
@@ -20,5 +21,6 @@ EXTRA_DIST += \
 	testingframework/sst_unittest_support.py \
 	testingframework/test_engine.py \
 	testingframework/test_engine_globals.py \
-	testingframework/test_engine_support.py
+	testingframework/test_engine_support.py \
+	testingframework/test_engine_junit.py
 

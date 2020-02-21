@@ -20,11 +20,12 @@ import os
 import unittest
 
 import test_engine_globals
-import test_engine_support
 from test_engine_support import OSCommand
 from test_engine_support import check_param_type
-from test_engine_support import JUnit_TestCase
-from test_engine_support import JUnit_TestSuite
+from test_engine_junit import JUnitTestCase
+from test_engine_junit import JUnitTestSuite
+from test_engine_junit import junit_to_xml_report_string
+#from test_engine_junit import junit_to_xml_report_file
 
 ################################################################################
 
@@ -50,8 +51,8 @@ class SSTUnitTestCase(unittest.TestCase):
     def tearDown(self):
         """ Called when the TestCase is shutting down """
 #        tc = JUnit_TestCase('Test1', 'some.class.name', 123.345, 'I am stdout!', 'I am stderr!')
-        tc = JUnit_TestCase(self._testMethodName, __name__ , 123.345, 'I am stdout!', 'I am stderr!')
-        test_engine_globals.JUNITTESTCASELIST.append(tc)
+        t_c = JUnitTestCase(self._testMethodName, __name__, 123.345, 'I am stdout!', 'I am stderr!')
+        test_engine_globals.JUNITTESTCASELIST.append(t_c)
         pass
 
 ###
@@ -70,26 +71,34 @@ class SSTUnitTestCase(unittest.TestCase):
 
 #        test_cases = [JUnit_TestCase('Test1', 'some.class.name', 123.345, 'I am stdout!', 'I am stderr!')]
 #        ts = JUnit_TestSuite("my test suite", test_cases)
-        ts = JUnit_TestSuite("my test suite", test_engine_globals.JUNITTESTCASELIST)
+        t_s = JUnitTestSuite("my test suite", test_engine_globals.JUNITTESTCASELIST)
         # pretty printing is on by default but can be disabled using prettyprint=False
 
         #TODO: FIGURE THIS OUT
-        #print(JUnit_TestSuite.to_xml_string([ts]))
+        print(junit_to_xml_report_string([t_s]))
 
 ###
 
-    def run_sst(self, sdl_file, out_file, other_params="", timeout=60):
+    def run_sst(self, sdl_file, out_file, other_params="", timeout_sec=60):
+        """ TODO: Launch sst with with the command line and send output to the
+            output file.  Other parameters can also be passed in.
+           :param: sdl_file (str): The FilePath to the sdl file
+           :param: out_file (str): The FilePath to the output file
+           :param: other_params (str): Any other parameters used in the SST cmd
+           :param: timeout_sec (int): Allowed runtime in seconds
+        """
+        #TODO: validate files exist
         check_param_type("sdl_file", sdl_file, str)
         check_param_type("out_file", out_file, str)
         check_param_type("other_params", other_params, str)
-        if not (isinstance(timeout, (int, float)) and not isinstance(timeout, bool)):
-            raise ValueError("ERROR: Timeout must be an int or a float")
+        if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
+            raise ValueError("ERROR: Timeout_sec must be an int or a float")
 
         # TODO Figure out how to set threads and ranks here
-        oscmd = "sst {0}".format(sdl_file)
+        oscmd = "sst {0} {1}".format(other_params, sdl_file)
         log_debug("--SST Launch Command = {0}".format(oscmd))
-        rtn = OSCommand(oscmd, out_file).run(timeout = timeout)
-        err_str = "SST Timed-Out while running {0}".format(oscmd)
+        rtn = OSCommand(oscmd, out_file).run(timeout=timeout_sec)
+        err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
         self.assertFalse(rtn.timeout(), err_str)
         err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
         self.assertEqual(rtn.result(), 0, err_str)
