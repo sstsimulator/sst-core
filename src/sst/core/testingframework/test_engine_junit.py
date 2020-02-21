@@ -14,7 +14,32 @@
 """ This module provides the a JUnit interface to generate xml data
     in a format that Jenkins will consume.
     This code comes from https://github.com/kyrus/python-junit-xml
-    And is modified and distributed as allowed per the license
+    Note: The code from the repo has been modified as allowed
+    per the MIT license defined on the repo (shown below)
+
+    ----------------------------------------------------------------------------
+    The MIT License
+
+    Copyright (c) 2013 Kyrus Tech, Inc., Brian Beyer
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+    ----------------------------------------------------------------------------
 """
 
 from collections import defaultdict
@@ -281,7 +306,6 @@ class JUnitTestCase(object):
         self.url = url
         self.stdout = stdout
         self.stderr = stderr
-
         self.is_enabled = True
         self.errors = []
         self.failures = []
@@ -406,6 +430,7 @@ def junit_to_xml_report_file(file_descriptor, test_suites, prettyprint=True, enc
     xml_string = junit_to_xml_report_string(test_suites, prettyprint=prettyprint, encoding=encoding)
     # has problems with encoded str with non-ASCII (non-default-encoding) characters!
     file_descriptor.write(xml_string)
+    pass
 
 ####
 

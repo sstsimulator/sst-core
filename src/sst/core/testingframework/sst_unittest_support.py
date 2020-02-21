@@ -17,15 +17,24 @@
 
 import sys
 import os
+import time
 import unittest
 
 import test_engine_globals
 from test_engine_support import OSCommand
 from test_engine_support import check_param_type
+from test_engine_support import qualname
+
 from test_engine_junit import JUnitTestCase
 from test_engine_junit import JUnitTestSuite
 from test_engine_junit import junit_to_xml_report_string
-#from test_engine_junit import junit_to_xml_report_file
+from test_engine_junit import junit_to_xml_report_file
+
+def strclass(cls):
+    return "%s" % (cls.__module__)
+
+def strqual(cls):
+    return "%s" % (qualname(cls))
 
 ################################################################################
 
@@ -37,21 +46,51 @@ class SSTUnitTestCase(unittest.TestCase):
 
         # Save the path of the testsuite that is being run
         parent_module_path = os.path.dirname(sys.modules[self.__module__].__file__)
+        self.startTime = 0
         self._test_suite_dir_path = parent_module_path
         test_engine_globals.JUNITTESTCASELIST = []
+        test_engine_globals.TEST_NAME_STR = ("{0}".format(methodName))
 
 ###
 
     def setUp(self):
         """ Called when the TestCase is starting up """
-        pass
+        self.startTime = time.time()
+        test_engine_globals.TESTSUITE_NAME_STR = ("{0}".format(strclass(self.__class__)))
+        test_engine_globals.TESTCASE_NAME_STR = ("{0}".format(strqual(self.__class__)))
 
 ###
+    def _list2reason(self, exc_list):
+        if exc_list and exc_list[-1][0] is self:
+            return exc_list[-1][1]
 
     def tearDown(self):
         """ Called when the TestCase is shutting down """
-#        tc = JUnit_TestCase('Test1', 'some.class.name', 123.345, 'I am stdout!', 'I am stderr!')
-        t_c = JUnitTestCase(self._testMethodName, __name__, 123.345, 'I am stdout!', 'I am stderr!')
+        t_sec = time.time() - self.startTime
+        t_c = JUnitTestCase(test_engine_globals.TEST_NAME_STR,
+                            test_engine_globals.TESTCASE_NAME_STR, t_sec)
+
+        # Extract the Error/Failure status of this TestCase
+        # This code comes from https://stackoverflow.com/questions/4414234/
+        # getting-pythons-unittest-results-in-a-teardown-method/39606065#39606065
+        # It works for Py2.7 - Py3.7
+        if hasattr(self, '_outcome'):  # Python 3.4+
+            result = self.defaultTestResult()  # these 2 methods have no side effects
+            self._feedErrorsToResult(result, self._outcome.errors)
+        else:  # Python 3.2 - 3.3 or 3.0 - 3.1 and 2.7
+            result = getattr(self, '_outcomeForDoCleanups', self._resultForDoCleanups)
+        error = self._list2reason(result.errors)
+        failure = self._list2reason(result.failures)
+        ok = not error and not failure
+        if not ok:
+            typ, text = ('ERROR', error) if error else ('FAIL', failure)
+            msg = [x for x in text.split('\n')[1:] if not x.startswith(' ')][0]
+#            log_forced("\n%s: %s\n     %s" % (typ, self.id(), msg))
+        if error:
+            t_c.junit_add_error_info(msg)
+        if failure:
+            t_c.junit_add_failure_info(msg)
+
         test_engine_globals.JUNITTESTCASELIST.append(t_c)
         pass
 
@@ -60,22 +99,23 @@ class SSTUnitTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """ Called when the class is starting up """
-        test_engine_globals.TESTCASERUNNING = True
+        test_engine_globals.TESTCASERUNNINGFLAG = True
 
 ###
 
     @classmethod
     def tearDownClass(cls):
         """ Called when the class is shutting down """
-        test_engine_globals.TESTCASERUNNING = False
+        test_engine_globals.TESTCASERUNNINGFLAG = False
+        t_s = JUnitTestSuite(test_engine_globals.TESTSUITE_NAME_STR,
+                             test_engine_globals.JUNITTESTCASELIST)
 
-#        test_cases = [JUnit_TestCase('Test1', 'some.class.name', 123.345, 'I am stdout!', 'I am stderr!')]
-#        ts = JUnit_TestSuite("my test suite", test_cases)
-        t_s = JUnitTestSuite("my test suite", test_engine_globals.JUNITTESTCASELIST)
-        # pretty printing is on by default but can be disabled using prettyprint=False
-
-        #TODO: FIGURE THIS OUT
-        print(junit_to_xml_report_string([t_s]))
+        # Write out Test Suite Results
+        #log_forced(junit_to_xml_report_string([t_s]))
+        xml_out_filepath = ("{0}/{1}.xml".format(test_engine_globals.TESTOUTPUTXMLDIRPATH,
+                                                 test_engine_globals.TESTSUITE_NAME_STR))
+        with open(xml_out_filepath, 'w') as file_out:
+            junit_to_xml_report_file(file_out, [t_s])
 
 ###
 
@@ -170,7 +210,7 @@ def log_forced(logstr):
         :param: logstr = string to be logged
     """
     extra_lf = ""
-    if test_engine_globals.TESTCASERUNNING:
+    if test_engine_globals.TESTCASERUNNINGFLAG:
         extra_lf = "\n"
     print(("{0}{1}".format(extra_lf, logstr)))
 

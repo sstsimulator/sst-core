@@ -66,7 +66,28 @@ class testcase_SubComponentLegacy(SSTUnitTestCase):
     def test_SubComponentLegacy_sc_uu(self):
         self.subcomponentlegacy_test_template("sc_legacy_nn")
 
+    # DEMO tests
+    def test_success(self):
+        self.assertEqual(1, 1)
 
+    def test_fail1(self):
+        self.assertEqual(2, 1)
+
+    def test_fail2(self):
+        self.assertEqual(2, 1)
+
+    def test_fail3(self):
+        self.assertEqual(2, 1)
+
+    def test_error1(self):
+        self.assertEqual(1 / 0, 1)
+
+    def test_error2(self):
+        self.assertEqual(1 / 0, 1)
+
+    @unittest.skip("Demonstrating Skipping")
+    def test_skipping(self):
+        self.assertEqual(1 / 0, 1)
 #####
 
     def subcomponentlegacy_test_template(self, testtype):
