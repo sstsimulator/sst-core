@@ -22,6 +22,7 @@
 
 #include <inttypes.h>
 #include <vector>
+#include <unistd.h>
 
 #include "sst/core/interprocess/circularBuffer.h"
 
