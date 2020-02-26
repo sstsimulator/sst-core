@@ -13,11 +13,6 @@
 #define SST_CORE_INTERPROCESS_TUNNEL_MMAP_CHILD_PIN3_H 1
 
 #include "pin.H"
-#include <iostream>
-#include <fstream>
-#include <sys/shm.h>
-#include <sys/stat.h>
-#include "atomic.hpp"
 
 #include "sst/core/interprocess/tunneldef.h"
 

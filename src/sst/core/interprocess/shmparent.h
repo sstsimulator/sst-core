@@ -15,15 +15,13 @@
 
 #include <fcntl.h>
 #include <cstdio>
-#include <vector>
 #include <string>
 #include <errno.h>
 #include <cstring>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#include "sst/core/interprocess/tunneldef.h"
+#include <inttypes.h>
 
 namespace SST {
 namespace Core {
