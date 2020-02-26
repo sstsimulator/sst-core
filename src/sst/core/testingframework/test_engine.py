@@ -190,19 +190,21 @@ class TestEngine():
         helpdesc = HELP_DESC.format(self._test_type_str)
         parser = argparse.ArgumentParser(description=helpdesc,
                                          epilog=HELP_EPILOG)
-        mutgroup = parser.add_mutually_exclusive_group()
+        out_mode_group = parser.add_argument_group('Output Mode Arguments')
+        mutgroup = out_mode_group.add_mutually_exclusive_group()
         mutgroup.add_argument('-v', '--verbose', action='store_true',
                               help='Run tests in verbose mode')
         mutgroup.add_argument('-q', '--quiet', action='store_true',
                               help='Run tests in quiet mode')
         mutgroup.add_argument('-d', '--debug', action='store_true',
                               help='Run tests in debug mode')
-        parser.add_argument('-r', '--ranks', type=int, metavar="XX",
-                            nargs=1, default=0,
-                            help='Run with XX ranks [0]')
-        parser.add_argument('-t', '--threads', type=int, metavar="YY",
-                            nargs=1, default=0,
-                            help='Run with YY threads [0]')
+        run_group = parser.add_argument_group('SST Run Options')
+        run_group.add_argument('-r', '--ranks', type=int, metavar="XX",
+                               nargs=1, default=0,
+                               help='Run with XX ranks [0]')
+        run_group.add_argument('-t', '--threads', type=int, metavar="YY",
+                               nargs=1, default=0,
+                               help='Run with YY threads [0]')
         parser.add_argument('-f', '--fail_fast', action='store_true',
                             help='Stop testing on failure [true]')
         parser.add_argument('-k', '--keep_output', action='store_true',
@@ -210,16 +212,17 @@ class TestEngine():
         parser.add_argument('-o', '--out_dir', type=str, metavar='dir',
                             nargs=1, default=['./sst_test_outputs'],
                             help='Set output directory [./sst_test_outputs]')
-        parser.add_argument('-s', '--scenarios', type=str, metavar="name",
-                            nargs="+", default=['default'],
-                            help=(('Name(s) of testing scenario(s)') + \
-                                 (' ("all" will run all scenarios) [default]')))
+        discover_group = parser.add_argument_group('Test Discovery Arguments')
+        discover_group.add_argument('-s', '--scenarios', type=str, metavar="name",
+                                    nargs="+", default=['default'],
+                                    help=(('Name(s) (in lowercase) of testing scenario(s)') + \
+                                         (' ("all" will run all scenarios) [default]')))
         if self._test_mode:
             testsuite_path_str = "TestSuite Files or Dirs to SST-Core TestSuites"
         else:
             testsuite_path_str = "Testsuite Files or Dirs to Registered Elements TestSuites"
-        parser.add_argument('-p', '--list_of_paths', metavar='path',
-                            nargs='*', default=[], help=testsuite_path_str)
+        discover_group.add_argument('-p', '--list_of_paths', metavar='path',
+                                    nargs='*', default=[], help=testsuite_path_str)
 
         args = parser.parse_args()
         self._decode_parsed_arguments(args)
@@ -234,7 +237,9 @@ class TestEngine():
         self._fail_fast = args.fail_fast
         self._keep_output_dir = args.keep_output
         self._list_of_searchable_testsuite_paths = args.list_of_paths
-        self._list_of_scenario_names = args.scenarios
+        lc_scen_list = [item.lower() for item in args.scenarios]
+#        self._list_of_scenario_names = args.scenarios
+        self._list_of_scenario_names = lc_scen_list
         test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_NORMAL
         if args.quiet:
             test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_QUIET
@@ -309,7 +314,7 @@ class TestEngine():
     def _add_testsuites_from_identifed_paths(self):
         """ Look at all the searchable testsuite paths in the list.  If its
             a file, try to add that testsuite directly.  If its a directory;
-            add all testsuites that match the identifed scenarios.  All
+            add all testsuites that match the identifed scenarios.
         """
         # Discover tests in each Test Path directory and add to the test suite
         # A testsuite_path may be a directory or a file
