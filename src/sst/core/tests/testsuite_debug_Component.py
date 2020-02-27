@@ -18,7 +18,19 @@ def tearDownModule():
 
 ################################################################################
 
-class testcase_SubComponentLegacy(SSTTestCase):
+class testcase_debug_Legacy_1(SSTTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super(cls, cls).setUpClass()
+        # Put class based setup code here. it is called once before tests are run
+
+    @classmethod
+    def tearDownClass(cls):
+        # Put class based teardown code here. it is called once after tests are run
+        super(cls, cls).tearDownClass()
+
+#####
 
     def setUp(self):
         super(type(self), self).setUp()
@@ -32,39 +44,6 @@ class testcase_SubComponentLegacy(SSTTestCase):
 
     def test_SubComponentLegacy_sc_2a(self):
         self.subcomponentlegacy_test_template("sc_legacy_2nl")
-
-    def test_SubComponentLegacy_sc_2u2u(self):
-        self.subcomponentlegacy_test_template("sc_legacy_n2l")
-
-    def test_SubComponentLegacy_sc_2u(self):
-        self.subcomponentlegacy_test_template("sc_legacy_n")
-
-    def test_SubComponentLegacy_sc_a(self):
-        self.subcomponentlegacy_test_template("sc_legacy_2l")
-
-    def test_SubComponentLegacy_sc_u2u(self):
-        self.subcomponentlegacy_test_template("sc_legacy_2nn")
-
-    def test_SubComponentLegacy_sc_u(self):
-        self.subcomponentlegacy_test_template("sc_legacy_n2n")
-
-    def test_SubComponentLegacy_sc_2u2a(self):
-        self.subcomponentlegacy_test_template("sc_legacy_2n2l")
-
-    def test_SubComponentLegacy_sc_2ua(self):
-        self.subcomponentlegacy_test_template("sc_legacy_2n")
-
-    def test_SubComponentLegacy_sc_2uu(self):
-        self.subcomponentlegacy_test_template("sc_legacy_nl")
-
-    def test_SubComponentLegacy_sc_u2a(self):
-        self.subcomponentlegacy_test_template("sc_legacy_2n2n")
-
-    def test_SubComponentLegacy_sc_ua(self):
-        self.subcomponentlegacy_test_template("sc_legacy_l")
-
-    def test_SubComponentLegacy_sc_uu(self):
-        self.subcomponentlegacy_test_template("sc_legacy_nn")
 
     # DEMO tests
     def test_success(self):
@@ -88,6 +67,7 @@ class testcase_SubComponentLegacy(SSTTestCase):
     @unittest.skip("Demonstrating Skipping")
     def test_skipping(self):
         self.assertEqual(1 / 0, 1)
+
 #####
 
     def subcomponentlegacy_test_template(self, testtype):
@@ -113,3 +93,47 @@ class testcase_SubComponentLegacy(SSTTestCase):
 
        return filecmp.cmp(sorted_outfile, sorted_reffile)
 
+################################################################################
+################################################################################
+################################################################################
+
+class testcase_debug_Legacy_2(SSTTestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        super(cls, cls).setUpClass()
+        # Put class based setup code here. it is called once before tests are run
+
+    @classmethod
+    def tearDownClass(cls):
+        # Put class based teardown code here. it is called once after tests are run
+        super(cls, cls).tearDownClass()
+
+#####
+
+    def setUp(self):
+        super(type(self), self).setUp()
+        # Put test based setup code here. it is called once before every test
+
+    def tearDown(self):
+        # Put test based teardown code here. it is called once after every test
+        super(type(self), self).tearDown()
+
+#####
+
+    def test_DEBUG_CASE2_SubComponentLegacy_sc_2a(self):
+        self.subcomponentlegacy_test_template("sc_legacy_2nl")
+
+    # DEMO tests
+    def test_DEBUG_CASE2_success(self):
+        self.assertEqual(1, 1)
+
+    def test_DEBUG_CASE2_fail1(self):
+        self.assertEqual(2, 1)
+
+    def test_DEBUG_CASE2_error1(self):
+        self.assertEqual(1 / 0, 1)
+
+    @unittest.skip("Demonstrating Skipping #2")
+    def test_DEBUG_CASE2_skipping(self):
+        self.assertEqual(1 / 0, 1)

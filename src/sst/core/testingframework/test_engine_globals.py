@@ -32,7 +32,6 @@ TESTCASERUNNINGFLAG = False
 JUNITTESTCASELIST = []
 TESTSUITE_NAME_STR = ""
 TESTCASE_NAME_STR = ""
-TEST_NAME_STR = ""
 
 
 # These are some globals to pass data between the top level test engine
@@ -51,7 +50,6 @@ def init_test_engine_globals():
     global JUNITTESTCASELIST
     global TESTSUITE_NAME_STR
     global TESTCASE_NAME_STR
-    global TEST_NAME_STR
 
     DEBUGMODE = False
     VERBOSITY = 1
@@ -65,4 +63,3 @@ def init_test_engine_globals():
     JUNITTESTCASELIST = []
     TESTSUITE_NAME_STR = ""
     TESTCASE_NAME_STR = ""
-    TEST_NAME_STR = ""

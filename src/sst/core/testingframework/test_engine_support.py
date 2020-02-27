@@ -200,8 +200,18 @@ def check_param_type(varname, vardata, datatype):
                    ("{4}")).format(caller, varname, vardata, datatype, type(vardata))
         raise ValueError(err_str)
 
+
 ################################################################################
-# qualname from https://github.com/wbolster/qualname
+
+def strclass(cls):
+    return "%s" % (cls.__module__)
+
+def strqual(cls):
+    return "%s" % (qualname(cls))
+
+
+################################################################################
+# qualname from https://github.com/wbolster/qualname to support Py2 and Py3
 
 import ast
 import inspect

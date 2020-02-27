@@ -21,6 +21,14 @@ import os
 import unittest
 import argparse
 import shutil
+import time
+import traceback
+from datetime import datetime
+from test_engine_support import strclass
+from test_engine_support import strqual
+from test_engine_junit import JUnitTestCase
+from test_engine_junit import JUnitTestSuite
+
 # ConfigParser module changes name between Py2->Py3
 try:
     import configparser
@@ -99,9 +107,11 @@ class TestEngine():
         log_forced(("\n=== TESTS STARTING ================") +
                    ("===================================\n"))
         try:
-            sst_tests_results = unittest.TextTestRunner(verbosity=test_engine_globals.VERBOSITY,
-                                                        failfast=self._fail_fast).\
-                                                        run(self._sst_full_test_suite)
+            test_runner = SSTTextTestRunner(verbosity=test_engine_globals.VERBOSITY,
+                                            failfast=self._fail_fast,
+                                            resultclass=SSTTextTestResult)
+            sst_tests_results = test_runner.run(self._sst_full_test_suite)
+
         # Handlers of unittest.TestRunner exceptions
         except KeyboardInterrupt:
             log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
@@ -238,7 +248,6 @@ class TestEngine():
         self._keep_output_dir = args.keep_output
         self._list_of_searchable_testsuite_paths = args.list_of_paths
         lc_scen_list = [item.lower() for item in args.scenarios]
-#        self._list_of_scenario_names = args.scenarios
         self._list_of_scenario_names = lc_scen_list
         test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_NORMAL
         if args.quiet:
@@ -253,6 +262,7 @@ class TestEngine():
         test_engine_globals.TESTOUTPUTTOPDIRPATH = args.out_dir[0]
         test_engine_globals.TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(args.out_dir[0])
         test_engine_globals.TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(args.out_dir[0])
+        test_engine_globals.TESTOUTPUTXMLDIRPATH = "{0}/xml_data".format(args.out_dir[0])
 
 ####
 
@@ -262,7 +272,7 @@ class TestEngine():
         top_dir = test_engine_globals.TESTOUTPUTTOPDIRPATH
         run_dir = test_engine_globals.TESTOUTPUTRUNDIRPATH
         tmp_dir = test_engine_globals.TESTOUTPUTTMPDIRPATH
-        xml_dir = test_engine_globals.TESTOUTPUTTOPDIRPATH + "/xml_data"
+        xml_dir = test_engine_globals.TESTOUTPUTXMLDIRPATH
         if not self._keep_output_dir:
             log_debug("Deleting output directory {0}".format(top_dir))
             shutil.rmtree(top_dir, True)
@@ -442,3 +452,90 @@ class TestEngine():
                 self._dump_testsuite_list(sub_suite)
         else:
             log_debug("- {0}".format(suite))
+
+
+################################################################################
+################################################################################
+################################################################################
+
+class SSTTextTestRunner(unittest.TextTestRunner):
+
+    def __init__(self, stream=sys.stderr, descriptions=True, verbosity=1,
+                 failfast=False, buffer=False, resultclass=None):
+        super(SSTTextTestRunner, self).__init__(stream, descriptions, verbosity,
+                                                failfast, buffer, resultclass)
+
+
+################################################################################
+
+class SSTTextTestResult(unittest.TextTestResult):
+
+    def __init__(self, stream, descriptions, verbosity):
+        super(SSTTextTestResult, self).__init__(stream, descriptions, verbosity)
+
+###
+
+    def startTest(self, test):
+        super(SSTTextTestResult, self).startTest(test)
+        #log_forced("DEBUG - startTest: Test = {0}\n".format(test))
+        self._start_time = time.time()
+        self._test_name = test.testName
+        self._testcase_name = strqual(test.__class__)
+        self._testsuite_name = strclass(test.__class__)
+        timestamp = datetime.utcnow().strftime("%Y_%m%d_%H:%M:%S.%f utc")
+        self._junit_test_case = JUnitTestCase(self._test_name,
+                                              self._testcase_name,
+                                              timestamp = timestamp)
+
+    def stopTest(self, test):
+        super(SSTTextTestResult, self).stopTest(test)
+        #log_forced("DEBUG - stopTest: Test = {0}\n".format(test))
+        self._junit_test_case.junit_add_elapsed_sec(time.time() - self._start_time)
+        test_engine_globals.JUNITTESTCASELIST.append(self._junit_test_case)
+
+###
+
+    def addSuccess(self, test):
+        super(SSTTextTestResult, self).addSuccess(test)
+        #log_forced("DEBUG - addSuccess: Test = {0}\n".format(test))
+
+    def addError(self, test, err):
+        super(SSTTextTestResult, self).addError(test, err)
+        #log_forced("DEBUG - addError: Test = {0}, err = {1}\n".format(test, err))
+        _junit_test_case = getattr(self, '_junit_test_case', None)
+        if _junit_test_case is not None:
+            err_msg = self._get_err_info(err, test)
+            _junit_test_case.junit_add_error_info(err_msg)
+
+    def addFailure(self, test, err):
+        super(SSTTextTestResult, self).addFailure(test, err)
+        #log_forced("DEBUG - addFailure: Test = {0}, err = {1}\n".format(test, err))
+        _junit_test_case = getattr(self, '_junit_test_case', None)
+        if _junit_test_case is not None:
+            err_msg = self._get_err_info(err, test)
+            _junit_test_case.junit_add_failure_info()
+
+    def addSkip(self, test, reason):
+        super(SSTTextTestResult, self).addSkip(test, reason)
+        #log_forced("DEBUG - addSkip: Test = {0}, reason = {1}\n".format(test, reason))
+        _junit_test_case = getattr(self, '_junit_test_case', None)
+        if _junit_test_case is not None:
+            _junit_test_case.junit_add_skipped_info(reason)
+
+    def addExpectedFailure(self, test, err):
+        super(SSTTextTestResult, self).addExpectedFailure(test, err)
+        #log_forced("DEBUG - addExpectedFailure: Test = {0}, err = {1}\n".format(test, err))
+
+    def addUnexpectedSuccess(self, test):
+        super(SSTTextTestResult, self).addUnexpectedSuccess(test)
+        #log_forced("DEBUG - addUnexpectedSuccess: Test = {0}\n".format(test))
+
+####
+
+    def _get_err_info(self, err, test):
+        """Converts a sys.exc_info() into a string."""
+        exctype, value, tb = err
+        msgLines = traceback.format_exception_only(exctype, value)
+        msgLines = [x.replace('\n', ' ') for x in msgLines]
+        return ''.join(msgLines)
+

@@ -366,6 +366,9 @@ class JUnitTestCase(object):
             if output:
                 self.skipped[0]["output"] = output
 
+    def junit_add_elapsed_sec(self, elapsed_sec):
+        self.elapsed_sec = elapsed_sec
+
     def junit_is_failure(self):
         """returns true if this test case is a failure"""
         return sum(1 for f in self.failures if f["message"] or f["output"]) > 0
@@ -430,7 +433,6 @@ def junit_to_xml_report_file(file_descriptor, test_suites, prettyprint=True, enc
     xml_string = junit_to_xml_report_string(test_suites, prettyprint=prettyprint, encoding=encoding)
     # has problems with encoded str with non-ASCII (non-default-encoding) characters!
     file_descriptor.write(xml_string)
-    pass
 
 ####
 

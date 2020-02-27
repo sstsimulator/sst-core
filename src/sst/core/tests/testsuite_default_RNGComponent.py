@@ -18,7 +18,7 @@ def tearDownModule():
 
 ################################################################################
 
-class testcase_RNGComponent(SSTUnitTestCase):
+class testcase_RNGComponent(SSTTestCase):
 
     def setUp(self):
         super(type(self), self).setUp()
