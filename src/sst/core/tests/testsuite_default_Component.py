@@ -20,6 +20,18 @@ def tearDownModule():
 
 class testcase_Component(SSTTestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        super(cls, cls).setUpClass()
+        # Put class based setup code here. it is called once before tests are run
+
+    @classmethod
+    def tearDownClass(cls):
+        # Put class based teardown code here. it is called once after tests are run
+        super(cls, cls).tearDownClass()
+
+#####
+
     def setUp(self):
         super(type(self), self).setUp()
         # Put test based setup code here. it is called once before every test
