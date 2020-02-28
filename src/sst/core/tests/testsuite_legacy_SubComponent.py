@@ -4,17 +4,18 @@ import os
 import sys
 import filecmp
 
+import sst_unittest_support
 from sst_unittest_support import *
 
 ################################################################################
 
 def setUpModule():
-    test_engine_setup_module()
+    sst_unittest_support.setUpModule()
     # Put Module based setup code here. it is called before any testcases are run
 
 def tearDownModule():
     # Put Module based teardown code here. it is called after all testcases are run
-    test_engine_teardown_module()
+    sst_unittest_support.tearDownModule()
 
 ################################################################################
 

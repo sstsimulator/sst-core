@@ -135,15 +135,11 @@ class SSTTestCase(unittest.TestCase):
 ### Module level support
 ################################################################################
 
-def test_engine_setup_module():
-    """ Common calls for all modules for setup """
-    log_forced("DEBUG BASE test_engine_setup_module()")
-    pass
+def setUpModule():
+    log_forced("AARON: BASE setUpModule")
 
-def test_engine_teardown_module():
-    """ Common calls for all modules for teardown """
-    log_forced("DEBUG BASE test_engine_teardown_module()")
-    pass
+def tearDownModule():
+    log_forced("AARON: BASE tearDownModule")
 
 ################################################################################
 # Information Functions
