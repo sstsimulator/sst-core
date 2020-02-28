@@ -50,6 +50,14 @@ dnl Error if python version is < 3.5 but > 3.0
   AS_IF([test "$PYTHON_VERSION3" = "no"],
     [AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.0],
         [AC_MSG_ERROR([Python3 version must be >= 3.5])])])
+
+dnl Python3.8 doesn't link to lpython by default
+  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
+        [AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.8], [PYTHON_LIBS=`$PYTHON_CONFIG_EXE --libs --embed`], [])])
+  
+  AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
+        [AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.8], [PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --ldflags --embed`], [])])
+  
   
   CPPFLAGS_saved="$CPPFLAGS"
   LDFLAGS_saved="$LDFLAGS"

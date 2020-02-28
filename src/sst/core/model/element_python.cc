@@ -43,7 +43,7 @@ void abortOnPyErr(uint32_t line, const char* file, const char* func,
     PyErr_NormalizeException(&exc,&val,&tb);
 
     // Get the exception name
-    char* exc_name = PyExceptionClass_Name(exc);
+    char* exc_name = (char*) PyExceptionClass_Name(exc);
     if (exc_name != nullptr) {
         char *dot = strrchr(exc_name, '.');
         if (dot != nullptr)
