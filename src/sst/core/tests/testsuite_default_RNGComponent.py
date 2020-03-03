@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import filecmp
 
 import sst_unittest_support
@@ -56,11 +55,11 @@ class testcase_RNGComponent(SSTTestCase):
 
     def RNG_test_template(self, testcase):
         # Set the various file paths
-        sdlfile = "{0}/test_RNGComponent_{1}.py".format(self.get_testsuite_dir(), testcase)
-        reffile = "{0}/refFiles/test_RNGComponent_{1}.out".format(self.get_testsuite_dir(), testcase)
-        outfile = "{0}/test_RNGComponent_{1}.out".format(self.get_test_output_run_dir(), testcase)
-        tmpfile = "{0}/test_RNGComponent_{1}.tmp".format(self.get_test_output_tmp_dir(), testcase)
-        cmpfile = "{0}/test_RNGComponent_{1}.cmp".format(self.get_test_output_tmp_dir(), testcase)
+        sdlfile = "{0}/test_RNGComponent_{1}.py".format(get_testsuite_dir(), testcase)
+        reffile = "{0}/refFiles/test_RNGComponent_{1}.out".format(get_testsuite_dir(), testcase)
+        outfile = "{0}/test_RNGComponent_{1}.out".format(get_test_output_run_dir(), testcase)
+        tmpfile = "{0}/test_RNGComponent_{1}.tmp".format(get_test_output_tmp_dir(), testcase)
+        cmpfile = "{0}/test_RNGComponent_{1}.cmp".format(get_test_output_tmp_dir(), testcase)
 
         self.run_sst(sdlfile, outfile)
 

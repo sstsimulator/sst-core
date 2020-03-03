@@ -104,48 +104,22 @@ class TestEngine():
         """
         self._create_all_output_directories()
         self._discover_testsuites()
-        log_forced(("\n=== TESTS STARTING ================") +
-                   ("===================================\n"))
         try:
             test_runner = SSTTextTestRunner(verbosity=test_engine_globals.VERBOSITY,
                                             failfast=self._fail_fast,
                                             resultclass=SSTTextTestResult)
             sst_tests_results = test_runner.run(self._sst_full_test_suite)
 
+            if not test_runner.did_tests_pass(sst_tests_results):
+                return 1
+            return 0
+
         # Handlers of unittest.TestRunner exceptions
         except KeyboardInterrupt:
             log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
 
-        testing_passed = self._get_and_display_test_results(sst_tests_results)
-        if not testing_passed:
-            return 1
-        return 0
-
 ################################################################################
 ################################################################################
-
-    def _get_and_display_test_results(self, sst_tests_results):
-        """ Figure out if testing passed, and display the test results
-            :param: sst_tests_results -  A unittest.TestResult object
-            :return: True if all tests passing with no errors, false otherwise
-        """
-        testing_passed = sst_tests_results.wasSuccessful and \
-                         len(sst_tests_results.errors) == 0
-        log_forced(("\n=== TEST RESULTS ==================") +
-                   ("===================================\n"))
-        log_forced("Tests Run      = {0}".format(sst_tests_results.testsRun))
-        log_forced("Tests Failures = {0}".format(len(sst_tests_results.failures)))
-        log_forced("Tests Skipped  = {0}".format(len(sst_tests_results.skipped)))
-        log_forced("Tests Errors   = {0}".format(len(sst_tests_results.errors)))
-        if testing_passed:
-            log_forced("\n== TESTING PASSED ==")
-        else:
-            log_forced("\n== TESTING FAILED ==")
-        log_forced(("\n===================================") +
-                   ("===================================\n"))
-        return testing_passed
-
-####
 
     def _validate_python_version(self):
         """ Validate that we are running on a supported Python version.
@@ -464,7 +438,43 @@ class SSTTextTestRunner(unittest.TextTestRunner):
                  failfast=False, buffer=False, resultclass=None):
         super(SSTTextTestRunner, self).__init__(stream, descriptions, verbosity,
                                                 failfast, buffer, resultclass)
+        log_forced(("\n=== TESTS STARTING ================") +
+                   ("===================================\n"))
 
+###
+
+    def run(self, test):
+        runresults = super(SSTTextTestRunner, self).run(test)
+        self._get_and_display_test_results(runresults)
+        return runresults
+
+###
+    def did_tests_pass(self, run_results):
+        """ Figure out if testing passed
+            :param: run_results -  A unittest.TestResult object
+            :return: True if all tests passing with no errors, false otherwise
+        """
+        return (run_results.wasSuccessful and len(run_results.errors) == 0)
+
+###
+
+    def _get_and_display_test_results(self, run_results):
+        """ Figure out if testing passed, and display the test results
+            :param: sst_tests_results -  A unittest.TestResult object
+            :return: True if all tests passing with no errors, false otherwise
+        """
+        log_forced(("\n=== TEST RESULTS ==================") +
+                   ("===================================\n"))
+        log_forced("Tests Run      = {0}".format(run_results.testsRun))
+        log_forced("Tests Failures = {0}".format(len(run_results.failures)))
+        log_forced("Tests Skipped  = {0}".format(len(run_results.skipped)))
+        log_forced("Tests Errors   = {0}".format(len(run_results.errors)))
+        if self.did_tests_pass(run_results):
+            log_forced("\n== TESTING PASSED ==")
+        else:
+            log_forced("\n== TESTING FAILED ==")
+        log_forced(("\n===================================") +
+                   ("===================================\n"))
 
 ################################################################################
 
@@ -479,7 +489,7 @@ class SSTTextTestResult(unittest.TextTestResult):
         super(SSTTextTestResult, self).startTest(test)
         #log_forced("DEBUG - startTest: Test = {0}\n".format(test))
         self._start_time = time.time()
-        self._test_name = test.testName
+        self._test_name = test._testName
         self._testcase_name = strqual(test.__class__)
         self._testsuite_name = strclass(test.__class__)
         timestamp = datetime.utcnow().strftime("%Y_%m%d_%H:%M:%S.%f utc")
@@ -513,7 +523,7 @@ class SSTTextTestResult(unittest.TextTestResult):
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
             err_msg = self._get_err_info(err, test)
-            _junit_test_case.junit_add_failure_info()
+            _junit_test_case.junit_add_failure_info(err_msg)
 
     def addSkip(self, test, reason):
         super(SSTTextTestResult, self).addSkip(test, reason)

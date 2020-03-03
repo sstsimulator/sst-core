@@ -67,7 +67,6 @@ class testcase_SubComponent(SSTTestCase):
     def test_SubComponent_sc_2ua(self):
         self.subcomponent_test_template("sc_2ua")
 
-    @unittest.skip("Demonstrating Skipping")
     def test_SubComponent_sc_2uu(self):
         self.subcomponent_test_template("sc_2uu")
 
@@ -84,24 +83,13 @@ class testcase_SubComponent(SSTTestCase):
 
     def subcomponent_test_template(self, testtype):
         # Set the various file paths
-        sdlfile = "{0}/subcomponent_tests/test_{1}.py".format(self.get_testsuite_dir(), testtype)
-        reffile = "{0}/subcomponent_tests/refFiles/test_{1}.out".format(self.get_testsuite_dir(), testtype)
-        outfile = "{0}/test_SubComponent_{1}.out".format(self.get_test_output_run_dir(), testtype)
+        sdlfile = "{0}/subcomponent_tests/test_{1}.py".format(get_testsuite_dir(), testtype)
+        reffile = "{0}/subcomponent_tests/refFiles/test_{1}.out".format(get_testsuite_dir(), testtype)
+        outfile = "{0}/test_SubComponent_{1}.out".format(get_test_output_run_dir(), testtype)
 
         self.run_sst(sdlfile, outfile)
 
         # Perform the test
-        cmp_result = self.compare_sorted(outfile, reffile)
+        cmp_result = compare_sorted(testtype, outfile, reffile)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
-
-#####
-
-    def compare_sorted(self, outfile, reffile):
-       sorted_outfile = "{0}/coreTestSubComponent_sorted_outfile".format(self.get_test_output_tmp_dir())
-       sorted_reffile = "{0}/coreTestSubComponent_sorted_reffile".format(self.get_test_output_tmp_dir())
-
-       os.system("sort -o {0} {1}".format(sorted_outfile, outfile))
-       os.system("sort -o {0} {1}".format(sorted_reffile, reffile))
-
-       return filecmp.cmp(sorted_outfile, sorted_reffile)
 

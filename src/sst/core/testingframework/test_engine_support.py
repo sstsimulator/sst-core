@@ -36,7 +36,7 @@ class OSCommand():
         self._output_file_path = None
         self._cmd_str = None
         self._process = None
-        self._timeout = 60
+        self._timeout_sec = 60
         self._run_status = None
         self._run_output = ''
         self._run_error = ''
@@ -46,12 +46,12 @@ class OSCommand():
 
 ####
 
-    def run(self, timeout=60, **kwargs):
+    def run(self, timeout_sec=60, **kwargs):
         """ Run a command then return and OSCmdRtn object. """
-        if not (isinstance(timeout, (int, float)) and not isinstance(timeout, bool)):
+        if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout must be an int or a float")
 
-        self._timeout = timeout
+        self._timeout_sec = timeout_sec
 
         # If No output file defined, default stdout and stderr to normal output
         if 'stdout' not in kwargs and self._output_file_path is None:
@@ -62,7 +62,7 @@ class OSCommand():
         # Build the thread that will monitor the subprocess with a timeout
         thread = threading.Thread(target=self._run_cmd_in_subprocess, kwargs=kwargs)
         thread.start()
-        thread.join(self._timeout)
+        thread.join(self._timeout_sec)
         if thread.is_alive():
             self._run_timeout = True
             self._process.terminate()
