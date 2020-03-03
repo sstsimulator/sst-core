@@ -13,8 +13,6 @@ AM_CPPFLAGS =  \
 	$(PYTHON_CPPFLAGS) \
 	$(LTDLINCL)
 
-
-
 DIST_SUBDIRS = libltdl .
 SUBDIRS = libltdl .
 EXTRA_DIST = mainpage.dox eli/README.md
@@ -283,6 +281,7 @@ sstinfo_x_SOURCES = \
 
 sstsim_x_LDADD = \
 	$(LIBLTDL) \
+	-lrt \
 	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
@@ -292,6 +291,7 @@ sstsim_x_LDADD = \
 	-lm
 
 sstsim_x_LDFLAGS = \
+	-lrt \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
@@ -302,6 +302,7 @@ sstsim_x_LDFLAGS = \
 
 sstinfo_x_LDADD = \
 	$(LIBLTDL) \
+	-lrt \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
 	$(BOOST_LIBS) \
@@ -310,6 +311,7 @@ sstinfo_x_LDADD = \
 	-lm
 
 sstinfo_x_LDFLAGS = \
+	-lrt \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \

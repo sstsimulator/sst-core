@@ -136,11 +136,11 @@ public:
     /** Destructor */
     virtual ~TunnelDef()
     {
-        shutdown(true);
+        shutdown();
     }
 
     /** Clean up a region */
-    void shutdown(bool all = false) {
+    void shutdown() {
         if ( master ) {
             for (size_t i = 0; i < circBuffs.size(); i++) {
                 circBuffs[i]->~CircBuff_t();

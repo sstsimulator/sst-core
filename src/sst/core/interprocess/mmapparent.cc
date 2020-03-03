@@ -9,7 +9,12 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+
+/* This exists only to test mmapparent during sst-core compilation */
+
 #include "sst_config.h"
 #include "sst/core/interprocess/mmapparent.h"
+#include "sst/core/interprocess/tunneldef.h"
 
-
+typedef SST::Core::Interprocess::TunnelDef<int,int> testtunnel;
+template class SST::Core::Interprocess::MMAPParent<testtunnel>;
