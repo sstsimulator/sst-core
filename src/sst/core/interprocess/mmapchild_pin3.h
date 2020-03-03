@@ -43,8 +43,8 @@ public:
 
         if (!OS_RETURN_CODE_IS_SUCCESS(retval)) {
             // Not using Output because IPC means Output might not be available
-            fprintf(stderr, "Failed to open file for IPC '%s': %s\n",
-                    filename.c_str(), strerror(errno));
+            fprintf(stderr, "Failed to open file for IPC '%s' (%d): %s\n",
+                    filename.c_str(), retval.os_specific_err, strerror(retval.os_specific_err));
             exit(1);
         }
 
@@ -54,7 +54,7 @@ public:
 
         if (!OS_RETURN_CODE_IS_SUCCESS(retval)) {
             // Not using Output because IPC means Output might not be available
-            fprintf(stderr, "mmap failed\n");
+            fprintf(stderr, "mmap failed (%d): %s\n", retval.os_specific_err, strerror(retval.os_specific_err));
             exit(1);
         }
         
@@ -70,7 +70,7 @@ public:
 
         if (!OS_RETURN_CODE_IS_SUCCESS(retval)) {
             // Not using Output because IPC means Output might not be available
-            fprintf(stderr, "mmap failed\n");
+            fprintf(stderr, "mmap failed (%d): %s\n", retval.os_specific_err, strerror(retval.os_specific_err));
             exit(1);
         }
 
