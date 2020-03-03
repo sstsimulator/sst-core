@@ -281,7 +281,6 @@ sstinfo_x_SOURCES = \
 
 sstsim_x_LDADD = \
 	$(LIBLTDL) \
-	-lrt \
 	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
@@ -291,7 +290,6 @@ sstsim_x_LDADD = \
 	-lm
 
 sstsim_x_LDFLAGS = \
-	-lrt \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
@@ -302,7 +300,6 @@ sstsim_x_LDFLAGS = \
 
 sstinfo_x_LDADD = \
 	$(LIBLTDL) \
-	-lrt \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
 	$(BOOST_LIBS) \
@@ -311,7 +308,6 @@ sstinfo_x_LDADD = \
 	-lm
 
 sstinfo_x_LDFLAGS = \
-	-lrt \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
@@ -334,6 +330,11 @@ if SST_CONFIG_HAVE_PYTHON3
 sst_core_sources += $(sst_core_python3_sources)
 else
 sst_core_sources += $(sst_core_python2_sources)
+endif
+
+if !SST_COMPILE_OSX
+sstsim_x_LDADD += -lrt
+sstinfo_x_LDADD += -lrt
 endif
 
 if USE_LIBZ
