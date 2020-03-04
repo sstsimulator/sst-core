@@ -13,8 +13,6 @@ AM_CPPFLAGS =  \
 	$(PYTHON_CPPFLAGS) \
 	$(LTDLINCL)
 
-
-
 DIST_SUBDIRS = libltdl .
 SUBDIRS = libltdl .
 EXTRA_DIST = mainpage.dox eli/README.md
@@ -118,6 +116,11 @@ nobase_dist_sst_HEADERS = \
 	interfaces/stringEvent.h \
 	interfaces/simpleMem.h \
 	interfaces/simpleNetwork.h \
+	interprocess/tunneldef.h \
+	interprocess/mmapparent.h \
+	interprocess/mmapchild_pin3.h \
+	interprocess/shmchild.h \
+	interprocess/shmparent.h \
 	interprocess/circularBuffer.h \
 	interprocess/sstmutex.h \
 	interprocess/ipctunnel.h \
@@ -202,9 +205,9 @@ sst_core_sources = \
 	timeLord.cc \
 	uninitializedQueue.cc \
 	unitAlgebra.cc \
-  module.cc \
-  sstpart.cc \
-  timeVortex.cc \
+	module.cc \
+	sstpart.cc \
+	timeVortex.cc \
 	serialization/serializable.cc \
 	serialization/serialize_serializable.cc \
 	serialization/serializer.cc \
@@ -213,6 +216,8 @@ sst_core_sources = \
 	interfaces/simpleMem.cc \
 	interfaces/simpleNetwork.cc \
 	interprocess/ipctunnel.cc \
+	interprocess/mmapparent.cc \
+	interprocess/shmparent.cc \
 	rng/sstrng.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
@@ -325,6 +330,11 @@ if SST_CONFIG_HAVE_PYTHON3
 sst_core_sources += $(sst_core_python3_sources)
 else
 sst_core_sources += $(sst_core_python2_sources)
+endif
+
+if !SST_COMPILE_OSX
+sstsim_x_LDADD += -lrt
+sstinfo_x_LDADD += -lrt
 endif
 
 if USE_LIBZ
