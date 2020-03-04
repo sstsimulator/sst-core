@@ -38,9 +38,6 @@ class SSTTestCase(unittest.TestCase):
     def __init__(self, methodName):
         super(SSTTestCase, self).__init__(methodName)
         #log_forced("DEBUG SSTTestCase __init__")
-
-        # Save the path of the testsuite that is being run
-        test_engine_globals.TESTSUITE_NAME_STR = ("{0}".format(strclass(self.__class__)))
         self._testName = methodName
 
 ###
@@ -48,7 +45,7 @@ class SSTTestCase(unittest.TestCase):
     def setUp(self):
         """ Called when the TestCase is starting up """
         #log_forced("DEBUG SSTTestCase setUp()")
-        pass
+        test_engine_globals.TESTSUITE_NAME_STR = ("{0}".format(strclass(self.__class__)))
 
 ###
     def tearDown(self):

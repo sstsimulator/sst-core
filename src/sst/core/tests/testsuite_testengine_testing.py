@@ -40,26 +40,26 @@ class testcase_testengine_testing_1(SSTTestCase):
 #####
 
     # DEMO tests
-    def test_DEBUG_CASE1_success(self):
+    def test_TESTING_CASE1_success(self):
         self.assertEqual(1, 1)
 
-    def test_DEBUG_CASE1_fail1(self):
+    def test_TESTING_CASE1_fail1(self):
         self.assertEqual(2, 1)
 
-    def test_DEBUG_CASE1_fail2(self):
+    def test_TESTING_CASE1_fail2(self):
         self.assertEqual(2, 1)
 
-    def test_DEBUG_CASE1_fail3(self):
+    def test_TESTING_CASE1_fail3(self):
         self.assertEqual(2, 1)
 
-    def test_DEBUG_CASE1_error1(self):
+    def test_TESTING_CASE1_error1(self):
         self.assertEqual(1 / 0, 1)
 
-    def test_DEBUG_CASE1_error2(self):
+    def test_TESTING_CASE1_error2(self):
         self.assertEqual(1 / 0, 1)
 
     @unittest.skip("Demonstrating Skipping #1")
-    def test_DEBUG_CASE1_skipping(self):
+    def test_TESTING_CASE1_skipping(self):
         self.assertEqual(1 / 0, 1)
 
 ################################################################################
@@ -91,20 +91,20 @@ class testcase_testengine_testing_2(SSTTestCase):
 #####
 
     # DEMO tests
-    def test_DEBUG_CASE2_success(self):
+    def test_TESTING_CASE2_success(self):
         self.assertEqual(1, 1)
 
-    def test_DEBUG_CASE2_fail1(self):
+    def test_TESTING_CASE2_fail1(self):
         self.assertEqual(2, 1)
 
-    def test_DEBUG_CASE2_error1(self):
+    def test_TESTING_CASE2_error1(self):
         self.assertEqual(1 / 0, 1)
 
     @unittest.skip("Demonstrating Skipping #2")
-    def test_DEBUG_CASE2_skipping(self):
+    def test_TESTING_CASE2_skipping(self):
         self.assertEqual(1 / 0, 1)
 
-    def test_DEBUG_CASE2_general_support(self):
+    def test_TESTING_CASE2_general_support(self):
         log("\n=======================================================")
 
         log("")
