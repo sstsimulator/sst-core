@@ -36,9 +36,11 @@ class SSTTestCase(unittest.TestCase):
     """ This class is the SST TestCase class """
 
     def __init__(self, methodName):
+        # NOTE: __init__ is called for all testscripts before any setUpModules
+        #       and the like are called.
         super(SSTTestCase, self).__init__(methodName)
         #log_forced("DEBUG SSTTestCase __init__")
-        self._testName = methodName
+        self.testName = methodName
 
 ###
 

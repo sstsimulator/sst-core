@@ -27,7 +27,6 @@ from datetime import datetime
 from test_engine_support import strclass
 from test_engine_support import strqual
 from test_engine_junit import JUnitTestCase
-from test_engine_junit import JUnitTestSuite
 
 # ConfigParser module changes name between Py2->Py3
 try:
@@ -290,7 +289,7 @@ class TestEngine():
         # Warn the user if no testssuites/testcases are found
         if self._sst_full_test_suite.countTestCases() == 0:
             log_error(("No TestSuites (with TestCases) have been found ") +
-                        ("- verify the search paths"))
+                      ("- verify the search paths"))
             log_forced("SEARCH LOCATIONS FOR TESTSUITES:")
             for search_path in self._list_of_searchable_testsuite_paths:
                 log_forced("- {0}".format(search_path))
@@ -435,6 +434,7 @@ class TestEngine():
 ################################################################################
 
 class SSTTextTestRunner(unittest.TextTestRunner):
+    """ A superclass to support SST required testing """
 
     def __init__(self, stream=sys.stderr, descriptions=True, verbosity=1,
                  failfast=False, buffer=False, resultclass=None):
@@ -456,7 +456,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
             :param: run_results -  A unittest.TestResult object
             :return: True if all tests passing with no errors, false otherwise
         """
-        return (run_results.wasSuccessful and len(run_results.errors) == 0)
+        return run_results.wasSuccessful and len(run_results.errors) == 0
 
 ###
 
@@ -481,6 +481,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
 ################################################################################
 
 class SSTTextTestResult(unittest.TextTestResult):
+    """ A superclass to support SST required testing """
 
     def __init__(self, stream, descriptions, verbosity):
         super(SSTTextTestResult, self).__init__(stream, descriptions, verbosity)
@@ -491,13 +492,13 @@ class SSTTextTestResult(unittest.TextTestResult):
         super(SSTTextTestResult, self).startTest(test)
         #log_forced("DEBUG - startTest: Test = {0}\n".format(test))
         self._start_time = time.time()
-        self._test_name = test._testName
+        self._test_name = test.testName
         self._testcase_name = strqual(test.__class__)
         self._testsuite_name = strclass(test.__class__)
         timestamp = datetime.utcnow().strftime("%Y_%m%d_%H:%M:%S.%f utc")
         self._junit_test_case = JUnitTestCase(self._test_name,
                                               self._testcase_name,
-                                              timestamp = timestamp)
+                                              timestamp=timestamp)
 
     def stopTest(self, test):
         super(SSTTextTestResult, self).stopTest(test)
@@ -516,7 +517,7 @@ class SSTTextTestResult(unittest.TextTestResult):
         #log_forced("DEBUG - addError: Test = {0}, err = {1}\n".format(test, err))
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
-            err_msg = self._get_err_info(err, test)
+            err_msg = self._get_err_info(err)
             _junit_test_case.junit_add_error_info(err_msg)
 
     def addFailure(self, test, err):
@@ -524,7 +525,7 @@ class SSTTextTestResult(unittest.TextTestResult):
         #log_forced("DEBUG - addFailure: Test = {0}, err = {1}\n".format(test, err))
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
-            err_msg = self._get_err_info(err, test)
+            err_msg = self._get_err_info(err)
             _junit_test_case.junit_add_failure_info(err_msg)
 
     def addSkip(self, test, reason):
@@ -544,10 +545,9 @@ class SSTTextTestResult(unittest.TextTestResult):
 
 ####
 
-    def _get_err_info(self, err, test):
+    def _get_err_info(self, err):
         """Converts a sys.exc_info() into a string."""
         exctype, value, tb = err
-        msgLines = traceback.format_exception_only(exctype, value)
-        msgLines = [x.replace('\n', ' ') for x in msgLines]
-        return ''.join(msgLines)
-
+        msg_lines = traceback.format_exception_only(exctype, value)
+        msg_lines = [x.replace('\n', ' ') for x in msg_lines]
+        return ''.join(msg_lines)

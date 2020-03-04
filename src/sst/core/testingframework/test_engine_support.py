@@ -205,9 +205,11 @@ def check_param_type(varname, vardata, datatype):
 ################################################################################
 
 def strclass(cls):
+    """ Return the classname of a class"""
     return "%s" % (cls.__module__)
 
 def strqual(cls):
+    """ Return the qualname of a class"""
     return "%s" % (qualname(cls))
 
 
@@ -270,16 +272,19 @@ def qualname(obj):
 
 
 class _Visitor(ast.NodeVisitor):
+    """Support class for qualname function"""
     def __init__(self):
         super(_Visitor, self).__init__()
         self.stack = []
         self.qualnames = {}
 
     def store_qualname(self, lineno):
-        qn = ".".join(n for n in self.stack)
-        self.qualnames[lineno] = qn
+        """Support method for _Visitor class"""
+        q_n = ".".join(n for n in self.stack)
+        self.qualnames[lineno] = q_n
 
     def visit_FunctionDef(self, node):
+        """Support method for _Visitor class"""
         self.stack.append(node.name)
         self.store_qualname(node.lineno)
         self.stack.append('<locals>')
@@ -288,8 +293,8 @@ class _Visitor(ast.NodeVisitor):
         self.stack.pop()
 
     def visit_ClassDef(self, node):
+        """Support method for _Visitor class"""
         self.stack.append(node.name)
         self.store_qualname(node.lineno)
         self.generic_visit(node)
         self.stack.pop()
-

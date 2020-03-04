@@ -14,10 +14,10 @@
 """ This module is a group of global variables that must be common to all tests
 """
 # Verbose Defines
-VERBOSE_QUIET  = 0
+VERBOSE_QUIET = 0
 VERBOSE_NORMAL = 1
-VERBOSE_LOUD   = 2
-VERBOSE_DEBUG  = 3
+VERBOSE_LOUD = 2
+VERBOSE_DEBUG = 3
 
 # Global Var Defines
 DEBUGMODE = None
@@ -31,8 +31,8 @@ TESTOUTPUTTMPDIRPATH = None
 TESTOUTPUTXMLDIRPATH = None
 TESTRUNNINGFLAG = False
 JUNITTESTCASELIST = []
-TESTCASESUITE_NAME_STR = ""
-ORECONFFILEPARSER = None
+TESTSUITE_NAME_STR = ""
+CORECONFFILEPARSER = None
 
 # These are some globals to pass data between the top level test engine
 # and the lower level testscripts

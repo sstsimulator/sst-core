@@ -367,6 +367,7 @@ class JUnitTestCase(object):
                 self.skipped[0]["output"] = output
 
     def junit_add_elapsed_sec(self, elapsed_sec):
+        """Add the elapsed time to the testcase"""
         self.elapsed_sec = elapsed_sec
 
     def junit_is_failure(self):
