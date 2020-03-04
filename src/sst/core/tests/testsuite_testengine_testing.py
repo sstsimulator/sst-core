@@ -15,7 +15,7 @@ def tearDownModule():
 
 ################################################################################
 
-class testcase_debug_Legacy_1(SSTTestCase):
+class testcase_testengine_testing_1(SSTTestCase):
 
     @classmethod
     def setUpClass(cls):
@@ -66,7 +66,7 @@ class testcase_debug_Legacy_1(SSTTestCase):
 ################################################################################
 ################################################################################
 
-class testcase_debug_Legacy_2(SSTTestCase):
+class testcase_testengine_testing_2(SSTTestCase):
 
     @classmethod
     def setUpClass(cls):

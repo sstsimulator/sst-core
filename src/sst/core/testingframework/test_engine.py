@@ -103,6 +103,8 @@ class TestEngine():
             run them using pythons unittest module
         """
         self._create_all_output_directories()
+        # Build the Config File Parser
+        test_engine_globals.CORECONFFILEPARSER = self._create_core_config_parser()
         self._discover_testsuites()
         try:
             test_runner = SSTTextTestRunner(verbosity=test_engine_globals.VERBOSITY,
@@ -273,7 +275,7 @@ class TestEngine():
 
         # Check again to see if no Test Suite Paths
         if len(self._list_of_searchable_testsuite_paths) == 0:
-            log_warning("No TestSuite dirs/files have been found or defined")
+            log_error("No TestSuite dirs/files have been found or defined")
 
         # Debug dump of search paths
         log_debug("SEARCH LOCATIONS OF TESTSUITES:")
@@ -287,7 +289,7 @@ class TestEngine():
 
         # Warn the user if no testssuites/testcases are found
         if self._sst_full_test_suite.countTestCases() == 0:
-            log_warning(("No TestSuites (with TestCases) have been found ") +
+            log_error(("No TestSuites (with TestCases) have been found ") +
                         ("- verify the search paths"))
             log_forced("SEARCH LOCATIONS FOR TESTSUITES:")
             for search_path in self._list_of_searchable_testsuite_paths:
@@ -362,8 +364,8 @@ class TestEngine():
         final_rtn_paths = []
         testsuite_paths = []
 
-        # Build the Config File Parser
-        core_conf_file_parser = self._create_core_config_parser()
+        # Get the Config File Parser
+        core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
 
         # Now read the appropriate type of data (Core or Elements)
         try:

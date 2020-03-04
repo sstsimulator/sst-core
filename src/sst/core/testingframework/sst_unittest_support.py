@@ -138,6 +138,160 @@ def is_testing_in_debug_mode():
 #TODO: Get SST-Core Build Information Here
 
 ################################################################################
+# SST Configuration file (sstsimulator.conf) Access Functions
+################################################################################
+
+def get_sst_config_value_str(section, key, default_str=""):
+    """ Retrieve a Section/Key from the SST Configuration File
+       :param: section (str): The [section] to look for the key
+       :param: key (str): The key to find
+       :param: default_str (str): Default Return if failure occurs
+       :return (str): The returned data or default if not found in file
+    """
+    check_param_type("section", section, str)
+    check_param_type("key", key, str)
+    check_param_type("default", default_str, str)
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        return core_conf_file_parser.get(section, key)
+    except configparser.Error as exc_e:
+        return _handle_config_err(exc_e, default_str)
+
+###
+
+def get_sst_config_value_int(section, key, default_int=0):
+    """ Retrieve a Section/Key from the SST Configuration File
+       :param: section (str): The [section] to look for the key
+       :param: key (str): The key to find
+       :param: default_int (int): Default Return if failure occurs
+       :return (float): The returned data or default if not found in file
+    """
+    check_param_type("section", section, str)
+    check_param_type("key", key, str)
+    check_param_type("default", default_int, int)
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        return core_conf_file_parser.getint(section, key)
+    except configparser.Error as exc_e:
+        return _handle_config_err(exc_e, default_int)
+
+###
+
+def get_sst_config_value_float(section, key, default_float=0.0):
+    """ Retrieve a Section/Key from the SST Configuration File
+       :param: section (str): The [section] to look for the key
+       :param: key (str): The key to find
+       :param: default_float (float): Default Return if failure occurs
+       :return (float): The returned data or default if not found in file
+    """
+    check_param_type("section", section, str)
+    check_param_type("key", key, str)
+    check_param_type("default", default_float, int)
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        return core_conf_file_parser.getfloat(section, key)
+    except configparser.Error as exc_e:
+        return _handle_config_err(exc_e, default_float)
+
+###
+
+def get_sst_config_value_bool(section, key, default_bool=False):
+    """ Retrieve a Section/Key from the SST Configuration File
+       :param: section (str): The [section] to look for the key
+       :param: key (str): The key to find
+       :param: default_bool (bool): Default Return if failure occurs
+       :return (bool): The returned data or default if not found in file
+       NOTE: "1", "yes", "true", and "on" return True
+    """
+    check_param_type("section", section, str)
+    check_param_type("key", key, str)
+    check_param_type("default", default_bool, int)
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        return core_conf_file_parser.getbool(section, key)
+    except configparser.Error as exc_e:
+        return _handle_config_err(exc_e, default_bool)
+
+###
+
+def get_sst_config_sections():
+    """ Retrieve a list of sections that exist in the SST Configuration File
+       :return (list of str): The list of sections in the file
+    """
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        return core_conf_file_parser.sections()
+    except configparser.Error as exc_e:
+        return _handle_config_err(exc_e, [])
+
+###
+
+def get_sst_config_section_keys(section):
+    """ Retrieve a list of keys under a section that exist in the SST Configuration File
+       :param: section (str): The [section] to look for the key
+       :return (list of str): The list of keys under a section in the file
+    """
+    check_param_type("section", section, str)
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        return core_conf_file_parser.options(section)
+    except configparser.Error as exc_e:
+        return _handle_config_err(exc_e, [])
+
+###
+
+def get_all_sst_config_keys_values_from_section(section):
+    """ Retrieve a list of tuples that contain all the key, value pairs
+        under a section that exists in the SST Configuration File
+       :param: section (str): The [section] to look for the key
+       :return (list of tuples): The list of tuples of key, value pairs
+    """
+    check_param_type("section", section, str)
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        return core_conf_file_parser.items(section)
+    except configparser.Error as exc_e:
+        return _handle_config_err(exc_e, [()])
+
+###
+
+def does_sst_config_have_section(section):
+    """ Check if the SST Configuration File has a section
+       :param: section (str): The [section] to look for the key
+       :return (bool):
+    """
+    check_param_type("section", section, str)
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        return core_conf_file_parser.has_section(section)
+    except configparser.Error as exc_e:
+        return _handle_config_err(exc_e, False)
+
+###
+
+def does_sst_config_section_have_key(section, key):
+    """ Check if the SST Configuration File has a key under a section
+       :param: section (str): The [section] to look for the key
+       :param: key (str): The key to find
+       :return (bool):
+    """
+    check_param_type("section", section, str)
+    check_param_type("key", key, str)
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        return core_conf_file_parser.has_option(section, key)
+    except configparser.Error as exc_e:
+        return _handle_config_err(exc_e, False)
+
+###
+
+def _handle_config_err(exc_e, rtn_data):
+    errmsg = (("Reading SST-Core Config file section ") +
+              ("{0} - {1} ")).format(section, exc_e)
+    log(errmsg)
+    return rtn_data
+
+################################################################################
 # Logging Functions
 ################################################################################
 

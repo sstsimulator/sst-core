@@ -32,6 +32,7 @@ TESTOUTPUTXMLDIRPATH = None
 TESTRUNNINGFLAG = False
 JUNITTESTCASELIST = []
 TESTCASESUITE_NAME_STR = ""
+ORECONFFILEPARSER = None
 
 # These are some globals to pass data between the top level test engine
 # and the lower level testscripts
@@ -49,6 +50,7 @@ def init_test_engine_globals():
     global TESTRUNNINGFLAG
     global JUNITTESTCASELIST
     global TESTSUITE_NAME_STR
+    global CORECONFFILEPARSER
 
     DEBUGMODE = False
     VERBOSITY = 1
@@ -62,3 +64,4 @@ def init_test_engine_globals():
     TESTRUNNINGFLAG = False
     JUNITTESTCASELIST = []
     TESTSUITE_NAME_STR = ""
+    CORECONFFILEPARSER = None

@@ -19,6 +19,7 @@ import subprocess
 import threading
 import traceback
 import shlex
+import ast
 import inspect
 
 ################################################################################
@@ -212,10 +213,7 @@ def strqual(cls):
 
 ################################################################################
 # qualname from https://github.com/wbolster/qualname to support Py2 and Py3
-
-import ast
-import inspect
-
+# LICENSE -> https://github.com/wbolster/qualname/blob/master/LICENSE.rst
 __all__ = ['qualname']
 
 _cache = {}
