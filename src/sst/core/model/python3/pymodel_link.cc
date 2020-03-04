@@ -141,7 +141,7 @@ PyTypeObject PyModel_LinkType = {
     sizeof(LinkPy_t),          /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)linkDealloc,   /* tp_dealloc */
-    nullptr,                   /* tp_vectorcall_offset */
+    0,                         /* tp_vectorcall_offset */
     nullptr,                   /* tp_getattr */
     nullptr,                   /* tp_setattr */
     nullptr,                   /* tp_as_async */
