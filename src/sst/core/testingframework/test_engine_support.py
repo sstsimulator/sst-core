@@ -132,8 +132,7 @@ class OSCommand():
 ################################################################################
 
 class OSCommandResult():
-    """ TODO : DOCSTRING
-    """
+    """ This class returns result data about the OSCommand that was executed """
     def __init__(self, cmd_str, status, output, error, timeout):
         self._run_cmd_str = cmd_str
         self._run_status = status
@@ -158,42 +157,42 @@ class OSCommandResult():
 ####
 
     def cmd(self):
-        """ TODO : DOCSTRING
-        """
+        """ return the command that was run """
         return self._run_cmd_str
 
 ####
 
     def result(self):
-        """ TODO : DOCSTRING
-        """
+        """ return the run status result """
         return self._run_status
 
 ####
 
     def output(self):
-        """ TODO : DOCSTRING
-        """
+        """ return the run output result """
         return self._run_output
 
 ####
 
     def error(self):
-        """ TODO : DOCSTRING
-        """
+        """ return the run error output result """
         return self._run_error
 
 ####
 
     def timeout(self):
-        """ TODO : DOCSTRING
-        """
+        """ return true if the run timed out """
         return self._run_timeout
 
 ################################################################################
 
 def check_param_type(varname, vardata, datatype):
-    """ TODO : DOCSTRING
+    """ Validate a parameter to ensure it is of the correct type
+        :param: varname (str) = The name of the variable
+        :param: vardata (???) = The actual variable of any type
+        :param: datatype (???) = The type that we want to confirm
+        This will raise a ValueErr telling the caller that the variable pass is
+        not of the correct type.
     """
     caller = inspect.stack()[1][3]
     if not isinstance(vardata, datatype):

@@ -35,12 +35,7 @@ except ImportError:
     import ConfigParser as configparser
 
 import test_engine_globals
-from sst_unittest_support import log_fatal
-from sst_unittest_support import log_info
-from sst_unittest_support import log_debug
-from sst_unittest_support import log_error
-from sst_unittest_support import log_warning
-from sst_unittest_support import log_forced
+from sst_unittest_support import *
 
 ################################################################################
 
@@ -88,6 +83,10 @@ class TestEngine():
         self._parse_arguments()
         log_info(("SST Test Engine Instantiated - Running") +
                  (" tests on {0}").format(self._test_type_str))
+
+        log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
+                 (" {0}".format(get_host_os_distribution_version())))
+
         if 'all' in self._list_of_scenario_names:
             log_info("Test Scenario(s) to be run are: ALL TEST SCENARIOS")
         else:
@@ -509,8 +508,14 @@ class SSTTextTestResult(unittest.TextTestResult):
 ###
 
     def addSuccess(self, test):
-        super(SSTTextTestResult, self).addSuccess(test)
+        #super(SSTTextTestResult, self).addSuccess(test)
         #log_forced("DEBUG - addSuccess: Test = {0}\n".format(test))
+        # Override the "ok" and make it a "PASS" instead
+        if self.showAll:
+            self.stream.writeln("PASS")
+        elif self.dots:
+            self.stream.write('.')
+            self.stream.flush()
 
     def addError(self, test, err):
         super(SSTTextTestResult, self).addError(test, err)

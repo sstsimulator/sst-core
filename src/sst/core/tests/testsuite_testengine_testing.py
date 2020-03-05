@@ -62,6 +62,26 @@ class testcase_testengine_testing_1(SSTTestCase):
     def test_TESTING_CASE1_skipping(self):
         self.assertEqual(1 / 0, 1)
 
+    def test_TESTING_CASE1_get_info_from_sstsimulator_conf(self):
+        # This should pass as we give valid data
+        sourcedir = get_sst_config_value_str("SSTCore", "sourcedir")
+        log_forced("SSTCore SourceDir = {0}".format(sourcedir))
+
+    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_section_failure(self):
+        # This should pass as we detect an expected exception
+        with self.assertRaises(SSTTestCaseException):
+            get_sst_config_value_str("invalid_section", "invalid_key")
+
+    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_key_failure(self):
+        # This should give an error as we detect an exception due to invalid key
+        get_sst_config_value_str("SSTCore", "invalid_key")
+
+    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_key_failure(self):
+        # This should pass by returning a default, but should log a warning
+        sourcedir = get_sst_config_value_str("SSTCore", "invalid_key", "kilroy_was_here")
+        log_forced("SSTCore SourceDir = {0}".format(sourcedir))
+
+
 ################################################################################
 ################################################################################
 ################################################################################
@@ -118,7 +138,7 @@ class testcase_testengine_testing_2(SSTTestCase):
         log("")
         log("=== Run tail and force a timeout")
         cmd = "tail".format()
-        rtn = OSCommand(cmd).run(timeout_sec=5)
+        rtn = OSCommand(cmd).run(timeout_sec=3)
         log("Tail (forced Timeout) Rtn = {0}".format(rtn))
 
         log("\n=======================================================")
