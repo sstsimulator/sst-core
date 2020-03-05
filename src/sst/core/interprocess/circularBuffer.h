@@ -31,7 +31,7 @@ public:
     void setBufferSize(const size_t bufferSize) {
         if ( buffSize != 0 ) {
             fprintf(stderr, "Already specified size for buffer\n");
-            exit(1);
+            return;
         }
         
         buffSize = bufferSize;
