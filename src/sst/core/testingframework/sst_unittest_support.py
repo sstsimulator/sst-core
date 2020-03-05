@@ -20,6 +20,7 @@ import os
 import unittest
 import filecmp
 import platform
+import re
 
 # ConfigParser module changes name between Py2->Py3
 try:
@@ -200,7 +201,7 @@ def get_host_os_distribution_type():
     """ Returns the os distribution type as a uppercase string"""
     k_type = get_host_os_kernel_type()
     if k_type == 'Linux':
-        lin_dist = platform.linux_distribution()
+        lin_dist = _get_linux_distribution()
         dist_name = lin_dist[0].lower()
         if "centos" in dist_name: return OS_DIST_CENTOS
         if "red hat" in dist_name: return OS_DIST_RHEL
@@ -213,8 +214,8 @@ def get_host_os_distribution_version():
     """ Returns the os distribution version as a string"""
     k_type = get_host_os_kernel_type()
     if k_type == 'Linux':
-        lin_dist = platform.linux_distribution()
-        lin_dist[1]
+        lin_dist = _get_linux_distribution()
+        return lin_dist[1]
     elif k_type == 'Darwin':
         mac_ver = platform.mac_ver()
         return mac_ver[0]
@@ -242,6 +243,52 @@ def is_host_os_toss():
 def is_host_os_ubuntu():
     """ Returns true if the os distribution is Ubuntu"""
     return get_host_os_distribution_type() == OS_DIST_UBUNTU
+
+###
+
+def _get_linux_distribution():
+    """ Return the linux distribution info as a tuple"""
+    # The method linux_distribution is depricated in depricated in Py3.5
+    _linux_distribution = getattr(platform, 'linux_distribution', None)
+        # This is the easy method for Py2 - p3.7.
+    if _linux_distribution is not None:
+        return _linux_distribution()
+    else:
+        # We need to do this the hard way, NOTE: order of checking is important
+        distname = "undefined"
+        distver = "undefined"
+        if os.path.isfile("/etc/toss-release"):
+            distname = "toss"
+            distver = _get_linux_version("/etc/toss-release", "-")
+        elif os.path.isfile("/etc/centos-release"):
+            distname = "centos"
+            distver = _get_linux_version("/etc/centos-release", " ")
+        elif os.path.isfile("/etc/redhat-release"):
+            distname = "red hat"
+            distver = _get_linux_version("/etc/redhat-release", " ")
+        elif os.path.isfile("/etc/lsb-release"):
+            # Until we have other OS's, this is Ubuntu.
+            distname = "ubuntu"
+            distver = _get_linux_version("/etc/lsb-release", " ")
+        rtn_data=(distname, distver)
+        return rtn_data
+
+def _get_linux_version(filepath, sep):
+    """ return the linux OS version as a string"""
+    # Find the first digit + period in the tokenized string list
+    with open(filepath, 'r') as f:
+        for line in f:
+            #print("found line = " + line)
+            word_list = line.split(sep)
+            for word in word_list:
+                #print("word =" + word)
+                m = re.search(r"[\d.]+", word)
+                #print("found_ver = {0}".format(m))
+                if m is not None:
+                    found_ver = m.string[m.start():m.end()]
+                    #print("found_ver = {0}".format(found_ver))
+                    return found_ver
+    return "undefined"
 
 ################################################################################
 # SST Configuration file (sstsimulator.conf) Access Functions
