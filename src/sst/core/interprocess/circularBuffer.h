@@ -28,14 +28,15 @@ public:
         writeIndex = 0;
     }
 
-    void setBufferSize(const size_t bufferSize) {
+    bool setBufferSize(const size_t bufferSize) {
         if ( buffSize != 0 ) {
             fprintf(stderr, "Already specified size for buffer\n");
-            return;
+            return false;
         }
         
         buffSize = bufferSize;
         __sync_synchronize();
+        return true;
     }
 
     T read() {

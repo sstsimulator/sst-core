@@ -18,6 +18,7 @@
 #include <string>
 #include <errno.h>
 #include <cstring>
+#include <cstdlib>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>

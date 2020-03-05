@@ -119,7 +119,8 @@ public:
             auto resResult = reserveSpace<CircBuff_t>(cbSize);
             isd->offsets[1+c] = resResult.first;
             cPtr = resResult.second;
-            cPtr->setBufferSize(bufferSize);
+            if (!cPtr->setBufferSize(bufferSize))
+                exit(1);
             circBuffs.push_back(cPtr);
         }
 
