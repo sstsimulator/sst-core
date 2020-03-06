@@ -113,7 +113,8 @@ public:
                 std::pair<size_t, CircBuff_t*> cResult = reserveSpace<CircBuff_t>(cbSize);
                 isd->offsets[1+c] = cResult.first;
                 cPtr = cResult.second;
-                cPtr->setBufferSize(buffSize);
+                if (!cPtr->setBufferSize(buffSize))
+                    exit(1); // function prints error message
                 circBuffs.push_back(cPtr);
             }
             return isd->expectedChildren;
