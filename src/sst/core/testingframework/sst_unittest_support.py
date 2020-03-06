@@ -304,126 +304,73 @@ def is_host_os_ubuntu():
     """ Returns true if the os distribution is Ubuntu"""
     return get_host_os_distribution_type() == OS_DIST_UBUNTU
 
+################################################################################
+# SST Configuration include file (sst_config.h.conf) Access Functions
+################################################################################
+def get_sst_config_include_file_value_int(define, default=None):
+    """ Retrieve a define from the SST Configuration Include File (sst_config.h)
+       :param: section (str): The [section] to look for the key
+       :param: default (int): Default Return if failure occurs
+       :return (int): The returned data or default if not found in the dict
+       This will raise a SSTTestCaseException if a default is not provided or type
+       is incorrect
+    """
+    return _get_sst_config_include_file_value(define, default, int)
+
 ###
 
-def _get_linux_distribution():
-    """ Return the linux distribution info as a tuple"""
-    # The method linux_distribution is depricated in depricated in Py3.5
-    _linux_distribution = getattr(platform, 'linux_distribution', None)
-        # This is the easy method for Py2 - p3.7.
-    if _linux_distribution is not None:
-        return _linux_distribution()
-    else:
-        # We need to do this the hard way, NOTE: order of checking is important
-        distname = "undefined"
-        distver = "undefined"
-        if os.path.isfile("/etc/toss-release"):
-            distname = "toss"
-            distver = _get_linux_version("/etc/toss-release", "-")
-        elif os.path.isfile("/etc/centos-release"):
-            distname = "centos"
-            distver = _get_linux_version("/etc/centos-release", " ")
-        elif os.path.isfile("/etc/redhat-release"):
-            distname = "red hat"
-            distver = _get_linux_version("/etc/redhat-release", " ")
-        elif os.path.isfile("/etc/lsb-release"):
-            # Until we have other OS's, this is Ubuntu.
-            distname = "ubuntu"
-            distver = _get_linux_version("/etc/lsb-release", " ")
-        rtn_data=(distname, distver)
-        return rtn_data
-
-def _get_linux_version(filepath, sep):
-    """ return the linux OS version as a string"""
-    # Find the first digit + period in the tokenized string list
-    with open(filepath, 'r') as f:
-        for line in f:
-            #print("found line = " + line)
-            word_list = line.split(sep)
-            for word in word_list:
-                #print("word =" + word)
-                m = re.search(r"[\d.]+", word)
-                #print("found_ver = {0}".format(m))
-                if m is not None:
-                    found_ver = m.string[m.start():m.end()]
-                    #print("found_ver = {0}".format(found_ver))
-                    return found_ver
-    return "undefined"
+def get_sst_config_include_file_value_str(define, default=None):
+    """ Retrieve a define from the SST Configuration Include File (sst_config.h)
+       :param: section (str): The [section] to look for the key
+       :param: default (str): Default Return if failure occurs
+       :return (str): The returned data or default if not found in the dict
+       This will raise a SSTTestCaseException if a default is not provided or type
+       is incorrect
+    """
+    return _get_sst_config_include_file_value(define, default, str)
 
 ################################################################################
 # SST Configuration file (sstsimulator.conf) Access Functions
 ################################################################################
 
 def get_sst_config_value_str(section, key, default=None):
-    """ Retrieve a Section/Key from the SST Configuration File
+    """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
        :param: default (str): Default Return if failure occurs
        :return (str): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    check_param_type("section", section, str)
-    check_param_type("key", key, str)
-    if default != None:
-        check_param_type("default", default, str)
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
-    try:
-        return core_conf_file_parser.get(section, key)
-    except configparser.Error as exc_e:
-        rtn = _handle_config_err(exc_e, default)
-        if default is None:
-            raise SSTTestCaseException(exc_e)
-        return rtn
+    _get_sst_config_value(section, key, default, str)
 
 ###
 
 def get_sst_config_value_int(section, key, default=None):
-    """ Retrieve a Section/Key from the SST Configuration File
+    """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
        :param: default (int): Default Return if failure occurs
        :return (float): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    check_param_type("section", section, str)
-    check_param_type("key", key, str)
-    if default != None:
-        check_param_type("default", default, int)
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
-    try:
-        return core_conf_file_parser.getint(section, key)
-    except configparser.Error as exc_e:
-        rtn = _handle_config_err(exc_e, default)
-        if default is None:
-            raise SSTTestCaseException(exc_e)
-        return rtn
+    _get_sst_config_value(section, key, default, int)
+
 ###
 
 def get_sst_config_value_float(section, key, default=None):
-    """ Retrieve a Section/Key from the SST Configuration File
+    """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
        :param: default (float): Default Return if failure occurs
        :return (float): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    check_param_type("section", section, str)
-    check_param_type("key", key, str)
-    if default != None:
-        check_param_type("default", default, float)
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
-    try:
-        return core_conf_file_parser.getfloat(section, key)
-    except configparser.Error as exc_e:
-        rtn = _handle_config_err(exc_e, default)
-        if default is None:
-            raise SSTTestCaseException(exc_e)
-        return rtn
+    _get_sst_config_value(section, key, default, float)
 
 ###
 
 def get_sst_config_value_bool(section, key,default=None):
-    """ Retrieve a Section/Key from the SST Configuration File
+    """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
        :param: default (bool): Default Return if failure occurs
@@ -431,23 +378,12 @@ def get_sst_config_value_bool(section, key,default=None):
        NOTE: "1", "yes", "true", and "on" return True
        This will raise a SSTTestCaseException if a default is not provided
     """
-    check_param_type("section", section, str)
-    check_param_type("key", key, str)
-    if default != None:
-        check_param_type("default", default, bool)
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
-    try:
-        return core_conf_file_parser.getbool(section, key)
-    except configparser.Error as exc_e:
-        rtn = _handle_config_err(exc_e, default)
-        if default is None:
-            raise SSTTestCaseException(exc_e)
-        return rtn
+    _get_sst_config_value(section, key, default, bool)
 
 ###
 
 def get_sst_config_sections():
-    """ Retrieve a list of sections that exist in the SST Configuration File
+    """ Retrieve a list of sections that exist in the SST Configuration File (sstsimulator.conf)
        :return (list of str): The list of sections in the file
        This will raise a SSTTestCaseException if an error occurs
     """
@@ -460,7 +396,8 @@ def get_sst_config_sections():
 ###
 
 def get_sst_config_section_keys(section):
-    """ Retrieve a list of keys under a section that exist in the SST Configuration File
+    """ Retrieve a list of keys under a section that exist in the
+        SST Configuration File  (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :return (list of str): The list of keys under a section in the file
        This will raise a SSTTestCaseException if an error occurs
@@ -476,7 +413,7 @@ def get_sst_config_section_keys(section):
 
 def get_all_sst_config_keys_values_from_section(section):
     """ Retrieve a list of tuples that contain all the key, value pairs
-        under a section that exists in the SST Configuration File
+        under a section that exists in the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :return (list of tuples): The list of tuples of key, value pairs
        This will raise a SSTTestCaseException if an error occurs
@@ -491,7 +428,7 @@ def get_all_sst_config_keys_values_from_section(section):
 ###
 
 def does_sst_config_have_section(section):
-    """ Check if the SST Configuration File has a section
+    """ Check if the SST Configuration File  (sstsimulator.conf) have a section
        :param: section (str): The [section] to look for the key
        :return (bool):
        This will raise a SSTTestCaseException if an error occurs
@@ -506,7 +443,7 @@ def does_sst_config_have_section(section):
 ###
 
 def does_sst_config_section_have_key(section, key):
-    """ Check if the SST Configuration File has a key under a section
+    """ Check if the SST Configuration File  (sstsimulator.conf) has a key under a section
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
        :return (bool):
@@ -519,13 +456,6 @@ def does_sst_config_section_have_key(section, key):
         return core_conf_file_parser.has_option(section, key)
     except configparser.Error as exc_e:
         raise SSTTestCaseException(exc_e)
-
-###
-
-def _handle_config_err(exc_e, default_rtn_data):
-    errmsg = "Reading SST-Core Config file sstsimulator.conf - {0}".format(exc_e)
-    log_warning(errmsg)
-    return default_rtn_data
 
 ################################################################################
 # Logging Functions
@@ -678,6 +608,7 @@ def os_cat(filepath):
 ################################################################################
 ### Platform Specific Support Functions
 ################################################################################
+
 def _get_num_cores_on_system():
     """ Figure out how many cores exist on the system"""
     num_cores = 1
@@ -691,3 +622,124 @@ def _get_num_cores_on_system():
         num_cores = int(rtn.output())
 
     return num_cores
+
+###
+
+def _get_linux_distribution():
+    """ Return the linux distribution info as a tuple"""
+    # The method linux_distribution is depricated in depricated in Py3.5
+    _linux_distribution = getattr(platform, 'linux_distribution', None)
+        # This is the easy method for Py2 - p3.7.
+    if _linux_distribution is not None:
+        return _linux_distribution()
+    else:
+        # We need to do this the hard way, NOTE: order of checking is important
+        distname = "undefined"
+        distver = "undefined"
+        if os.path.isfile("/etc/toss-release"):
+            distname = "toss"
+            distver = _get_linux_version("/etc/toss-release", "-")
+        elif os.path.isfile("/etc/centos-release"):
+            distname = "centos"
+            distver = _get_linux_version("/etc/centos-release", " ")
+        elif os.path.isfile("/etc/redhat-release"):
+            distname = "red hat"
+            distver = _get_linux_version("/etc/redhat-release", " ")
+        elif os.path.isfile("/etc/lsb-release"):
+            # Until we have other OS's, this is Ubuntu.
+            distname = "ubuntu"
+            distver = _get_linux_version("/etc/lsb-release", " ")
+        rtn_data=(distname, distver)
+        return rtn_data
+
+###
+
+def _get_linux_version(filepath, sep):
+    """ return the linux OS version as a string"""
+    # Find the first digit + period in the tokenized string list
+    with open(filepath, 'r') as f:
+        for line in f:
+            #print("found line = " + line)
+            word_list = line.split(sep)
+            for word in word_list:
+                #print("word =" + word)
+                m = re.search(r"[\d.]+", word)
+                #print("found_ver = {0}".format(m))
+                if m is not None:
+                    found_ver = m.string[m.start():m.end()]
+                    #print("found_ver = {0}".format(found_ver))
+                    return found_ver
+    return "undefined"
+
+
+################################################################################
+### Generic Internal Support Functions
+################################################################################
+
+def _get_sst_config_include_file_value(define, default=None, data_type=str):
+    """ Retrieve a define from the SST Configuration Include File (sst_config.h)
+       :param: section (str): The [section] to look for the key
+       :param: default (str|int): Default Return if failure occurs
+       :param: data_type (str|int): The data type to return
+       :return (str|int): The returned data or default if not found in the dict
+       This will raise a SSTTestCaseException if a default is not provided or type
+       is incorrect
+    """
+    if not data_type == int and not data_type == str:
+        raise SSTTestCaseException("Illegal datatype {0}".format(data_type))
+    check_param_type("define", define, str)
+    if default != None:
+        check_param_type("default", default, data_type)
+    core_conf_inc_dict = test_engine_globals.CORECONFINCLUDEFILEDICT
+    try:
+        rtn_data =  core_conf_inc_dict[define]
+    except KeyError as exc_e:
+        errmsg = "Reading SST-Core Config include file sst_config.h - Cannot find #define {0}".format(exc_e)
+        log_warning(errmsg)
+        if default is None:
+            raise SSTTestCaseException(exc_e)
+        rtn_data = default
+    if data_type == int:
+        rtn_data = int(rtn_data)
+    return rtn_data
+
+###
+
+def _get_sst_config_value(section, key, default=None, data_type=str):
+    """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
+       :param: section (str): The [section] to look for the key
+       :param: key (str): The key to find
+       :param: default (str|int|float|bool): Default Return if failure occurs
+       :return (str|int|float|bool): The returned data or default if not found in file
+       This will raise a SSTTestCaseException if a default is not provided
+    """
+    if not data_type == int and not data_type == str and \
+       not data_type == float and not data_type == bool:
+        raise SSTTestCaseException("Illegal datatype {0}".format(data_type))
+    check_param_type("section", section, str)
+    check_param_type("key", key, str)
+    if default != None:
+        check_param_type("default", default, data_type)
+    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    try:
+        if data_type == str:
+            return core_conf_file_parser.get(section, key)
+        if data_type == int:
+            return core_conf_file_parser.getint(section, key)
+        if data_type == float:
+            return core_conf_file_parser.getfloat(section, key)
+        if data_type == bool:
+            return core_conf_file_parser.getbool(section, key)
+    except configparser.Error as exc_e:
+        rtn = _handle_config_err(exc_e, default)
+        if default is None:
+            raise SSTTestCaseException(exc_e)
+        return rtn
+
+###
+
+def _handle_config_err(exc_e, default_rtn_data):
+    errmsg = "Reading SST-Core Config file sstsimulator.conf - {0}".format(exc_e)
+    log_warning(errmsg)
+    return default_rtn_data
+

@@ -34,6 +34,7 @@ TESTRUNNINGFLAG = None
 JUNITTESTCASELIST = None
 TESTSUITE_NAME_STR = None
 CORECONFFILEPARSER = None
+CORECONFINCLUDEFILEDICT = None
 
 # These are some globals to pass data between the top level test engine
 # and the lower level testscripts
@@ -53,6 +54,7 @@ def init_test_engine_globals():
     global JUNITTESTCASELIST
     global TESTSUITE_NAME_STR
     global CORECONFFILEPARSER
+    global CORECONFINCLUDEFILEDICT
 
     DEBUGMODE = False
     VERBOSITY = 1
@@ -68,3 +70,4 @@ def init_test_engine_globals():
     JUNITTESTCASELIST = []
     TESTSUITE_NAME_STR = ""
     CORECONFFILEPARSER = None
+    CORECONFINCLUDEFILEDICT = {}

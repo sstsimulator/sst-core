@@ -62,7 +62,7 @@ class testcase_testengine_testing_1(SSTTestCase):
     def test_TESTING_CASE1_skipping(self):
         self.assertEqual(1 / 0, 1)
 
-    def test_TESTING_CASE1_get_info_from_sstsimulator_conf(self):
+    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_success(self):
         # This should pass as we give valid data
         sourcedir = get_sst_config_value_str("SSTCore", "sourcedir")
         log_forced("SSTCore SourceDir = {0}".format(sourcedir))
@@ -80,6 +80,24 @@ class testcase_testengine_testing_1(SSTTestCase):
         # This should pass by returning a default, but should log a warning
         sourcedir = get_sst_config_value_str("SSTCore", "invalid_key", "kilroy_was_here")
         log_forced("SSTCore SourceDir = {0}".format(sourcedir))
+
+    def test_TESTING_CASE1_get_info_from_sst_config_h_success(self):
+        # This should pass as we give valid data
+        test_define = get_sst_config_include_file_value_int("HAVE_CLOSEDIR", 123)
+        log_forced("#define HAVE_CLOSEDIR={0}; type={1}".format(test_define, type(test_define)))
+
+        test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT", "THIS_IS_DEFAULT_DATA")
+        log_forced("#define PACKAGE_BUGREPORT={0}; type={1}".format(test_define, type(test_define)))
+
+        # This should pass by returning a default, but should log a warning
+        test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT_NOTFOUND", "THIS_IS_DEFAULT_DATA")
+        log_forced("#define PACKAGE_BUGREPORT={0}; type={1}".format(test_define, type(test_define)))
+
+    def test_TESTING_CASE1_get_info_from_sst_config_h_failure(self):
+        # This should pass as we detect an expected exception
+        with self.assertRaises(SSTTestCaseException):
+            test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT")
+            log_forced("#define PACKAGE_BUGREPORT={0}; type={1}".format(test_define, type(test_define)))
 
 
 ################################################################################

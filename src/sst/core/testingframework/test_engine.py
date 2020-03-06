@@ -103,6 +103,8 @@ class TestEngine():
         self._create_all_output_directories()
         # Build the Config File Parser
         test_engine_globals.CORECONFFILEPARSER = self._create_core_config_parser()
+        test_engine_globals.CORECONFINCLUDEFILEDICT = self._build_core_config_include_defs_dict()
+
         self._discover_testsuites()
         try:
             test_runner = SSTTextTestRunner(verbosity=test_engine_globals.VERBOSITY,
@@ -360,6 +362,43 @@ class TestEngine():
                        ("({1})")).format(core_conf_file_path, exc_e))
 
         return core_conf_file_parser
+###
+
+
+    def _build_core_config_include_defs_dict(self):
+        """ Create a dictionary of settings fromt he sst_config.h.  This will
+            allow us to search the includes that the core provides
+            :return: A dict object of defines from the
+        """
+        # ID the path to the sst configuration file
+        core_conf_include_dir = self._sst_core_bin_dir + "/../include/sst/core/"
+        core_conf_include_path = core_conf_include_dir + "sst_config.h"
+        if not os.path.isdir(core_conf_include_dir):
+            log_fatal((("SST-Core Directory {0} - Does not exist - ") +
+                       ("testing cannot continue")).format(core_conf_include_dir))
+        if not os.path.isfile(core_conf_include_path):
+            log_fatal((("SST-Core Configuration Include File {0} - Does not exist - ") +
+                       ("testing cannot continue")).format(core_conf_include_path))
+
+        # Read in the file line by line and discard any lines
+        # that do not start with "#define "
+        rtn_dict = {}
+        with open(core_conf_include_path, 'r') as f:
+            for read_line in f:
+                line = read_line.rstrip()
+                if "#define " in line[0:8]:
+                    value = "undefined"
+                    key = "undefined"
+                    line = line[8:]
+                    #find the first space
+                    index = line.find(" ")
+                    if index == -1:
+                        key = line
+                    else:
+                        key = line[0:index]
+                        value = line[index+1:].strip('"')
+                    rtn_dict[key] = value
+        return rtn_dict
 
 ###
 
@@ -435,7 +474,6 @@ class TestEngine():
                 self._dump_testsuite_list(sub_suite)
         else:
             log_debug("- {0}".format(suite))
-
 
 ################################################################################
 ################################################################################
