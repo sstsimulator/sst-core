@@ -184,11 +184,11 @@ class TestEngine():
                               help='Run tests in debug mode')
         run_group = parser.add_argument_group('SST Run Options')
         run_group.add_argument('-r', '--ranks', type=int, metavar="XX",
-                               nargs=1, default=[0],
-                               help='Run with XX ranks [0]')
+                               nargs=1, default=[1],
+                               help='Run with XX ranks [1]')
         run_group.add_argument('-t', '--threads', type=int, metavar="YY",
-                               nargs=1, default=[0],
-                               help='Run with YY threads [0]')
+                               nargs=1, default=[1],
+                               help='Run with YY threads [1]')
         run_group.add_argument('-a', '--sst_run_args', type=str, metavar='" --arg1 -a2"',
                                nargs=1, default=[''],
                                help=('Runtime args for all SST runs (must be ')

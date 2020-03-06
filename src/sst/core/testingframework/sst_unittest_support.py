@@ -142,10 +142,19 @@ class SSTTestCase(unittest.TestCase):
         else:
             mpiout_filename = mpi_out_files
 
-        oscmd = "sst {0} {1} {2}".format(global_args, other_args, sdl_file)
-        if num_ranks > 0:
+        if num_threads > 1:
+            oscmd = "sst -n {0} {1} {2} {3}".format(num_threads,
+                                                    global_args,
+                                                    other_args,
+                                                    sdl_file)
+        else:
+            oscmd = "sst {0} {1} {2}".format(global_args,
+                                             other_args,
+                                             sdl_file)
+
+        num_cores = _get_num_cores_on_system()
+        if num_ranks > 1:
             numa_param=""
-            num_cores = _get_num_cores_on_system()
             numa_param = ""
             if num_cores >= 2 and num_cores <= 4:
                 numa_param = "-map-by numa:pe=2 -oversubscribe"
@@ -156,13 +165,15 @@ class SSTTestCase(unittest.TestCase):
                                                                          numa_param,
                                                                          mpiout_filename,
                                                                          oscmd)
-        log_debug("--SST Launch Command (Num Cores:{0}) = {1}".format(num_cores, oscmd))
+        log_debug((("--SST Launch Command (Ranks:{0}; Threads:{1};") +
+                   (" Num Cores:{2}) = {3}")).format(num_ranks, num_threads,
+                                                     num_cores, oscmd))
 
-        if num_ranks == 0:
-            rtn = OSCommand(oscmd, out_file).run(timeout_sec=timeout_sec)
-        else:
+        if num_ranks > 1:
             rtn = OSCommand(oscmd).run(timeout_sec=timeout_sec)
             merge_files("{0}*".format(mpiout_filename), out_file)
+        else:
+            rtn = OSCommand(oscmd, out_file).run(timeout_sec=timeout_sec)
 
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
         self.assertFalse(rtn.timeout(), err_str)

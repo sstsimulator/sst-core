@@ -56,8 +56,8 @@ def init_test_engine_globals():
 
     DEBUGMODE = False
     VERBOSITY = 1
-    SSTRUNNUMRANKS = 0
-    SSTRUNNUMTHREADS = 0
+    SSTRUNNUMRANKS = 1
+    SSTRUNNUMTHREADS = 1
     SSTRUNGLOBALARGS = ["xxx"]
     TESTSUITEDIRPATH = ""
     TESTOUTPUTTOPDIRPATH = "./sst_test_outputs"
