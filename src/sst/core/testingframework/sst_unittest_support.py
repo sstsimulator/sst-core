@@ -100,25 +100,70 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def run_sst(self, sdl_file, out_file, other_params="", timeout_sec=60):
+    def run_sst(self, sdl_file, out_file, mpi_out_files="", other_args="",
+               num_ranks=None, num_threads=None, global_args=None,
+               timeout_sec=60):
         """ TODO: Launch sst with with the command line and send output to the
             output file.  Other parameters can also be passed in.
            :param: sdl_file (str): The FilePath to the sdl file
-           :param: out_file (str): The FilePath to the output file
-           :param: other_params (str): Any other parameters used in the SST cmd
-           :param: timeout_sec (int): Allowed runtime in seconds
+           :param: other_args (str): Any other arguments used in the SST cmd
+           :param: out_file (str): The FilePath to the finalized output file
+           :param: mpi_out_files (str): The FilePath to the mpi run output files
+                                        These will be merged into the out_file
+           :param: num_ranks (int): The number of ranks to run SST with
+           :param: num_threads (int): The number of threads to run SST with
+           :param: global_args (str): Global Arguments provided from test engine args
+           :param: timeout_sec (int|float): Allowed runtime in seconds
         """
-        #TODO: validate files exist
+        # We cannot set the default of param to the global variable due to
+        # oddities on how this class loads.
+        if num_ranks == None:
+            num_ranks=test_engine_globals.SSTRUNNUMRANKS
+        if num_threads == None:
+            num_threads=test_engine_globals.SSTRUNNUMTHREADS
+        if global_args == None:
+            global_args=test_engine_globals.SSTRUNGLOBALARGS
+
         check_param_type("sdl_file", sdl_file, str)
         check_param_type("out_file", out_file, str)
-        check_param_type("other_params", other_params, str)
+        check_param_type("mpi_out_files", mpi_out_files, str)
+        check_param_type("other_args", other_args, str)
+        check_param_type("global_args", global_args, str)
+        check_param_type("num_ranks", num_ranks, int)
+        check_param_type("num_threads", num_threads, int)
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
-            raise ValueError("ERROR: Timeout_sec must be an int or a float")
+            raise ValueError("ERROR: Timeout_sec must be a postive int or a float")
 
-        # TODO Figure out how to set threads and ranks here
-        oscmd = "sst {0} {1}".format(other_params, sdl_file)
-        log_debug("--SST Launch Command = {0}".format(oscmd))
-        rtn = OSCommand(oscmd, out_file).run(timeout_sec=timeout_sec)
+        if not os.path.exists(sdl_file) or not os.path.isfile(sdl_file):
+            log_error("sdl_file {0} does not exist".format(sdl_file))
+
+        if mpi_out_files == "":
+            mpiout_filename = out_file
+        else:
+            mpiout_filename = mpi_out_files
+
+        oscmd = "sst {0} {1} {2}".format(global_args, other_args, sdl_file)
+        if num_ranks > 0:
+            numa_param=""
+            num_cores = _get_num_cores_on_system()
+            numa_param = ""
+            if num_cores >= 2 and num_cores <= 4:
+                numa_param = "-map-by numa:pe=2 -oversubscribe"
+            elif num_cores >= 4:
+                numa_param = "-map-by numa:pe=2"
+
+            oscmd = "mpirun -np {0} {1} -output-filename {2} {3}".format(num_ranks,
+                                                                         numa_param,
+                                                                         mpiout_filename,
+                                                                         oscmd)
+        log_debug("--SST Launch Command (Num Cores:{0}) = {1}".format(num_cores, oscmd))
+
+        if num_ranks == 0:
+            rtn = OSCommand(oscmd, out_file).run(timeout_sec=timeout_sec)
+        else:
+            rtn = OSCommand(oscmd).run(timeout_sec=timeout_sec)
+            merge_files("{0}*".format(mpiout_filename), out_file)
+
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
         self.assertFalse(rtn.timeout(), err_str)
         err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
@@ -163,7 +208,7 @@ def get_testing_num_ranks():
     """ Get the number of ranks defined to be run during the testing
        :return: The number of requested run ranks
     """
-    return test_engine_globals.NUMRANKS
+    return test_engine_globals.SSTRUNNUMRANKS
 
 ###
 
@@ -171,7 +216,7 @@ def get_testing_num_threads():
     """ Get the number of threads defined to be run during the testing
        :return: The number of requested run threads
     """
-    return test_engine_globals.NUMTHREADS
+    return test_engine_globals.SSTRUNNUMTHREADS
 
 ################################################################################
 # System Information Functions
@@ -227,6 +272,10 @@ def get_host_os_distribution_version():
 def is_host_os_osx():
     """ Returns true if the os distribution is OSX"""
     return get_host_os_distribution_type() == OS_DIST_OSX
+
+def is_host_os_linux():
+    """ Returns true if the os distribution is Linux"""
+    return not get_host_os_distribution_type() == OS_DIST_OSX
 
 def is_host_os_centos():
     """ Returns true if the os distribution is CentOS"""
@@ -540,7 +589,7 @@ def log_fatal(errstr):
         THIS WILL KILL THE TEST ENGINE AND RETURN FAILURE
         :param: logstr = string to be logged
     """
-    check_param_type("logstr", logstr, str)
+    check_param_type("errstr", errstr, str)
     finalstr = "FATAL: {0}".format(errstr)
     log_forced(finalstr)
     sys.exit(1)
@@ -576,6 +625,11 @@ def get_test_output_tmp_dir():
 ################################################################################
 
 def compare_sorted(test_name, outfile, reffile):
+   """ Sort a output file along with a reference file and compare them
+       :param: outfile (str) Path to the output file
+       :param: reffile (str) Path to the reference file
+       :return: True if the 2 sorted file match
+   """
    sorted_outfile = "{1}/{0}_sorted_outfile".format(test_name, get_test_output_tmp_dir())
    sorted_reffile = "{1}/{0}_sorted_reffile".format(test_name, get_test_output_tmp_dir())
 
@@ -584,22 +638,45 @@ def compare_sorted(test_name, outfile, reffile):
 
    return filecmp.cmp(sorted_outfile, sorted_reffile)
 
+###
+
+def merge_files(filepath_wildcard, outputfilepath):
+    """ Merge a group of common files into an output file
+       :param: filepath_wildcard (str) The wildcard Path to the files to be mreged
+       :param: outputfilepath (str) The output file path
+    """
+    cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
+    os.system(cmd)
+
 ################################################################################
 ### OS Basic Commands
 ################################################################################
 
 def os_ls(directory="."):
-    """ TODO : DOCSTRING
-    """
+    """ Perform an ls -lia on a directory and dump output to screen """
     cmd = "ls -lia {0}".format(directory)
     rtn = OSCommand(cmd).run()
     log("{0}".format(rtn.output()))
 
 def os_cat(filepath):
-    """ TODO : DOCSTRING
-    """
+    """ Perform an cat cmd on a file and dump output to screen """
     cmd = "cat {0}".format(filepath)
     rtn = OSCommand(cmd).run()
     log("{0}".format(rtn.output()))
 
 ################################################################################
+### Platform Specific Support Functions
+################################################################################
+def _get_num_cores_on_system():
+    """ Figure out how many cores exist on the system"""
+    num_cores = 1
+    if is_host_os_osx():
+        cmd = "sysctl -n hw.ncpu"
+        rtn = OSCommand(cmd).run()
+        num_cores = int(rtn.output())
+    else:
+        cmd = "cat /proc/cpuinfo |grep processor | wc -l"
+        rtn = OSCommand(cmd).run()
+        num_cores = int(rtn.output())
+
+    return num_cores

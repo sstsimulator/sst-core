@@ -184,11 +184,15 @@ class TestEngine():
                               help='Run tests in debug mode')
         run_group = parser.add_argument_group('SST Run Options')
         run_group.add_argument('-r', '--ranks', type=int, metavar="XX",
-                               nargs=1, default=0,
+                               nargs=1, default=[0],
                                help='Run with XX ranks [0]')
         run_group.add_argument('-t', '--threads', type=int, metavar="YY",
-                               nargs=1, default=0,
+                               nargs=1, default=[0],
                                help='Run with YY threads [0]')
+        run_group.add_argument('-a', '--sst_run_args', type=str, metavar='" --arg1 -a2"',
+                               nargs=1, default=[''],
+                               help=('Runtime args for all SST runs (must be ')
+                                  + ('identifed as a string; Note:extra space at front)'))
         parser.add_argument('-f', '--fail_fast', action='store_true',
                             help='Stop testing on failure [true]')
         parser.add_argument('-k', '--keep_output', action='store_true',
@@ -200,7 +204,7 @@ class TestEngine():
         discover_group.add_argument('-s', '--scenarios', type=str, metavar="name",
                                     nargs="+", default=['default'],
                                     help=(('Name(s) (in lowercase) of testing scenario(s)') + \
-                                         (' ("all" will run all scenarios) [default]')))
+                                         (' ("all" will run all scenarios) ["default"]')))
         if self._test_mode:
             testsuite_path_str = "TestSuite Files or Dirs to SST-Core TestSuites"
         else:
@@ -231,12 +235,17 @@ class TestEngine():
         if args.debug:
             test_engine_globals.DEBUGMODE = True
             test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_DEBUG
-        test_engine_globals.NUMRANKS = args.ranks
-        test_engine_globals.NUMTHREADS = args.threads
+        test_engine_globals.SSTRUNNUMRANKS = args.ranks[0]
+        test_engine_globals.SSTRUNNUMTHREADS = args.threads[0]
+        test_engine_globals.SSTRUNGLOBALARGS = args.sst_run_args[0]
         test_engine_globals.TESTOUTPUTTOPDIRPATH = args.out_dir[0]
         test_engine_globals.TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(args.out_dir[0])
         test_engine_globals.TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(args.out_dir[0])
         test_engine_globals.TESTOUTPUTXMLDIRPATH = "{0}/xml_data".format(args.out_dir[0])
+        if args.ranks[0] < 0:
+            log_fatal("ranks must be >= 0; currently set to {0}".format(args.ranks[0]))
+        if args.threads[0] < 0:
+            log_fatal("threads must be >= 0; currently set to {0}".format(args.threads[0]))
 
 ####
 

@@ -22,16 +22,17 @@ VERBOSE_DEBUG = 3
 # Global Var Defines
 DEBUGMODE = None
 VERBOSITY = None
-NUMRANKS = None
-NUMTHREADS = None
+SSTRUNNUMRANKS = None
+SSTRUNNUMTHREADS = None
+SSTRUNGLOBALARGS = None
 TESTSUITEDIRPATH = None
 TESTOUTPUTTOPDIRPATH = None
 TESTOUTPUTRUNDIRPATH = None
 TESTOUTPUTTMPDIRPATH = None
 TESTOUTPUTXMLDIRPATH = None
-TESTRUNNINGFLAG = False
-JUNITTESTCASELIST = []
-TESTSUITE_NAME_STR = ""
+TESTRUNNINGFLAG = None
+JUNITTESTCASELIST = None
+TESTSUITE_NAME_STR = None
 CORECONFFILEPARSER = None
 
 # These are some globals to pass data between the top level test engine
@@ -40,8 +41,9 @@ def init_test_engine_globals():
     """ Initialize the test global variables """
     global DEBUGMODE
     global VERBOSITY
-    global NUMRANKS
-    global NUMTHREADS
+    global SSTRUNNUMRANKS
+    global SSTRUNNUMTHREADS
+    global SSTRUNGLOBALARGS
     global TESTSUITEDIRPATH
     global TESTOUTPUTTOPDIRPATH
     global TESTOUTPUTRUNDIRPATH
@@ -54,8 +56,9 @@ def init_test_engine_globals():
 
     DEBUGMODE = False
     VERBOSITY = 1
-    NUMRANKS = 0
-    NUMTHREADS = 0
+    SSTRUNNUMRANKS = 0
+    SSTRUNNUMTHREADS = 0
+    SSTRUNGLOBALARGS = ["xxx"]
     TESTSUITEDIRPATH = ""
     TESTOUTPUTTOPDIRPATH = "./sst_test_outputs"
     TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(TESTOUTPUTTOPDIRPATH)
