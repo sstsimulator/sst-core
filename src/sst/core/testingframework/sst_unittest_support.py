@@ -476,11 +476,11 @@ def does_sst_config_section_have_key(section, key):
 
 def log(logstr):
     """ Log a message, this will not output unless we are
-        outputing in verbose mode.
+        outputing in >= normal mode.
        :param: logstr = string to be logged
     """
     check_param_type("logstr", logstr, str)
-    if test_engine_globals.VERBOSITY >= test_engine_globals.VERBOSE_LOUD:
+    if test_engine_globals.VERBOSITY >= test_engine_globals.VERBOSE_NORMAL:
         log_forced(logstr)
 
 ###
@@ -499,23 +499,28 @@ def log_forced(logstr):
 
 ###
 
-def log_info(logstr):
-    """ Log a INFO: message, no matter what the verbosity is
-        :param: logstr = string to be logged
-    """
-    check_param_type("logstr", logstr, str)
-    finalstr = "INFO: {0}".format(logstr)
-    log_forced(finalstr)
-
-###
-
 def log_debug(logstr):
     """ Log a DEBUG: message, only if in debug verbosity mode
+        :param: logstr = string to be logged
     """
     if test_engine_globals.DEBUGMODE:
         finalstr = "DEBUG: {0}".format(logstr)
         log_forced(finalstr)
 
+###
+
+def log_info(logstr, forced=True):
+    """ Log a INFO: message, no matter what the verbosity is
+        :param: logstr = string to be logged
+        :param: forced = True to always force the logging regardless of verbositry
+                         otherwise, perform a normal log.
+    """
+    check_param_type("logstr", logstr, str)
+    finalstr = "INFO: {0}".format(logstr)
+    if forced:
+        log_forced(finalstr)
+    else:
+        log(finalstr)
 ###
 
 def log_error(logstr):

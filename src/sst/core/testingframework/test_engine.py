@@ -82,16 +82,16 @@ class TestEngine():
         self._init_test_engine_variables(sst_core_bin_dir, test_mode)
         self._parse_arguments()
         log_info(("SST Test Engine Instantiated - Running") +
-                 (" tests on {0}").format(self._test_type_str))
+                 (" tests on {0}").format(self._test_type_str), forced=False)
 
         log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
-                 (" {0}".format(get_host_os_distribution_version())))
+                 (" {0}".format(get_host_os_distribution_version())), forced=False)
 
         if 'all' in self._list_of_scenario_names:
-            log_info("Test Scenario(s) to be run are: ALL TEST SCENARIOS")
+            log_info("Test Scenario(s) to be run are: ALL TEST SCENARIOS", forced=False)
         else:
             log_info(("Test Scenario(s) to be run are: ") +
-                     ("{0}").format(" ".join(self._list_of_scenario_names)))
+                     ("{0}").format(" ".join(self._list_of_scenario_names)), forced=False)
         log_debug("Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
 
 ####
@@ -266,7 +266,7 @@ class TestEngine():
         self._create_output_dir(run_dir)
         self._create_output_dir(tmp_dir)
         self._create_output_dir(xml_dir)
-        log_info("SST Test Output Directory = {0}".format(top_dir))
+        log_info("SST Test Output Directory = {0}".format(top_dir), forced=False)
         log_debug(" - Test Output Run Directory = {0}".format(run_dir))
         log_debug(" - Test Output Tmp Directory = {0}".format(tmp_dir))
         log_debug(" - Test Output XML Directory = {0}".format(xml_dir))
@@ -486,8 +486,8 @@ class SSTTextTestRunner(unittest.TextTestRunner):
                  failfast=False, buffer=False, resultclass=None):
         super(SSTTextTestRunner, self).__init__(stream, descriptions, verbosity,
                                                 failfast, buffer, resultclass)
-        log_forced(("\n=== TESTS STARTING ================") +
-                   ("===================================\n"))
+        log(("\n=== TESTS STARTING ================") +
+            ("===================================\n"))
 
 ###
 
@@ -497,20 +497,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
         return runresults
 
 ###
-#
-#    def printErrors(self):
-#        log_forced(("===================================") +
-#                   ("==================================="))
-#        log_forced(("\n=== TESTS FINISHED===============") +
-#                   ("===================================\n"))
-#        log_forced(("===================================") +
-#                   ("==================================="))
-#        if self.dots or self.showAll:
-#            self.stream.writeln()
-#        self.printErrorList('ERROR', self.errors)
-#        self.printErrorList('FAIL', self.failures)
 
-###
     def did_tests_pass(self, run_results):
         """ Figure out if testing passed
             :param: run_results -  A unittest.TestResult object
@@ -525,18 +512,18 @@ class SSTTextTestRunner(unittest.TextTestRunner):
             :param: sst_tests_results -  A unittest.TestResult object
             :return: True if all tests passing with no errors, false otherwise
         """
-        log_forced(("\n=== TEST RESULTS ==================") +
+        log(("\n=== TEST RESULTS ==================") +
                    ("===================================\n"))
-        log_forced("Tests Run      = {0}".format(run_results.testsRun))
-        log_forced("Tests Failures = {0}".format(len(run_results.failures)))
-        log_forced("Tests Skipped  = {0}".format(len(run_results.skipped)))
-        log_forced("Tests Errors   = {0}".format(len(run_results.errors)))
+        log("Tests Run      = {0}".format(run_results.testsRun))
+        log("Tests Failures = {0}".format(len(run_results.failures)))
+        log("Tests Skipped  = {0}".format(len(run_results.skipped)))
+        log("Tests Errors   = {0}".format(len(run_results.errors)))
         if self.did_tests_pass(run_results):
             log_forced("\n== TESTING PASSED ==")
         else:
             log_forced("\n== TESTING FAILED ==")
-        log_forced(("\n===================================") +
-                   ("===================================\n"))
+        log(("\n===================================") +
+            ("===================================\n"))
 
 ################################################################################
 
@@ -608,6 +595,20 @@ class SSTTextTestResult(unittest.TextTestResult):
     def addUnexpectedSuccess(self, test):
         super(SSTTextTestResult, self).addUnexpectedSuccess(test)
         #log_forced("DEBUG - addUnexpectedSuccess: Test = {0}\n".format(test))
+
+###
+
+    def printErrors(self):
+        if self.dots or self.showAll:
+            self.stream.writeln()
+        log(("===================================") +
+            ("==================================="))
+        log(("=== TESTS FINISHED ================") +
+            ("==================================="))
+        log(("===================================") +
+            ("===================================\n"))
+        self.printErrorList('ERROR', self.errors)
+        self.printErrorList('FAIL', self.failures)
 
 ####
 
