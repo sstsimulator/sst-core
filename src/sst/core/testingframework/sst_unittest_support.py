@@ -40,6 +40,9 @@ from test_engine_junit import junit_to_xml_report_file
 
 ################################################################################
 
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+
 OS_DIST_OSX    = "OSX"
 OS_DIST_CENTOS = "CENTOS"
 OS_DIST_RHEL   = "RHEL"
@@ -233,6 +236,16 @@ def get_testing_num_threads():
 # System Information Functions
 ################################################################################
 
+def is_py_2():
+    return PY2
+
+###
+
+def is_py_3():
+    return PY3
+
+###
+
 def get_system_node_name():
     """ Returns the node name of the system"""
     return platform.node()
@@ -341,7 +354,7 @@ def get_sst_config_value_str(section, key, default=None):
        :return (str): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    _get_sst_config_value(section, key, default, str)
+    return _get_sst_config_value(section, key, default, str)
 
 ###
 
@@ -353,7 +366,7 @@ def get_sst_config_value_int(section, key, default=None):
        :return (float): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    _get_sst_config_value(section, key, default, int)
+    return _get_sst_config_value(section, key, default, int)
 
 ###
 
@@ -365,7 +378,7 @@ def get_sst_config_value_float(section, key, default=None):
        :return (float): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    _get_sst_config_value(section, key, default, float)
+    return _get_sst_config_value(section, key, default, float)
 
 ###
 
@@ -378,7 +391,7 @@ def get_sst_config_value_bool(section, key,default=None):
        NOTE: "1", "yes", "true", and "on" return True
        This will raise a SSTTestCaseException if a default is not provided
     """
-    _get_sst_config_value(section, key, default, bool)
+    return _get_sst_config_value(section, key, default, bool)
 
 ###
 
@@ -731,10 +744,10 @@ def _get_sst_config_value(section, key, default=None, data_type=str):
         if data_type == bool:
             return core_conf_file_parser.getbool(section, key)
     except configparser.Error as exc_e:
-        rtn = _handle_config_err(exc_e, default)
+        rtn_default = _handle_config_err(exc_e, default)
         if default is None:
             raise SSTTestCaseException(exc_e)
-        return rtn
+        return rtn_default
 
 ###
 

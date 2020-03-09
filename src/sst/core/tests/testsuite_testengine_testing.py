@@ -40,64 +40,95 @@ class testcase_testengine_testing_1(SSTTestCase):
 #####
 
     # DEMO tests
-    def test_TESTING_CASE1_success(self):
+    def test_TESTING_CASE1_assert_success(self):
+        log_forced("This Test Has an Expected Pass")
         self.assertEqual(1, 1)
 
-    def test_TESTING_CASE1_fail1(self):
+    def test_TESTING_CASE1_assert_fail1(self):
+        log_forced("This Test Has an Expected Assert Failure")
         self.assertEqual(2, 1)
 
-    def test_TESTING_CASE1_fail2(self):
+    def test_TESTING_CASE1_assert_fail2(self):
+        log_forced("This Test Has an Expected Assert Failure")
         self.assertEqual(2, 1)
 
-    def test_TESTING_CASE1_fail3(self):
+    def test_TESTING_CASE1_assert_fail3(self):
+        log_forced("This Test Has an Expected Assert Failure")
         self.assertEqual(2, 1)
 
-    def test_TESTING_CASE1_error1(self):
+    def test_TESTING_CASE1_assert_error1(self):
+        log_forced("This Test Has an Expected Error")
         self.assertEqual(1 / 0, 1)
 
-    def test_TESTING_CASE1_error2(self):
+    def test_TESTING_CASE1_assert_error2(self):
+        log_forced("This Test Has an Expected Error")
         self.assertEqual(1 / 0, 1)
 
     @unittest.skip("Demonstrating Skipping #1")
     def test_TESTING_CASE1_skipping(self):
+        log_forced("This Test Has an Expected Skip")
         self.assertEqual(1 / 0, 1)
 
     def test_TESTING_CASE1_get_info_from_sstsimulator_conf_success(self):
         # This should pass as we give valid data
+        log_forced("This Test Has an Expected Pass")
         sourcedir = get_sst_config_value_str("SSTCore", "sourcedir")
-        log_forced("SSTCore SourceDir = {0}".format(sourcedir))
+        log_forced("SSTCore SourceDir = {0}; Type = {1}".format(sourcedir, type(sourcedir)))
+        if is_py_2():
+            self.assertEqual(unicode, type(sourcedir))
+        else:
+            self.assertEqual(str, type(sourcedir))
 
-    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_section_failure(self):
+    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_invalid_section_exception_success(self):
         # This should pass as we detect an expected exception
+        log_forced("This Test Has an Expected Pass - AND GENERATES A WARNING - From a Detected Exception")
         with self.assertRaises(SSTTestCaseException):
             get_sst_config_value_str("invalid_section", "invalid_key")
 
-    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_key_failure(self):
+    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_invalid_key_exception_error(self):
         # This should give an error as we detect an exception due to invalid key
+        log_forced("This Test Has an Expected ERROR - AND GENERATES A WARNING - Due to invalid Key")
         get_sst_config_value_str("SSTCore", "invalid_key")
 
-    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_key_failure(self):
+    def test_TESTING_CASE1_get_info_from_sstsimulator_conf_invalid_key_rtn_default_success_with_warning(self):
         # This should pass by returning a default, but should log a warning
+        log_forced("This Test Has an Expected Pass - BUT GENERATES A WARNING")
         sourcedir = get_sst_config_value_str("SSTCore", "invalid_key", "kilroy_was_here")
         log_forced("SSTCore SourceDir = {0}".format(sourcedir))
+        self.assertEqual(str, type(sourcedir))
+        self.assertEqual("kilroy_was_here", sourcedir)
 
-    def test_TESTING_CASE1_get_info_from_sst_config_h_success(self):
+    def test_TESTING_CASE1_get_info_from_sst_config_h_valid_key_rtn_int_success(self):
         # This should pass as we give valid data
+        log_forced("This Test Has an Expected Pass")
         test_define = get_sst_config_include_file_value_int("HAVE_CLOSEDIR", 123)
-        log_forced("#define HAVE_CLOSEDIR={0}; type={1}".format(test_define, type(test_define)))
+        log_forced("(#define HAVE_CLOSEDIR)-returneddata={0}; type={1}".format(test_define, type(test_define)))
+        self.assertEqual(1, test_define)
+        self.assertEqual(int, type(test_define))
 
+    def test_TESTING_CASE1_get_info_from_sst_config_h_valid_key_rtn_str_success(self):
+        # This should pass as we give valid data
+        log_forced("This Test Has an Expected Pass")
         test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT", "THIS_IS_DEFAULT_DATA")
-        log_forced("#define PACKAGE_BUGREPORT={0}; type={1}".format(test_define, type(test_define)))
+        log_forced("(#define PACKAGE_BUGREPORT)-returneddata={0}; type={1}".format(test_define, type(test_define)))
+        self.assertEqual("sst@sandia.gov", test_define)
+        self.assertEqual(str, type(test_define))
 
+    def test_TESTING_CASE1_get_info_from_sst_config_h_invalid_key_rtn_default_str_success(self):
+        # This should pass as we give valid data
+        log_forced("This Test Has an Expected Pass - BUT GENERATES A WARNING")
         # This should pass by returning a default, but should log a warning
-        test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT_NOTFOUND", "THIS_IS_DEFAULT_DATA")
-        log_forced("#define PACKAGE_BUGREPORT={0}; type={1}".format(test_define, type(test_define)))
+        test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT_KEYINVALID", "THIS_IS_DEFAULT_DATA")
+        log_forced("(#define PACKAGE_BUGREPORT_KEYINVALID)-returneddata={0}; type={1}".format(test_define, type(test_define)))
+        self.assertEqual("THIS_IS_DEFAULT_DATA", test_define)
+        self.assertEqual(str, type(test_define))
 
-    def test_TESTING_CASE1_get_info_from_sst_config_h_failure(self):
+    def test_TESTING_CASE1_get_info_from_sst_config_h_invalid_key_exception_success(self):
         # This should pass as we detect an expected exception
+        log_forced("This Test Has an Expected Pass - BUT GENERATES A WARNING - From a Detected Exception")
         with self.assertRaises(SSTTestCaseException):
-            test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT")
-            log_forced("#define PACKAGE_BUGREPORT={0}; type={1}".format(test_define, type(test_define)))
+            test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT_KEYINVALID")
+            log_forced("(#define PACKAGE_BUGREPORT_KEYINVALID)-returneddata={0}; type={1}".format(test_define, type(test_define)))
 
 
 ################################################################################
@@ -129,36 +160,50 @@ class testcase_testengine_testing_2(SSTTestCase):
 #####
 
     # DEMO tests
-    def test_TESTING_CASE2_success(self):
+    def test_TESTING_CASE2_assert_success(self):
+        log_forced("This Test Has an Expected Pass")
         self.assertEqual(1, 1)
 
-    def test_TESTING_CASE2_fail1(self):
+    def test_TESTING_CASE2_assert_fail1(self):
+        log_forced("This Test Has an Expected Assert Failure")
         self.assertEqual(2, 1)
 
-    def test_TESTING_CASE2_error1(self):
+    def test_TESTING_CASE2_assert_error1(self):
+        log_forced("This Test Has an Expected Error")
         self.assertEqual(1 / 0, 1)
 
     @unittest.skip("Demonstrating Skipping #2")
     def test_TESTING_CASE2_skipping(self):
+        log_forced("This Test Has an Expected Skip")
         self.assertEqual(1 / 0, 1)
 
-    def test_TESTING_CASE2_general_support(self):
+    def test_TESTING_CASE2_general_support_test_ls_cmd_success(self):
+        log_forced("This Test Has an Expected Pass")
+        log_forced("This Test Generates Output From a ls Cmd")
         log("\n=======================================================")
 
         log("")
         log("=== ls cmd")
         os_ls()
 
+    def test_TESTING_CASE2_general_support_test_cat_cmd_success(self):
+        log_forced("This Test Has an Expected Pass")
+        log_forced("This Test Generates Output From a cat Cmd")
+        log("\n=======================================================")
         log("")
         log("=== cat VERSION file")
         os_cat("VERSION")
 
+    def test_TESTING_CASE2_general_support_test_run_timeout_success(self):
+        log_forced("This Test Has an Expected Pass")
+        log_forced("This Test Runs a command to force a timeout")
+        log("\n=======================================================")
         log("")
         log("=== Run tail and force a timeout")
         cmd = "tail".format()
         rtn = OSCommand(cmd).run(timeout_sec=3)
         log("Tail (forced Timeout) Rtn = {0}".format(rtn))
-
+        self.assertEqual(True, rtn.timeout())
         log("\n=======================================================")
 
 

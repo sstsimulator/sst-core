@@ -497,6 +497,20 @@ class SSTTextTestRunner(unittest.TextTestRunner):
         return runresults
 
 ###
+#
+#    def printErrors(self):
+#        log_forced(("===================================") +
+#                   ("==================================="))
+#        log_forced(("\n=== TESTS FINISHED===============") +
+#                   ("===================================\n"))
+#        log_forced(("===================================") +
+#                   ("==================================="))
+#        if self.dots or self.showAll:
+#            self.stream.writeln()
+#        self.printErrorList('ERROR', self.errors)
+#        self.printErrorList('FAIL', self.failures)
+
+###
     def did_tests_pass(self, run_results):
         """ Figure out if testing passed
             :param: run_results -  A unittest.TestResult object
