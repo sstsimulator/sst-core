@@ -531,7 +531,7 @@ def log_error(logstr):
     check_param_type("logstr", logstr, str)
     finalstr = "ERROR: {0}".format(logstr)
     log_forced(finalstr)
-    test_engine_globals.ERRORCOUNT += 1
+    test_engine_globals.TESTENGINEERRORCOUNT += 1
 
 ###
 

@@ -35,7 +35,7 @@ JUNITTESTCASELIST = None
 TESTSUITE_NAME_STR = None
 CORECONFFILEPARSER = None
 CORECONFINCLUDEFILEDICT = None
-ERRORCOUNT = 0
+TESTENGINEERRORCOUNT = 0
 
 # These are some globals to pass data between the top level test engine
 # and the lower level testscripts
@@ -56,7 +56,7 @@ def init_test_engine_globals():
     global TESTSUITE_NAME_STR
     global CORECONFFILEPARSER
     global CORECONFINCLUDEFILEDICT
-    global ERRORCOUNT
+    global TESTENGINEERRORCOUNT
 
     DEBUGMODE = False
     VERBOSITY = 1
@@ -73,4 +73,4 @@ def init_test_engine_globals():
     TESTSUITE_NAME_STR = ""
     CORECONFFILEPARSER = None
     CORECONFINCLUDEFILEDICT = {}
-    ERRORCOUNT = 0
+    TESTENGINEERRORCOUNT = 0

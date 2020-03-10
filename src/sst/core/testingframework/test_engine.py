@@ -505,7 +505,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
         """
         return run_results.wasSuccessful and \
         len(run_results.errors) == 0 and \
-        test_engine_globals.ERRORCOUNT == 0
+        test_engine_globals.TESTENGINEERRORCOUNT == 0
 
 ###
 
@@ -523,7 +523,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
         if self.did_tests_pass(run_results):
             log_forced("\n== TESTING PASSED ==")
         else:
-            if test_engine_globals.ERRORCOUNT == 0:
+            if test_engine_globals.TESTENGINEERRORCOUNT == 0:
                 log_forced("\n== TESTING FAILED ==")
             else:
                 log_forced("\n== TESTING FAILED DUE TO ERRORS ==")
