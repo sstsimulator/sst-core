@@ -75,7 +75,12 @@ class testcase_testengine_testing_1(SSTTestCase):
         sourcedir = get_sst_config_value_str("SSTCore", "sourcedir")
         log_forced("SSTCore SourceDir = {0}; Type = {1}".format(sourcedir, type(sourcedir)))
         if is_py_2():
-            self.assertEqual(unicode, type(sourcedir))
+            if type(sourcedir) == str:
+                self.assertEqual(str, type(sourcedir))
+            elif type(sourcedir) == unicode:
+                self.assertEqual(unicode, type(sourcedir))
+            else:
+                self.assertTrue(False)
         else:
             self.assertEqual(str, type(sourcedir))
 
