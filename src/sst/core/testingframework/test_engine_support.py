@@ -33,7 +33,7 @@ class OSCommand():
     """
 ###
 
-    def __init__(self, cmd_str, output_file_path=None):
+    def __init__(self, cmd_str, output_file_path=None, use_shell=False):
         self._output_file_path = None
         self._cmd_str = None
         self._process = None
@@ -42,6 +42,7 @@ class OSCommand():
         self._run_output = ''
         self._run_error = ''
         self._run_timeout = False
+        self._use_shell = use_shell
         self._validate_cmd_str(cmd_str)
         self._validate_output_path(output_file_path)
 
@@ -85,6 +86,7 @@ class OSCommand():
                     self._process = subprocess.Popen(self._cmd_str,
                                                      stdout=file_out,
                                                      stderr=file_out,
+                                                     shell=self._use_shell,
                                                      **kwargs)
                     self._run_output, self._run_error = self._process.communicate()
                     self._run_status = self._process.returncode

@@ -632,12 +632,14 @@ def _get_num_cores_on_system():
     num_cores = 1
     if is_host_os_osx():
         cmd = "sysctl -n hw.ncpu"
-        rtn = OSCommand(cmd).run()
-        num_cores = int(rtn.output())
+        rtn = OSCommand(cmd, use_shell=True).run()
+        if rtn.output() != "":
+            num_cores = int(rtn.output())
     else:
-        cmd = "cat /proc/cpuinfo |grep processor | wc -l"
-        rtn = OSCommand(cmd).run()
-        num_cores = int(rtn.output())
+        cmd = "cat /proc/cpuinfo | grep processor | wc -l"
+        rtn = OSCommand(cmd, use_shell=True).run()
+        if rtn.output() != "":
+            num_cores = int(rtn.output())
 
     return num_cores
 
