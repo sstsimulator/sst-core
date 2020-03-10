@@ -503,7 +503,9 @@ class SSTTextTestRunner(unittest.TextTestRunner):
             :param: run_results -  A unittest.TestResult object
             :return: True if all tests passing with no errors, false otherwise
         """
-        return run_results.wasSuccessful and len(run_results.errors) == 0
+        return run_results.wasSuccessful and \
+        len(run_results.errors) == 0 and \
+        test_engine_globals.ERRORCOUNT == 0
 
 ###
 
@@ -521,7 +523,10 @@ class SSTTextTestRunner(unittest.TextTestRunner):
         if self.did_tests_pass(run_results):
             log_forced("\n== TESTING PASSED ==")
         else:
-            log_forced("\n== TESTING FAILED ==")
+            if test_engine_globals.ERRORCOUNT == 0:
+                log_forced("\n== TESTING FAILED ==")
+            else:
+                log_forced("\n== TESTING FAILED DUE TO ERRORS ==")
         log(("\n===================================") +
             ("===================================\n"))
 
