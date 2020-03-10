@@ -21,6 +21,7 @@ import unittest
 import filecmp
 import platform
 import re
+import multiprocessing
 
 # ConfigParser module changes name between Py2->Py3
 try:
@@ -629,18 +630,7 @@ def os_cat(filepath):
 
 def _get_num_cores_on_system():
     """ Figure out how many cores exist on the system"""
-    num_cores = 1
-    if is_host_os_osx():
-        cmd = "sysctl -n hw.ncpu"
-        rtn = OSCommand(cmd, use_shell=True).run()
-        if rtn.output() != "":
-            num_cores = int(rtn.output())
-    else:
-        cmd = "cat /proc/cpuinfo | grep processor | wc -l"
-        rtn = OSCommand(cmd, use_shell=True).run()
-        if rtn.output() != "":
-            num_cores = int(rtn.output())
-
+    num_cores = multiprocessing.cpu_count()
     return num_cores
 
 ###
