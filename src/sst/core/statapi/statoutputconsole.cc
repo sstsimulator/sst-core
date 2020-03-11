@@ -18,7 +18,7 @@ namespace SST {
 namespace Statistics {
 
 StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) 
-    : StatisticOutput (outputParameters)
+    : StatisticFieldsOutput (outputParameters)
 {
     Output out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputConsole enabled...\n");

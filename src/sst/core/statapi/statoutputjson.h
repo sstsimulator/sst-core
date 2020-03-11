@@ -24,7 +24,7 @@ namespace Statistics {
 
     The class for statistics output to a JSON formatted file
 */
-class StatisticOutputJSON : public StatisticOutput
+class StatisticOutputJSON : public StatisticFieldsOutput
 {
 public:
     SST_ELI_REGISTER_DERIVED(
