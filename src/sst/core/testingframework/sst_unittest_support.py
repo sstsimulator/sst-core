@@ -68,27 +68,32 @@ class SSTTestCase(unittest.TestCase):
         # NOTE: __init__ is called for all testscripts before any setUpModules
         #       and the like are called.
         super(SSTTestCase, self).__init__(methodName)
-        #log_forced("DEBUG SSTTestCase __init__")
+        log_forced("DEBUG SSTTestCase __init__")
         self.testName = methodName
 
 ###
 
     def setUp(self):
         """ Called when the TestCase is starting up """
-        #log_forced("DEBUG SSTTestCase setUp()")
+        log_forced("DEBUG SSTTestCase setUp()")
         test_engine_globals.TESTSUITE_NAME_STR = ("{0}".format(strclass(self.__class__)))
+
+
+        ##???
+#        parent_module_path = os.path.dirname(sys.modules[cls.__module__].__file__)
+#        test_engine_globals.TESTSUITEDIRPATH = parent_module_path
 
 ###
     def tearDown(self):
         """ Called when the TestCase is shutting down """
-        #log_forced("DEBUG SSTTestCase tearDown()")
+        log_forced("DEBUG SSTTestCase tearDown()")
         pass
 
 ###
 
     @classmethod
     def setUpClass(cls):
-        #log_forced("DEBUG SSTTestCase setUpClass()")
+        log_forced("DEBUG SSTTestCase setUpClass()")
         """ Called when the class is starting up """
         test_engine_globals.TESTRUNNINGFLAG = True
         parent_module_path = os.path.dirname(sys.modules[cls.__module__].__file__)
@@ -98,7 +103,7 @@ class SSTTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        #log_forced("DEBUG SSTTestCase tearDownClass()")
+        log_forced("DEBUG SSTTestCase tearDownClass()")
         """ Called when the class is shutting down """
         test_engine_globals.TESTRUNNINGFLAG = False
 
@@ -119,6 +124,23 @@ class SSTTestCase(unittest.TestCase):
            :param: global_args (str): Global Arguments provided from test engine args
            :param: timeout_sec (int|float): Allowed runtime in seconds
         """
+        log_forced("AARON --- ABOUT TO RUN TESTS")
+#        log_forced("AARON --- DEBUGMODE              ={0}".format(test_engine_globals.DEBUGMODE               ))
+#        log_forced("AARON --- VERBOSITY              ={0}".format(test_engine_globals.VERBOSITY               ))
+#        log_forced("AARON --- SSTRUNNUMRANKS         ={0}".format(test_engine_globals.SSTRUNNUMRANKS          ))
+#        log_forced("AARON --- SSTRUNNUMTHREADS       ={0}".format(test_engine_globals.SSTRUNNUMTHREADS        ))
+#        log_forced("AARON --- SSTRUNGLOBALARGS       ={0}".format(test_engine_globals.SSTRUNGLOBALARGS        ))
+        log_forced("AARON --- TESTSUITEDIRPATH       ={0}".format(test_engine_globals.TESTSUITEDIRPATH        ))
+#        log_forced("AARON --- TESTOUTPUTTOPDIRPATH   ={0}".format(test_engine_globals.TESTOUTPUTTOPDIRPATH    ))
+#        log_forced("AARON --- TESTOUTPUTRUNDIRPATH   ={0}".format(test_engine_globals.TESTOUTPUTRUNDIRPATH    ))
+#        log_forced("AARON --- TESTOUTPUTTMPDIRPATH   ={0}".format(test_engine_globals.TESTOUTPUTTMPDIRPATH    ))
+#        log_forced("AARON --- TESTOUTPUTXMLDIRPATH   ={0}".format(test_engine_globals.TESTOUTPUTXMLDIRPATH    ))
+#        log_forced("AARON --- TESTRUNNINGFLAG        ={0}".format(test_engine_globals.TESTRUNNINGFLAG         ))
+#        log_forced("AARON --- JUNITTESTCASELIST      ={0}".format(test_engine_globals.JUNITTESTCASELIST       ))
+#        log_forced("AARON --- TESTSUITE_NAME_STR     ={0}".format(test_engine_globals.TESTSUITE_NAME_STR      ))
+#        log_forced("AARON --- CORECONFFILEPARSER     ={0}".format(test_engine_globals.CORECONFFILEPARSER      ))
+#        log_forced("AARON --- TESTENGINEERRORCOUNT   ={0}".format(test_engine_globals.TESTENGINEERRORCOUNT    ))
+
         # We cannot set the default of param to the global variable due to
         # oddities on how this class loads.
         if num_ranks == None:
@@ -189,13 +211,13 @@ class SSTTestCase(unittest.TestCase):
 ################################################################################
 
 def setUpModule():
-    #log_forced("DEBUG: SSTTestCase setUpModule")
+    log_forced("DEBUG: SSTTestCase setUpModule")
     test_engine_globals.JUNITTESTCASELIST = []
 
 ###
 
 def tearDownModule():
-    #log_forced("DEBUG: SSTTestCase tearDownModule")
+    log_forced("DEBUG: SSTTestCase tearDownModule")
     t_s = JUnitTestSuite(test_engine_globals.TESTSUITE_NAME_STR,
                          test_engine_globals.JUNITTESTCASELIST)
 

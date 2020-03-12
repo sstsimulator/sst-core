@@ -28,6 +28,11 @@ from test_engine_support import strclass
 from test_engine_support import strqual
 from test_engine_junit import JUnitTestCase
 
+# Experiment with TestTools Module for Concurrent Tests
+import testtools
+from testtools.testsuite import ConcurrentTestSuite
+from testtools.testsuite import iterate_tests
+
 # ConfigParser module changes name between Py2->Py3
 try:
     import configparser
@@ -107,10 +112,14 @@ class TestEngine():
 
         self._discover_testsuites()
         try:
+            concurrent_suites_to_run = ConcurrentTestSuite(self._sst_full_test_suite,
+                                                           self.split_suites)
+
             test_runner = SSTTextTestRunner(verbosity=test_engine_globals.VERBOSITY,
                                             failfast=self._fail_fast,
                                             resultclass=SSTTextTestResult)
-            sst_tests_results = test_runner.run(self._sst_full_test_suite)
+#            sst_tests_results = test_runner.run(self._sst_full_test_suite)
+            sst_tests_results = test_runner.run(concurrent_suites_to_run)
 
             if not test_runner.did_tests_pass(sst_tests_results):
                 return 1
@@ -119,6 +128,12 @@ class TestEngine():
         # Handlers of unittest.TestRunner exceptions
         except KeyboardInterrupt:
             log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
+
+####
+
+    def split_suites(self, suite):
+        tests = list(iterate_tests(suite))
+        return tests[0], tests[1], tests[2]
 
 ################################################################################
 ################################################################################
