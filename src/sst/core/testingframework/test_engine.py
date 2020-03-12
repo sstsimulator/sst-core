@@ -44,22 +44,46 @@ REQUIRED_PY_MAJ_VER_MAX = 3 # Required Major Version Max
 REQUIRED_PY_MAJ_VER_2_MINOR_VER = 7 # Required Minor Version
 
 HELP_DESC = 'Run {0} Tests'
-HELP_EPILOG = (("The 'testsuite_paths' argument can be defined as either as  ") +
-               ("directories or specific testsuite files.  If the ") +
-               ("'testsuite_paths' argument is empty, testsuites paths will be ") +
-               ("populated from the sstsimulator.conf ") +
-               ("file located in the <sstcore_install>/etc dir.  ") +
-               ("During operation, the Test Frameworks will create a list of ") +
-               ("runable testsuites.  Files specifed in the 'testsuite_paths' ") +
-               ("argument will be directly added.  Directories specifed in the ") +
-               ("'testsuite_paths' argument will be searched ") +
-               ("and testsuites will be added as follows: ") +
-               ("Files named testsuite_<scenarioname>_*.py found in a ") +
-               ("searched directory(s) will be added.  Scenario Names can be set ") +
-               ("using the -s (--scenario) argument.  By default ") +
-               ("the scenarioname will be = 'default'; and all testsuite_default_*.py ") +
-               ("files will be found.  If <scenarioname> = 'all', then all ") +
-               ("testsuite_*.py files will be found.")
+HELP_EPILOG = (
+               ("Finding TestSuites:\n") +
+               ("During Startup, the 'list_of_paths' and 'testsuite_types' arguments are used\n") +
+               ("to create a list of testsuites to be run.\n") +
+               (" - If the 'list_of_paths' argument includes a testsuite file, that testsuite\n") +
+               ("   file will be directly added to the list of testsuites to be run.\n") +
+               (" - If the 'list_of_paths' argument includes a directory (containing 1 or more \n") +
+               ("   testsuites), that directory will be searched for specific testsuites types as\n") +
+               ("   described below.\n") +
+               (" - If the 'list_of_paths' argument is empty (default), testsuites paths found \n") +
+               ("   in the sstsimulator.conf file (located in the <sstcore_install>/etc directory)\n") +
+               ("   will be searched for specific testsuite types as described below.\n") +
+               ("\n") +
+               ("Searching for testsuites types:\n") +
+               ("Each directory identified by the 'list_of_paths' argument will search for \n") +
+               ("testsuites based upon the 'testsuite_type' argument as follows:\n") +
+               (" - Files named 'testsuite_default_*.py' will be added to the list of\n") +
+               ("   testsuites to be run if argument --testsuite_type is NOT specified.\n") +
+               ("   Note: This will run only the 'default' set of testsuites in the directory.\n") +
+               (" - Files named 'testsuite_<type_name>_*.py' will be added to the list of\n") +
+               ("   testsuites to be run when <typename> is specifed using the \n") +
+               ("   --testsuite_type=<type_name> argument.\n") +
+               ("   Note: This will run user selected set of testsuites in the directory.\n") +
+               (" - Files named 'testsuite_*.py' will be added to the list of testsuites to\n") +
+               ("   be run when argument --testsuite_type=all is specified.\n") +
+               ("   Note: This will run ALL of the testsuites in the directory.\n") +
+               ("\n") +
+               ("Tests Execution:\n") +
+               ("All tests identified inside of the testsuites to be given an opportunity to\n") +
+               ("run.  There will be situations where a tests may not be able to run and will be \n") +
+               ("skipped (cannot run on the OS, or build configuration does not support the\n") +
+               ("test).\n") +
+               (" - The decision to skip is made in the testsuite source code.\n") +
+               ("\n") +
+               ("Test Scenarios:\n") +
+               ("Tests and TestCases identified in testsuites can be skipped from running\n") +
+               ("by using the '--scenarios' argument.  1 or more scenarios can be defined\n") +
+               ("concurrently.\n") +
+               (" - The decision to skip is made in the testsuite source code.\n") +
+               (" \n")
               )
 
 # AVAILABLE TEST MODES
@@ -81,17 +105,29 @@ class TestEngine():
         ver = self._validate_python_version()
         self._init_test_engine_variables(sst_core_bin_dir, test_mode)
         self._parse_arguments()
+
+        # Display lots of operations info if we are unning in a verbose mode
         log_info(("SST Test Engine Instantiated - Running") +
                  (" tests on {0}").format(self._test_type_str), forced=False)
 
         log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
                  (" {0}".format(get_host_os_distribution_version())), forced=False)
 
-        if 'all' in self._list_of_scenario_names:
-            log_info("Test Scenario(s) to be run are: ALL TEST SCENARIOS", forced=False)
+        if 'all' in self._testsuite_types_list:
+            log_info("TestSuite Types to be run are: ALL TESTSUITE TYPES",
+                     forced=False)
         else:
-            log_info(("Test Scenario(s) to be run are: ") +
-                     ("{0}").format(" ".join(self._list_of_scenario_names)), forced=False)
+            log_info(("TestSuite Types to be run are: ") +
+                     ("{0}").format(" ".join(self._testsuite_types_list)),
+                     forced=False)
+
+        if len(test_engine_globals.TESTSCENARIOLIST) == 0:
+            log_info("Test scenarios to filter tests: NONE", forced=False)
+        else:
+            log_info(("Test Scenarios to filter tests: ") +
+                     ("{0}").format(" ".join(test_engine_globals.TESTSCENARIOLIST)),
+                     forced=False)
+
         log_debug("Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
 
 ####
@@ -156,7 +192,7 @@ class TestEngine():
         self._fail_fast = False
         self._keep_output_dir = False
         self._list_of_searchable_testsuite_paths = []
-        self._list_of_scenario_names = []
+        self._testsuite_types_list = []
         self._sst_core_bin_dir = sst_core_bin_dir
         self._test_mode = test_mode
         self._sst_full_test_suite = unittest.TestSuite()
@@ -175,6 +211,7 @@ class TestEngine():
         # Build a parameter parser, adjust its help based upon the test type
         helpdesc = HELP_DESC.format(self._test_type_str)
         parser = argparse.ArgumentParser(description=helpdesc,
+                                         formatter_class=argparse.RawTextHelpFormatter,
                                          epilog=HELP_EPILOG)
         out_mode_group = parser.add_argument_group('Output Mode Arguments')
         mutgroup = out_mode_group.add_mutually_exclusive_group()
@@ -185,6 +222,10 @@ class TestEngine():
         mutgroup.add_argument('-d', '--debug', action='store_true',
                               help='Run tests in debug mode')
         run_group = parser.add_argument_group('SST Run Options')
+        run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
+                               nargs="+", default=[],
+                               help=(('Names of test scenarios that filter') + \
+                                     (' tests\nto be run [NONE]')))
         run_group.add_argument('-r', '--ranks', type=int, metavar="XX",
                                nargs=1, default=[1],
                                help='Run with XX ranks [1]')
@@ -193,20 +234,20 @@ class TestEngine():
                                help='Run with YY threads [1]')
         run_group.add_argument('-a', '--sst_run_args', type=str, metavar='" --arg1 -a2"',
                                nargs=1, default=[''],
-                               help=('Runtime args for all SST runs (must be ')
+                               help=('Runtime args for all SST runs (must be\n')
                                   + ('identifed as a string; Note:extra space at front)'))
         parser.add_argument('-f', '--fail_fast', action='store_true',
                             help='Stop testing on failure [true]')
         parser.add_argument('-k', '--keep_output', action='store_true',
-                            help='Dont clean output directory at start [false]')
+                            help='Dont clean output directory at start [False]')
         parser.add_argument('-o', '--out_dir', type=str, metavar='dir',
                             nargs=1, default=['./sst_test_outputs'],
                             help='Set output directory [./sst_test_outputs]')
         discover_group = parser.add_argument_group('Test Discovery Arguments')
-        discover_group.add_argument('-s', '--scenarios', type=str, metavar="name",
+        discover_group.add_argument('-y', '--testsuite_types', type=str, metavar="name",
                                     nargs="+", default=['default'],
-                                    help=(('Name(s) (in lowercase) of testing scenario(s)') + \
-                                         (' ("all" will run all scenarios) ["default"]')))
+                                    help=(('Name (in lowercase) of testsuite types to') + \
+                                          (' run\n("all" will run all types) ["default"]')))
         if self._test_mode:
             testsuite_path_str = "TestSuite Files or Dirs to SST-Core TestSuites"
         else:
@@ -227,8 +268,10 @@ class TestEngine():
         self._fail_fast = args.fail_fast
         self._keep_output_dir = args.keep_output
         self._list_of_searchable_testsuite_paths = args.list_of_paths
-        lc_scen_list = [item.lower() for item in args.scenarios]
-        self._list_of_scenario_names = lc_scen_list
+        lc_testscenario_list = [item.lower() for item in args.scenarios]
+        test_engine_globals.TESTSCENARIOLIST = lc_testscenario_list
+        lc_testsuitetype_list = [item.lower() for item in args.testsuite_types]
+        self._testsuite_types_list = lc_testsuitetype_list
         test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_NORMAL
         if args.quiet:
             test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_QUIET
@@ -309,21 +352,21 @@ class TestEngine():
     def _add_testsuites_from_identifed_paths(self):
         """ Look at all the searchable testsuite paths in the list.  If its
             a file, try to add that testsuite directly.  If its a directory;
-            add all testsuites that match the identifed scenarios.
+            add all testsuites that match the identifed testsuite types.
         """
         # Discover tests in each Test Path directory and add to the test suite
         # A testsuite_path may be a directory or a file
         for testsuite_path in self._list_of_searchable_testsuite_paths:
             if os.path.isdir(testsuite_path):
                 # Find all testsuites that match our pattern(s)
-                if 'all' in self._list_of_scenario_names:
+                if 'all' in self._testsuite_types_list:
                     testsuite_pattern = 'testsuite_*.py'
                     sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
                                                                     pattern=testsuite_pattern)
                     self._sst_full_test_suite.addTests(sst_testsuites)
                 else:
-                    for scenario_name in self._list_of_scenario_names:
-                        testsuite_pattern = 'testsuite_{0}_*.py'.format(scenario_name)
+                    for testsuite_type in self._testsuite_types_list:
+                        testsuite_pattern = 'testsuite_{0}_*.py'.format(testsuite_type)
                         sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
                                                                         pattern=testsuite_pattern)
                         self._sst_full_test_suite.addTests(sst_testsuites)
@@ -544,8 +587,14 @@ class SSTTextTestResult(unittest.TextTestResult):
         super(SSTTextTestResult, self).startTest(test)
         #log_forced("DEBUG - startTest: Test = {0}\n".format(test))
         self._start_time = time.time()
-        self._test_name = test.testName
-        self._testcase_name = strqual(test.__class__)
+        self._test_name = "undefined"
+        _testName = getattr(test, 'testName', None)
+        if _testName is not None:
+            self._test_name = test.testName
+        self._testcase_name = "undefined"
+        _strqual = getattr(test, 'strqual', None)
+        if _strqual is not None:
+            self._testcase_name = _strqual(test.__class__)
         self._testsuite_name = strclass(test.__class__)
         timestamp = datetime.utcnow().strftime("%Y_%m%d_%H:%M:%S.%f utc")
         self._junit_test_case = JUnitTestCase(self._test_name,

@@ -319,8 +319,27 @@ def is_host_os_ubuntu():
     return get_host_os_distribution_type() == OS_DIST_UBUNTU
 
 ################################################################################
+# TEST SCENARIO SUPPORT
+################################################################################
+
+def is_scenario_filtering_enabled(scenario_name):
+    """ Detirmine if a scenario filter name is enabled
+       :param: scenario_name (str): The scenario filter name to check
+       :return: True if the scenario filter name is enabled
+    """
+    return scenario_name in test_engine_globals.TESTSCENARIOLIST
+
+
+###
+def skipOnScenario(scenario_name, reason):
+    if not is_scenario_filtering_enabled(scenario_name):
+        return lambda func: func
+    return unittest.skip(reason)
+
+################################################################################
 # SST Configuration include file (sst_config.h.conf) Access Functions
 ################################################################################
+
 def get_sst_config_include_file_value_int(define, default=None):
     """ Retrieve a define from the SST Configuration Include File (sst_config.h)
        :param: section (str): The [section] to look for the key
@@ -433,7 +452,7 @@ def get_all_sst_config_keys_values_from_section(section):
        This will raise a SSTTestCaseException if an error occurs
     """
     check_param_type("section", section, str)
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    core_conf_file_parser = CORECONFFILEPARSER
     try:
         return core_conf_file_parser.items(section)
     except configparser.Error as exc_e:
