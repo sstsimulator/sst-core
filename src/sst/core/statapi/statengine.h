@@ -116,6 +116,7 @@ private:
     StatisticGroup& getGroupForStatistic(const StatisticBase *stat) const;
     bool addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
     bool addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
+    bool addEndOfSimStatistic(StatisticBase* Stat);
     UnitAlgebra getParamTime(StatisticBase *stat, const std::string& pName) const;
     void setStatisticStartTime(StatisticBase* Stat);
     void setStatisticStopTime(StatisticBase* Stat);

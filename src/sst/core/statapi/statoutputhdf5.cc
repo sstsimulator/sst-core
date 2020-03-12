@@ -24,7 +24,7 @@ namespace SST {
 namespace Statistics {
 
 StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters)
-    : StatisticOutput (outputParameters),
+    : StatisticFieldsOutput (outputParameters),
     m_hFile(nullptr),
     m_currentDataSet(nullptr)
 {
@@ -73,8 +73,9 @@ void StatisticOutputHDF5::printUsage()
 }
 
 
-void StatisticOutputHDF5::implStartRegisterFields(StatisticBase *stat)
+void StatisticOutputHDF5::startRegisterFields(StatisticBase *stat)
 {
+    StatisticFieldsOutput::startRegisterFields(stat);
     if ( m_currentDataSet != nullptr ) {
         m_currentDataSet->setCurrentStatistic(stat);
     } else {
@@ -89,16 +90,18 @@ void StatisticOutputHDF5::implRegisteredField(fieldHandle_t fieldHandle)
     m_currentDataSet->registerField(fi);
 }
 
-void StatisticOutputHDF5::implStopRegisterFields()
+void StatisticOutputHDF5::stopRegisterFields()
 {
+    StatisticFieldsOutput::stopRegisterFields();
     m_currentDataSet->finalizeCurrentStatistic();
     if ( !m_currentDataSet->isGroup() )
         m_currentDataSet = nullptr;
 }
 
 
-void StatisticOutputHDF5::implStartRegisterGroup(StatisticGroup* group )
+void StatisticOutputHDF5::startRegisterGroup(StatisticGroup* group )
 {
+    StatisticFieldsOutput::startRegisterGroup(group);
     m_statGroups.emplace(std::piecewise_construct,
             std::forward_as_tuple(group->name),
             std::forward_as_tuple(group, m_hFile));
@@ -107,8 +110,9 @@ void StatisticOutputHDF5::implStartRegisterGroup(StatisticGroup* group )
 }
 
 
-void StatisticOutputHDF5::implStopRegisterGroup()
+void StatisticOutputHDF5::stopRegisterGroup()
 {
+    StatisticFieldsOutput::stopRegisterGroup();
     m_currentDataSet->finalizeGroupRegistration();
     m_currentDataSet = nullptr;
 }
@@ -128,8 +132,6 @@ void StatisticOutputHDF5::endOfSimulation()
 }
 
 
-
-
 void StatisticOutputHDF5::implStartOutputEntries(StatisticBase* statistic)
 {
     if ( m_currentDataSet == nullptr )
@@ -146,21 +148,20 @@ void StatisticOutputHDF5::implStopOutputEntries()
 
 
 
-void StatisticOutputHDF5::implStartOutputGroup(StatisticGroup* group)
+void StatisticOutputHDF5::startOutputGroup(StatisticGroup* group)
 {
+    StatisticFieldsOutput::startOutputGroup(group);
     m_currentDataSet = &m_statGroups.at(group->name);
     m_currentDataSet->startNewGroupEntry();
 }
 
 
-void StatisticOutputHDF5::implStopOutputGroup()
+void StatisticOutputHDF5::stopOutputGroup()
 {
+    StatisticFieldsOutput::stopOutputGroup();
     m_currentDataSet->finishGroupEntry();
     m_currentDataSet = nullptr;
 }
-
-
-
 
 
 void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, int32_t data)
@@ -207,10 +208,6 @@ StatisticOutputHDF5::StatisticInfo* StatisticOutputHDF5::getStatisticInfo(Statis
 {
     return m_statistics.at(statistic);
 }
-
-
-
-
 
 void StatisticOutputHDF5::StatisticInfo::startNewEntry(StatisticBase *UNUSED(stat))
 {

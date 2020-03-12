@@ -23,12 +23,9 @@ namespace Statistics {
 ////////////////////////////////////////////////////////////////////////////////    
     
 StatisticOutput::StatisticOutput(Params& outputParameters)
- : Module()
 {
     m_statOutputName = "StatisticOutput";
     m_outputParameters = outputParameters;
-    m_highestFieldHandle = 0;
-    m_currentFieldStatName = "";
 }
 
 SST_ELI_DEFINE_CTOR_EXTERN(StatisticOutput)
@@ -38,36 +35,36 @@ StatisticOutput::~StatisticOutput()
 {
 }
 
-void StatisticOutput::registerStatistic(StatisticBase *stat)
+void
+StatisticOutput::outputGroup(StatisticGroup* group, bool endOfSimFlag)
 {
-    startRegisterFields(stat);
-    stat->registerOutputFields(this);
-    stopRegisterFields();
+    this->lock();
+    startOutputGroup(group);
+    for ( auto & stat : group->stats ) {
+        output(stat, endOfSimFlag);
+    }
+    stopOutputGroup();
+    this->unlock();
 }
 
 void StatisticOutput::registerGroup(StatisticGroup *group)
 {
-    implStartRegisterGroup(group);
+    startRegisterGroup(group);
     for ( auto &stat : group->stats ) {
         registerStatistic(stat);
     }
-    implStopRegisterGroup();
+    stopRegisterGroup();
 }
 
-// Start / Stop of register
-void StatisticOutput::startRegisterFields(StatisticBase *statistic)
+StatisticFieldsOutput::StatisticFieldsOutput(Params &outputParameters)
+  : StatisticOutput(outputParameters)
 {
-    m_currentFieldStatName = statistic->getStatName();
-    implStartRegisterFields(statistic);
+  m_highestFieldHandle = 0;
+  m_currentFieldStatName = "";
 }
 
-void StatisticOutput::stopRegisterFields()
-{
-    implStopRegisterFields();
-    m_currentFieldStatName = "";
-}
-
-StatisticFieldInfo* StatisticOutput::addFieldToLists(const char* fieldName, fieldType_t fieldType)
+StatisticFieldInfo*
+StatisticFieldsOutput::addFieldToLists(const char* fieldName, fieldType_t fieldType)
 {
     // Create a new (perhaps temporary) Instance of a StatisticFieldInfo
     StatisticFieldInfo* NewStatFieldInfo = new StatisticFieldInfo(m_currentFieldStatName.c_str(), fieldName, fieldType);
@@ -92,7 +89,8 @@ StatisticFieldInfo* StatisticOutput::addFieldToLists(const char* fieldName, fiel
     return NewStatFieldInfo;
 }
 
-StatisticOutput::fieldHandle_t StatisticOutput::generateFieldHandle(StatisticFieldInfo* FieldInfo)
+StatisticOutput::fieldHandle_t
+StatisticFieldsOutput::generateFieldHandle(StatisticFieldInfo* FieldInfo)
 {
     // Check to see if this field info has a handle assigned
     if (-1 == FieldInfo->getFieldHandle()) {
@@ -103,12 +101,8 @@ StatisticOutput::fieldHandle_t StatisticOutput::generateFieldHandle(StatisticFie
     return FieldInfo->getFieldHandle();
 }
 
-//// Routines to Manipulate Fields (For Future Support)
-//void StatisticOutput::setFieldHierarchy(fieldHandle_t fieldHandle, uint32_t Level, fieldHandle_t parent) 
-//{
-//}
-
-StatisticFieldInfo* StatisticOutput::getRegisteredField(fieldHandle_t fieldHandle)
+StatisticFieldInfo*
+StatisticFieldsOutput::getRegisteredField(fieldHandle_t fieldHandle)
 {
     if (fieldHandle <= m_highestFieldHandle) {
         return m_outputFieldInfoArray[fieldHandle];
@@ -117,7 +111,7 @@ StatisticFieldInfo* StatisticOutput::getRegisteredField(fieldHandle_t fieldHandl
 }
 
 void
-StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), double UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), double UNUSED(data))
 {
   Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
       "StatisticOutput %s does not support double output",
@@ -125,7 +119,7 @@ StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), double UNUSED(da
 }
 
 void
-StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), float UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), float UNUSED(data))
 {
   Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
       "StatisticOutput %s does not support float output",
@@ -133,7 +127,7 @@ StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), float UNUSED(dat
 }
 
 void
-StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t UNUSED(data))
 {
   Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
       "StatisticOutput %s does not support int32_t output",
@@ -141,7 +135,7 @@ StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t UNUSED(d
 }
 
 void
-StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t UNUSED(data))
 {
   Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
       "StatisticOutput %s does not support uint32_t output",
@@ -149,7 +143,7 @@ StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_t UNUSED(
 }
 
 void
-StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t UNUSED(data))
 {
   Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
       "StatisticOutput %s does not support int64_t output",
@@ -157,66 +151,86 @@ StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t UNUSED(d
 }
 
 void
-StatisticOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t UNUSED(data))
+StatisticFieldsOutput::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_t UNUSED(data))
 {
   Simulation::getSimulationOutput().fatal(CALL_INFO, 1,
       "StatisticOutput %s does not support uint64_t output",
       getStatisticOutputName().c_str());
 }
 
-void StatisticOutput::outputEntries(StatisticBase* statistic, bool endOfSimFlag)
+void
+StatisticFieldsOutput::output(StatisticBase* statistic, bool endOfSimFlag)
 {
     this->lock();
     startOutputEntries(statistic);
-    statistic->outputStatisticData(this, endOfSimFlag);
+    statistic->outputStatisticFields(this, endOfSimFlag);
     stopOutputEntries();
     this->unlock();
 }
 
-void StatisticOutput::startOutputEntries(StatisticBase* statistic)
+void
+StatisticFieldsOutput::startRegisterGroup(StatisticGroup* UNUSED(group))
+{
+  //do nothing by default
+}
+
+void
+StatisticFieldsOutput::stopRegisterGroup()
+{
+  //do nothing by default
+}
+
+void
+StatisticFieldsOutput::startOutputEntries(StatisticBase* statistic)
 {
     m_currentFieldStatName = statistic->getStatName();
     // Call the Derived class method
     implStartOutputEntries(statistic);
 }
 
-void StatisticOutput::stopOutputEntries()
+void
+StatisticFieldsOutput::stopOutputEntries()
 {
     m_currentFieldStatName = "";
     // Call the Derived class method
     implStopOutputEntries();
 }
 
-
-
-void StatisticOutput::outputGroup(StatisticGroup* group, bool endOfSimFlag)
-{
-    this->lock();
-    startOutputGroup(group);
-    for ( auto & stat : group->stats ) {
-        outputEntries(stat, endOfSimFlag);
-    }
-    stopOutputGroup();
-    this->unlock();
-}
-
-void StatisticOutput::startOutputGroup(StatisticGroup* group)
+void
+StatisticFieldsOutput::startOutputGroup(StatisticGroup* group)
 {
     m_currentFieldStatName = group->name;
-    // Call the Derived class method
-    implStartOutputGroup(group);
 }
 
-void StatisticOutput::stopOutputGroup()
+void
+StatisticFieldsOutput::stopOutputGroup()
 {
     m_currentFieldStatName = "";
-    // Call the Derived class method
-    implStopOutputGroup();
 }
 
-const char* StatisticOutput::getFieldTypeShortName(fieldType_t type)
+const char*
+StatisticFieldsOutput::getFieldTypeShortName(fieldType_t type)
 {
     return StatisticFieldInfo::getFieldTypeShortName(type);
+}
+
+void StatisticFieldsOutput::registerStatistic(StatisticBase *stat)
+{
+    startRegisterFields(stat);
+    stat->registerOutputFields(this);
+    stopRegisterFields();
+}
+
+
+// Start / Stop of register
+void StatisticFieldsOutput::startRegisterFields(StatisticBase *statistic)
+{
+    m_currentFieldStatName = statistic->getStatName();
+}
+
+void StatisticFieldsOutput::stopRegisterFields()
+{
+    m_currentFieldStatName = "";
 }
 
 } //namespace Statistics
