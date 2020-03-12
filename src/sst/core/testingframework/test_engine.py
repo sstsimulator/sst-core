@@ -112,14 +112,15 @@ class TestEngine():
 
         self._discover_testsuites()
         try:
-            concurrent_suites_to_run = ConcurrentTestSuite(self._sst_full_test_suite,
-                                                           self.split_suites)
+            # Convert test suites to a Concurrent Test Suite
+            concurrent_suites_to_run = SSTConcurrentTestSuite(self._sst_full_test_suite,
+                                                              self.split_suites)
+            self._sst_full_test_suite = concurrent_suites_to_run
 
             test_runner = SSTTextTestRunner(verbosity=test_engine_globals.VERBOSITY,
                                             failfast=self._fail_fast,
                                             resultclass=SSTTextTestResult)
-#            sst_tests_results = test_runner.run(self._sst_full_test_suite)
-            sst_tests_results = test_runner.run(concurrent_suites_to_run)
+            sst_tests_results = test_runner.run(self._sst_full_test_suite)
 
             if not test_runner.did_tests_pass(sst_tests_results):
                 return 1
@@ -638,3 +639,29 @@ class SSTTextTestResult(unittest.TextTestResult):
         msg_lines = traceback.format_exception_only(exctype, value)
         msg_lines = [x.replace('\n', ' ') for x in msg_lines]
         return ''.join(msg_lines)
+
+####
+# TODO: Perform an assignment would do a check here if we are running concurrent
+debug_runningconcurrent = True
+if debug_runningconcurrent:
+    test_suite_base_class = ConcurrentTestSuite
+else:
+    test_suite_base_class = unittest.TestSuite
+
+# NOTE: The problem is that setUpClass(), setUpModule() functions are not being
+#       called by the ConcurrentTestSuite.  This prevent us from tracking
+#       The test name and path along with the teardown call to Junit to write
+#       out the XML
+class SSTConcurrentTestSuite(test_suite_base_class):
+    """A TestSuite whose run() calls out to a concurrency strategy
+       but also supports some of the base UnitTest functionality
+       lost in testtools.
+    """
+
+    def __init__(self, suite, make_tests, wrap_result=None):
+        super(SSTConcurrentTestSuite, self).__init__(suite, make_tests, wrap_result)
+
+
+    def run(self, result):
+        super(SSTConcurrentTestSuite, self).run(result)
+

@@ -78,10 +78,8 @@ class SSTTestCase(unittest.TestCase):
         log_forced("DEBUG SSTTestCase setUp()")
         test_engine_globals.TESTSUITE_NAME_STR = ("{0}".format(strclass(self.__class__)))
 
-
-        ##???
-#        parent_module_path = os.path.dirname(sys.modules[cls.__module__].__file__)
-#        test_engine_globals.TESTSUITEDIRPATH = parent_module_path
+        parent_module_path = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
+        test_engine_globals.TESTSUITEDIRPATH = parent_module_path
 
 ###
     def tearDown(self):
