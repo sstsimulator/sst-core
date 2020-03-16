@@ -283,10 +283,10 @@ class TestEngine():
         test_engine_globals.SSTRUNNUMRANKS = args.ranks[0]
         test_engine_globals.SSTRUNNUMTHREADS = args.threads[0]
         test_engine_globals.SSTRUNGLOBALARGS = args.sst_run_args[0]
-        test_engine_globals.TESTOUTPUTTOPDIRPATH = args.out_dir[0]
-        test_engine_globals.TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(args.out_dir[0])
-        test_engine_globals.TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(args.out_dir[0])
-        test_engine_globals.TESTOUTPUTXMLDIRPATH = "{0}/xml_data".format(args.out_dir[0])
+        test_engine_globals.TESTOUTPUTTOPDIRPATH = os.path.abspath(args.out_dir[0])
+        test_engine_globals.TESTOUTPUTRUNDIRPATH = os.path.abspath("{0}/run_data".format(args.out_dir[0]))
+        test_engine_globals.TESTOUTPUTTMPDIRPATH = os.path.abspath("{0}/tmp_data".format(args.out_dir[0]))
+        test_engine_globals.TESTOUTPUTXMLDIRPATH = os.path.abspath("{0}/xml_data".format(args.out_dir[0]))
         if args.ranks[0] < 0:
             log_fatal("ranks must be >= 0; currently set to {0}".format(args.ranks[0]))
         if args.threads[0] < 0:

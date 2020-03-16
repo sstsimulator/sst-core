@@ -15,6 +15,7 @@
 """
 
 import os
+import sys
 import subprocess
 import threading
 import traceback
@@ -33,7 +34,8 @@ class OSCommand():
     """
 ###
 
-    def __init__(self, cmd_str, output_file_path=None, error_file_path=None, use_shell=False):
+    def __init__(self, cmd_str, output_file_path=None, error_file_path=None,
+                 set_cwd=None, use_shell=False):
         self._output_file_path = None
         self._error_file_path = None
         self._cmd_str = None
@@ -44,6 +46,7 @@ class OSCommand():
         self._run_error = ''
         self._run_timeout = False
         self._use_shell = use_shell
+        self._set_cwd = set_cwd
         self._validate_cmd_str(cmd_str)
         self._output_file_path = self._validate_output_path(output_file_path)
         self._error_file_path = self._validate_output_path(error_file_path)
@@ -77,7 +80,14 @@ class OSCommand():
         """ Run the command in a subprocess """
         file_out = None
         file_err = None
+        saved_cwd = os.getcwd()
+
         try:
+            cwd = os.getcwd()
+
+            if self._set_cwd is not None:
+                os.chdir(os.path.abspath(self._set_cwd))
+
             # If No output files defined, default stdout and stderr to normal output
             if 'stdout' not in kwargs and self._output_file_path is None:
                 kwargs['stdout'] = subprocess.PIPE
@@ -111,6 +121,11 @@ class OSCommand():
             self._run_error = traceback.format_exc()
             self._run_status = -1
 
+        # Go back to the orig working dir
+        if self._set_cwd is not None:
+            os.chdir(saved_cwd)
+
+        # Close any open files
         if file_out is not None:
             file_out.close()
         if file_err is not None:

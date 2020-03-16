@@ -11,6 +11,8 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
+import os
+
 """ This module is a group of global variables that must be common to all tests
 """
 # Verbose Defines
@@ -68,10 +70,10 @@ def init_test_engine_globals():
     SSTRUNNUMRANKS = 1
     SSTRUNNUMTHREADS = 1
     SSTRUNGLOBALARGS = ["xxx"]
-    TESTOUTPUTTOPDIRPATH = "./sst_test_outputs"
-    TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(TESTOUTPUTTOPDIRPATH)
-    TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(TESTOUTPUTTOPDIRPATH)
-    TESTOUTPUTXMLDIRPATH = "{0}/xml_data".format(TESTOUTPUTTOPDIRPATH)
+    TESTOUTPUTTOPDIRPATH = os.path.abspath("./sst_test_outputs")
+    TESTOUTPUTRUNDIRPATH = os.path.abspath("{0}/run_data".format(TESTOUTPUTTOPDIRPATH))
+    TESTOUTPUTTMPDIRPATH = os.path.abspath("{0}/tmp_data".format(TESTOUTPUTTOPDIRPATH))
+    TESTOUTPUTXMLDIRPATH = os.path.abspath("{0}/xml_data".format(TESTOUTPUTTOPDIRPATH))
     JUNITTESTCASELIST = []
     CORECONFFILEPARSER = None
     CORECONFINCLUDEFILEDICT = {}

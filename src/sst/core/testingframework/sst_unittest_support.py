@@ -104,7 +104,7 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def run_sst(self, sdl_file, out_file, err_file=None, mpi_out_files="",
+    def run_sst(self, sdl_file, out_file, err_file=None, set_cwd=None, mpi_out_files="",
                other_args="", num_ranks=None, num_threads=None, global_args=None,
                timeout_sec=60):
         """ Launch sst with with the command line and send output to the
@@ -133,6 +133,7 @@ class SSTTestCase(unittest.TestCase):
         check_param_type("mpi_out_files", mpi_out_files, str)
         check_param_type("other_args", other_args, str)
         check_param_type("global_args", global_args, str)
+        check_param_type("set_cwd", set_cwd, str)
         check_param_type("num_ranks", num_ranks, int)
         check_param_type("num_threads", num_threads, int)
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
@@ -169,15 +170,20 @@ class SSTTestCase(unittest.TestCase):
                                                                          numa_param,
                                                                          mpiout_filename,
                                                                          oscmd)
-        log_debug((("--SST Launch Command (Ranks:{0}; Threads:{1};") +
+
+        final_wd = os.getcwd()
+        if set_cwd != None:
+            final_wd = os.path.abspath(set_cwd)
+        log_debug((("-- SST Launch Command (Ranks:{0}; Threads:{1};") +
                    (" Num Cores:{2}) = {3}")).format(num_ranks, num_threads,
                                                      num_cores, oscmd))
+        log_debug("-- SST Launched in Working Directory ={0}".format(final_wd))
 
         if num_ranks > 1:
-            rtn = OSCommand(oscmd).run(timeout_sec=timeout_sec)
+            rtn = OSCommand(oscmd, set_cwd=set_cwd).run(timeout_sec=timeout_sec)
             merge_files("{0}*".format(mpiout_filename), out_file)
         else:
-            rtn = OSCommand(oscmd, out_file, err_file).run(timeout_sec=timeout_sec)
+            rtn = OSCommand(oscmd, out_file, err_file, set_cwd).run(timeout_sec=timeout_sec)
 
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
         self.assertFalse(rtn.timeout(), err_str)
