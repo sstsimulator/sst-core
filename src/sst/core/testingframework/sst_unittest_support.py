@@ -104,10 +104,10 @@ class SSTTestCase(unittest.TestCase):
 
 ###
 
-    def run_sst(self, sdl_file, out_file, mpi_out_files="", other_args="",
-               num_ranks=None, num_threads=None, global_args=None,
+    def run_sst(self, sdl_file, out_file, err_file=None, mpi_out_files="",
+               other_args="", num_ranks=None, num_threads=None, global_args=None,
                timeout_sec=60):
-        """ TODO: Launch sst with with the command line and send output to the
+        """ Launch sst with with the command line and send output to the
             output file.  Other parameters can also be passed in.
            :param: sdl_file (str): The FilePath to the sdl file
            :param: other_args (str): Any other arguments used in the SST cmd
@@ -177,7 +177,7 @@ class SSTTestCase(unittest.TestCase):
             rtn = OSCommand(oscmd).run(timeout_sec=timeout_sec)
             merge_files("{0}*".format(mpiout_filename), out_file)
         else:
-            rtn = OSCommand(oscmd, out_file).run(timeout_sec=timeout_sec)
+            rtn = OSCommand(oscmd, out_file, err_file).run(timeout_sec=timeout_sec)
 
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
         self.assertFalse(rtn.timeout(), err_str)
@@ -327,11 +327,19 @@ def is_scenario_filtering_enabled(scenario_name):
        :param: scenario_name (str): The scenario filter name to check
        :return: True if the scenario filter name is enabled
     """
+    check_param_type("scenario_name", scenario_name, str)
     return scenario_name in test_engine_globals.TESTSCENARIOLIST
 
 
 ###
 def skipOnScenario(scenario_name, reason):
+    """ Skip a test if a scenario filter name is enabled
+       :param: scenario_name (str): The scenario filter name to check
+       :param: reason (str): The reason for the skip
+       :return: True if the scenario filter name is enabled
+    """
+    check_param_type("scenario_name", scenario_name, str)
+    check_param_type("reason", reason, str)
     if not is_scenario_filtering_enabled(scenario_name):
         return lambda func: func
     return unittest.skip(reason)

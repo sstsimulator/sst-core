@@ -33,8 +33,9 @@ class OSCommand():
     """
 ###
 
-    def __init__(self, cmd_str, output_file_path=None, use_shell=False):
+    def __init__(self, cmd_str, output_file_path=None, error_file_path=None, use_shell=False):
         self._output_file_path = None
+        self._error_file_path = None
         self._cmd_str = None
         self._process = None
         self._timeout_sec = 60
@@ -44,7 +45,8 @@ class OSCommand():
         self._run_timeout = False
         self._use_shell = use_shell
         self._validate_cmd_str(cmd_str)
-        self._validate_output_path(output_file_path)
+        self._output_file_path = self._validate_output_path(output_file_path)
+        self._error_file_path = self._validate_output_path(error_file_path)
 
 ####
 
@@ -54,12 +56,6 @@ class OSCommand():
             raise ValueError("ERROR: Timeout must be an int or a float")
 
         self._timeout_sec = timeout_sec
-
-        # If No output file defined, default stdout and stderr to normal output
-        if 'stdout' not in kwargs and self._output_file_path is None:
-            kwargs['stdout'] = subprocess.PIPE
-        if 'stderr' not in kwargs and self._output_file_path is None:
-            kwargs['stderr'] = subprocess.PIPE
 
         # Build the thread that will monitor the subprocess with a timeout
         thread = threading.Thread(target=self._run_cmd_in_subprocess, kwargs=kwargs)
@@ -79,22 +75,31 @@ class OSCommand():
 
     def _run_cmd_in_subprocess(self, **kwargs):
         """ Run the command in a subprocess """
+        file_out = None
+        file_err = None
         try:
-            # Run and dump stderr & stdout to the output file
-            if self._output_file_path is not None:
-                with open(self._output_file_path, 'w+') as file_out:
-                    self._process = subprocess.Popen(self._cmd_str,
-                                                     stdout=file_out,
-                                                     stderr=file_out,
-                                                     shell=self._use_shell,
-                                                     **kwargs)
-                    self._run_output, self._run_error = self._process.communicate()
-                    self._run_status = self._process.returncode
-            else:
-                # Run and dump stderr & stdout to the normal output
-                self._process = subprocess.Popen(self._cmd_str, **kwargs)
-                self._run_output, self._run_error = self._process.communicate()
-                self._run_status = self._process.returncode
+            # If No output files defined, default stdout and stderr to normal output
+            if 'stdout' not in kwargs and self._output_file_path is None:
+                kwargs['stdout'] = subprocess.PIPE
+            if 'stderr' not in kwargs and self._error_file_path is None:
+                kwargs['stderr'] = subprocess.PIPE
+
+            # Create the stderr & stdout to the output files, if stderr path is
+            # not defined, then use the normal output file
+            if 'stdout' not in kwargs and self._output_file_path is not None:
+                file_out = open(self._output_file_path, 'w+')
+                kwargs['stdout'] = file_out
+                if self._error_file_path is None:
+                    kwargs['stderr'] = file_out
+            if 'stderr' not in kwargs and self._error_file_path is not None:
+                file_err = open(self._error_file_path, 'w+')
+                kwargs['stderr'] = file_err
+
+            self._process = subprocess.Popen(self._cmd_str,
+                                             shell=self._use_shell,
+                                             **kwargs)
+            self._run_output, self._run_error = self._process.communicate()
+            self._run_status = self._process.returncode
 
             if self._run_output is None:
                 self._run_output = ""
@@ -105,6 +110,11 @@ class OSCommand():
         except:
             self._run_error = traceback.format_exc()
             self._run_status = -1
+
+        if file_out is not None:
+            file_out.close()
+        if file_err is not None:
+            file_err.close()
 
 ####
 
@@ -121,15 +131,15 @@ class OSCommand():
 
 ####
 
-    def _validate_output_path(self, output_file_path):
-        """ Validate the cmd_str """
-        if output_file_path is not None:
-            dirpath = os.path.abspath(os.path.dirname(output_file_path))
+    def _validate_output_path(self, file_path):
+        """ Validate the output file path """
+        if file_path is not None:
+            dirpath = os.path.abspath(os.path.dirname(file_path))
             if not os.path.exists(dirpath):
-                err_str = (("ERROR: OSCommand() Path to output file {0} ") +
-                           ("is not valid")).format(output_file_path)
+                err_str = (("ERROR: OSCommand() Output path to file {0} ") +
+                           ("is not valid")).format(file_path)
                 raise ValueError(err_str)
-        self._output_file_path = output_file_path
+        return file_path
 
 ################################################################################
 
