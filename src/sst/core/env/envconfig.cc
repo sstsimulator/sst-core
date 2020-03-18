@@ -1,10 +1,10 @@
 // Copyright 2009-2019 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
+//
 // Copyright (c) 2009-2019, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -75,7 +75,7 @@ void SST::Core::Environment::EnvironmentConfigGroup::print() {
 }
 
 void SST::Core::Environment::EnvironmentConfigGroup::writeTo(FILE* outFile) {
-    fprintf(outFile, "[%s]\n", groupName.c_str());
+    fprintf(outFile, "\n[%s]\n", groupName.c_str());
 
     for(auto paramsItr = params.begin(); paramsItr != params.end(); paramsItr++) {
         fprintf(outFile, "%s=%s\n", paramsItr->first.c_str(), paramsItr->second.c_str());
