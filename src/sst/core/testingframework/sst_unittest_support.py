@@ -130,12 +130,18 @@ class SSTTestCase(unittest.TestCase):
 
         check_param_type("sdl_file", sdl_file, str)
         check_param_type("out_file", out_file, str)
+        if err_file is not None:
+            check_param_type("err_file", out_file, str)
+        if set_cwd is not None:
+            check_param_type("set_cwd", set_cwd, str)
         check_param_type("mpi_out_files", mpi_out_files, str)
         check_param_type("other_args", other_args, str)
-        check_param_type("global_args", global_args, str)
-        check_param_type("set_cwd", set_cwd, str)
-        check_param_type("num_ranks", num_ranks, int)
-        check_param_type("num_threads", num_threads, int)
+        if num_ranks is not None:
+            check_param_type("num_ranks", num_ranks, int)
+        if num_threads is not None:
+            check_param_type("num_threads", num_threads, int)
+        if global_args is not None:
+            check_param_type("global_args", global_args, str)
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout_sec must be a postive int or a float")
 
