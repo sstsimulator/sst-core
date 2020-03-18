@@ -72,7 +72,7 @@ class testcase_testengine_testing_1(SSTTestCase):
     def test_TESTING_CASE1_get_info_from_sstsimulator_conf_success(self):
         # This should pass as we give valid data
         log_forced("This Test Has an Expected Pass")
-        sourcedir = get_sst_config_value_str("SSTCore", "sourcedir")
+        sourcedir = get_sstsimulator_conf_value_str("SSTCore", "sourcedir")
         log_forced("SSTCore SourceDir = {0}; Type = {1}".format(sourcedir, type(sourcedir)))
         if is_py_2():
             if type(sourcedir) == str:
@@ -88,17 +88,17 @@ class testcase_testengine_testing_1(SSTTestCase):
         # This should pass as we detect an expected exception
         log_forced("This Test Has an Expected Pass - AND GENERATES A WARNING - From a Detected Exception")
         with self.assertRaises(SSTTestCaseException):
-            get_sst_config_value_str("invalid_section", "invalid_key")
+            get_sstsimulator_conf_value_str("invalid_section", "invalid_key")
 
     def test_TESTING_CASE1_get_info_from_sstsimulator_conf_invalid_key_exception_error(self):
         # This should give an error as we detect an exception due to invalid key
         log_forced("This Test Has an Expected ERROR - AND GENERATES A WARNING - Due to invalid Key")
-        get_sst_config_value_str("SSTCore", "invalid_key")
+        get_sstsimulator_conf_value_str("SSTCore", "invalid_key")
 
     def test_TESTING_CASE1_get_info_from_sstsimulator_conf_invalid_key_rtn_default_success_with_warning(self):
         # This should pass by returning a default, but should log a warning
         log_forced("This Test Has an Expected Pass - BUT GENERATES A WARNING")
-        sourcedir = get_sst_config_value_str("SSTCore", "invalid_key", "kilroy_was_here")
+        sourcedir = get_sstsimulator_conf_value_str("SSTCore", "invalid_key", "kilroy_was_here")
         log_forced("SSTCore SourceDir = {0}".format(sourcedir))
         self.assertEqual(str, type(sourcedir))
         self.assertEqual("kilroy_was_here", sourcedir)
