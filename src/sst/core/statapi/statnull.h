@@ -113,12 +113,12 @@ struct NullStatistic : public NullStatisticBase<T> {
       // Do Nothing
   }
 
-  void registerOutputFields(StatisticOutput* UNUSED(statOutput)) override
+  void registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput)) override
   {
       // Do Nothing
   }
 
-  void outputStatisticData(StatisticOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
+  void outputStatisticFields(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
   {
       // Do Nothing
   }
@@ -141,6 +141,30 @@ struct NullStatistic : public NullStatisticBase<T> {
 };
 
 template <class T> bool NullStatistic<T>::loaded_ = true;
+
+template <>
+struct NullStatistic<void> : public Statistic<void>
+{
+  SST_ELI_REGISTER_DERIVED(
+    Statistic<void>,
+    NullStatistic<void>,
+    "sst",
+    "NullStatistic",
+    SST_ELI_ELEMENT_VERSION(1,0,0),
+    "Null statistic for custom (void) stats"
+  )
+
+  SST_ELI_INTERFACE_INFO("Statistic<void>")
+
+  NullStatistic(BaseComponent* comp, const std::string& statName,
+                    const std::string& statSubId, Params& statParams)
+  : Statistic<void>(comp, statName, statSubId, statParams)
+  {
+      // Set the Name of this Statistic
+      this->setStatisticTypeName("NULL");
+  }
+};
+
 
 } //namespace Statistics
 } //namespace SST

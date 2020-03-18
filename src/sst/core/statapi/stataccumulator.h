@@ -173,7 +173,7 @@ public:
         this->setCollectionCount(0);
     }
     
-    void registerOutputFields(StatisticOutput* statOutput) override
+    void registerOutputFields(StatisticFieldsOutput* statOutput) override
     {
         h_sum   = statOutput->registerField<NumberBase>("Sum");
         h_sumsq = statOutput->registerField<NumberBase>("SumSQ");
@@ -182,7 +182,7 @@ public:
         h_max   = statOutput->registerField<NumberBase>("Max");
     }
 
-    void outputStatisticData(StatisticOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
+    void outputStatisticFields(StatisticFieldsOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
         statOutput->outputField(h_sum, m_sum);
         statOutput->outputField(h_sumsq, m_sum_sq);
@@ -199,13 +199,15 @@ public:
 
     bool isStatModeSupported(StatisticBase::StatMode_t mode) const override
     {
-        if (mode == StatisticBase::STAT_MODE_COUNT) {
-            return true;
-        }
-        if (mode == StatisticBase::STAT_MODE_PERIODIC) {
-            return true;
-        }
+      switch(mode){
+      case StatisticBase::STAT_MODE_COUNT:
+      case StatisticBase::STAT_MODE_PERIODIC:
+      case StatisticBase::STAT_MODE_DUMP_AT_END:
+        return true;
+      default:
         return false;
+      }
+      return false;
     }
 
 private:
