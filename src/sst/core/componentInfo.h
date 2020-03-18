@@ -114,8 +114,9 @@ private:
     const Params *params;
 
     TimeConverter* defaultTimeBase;
-    
+
     statEnableList_t * enabledStats;
+
     std::vector<double> coordinates;
 
     uint64_t subIDIndex;

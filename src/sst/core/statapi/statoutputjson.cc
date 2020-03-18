@@ -21,7 +21,7 @@ namespace SST {
 namespace Statistics {
 
 StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters)
-    : StatisticOutput (outputParameters)
+    : StatisticFieldsOutput (outputParameters)
 {
     // Announce this output object's name
     Output &out = Simulation::getSimulationOutput();
