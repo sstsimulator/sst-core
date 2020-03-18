@@ -114,25 +114,50 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
         // If the mode is Periodic Based, the add the statistic to the
         // StatisticProcessingEngine otherwise add it as an Event Based Stat.
         UnitAlgebra collectionRate = stat->m_statParams.find<SST::UnitAlgebra>("rate", "0ns");
-        if (StatisticBase::STAT_MODE_PERIODIC == stat->getRegisteredCollectionMode()) {
-            if (false == addPeriodicBasedStatistic(collectionRate, stat)) {
-                return false;
-            }
-        } else {
-            if (false == addEventBasedStatistic(collectionRate, stat)) {
-                return false;
-            }
+        bool success = true;
+        switch (stat->getRegisteredCollectionMode()){
+        case StatisticBase::STAT_MODE_PERIODIC:
+          success = addPeriodicBasedStatistic(collectionRate, stat);
+          break;
+        case StatisticBase::STAT_MODE_COUNT:
+          success = addEventBasedStatistic(collectionRate, stat);
+          break;
+        case StatisticBase::STAT_MODE_DUMP_AT_END:
+          success = addEndOfSimStatistic(stat);
+          break;
+        case StatisticBase::STAT_MODE_UNDEFINED:
+          m_output.fatal(CALL_INFO, 1, "Stat mode is undefined for %s in registerStatistic",
+                         stat->getFullStatName().c_str());
+          break;
         }
+        if (!success) return false;
     } else {
-        /* Make sure it is periodic! */
-        if ( StatisticBase::STAT_MODE_PERIODIC != stat->getRegisteredCollectionMode() ) {
-            m_output.output("ERROR: Statistics in groups must be periodic in nature!\n");
-            return false;
+        switch (stat->getRegisteredCollectionMode()){
+        case StatisticBase::STAT_MODE_PERIODIC:
+        case StatisticBase::STAT_MODE_DUMP_AT_END:
+          break;
+        default:
+          m_output.output("ERROR: Statistics in groups must be periodic or dump at end\n");
+          return false;
         }
     }
 
-    /* All checks pass.  Add the stat */
+    // Make sure that the wireup has not been completed
+    if (true == stat->getComponent()->getSimulation()->isWireUpFinished()) {
+      if (!group.output->supportsDynamicRegistration()){
+        m_output.fatal(CALL_INFO, 1, "ERROR: Statistic %s - "
+             "Cannot be registered for output %s after the Components have been wired up. "
+             "Statistics on output %s must be registered on Component creation. exiting...\n",
+             stat->getFullStatName().c_str(), group.output->getStatisticOutputName().c_str(),
+             group.output->getStatisticOutputName().c_str());
+      } else if (stat->getRegisteredCollectionMode() != StatisticBase::STAT_MODE_DUMP_AT_END) {
+        m_output.fatal(CALL_INFO, 1, "ERROR: Statistic %s - "
+             "Stats can only be registered dynamically in DUMP_AT_END mode with no periodic clock",
+             stat->getFullStatName().c_str());
+      }
+    }
 
+    /* All checks pass.  Add the stat */
     group.addStatistic(stat);
 
     if ( group.isDefault ) {
@@ -183,6 +208,10 @@ void StatisticProcessingEngine::startOfSimulation()
 
 void StatisticProcessingEngine::endOfSimulation()
 {
+    //This is a redundant call to all this code
+    //Looping all the statistic groups and outputting them
+    //will cause all of this code to be executed anyway
+    //so really we are double dumping the end-of-time stats
 
     // Output the Event based Statistics
     for ( StatisticBase * stat : m_EventStatisticArray ) {
@@ -268,7 +297,11 @@ StatisticGroup& StatisticProcessingEngine::getGroupForStatistic(const StatisticB
     return const_cast<StatisticGroup&>(m_defaultGroup);
 }
 
-
+bool
+StatisticProcessingEngine::addEndOfSimStatistic(StatisticBase* /*stat*/)
+{
+  return true;
+}
 
 bool StatisticProcessingEngine::addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* stat)
 {
@@ -428,7 +461,7 @@ void StatisticProcessingEngine::performStatisticOutputImpl(StatisticBase* stat, 
             return;
         }
 
-        statOutput->outputEntries(stat, endOfSimFlag);
+        statOutput->output(stat, endOfSimFlag);
 
         if (false == endOfSimFlag) {
             // Check to see if the Statistic Count needs to be reset

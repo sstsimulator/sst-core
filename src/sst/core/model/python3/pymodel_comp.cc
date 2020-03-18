@@ -249,12 +249,12 @@ static PyObject* compCompare(PyObject *obj0, PyObject *obj1, int op) {
     PyObject *result;
     bool cmp = false;
     switch(op) {
-        case Py_LT: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == -1;
-        case Py_LE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != 1;
-        case Py_EQ: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == 0;
-        case Py_NE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != 0;
-        case Py_GT: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == 1;
-        case Py_GE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != -1;
+        case Py_LT: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == -1; break;
+        case Py_LE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != 1; break;
+        case Py_EQ: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == 0; break;
+        case Py_NE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != 0; break;
+        case Py_GT: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == 1; break;
+        case Py_GE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != -1; break;
     }
     result = cmp ? Py_True : Py_False;
     Py_INCREF(result);
@@ -433,7 +433,7 @@ PyTypeObject PyModel_ComponentType = {
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)compDealloc,   /* tp_dealloc */
-    nullptr,                   /* tp_vectorcall_offset */
+    0,                         /* tp_vectorcall_offset */
     nullptr,                   /* tp_getattr */
     nullptr,                   /* tp_setattr */
     nullptr,                   /* tp_as_async */
@@ -550,7 +550,7 @@ PyTypeObject PyModel_SubComponentType = {
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)subCompDealloc,/* tp_dealloc */
-    nullptr,                   /* tp_vectorcall_offset */
+    0,                         /* tp_vectorcall_offset */
     nullptr,                   /* tp_getattr */
     nullptr,                   /* tp_setattr */
     nullptr,                   /* tp_as_async */

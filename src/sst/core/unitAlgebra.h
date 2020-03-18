@@ -78,6 +78,9 @@ public:
     Units() {}
     virtual ~Units() {}
 
+    /** Copy constructor */
+    Units(const Units&) = default;
+
     /** Assignment operator */
     Units& operator= (const Units& v);
     /** Self-multiplication operator */
@@ -129,6 +132,9 @@ public:
      */
     UnitAlgebra(const std::string& val);
     virtual ~UnitAlgebra();
+
+    /** Copy constructor */
+    UnitAlgebra(const UnitAlgebra&) = default;
 
     /** Print to an ostream the value */
     void print(std::ostream& stream);

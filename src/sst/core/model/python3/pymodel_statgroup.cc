@@ -173,7 +173,7 @@ PyTypeObject PyModel_StatGroupType = {
     sizeof(StatGroupPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)sgDealloc,     /* tp_dealloc */
-    nullptr,                   /* tp_vectorcall_offset */
+    0,                         /* tp_vectorcall_offset */
     nullptr,                   /* tp_getattr */
     nullptr,                   /* tp_setattr */
     nullptr,                   /* tp_as_async */
@@ -308,7 +308,7 @@ PyTypeObject PyModel_StatOutputType = {
     sizeof(StatOutputPy_t),      /* tp_basicsize */
     0,                           /* tp_itemsize */
     (destructor)soDealloc,       /* tp_dealloc */
-    nullptr,                     /* tp_vectorcall_offset */
+    0,                           /* tp_vectorcall_offset */
     nullptr,                     /* tp_getattr */
     nullptr,                     /* tp_setattr */
     nullptr,                     /* tp_as_async */

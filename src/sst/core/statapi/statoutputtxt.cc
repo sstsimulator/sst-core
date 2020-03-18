@@ -19,7 +19,7 @@ namespace SST {
 namespace Statistics {
 
 StatisticOutputTxt::StatisticOutputTxt(Params& outputParameters)
-    : StatisticOutput (outputParameters)
+    : StatisticFieldsOutput (outputParameters)
 {
     m_useCompression = outputParameters.find<bool>("compressed");
     // Announce this output object's name
