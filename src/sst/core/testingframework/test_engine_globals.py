@@ -11,6 +11,8 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
+import os
+
 """ This module is a group of global variables that must be common to all tests
 """
 # Verbose Defines
@@ -20,57 +22,60 @@ VERBOSE_LOUD = 2
 VERBOSE_DEBUG = 3
 
 # Global Var Defines
+TESTSUITE_NAME_STR = None
+TESTSUITEDIRPATH = None
+TESTRUNNINGFLAG = None
 DEBUGMODE = None
 VERBOSITY = None
 SSTRUNNUMRANKS = None
 SSTRUNNUMTHREADS = None
 SSTRUNGLOBALARGS = None
-TESTSUITEDIRPATH = None
 TESTOUTPUTTOPDIRPATH = None
 TESTOUTPUTRUNDIRPATH = None
 TESTOUTPUTTMPDIRPATH = None
 TESTOUTPUTXMLDIRPATH = None
-TESTRUNNINGFLAG = None
 JUNITTESTCASELIST = None
-TESTSUITE_NAME_STR = None
 CORECONFFILEPARSER = None
 CORECONFINCLUDEFILEDICT = None
 TESTENGINEERRORCOUNT = 0
+TESTSCENARIOLIST = None
 
 # These are some globals to pass data between the top level test engine
 # and the lower level testscripts
 def init_test_engine_globals():
     """ Initialize the test global variables """
+    global TESTSUITE_NAME_STR
+    global TESTSUITEDIRPATH
+    global TESTRUNNINGFLAG
     global DEBUGMODE
     global VERBOSITY
     global SSTRUNNUMRANKS
     global SSTRUNNUMTHREADS
     global SSTRUNGLOBALARGS
-    global TESTSUITEDIRPATH
     global TESTOUTPUTTOPDIRPATH
     global TESTOUTPUTRUNDIRPATH
     global TESTOUTPUTTMPDIRPATH
     global TESTOUTPUTXMLDIRPATH
-    global TESTRUNNINGFLAG
     global JUNITTESTCASELIST
-    global TESTSUITE_NAME_STR
     global CORECONFFILEPARSER
     global CORECONFINCLUDEFILEDICT
     global TESTENGINEERRORCOUNT
+    global TESTSCENARIOLIST
 
+    TESTSUITE_NAME_STR = ""
+    TESTSUITEDIRPATH = ""
+    TESTRUNNINGFLAG = False
     DEBUGMODE = False
     VERBOSITY = 1
     SSTRUNNUMRANKS = 1
     SSTRUNNUMTHREADS = 1
     SSTRUNGLOBALARGS = ["xxx"]
-    TESTSUITEDIRPATH = ""
-    TESTOUTPUTTOPDIRPATH = "./sst_test_outputs"
-    TESTOUTPUTRUNDIRPATH = "{0}/run_data".format(TESTOUTPUTTOPDIRPATH)
-    TESTOUTPUTTMPDIRPATH = "{0}/tmp_data".format(TESTOUTPUTTOPDIRPATH)
-    TESTOUTPUTXMLDIRPATH = "{0}/xml_data".format(TESTOUTPUTTOPDIRPATH)
-    TESTRUNNINGFLAG = False
+    TESTOUTPUTTOPDIRPATH = os.path.abspath("./sst_test_outputs")
+    TESTOUTPUTRUNDIRPATH = os.path.abspath("{0}/run_data".format(TESTOUTPUTTOPDIRPATH))
+    TESTOUTPUTTMPDIRPATH = os.path.abspath("{0}/tmp_data".format(TESTOUTPUTTOPDIRPATH))
+    TESTOUTPUTXMLDIRPATH = os.path.abspath("{0}/xml_data".format(TESTOUTPUTTOPDIRPATH))
     JUNITTESTCASELIST = []
-    TESTSUITE_NAME_STR = ""
     CORECONFFILEPARSER = None
     CORECONFINCLUDEFILEDICT = {}
     TESTENGINEERRORCOUNT = 0
+    TESTSCENARIOLIST = []

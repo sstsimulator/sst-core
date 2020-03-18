@@ -42,7 +42,6 @@ def startup_and_run(sst_core_bin_dir, test_mode):
         :param: test_mode = 1 for Core Testing, 0 for Elements testing
     """
     try:
-#        if test_mode != TEST_SST_CORE and test_mode != TEST_ELEMENTS:
         if test_mode not in (TEST_SST_CORE, TEST_ELEMENTS):
             print((("FATAL: Unsupported test_mode {0} in ") +
                    ("startup_and_run()")).format(test_mode))
