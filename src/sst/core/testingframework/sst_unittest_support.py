@@ -648,11 +648,16 @@ def compare_sorted(test_name, outfile, reffile):
    """
    sorted_outfile = "{1}/{0}_sorted_outfile".format(test_name, get_test_output_tmp_dir())
    sorted_reffile = "{1}/{0}_sorted_reffile".format(test_name, get_test_output_tmp_dir())
+   diff_sorted_file = "{1}/{0}_diff_sorted".format(test_name, get_test_output_tmp_dir())
 
    os.system("sort -o {0} {1}".format(sorted_outfile, outfile))
    os.system("sort -o {0} {1}".format(sorted_reffile, reffile))
 
-   return filecmp.cmp(sorted_outfile, sorted_reffile)
+   # Use diff (ignore whitespace) to see if the sorted files are the same
+   cmd = "diff -b {0} {1} > {2}".format(sorted_outfile, sorted_reffile, diff_sorted_file)
+   filesAreTheSame = (os.system(cmd) == 0)
+
+   return filesAreTheSame
 
 ###
 
