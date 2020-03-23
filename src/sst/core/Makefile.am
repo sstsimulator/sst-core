@@ -154,9 +154,7 @@ nobase_dist_sst_HEADERS = \
 	warnmacros.h \
 	model/element_python.h
 
-deprecated_nobase_dist_sst_headers = \
-	elibase.h \
-	elementinfo.h
+deprecated_nobase_dist_sst_headers = 
 
 
 nobase_nodist_sst_HEADERS = \

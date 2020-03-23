@@ -500,43 +500,6 @@ Factory::CreateModuleWithComponent(const std::string& type, Component* comp, Par
     return nullptr;
 }
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-SubComponent*
-Factory::CreateSubComponent(const std::string& type, Component* comp, Params& params)
-{
-    std::string elemlib, elem;
-    std::tie(elemlib, elem) = parseLoadName(type);
-
-    // ensure library is already loaded...
-    std::stringstream error_os;
-    requireLibrary(elemlib, error_os);
-
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-    // Check to see if library is loaded into new
-    // ElementLibraryDatabase
-    auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if (lib){
-      auto* info = lib->getInfo(elem);
-      if (info){
-        auto* builderLib = SubComponent::getBuilderLibrary(elemlib);
-        if (builderLib){
-          auto* fact = builderLib->getBuilder(elem);
-          if (fact){
-            params.pushAllowedKeys(info->getParamNames());
-            SubComponent* ret = fact->create(comp,params);
-            params.popAllowedKeys();
-            return ret;
-          }
-        }
-      }
-    }
-
-    // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested subcomponent '%s'\n%s\n",
-              type.c_str(), error_os.str().c_str());
-    return nullptr;
-}
-#endif
 
 bool
 Factory::doesSubComponentExist(const std::string& type)

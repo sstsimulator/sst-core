@@ -18,31 +18,11 @@ namespace SST {
 SST_ELI_DEFINE_INFO_EXTERN(SubComponent)
 SST_ELI_DEFINE_CTOR_EXTERN(SubComponent)
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-SubComponent::SubComponent(Component* parent) :
-    BaseComponent(parent->getCurrentlyLoadingSubComponentID()),
-    parent(parent)
-{
-    loadedWithLegacyAPI = true;
-}
-#endif
 
 SubComponent::SubComponent(ComponentId_t id) :
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    BaseComponent(id),
-    parent(getTrueComponentPrivate())
-#else
     BaseComponent(id)
-#endif
 {}
 
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-SubComponent*
-SubComponent::loadSubComponent(const std::string& type, Params& params)
-{
-    return BaseComponent::loadSubComponent(type, getTrueComponentPrivate(), params);
-}
-#endif
 
 } // namespace SST

@@ -44,10 +44,6 @@ public:
     static const uint64_t SHARE_STATS = 0x2;
     static const uint64_t INSERT_STATS = 0x4;
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    // Temporary, only for backward compatibility with loadSubComponent
-    static const uint64_t IS_LEGACY_SUBCOMPONENT = 0x32;
-#endif
     
     static const uint64_t SHARE_NONE = 0x0;
 
@@ -155,12 +151,6 @@ private:
     bool canInsertStatistics() {
         return (share_flags & INSERT_STATS) != 0;
     }
-    
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    bool isLegacySubComponent() {
-        return (share_flags & IS_LEGACY_SUBCOMPONENT) != 0;
-    }
-#endif    
 
     inline void setComponent(BaseComponent* comp) { component = comp; }
     // inline void setParent(BaseComponent* comp) { parent = comp; }
