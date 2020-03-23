@@ -150,12 +150,18 @@ class SSTTestCase(unittest.TestCase):
 
         check_param_type("sdl_file", sdl_file, str)
         check_param_type("out_file", out_file, str)
+        if err_file is not None:
+            check_param_type("err_file", out_file, str)
+        if set_cwd is not None:
+            check_param_type("set_cwd", set_cwd, str)
         check_param_type("mpi_out_files", mpi_out_files, str)
         check_param_type("other_args", other_args, str)
-        check_param_type("global_args", global_args, str)
-        check_param_type("set_cwd", set_cwd, str)
-        check_param_type("num_ranks", num_ranks, int)
-        check_param_type("num_threads", num_threads, int)
+        if num_ranks is not None:
+            check_param_type("num_ranks", num_ranks, int)
+        if num_threads is not None:
+            check_param_type("num_threads", num_threads, int)
+        if global_args is not None:
+            check_param_type("global_args", global_args, str)
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout_sec must be a postive int or a float")
 
@@ -345,7 +351,7 @@ def is_host_os_ubuntu():
     return get_host_os_distribution_type() == OS_DIST_UBUNTU
 
 ################################################################################
-# TEST SCENARIO SUPPORT
+# SST Skipping Support
 ################################################################################
 
 def is_scenario_filtering_enabled(scenario_name):
@@ -356,17 +362,33 @@ def is_scenario_filtering_enabled(scenario_name):
     check_param_type("scenario_name", scenario_name, str)
     return scenario_name in test_engine_globals.TESTSCENARIOLIST
 
-
 ###
+
 def skipOnScenario(scenario_name, reason):
     """ Skip a test if a scenario filter name is enabled
        :param: scenario_name (str): The scenario filter name to check
        :param: reason (str): The reason for the skip
-       :return: True if the scenario filter name is enabled
     """
     check_param_type("scenario_name", scenario_name, str)
     check_param_type("reason", reason, str)
     if not is_scenario_filtering_enabled(scenario_name):
+        return lambda func: func
+    return unittest.skip(reason)
+
+###
+
+def skipOnSSTSimulatorConfEmptyStr(section, key, reason):
+    """ Skip a test if a section/key in the sstsimulator.conf file is missing an
+        entry
+       :param: section (str): The section in the sstsimulator.conf to check
+       :param: key (str): The key in the sstsimulator.conf to check
+       :param: reason (str): The reason for the skip
+    """
+    check_param_type("section", section, str)
+    check_param_type("key", key, str)
+    check_param_type("reason", reason, str)
+    rtn_str = get_sstsimulator_conf_value_str(section, key, "")
+    if rtn_str != "":
         return lambda func: func
     return unittest.skip(reason)
 
@@ -400,7 +422,7 @@ def get_sst_config_include_file_value_str(define, default=None):
 # SST Configuration file (sstsimulator.conf) Access Functions
 ################################################################################
 
-def get_sst_config_value_str(section, key, default=None):
+def get_sstsimulator_conf_value_str(section, key, default=None):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
@@ -408,11 +430,11 @@ def get_sst_config_value_str(section, key, default=None):
        :return (str): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    return _get_sst_config_value(section, key, default, str)
+    return _get_sstsimulator_conf_value(section, key, default, str)
 
 ###
 
-def get_sst_config_value_int(section, key, default=None):
+def get_sstsimulator_conf_value_int(section, key, default=None):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
@@ -420,11 +442,11 @@ def get_sst_config_value_int(section, key, default=None):
        :return (float): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    return _get_sst_config_value(section, key, default, int)
+    return _get_sstsimulator_conf_value(section, key, default, int)
 
 ###
 
-def get_sst_config_value_float(section, key, default=None):
+def get_sstsimulator_conf_value_float(section, key, default=None):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
@@ -432,11 +454,11 @@ def get_sst_config_value_float(section, key, default=None):
        :return (float): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    return _get_sst_config_value(section, key, default, float)
+    return _get_sstsimulator_conf_value(section, key, default, float)
 
 ###
 
-def get_sst_config_value_bool(section, key,default=None):
+def get_sstsimulator_conf_value_bool(section, key,default=None):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
@@ -445,11 +467,11 @@ def get_sst_config_value_bool(section, key,default=None):
        NOTE: "1", "yes", "true", and "on" return True
        This will raise a SSTTestCaseException if a default is not provided
     """
-    return _get_sst_config_value(section, key, default, bool)
+    return _get_sstsimulator_conf_value(section, key, default, bool)
 
 ###
 
-def get_sst_config_sections():
+def get_sstsimulator_conf_sections():
     """ Retrieve a list of sections that exist in the SST Configuration File (sstsimulator.conf)
        :return (list of str): The list of sections in the file
        This will raise a SSTTestCaseException if an error occurs
@@ -462,7 +484,7 @@ def get_sst_config_sections():
 
 ###
 
-def get_sst_config_section_keys(section):
+def get_sstsimulator_conf_section_keys(section):
     """ Retrieve a list of keys under a section that exist in the
         SST Configuration File  (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
@@ -646,11 +668,16 @@ def compare_sorted(test_name, outfile, reffile):
    """
    sorted_outfile = "{1}/{0}_sorted_outfile".format(test_name, get_test_output_tmp_dir())
    sorted_reffile = "{1}/{0}_sorted_reffile".format(test_name, get_test_output_tmp_dir())
+   diff_sorted_file = "{1}/{0}_diff_sorted".format(test_name, get_test_output_tmp_dir())
 
    os.system("sort -o {0} {1}".format(sorted_outfile, outfile))
    os.system("sort -o {0} {1}".format(sorted_reffile, reffile))
 
-   return filecmp.cmp(sorted_outfile, sorted_reffile)
+   # Use diff (ignore whitespace) to see if the sorted files are the same
+   cmd = "diff -b {0} {1} > {2}".format(sorted_outfile, sorted_reffile, diff_sorted_file)
+   filesAreTheSame = (os.system(cmd) == 0)
+
+   return filesAreTheSame
 
 ###
 
@@ -769,7 +796,7 @@ def _get_sst_config_include_file_value(define, default=None, data_type=str):
 
 ###
 
-def _get_sst_config_value(section, key, default=None, data_type=str):
+def _get_sstsimulator_conf_value(section, key, default=None, data_type=str):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
