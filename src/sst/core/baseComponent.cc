@@ -33,13 +33,7 @@ namespace SST {
 
 BaseComponent::BaseComponent(ComponentId_t id) :
     sim(Simulation::getSimulation()),
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    loadedWithLegacyAPI(false),
-#endif
     my_info(Simulation::getSimulation()->getComponentInfo(id)),
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    currentlyLoadingSubComponent(nullptr),
-#endif
     isExtension(false)
 {
     if ( my_info->component == nullptr ) {
@@ -96,48 +90,6 @@ BaseComponent::~BaseComponent()
     }
 }
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-void
-BaseComponent::setDefaultTimeBaseForParentLinks(TimeConverter* tc) {
-    LinkMap* myLinks = my_info->getLinkMap();
-    if (nullptr != myLinks) {
-        for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
-            // if ( nullptr == p.second->getDefaultTimeBase() ) {
-            if ( nullptr == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
-                p.second->setDefaultTimeBase(tc);
-            }
-        }
-    }
-
-    // Need to look through up through my parent chain, if I'm legacy
-    // anonymous.
-    if ( my_info->isLegacySubComponent() ) {
-        my_info->parent_info->component->setDefaultTimeBaseForParentLinks(tc);
-    }
-}
-void
-BaseComponent::setDefaultTimeBaseForChildLinks(TimeConverter* tc) {
-    LinkMap* myLinks = my_info->getLinkMap();
-    if (nullptr != myLinks) {
-        for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
-            // if ( nullptr == p.second->getDefaultTimeBase() ) {
-            if ( nullptr == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
-                p.second->setDefaultTimeBase(tc);
-            }
-        }
-    }
-
-    // Need to look through my child subcomponents and for all legacy
-    // anonymously loaded subcomponents, set the default time base for
-    // any links they have.  These links would have been moved from
-    // the parent to the child.
-    for ( auto &sub : my_info->subComponents ) {
-        if ( sub.second.isLegacySubComponent() ) {
-            sub.second.component->setDefaultTimeBaseForChildLinks(tc);
-        }
-    }    
-}
-#endif
 
 void
 BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
@@ -151,23 +103,6 @@ BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
         }
     }
     
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    // Need to look through my child subcomponents and for all
-    // anonymously loaded subcomponents, set the default time base for
-    // any links they have.  These links would have been moved from
-    // the parent to the child.
-    for ( auto &sub : my_info->subComponents ) {
-        if ( sub.second.isLegacySubComponent() ) {
-            sub.second.component->setDefaultTimeBaseForLinks(tc);
-        }
-    }
-
-    // Need to look through up through my parent chain, if I'm
-    // anonymous.
-    if ( my_info->isLegacySubComponent() ) {
-        my_info->parent_info->component->setDefaultTimeBaseForParentLinks(tc);
-    }
-#endif
 }
 
 void
@@ -332,16 +267,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                 }
                 myLinks->insertLink(name,tmp);
                 // Need to set the link's defaultTimeBase to nullptr
-#ifndef SST_ENABLE_PREVIEW_BUILD
-                // except in the case of this being an Anonymously
-                // loadeed SubComponent, then for backward
-                // compatibility, we leave it as is.
-                if ( !my_info->isLegacySubComponent() ) {
-                    tmp->setDefaultTimeBase(nullptr);
-                }
-#else
                 tmp->setDefaultTimeBase(nullptr);
-#endif
             }
         }
     }
@@ -491,147 +417,6 @@ BaseComponent::sst_assert(bool condition, uint32_t line, const char* file, const
     }
 }
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-Module*
-BaseComponent::loadModuleWithComponent(const std::string& type, Component* comp, Params& params)
-{
-    return Factory::getFactory()->CreateModuleWithComponent(type,comp,params);
-}
-
-/* Old ELI style */
-SubComponent*
-BaseComponent::loadSubComponent(const std::string& type, Component* comp, Params& params)
-{
-    // /* Old Style SubComponents end up with their parent's Id, name, etc. */
-    // ComponentInfo *sub_info = new ComponentInfo(type, &params, my_info);
-
-    // /* By "magic", the new component will steal ownership of this pointer */
-    // currentlyLoadingSubComponent = sub_info;
-    ComponentId_t cid = comp->currentlyLoadingSubComponentID;
-    comp->currentlyLoadingSubComponentID = my_info->addAnonymousSubComponent(my_info, type, "LEGACY", 0,
-          ComponentInfo::SHARE_PORTS | ComponentInfo::SHARE_STATS | ComponentInfo::INSERT_STATS | ComponentInfo::IS_LEGACY_SUBCOMPONENT);
-    
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
-    comp->currentlyLoadingSubComponentID = cid;
-
-    return ret;
-}
-
-Component*
-BaseComponent::getTrueComponent() const {
-    // Walk up the parent tree until we hit the base Component.  We
-    // know we're the base Component when parent is nullptr.
-    ComponentInfo* info = my_info;
-    while ( info->parent_info != nullptr ) info = info->parent_info;
-    return static_cast<Component* const>(info->component);
-}
-
-
-SubComponent*
-BaseComponent::loadLegacySubComponentPrivate(ComponentId_t cid, const std::string& type, Params& params) {
-    Component* comp = getTrueComponentPrivate();
-    ComponentId_t old_cid = comp->currentlyLoadingSubComponentID;
-    comp->currentlyLoadingSubComponentID = cid;
-    
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
-    comp->currentlyLoadingSubComponentID = old_cid;
-    return ret;
-}
-
-Component*
-BaseComponent::getTrueComponentPrivate() const {
-    // Walk up the parent tree until we hit the base Component.  We
-    // know we're the base Component when parent is nullptr.
-    ComponentInfo* info = my_info;
-    while ( info->parent_info != nullptr ) info = info->parent_info;
-    return static_cast<Component* const>(info->component);
-}
-
-/* New ELI style */
-SubComponent*
-BaseComponent::loadNamedSubComponent(const std::string& name) {
-    Params empty;
-    return loadNamedSubComponent(name, empty);
-}
-
-SubComponent*
-BaseComponent::loadNamedSubComponent(const std::string& name, Params& params) {
-    // Get list of ComponentInfo objects and make sure that there is
-    // only one SubComponent put into this slot
-    const std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();
-    int sub_count = 0;
-    for ( auto &ci : subcomps ) {
-        if ( ci.second.getSlotName() == name ) {
-            sub_count++;
-        }
-    }
-    
-    if ( sub_count > 1 ) {
-        SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
-        outXX.fatal(CALL_INFO, 1, "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
-                    name.c_str(), my_info->getType().c_str(), sub_count);
-    }
-    
-    return loadNamedSubComponent(name, 0, params);
-}
-
-SubComponent*
-BaseComponent::loadNamedSubComponent(const std::string& name, int slot_num) {
-    Params empty;
-    return loadNamedSubComponent(name, slot_num, empty);
-}
-
-// Private
-SubComponent*
-BaseComponent::loadNamedSubComponent(const std::string& name, int slot_num, Params& params)
-{
-    if ( !Factory::getFactory()->DoesSubComponentSlotExist(my_info->type, name) ) {
-        SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
-        outXX.output(CALL_INFO, "Warning: SubComponentSlot \"%s\" is undocumented.\n", name.c_str());
-    }
-
-    ComponentInfo* sub_info = my_info->findSubComponent(name,slot_num);
-    if ( sub_info == nullptr ) return nullptr;
-    sub_info->share_flags = ComponentInfo::SHARE_NONE;
-    sub_info->parent_info = my_info;
-    
-    // ComponentInfo *oldLoadingSubcomponent = getTrueComponentPrivate()->currentlyLoadingSubComponent;
-    // // ComponentInfo *sub_info = &(infoItr->second);
-    // getTrueComponentPrivate()->currentlyLoadingSubComponent = sub_info;
-
-    ComponentId_t cid = getTrueComponentPrivate()->currentlyLoadingSubComponentID;
-    getTrueComponentPrivate()->currentlyLoadingSubComponentID = sub_info->id;
-        
-    Params myParams;
-    if ( sub_info->getParams() != nullptr )
-        myParams.insert(*sub_info->getParams());
-    myParams.insert(params);
-
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponentPrivate(), myParams);
-    sub_info->setComponent(ret);
-
-    getTrueComponentPrivate()->currentlyLoadingSubComponentID = cid;
-    return ret;
-}
-
-SubComponent*
-BaseComponent::loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Params& params)
-{
-    ComponentId_t cid = getTrueComponentPrivate()->currentlyLoadingSubComponentID;
-    getTrueComponentPrivate()->currentlyLoadingSubComponentID = sub_info->id;
-    
-    Params myParams;
-    if ( sub_info->getParams() != nullptr )
-        myParams.insert(*sub_info->getParams());
-    myParams.insert(params);
-    
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponentPrivate(), myParams);
-    sub_info->setComponent(ret);
-    
-    getTrueComponentPrivate()->currentlyLoadingSubComponentID = cid;
-    return ret;
-}
-#endif
 
 
 SubComponentSlotInfo*
