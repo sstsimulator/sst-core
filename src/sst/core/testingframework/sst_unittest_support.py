@@ -33,6 +33,7 @@ import test_engine_globals
 from test_engine_support import OSCommand
 from test_engine_support import check_param_type
 from test_engine_support import strclass
+from test_engine_support import strqual
 
 from test_engine_junit import JUnitTestCase
 from test_engine_junit import JUnitTestSuite
@@ -65,45 +66,45 @@ class SSTTestCase(unittest.TestCase):
     """ This class is the SST TestCase class """
 
     def __init__(self, methodName):
-        # NOTE: __init__ is called for all testscripts before any setUpModules
-        #       and the like are called.
+        # NOTE: __init__ is called at startup for all tests before any
+        #       setUpModules(), setUpClass(), setUp() and the like are called.
         super(SSTTestCase, self).__init__(methodName)
-        log_forced("DEBUG SSTTestCase __init__")
         self.testName = methodName
+        log_forced("SSTTestCase: __init__() - {0}".format(self.testName))
 
 ###
 
     def setUp(self):
         """ Called when the TestCase is starting up """
-        log_forced("DEBUG SSTTestCase setUp()")
+        log_forced("SSTTestCase: setUp() - {0}".format(self.testName))
         test_engine_globals.TESTSUITE_NAME_STR = ("{0}".format(strclass(self.__class__)))
 
         parent_module_path = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
         test_engine_globals.TESTSUITEDIRPATH = parent_module_path
+        test_engine_globals.TESTRUNNINGFLAG = True
 
 ###
     def tearDown(self):
         """ Called when the TestCase is shutting down """
-        log_forced("DEBUG SSTTestCase tearDown()")
+        log_forced("SSTTestCase: tearDown() - {0}".format(self.testName))
+        test_engine_globals.TESTRUNNINGFLAG = False
         pass
 
 ###
 
     @classmethod
     def setUpClass(cls):
-        log_forced("DEBUG SSTTestCase setUpClass()")
+        log_forced("SSTTestCase: setUpClass() - {0}".format(sys.modules[cls.__module__].__file__))
         """ Called when the class is starting up """
-        test_engine_globals.TESTRUNNINGFLAG = True
-        parent_module_path = os.path.dirname(sys.modules[cls.__module__].__file__)
-        test_engine_globals.TESTSUITEDIRPATH = parent_module_path
+        pass
 
 ###
 
     @classmethod
     def tearDownClass(cls):
-        log_forced("DEBUG SSTTestCase tearDownClass()")
+        log_forced("SSTTestCase: tearDownClass() - {0}".format(sys.modules[cls.__module__].__file__))
         """ Called when the class is shutting down """
-        test_engine_globals.TESTRUNNINGFLAG = False
+        pass
 
 ###
 
@@ -122,29 +123,15 @@ class SSTTestCase(unittest.TestCase):
            :param: global_args (str): Global Arguments provided from test engine args
            :param: timeout_sec (int|float): Allowed runtime in seconds
         """
-        log_forced("AARON --- ABOUT TO RUN TESTS")
-#        log_forced("AARON --- DEBUGMODE              ={0}".format(test_engine_globals.DEBUGMODE               ))
-#        log_forced("AARON --- VERBOSITY              ={0}".format(test_engine_globals.VERBOSITY               ))
-#        log_forced("AARON --- SSTRUNNUMRANKS         ={0}".format(test_engine_globals.SSTRUNNUMRANKS          ))
-#        log_forced("AARON --- SSTRUNNUMTHREADS       ={0}".format(test_engine_globals.SSTRUNNUMTHREADS        ))
-#        log_forced("AARON --- SSTRUNGLOBALARGS       ={0}".format(test_engine_globals.SSTRUNGLOBALARGS        ))
-        log_forced("AARON --- TESTSUITEDIRPATH       ={0}".format(test_engine_globals.TESTSUITEDIRPATH        ))
-#        log_forced("AARON --- TESTOUTPUTTOPDIRPATH   ={0}".format(test_engine_globals.TESTOUTPUTTOPDIRPATH    ))
-#        log_forced("AARON --- TESTOUTPUTRUNDIRPATH   ={0}".format(test_engine_globals.TESTOUTPUTRUNDIRPATH    ))
-#        log_forced("AARON --- TESTOUTPUTTMPDIRPATH   ={0}".format(test_engine_globals.TESTOUTPUTTMPDIRPATH    ))
-#        log_forced("AARON --- TESTOUTPUTXMLDIRPATH   ={0}".format(test_engine_globals.TESTOUTPUTXMLDIRPATH    ))
-#        log_forced("AARON --- TESTRUNNINGFLAG        ={0}".format(test_engine_globals.TESTRUNNINGFLAG         ))
-#        log_forced("AARON --- JUNITTESTCASELIST      ={0}".format(test_engine_globals.JUNITTESTCASELIST       ))
-#        log_forced("AARON --- TESTSUITE_NAME_STR     ={0}".format(test_engine_globals.TESTSUITE_NAME_STR      ))
-#        log_forced("AARON --- CORECONFFILEPARSER     ={0}".format(test_engine_globals.CORECONFFILEPARSER      ))
-#        log_forced("AARON --- TESTENGINEERRORCOUNT   ={0}".format(test_engine_globals.TESTENGINEERRORCOUNT    ))
+        log_forced("SSTTestCase --- ABOUT TO RUN TESTS {0}".format(self.testName))
+        log_forced("SSTTestCase --- TESTSUITEDIRPATH       ={0}".format(test_engine_globals.TESTSUITEDIRPATH        ))
 
         # We cannot set the default of param to the global variable due to
         # oddities on how this class loads.
         if num_ranks == None:
-            num_ranks=test_engine_globals.SSTRUNNUMRANKS
+            num_ranks=test_engine_globals.TESTENGINE_SSTRUNNUMRANKS
         if num_threads == None:
-            num_threads=test_engine_globals.SSTRUNNUMTHREADS
+            num_threads=test_engine_globals.TESTENGINE_SSTRUNNUMTHREADS
         if global_args == None:
             global_args=test_engine_globals.SSTRUNGLOBALARGS
 
@@ -221,23 +208,50 @@ class SSTTestCase(unittest.TestCase):
 ################################################################################
 
 def setUpModule():
-    log_forced("DEBUG: SSTTestCase setUpModule")
-    test_engine_globals.JUNITTESTCASELIST = []
+    log_forced("SSTTestCase: setUpModule() - {0}".format(__file__))
+    test_engine_globals.JUNITTESTCASELIST['singlethread'] = []
 
 ###
 
 def tearDownModule():
-    log_forced("DEBUG: SSTTestCase tearDownModule")
+    log_forced("SSTTestCase: tearDownModule() - {0}".format(__file__))
     t_s = JUnitTestSuite(test_engine_globals.TESTSUITE_NAME_STR,
-                         test_engine_globals.JUNITTESTCASELIST)
+                         test_engine_globals.JUNITTESTCASELIST['singlethread'])
 
     # Write out Test Suite Results
     #log_forced(junit_to_xml_report_string([t_s]))
-    xml_out_filepath = ("{0}/{1}.xml".format(test_engine_globals.TESTOUTPUTXMLDIRPATH,
+    xml_out_filepath = ("{0}/{1}.xml".format(test_engine_globals.TESTOUTPUT_XMLDIRPATH,
                                              test_engine_globals.TESTSUITE_NAME_STR))
 
     with open(xml_out_filepath, 'w') as file_out:
         junit_to_xml_report_file(file_out, [t_s])
+
+###################
+
+def setUpConcurrentModule(test):
+    testcase_name = strqual(test.__class__)
+    testsuite_name = strclass(test.__class__)
+
+    log_forced("\nSSTTestCase - setUpConcurrentModule suite={0}; case={1}; test={2}".format(testsuite_name, testcase_name, test))
+    if not test_engine_globals.JUNITTESTCASELIST.has_key(testsuite_name):
+        test_engine_globals.JUNITTESTCASELIST[testsuite_name] = []
+
+def tearDownConcurrentModule(test):
+    testcase_name = strqual(test.__class__)
+    testsuite_name = strclass(test.__class__)
+
+    log_forced("\nSSTTestCase - tearDownConcurrentModule suite={0}; case={1}; test={2}".format(testsuite_name, testcase_name, test))
+    t_s = JUnitTestSuite(testsuite_name,
+                         test_engine_globals.JUNITTESTCASELIST[testsuite_name])
+
+    # Write out Test Suite Results
+    #log_forced(junit_to_xml_report_string([t_s]))
+    xml_out_filepath = ("{0}/{1}.xml".format(test_engine_globals.TESTOUTPUT_XMLDIRPATH,
+                                             testsuite_name))
+
+    with open(xml_out_filepath, 'w') as file_out:
+        junit_to_xml_report_file(file_out, [t_s])
+
 
 ################################################################################
 # Commandline Information Functions
@@ -247,7 +261,7 @@ def is_testing_in_debug_mode():
     """ Identify if test engine is in debug mode
        :return: True if in debug mode
     """
-    return test_engine_globals.DEBUGMODE
+    return test_engine_globals.TESTENGINE_DEBUGMODE
 
 ###
 
@@ -255,7 +269,7 @@ def get_testing_num_ranks():
     """ Get the number of ranks defined to be run during the testing
        :return: The number of requested run ranks
     """
-    return test_engine_globals.SSTRUNNUMRANKS
+    return test_engine_globals.TESTENGINE_SSTRUNNUMRANKS
 
 ###
 
@@ -263,7 +277,7 @@ def get_testing_num_threads():
     """ Get the number of threads defined to be run during the testing
        :return: The number of requested run threads
     """
-    return test_engine_globals.SSTRUNNUMTHREADS
+    return test_engine_globals.TESTENGINE_SSTRUNNUMTHREADS
 
 ################################################################################
 # System Information Functions
@@ -360,7 +374,7 @@ def is_scenario_filtering_enabled(scenario_name):
        :return: True if the scenario filter name is enabled
     """
     check_param_type("scenario_name", scenario_name, str)
-    return scenario_name in test_engine_globals.TESTSCENARIOLIST
+    return scenario_name in test_engine_globals.TESTENGINE_SCENARIOSLIST
 
 ###
 
@@ -476,7 +490,7 @@ def get_sstsimulator_conf_sections():
        :return (list of str): The list of sections in the file
        This will raise a SSTTestCaseException if an error occurs
     """
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.sections()
     except configparser.Error as exc_e:
@@ -492,7 +506,7 @@ def get_sstsimulator_conf_section_keys(section):
        This will raise a SSTTestCaseException if an error occurs
     """
     check_param_type("section", section, str)
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.options(section)
     except configparser.Error as exc_e:
@@ -508,7 +522,7 @@ def get_all_sst_config_keys_values_from_section(section):
        This will raise a SSTTestCaseException if an error occurs
     """
     check_param_type("section", section, str)
-    core_conf_file_parser = CORECONFFILEPARSER
+    core_conf_file_parser = TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.items(section)
     except configparser.Error as exc_e:
@@ -523,7 +537,7 @@ def does_sst_config_have_section(section):
        This will raise a SSTTestCaseException if an error occurs
     """
     check_param_type("section", section, str)
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.has_section(section)
     except configparser.Error as exc_e:
@@ -540,7 +554,7 @@ def does_sst_config_section_have_key(section, key):
     """
     check_param_type("section", section, str)
     check_param_type("key", key, str)
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.has_option(section, key)
     except configparser.Error as exc_e:
@@ -556,7 +570,7 @@ def log(logstr):
        :param: logstr = string to be logged
     """
     check_param_type("logstr", logstr, str)
-    if test_engine_globals.VERBOSITY >= test_engine_globals.VERBOSE_NORMAL:
+    if test_engine_globals.TESTENGINE_VERBOSITY >= test_engine_globals.VERBOSE_NORMAL:
         log_forced(logstr)
 
 ###
@@ -579,7 +593,7 @@ def log_debug(logstr):
     """ Log a DEBUG: message, only if in debug verbosity mode
         :param: logstr = string to be logged
     """
-    if test_engine_globals.DEBUGMODE:
+    if test_engine_globals.TESTENGINE_DEBUGMODE:
         finalstr = "DEBUG: {0}".format(logstr)
         log_forced(finalstr)
 
@@ -606,7 +620,7 @@ def log_error(logstr):
     check_param_type("logstr", logstr, str)
     finalstr = "ERROR: {0}".format(logstr)
     log_forced(finalstr)
-    test_engine_globals.TESTENGINEERRORCOUNT += 1
+    test_engine_globals.TESTENGINE_ERRORCOUNT += 1
 
 ###
 
@@ -646,7 +660,7 @@ def get_test_output_run_dir():
     """ Return the path of the output run directory
        :return: str the dir
     """
-    return test_engine_globals.TESTOUTPUTRUNDIRPATH
+    return test_engine_globals.TESTOUTPUT_RUNDIRPATH
 
 ###
 
@@ -654,7 +668,7 @@ def get_test_output_tmp_dir():
     """ Return the path of the output run directory
        :return: str the dir
     """
-    return test_engine_globals.TESTOUTPUTTMPDIRPATH
+    return test_engine_globals.TESTOUTPUT_TMPDIRPATH
 
 ################################################################################
 ### Testing Support
@@ -781,7 +795,7 @@ def _get_sst_config_include_file_value(define, default=None, data_type=str):
     check_param_type("define", define, str)
     if default != None:
         check_param_type("default", default, data_type)
-    core_conf_inc_dict = test_engine_globals.CORECONFINCLUDEFILEDICT
+    core_conf_inc_dict = test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT
     try:
         rtn_data =  core_conf_inc_dict[define]
     except KeyError as exc_e:
@@ -811,7 +825,7 @@ def _get_sstsimulator_conf_value(section, key, default=None, data_type=str):
     check_param_type("key", key, str)
     if default != None:
         check_param_type("default", default, data_type)
-    core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+    core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         if data_type == str:
             return core_conf_file_parser.get(section, key)

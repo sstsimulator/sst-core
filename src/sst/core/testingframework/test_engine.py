@@ -21,17 +21,6 @@ import os
 import unittest
 import argparse
 import shutil
-import time
-import traceback
-from datetime import datetime
-from test_engine_support import strclass
-from test_engine_support import strqual
-from test_engine_junit import JUnitTestCase
-
-# Experiment with TestTools Module for Concurrent Tests
-import testtools
-from testtools.testsuite import ConcurrentTestSuite
-from testtools.testsuite import iterate_tests
 
 # ConfigParser module changes name between Py2->Py3
 try:
@@ -41,6 +30,7 @@ except ImportError:
 
 import test_engine_globals
 from sst_unittest_support import *
+from test_engine_unittest import *
 
 ################################################################################
 
@@ -110,30 +100,8 @@ class TestEngine():
         ver = self._validate_python_version()
         self._init_test_engine_variables(sst_core_bin_dir, test_mode)
         self._parse_arguments()
-
-        # Display lots of operations info if we are unning in a verbose mode
-        log_info(("SST Test Engine Instantiated - Running") +
-                 (" tests on {0}").format(self._test_type_str), forced=False)
-
-        log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
-                 (" {0}".format(get_host_os_distribution_version())), forced=False)
-
-        if 'all' in self._testsuite_types_list:
-            log_info("TestSuite Types to be run are: ALL TESTSUITE TYPES",
-                     forced=False)
-        else:
-            log_info(("TestSuite Types to be run are: ") +
-                     ("{0}").format(" ".join(self._testsuite_types_list)),
-                     forced=False)
-
-        if len(test_engine_globals.TESTSCENARIOLIST) == 0:
-            log_info("Test scenarios to filter tests: NONE", forced=False)
-        else:
-            log_info(("Test Scenarios to filter tests: ") +
-                     ("{0}").format(" ".join(test_engine_globals.TESTSCENARIOLIST)),
-                     forced=False)
-
-        log_debug("Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
+        verify_concurrent_test_engine_available()
+        self._display_startup_info()
 
 ####
 
@@ -143,17 +111,16 @@ class TestEngine():
         """
         self._create_all_output_directories()
         # Build the Config File Parser
-        test_engine_globals.CORECONFFILEPARSER = self._create_core_config_parser()
-        test_engine_globals.CORECONFINCLUDEFILEDICT = self._build_core_config_include_defs_dict()
+        test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER = self._create_core_config_parser()
+        test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT = self._build_core_config_include_defs_dict()
 
         self._discover_testsuites()
         try:
             # Convert test suites to a Concurrent Test Suite
-            concurrent_suites_to_run = SSTConcurrentTestSuite(self._sst_full_test_suite,
-                                                              self.split_suites)
-            self._sst_full_test_suite = concurrent_suites_to_run
+            self._sst_full_test_suite = SSTTestSuite(self._sst_full_test_suite,
+                                                     self.split_suites)
 
-            test_runner = SSTTextTestRunner(verbosity=test_engine_globals.VERBOSITY,
+            test_runner = SSTTextTestRunner(verbosity=test_engine_globals.TESTENGINE_VERBOSITY,
                                             failfast=self._fail_fast,
                                             resultclass=SSTTextTestResult)
             sst_tests_results = test_runner.run(self._sst_full_test_suite)
@@ -166,11 +133,84 @@ class TestEngine():
         except KeyboardInterrupt:
             log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
 
+
 ####
 
+#    def split_suites_SEPARATE_SUITES_RUN(self, suite):
+#    def split_suites(self, suite):
+##        tests = list(iterate_tests(suite))
+#        data = self.my_iterate_tests(suite)
+#        log_forced("\n\nAARON - DATA = {0}".format(data))
+#
+#        tests = list(data)
+#
+#        log_forced("\n\nAARON - TESTS LIST = {0}".format(tests))
+#
+#        rtn_tests_list=[]
+#        newtestsuite0 = unittest.TestSuite(tests[00:17])
+#        newtestsuite1 = unittest.TestSuite(tests[17:24])
+#        newtestsuite2 = unittest.TestSuite(tests[24:])
+#        log_forced("\n\nAARON - newtestsuite0= {0}".format(newtestsuite0))
+#        log_forced("\n\nAARON - newtestsuite1= {0}".format(newtestsuite1))
+#        log_forced("\n\nAARON - newtestsuite2= {0}".format(newtestsuite2))
+#        rtn_tests_list.append(newtestsuite0)
+#        rtn_tests_list.append(newtestsuite1)
+#        rtn_tests_list.append(newtestsuite2)
+#        rtn_tests = tuple(rtn_tests_list)
+#
+#        log_forced("\n\nAARON - rtn_tests[0]= {0}".format(rtn_tests[0]))
+#        log_forced("\n\nAARON - rtn_tests[1]= {0}".format(rtn_tests[1]))
+#        log_forced("\n\nAARON - rtn_tests[2]= {0}".format(rtn_tests[2]))
+#        log_forced("\n\nAARON - rtn_tests= {0}".format(rtn_tests))
+#
+##        return rtn_tests[1]
+##        return rtn_tests[1], rtn_tests[2]
+##        return rtn_tests[0], rtn_tests[1], rtn_tests[2]
+#        return rtn_tests
+#
+#
+##        log_forced("\n\nAARON - TESTS[0]= {0}".format(tests[0]))
+##        log_forced("\n\nAARON - TESTS[1]= {0}".format(tests[1]))
+##        log_forced("\n\nAARON - TESTS[2]= {0}".format(tests[2]))
+##
+##        return tests[0], tests[1], tests[2]
+##        return tests
+
+###
+
+#    def split_suites_orig(self, suite):
     def split_suites(self, suite):
         tests = list(iterate_tests(suite))
-        return tests[0], tests[1], tests[2]
+#        tests = list(self.my_iterate_tests(suite))
+#        return tests[0], tests[1], tests[2]
+#        log_forced("\n\nAARON - tests[0] = {0}".format(tests[0]))
+#        log_forced("AARON - tests[1] = {0}".format(tests[1]))
+#        log_forced("AARON - type tests[0] = {0}".format(type(tests[0])))
+#        log_forced("AARON - type tests[1] = {0}".format(type(tests[1])))
+
+        return tests
+
+
+####
+
+    def my_iterate_tests(self, test_suite_or_case):
+        """Iterate through all of the test cases in 'test_suite_or_case'."""
+        try:
+#            log_forced("\nAARON: ITERATION Starting = {0}".format(test_suite_or_case))
+            suite = iter(test_suite_or_case)
+#            log_forced("\nAARON: Suite = {0}".format(suite))
+        except TypeError:
+#            log_forced("- AARON: Yield test_suite_or_case = {0}".format(test_suite_or_case))
+            yield test_suite_or_case
+        else:
+            for test in suite:
+                for subtest in self.my_iterate_tests(test):
+#                    log_forced("-- AARON: Yield subtest = {0}".format(subtest))
+                    yield subtest
+
+
+
+
 
 ################################################################################
 ################################################################################
@@ -229,6 +269,7 @@ class TestEngine():
         parser = argparse.ArgumentParser(description=helpdesc,
                                          formatter_class=argparse.RawTextHelpFormatter,
                                          epilog=HELP_EPILOG)
+
         out_mode_group = parser.add_argument_group('Output Mode Arguments')
         mutgroup = out_mode_group.add_mutually_exclusive_group()
         mutgroup.add_argument('-v', '--verbose', action='store_true',
@@ -237,6 +278,7 @@ class TestEngine():
                               help='Run tests in quiet mode')
         mutgroup.add_argument('-d', '--debug', action='store_true',
                               help='Run tests in debug mode')
+
         run_group = parser.add_argument_group('SST Run Options')
         run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
                                nargs="+", default=[],
@@ -252,6 +294,7 @@ class TestEngine():
                                nargs=1, default=[''],
                                help=('Runtime args for all SST runs (must be\n')
                                   + ('identifed as a string; Note:extra space at front)'))
+
         parser.add_argument('-f', '--fail_fast', action='store_true',
                             help='Stop testing on failure [true]')
         parser.add_argument('-k', '--keep_output', action='store_true',
@@ -259,6 +302,9 @@ class TestEngine():
         parser.add_argument('-o', '--out_dir', type=str, metavar='dir',
                             nargs=1, default=['./sst_test_outputs'],
                             help='Set output directory [./sst_test_outputs]')
+        parser.add_argument('-c', '--concurrent', action='store_true',
+                            help='Run Test Suites concurrently using threads')
+
         discover_group = parser.add_argument_group('Test Discovery Arguments')
         discover_group.add_argument('-y', '--testsuite_types', type=str, metavar="name",
                                     nargs="+", default=['default'],
@@ -285,24 +331,25 @@ class TestEngine():
         self._keep_output_dir = args.keep_output
         self._list_of_searchable_testsuite_paths = args.list_of_paths
         lc_testscenario_list = [item.lower() for item in args.scenarios]
-        test_engine_globals.TESTSCENARIOLIST = lc_testscenario_list
+        test_engine_globals.TESTENGINE_SCENARIOSLIST = lc_testscenario_list
         lc_testsuitetype_list = [item.lower() for item in args.testsuite_types]
         self._testsuite_types_list = lc_testsuitetype_list
-        test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_NORMAL
+        test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_NORMAL
         if args.quiet:
-            test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_QUIET
+            test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_QUIET
         if args.verbose:
-            test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_LOUD
+            test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_LOUD
         if args.debug:
-            test_engine_globals.DEBUGMODE = True
-            test_engine_globals.VERBOSITY = test_engine_globals.VERBOSE_DEBUG
-        test_engine_globals.SSTRUNNUMRANKS = args.ranks[0]
-        test_engine_globals.SSTRUNNUMTHREADS = args.threads[0]
+            test_engine_globals.TESTENGINE_DEBUGMODE = True
+            test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_DEBUG
+        test_engine_globals.TESTENGINE_CONCURRENTMODE = args.concurrent
+        test_engine_globals.TESTENGINE_SSTRUNNUMRANKS = args.ranks[0]
+        test_engine_globals.TESTENGINE_SSTRUNNUMTHREADS = args.threads[0]
         test_engine_globals.SSTRUNGLOBALARGS = args.sst_run_args[0]
-        test_engine_globals.TESTOUTPUTTOPDIRPATH = os.path.abspath(args.out_dir[0])
-        test_engine_globals.TESTOUTPUTRUNDIRPATH = os.path.abspath("{0}/run_data".format(args.out_dir[0]))
-        test_engine_globals.TESTOUTPUTTMPDIRPATH = os.path.abspath("{0}/tmp_data".format(args.out_dir[0]))
-        test_engine_globals.TESTOUTPUTXMLDIRPATH = os.path.abspath("{0}/xml_data".format(args.out_dir[0]))
+        test_engine_globals.TESTOUTPUT_TOPDIRPATH = os.path.abspath(args.out_dir[0])
+        test_engine_globals.TESTOUTPUT_RUNDIRPATH = os.path.abspath("{0}/run_data".format(args.out_dir[0]))
+        test_engine_globals.TESTOUTPUT_TMPDIRPATH = os.path.abspath("{0}/tmp_data".format(args.out_dir[0]))
+        test_engine_globals.TESTOUTPUT_XMLDIRPATH = os.path.abspath("{0}/xml_data".format(args.out_dir[0]))
         if args.ranks[0] < 0:
             log_fatal("ranks must be >= 0; currently set to {0}".format(args.ranks[0]))
         if args.threads[0] < 0:
@@ -310,13 +357,48 @@ class TestEngine():
 
 ####
 
+    def _display_startup_info(self):
+
+        ver = sys.version_info
+        concurrent_txt = ""
+
+        if test_engine_globals.TESTENGINE_CONCURRENTMODE:
+            concurrent_txt = " (CONCURRENTLY)"
+
+        # Display operations info if we are unning in a verbose mode
+        log_info(("SST Test Engine Instantiated - Running") +
+                 ("{0} tests on {1}").format(concurrent_txt, self._test_type_str),
+                 forced=False)
+
+        log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
+                 (" {0}".format(get_host_os_distribution_version())), forced=False)
+
+        if 'all' in self._testsuite_types_list:
+            log_info("TestSuite Types to be run are: ALL TESTSUITE TYPES",
+                     forced=False)
+        else:
+            log_info(("TestSuite Types to be run are: ") +
+                     ("{0}").format(" ".join(self._testsuite_types_list)),
+                     forced=False)
+
+        if len(test_engine_globals.TESTENGINE_SCENARIOSLIST) == 0:
+            log_info("Test scenarios to filter tests: NONE", forced=False)
+        else:
+            log_info(("Test Scenarios to filter tests: ") +
+                     ("{0}").format(" ".join(test_engine_globals.TESTENGINE_SCENARIOSLIST)),
+                     forced=False)
+
+        log_debug("Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
+
+####
+
     def _create_all_output_directories(self):
         """ Create the output directories if needed
         """
-        top_dir = test_engine_globals.TESTOUTPUTTOPDIRPATH
-        run_dir = test_engine_globals.TESTOUTPUTRUNDIRPATH
-        tmp_dir = test_engine_globals.TESTOUTPUTTMPDIRPATH
-        xml_dir = test_engine_globals.TESTOUTPUTXMLDIRPATH
+        top_dir = test_engine_globals.TESTOUTPUT_TOPDIRPATH
+        run_dir = test_engine_globals.TESTOUTPUT_RUNDIRPATH
+        tmp_dir = test_engine_globals.TESTOUTPUT_TMPDIRPATH
+        xml_dir = test_engine_globals.TESTOUTPUT_XMLDIRPATH
         if not self._keep_output_dir:
             log_debug("Deleting output directory {0}".format(top_dir))
             shutil.rmtree(top_dir, True)
@@ -386,6 +468,7 @@ class TestEngine():
                         sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
                                                                         pattern=testsuite_pattern)
                         self._sst_full_test_suite.addTests(sst_testsuites)
+
             if os.path.isfile(testsuite_path):
                 # Add a specific testsuite from a filepath
                 testsuite_dir = os.path.abspath(os.path.dirname(testsuite_path))
@@ -470,7 +553,7 @@ class TestEngine():
         testsuite_paths = []
 
         # Get the Config File Parser
-        core_conf_file_parser = test_engine_globals.CORECONFFILEPARSER
+        core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
 
         # Now read the appropriate type of data (Core or Elements)
         try:
@@ -533,184 +616,3 @@ class TestEngine():
                 self._dump_testsuite_list(sub_suite)
         else:
             log_debug("- {0}".format(suite))
-
-################################################################################
-################################################################################
-################################################################################
-
-class SSTTextTestRunner(unittest.TextTestRunner):
-    """ A superclass to support SST required testing """
-
-    def __init__(self, stream=sys.stderr, descriptions=True, verbosity=1,
-                 failfast=False, buffer=False, resultclass=None):
-        super(SSTTextTestRunner, self).__init__(stream, descriptions, verbosity,
-                                                failfast, buffer, resultclass)
-        log(("\n=== TESTS STARTING ================") +
-            ("===================================\n"))
-
-###
-
-    def run(self, test):
-        runresults = super(SSTTextTestRunner, self).run(test)
-        self._get_and_display_test_results(runresults)
-        return runresults
-
-###
-
-    def did_tests_pass(self, run_results):
-        """ Figure out if testing passed
-            :param: run_results -  A unittest.TestResult object
-            :return: True if all tests passing with no errors, false otherwise
-        """
-        return run_results.wasSuccessful and \
-        len(run_results.errors) == 0 and \
-        test_engine_globals.TESTENGINEERRORCOUNT == 0
-
-###
-
-    def _get_and_display_test_results(self, run_results):
-        """ Figure out if testing passed, and display the test results
-            :param: sst_tests_results -  A unittest.TestResult object
-            :return: True if all tests passing with no errors, false otherwise
-        """
-        log(("\n=== TEST RESULTS ==================") +
-                   ("===================================\n"))
-        log("Tests Run      = {0}".format(run_results.testsRun))
-        log("Tests Failures = {0}".format(len(run_results.failures)))
-        log("Tests Skipped  = {0}".format(len(run_results.skipped)))
-        log("Tests Errors   = {0}".format(len(run_results.errors)))
-        if self.did_tests_pass(run_results):
-            log_forced("\n== TESTING PASSED ==")
-        else:
-            if test_engine_globals.TESTENGINEERRORCOUNT == 0:
-                log_forced("\n== TESTING FAILED ==")
-            else:
-                log_forced("\n== TESTING FAILED DUE TO ERRORS ==")
-        log(("\n===================================") +
-            ("===================================\n"))
-
-################################################################################
-
-class SSTTextTestResult(unittest.TextTestResult):
-    """ A superclass to support SST required testing """
-
-    def __init__(self, stream, descriptions, verbosity):
-        super(SSTTextTestResult, self).__init__(stream, descriptions, verbosity)
-
-###
-
-    def startTest(self, test):
-        super(SSTTextTestResult, self).startTest(test)
-        #log_forced("DEBUG - startTest: Test = {0}\n".format(test))
-        self._start_time = time.time()
-        self._test_name = "undefined"
-        _testName = getattr(test, 'testName', None)
-        if _testName is not None:
-            self._test_name = test.testName
-        self._testcase_name = "undefined"
-        _strqual = getattr(test, 'strqual', None)
-        if _strqual is not None:
-            self._testcase_name = _strqual(test.__class__)
-        self._testsuite_name = strclass(test.__class__)
-        timestamp = datetime.utcnow().strftime("%Y_%m%d_%H:%M:%S.%f utc")
-        self._junit_test_case = JUnitTestCase(self._test_name,
-                                              self._testcase_name,
-                                              timestamp=timestamp)
-
-    def stopTest(self, test):
-        super(SSTTextTestResult, self).stopTest(test)
-        #log_forced("DEBUG - stopTest: Test = {0}\n".format(test))
-        self._junit_test_case.junit_add_elapsed_sec(time.time() - self._start_time)
-        test_engine_globals.JUNITTESTCASELIST.append(self._junit_test_case)
-
-###
-
-    def addSuccess(self, test):
-        #super(SSTTextTestResult, self).addSuccess(test)
-        #log_forced("DEBUG - addSuccess: Test = {0}\n".format(test))
-        # Override the "ok" and make it a "PASS" instead
-        if self.showAll:
-            self.stream.writeln("PASS")
-        elif self.dots:
-            self.stream.write('.')
-            self.stream.flush()
-
-    def addError(self, test, err):
-        super(SSTTextTestResult, self).addError(test, err)
-        #log_forced("DEBUG - addError: Test = {0}, err = {1}\n".format(test, err))
-        _junit_test_case = getattr(self, '_junit_test_case', None)
-        if _junit_test_case is not None:
-            err_msg = self._get_err_info(err)
-            _junit_test_case.junit_add_error_info(err_msg)
-
-    def addFailure(self, test, err):
-        super(SSTTextTestResult, self).addFailure(test, err)
-        #log_forced("DEBUG - addFailure: Test = {0}, err = {1}\n".format(test, err))
-        _junit_test_case = getattr(self, '_junit_test_case', None)
-        if _junit_test_case is not None:
-            err_msg = self._get_err_info(err)
-            _junit_test_case.junit_add_failure_info(err_msg)
-
-    def addSkip(self, test, reason):
-        super(SSTTextTestResult, self).addSkip(test, reason)
-        #log_forced("DEBUG - addSkip: Test = {0}, reason = {1}\n".format(test, reason))
-        _junit_test_case = getattr(self, '_junit_test_case', None)
-        if _junit_test_case is not None:
-            _junit_test_case.junit_add_skipped_info(reason)
-
-    def addExpectedFailure(self, test, err):
-        super(SSTTextTestResult, self).addExpectedFailure(test, err)
-        #log_forced("DEBUG - addExpectedFailure: Test = {0}, err = {1}\n".format(test, err))
-
-    def addUnexpectedSuccess(self, test):
-        super(SSTTextTestResult, self).addUnexpectedSuccess(test)
-        #log_forced("DEBUG - addUnexpectedSuccess: Test = {0}\n".format(test))
-
-###
-
-    def printErrors(self):
-        if self.dots or self.showAll:
-            self.stream.writeln()
-        log(("===================================") +
-            ("==================================="))
-        log(("=== TESTS FINISHED ================") +
-            ("==================================="))
-        log(("===================================") +
-            ("===================================\n"))
-        self.printErrorList('ERROR', self.errors)
-        self.printErrorList('FAIL', self.failures)
-
-####
-
-    def _get_err_info(self, err):
-        """Converts a sys.exc_info() into a string."""
-        exctype, value, tb = err
-        msg_lines = traceback.format_exception_only(exctype, value)
-        msg_lines = [x.replace('\n', ' ') for x in msg_lines]
-        return ''.join(msg_lines)
-
-####
-# TODO: Perform an assignment would do a check here if we are running concurrent
-debug_runningconcurrent = True
-if debug_runningconcurrent:
-    test_suite_base_class = ConcurrentTestSuite
-else:
-    test_suite_base_class = unittest.TestSuite
-
-# NOTE: The problem is that setUpClass(), setUpModule() functions are not being
-#       called by the ConcurrentTestSuite.  This prevent us from tracking
-#       The test name and path along with the teardown call to Junit to write
-#       out the XML
-class SSTConcurrentTestSuite(test_suite_base_class):
-    """A TestSuite whose run() calls out to a concurrency strategy
-       but also supports some of the base UnitTest functionality
-       lost in testtools.
-    """
-
-    def __init__(self, suite, make_tests, wrap_result=None):
-        super(SSTConcurrentTestSuite, self).__init__(suite, make_tests, wrap_result)
-
-
-    def run(self, result):
-        super(SSTConcurrentTestSuite, self).run(result)
-
