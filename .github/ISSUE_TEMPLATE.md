@@ -12,7 +12,4 @@ New Issue for sst-core
 
 6 - Fill out Labels, Milestones, and Assignee fields as best possible
 
-<<<<<<< HEAD
-=======
 
->>>>>>> devel
