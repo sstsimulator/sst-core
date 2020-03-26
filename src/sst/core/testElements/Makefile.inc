@@ -32,9 +32,7 @@ libcoreTestElement_la_SOURCES = \
 	testElements/coreTest_ParamComponent.h \
 	testElements/coreTest_ParamComponent.cc
 
-deprecated_libcoreTestElement_sources = \
-	testElements/coreTest_SubComponentLegacy.h \
-	testElements/coreTest_SubComponentLegacy.cc
+deprecated_libcoreTestElement_sources =
 
 if !SST_ENABLE_PREVIEW_BUILD
 libcoreTestElement_la_SOURCES += $(deprecated_libcoreTestElement_sources)
