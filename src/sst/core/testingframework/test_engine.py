@@ -29,6 +29,7 @@ except ImportError:
     import ConfigParser as configparser
 
 import test_engine_globals
+from sst_unittest import *
 from sst_unittest_support import *
 from test_engine_unittest import *
 

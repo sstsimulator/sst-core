@@ -1,33 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import sst_unittest_support
+from sst_unittest import *
 from sst_unittest_support import *
 
 ################################################################################
 
-def setUpModule():
-    sst_unittest_support.setUpModule()
-    # Put Module based setup code here. it is called before any testcases are run
-
-def tearDownModule():
-    # Put Module based teardown code here. it is called after all testcases are run
-    sst_unittest_support.tearDownModule()
-
-################################################################################
-
 class testcase_testengine_testing_1(SSTTestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, cls).setUpClass()
-        # Put class based setup code here. it is called once before tests are run
-
-    @classmethod
-    def tearDownClass(cls):
-        # Put class based teardown code here. it is called once after tests are run
-        super(cls, cls).tearDownClass()
-
-#####
 
     def setUp(self):
         super(type(self), self).setUp()

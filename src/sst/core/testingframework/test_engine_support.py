@@ -11,7 +11,8 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
-""" This module provides the low level calls to the OS shell
+""" This module provides the low level calls to the OS shell and other support
+    functions
 """
 
 import os
@@ -237,7 +238,6 @@ def strclass(cls):
 def strqual(cls):
     """ Return the qualname of a class"""
     return "%s" % (qualname(cls))
-
 
 ################################################################################
 # qualname from https://github.com/wbolster/qualname to support Py2 and Py3

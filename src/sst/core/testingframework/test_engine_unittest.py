@@ -43,6 +43,7 @@ except ImportError:
     test_suite_base_class = unittest.TestSuite
 
 import test_engine_globals
+from sst_unittest import *
 from sst_unittest_support import *
 from test_engine_support import strclass
 from test_engine_support import strqual
@@ -132,8 +133,8 @@ class SSTTextTestResult(unittest.TextTestResult):
         _testName = getattr(test, 'testName', None)
         if _testName is not None:
             self._test_name = test.testName
-        self._testcase_name = strqual(test.__class__)
-        self._testsuite_name = strclass(test.__class__)
+        self._testcase_name = test.get_testcase_name()
+        self._testsuite_name = test.get_testsuite_name()
         timestamp = datetime.utcnow().strftime("%Y_%m%d_%H:%M:%S.%f utc")
         self._junit_test_case = JUnitTestCase(self._test_name,
                                               self._testcase_name,
@@ -321,6 +322,8 @@ class SSTTestSuite(test_suite_base_class):
                     #log_forced("DEBUG: FINISHED TEST THREADS keys = {0}".format(threads.keys()))
                 else:
                     tests_finished = True
+                    test_engine_globals.TESTRUN_TESTRUNNINGFLAG = False
+
         except:
             for thread, process_result in threads.values():
                 process_result.stop()
@@ -338,9 +341,8 @@ class SSTTestSuite(test_suite_base_class):
         """
         try:
             try:
-                testcase_name = strqual(test.__class__)
-                testsuite_name = strclass(test.__class__)
                 setUpModuleConcurrent(test)
+                test_engine_globals.TESTRUN_TESTRUNNINGFLAG = True
                 test.run(process_result)
                 tearDownModuleConcurrent(test)
             except Exception:

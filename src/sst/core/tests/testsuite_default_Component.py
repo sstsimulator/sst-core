@@ -1,33 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import sst_unittest_support
+from sst_unittest import *
 from sst_unittest_support import *
 
 ################################################################################
 
-def setUpModule():
-    sst_unittest_support.setUpModule()
-    # Put Module based setup code here. it is called before any testcases are run
-
-def tearDownModule():
-    # Put Module based teardown code here. it is called after all testcases are run
-    sst_unittest_support.tearDownModule()
-
-################################################################################
-
 class testcase_Component(SSTTestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        super(cls, cls).setUpClass()
-        # Put class based setup code here. it is called once before tests are run
-
-    @classmethod
-    def tearDownClass(cls):
-        # Put class based teardown code here. it is called once after tests are run
-        super(cls, cls).tearDownClass()
-
-#####
 
     def setUp(self):
         super(type(self), self).setUp()
@@ -49,8 +27,6 @@ class testcase_Component(SSTTestCase):
         parent_module_path = os.path.dirname(__file__)
         testsuitedir = parent_module_path
 
-#        sdlfile = "{0}/test_Component.py".format(get_testsuite_dir())
-#        reffile = "{0}/refFiles/test_Component.out".format(get_testsuite_dir())
         sdlfile = "{0}/test_Component.py".format(testsuitedir)
         reffile = "{0}/refFiles/test_Component.out".format(testsuitedir)
         outfile = "{0}/test_Component.out".format(get_test_output_run_dir())
