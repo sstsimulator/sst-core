@@ -226,9 +226,15 @@ class SSTTextTestResult(unittest.TextTestResult):
 class SSTTestSuite(test_suite_base_class):
     """A TestSuite whose run() calls out to a concurrency strategy
        but also supports the base unittest.TestSuite functionality
-       Note: This is a highly modified version of testtools.ConcurrentTestSuite class
-             This may be derived from testtools.ConcurrentTestSuite class, or
-             if the import failed, it will be derived from unittest.TestSuite
+       Note: This is a highly modified version of testtools.ConcurrentTestSuite
+             class to support startUpModuleConcurrent() & tearDownModuleConcurrent()
+             and to also support the limiting of parallel threads in flight.
+       Note: This object will normally be derived from testtools.ConcurrentTestSuite class,
+             however, if the import of testtools failed, it will be derived from
+             unittest.TestSuite.
+       Note: If concurrent mode is false, then it will always make calls to the
+             unittest.TestSuite class EVEN IF it is derived from
+             testtools.ConcurrentTestSuite.
     """
 
     def __init__(self, suite, make_tests, wrap_result=None):
@@ -245,6 +251,9 @@ class SSTTestSuite(test_suite_base_class):
             object. If not provided, then ``ConcurrentTestSuite`` will just
             use a ``ThreadsafeForwardingResult`` wrapped around the result
             passed to ``run()``.  NOT USED IN unittest.TestSuite
+        Note: If concurrent mode is false, then it will always make calls to the
+              unittest.TestSuite class EVEN IF it is derived from
+              testtools.ConcurrentTestSuite.
         """
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             # Ignore make_tests and wrap_results
@@ -254,7 +263,7 @@ class SSTTestSuite(test_suite_base_class):
 
 ####
 
-    def run(self, result, thread_limit = 4):
+    def run(self, result):
         """Run the tests concurrently.
 
         This calls out to the provided make_tests helper, and then serialises
@@ -265,7 +274,14 @@ class SSTTestSuite(test_suite_base_class):
         returned by make_tests, it is up to the make_tests to honour the
         shouldStop attribute on the result object they are run with, which will
         be set if an exception is raised in the thread which
-        ConcurrentTestSuite.run is called in.
+        ConcurrentTestSuite.run() is called in.
+
+        NOTE: This is a highly modified version of the
+              testtools.ConcurrentTestSuite.run() method.  It was changed to
+              support running a limited number of concurrent threads.
+        Note: If concurrent mode is false, then it will always make calls to the
+              unittest.TestSuite class EVEN IF it is derived from
+              testtools.ConcurrentTestSuite.
         """
         # Check to verify if we are NOT in concurrent mode, if so, then
         # just call the run (this will be unittest.TestSuite's run())
@@ -274,7 +290,7 @@ class SSTTestSuite(test_suite_base_class):
 
         # Perform the Concurrent Run
         tests = self.make_tests(self)
-        thread_limit
+        thread_limit = test_engine_globals.TESTENGINE_THREADLIMIT
         test_index = -1
         try:
             threads = {}
@@ -313,6 +329,13 @@ class SSTTestSuite(test_suite_base_class):
 ###
 
     def _run_test(self, test, process_result, queue):
+        """Support running a single test concurrently
+
+        NOTE: This is a slightly modified version of the
+              testtools.ConcurrentTestSuite._run_test() method.  It was changed
+              to support running a limited number of calling the functions
+              setUpModuleConcurrent() and tearDownModuleConcurrent()
+        """
         try:
             try:
                 testcase_name = strqual(test.__class__)

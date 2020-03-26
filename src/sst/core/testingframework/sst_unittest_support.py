@@ -217,7 +217,7 @@ class SSTTestCase(unittest.TestCase):
 ### Module level support
 ################################################################################
 
-def setUpModule(test=None):
+def setUpModule():
     """ (Single Thread Testing) - Called immediately before the testing Module loads
         This is called before any a testsuite module is loaded, and before
         any TestCases or tests are run
@@ -258,7 +258,7 @@ def setUpModuleConcurrent(test):
 #    log_forced("\nSSTTestCase - setUpModuleConcurrent suite={0}; case={1}; test={2}".format(testsuite_name,
 #                                                                                            testcase_name,
 #                                                                                            test))
-    if not test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS.has_key(testsuite_name):
+    if not testsuite_name in test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS:
         test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS[testsuite_name] = []
 
 def tearDownModuleConcurrent(test):

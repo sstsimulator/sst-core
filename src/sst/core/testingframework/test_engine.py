@@ -37,6 +37,7 @@ from test_engine_unittest import *
 REQUIRED_PY_MAJ_VER_2 = 2 # Required Major Version Min
 REQUIRED_PY_MAJ_VER_MAX = 3 # Required Major Version Max
 REQUIRED_PY_MAJ_VER_2_MINOR_VER = 7 # Required Minor Version
+DEF_THREAD_LIMIT = 8
 
 HELP_DESC = 'Run {0} Tests'
 HELP_EPILOG = (
@@ -230,8 +231,10 @@ class TestEngine():
         parser.add_argument('-o', '--out_dir', type=str, metavar='dir',
                             nargs=1, default=['./sst_test_outputs'],
                             help='Set output directory [./sst_test_outputs]')
-        parser.add_argument('-c', '--concurrent', action='store_true',
-                            help='Run Test Suites concurrently using threads')
+        parser.add_argument('-c', '--concurrent', type=int, metavar="TT",
+                            nargs='?', const=DEF_THREAD_LIMIT,
+                            help=('Run Test Suites concurrently using threads')
+                               + (' TT = thread limit [default {0}]').format(DEF_THREAD_LIMIT))
 
         discover_group = parser.add_argument_group('Test Discovery Arguments')
         discover_group.add_argument('-y', '--testsuite_types', type=str, metavar="name",
@@ -246,13 +249,14 @@ class TestEngine():
                                     nargs='*', default=[], help=testsuite_path_str)
 
         args = parser.parse_args()
-        self._decode_parsed_arguments(args)
+        self._decode_parsed_arguments(args, parser)
 
 ####
 
-    def _decode_parsed_arguments(self, args):
+    def _decode_parsed_arguments(self, args, parser):
         """ Decode the parsed arguments into their class or global variables
             :param: args = The arguments from the cmd line parser
+            :param: parser = The parser in case help need to be printed.
         """
         # Extract the Arguments into the class variables
         self._fail_fast = args.fail_fast
@@ -270,7 +274,15 @@ class TestEngine():
         if args.debug:
             test_engine_globals.TESTENGINE_DEBUGMODE = True
             test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_DEBUG
-        test_engine_globals.TESTENGINE_CONCURRENTMODE = args.concurrent
+        test_engine_globals.TESTENGINE_CONCURRENTMODE = False
+        test_engine_globals.TESTENGINE_THREADLIMIT = DEF_THREAD_LIMIT
+        if args.concurrent != None:
+            if args.concurrent > 0:
+                test_engine_globals.TESTENGINE_CONCURRENTMODE = True
+                test_engine_globals.TESTENGINE_THREADLIMIT = args.concurrent
+            else:
+                parser.print_help()
+                log_fatal("Thread limit must be > 0; you provided {0}".format(args.concurrent))
         test_engine_globals.TESTENGINE_SSTRUNNUMRANKS = args.ranks[0]
         test_engine_globals.TESTENGINE_SSTRUNNUMTHREADS = args.threads[0]
         test_engine_globals.SSTRUNGLOBALARGS = args.sst_run_args[0]
@@ -291,11 +303,11 @@ class TestEngine():
         concurrent_txt = ""
 
         if test_engine_globals.TESTENGINE_CONCURRENTMODE:
-            concurrent_txt = " (CONCURRENTLY)"
+            concurrent_txt = "[CONCURRENTLY ({0} Threads)]".format(test_engine_globals.TESTENGINE_THREADLIMIT)
 
         # Display operations info if we are unning in a verbose mode
         log_info(("SST Test Engine Instantiated - Running") +
-                 ("{0} tests on {1}").format(concurrent_txt, self._test_type_str),
+                 (" tests on {0} {1}").format(self._test_type_str, concurrent_txt),
                  forced=False)
 
         log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
