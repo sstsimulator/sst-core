@@ -11,7 +11,7 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
-""" This module is the main testing engine.  It will init testing variable,
+""" This module is the main testing engine.  It will init testing variables,
     parse the cmd line vars, read the sstsimulator.conf file to find where
     testsuites should live, and then discover and run tests.
 """
@@ -118,7 +118,7 @@ class TestEngine():
         try:
             # Convert test suites to a Concurrent Test Suite
             self._sst_full_test_suite = SSTTestSuite(self._sst_full_test_suite,
-                                                     self.split_suites)
+                                                     self._built_tests_list)
 
             test_runner = SSTTextTestRunner(verbosity=test_engine_globals.TESTENGINE_VERBOSITY,
                                             failfast=self._fail_fast,
@@ -136,81 +136,9 @@ class TestEngine():
 
 ####
 
-#    def split_suites_SEPARATE_SUITES_RUN(self, suite):
-#    def split_suites(self, suite):
-##        tests = list(iterate_tests(suite))
-#        data = self.my_iterate_tests(suite)
-#        log_forced("\n\nAARON - DATA = {0}".format(data))
-#
-#        tests = list(data)
-#
-#        log_forced("\n\nAARON - TESTS LIST = {0}".format(tests))
-#
-#        rtn_tests_list=[]
-#        newtestsuite0 = unittest.TestSuite(tests[00:17])
-#        newtestsuite1 = unittest.TestSuite(tests[17:24])
-#        newtestsuite2 = unittest.TestSuite(tests[24:])
-#        log_forced("\n\nAARON - newtestsuite0= {0}".format(newtestsuite0))
-#        log_forced("\n\nAARON - newtestsuite1= {0}".format(newtestsuite1))
-#        log_forced("\n\nAARON - newtestsuite2= {0}".format(newtestsuite2))
-#        rtn_tests_list.append(newtestsuite0)
-#        rtn_tests_list.append(newtestsuite1)
-#        rtn_tests_list.append(newtestsuite2)
-#        rtn_tests = tuple(rtn_tests_list)
-#
-#        log_forced("\n\nAARON - rtn_tests[0]= {0}".format(rtn_tests[0]))
-#        log_forced("\n\nAARON - rtn_tests[1]= {0}".format(rtn_tests[1]))
-#        log_forced("\n\nAARON - rtn_tests[2]= {0}".format(rtn_tests[2]))
-#        log_forced("\n\nAARON - rtn_tests= {0}".format(rtn_tests))
-#
-##        return rtn_tests[1]
-##        return rtn_tests[1], rtn_tests[2]
-##        return rtn_tests[0], rtn_tests[1], rtn_tests[2]
-#        return rtn_tests
-#
-#
-##        log_forced("\n\nAARON - TESTS[0]= {0}".format(tests[0]))
-##        log_forced("\n\nAARON - TESTS[1]= {0}".format(tests[1]))
-##        log_forced("\n\nAARON - TESTS[2]= {0}".format(tests[2]))
-##
-##        return tests[0], tests[1], tests[2]
-##        return tests
-
-###
-
-#    def split_suites_orig(self, suite):
-    def split_suites(self, suite):
+    def _built_tests_list(self, suite):
         tests = list(iterate_tests(suite))
-#        tests = list(self.my_iterate_tests(suite))
-#        return tests[0], tests[1], tests[2]
-#        log_forced("\n\nAARON - tests[0] = {0}".format(tests[0]))
-#        log_forced("AARON - tests[1] = {0}".format(tests[1]))
-#        log_forced("AARON - type tests[0] = {0}".format(type(tests[0])))
-#        log_forced("AARON - type tests[1] = {0}".format(type(tests[1])))
-
         return tests
-
-
-####
-
-    def my_iterate_tests(self, test_suite_or_case):
-        """Iterate through all of the test cases in 'test_suite_or_case'."""
-        try:
-#            log_forced("\nAARON: ITERATION Starting = {0}".format(test_suite_or_case))
-            suite = iter(test_suite_or_case)
-#            log_forced("\nAARON: Suite = {0}".format(suite))
-        except TypeError:
-#            log_forced("- AARON: Yield test_suite_or_case = {0}".format(test_suite_or_case))
-            yield test_suite_or_case
-        else:
-            for test in suite:
-                for subtest in self.my_iterate_tests(test):
-#                    log_forced("-- AARON: Yield subtest = {0}".format(subtest))
-                    yield subtest
-
-
-
-
 
 ################################################################################
 ################################################################################
@@ -504,8 +432,8 @@ class TestEngine():
                        ("({1})")).format(core_conf_file_path, exc_e))
 
         return core_conf_file_parser
-###
 
+###
 
     def _build_core_config_include_defs_dict(self):
         """ Create a dictionary of settings fromt he sst_config.h.  This will

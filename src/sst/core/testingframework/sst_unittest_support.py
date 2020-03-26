@@ -70,13 +70,15 @@ class SSTTestCase(unittest.TestCase):
         #       setUpModules(), setUpClass(), setUp() and the like are called.
         super(SSTTestCase, self).__init__(methodName)
         self.testName = methodName
-        log_forced("SSTTestCase: __init__() - {0}".format(self.testName))
+        #log_forced("SSTTestCase: __init__() - {0}".format(self.testName))
 
 ###
 
     def setUp(self):
-        """ Called when the TestCase is starting up """
-        log_forced("SSTTestCase: setUp() - {0}".format(self.testName))
+        """ (Single Thread Testing) - Called immediately before a test is run
+            (Concurrent Thread Testing) - Called immediately before a test is run
+        """
+        #log_forced("SSTTestCase: setUp() - {0}".format(self.testName))
         test_engine_globals.TESTSUITE_NAME_STR = ("{0}".format(strclass(self.__class__)))
 
         parent_module_path = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
@@ -85,8 +87,10 @@ class SSTTestCase(unittest.TestCase):
 
 ###
     def tearDown(self):
-        """ Called when the TestCase is shutting down """
-        log_forced("SSTTestCase: tearDown() - {0}".format(self.testName))
+        """ (Single Thread Testing) - Called immediately after a test finishes
+            (Concurrent Thread Testing) - Called immediately after a test finishes
+        """
+        #log_forced("SSTTestCase: tearDown() - {0}".format(self.testName))
         test_engine_globals.TESTRUNNINGFLAG = False
         pass
 
@@ -94,16 +98,22 @@ class SSTTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        log_forced("SSTTestCase: setUpClass() - {0}".format(sys.modules[cls.__module__].__file__))
-        """ Called when the class is starting up """
+        """ (Single Thread Testing) - Called immediately before the TestCase starts
+            This is called before any tests in a TestCase are run
+            (Concurrent Thread Testing) - NOT CALLED, NOT AVAILABLE
+        """
+        #log_forced("SSTTestCase: setUpClass() - {0}".format(sys.modules[cls.__module__].__file__))
         pass
 
 ###
 
     @classmethod
     def tearDownClass(cls):
-        log_forced("SSTTestCase: tearDownClass() - {0}".format(sys.modules[cls.__module__].__file__))
-        """ Called when the class is shutting down """
+        """ (Single Thread Testing) - Called immediately after a TestCase finishes
+            This is called after all tests in a TestCase have finished running
+            (Concurrent Thread Testing) - NOT CALLED, NOT AVAILABLE
+        """
+        #log_forced("SSTTestCase: tearDownClass() - {0}".format(sys.modules[cls.__module__].__file__))
         pass
 
 ###
@@ -123,8 +133,8 @@ class SSTTestCase(unittest.TestCase):
            :param: global_args (str): Global Arguments provided from test engine args
            :param: timeout_sec (int|float): Allowed runtime in seconds
         """
-        log_forced("SSTTestCase --- ABOUT TO RUN TESTS {0}".format(self.testName))
-        log_forced("SSTTestCase --- TESTSUITEDIRPATH       ={0}".format(test_engine_globals.TESTSUITEDIRPATH        ))
+#        log_forced("SSTTestCase --- ABOUT TO RUN TESTS {0}".format(self.testName))
+#        log_forced("SSTTestCase --- TESTSUITEDIRPATH       ={0}".format(test_engine_globals.TESTSUITEDIRPATH))
 
         # We cannot set the default of param to the global variable due to
         # oddities on how this class loads.
@@ -207,16 +217,25 @@ class SSTTestCase(unittest.TestCase):
 ### Module level support
 ################################################################################
 
-def setUpModule():
-    log_forced("SSTTestCase: setUpModule() - {0}".format(__file__))
-    test_engine_globals.JUNITTESTCASELIST['singlethread'] = []
+def setUpModule(test=None):
+    """ (Single Thread Testing) - Called immediately before the testing Module loads
+        This is called before any a testsuite module is loaded, and before
+        any TestCases or tests are run
+        (Concurrent Thread Testing) - NOT CALLED
+    """
+    #log_forced("SSTTestCase: setUpModule() - {0}".format(__file__))
+    test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS['singlethread'] = []
 
 ###
 
 def tearDownModule():
-    log_forced("SSTTestCase: tearDownModule() - {0}".format(__file__))
+    """ (Single Thread Testing) - Called immediately after a testing module finishes
+        This is called after all tests in all TestCases have finished running
+        (Concurrent Thread Testing) - NOT CALLED
+    """
+    #log_forced("SSTTestCase: tearDownModule() - {0}".format(__file__))
     t_s = JUnitTestSuite(test_engine_globals.TESTSUITE_NAME_STR,
-                         test_engine_globals.JUNITTESTCASELIST['singlethread'])
+                         test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS['singlethread'])
 
     # Write out Test Suite Results
     #log_forced(junit_to_xml_report_string([t_s]))
@@ -228,21 +247,32 @@ def tearDownModule():
 
 ###################
 
-def setUpConcurrentModule(test):
+def setUpModuleConcurrent(test):
+    """ (Single Thread Testing) - NOT CALLED
+        (Concurrent Thread Testing) - Called immediately before the testing Module loads
+        This is called before any a testsuite module is loaded, and before
+        any TestCases or tests are run
+    """
     testcase_name = strqual(test.__class__)
     testsuite_name = strclass(test.__class__)
+#    log_forced("\nSSTTestCase - setUpModuleConcurrent suite={0}; case={1}; test={2}".format(testsuite_name,
+#                                                                                            testcase_name,
+#                                                                                            test))
+    if not test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS.has_key(testsuite_name):
+        test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS[testsuite_name] = []
 
-    log_forced("\nSSTTestCase - setUpConcurrentModule suite={0}; case={1}; test={2}".format(testsuite_name, testcase_name, test))
-    if not test_engine_globals.JUNITTESTCASELIST.has_key(testsuite_name):
-        test_engine_globals.JUNITTESTCASELIST[testsuite_name] = []
-
-def tearDownConcurrentModule(test):
+def tearDownModuleConcurrent(test):
+    """ (Single Thread Testing) - NOT CALLED
+        (Concurrent Thread Testing) - Called immediately after a testing module finishes
+        This is called after all tests in all TestCases have finished running
+    """
     testcase_name = strqual(test.__class__)
     testsuite_name = strclass(test.__class__)
-
-    log_forced("\nSSTTestCase - tearDownConcurrentModule suite={0}; case={1}; test={2}".format(testsuite_name, testcase_name, test))
+#    log_forced("\nSSTTestCase - tearDownModuleConcurrent suite={0}; case={1}; test={2}".format(testsuite_name,
+#                                                                                               testcase_name,
+#                                                                                               test))
     t_s = JUnitTestSuite(testsuite_name,
-                         test_engine_globals.JUNITTESTCASELIST[testsuite_name])
+                         test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS[testsuite_name])
 
     # Write out Test Suite Results
     #log_forced(junit_to_xml_report_string([t_s]))

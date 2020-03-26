@@ -126,7 +126,7 @@ class SSTTextTestResult(unittest.TextTestResult):
 
     def startTest(self, test):
         super(SSTTextTestResult, self).startTest(test)
-        log_forced("DEBUG - startTest: Test = {0}\n".format(test))
+        #log_forced("DEBUG - startTest: Test = {0}\n".format(test))
         self._start_time = time.time()
         self._test_name = "undefined_testname"
         _testName = getattr(test, 'testName', None)
@@ -141,12 +141,12 @@ class SSTTextTestResult(unittest.TextTestResult):
 
     def stopTest(self, test):
         super(SSTTextTestResult, self).stopTest(test)
-        log_forced("DEBUG - stopTest: Test = {0}\n".format(test))
+        #log_forced("DEBUG - stopTest: Test = {0}\n".format(test))
         self._junit_test_case.junit_add_elapsed_sec(time.time() - self._start_time)
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
-            test_engine_globals.JUNITTESTCASELIST['singlethread'].append(self._junit_test_case)
+            test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS['singlethread'].append(self._junit_test_case)
         else:
-            test_engine_globals.JUNITTESTCASELIST[self._testsuite_name].append(self._junit_test_case)
+            test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS[self._testsuite_name].append(self._junit_test_case)
 
 ###
 
@@ -254,8 +254,7 @@ class SSTTestSuite(test_suite_base_class):
 
 ####
 
-#    def run_orig(self, result):
-    def run(self, result):
+    def run(self, result, thread_limit = 4):
         """Run the tests concurrently.
 
         This calls out to the provided make_tests helper, and then serialises
@@ -275,19 +274,37 @@ class SSTTestSuite(test_suite_base_class):
 
         # Perform the Concurrent Run
         tests = self.make_tests(self)
+        thread_limit
+        test_index = -1
         try:
             threads = {}
             queue = Queue()
             semaphore = threading.Semaphore(1)
-            for i, test in enumerate(tests):
-                process_result = self._wrap_result(testtools.ThreadsafeForwardingResult(result, semaphore), i)
-                reader_thread = threading.Thread(target=self._run_test, args=(test, process_result, queue))
-                threads[test] = reader_thread, process_result
-                reader_thread.start()
-            while threads:
-                finished_test = queue.get()
-                threads[finished_test][0].join()
-                del threads[finished_test]
+            test_iter = iter(tests)
+            test = "startup_placeholder"
+            tests_finished = False
+            while tests_finished == False:
+                while len(threads) < thread_limit and test != None:
+                    #log_forced("DEBUG: CALLING FOR NEXT TEST; threads = {0}".format(len(threads)))
+                    test = next(test_iter, None)
+                    test_index += 1
+                    #log_forced("DEBUG: TEST = {0}; index = {1}".format(test, test_index))
+                    if test != None:
+                        process_result = self._wrap_result(testtools.ThreadsafeForwardingResult(result, semaphore), test_index)
+                        reader_thread = threading.Thread(target=self._run_test, args=(test, process_result, queue))
+                        threads[test] = reader_thread, process_result
+                        reader_thread.start()
+                        #log_forced("DEBUG: ADDED TEST = {0}; threads = {1}".format(test, len(threads)))
+                if threads:
+                    #log_forced("DEBUG: IN THREADS PROESSING")
+                    finished_test = queue.get()
+                    #log_forced("DEBUG: FINISHED TEST = {0}".format(finished_test))
+                    threads[finished_test][0].join()
+                    del threads[finished_test]
+                    #log_forced("DEBUG: FINISHED TEST NUM THREADS = {0}".format(len(threads)))
+                    #log_forced("DEBUG: FINISHED TEST THREADS keys = {0}".format(threads.keys()))
+                else:
+                    tests_finished = True
         except:
             for thread, process_result in threads.values():
                 process_result.stop()
@@ -295,160 +312,17 @@ class SSTTestSuite(test_suite_base_class):
 
 ###
 
-#    def _run_test_orig(self, test, process_result, queue):
     def _run_test(self, test, process_result, queue):
         try:
             try:
                 testcase_name = strqual(test.__class__)
                 testsuite_name = strclass(test.__class__)
-                #log_forced("\nDEBUG - PRE-RUN suite={0}; case={1}; test={2}".format(testsuite_name, testcase_name, test))
-                setUpConcurrentModule(test)
+                setUpModuleConcurrent(test)
                 test.run(process_result)
-                tearDownConcurrentModule(test)
-                #log_forced("\nDEBUG - PRE-RUN suite={0}; case={1}; test={2}".format(testsuite_name, testcase_name, test))
+                tearDownModuleConcurrent(test)
             except Exception:
                 # The run logic itself failed.
                 case = testtools.ErrorHolder("broken-runner", error=sys.exc_info())
                 case.run(process_result)
         finally:
             queue.put(test)
-
-
-####
-
-#    def run_SUITES_SEPARATE_SUITES_RUN(self, result):
-#    def run(self, result):
-#        """Run the tests concurrently.
-#
-#        This calls out to the provided make_tests helper, and then serialises
-#        the results so that result only sees activity from one TestCase at
-#        a time.
-#
-#        ConcurrentTestSuite provides no special mechanism to stop the tests
-#        returned by make_tests, it is up to the make_tests to honour the
-#        shouldStop attribute on the result object they are run with, which will
-#        be set if an exception is raised in the thread which
-#        ConcurrentTestSuite.run is called in.
-#        """
-#        # Check to verify if we are NOT in concurrent mode, if so, then
-#        # just call the run (this will be unittest.TestSuite's run())
-#        if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
-#            return super(unittest.TestSuite, self).run(result)
-#
-#        # Perform the Concurrent Run
-##        tests = self.make_tests(self)
-##        log_forced("\n\nAARON - SSTTestSuite tests = {0}".format(tests))
-#        testsuites = self.make_tests(self)
-#        log_forced("\n\nAARON - SSTTestSuite testsuites = {0}".format(testsuites))
-#        try:
-#            threads = {}
-#            queue = Queue()
-#            semaphore = threading.Semaphore(1)
-##            for i, test in enumerate(tests):
-#            for i, testsuite in enumerate(testsuites):
-#                # Create a thread safe `result` object for the process
-#                process_result = self._wrap_result(testtools.ThreadsafeForwardingResult(result, semaphore), i)
-#                # Create a thread to run the object
-##                reader_thread = threading.Thread(target=self._run_test, args=(test, process_result, queue))
-##                reader_thread = threading.Thread(target=self._run_test, args=(testsuite, process_result, queue))
-#                reader_thread = threading.Thread(target=self._run_testsuite, args=(testsuite, process_result, queue))
-#                # Add the thread and result to the dict of threads
-##                log_forced("AARON ADDING TEST TO DICT = {0}".format(test))
-#                log_forced("\n\nAARON - Preping name of Suite = {0}".format(testsuite))
-#                testsuite_name = self.get_testsuitename(testsuite)
-#                log_forced("AARON ADDING TESTSUITE TO DICT = {0}".format(testsuite_name))
-##                threads[test] = reader_thread, process_result
-#                threads[testsuite_name] = reader_thread, process_result
-#                # Start the thread
-#                reader_thread.start()
-#            while threads:
-#                finished_test = queue.get()
-#                log_forced("AARON ADDING finished_test = {0}".format(finished_test))
-#                threads[finished_test][0].join()
-#                del threads[finished_test]
-#        except:
-#            for thread, process_result in threads.values():
-#                process_result.stop()
-#            raise
-#
-#####
-#    def get_testsuitename(self, testsuite):
-#        first_test = next(iter(testsuite))
-#        testsuite_name = type(first_test).__name__
-#        log_forced("\n\nAARON - get_testsuitename first_test = {0}".format(first_test))
-#        log_forced("AARON get_testsuitename = {0}".format(testsuite_name))
-#        return testsuite_name
-#
-#####
-#    def _run_testsuite(self, testsuite, process_result, queue):
-#        try:
-#            try:
-#                testsuite.run(process_result)
-#            except Exception:
-#                # The run logic itself failed.
-#                case = testtools.ErrorHolder("broken-runner", error=sys.exc_info())
-#                case.run(process_result)
-#        finally:
-#            queue.put(self.get_testsuitename(testsuite))
-
-################################################################################
-
-#    def run_orig(self, result):
-#        """Run the tests concurrently.
-#
-#        This calls out to the provided make_tests helper, and then serialises
-#        the results so that result only sees activity from one TestCase at
-#        a time.
-#
-#        ConcurrentTestSuite provides no special mechanism to stop the tests
-#        returned by make_tests, it is up to the make_tests to honour the
-#        shouldStop attribute on the result object they are run with, which will
-#        be set if an exception is raised in the thread which
-#        ConcurrentTestSuite.run is called in.
-#        """
-#        # Check to verify if we are NOT in concurrent mode, if so, then
-#        # just call the run (this will be unittest.TestSuite's run())
-#        if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
-#            return super(unittest.TestSuite, self).run(result)
-#
-#        # Perform the Concurrent Run
-#        tests = self.make_tests(self)
-#        try:
-#            threads = {}
-#            queue = Queue()
-#            semaphore = threading.Semaphore(1)
-#            for i, test in enumerate(tests):
-#                process_result = self._wrap_result(testtools.ThreadsafeForwardingResult(result, semaphore), i)
-#                reader_thread = threading.Thread(target=self._run_test, args=(test, process_result, queue))
-#                threads[test] = reader_thread, process_result
-#                reader_thread.start()
-#            while threads:
-#                finished_test = queue.get()
-#                threads[finished_test][0].join()
-#                del threads[finished_test]
-#        except:
-#            for thread, process_result in threads.values():
-#                process_result.stop()
-#            raise
-
-####
-
-#    def _run_test_orig(self, test, process_result, queue):
-#        try:
-#            try:
-#                test.run(process_result)
-#            except Exception:
-#                # The run logic itself failed.
-#                case = testtools.ErrorHolder("broken-runner", error=sys.exc_info())
-#                case.run(process_result)
-#        finally:
-#            queue.put(test)
-
-################################################################################
-
-class SSTTestFixture():
-    def setUp(self):
-        log_forced("DEBUG IN TestFixture.setUp()")
-
-    def cleanUp(self):
-        log_forced("DEBUG IN TestFixture.cleanUp()")

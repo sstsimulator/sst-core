@@ -22,11 +22,11 @@ VERBOSE_LOUD = 2
 VERBOSE_DEBUG = 3
 
 # Global Var Defines
-JUNITTESTCASELIST = None
 TESTSUITE_NAME_STR = None
 TESTSUITEDIRPATH = None
 TESTRUNNINGFLAG = None
 
+TESTRUN_JUNIT_TESTCASE_DICTLISTS = None
 TESTOUTPUT_TOPDIRPATH = None
 TESTOUTPUT_RUNDIRPATH = None
 TESTOUTPUT_TMPDIRPATH = None
@@ -46,11 +46,11 @@ TESTENGINE_SCENARIOSLIST = None
 # and the lower level testscripts
 def init_test_engine_globals():
     """ Initialize the test global variables """
-    global JUNITTESTCASELIST
     global TESTSUITE_NAME_STR
     global TESTSUITEDIRPATH
     global TESTRUNNINGFLAG
 
+    global TESTRUN_JUNIT_TESTCASE_DICTLISTS
     global TESTOUTPUT_TOPDIRPATH
     global TESTOUTPUT_RUNDIRPATH
     global TESTOUTPUT_TMPDIRPATH
@@ -66,12 +66,11 @@ def init_test_engine_globals():
     global TESTENGINE_ERRORCOUNT
     global TESTENGINE_SCENARIOSLIST
 
-#    JUNITTESTCASELIST = []
-    JUNITTESTCASELIST = {}
     TESTSUITE_NAME_STR = ""
     TESTSUITEDIRPATH = ""
     TESTRUNNINGFLAG = False
 
+    TESTRUN_JUNIT_TESTCASE_DICTLISTS = {}
     TESTOUTPUT_TOPDIRPATH = os.path.abspath("./sst_test_outputs")
     TESTOUTPUT_RUNDIRPATH = os.path.abspath("{0}/run_data".format(TESTOUTPUT_TOPDIRPATH))
     TESTOUTPUT_TMPDIRPATH = os.path.abspath("{0}/tmp_data".format(TESTOUTPUT_TOPDIRPATH))
