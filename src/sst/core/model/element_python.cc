@@ -155,24 +155,6 @@ SSTElementPythonModule::SSTElementPythonModule(const std::string& library) :
     sstlibrary = "sst." + library;
 }
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-void
-SSTElementPythonModule::addPrimaryModule(char* file)
-{
-    if ( primary_module == nullptr ) {
-        primary_module = file;
-    }
-    else {
-        Simulation::getSimulationOutput().fatal(CALL_INFO,1,"SSTElementPythonModule::addPrimaryModule: Attempt to add second primary module.\n");
-    }
-}
-
-void
-SSTElementPythonModule::addSubModule(const std::string& name, char* file)
-{
-    sub_modules.push_back(std::make_pair(name,file));
-}
-#endif
 
 void*
 SSTElementPythonModule::load()

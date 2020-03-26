@@ -160,14 +160,6 @@ public:
      */ 
     SSTElementPythonModule(const std::string& library);
 
-
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    __attribute__ ((deprecated("Support for addPrimaryModule will be removed in version 9.0.  Please use createPrimaryModule().")))
-    void addPrimaryModule(char* file);
-
-    __attribute__ ((deprecated("Support for addPrimaryModule will be removed in version 9.0.  Please use createPrimaryModule() to get an SSTElementPythonModuleCode object then use it's addSubModule() method.")))
-    void addSubModule(const std::string& name, char* file);
-#endif
     
     virtual void* load();
 
@@ -190,48 +182,6 @@ public:
 
 };
 
-
-#ifndef SST_ENABLE_PREVIEW_BUILD
-// Class to use to support old ELI
-class SSTElementPythonModuleOldELI : public SSTElementPythonModule {
-private:
-    genPythonModuleFunction func;
-
-public:
-    SSTElementPythonModuleOldELI(const std::string& lib, genPythonModuleFunction func) :
-        SSTElementPythonModule(lib),
-        func(func)
-        {
-        }
-
-    void* load() override {
-        return (*func)();
-    }
-};
-
-namespace ELI {
-template <class T> struct Allocator<SSTElementPythonModule,T> :
- public CachedAllocator<SSTElementPythonModule,T>
-{
-};
-
-template <>
-struct DerivedBuilder<SSTElementPythonModule,SSTElementPythonModuleOldELI,const std::string&> :
-  public Builder<SSTElementPythonModule,const std::string&>
-{
-  SSTElementPythonModule* create(const std::string& lib) override {
-    return new SSTElementPythonModuleOldELI(lib, func_);
-  }
-
-  DerivedBuilder(genPythonModuleFunction func) :
-    func_(func)
-  {}
-
-  genPythonModuleFunction func_;
-};
-
-} //end ELI
-#endif
 
 } //end SST
 

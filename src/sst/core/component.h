@@ -46,27 +46,6 @@ public:
     Component( ComponentId_t id );
     virtual ~Component();
 
-
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    /** Register that the simulation should not end until this
-        component says it is OK to. Calling this function (generally
-        done in Component::setup() or in component constructor)
-        increments a global counter. Calls to
-        Component::unregisterExit() decrements the counter. The
-        simulation cannot end unless this counter reaches zero, or the
-        simulation time limit is reached. This counter is synchronized
-        periodically with the other nodes.
-
-        @sa Component::unregisterExit()
-    */
-    bool registerExit() __attribute__ ((deprecated("registerExit is deprecated and will be removed in SST version 10.0.  Please use registerAsPrimaryComponent() and primaryComponentDoNotEndSim() instead.")));
-
-    /** Indicate permission for the simulation to end. This function is
-        the mirror of Component::registerExit(). It decrements the
-        global counter, which, upon reaching zero, indicates that the
-        simulation can terminate. @sa Component::registerExit() */
-    bool unregisterExit() __attribute__ ((deprecated("unregisterExit is deprecated and will be removed in SST version 10.0.  Please use primaryComponentOKToEndSim() instead.")));
-#endif
     /** Register as a primary component, which allows the component to
         specify when it is and is not OK to end simulation.  The
         simulator will not end simulation naturally (through use of

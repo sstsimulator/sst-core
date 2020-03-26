@@ -167,11 +167,6 @@ public:
     public:
         SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork::NetworkInspector,std::string)
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-        NetworkInspector(Component* parent) :
-            SubComponent(parent)
-        {}
-#endif
         
         NetworkInspector(ComponentId_t id) :
             SubComponent(id)
@@ -181,17 +176,6 @@ public:
 
         virtual void inspectNetworkData(Request* req) = 0;
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-        /**
-         *  The ID uniquely identifies the component in which this
-         *  subcomponent is instantiated.  It does not uniquely define
-         *  this particular NetworkInspector, and all NetworkInspectors
-         *  instantiated in the same component will get the same ID.  If
-         *  registering statistics, the ID is intended to be used as the
-         *  subfield of the statistic.
-         */
-        virtual void initialize(std::string id) = 0;
-#endif
     };
 
     /** Functor classes for handling of callbacks */
@@ -258,31 +242,11 @@ public:
 
 public:
     
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    /** Constructor, designed to be used via 'loadSubComponent'. */
-    SimpleNetwork(SST::Component *comp) :
-        SubComponent(comp)
-    { }
-#endif
     /** Constructor, designed to be used via 'loadUserSubComponent or loadAnonymousSubComponent'. */
     SimpleNetwork(SST::ComponentId_t id) :
         SubComponent(id)
     { }
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    /** Second half of building the interface.
-        Initialize network interface
-        @param portName - Name of port to connect to
-        @param link_bw - Bandwidth of the link
-        @param vns - Number of virtual networks to be provided
-        @param in_buf_size - Size of input buffers (from router)
-        @param out_buf_size - Size of output buffers (to router)
-     * @return true if the link was able to be configured.
-     */
-    virtual bool initialize(const std::string& portName, const UnitAlgebra& link_bw,
-                            int vns, const UnitAlgebra& in_buf_size,
-                            const UnitAlgebra& out_buf_size) = 0;
-#endif
     /**
      * Sends a network request during the init() phase
      */
