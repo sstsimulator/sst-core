@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -46,12 +46,12 @@ int main(int argc, char* argv[]) {
     int option = 0;
     std::vector<std::string> elementsArray;
     cfgPath = (char*) malloc(sizeof(char) * PATH_MAX);
-    
+
     if(argc < 2) {
         print_usage();
         exit(-1);
     }
-    
+
     //Check for configuration file
     sprintf(cfgPath, SST_INSTALL_PREFIX "/etc/sst/sstsimulator.conf");
     FILE* cfgFile = fopen(cfgPath, "r+");
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
         }
     }
     fclose(cfgFile);
-    
+
     if(!strcmp(argv[1],"-u")){ //Unregister
         std::string element = argv[2];
         sstUnregister(element);
@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
         std::cout << "SST, but no longer exists in the specified path.\n";
         listModels(option);//if param = 0, listModels function does NOT put elements in array
     }
-    else if(!strcmp(argv[1],"-m")){ //unregister multiple components        
+    else if(!strcmp(argv[1],"-m")){ //unregister multiple components
         std::cout << "\nChoose which models you would like to unregister. \nSeparate your choices with a space. Ex: 1 2 3\n";
         std::cout << "Note: This does not delete the model files.\n";
         elementsArray = listModels(option+1);//if param = 1, listModels puts elements in array
@@ -191,8 +191,8 @@ std::vector<std::string> listModels(int option){
     std::string strNew;
     std::vector<std::string> elements;
     int found = 0, count = 1;
-    
-    
+
+
     std::ifstream infile(cfgPath);
 
     //Begin search of sstconf for models
@@ -208,14 +208,14 @@ std::vector<std::string> listModels(int option){
                 found = 1;
                 //check if the model is valid by confirming it is located in the path registered in the sst config file
                 getline(infile, s);//grab the next line containing the model location
-                
+
                 if(s.find("/") != std::string::npos){//check to see if there is a path
                     if(validModel(s)){
                         std::cout << count << ". " << std::setw(25) << std::left << strNew << "VALID" << std::endl;
                     }else{
                         std::cout << count << ". " << std::setw(25) << std::left << strNew << "INVALID" << std::endl;
                         if(option == 2)//if option = 2, then we only push the invalid models into the vector
-                            elements.push_back(strNew);                    
+                            elements.push_back(strNew);
                     }
 
                     if(option == 1)//if option = 1, then we push ALL of the models to the vector
@@ -235,7 +235,7 @@ std::vector<std::string> listModels(int option){
 }
 
 //sstUnregisterMultiple
-//Lists the registered models and gives the user the 
+//Lists the registered models and gives the user the
 //option to choose multiple models to unregister.
 //Input: a vector of strings
 void sstUnregisterMultiple(std::vector<std::string> elementsArray){
@@ -272,7 +272,7 @@ bool validModel(const std::string& s){
     std::string str1 = s.substr(locationStart);//grabs the rest of the line from / to the end
     char* path = new char[str1.length() + 1];
     std::strcpy(path, str1.c_str());
-    
+
     struct stat statbuf;
     if(stat(path, &statbuf) != -1){
         delete[] path;

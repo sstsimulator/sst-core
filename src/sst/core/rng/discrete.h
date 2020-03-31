@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -60,7 +60,7 @@ class SSTDiscreteDistribution : public SSTRandomDistribution {
     */
     SSTDiscreteDistribution(const double* probs, const uint32_t probsCount, SSTRandom* baseDist) :
         probCount(probsCount) {
-        
+
         probabilities = (double*) malloc(sizeof(double) * probsCount);
     double prob_sum = 0;
 
@@ -78,7 +78,7 @@ class SSTDiscreteDistribution : public SSTRandomDistribution {
         */
     ~SSTDiscreteDistribution() {
         free(probabilities);
-        
+
         if(deleteDistrib) {
             delete baseDistrib;
         }

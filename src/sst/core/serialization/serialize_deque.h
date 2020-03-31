@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -22,7 +22,7 @@ namespace Serialization {
 template <class T>
 class serialize<std::deque<T> > {
   typedef std::deque<T> Deque;
- 
+
 public:
   void
   operator()(Deque& v, serializer& ser) {
@@ -31,7 +31,7 @@ public:
           size_t size = v.size();
           ser.size(size);
           for (auto it = v.begin(); it != v.end(); ++it){
-              T& t = const_cast<T&>(*it); 
+              T& t = const_cast<T&>(*it);
               serialize<T>()(t,ser);
           }
           break;
@@ -40,7 +40,7 @@ public:
           size_t size = v.size();
           ser.pack(size);
           for (auto it = v.begin(); it != v.end(); ++it){
-              T& t = const_cast<T&>(*it); 
+              T& t = const_cast<T&>(*it);
               serialize<T>()(t,ser);
           }
           break;

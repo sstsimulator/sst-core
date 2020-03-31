@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -35,7 +35,7 @@ public:
     inline void operator()(T& UNUSED(t), serializer& UNUSED(ser)){
         // If the default gets called, then it's actually invalid
         // because we don't know how to serialize it.
-        
+
         // This is a bit strange, but if I just do a
         // static_assert(false) it always triggers, but if I use
         // std::is_* then it seems to only trigger if something expands
@@ -53,7 +53,7 @@ template <class T>
 class serialize <T, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type> {
 public:
     inline void operator()(T& t, serializer& ser){
-        ser.primitive(t); 
+        ser.primitive(t);
     }
 };
 
@@ -63,7 +63,7 @@ public:
 //                                         (std::is_fundamental<V>::value || std::is_enum<V>::value)>::type> {
 // public:
 //     inline void operator()(std::pair<U,V>& t, serializer& ser){
-//         ser.primitive(t); 
+//         ser.primitive(t);
 //     }
 // };
 
@@ -102,7 +102,7 @@ public:
         case serializer::UNPACK:
             t = new T();
             ser.primitive(*t);
-            break;  
+            break;
         }
     }
 };
@@ -115,7 +115,7 @@ class serialize<std::pair<U,V> > {
 public:
     inline void operator()(std::pair<U,V>& t, serializer& ser){
         serialize<U>()(t.first,ser);
-        serialize<V>()(t.second,ser);        
+        serialize<V>()(t.second,ser);
     }
 };
 

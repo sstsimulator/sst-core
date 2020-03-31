@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -33,7 +33,7 @@ private:
 
 public:
     SSTRoundRobinPartition(RankInfo world_size, RankInfo my_rank, int verbosity);
-    
+
     /**
        Performs a partition of an SST simulation configuration
        \param graph The simulation configuration to partition
@@ -46,8 +46,8 @@ public:
 
     bool requiresConfigGraph() override { return false; }
     bool spawnOnAllRanks() override { return false; }
-    
-        
+
+
 };
 
 } // namespace Partition

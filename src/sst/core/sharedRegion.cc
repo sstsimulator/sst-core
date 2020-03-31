@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -46,7 +46,7 @@ bool SharedRegionMerger::merge(uint8_t *target, size_t size, const std::vector<C
 {
     std::vector<ChangeSet> sorted = changeSets;
     std::sort(sorted.begin(), sorted.end(), compareRange);
-    
+
     for ( size_t n = 0 ; n < sorted.size() ; n++ ) {
         const ChangeSet &cs = sorted[n];
         /* Check for overlap */
@@ -273,7 +273,7 @@ const void* SharedRegionManagerImpl::getConstPtr(const SharedRegion *sr) const
 void SharedRegionManagerImpl::updateState(bool finalize)
 {
     std::lock_guard<std::mutex> lock(mtx);
-    
+
 #ifdef SST_CONFIG_HAVE_MPI
     // Exchange data between ranks
     int myRank = Simulation::getSimulation()->getRank().rank;
@@ -367,7 +367,7 @@ void SharedRegionManagerImpl::updateState(bool finalize)
         // Print out the regions
         if ( myRank == 0 ) {
             for ( auto it = regions.begin(); it != regions.end(); ++it) {
-                    
+
             }
         }
 

@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -37,7 +37,7 @@ void JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* gra
 
     auto compMap = graph->getComponentMap();
     auto linkMap = graph->getLinkMap();
-    
+
     num = compMap.size();
     fprintf(outputFile, "{\n\t\"components\" : [\n");
     for ( auto compItr : compMap ) {
@@ -46,7 +46,7 @@ void JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* gra
         fprintf(outputFile, "\t\t}");
         num--; (num > 0) ? fprintf(outputFile, ",\n") : fprintf(outputFile, "\n");
     }
-    
+
     num = linkMap.size();
   fprintf(outputFile, "\t],\n\t\"links\" : [\n");
     for ( auto linkItr : linkMap ) {
@@ -59,11 +59,11 @@ void JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* gra
 
 
 void JSONConfigGraphOutput::generateJSON(const std::string& indent, const ConfigComponent& comp, const ConfigLinkMap_t& linkMap) const {
-    
+
     int num = 0;
     std::string temp = indent + "\"name\" : \"" + comp.name + "\",\n" + indent + "\"type\" : \"" + comp.type + "\",\n";
     fprintf(outputFile, "%s", temp.c_str());
-    
+
     num = comp.links.size();
     if (num > 0){
         fprintf(outputFile,    "%s\"ports\" : [\n", indent.c_str());
@@ -75,7 +75,7 @@ void JSONConfigGraphOutput::generateJSON(const std::string& indent, const Config
         }
         fprintf(outputFile, "%s],\n", indent.c_str());
     }
-    
+
     num = comp.subComponents.size();
     if (num > 0){
         fprintf(outputFile, "%s\"subcomponents\" : [\n", indent.c_str());
@@ -87,7 +87,7 @@ void JSONConfigGraphOutput::generateJSON(const std::string& indent, const Config
         }
         fprintf(outputFile, "%s],\n", indent.c_str());
     }
-    
+
     num = comp.enabledStatistics.size();
     if (num > 0){
         fprintf(outputFile, "%s\"statistics\" : [\n", indent.c_str());
@@ -109,7 +109,7 @@ void JSONConfigGraphOutput::generateJSON(const std::string& indent, const Config
         }
         fprintf(outputFile, "%s],\n", indent.c_str());
     }
-    
+
     num = comp.params.size();
     fprintf(outputFile, "%s\"params\" : [\n", indent.c_str());
     for(auto &paramsItr : comp.params.getKeys()) {
@@ -122,11 +122,11 @@ void JSONConfigGraphOutput::generateJSON(const std::string& indent, const Config
 
 void JSONConfigGraphOutput::generateJSON(const ConfigLink& link, const ConfigComponentMap_t& compMap) const {
     int minLatIdx = (link.latency[0] <= link.latency[1]) ? 0 : 1;
-    std::string temp = "\t\t{\n\t\t\t\"name\" : \"" + link.name + "\",\n" + 
-        "\t\t\t\"left\" : \"" + compMap[link.component[0]].name + "\",\n" + 
-        "\t\t\t\"leftPort\" : \"" + link.port[0] + "\",\n" + 
-        "\t\t\t\"right\" : \"" + compMap[link.component[1]].name + "\",\n" + 
-        "\t\t\t\"rightPort\" : \"" + link.port[1] + "\",\n" + 
+    std::string temp = "\t\t{\n\t\t\t\"name\" : \"" + link.name + "\",\n" +
+        "\t\t\t\"left\" : \"" + compMap[link.component[0]].name + "\",\n" +
+        "\t\t\t\"leftPort\" : \"" + link.port[0] + "\",\n" +
+        "\t\t\t\"right\" : \"" + compMap[link.component[1]].name + "\",\n" +
+        "\t\t\t\"rightPort\" : \"" + link.port[1] + "\",\n" +
         "\t\t\t\"latency\" : \"" + link.latency_str[minLatIdx] + "\"\n";
     fprintf(outputFile, "%s", temp.c_str());
 }

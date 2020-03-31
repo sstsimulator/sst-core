@@ -1,7 +1,7 @@
 /*
  *  This file is part of SST/macroscale:
  *               The macroscale architecture simulator from the SST suite.
- *  Copyright (c) 2009-2019 NTESS.
+ *  Copyright (c) 2009-2020 NTESS.
  *  This software is distributed under the BSD License.
  *  Under the terms of Contract DE-NA0003525 with NTESS,
  *  the U.S. Government retains certain rights in this software.
@@ -38,40 +38,40 @@ public:
     typedef enum {
         SIZER, PACK, UNPACK
     } SERIALIZE_MODE;
-    
+
 public:
     serializer() :
         mode_(SIZER) //just sizing by default
         {
         }
-    
+
     pvt::ser_packer&
     packer() {
         return packer_;
     }
-    
+
     pvt::ser_unpacker&
     unpacker() {
         return unpacker_;
     }
-    
+
     pvt::ser_sizer&
     sizer() {
         return sizer_;
     }
-    
+
     template <class T>
     void
     size(T& t){
         sizer_.size<T>(t);
     }
-    
+
     template <class T>
     void
     pack(T& t){
         packer_.pack<T>(t);
     }
-  
+
     template <class T>
     void
     unpack(T& t){
@@ -114,7 +114,7 @@ public:
             break;
         }
     }
-  
+
     template <class T, int N>
     void
     array(T arr[N]){
@@ -132,7 +132,7 @@ public:
             char* charstr = unpacker_.next_str(N*sizeof(T));
             ::memcpy(arr, charstr, N*sizeof(T));
             break;
-        }   
+        }
         }
     }
 
@@ -176,10 +176,10 @@ public:
       binary<char>(tmp, size);
       buffer = tmp;
     }
-  
+
     void
     string(std::string& str);
-    
+
     void
     start_packing(char* buffer, size_t size){
         packer_.init(buffer, size);
@@ -197,7 +197,7 @@ public:
         unpacker_.init(buffer, size);
         mode_ = UNPACK;
     }
-    
+
     size_t
     size() const {
         switch (mode_){

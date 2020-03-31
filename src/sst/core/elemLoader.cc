@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -189,7 +189,7 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
         err_os << (const char*) err_str.data();
         followError(libname, elemlib, searchPaths, err_os);
     }
-        
+
     //loading a library can "wipe" previously loaded libraries depending
     //on how weak symbol resolution works in dlopen
     //rerun the loaders to make sure everything is still registered

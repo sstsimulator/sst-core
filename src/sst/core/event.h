@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -51,7 +51,7 @@ public:
 
     /** Clones the event in for the case of a broadcast */
     virtual Event* clone();
-    
+
     /** Sets the link id used for delivery.  For use by SST Core only */
     inline void setDeliveryLink(LinkId_t id, Link *link) {
 #ifdef SST_ENFORCE_EVENT_ORDERING
@@ -165,9 +165,9 @@ public:
     const std::string& getLastComponentName() { return last_comp; }
     const std::string& getLastComponentType() { return last_type; }
     const std::string& getLastPort() { return last_port; }
-    
+
     void addSendComponent(const std::string& comp, const std::string& type, const std::string& port) {
-        if ( first_comp == "" ) { 
+        if ( first_comp == "" ) {
             first_comp = comp;
             first_type = type;
             first_port = port;
@@ -183,7 +183,7 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer &ser) override{
         Activity::serialize_order(ser);
-#ifndef SST_ENFORCE_EVENT_ORDERING        
+#ifndef SST_ENFORCE_EVENT_ORDERING
         ser & link_id;
 #endif
 #ifdef __SST_DEBUG_EVENT_TRACKING__
@@ -195,8 +195,8 @@ public:
         ser & last_port;
 #endif
 
-    }    
-    
+    }
+
 protected:
     /** Link used for delivery */
     Link* delivery_link;
@@ -213,7 +213,7 @@ private:
 #ifndef SST_ENFORCE_EVENT_ORDERING
     LinkId_t link_id;
 #endif
-    
+
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     std::string first_comp;
     std::string first_type;
@@ -222,7 +222,7 @@ private:
     std::string last_type;
     std::string last_port;
 #endif
-    
+
 };
 
 
@@ -241,7 +241,7 @@ public:
                 header.c_str(), getDeliveryTime(), getPriority());
     }
 
-    
+
 
 private:
     ImplementSerializable(SST::NullEvent)

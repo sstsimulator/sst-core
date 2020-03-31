@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -39,7 +39,7 @@ class MMAPParent {
 
 public:
     /** Parent/master manager for an IPC Tunnel
-     * Creates a memory-mapped file and initializes a 
+     * Creates a memory-mapped file and initializes a
      * TunnelType data structure in the mmap'd region
      *
      * @param comp_id Component ID of owner
@@ -64,13 +64,13 @@ public:
              * a different random number.
              */
         } while ( (fd < 0) && (errno == EEXIST) );
-        
+
         if ( fd < 0 ) {
             // Not using Output because IPC means Output might not be available
             fprintf(stderr, "Failed to create IPC region '%s': %s\n", filename.c_str(), strerror(errno));
             exit(1);
         }
-        
+
         tunnel = new TunnelType(numBuffers, bufferSize, expectedChildren);
         shmSize = tunnel->getTunnelSize();
 
@@ -96,7 +96,7 @@ public:
     virtual ~MMAPParent()
     {
         delete tunnel;
-        
+
         munmap(shmPtr, shmSize);
         if (remove(filename.c_str()) != 0) {
             fprintf(stderr, "Error deleting tunnel file: %s\n", filename.c_str());
@@ -112,10 +112,10 @@ public:
 private:
     void *shmPtr;
     int fd;
-    
+
     std::string filename;
     size_t shmSize;
-    
+
     TunnelType* tunnel;
 };
 

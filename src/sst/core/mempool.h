@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -116,7 +116,7 @@ public:
     uint64_t getUndeletedEntries() {
         return numAlloc - numFree;
     }
-    
+
     /** Counter:  Number of times elements have been allocated */
     std::atomic<uint64_t> numAlloc;
     /** Counter:  Number times elements have been freed */
@@ -126,7 +126,7 @@ public:
     size_t getElementSize() const { return elemSize; }
 
     const std::list<uint8_t*>& getArenas() { return arenas; }
-    
+
 private:
 
     bool allocPool()
@@ -141,7 +141,7 @@ private:
             allocating.store(0, std::memory_order_release);
             return false;
         }
-        std::memset(newPool, 0xFF, arenaSize); 
+        std::memset(newPool, 0xFF, arenaSize);
         arenas.push_back(newPool);
         size_t nelem = arenaSize / elemSize;
         for ( size_t i = 0 ; i < nelem ; i++ ) {

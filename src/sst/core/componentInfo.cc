@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -33,7 +33,7 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
     subIDIndex(1),
     slot_name(""),
     slot_num(-1),
-    share_flags(0)    
+    share_flags(0)
 {
 }
 
@@ -100,7 +100,7 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, const std::string& name, Co
     for ( auto &sc : ccomp->subComponents ) {
         counts[sc.name]++;
     }
-    
+
     for ( auto &sc : ccomp->subComponents ) {
         std::string sub_name(name);
         sub_name += ":";
@@ -113,7 +113,7 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, const std::string& name, Co
             sub_name += "]";
         }
         subComponents.emplace_hint(subComponents.end(), std::piecewise_construct, std::make_tuple(sc.id), std::forward_as_tuple(&sc, sub_name, this, new LinkMap()));
-    }   
+    }
 }
 
 ComponentInfo::ComponentInfo(ComponentInfo &&o) :
@@ -122,7 +122,7 @@ ComponentInfo::ComponentInfo(ComponentInfo &&o) :
     name(std::move(o.name)),
     type(std::move(o.type)),
     link_map(o.link_map),
-    component(o.component), 
+    component(o.component),
     subComponents(std::move(o.subComponents)),
     params(o.params),
     defaultTimeBase(o.defaultTimeBase),
@@ -168,9 +168,9 @@ ComponentInfo::addAnonymousSubComponent(ComponentInfo* parent_info, const std::s
     uint64_t sub_id = real_comp->subIDIndex++;
 
     ComponentId_t cid = COMPDEFINED_SUBCOMPONENT_ID_CREATE(COMPONENT_ID_MASK(id), sub_id);
-    
+
     subComponents.emplace_hint(subComponents.end(), std::piecewise_construct, std::make_tuple(cid), std::forward_as_tuple(cid, parent_info, type, slot_name, slot_num, share_flags));
-    
+
     return cid;
 
 }
@@ -199,7 +199,7 @@ void ComponentInfo::prepareForComplete() const {
 }
 
 
-ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id) 
+ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id)
 {
     /* See if it is us */
     if ( id == this->id )
@@ -217,7 +217,7 @@ ComponentInfo* ComponentInfo::findSubComponent(ComponentId_t id)
     return nullptr;
 }
 
-ComponentInfo* ComponentInfo::findSubComponent(const std::string& slot, int slot_num) 
+ComponentInfo* ComponentInfo::findSubComponent(const std::string& slot, int slot_num)
 {
     // Non-recursive, only look in current component
     for ( auto &sc : subComponents ) {

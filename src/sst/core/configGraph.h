@@ -1,12 +1,12 @@
 // -*- c++ -*-
 
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -59,7 +59,7 @@ public:
 
     // inline const std::string& key() const { return name; }
     inline LinkId_t key() const { return id; }
-    
+
     /** Return the minimum latency of this link (from both sides) */
     SimTime_t getMinLatency() const {
         if ( latency[0] < latency[1] ) return latency[0];
@@ -93,7 +93,7 @@ public:
     }
 
     ImplementSerializable(SST::ConfigLink)
-    
+
 private:
     friend class ConfigGraph;
     ConfigLink(LinkId_t id) :
@@ -205,7 +205,7 @@ public:
     std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
     uint16_t                      nextSubID;         /*!< Next subID to use for children */
-    
+
     static constexpr ComponentId_t null_id = std::numeric_limits<ComponentId_t>::max();
 
     inline const ComponentId_t& key()const { return id; }
@@ -289,7 +289,7 @@ typedef std::map<std::string,Params*> ParamsMap_t;
 typedef std::map<std::string,std::string> VariableMap_t;
 
 class PartitionGraph;
-    
+
 /** A Configuration Graph
  *  A graph representing Components and Links
  */
@@ -312,7 +312,7 @@ public:
     }
 
     size_t getNumComponents() { return comps.data.size(); }
-    
+
     /** Helper function to set all the ranks to the same value */
     void setComponentRanks(RankInfo rank);
     /** Checks to see if rank contains at least one component */
@@ -445,7 +445,7 @@ public:
         weight(0),
         rank(RankInfo(RankInfo::UNASSIGNED, 0))
     {}
-    
+
     // PartitionComponent(ComponentId_t id, ConfigGraph* graph, const ComponentIdMap_t& group);
     void print(std::ostream &os, const PartitionGraph* graph) const;
 
@@ -475,7 +475,7 @@ public:
     SimTime_t getMinLatency() const {
         if ( latency[0] < latency[1] ) return latency[0];
         return latency[1];    }
-    
+
     /** Print the Link information */
     void print(std::ostream &os) const {
         os << "    Link " << id << std::endl;

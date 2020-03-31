@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -33,7 +33,7 @@ public:
     size_t offset;
     size_t length;
     /*const*/ uint8_t *data;
-    
+
     ChangeSet(size_t offset, size_t length, /*const*/ uint8_t *data = nullptr) : offset(offset), length(length), data(data) { }
 
     void serialize_order(SST::Core::Serialization::serializer &ser) override {
@@ -48,11 +48,11 @@ public:
         ser & SST::Core::Serialization::array(data,length);
         // ser.binary(data,length);
 
-    }    
-    
+    }
+
     ImplementSerializable(SST::ChangeSet)
 
-    
+
 };
 
 class RegionInfo {
@@ -74,8 +74,8 @@ public:
         void serialize_order(SST::Core::Serialization::serializer &ser) override {
             ser & rank;
             ser & key;
-        }    
-        
+        }
+
         ImplementSerializable(SST::RegionInfo::RegionMergeInfo)
     };
 
@@ -109,8 +109,8 @@ public:
             // }
             ser & SST::Core::Serialization::array(data,length);
             // ser.binary(data,length);
-        }    
-        
+        }
+
         ImplementSerializable(SST::RegionInfo::BulkMergeInfo)
     };
 
@@ -132,8 +132,8 @@ public:
         void serialize_order(SST::Core::Serialization::serializer &ser) override {
             RegionInfo::RegionMergeInfo::serialize_order(ser);
             ser & changeSets;
-        }    
-        
+        }
+
         ImplementSerializable(SST::RegionInfo::ChangeSetMergeInfo)
     };
 

@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -343,14 +343,14 @@ template <class Base> struct CtorList<Base,void>
 #define SST_ELI_DECLARE_CTORS_EXTERN(...) \
   SST_ELI_CTORS_COMMON(ELI_FORWARD_AS_ONE(__VA_ARGS__))
 
-//VA_ARGS here 
+//VA_ARGS here
 // 0) Base name
 // 1) List of ctor args
 #define SST_ELI_BUILDER_TYPEDEFS(...) \
   using BaseBuilder = ::SST::ELI::Builder<__VA_ARGS__>; \
   using BuilderLibrary = ::SST::ELI::BuilderLibrary<__VA_ARGS__>; \
   using BuilderLibraryDatabase = ::SST::ELI::BuilderLibraryDatabase<__VA_ARGS__>; \
-  template <class __TT> using DerivedBuilder = ::SST::ELI::DerivedBuilder<__TT,__VA_ARGS__>; 
+  template <class __TT> using DerivedBuilder = ::SST::ELI::DerivedBuilder<__TT,__VA_ARGS__>;
 
 #define SST_ELI_BUILDER_FXNS() \
   static BuilderLibrary* getBuilderLibrary(const std::string& name){ \
@@ -387,7 +387,7 @@ template <class Base> struct CtorList<Base,void>
 #define SST_ELI_DECLARE_DEFAULT_CTOR() \
   using Ctor = ::SST::ELI::SingleCtor<__LocalEliBase>; \
   SST_ELI_BUILDER_TYPEDEFS(__LocalEliBase) \
-  SST_ELI_BUILDER_FXNS() 
+  SST_ELI_BUILDER_FXNS()
 
 #define SST_ELI_DECLARE_DEFAULT_CTOR_EXTERN() \
   SST_ELI_DEFAULT_CTOR_COMMON() \

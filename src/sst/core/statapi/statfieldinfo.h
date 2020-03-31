@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -20,11 +20,11 @@ namespace SST {
 namespace Statistics {
 
 using fieldType_t = uint32_t;
-    
+
 /**
     \class StatisticFieldInfo
 
-    The class for representing Statistic Output Fields  
+    The class for representing Statistic Output Fields
 */
 
 class StatisticFieldTypeBase {
@@ -109,7 +109,7 @@ class StatisticFieldInfo
    * @param fieldType - Data type of the field.
    */
   StatisticFieldInfo(const char* statName, const char* fieldName, fieldType_t fieldType);
-   
+
   // Get Field Data
   /** Return the statistic name related to this field info */
   inline const std::string& getStatName() const {return m_statName;}
@@ -119,7 +119,7 @@ class StatisticFieldInfo
   fieldType_t getFieldType() const {return m_fieldType;}
   /** Return the field type related to this field info */
   std::string getFieldUniqueName() const;
-    
+
   /** Compare two field info structures
    * @param FieldInfo1 - a FieldInfo to compare against.
    * @return True if the Field Info structures are the same.
@@ -135,7 +135,7 @@ class StatisticFieldInfo
    * @return The assigned field handle.
    */
   fieldHandle_t getFieldHandle() {return m_fieldHandle;}
-    
+
   static const char* getFieldTypeShortName(fieldType_t type){
     return StatisticFieldTypeBase::getField(type)->shortName();
   }
@@ -148,10 +148,10 @@ class StatisticFieldInfo
   static fieldType_t getFieldTypeFromTemplate(){
     return StatisticFieldType<T>::id();
   }
-    
+
  protected:
   StatisticFieldInfo(){} // For serialization only
-    
+
  private:
   std::string   m_statName;
   std::string   m_fieldName;
@@ -161,7 +161,7 @@ class StatisticFieldInfo
 };
 
 
-    
+
 } //namespace Statistics
 } //namespace SST
 

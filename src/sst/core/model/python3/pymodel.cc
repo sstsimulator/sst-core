@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -903,7 +903,7 @@ std::map<std::string,std::string> SST::Core::generateStatisticParameters(PyObjec
         // Make sure it really is a Dict
         if (true == PyDict_Check(statParamDict)) {
 
-            // Extract the Key and Value for each parameter and put them into the vectors 
+            // Extract the Key and Value for each parameter and put them into the vectors
             while ( PyDict_Next(statParamDict, &pos, &pykey, &pyval) ) {
                 PyObject* pyparam = PyObject_Str(pykey);
                 PyObject* pyvalue = PyObject_Str(pyval);

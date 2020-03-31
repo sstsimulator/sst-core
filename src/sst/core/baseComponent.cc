@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -54,7 +54,7 @@ BaseComponent::~BaseComponent()
     if ( !my_info ) return;
     if ( isExtension ) return;
 
-    // Start by deleting children    
+    // Start by deleting children
     std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();
     for ( auto &ci : subcomps ) {
         // Delete the subcomponent
@@ -102,7 +102,7 @@ BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
             }
         }
     }
-    
+
 }
 
 void
@@ -210,10 +210,10 @@ Link*
 BaseComponent::getLinkFromParentSharedPort(const std::string& port)
 {
     LinkMap* myLinks = my_info->getLinkMap();
-    
+
     // See if the link is found, and if not see if my parent shared
     // their ports with me
-    
+
     if ( nullptr != myLinks ) {
         Link* tmp = myLinks->getLink(port);
         if ( nullptr != tmp ) {
@@ -231,13 +231,13 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port)
     // If we get here, we didn't find the link.  Check to see if my
     // parent shared with me and if so, call
     // getLinkFromParentSharedPort on them
-        
+
     if ( my_info->sharesPorts() ) {
         return my_info->parent_info->component->getLinkFromParentSharedPort(port);
     }
     else {
         return nullptr;
-    }    
+    }
 }
 
 
@@ -247,7 +247,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
     LinkMap* myLinks = my_info->getLinkMap();
 
     Link* tmp = nullptr;
-    
+
     // If I have a linkmap, check to see if a link was connected to
     // port "name"
     if ( nullptr != myLinks ) {
@@ -274,7 +274,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
 
     // If I got a link, configure it
     if ( nullptr != tmp ) {
-        
+
         // If no functor, this is a polling link
         if ( handler == nullptr ) {
             tmp->setPolling();
@@ -285,7 +285,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
         tmp->setAsConfigured();
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         tmp->setSendingComponentInfo(my_info->getName(), my_info->getType(), name);
-#endif        
+#endif
     }
     return tmp;
 }
@@ -396,19 +396,19 @@ BaseComponent::fatal(uint32_t line, const char* file, const char* func,
 
     sprintf(buf,"\nElement name: %s,  type: %s (full type tree: %s)\n%s",
             name.c_str(),type.c_str(),type_tree.c_str(),format);
-    
-    
+
+
     va_list arg;
     va_start(arg, format);
     abort.fatal(line,file,func,exit_code,buf,arg);
     va_end(arg);
 }
-    
+
 void
 BaseComponent::sst_assert(bool condition, uint32_t line, const char* file, const char* func,
                           int exit_code,
                           const char* format, ...)    const
-{    
+{
     if ( !condition ) {
         va_list arg;
         va_start(arg, format);
@@ -463,12 +463,12 @@ uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& s
 }
 
 
-StatisticBase* 
+StatisticBase*
 BaseComponent::registerStatisticCore(SST::Params& params, const std::string& statName, const std::string& statSubId,
                                      fieldType_t fieldType, CreateFxn&& create)
 {
     SST::Params statParams = params.find_prefix_params(statName);
-    std::string                     fullStatName; 
+    std::string                     fullStatName;
     bool                            statGood = true;
     bool                            nameFound = false;
     StatisticBase::StatMode_t       statCollectionMode = StatisticBase::STAT_MODE_COUNT;
@@ -504,7 +504,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
 
     // Make sure that the wireup has not been completed
     if (true == getSimulation()->isWireUpFinished()) {
-        // We cannot register statistics AFTER the wireup (after all components have been created) 
+        // We cannot register statistics AFTER the wireup (after all components have been created)
         out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
     }
 
@@ -517,8 +517,8 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
     // uint8_t stat_load_level;
     do {
         curr_info = next_info;
-        // Check each entry in the StatEnableList (from the ConfigGraph via the 
-        // Python File) to see if this Statistic is enabled, then check any of 
+        // Check each entry in the StatEnableList (from the ConfigGraph via the
+        // Python File) to see if this Statistic is enabled, then check any of
         // its critical parameters
 
         // Only check for stat enables if I'm a not a component
@@ -526,9 +526,9 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
         // SubComponents don't have a stat enable list.
         if ( !curr_info->isAnonymous() ) {
             for ( auto & si : *curr_info->getStatEnableList() ) {
-                // First check to see if the any entry in the StatEnableList matches 
+                // First check to see if the any entry in the StatEnableList matches
                 // the Statistic Name or the STATALLFLAG.  If so, then this Statistic
-                // will be enabled.  Then check any critical parameters   
+                // will be enabled.  Then check any critical parameters
                 if ((std::string(STATALLFLAG) == si.name) || (statName == si.name)) {
                     // Identify what keys are Allowed in the parameters
                     Params::KeySet_t allowedKeySet;
@@ -538,12 +538,12 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
                     allowedKeySet.insert("stopat");
                     allowedKeySet.insert("resetOnRead");
                     si.params.pushAllowedKeys(allowedKeySet);
-                    
+
                     // We found an acceptable name... Now check its critical Parameters
                     // Note: If parameter not found, defaults will be provided
                     statTypeParam = si.params.find<std::string>("type", "sst.AccumulatorStatistic");
                     statRateParam = si.params.find<std::string>("rate", "0ns");
-                    
+
                     collectionRate = UnitAlgebra(statRateParam);
                     statParams = si.params;
                     // Get the load level from the component
@@ -556,7 +556,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
         next_info = curr_info->parent_info;
     } while ( curr_info->canInsertStatistics() );
 
-    
+
     // Did we find a matching enable name?
     if (false == nameFound) {
         statGood = false;
@@ -578,7 +578,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
             collectionRate = UnitAlgebra("0ns");
             statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
         } else {
-            // collectionRate is a unit type we dont recognize 
+            // collectionRate is a unit type we dont recognize
             out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
         }
     }
