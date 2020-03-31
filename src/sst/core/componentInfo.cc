@@ -244,4 +244,3 @@ std::vector<LinkId_t> ComponentInfo::getAllLinkIds() const
 
 } // namespace SST
 
-// BOOST_CLASS_EXPORT_IMPLEMENT(SST::InitQueue)

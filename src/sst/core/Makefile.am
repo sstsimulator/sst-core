@@ -8,7 +8,6 @@ CXX = $(MPICXX)
 AM_CPPFLAGS =  \
 	-DTIXML_USE_STL \
 	-DSST_BUILDING_CORE=1 \
-	$(BOOST_CPPFLAGS) \
 	$(ZOLTAN_CPPFLAGS) \
 	$(PYTHON_CPPFLAGS) \
 	$(LTDLINCL)
@@ -282,7 +281,6 @@ sstsim_x_LDADD = \
 	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
-	$(BOOST_LIBS) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
 	-lm
@@ -291,8 +289,7 @@ sstsim_x_LDFLAGS = \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
-	$(BOOST_LDFLAGS) \
-        $(PYTHON_LDFLAGS) \
+	$(PYTHON_LDFLAGS) \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 
@@ -300,7 +297,6 @@ sstinfo_x_LDADD = \
 	$(LIBLTDL) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
-	$(BOOST_LIBS) \
 	$(MPILIBS) \
 	$(TCMALLOC_LIB) \
 	-lm
@@ -309,8 +305,7 @@ sstinfo_x_LDFLAGS = \
 	$(PARMETIS_LDFLAGS) \
 	$(ZOLTAN_LDFLAGS) \
 	$(TCMALLOC_LDFLAGS) \
-	$(BOOST_LDFLAGS) \
-        $(PYTHON_LDFLAGS) \
+	$(PYTHON_LDFLAGS) \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 
