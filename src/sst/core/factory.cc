@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -135,7 +135,7 @@ bool Factory::isPortNameValid(const std::string& type, const std::string& port_n
       }
     }
 
-    
+
     std::string tmp = elemlib + "." + elem;
 
     if (portNames == nullptr) {
@@ -168,7 +168,7 @@ Factory::getParamNames(const std::string& type)
     if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
         findLibrary(elemlib);
     }
-    
+
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
@@ -199,12 +199,12 @@ Factory::getParamNames(const std::string& type)
 
 
 Component*
-Factory::CreateComponent(ComponentId_t id, 
-                         const std::string& type, 
+Factory::CreateComponent(ComponentId_t id,
+                         const std::string& type,
                          Params& params)
 {
     std::string elemlib, elem;
-    
+
     std::tie(elemlib, elem) = parseLoadName(type);
 
     // ensure library is already loaded...
@@ -244,7 +244,7 @@ bool
 Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& slotName)
 {
     std::string compTypeToLoad = type;
-    
+
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
@@ -283,14 +283,14 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
     return false;
 }
 
-bool 
+bool
 Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
-    if (true == type.empty()) { 
+    if (true == type.empty()) {
         compTypeToLoad = loadingComponentType;
     }
-    
+
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
@@ -327,7 +327,7 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
             return false;
         }
     }
-    
+
 
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested subcomponent '%s'\n%s\n",
@@ -335,14 +335,14 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
     return false;
 }
 
-uint8_t 
+uint8_t
 Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
-    if (true == type.empty()) { 
+    if (true == type.empty()) {
         compTypeToLoad = loadingComponentType;
     }
-    
+
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
@@ -386,14 +386,14 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     return 0;
 }
 
-std::string 
+std::string
 Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
-    if (true == type.empty()) { 
+    if (true == type.empty()) {
         compTypeToLoad = loadingComponentType;
     }
-    
+
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
@@ -456,7 +456,7 @@ Factory::CreateModule(const std::string& type, Params& params)
         }
       }
     }
-    
+
     // If we get to here, element doesn't exist
     out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n%s\n",
               type.c_str(), error_os.str().c_str());
@@ -665,7 +665,7 @@ void Factory::getLoadedLibraryNames(std::set<std::string>& lib_names)
     for ( auto& lib : loaded_libraries ) {
         lib_names.insert(lib);
     }
-    
+
 }
 
 void Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
@@ -676,7 +676,7 @@ void Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
             findLibrary(*i);
         }
 }
-    
+
 
 bool
 Factory::findLibrary(const std::string& elemlib, std::ostream& err_os)

@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -36,7 +36,7 @@ unpack_serializable(serializable*& s, serializer& ser);
 
 template <>
 class serialize<serializable*> {
- 
+
 public:
 void
 operator()(serializable*& s, serializer& ser)
@@ -50,7 +50,7 @@ operator()(serializable*& s, serializer& ser)
         break;
     case serializer::UNPACK:
         pvt::unpack_serializable(s,ser);
-        break;  
+        break;
     }
 }
 
@@ -59,7 +59,7 @@ operator()(serializable*& s, serializer& ser)
 
 template <class T>
 class serialize<T*, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable,T>::value>::type> {
- 
+
 public:
 void
 operator()(T*& s, serializer& ser)
@@ -74,7 +74,7 @@ operator()(T*& s, serializer& ser)
         break;
     case serializer::UNPACK:
         pvt::unpack_serializable(sp,ser);
-        break;  
+        break;
     }
     s = static_cast<T*>(sp);
 }
@@ -96,8 +96,8 @@ case serializer::PACK:
 case serializer::UNPACK:
   pvt::unpack_serializable(s,ser);
   t = dynamic_cast<T*>(s);
-  break;  
-  }  
+  break;
+  }
 }
 
 template <class T>
@@ -122,7 +122,7 @@ public:
 // };
 
 
-} 
+}
 }
 }
 

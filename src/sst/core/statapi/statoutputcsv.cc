@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -35,7 +35,7 @@ bool StatisticOutputCSV::checkOutputParameters()
     std::string simTimeFlag;
     std::string rankFlag;
 
-    // Review the output parameters and make sure they are correct, and 
+    // Review the output parameters and make sure they are correct, and
     // also setup internal variables
 
     // Look for Help Param
@@ -55,11 +55,11 @@ bool StatisticOutputCSV::checkOutputParameters()
     m_outputRank = ("1" == rankFlag);
 
     // Perform some checking on the parameters
-    if (0 == m_Separator.length()) { 
+    if (0 == m_Separator.length()) {
         // Separator is zero length
         return false;
     }
-    if (0 == m_FilePath.length()) { 
+    if (0 == m_FilePath.length()) {
         // Filepath is zero length
         return false;
     }
@@ -81,18 +81,18 @@ void StatisticOutputCSV::printUsage()
     out.output(" : outputrank = 0 | 1 - Output Rank - Default is 1\n");
 }
 
-void StatisticOutputCSV::startOfSimulation() 
+void StatisticOutputCSV::startOfSimulation()
 {
     StatisticFieldInfo*        statField;
     std::string                outputBuffer;
     FieldInfoArray_t::iterator it_v;
-    
+
     // Set Filename with Rank if Num Ranks > 1
     if (1 < Simulation::getSimulation()->getNumRanks().rank) {
         int rank = Simulation::getSimulation()->getRank().rank;
         std::string rankstr = "_" + SST::to_string(rank);
 
-        // Search for any extension        
+        // Search for any extension
         size_t index = m_FilePath.find_last_of(".");
         if (std::string::npos != index) {
             // We found a . at the end of the file, insert the rank string
@@ -111,7 +111,7 @@ void StatisticOutputCSV::startOfSimulation()
     for (FieldInfoArray_t::iterator it_v = getFieldInfoArray().begin(); it_v != getFieldInfoArray().end(); it_v++) {
         m_OutputBufferArray.push_back(std::string(""));
     }
-    
+
     if (true == m_outputTopHeader) {
         // Add a Component Time Header to the front
         outputBuffer = "ComponentName";
@@ -136,7 +136,7 @@ void StatisticOutputCSV::startOfSimulation()
             outputBuffer += m_Separator;
             print("%s", outputBuffer.c_str());
         }
-    
+
         if (true == m_outputRank) {
             // Add a rank Header to the front
             outputBuffer = "Rank";
@@ -146,51 +146,51 @@ void StatisticOutputCSV::startOfSimulation()
 
         // Output all Headers
         it_v = getFieldInfoArray().begin();
-        
+
         while (it_v != getFieldInfoArray().end()) {
             statField = *it_v;
             outputBuffer = statField->getFieldName();
             outputBuffer += ".";
             outputBuffer += getFieldTypeShortName(statField->getFieldType());
-            
-            // Increment the iterator 
+
+            // Increment the iterator
             it_v++;
-            // If not the last field, tack on a separator             
+            // If not the last field, tack on a separator
             if (it_v != getFieldInfoArray().end()) {
                 outputBuffer += m_Separator;
             }
-    
+
             print("%s", outputBuffer.c_str());
         }
         print("\n");
     }
 }
 
-void StatisticOutputCSV::endOfSimulation() 
+void StatisticOutputCSV::endOfSimulation()
 {
     // Close the file
     closeFile();
 }
 
-void StatisticOutputCSV::implStartOutputEntries(StatisticBase* statistic) 
+void StatisticOutputCSV::implStartOutputEntries(StatisticBase* statistic)
 {
     // Save the current Component and Statistic Names for when we stop output and send to file
     m_currentComponentName = statistic->getCompName();
     m_currentStatisticName = statistic->getStatName();
     m_currentStatisticSubId = statistic->getStatSubId();
     m_currentStatisticType = statistic->getStatTypeName();
-    
-    // Starting Output, Initialize the Buffers 
+
+    // Starting Output, Initialize the Buffers
     for (uint32_t x = 0; x < getFieldInfoArray().size(); x++) {
         // Initialize the Output Buffer Array strings
         m_OutputBufferArray[x] = "0";
     }
 }
 
-void StatisticOutputCSV::implStopOutputEntries() 
+void StatisticOutputCSV::implStopOutputEntries()
 {
     uint32_t x;
-    
+
     // Output the Component and Statistic names
     print("%s", m_currentComponentName.c_str());
     print("%s", m_Separator.c_str());
@@ -200,7 +200,7 @@ void StatisticOutputCSV::implStopOutputEntries()
     print("%s", m_Separator.c_str());
     print("%s", m_currentStatisticType.c_str());
     print("%s", m_Separator.c_str());
-    
+
     // Done with Output, Send a line of data to the file
     if (true == m_outputSimTime) {
         // Add the Simulation Time to the front
@@ -214,7 +214,7 @@ void StatisticOutputCSV::implStopOutputEntries()
         print("%d", Simulation::getSimulation()->getRank().rank);
         print("%s", m_Separator.c_str());
     }
-    
+
     x = 0;
     while (x < m_OutputBufferArray.size()) {
         print("%s", m_OutputBufferArray[x].c_str());
@@ -277,7 +277,7 @@ bool StatisticOutputCSV::openFile(void)
         if (nullptr == m_gzFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
-            out.fatal(CALL_INFO, 1, 
+            out.fatal(CALL_INFO, 1,
                             " : StatisticOutputCompressedCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;
         }
@@ -289,7 +289,7 @@ bool StatisticOutputCSV::openFile(void)
         if (nullptr == m_hFile){
             // We got an error of some sort
             Output out = Simulation::getSimulation()->getSimulationOutput();
-            out.fatal(CALL_INFO, 1, 
+            out.fatal(CALL_INFO, 1,
                           " : StatisticOutputCSV - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
             return false;;
         }
@@ -341,7 +341,7 @@ int StatisticOutputCSV::print(const char* fmt, ...)
             }
             free(buf);
         } while ( retry );
-        
+
 #endif
 #endif
     } else {

@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -64,17 +64,17 @@ Simulation::~Simulation()
     // delete it->second;
     // }
     // compMap.clear();
-    
+
 
     // Clocks already got deleted by timeVortex, simply clear the clockMap
     clockMap.clear();
-    
+
     // OneShots already got deleted by timeVortex, simply clear the onsShotMap
     oneShotMap.clear();
 
     // Clear out Components
     compInfoMap.clear();
-    
+
     // // Delete any remaining links.  This should never happen now, but
     // // when we add an API to have components build subcomponents, user
     // // error could cause LinkMaps to be left.
@@ -84,7 +84,7 @@ Simulation::~Simulation()
     // }
     // component_links.clear();
 
-    // Delete the links    
+    // Delete the links
     // for ( CompInfoMap_t::iterator it = compInfoMap.begin(); it != compInfoMap.end(); ++it ) {
     //     std::map<std::string,Link*>& map = it->second.link_map->getLinkMap();
     //     std::map<std::string,Link*>::iterator map_it;
@@ -171,7 +171,7 @@ Simulation::Simulation()
 
 
 Component*
-Simulation::createComponent( ComponentId_t id, const std::string& name, 
+Simulation::createComponent( ComponentId_t id, const std::string& name,
                              Params &params )
 {
     return factory->CreateComponent(id, name, params);
@@ -183,7 +183,7 @@ Simulation::requireEvent(const std::string& name)
 {
     factory->RequireEvent(name);
 }
-    
+
 SimTime_t
 Simulation::getNextActivityTime() const
 {
@@ -252,7 +252,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank)
             // Now check only those latencies that directly impact this
             // thread.  Keep track of minimum latency for each other
             // thread separately
-            if ( rank[0].thread == my_rank.thread) { 
+            if ( rank[0].thread == my_rank.thread) {
                 if ( clink.getMinLatency() < interThreadLatencies[rank[1].thread] ) {
                     interThreadLatencies[rank[1].thread] = clink.getMinLatency();
                 }
@@ -278,7 +278,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank)
         independent = false;
     }
 }
-    
+
 int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
     // Create the Statistics Engine
@@ -422,7 +422,7 @@ void Simulation::initialize() {
         initBarrier.wait();
         if ( my_rank.thread == 0 ) untimed_msg_count = 0;
         initBarrier.wait();
-                
+
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
             // printf("Calling init on %s: %p\n",(*iter)->getName().c_str(),(*iter)->getComponent());
             (*iter)->getComponent()->init(untimed_phase);
@@ -473,7 +473,7 @@ void Simulation::complete() {
         completeBarrier.wait();
         if ( my_rank.thread == 0 ) untimed_msg_count = 0;
         completeBarrier.wait();
-                
+
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
             (*iter)->getComponent()->complete(untimed_phase);
         }
@@ -490,10 +490,10 @@ void Simulation::complete() {
 
 }
 
-void Simulation::setup() {  
+void Simulation::setup() {
 
     setupBarrier.wait();
-    
+
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
         (*iter)->getComponent()->setup();
     }
@@ -509,7 +509,7 @@ void Simulation::run() {
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.
     // In general, this shouldn't happen, especially for parallel
-    // simulations. If it happens in a parallel simulation the 
+    // simulations. If it happens in a parallel simulation the
     // simulation will likely deadlock as only some of the ranks
     // will hit the anomaly.
     StopAction* sa = new StopAction("*** Event queue empty, exiting simulation... ***");
@@ -526,7 +526,7 @@ void Simulation::run() {
             timeVortex->insert(sa);
         }
     }
-    
+
     // Tell the Statistics Engine that the simulation is beginning
     if ( my_rank.thread == 0 )
         StatisticProcessingEngine::getInstance()->startOfSimulation();
@@ -603,7 +603,7 @@ void Simulation::endSimulation(SimTime_t end)
 
 
 }
-    
+
 
 void Simulation::finish() {
 
@@ -615,7 +615,7 @@ void Simulation::finish() {
     }
 
     finishBarrier.wait();
-    
+
     switch ( shutdown_mode ) {
     case SHUTDOWN_CLEAN:
         break;
@@ -629,7 +629,7 @@ void Simulation::finish() {
     }
 
     finishBarrier.wait();
-    
+
     // Tell the Statistics Engine that the simulation is ending
     if ( my_rank.thread == 0 ) {
         StatisticProcessingEngine::getInstance()->endOfSimulation();
@@ -639,19 +639,19 @@ void Simulation::finish() {
 const SimTime_t&
 Simulation::getCurrentSimCycle() const
 {
-    return currentSimCycle; 
+    return currentSimCycle;
 }
 
 SimTime_t
 Simulation::getEndSimCycle() const
 {
-    return endSimCycle; 
+    return endSimCycle;
 }
 
 int
 Simulation::getCurrentPriority() const
 {
-    return currentPriority; 
+    return currentPriority;
 }
 
 

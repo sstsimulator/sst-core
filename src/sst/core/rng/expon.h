@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -37,7 +37,7 @@ class SSTExponentialDistribution : public SSTRandomDistribution {
         */
     SSTExponentialDistribution(const double mn)  :
     SSTRandomDistribution() {
-        
+
         lambda = mn;
         baseDistrib = new MersenneRNG();
         deleteDistrib = true;
@@ -50,7 +50,7 @@ class SSTExponentialDistribution : public SSTRandomDistribution {
         */
     SSTExponentialDistribution(const double mn, SSTRandom* baseDist)  :
     SSTRandomDistribution() {
-        
+
         lambda = mn;
         baseDistrib = baseDist;
         deleteDistrib = false;
@@ -81,7 +81,7 @@ class SSTExponentialDistribution : public SSTRandomDistribution {
     double getLambda()  {
         return lambda;
     }
-    
+
 
     protected:
         /**

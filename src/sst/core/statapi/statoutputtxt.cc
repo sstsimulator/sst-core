@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -37,7 +37,7 @@ bool StatisticOutputTxt::checkOutputParameters()
     std::string simTimeFlag;
     std::string rankFlag;
 
-    // Review the output parameters and make sure they are correct, and 
+    // Review the output parameters and make sure they are correct, and
     // also setup internal variables
 
     // Look for Help Param
@@ -57,9 +57,9 @@ bool StatisticOutputTxt::checkOutputParameters()
 
     // Get the parameters
     m_FilePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.txt");
-    
+
     // Perform some checking on the parameters
-    if (0 == m_FilePath.length()) { 
+    if (0 == m_FilePath.length()) {
         // Filepath is zero length
         return false;
     }
@@ -81,17 +81,17 @@ void StatisticOutputTxt::printUsage()
     out.output(" : outputrank = 0 | 1 - Output Rank - Default is 1\n");
 }
 
-void StatisticOutputTxt::startOfSimulation() 
+void StatisticOutputTxt::startOfSimulation()
 {
     StatisticFieldInfo*        statField;
     FieldInfoArray_t::iterator it_v;
-    
+
     // Set Filename with Rank if Num Ranks > 1
     if (1 < Simulation::getSimulation()->getNumRanks().rank) {
         int rank = Simulation::getSimulation()->getRank().rank;
         std::string rankstr = "_" + SST::to_string(rank);
-        
-        // Search for any extension        
+
+        // Search for any extension
         size_t index = m_FilePath.find_last_of(".");
         if (std::string::npos != index) {
             // We found a . at the end of the file, insert the rank string
@@ -101,7 +101,7 @@ void StatisticOutputTxt::startOfSimulation()
             m_FilePath += rankstr;
         }
     }
-    
+
     // Open the finalized filename
     if ( !openFile() )
         return;
@@ -111,7 +111,7 @@ void StatisticOutputTxt::startOfSimulation()
         // Add a Simulation Component to the front
         m_outputBuffer = "Component.Statistic";
         print("%s; ", m_outputBuffer.c_str());
-        
+
         if (true == m_outputSimTime) {
             // Add a Simulation Time Header to the front
             m_outputBuffer = "SimTime";
@@ -123,32 +123,32 @@ void StatisticOutputTxt::startOfSimulation()
             m_outputBuffer = "Rank";
             printf("%s; ", m_outputBuffer.c_str());
         }
-    
+
         // Output all Headers
         it_v = getFieldInfoArray().begin();
-        
+
         while (it_v != getFieldInfoArray().end()) {
             statField = *it_v;
             m_outputBuffer += statField->getStatName();
             m_outputBuffer += ".";
             m_outputBuffer += statField->getFieldName();
-            
-            // Increment the iterator 
+
+            // Increment the iterator
             it_v++;
-    
+
             print("%s; ", m_outputBuffer.c_str());
         }
         print("\n");
     }
 }
 
-void StatisticOutputTxt::endOfSimulation() 
+void StatisticOutputTxt::endOfSimulation()
 {
     // Close the file
     closeFile();
 }
 
-void StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic) 
+void StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic)
 {
     char buffer[256];
 
@@ -184,7 +184,7 @@ void StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic)
     }
 }
 
-void StatisticOutputTxt::implStopOutputEntries() 
+void StatisticOutputTxt::implStopOutputEntries()
 {
     // Done with Output
     print("%s\n", m_outputBuffer.c_str());
@@ -194,7 +194,7 @@ void StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
     char buffer[256];
     StatisticFieldInfo* FieldInfo = getRegisteredField(fieldHandle);
-    
+
     if (nullptr != FieldInfo) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
@@ -369,7 +369,7 @@ int StatisticOutputTxt::print(const char* fmt, ...)
             }
             free(buf);
         } while ( retry );
-        
+
 #endif
 #endif
     } else {

@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -57,7 +57,7 @@ public:
 
     uint64_t getCurrentDepth() const override { return current_depth; }
     uint64_t getMaxDepth() const override { return max_depth; }
-    
+
 private:
 #ifdef SST_ENFORCE_EVENT_ORDERING
     typedef std::priority_queue<Activity*, std::vector<Activity*>, Activity::pq_less_time_priority_order> dataType_t;
@@ -69,7 +69,7 @@ private:
 
     uint64_t current_depth;
     uint64_t max_depth;
-    
+
 };
 
 } // namespace IMPL

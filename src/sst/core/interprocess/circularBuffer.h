@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -33,7 +33,7 @@ public:
             fprintf(stderr, "Already specified size for buffer\n");
             return false;
         }
-        
+
         buffSize = bufferSize;
         __sync_synchronize();
         return true;
@@ -41,14 +41,14 @@ public:
 
     T read() {
         int loop_counter = 0;
-        
+
         while( true ) {
             bufferMutex.lock();
-            
+
             if( readIndex != writeIndex ) {
                 const T result = buffer[readIndex];
                 readIndex = (readIndex + 1) % buffSize;
-                
+
                 bufferMutex.unlock();
                 return result;
             }
@@ -63,20 +63,20 @@ public:
             if( readIndex != writeIndex ) {
                 *result = buffer[readIndex];
                 readIndex = (readIndex + 1) % buffSize;
-                
+
                 bufferMutex.unlock();
                 return true;
             }
-            
+
             bufferMutex.unlock();
         }
-        
+
         return false;
     }
 
     void write(const T& v) {
         int loop_counter = 0;
-        
+
         while( true ) {
             bufferMutex.lock();
 

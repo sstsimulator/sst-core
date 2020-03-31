@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -90,7 +90,7 @@ public:
             }
         }
     };
-    
+
     /** To use with STL priority queues, that order in reverse. */
     class pq_less_time_priority_order {
     public:
@@ -131,9 +131,9 @@ public:
             }
         }
     };
-    
+
 #endif
-    
+
     /** Comparator class to use with STL container classes. */
     class less_time_priority {
     public:
@@ -166,7 +166,7 @@ public:
                 return lhs->delivery_time > rhs->delivery_time;
             }
         }
-        
+
         /** Compare based off references */
         inline bool operator()(const Activity& lhs, const Activity& rhs) const {
             if ( lhs.delivery_time == rhs.delivery_time ) {
@@ -181,7 +181,7 @@ public:
             }
         }
     };
-    
+
     /** Comparator class to use with STL container classes. */
     class less_time {
     public:
@@ -223,12 +223,12 @@ public:
     virtual void printTrackingInfo(const std::string& header, Output &out) const {
     }
 #endif
-    
+
     /** Set a new Queue order */
     void setQueueOrder(uint64_t order) {
         queue_order = order;
     }
-    
+
 #ifdef USE_MEMPOOL
     /** Allocates memory from a memory pool for a new Activity */
     void* operator new(std::size_t size) noexcept
@@ -251,7 +251,7 @@ public:
         if ( nullptr == pool ) {
             /* Still can't find it, alloc a new one */
             pool = new Core::MemPool(size+sizeof(PoolData_t));
-            
+
             std::lock_guard<std::mutex> lock(poolMutex);
             memPools.emplace_back(tid, size, pool);
         }
@@ -301,7 +301,7 @@ public:
             active_activities += entry.pool->getUndeletedEntries();
         }
     }
-    
+
     static void printUndeletedActivities(const std::string& header, Output &out, SimTime_t before = MAX_SIMTIME_T) {
         for ( auto && entry : Activity::memPools ) {
             const std::list<uint8_t*>& arenas = entry.pool->getArenas();
@@ -324,21 +324,21 @@ public:
             }
         }
     }
-    
+
 #endif
 
     // /* Serializable interface methods */
     // void serialize_order(serializer &ser);
 
 
-    
-    
+
+
 protected:
     /** Set the priority of the Activity */
     void setPriority(int priority) {
         this->priority = priority;
     }
-    
+
     // Function used by derived classes to serialize data members.
     // This class is not serializable, because not all class that
     // inherit from it need to be serializable.
@@ -349,7 +349,7 @@ protected:
 #ifdef SST_ENFORCE_EVENT_ORDERING
         ser & enforce_link_order;
 #endif
-    }    
+    }
 
 #ifdef SST_ENFORCE_EVENT_ORDERING
     int32_t   enforce_link_order;

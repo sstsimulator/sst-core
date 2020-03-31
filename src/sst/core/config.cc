@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -263,7 +263,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
         case 'h':
         case '?':
         default:
-        
+
             ok = usage();
         }
     }
@@ -341,7 +341,7 @@ bool Config::setConfigEntryFromModel(const string& entryName, const string& valu
 
 bool Config::printVersion() {
     printf("SST-Core Version (" PACKAGE_VERSION);
-    if (strcmp(SSTCORE_GIT_HEADSHA, PACKAGE_VERSION)) { 
+    if (strcmp(SSTCORE_GIT_HEADSHA, PACKAGE_VERSION)) {
         printf(", git branch : " SSTCORE_GIT_BRANCH);
         printf(", SHA: " SSTCORE_GIT_HEADSHA);
     }

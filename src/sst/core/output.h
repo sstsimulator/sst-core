@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -105,10 +105,10 @@ public:
                --debug runtime parameter, or to the file 'sst_output' if the
                --debug parameter is not defined.  If the size of MPI_COMM_WORLD
                is > 1, then the rank process will be appended to the file name.
-        @param localoutputfilename.  Send the output of this class to the 
-               file identified in localoutputfilename instead of the of the 
-               normal output file set by the run time parameter --debug-file.  
-               location parameter must be set to FILE.  This parameter is 
+        @param localoutputfilename.  Send the output of this class to the
+               file identified in localoutputfilename instead of the of the
+               normal output file set by the run time parameter --debug-file.
+               location parameter must be set to FILE.  This parameter is
                intended for special case debug purposes only.
     */
     // CONSTRUCTION / DESTRUCTION
@@ -164,10 +164,10 @@ public:
                --debug runtime parameter, or to the file 'sst_output' if the
                --debug parameter is not defined.  If the size of MPI_COMM_WORLD
                is > 1, then the rank process will be appended to the file name.
-        @param localoutputfilename.  Send the output of this class to the 
-               file identified in localoutputfilename instead of the of the 
-               normal output file set by the run time parameter --debug-file.  
-               location parameter must be set to FILE.  This parameter is 
+        @param localoutputfilename.  Send the output of this class to the
+               file identified in localoutputfilename instead of the of the
+               normal output file set by the run time parameter --debug-file.
+               location parameter must be set to FILE.  This parameter is
                intended for special case debug purposes only.
     */
     // INITIALIZATION
@@ -556,7 +556,7 @@ private:
     std::FILE**       m_targetOutputRef;
 
     // m_targetFileHandleRef, m_targetFileNameRef, and m_targetFileAccessCount
-    // are pointers to their associated types.  These point to either the local 
+    // are pointers to their associated types.  These point to either the local
     // output file information or to the global simulation output file information.
     std::FILE**        m_targetFileHandleRef;
     std::string*       m_targetFileNameRef;
@@ -566,7 +566,7 @@ private:
     static std::string  m_sstGlobalSimFileName;
     static std::FILE*   m_sstGlobalSimFileHandle;
     static uint32_t     m_sstGlobalSimFileAccessCount;
-    
+
     // File Member Variables regarding the local simulation file info
     std::string  m_sstLocalFileName;
     std::FILE*   m_sstLocalFileHandle;
@@ -575,7 +575,7 @@ private:
     static std::unordered_map<std::thread::id, uint32_t> m_threadMap;
     static RankInfo m_worldSize;
     static int m_mpiRank;
-    
+
 };
 
 // Class to easily trace function enter and exit
@@ -583,7 +583,7 @@ class TraceFunction {
 
     static int trace_level;
     static std::vector<char> indent_array;
-    
+
 public:
     TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info = true);
     ~TraceFunction();
@@ -597,7 +597,7 @@ public:
     void output(const char* format, ...) const
         __attribute__ ((format (printf, 2, 3)));
 
-    
+
 private:
     Output output_obj;
     uint32_t line;

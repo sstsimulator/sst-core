@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -378,7 +378,7 @@ ConfigGraph::checkForStructuralErrors()
 {
     // Output object for error messages
     Output &output = Output::getDefaultObject();
-    
+
     // Check to make sure there are no dangling links.  A dangling
     // link is found by looking though the links in the graph and
     // making sure there are components on both sides of the link.
@@ -745,7 +745,7 @@ ConfigGraph::getPartitionGraph()
 
     PartitionComponentMap_t& pcomps = graph->getComponentMap();
     PartitionLinkMap_t& plinks = graph->getLinkMap();
-    
+
     // SparseVectorMap is slow for random inserts, so make sure we
     // insert both components and links in order of ID, which is the
     // key for the SparseVectorMap
@@ -754,20 +754,20 @@ ConfigGraph::getPartitionGraph()
 
         pcomps.insert(PartitionComponent(comp));
     }
-    
+
 
     for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
         const ConfigLink& link = *it;
-        
+
         const ConfigComponent& comp0 = comps[COMPONENT_ID_MASK(link.component[0])];
         const ConfigComponent& comp1 = comps[COMPONENT_ID_MASK(link.component[1])];
 
         plinks.insert(PartitionLink(link));
 
         pcomps[comp0.id].links.push_back(link.id);
-        pcomps[comp1.id].links.push_back(link.id);                                     
+        pcomps[comp1.id].links.push_back(link.id);
     }
-    return graph;    
+    return graph;
 }
 
 PartitionGraph*
@@ -776,10 +776,10 @@ ConfigGraph::getCollapsedPartitionGraph()
     PartitionGraph* graph = new PartitionGraph();
 
     SparseVectorMap<LinkId_t> deleted_links;
-    
+
     PartitionComponentMap_t& pcomps = graph->getComponentMap();
     PartitionLinkMap_t& plinks = graph->getLinkMap();
-    
+
     // SparseVectorMap is slow for random inserts, so make sure we
     // insert both components and links in order of ID, which is the
     // key for the SparseVectorMap in both cases
@@ -865,7 +865,7 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group
 {
     // We'll do this as a simple recursive depth first search
     group.insert(COMPONENT_ID_MASK(start));
-    
+
     // First, get the component
     ConfigComponent& comp = comps[start];
 

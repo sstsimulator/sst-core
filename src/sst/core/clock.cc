@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -14,7 +14,7 @@
 
 #include "sst/core/simulation.h"
 #include "sst/core/timeConverter.h"
-    
+
 namespace SST {
 
 Clock::Clock( TimeConverter* period, int priority ) :
@@ -24,7 +24,7 @@ Clock::Clock( TimeConverter* period, int priority ) :
     scheduled( false )
 {
     setPriority(priority);
-} 
+}
 
 
 Clock::~Clock()
@@ -58,9 +58,9 @@ bool Clock::unregisterHandler( Clock::HandlerBase* handler, bool& empty )
             break;
         }
     }
-  
+
     empty = staticHandlerMap.empty();
-    
+
     return 0;
 }
 
@@ -70,20 +70,20 @@ Clock::getNextCycle()
     return currentCycle + 1;
     // return period->convertFromCoreTime(next);
 }
-    
+
 void Clock::execute( void ) {
     Simulation *sim = Simulation::getSimulation();
-    
+
     if ( staticHandlerMap.empty() ) {
         // std::cout << "Not rescheduling clock" << std::endl;
         scheduled = false;
         return;
-    } 
-    
+    }
+
     // Derive the current cycle from the core time
     // currentCycle = period->convertFromCoreTime(sim->getCurrentSimCycle());
     currentCycle++;
-    
+
     StaticHandlerMap_t::iterator sop_iter,start_iter,stop_iter;
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
         Clock::HandlerBase* handler = *sop_iter;
@@ -92,7 +92,7 @@ void Clock::execute( void ) {
         // (*handler)(currentCycle);
         // ++sop_iter;
     }
-    
+
     next = sim->getCurrentSimCycle() + period->getFactor();
     sim->insertActivity( next, this );
 

@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -64,7 +64,7 @@ void SimulatorHeartbeat::execute( void )
     // Print some resource usage
     uint64_t local_max_tv_depth = Simulation::getSimulation()->getTimeVortexMaxDepth();
     uint64_t global_max_tv_depth = 0;
-    
+
     uint64_t global_max_sync_data_size = 0, global_sync_data_size = 0;
 
     uint64_t mempool_size = 0;
@@ -73,7 +73,7 @@ void SimulatorHeartbeat::execute( void )
     Activity::getMemPoolUsage(mempool_size, active_activities);
 #endif
     uint64_t max_mempool_size, global_mempool_size, global_active_activities;
-    
+
 #ifdef SST_CONFIG_HAVE_MPI
     uint64_t local_sync_data_size = Simulation::getSimulation()->getSyncQueueDataSize();
 
@@ -92,22 +92,22 @@ void SimulatorHeartbeat::execute( void )
     global_active_activities = active_activities;
 #endif
 
-        
+
     if ( rank == 0 ) {
         char ua_buffer[256];
-        
+
         sprintf(ua_buffer, "%" PRIu64 "B", global_max_sync_data_size);
         UnitAlgebra global_max_sync_data_size_ua(ua_buffer);
-        
+
         sprintf(ua_buffer, "%" PRIu64 "B", global_sync_data_size);
         UnitAlgebra global_sync_data_size_ua(ua_buffer);
-        
+
         sprintf(ua_buffer, "%" PRIu64 "B", max_mempool_size);
         UnitAlgebra max_mempool_size_ua(ua_buffer);
-        
+
         sprintf(ua_buffer, "%" PRIu64 "B", global_mempool_size);
         UnitAlgebra global_mempool_size_ua(ua_buffer);
-        
+
         sim_output.output("\tMax mempool usage:               %s\n",
                           max_mempool_size_ua.toStringBestSI().c_str());
         sim_output.output("\tGlobal mempool usage:            %s\n",
@@ -120,7 +120,7 @@ void SimulatorHeartbeat::execute( void )
                           global_max_sync_data_size_ua.toStringBestSI().c_str());
         sim_output.output("\tGlobal Sync data size:           %s\n",
                           global_sync_data_size_ua.toStringBestSI().c_str());
-        
+
     }
 
 }

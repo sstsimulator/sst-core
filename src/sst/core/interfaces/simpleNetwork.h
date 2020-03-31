@@ -1,9 +1,9 @@
 // -*- mode: c++ -*-
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -29,10 +29,10 @@ namespace SST {
 class Component;
 class Event;
 class Link;
-    
+
 namespace Interfaces {
-    
-    
+
+
 /**
  * Generic network interface
  */
@@ -41,12 +41,12 @@ class SimpleNetwork : public SubComponent {
 public:
 
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork,int)
-    
+
     /** All Addresses can be 64-bit */
     typedef int64_t nid_t;
 
     static const nid_t INIT_BROADCAST_ADDR;
-    
+
     /**
      * Represents both network sends and receives
      */
@@ -60,10 +60,10 @@ public:
         bool   head;          /*!< True if this is the head of a stream */
         bool   tail;          /*!< True if this is the tail of a steram */
         bool   allow_adaptive; /*!< Indicates whether adaptive routing is allowed or not. */
-        
+
     private:
         Event* payload;       /*!< Payload of the request */
-        
+
     public:
 
         /**
@@ -73,7 +73,7 @@ public:
         inline void givePayload(Event *event) {
             payload = event;
         }
-        
+
         /**
            Returns the payload for the request.  This will also set
            the payload to nullptr, so the call will only return valid
@@ -124,7 +124,7 @@ public:
         {
             if ( payload != nullptr ) delete payload;
         }
-        
+
         inline Request* clone() {
             Request* req = new Request(*this);
             // Copy constructor only makes a shallow copy, need to
@@ -132,12 +132,12 @@ public:
             if ( payload != nullptr ) req->payload = payload->clone();
             return req;
         }
-        
+
         void setTraceID(int id) {traceID = id;}
         void setTraceType(TraceType type) {trace = type;}
         int getTraceID() {return traceID;}
         TraceType getTraceType() {return trace;}
-        
+
         void serialize_order(SST::Core::Serialization::serializer &ser) override {
             ser & dest;
             ser & src;
@@ -150,7 +150,7 @@ public:
             ser & traceID;
             ser & allow_adaptive;
         }
-        
+
     protected:
         TraceType trace;
         int traceID;
@@ -172,7 +172,7 @@ public:
             SubComponent(parent)
         {}
 #endif
-        
+
         NetworkInspector(ComponentId_t id) :
             SubComponent(id)
         {}
@@ -200,7 +200,7 @@ public:
         virtual bool operator()(int) = 0;
         virtual ~HandlerBase() {}
     };
-    
+
 
     /** Event Handler class with user-data argument
      * @tparam classT Type of the Object
@@ -213,7 +213,7 @@ public:
         classT* object;
         const PtrMember member;
         argT data;
-        
+
     public:
         /** Constructor
          * @param object - Pointer to Object upon which to call the handler
@@ -225,12 +225,12 @@ public:
             member(member),
             data(data)
         {}
-        
+
         bool operator()(int vn) {
             return (object->*member)(vn,data);
         }
     };
-    
+
     /** Event Handler class without user-data
      * @tparam classT Type of the Object
      */
@@ -240,7 +240,7 @@ public:
         typedef bool (classT::*PtrMember)(int);
         classT* object;
         const PtrMember member;
-        
+
     public:
         /** Constructor
          * @param object - Pointer to Object upon which to call the handler
@@ -250,14 +250,14 @@ public:
             object(object),
             member(member)
         {}
-        
+
         bool operator()(int vn) {
             return (object->*member)(vn);
         }
     };
 
 public:
-    
+
 #ifndef SST_ENABLE_PREVIEW_BUILD
     /** Constructor, designed to be used via 'loadSubComponent'. */
     SimpleNetwork(SST::Component *comp) :
@@ -310,7 +310,7 @@ public:
     virtual void sendUntimedData(Request *req) {
         sendInitData(req);
     }
-        
+
     /**
      * Receive any data during untimed phases (init() and complete()).
      * @see SST::Link::recvUntimedData()
@@ -363,7 +363,7 @@ public:
      * @return true if there is space in the output, false otherwise
      */
      virtual bool spaceToSend(int vn, int num_bits) = 0;
-     
+
 
     /**
      * Checks if there is a waiting network request request pending in

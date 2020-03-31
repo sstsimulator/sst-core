@@ -1,12 +1,12 @@
 // -*- c++ -*-
 
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -26,7 +26,7 @@ namespace SST {
 
    Fixed point class that stores digits in radix-10.  Size is
    specified in words, and each word represents 8 digits.
-   
+
    @tparam whole_words Number of words used to represent the digits to
    the left of the decimal point.  Each word represents 8 decimal
    digits.
@@ -39,10 +39,10 @@ template <int whole_words, int fraction_words>
 class decimal_fixedpoint {
 
 public:
-    static constexpr uint32_t storage_radix = 100000000; 
-    static constexpr uint64_t storage_radix_long = 100000000l; 
+    static constexpr uint32_t storage_radix = 100000000;
+    static constexpr uint64_t storage_radix_long = 100000000l;
     static constexpr int32_t  digits_per_word = 8;
-    
+
     /**
        Get the value of whole_words template parameter.
      */
@@ -65,7 +65,7 @@ private:
 
     /**
        Data representing the digits of the number.
-       
+
        Represents 8 decimal digits per 32-bits.  Each digit will not
        be represented independently, but rather all 8 digits will be
        represented as a number of parts out of 100,000,000.
@@ -93,7 +93,7 @@ private:
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
             data[i] = 0;
         }
-        
+
         // Look for a negative sign
         if ( init[0] == '-' ) {
             negative = true;
@@ -117,7 +117,7 @@ private:
 
         // get rid of the decimal point
         init.erase(dp,1);
-        
+
         //                     pos of decimal pt       digits after dec pt
         int start_of_digits = (fraction_words * digits_per_word) - (init.length() - dp) + exponent;
         // Convert digits to numbers
@@ -137,7 +137,7 @@ private:
             mult *= 10;
             if (mult == storage_radix) mult = 1;
         }
-        
+
     }
 
     /**
@@ -179,11 +179,11 @@ private:
             data[i] = 0;
         }
         double factor = 1;
-        
+
         for ( int i = 0; i < whole_words - 1; ++i ) {
             factor *= storage_radix;
         }
-        
+
         for ( int i = whole_words + fraction_words - 1; i >= 0; --i ) {
             data[i] = static_cast<uint32_t>(init / factor);
             init -= (data[i] * factor);
@@ -202,7 +202,7 @@ public:
         negative = false;
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
             data[i] = 0;
-        }        
+        }
     }
 
     /**
@@ -277,7 +277,7 @@ public:
         }
         return *this;
     }
-    
+
     /**
        Equal operator for 64-bit unsigned int.
      */
@@ -285,7 +285,7 @@ public:
         from_uint64(v);
         return *this;
     }
-    
+
     /**
        Equal operator for 64-bit signed int.
      */
@@ -299,7 +299,7 @@ public:
         }
         return *this;
     }
-    
+
     /**
        Equal operator for double.
      */
@@ -307,7 +307,7 @@ public:
         from_double(v);
         return *this;
     }
-    
+
     /**
        Equal operator for string.
      */
@@ -315,8 +315,8 @@ public:
         from_string(v);
         return *this;
     }
-    
-    
+
+
     /**
        Negate the value (change the sign bit).
      */
@@ -342,7 +342,7 @@ public:
 
         return ret;
     }
-    
+
     /**
        Return a int64_t version of the decimal_fixedpoint.  There is
        possible precision loss in this conversion.
@@ -400,7 +400,7 @@ public:
     T convert_to(typename std::enable_if<std::is_unsigned<T>::value>::type* = 0) const {
         return static_cast<T>(toUnsignedLong());
     }
-    
+
     /**
        Templated conversion function for signed integral types.
      */
@@ -409,7 +409,7 @@ public:
                  std::is_integral<T>::value >::type* = 0)  const {
         return static_cast<T>(toLong());
     }
-    
+
     /**
        Templated conversion function for floating point types.
      */
@@ -417,7 +417,7 @@ public:
     T convert_to(typename std::enable_if<std::is_floating_point<T>::value >::type* = 0) const {
         return static_cast<T>(toDouble());
     }
-    
+
     /**
        Create a string representation of this decimal_fixedpoint.
 
@@ -433,7 +433,7 @@ public:
         // First create a digit by digit representation so we can
         // reason about what to print based on the precision.
         constexpr int num_digits = (whole_words + fraction_words) * digits_per_word;
-        
+
         unsigned char digits[num_digits];
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
             uint32_t value = data[i];
@@ -465,7 +465,7 @@ public:
             if ( digits[round_position] > 5 ) round = true;
             else if ( digits[round_position] < 5 ) round = false;
             else { // Round if the rest aren't zeros
-            
+
                 for ( int i = round_position - 1; i >= 0; --i ) {
                     if ( digits[i] != 0 ) {
                         round = true;
@@ -497,7 +497,7 @@ public:
 
         // print possible negative sign
         if ( negative ) stream << '-';
-        
+
 
         // Find the first non-zero
         first_non_zero = -1;
@@ -515,7 +515,7 @@ public:
             stream << "1e+" << (whole_words*digits_per_word);
             return stream.str();
         }
-        
+
         // There are several cases to cover:
 
         // Need to switch to exponent notation for numbers > 1
@@ -546,7 +546,7 @@ public:
             stream << "e+" << std::setfill('0') << std::setw(2) << exponent;
             // return stream.str();
         }
-        
+
         // Decimal point is within the string of digits to print
         else if ( first_non_zero >= (fraction_words * digits_per_word)) {
             int zeros = 0;
@@ -554,9 +554,9 @@ public:
                 // Digits before the decimal point
                 stream << static_cast<uint32_t>(digits[i]);
             }
-            
+
             stream << ".";
-                
+
             for ( int i = (fraction_words * digits_per_word) - 1;
                   i >= first_non_zero - precision && (i >= 0);
                   --i ) {
@@ -635,10 +635,10 @@ public:
             }
             stream << "e-" << std::setfill('0') << std::setw(2) << exponent;
         }
-        
+
         return stream.str();
     }
-    
+
     /**
        Adds another number to this one and sets it equal to the
        result.
@@ -669,7 +669,7 @@ public:
             uint64_t carry_over = 1;
             for ( int i = 0; i < whole_words + fraction_words; i++ ) {
                 uint64_t negate = static_cast<uint64_t>(storage_radix - 1) - static_cast<uint64_t>(v.data[i]);
-                
+
                 uint64_t value = static_cast<uint64_t>(data[i])
                     + negate
                     + carry_over;
@@ -684,7 +684,7 @@ public:
             uint64_t carry_over = 1;
             for ( int i = 0; i < whole_words + fraction_words; i++ ) {
                 uint64_t negate = static_cast<uint64_t>(storage_radix - 1) - static_cast<uint64_t>(data[i]);
-                
+
                 uint64_t value = static_cast<uint64_t>(v.data[i])
                     + negate
                     + carry_over;
@@ -720,7 +720,7 @@ public:
     decimal_fixedpoint& operator*= (const decimal_fixedpoint& v) {
         // Need to do the multiply accumulate for each digit.
         decimal_fixedpoint<whole_words,fraction_words> me(*this);
-        
+
         // The first "fraction_words" digits only matter as far as
         // their carries go.  They get dropped in the final output
         // because they are less than the least significant digit.
@@ -742,7 +742,7 @@ public:
             carry_over = sum / storage_radix_long;
             data[i-fraction_words] = static_cast<uint32_t>(sum % storage_radix_long);
         }
-        
+
         for ( int i = 0; i < fraction_words; ++i ) {
             uint64_t sum = carry_over;
             for ( int j = i+1; j < whole_words + fraction_words; ++j ) {
@@ -781,7 +781,7 @@ public:
         decimal_fixedpoint me(*this);
         decimal_fixedpoint<whole_words,fraction_words> inv(1.0 / toDouble());
         // decimal_fixedpoint<whole_words,fraction_words> inv("400");
-        
+
         decimal_fixedpoint<whole_words,fraction_words> two(2.0);
 
         // Since we converted to double to get an estimate of the
@@ -789,7 +789,7 @@ public:
         // in our answer.  We'll divide that by 2 for now, just to be
         // save.
         int digits_of_prec = std::numeric_limits<double>::digits10 / 2;
-        
+
         // Number of digits of precision doubles with each iteration
         for ( int i = digits_of_prec; i <= (whole_words + fraction_words) * digits_per_word; i *= 2 ) {
             decimal_fixedpoint temp(inv);
