@@ -77,7 +77,7 @@ public:
     bool            print_timing;       /*!< Print SST timing information */
     bool            print_env;          /*!< Print SST environment */
 
-#ifdef USE_MEMPOOL
+#if defined(USE_MEMPOOL) || defined(__SST_DEBUG_EVENT_TRACKING__)
     std::string     event_dump_file;    /*!< File to dump undeleted events to */
 #endif
 
