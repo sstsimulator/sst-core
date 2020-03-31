@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -25,26 +25,26 @@
 namespace SST {
 namespace Statistics {
 
-// NOTE: When calling base class members of classes derived from 
-//       a templated base class.  The user must use "this->" in 
-//       order to call base class members (to avoid a compiler 
-//       error) because they are "nondependant named" and the 
-//       templated base class is a "dependant named".  The 
-//       compiler will not look in dependant named base classes 
+// NOTE: When calling base class members of classes derived from
+//       a templated base class.  The user must use "this->" in
+//       order to call base class members (to avoid a compiler
+//       error) because they are "nondependant named" and the
+//       templated base class is a "dependant named".  The
+//       compiler will not look in dependant named base classes
 //       when looking up independent names.
 // See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
 
 /**
     \class AccumulatorStatistic
 
-    Allows the online gathering of statistical information about a single quantity. The basic 
+    Allows the online gathering of statistical information about a single quantity. The basic
     statistics are captured online removing the need to keep a copy of the values of interest.
 
     @tparam NumberBase A template for the basic numerical type of values
 */
 
 template <typename NumberBase>
-class AccumulatorStatistic : public Statistic<NumberBase> 
+class AccumulatorStatistic : public Statistic<NumberBase>
 {
 public:
   SST_ELI_DECLARE_STATISTIC_TEMPLATE(
@@ -62,14 +62,14 @@ public:
         m_sum_sq = static_cast<NumberBase>(0);
         m_min = std::numeric_limits<NumberBase>::max();
         m_max = std::numeric_limits<NumberBase>::min();
-        
+
         // Set the Name of this Statistic
         this->setStatisticTypeName("Accumulator");
     }
 
     ~AccumulatorStatistic() {}
 
-protected:    
+protected:
     /**
         Present a new value to the class to be included in the statistics.
         @param value New value to be presented
@@ -94,7 +94,7 @@ public:
         Provides the sum of the values presented so far.
         @return The sum of values presented to the class so far.
     */
-    NumberBase getSum() 
+    NumberBase getSum()
     {
         return m_sum;
     }
@@ -121,7 +121,7 @@ public:
         Provides the sum of each value squared presented to the class so far.
         @return The sum of squared values presented to the class so far.
     */
-    NumberBase getSumSquared() 
+    NumberBase getSumSquared()
     {
         return m_sum_sq;
     }
@@ -130,7 +130,7 @@ public:
         Get the arithmetic mean of the values presented so far
         @return The arithmetic mean of the values presented so far.
     */
-    NumberBase getArithmeticMean() 
+    NumberBase getArithmeticMean()
     {
         uint64_t count = getCount();
         return (count > 0) ? (m_sum / (NumberBase) count) : 0;
@@ -140,7 +140,7 @@ public:
         Get the variance of the values presented so far
         @return The variance of the values presented so far
     */
-    NumberBase getVariance() 
+    NumberBase getVariance()
     {
         uint64_t count = getCount();
         return (count > 0) ? (m_sum_sq * count) - (m_sum * m_sum) : 0;
@@ -150,7 +150,7 @@ public:
         Get the standard deviation of the values presented so far
         @return The standard deviation of the values presented so far
     */
-    NumberBase getStandardDeviation() 
+    NumberBase getStandardDeviation()
     {
         return (NumberBase) std::sqrt( (double) getVariance() );
     }
@@ -159,11 +159,11 @@ public:
         Get a count of the number of elements presented to the statistics collection so far.
         @return Count the number of values presented to the class.
     */
-    uint64_t getCount() 
+    uint64_t getCount()
     {
         return this->getCollectionCount();
     }
-    
+
     void clearStatisticData() override
     {
         m_sum = 0;
@@ -172,7 +172,7 @@ public:
         m_max = std::numeric_limits<NumberBase>::min();
         this->setCollectionCount(0);
     }
-    
+
     void registerOutputFields(StatisticFieldsOutput* statOutput) override
     {
         h_sum   = statOutput->registerField<NumberBase>("Sum");

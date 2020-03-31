@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -20,11 +20,11 @@
 #include "sst/core/output.h"
 #include "sst/core/eli/elementinfo.h"
 
-// SST and ZOLTANÕs configurations are conflicting on the SST_CONFIG_HAVE_MPI definition.  
-// So temporarily shut down SSTÕs SST_CONFIG_HAVE_MPI, then allow ZOLTANÕs SST_CONFIG_HAVE_MPI to 
-//be defined, then reset SSTÕs SST_CONFIG_HAVE_MPI.
-#ifdef SST_CONFIG_HAVE_MPI 
-#undef SST_CONFIG_HAVE_MPI  
+// SST and ZOLTANï¿½s configurations are conflicting on the SST_CONFIG_HAVE_MPI definition.
+// So temporarily shut down SSTï¿½s SST_CONFIG_HAVE_MPI, then allow ZOLTANï¿½s SST_CONFIG_HAVE_MPI to
+//be defined, then reset SSTï¿½s SST_CONFIG_HAVE_MPI.
+#ifdef SST_CONFIG_HAVE_MPI
+#undef SST_CONFIG_HAVE_MPI
 #include <zoltan.h>
 #include <mpi.h>
 #define SST_CONFIG_HAVE_MPI
@@ -56,7 +56,7 @@ protected:
     RankInfo rankcount;
     struct Zoltan_Struct * zolt_config;
     RankInfo rank;
-    
+
 public:
     /**
        Create a Zoltan-based partition scheme
@@ -64,7 +64,7 @@ public:
     */
     SSTZoltanPartition(RankInfo world_size, RankInfo my_rank, int verbosity);
     ~SSTZoltanPartition();
-    
+
     /**
        Performs a partition of an SST partition graph. Components in the graph
        have their setRank() attribute set based on the partition scheme computed
@@ -76,11 +76,11 @@ public:
         void performPartition(ConfigGraph* graph) override {
             SST::Partition::SSTPartitioner::performPartition(graph);
         }
-    
+
     bool requiresConfigGraph() override { return false; }
-    
+
     bool spawnOnAllRanks() override { return true; }
-    
+
 };
 
 }

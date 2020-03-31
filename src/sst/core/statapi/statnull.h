@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -21,12 +21,12 @@
 namespace SST {
 namespace Statistics {
 
-// NOTE: When calling base class members of classes derived from 
-//       a templated base class.  The user must use "this->" in 
-//       order to call base class members (to avoid a compiler 
-//       error) because they are "nondependant named" and the 
-//       templated base class is a "dependant named".  The 
-//       compiler will not look in dependant named base classes 
+// NOTE: When calling base class members of classes derived from
+//       a templated base class.  The user must use "this->" in
+//       order to call base class members (to avoid a compiler
+//       error) because they are "nondependant named" and the
+//       templated base class is a "dependant named".  The
+//       compiler will not look in dependant named base classes
 //       when looking up indepenedent names.
 // See: http://www.parashift.com/c++-faq-lite/nondependent-name-lookup-members.html
 

@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -118,7 +118,7 @@ static void setupSignals(uint32_t threadRank)
 
 static void dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo &size) {
 
-    ///////////////////////////////////////////////////////////////////////    
+    ///////////////////////////////////////////////////////////////////////
     // If the user asks us to dump the partitioned graph.
     if(cfg.dump_component_graph_file != "") {
         if(cfg.verbose) {
@@ -162,7 +162,7 @@ static void do_graph_wireup(ConfigGraph* graph,
         const RankInfo &myRank, SimTime_t min_part) {
 
     if ( !graph->containsComponentInRank( myRank ) ) {
-        g_output.output("WARNING: No components are assigned to rank: %u.%u\n", 
+        g_output.output("WARNING: No components are assigned to rank: %u.%u\n",
                 myRank.rank, myRank.thread);
     }
 
@@ -327,7 +327,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
 
         sim->initialize();
         barrier.wait();
-        
+
         /* Run Set */
         sim->setup();
         barrier.wait();
@@ -347,7 +347,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
 
     info.simulated_time = sim->getFinalSimTime();
     // g_output.output(CALL_INFO,"Simulation time = %s\n",info.simulated_time.toStringBestSI().c_str());
-    
+
     double end_time = sst_get_cpu_time();
     info.run_time = end_time - start_run;
 
@@ -418,7 +418,7 @@ main(int argc, char *argv[])
     Output::setWorldSize(world_size, myrank);
     g_output = Output::setDefaultObject(cfg.output_core_prefix, cfg.getVerboseLevel(), 0, Output::STDOUT);
 
-    
+
     g_output.verbose(CALL_INFO, 1, 0, "#main() My rank is (%u.%u), on %u/%u nodes/threads\n", myRank.rank,myRank.thread, world_size.rank, world_size.thread);
 
     // Get the memory before we create the graph
@@ -593,7 +593,7 @@ main(int argc, char *argv[])
             }
 
             // Need to send the your_ranks set and the proper
-            // subgraph for further distribution                
+            // subgraph for further distribution
             ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
             int dest = *your_ranks.begin();
             Comms::send(dest, 0, your_ranks);
@@ -709,7 +709,7 @@ main(int argc, char *argv[])
     uint64_t global_max_tv_depth = 0;
     uint64_t local_current_tv_depth = threadInfo[0].current_tv_depth;
     uint64_t global_current_tv_depth = 0;
-    
+
     uint64_t global_max_sync_data_size = 0, global_sync_data_size = 0;
 
     uint64_t mempool_size = 0, max_mempool_size = 0, global_mempool_size = 0;
@@ -770,7 +770,7 @@ main(int argc, char *argv[])
 
         sprintf(ua_buffer, "%" PRIu64 "B", global_mempool_size);
         UnitAlgebra global_mempool_size_ua(ua_buffer);
-        
+
         g_output.output( "\n");
         g_output.output("\n");
         g_output.output( "------------------------------------------------------------\n");
@@ -821,7 +821,7 @@ main(int argc, char *argv[])
         Activity::printUndeletedActivities("",out, MAX_SIMTIME_T);
     }
 #endif
-    
+
 #ifdef SST_CONFIG_HAVE_MPI
     if( 0 == myRank.rank ) {
 #endif

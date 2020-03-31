@@ -1,12 +1,12 @@
 // -*- c++ -*-
 
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -29,14 +29,14 @@ namespace SST {
 
 class TimeConverter;
 class UnitAlgebra;
-    
-  /** 
+
+  /**
       Class for creating and managing TimeConverter objects
    */
 class TimeLord {
     typedef std::map<SimTime_t,TimeConverter*> TimeConverterMap_t;
     typedef std::map<std::string,TimeConverter*> StringToTCMap_t;
-    
+
  public:
   /**
       Create a new TimeConverter object using specified SI Units. For
@@ -104,7 +104,7 @@ class TimeLord {
     TimeConverter* micro;
     TimeConverter* milli;
 
-};    
+};
 
 } // namespace SST
 

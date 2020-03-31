@@ -1,12 +1,12 @@
 // -*- c++ -*-
 
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -125,7 +125,7 @@ public:
     void finish();
 
     bool isIndependentThread() { return independent;}
-    
+
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
     Mode_t getSimulationMode() const { return runMode; };
     /** Return the current simulation time as a cycle count*/
@@ -161,7 +161,7 @@ public:
     */
     TimeConverter* registerOneShot(const std::string& timeDelay, OneShot::HandlerBase* handler, int priority);
     TimeConverter* registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority);
-    
+
     /** Insert an activity to fire at a specified time */
     void insertActivity(SimTime_t time, Activity* ev);
 
@@ -215,7 +215,7 @@ public:
     }
 
 
-    ComponentInfo* getComponentInfo(const ComponentId_t &id) const {        
+    ComponentInfo* getComponentInfo(const ComponentId_t &id) const {
         ComponentInfo* i = compInfoMap.getByID(id);
         // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
         if ( nullptr != i ) {
@@ -261,13 +261,13 @@ public:
      *  the Rank
      */
     static SimTime_t getLocalMinimumNextActivityTime();
-    
+
     /**
      * Returns the Simulation's SharedRegionManager
      */
     static SharedRegionManager* getSharedRegionManager() { return sharedRegionManager; }
-    
-    /** 
+
+    /**
     * Returns true when the Wireup is finished.
     */
     bool isWireUpFinished() {return wireUpFinished; }
@@ -307,7 +307,7 @@ private:
 
 
 
-    Component* createComponent(ComponentId_t id, const std::string& name, 
+    Component* createComponent(ComponentId_t id, const std::string& name,
                                Params &params);
 
     TimeVortex* getTimeVortex() const { return timeVortex; }
@@ -319,7 +319,7 @@ private:
     /** Normal Shutdown
      */
     void endSimulation(void) { endSimulation(currentSimCycle); }
-    void endSimulation(SimTime_t end); 
+    void endSimulation(SimTime_t end);
 
     typedef enum {
         SHUTDOWN_CLEAN,     /* Normal shutdown */
@@ -328,7 +328,7 @@ private:
     } ShutdownMode_t;
 
     friend class SyncManager;
-    
+
     Mode_t   runMode;
     TimeVortex*      timeVortex;
     TimeConverter*   threadMinPartTC;

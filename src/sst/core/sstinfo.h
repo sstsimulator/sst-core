@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -22,9 +22,9 @@
 
 class TiXmlNode;
 
-namespace SST { 
-    
-// CONFIGURATION BITS    
+namespace SST {
+
+// CONFIGURATION BITS
 #define CFG_OUTPUTHUMAN 0x00000001
 #define CFG_OUTPUTXML   0x00000002
 #define CFG_VERBOSE     0x00000004
@@ -32,11 +32,11 @@ namespace SST {
 /**
  * The SSTInfo Configuration class.
  *
- * This class will parse the command line, and setup internal 
- * lists of elements and components to be processed. 
+ * This class will parse the command line, and setup internal
+ * lists of elements and components to be processed.
  */
 class SSTInfoConfig {
-public:    
+public:
     typedef std::multimap<std::string, std::string> FilterMap_t;
     /** Create a new SSTInfo configuration and parse the Command Line. */
     SSTInfoConfig();

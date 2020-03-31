@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -46,8 +46,8 @@ RankInfo Output::m_worldSize;
 int Output::m_mpiRank = 0;
 
 
-Output::Output(const std::string& prefix, uint32_t verbose_level,   
-               uint32_t verbose_mask,output_location_t location, 
+Output::Output(const std::string& prefix, uint32_t verbose_level,
+               uint32_t verbose_mask,output_location_t location,
                const std::string& localoutputfilename /*=""*/)
 {
     m_objInitialized = false;
@@ -68,8 +68,8 @@ Output::Output()
 }
 
 
-void Output::init(const std::string& prefix, uint32_t verbose_level,  
-                  uint32_t verbose_mask, output_location_t location, 
+void Output::init(const std::string& prefix, uint32_t verbose_level,
+                  uint32_t verbose_mask, output_location_t location,
                   const std::string& localoutputfilename /*=""*/)
 {
     // Only initialize if the object has not yet been initialized.
@@ -85,7 +85,7 @@ void Output::init(const std::string& prefix, uint32_t verbose_level,
         m_targetFileHandleRef = nullptr;
         m_targetFileNameRef = nullptr;
         m_targetFileAccessCountRef = nullptr;
-    
+
         setTargetOutput(location);
 
         m_objInitialized = true;
@@ -140,9 +140,9 @@ void Output::setOutputLocation(output_location_t location)
 {
     // Check to see if we need to close the file (if we are set to FILE)
     closeSSTTargetFile();
-    
+
     // Set the new target output
-    setTargetOutput(location);    
+    setTargetOutput(location);
 }
 
 
@@ -159,24 +159,24 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
     va_list     arg1;
     va_list     arg2;
     std::string newFmt;
-    
+
     newFmt = std::string("FATAL: ") + buildPrefixString(line, file, func) + format;
-    
+
     // Get the argument list
     va_start(arg1, format);
     // Always output to STDERR
     std::vfprintf(stderr, newFmt.c_str(), arg1);
     va_end(arg1);
-    
+
     // Output to the target location as long is it is not NONE or
     // STDERR (prevent 2 outputs to stderr)
     if (true == m_objInitialized && NONE != m_targetLoc && STDERR != m_targetLoc) {
-        // Print it out to the target location 
+        // Print it out to the target location
         va_start(arg2, format);
 
         // If the target output is a file, Make sure that the file is created and opened
         openSSTTargetFile();
-        
+
         // Check to make sure output location is not NONE
         // Also make sure we are not redundantly printing to screen
         // We have already printed to stderr
@@ -186,8 +186,8 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
         va_end(arg2);
     }
-    
-    // Flush the outputs    
+
+    // Flush the outputs
     std::fflush(stderr);
     flush();
 
@@ -219,19 +219,19 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
 void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
 {
-    // This method will be called by the SST core during startup parameter 
-    // checking to set the output file name.  It is not intended to be called 
+    // This method will be called by the SST core during startup parameter
+    // checking to set the output file name.  It is not intended to be called
     // by the SST components.
     //
-    // NOTE: This method can be called only once  
-    
+    // NOTE: This method can be called only once
+
     // Make sure we do not have a empty string from the user.
     if (0 == filename.length()) {
         // We need to abort here, this is an illegal condition
         fprintf(stderr, "ERROR: Output::setFileName(filename) - Parameter filename cannot be an empty string.\n");
         exit(-1);
     }
-    
+
     // Set the Filename, only if it has not yet been set.
     if (0 == m_sstGlobalSimFileName.length()) {
         m_sstGlobalSimFileName = filename;
@@ -246,9 +246,9 @@ void Output::setTargetOutput(output_location_t location)
 {
     // Set the Target location
     m_targetLoc = location;
-    
+
     // Figure out where we need to send the output, we do this here rather
-    // than over and over in the output methods.  If set to NONE, we choose 
+    // than over and over in the output methods.  If set to NONE, we choose
     // stdout, but will not output any value (checked in the output methods)
     switch (m_targetLoc) {
     case FILE:
@@ -266,7 +266,7 @@ void Output::setTargetOutput(output_location_t location)
             m_targetFileNameRef        = &m_sstLocalFileName;
             m_targetFileAccessCountRef = &m_sstLocalFileAccessCount;
         }
-        // Increment the Access count for the target output file 
+        // Increment the Access count for the target output file
         (*m_targetFileAccessCountRef)++;
         break;
     case STDERR:
@@ -290,17 +290,17 @@ void Output::openSSTTargetFile() const
     if (true == m_objInitialized) {
         // If the target output is a file, See if the output file is created and opened
         if ((FILE == m_targetLoc) && (nullptr == *m_targetFileHandleRef)) {
-  
+
             // Check to see if the File has not been opened.
             if ((*m_targetFileAccessCountRef > 0) && (nullptr == *m_targetFileHandleRef)) {
                 tempFileName = *m_targetFileNameRef;
-                
+
                 // Append the rank to file name if MPI_COMM_WORLD is GT 1
                 if (getMPIWorldSize() > 1) {
                     sprintf(tempBuf, "%d", getMPIWorldRank());
                     tempFileName += tempBuf;
                 }
-                
+
                 // Now try to open the file
                 handle = fopen(tempFileName.c_str(), "w");
                 if (nullptr != handle){
@@ -321,11 +321,11 @@ void Output::closeSSTTargetFile()
     if ((true == m_objInitialized) && (FILE == m_targetLoc)) {
         // Decrement the Access count for the file
         if (*m_targetFileAccessCountRef > 0) {
-            (*m_targetFileAccessCountRef)--; 
+            (*m_targetFileAccessCountRef)--;
         }
 
         // If the access count is zero, and the file has been opened, then close it
-        if ((0 == *m_targetFileAccessCountRef) && 
+        if ((0 == *m_targetFileAccessCountRef) &&
             (nullptr != *m_targetFileHandleRef) &&
             (FILE == m_targetLoc)) {
             fclose (*m_targetFileHandleRef);
@@ -341,16 +341,16 @@ std::string Output::buildPrefixString(uint32_t line, const std::string& file, co
     size_t      findindex = 0;
     char        tempBuf[256];
 
-    // Scan the string for tokens 
+    // Scan the string for tokens
     while(std::string::npos != findindex){
-        
-        // Find the next '@' from the starting index 
+
+        // Find the next '@' from the starting index
         findindex = m_outputPrefix.find("@", startindex);
 
         // Check to see if we found anything
         if (std::string::npos != findindex){
-            
-            // We found the @, copy the string up to this point 
+
+            // We found the @, copy the string up to this point
             rtnstring += m_outputPrefix.substr(startindex, findindex - startindex);
 
             // check the next character to see what we need to do
@@ -429,7 +429,7 @@ std::string Output::buildPrefixString(uint32_t line, const std::string& file, co
     }
     // copy the remainder of the string from the start index to the end.
     rtnstring += m_outputPrefix.substr(startindex);
-    
+
     return rtnstring;
 }
 
@@ -438,10 +438,10 @@ void Output::outputprintf(uint32_t line, const std::string& file,
                           const std::string& func, const char* format, va_list arg) const
 {
     std::string newFmt;
-    
+
     // If the target output is a file, Make sure that the file is created and opened
     openSSTTargetFile();
-    
+
     // Check to make sure output location is not NONE
     if (NONE != m_targetLoc) {
         newFmt = buildPrefixString(line, file, func) + format;
@@ -455,7 +455,7 @@ void Output::outputprintf(const char* format, va_list arg) const
 {
     // If the target output is a file, Make sure that the file is created and opened
     openSSTTargetFile();
-    
+
     // Check to make sure output location is not NONE
     if (NONE != m_targetLoc) {
         std::vfprintf(*m_targetOutputRef, format, arg);
@@ -482,7 +482,7 @@ uint32_t Output::getThreadRank() const {
 }
 
 
-std::vector<char> TraceFunction::indent_array(100,' '); 
+std::vector<char> TraceFunction::indent_array(100,' ');
 // std::vector<char> TraceFunction::indent_array;
 int TraceFunction::trace_level = 0;
 
@@ -525,7 +525,7 @@ TraceFunction::~TraceFunction() {
 
 void TraceFunction::output(const char* format, ...) const
 {
-    
+
     // Need to add the indent
     char buf[200];
 
@@ -533,7 +533,7 @@ void TraceFunction::output(const char* format, ...) const
     indent_array[indent] = '\0';
     sprintf(buf,"%s%s",indent_array.data(),format);
     indent_array[indent] = ' ';
-    
+
     va_list arg;
     va_start(arg, format);
     output_obj.outputprintf(line,file.c_str(),function.c_str(), buf, arg);

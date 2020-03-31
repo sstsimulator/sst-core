@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -121,7 +121,7 @@ NO_VARIABLE:
                 std::invalid_argument t(msg);
                 throw t;
             }
-        }        
+        }
     }
 
     /** Find a Parameter value in the set, and return its value as a type T.
@@ -160,13 +160,13 @@ NO_VARIABLE:
                 std::invalid_argument t(msg);
                 throw t;
             }
-        }        
+        }
     }
-    
+
     typedef std::map<uint32_t, std::string>::const_iterator const_iterator; /*!< Const Iterator type */
 
     const std::string& getString(const std::string& name, bool& found) const;
-    
+
 public:
     typedef std::string key_type;  /*!< Type of key (string) */
     typedef std::set<key_type, KeyCompare> KeySet_t; /*!< Type of a set of keys */
@@ -238,7 +238,7 @@ public:
     find(const std::string& k, T default_value, bool &found) const {
         return find_impl<T>(k,default_value,found);
     }
-    
+
     /** Find a Parameter value in the set, and return its value as a type T.
      * Type T must be either a basic numeric type (including bool) ,
      * a std::string, or a class that has a constructor with a std::string
@@ -253,7 +253,7 @@ public:
     T find(const std::string& k, const std::string& default_value, bool &found) const {
         return find_impl<T>(k,default_value,found);
     }
-    
+
     /** Find a Parameter value in the set, and return its value as a type T.
      * This version of find is only enabled for bool.  This
      * is required because a string literal will be preferentially
@@ -286,7 +286,7 @@ public:
         bool tmp;
         return find_impl<T>(k, default_value, tmp);
     }
-    
+
     /** Find a Parameter value in the set, and return its value as a type T.
      * Type T must be either a basic numeric type (including bool) ,
      * a std::string, or a class that has a constructor with a std::string
@@ -301,7 +301,7 @@ public:
         bool tmp;
         return find_impl<T>(k, default_value, tmp);
     }
-    
+
     /** Find a Parameter value in the set, and return its value as a type T.
      * This version of find is only enabled for bool.  This
      * is required because a string literal will be preferentially
@@ -321,7 +321,7 @@ public:
         }
         return find_impl<T>(k, std::string(default_value), tmp);
     }
-    
+
     /** Find a Parameter value in the set, and return its value as a type T.
      * Type T must be either a basic numeric type (including bool) ,
      * a std::string, or a class that has a constructor with a std::string
@@ -419,7 +419,7 @@ public:
     void insert(const Params& params);
 
     std::set<std::string> getKeys() const;
-    
+
      /** Returns a new parameter object with parameters that match
      * the specified prefix.
      */
@@ -496,8 +496,8 @@ private:
      type Params::find(const std::string& k, const std::string& default_value ) const; \
      template <> \
      type Params::find(const std::string& k) const;
-  
- 
+
+
  SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(int32_t)
  SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(uint32_t)
  SST_PARAMS_DECLARE_TEMPLATE_SPECIALIZATION(int64_t)

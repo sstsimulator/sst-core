@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -27,7 +27,7 @@ StatisticOutputJSON::StatisticOutputJSON(Params& outputParameters)
     Output &out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputJSON enabled...\n");
     setStatisticOutputName("StatisticOutputJSON");
-    
+
     m_currentComponentName = "";
     m_firstEntry = false;
     m_processedAnyStats = false;
@@ -40,7 +40,7 @@ bool StatisticOutputJSON::checkOutputParameters()
     std::string simTimeFlag;
     std::string rankFlag;
 
-    // Review the output parameters and make sure they are correct, and 
+    // Review the output parameters and make sure they are correct, and
     // also setup internal variables
 
     // Look for Help Param
@@ -53,11 +53,11 @@ bool StatisticOutputJSON::checkOutputParameters()
     m_FilePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.json");
     simTimeFlag = getOutputParameters().find<std::string>("outputsimtime", "1");
     rankFlag = getOutputParameters().find<std::string>("outputrank", "1");
-    
+
     m_outputSimTime = ("1" == simTimeFlag);
     m_outputRank = ("1" == rankFlag);
 
-    if (0 == m_FilePath.length()) { 
+    if (0 == m_FilePath.length()) {
         // Filepath is zero length
         return false;
     }
@@ -77,18 +77,18 @@ void StatisticOutputJSON::printUsage()
     out.output(" : outputrank = 0 | 1 - Output Rank - Default is 1\n");
 }
 
-void StatisticOutputJSON::startOfSimulation() 
+void StatisticOutputJSON::startOfSimulation()
 {
     // Open the finalized filename
     if ( ! openFile() )
         return;
-        
+
     fprintf(m_hFile, "{\n");
     m_curIndentLevel++;
-    
+
     if (1 < Simulation::getSimulation()->getNumRanks().rank) {
         const int thisRank = Simulation::getSimulation()->getRank().rank;
-        
+
         printIndent();
         fprintf(m_hFile, "\"rank\" : %d\n\n", thisRank);
     }
@@ -158,7 +158,7 @@ void StatisticOutputJSON::implStartOutputEntries(StatisticBase* statistic)
     } else {
         fprintf(m_hFile, ",\n");
     }
-    
+
     printIndent();
     fprintf(m_hFile, "{ \"stat\" : \"%s\", \"values\" : [ ", statistic->getStatName().c_str());
 
@@ -166,7 +166,7 @@ void StatisticOutputJSON::implStartOutputEntries(StatisticBase* statistic)
     m_firstField = true;
 }
 
-void StatisticOutputJSON::implStopOutputEntries() 
+void StatisticOutputJSON::implStopOutputEntries()
 {
     fprintf(m_hFile, " ] }");
 }
@@ -176,9 +176,9 @@ void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int32_t
     if( ! m_firstField) {
         fprintf(m_hFile, ", ");
     }
-    
+
     fprintf(m_hFile, "%" PRId32 , data);
-    
+
     m_firstField = false;
 }
 
@@ -187,9 +187,9 @@ void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint32_
     if( ! m_firstField) {
         fprintf(m_hFile, ", ");
     }
-    
+
     fprintf(m_hFile, "%" PRIu32 , data);
-    
+
     m_firstField = false;
 }
 
@@ -198,9 +198,9 @@ void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), int64_t
     if( ! m_firstField) {
         fprintf(m_hFile, ", ");
     }
-    
+
     fprintf(m_hFile, "%" PRId64 , data);
-    
+
     m_firstField = false;
 }
 
@@ -209,9 +209,9 @@ void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), uint64_
     if( ! m_firstField) {
         fprintf(m_hFile, ", ");
     }
-    
+
     fprintf(m_hFile, "%" PRIu64 , data);
-    
+
     m_firstField = false;
 }
 
@@ -220,9 +220,9 @@ void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), float d
     if( ! m_firstField) {
         fprintf(m_hFile, ", ");
     }
-    
+
     fprintf(m_hFile, "%f ", data);
-    
+
     m_firstField = false;
 }
 
@@ -233,7 +233,7 @@ void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), double 
     }
 
     fprintf(m_hFile, "%f ", data);
-    
+
     m_firstField = false;
 }
 
@@ -241,14 +241,14 @@ void StatisticOutputJSON::outputField(fieldHandle_t UNUSED(fieldHandle), double 
 bool StatisticOutputJSON::openFile(void)
 {
     m_hFile = fopen(m_FilePath.c_str(), "w");
-    
+
     if (nullptr == m_hFile) {
         // We got an error of some sort
         Output out = Simulation::getSimulation()->getSimulationOutput();
         out.fatal(CALL_INFO, 1, " : StatisticOutputJSON - Problem opening File %s - %s\n", m_FilePath.c_str(), strerror(errno));
         return false;
     }
-    
+
     return true;
 }
 
