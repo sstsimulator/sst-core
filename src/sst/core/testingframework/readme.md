@@ -68,3 +68,20 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
    * 1 or more scenarios can be defined concurrently.
    * The decision to skip is made in the testsuite source code.
 
+## Creating new testsuites
+  * In general, testsuites are named `testsuite_XXX_YYY.py` where XXX = The test_type name, and YYY is the general name of the testsuite.  These testsuites should live the tests directory 
+     - test_type name is normally `default`.  All testsuites with a test_type of `default` will be run under normal run conditions.  specialized testsuites may be created with a unique test_type name and will only be run if the -y option identifies that name (or `all`).
+     - Test directories must be in a registered path for the SST Test Frameworks to automatically discover.  See Makefile.am files of various elements on how to register.
+     - 3rd party elements can also register their test paths to the SST Test Frameworks to enable testing. 
+     - Testsuites are python files that contain classes derived from SSTTestCase (defined in module sst_unittest)
+        - Numerous support functions exist in the the modules sst_unittest and sst_unittest_support to assist with testing.
+     - It is recommended that the developer look at examples of other testsuites to see implementation details.
+  * **SST-Core**
+     * SST-Core tests require the support of test elements.  These elements are simular to normal elements defined in SST-Elements.  The core test elements are located in `<core source dir>/src/sst/core/testElements`
+     * SDL Testfiles are located in `<core source dir>/src/sst/core/tests`
+     * Reference Ouput file for the SDL Tests files located in `<core source dir>/src/sst/core/tests/refFiles`
+     * Testscripts that run the SDL Testfiles are located in `<core source dir>/src/sst/core/tests`     
+ * **SST-Elements**
+     * SDL Testfiles are located in `<elements source dir>/src/sst/elements/<element>/tests`
+     * Reference Ouput file for the SDL Tests files located in `<elements source dir>/src/sst/elements/<element>/tests/refFiles`
+     * Testscripts that run the SDL Testfiles are located in `<elements source dir>/src/sst/elements/<element>/tests`
