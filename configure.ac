@@ -82,7 +82,6 @@ SST_CHECK_PREVIEW_BUILD()
 
 SST_CHECK_OSX()
 SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
-SST_CHECK_BOOST([], [])
 
 SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
 SST_CHECK_LIBZ([have_zlib="yes"],[have_zlib="no"],[AC_MSG_ERROR([zlib was requested but could not be found.])])
@@ -122,15 +121,6 @@ AC_DEFINE_UNQUOTED([SST_PYTHON_CPPFLAGS], ["$PYTHON_CPPFLAGS"],
 	[Defines the CPPFLAGS needed to compile Python into SST])
 AC_DEFINE_UNQUOTED([SST_PYTHON_LDFLAGS], ["$PYTHON_LDFLAGS"],
 	[Defines the LDFLAGS needed to compile Python into SST])
-
-AC_DEFINE_UNQUOTED([SST_BOOST_CPPFLAGS], ["$BOOST_CPPFLAGS"],
-	[Defines the CPPFLAGS needed to compile Boost into SST])
-AC_DEFINE_UNQUOTED([SST_BOOST_LDFLAGS], ["$BOOST_LDFLAGS"],
-	[Defines the LDFLAGS needed to compile Boost into SST])
-AC_DEFINE_UNQUOTED([SST_BOOST_LIBS], ["$BOOST_LIBS"],
-	[Defines the LIBS needed to compile Boost into SST])
-AC_DEFINE_UNQUOTED([SST_BOOST_LIBDIR], ["$BOOST_LIBDIR"],
-	[Defines the LIBDIR needed to load dynamic libraries for Boost])
 
 AC_DEFINE([__STDC_FORMAT_MACROS], [1], [Defines that standard PRI macros should be enabled])
 
@@ -229,14 +219,6 @@ printf "%38s : %s\n" "Linker Options" "$LDFLAGS"
 echo "-------------------------------------------------------"
 echo "Configuration Information (Dependencies):"
 echo ""
-
-if test "x$sst_check_boost_happy" = "xyes" ; then
-    printf "%38s : YES\n" "Boost Library"
-    printf "%38s : %s\n" "Boost Library Preprocessor" "$BOOST_CPPFLAGS"
-    printf "%38s : %s\n" "Boost Library Linker Options" "$BOOST_LDFLAGS"
-else
-    printf "%38s : No\n" "Boost Library"
-fi
 
 printf "%38s : %s\n" "Found Python" "$PYTHON_EXE"
 printf "%38s : %s\n" "Python3" "$PYTHON_VERSION3"
