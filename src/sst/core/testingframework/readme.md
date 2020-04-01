@@ -1,7 +1,9 @@
 # SST Testing Frameworks
 
 ## Overview
-This frameworks is built upon Python's unittest module and modified to operate for SST.  It is designed to operate on Python 2.7 - Python 3.x.  No 3rd party modules are required, however to enable (optional) concurrent testing, the `testtools` module must be pip installed.
+This frameworks is built upon Python's unittest module and modified to operate for SST.  It is designed to operate on Python 2.7 - Python 3.x.  No 3rd party modules are required, however to enable (optional) concurrent testing, the `testtools` module must be pip installed.  
+
+When the test system is run, it will automatically discover testsuites (this is can be controlled by the user).  Each testsuite will have multiple tests.  Normally all tests will be run, however some build or environment conditions or scenarios may require tests to be skipped.  
 
 ## Building and Installing the SST Testing Frameworks
 
@@ -45,6 +47,8 @@ This frameworks is built upon Python's unittest module and modified to operate f
       * To install test tools, ```> pip install testtools```
  
 ## Scenarios
-   * Tests and TestCases identified in testsuites can be skipped from running by using the '--scenarios' argument.  1 or more scenarios can be defined concurrently.
+   * Tests and TestCases identified in testsuites can be skipped from running by using the '--scenarios' argument.  
+      * Some tests are not desired to be run under some circumstances (ie the Autotester).
+   * 1 or more scenarios can be defined concurrently.
    * The decision to skip is made in the testsuite source code.
 
