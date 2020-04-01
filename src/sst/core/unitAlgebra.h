@@ -1,12 +1,12 @@
 // -*- c++ -*-
 
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -43,7 +43,7 @@ class Units {
 
 private:
     friend class UnitAlgebra;
-    
+
     // Static data members and functions
     static std::recursive_mutex unit_lock;
     static std::map<std::string,unit_id_t> valid_base_units;
@@ -150,7 +150,7 @@ public:
     std::string toStringBestSI() const;
 
     UnitAlgebra& operator= (const std::string& v);
-    
+
     /** Multiply by an argument; */
     UnitAlgebra& operator*= (const UnitAlgebra& v);
     /** Multiply by an argument; */

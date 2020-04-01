@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -23,7 +23,7 @@
 DISABLE_WARN_MISSING_OVERRIDE
 #include <mpi.h>
 REENABLE_WARNING
-#endif   
+#endif
 
 namespace SST {
 
@@ -35,7 +35,7 @@ public:
     /** Create a new Sync object which fires with a specified period */
     RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC);
     virtual ~RankSyncParallelSkip();
-    
+
     /** Register a Link which this Sync Object is responsible for */
     ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) override;
     void execute(int thread) override;
@@ -48,9 +48,9 @@ public:
     void prepareForComplete() override;
 
     SimTime_t getNextSyncTime() override { return myNextSyncTime; }
-    
+
     uint64_t getDataSize() const override;
-    
+
 private:
 
     static SimTime_t myNextSyncTime;
@@ -58,7 +58,7 @@ private:
     // Function that actually does the exchange during run
     void exchange_master(int thread);
     void exchange_slave(int thread);
-    
+
     struct comm_send_pair {
         RankInfo to_rank;
         SyncQueue* squeue; // SyncQueue
@@ -75,9 +75,9 @@ private:
         bool recv_done;
 #ifdef SST_CONFIG_HAVE_MPI
         MPI_Request req;
-#endif   
+#endif
     };
-    
+
     typedef std::map<RankInfo, comm_send_pair > comm_send_map_t;
     typedef std::map<RankInfo, comm_recv_pair > comm_recv_map_t;
     typedef std::map<LinkId_t, Link*> link_map_t;
@@ -98,9 +98,9 @@ private:
     SST::Core::ThreadSafe::UnboundedQueue<comm_recv_pair*>* link_send_queue;
     SST::Core::ThreadSafe::BoundedQueue<comm_send_pair*> serialize_queue;
     SST::Core::ThreadSafe::BoundedQueue<comm_send_pair*> send_queue;
-    
+
     void deserializeMessage(comm_recv_pair* msg);
-    
+
 
     Core::ThreadSafe::Barrier serializeReadyBarrier;
     Core::ThreadSafe::Barrier slaveExchangeDoneBarrier;

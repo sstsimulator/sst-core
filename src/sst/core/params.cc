@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -191,11 +191,11 @@ void
 Params::verifyParam(const key_type &k) const
 {
     if ( !g_verify_enabled || !verify_enabled ) return;
-    
+
     for ( std::vector<KeySet_t>::const_reverse_iterator ri = allowedKeys.rbegin() ; ri != allowedKeys.rend() ; ++ri ) {
         if ( ri->find(k) != ri->end() ) return;
     }
-    
+
 #ifdef USE_PARAM_WARNINGS
     SST::Output outXX("ParamWarning: ", 0, 0, Output::STDERR);
     outXX.output(CALL_INFO, "Warning: Parameter \"%s\" is undocumented.\n", k.c_str());
@@ -213,7 +213,7 @@ void
 Params::serialize_order(SST::Core::Serialization::serializer &ser)
 {
     ser & data;
-}    
+}
 
 uint32_t
 Params::getKey(const std::string& str) const
@@ -277,7 +277,7 @@ Params::getKey(const std::string& str)
          type default_value = type(); \
          return find_impl<type>(k, default_value, tmp); \
      }
-  
+
 
  SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(int32_t)
  SST_PARAMS_IMPLEMENT_TEMPLATE_SPECIALIZATION(uint32_t)

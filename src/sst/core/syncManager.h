@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -49,25 +49,25 @@ public:
     TimeConverter* getMaxPeriod() {return max_period;}
 
     virtual uint64_t getDataSize() const = 0;
-    
+
 protected:
     SimTime_t nextSyncTime;
-    TimeConverter* max_period; 
+    TimeConverter* max_period;
 
     void finalizeConfiguration(Link* link) {
         link->finalizeConfiguration();
     }
-   
+
     void prepareForCompleteInt(Link* link) {
         link->prepareForComplete();
     }
-   
+
     void sendUntimedData_sync(Link* link, Event* data) {
         link->sendUntimedData_sync(data);
     }
 
 private:
-    
+
 };
 
 class NewThreadSync {
@@ -90,19 +90,19 @@ public:
     /** Register a Link which this Sync Object is responsible for */
     virtual void registerLink(LinkId_t link_id, Link* link) = 0;
     virtual ActivityQueue* getQueueForThread(int tid) = 0;
-    
+
 protected:
     SimTime_t nextSyncTime;
     TimeConverter* max_period;
-    
+
     void finalizeConfiguration(Link* link) {
         link->finalizeConfiguration();
     }
-   
+
     void prepareForCompleteInt(Link* link) {
         link->prepareForComplete();
     }
-   
+
     void sendUntimedData_sync(Link* link, Event* data) {
         link->sendUntimedData_sync(data);
     }
@@ -138,18 +138,18 @@ private:
     static Core::ThreadSafe::Barrier LinkUntimedBarrier[3];
     // static SimTime_t min_next_time;
     // static int min_count;
-    
+
     static NewRankSync*     rankSync;
     static SimTime_t        next_rankSync;
     NewThreadSync*   threadSync;
     Exit* exit;
     Simulation * sim;
-    
+
     sync_type_t      next_sync_type;
     SimTime_t min_part;
-    
+
     void computeNextInsert();
-    
+
 };
 
 

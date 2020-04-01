@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -55,15 +55,15 @@ class BaseComponent {
     friend class SubComponent;
     friend class ComponentInfo;
     friend class ComponentExtension;
-    
+
 public:
 
     BaseComponent(ComponentId_t id);
     BaseComponent() {}
     virtual ~BaseComponent();
-    
+
     const std::string& getType() const { return my_info->getType(); }
-    
+
     /** Returns unique component ID */
     inline ComponentId_t getId() const { return my_info->id; }
 
@@ -123,7 +123,7 @@ public:
 
 
 protected:
-    
+
     /** Determine if a port name is connected to any links */
     bool isPortConnected(const std::string& name) const;
 
@@ -181,7 +181,7 @@ protected:
     */
     TimeConverter* registerClock( const std::string& freq, Clock::HandlerBase* handler,
                                   bool regAll = true);
-    
+
     /** Registers a clock for this component.
         @param freq Frequency for the clock as a UnitAlgebra object
         @param handler Pointer to Clock::HandlerBase which is to be invoked
@@ -202,7 +202,7 @@ protected:
         @return the TimeConverter object representing the clock frequency
     */
     TimeConverter* registerClock( TimeConverter *tc, Clock::HandlerBase* handler, bool regAll = true);
-    
+
     /** Removes a clock handler from the component */
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
 
@@ -222,7 +222,7 @@ protected:
     */
     TimeConverter* registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler);
     TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
-    
+
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
         components which do not have a clock, but would like a default
@@ -349,7 +349,7 @@ protected:
         return Factory::getFactory()->Create<T>(type, params, params, args...);
     }
 
-    
+
 protected:
     // When you direct load, the ComponentExtension does not need any
     // ELI information and if it has any, it will be ignored.  The
@@ -371,7 +371,7 @@ protected:
     bool isSubComponentLoadableUsingAPI(const std::string& type) {
         return Factory::getFactory()->isSubComponentLoadableUsingAPI<T>(type);
     }
-    
+
     /**
        Loads an anonymous subcomponent (not defined in input file to
        SST run).
@@ -422,7 +422,7 @@ protected:
     T* loadUserSubComponent(const std::string& slot_name) {
         return loadUserSubComponent<T>(slot_name, ComponentInfo::SHARE_NONE);
     }
-    
+
     /**
        Loads a user defined subcomponent (defined in input file to SST
        run).
@@ -451,14 +451,14 @@ protected:
                 sub_count++;
             }
         }
-        
+
         if ( sub_count > 1 ) {
             SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
             outXX.fatal(CALL_INFO, 1, "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
                         slot_name.c_str(), my_info->getType().c_str(), sub_count);
         }
-        
-        return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);        
+
+        return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);
     }
 
 
@@ -487,7 +487,7 @@ protected:
                const char* format, ...)    const
                   __attribute__ ((format (printf, 6, 7))) ;
 
-    
+
     /** Convenience function for testing for and reporting fatal
         conditions.  If the condition holds, fatal() will be called,
         otherwise, the function will return.  The function will create
@@ -516,24 +516,24 @@ protected:
                     const char* format, ...)    const
         __attribute__ ((format (printf, 7, 8)));
 
-    
+
 private:
 
     void setDefaultTimeBaseForLinks(TimeConverter* tc);
 
     void pushValidParams(Params& params, const std::string& type);
-    
+
     template <class T, class... ARGS>
     T* loadUserSubComponentByIndex(const std::string& slot_name, int slot_num, int share_flags, ARGS... args) {
 
         share_flags = share_flags & ComponentInfo::USER_FLAGS;
-        
+
         // Check to see if the slot exists
         ComponentInfo* sub_info = my_info->findSubComponent(slot_name,slot_num);
         if ( sub_info == nullptr ) return nullptr;
         sub_info->share_flags = share_flags;
         sub_info->parent_info = my_info;
-        
+
         // Check to see if this is documented, and if so, try to load it through the ElementBuilder
         Params myParams;
         if ( sub_info->getParams() != nullptr ) {
@@ -544,7 +544,7 @@ private:
             auto ret = Factory::getFactory()->Create<T>(sub_info->type, myParams, sub_info->id, myParams, args...);
             return ret;
         }
-        return nullptr;        
+        return nullptr;
     }
 
 
@@ -566,7 +566,7 @@ protected:
     bool isUser() {
         return my_info->isUser();
     }
-    
+
     /** Manually set the default detaulTimeBase */
     void setDefaultTimeBase(TimeConverter *tc) {
         my_info->defaultTimeBase = tc;
@@ -598,12 +598,12 @@ protected:
     Simulation *sim;
 
 
-    
+
 private:
 
     ComponentInfo* my_info;
     bool isExtension;
-    
+
     void addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port);
 
@@ -628,10 +628,10 @@ class SubComponentSlotInfo {
     std::string slot_name;
     int max_slot_index;
 
-    
+
 public:
     ~SubComponentSlotInfo() {}
-    
+
 
     SubComponentSlotInfo(BaseComponent* comp, const std::string& slot_name) :
         comp(comp),
@@ -689,14 +689,14 @@ public:
        fallback to old if unsuccessful.
     */
     template <typename T>
-    T* create(int slot_num) const 
+    T* create(int slot_num) const
     {
         Params empty;
         return comp->loadUserSubComponentByIndex<T>(slot_name, slot_num, ComponentInfo::SHARE_NONE);
         // return private_create<T>(slot_num, empty);
     }
 
-    
+
     /**
        Create a user defined subcomponent (defined in input file to SST
        run).
@@ -715,7 +715,7 @@ public:
         return comp->loadUserSubComponentByIndex<T,ARGS...>(slot_name,slot_num, share_flags, args...);
     }
 
-    
+
     /**
        Create all user defined subcomponents (defined in input file to SST
        run) for the slot.

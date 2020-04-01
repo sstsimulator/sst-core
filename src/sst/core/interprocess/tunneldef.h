@@ -1,4 +1,4 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
@@ -32,7 +32,7 @@ namespace Interprocess {
 
 
 extern uint32_t globalMMAPIPCCount;
-    
+
 /* Internal bookkeeping */
 struct InternalSharedData {
     volatile uint32_t expectedChildren;
@@ -71,7 +71,7 @@ public:
         children = expectedChildren;
         shmSize = calculateShmemSize(numBuffers, bufferSize);
     }
-    
+
     /** Access an existing tunnel
      * Child creates the TunnelDef, reads the shmSize, and then resizes its map accordingly
      * @param sPtr Location of shared memory region
@@ -147,7 +147,7 @@ public:
                 circBuffs[i]->~CircBuff_t();
             }
         }
-        
+
         if (shmPtr) {
             shmPtr = NULL;
             isd = NULL;
@@ -195,15 +195,15 @@ public:
     }
 
     /** return whether this is a master-side tunnel or a child*/
-    bool isMaster() { 
-        return master; 
+    bool isMaster() {
+        return master;
     }
 
 private:
     /** Allocate space for a data structure in the shared region
      * @tparam T data structure type to allocate space for
      * @param extraSpace how many extra bytes to reserve with this allocation
-     * return offset from shmPtr where structure was allocated and pointer to structure 
+     * return offset from shmPtr where structure was allocated and pointer to structure
      */
     template <typename T>
     std::pair<size_t, T*> reserveSpace(size_t extraSpace = 0)
@@ -216,7 +216,7 @@ private:
         new (ptr) T();  // Call constructor if need be
         return std::make_pair((uint8_t*)ptr - (uint8_t*)shmPtr, ptr);
     }
-    
+
     /** Calculate the size of the tunnel */
     static size_t calculateShmemSize(size_t numBuffers, size_t bufferSize) {
         long pagesize = sysconf(_SC_PAGESIZE);

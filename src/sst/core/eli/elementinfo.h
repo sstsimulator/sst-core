@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -297,7 +297,7 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
                                             BuilderImpl* info){ \
     return ::SST::ELI::InfoDatabase::getLibrary<__LocalEliBase>(elemlib)->addInfo(elem,info); \
   } \
-  SST_ELI_DECLARE_INFO_COMMON() 
+  SST_ELI_DECLARE_INFO_COMMON()
 
 
 #define SST_ELI_DECLARE_DEFAULT_INFO() \
@@ -306,7 +306,7 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
                                                    BuilderImpl* info){ \
     return ::SST::ELI::InfoDatabase::getLibrary<__LocalEliBase>(elemlib)->addInfo(elem,info); \
   } \
-  SST_ELI_DECLARE_INFO_COMMON() 
+  SST_ELI_DECLARE_INFO_COMMON()
 
 
 #define SST_ELI_DECLARE_INFO_EXTERN(...) \
@@ -317,7 +317,7 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
 #define SST_ELI_DECLARE_DEFAULT_INFO_EXTERN() \
   using BuilderInfo = ::SST::ELI::BuilderInfoImpl<SST::ELI::ProvidesDefaultInfo,void>; \
   static bool addInfo(const std::string& elemlib, const std::string& elem, BuilderInfo* info); \
-  SST_ELI_DECLARE_INFO_COMMON() 
+  SST_ELI_DECLARE_INFO_COMMON()
 
 #define SST_ELI_DEFINE_INFO_EXTERN(base) \
   bool base::addInfo(const std::string& elemlib, const std::string& elem, BuilderInfo* info){ \

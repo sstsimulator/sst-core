@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -34,7 +34,7 @@ public:
         "statoutputjson",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Output to a JSON file")
-    
+
     /** Construct a StatOutputJSON
      * @param outputParameters - Parameters used for this Statistic Output
      */
@@ -42,40 +42,40 @@ public:
 
 protected:
     /** Perform a check of provided parameters
-     * @return True if all required parameters and options are acceptable 
+     * @return True if all required parameters and options are acceptable
      */
     bool checkOutputParameters() override;
-    
+
     /** Print out usage for this Statistic Output */
     void printUsage() override;
-    
+
     /** Indicate to Statistic Output that simulation started.
-     *  Statistic output may perform any startup code here as necessary. 
+     *  Statistic output may perform any startup code here as necessary.
      */
     void startOfSimulation() override;
 
     /** Indicate to Statistic Output that simulation ended.
-     *  Statistic output may perform any shutdown code here as necessary. 
+     *  Statistic output may perform any shutdown code here as necessary.
      */
     void endOfSimulation() override;
 
     /** Implementation function for the start of output.
-     * This will be called by the Statistic Processing Engine to indicate that  
+     * This will be called by the Statistic Processing Engine to indicate that
      * a Statistic is about to send data to the Statistic Output for processing.
-     * @param statistic - Pointer to the statistic object than the output can 
+     * @param statistic - Pointer to the statistic object than the output can
      * retrieve data from.
      */
     void implStartOutputEntries(StatisticBase* statistic) override;
-    
+
     /** Implementation function for the end of output.
-     * This will be called by the Statistic Processing Engine to indicate that  
+     * This will be called by the Statistic Processing Engine to indicate that
      * a Statistic is finished sending data to the Statistic Output for processing.
      * The Statistic Output can perform any output related functions here.
      */
     void implStopOutputEntries() override;
 
     /** Implementation functions for output.
-     * These will be called by the statistic to provide Statistic defined 
+     * These will be called by the statistic to provide Statistic defined
      * data to be output.
      * @param fieldHandle - The handle to the registered statistic field.
      * @param data - The data related to the registered field to be output.
@@ -86,7 +86,7 @@ protected:
     void outputField(fieldHandle_t fieldHandle, uint64_t data) override;
     void outputField(fieldHandle_t fieldHandle, float data) override;
     void outputField(fieldHandle_t fieldHandle, double data) override;
-    
+
     void printIndent();
 
 protected:
@@ -95,7 +95,7 @@ protected:
 private:
     bool openFile();
     void closeFile();
-    
+
 private:
     FILE*                    m_hFile;
     std::string              m_FilePath;

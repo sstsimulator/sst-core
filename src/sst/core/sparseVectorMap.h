@@ -1,12 +1,12 @@
 // -*- c++ -*-
 
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -21,12 +21,12 @@
 
 namespace SST {
 
-    
+
 template <typename keyT, typename classT = keyT>
 class SparseVectorMap {
 private:
     friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT,classT> >;
-    
+
     std::vector<classT> data;
     int binary_search_insert(keyT id) const
     {
@@ -39,7 +39,7 @@ private:
         if ( size == 0 ) return 0;
         if ( id < data[0].key() ) return 0;
         if ( id > data[size-1].key() ) return size;
-        
+
         int bottom = 0;
         int top = size - 1;
         int middle;
@@ -69,7 +69,7 @@ private:
         int bottom = 0;
         int top = data.size() - 1;
         int middle;
-        
+
         if ( data.size() == 0 ) return -1;
         while (bottom <= top) {
             middle = bottom + ( top - bottom ) / 2;
@@ -81,11 +81,11 @@ private:
     }
 
     friend class ConfigGraph;
-    
+
 public:
     typedef typename std::vector<classT>::iterator iterator;
     typedef typename std::vector<classT>::const_iterator const_iterator;
-    
+
     // Essentially insert with a hint to look at end first.  This is
     // just here for backward compatibility for now.  Will be replaced
     // with insert() once things stabilize.
@@ -101,11 +101,11 @@ public:
             data.push_back(val);
             return;
         }
-        
+
         // Didn't belong at end, call regular insert
-        insert(val);   
+        insert(val);
     }
-    
+
     void insert(const classT& val)
     {
         int index = binary_search_insert(val.key());
@@ -114,7 +114,7 @@ public:
         it += index;
         data.insert(it, val);
     }
-    
+
     iterator begin() { return data.begin(); }
     iterator end() { return data.end(); }
 
@@ -126,16 +126,16 @@ public:
         if ( binary_search_find(id) == -1 ) return false;
         return true;
     }
-    
+
     classT& operator[] (keyT id)
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
             // Need to error out
         }
-        return data[index]; 
+        return data[index];
     }
-    
+
     const classT& operator[] (keyT id) const
     {
         int index = binary_search_find(id);
@@ -144,7 +144,7 @@ public:
         }
         return data[index];
     }
-    
+
     void clear() { data.clear(); }
     size_t size() { return data.size(); }
 
@@ -167,7 +167,7 @@ private:
         if ( size == 0 ) return 0;
         if ( id < data[0] ) return 0;
         if ( id > data[size-1] ) return size;
-        
+
         int bottom = 0;
         int top = size - 1;
         int middle;
@@ -191,13 +191,13 @@ private:
         /* Shouldn't be reached */
         return -1;
     }
-    
+
     int binary_search_find(keyT id) const
     {
         int bottom = 0;
         int top = data.size() - 1;
         int middle;
-        
+
         if ( data.size() == 0 ) return -1;
         while (bottom <= top) {
             middle = bottom + ( top - bottom ) / 2;
@@ -209,11 +209,11 @@ private:
     }
 
     friend class ConfigGraph;
-    
+
 public:
     typedef typename std::vector<keyT>::iterator iterator;
     typedef typename std::vector<keyT>::const_iterator const_iterator;
-    
+
     // Essentially insert with a hint to look at end first.  This is
     // just here for backward compatibility for now.  Will be replaced
     // with insert() once things stabilize.
@@ -231,9 +231,9 @@ public:
         }
 
         // Didn't belong at end, call regular insert
-        insert(val);   
+        insert(val);
     }
-    
+
     void insert(const keyT& val)
     {
         int index = binary_search_insert(val);
@@ -242,7 +242,7 @@ public:
         it += index;
         data.insert(it, val);
     }
-    
+
     iterator begin() { return data.begin(); }
     iterator end() { return data.end(); }
 
@@ -254,16 +254,16 @@ public:
         if ( binary_search_find(id) == -1 ) return false;
         return true;
     }
-    
+
     keyT& operator[] (keyT id)
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
             // Need to error out
         }
-        return data[index]; 
+        return data[index];
     }
-    
+
     const keyT& operator[] (keyT id) const
     {
         int index = binary_search_find(id);
@@ -272,14 +272,14 @@ public:
         }
         return data[index];
     }
-    
+
     void clear() { data.clear(); }
     size_t size() { return data.size(); }
-    
+
 };
 
 
- 
+
 } // namespace SST
 
 namespace SST {

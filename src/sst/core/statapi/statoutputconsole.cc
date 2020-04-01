@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -17,7 +17,7 @@
 namespace SST {
 namespace Statistics {
 
-StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters) 
+StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters)
     : StatisticFieldsOutput (outputParameters)
 {
     Output out = Simulation::getSimulationOutput();
@@ -28,7 +28,7 @@ StatisticOutputConsole::StatisticOutputConsole(Params& outputParameters)
 bool StatisticOutputConsole::checkOutputParameters()
 {
     bool foundKey;
-    
+
     // Look for Help Param
     getOutputParameters().find<std::string>("help", "1", foundKey);
     if (true == foundKey) {
@@ -45,15 +45,15 @@ void StatisticOutputConsole::printUsage()
     out.output(" : help = Force Statistic Output to display usage\n");
 }
 
-void StatisticOutputConsole::startOfSimulation() 
+void StatisticOutputConsole::startOfSimulation()
 {
 }
 
-void StatisticOutputConsole::endOfSimulation() 
+void StatisticOutputConsole::endOfSimulation()
 {
 }
 
-void StatisticOutputConsole::implStartOutputEntries(StatisticBase* statistic) 
+void StatisticOutputConsole::implStartOutputEntries(StatisticBase* statistic)
 {
     // Starting Output
     m_OutputBuffer.clear();
@@ -63,7 +63,7 @@ void StatisticOutputConsole::implStartOutputEntries(StatisticBase* statistic)
     m_OutputBuffer += " : ";
 }
 
-void StatisticOutputConsole::implStopOutputEntries() 
+void StatisticOutputConsole::implStopOutputEntries()
 {
     // Done with Output
     printf(" %s\n", m_OutputBuffer.c_str());

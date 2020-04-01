@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -26,13 +26,13 @@
 #include "sst/core/uninitializedQueue.h"
 #include "sst/core/unitAlgebra.h"
 
-namespace SST { 
+namespace SST {
 
 // ActivityQueue* Link::uninitQueue = nullptr;
 ActivityQueue* Link::uninitQueue = new UninitializedQueue("ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before setup.");
 ActivityQueue* Link::afterInitQueue = new UninitializedQueue("ERROR: Trying to call sendUntimedData/sendInitData or recvUntimedData/recvInitData during the run phase.");
 ActivityQueue* Link::afterRunQueue = new UninitializedQueue("ERROR: Trying to call send or recv during complete phase.");
-    
+
 Link::Link(LinkId_t id) :
     rFunctor( nullptr ),
     defaultTimeBase( nullptr ),
@@ -91,37 +91,37 @@ void Link::setPolling() {
     configuredQueue = new PollingLinkQueue();
 }
 
-    
+
 void Link::setLatency(Cycle_t lat) {
     latency = lat;
 }
-    
+
 void Link::addSendLatency(int cycles, const std::string& timebase) {
     SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase,"addOutputLatency");
     latency += (cycles * tb);
 }
-    
+
 void Link::addSendLatency(SimTime_t cycles, TimeConverter* timebase) {
     latency += timebase->convertToCoreTime(cycles);
 }
-    
+
 void Link::addRecvLatency(int cycles, const std::string& timebase) {
     SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase,"addOutputLatency");
     pair_link->latency += (cycles * tb);
 }
-    
+
 void Link::addRecvLatency(SimTime_t cycles, TimeConverter* timebase) {
     pair_link->latency += timebase->convertToCoreTime(cycles);
 }
-    
-void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {  
+
+void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {
     if ( tc == nullptr ) {
         Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Cannot send an event on Link with nullptr TimeConverter\n");
     }
-    
+
     Cycle_t cycle = Simulation::getSimulation()->getCurrentSimCycle() +
         tc->convertToCoreTime(delay) + latency;
-    
+
     if ( event == nullptr ) {
         event = new NullEvent();
     }
@@ -136,16 +136,16 @@ void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {
     // trace.getOutput().output(CALL_INFO, "%p\n",pair_link->recvQueue);
     pair_link->recvQueue->insert( event );
 }
-    
 
-Event* Link::recv() 
+
+Event* Link::recv()
 {
     // Check to make sure this is a polling link
     if ( UNLIKELY( type != POLL ) ) {
         Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Cannot call recv on a Link with an event handler installed (non-polling link.\n");
-        
+
     }
-    
+
     Event* event = nullptr;
     Simulation *simulation = Simulation::getSimulation();
 
@@ -157,7 +157,7 @@ Event* Link::recv()
     }
     }
     return event;
-} 
+}
 
 void Link::sendUntimedData(Event* data)
 {
@@ -167,7 +167,7 @@ void Link::sendUntimedData(Event* data)
     Simulation::getSimulation()->untimed_msg_count++;
     data->setDeliveryTime(Simulation::getSimulation()->untimed_phase + 1);
     data->setDeliveryLink(id,pair_link);
-    
+
     pair_link->untimedQueue->insert(data);
 #if __SST_DEBUG_EVENT_TRACKING__
     data->addSendComponent(comp,ctype,port);

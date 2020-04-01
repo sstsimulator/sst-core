@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -54,7 +54,7 @@ RankSyncSerialSkip::~RankSyncSerialSkip()
         delete i->second.squeue;
     }
     comm_map.clear();
-    
+
     for (link_map_t::iterator i = link_map.begin() ; i != link_map.end() ; ++i) {
         delete i->second;
     }
@@ -63,7 +63,7 @@ RankSyncSerialSkip::~RankSyncSerialSkip()
     if ( mpiWaitTime > 0.0 || deserializeTime > 0.0 )
         Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "RankSyncSerialSkip mpiWait: %lg sec  deserializeWait:  %lg sec\n", mpiWaitTime, deserializeTime);
 }
-    
+
 ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const RankInfo& UNUSED(from_rank), LinkId_t link_id, Link* link)
 {
     SyncQueue* queue;
@@ -75,7 +75,7 @@ ActivityQueue* RankSyncSerialSkip::registerLink(const RankInfo& to_rank, const R
     } else {
         queue = comm_map[to_rank.rank].squeue;
     }
-    
+
     link_map[link_id] = link;
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     link->setSendingComponentInfo("SYNC", "SYNC", "");
@@ -119,16 +119,16 @@ void
 RankSyncSerialSkip::exchange(void)
 {
 #ifdef SST_CONFIG_HAVE_MPI
-    
+
     //Maximum number of outstanding requests is 3 times the number
     // of ranks I communicate with (1 recv, 2 sends per rank)
     MPI_Request sreqs[2 * comm_map.size()];
     MPI_Request rreqs[comm_map.size()];
     int sreq_count = 0;
     int rreq_count = 0;
-    
+
     for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
-        
+
         // Do all the sends
         // Get the buffer from the syncQueue
         char* send_buffer = i->second.squeue->getData();
@@ -150,28 +150,28 @@ RankSyncSerialSkip::exchange(void)
         }
         MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE,
                   i->first/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
-        
+
         // Post all the receives
         MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE,
                   i->first, 1, MPI_COMM_WORLD, &rreqs[rreq_count++]);
     }
-    
+
     // Wait for all sends and recvs to complete
     Simulation* sim = Simulation::getSimulation();
     SimTime_t current_cycle = sim->getCurrentSimCycle();
-    
+
     auto waitStart = SST::Core::Profile::now();
     MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
     mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
-    
+
     for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
         // Get the buffer and deserialize all the events
         char* buffer = i->second.rbuf;
-        
+
         SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(buffer);
         unsigned int size = hdr->buffer_size;
         int mode = hdr->mode;
-        
+
         if ( mode == 1 ) {
             // May need to resize the buffer
             if ( size > i->second.local_size ) {
@@ -183,7 +183,7 @@ RankSyncSerialSkip::exchange(void)
                      i->first, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             buffer = i->second.rbuf;
         }
-        
+
         auto deserialStart = SST::Core::Profile::now();
 
         SST::Core::Serialization::serializer ser;
@@ -192,11 +192,11 @@ RankSyncSerialSkip::exchange(void)
         std::vector<Activity*> activities;
         activities.clear();
         ser & activities;
-        
+
         deserializeTime += SST::Core::Profile::getElapsed(deserialStart);
 
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
-            
+
             Event* ev = static_cast<Event*>(activities[j]);
             link_map_t::iterator link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
@@ -216,14 +216,14 @@ RankSyncSerialSkip::exchange(void)
     waitStart = SST::Core::Profile::now();
     MPI_Waitall(sreq_count, sreqs, MPI_STATUSES_IGNORE);
     mpiWaitTime += SST::Core::Profile::getElapsed(waitStart);
-    
+
     for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
         i->second.squeue->clear();
     }
-    
+
     // If we have an Exit object, fire it to see if we need end simulation
     // if ( exit != nullptr ) exit->check();
-    
+
     // Check to see when the next event is scheduled, then do an
     // all_reduce with min operator and set next sync time to be
     // min + max_period.
@@ -251,9 +251,9 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
     MPI_Request rreqs[comm_map.size()];
     int rreq_count = 0;
     int sreq_count = 0;
-    
+
     for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
-        
+
         // Do all the sends
         // Get the buffer from the syncQueue
         char* send_buffer = i->second.squeue->getData();
@@ -272,25 +272,25 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
             hdr->mode = 0;
         }
         MPI_Isend(send_buffer, hdr->buffer_size, MPI_BYTE, i->first/*dest*/, tag, MPI_COMM_WORLD, &sreqs[sreq_count++]);
-        
+
         // Post all the receives
         MPI_Irecv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->first, 1, MPI_COMM_WORLD, &rreqs[rreq_count++]);
-        
+
     }
-    
+
     // Wait for all recvs to complete
     MPI_Waitall(rreq_count, rreqs, MPI_STATUSES_IGNORE);
-    
-    
+
+
     for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
-        
+
         // Get the buffer and deserialize all the events
         char* buffer = i->second.rbuf;
-        
+
         SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(buffer);
         unsigned int size = hdr->buffer_size;
         int mode = hdr->mode;
-        
+
         if ( mode == 1 ) {
             // May need to resize the buffer
             if ( size > i->second.local_size ) {
@@ -301,14 +301,14 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
             MPI_Recv(i->second.rbuf, i->second.local_size, MPI_BYTE, i->first, 2, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
             buffer = i->second.rbuf;
         }
-        
+
         SST::Core::Serialization::serializer ser;
         ser.start_unpacking(&buffer[sizeof(SyncQueue::Header)],size-sizeof(SyncQueue::Header));
-        
+
         std::vector<Activity*> activities;
         ser & activities;
         for ( unsigned int j = 0; j < activities.size(); j++ ) {
-            
+
             Event* ev = static_cast<Event*>(activities[j]);
             link_map_t::iterator link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
@@ -317,17 +317,17 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
                 sendUntimedData_sync(link->second,ev);
             }
         }
-        
-        
+
+
     }
-    
+
     // Clear the SyncQueues used to send the data after all the sends have completed
     MPI_Waitall(sreq_count, sreqs, MPI_STATUSES_IGNORE);
-    
+
     for (comm_map_t::iterator i = comm_map.begin() ; i != comm_map.end() ; ++i) {
         i->second.squeue->clear();
     }
-    
+
     // Do an allreduce to see if there were any messages sent
     int input = msg_count;
 

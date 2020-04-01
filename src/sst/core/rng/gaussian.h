@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -37,10 +37,10 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
         */
     SSTGaussianDistribution(double mn, double sd)  :
     SSTRandomDistribution() {
-        
+
         mean = mn;
         stddev = sd;
-        
+
         baseDistrib = new MersenneRNG();
         unusedPair = 0;
         usePair = false;
@@ -55,10 +55,10 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
         */
     SSTGaussianDistribution(double mn, double sd, SSTRandom* baseRNG)  :
     SSTRandomDistribution() {
-        
+
         mean = mn;
         stddev = sd;
-        
+
         baseDistrib = baseRNG;
         unusedPair = 0;
         usePair = false;
@@ -84,25 +84,25 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
             return unusedPair;
         } else {
             double gauss_u, gauss_v, sq_sum;
-            
+
             do {
                 gauss_u = baseDistrib->nextUniform();
                 gauss_v = baseDistrib->nextUniform();
                 sq_sum = (gauss_u * gauss_u) + (gauss_v * gauss_v);
             } while(sq_sum >= 1 || sq_sum == 0);
-            
+
             if(baseDistrib->nextUniform() < 0.5) {
                 gauss_u *= -1.0;
             }
-            
+
             if(baseDistrib->nextUniform() < 0.5) {
                 gauss_v *= -1.0;
             }
-            
+
             double multiplier = sqrt(-2.0 * log(sq_sum) / sq_sum);
             unusedPair = mean + stddev * gauss_v * multiplier;
             usePair = true;
-            
+
             return mean + stddev * gauss_u * multiplier;
         }
     }

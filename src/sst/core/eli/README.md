@@ -11,7 +11,7 @@ The element builders are used for making derived types of a base class based on 
 ````
 Base* b = create<Base>(name, args...);
 ````
-This eventually needs to call 
+This eventually needs to call
 ````
 Derived* d = new Derived(args...);
 return d;
@@ -45,7 +45,7 @@ a given class `Derived` might be created via either:
 ````
 Base1* b1 = create<Base1>(name, args...);
 ````
-or 
+or
 ````
 Base2* b2 = create<Base2>(name, args...);
 ````
@@ -53,4 +53,4 @@ where `Base2` itself inherits from `Base1`.
 The derived constructor for `Base2` must register a class `T` to itself and to the original `Base1`.
 The meaning of the type alias `is_constructible` applies only to the most derived base class.
 
-#### Copyright (c) 2009-2019, National Technology and Engineering Solutions of Sandia, LLC (NTESS)
+#### Copyright (c) 2009-2020, National Technology and Engineering Solutions of Sandia, LLC (NTESS)

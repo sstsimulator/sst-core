@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -23,13 +23,13 @@ fieldType_t StatisticFieldTypeBase::enumCounter_ = 0;
 
 StatisticFieldInfo::StatisticFieldInfo(const char* statName, const char* fieldName, fieldType_t fieldType)
 {
-    m_statName  = statName; 
-    m_fieldName = fieldName; 
+    m_statName  = statName;
+    m_fieldName = fieldName;
     m_fieldType = fieldType;
     m_fieldHandle = -1;
 }
-    
-bool StatisticFieldInfo::operator==(StatisticFieldInfo& FieldInfo1) 
+
+bool StatisticFieldInfo::operator==(StatisticFieldInfo& FieldInfo1)
 {
     return ( (getFieldName() == FieldInfo1.getFieldName()) &&
              (getFieldType() == FieldInfo1.getFieldType()) );

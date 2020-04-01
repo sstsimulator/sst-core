@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -57,7 +57,7 @@ public:
         classT* object;
         const PtrMember member;
         argT data;
-    
+
     public:
         /** Constructor
          * @param object - Pointer to Object upon which to call the handler
@@ -115,7 +115,7 @@ public:
     bool unregisterHandler( Clock::HandlerBase* handler, bool& empty );
 
     void print(const std::string& header, Output &out) const override;
-    
+
 private:
 /*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */
     typedef std::vector<Clock::HandlerBase*> StaticHandlerMap_t;
@@ -130,7 +130,7 @@ private:
     StaticHandlerMap_t staticHandlerMap;
     SimTime_t          next;
     bool               scheduled;
-    
+
 };
 
 } // namespace SST
