@@ -43,16 +43,16 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
      
 ## Discovery of Tests
    * Finding TestSuites:
-      * During Startup, the 'list_of_paths' and 'testsuite_types' arguments are used to create a list of testsuites to be run.
-      - If the 'list_of_paths' argument includes a testsuite file, that testsuite file will be directly added to the list of testsuites to be run.
-      - If the 'list_of_paths' argument includes a directory (containing 1 or more testsuites), that directory will be searched for specific testsuites types as described below.
-      - If the 'list_of_paths' argument is empty (default), testsuites paths found in the sstsimulator.conf file (located in the <sstcore_install>/etc directory) will be searched for specific testsuite types as described below.
+      * During Startup, the -p and -y arguments are used to create a list of testsuites to be run.
+      - If the -p argument includes a testsuite file, that testsuite file will be directly added to the list of testsuites to be run.  Multiple files can be defined.
+      - If the -p argument includes a directory (containing 1 or more testsuites), that directory will be searched for specific testsuites types as described below.  Muliple paths can be defined.  
+      - If the 'list_of_paths' argument is empty (by default), test directory paths found in the sstsimulator.conf file (located in the <sstcore_install>/etc directory) will be searched for specific testsuite types as described below.
 
    * Searching for testsuites types:
-      * Each directory identified by the 'list_of_paths' argument will search for testsuites based upon the 'testsuite_type' argument as follows:
-      - Files named 'testsuite_default_*.py' will be added to the list of testsuites to be run if argument --testsuite_type is NOT specified. Note: This will run only the 'default' set of testsuites in the directory.
+      * Each directory identified by the -p argument will search for testsuites based upon the -y argument as follows:
+      - Files named 'testsuite_default_*.py' will be added to the list of testsuites to be run if argument -y is **NOT** specified. Note: This will run only the 'default' set of testsuites in the directory.
       - Files named 'testsuite_<type_name>_*.py' will be added to the list of testsuites to be run when <typename> is specifed using the -y = <type_name> argument. Note: This will run user selected set of testsuites in the directory.
-      - Files named 'testsuite_*.py' will be added to the list of testsuites to be run when argument --testsuite_type=all is specified. Note: This will run ALL of the testsuites in the directory.
+      - Files named 'testsuite_*.py' will be added to the list of testsuites to be run when argument -y = all is specified. Note: This will run ALL of the testsuites in the directory.
 
 ## Running Tests Concurrently
    * Tests may be run concurrently in multiple threads to significantly reduce testing runtime.
