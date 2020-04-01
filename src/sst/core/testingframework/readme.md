@@ -27,7 +27,7 @@ This frameworks is built upon Python's unittest module and modified to operate f
      * -k = Keep output.  Normally, output directory is deleted before run to ensure clean results, setting this flag will prevent delete of output directory; default = false
      * -c = Run tests concurrently.  (SEE Concurrently BELOW)
      * -v, -q, -d - Screen Output mode as verbose, quiet or debug.  
-        * If not defined, screan output is normal (dots indicate successful tests)
+        * If not defined, screen output is normal (dots indicate successful tests)
         * -q = quiet output, minimal information is displayed on screen
         * -v = Verbose output, tells user what test is running
         * -d = Debug output, outputs test specific debug data to the screen
@@ -45,4 +45,6 @@ This frameworks is built upon Python's unittest module and modified to operate f
       * To install test tools, ```> pip install testtools```
  
 ## Scenarios
+   * Tests and TestCases identified in testsuites can be skipped from running by using the '--scenarios' argument.  1 or more scenarios can be defined concurrently.
+   * The decision to skip is made in the testsuite source code.
 
