@@ -91,6 +91,10 @@ SST_CHECK_MEM_POOL()
 
 SST_ENABLE_DEBUG_OUTPUT()
 SST_ENABLE_DEBUG_EVENT_TRACKING()
+
+AS_IF([test "$use_mempool" = "no" -a "$enable_debug_event_tracking" = "yes"],
+[AC_MSG_ERROR([Event Tracking cannot be enabled with mem-pools disabled.])])
+
 SST_ENABLE_CORE_PROFILE()
 
 SST_CHECK_FPIC()
