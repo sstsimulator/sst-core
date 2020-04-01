@@ -226,12 +226,12 @@ class TestEngine():
                                   + ('identifed as a string; Note:extra space at front)'))
 
         parser.add_argument('-f', '--fail_fast', action='store_true',
-                            help='Stop testing on failure [true]')
-        parser.add_argument('-k', '--keep_output', action='store_true',
-                            help='Dont clean output directory at start [False]')
+                            help='Stop testing on failure [false]')
         parser.add_argument('-o', '--out_dir', type=str, metavar='dir',
                             nargs=1, default=['./sst_test_outputs'],
                             help='Set output directory [./sst_test_outputs]')
+        parser.add_argument('-k', '--keep_output', action='store_true',
+                            help='Dont clean output directory at start [False]')
         parser.add_argument('-c', '--concurrent', type=int, metavar="TT",
                             nargs='?', const=DEF_THREAD_LIMIT,
                             help=('Run Test Suites concurrently using threads')
