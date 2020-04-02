@@ -1,7 +1,7 @@
 /*
  *  This file is part of SST/macroscale:
  *               The macroscale architecture simulator from the SST suite.
- *  Copyright (c) 2009-2019 NTESS.
+ *  Copyright (c) 2009-2020 NTESS.
  *  This software is distributed under the BSD License.
  *  Under the terms of Contract DE-NA0003525 with NTESS,
  *  the U.S. Government retains certain rights in this software.
@@ -40,7 +40,7 @@ inline uint32_t type_hash(const char* key)
     hash += (hash << 3);
     hash ^= (hash >> 11);
     hash += (hash << 15);
-    
+
     return hash;
 }
 
@@ -109,20 +109,20 @@ constexpr uint32_t ct_hash(const char* str)
 class serializable
 {
 public:
-    static constexpr uint32_t NullClsId = std::numeric_limits<uint32_t>::max(); 
+    static constexpr uint32_t NullClsId = std::numeric_limits<uint32_t>::max();
 
     virtual const char*
     cls_name() const = 0;
 
     virtual void
     serialize_order(serializer& ser) = 0;
-    
+
     virtual uint32_t
     cls_id() const = 0;
     virtual std::string serialization_name() const = 0;
-    
+
     virtual ~serializable() { }
-    
+
 protected:
     typedef enum { ConstructorFlag } cxn_flag_t;
     static void serializable_abort(uint32_t line, const char* file, const char* func, const char* obj);
@@ -206,13 +206,13 @@ public:
     build() const = 0;
 
     virtual ~serializable_builder(){}
-    
+
     virtual const char*
     name() const = 0;
-    
+
     virtual uint32_t
     cls_id() const = 0;
-    
+
     virtual bool
     sanity(serializable* ser) = 0;
 };
@@ -223,13 +223,13 @@ class serializable_builder_impl : public serializable_builder
 protected:
     static const char* name_;
     static const uint32_t cls_id_;
-    
+
 public:
     serializable*
     build() const override {
         return T::construct_deserialize_stub();
     }
-    
+
     const char*
     name() const override {
         return name_;
@@ -249,7 +249,7 @@ public:
     static_name() {
         return name_;
     }
-    
+
     bool
     sanity(serializable* ser) override {
         return (typeid(T) == typeid(*ser));
@@ -265,22 +265,22 @@ protected:
 public:
     static serializable*
     get_serializable(uint32_t cls_id);
-    
+
     /**
        @return The cls id for the given builder
     */
     static uint32_t
     // add_builder(serializable_builder* builder, uint32_t cls_id);
     add_builder(serializable_builder* builder, const char* name);
-    
+
     static bool
     sanity(serializable* ser, uint32_t cls_id) {
         return (*builders_)[cls_id]->sanity(ser);
     }
-    
+
     static void
     delete_statics();
-    
+
 };
 
 template<class T> const char* serializable_builder_impl<T>::name_ = typeid(T).name();

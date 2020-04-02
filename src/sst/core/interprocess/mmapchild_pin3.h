@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -49,7 +49,7 @@ public:
         }
 
         shmPtr = NULL;
-        retval = OS_MapFileToMemory(NATIVE_PID_CURRENT, OS_PAGE_PROTECTION_TYPE_READ | OS_PAGE_PROTECTION_TYPE_WRITE, 
+        retval = OS_MapFileToMemory(NATIVE_PID_CURRENT, OS_PAGE_PROTECTION_TYPE_READ | OS_PAGE_PROTECTION_TYPE_WRITE,
                 sizeof(InternalSharedData), OS_MEMORY_FLAGS_SHARED, fd, 0, &shmPtr);
 
         if (!OS_RETURN_CODE_IS_SUCCESS(retval)) {
@@ -57,7 +57,7 @@ public:
             fprintf(stderr, "mmap failed (%d): %s\n", retval.os_specific_err, strerror(retval.os_specific_err));
             exit(1);
         }
-        
+
         // Attach to tunnel to discover actual tunnel size
         tunnel = new TunnelType(shmPtr);
         shmSize = tunnel->getTunnelSize();
@@ -79,7 +79,7 @@ public:
         // Finish setup of tunnel with correctly-sized mmap
         tunnel->initialize(shmPtr);
     }
-   
+
     /** Close file and shutdown tunnel */
     virtual ~MMAPChild_Pin3() {
         delete tunnel;
@@ -91,7 +91,7 @@ public:
 
     /** Return the name of the mmap'd file */
     const std::string& getRegionName(void) const { return filename; }
-    
+
 private:
     void *shmPtr;
     std::string filename;

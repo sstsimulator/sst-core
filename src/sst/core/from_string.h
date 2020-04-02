@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -39,7 +39,7 @@ typename std::enable_if<std::is_integral<T>::value, T >::type
     }
     else {
         if ( std::is_same<bool, T>::value ) {
-            // valid pairs: true/false, t/f, yes/no, y/n, on/off, 1/0 
+            // valid pairs: true/false, t/f, yes/no, y/n, on/off, 1/0
             std::string transform(input);
             for (auto & c: transform) c = std::tolower(c);
             if ( transform == "true" || transform == "t" || transform == "yes" || transform == "y" || transform == "on" || transform == "1" ) {
@@ -66,7 +66,7 @@ typename std::enable_if<std::is_integral<T>::value, T >::type
 template<class T>
 typename std::enable_if<std::is_floating_point<T>::value, T >::type
   from_string(const std::string& input)
-{  
+{
     if ( std::is_same<float, T>::value ) {
         return stof(input);
     }

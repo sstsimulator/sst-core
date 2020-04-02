@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -231,15 +231,15 @@ void OverallOutputter::outputXML()
 
     // Create a Timestamp Format: 2015.02.15_20:20:00
     std::strftime(TimeStamp, 32, "%Y.%m.%d_%H:%M:%S", ptm);
-    
+
     dprintf(stdout, "\n");
     dprintf(stdout, "================================================================================\n");
     dprintf(stdout, "GENERATING XML FILE SSTInfo.xml as %s\n", g_configuration.getXMLFilePath().c_str());
     dprintf(stdout, "================================================================================\n");
     dprintf(stdout, "\n");
     dprintf(stdout, "\n");
-    
-    // Create the XML Document     
+
+    // Create the XML Document
     TiXmlDocument XMLDocument;
 
 
@@ -257,7 +257,7 @@ void OverallOutputter::outputXML()
     // Add the File Information to the Top Level Element
     XMLTopLevelElement->LinkEndChild(XMLFileInfoElement);
 
-    // Now Generate the XML Data that represents the Library Info, 
+    // Now Generate the XML Data that represents the Library Info,
     // and add the data to the Top Level Element
     for (x = 0; x < g_libInfoArray.size(); x++) {
         g_libInfoArray[x].outputXML(x, XMLTopLevelElement);
@@ -484,7 +484,7 @@ SSTLibraryInfo::outputXML(int LibIndex, TiXmlNode *XMLParentElement)
     XMLLibraryElement->SetAttribute("Index", LibIndex);
     XMLLibraryElement->SetAttribute("Name", getLibraryName().c_str());
     XMLLibraryElement->SetAttribute("Description", getLibraryDescription().c_str());
-    
+
     outputXML<Component>(XMLLibraryElement);
     outputXML<SubComponent>(XMLLibraryElement);
     outputXML<Module>(XMLLibraryElement);

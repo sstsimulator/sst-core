@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -56,7 +56,7 @@ public:
         classT*         object;
         const PtrMember member;
         argT            data;
-    
+
     public:
         /** Constructor
          * @param object - Pointer to Object upon which to call the handler
@@ -69,7 +69,7 @@ public:
             data(data)
         {}
 
-        /** Operator to callback OneShot Handler; called 
+        /** Operator to callback OneShot Handler; called
          *  by the OneShot object to execute the users callback.
          * @param data - The data passed in when the handler was created
          */
@@ -79,7 +79,7 @@ public:
     };
 
     /////////////////////////////////////////////////
-    
+
     /** Event Handler class without user-data
      * @tparam classT Type of the Object
      */
@@ -100,7 +100,7 @@ public:
             member(member)
         {}
 
-        /** Operator to callback OneShot Handler; called 
+        /** Operator to callback OneShot Handler; called
          *  by the OneShot object to execute the users callback.
          */
         void operator()() override {
@@ -110,27 +110,27 @@ public:
 
     /////////////////////////////////////////////////
 
-    /** Create a new One Shot for a specified time that will callback the 
+    /** Create a new One Shot for a specified time that will callback the
         handler function.
         Note: OneShot cannot be canceled, and will always callback after
-              the timedelay.  
+              the timedelay.
     */
     OneShot(TimeConverter* timeDelay, int priority = ONESHOTPRIORITY);
     ~OneShot();
-    
+
     /** Is OneShot scheduled */
     bool isScheduled() {return m_scheduled;}
-    
+
     /** Add a handler to be called on this OneShot Event */
     void registerHandler(OneShot::HandlerBase* handler);
 
     /** Print details about the OneShot */
     void print(const std::string& header, Output &out) const override;
-    
+
 private:
     typedef std::vector<OneShot::HandlerBase*>  HandlerList_t;
     typedef std::map<SimTime_t, HandlerList_t*> HandlerVectorMap_t;
-    
+
     // Generic constructor for serialization
     OneShot() { }
 
@@ -144,7 +144,7 @@ private:
     TimeConverter*      m_timeDelay;
     HandlerVectorMap_t  m_HandlerVectorMap;
     bool                m_scheduled;
-    
+
 };
 
 } // namespace SST

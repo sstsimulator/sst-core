@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -157,7 +157,7 @@ public:
         }
         return false;
     }
-    
+
     /** Inserts a new pair of name and link into the map */
     void insertLink(const std::string& name, Link* link) {
         linkMap.insert(std::pair<std::string,Link*>(name,link));
@@ -166,7 +166,7 @@ public:
     void removeLink(const std::string& name) {
         linkMap.erase(name);
     }
-    
+
     /** Returns a Link pointer for a given name */
     Link* getLink(const std::string& name) {
 //         if ( !checkPort(name) ) {
@@ -186,7 +186,7 @@ public:
     bool empty() {
         return linkMap.empty();
     }
-    
+
     // FIXME: Kludge for now, fix later.  Need to make LinkMap look
     // like a regular map instead.
     /** Return a reference to the internal map */

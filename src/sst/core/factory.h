@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -85,17 +85,9 @@ public:
      */
     Module* CreateModuleWithComponent(const std::string& type, Component* comp, Params& params);
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    /** Instantiate a new Module
-     * @param type - Fully qualified elementlibname.modulename type
-     * @param comp - Component instance to pass to the SubComponent's constructor
-     * @param params - Parameters to pass to the SubComponent's constructor
-     */
-    SubComponent* CreateSubComponent(const std::string& type, Component* comp, Params& params);
-#endif
 
     bool doesSubComponentExist(const std::string& type);
-    
+
     /** Return partitioner function
      * @param name - Fully qualified elementlibname.partitioner type name
      */
@@ -131,7 +123,7 @@ public:
         }
         return false;
     }
-    
+
     /**
      * General function for a given base class
      * @param type
@@ -225,35 +217,35 @@ public:
 
     /** Determine if a SubComponentSlot is defined in a components ElementInfoStatistic
      * @param type - The name of the component/subcomponent
-     * @param slotName - The name of the SubComponentSlot 
+     * @param slotName - The name of the SubComponentSlot
      * @return True if the SubComponentSlot is defined in the component's ELI
      */
     bool DoesSubComponentSlotExist(const std::string& type, const std::string& slotName);
 
     /** Determine if a statistic is defined in a components ElementInfoStatistic
      * @param type - The name of the component
-     * @param statisticName - The name of the statistic 
+     * @param statisticName - The name of the statistic
      * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
     bool DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
 
     /** Determine if a statistic is defined in a subcomponents ElementInfoStatistic
      * @param type - The name of the subcomponent
-     * @param statisticName - The name of the statistic 
+     * @param statisticName - The name of the statistic
      * @return True if the statistic is defined in the component's ElementInfoStatistic
      */
     // bool DoesSubComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName);
 
     /** Get the enable level of a statistic defined in the component's ElementInfoStatistic
      * @param componentname - The name of the component
-     * @param statisticName - The name of the statistic 
+     * @param statisticName - The name of the statistic
      * @return The Enable Level of the statistic from the ElementInfoStatistic
      */
     uint8_t GetComponentInfoStatisticEnableLevel(const std::string& type, const std::string& statisticName);
-    
+
     /** Get the units of a statistic defined in the component's ElementInfoStatistic
      * @param componentname - The name of the component
-     * @param statisticName - The name of the statistic 
+     * @param statisticName - The name of the statistic
      * @return The units string of the statistic from the ElementInfoStatistic
      */
     std::string GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName);

@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -85,33 +85,33 @@ private:
      *  \return pointer (as PyObject*) to the created module
      */
     virtual void* load(void* parent_module);
- 
+
     //! Vector of sub_modules
     std::vector<SSTElementPythonModuleCode*> sub_modules;
 
 
     friend class SSTElementPythonModule;
-    
+
 public:
 
     //! Add a submodule to the module
     ///
     /// Python files will need to be turned into a char array (code parameter).  One way to do
     /// this is to use the following in your Makefile:
-    /// \verbatim %.inc: %.py 
+    /// \verbatim %.inc: %.py
     ///         od -v -t x1 < $< | sed -e 's/^[^ ]*[ ]*//g' -e '/^\s*$$/d' -e 's/\([0-9a-f]*\)[ $$]*/0x\1,/g' > $@ \endverbatim
     /// \param module_name simple name of the module
     /// \param code code to be compiled
     /// \param filename filname used when reporting errors
     ///
-    /// 
+    ///
     SSTElementPythonModuleCode* addSubModule(const std::string& module_name, char* code, const std::string& filename);
 
     //! Add an empty submodule to the module
     ///
     /// \param module_name simple name of the module
     ///
-    /// 
+    ///
     SSTElementPythonModuleCode* addSubModule(const std::string& module_name);
 
     //! Get the full name of the module
@@ -141,97 +141,47 @@ protected:
     std::vector<std::pair<std::string,char*> > sub_modules;
 
     SSTElementPythonModuleCode* primary_code_module;
-    
+
     // Only needed for supporting the old ELI
     SSTElementPythonModule() {}
-    
+
 public:
     SST_ELI_DECLARE_BASE(SSTElementPythonModule)
     SST_ELI_DECLARE_DEFAULT_INFO_EXTERN()
     SST_ELI_DECLARE_CTOR_EXTERN(const std::string&)
 
     virtual ~SSTElementPythonModule() {}
-    
+
     //! Constructor for SSTElementPythonModule.  Must be called by derived class
     /**
      * \param library name of the element library the module is part
      * of.  Primary module name will be sst.library and submodules
      * under this can also be created.
-     */ 
+     */
     SSTElementPythonModule(const std::string& library);
 
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    __attribute__ ((deprecated("Support for addPrimaryModule will be removed in version 9.0.  Please use createPrimaryModule().")))
-    void addPrimaryModule(char* file);
-
-    __attribute__ ((deprecated("Support for addPrimaryModule will be removed in version 9.0.  Please use createPrimaryModule() to get an SSTElementPythonModuleCode object then use it's addSubModule() method.")))
-    void addSubModule(const std::string& name, char* file);
-#endif
-    
     virtual void* load();
 
     //! Create the top level python module (i.e. the one named sst.library)
     /// Python files will need to be turned into a char array (code parameter).  One way to do
     /// this is to use the following in your Makefile:
-    /// \verbatim %.inc: %.py 
+    /// \verbatim %.inc: %.py
     ///         od -v -t x1 < $< | sed -e 's/^[^ ]*[ ]*//g' -e '/^\s*$$/d' -e 's/\([0-9a-f]*\)[ $$]*/0x\1,/g' > $@ \endverbatim
     /// \param code code to be compiled
     /// \param filename filname used when reporting errors
     ///
-    ///     
+    ///
     SSTElementPythonModuleCode* createPrimaryModule(char* code, const std::string& filename);
 
 
     //! Create and empty top level python module (i.e. the one named sst.library)
     ///
-    ///     
+    ///
     SSTElementPythonModuleCode* createPrimaryModule();
 
 };
 
-
-#ifndef SST_ENABLE_PREVIEW_BUILD
-// Class to use to support old ELI
-class SSTElementPythonModuleOldELI : public SSTElementPythonModule {
-private:
-    genPythonModuleFunction func;
-
-public:
-    SSTElementPythonModuleOldELI(const std::string& lib, genPythonModuleFunction func) :
-        SSTElementPythonModule(lib),
-        func(func)
-        {
-        }
-
-    void* load() override {
-        return (*func)();
-    }
-};
-
-namespace ELI {
-template <class T> struct Allocator<SSTElementPythonModule,T> :
- public CachedAllocator<SSTElementPythonModule,T>
-{
-};
-
-template <>
-struct DerivedBuilder<SSTElementPythonModule,SSTElementPythonModuleOldELI,const std::string&> :
-  public Builder<SSTElementPythonModule,const std::string&>
-{
-  SSTElementPythonModule* create(const std::string& lib) override {
-    return new SSTElementPythonModuleOldELI(lib, func_);
-  }
-
-  DerivedBuilder(genPythonModuleFunction func) :
-    func_(func)
-  {}
-
-  genPythonModuleFunction func_;
-};
-
-} //end ELI
-#endif
 
 } //end SST
 

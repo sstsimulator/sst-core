@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -25,7 +25,7 @@ class TimeLord;
 class TimeConverter {
 
     friend class TimeLord;
-  
+
  public:
     /**
        Converts from the component's view to the core's view of time.
@@ -34,7 +34,7 @@ class TimeConverter {
     SimTime_t convertToCoreTime(SimTime_t time) {
     return time * factor;
     }
-    
+
     /**
        Converts from the core's view to the components's view of time.
        The result is truncated, not rounded.
@@ -50,24 +50,24 @@ class TimeConverter {
     SimTime_t getFactor() {
     return factor;
     }
-    
+
  private:
     /**
        Factor for converting between core and component time
     */
     SimTime_t factor;
-    
+
     TimeConverter(SimTime_t fact) {
     factor = fact;
     }
 
     ~TimeConverter() {
     }
-    
+
 
     TimeConverter() {}   // Only needed to simplify serialization
 
-};    
+};
 
 } // namespace SST
 

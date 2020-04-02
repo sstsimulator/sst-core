@@ -27,7 +27,7 @@ architectures.
 A quick overview of some key interfaces and data structures in SST can be found here: \subpage interfaces
 
 <h2> Install </h2>
-	
+
 Installation instructions can be found <A HREF="http://sst-simulator.org/SSTPages/SSTTopDocBuildInfo/">here</A>.
 
 <h2> Tutorials </h2>
@@ -37,11 +37,11 @@ Installation instructions can be found <A HREF="http://sst-simulator.org/SSTPage
 <h2> License </h2>
 
 @verbatim
-Copyright 2009-2019 NTESS. Under the terms
+Copyright 2009-2020 NTESS. Under the terms
 of Contract DE-NA0003525 with NTESS, the U.S.
 Government retains certain rights in this software.
 
-Copyright (c) 2009-2019, NTESS
+Copyright (c) 2009-2020, NTESS
 
 All rights reserved.
 
@@ -90,7 +90,7 @@ component writer must create a class which inherits from
 SST::Component and which contains a constructor. This class should be
 created in a dynamic library (.so or .dylib file) and should include a C-style
 function which returns a
-pointer to a newly instantiated component. 
+pointer to a newly instantiated component.
 
 SST::Component also contains useful functions for component setup
 (SST::Component::Setup() and SST::Component::Init()), cleanup (SST::Component::Finish()), controlling when the
@@ -105,7 +105,7 @@ other components (i.e. through an SST::Event sent over an SST::Link)
 and recurring events (i.e. component clock ticks). The Event Handler
 Class, SST::EventHandler, is templated to create either type of event
 handler by creating a functor which invokes a given member function
-whenever triggered. For example: 
+whenever triggered. For example:
 
 @verbatim
 NICeventHandler = new Event::Handler<proc>
@@ -125,7 +125,7 @@ clockHandler = new Clock::Handler<proc>(this, &proc::preTic());
 @endverbatim
 
 creates an clock handler which invokes the function \c proc::preTic()
-at a regular interval. 
+at a regular interval.
 
 <h2>Using Event Handlers</h2>
 
@@ -153,7 +153,7 @@ mechanism with SST::Link::Recv().
 
 SST::Component s use SST::Link to communicate by passing events. An
 SST::Link is specified in the Python file use to configure the
-simulation. For example, 
+simulation. For example,
 
 @verbatim
 comp_A = sst.Component("cA", "simpleElementExample.simpleComponent")
@@ -176,7 +176,7 @@ are connected by an SST::Link. Each \c link.connect contains a pair of structure
 
 Other commonly used SST::Link functions are:
 
-  - SST::Link::Send(CompEvent *event) : Send an SST::Event across the link. 
+  - SST::Link::Send(CompEvent *event) : Send an SST::Event across the link.
 
   - SST::Link::Send(SimTime_t delay, CompEvent *event) : Send an
     SST::Event with an additional delay, where the delay is in units of
@@ -191,6 +191,6 @@ Other commonly used SST::Link functions are:
     If there is no event handler registered with the Link, this
     function should be used to gather incoming events from the link.
     (I.e. a component "pulls" events from the link, rather than having
-    them "pushed" into an event handler). 
+    them "pushed" into an event handler).
 
 */

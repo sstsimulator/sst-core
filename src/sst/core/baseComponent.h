@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -55,21 +55,15 @@ class BaseComponent {
     friend class SubComponent;
     friend class ComponentInfo;
     friend class ComponentExtension;
-    
+
 public:
 
     BaseComponent(ComponentId_t id);
     BaseComponent() {}
     virtual ~BaseComponent();
 
-#ifndef SST_ENABLE_PREVIEW_BUILD    
-    /** Returns a pointer to the parent BaseComponent */
-    BaseComponent* getParent() const __attribute__ ((deprecated("getParent() will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent is not allowed.")))
-        { return my_info->parent_info->component; }
-#endif
-    
     const std::string& getType() const { return my_info->getType(); }
-    
+
     /** Returns unique component ID */
     inline ComponentId_t getId() const { return my_info->id; }
 
@@ -107,10 +101,29 @@ public:
      */
     virtual void printStatus(Output &UNUSED(out)) { return; }
 
-#ifdef SST_ENABLE_PREVIEW_BUILD
+
+    /** return the time since the simulation began in units specified by
+        the parameter.
+        @param tc TimeConverter specifying the units */
+    SimTime_t getCurrentSimTime(TimeConverter *tc) const;
+    /** return the time since the simulation began in the default timebase */
+    inline SimTime_t getCurrentSimTime()  const{
+        return getCurrentSimTime(my_info->defaultTimeBase);
+    }
+    /** return the time since the simulation began in timebase specified
+        @param base Timebase frequency in SI Units */
+    SimTime_t getCurrentSimTime(const std::string& base);
+
+    /** Utility function to return the time since the simulation began in nanoseconds */
+    SimTime_t getCurrentSimTimeNano() const;
+    /** Utility function to return the time since the simulation began in microseconds */
+    SimTime_t getCurrentSimTimeMicro() const;
+    /** Utility function to return the time since the simulation began in milliseconds */
+    SimTime_t getCurrentSimTimeMilli() const;
+
+
 protected:
-#endif
-    
+
     /** Determine if a port name is connected to any links */
     bool isPortConnected(const std::string& name) const;
 
@@ -168,7 +181,7 @@ protected:
     */
     TimeConverter* registerClock( const std::string& freq, Clock::HandlerBase* handler,
                                   bool regAll = true);
-    
+
     /** Registers a clock for this component.
         @param freq Frequency for the clock as a UnitAlgebra object
         @param handler Pointer to Clock::HandlerBase which is to be invoked
@@ -189,7 +202,7 @@ protected:
         @return the TimeConverter object representing the clock frequency
     */
     TimeConverter* registerClock( TimeConverter *tc, Clock::HandlerBase* handler, bool regAll = true);
-    
+
     /** Removes a clock handler from the component */
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler);
 
@@ -209,7 +222,7 @@ protected:
     */
     TimeConverter* registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler);
     TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
-    
+
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
         components which do not have a clock, but would like a default
@@ -223,24 +236,6 @@ protected:
     TimeConverter* getTimeConverter( const std::string& base );
     TimeConverter* getTimeConverter( const UnitAlgebra& base );
 
-    /** return the time since the simulation began in units specified by
-        the parameter.
-        @param tc TimeConverter specifying the units */
-    SimTime_t getCurrentSimTime(TimeConverter *tc) const;
-    /** return the time since the simulation began in the default timebase */
-    inline SimTime_t getCurrentSimTime()  const{
-        return getCurrentSimTime(my_info->defaultTimeBase);
-    }
-    /** return the time since the simulation began in timebase specified
-        @param base Timebase frequency in SI Units */
-    SimTime_t getCurrentSimTime(const std::string& base);
-
-    /** Utility function to return the time since the simulation began in nanoseconds */
-    SimTime_t getCurrentSimTimeNano() const;
-    /** Utility function to return the time since the simulation began in microseconds */
-    SimTime_t getCurrentSimTimeMicro() const;
-    /** Utility function to return the time since the simulation began in milliseconds */
-    SimTime_t getCurrentSimTimeMilli() const;
 
     bool isStatisticShared(const std::string& statName, bool include_me = false) {
         if ( include_me ) {
@@ -354,30 +349,7 @@ protected:
         return Factory::getFactory()->Create<T>(type, params, params, args...);
     }
 
-    
-#ifndef SST_ENABLE_PREVIEW_BUILD    
-    /** Loads a module from an element Library
-     * @param type Fully Qualified library.moduleName
-     * @param comp Pointer to component to pass to Module's constructor
-     * @param params Parameters the module should use for configuration
-     * @return handle to new instance of module, or nullptr on failure.
-     */
-    Module* loadModuleWithComponent(const std::string& type, Component* comp, Params& params) __attribute__ ((deprecated("loadModuleWithComponent will be removed in SST version 10.0.  If the module needs access to the parent component, please use SubComponents instead of Modules.")));
 
-
-    /** Loads a SubComponent from an element Library
-     * @param type Fully Qualified library.moduleName
-     * @param comp Pointer to component to pass to SuBaseComponent's constructor
-     * @param params Parameters the module should use for configuration
-     * @return handle to new instance of SubComponent, or nullptr on failure.
-     */
-    SubComponent* loadSubComponent(const std::string& type, Component* comp, Params& params) __attribute__ ((deprecated("This version of loadSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-
-    /* New ELI style */
-    SubComponent* loadNamedSubComponent(const std::string& name) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-    SubComponent* loadNamedSubComponent(const std::string& name, Params& params) __attribute__ ((deprecated("This version of loadNamedSubComponent will be removed in SST version 10.0.  Please switch to new user defined API (LoadUserSubComponent(std::string, int, ARGS...)).")));
-#endif
-    
 protected:
     // When you direct load, the ComponentExtension does not need any
     // ELI information and if it has any, it will be ignored.  The
@@ -399,7 +371,7 @@ protected:
     bool isSubComponentLoadableUsingAPI(const std::string& type) {
         return Factory::getFactory()->isSubComponentLoadableUsingAPI<T>(type);
     }
-    
+
     /**
        Loads an anonymous subcomponent (not defined in input file to
        SST run).
@@ -431,14 +403,7 @@ protected:
             auto ret = Factory::getFactory()->Create<T>(type, params, sub_info->id, params, args...);
             return ret;
         }
-#ifndef SST_ENABLE_PREVIEW_BUILD
-        else {
-            SubComponent* ret = loadLegacySubComponentPrivate(cid,type,params);
-            return dynamic_cast<T*>(ret);
-        }
-#else
         return nullptr;
-#endif
     }
 
 
@@ -457,7 +422,7 @@ protected:
     T* loadUserSubComponent(const std::string& slot_name) {
         return loadUserSubComponent<T>(slot_name, ComponentInfo::SHARE_NONE);
     }
-    
+
     /**
        Loads a user defined subcomponent (defined in input file to SST
        run).
@@ -486,14 +451,14 @@ protected:
                 sub_count++;
             }
         }
-        
+
         if ( sub_count > 1 ) {
             SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
             outXX.fatal(CALL_INFO, 1, "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
                         slot_name.c_str(), my_info->getType().c_str(), sub_count);
         }
-        
-        return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);        
+
+        return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);
     }
 
 
@@ -522,7 +487,7 @@ protected:
                const char* format, ...)    const
                   __attribute__ ((format (printf, 6, 7))) ;
 
-    
+
     /** Convenience function for testing for and reporting fatal
         conditions.  If the condition holds, fatal() will be called,
         otherwise, the function will return.  The function will create
@@ -551,37 +516,24 @@ protected:
                     const char* format, ...)    const
         __attribute__ ((format (printf, 7, 8)));
 
-    
+
 private:
-
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    SubComponent* loadNamedSubComponent(const std::string& name, int slot_num);
-    SubComponent* loadNamedSubComponent(const std::string& name, int slot_num, Params& params);
-
-    SubComponent* loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Params& params);
-    SubComponent* loadLegacySubComponentPrivate(ComponentId_t cid, const std::string& type, Params& params);
-
-    // These two functions are only need for backward compatibility
-    // for anonymous subcomponents.
-    void setDefaultTimeBaseForParentLinks(TimeConverter* tc);
-    void setDefaultTimeBaseForChildLinks(TimeConverter* tc);
-#endif
 
     void setDefaultTimeBaseForLinks(TimeConverter* tc);
 
     void pushValidParams(Params& params, const std::string& type);
-    
+
     template <class T, class... ARGS>
     T* loadUserSubComponentByIndex(const std::string& slot_name, int slot_num, int share_flags, ARGS... args) {
 
         share_flags = share_flags & ComponentInfo::USER_FLAGS;
-        
+
         // Check to see if the slot exists
         ComponentInfo* sub_info = my_info->findSubComponent(slot_name,slot_num);
         if ( sub_info == nullptr ) return nullptr;
         sub_info->share_flags = share_flags;
         sub_info->parent_info = my_info;
-        
+
         // Check to see if this is documented, and if so, try to load it through the ElementBuilder
         Params myParams;
         if ( sub_info->getParams() != nullptr ) {
@@ -592,20 +544,9 @@ private:
             auto ret = Factory::getFactory()->Create<T>(sub_info->type, myParams, sub_info->id, myParams, args...);
             return ret;
         }
-#ifndef SST_ENABLE_PREVIEW_BUILD
-        else {
-            SubComponent* ret = loadNamedSubComponentLegacyPrivate(sub_info,myParams);
-            return dynamic_cast<T*>(ret);
-        }
-#else
-        return nullptr;        
-#endif        
+        return nullptr;
     }
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    ComponentInfo* getCurrentlyLoadingSubComponentInfo() { return currentlyLoadingSubComponent; }
-    ComponentId_t getCurrentlyLoadingSubComponentID() { return currentlyLoadingSubComponentID; }
-#endif
 
 public:
     SubComponentSlotInfo* getSubComponentSlotInfo(const std::string& name, bool fatalOnEmptyIndex = false);
@@ -625,7 +566,7 @@ protected:
     bool isUser() {
         return my_info->isUser();
     }
-    
+
     /** Manually set the default detaulTimeBase */
     void setDefaultTimeBase(TimeConverter *tc) {
         my_info->defaultTimeBase = tc;
@@ -652,44 +593,17 @@ protected:
     // Return the Units for the statisticName from the ElementInfoStatistic
     // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
 
-#ifndef SST_ENABLE_PREVIEW_BUILD    
-    Component* getTrueComponent() const __attribute__ ((deprecated("getTrueParent will be removed in SST version 10.0.  With the new subcomponent structure, direct access to your parent component is not allowed.")));
-#endif
 
 protected:
     Simulation *sim;
 
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-private:
 
-    // Only need temporarily to help with backward compatibility
-    // implementation in elements.
-    bool loadedWithLegacyAPI;
-    
-public:
-
-    /**
-       Temporary function to help provide backward compatibility to
-       old SubComponent API.
-       
-       @return true if subcomponent loaded with old API, false if
-       loaded with new
-     */
-    bool wasLoadedWithLegacyAPI() const {
-        return loadedWithLegacyAPI;
-    }
-#endif
-    
 private:
 
     ComponentInfo* my_info;
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    ComponentInfo* currentlyLoadingSubComponent;
-    ComponentId_t currentlyLoadingSubComponentID;
-#endif
     bool isExtension;
-    
+
     void addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port);
 
@@ -700,9 +614,6 @@ private:
                                          const std::string& statName, const std::string& statSubId,
                                          fieldType_t fieldType, CreateFxn&& fxn);
 
-#ifndef SST_ENABLE_PREVIEW_BUILD    
-    Component* getTrueComponentPrivate() const;
-#endif
 };
 
 
@@ -718,21 +629,9 @@ class SubComponentSlotInfo {
     int max_slot_index;
 
 
-#ifndef SST_ENABLE_PREVIEW_BUILD    
-protected:
-    
-    SubComponent* protected_create(int slot_num, Params& params) const {
-        if ( slot_num > max_slot_index ) return nullptr;
-
-        return comp->loadNamedSubComponent(slot_name, slot_num, params);
-    }    
-#endif
-
-
-    
 public:
     ~SubComponentSlotInfo() {}
-    
+
 
     SubComponentSlotInfo(BaseComponent* comp, const std::string& slot_name) :
         comp(comp),
@@ -773,32 +672,6 @@ public:
     }
 
 
-    
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    // Create functions that support the legacy API
-    template <typename T>
-    __attribute__ ((deprecated("This version of create will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags.")))
-    T* create(int slot_num, Params& params) const 
-    {
-        return private_create<T>(slot_num,params);
-    }
-
-    template <typename T>
-    __attribute__ ((deprecated("This version of createAll will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))
-    void createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const 
-    {
-        return private_createAll<T>(params, vec, insertNulls);
-    }
-
-    template <typename T>
-    __attribute__ ((deprecated("This version of createAll will be removed in SST version 10.0.  Please switch to the new user defined API, which includes the share flags and optional constructor arguments.")))
-    void createAll(std::vector<T*>& vec, bool insertNulls = true) const 
-    {
-        Params empty;
-        return private_createAll<T>(empty, vec, insertNulls);
-    }
-#endif
-
     // Create functions that support the new API
 
     /**
@@ -816,14 +689,14 @@ public:
        fallback to old if unsuccessful.
     */
     template <typename T>
-    T* create(int slot_num) const 
+    T* create(int slot_num) const
     {
         Params empty;
         return comp->loadUserSubComponentByIndex<T>(slot_name, slot_num, ComponentInfo::SHARE_NONE);
         // return private_create<T>(slot_num, empty);
     }
 
-    
+
     /**
        Create a user defined subcomponent (defined in input file to SST
        run).
@@ -842,7 +715,7 @@ public:
         return comp->loadUserSubComponentByIndex<T,ARGS...>(slot_name,slot_num, share_flags, args...);
     }
 
-    
+
     /**
        Create all user defined subcomponents (defined in input file to SST
        run) for the slot.
@@ -920,37 +793,6 @@ public:
 
 private:
 
-#ifndef SST_ENABLE_PREVIEW_BUILD    
-    // Extra versions of the calls supporting the legacy API to avoid
-    // deprecation warnings in every file that include this file
-    template <typename T>
-    T* private_create(int slot_num, Params& params) const
-    {
-        SubComponent* sub = protected_create(slot_num, params);
-        if ( sub == nullptr ) {
-            // Nothing populated at this index, simply return nullptr
-            return nullptr;
-        }
-        T* cast_sub = dynamic_cast<T*>(sub);
-        if ( cast_sub == nullptr ) {
-            // SubComponent not castable to the correct class,
-            // fatal
-            Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Attempt to load SubComponent into slot "
-                                                    "%s, index %d, which is not castable to correct time\n",
-                                                    getSlotName().c_str(),slot_num);
-        }
-        return cast_sub;
-    }
-
-    template <typename T>
-    void private_createAll(Params& params, std::vector<T*>& vec, bool insertNulls = true) const 
-    {
-        for ( int i = 0; i <= getMaxPopulatedSlotNumber(); ++i ) {
-            T* sub = create<T>(i, params);
-            if ( sub != nullptr || insertNulls ) vec.push_back(sub);
-        }
-    }
-#endif
 };
 
 

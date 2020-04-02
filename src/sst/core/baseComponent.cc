@@ -1,8 +1,8 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -33,13 +33,7 @@ namespace SST {
 
 BaseComponent::BaseComponent(ComponentId_t id) :
     sim(Simulation::getSimulation()),
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    loadedWithLegacyAPI(false),
-#endif
     my_info(Simulation::getSimulation()->getComponentInfo(id)),
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    currentlyLoadingSubComponent(nullptr),
-#endif
     isExtension(false)
 {
     if ( my_info->component == nullptr ) {
@@ -60,7 +54,7 @@ BaseComponent::~BaseComponent()
     if ( !my_info ) return;
     if ( isExtension ) return;
 
-    // Start by deleting children    
+    // Start by deleting children
     std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();
     for ( auto &ci : subcomps ) {
         // Delete the subcomponent
@@ -96,48 +90,6 @@ BaseComponent::~BaseComponent()
     }
 }
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-void
-BaseComponent::setDefaultTimeBaseForParentLinks(TimeConverter* tc) {
-    LinkMap* myLinks = my_info->getLinkMap();
-    if (nullptr != myLinks) {
-        for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
-            // if ( nullptr == p.second->getDefaultTimeBase() ) {
-            if ( nullptr == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
-                p.second->setDefaultTimeBase(tc);
-            }
-        }
-    }
-
-    // Need to look through up through my parent chain, if I'm legacy
-    // anonymous.
-    if ( my_info->isLegacySubComponent() ) {
-        my_info->parent_info->component->setDefaultTimeBaseForParentLinks(tc);
-    }
-}
-void
-BaseComponent::setDefaultTimeBaseForChildLinks(TimeConverter* tc) {
-    LinkMap* myLinks = my_info->getLinkMap();
-    if (nullptr != myLinks) {
-        for ( std::pair<std::string,Link*> p : myLinks->getLinkMap() ) {
-            // if ( nullptr == p.second->getDefaultTimeBase() ) {
-            if ( nullptr == p.second->getDefaultTimeBase() && p.second->isConfigured() ) {
-                p.second->setDefaultTimeBase(tc);
-            }
-        }
-    }
-
-    // Need to look through my child subcomponents and for all legacy
-    // anonymously loaded subcomponents, set the default time base for
-    // any links they have.  These links would have been moved from
-    // the parent to the child.
-    for ( auto &sub : my_info->subComponents ) {
-        if ( sub.second.isLegacySubComponent() ) {
-            sub.second.component->setDefaultTimeBaseForChildLinks(tc);
-        }
-    }    
-}
-#endif
 
 void
 BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
@@ -150,24 +102,7 @@ BaseComponent::setDefaultTimeBaseForLinks(TimeConverter* tc) {
             }
         }
     }
-    
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    // Need to look through my child subcomponents and for all
-    // anonymously loaded subcomponents, set the default time base for
-    // any links they have.  These links would have been moved from
-    // the parent to the child.
-    for ( auto &sub : my_info->subComponents ) {
-        if ( sub.second.isLegacySubComponent() ) {
-            sub.second.component->setDefaultTimeBaseForLinks(tc);
-        }
-    }
 
-    // Need to look through up through my parent chain, if I'm
-    // anonymous.
-    if ( my_info->isLegacySubComponent() ) {
-        my_info->parent_info->component->setDefaultTimeBaseForParentLinks(tc);
-    }
-#endif
 }
 
 void
@@ -275,10 +210,10 @@ Link*
 BaseComponent::getLinkFromParentSharedPort(const std::string& port)
 {
     LinkMap* myLinks = my_info->getLinkMap();
-    
+
     // See if the link is found, and if not see if my parent shared
     // their ports with me
-    
+
     if ( nullptr != myLinks ) {
         Link* tmp = myLinks->getLink(port);
         if ( nullptr != tmp ) {
@@ -296,13 +231,13 @@ BaseComponent::getLinkFromParentSharedPort(const std::string& port)
     // If we get here, we didn't find the link.  Check to see if my
     // parent shared with me and if so, call
     // getLinkFromParentSharedPort on them
-        
+
     if ( my_info->sharesPorts() ) {
         return my_info->parent_info->component->getLinkFromParentSharedPort(port);
     }
     else {
         return nullptr;
-    }    
+    }
 }
 
 
@@ -312,7 +247,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
     LinkMap* myLinks = my_info->getLinkMap();
 
     Link* tmp = nullptr;
-    
+
     // If I have a linkmap, check to see if a link was connected to
     // port "name"
     if ( nullptr != myLinks ) {
@@ -332,23 +267,14 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
                 }
                 myLinks->insertLink(name,tmp);
                 // Need to set the link's defaultTimeBase to nullptr
-#ifndef SST_ENABLE_PREVIEW_BUILD
-                // except in the case of this being an Anonymously
-                // loadeed SubComponent, then for backward
-                // compatibility, we leave it as is.
-                if ( !my_info->isLegacySubComponent() ) {
-                    tmp->setDefaultTimeBase(nullptr);
-                }
-#else
                 tmp->setDefaultTimeBase(nullptr);
-#endif
             }
         }
     }
 
     // If I got a link, configure it
     if ( nullptr != tmp ) {
-        
+
         // If no functor, this is a polling link
         if ( handler == nullptr ) {
             tmp->setPolling();
@@ -359,7 +285,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
         tmp->setAsConfigured();
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         tmp->setSendingComponentInfo(my_info->getName(), my_info->getType(), name);
-#endif        
+#endif
     }
     return tmp;
 }
@@ -470,19 +396,19 @@ BaseComponent::fatal(uint32_t line, const char* file, const char* func,
 
     sprintf(buf,"\nElement name: %s,  type: %s (full type tree: %s)\n%s",
             name.c_str(),type.c_str(),type_tree.c_str(),format);
-    
-    
+
+
     va_list arg;
     va_start(arg, format);
     abort.fatal(line,file,func,exit_code,buf,arg);
     va_end(arg);
 }
-    
+
 void
 BaseComponent::sst_assert(bool condition, uint32_t line, const char* file, const char* func,
                           int exit_code,
                           const char* format, ...)    const
-{    
+{
     if ( !condition ) {
         va_list arg;
         va_start(arg, format);
@@ -491,147 +417,6 @@ BaseComponent::sst_assert(bool condition, uint32_t line, const char* file, const
     }
 }
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-Module*
-BaseComponent::loadModuleWithComponent(const std::string& type, Component* comp, Params& params)
-{
-    return Factory::getFactory()->CreateModuleWithComponent(type,comp,params);
-}
-
-/* Old ELI style */
-SubComponent*
-BaseComponent::loadSubComponent(const std::string& type, Component* comp, Params& params)
-{
-    // /* Old Style SubComponents end up with their parent's Id, name, etc. */
-    // ComponentInfo *sub_info = new ComponentInfo(type, &params, my_info);
-
-    // /* By "magic", the new component will steal ownership of this pointer */
-    // currentlyLoadingSubComponent = sub_info;
-    ComponentId_t cid = comp->currentlyLoadingSubComponentID;
-    comp->currentlyLoadingSubComponentID = my_info->addAnonymousSubComponent(my_info, type, "LEGACY", 0,
-          ComponentInfo::SHARE_PORTS | ComponentInfo::SHARE_STATS | ComponentInfo::INSERT_STATS | ComponentInfo::IS_LEGACY_SUBCOMPONENT);
-    
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
-    comp->currentlyLoadingSubComponentID = cid;
-
-    return ret;
-}
-
-Component*
-BaseComponent::getTrueComponent() const {
-    // Walk up the parent tree until we hit the base Component.  We
-    // know we're the base Component when parent is nullptr.
-    ComponentInfo* info = my_info;
-    while ( info->parent_info != nullptr ) info = info->parent_info;
-    return static_cast<Component* const>(info->component);
-}
-
-
-SubComponent*
-BaseComponent::loadLegacySubComponentPrivate(ComponentId_t cid, const std::string& type, Params& params) {
-    Component* comp = getTrueComponentPrivate();
-    ComponentId_t old_cid = comp->currentlyLoadingSubComponentID;
-    comp->currentlyLoadingSubComponentID = cid;
-    
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(type,comp,params);
-    comp->currentlyLoadingSubComponentID = old_cid;
-    return ret;
-}
-
-Component*
-BaseComponent::getTrueComponentPrivate() const {
-    // Walk up the parent tree until we hit the base Component.  We
-    // know we're the base Component when parent is nullptr.
-    ComponentInfo* info = my_info;
-    while ( info->parent_info != nullptr ) info = info->parent_info;
-    return static_cast<Component* const>(info->component);
-}
-
-/* New ELI style */
-SubComponent*
-BaseComponent::loadNamedSubComponent(const std::string& name) {
-    Params empty;
-    return loadNamedSubComponent(name, empty);
-}
-
-SubComponent*
-BaseComponent::loadNamedSubComponent(const std::string& name, Params& params) {
-    // Get list of ComponentInfo objects and make sure that there is
-    // only one SubComponent put into this slot
-    const std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();
-    int sub_count = 0;
-    for ( auto &ci : subcomps ) {
-        if ( ci.second.getSlotName() == name ) {
-            sub_count++;
-        }
-    }
-    
-    if ( sub_count > 1 ) {
-        SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
-        outXX.fatal(CALL_INFO, 1, "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
-                    name.c_str(), my_info->getType().c_str(), sub_count);
-    }
-    
-    return loadNamedSubComponent(name, 0, params);
-}
-
-SubComponent*
-BaseComponent::loadNamedSubComponent(const std::string& name, int slot_num) {
-    Params empty;
-    return loadNamedSubComponent(name, slot_num, empty);
-}
-
-// Private
-SubComponent*
-BaseComponent::loadNamedSubComponent(const std::string& name, int slot_num, Params& params)
-{
-    if ( !Factory::getFactory()->DoesSubComponentSlotExist(my_info->type, name) ) {
-        SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
-        outXX.output(CALL_INFO, "Warning: SubComponentSlot \"%s\" is undocumented.\n", name.c_str());
-    }
-
-    ComponentInfo* sub_info = my_info->findSubComponent(name,slot_num);
-    if ( sub_info == nullptr ) return nullptr;
-    sub_info->share_flags = ComponentInfo::SHARE_NONE;
-    sub_info->parent_info = my_info;
-    
-    // ComponentInfo *oldLoadingSubcomponent = getTrueComponentPrivate()->currentlyLoadingSubComponent;
-    // // ComponentInfo *sub_info = &(infoItr->second);
-    // getTrueComponentPrivate()->currentlyLoadingSubComponent = sub_info;
-
-    ComponentId_t cid = getTrueComponentPrivate()->currentlyLoadingSubComponentID;
-    getTrueComponentPrivate()->currentlyLoadingSubComponentID = sub_info->id;
-        
-    Params myParams;
-    if ( sub_info->getParams() != nullptr )
-        myParams.insert(*sub_info->getParams());
-    myParams.insert(params);
-
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponentPrivate(), myParams);
-    sub_info->setComponent(ret);
-
-    getTrueComponentPrivate()->currentlyLoadingSubComponentID = cid;
-    return ret;
-}
-
-SubComponent*
-BaseComponent::loadNamedSubComponentLegacyPrivate(ComponentInfo* sub_info, Params& params)
-{
-    ComponentId_t cid = getTrueComponentPrivate()->currentlyLoadingSubComponentID;
-    getTrueComponentPrivate()->currentlyLoadingSubComponentID = sub_info->id;
-    
-    Params myParams;
-    if ( sub_info->getParams() != nullptr )
-        myParams.insert(*sub_info->getParams());
-    myParams.insert(params);
-    
-    SubComponent* ret = Factory::getFactory()->CreateSubComponent(sub_info->getType(), getTrueComponentPrivate(), myParams);
-    sub_info->setComponent(ret);
-    
-    getTrueComponentPrivate()->currentlyLoadingSubComponentID = cid;
-    return ret;
-}
-#endif
 
 
 SubComponentSlotInfo*
@@ -678,12 +463,12 @@ uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& s
 }
 
 
-StatisticBase* 
+StatisticBase*
 BaseComponent::registerStatisticCore(SST::Params& params, const std::string& statName, const std::string& statSubId,
                                      fieldType_t fieldType, CreateFxn&& create)
 {
     SST::Params statParams = params.find_prefix_params(statName);
-    std::string                     fullStatName; 
+    std::string                     fullStatName;
     bool                            statGood = true;
     bool                            nameFound = false;
     StatisticBase::StatMode_t       statCollectionMode = StatisticBase::STAT_MODE_COUNT;
@@ -719,7 +504,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
 
     // Make sure that the wireup has not been completed
     if (true == getSimulation()->isWireUpFinished()) {
-        // We cannot register statistics AFTER the wireup (after all components have been created) 
+        // We cannot register statistics AFTER the wireup (after all components have been created)
         out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
     }
 
@@ -732,8 +517,8 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
     // uint8_t stat_load_level;
     do {
         curr_info = next_info;
-        // Check each entry in the StatEnableList (from the ConfigGraph via the 
-        // Python File) to see if this Statistic is enabled, then check any of 
+        // Check each entry in the StatEnableList (from the ConfigGraph via the
+        // Python File) to see if this Statistic is enabled, then check any of
         // its critical parameters
 
         // Only check for stat enables if I'm a not a component
@@ -741,9 +526,9 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
         // SubComponents don't have a stat enable list.
         if ( !curr_info->isAnonymous() ) {
             for ( auto & si : *curr_info->getStatEnableList() ) {
-                // First check to see if the any entry in the StatEnableList matches 
+                // First check to see if the any entry in the StatEnableList matches
                 // the Statistic Name or the STATALLFLAG.  If so, then this Statistic
-                // will be enabled.  Then check any critical parameters   
+                // will be enabled.  Then check any critical parameters
                 if ((std::string(STATALLFLAG) == si.name) || (statName == si.name)) {
                     // Identify what keys are Allowed in the parameters
                     Params::KeySet_t allowedKeySet;
@@ -753,12 +538,12 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
                     allowedKeySet.insert("stopat");
                     allowedKeySet.insert("resetOnRead");
                     si.params.pushAllowedKeys(allowedKeySet);
-                    
+
                     // We found an acceptable name... Now check its critical Parameters
                     // Note: If parameter not found, defaults will be provided
                     statTypeParam = si.params.find<std::string>("type", "sst.AccumulatorStatistic");
                     statRateParam = si.params.find<std::string>("rate", "0ns");
-                    
+
                     collectionRate = UnitAlgebra(statRateParam);
                     statParams = si.params;
                     // Get the load level from the component
@@ -771,7 +556,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
         next_info = curr_info->parent_info;
     } while ( curr_info->canInsertStatistics() );
 
-    
+
     // Did we find a matching enable name?
     if (false == nameFound) {
         statGood = false;
@@ -793,7 +578,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
             collectionRate = UnitAlgebra("0ns");
             statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
         } else {
-            // collectionRate is a unit type we dont recognize 
+            // collectionRate is a unit type we dont recognize
             out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
         }
     }

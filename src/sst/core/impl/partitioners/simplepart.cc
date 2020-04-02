@@ -1,10 +1,10 @@
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
-// 
-// Copyright (c) 2009-2019, NTESS
+//
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
-// 
+//
 // This file is part of the SST software package. For license
 // information, see the LICENSE file in the top level directory of the
 // distribution.
@@ -37,7 +37,7 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
         world_size(RankInfo(1,1)),
         total_parts(world_size.rank * world_size.thread)
     {}
-    
+
     static inline int pow2(int step) {
         int value = 1;
 
@@ -51,7 +51,7 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
     // Find the index of a specific component in this array
     static inline int findIndex(ComponentId_t* theArray, const int length, ComponentId_t findThis) {
         int index = -1;
-        
+
         for(int i = 0; i < length; i++) {
             if(theArray[i] == findThis) {
                 index = i; break;
@@ -63,7 +63,7 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
 
     // Cost up all of the links between two sets (that is all links which originate in A
     // and connect to a vertex in B
-    static SimTime_t cost_external_links(ComponentId_t* setA, 
+    static SimTime_t cost_external_links(ComponentId_t* setA,
                 const int lengthA,
                 ComponentId_t* setB,
                 const int lengthB,
@@ -99,12 +99,12 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
         for(int i = 0; i < lengthA; i++) {
             for(int j = 0; j < lengthB; j++) {
                 ComponentId_t tempA = setA[i];
-                setA[i] = setB[j]; 
+                setA[i] = setB[j];
                 setB[j] = tempA;
 
                 SimTime_t newCost = cost_external_links(setA, lengthA, setB, lengthB, timeTable);
 
-                // check higher? if yes then keep otherwise swap back 
+                // check higher? if yes then keep otherwise swap back
                 if(newCost >= costExt) {
                     costExt = newCost;
                 } else {
@@ -112,7 +112,7 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
                     setB[j] = setA[i];
                     setA[i] = tempB;
                 }
-            }    
+            }
         }
 
         /////////////////////////////////////////////////////////////////////////////////////

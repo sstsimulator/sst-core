@@ -1,9 +1,9 @@
 // -*- mode: c++ -*-
-// Copyright 2009-2019 NTESS. Under the terms
+// Copyright 2009-2020 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2019, NTESS
+// Copyright (c) 2009-2020, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -38,7 +38,7 @@ namespace Interfaces {
  */
 class SimpleMem : public SubComponent {
 
-    
+
 public:
     class HandlerBase;
 
@@ -310,13 +310,6 @@ public:
     };
 
 
-#ifndef SST_ENABLE_PREVIEW_BUILD
-    /** Constructor, designed to be used via 'loadSubComponent'. */
-    SimpleMem(SST::Component *comp, Params &UNUSED(params)) :
-        SubComponent(comp)
-        { }
-#endif
-    
     /** Constructor, designed to be used via 'loadUserSubComponent and loadAnonymousSubComponent'. */
     SimpleMem(SST::ComponentId_t id, Params &UNUSED(params)) :
         SubComponent(id)
