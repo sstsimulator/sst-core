@@ -532,12 +532,10 @@ std::string Config::getLibPath(void) const {
             const std::string key = *keyItr;
             const std::string value = currentGroup->getValue(key);
 
-            if("BOOST_LIBDIR" != key) {
-                if(key.size() > 6) {
-                    if("LIBDIR" == key.substr(key.size() - 6)) {
-                        fullLibPath.append(":");
-                        fullLibPath.append(value);
-                    }
+            if(key.size() > 6) {
+                if("LIBDIR" == key.substr(key.size() - 6)) {
+                    fullLibPath.append(":");
+                    fullLibPath.append(value);
                 }
             }
         }
