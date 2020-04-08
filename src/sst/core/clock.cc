@@ -84,7 +84,7 @@ void Clock::execute( void ) {
     // currentCycle = period->convertFromCoreTime(sim->getCurrentSimCycle());
     currentCycle++;
 
-    StaticHandlerMap_t::iterator sop_iter,start_iter,stop_iter;
+    StaticHandlerMap_t::iterator sop_iter;
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
         Clock::HandlerBase* handler = *sop_iter;
         if ( (*handler)(currentCycle) ) sop_iter = staticHandlerMap.erase(sop_iter);
