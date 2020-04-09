@@ -51,12 +51,12 @@ ComponentId_t ComponentHolder::getID()
     return config->id;
 }
 
-const char* PyComponent::getName() const {
+std::string ComponentHolder::getName() const {
     return config->name;
 }
 
 
-ConfigComponent* PyComponent::getComp() {
+ConfigComponent* ComponentHolder::getComp() {
     return config;
 }
 
@@ -70,7 +70,7 @@ int ComponentHolder::compare(ComponentHolder *other) {
 
     
 int PySubComponent::getSlot() const {
-    return config->slot;
+    return config->slot_num;
 }
 
 
@@ -221,12 +221,12 @@ static PyObject* compCompare(PyObject *obj0, PyObject *obj1, int op) {
     PyObject *result;
     bool cmp = false;
     switch(op) {
-        case Py_LT: cmp = ((ComponentPy_t*)obj0)->compare(((ComponentPy_t*)obj1)->obj) == -1; break;
-        case Py_LE: cmp = ((ComponentPy_t*)obj0)->compare(((ComponentPy_t*)obj1)->obj) != 1; break;
-        case Py_EQ: cmp = ((ComponentPy_t*)obj0)->compare(((ComponentPy_t*)obj1)->obj) == 0; break;
-        case Py_NE: cmp = ((ComponentPy_t*)obj0)->compare(((ComponentPy_t*)obj1)->obj) != 0; break;
-        case Py_GT: cmp = ((ComponentPy_t*)obj0)->compare(((ComponentPy_t*)obj1)->obj) == 1; break;
-        case Py_GE: cmp = ((ComponentPy_t*)obj0)->compare(((ComponentPy_t*)obj1)->obj) != -1; break;
+        case Py_LT: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) == -1; break;
+        case Py_LE: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) != 1; break;
+        case Py_EQ: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) == 0; break;
+        case Py_NE: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) != 0; break;
+        case Py_GT: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) == 1; break;
+        case Py_GE: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) != -1; break;
     }
     result = cmp ? Py_True : Py_False;
     Py_INCREF(result);
@@ -317,7 +317,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
     int           argOK = 0;
     PyObject*     statParamDict = nullptr;
     ConfigComponent *c = getComp(self);
-    bool          apply_to_children = False
+    bool          apply_to_children = false;
 
     PyErr_Clear();
 
@@ -516,7 +516,7 @@ static void subCompDealloc(ComponentPy_t *self)
     if ( self->obj ) {
         delete self->obj;
     }
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 

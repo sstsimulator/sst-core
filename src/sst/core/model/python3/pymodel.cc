@@ -225,36 +225,38 @@ static PyObject* mlLoadModule(PyObject *UNUSED(self), PyObject *args)
 
 static PyObject* findComponentByName(PyObject* UNUSED(self), PyObject* args)
 {
-    if ( ! PyBytes_Check(args) ) {
-        Py_INCREF(Py_None);
-        return Py_None;
-    }
-    char *name = PyBytes_AsString(args);
-    ComponentId_t id = gModel->findComponentByName(name);
+    char *name = nullptr;
+    int argOK = PyArg_ParseTuple(args, "s", &name);
 
-    if ( id == UNSET_COMPONENT_ID ) {
-        Py_INCREF(Py_None);
-        return Py_None;
-    }
+    if ( argOK ) {
+        ComponentId_t id = gModel->findComponentByName(name);
+
+        if ( id == UNSET_COMPONENT_ID ) {
+            Py_INCREF(Py_None);
+	    return Py_None;
+	}
 
 
-    if ( SUBCOMPONENT_ID_MASK(id) == 0 ) {
-        // Component
-        PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", id);
-        PyObject *res = PyObject_CallObject((PyObject *) &PyModel_ComponentType, argList);
-        Py_DECREF(argList);
-        return res;
+        if ( SUBCOMPONENT_ID_MASK(id) == 0 ) {
+            // Component
+            PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", id);
+	    PyObject *res = PyObject_CallObject((PyObject *) &PyModel_ComponentType, argList);
+	    Py_DECREF(argList);
+	    return res;
+	}
+	else {
+            // SubComponent
+            PyObject *argList = Py_BuildValue("Ok", Py_None, id);
+	    PyObject *res = PyObject_CallObject((PyObject *) &PyModel_SubComponentType, argList);
+	    Py_DECREF(argList);
+	    return res;
+	}
     }
     else {
-        // SubComponent
-        PyObject *argList = Py_BuildValue("Ok", Py_None, id);
-        PyObject *res = PyObject_CallObject((PyObject *) &PyModel_SubComponentType, argList);
-        Py_DECREF(argList);
-        return res;
+        return nullptr;
     }
 
-    Py_INCREF(Py_None);
-    return Py_None;
+    return PyLong_FromLong(0);
 }
 
 static PyObject* setProgramOption(PyObject* UNUSED(self), PyObject* args)
@@ -812,7 +814,7 @@ static PyMethodDef sstModuleMethods[] = {
         setStatisticLoadLevelForComponentType, METH_VARARGS,
         "Sets the statistic load level for all components of the specified type."},
     {   "findComponentByName",
-        findComponentByName, METH_O,
+        findComponentByName, METH_VARARGS,
         "Looks up to find a previously created component, based off of its name.  Returns None if none are to be found."},
     {   nullptr, nullptr, 0, nullptr }
 };
