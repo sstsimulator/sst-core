@@ -26,6 +26,7 @@
 // Default Settings for Statistic Output and Load Level
 #define STATISTICSDEFAULTOUTPUTNAME "sst.statOutputConsole"
 #define STATISTICSDEFAULTLOADLEVEL 0
+#define STATISTICLOADLEVELUNINITIALIZED 0xff
 
 namespace SST {
 class BaseComponent;

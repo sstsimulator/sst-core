@@ -36,58 +36,94 @@ namespace Core {
 
 class SSTPythonModelDefinition : public SSTModelDescription {
 
-    public:
-        SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config, int argc, char **argv);
-        SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config);
-        virtual ~SSTPythonModelDefinition();
+public:
+    SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config, int argc, char **argv);
+    SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config);
+    virtual ~SSTPythonModelDefinition();
+    
+    ConfigGraph* createConfigGraph() override;
+    
+protected:
+    void initModel(const std::string& script_file, int verbosity, Config* config, int argc, char** argv);
+    std::string scriptName;
+    Output* output;
+    Config* config;
+    ConfigGraph *graph;
+    char *namePrefix;
+    size_t namePrefixLen;
+    std::vector<size_t> nameStack;
+    std::map<std::string, ComponentId_t> compNameMap;
+    ComponentId_t nextComponentId;
+    
 
-        ConfigGraph* createConfigGraph() override;
+public:  /* Public, but private.  Called only from Python functions */
+    Config* getConfig(void) const { return config; }
 
-    protected:
-        void initModel(const std::string& script_file, int verbosity, Config* config, int argc, char** argv);
-        std::string scriptName;
-        Output* output;
-        Config* config;
-        ConfigGraph *graph;
-        char *namePrefix;
-        size_t namePrefixLen;
-        std::vector<size_t> nameStack;
-        std::map<std::string, ComponentId_t> compNameMap;
-        ComponentId_t nextComponentId;
+    ConfigGraph* getGraph(void) const { return graph; }
 
+    Output* getOutput() const { return output; }
 
-    public:  /* Public, but private.  Called only from Python functions */
-        Config* getConfig(void) const { return config; }
-        ConfigGraph* getGraph(void) const { return graph; }
-        Output* getOutput() const { return output; }
-        ComponentId_t getNextComponentId() { return nextComponentId++; }
-        ComponentId_t addComponent(const char *name, const char *type) {
-            ComponentId_t id = getNextComponentId();
-            graph->addComponent(id, name, type);
-            compNameMap[std::string(name)] = id;
-            return id;
+    ComponentId_t getNextComponentId() { return nextComponentId++; }
+
+    ComponentId_t addComponent(const char *name, const char *type) {
+        ComponentId_t id = getNextComponentId();
+        graph->addComponent(id, name, type);
+        compNameMap[std::string(name)] = id;
+        return id;
+    }
+
+    ComponentId_t findComponentByName(const char *name) const {
+        std::string origname(name);
+        auto index = origname.find(":");
+        std::string compname = origname.substr(0,index);
+        auto itr = compNameMap.find(compname);
+        
+        // Check to see if component was found
+        if ( itr == compNameMap.end() ) return UNSET_COMPONENT_ID;
+        
+        // If this was just a component name
+        if ( index == std::string::npos ) return itr->second;
+        
+        // See if this is a valid subcomponent name
+        ConfigComponent* cc = graph->findComponent(itr->second);
+        cc = cc->findSubComponentByName(origname.substr(index+1,std::string::npos));
+        if ( cc ) return cc->id;
+        return UNSET_COMPONENT_ID;
+    }
+    
+    void addLink(ComponentId_t id, const char *link_name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, link_name, port, latency, no_cut); }
+    void setLinkNoCut(const char *link_name) const {graph->setLinkNoCut(link_name); }
+    
+    void pushNamePrefix(const char *name);
+    void popNamePrefix(void);
+    char* addNamePrefix(const char *name) const;
+    
+    void setStatisticOutput(const char* Name) { graph->setStatisticOutput(Name); }
+    void addStatisticOutputParameter(const std::string& param, const std::string& value) { graph->addStatisticOutputParameter(param, value); }
+    void setStatisticLoadLevel(uint8_t loadLevel) { graph->setStatisticLoadLevel(loadLevel); }
+    
+    void enableStatisticForComponentName(const std::string& compname, const std::string& statname, bool apply_to_children = false) const {
+        ComponentId_t id = findComponentByName(compname.c_str());
+        if ( UNSET_COMPONENT_ID == id ) {
+            output->fatal(CALL_INFO,1,"component not found in call to enableStatisticForComponentName(): %s\n",compname.c_str());
         }
-        ComponentId_t findComponentByName(const char *name) const {
-            auto itr = compNameMap.find(name);
-            return ( itr != compNameMap.end() ) ? itr->second : UNSET_COMPONENT_ID;
-        }
+        ConfigComponent* cc = graph->findComponent(id);
+        cc->enableStatistic(statname,apply_to_children);
+    }
 
-        void addLink(ComponentId_t id, const char *link_name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, link_name, port, latency, no_cut); }
-        void setLinkNoCut(const char *link_name) const {graph->setLinkNoCut(link_name); }
+    void enableStatisticForComponentType(const std::string& comptype, const std::string& statname, bool apply_to_children = false) const  {
+        graph->enableStatisticForComponentType(comptype, statname, apply_to_children);
+    }
+    
+    void addStatisticParameterForComponentName(const std::string& compname, const std::string& statname, const std::string& param, const std::string& value, bool apply_to_children = false) {
+        ComponentId_t id = findComponentByName(compname.c_str());
+        ConfigComponent* cc = graph->findComponent(id);
+        cc->addStatisticParameter(statname, param, value, apply_to_children);
+    }
 
-        void pushNamePrefix(const char *name);
-        void popNamePrefix(void);
-        char* addNamePrefix(const char *name) const;
-
-        void setStatisticOutput(const char* Name) { graph->setStatisticOutput(Name); }
-        void addStatisticOutputParameter(const std::string& param, const std::string& value) { graph->addStatisticOutputParameter(param, value); }
-        void setStatisticLoadLevel(uint8_t loadLevel) { graph->setStatisticLoadLevel(loadLevel); }
-
-        void enableStatisticForComponentName(const std::string& compname, const std::string& statname) const { graph->enableStatisticForComponentName(compname, statname); }
-        void enableStatisticForComponentType(const std::string& comptype, const std::string& statname) const  { graph->enableStatisticForComponentType(comptype, statname); }
-
-        void addStatisticParameterForComponentName(const std::string& compname, const std::string& statname, const std::string& param, const std::string& value) { graph->addStatisticParameterForComponentName(compname, statname, param, value); }
-        void addStatisticParameterForComponentType(const std::string& comptype, const std::string& statname, const std::string& param, const std::string& value) { graph->addStatisticParameterForComponentType(comptype, statname, param, value); }
+    void addStatisticParameterForComponentType(const std::string& comptype, const std::string& statname, const std::string& param, const std::string& value, bool apply_to_children = false) {
+        graph->addStatisticParameterForComponentType(comptype, statname, param, value, apply_to_children);
+    }
 };
 
 std::map<std::string,std::string> generateStatisticParameters(PyObject* statParamDict);

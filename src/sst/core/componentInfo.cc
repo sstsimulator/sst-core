@@ -67,6 +67,7 @@ ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const
     params(/*new Params()*/ nullptr),
     defaultTimeBase(nullptr),
     enabledStats(nullptr),
+    statLoadLevel(0),
     coordinates(parent_info->coordinates),
     subIDIndex(1),
     slot_name(slot_name),
@@ -87,6 +88,7 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, const std::string& name, Co
     params(&ccomp->params),
     defaultTimeBase(nullptr),
     enabledStats(&ccomp->enabledStatistics),
+    statLoadLevel(ccomp->statLoadLevel),
     coordinates(ccomp->coords),
     subIDIndex(1),
     slot_name(ccomp->name),
@@ -127,6 +129,7 @@ ComponentInfo::ComponentInfo(ComponentInfo &&o) :
     params(o.params),
     defaultTimeBase(o.defaultTimeBase),
     enabledStats(o.enabledStats),
+    statLoadLevel(o.statLoadLevel),
     coordinates(o.coordinates),
     subIDIndex(o.subIDIndex),
     slot_name(o.slot_name),
@@ -244,3 +247,4 @@ std::vector<LinkId_t> ComponentInfo::getAllLinkIds() const
 
 } // namespace SST
 
+// BOOST_CLASS_EXPORT_IMPLEMENT(SST::InitQueue)

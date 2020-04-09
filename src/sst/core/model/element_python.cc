@@ -13,12 +13,14 @@
 
 #include "sst_config.h"
 
-#include "sst/core/model/element_python.h"
-
-// Python header files
+#include "warnmacros.h"
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
+
+#include "sst/core/model/element_python.h"
+
+// Python header files
 #include <traceback.h>
 #include <frameobject.h>
 
