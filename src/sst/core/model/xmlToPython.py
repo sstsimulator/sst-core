@@ -6,12 +6,12 @@ import sys, os, re
 import sst
 
 def printTree(indent, node):
-    print "%sBegin %s: %r"%('  '*indent, node.tag, node.attrib)
+    print("%sBegin %s: %r"%('  '*indent, node.tag, node.attrib))
     if node.text and len(node.text.strip()):
-        print "%sText:  %s"%('  '*indent, node.text.strip())
+        print("%sText:  %s"%('  '*indent, node.text.strip()))
     for child in node:
         printTree(indent+1, child)
-    print "%sEnd %s"%('  '*indent, node.tag)
+    print("%sEnd %s"%('  '*indent, node.tag))
 
 
 
@@ -163,5 +163,5 @@ with open(xmlFile, 'r') as f:
         #printTree(0, root)
         build(root)
     else:
-        print "Unknown format"
+        print("Unknown format")
         sst.exit(1)
