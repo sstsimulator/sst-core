@@ -24,13 +24,13 @@ struct PyComponent;
 
 struct ComponentHolder {
     ComponentPy_t *pobj;
-    ConfigComponent* config;
+    ComponentId_t id;
     
-    ComponentHolder(ComponentPy_t *pobj, ConfigComponent* config) : pobj(pobj), config(config) { }
+    ComponentHolder(ComponentPy_t *pobj, ComponentId_t id) : pobj(pobj), id(id) { }
     virtual ~ComponentHolder() { }
     virtual ConfigComponent* getComp();
     virtual int compare(ComponentHolder *other);
-    virtual std::string getName() const;
+    virtual std::string getName();
     ComponentId_t getID();
     ConfigComponent* getSubComp(const std::string& name, int slot_num);
 };
@@ -38,14 +38,14 @@ struct ComponentHolder {
 struct PyComponent : ComponentHolder {
     uint16_t subCompId;
 
-    PyComponent(ComponentPy_t *pobj, ConfigComponent* config) : ComponentHolder(pobj,config), subCompId(0) { }
+    PyComponent(ComponentPy_t *pobj, ComponentId_t id) : ComponentHolder(pobj,id), subCompId(0) { }
     ~PyComponent() {}
 };
 
 struct PySubComponent : ComponentHolder {
-    PySubComponent(ComponentPy_t *pobj, ConfigComponent* config) : ComponentHolder(pobj,config) { }
+    PySubComponent(ComponentPy_t *pobj, ComponentId_t id) : ComponentHolder(pobj,id) { }
     ~PySubComponent() {}
-    int getSlot() const;
+    int getSlot();
 };
 
 
@@ -59,6 +59,14 @@ extern PyTypeObject PyModel_SubComponentType;
 
 static inline ConfigComponent* getComp(PyObject *pobj) {
     ConfigComponent *c = ((ComponentPy_t*)pobj)->obj->getComp();
+    if ( c == nullptr ) {
+        PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent");
+    }
+    return c;
+}
+
+static inline ConfigComponent* getComp(ComponentPy_t *pobj) {
+    ConfigComponent *c = pobj->obj->getComp();
     if ( c == nullptr ) {
         PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent");
     }

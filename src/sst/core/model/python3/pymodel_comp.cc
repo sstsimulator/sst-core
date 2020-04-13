@@ -48,29 +48,29 @@ ConfigComponent* ComponentHolder::getSubComp(const std::string& name, int slot_n
 
 ComponentId_t ComponentHolder::getID()
 {
-    return config->id;
+    return id;
 }
 
-std::string ComponentHolder::getName() const {
-    return config->name;
+std::string ComponentHolder::getName() {
+    return getComp()->name;
 }
 
 
 ConfigComponent* ComponentHolder::getComp() {
-    return config;
+    return gModel->getGraph()->findComponent(id);
 }
 
 
 int ComponentHolder::compare(ComponentHolder *other) {
-    if (config->id < other->config->id) return -1;
-    else if (config->id > other->config->id ) return 1;
+    if (id < other->id) return -1;
+    else if (id > other->id ) return 1;
     else return 0;    
 }
 
 
     
-int PySubComponent::getSlot() const {
-    return config->slot_num;
+int PySubComponent::getSlot() {
+    return getComp()->slot_num;
 }
 
 
@@ -86,12 +86,10 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
      if ( useID == UNSET_COMPONENT_ID ) {
         char* prefixed_name = gModel->addNamePrefix(name);
         ComponentId_t id = gModel->addComponent(prefixed_name, type);
-        ConfigComponent* config = gModel->getGraph()->findComponent(id);
-        obj = new PyComponent(self,config);
+        obj = new PyComponent(self,id);
         gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, id);
     } else {
-        ConfigComponent* config = gModel->getGraph()->findComponent(useID);
-        obj = new PyComponent(self,config);
+        obj = new PyComponent(self,useID);
     }
     self->obj = obj;
 
@@ -238,7 +236,7 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
 {
     char *name = nullptr, *type = nullptr;
     int slot = 0;
-
+    
     if ( !PyArg_ParseTuple(args, "ss|i", &name, &type, &slot) )
         return nullptr;
 
@@ -499,13 +497,11 @@ static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwd
     if ( !PyArg_ParseTuple(args, "Ok", &parent, &id) )
         return -1;
 
-    ConfigComponent* config = gModel->getGraph()->findComponent(id);
-    
-    PySubComponent *obj = new PySubComponent(self,config);
+    PySubComponent *obj = new PySubComponent(self,id);
     
     self->obj = obj;
 
-    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating subcomponent [%s] of type [%s]]\n", config->name.c_str(), config->type.c_str());
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating subcomponent [%s] of type [%s]]\n", getComp(self)->name.c_str(), getComp(self)->type.c_str());
 
     return 0;
 }
