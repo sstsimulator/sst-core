@@ -65,15 +65,6 @@ static inline ConfigComponent* getComp(PyObject *pobj) {
     return c;
 }
 
-static inline ConfigComponent* getComp(ComponentPy_t *pobj) {
-    ConfigComponent *c = pobj->obj->getComp();
-    if ( c == nullptr ) {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigComponent");
-    }
-    return c;
-}
-
-
 }  /* extern C */
 
 

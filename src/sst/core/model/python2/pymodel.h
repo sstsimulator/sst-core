@@ -103,12 +103,7 @@ public:  /* Public, but private.  Called only from Python functions */
     void setStatisticLoadLevel(uint8_t loadLevel) { graph->setStatisticLoadLevel(loadLevel); }
     
     void enableStatisticForComponentName(const std::string& compname, const std::string& statname, bool apply_to_children = false) const {
-        ComponentId_t id = findComponentByName(compname.c_str());
-        if ( UNSET_COMPONENT_ID == id ) {
-            output->fatal(CALL_INFO,1,"component not found in call to enableStatisticForComponentName(): %s\n",compname.c_str());
-        }
-        ConfigComponent* cc = graph->findComponent(id);
-        cc->enableStatistic(statname,apply_to_children);
+        graph->enableStatisticForComponentName(compname,statname,apply_to_children);
     }
 
     void enableStatisticForComponentType(const std::string& comptype, const std::string& statname, bool apply_to_children = false) const  {
@@ -116,9 +111,7 @@ public:  /* Public, but private.  Called only from Python functions */
     }
     
     void addStatisticParameterForComponentName(const std::string& compname, const std::string& statname, const std::string& param, const std::string& value, bool apply_to_children = false) {
-        ComponentId_t id = findComponentByName(compname.c_str());
-        ConfigComponent* cc = graph->findComponent(id);
-        cc->addStatisticParameter(statname, param, value, apply_to_children);
+        graph->addStatisticParameterForComponentName(compname,statname,param,value,apply_to_children);
     }
 
     void addStatisticParameterForComponentType(const std::string& comptype, const std::string& statname, const std::string& param, const std::string& value, bool apply_to_children = false) {
