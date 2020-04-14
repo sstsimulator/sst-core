@@ -193,7 +193,7 @@ typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 class ConfigComponent : public SST::Core::Serialization::serializable {
 public:
     ComponentId_t                 id;                /*!< Unique ID of this component */
-    ConfigComponent*              ulitmate_parent;   /*!< Ultimate parent of this component */
+    ConfigGraph*                  graph;             /*!< Graph that this component belongs to */
     std::string                   name;              /*!< Name of this component, or slot name for subcomp */
     int                           slot_num;          /*!< Slot number.  Only valid for subcomponents */
     std::string                   type;              /*!< Type of this component */
@@ -201,6 +201,7 @@ public:
     RankInfo                      rank;              /*!< Parallel Rank for this component */
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
+    uint8_t                       statLoadLevel;     /*!< Statistic load level for this component */
     std::vector<Statistics::StatisticInfo> enabledStatistics; /*!< List of statistics to be enabled */
     std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
@@ -217,7 +218,9 @@ public:
     ConfigComponent cloneWithoutLinksOrParams() const;
 
     ~ConfigComponent() {}
-    ConfigComponent() : id(null_id) {}
+    ConfigComponent() : id(null_id), statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), nextSubID(1) { }
+
+    ComponentId_t getNextSubComponentID();
 
     void setRank(RankInfo r);
     void setWeight(double w);
@@ -226,9 +229,11 @@ public:
     ConfigComponent* addSubComponent(ComponentId_t, const std::string& name, const std::string& type, int slot);
     ConfigComponent* findSubComponent(ComponentId_t);
     const ConfigComponent* findSubComponent(ComponentId_t) const;
+    ConfigComponent* findSubComponentByName(const std::string& name);
     void enableStatistic(const std::string& statisticName, bool recursively = false);
     void addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively = false);
     void setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively = false);
+    void setStatisticLoadLevel(uint8_t level, bool recursively = false);
 
     std::vector<LinkId_t> allLinks() const;
 
@@ -242,6 +247,7 @@ public:
         ser & rank.thread;
         ser & links;
         ser & params;
+        ser & statLoadLevel;
         ser & enabledStatistics;
         ser & subComponents;
     }
@@ -252,23 +258,29 @@ private:
 
     friend class ConfigGraph;
     /** Create a new Component */
-    ConfigComponent(ComponentId_t id, const std::string& name, const std::string& type, float weight, RankInfo rank) :
+    ConfigComponent(ComponentId_t id, ConfigGraph* graph, const std::string& name, const std::string& type, float weight, RankInfo rank) :
         id(id),
+        graph(graph),
         name(name),
         type(type),
         weight(weight),
-        rank(rank)
+        rank(rank),
+        statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
+        nextSubID(1)
     {
         coords.resize(3, 0.0);
     }
 
-    ConfigComponent(ComponentId_t id, const std::string& name, int slot_num, const std::string& type, float weight, RankInfo rank) :
+    ConfigComponent(ComponentId_t id, ConfigGraph* graph, const std::string& name, int slot_num, const std::string& type, float weight, RankInfo rank) :
         id(id),
+        graph(graph),
         name(name),
         slot_num(slot_num),
         type(type),
         weight(weight),
-        rank(rank)
+        rank(rank),
+        statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
+        nextSubID(1)
     {
         coords.resize(3, 0.0);
     }
@@ -283,6 +295,8 @@ private:
 // typedef SparseVectorMap<std::string,ConfigLink> ConfigLinkMap_t;
 /** Map IDs to Components */
 typedef SparseVectorMap<ComponentId_t,ConfigComponent> ConfigComponentMap_t;
+/** Map names to Components */
+// typedef std::map<std::string,ConfigComponent*> ConfigComponentNameMap_t;
 /** Map names to Parameter Sets: XML only */
 typedef std::map<std::string,Params*> ParamsMap_t;
 /** Map names to variable values:  XML only */
@@ -341,12 +355,13 @@ public:
     void setStatisticLoadLevel(uint8_t loadLevel);
 
     /** Enable a Statistics assigned to a component */
-    void enableStatisticForComponentName(const std::string& ComponentName, const std::string& statisticName);
-    void enableStatisticForComponentType(const std::string& ComponentType, const std::string& statisticName);
+    void enableStatisticForComponentName(const std::string& ComponentName, const std::string& statisticName, bool recursive = false);
+    void enableStatisticForComponentType(const std::string& ComponentType, const std::string& statisticName, bool recursive = false);
 
     /** Add Parameters for a Statistic */
-    void addStatisticParameterForComponentName(const std::string& ComponentName, const std::string& statisticName, const std::string& param, const std::string& value);
-    void addStatisticParameterForComponentType(const std::string& ComponentType, const std::string& statisticName, const std::string& param, const std::string& value);
+    void addStatisticParameterForComponentName(const std::string& ComponentName, const std::string& statisticName, const std::string& param, const std::string& value, bool recursively);
+    void addStatisticParameterForComponentType(const std::string& ComponentType, const std::string& statisticName, const std::string& param, const std::string& value, bool recursively);
+    void setStatisticLoadLevelForComponentType(const std::string& compType, uint8_t level, bool recursively = false);
 
     std::vector<ConfigStatOutput>& getStatOutputs() {return statOutputs;}
     const ConfigStatOutput& getStatOutput(size_t index = 0) const {return statOutputs[index];}
@@ -412,6 +427,7 @@ private:
 
     ConfigLinkMap_t      links;
     ConfigComponentMap_t comps;
+    // ConfigComponentNameMap_t compsByName;
     std::map<std::string, ConfigStatGroup> statGroups;
 
     // temporary as a test

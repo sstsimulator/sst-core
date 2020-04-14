@@ -113,6 +113,8 @@ private:
 
     statEnableList_t * enabledStats;
 
+    uint8_t statLoadLevel;
+
     std::vector<double> coordinates;
 
     uint64_t subIDIndex;
@@ -211,6 +213,8 @@ public:
     ComponentInfo* findSubComponent(const std::string& slot, int slot_num);
     ComponentInfo* findSubComponent(ComponentId_t id);
     std::vector<LinkId_t> getAllLinkIds() const;
+
+    uint8_t getStatisticLoadLevel() { return statLoadLevel; }
 
     statEnableList_t* getStatEnableList() { return enabledStats; }
 

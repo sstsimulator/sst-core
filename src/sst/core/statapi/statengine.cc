@@ -86,13 +86,14 @@ StatisticProcessingEngine::~StatisticProcessingEngine()
     }
 }
 
-bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
+bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat, uint8_t comp_load_level)
 {
     if ( stat->isNullStatistic() )
         return true;
 
+    uint8_t stat_load_level = comp_load_level == STATISTICLOADLEVELUNINITIALIZED ? m_statLoadLevel : comp_load_level;
 
-    if ( 0 == m_statLoadLevel ) {
+    if ( 0 == stat_load_level ) {
         m_output.verbose(CALL_INFO, 1, 0,
                 " Warning: Statistic Load Level = 0 (all statistics disabled); statistic %s is disabled...\n",
                 stat->getFullStatName().c_str());
@@ -101,10 +102,10 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 
 
     uint8_t enableLevel = stat->getComponent()->getComponentInfoStatisticEnableLevel(stat->getStatName());
-    if ( enableLevel > m_statLoadLevel ) {
+    if ( enableLevel > stat_load_level ) {
         m_output.verbose(CALL_INFO, 1, 0,
                 " Warning: Load Level %d is too low to enable Statistic %s with Enable Level %d, statistic will not be enabled...\n",
-                m_statLoadLevel, stat->getFullStatName().c_str(), enableLevel);
+                stat_load_level, stat->getFullStatName().c_str(), enableLevel);
         return false;
     }
 

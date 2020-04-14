@@ -79,10 +79,10 @@ public:
       return Factory::getFactory()->Create<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
 
-    bool registerStatisticWithEngine(StatisticBase* stat, fieldType_t fieldType)
+    bool registerStatisticWithEngine(StatisticBase* stat, fieldType_t fieldType, uint8_t comp_stat_level)
     {
         bool ok;
-        if ((ok = registerStatisticCore(stat))) {
+        if ((ok = registerStatisticCore(stat,comp_stat_level))) {
             addStatisticToCompStatMap(stat, fieldType);
         }
         return ok;
@@ -110,7 +110,7 @@ private:
 
     StatisticOutput* createStatisticOutput(const ConfigStatOutput &cfg);
 
-    bool registerStatisticCore(StatisticBase* stat);
+    bool registerStatisticCore(StatisticBase* stat, uint8_t comp_stat_level);
 
     StatisticOutput* getOutputForStatistic(const StatisticBase *stat) const;
     StatisticGroup& getGroupForStatistic(const StatisticBase *stat) const;
