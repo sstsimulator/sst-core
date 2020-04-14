@@ -48,59 +48,29 @@ ConfigComponent* ComponentHolder::getSubComp(const std::string& name, int slot_n
 
 ComponentId_t ComponentHolder::getID()
 {
-    return getComp()->id;
+    return id;
 }
 
-const char* PyComponent::getName() const {
-    return name;
-}
-
-
-ConfigComponent* PyComponent::getComp() {
-    return &(gModel->getGraph()->getComponentMap()[id]);
+std::string ComponentHolder::getName() {
+    return getComp()->name;
 }
 
 
-PyComponent* PyComponent::getBaseObj() {
-    return this;
-}
-
-int PyComponent::compare(ComponentHolder *other) {
-    PyComponent *o = dynamic_cast<PyComponent*>(other);
-    if ( o ) {
-        return (id < o->id) ? -1 : (id > o->id) ? 1 : 0;
-    }
-    return 1;
+ConfigComponent* ComponentHolder::getComp() {
+    return gModel->getGraph()->findComponent(id);
 }
 
 
-const char* PySubComponent::getName() const {
-    return name;
-}
-
-int PySubComponent::getSlot() const {
-    return slot;
-}
-
-ConfigComponent* PySubComponent::getComp() {
-    return parent->getSubComp(name,slot);
+int ComponentHolder::compare(ComponentHolder *other) {
+    if (id < other->id) return -1;
+    else if (id > other->id ) return 1;
+    else return 0;    
 }
 
 
-PyComponent* PySubComponent::getBaseObj() {
-    return parent->getBaseObj();
-}
-
-
-int PySubComponent::compare(ComponentHolder *other) {
-    PySubComponent *o = dynamic_cast<PySubComponent*>(other);
-    if ( o ) {
-        int pCmp = parent->compare(o->parent);
-        if ( pCmp == 0 ) /* Parents are equal */
-            pCmp = strcmp(name, o->name);
-        return pCmp;
-    }
-    return -11;
+    
+int PySubComponent::getSlot() {
+    return getComp()->slot_num;
 }
 
 
@@ -112,16 +82,16 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
     if ( !PyArg_ParseTuple(args, "ss|k", &name, &type, &useID) )
         return -1;
 
-    PyComponent *obj = new PyComponent(self);
-    self->obj = obj;
-    if ( useID == UNSET_COMPONENT_ID ) {
-        obj->name = gModel->addNamePrefix(name);
-        obj->id = gModel->addComponent(obj->name, type);
-        gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, obj->id);
+    PyComponent *obj;
+     if ( useID == UNSET_COMPONENT_ID ) {
+        char* prefixed_name = gModel->addNamePrefix(name);
+        ComponentId_t id = gModel->addComponent(prefixed_name, type);
+        obj = new PyComponent(self,id);
+        gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating component [%s] of type [%s]: id [%" PRIu64 "]\n", name, type, id);
     } else {
-        obj->name = name;
-        obj->id = useID;
+        obj = new PyComponent(self,useID);
     }
+    self->obj = obj;
 
     return 0;
 }
@@ -249,12 +219,12 @@ static PyObject* compCompare(PyObject *obj0, PyObject *obj1, int op) {
     PyObject *result;
     bool cmp = false;
     switch(op) {
-        case Py_LT: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == -1; break;
-        case Py_LE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != 1; break;
-        case Py_EQ: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == 0; break;
-        case Py_NE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != 0; break;
-        case Py_GT: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) == 1; break;
-        case Py_GE: cmp = ((ComponentPy_t*)obj0)->obj->compare(((ComponentPy_t*)obj1)->obj) != -1; break;
+        case Py_LT: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) == -1; break;
+        case Py_LE: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) != 1; break;
+        case Py_EQ: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) == 0; break;
+        case Py_NE: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) != 0; break;
+        case Py_GT: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) == 1; break;
+        case Py_GE: cmp = ((ComponentHolder*)obj0)->compare(((ComponentPy_t*)obj1)->obj) != -1; break;
     }
     result = cmp ? Py_True : Py_False;
     Py_INCREF(result);
@@ -266,17 +236,17 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
 {
     char *name = nullptr, *type = nullptr;
     int slot = 0;
-
+    
     if ( !PyArg_ParseTuple(args, "ss|i", &name, &type, &slot) )
         return nullptr;
 
     ConfigComponent *c = getComp(self);
     if ( nullptr == c ) return nullptr;
 
-    PyComponent *baseComp = ((ComponentPy_t*)self)->obj->getBaseObj();
-    ComponentId_t subC_id = SUBCOMPONENT_ID_CREATE(baseComp->id, ++(baseComp->subCompId));
-    if ( nullptr != c->addSubComponent(subC_id, name, type, slot) ) {
-        PyObject *argList = Py_BuildValue("Ossi", self, name, type, slot);
+    ComponentId_t subC_id = c->getNextSubComponentID();
+    ConfigComponent* sub = c->addSubComponent( subC_id, name, type, slot);
+    if ( nullptr != sub ) {
+        PyObject *argList = Py_BuildValue("Ok", self, subC_id);
         PyObject *subObj = PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);
         Py_DECREF(argList);
         return subObj;
@@ -319,23 +289,45 @@ error:
     return PyLong_FromLong(0);
 }
 
+static PyObject* compSetStatisticLoadLevel(PyObject *self, PyObject *args) {
+    int           argOK = 0;
+    uint8_t       loadLevel = STATISTICLOADLEVELUNINITIALIZED;
+    ConfigComponent *c = getComp(self);
+    bool          apply_to_children = false;
+
+    PyErr_Clear();
+
+    argOK = PyArg_ParseTuple(args, "H|i", &loadLevel, &apply_to_children);
+    loadLevel = loadLevel & 0xff;
+    
+    if (argOK) {
+        c->setStatisticLoadLevel(loadLevel,apply_to_children);
+    }
+    else {
+        return nullptr;
+    }
+    return PyLong_FromLong(0);
+}
+
+
 static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
 {
     int           argOK = 0;
     PyObject*     statParamDict = nullptr;
     ConfigComponent *c = getComp(self);
+    bool          apply_to_children = false;
 
     PyErr_Clear();
 
     // Parse the Python Args and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "|O!", &PyDict_Type, &statParamDict);
+    argOK = PyArg_ParseTuple(args, "|O!i", &PyDict_Type, &statParamDict, &apply_to_children);
 
     if (argOK) {
-        c->enableStatistic(STATALLFLAG);
+        c->enableStatistic(STATALLFLAG,apply_to_children);
 
         // Generate and Add the Statistic Parameters
         for ( auto p : generateStatisticParameters(statParamDict) ) {
-            c->addStatisticParameter(STATALLFLAG, p.first, p.second);
+            c->addStatisticParameter(STATALLFLAG, p.first, p.second, apply_to_children);
         }
 
     } else {
@@ -350,15 +342,27 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
 {
     int           argOK = 0;
     PyObject*     statList = nullptr;
+    char*         stat_str = nullptr;
     PyObject*     statParamDict = nullptr;
     Py_ssize_t    numStats = 0;
+    bool          apply_to_children = false;
     ConfigComponent *c = getComp(self);
 
     PyErr_Clear();
 
-    // Parse the Python Args and get A List Object and the optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "O!|O!", &PyList_Type, &statList, &PyDict_Type, &statParamDict);
-
+    // Can either have a single string, or a list of strings.  Try single string first
+    argOK = PyArg_ParseTuple(args,"s|O!i", &stat_str, &PyDict_Type, &statParamDict, &apply_to_children);
+    if ( argOK ) {
+        statList = PyList_New(1);
+        PyList_SetItem(statList,0,PyBytes_FromString(stat_str));
+    }
+    else  {
+        PyErr_Clear();
+        // Try list version
+        argOK = PyArg_ParseTuple(args, "O!|O!i", &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
+        if ( argOK )  Py_INCREF(statList);
+    }
+        
     if (argOK) {
         // Generate the Statistic Parameters
         auto params = generateStatisticParameters(statParamDict);
@@ -373,17 +377,17 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
         numStats = PyList_Size(statList);
         for (uint32_t x = 0; x < numStats; x++) {
             PyObject* pylistitem = PyList_GetItem(statList, x);
-            PyObject* pyname = PyObject_Str(pylistitem);
+            PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
 
-            c->enableStatistic(PyUnicode_AsUTF8(pyname));
+            c->enableStatistic(PyBytes_AsString(pyname),apply_to_children);
 
             // Add the parameters
             for ( auto p : params ) {
-                c->addStatisticParameter(PyBytes_AsString(pyname), p.first, p.second);
+                c->addStatisticParameter(PyBytes_AsString(pyname), p.first, p.second, apply_to_children);
             }
 
-            Py_XDECREF(pyname);
         }
+        Py_XDECREF(statList);
     } else {
         // ParseTuple Failed, return NULL for error
         return nullptr;
@@ -411,6 +415,9 @@ static PyMethodDef componentMethods[] = {
     {   "getFullName",
         compGetFullName, METH_NOARGS,
         "Returns the full name, after any prefix, of the component."},
+    {   "setStatisticLoadLevel",
+        compSetStatisticLoadLevel, METH_VARARGS,
+        "Sets the statistics load level for this component"},
     {   "enableAllStatistics",
         compEnableAllStatistics, METH_VARARGS,
         "Enable all Statistics in the component with optional parameters"},
@@ -484,23 +491,17 @@ PyTypeObject PyModel_ComponentType = {
 
 static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
-    char *name, *type;
-    int slot;
+    ComponentId_t id;
     PyObject *parent;
-    if ( !PyArg_ParseTuple(args, "Ossi", &parent, &name, &type, &slot) )
+    // if ( !PyArg_ParseTuple(args, "Ossii", &parent, &name, &type, &slot, &id) )
+    if ( !PyArg_ParseTuple(args, "Ok", &parent, &id) )
         return -1;
 
-    PySubComponent *obj = new PySubComponent(self);
-    obj->parent = ((ComponentPy_t*)parent)->obj;
-
-    obj->name = strdup(name);
-
-    obj->slot = slot;
-
+    PySubComponent *obj = new PySubComponent(self,id);
+    
     self->obj = obj;
-    Py_INCREF(obj->parent->pobj);
 
-    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating subcomponent [%s] of type [%s]]\n", name, type);
+    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating subcomponent [%s] of type [%s]]\n", getComp((PyObject*)self)->name.c_str(), getComp((PyObject*)self)->type.c_str());
 
     return 0;
 }
@@ -509,8 +510,6 @@ static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwd
 static void subCompDealloc(ComponentPy_t *self)
 {
     if ( self->obj ) {
-        PySubComponent *obj = (PySubComponent*)self->obj;
-        Py_XDECREF(obj->parent->pobj);
         delete self->obj;
     }
     Py_TYPE(self)->tp_free((PyObject*)self);
@@ -528,6 +527,9 @@ static PyMethodDef subComponentMethods[] = {
     {   "addLink",
         compAddLink, METH_VARARGS,
         "Connects this subComponent to a Link"},
+    {   "setStatisticLoadLevel",
+        compSetStatisticLoadLevel, METH_VARARGS,
+        "Sets the statistics load level for this component"},
     {   "enableAllStatistics",
         compEnableAllStatistics, METH_VARARGS,
         "Enable all Statistics in the component with optional parameters"},
