@@ -282,7 +282,7 @@ static PyObject* compSetStatisticLoadLevel(PyObject *self, PyObject *args) {
     int           argOK = 0;
     uint8_t       loadLevel = STATISTICLOADLEVELUNINITIALIZED;
     ConfigComponent *c = getComp(self);
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -304,7 +304,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
     int           argOK = 0;
     PyObject*     statParamDict = nullptr;
     ConfigComponent *c = getComp(self);
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -334,7 +334,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     char*         stat_str = nullptr;
     PyObject*     statParamDict = nullptr;
     Py_ssize_t    numStats = 0;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
     ConfigComponent *c = getComp(self);
 
     PyErr_Clear();
@@ -347,6 +347,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     }
     else  {
         PyErr_Clear();
+        apply_to_children = 0;
         // Try list version
         argOK = PyArg_ParseTuple(args, "O!|O!i", &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK )  Py_INCREF(statList);

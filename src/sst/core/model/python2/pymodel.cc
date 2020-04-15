@@ -460,7 +460,7 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *UNUSED(self), PyO
     int           argOK = 0;
     char*         compName = nullptr;
     PyObject*     statParamDict = nullptr;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
     
     PyErr_Clear();
 
@@ -488,7 +488,7 @@ static PyObject* enableStatisticForComponentName(PyObject *UNUSED(self), PyObjec
     char*         compName = nullptr;
     char*         statName = nullptr;
     PyObject*     statParamDict = nullptr;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -517,7 +517,7 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
     char*         stat_str = nullptr;
     PyObject*     statParamDict = nullptr;
     Py_ssize_t    numStats = 0;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -529,6 +529,7 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
     }
     else  {
         PyErr_Clear();
+        apply_to_children = 0;
         // Try list version
         argOK = PyArg_ParseTuple(args, "sO!|O!i", &compName, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK )  Py_INCREF(statList);
@@ -576,7 +577,7 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyO
     int           argOK = 0;
     char*         compType = nullptr;
     PyObject*     statParamDict = nullptr;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -603,7 +604,7 @@ static PyObject* enableStatisticForComponentType(PyObject *UNUSED(self), PyObjec
     char*         compType = nullptr;
     char*         statName = nullptr;
     PyObject*     statParamDict = nullptr;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -632,7 +633,7 @@ static PyObject* enableStatisticsForComponentType(PyObject *UNUSED(self), PyObje
     char*         stat_str = nullptr;
     PyObject*     statParamDict = nullptr;
     Py_ssize_t    numStats = 0;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -644,6 +645,7 @@ static PyObject* enableStatisticsForComponentType(PyObject *UNUSED(self), PyObje
     }
     else  {
         PyErr_Clear();
+        apply_to_children = 0;
         // Try list version
         argOK = PyArg_ParseTuple(args, "sO!|O!i", &compType, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK )  Py_INCREF(statList);
@@ -678,7 +680,7 @@ static PyObject* setStatisticLoadLevelForComponentName(PyObject *UNUSED(self), P
     int           argOK = 0;
     char*         compName = nullptr;
     int           level = STATISTICLOADLEVELUNINITIALIZED;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -707,7 +709,7 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject *UNUSED(self), P
     int           argOK = 0;
     char*         compType = nullptr;
     uint8_t       level = STATISTICLOADLEVELUNINITIALIZED;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 

@@ -285,7 +285,7 @@ static PyObject* setProgramOptions(PyObject* UNUSED(self), PyObject* args)
     PyObject *key, *val;
     long count = 0;
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        if ( gModel->getConfig()->setConfigEntryFromModel(PyBytes_AsString(key), PyBytes_AsString(val)) )
+        if ( gModel->getConfig()->setConfigEntryFromModel(PyUnicode_AsUTF8(key), PyUnicode_AsUTF8(val)) )
             count++;
     }
     return PyLong_FromLong(count);
@@ -324,12 +324,10 @@ static PyObject* getProgramOptions(PyObject*UNUSED(self), PyObject *UNUSED(args)
 
 static PyObject* pushNamePrefix(PyObject* UNUSED(self), PyObject* arg)
 {
-    char *name = nullptr;
-    PyErr_Clear();
-    name = PyBytes_AsString(arg);
-
-    if ( name != nullptr ) {
-        gModel->pushNamePrefix(name);
+    const char* prefix = PyUnicode_AsUTF8(arg);
+    
+    if ( prefix != nullptr ) {
+        gModel->pushNamePrefix(prefix);
     } else {
         return nullptr;
     }
@@ -482,7 +480,7 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *UNUSED(self), PyO
     int           argOK = 0;
     char*         compName = nullptr;
     PyObject*     statParamDict = nullptr;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -510,7 +508,7 @@ static PyObject* enableStatisticForComponentName(PyObject *UNUSED(self), PyObjec
     char*         compName = nullptr;
     char*         statName = nullptr;
     PyObject*     statParamDict = nullptr;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -539,7 +537,7 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
     char*         stat_str = nullptr;
     PyObject*     statParamDict = nullptr;
     Py_ssize_t    numStats = 0;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -547,10 +545,11 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
     argOK = PyArg_ParseTuple(args,"ss|O!i", &compName, &stat_str, &PyDict_Type, &statParamDict, &apply_to_children);
     if ( argOK ) {
         statList = PyList_New(1);
-        PyList_SetItem(statList,0,PyBytes_FromString(stat_str));
+        PyList_SetItem(statList,0,PyUnicode_FromString(stat_str));
     }
     else  {
         PyErr_Clear();
+        apply_to_children = 0;
         // Try list version
         argOK = PyArg_ParseTuple(args, "sO!|O!i", &compName, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK )  Py_INCREF(statList);
@@ -575,13 +574,12 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
         // For each stat, enable on compoennt
         for (uint32_t x = 0; x < numStats; x++) {
             PyObject* pylistitem = PyList_GetItem(statList, x);
-            PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
-
-            c->enableStatistic(PyBytes_AsString(pyname),apply_to_children);
+            const char *name = PyUnicode_AsUTF8(pylistitem);
+            c->enableStatistic(name,apply_to_children);
 
             // Add the parameters
             for ( auto p : params ) {
-                c->addStatisticParameter(PyBytes_AsString(pyname), p.first, p.second, apply_to_children);
+                c->addStatisticParameter(name, p.first, p.second, apply_to_children);
             }
 
         }        
@@ -598,7 +596,7 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyO
     int           argOK = 0;
     char*         compType = nullptr;
     PyObject*     statParamDict = nullptr;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -625,7 +623,7 @@ static PyObject* enableStatisticForComponentType(PyObject *UNUSED(self), PyObjec
     char*         compType = nullptr;
     char*         statName = nullptr;
     PyObject*     statParamDict = nullptr;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
     
     PyErr_Clear();
 
@@ -654,7 +652,7 @@ static PyObject* enableStatisticsForComponentType(PyObject *UNUSED(self), PyObje
     char*         stat_str = nullptr;
     PyObject*     statParamDict = nullptr;
     Py_ssize_t    numStats = 0;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -662,10 +660,11 @@ static PyObject* enableStatisticsForComponentType(PyObject *UNUSED(self), PyObje
     argOK = PyArg_ParseTuple(args,"ss|O!i", &compType, &stat_str, &PyDict_Type, &statParamDict, &apply_to_children);
     if ( argOK ) {
         statList = PyList_New(1);
-        PyList_SetItem(statList,0,PyBytes_FromString(stat_str));
+        PyList_SetItem(statList,0,PyUnicode_FromString(stat_str));
     }
     else  {
         PyErr_Clear();
+        apply_to_children = 0;
         // Try list version
         argOK = PyArg_ParseTuple(args, "sO!|O!i", &compType, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK )  Py_INCREF(statList);
@@ -677,8 +676,7 @@ static PyObject* enableStatisticsForComponentType(PyObject *UNUSED(self), PyObje
         numStats = PyList_Size(statList);
         for (uint32_t x = 0; x < numStats; x++) {
             PyObject* pylistitem = PyList_GetItem(statList, x);
-            PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
-            std::string statName = PyBytes_AsString(pyname);
+            const char *statName = PyUnicode_AsUTF8(pylistitem);
             
             gModel->enableStatisticForComponentType(compType, statName, apply_to_children);
 
@@ -700,8 +698,8 @@ static PyObject* setStatisticLoadLevelForComponentName(PyObject *UNUSED(self), P
     int           argOK = 0;
     char*         compName = nullptr;
     int           level = STATISTICLOADLEVELUNINITIALIZED;
-    bool          apply_to_children = false;
-
+    int           apply_to_children = 0;
+    
     PyErr_Clear();
 
     // Parse the Python Args Component Type, Stat Name and get optional Stat Params (as a Dictionary)
@@ -729,7 +727,7 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject *UNUSED(self), P
     int           argOK = 0;
     char*         compType = nullptr;
     uint8_t       level = STATISTICLOADLEVELUNINITIALIZED;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
