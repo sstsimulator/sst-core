@@ -28,6 +28,8 @@
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/sharedRegion.h"
 
+#include "sst/core/statapi/statoutput.h"
+
 namespace SST {
 
 
@@ -515,6 +517,15 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
     curr_info = my_info;
     ComponentInfo* next_info = my_info;
     // uint8_t stat_load_level;
+
+    // Need to keep track of if the stat was enabled with all flag or
+    // directly and what the enable level for the component that it
+    // was enabled in is set to.  This info is needed to get the final
+    // load level checking correct.  If the stat is enabled
+    // explicitly, then load level doesn't matter.  Also, a locally
+    // set load level will take priority over the global setting.
+    bool all_enabled = false;
+    uint8_t enable_level = STATISTICLOADLEVELUNINITIALIZED;
     do {
         curr_info = next_info;
         // Check each entry in the StatEnableList (from the ConfigGraph via the
@@ -549,6 +560,9 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
                     // Get the load level from the component
                     // stat_load_level = curr_info->component->getComponentInfoStatisticEnableLevel(si.name);
                     nameFound = true;
+
+                    all_enabled = (std::string(STATALLFLAG) == si.name);
+                    enable_level = curr_info->getStatisticLoadLevel();
                     break;
                 }
             }
@@ -556,6 +570,9 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
         next_info = curr_info->parent_info;
     } while ( curr_info->canInsertStatistics() );
 
+    // hack for now to make sure that an explicitly enabled stat is
+    // always loaded regardless of load level.
+    if ( !all_enabled ) enable_level = 0xfe;
 
     // Did we find a matching enable name?
     if (false == nameFound) {
@@ -591,6 +608,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
             out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
         }
 
+
         // Check that the statistic supports this collection rate
         if (false == statistic->isStatModeSupported(statCollectionMode)) {
             if (StatisticBase::STAT_MODE_PERIODIC == statCollectionMode) {
@@ -607,7 +625,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
 
     // If Stat is good, Add it to the Statistic Processing Engine
     if (true == statGood) {
-        statGood = engine->registerStatisticWithEngine(statistic,fieldType);
+        statGood = engine->registerStatisticWithEngine(statistic,fieldType,enable_level);
     }
 
     if (false == statGood ) {
@@ -623,7 +641,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
             statGood = false;
             out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
         }
-        engine->registerStatisticWithEngine(statistic, fieldType);
+        engine->registerStatisticWithEngine(statistic, fieldType, enable_level);
     }
 
     // Register the new Statistic with the Statistic Engine

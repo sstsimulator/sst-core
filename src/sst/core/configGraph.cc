@@ -21,6 +21,7 @@
 #include "sst/core/timeLord.h"
 #include "sst/core/simulation.h"
 #include "sst/core/factory.h"
+#include "sst/core/from_string.h"
 
 #include <string.h>
 
@@ -136,6 +137,7 @@ ConfigComponent::cloneWithoutLinks() const
     ret.weight = weight;
     ret.rank = rank;
     ret.params = params;
+    ret.statLoadLevel = statLoadLevel;
     ret.enabledStatistics = enabledStatistics;
     ret.coords = coords;
     for ( auto &i : subComponents ) {
@@ -155,6 +157,7 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.type = type;
     ret.weight = weight;
     ret.rank = rank;
+    ret.statLoadLevel = statLoadLevel;
     ret.enabledStatistics = enabledStatistics;
     ret.coords = coords;
     for ( auto &i : subComponents ) {
@@ -162,6 +165,24 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     }
     return ret;
 }
+
+ComponentId_t ConfigComponent::getNextSubComponentID()
+{
+    // If we are the ultimate component, get nextSubID and increment
+    // for next time
+    if ( id == COMPONENT_ID_MASK(id) ) {
+        uint16_t subid = nextSubID;
+        nextSubID++;
+        return SUBCOMPONENT_ID_CREATE( id, subid );
+    }
+    else {
+        // Get the ultimate parent and call getNextSubComponentID on
+        // it
+        return graph->findComponent(COMPONENT_ID_MASK(id))->getNextSubComponentID();
+    }
+        
+}
+
 
 
 void ConfigComponent::setRank(RankInfo r)
@@ -281,6 +302,16 @@ void ConfigComponent::setStatisticParameters(const std::string& statisticName, c
 
 }
 
+void ConfigComponent::setStatisticLoadLevel(uint8_t level, bool recursively)
+{
+    statLoadLevel = level;
+
+    if ( recursively ) {
+        for ( auto &sc : subComponents ) {
+            sc.setStatisticLoadLevel(level, true);
+        }
+    }
+}
 
 
 ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string& name, const std::string& type, int slot_num)
@@ -292,7 +323,7 @@ ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::
     }
 
     subComponents.emplace_back(
-        ConfigComponent(sid, name, slot_num, type, this->weight, this->rank));
+        ConfigComponent(sid, graph, name, slot_num, type, this->weight, this->rank));
 
     return &(subComponents.back());
 }
@@ -315,6 +346,40 @@ const ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid) cons
     return nullptr;
 }
 
+ConfigComponent* ConfigComponent::findSubComponentByName(const std::string& name)
+{
+    size_t colon_index = name.find(":");
+    std::string slot = name.substr(0,colon_index);
+
+    // Get the slot number
+    int slot_num = 0;
+    size_t bracket_index = slot.find("[");
+    if ( bracket_index == std::string::npos ) {
+        // No brackets, slot_num 0
+        slot_num = 0;
+    }
+    else {
+        size_t close_index = slot.find("]");
+        size_t length = close_index - bracket_index - 1;
+        slot_num = Core::from_string<int>(slot.substr(bracket_index+1,length));
+        slot = slot.substr(0,bracket_index);
+    }
+
+    // Now, see if we have something in this slot and slot_num
+    for ( auto& sc : subComponents ) {
+        if ( sc.name == slot && sc.slot_num == slot_num ) {
+            // Found the subcomponent
+            if ( colon_index == std::string::npos ) {
+                // Last level of hierarchy
+                return &sc;
+            }
+            else {
+                return sc.findSubComponentByName(slot.substr(colon_index+1,std::string::npos));
+            }
+        }
+    }
+    return nullptr;
+}
 
 std::vector<LinkId_t> ConfigComponent::allLinks() const {
     std::vector<LinkId_t> res;
@@ -477,17 +542,16 @@ ConfigGraph::checkForStructuralErrors()
 ComponentId_t
 ConfigGraph::addComponent(ComponentId_t id, const std::string& name, const std::string& type, float weight, RankInfo rank)
 {
-    comps.push_back(ConfigComponent(id, name, type, weight, rank));
+    comps.push_back(ConfigComponent(id, this, name, type, weight, rank));
     return id;
 }
 
 ComponentId_t
 ConfigGraph::addComponent(ComponentId_t id, const std::string& name, const std::string& type)
 {
-    comps.push_back(ConfigComponent(id, name, type, 1.0f, RankInfo()));
+    comps.push_back(ConfigComponent(id, this, name, type, 1.0f, RankInfo()));
     return id;
 }
-
 
 
 
@@ -518,7 +582,7 @@ ConfigGraph::setStatisticLoadLevel(uint8_t loadLevel)
 
 
 void
-ConfigGraph::enableStatisticForComponentName(const std::string& ComponentName, const std::string& statisticName)
+ConfigGraph::enableStatisticForComponentName(const std::string& ComponentName, const std::string& statisticName, bool recursively)
 {
     bool found;
 
@@ -527,7 +591,7 @@ ConfigGraph::enableStatisticForComponentName(const std::string& ComponentName, c
         // Check to see if the names match or All components are selected
         found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
         if (true == found) {
-            comps[iter->id].enableStatistic(statisticName, (ComponentName == STATALLFLAG));
+            comps[iter->id].enableStatistic(statisticName, (ComponentName == STATALLFLAG) || recursively );
         }
     }
 }
@@ -551,25 +615,43 @@ size_t for_each_subcomp_if(ConfigComponent &c, PredicateFunc p, UnaryFunc f) {
 
 
 void
-ConfigGraph::enableStatisticForComponentType(const std::string& ComponentType, const std::string& statisticName)
+ConfigGraph::enableStatisticForComponentType(const std::string& ComponentType, const std::string& statisticName, bool recursively)
 {
     if ( ComponentType == STATALLFLAG ) {
         for ( auto &c : comps ) {
             for_each_subcomp_if(c,
                     [](ConfigComponent & UNUSED(c)) -> bool {return true;},
-                    [statisticName](ConfigComponent &c){ c.enableStatistic(statisticName); } );
+                                [statisticName](ConfigComponent &c){ c.enableStatistic(statisticName); } );
         }
     } else {
         for ( auto &c : comps ) {
             for_each_subcomp_if(c,
                     [ComponentType](ConfigComponent &c) -> bool { return c.type == ComponentType; },
-                    [statisticName](ConfigComponent &c){ c.enableStatistic(statisticName);} );
+                                [statisticName,recursively](ConfigComponent &c){ c.enableStatistic(statisticName,recursively);} );
         }
     }
 }
 
 void
-ConfigGraph::addStatisticParameterForComponentName(const std::string& ComponentName, const std::string& statisticName, const std::string& param, const std::string& value)
+ConfigGraph::setStatisticLoadLevelForComponentType(const std::string& ComponentType, uint8_t level, bool recursively)
+{
+    if ( ComponentType == STATALLFLAG ) {
+        for ( auto &c : comps ) {
+            for_each_subcomp_if(c,
+                    [](ConfigComponent & UNUSED(c)) -> bool {return true;},
+                                [level](ConfigComponent &c){ c.setStatisticLoadLevel(level); } );
+        }
+    } else {
+        for ( auto &c : comps ) {
+            for_each_subcomp_if(c,
+                    [ComponentType](ConfigComponent &c) -> bool { return c.type == ComponentType; },
+                                [level,recursively](ConfigComponent &c){ c.setStatisticLoadLevel(level,recursively);} );
+        }
+    }
+}
+
+void
+ConfigGraph::addStatisticParameterForComponentName(const std::string& ComponentName, const std::string& statisticName, const std::string& param, const std::string& value, bool recursively)
 {
     bool found;
 
@@ -578,25 +660,25 @@ ConfigGraph::addStatisticParameterForComponentName(const std::string& ComponentN
         // Check to see if the names match or All components are selected
         found = ((ComponentName == iter->name) || (ComponentName == STATALLFLAG));
         if (true == found) {
-            comps[iter->id].addStatisticParameter(statisticName, param, value, (ComponentName == STATALLFLAG));
+            comps[iter->id].addStatisticParameter(statisticName, param, value, (ComponentName == STATALLFLAG) || recursively);
         }
     }
 }
 
 void
-ConfigGraph::addStatisticParameterForComponentType(const std::string& ComponentType, const std::string& statisticName, const std::string& param, const std::string& value)
+ConfigGraph::addStatisticParameterForComponentType(const std::string& ComponentType, const std::string& statisticName, const std::string& param, const std::string& value, bool recursively)
 {
     if ( ComponentType == STATALLFLAG ) {
         for ( auto &c : comps ) {
             for_each_subcomp_if(c,
                     [](ConfigComponent & UNUSED(c)) -> bool {return true;},
-                    [statisticName, param, value](ConfigComponent &c){ c.addStatisticParameter(statisticName, param, value); } );
+                                [statisticName, param, value](ConfigComponent &c){ c.addStatisticParameter(statisticName, param, value); } );
         }
     } else {
         for ( auto &c : comps ) {
             for_each_subcomp_if(c,
                     [ComponentType](ConfigComponent &c) -> bool { return c.type == ComponentType; },
-                    [statisticName, param, value](ConfigComponent &c){ c.addStatisticParameter(statisticName, param, value);} );
+                                [statisticName, param, value, recursively](ConfigComponent &c){ c.addStatisticParameter(statisticName, param, value, recursively);} );
         }
     }
 }
