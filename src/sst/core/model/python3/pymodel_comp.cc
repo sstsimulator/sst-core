@@ -293,7 +293,7 @@ static PyObject* compSetStatisticLoadLevel(PyObject *self, PyObject *args) {
     int           argOK = 0;
     uint8_t       loadLevel = STATISTICLOADLEVELUNINITIALIZED;
     ConfigComponent *c = getComp(self);
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -315,7 +315,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
     int           argOK = 0;
     PyObject*     statParamDict = nullptr;
     ConfigComponent *c = getComp(self);
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
@@ -345,7 +345,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     char*         stat_str = nullptr;
     PyObject*     statParamDict = nullptr;
     Py_ssize_t    numStats = 0;
-    bool          apply_to_children = false;
+    int           apply_to_children = 0;
     ConfigComponent *c = getComp(self);
 
     PyErr_Clear();
@@ -354,12 +354,14 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     argOK = PyArg_ParseTuple(args,"s|O!i", &stat_str, &PyDict_Type, &statParamDict, &apply_to_children);
     if ( argOK ) {
         statList = PyList_New(1);
-        PyList_SetItem(statList,0,PyBytes_FromString(stat_str));
+        PyList_SetItem(statList,0,PyUnicode_FromString(stat_str));
     }
     else  {
         PyErr_Clear();
+        apply_to_children = 0;
         // Try list version
-        argOK = PyArg_ParseTuple(args, "O!|O!i", &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
+        // argOK = PyArg_ParseTuple(args, "O!|O!i", &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
+        argOK = PyArg_ParseTuple(args, "iO!|O!i", &apply_to_children,&PyList_Type, &statList, &PyDict_Type, &statParamDict);
         if ( argOK )  Py_INCREF(statList);
     }
         
@@ -371,19 +373,20 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
         if ( !PyList_Check(statList) ) {
             return nullptr;
         }
-
+        
         // Get the Number of Stats in the list, and enable them separately,
         // also set their parameters
         numStats = PyList_Size(statList);
         for (uint32_t x = 0; x < numStats; x++) {
             PyObject* pylistitem = PyList_GetItem(statList, x);
-            PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
+            const char *name = PyUnicode_AsUTF8(pylistitem);
 
-            c->enableStatistic(PyBytes_AsString(pyname),apply_to_children);
+            // c->enableStatistic(PyBytes_AsString(pyname),apply_to_children);
+            c->enableStatistic(name,apply_to_children);
 
             // Add the parameters
             for ( auto p : params ) {
-                c->addStatisticParameter(PyBytes_AsString(pyname), p.first, p.second, apply_to_children);
+                c->addStatisticParameter(name, p.first, p.second, apply_to_children);
             }
 
         }

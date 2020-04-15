@@ -140,10 +140,10 @@ static PyObject* sgSetOutput(PyObject *self, PyObject *args)
 
 static PyObject* sgSetFreq(PyObject *self, PyObject *args)
 {
-    if ( !PyBytes_Check(args) ) {
+    if ( !PyUnicode_Check(args) ) {
         return nullptr;
     }
-    if ( !((StatGroupPy_t*)self)->ptr->setFrequency(PyBytes_AsString(args)) ) {
+    if ( !((StatGroupPy_t*)self)->ptr->setFrequency(PyUnicode_AsUTF8(args)) ) {
         PyErr_SetString(PyExc_RuntimeError, "Invalid frequency");
         return nullptr;
     }
