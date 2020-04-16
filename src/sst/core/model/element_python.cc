@@ -69,7 +69,7 @@ void abortOnPyErr(uint32_t line, const char* file, const char* func,
     while ( ptb != nullptr ) {
         // Filename
 #ifdef SST_CONFIG_HAVE_PYTHON3
-        stream << "File \"" << PyBytes_AsString(ptb->tb_frame->f_code->co_filename) << "\", ";
+        stream << "File \"" << PyUnicode_AsUTF8(ptb->tb_frame->f_code->co_filename) << "\", ";
 #else
         stream << "File \"" << PyString_AsString(ptb->tb_frame->f_code->co_filename) << "\", ";
 #endif
@@ -77,7 +77,7 @@ void abortOnPyErr(uint32_t line, const char* file, const char* func,
         stream << "line " << ptb->tb_lineno << ", ";
         // Module name
 #ifdef SST_CONFIG_HAVE_PYTHON3
-        stream << PyBytes_AsString(ptb->tb_frame->f_code->co_name) << "\n";
+        stream << PyUnicode_AsUTF8(ptb->tb_frame->f_code->co_name) << "\n";
 #else
         stream << PyString_AsString(ptb->tb_frame->f_code->co_name) << "\n";
 #endif
@@ -88,7 +88,7 @@ void abortOnPyErr(uint32_t line, const char* file, const char* func,
 
     // Add in the other error information
 #ifdef SST_CONFIG_HAVE_PYTHON3
-    stream << exc_name << ": " << PyBytes_AsString(PyObject_Str(val)) << "\n";
+    stream << exc_name << ": " << PyUnicode_AsUTF8(PyObject_Str(val)) << "\n";
 #else
     stream << exc_name << ": " << PyString_AsString(PyObject_Str(val)) << "\n";
 #endif
@@ -119,7 +119,6 @@ void*
 SSTElementPythonModuleCode::load(void* parent_module)
 {
     PyObject* pm = (PyObject*)parent_module;
-
     PyObject *compiled_code = Py_CompileString(code, filename.c_str(), Py_file_input);
     if ( compiled_code == nullptr) abortOnPyErr(CALL_INFO,1,"SSTElementPythonModule: Error running Py_CompileString on %s.  Details follow:\n", filename.c_str());
 

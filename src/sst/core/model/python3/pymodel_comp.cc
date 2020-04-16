@@ -361,7 +361,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
         apply_to_children = 0;
         // Try list version
         // argOK = PyArg_ParseTuple(args, "O!|O!i", &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
-        argOK = PyArg_ParseTuple(args, "iO!|O!i", &apply_to_children,&PyList_Type, &statList, &PyDict_Type, &statParamDict);
+        argOK = PyArg_ParseTuple(args, "O!|O!i", &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK )  Py_INCREF(statList);
     }
         
