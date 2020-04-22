@@ -69,7 +69,7 @@ dnl Python3.8+ doesn't link to lpython by default
         [AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.8], [PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --ldflags --embed`], [])])
 
 dnl report Python version
-  PYTHON_VERSION=`$PYTHON_EXE -V`
+  PYTHON_VERSION=`$PYTHON_EXE -V 2>&1`
   AC_MSG_NOTICE([Python version is $PYTHON_VERSION])
   
 dnl check for Python.h
