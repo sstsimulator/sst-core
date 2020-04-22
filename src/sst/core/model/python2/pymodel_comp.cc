@@ -212,13 +212,17 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
 
 static PyObject* compGetFullName(PyObject *self, PyObject *UNUSED(args))
 {
-    return PyString_FromString(getComp(self)->name.c_str());
+    return PyString_FromString(getComp(self)->getFullName().c_str());
 }
 
 static int compCompare(PyObject *obj0, PyObject *obj1) {
     return ((ComponentHolder*)obj0)->compare(((ComponentHolder*)obj1));
 }
 
+static PyObject* compGetType(PyObject *self, PyObject *UNUSED(args))
+{
+    return PyUnicode_FromString(getComp(self)->type.c_str());
+}
 
 static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
 {
@@ -404,7 +408,10 @@ static PyMethodDef componentMethods[] = {
         "Connects this component to a Link"},
     {   "getFullName",
         compGetFullName, METH_NOARGS,
-        "Returns the full name, after any prefix, of the component."},
+        "Returns the full name of the component."},
+    {   "getType",
+        compGetType, METH_NOARGS,
+        "Returns the type of the component."},
     {   "setStatisticLoadLevel",
         compSetStatisticLoadLevel, METH_VARARGS,
         "Sets the statistics load level for this component"},
@@ -516,6 +523,12 @@ static PyMethodDef subComponentMethods[] = {
     {   "addLink",
         compAddLink, METH_VARARGS,
         "Connects this subComponent to a Link"},
+    {   "getFullName",
+        compGetFullName, METH_NOARGS,
+        "Returns the full name, after any prefix, of the component."},
+    {   "getType",
+        compGetType, METH_NOARGS,
+        "Returns the type of the component."},
     {   "setStatisticLoadLevel",
         compSetStatisticLoadLevel, METH_VARARGS,
         "Sets the statistics load level for this component"},
