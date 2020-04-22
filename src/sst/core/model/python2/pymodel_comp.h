@@ -24,41 +24,29 @@ struct PyComponent;
 
 struct ComponentHolder {
     ComponentPy_t *pobj;
-    char *name;
-    ComponentHolder(ComponentPy_t *pobj) : pobj(pobj), name(nullptr) { }
-    virtual ~ComponentHolder() { free(name); }
-    virtual ConfigComponent* getComp() = 0;
-    virtual PyComponent* getBaseObj() = 0;
-    virtual int compare(ComponentHolder *other) = 0;
-    virtual const char* getName() const = 0;
+    // ConfigComponent* config;
+    ComponentId_t id;
+    
+    ComponentHolder(ComponentPy_t *pobj, ComponentId_t id) : pobj(pobj), id(id) { }
+    virtual ~ComponentHolder() { }
+    virtual ConfigComponent* getComp();
+    virtual int compare(ComponentHolder *other);
+    virtual std::string getName();
     ComponentId_t getID();
     ConfigComponent* getSubComp(const std::string& name, int slot_num);
 };
 
 struct PyComponent : ComponentHolder {
-    ComponentId_t id;
     uint16_t subCompId;
 
-    PyComponent(ComponentPy_t *pobj) : ComponentHolder(pobj), subCompId(0) { }
+    PyComponent(ComponentPy_t *pobj, ComponentId_t id) : ComponentHolder(pobj,id), subCompId(0) { }
     ~PyComponent() {}
-    const char* getName() const override;
-    ConfigComponent* getComp() override;
-    PyComponent* getBaseObj() override;
-    int compare(ComponentHolder *other) override;
 };
 
 struct PySubComponent : ComponentHolder {
-    ComponentHolder *parent;
-
-    int slot;
-
-    PySubComponent(ComponentPy_t *pobj) : ComponentHolder(pobj) { }
+    PySubComponent(ComponentPy_t *pobj, ComponentId_t id) : ComponentHolder(pobj,id) { }
     ~PySubComponent() {}
-    const char* getName() const override;
-    ConfigComponent* getComp() override;
-    PyComponent* getBaseObj() override;
-    int compare(ComponentHolder *other) override;
-    int getSlot() const;
+    int getSlot();
 };
 
 

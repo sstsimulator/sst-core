@@ -221,7 +221,7 @@ echo "-------------------------------------------------------"
 echo "Configuration Information (Dependencies):"
 echo ""
 
-printf "%38s : %s\n" "Found Python" "$PYTHON_EXE"
+printf "%38s : %s (%s)\n" "Found Python" "$PYTHON_EXE" "$PYTHON_VERSION"
 printf "%38s : %s\n" "Python3" "$PYTHON_VERSION3"
 
 if test "x$sst_check_zoltan_happy" = "xyes" ; then

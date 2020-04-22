@@ -55,10 +55,18 @@ static PyObject* setStatisticOutput(PyObject *self, PyObject *args);
 static PyObject* setStatisticLoadLevel(PyObject *self, PyObject *args);
 
 static PyObject* enableAllStatisticsForAllComponents(PyObject *self, PyObject *args);
+
 static PyObject* enableAllStatisticsForComponentName(PyObject *self, PyObject *args);
-static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *args);
+static PyObject* enableStatisticsForComponentName(PyObject *self, PyObject *args);
 static PyObject* enableStatisticForComponentName(PyObject *self, PyObject *args);
+
+static PyObject* enableAllStatisticsForComponentType(PyObject *self, PyObject *args);
+static PyObject* enableStatisticsForComponentType(PyObject *self, PyObject *args);
 static PyObject* enableStatisticForComponentType(PyObject *self, PyObject *args);
+
+static PyObject* setStatisticLoadLevelForComponentName(PyObject *self, PyObject *args);
+static PyObject* setStatisticLoadLevelForComponentType(PyObject *self, PyObject *args);
+
 
 static PyObject* PyInit_sst(void);
 
@@ -217,20 +225,38 @@ static PyObject* mlLoadModule(PyObject *UNUSED(self), PyObject *args)
 
 static PyObject* findComponentByName(PyObject* UNUSED(self), PyObject* args)
 {
-    if ( ! PyBytes_Check(args) ) {
-        Py_INCREF(Py_None);
-        return Py_None;
+    char *name = nullptr;
+    int argOK = PyArg_ParseTuple(args, "s", &name);
+
+    if ( argOK ) {
+        ComponentId_t id = gModel->findComponentByName(name);
+
+        if ( id == UNSET_COMPONENT_ID ) {
+            Py_INCREF(Py_None);
+	    return Py_None;
+	}
+
+
+        if ( SUBCOMPONENT_ID_MASK(id) == 0 ) {
+            // Component
+            PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", id);
+	    PyObject *res = PyObject_CallObject((PyObject *) &PyModel_ComponentType, argList);
+	    Py_DECREF(argList);
+	    return res;
+	}
+	else {
+            // SubComponent
+            PyObject *argList = Py_BuildValue("Ok", Py_None, id);
+	    PyObject *res = PyObject_CallObject((PyObject *) &PyModel_SubComponentType, argList);
+	    Py_DECREF(argList);
+	    return res;
+	}
     }
-    char *name = PyBytes_AsString(args);
-    ComponentId_t id = gModel->findComponentByName(name);
-    if ( id != UNSET_COMPONENT_ID ) {
-        PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", id);
-        PyObject *res = PyObject_CallObject((PyObject *) &PyModel_ComponentType, argList);
-        Py_DECREF(argList);
-        return res;
+    else {
+        return nullptr;
     }
-    Py_INCREF(Py_None);
-    return Py_None;
+
+    return PyLong_FromLong(0);
 }
 
 static PyObject* setProgramOption(PyObject* UNUSED(self), PyObject* args)
@@ -259,7 +285,7 @@ static PyObject* setProgramOptions(PyObject* UNUSED(self), PyObject* args)
     PyObject *key, *val;
     long count = 0;
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        if ( gModel->getConfig()->setConfigEntryFromModel(PyBytes_AsString(key), PyBytes_AsString(val)) )
+        if ( gModel->getConfig()->setConfigEntryFromModel(PyUnicode_AsUTF8(key), PyUnicode_AsUTF8(val)) )
             count++;
     }
     return PyLong_FromLong(count);
@@ -298,12 +324,10 @@ static PyObject* getProgramOptions(PyObject*UNUSED(self), PyObject *UNUSED(args)
 
 static PyObject* pushNamePrefix(PyObject* UNUSED(self), PyObject* arg)
 {
-    char *name = nullptr;
-    PyErr_Clear();
-    name = PyBytes_AsString(arg);
-
-    if ( name != nullptr ) {
-        gModel->pushNamePrefix(name);
+    const char* prefix = PyUnicode_AsUTF8(arg);
+    
+    if ( prefix != nullptr ) {
+        gModel->pushNamePrefix(prefix);
     } else {
         return nullptr;
     }
@@ -436,11 +460,11 @@ static PyObject* enableAllStatisticsForAllComponents(PyObject* UNUSED(self), PyO
     argOK = PyArg_ParseTuple(args, "|O!", &PyDict_Type, &statParamDict);
 
     if (argOK) {
-        gModel->enableStatisticForComponentName(STATALLFLAG, STATALLFLAG);
+        gModel->enableStatisticForComponentName(STATALLFLAG, STATALLFLAG, true);
 
         // Generate and Add the Statistic Parameters
         for ( auto p : generateStatisticParameters(statParamDict) ) {
-            gModel->addStatisticParameterForComponentName(STATALLFLAG, STATALLFLAG, p.first, p.second);
+            gModel->addStatisticParameterForComponentName(STATALLFLAG, STATALLFLAG, p.first, p.second, true);
         }
     } else {
         // ParseTuple Failed, return NULL for error
@@ -456,20 +480,109 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *UNUSED(self), PyO
     int           argOK = 0;
     char*         compName = nullptr;
     PyObject*     statParamDict = nullptr;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
     // Parse the Python Args Component Name and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "s|O!", &compName, &PyDict_Type, &statParamDict);
+    argOK = PyArg_ParseTuple(args, "s|O!i", &compName, &PyDict_Type, &statParamDict, &apply_to_children);
 
     if (argOK) {
-        gModel->enableStatisticForComponentName(compName, STATALLFLAG);
+        gModel->enableStatisticForComponentName(compName, STATALLFLAG, apply_to_children);
 
         // Generate and Add the Statistic Parameters
         for ( auto p : generateStatisticParameters(statParamDict) ) {
-            gModel->addStatisticParameterForComponentName(compName, STATALLFLAG, p.first, p.second);
+            gModel->addStatisticParameterForComponentName(compName, STATALLFLAG, p.first, p.second, apply_to_children);
         }
 
+    } else {
+        // ParseTuple Failed, return NULL for error
+        return nullptr;
+    }
+    return PyLong_FromLong(0);
+}
+
+static PyObject* enableStatisticForComponentName(PyObject *UNUSED(self), PyObject *args)
+{
+    int           argOK = 0;
+    char*         compName = nullptr;
+    char*         statName = nullptr;
+    PyObject*     statParamDict = nullptr;
+    int           apply_to_children = 0;
+
+    PyErr_Clear();
+
+    // Parse the Python Args Component Name, Stat Name and get optional Stat Params (as a Dictionary)
+    argOK = PyArg_ParseTuple(args, "ss|O!i", &compName, &statName, &PyDict_Type, &statParamDict, &apply_to_children);
+
+    if (argOK) {
+        gModel->enableStatisticForComponentName(compName, statName, apply_to_children);
+
+        // Generate and Add the Statistic Parameters
+        for ( auto p : generateStatisticParameters(statParamDict) ) {
+            gModel->addStatisticParameterForComponentName(compName, statName, p.first, p.second, apply_to_children);
+        }
+    } else {
+        // ParseTuple Failed, return NULL for error
+        return nullptr;
+    }
+    return PyLong_FromLong(0);
+}
+
+static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObject *args)
+{
+    int           argOK = 0;
+    char*         compName = nullptr;
+    PyObject*     statList = nullptr;
+    char*         stat_str = nullptr;
+    PyObject*     statParamDict = nullptr;
+    Py_ssize_t    numStats = 0;
+    int           apply_to_children = 0;
+
+    PyErr_Clear();
+
+    // Can either have a single string, or a list of strings.  Try single string first
+    argOK = PyArg_ParseTuple(args,"ss|O!i", &compName, &stat_str, &PyDict_Type, &statParamDict, &apply_to_children);
+    if ( argOK ) {
+        statList = PyList_New(1);
+        PyList_SetItem(statList,0,PyUnicode_FromString(stat_str));
+    }
+    else  {
+        PyErr_Clear();
+        apply_to_children = 0;
+        // Try list version
+        argOK = PyArg_ParseTuple(args, "sO!|O!i", &compName, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
+        if ( argOK )  Py_INCREF(statList);
+    }
+
+    
+    if (argOK) {
+        // Generate the Statistic Parameters
+        auto params = generateStatisticParameters(statParamDict);
+
+        // Get the component
+        ComponentId_t id = gModel->findComponentByName(compName);
+        if ( UNSET_COMPONENT_ID == id ) {
+            gModel->getOutput()->fatal(CALL_INFO,1,"component name not found in call to enableStatisticsForComponentName(): %s\n",compName);
+        }
+
+        ConfigComponent* c = gModel->getGraph()->findComponent(id);
+        
+        // Figure out how many stats there are
+        numStats = PyList_Size(statList);
+
+        // For each stat, enable on compoennt
+        for (uint32_t x = 0; x < numStats; x++) {
+            PyObject* pylistitem = PyList_GetItem(statList, x);
+            const char *name = PyUnicode_AsUTF8(pylistitem);
+            c->enableStatistic(name,apply_to_children);
+
+            // Add the parameters
+            for ( auto p : params ) {
+                c->addStatisticParameter(name, p.first, p.second, apply_to_children);
+            }
+
+        }        
     } else {
         // ParseTuple Failed, return NULL for error
         return nullptr;
@@ -483,18 +596,19 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyO
     int           argOK = 0;
     char*         compType = nullptr;
     PyObject*     statParamDict = nullptr;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
     // Parse the Python Args Component Type and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "s|O!", &compType, &PyDict_Type, &statParamDict);
+    argOK = PyArg_ParseTuple(args, "s|O!i", &compType, &PyDict_Type, &statParamDict, &apply_to_children);
 
     if (argOK) {
-        gModel->enableStatisticForComponentType(compType, STATALLFLAG);
+        gModel->enableStatisticForComponentType(compType, STATALLFLAG, apply_to_children);
 
         // Generate and Add the Statistic Parameters
         for ( auto p : generateStatisticParameters(statParamDict) ) {
-            gModel->addStatisticParameterForComponentType(compType, STATALLFLAG, p.first, p.second);
+            gModel->addStatisticParameterForComponentType(compType, STATALLFLAG, p.first, p.second, apply_to_children);
         }
     } else {
         // ParseTuple Failed, return NULL for error
@@ -502,34 +616,6 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyO
     }
     return PyLong_FromLong(0);
 }
-
-
-static PyObject* enableStatisticForComponentName(PyObject *UNUSED(self), PyObject *args)
-{
-    int           argOK = 0;
-    char*         compName = nullptr;
-    char*         statName = nullptr;
-    PyObject*     statParamDict = nullptr;
-
-    PyErr_Clear();
-
-    // Parse the Python Args Component Name, Stat Name and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "ss|O!", &compName, &statName, &PyDict_Type, &statParamDict);
-
-    if (argOK) {
-        gModel->enableStatisticForComponentName(compName, statName);
-
-        // Generate and Add the Statistic Parameters
-        for ( auto p : generateStatisticParameters(statParamDict) ) {
-            gModel->addStatisticParameterForComponentName(compName, statName, p.first, p.second);
-        }
-    } else {
-        // ParseTuple Failed, return NULL for error
-        return nullptr;
-    }
-    return PyLong_FromLong(0);
-}
-
 
 static PyObject* enableStatisticForComponentType(PyObject *UNUSED(self), PyObject *args)
 {
@@ -537,19 +623,119 @@ static PyObject* enableStatisticForComponentType(PyObject *UNUSED(self), PyObjec
     char*         compType = nullptr;
     char*         statName = nullptr;
     PyObject*     statParamDict = nullptr;
+    int           apply_to_children = 0;
+    
+    PyErr_Clear();
+
+    // Parse the Python Args Component Type, Stat Name and get optional Stat Params (as a Dictionary)
+    argOK = PyArg_ParseTuple(args, "ss|O!i", &compType, &statName, &PyDict_Type, &statParamDict, &apply_to_children);
+
+    if (argOK) {
+        gModel->enableStatisticForComponentType(compType, statName, apply_to_children);
+
+        // Generate and Add the Statistic Parameters
+        for ( auto p : generateStatisticParameters(statParamDict) ) {
+            gModel->addStatisticParameterForComponentType(compType, statName, p.first, p.second, apply_to_children);
+        }
+    } else {
+        // ParseTuple Failed, return NULL for error
+        return nullptr;
+    }
+    return PyLong_FromLong(0);
+}
+
+static PyObject* enableStatisticsForComponentType(PyObject *UNUSED(self), PyObject *args)
+{
+    int           argOK = 0;
+    char*         compType = nullptr;
+    PyObject*     statList = nullptr;
+    char*         stat_str = nullptr;
+    PyObject*     statParamDict = nullptr;
+    Py_ssize_t    numStats = 0;
+    int           apply_to_children = 0;
+
+    PyErr_Clear();
+
+    // Can either have a single string, or a list of strings.  Try single string first
+    argOK = PyArg_ParseTuple(args,"ss|O!i", &compType, &stat_str, &PyDict_Type, &statParamDict, &apply_to_children);
+    if ( argOK ) {
+        statList = PyList_New(1);
+        PyList_SetItem(statList,0,PyUnicode_FromString(stat_str));
+    }
+    else  {
+        PyErr_Clear();
+        apply_to_children = 0;
+        // Try list version
+        argOK = PyArg_ParseTuple(args, "sO!|O!i", &compType, &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
+        if ( argOK )  Py_INCREF(statList);
+    }
+
+
+    if (argOK) {
+        // Figure out how many stats there are
+        numStats = PyList_Size(statList);
+        for (uint32_t x = 0; x < numStats; x++) {
+            PyObject* pylistitem = PyList_GetItem(statList, x);
+            const char *statName = PyUnicode_AsUTF8(pylistitem);
+            
+            gModel->enableStatisticForComponentType(compType, statName, apply_to_children);
+
+            // Generate and Add the Statistic Parameters
+            for ( auto p : generateStatisticParameters(statParamDict) ) {
+                gModel->addStatisticParameterForComponentType(compType, statName, p.first, p.second, apply_to_children);
+            }
+        }
+    } else {
+        // ParseTuple Failed, return NULL for error
+        return nullptr;
+    }
+    return PyLong_FromLong(0);
+}
+
+
+static PyObject* setStatisticLoadLevelForComponentName(PyObject *UNUSED(self), PyObject *args)
+{
+    int           argOK = 0;
+    char*         compName = nullptr;
+    int           level = STATISTICLOADLEVELUNINITIALIZED;
+    int           apply_to_children = 0;
+    
+    PyErr_Clear();
+
+    // Parse the Python Args Component Type, Stat Name and get optional Stat Params (as a Dictionary)
+    argOK = PyArg_ParseTuple(args, "sH|i", &compName, &level, &apply_to_children);
+
+    if (argOK) {
+        // Get the component
+        ComponentId_t id = gModel->findComponentByName(compName);
+        if ( UNSET_COMPONENT_ID == id ) {
+            gModel->getOutput()->fatal(CALL_INFO,1,"component name not found in call to setStatisticLoadLevelForComponentName(): %s\n",compName);
+        }
+
+        ConfigComponent* c = gModel->getGraph()->findComponent(id);
+
+        c->setStatisticLoadLevel(level,apply_to_children);
+    }
+    else {
+        return nullptr;
+    }
+    return PyLong_FromLong(0);
+}
+
+static PyObject* setStatisticLoadLevelForComponentType(PyObject *UNUSED(self), PyObject *args)
+{
+    int           argOK = 0;
+    char*         compType = nullptr;
+    uint8_t       level = STATISTICLOADLEVELUNINITIALIZED;
+    int           apply_to_children = 0;
 
     PyErr_Clear();
 
     // Parse the Python Args Component Type, Stat Name and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "ss|O!", &compType, &statName, &PyDict_Type, &statParamDict);
+    argOK = PyArg_ParseTuple(args, "sH|i", &compType, &level, &apply_to_children);
 
     if (argOK) {
-        gModel->enableStatisticForComponentType(compType, statName);
-
-        // Generate and Add the Statistic Parameters
-        for ( auto p : generateStatisticParameters(statParamDict) ) {
-            gModel->addStatisticParameterForComponentType(compType, statName, p.first, p.second);
-        }
+        gModel->getGraph()->setStatisticLoadLevelForComponentType(compType, level, apply_to_children);
     } else {
         // ParseTuple Failed, return NULL for error
         return nullptr;
@@ -604,17 +790,29 @@ static PyMethodDef sstModuleMethods[] = {
     {   "enableAllStatisticsForComponentName",
         enableAllStatisticsForComponentName, METH_VARARGS,
         "Enables all statistics on a component with output occurring at defined rate."},
-    {   "enableAllStatisticsForComponentType",
-        enableAllStatisticsForComponentType, METH_VARARGS,
-        "Enables all statistics on all components of component type with output occurring at defined rate."},
     {   "enableStatisticForComponentName",
         enableStatisticForComponentName, METH_VARARGS,
         "Enables a single statistic on a component with output occurring at defined rate."},
+    {   "enableStatisticsForComponentName",
+        enableStatisticsForComponentName, METH_VARARGS,
+        "Enables a mulitple statistics on a component with output occurring at defined rate."},
+    {   "enableAllStatisticsForComponentType",
+        enableAllStatisticsForComponentType, METH_VARARGS,
+        "Enables all statistics on all components of component type with output occurring at defined rate."},
     {   "enableStatisticForComponentType",
         enableStatisticForComponentType, METH_VARARGS,
         "Enables a single statistic on all components of component type with output occurring at defined rate."},
+    {   "enableStatisticsForComponentType",
+        enableStatisticsForComponentType, METH_VARARGS,
+        "Enables a list of statistics on all components of component type with output occurring at defined rate."},
+    {   "setStatisticLoadLevelForComponentName",
+        setStatisticLoadLevelForComponentName, METH_VARARGS,
+        "Sets the statistic load level for the specified component name."},
+    {   "setStatisticLoadLevelForComponentType",
+        setStatisticLoadLevelForComponentType, METH_VARARGS,
+        "Sets the statistic load level for all components of the specified type."},
     {   "findComponentByName",
-        findComponentByName, METH_O,
+        findComponentByName, METH_VARARGS,
         "Looks up to find a previously created component, based off of its name.  Returns None if none are to be found."},
     {   nullptr, nullptr, 0, nullptr }
 };
