@@ -220,8 +220,8 @@ protected:
         @param handler Pointer to OneShot::HandlerBase which is to be invoked
         at the specified interval
     */
-    TimeConverter* registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler);
-    TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
+    TimeConverter* registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler) __attribute__ ((deprecated("registerOneShot is deprecated and will be removed in  SST 11. Please use configureSelfLink to create a mechanism for waking up Component/SubComponents")));
+    TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler) __attribute__ ((deprecated("registerOneShot is deprecated and will be removed in  SST 11. Please use configureSelfLink to create a mechanism for waking up Component/SubComponents")));
 
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for

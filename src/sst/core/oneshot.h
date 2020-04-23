@@ -129,7 +129,11 @@ public:
 
 private:
     typedef std::vector<OneShot::HandlerBase*>  HandlerList_t;
-    typedef std::map<SimTime_t, HandlerList_t*> HandlerVectorMap_t;
+    // Since this only gets fixed latency events, the times will fire
+    // in order of arrival.  No need to use a full map, a double ended
+    // queue will work just as well
+    // typedef std::map<SimTime_t, HandlerList_t*> HandlerVectorMap_t;
+    typedef std::deque<std::pair<SimTime_t, HandlerList_t*> > HandlerVectorMap_t;
 
     // Generic constructor for serialization
     OneShot() { }
@@ -139,7 +143,8 @@ private:
 
     // Activates this OneShot object, by inserting into the simulation's
     // timeVortex for future execution.
-    SimTime_t scheduleOneShot();
+    void scheduleOneShot();
+    SimTime_t computeDeliveryTime();
 
     TimeConverter*      m_timeDelay;
     HandlerVectorMap_t  m_HandlerVectorMap;
