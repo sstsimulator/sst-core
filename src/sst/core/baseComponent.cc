@@ -568,7 +568,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
             }
         }
         next_info = curr_info->parent_info;
-    } while ( curr_info->canInsertStatistics() );
+    } while ( curr_info->canInsertStatistics() && !nameFound );
 
     // hack for now to make sure that an explicitly enabled stat is
     // always loaded regardless of load level.
