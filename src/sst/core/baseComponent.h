@@ -18,13 +18,13 @@
 #include <map>
 #include <string>
 
+#include "sst/core/simulation.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/event.h"
 #include "sst/core/clock.h"
 #include "sst/core/oneshot.h"
 #include "sst/core/componentInfo.h"
-#include "sst/core/simulation.h"
 #include "sst/core/eli/elementinfo.h"
 
 using namespace SST::Statistics;
@@ -123,7 +123,9 @@ public:
         @param tc TimeConverter specifying the units */
     SimTime_t getCurrentSimTime(TimeConverter *tc) const;
     /** return the time since the simulation began in the default timebase */
-    SimTime_t getCurrentSimTime() const;
+    inline SimTime_t getCurrentSimTime() const {
+        return getCurrentSimTime(my_info->defaultTimeBase);
+    }
     /** return the time since the simulation began in timebase specified
         @param base Timebase frequency in SI Units */
     SimTime_t getCurrentSimTime(const std::string& base) const;
