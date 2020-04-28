@@ -12,6 +12,7 @@
 #ifndef SST_CORE_PARAM_H
 #define SST_CORE_PARAM_H
 
+#include "sst/core/output.h"
 #include "sst/core/from_string.h"
 
 #include <cassert>
@@ -26,7 +27,6 @@
 
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/serialization/serializer.h"
-#include "sst/core/output.h"
 
 int main(int argc, char *argv[]);
 
