@@ -102,17 +102,31 @@ public:
     virtual void printStatus(Output &UNUSED(out)) { return; }
 
 
+    /** Return the current simulation time as a cycle count*/
+    SimTime_t getCurrentSimCycle() const;
+    /** Return the current priority */
+    int getCurrentPriority() const;
+    /** Return the elapsed simulation time as a time */
+    UnitAlgebra getElapsedSimTime() const;
+    /** Return the end simulation time as a time */
+    UnitAlgebra getFinalSimTime() const;
+    /** Get this instance's parallel rank */
+    RankInfo getRank() const;
+    /** Get the number of parallel ranks in the simulation */
+    RankInfo getNumRanks() const;
+    /** Return the base simulation Output class instance */
+    Output& getSimulationOutput() const;
+
+
     /** return the time since the simulation began in units specified by
         the parameter.
         @param tc TimeConverter specifying the units */
     SimTime_t getCurrentSimTime(TimeConverter *tc) const;
     /** return the time since the simulation began in the default timebase */
-    inline SimTime_t getCurrentSimTime()  const{
-        return getCurrentSimTime(my_info->defaultTimeBase);
-    }
+    SimTime_t getCurrentSimTime() const;
     /** return the time since the simulation began in timebase specified
         @param base Timebase frequency in SI Units */
-    SimTime_t getCurrentSimTime(const std::string& base);
+    SimTime_t getCurrentSimTime(const std::string& base) const;
 
     /** Utility function to return the time since the simulation began in nanoseconds */
     SimTime_t getCurrentSimTimeNano() const;
@@ -233,8 +247,12 @@ protected:
     */
     TimeConverter* registerTimeBase( const std::string& base, bool regAll = true);
 
-    TimeConverter* getTimeConverter( const std::string& base );
-    TimeConverter* getTimeConverter( const UnitAlgebra& base );
+    TimeConverter* getTimeConverter( const std::string& base ) const;
+    TimeConverter* getTimeConverter( const UnitAlgebra& base ) const;
+
+    TimeConverter* getTimeConverterNano() const;
+    TimeConverter* getTimeConverterMicro() const;
+    TimeConverter* getTimeConverterMilli() const;
 
 
     bool isStatisticShared(const std::string& statName, bool include_me = false) {
@@ -329,6 +347,18 @@ protected:
         return registerStatistic<T>(std::string(statName), std::string(statSubId));
     }
 
+    /** Called by the Components and Subcomponent to perform a statistic Output.
+      * @param stat - Pointer to the statistic.
+      * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
+      */
+    void performStatisticOutput(StatisticBase* stat, bool endOfSimFlag = false);
+
+    /** Performs a global statistic Output.
+     * This routine will force ALL Components and Subcomponents to output their statistic information.
+     * This may lead to unexpected results if the statistic counts or data is reset on output.
+     * @param endOfSimFlag - Indicates that the output is occurring at the end of simulation.
+     */
+    void performGlobalStatisticOutput(bool endOfSimFlag = false);
 
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName

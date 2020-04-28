@@ -12,7 +12,6 @@
 #ifndef SST_CORE_PARAM_H
 #define SST_CORE_PARAM_H
 
-#include "sst/core/output.h"
 #include "sst/core/from_string.h"
 
 #include <cassert>

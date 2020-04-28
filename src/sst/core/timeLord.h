@@ -57,10 +57,6 @@ class TimeLord {
      */
     TimeConverter* getTimeConverter(const UnitAlgebra& ts);
 
-    /** Not a Public API.
-     * Returns the number of raw simulation cycles given by a specified time string
-     */
-    SimTime_t getSimCycles(const std::string& timeString, const std::string& where);
     /**
      * Return the Time Base of the TimeLord
      */
@@ -73,6 +69,12 @@ class TimeLord {
     /** Return a TimeConverter which represents Milliseconds */
     TimeConverter* getMilli() {return milli;}
 
+    /** Not a Public API.
+     * Returns the number of raw simulation cycles given by a specified time string
+     */
+    SimTime_t getSimCycles(const std::string& timeString, const std::string& where);
+
+    
  private:
     friend class SST::Simulation;
     friend int ::main(int argc, char **argv);
