@@ -353,7 +353,7 @@ protected:
       * @param stat - Pointer to the statistic.
       * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
       */
-    void performStatisticOutput(StatisticBase* stat, bool endOfSimFlag = false);
+    void performStatisticOutput(StatisticBase* stat);
 
     /** Performs a global statistic Output.
      * This routine will force ALL Components and Subcomponents to output their statistic information.

@@ -710,9 +710,9 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
 }
 
 void
-BaseComponent::performStatisticOutput(StatisticBase* stat, bool endOfSimFlag)
+BaseComponent::performStatisticOutput(StatisticBase* stat)
 {
-    Simulation::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(stat,endOfSimFlag);
+    Simulation::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(stat);
 }
 
 void
