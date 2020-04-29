@@ -358,9 +358,9 @@ protected:
     /** Performs a global statistic Output.
      * This routine will force ALL Components and Subcomponents to output their statistic information.
      * This may lead to unexpected results if the statistic counts or data is reset on output.
-     * @param endOfSimFlag - Indicates that the output is occurring at the end of simulation.
+     * NOTE: Currently, this function will only output statistics that are on the same rank.
      */
-    void performGlobalStatisticOutput(bool endOfSimFlag = false);
+    void performGlobalStatisticOutput();
 
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName

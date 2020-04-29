@@ -716,9 +716,9 @@ BaseComponent::performStatisticOutput(StatisticBase* stat, bool endOfSimFlag)
 }
 
 void
-BaseComponent::performGlobalStatisticOutput(bool endOfSimFlag)
+BaseComponent::performGlobalStatisticOutput()
 {
-    Simulation::getSimulation()->getStatisticsProcessingEngine()->performGlobalStatisticOutput(endOfSimFlag);
+    Simulation::getSimulation()->getStatisticsProcessingEngine()->performGlobalStatisticOutput(false);
 }
 
 
