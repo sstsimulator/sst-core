@@ -12,6 +12,7 @@
 #include "sst_config.h"
 #include "sst/core/statapi/statbase.h"
 
+#include "sst/core/simulation.h"
 #include "sst/core/baseComponent.h"
 #include "sst/core/statapi/stataccumulator.h"
 #include "sst/core/statapi/stathistogram.h"

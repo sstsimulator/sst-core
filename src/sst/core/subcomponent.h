@@ -15,7 +15,6 @@
 
 #include "sst/core/warnmacros.h"
 #include "sst/core/baseComponent.h"
-#include "sst/core/component.h"
 #include "sst/core/module.h"
 #include "sst/core/eli/elementinfo.h"
 

@@ -18,13 +18,13 @@
 #include <map>
 #include <string>
 
+#include "sst/core/simulation.h"
 #include "sst/core/statapi/statengine.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/event.h"
 #include "sst/core/clock.h"
 #include "sst/core/oneshot.h"
 #include "sst/core/componentInfo.h"
-#include "sst/core/simulation.h"
 #include "sst/core/eli/elementinfo.h"
 
 using namespace SST::Statistics;
@@ -102,17 +102,33 @@ public:
     virtual void printStatus(Output &UNUSED(out)) { return; }
 
 
+    /** Return the current simulation time as a cycle count*/
+    SimTime_t getCurrentSimCycle() const;
+    /** Return the current priority */
+    int getCurrentPriority() const;
+    /** Return the elapsed simulation time as a time */
+    UnitAlgebra getElapsedSimTime() const;
+    /** Return the end simulation time as a time */
+    UnitAlgebra getFinalSimTime() const;
+    /** Get this instance's parallel rank */
+    RankInfo getRank() const;
+    /** Get the number of parallel ranks in the simulation */
+    RankInfo getNumRanks() const;
+    /** Return the base simulation Output class instance */
+    Output& getSimulationOutput() const;
+
+
     /** return the time since the simulation began in units specified by
         the parameter.
         @param tc TimeConverter specifying the units */
     SimTime_t getCurrentSimTime(TimeConverter *tc) const;
     /** return the time since the simulation began in the default timebase */
-    inline SimTime_t getCurrentSimTime()  const{
+    inline SimTime_t getCurrentSimTime() const {
         return getCurrentSimTime(my_info->defaultTimeBase);
     }
     /** return the time since the simulation began in timebase specified
         @param base Timebase frequency in SI Units */
-    SimTime_t getCurrentSimTime(const std::string& base);
+    SimTime_t getCurrentSimTime(const std::string& base) const;
 
     /** Utility function to return the time since the simulation began in nanoseconds */
     SimTime_t getCurrentSimTimeNano() const;
@@ -220,8 +236,8 @@ protected:
         @param handler Pointer to OneShot::HandlerBase which is to be invoked
         at the specified interval
     */
-    TimeConverter* registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler);
-    TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler);
+    TimeConverter* registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler) __attribute__ ((deprecated("registerOneShot is deprecated and will be removed in  SST 11. Please use configureSelfLink to create a mechanism for waking up Component/SubComponents")));
+    TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler) __attribute__ ((deprecated("registerOneShot is deprecated and will be removed in  SST 11. Please use configureSelfLink to create a mechanism for waking up Component/SubComponents")));
 
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
@@ -233,8 +249,12 @@ protected:
     */
     TimeConverter* registerTimeBase( const std::string& base, bool regAll = true);
 
-    TimeConverter* getTimeConverter( const std::string& base );
-    TimeConverter* getTimeConverter( const UnitAlgebra& base );
+    TimeConverter* getTimeConverter( const std::string& base ) const;
+    TimeConverter* getTimeConverter( const UnitAlgebra& base ) const;
+
+    TimeConverter* getTimeConverterNano() const;
+    TimeConverter* getTimeConverterMicro() const;
+    TimeConverter* getTimeConverterMilli() const;
 
 
     bool isStatisticShared(const std::string& statName, bool include_me = false) {
@@ -329,6 +349,18 @@ protected:
         return registerStatistic<T>(std::string(statName), std::string(statSubId));
     }
 
+    /** Called by the Components and Subcomponent to perform a statistic Output.
+      * @param stat - Pointer to the statistic.
+      * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
+      */
+    void performStatisticOutput(StatisticBase* stat);
+
+    /** Performs a global statistic Output.
+     * This routine will force ALL Components and Subcomponents to output their statistic information.
+     * This may lead to unexpected results if the statistic counts or data is reset on output.
+     * NOTE: Currently, this function will only output statistics that are on the same rank.
+     */
+    void performGlobalStatisticOutput();
 
     /** Loads a module from an element Library
      * @param type Fully Qualified library.moduleName
