@@ -23,13 +23,12 @@ class testcase_Component(SSTTestCase):
 #####
 
     def component_test_template(self, testtype):
-        # Set the various file paths
-        parent_module_path = os.path.dirname(__file__)
-        testsuitedir = parent_module_path
+        testsuitedir = self.get_testsuite_dir()
+        outdir = get_test_output_run_dir()
 
         sdlfile = "{0}/test_Component.py".format(testsuitedir)
         reffile = "{0}/refFiles/test_Component.out".format(testsuitedir)
-        outfile = "{0}/test_Component.out".format(get_test_output_run_dir())
+        outfile = "{0}/test_Component.out".format(outdir)
 
         self.run_sst(sdlfile, outfile)
 

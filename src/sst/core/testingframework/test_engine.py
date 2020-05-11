@@ -111,20 +111,27 @@ class TestEngine():
         """ Create the output directories, then discover the tests, and then
             run them using pythons unittest module
         """
+        # Setup our output directories
         self._create_all_output_directories()
+
         # Build the Config File Parser
         test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER = self._create_core_config_parser()
         test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT = self._build_core_config_include_defs_dict()
 
+        # Find all the testsuites we need to run
         self._discover_testsuites()
-        try:
-            # Convert test suites to a Concurrent Test Suite
-            self._sst_full_test_suite = SSTTestSuite(self._sst_full_test_suite,
-                                                     self._built_tests_list)
 
+        # Now run the testsuites, looking for a keyboard interrupt if necessary
+        # to stop testing.
+        try:
+            # Convert test suites to a Concurrent Test Suite type object,
+            self._sst_full_test_suite = SSTTestSuite(self._sst_full_test_suite,
+                                                     self._build_tests_list_helper)
+            # Setup the runner
             test_runner = SSTTextTestRunner(verbosity=test_engine_globals.TESTENGINE_VERBOSITY,
                                             failfast=self._fail_fast,
                                             resultclass=SSTTextTestResult)
+            # run the tests
             sst_tests_results = test_runner.run(self._sst_full_test_suite)
 
             if not test_runner.did_tests_pass(sst_tests_results):
@@ -138,7 +145,12 @@ class TestEngine():
 
 ####
 
-    def _built_tests_list(self, suite):
+    def _build_tests_list_helper(self, suite):
+        # A helper function to split the tests for the ConcurrentTestSuite into
+        # some number of concurrently executing sub-suites. _build_tests_list_helper
+        # must take a suite, and return an iterable of TestCase-like object,
+        #each of which must have a run(result) method.
+        # See: SSTTestSuite.__init__() for more info...
         tests = list(iterate_tests(suite))
         return tests
 
@@ -295,6 +307,9 @@ class TestEngine():
             log_fatal("ranks must be >= 0; currently set to {0}".format(args.ranks[0]))
         if args.threads[0] < 0:
             log_fatal("threads must be >= 0; currently set to {0}".format(args.threads[0]))
+        if test_engine_globals.TESTENGINE_DEBUGMODE == True and \
+           test_engine_globals.TESTENGINE_CONCURRENTMODE == True:
+               log_fatal("debug mode is not available with concurrent mode")
 
 ####
 

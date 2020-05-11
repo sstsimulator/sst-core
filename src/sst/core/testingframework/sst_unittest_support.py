@@ -378,8 +378,8 @@ def log(logstr):
 
 def log_forced(logstr):
     """ Log a message, no matter what the verbosity is
-        if in the middle of testing, precede with a \n to slip in-between
-        unittest outputs
+        if in the middle of testing, it will precede with a \n to slip
+        in-between unittest outputs
         :param: logstr = string to be logged
     """
     check_param_type("logstr", logstr, str)
@@ -401,9 +401,9 @@ def log_debug(logstr):
 ###
 
 def log_info(logstr, forced=True):
-    """ Log a INFO: message, no matter what the verbosity is
+    """ Log a INFO: message
         :param: logstr = string to be logged
-        :param: forced = True to always force the logging regardless of verbositry
+        :param: forced = True to always force the logging regardless of verbosity
                          otherwise, perform a normal log.
     """
     check_param_type("logstr", logstr, str)
@@ -488,13 +488,29 @@ def compare_sorted(test_name, outfile, reffile):
 
 ###
 
-def merge_files(filepath_wildcard, outputfilepath):
+def merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
     """ Merge a group of common files into an output file
        :param: filepath_wildcard (str) The wildcard Path to the files to be mreged
        :param: outputfilepath (str) The output file path
     """
-    cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
+    # Delete any output files that might exist
+    cmd = "rm -rf {0}".format(outputfilepath)
     os.system(cmd)
+
+    # Check for existing mpiout_filepath (for OpenMPI V4)
+    mpipath = "{0}/1".format(mpiout_filename)
+    if os.path.isdir(mpipath):
+        dirItemList = os.listdir(mpipath)
+        for rankdir in dirItemList:
+            mpirankoutdir = "{0}/{1}".format(mpipath, rankdir)
+            mpioutfile = "{0}/{1}".format(mpirankoutdir, "stdout")
+            if os.path.isdir(mpirankoutdir) and os.path.isfile(mpioutfile):
+                cmd = "cat {0} >> {1}".format(mpioutfile, outputfilepath)
+                os.system(cmd)
+    else:
+        # Cat the files together normally (OpenMPI V2)
+        cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
+        os.system(cmd)
 
 ################################################################################
 ### OS Basic Commands
@@ -525,7 +541,7 @@ def get_num_cores_on_system():
 
 def _get_linux_distribution():
     """ Return the linux distribution info as a tuple"""
-    # The method linux_distribution is depricated in depricated in Py3.5
+    # The method linux_distribution is depricated in deprecated in Py3.5
     _linux_distribution = getattr(platform, 'linux_distribution', None)
         # This is the easy method for Py2 - p3.7.
     if _linux_distribution is not None:

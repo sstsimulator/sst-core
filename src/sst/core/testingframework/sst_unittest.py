@@ -119,17 +119,21 @@ class SSTTestCase(unittest.TestCase):
         """ Launch sst with with the command line and send output to the
             output file.  Other parameters can also be passed in.
            :param: sdl_file (str): The FilePath to the sdl file
-           :param: other_args (str): Any other arguments used in the SST cmd
            :param: out_file (str): The FilePath to the finalized output file
+           :param: err_file (str): The FilePath to the finalized error file
+                                   The default is the same as the output file.
            :param: mpi_out_files (str): The FilePath to the mpi run output files
-                                        These will be merged into the out_file
+                                        These will be merged into the out_file at
+                                        the end of a multi-rank run
+           :param: other_args (str): Any other arguments used in the SST cmd
+                                     that the caller wishes to use
            :param: num_ranks (int): The number of ranks to run SST with
            :param: num_threads (int): The number of threads to run SST with
            :param: global_args (str): Global Arguments provided from test engine args
            :param: timeout_sec (int|float): Allowed runtime in seconds
         """
-        # We cannot set the default of param to the global variable due to
-        # oddities on how this class loads.
+        # NOTE: We cannot set the default of param to the global variable due to
+        # oddities on how this class loads, so we do it here.
         if num_ranks == None:
             num_ranks=test_engine_globals.TESTENGINE_SSTRUNNUMRANKS
         if num_threads == None:
@@ -137,6 +141,7 @@ class SSTTestCase(unittest.TestCase):
         if global_args == None:
             global_args=test_engine_globals.SSTRUNGLOBALARGS
 
+        # Make sure arguments are of valid types
         check_param_type("sdl_file", sdl_file, str)
         check_param_type("out_file", out_file, str)
         if err_file is not None:
@@ -154,14 +159,18 @@ class SSTTestCase(unittest.TestCase):
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout_sec must be a postive int or a float")
 
+        # Make sure sdl file is exists and is a file
         if not os.path.exists(sdl_file) or not os.path.isfile(sdl_file):
             log_error("sdl_file {0} does not exist".format(sdl_file))
 
+        # Figure out a name for the mpi_output files if the default is provided
         if mpi_out_files == "":
-            mpiout_filename = out_file
+            mpiout_filename = "{0}.testfile".format(out_file)
         else:
             mpiout_filename = mpi_out_files
 
+        # Set the initial os launch command for sst.
+        # If multi-threaded, include the number of threads
         if num_threads > 1:
             oscmd = "sst -n {0} {1} {2} {3}".format(num_threads,
                                                     global_args,
@@ -172,9 +181,16 @@ class SSTTestCase(unittest.TestCase):
                                              other_args,
                                              sdl_file)
 
+        # Update the os launch command if we are running multi-rank
         num_cores = get_num_cores_on_system()
+
+        # Check to see if mpirun is available
+        mpiAvail = False
+        rtn = os.system("which mpirun > /dev/null")
+        if rtn == 0:
+            mpiAvail = True
+
         if num_ranks > 1:
-            numa_param=""
             numa_param = ""
             if num_cores >= 2 and num_cores <= 4:
                 numa_param = "-map-by numa:pe=2 -oversubscribe"
@@ -186,20 +202,26 @@ class SSTTestCase(unittest.TestCase):
                                                                          mpiout_filename,
                                                                          oscmd)
 
+        # Identify the working directory that we are launching SST from
         final_wd = os.getcwd()
         if set_cwd != None:
             final_wd = os.path.abspath(set_cwd)
-        log_debug((("-- SST Launch Command (Ranks:{0}; Threads:{1};") +
-                   (" Num Cores:{2}) = {3}")).format(num_ranks, num_threads,
-                                                     num_cores, oscmd))
-        log_debug("-- SST Launched in Working Directory ={0}".format(final_wd))
 
+        # Log some debug info on the launch of SST
+        log_debug((("-- SST Launch Command (In Dir={0}; Ranks:{1}; Threads:{2};") +
+                   (" Num Cores:{3}) = {4}")).format(final_wd, num_ranks, num_threads,
+                                                     num_cores, oscmd))
+
+        # Launch SST
         if num_ranks > 1:
-            rtn = OSCommand(oscmd, set_cwd=set_cwd).run(timeout_sec=timeout_sec)
-            merge_files("{0}*".format(mpiout_filename), out_file)
+            if mpiAvail == False:
+                log_fatal("OpenMPI IS NOT FOUND/AVAILABLE")
+            rtn = OSCommand(oscmd, out_file, err_file, set_cwd).run(timeout_sec=timeout_sec)
+            merge_mpi_files("{0}*".format(mpiout_filename), mpiout_filename, out_file)
         else:
             rtn = OSCommand(oscmd, out_file, err_file, set_cwd).run(timeout_sec=timeout_sec)
 
+        # Look for runtime error conditions
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
         self.assertFalse(rtn.timeout(), err_str)
         err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)

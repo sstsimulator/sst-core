@@ -22,22 +22,27 @@ class testcase_testengine_testing_1(SSTTestCase):
         log_forced("This Test Has an Expected Pass")
         self.assertEqual(1, 1)
 
+    @unittest.expectedFailure
     def test_TESTING_CASE1_assert_fail1(self):
         log_forced("This Test Has an Expected Assert Failure")
         self.assertEqual(2, 1)
 
+    @unittest.expectedFailure
     def test_TESTING_CASE1_assert_fail2(self):
         log_forced("This Test Has an Expected Assert Failure")
         self.assertEqual(2, 1)
 
+    @unittest.expectedFailure
     def test_TESTING_CASE1_assert_fail3(self):
         log_forced("This Test Has an Expected Assert Failure")
         self.assertEqual(2, 1)
 
+    @unittest.expectedFailure
     def test_TESTING_CASE1_assert_error1(self):
         log_forced("This Test Has an Expected Error")
         self.assertEqual(1 / 0, 1)
 
+    @unittest.expectedFailure
     def test_TESTING_CASE1_assert_error2(self):
         log_forced("This Test Has an Expected Error")
         self.assertEqual(1 / 0, 1)
@@ -68,6 +73,7 @@ class testcase_testengine_testing_1(SSTTestCase):
         with self.assertRaises(SSTTestCaseException):
             get_sstsimulator_conf_value_str("invalid_section", "invalid_key")
 
+    @unittest.expectedFailure
     def test_TESTING_CASE1_get_info_from_sstsimulator_conf_invalid_key_exception_error(self):
         # This should give an error as we detect an exception due to invalid key
         log_forced("This Test Has an Expected ERROR - AND GENERATES A WARNING - Due to invalid Key")
@@ -147,10 +153,12 @@ class testcase_testengine_testing_2(SSTTestCase):
         log_forced("This Test Has an Expected Pass")
         self.assertEqual(1, 1)
 
+    @unittest.expectedFailure
     def test_TESTING_CASE2_assert_fail1(self):
         log_forced("This Test Has an Expected Assert Failure")
         self.assertEqual(2, 1)
 
+    @unittest.expectedFailure
     def test_TESTING_CASE2_assert_error1(self):
         log_forced("This Test Has an Expected Error")
         self.assertEqual(1 / 0, 1)

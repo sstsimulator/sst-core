@@ -20,53 +20,66 @@ class testcase_SubComponent(SSTTestCase):
         super(type(self), self).tearDown()
 
 #####
+    rankerr = "Test only suports ranks <= 2"
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_2a(self):
         self.subcomponent_test_template("sc_2a")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_2u2u(self):
         self.subcomponent_test_template("sc_2u2u")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_2u(self):
         self.subcomponent_test_template("sc_2u")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_a(self):
         self.subcomponent_test_template("sc_a")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_u2u(self):
         self.subcomponent_test_template("sc_u2u")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_u(self):
         self.subcomponent_test_template("sc_u")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_2u2a(self):
         self.subcomponent_test_template("sc_2u2a")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_2ua(self):
         self.subcomponent_test_template("sc_2ua")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_2uu(self):
         self.subcomponent_test_template("sc_2uu")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_u2a(self):
         self.subcomponent_test_template("sc_u2a")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_ua(self):
         self.subcomponent_test_template("sc_ua")
 
+    @unittest.skipIf(get_testing_num_ranks() > 2, rankerr)
     def test_SubComponent_sc_uu(self):
         self.subcomponent_test_template("sc_uu")
 
 #####
 
     def subcomponent_test_template(self, testtype):
-        # Get the path to the test files
-        test_path = self.get_testsuite_dir()
+        testsuitedir = self.get_testsuite_dir()
+        outdir = get_test_output_run_dir()
 
         # Set the various file paths
-        sdlfile = "{0}/subcomponent_tests/test_{1}.py".format(test_path, testtype)
-        reffile = "{0}/subcomponent_tests/refFiles/test_{1}.out".format(test_path, testtype)
-        outfile = "{0}/test_SubComponent_{1}.out".format(get_test_output_run_dir(), testtype)
+        sdlfile = "{0}/subcomponent_tests/test_{1}.py".format(testsuitedir, testtype)
+        reffile = "{0}/subcomponent_tests/refFiles/test_{1}.out".format(testsuitedir, testtype)
+        outfile = "{0}/test_SubComponent_{1}.out".format(outdir, testtype)
 
         self.run_sst(sdlfile, outfile)
 

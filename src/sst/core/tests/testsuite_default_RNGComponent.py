@@ -31,16 +31,15 @@ class testcase_RNGComponent(SSTTestCase):
 
 #####
 
-    def RNG_test_template(self, testcase):
-        # Set the various file paths
-        parent_module_path = os.path.dirname(__file__)
-        testsuitedir = parent_module_path
+    def RNG_test_template(self, testtype):
+        testsuitedir = self.get_testsuite_dir()
+        outdir = get_test_output_run_dir()
 
-        sdlfile = "{0}/test_RNGComponent_{1}.py".format(testsuitedir, testcase)
-        reffile = "{0}/refFiles/test_RNGComponent_{1}.out".format(testsuitedir, testcase)
-        outfile = "{0}/test_RNGComponent_{1}.out".format(get_test_output_run_dir(), testcase)
-        tmpfile = "{0}/test_RNGComponent_{1}.tmp".format(get_test_output_tmp_dir(), testcase)
-        cmpfile = "{0}/test_RNGComponent_{1}.cmp".format(get_test_output_tmp_dir(), testcase)
+        sdlfile = "{0}/test_RNGComponent_{1}.py".format(testsuitedir, testtype)
+        reffile = "{0}/refFiles/test_RNGComponent_{1}.out".format(testsuitedir, testtype)
+        outfile = "{0}/test_RNGComponent_{1}.out".format(outdir, testtype)
+        tmpfile = "{0}/test_RNGComponent_{1}.tmp".format(outdir, testtype)
+        cmpfile = "{0}/test_RNGComponent_{1}.cmp".format(outdir, testtype)
 
         self.run_sst(sdlfile, outfile)
 

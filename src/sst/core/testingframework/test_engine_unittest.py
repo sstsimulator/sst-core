@@ -217,13 +217,7 @@ class SSTTextTestResult(unittest.TextTestResult):
 
 ################################################################################
 
-################################################################################
-# NOTE: The problem is that setUpClass(), setUpModule() functions are not being
-#       called by the ConcurrentTestSuite.  This prevent us from tracking
-#       The test name and path along with the teardown call to Junit to write
-#       out the XML
-################################################################################
-
+# Note: test_suite_base_class will either unitest.TestSuite or testtools.ConcurrentTestSuite
 class SSTTestSuite(test_suite_base_class):
     """A TestSuite whose run() calls out to a concurrency strategy
        but also supports the base unittest.TestSuite functionality
@@ -235,7 +229,7 @@ class SSTTestSuite(test_suite_base_class):
              unittest.TestSuite.
        Note: If concurrent mode is false, then it will always make calls to the
              unittest.TestSuite class EVEN IF it is derived from
-             testtools.ConcurrentTestSuite.
+             testtools.ConcurrentTestSuite, which is itself derived from unittest.TestSuite.
     """
 
     def __init__(self, suite, make_tests, wrap_result=None):
