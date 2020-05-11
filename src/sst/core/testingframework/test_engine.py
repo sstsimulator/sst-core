@@ -344,7 +344,15 @@ class TestEngine():
                      ("{0}").format(" ".join(test_engine_globals.TESTENGINE_SCENARIOSLIST)),
                      forced=False)
 
-        log_debug("Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
+        cmd = "sst --version"
+        rtn = OSCommand(cmd).run()
+        sstcoreversion = rtn.output()
+        sstcoreversion = sstcoreversion.replace("SST-Core Version ", "").rstrip()
+
+        log_info("TestEngine Version = {0}".format(sstcoreversion), forced=False)
+        log_info("Running on Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
+        log_info("Num Ranks = {0}; Num Threads = {1}".format(test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS, \
+            test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS), forced=False)
 
 ####
 
