@@ -24,8 +24,9 @@ from logging.handlers import RotatingFileHandler
 
 ################################################################################
 
-TESTFRAMEWORKSFILES = ["sst_unittest_support.py", "test_engine.py",
-                       "test_engine_globals.py", "test_engine_support.py"]
+TESTFRAMEWORKSFILES = ["sst_unittest.py", "sst_unittest_support.py", "test_engine.py",
+                       "test_engine_globals.py", "test_engine_support.py", 
+                       "test_engine_junit.py", "test_engine_unittest.py"]
 
 # AVAILABLE TEST MODES
 TEST_ELEMENTS = 0
