@@ -3,9 +3,9 @@
 ## Overview
 This frameworks is built upon Python's unittest module and modified to operate for SST.  It is designed to operate on Python 2.7 - Python 3.x.  No 3rd party modules are required, however to enable (optional) concurrent testing, the `testtools` module must be pip installed.  
 
-When the test system is run, it will automatically discover testsuites (this is can be controlled by the user).  Each testsuite can have multiple tests.  All tests (of all discovered testsuites) will be given the opportunity to run, however some build or environment conditions or scenarios may require tests to be skipped.  The decision to skip a test is performed by the test code.
+When the test system is run, it will automatically discover testsuites (this is can be controlled by the user).  Each testsuite can have multiple tests.  All tests (of all discovered testsuites) will be given the opportunity to run, however some build settings, environment conditions or scenarios may require tests to be skipped.  The decision to skip a test is performed by the test code.
 
-There is no guarantee on the order of Testsuites being run, however, all tests within a testsuite will be run before the next testsuite is started (see concurrent testing for exceptions).  Note: Tests within a test suite are not guaranteed to run in a specific order.  
+There is no guarantee on the order of Testsuites being run, however, all tests within a testsuite will be run before the next testsuite is started (see concurrent testing for exceptions).  Note: Tests within a test suite are ALSO not guaranteed to run in a specific order.  
 
 ## Building and Installing the SST Testing Frameworks
 
@@ -18,7 +18,7 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
 
 ## Development of SST Testing FrameWorks components
    * If development of the SST Testing Frameworks components is desired, the developer must build and install SST-Core with the --enable-testframework-dev configuration flag.
-   * This will create symbolic links to the SST Testing Frameworks components (instead of copying them), thereby allowing the developer to modify the scripts and test without having to re-copy the file to the SST-Core install directory.
+      * This will create symbolic links to the SST Testing Frameworks components (instead of copying them), thereby allowing the developer to modify the scripts and test without having to re-copy the file to the SST-Core install directory.
     
 ## Running SST Testing Frameworks
   * To test SST-Core, run ```sst-test-core```
@@ -27,9 +27,9 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
   * Run-time Parameters:
      * -h = help
      * -f = Fail Fast. Testing will stop on the first detected failure; default = false
-     * -o dir = Output directory path. Where test run results are stored; default = .
+     * -o dir = Output directory path. Where test run results are stored; default = ./sst_test_outputs
      * -k = Keep output.  Normally, output directory is deleted before run to ensure clean results, setting this flag will prevent delete of output directory; default = false
-     * -c xx = Run tests concurrently; default = 8  (SEE Concurrently BELOW)
+     * -c xx = Run tests concurrently; default = 8  (SEE Concurrent Testing BELOW)
      * -v, -q, -d - Screen Output mode as verbose, quiet or debug.  
         * If not defined, screen output is normal (dots indicate successful tests)
         * -q = quiet output, minimal information is displayed on screen
@@ -61,6 +61,7 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
       * If ```testtools``` is not installed, concurrent testing is not available.
    * Tests are run in multiple threads (default = 8) 
    * There is no guarantee of test run order, and tests from multiple testsuites may be running concurrently.
+   * Debug output mode cannot be used with concurrent testing (debug output is not thread-safe)  
  
 ## Scenarios
    * Specific tests in testsuites can be skipped from running by using the '--scenarios' argument.  
@@ -69,7 +70,7 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
    * The decision to skip is made in the testsuite source code.
 
 ## Creating new testsuites
-  * In general, testsuites are named `testsuite_XXX_YYY.py` where XXX = The test_type name, and YYY is the general name of the testsuite.  These testsuites should live the tests directory 
+  * In general, testsuites are named `testsuite_XXX_YYY.py` where XXX = The test_type name, and YYY is the general name of the testsuite.  These testsuites should live the tests directory of an element
      - test_type name is normally `default`.  All testsuites with a test_type of `default` will be run under normal run conditions.  specialized testsuites may be created with a unique test_type name and will only be run if the -y option identifies that name (or `all`).
      - Test directories must be in a registered path for the SST Test Frameworks to automatically discover.  See Makefile.am files of various elements on how to register.
      - 3rd party elements can also register their test paths to the SST Test Frameworks to enable testing. 
