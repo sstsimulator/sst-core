@@ -371,7 +371,9 @@ class TestEngine():
 
         log_info("TestEngine Version = {0}".format(sstcoreversion), forced=False)
         log_info("Running on Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
-        log_info("Num Ranks = {0}; Num Threads = {1}".format(test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS, \
+        num_cores = get_num_cores_on_system()
+        log_info("Available Cores = {0}; Num Ranks = {1}; Num Threads = {2}".format(num_cores, \
+            test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS, \
             test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS), forced=False)
 
 ####

@@ -21,6 +21,7 @@ import time
 import traceback
 import threading
 from datetime import datetime
+from sst_unittest_support import *
 
 # Queue module changes name between Py2->Py3
 try:
@@ -89,6 +90,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
             :return: True if all tests passing with no errors, false otherwise
         """
         return run_results.wasSuccessful and \
+        len(run_results.failures) == 0 and \
         len(run_results.errors) == 0 and \
         test_engine_globals.TESTENGINE_ERRORCOUNT == 0
 
@@ -99,6 +101,20 @@ class SSTTextTestRunner(unittest.TextTestRunner):
             :param: sst_tests_results -  A unittest.TestResult object
             :return: True if all tests passing with no errors, false otherwise
         """
+        # Check to see if we are using up all the cores on the system
+        # in concurrent mode, warn user of possible failures
+        if test_engine_globals.TESTENGINE_CONCURRENTMODE == True:
+            num_cores_avail = get_num_cores_on_system()
+            threads_used = test_engine_globals.TESTENGINE_THREADLIMIT
+            ranks_used = test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
+            cores_used = threads_used * ranks_used
+            if cores_used >= num_cores_avail:
+                log_forced("\n================== NOTICE =========================")
+                log_forced("The number of concurrent threads ({0}) *  ".format(threads_used))
+                log_forced("number of ranks ({0}) >= available cores ({1})".format(ranks_used, num_cores_avail))
+                log_forced("This may cause unexpected test issues/failures...")
+                log_forced("===================================================")
+
         log(("\n=== TEST RESULTS ==================") +
                    ("===================================\n"))
         log("Tests Run      = {0}".format(run_results.testsRun))
