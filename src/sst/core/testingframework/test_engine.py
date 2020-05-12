@@ -43,30 +43,36 @@ DEF_THREAD_LIMIT = 8
 HELP_DESC = 'Run {0} Tests'
 HELP_EPILOG = (
                ("Finding TestSuites:\n") +
-               ("During Startup, the 'list_of_paths' and 'testsuite_types' arguments are used\n") +
-               ("to create a list of testsuites to be run.\n") +
+               ("During Startup, the 'list_of_paths' and 'testsuite_types' (or 'testsuite_wildcards')\n") +
+               (" arguments are used to create a list of testsuites to be run.\n") +
                (" - If the 'list_of_paths' argument includes a testsuite file, that testsuite\n") +
                ("   file will be directly added to the list of testsuites to be run.\n") +
                (" - If the 'list_of_paths' argument includes a directory (containing 1 or more \n") +
-               ("   testsuites), that directory will be searched for specific testsuites types as\n") +
+               ("   testsuites), that directory will be searched for specific testsuites as\n") +
                ("   described below.\n") +
                (" - If the 'list_of_paths' argument is empty (default), testsuites paths found \n") +
                ("   in the sstsimulator.conf file (located in the <sstcore_install>/etc directory)\n") +
-               ("   will be searched for specific testsuite types as described below.\n") +
+               ("   will be searched for specific testsuites as described below.\n") +
                ("\n") +
-               ("Searching for testsuites types:\n") +
+               ("Searching for testsuites by type or wildcard:\n") +
                ("Each directory identified by the 'list_of_paths' argument will search for \n") +
-               ("testsuites based upon the 'testsuite_type' argument as follows:\n") +
+               ("testsuites based upon the 'testsuite_types' argument or 'testsuite_wildcards'\n") +
+               ("argument (mutually exclusive) as follows:\n") +
                (" - Files named 'testsuite_default_*.py' will be added to the list of\n") +
-               ("   testsuites to be run if argument --testsuite_type is NOT specified.\n") +
+               ("   testsuites to be run if argument --testsuite_types AND\n") +
+               ("   argument --testsuite_wildcards are both NOT specified.\n") +
                ("   Note: This will run only the 'default' set of testsuites in the directory.\n") +
                (" - Files named 'testsuite_<type_name>_*.py' will be added to the list of\n") +
-               ("   testsuites to be run when <typename> is specifed using the \n") +
-               ("   --testsuite_type=<type_name> argument.\n") +
+               ("   testsuites to be run when <type_name> is specifed using the \n") +
+               ("   --testsuite_types=<type_name> argument.\n") +
                ("   Note: This will run user selected set of testsuites in the directory.\n") +
                (" - Files named 'testsuite_*.py' will be added to the list of testsuites to\n") +
-               ("   be run when argument --testsuite_type=all is specified.\n") +
+               ("   be run when argument --testsuite_types=all is specified.\n") +
                ("   Note: This will run ALL of the testsuites in the directory.\n") +
+               (" - Files named 'testsuite_<wildcard_name>.py' will be added to the list of\n") +
+               ("   testsuites to be run when <wildcard_name> is specifed using the\n") +
+               ("   --testsuite_wildcards = <wildcard_name> argument.\n") +
+               ("   Note: This will run user selected set of testsuites in the directory.\n") +
                ("\n") +
                ("Tests Execution:\n") +
                ("All tests identified inside of the testsuites to be given an opportunity to\n") +
@@ -191,6 +197,7 @@ class TestEngine():
         self._keep_output_dir = False
         self._list_of_searchable_testsuite_paths = []
         self._testsuite_types_list = []
+        self._testsuite_wildcards_list = []
         self._sst_core_bin_dir = sst_core_bin_dir
         self._test_mode = test_mode
         self._sst_full_test_suite = unittest.TestSuite()
@@ -246,18 +253,25 @@ class TestEngine():
                             help='Dont clean output directory at start [False]')
         parser.add_argument('-c', '--concurrent', type=int, metavar="TT",
                             nargs='?', const=DEF_THREAD_LIMIT,
-                            help=('Run Test Suites concurrently using threads')
-                               + (' TT = thread limit [default {0}]').format(DEF_THREAD_LIMIT))
+                            help=('Run Test Suites concurrently using threads\n')
+                               + ('TT = thread limit [default {0}]').format(DEF_THREAD_LIMIT))
 
         discover_group = parser.add_argument_group('Test Discovery Arguments')
-        discover_group.add_argument('-y', '--testsuite_types', type=str, metavar="name",
-                                    nargs="+", default=['default'],
-                                    help=(('Name (in lowercase) of testsuite types to') + \
-                                          (' run\n("all" will run all types) ["default"]')))
+        mutnamegroup = discover_group.add_mutually_exclusive_group()
+        mutnamegroup.add_argument('-y', '--testsuite_types', type=str, metavar="name",
+                                 nargs="+", default=['default'],
+                                 help=(('Name (in lowercase) of testsuite types to') + \
+                                       (' run\n("all" will run all types) ["default"]') + \
+                                       ('\nNote: Mutually exclusive with --testsuite_wildcards')))
+        mutnamegroup.add_argument('-w', '--testsuite_wildcards', type=str, metavar="name",
+                                 nargs="+", default=[],
+                                 help=(('Wildcard names of testsuites to') + \
+                                       (' run\n("testsuite_<wildcard_name>.py") [""]') + \
+                                       ('\nNote: Mutually exclusive with --testsuite_types')))
         if self._test_mode:
-            testsuite_path_str = "TestSuite Files or Dirs to SST-Core TestSuites"
+            testsuite_path_str = "TestSuite Files or Dirs to SST-Core\nTestSuites [Registered Dir Path]"
         else:
-            testsuite_path_str = "Testsuite Files or Dirs to Registered Elements TestSuites"
+            testsuite_path_str = "Testsuite Files or Dirs to Registered\nElements TestSuites [Registered Dir Paths]"
         discover_group.add_argument('-p', '--list_of_paths', metavar='path',
                                     nargs='*', default=[], help=testsuite_path_str)
 
@@ -279,6 +293,7 @@ class TestEngine():
         test_engine_globals.TESTENGINE_SCENARIOSLIST = lc_testscenario_list
         lc_testsuitetype_list = [item.lower() for item in args.testsuite_types]
         self._testsuite_types_list = lc_testsuitetype_list
+        self._testsuite_wildcards_list = args.testsuite_wildcards
         test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_NORMAL
         if args.quiet:
             test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_QUIET
@@ -296,9 +311,9 @@ class TestEngine():
             else:
                 parser.print_help()
                 log_fatal("Thread limit must be > 0; you provided {0}".format(args.concurrent))
-        test_engine_globals.TESTENGINE_SSTRUNNUMRANKS = args.ranks[0]
-        test_engine_globals.TESTENGINE_SSTRUNNUMTHREADS = args.threads[0]
-        test_engine_globals.SSTRUNGLOBALARGS = args.sst_run_args[0]
+        test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS = args.ranks[0]
+        test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS = args.threads[0]
+        test_engine_globals.TESTENGINE_SSTRUN_GLOBALARGS = args.sst_run_args[0]
         test_engine_globals.TESTOUTPUT_TOPDIRPATH = os.path.abspath(args.out_dir[0])
         test_engine_globals.TESTOUTPUT_RUNDIRPATH = os.path.abspath("{0}/run_data".format(args.out_dir[0]))
         test_engine_globals.TESTOUTPUT_TMPDIRPATH = os.path.abspath("{0}/tmp_data".format(args.out_dir[0]))
@@ -329,12 +344,17 @@ class TestEngine():
         log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
                  (" {0}".format(get_host_os_distribution_version())), forced=False)
 
-        if 'all' in self._testsuite_types_list:
-            log_info("TestSuite Types to be run are: ALL TESTSUITE TYPES",
-                     forced=False)
+        if not self._testsuite_wildcards_list:
+            if 'all' in self._testsuite_types_list:
+                log_info("TestSuite Types to be run are: ALL TESTSUITE TYPES",
+                         forced=False)
+            else:
+                log_info(("TestSuite Types to be run are: ") +
+                         ("{0}").format(" ".join(self._testsuite_types_list)),
+                         forced=False)
         else:
-            log_info(("TestSuite Types to be run are: ") +
-                     ("{0}").format(" ".join(self._testsuite_types_list)),
+            log_info(("TestSuite wildcards to search for: ") +
+                     ("testsuite_{0}.py").format(" ".join(self._testsuite_wildcards_list)),
                      forced=False)
 
         if len(test_engine_globals.TESTENGINE_SCENARIOSLIST) == 0:
@@ -420,18 +440,24 @@ class TestEngine():
         # A testsuite_path may be a directory or a file
         for testsuite_path in self._list_of_searchable_testsuite_paths:
             if os.path.isdir(testsuite_path):
-                # Find all testsuites that match our pattern(s)
-                if 'all' in self._testsuite_types_list:
-                    testsuite_pattern = 'testsuite_*.py'
-                    sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
-                                                                    pattern=testsuite_pattern)
-                    self._sst_full_test_suite.addTests(sst_testsuites)
-                else:
-                    for testsuite_type in self._testsuite_types_list:
-                        testsuite_pattern = 'testsuite_{0}_*.py'.format(testsuite_type)
+                if not self._testsuite_wildcards_list:
+                    # Find all testsuites that match our pattern(s)
+                    if 'all' in self._testsuite_types_list:
+                        testsuite_pattern = 'testsuite_*.py'
                         sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
                                                                         pattern=testsuite_pattern)
-                        self._sst_full_test_suite.addTests(sst_testsuites)
+                    else:
+                        for testsuite_type in self._testsuite_types_list:
+                            testsuite_pattern = 'testsuite_{0}_*.py'.format(testsuite_type)
+                            sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
+                                                                            pattern=testsuite_pattern)
+                else:
+                    for testsuite_wcname in self._testsuite_wildcards_list:
+                        testsuite_pattern = 'testsuite_{0}.py'.format(testsuite_wcname)
+                        sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
+                                                                        pattern=testsuite_pattern)
+                self._sst_full_test_suite.addTests(sst_testsuites)
+
 
             if os.path.isfile(testsuite_path):
                 # Add a specific testsuite from a filepath

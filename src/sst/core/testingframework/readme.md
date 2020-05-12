@@ -38,21 +38,23 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
      * -s = Scenarios name (SEE Scenarios BELOW); default = NONE
      * -r XX = Number of ranks to use during SST runs; default = 1
      * -t YY = Number of threads to use during SST runs; default = 1
-     * -y name = Name of testsuits to discover (SEE Discovery BELOW); default = "default"
+     * -y name = Name of testsuites to discover (SEE Discovery BELOW); default = "default"
+     * -w name = Wildcard name of testsuites to discover (SEE Discovery BELOW); default = ""
      * -p path = Path to testsuites (SEE Discovery BELOW); default = registered tests dir paths
      
 ## Discovery of Tests
    * Finding TestSuites:
-      * During Startup, the -p and -y arguments are used to create a list of testsuites to be run.
+      * During Startup, the -p and -y (or -w) arguments are used to create a list of testsuites to be run.
       - If the -p argument includes a testsuite file, that testsuite file will be directly added to the list of testsuites to be run.  Multiple files can be defined.
-      - If the -p argument includes a directory (containing 1 or more testsuites), that directory will be searched for specific testsuites types as described below.  Muliple paths can be defined.  
-      - If the 'list_of_paths' argument is empty (by default), test directory paths found in the sstsimulator.conf file (located in the <sstcore_install>/etc directory) will be searched for specific testsuite types as described below.
+      - If the -p argument includes a directory (containing 1 or more testsuites), that directory will be searched for specific testsuites as described below.  Muliple paths can be defined.  
+      - If the 'list_of_paths' argument is empty (by default), test directory paths found in the sstsimulator.conf file (located in the <sstcore_install>/etc directory) will be searched for specific testsuites as described below.
 
-   * Searching for testsuites types:
-      * Each directory identified by the -p argument will search for testsuites based upon the -y argument as follows:
-      - Files named 'testsuite_default_*.py' will be added to the list of testsuites to be run if argument -y is **NOT** specified. Note: This will run only the 'default' set of testsuites in the directory.
-      - Files named 'testsuite_<type_name>_*.py' will be added to the list of testsuites to be run when <typename> is specifed using the -y = <type_name> argument. Note: This will run user selected set of testsuites in the directory.
+   * Searching for testsuites by type or wildcard:
+      * Each directory identified by the -p argument will search for testsuites based upon the -y or -w (mutually exclusive) argument as follows:
+      - Files named 'testsuite_default_*.py' will be added to the list of testsuites to be run if argument -y **AND** -w are both **NOT** specified. Note: This will run only the 'default' set of testsuites in the directory.
+      - Files named 'testsuite_<type_name>_*.py' will be added to the list of testsuites to be run when <type_name> is specifed using the -y = <type_name> argument. Note: This will run user selected set of testsuites in the directory. Example: ```-y = autotester```
       - Files named 'testsuite_*.py' will be added to the list of testsuites to be run when argument -y = all is specified. Note: This will run ALL of the testsuites in the directory.
+      - Files named 'testsuite_<wildcard_name>.py' will be added to the list of testsuites to be run when <wildcard_name> is specifed using the -w = <wildcard_name> argument. Note: This will run user selected set of testsuites in the directory. Example: ```-w = *merlin*```
 
 ## Running Tests Concurrently
    * Tests may be run concurrently in multiple threads to significantly reduce testing runtime.

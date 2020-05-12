@@ -135,11 +135,11 @@ class SSTTestCase(unittest.TestCase):
         # NOTE: We cannot set the default of param to the global variable due to
         # oddities on how this class loads, so we do it here.
         if num_ranks == None:
-            num_ranks=test_engine_globals.TESTENGINE_SSTRUNNUMRANKS
+            num_ranks=test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
         if num_threads == None:
-            num_threads=test_engine_globals.TESTENGINE_SSTRUNNUMTHREADS
+            num_threads=test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
         if global_args == None:
-            global_args=test_engine_globals.SSTRUNGLOBALARGS
+            global_args=test_engine_globals.TESTENGINE_SSTRUN_GLOBALARGS
 
         # Make sure arguments are of valid types
         check_param_type("sdl_file", sdl_file, str)

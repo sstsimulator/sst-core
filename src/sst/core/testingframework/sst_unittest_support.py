@@ -70,7 +70,7 @@ def get_testing_num_ranks():
     """ Get the number of ranks defined to be run during the testing
        :return: The number of requested run ranks
     """
-    return test_engine_globals.TESTENGINE_SSTRUNNUMRANKS
+    return test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
 
 ###
 
@@ -78,7 +78,7 @@ def get_testing_num_threads():
     """ Get the number of threads defined to be run during the testing
        :return: The number of requested run threads
     """
-    return test_engine_globals.TESTENGINE_SSTRUNNUMTHREADS
+    return test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
 
 ################################################################################
 # System Information Functions
