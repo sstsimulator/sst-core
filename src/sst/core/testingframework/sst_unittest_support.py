@@ -516,6 +516,15 @@ def merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
 ### OS Basic Commands
 ################################################################################
 
+def os_simple_command(os_cmd, rtn_value=None):
+    """ Perform an simple os command and get the stdout and the return code if needed
+        NOTE: Simple command cannot have pipes or redirects
+    """
+    rtn = OSCommand(os_cmd).run()
+#    if rtn_value != None:
+#        rtn_value = rtn.result()
+    return rtn.output()
+
 def os_ls(directory="."):
     """ Perform an ls -lia on a directory and dump output to screen """
     cmd = "ls -lia {0}".format(directory)
