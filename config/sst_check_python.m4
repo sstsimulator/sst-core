@@ -68,8 +68,12 @@ dnl Python3.8+ doesn't link to lpython by default
   AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
         [AM_PYTHON_CHECK_VERSION([$PYTHON_EXE], [3.8], [PYTHON_LDFLAGS=`$PYTHON_CONFIG_EXE --ldflags --embed`], [])])
 
+dnl Figure out the name of the python library
+  PYLIBX=`sed 's/.*python/python/g' <<< "$PYTHON_LIBS"`
+  PYLIB=${PYLIBX%% *}
+
 dnl report Python version
-  PYTHON_VERSION=`$PYTHON_EXE -V`
+  PYTHON_VERSION=`$PYTHON_EXE -V 2>&1`
   AC_MSG_NOTICE([Python version is $PYTHON_VERSION])
   
 dnl check for Python.h
@@ -84,7 +88,43 @@ dnl check for Python.h
   AC_LANG_PUSH(C++)
   
   AC_CHECK_HEADERS([Python.h], [sst_check_python_happy="yes"], [sst_check_python_happy="no"])
- 
+
+dnl Sometimes python-config doesn't give the library path correctly
+dnl Also, autoconf caches the result of AC_CHECK_LIB and won't recheck
+dnl even though LDFLAGS is updated
+  PYLIB_US=${PYLIB/./_}
+  PYCACHEVAR="ac_cv_lib_${PYLIB_US}___Py_Initialize"
+
+  AC_CHECK_LIB([$PYLIB], [Py_Initialize], [PYLIB_OK="yes"], [PYLIB_OK="no"])
+  AS_UNSET([$PYCACHEVAR]) 
+
+  AS_IF([test "$PYLIB_OK" = "no"],
+        [LDFLAGS="$LDFLAGS -L$PYTHON_PREFIX/lib"])
+  
+  AS_IF([test "$PYLIB_OK" = "no"],
+        [AC_CHECK_LIB([$PYLIB], 
+                      [Py_Initialize], 
+                      [PYLIB_OK="yes"
+                       PYTHON_LDFLAGS="$PYTHON_LDFLAGS -L$PYTHON_PREFIX/lib"], 
+                      [PYLIB_OK="no"])])
+  
+  AS_UNSET([$PYCACHEVAR]) 
+  
+  AS_IF([test "$PYLIB_OK" = "no"],
+        [LDFLAGS="$LDFLAGS -L$PYTHON_PREFIX/lib64"])
+  
+  AS_IF([test "$PYLIB_OK" = "no"],
+        [AC_CHECK_LIB([$PYLIB], 
+                      [Py_Initialize], 
+                      [PYLIB_OK="yes"
+                       PYTHON_LDFLAGS="$PYTHON_LDFLAGS -L$PYTHON_PREFIX/lib64"],
+                      [PYLIB_OK="no"])])
+  
+  AC_MSG_CHECKING([python libraries])
+  AC_MSG_RESULT([$PYLIB_OK])
+  AS_IF([test $PYLIB_OK = "no"],
+        [AC_MSG_ERROR([Unable to locate Python library $PYLIB in $LDFLAGS])])
+
   AC_LANG_POP(C++)
 
   CPPFLAGS="$CPPFLAGS_saved"

@@ -27,7 +27,6 @@
 
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/serialization/serializer.h"
-#include "sst/core/output.h"
 
 int main(int argc, char *argv[]);
 

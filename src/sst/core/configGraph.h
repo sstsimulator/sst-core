@@ -205,7 +205,7 @@ public:
     std::vector<Statistics::StatisticInfo> enabledStatistics; /*!< List of statistics to be enabled */
     std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
-    uint16_t                      nextSubID;         /*!< Next subID to use for children */
+    uint16_t                      nextSubID;         /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
 
     static constexpr ComponentId_t null_id = std::numeric_limits<ComponentId_t>::max();
 
@@ -222,6 +222,10 @@ public:
 
     ComponentId_t getNextSubComponentID();
 
+    ConfigComponent* getParent() const;
+    std::string getFullName() const;
+
+    
     void setRank(RankInfo r);
     void setWeight(double w);
     void setCoordinates(const std::vector<double> &c);
@@ -234,7 +238,7 @@ public:
     void addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively = false);
     void setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively = false);
     void setStatisticLoadLevel(uint8_t level, bool recursively = false);
-
+    
     std::vector<LinkId_t> allLinks() const;
 
     void serialize_order(SST::Core::Serialization::serializer &ser) override {
@@ -250,6 +254,8 @@ public:
         ser & statLoadLevel;
         ser & enabledStatistics;
         ser & subComponents;
+        ser & coords;
+        ser & nextSubID;
     }
 
     ImplementSerializable(SST::ConfigComponent)
@@ -271,7 +277,7 @@ private:
         coords.resize(3, 0.0);
     }
 
-    ConfigComponent(ComponentId_t id, ConfigGraph* graph, const std::string& name, int slot_num, const std::string& type, float weight, RankInfo rank) :
+    ConfigComponent(ComponentId_t id, ConfigGraph* graph, uint16_t parent_subid, const std::string& name, int slot_num, const std::string& type, float weight, RankInfo rank) :
         id(id),
         graph(graph),
         name(name),
@@ -280,7 +286,7 @@ private:
         weight(weight),
         rank(rank),
         statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
-        nextSubID(1)
+        nextSubID(parent_subid)
     {
         coords.resize(3, 0.0);
     }

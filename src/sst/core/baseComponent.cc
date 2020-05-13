@@ -184,16 +184,35 @@ TimeConverter* BaseComponent::registerTimeBase( const std::string& base, bool re
 }
 
 TimeConverter*
-BaseComponent::getTimeConverter( const std::string& base )
+BaseComponent::getTimeConverter( const std::string& base ) const
 {
     return getSimulation()->getTimeLord()->getTimeConverter(base);
 }
 
 TimeConverter*
-BaseComponent::getTimeConverter( const UnitAlgebra& base )
+BaseComponent::getTimeConverter( const UnitAlgebra& base ) const
 {
     return getSimulation()->getTimeLord()->getTimeConverter(base);
 }
+
+TimeConverter*
+BaseComponent::getTimeConverterNano() const
+{
+    return Simulation::getSimulation()->getTimeLord()->getNano();
+}
+
+TimeConverter*
+BaseComponent::getTimeConverterMicro() const
+{
+    return Simulation::getSimulation()->getTimeLord()->getMicro();
+}
+
+TimeConverter*
+BaseComponent::getTimeConverterMilli() const
+{
+    return Simulation::getSimulation()->getTimeLord()->getMilli();
+}
+
 
 
 bool
@@ -342,13 +361,55 @@ BaseComponent::configureSelfLink( const std::string& name, Event::HandlerBase* h
     return configureLink(name,handler);
 }
 
+SimTime_t
+BaseComponent::getCurrentSimCycle() const
+{
+    return Simulation::getSimulation()->getCurrentSimCycle();
+}
+
+int
+BaseComponent::getCurrentPriority() const
+{
+    return Simulation::getSimulation()->getCurrentPriority();
+}
+
+UnitAlgebra
+BaseComponent::getElapsedSimTime() const
+{
+    return Simulation::getSimulation()->getElapsedSimTime();
+}
+
+UnitAlgebra
+BaseComponent::getFinalSimTime() const
+{
+    return Simulation::getSimulation()->getFinalSimTime();
+}
+
+RankInfo
+BaseComponent::getRank() const
+{
+    return Simulation::getSimulation()->getRank();
+}
+
+RankInfo
+BaseComponent::getNumRanks() const
+{
+    return Simulation::getSimulation()->getNumRanks();
+}
+
+Output&
+BaseComponent::getSimulationOutput() const
+{
+    return Simulation::getSimulation()->getSimulationOutput();
+}
+
+
 SimTime_t BaseComponent::getCurrentSimTime(TimeConverter *tc) const {
     return tc->convertFromCoreTime(getSimulation()->getCurrentSimCycle());
 }
 
-SimTime_t BaseComponent::getCurrentSimTime(const std::string& base) {
+SimTime_t BaseComponent::getCurrentSimTime(const std::string& base) const {
     return getCurrentSimTime(getSimulation()->getTimeLord()->getTimeConverter(base));
-
 }
 
 SimTime_t BaseComponent::getCurrentSimTimeNano() const {
@@ -568,7 +629,7 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
             }
         }
         next_info = curr_info->parent_info;
-    } while ( curr_info->canInsertStatistics() );
+    } while ( curr_info->canInsertStatistics() && !nameFound );
 
     // hack for now to make sure that an explicitly enabled stat is
     // always loaded regardless of load level.
@@ -647,6 +708,19 @@ BaseComponent::registerStatisticCore(SST::Params& params, const std::string& sta
     // Register the new Statistic with the Statistic Engine
     return statistic;
 }
+
+void
+BaseComponent::performStatisticOutput(StatisticBase* stat)
+{
+    Simulation::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(stat);
+}
+
+void
+BaseComponent::performGlobalStatisticOutput()
+{
+    Simulation::getSimulation()->getStatisticsProcessingEngine()->performGlobalStatisticOutput(false);
+}
+
 
 } // namespace SST
 

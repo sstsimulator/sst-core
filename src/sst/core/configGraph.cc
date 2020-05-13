@@ -183,6 +183,26 @@ ComponentId_t ConfigComponent::getNextSubComponentID()
         
 }
 
+ConfigComponent* ConfigComponent::getParent() const {
+    if ( id == COMPONENT_ID_MASK(id) ) {
+        return nullptr;
+    }
+    return graph->findComponent( (((ComponentId_t)nextSubID) << COMPONENT_ID_BITS) | COMPONENT_ID_MASK(id) );
+}
+
+
+std::string ConfigComponent::getFullName() const {
+    if ( id == COMPONENT_ID_MASK(id) ) {
+        // We are a component
+        return name;
+    }
+
+    // Get full name of parent
+    std::string parent_name = getParent()->getFullName();
+
+    // For ConfigComponent, we will always put in [] for the slot number.
+    return parent_name + ":" + name + "[" + std::to_string(slot_num) + "]";
+}
 
 
 void ConfigComponent::setRank(RankInfo r)
@@ -322,8 +342,10 @@ ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::
             return nullptr;
     }
 
+    uint16_t parent_sub_id = SUBCOMPONENT_ID_MASK(id);
+
     subComponents.emplace_back(
-        ConfigComponent(sid, graph, name, slot_num, type, this->weight, this->rank));
+        ConfigComponent(sid, graph, parent_sub_id, name, slot_num, type, this->weight, this->rank));
 
     return &(subComponents.back());
 }
