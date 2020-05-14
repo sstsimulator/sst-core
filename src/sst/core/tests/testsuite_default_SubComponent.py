@@ -2,17 +2,38 @@
 
 import os
 import sys
-import filecmp
 
 from sst_unittest import *
 from sst_unittest_support import *
 
 ################################################################################
+# Code to support a single instance module initialize, must be called setUp method  
+
+module_init = 0
+module_sema = threading.Semaphore()
+
+def initializeTestModule_SingleInstance(class_inst):
+    global module_init
+    global module_sema
+    
+    module_sema.acquire()
+    if module_init != 1:
+        # Put your single instance Init Code Here
+        module_init = 1
+    module_sema.release()
+    
+################################################################################
 
 class testcase_SubComponent(SSTTestCase):
 
+    def initializeClass(self, testName):
+        super(type(self), self).initializeClass(testName)
+        # Put test based setup code here. it is called before testing starts
+        # NOTE: This method is called once for every test
+        
     def setUp(self):
         super(type(self), self).setUp()
+        initializeTestModule_SingleInstance(self)
         # Put test based setup code here. it is called once before every test
 
     def tearDown(self):

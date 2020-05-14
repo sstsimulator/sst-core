@@ -18,6 +18,7 @@
 import sys
 import os
 import unittest
+import threading
 
 import test_engine_globals
 from sst_unittest_support import *
@@ -44,7 +45,17 @@ class SSTTestCase(unittest.TestCase):
         #       setUpModules(), setUpClass(), setUp() and the like are called.
         super(SSTTestCase, self).__init__(methodName)
         self.testName = methodName
+        parent_module_path = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
+        self._testsuite_dirpath = parent_module_path
         #log_forced("SSTTestCase: __init__() - {0}".format(self.testName))
+        self.initializeClass(self.testName)
+
+###
+
+    def initializeClass(self, testName):
+        # Placeholder method for overridden method in derived class
+        #log_forced("\nSSTTestCase: initializeClass() - {0}".format(testName))
+        pass
 
 ###
 
@@ -56,14 +67,12 @@ class SSTTestCase(unittest.TestCase):
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             test_engine_globals.TESTRUN_TESTRUNNINGFLAG = True
 
-        parent_module_path = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
-        self._testsuite_dirpath = parent_module_path
-
         # TESTRUN_SINGTHREAD_TESTSUITE_NAME is used for non-concurrent
         # (ie single thread) runs
         test_engine_globals.TESTRUN_SINGTHREAD_TESTSUITE_NAME = self.get_testsuite_name()
 
 ###
+
     def tearDown(self):
         """ (Single Thread Testing) - Called immediately after a test finishes
             (Concurrent Thread Testing) - Called immediately after a test finishes
