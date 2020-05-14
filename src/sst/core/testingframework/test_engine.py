@@ -448,17 +448,19 @@ class TestEngine():
                         testsuite_pattern = 'testsuite_*.py'
                         sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
                                                                         pattern=testsuite_pattern)
+                        self._sst_full_test_suite.addTests(sst_testsuites)
                     else:
                         for testsuite_type in self._testsuite_types_list:
                             testsuite_pattern = 'testsuite_{0}_*.py'.format(testsuite_type)
                             sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
                                                                             pattern=testsuite_pattern)
+                            self._sst_full_test_suite.addTests(sst_testsuites)
                 else:
                     for testsuite_wcname in self._testsuite_wildcards_list:
                         testsuite_pattern = 'testsuite_{0}.py'.format(testsuite_wcname)
                         sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
                                                                         pattern=testsuite_pattern)
-                self._sst_full_test_suite.addTests(sst_testsuites)
+                        self._sst_full_test_suite.addTests(sst_testsuites)
 
 
             if os.path.isfile(testsuite_path):
