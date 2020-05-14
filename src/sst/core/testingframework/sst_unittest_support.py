@@ -20,6 +20,7 @@ import os
 import unittest
 import platform
 import re
+import time
 import multiprocessing
 
 # ConfigParser module changes name between Py2->Py3
@@ -536,6 +537,61 @@ def os_cat(filepath):
     cmd = "cat {0}".format(filepath)
     rtn = OSCommand(cmd).run()
     log("{0}".format(rtn.output()))
+
+def os_file_symlink(srcdir, destdir, filename):
+    """ Create a simlink of a file """
+    srcfilepath = "{0}/{1}".format(srcdir, filename)
+    dstfilepath = "{0}/{1}".format(destdir, filename)
+    os.symlink(srcfilepath, dstfilepath)
+
+def os_dir_symlink(srcdir, destdir):
+    """ Create a simlink of a directory """
+    os.symlink(srcdir, destdir)
+
+def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams=""):
+    """ wget Download a file with retries
+        :return: True on success
+    """
+    rtn = False
+
+    # Make sure target dir exists, and cd into it
+    if not os.path.isdir(targetdir):
+        log_error("Download directory {0} does not exist".format(targetdir))
+        return false
+
+    savedir = os.getcwd()
+    os.chdir(targetdir)
+
+    wgetoutfile = "{0}/wget.out".format(get_test_output_tmp_dir())
+
+    log_debug("Downloading file via wget: {0}".format(fileurl))
+    cmd = "wget {0} --no-check-certificate {1} > {2} 2>&1".format(fileurl, wgetparams, wgetoutfile)
+    attemptnum = 1
+    while attemptnum <= num_tries:
+        log_debug("Attempt#{0}; cmd={1}".format(attemptnum, cmd))
+        rtn_value = os.system(cmd)
+        if rtn_value == 0:
+            rtn = True
+            attemptnum = num_tries + 1
+            continue
+        log_debug("wget rtn: {0}".format(rtn_value))
+        if os.path.isfile(wgetoutfile):
+            with open(wgetoutfile, "rb") as wgetfile:
+                 wgetoutput = "".join(wgetfile.readlines()[1:])
+
+            log_debug("wget output:\n{0}".format(wgetoutput))
+        else:
+            log_debug("wget output: NOT FOUND")
+        log_debug("Download Failed, waiting {0} seconds and trying again...".format(secsbetweentries))
+        attemptnum = attemptnum + 1
+        time.sleep(secsbetweentries)
+
+    if rtn == False:
+        log_error("Failed to download via wget {0}".format(fileurl))
+
+    # Restore the saved dir and return the results
+    os.chdir(savedir)
+    return rtn
 
 ################################################################################
 ### Platform Specific Support Functions
