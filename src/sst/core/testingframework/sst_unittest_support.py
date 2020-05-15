@@ -492,10 +492,6 @@ def compare_diff(outfile, reffile, ignore_ws=False):
        :return: True if the 2 files match
    """
    # Use diff (ignore whitespace) to see if the sorted files are the same
-   print("AARON OUTFILE = {0}".format(outfile))
-   print("AARON REFFILE = {0}".format(reffile))
-
-
    if not os.path.isfile(outfile):
        log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
        return False
