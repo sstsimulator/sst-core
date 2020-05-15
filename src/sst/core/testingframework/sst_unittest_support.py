@@ -484,12 +484,52 @@ def get_test_output_tmp_dir():
 ### Testing Support
 ################################################################################
 
-def compare_sorted(test_name, outfile, reffile):
+def compare_diff(outfile, reffile, ignore_ws=False):
+   """ compare 2 files for a diff
+       :param: outfile (str) Path to the output file
+       :param: reffile (str) Path to the reference file
+       :param: ignore_ws (bool) Path to the reference file
+       :return: True if the 2 files match
+   """
+   # Use diff (ignore whitespace) to see if the sorted files are the same
+   print("AARON OUTFILE = {0}".format(outfile))
+   print("AARON REFFILE = {0}".format(reffile))
+
+
+   if not os.path.isfile(outfile):
+       log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
+       return False
+
+   if not os.path.isfile(reffile):
+       log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
+       return False
+
+   ws_flag = ""
+   if ignore_ws == True:
+       ws_flag = "-b "
+
+   cmd = "diff {0}{0} {1} > /dev/null 2>&1".format(ignore_ws, outfile, reffile)
+   filesAreTheSame = (os.system(cmd) == 0)
+
+   return filesAreTheSame
+
+###
+
+def compare_sorted_diff(test_name, outfile, reffile):
    """ Sort a output file along with a reference file and compare them
+       :param: test_name (str) Name to prefix the sorted files
        :param: outfile (str) Path to the output file
        :param: reffile (str) Path to the reference file
        :return: True if the 2 sorted file match
    """
+   if not os.path.isfile(outfile):
+       log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
+       return False
+
+   if not os.path.isfile(reffile):
+       log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
+       return False
+
    sorted_outfile = "{1}/{0}_sorted_outfile".format(test_name, get_test_output_tmp_dir())
    sorted_reffile = "{1}/{0}_sorted_reffile".format(test_name, get_test_output_tmp_dir())
    diff_sorted_file = "{1}/{0}_diff_sorted".format(test_name, get_test_output_tmp_dir())
