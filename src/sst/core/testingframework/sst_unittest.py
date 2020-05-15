@@ -120,7 +120,9 @@ class SSTTestCase(unittest.TestCase):
         """
         return self._testsuite_dirpath
 
-###
+################################################################################
+### Method to run an SST simulation
+################################################################################
 
     def run_sst(self, sdl_file, out_file, err_file=None, set_cwd=None, mpi_out_files="",
                other_args="", num_ranks=None, num_threads=None, global_args=None,

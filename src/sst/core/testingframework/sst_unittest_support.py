@@ -11,8 +11,8 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
-""" This module provides the basic UnitTest class for the test system, along
-    with a large number of support functions that tests can call
+""" This module provides the a large number of support functions
+    that tests can call
 """
 
 import sys
@@ -22,6 +22,7 @@ import platform
 import re
 import time
 import multiprocessing
+import tarfile
 
 # ConfigParser module changes name between Py2->Py3
 try:
@@ -67,6 +68,14 @@ def is_testing_in_debug_mode():
 
 ###
 
+def is_testing_in_concurrent_mode():
+    """ Identify if test engine is in debug mode
+       :return: True if in debug mode
+    """
+    return test_engine_globals.TESTENGINE_CONCURRENTMODE
+
+###
+
 def get_testing_num_ranks():
     """ Get the number of ranks defined to be run during the testing
        :return: The number of requested run ranks
@@ -86,11 +95,11 @@ def get_testing_num_threads():
 ################################################################################
 
 def is_py_2():
+    """ Return True if running in Python Version 2"""
     return PY2
 
-###
-
 def is_py_3():
+    """ Return True if running in Python Version 3"""
     return PY3
 
 ###
@@ -165,6 +174,13 @@ def is_host_os_toss():
 def is_host_os_ubuntu():
     """ Returns true if the os distribution is Ubuntu"""
     return get_host_os_distribution_type() == OS_DIST_UBUNTU
+
+###
+
+def get_num_cores_on_system():
+    """ Figure out how many cores exist on the system"""
+    num_cores = multiprocessing.cpu_count()
+    return num_cores
 
 ################################################################################
 # SST Skipping Support
@@ -593,16 +609,27 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
     os.chdir(savedir)
     return rtn
 
+def os_extract_tar(tarfilepath, targetdir = "."):
+    """ Untar a file
+        :return: True on success
+    """
+    if not os.path.isfile(tarfilepath):
+        errmsg = "tar file{0} does not exist".format(tarfilepath)
+        log_error(errmsg)
+        return False
+    try:
+        this_tar = tarfile.open(tarfilepath)
+        this_tar.extractall(targetdir)
+        this_tar.close()
+        return True
+    except tarfile.TarError as exc_e:
+        errmsg = "Failed to untar file {0} - {1}".format(tarfilepath, exc_e)
+        log_error(errmsg)
+        return False
+
 ################################################################################
 ### Platform Specific Support Functions
 ################################################################################
-
-def get_num_cores_on_system():
-    """ Figure out how many cores exist on the system"""
-    num_cores = multiprocessing.cpu_count()
-    return num_cores
-
-###
 
 def _get_linux_distribution():
     """ Return the linux distribution info as a tuple"""
