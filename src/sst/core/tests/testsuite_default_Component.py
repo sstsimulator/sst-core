@@ -55,6 +55,6 @@ class testcase_Component(SSTTestCase):
         self.run_sst(sdlfile, outfile)
 
         # Perform the test
-        cmp_result = compare_sorted(testtype, outfile, reffile)
+        cmp_result = compare_sorted_diff(testtype, outfile, reffile)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
 
