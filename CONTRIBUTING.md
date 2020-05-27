@@ -101,27 +101,29 @@ once you are done with the feature and would like to get changes to the official
    * **CRITICAL: ENSURE THAT PULL REQUEST IS TARGETED TO THE `sst-core/devel` BRANCH.**
    * Ensure the Pull Request description clearly describes the problem and solution. Include the relevant issue number if applicable.
    *  **DO NOT ATTEMPT TO MERGE THE `issue-fix` branch, it will be merged automatically if it passes tests.**
+   *  **DO NOT DELETE THE `issue-fix` branch, until it is merged.**
 * The AutoTester tool will run and perform testing and merge the Pull Request as described below.
 
 ---
 
 #### **New Feature**
 
-* Create a `new-feature` branch on GitHub derived from the **devel** branch  
+* Create a `new-feature` branch on your forked repo derived from the **sst-core/devel** branch  
 * Make all required changes to correct the issue. All the changes must be commited to the `new-feature` branch.
 * Open a new GitHub pull request from the `new-feature` branch to the **sst-core/devel** branch.
    * **CRITICAL: ENSURE THAT PULL REQUEST IS TARGETED TO THE `sst-core/devel` BRANCH.**
    * Ensure the Pull Request description clearly describes the new feature, and any relevant information.
    *  **DO NOT ATTEMPT TO MERGE THE `new-feature` branch, it will be merged automatically.**
+   *  **DO NOT DELETE THE `new-feature` branch, until it is merged.**
 * The AutoTester tool will run and perform testing and merge the Pull Request as described below.
 
 ---
 
-#### **SST AutoTester**
+#### **SST AutoTester (CI Testing)**
 
 * When a Pull Request is created against the **sst-core/devel** branch, the SST AutoTester application will automatically run (usually within 30 minutes) and will build and test the source branch of the Pull Request.  
    * Testing is performed across a number of different platforms
-   * If the test suites pass, then the Pull Request will be setup for manual merging by SST-Core admin staff.
+   * If the test suites pass, then the Pull Request will be setup for manual merging by SST-Core staff.
    * The testing is not all inclusive, it is possible for a bug related to a specific platform to slip in.  See Nightly Testing below.
 
 ---
