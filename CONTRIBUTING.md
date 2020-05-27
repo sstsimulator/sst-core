@@ -51,7 +51,7 @@ Your fork will not automatically get updates from the official repo but you will
 ```
 git remote add sst-official https://github.com/sstsimulator/sst-core
 git pull --all
-git branch devel            __(you can ignore "already exists" errors if they occur)__
+git branch devel            (you can ignore "already exists" errors if they occur)
 git branch devel --set-upstream-to sst-official/devel
 ```
 You can verify that things are setup correctly
