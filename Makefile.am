@@ -2,6 +2,7 @@
 ACLOCAL_AMFLAGS = -I config
 
 SUBDIRS = \
+	share \
 	src \
 	doc
 
