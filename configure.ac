@@ -172,6 +172,8 @@ AC_CONFIG_FILES([
   Makefile
   doc/Makefile
   doc/Doxyfile
+  share/Makefile
+  share/SSTConfig.cmake
   src/sst/sstsimulator.conf:src/sst/sst.conf
   src/Makefile
   src/sst/Makefile
