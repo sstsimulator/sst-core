@@ -20,13 +20,12 @@ Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-cor
    * A **title and clear description** 
    * As much relevant information as possible
    * A **code sample** or an **executable test case** demonstrating the expected behavior that is not occurring.
-   * On the right side of the issue entry form, set the **Labels**, **Milestone** and **Assignee** as appropriate.
-
+   
 ---
 
 #### **Forked Development**
 
-* To contribute code to the sst-core repo, you must create a fork of the repo and setup for forked development.
+To contribute code to the sst-core repo, you must create a fork of the repo and setup for forked development.
 
 ##### Creating a Fork
 A fork is simply a personal copy of the repo on github for example the official sst-core repo is located here:
@@ -58,10 +57,10 @@ You can verify that things are setup correctly
 
 ```
 git remote -vv
-origin	   https://github.com/fryeguy52/sst-core (fetch)
-origin	   https://github.com/fryeguy52/sst-core (push)
-sst-official					 https://github.com/sstsimulator/sst-core.git (fetch)
-sst-official					 https://github.com/sstsimulator/sst-core.git (push)
+origin       https://github.com/fryeguy52/sst-core (fetch)
+origin       https://github.com/fryeguy52/sst-core (push)
+sst-official https://github.com/sstsimulator/sst-core.git (fetch)
+sst-official https://github.com/sstsimulator/sst-core.git (push)
 
 git branch -vv
   devel  be1b790 [sst-official/devel: ahead 82, behind 61] Merge pull request #496 from sstsimulator/devel
@@ -118,7 +117,7 @@ git fetch --all --prune
 * Open a new GitHub pull request from the `issue-fix` branch to the **sst-core/devel** branch.
    * **CRITICAL: ENSURE THAT PULL REQUEST IS TARGETED TO THE `sst-core/devel` BRANCH.**
    * Ensure the Pull Request description clearly describes the problem and solution. Include the relevant issue number if applicable.
-   *  **DO NOT ATTEMPT TO MERGE THE `issue-fix` branch, it will be merged automatically if it passes tests.**
+   *  **DO NOT ATTEMPT TO MERGE THE `issue-fix` branch, it will be merged via the normal workflow process.**
    *  **DO NOT DELETE THE `issue-fix` branch, until it is merged.**
 * The AutoTester tool will run and perform testing and merge the Pull Request as described below.
 
@@ -131,7 +130,7 @@ git fetch --all --prune
 * Open a new GitHub pull request from the `new-feature` branch to the **sst-core/devel** branch.
    * **CRITICAL: ENSURE THAT PULL REQUEST IS TARGETED TO THE `sst-core/devel` BRANCH.**
    * Ensure the Pull Request description clearly describes the new feature, and any relevant information.
-   *  **DO NOT ATTEMPT TO MERGE THE `new-feature` branch, it will be merged automatically.**
+   *  **DO NOT ATTEMPT TO MERGE THE `new-feature` branch, it will be merged via the normal workflow process.**
    *  **DO NOT DELETE THE `new-feature` branch, until it is merged.**
 * The AutoTester tool will run and perform testing and merge the Pull Request as described below.
 
