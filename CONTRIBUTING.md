@@ -49,9 +49,9 @@ git clone https://github.com/fryeguy52/sst-core
 Your fork will not automatically get updates from the official repo but you will want to regularly get those updates, especially as you are starting a new branch. The easiest way to do this is to tell the `devel` branch in your local repo to track the `devel` branch on the official repo. First create a new remote, then point the devel branch to that remote.
 
 ```
+git checkout devel
 git remote add sst-official https://github.com/sstsimulator/sst-core
 git pull --all
-git branch devel            (you can ignore "already exists" errors if they occur)
 git branch devel --set-upstream-to sst-official/devel
 ```
 You can verify that things are setup correctly
