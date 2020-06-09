@@ -67,7 +67,7 @@ git branch -vv
   devel  be1b790 [sst-official/devel: ahead 82, behind 61] Merge pull request #496 from sstsimulator/devel
 * master be1b790 [origin/master] Merge pull request #496 from sstsimulator/devel
 ```
-you should see that the `sst-official` is pointing to the official repo and that the `devel` branch in you local repo is pointing to `sst-officiall/devel`. Now all you need to do to get updates from the official sst-core repo devel branch is:
+you should see that the `sst-official` is pointing to the official repo and that the `devel` branch in you local repo is pointing to `sst-official/devel`. Now all you need to do to get updates from the official sst-core repo devel branch is:
 
 ```
 git checkout devel
@@ -81,6 +81,7 @@ Once a local clone has more than 1 remote (origin and sst-official in this case)
 
 ```
 git checkout devel
+git pull
 git checkout -b my-new-feature-branch
 git push --set-upstream origin my-new-feature-branch
 <making changes ...>
@@ -90,6 +91,23 @@ git push
 ```
 
 once you are done with the feature and would like to get changes to the official repo, you will do that with a pull request from the branch on your fork to the `devel` branch on the official repo. This is done through the github UI.
+
+
+##### More cleanup of local forked repo (optional)
+You can also set your `master` branch to get updates from the official repo.
+
+```
+git checkout master
+git branch master --set-upstream-to sst-official/master
+git pull
+```
+
+If you desire to keep up to syncronized with the branches of the official repo, you can occasionally fetch with prune to clear out any remote-tracking references
+
+```
+git checkout devel
+git fetch --all --prune
+```
 
 ---
 
