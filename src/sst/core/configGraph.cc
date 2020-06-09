@@ -460,12 +460,11 @@ ConfigGraph::postCreationCleanup()
 }
 
 
+// Checks for errors that can't be easily detected during the build
+// process
 bool
 ConfigGraph::checkForStructuralErrors()
 {
-    // Output object for error messages
-    Output &output = Output::getDefaultObject();
-
     // Check to make sure there are no dangling links.  A dangling
     // link is found by looking though the links in the graph and
     // making sure there are components on both sides of the link.
@@ -488,33 +487,9 @@ ConfigGraph::checkForStructuralErrors()
         }
     }
 
-    // Check to make sure all the component names are unique.  This
-    // could be memory intensive for large graphs because we will
-    // simply put things in a set and check to see if there are
-    // duplicates.
-    std::set<std::string> name_set;
-    int count = 10;
-    for ( ConfigComponentMap_t::iterator iter = comps.begin();
-          iter != comps.end(); ++iter )
-    {
-        ConfigComponent* ccomp = &(*iter);
-        if ( name_set.find(ccomp->name) == name_set.end() ) {
-            name_set.insert(ccomp->name);
-        }
-        else {
-            found_error = true;
-            output.output("WARNING:  Found duplicate component name: %s\n",ccomp->name.c_str());
-            count--;
-            if ( count == 0 ) {
-                output.output("Maximum name clashes reached, no more checks will be made.\n");
-                break;
-            }
-        }
-    }
 
-#if 1
     // Check to see if all the port names are valid
-    count = 10;
+    int count = 10;
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
           iter != comps.end(); ++iter )
     {
@@ -541,38 +516,34 @@ ConfigGraph::checkForStructuralErrors()
             output.output("Maximum bad port names reached, no more checks will be made.\n");
             break;
         }
-
-        // if ( name_set.find(ccomp->name) == name_set.end() ) {
-        //     name_set.insert(ccomp->name);
-        // }
-        // else {
-        //     found_error = true;
-        //     output.output("Found duplicate component name: %s\n",ccomp->name.c_str());
-        //     count--;
-        //     if ( count == 0 ) {
-        //         output.output("Maximum name clashes reached, no more checks will be made.\n");
-        //         break;
-        //     }
-        // }
     }
-#endif
 
     return found_error;
 }
 
 
 ComponentId_t
-ConfigGraph::addComponent(ComponentId_t id, const std::string& name, const std::string& type, float weight, RankInfo rank)
+ConfigGraph::addComponent(const std::string& name, const std::string& type, float weight, RankInfo rank)
 {
-    comps.push_back(ConfigComponent(id, this, name, type, weight, rank));
-    return id;
+    if ( compsByName.find(name) != compsByName.end() ) {
+        output.fatal(CALL_INFO,1,"ERROR: trying to add Component with name that already exists: %s\n",name.c_str());
+    }
+    ComponentId_t cid = nextComponentId++;
+    comps.push_back(ConfigComponent(cid, this, name, type, weight, rank));
+    compsByName[name] = &comps[cid];
+    return cid;
 }
 
 ComponentId_t
-ConfigGraph::addComponent(ComponentId_t id, const std::string& name, const std::string& type)
+ConfigGraph::addComponent(const std::string& name, const std::string& type)
 {
-    comps.push_back(ConfigComponent(id, this, name, type, 1.0f, RankInfo()));
-    return id;
+    if ( compsByName.find(name) != compsByName.end() ) {
+        output.fatal(CALL_INFO,1,"ERROR: trying to add Component with name that already exists: %s\n",name.c_str());
+    }
+    ComponentId_t cid = nextComponentId++;
+    comps.push_back(ConfigComponent(cid, this, name, type, 1.0f, RankInfo()));
+    compsByName[name] = &comps[cid];
+    return cid;
 }
 
 
@@ -708,6 +679,20 @@ ConfigGraph::addStatisticParameterForComponentType(const std::string& ComponentT
 void
 ConfigGraph::addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port, const std::string& latency_str, bool no_cut)
 {
+    // Make sure the port hasn't already been connected
+    const std::vector<LinkId_t>& comp_links = findComponent(comp_id)->links;
+    for ( auto x : comp_links ) {
+        const ConfigLink &link = links[x];
+        if ( ( link.component[0] == comp_id && link.port[0] == port ) ||
+             ( link.component[1] == comp_id && link.port[1] == port ) ) {
+#ifndef SST_ENABLE_PREVIEW_BUILD
+            output.output("Warning: Parsing SDL file: Port %s of Component %s is already connected to link %s, trying to connect to link %s (this will become a fatal error in SST 11)\n",port.c_str(),findComponent(comp_id)->name.c_str(),link.name.c_str(),link_name.c_str());
+#else
+            output.fatal(CALL_INFO,1,"ERROR: Parsing SDL file: Port %s of Component %s is already connected to link %s, trying to connect to link %s.\n",port.c_str(),findComponent(comp_id)->name.c_str(),link.name.c_str(),link_name.c_str());
+#endif
+        }
+    }
+
     if ( link_names.find(link_name) == link_names.end() ) {
         LinkId_t id = links.size();
         link_names[link_name] = id;
@@ -715,8 +700,7 @@ ConfigGraph::addLink(ComponentId_t comp_id, const std::string& link_name, const 
     }
     ConfigLink &link = links[link_names[link_name]];
     if ( link.current_ref >= 2 ) {
-        cout << "ERROR: Parsing SDL file: Link " << link_name << " referenced more than two times" << endl;
-        exit(1);
+        output.fatal(CALL_INFO,1,"ERROR: Parsing SDL file: Link %s referenced more than two times\n",link_name.c_str());
     }
 
     // Convert the latency string to a number
@@ -755,6 +739,7 @@ ConfigComponent* ConfigGraph::findComponent(ComponentId_t id)
     return const_cast<ConfigComponent*>(const_cast<const ConfigGraph*>(this)->findComponent(id));
 }
 
+
 const ConfigComponent* ConfigGraph::findComponent(ComponentId_t id) const
 {
     /* Check to make sure we're part of the same component */
@@ -765,6 +750,25 @@ const ConfigComponent* ConfigGraph::findComponent(ComponentId_t id) const
     return comps[COMPONENT_ID_MASK(id)].findSubComponent(id);
 }
 
+ConfigComponent* ConfigGraph::findComponentByName(const std::string& name) {
+    std::string origname(name);
+    auto index = origname.find(":");
+    std::string compname = origname.substr(0,index);
+    auto itr = compsByName.find(compname);
+
+    // Check to see if component was found
+    if ( itr == compsByName.end() ) return nullptr;
+
+    ConfigComponent* cc = compsByName[compname];
+
+    // If this was just a component name
+    if ( index == std::string::npos ) return cc;
+
+    // See if this is a valid subcomponent name
+    cc = cc->findSubComponentByName(origname.substr(index+1,std::string::npos));
+    if ( cc ) return cc;
+    return nullptr;
+}
 
 ConfigGraph*
 ConfigGraph::getSubGraph(uint32_t start_rank, uint32_t end_rank)
