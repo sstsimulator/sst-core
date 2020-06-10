@@ -76,7 +76,7 @@ git pull
 Now you can branch from `devel` to create new features and when you push those feature branches they will push to your fork. When you pull devel, it will get updates from the official sst repo
 
 ##### Feature branches
-Once a local clone has more than 1 remote (origin and sst-official in this case) you will need to tell git which remote to track for a new branch.  this requires one additional step when pushing a branch for the first time.  I personally like to push the branch right after I create it like shown below.
+Once a local clone has more than 1 remote (origin and sst-official in this case) you will need to tell git which remote to track for a new branch.  This requires one additional step when pushing a branch for the first time.  I personally like to push the branch right after I create it like shown below.
 
 ```
 git checkout devel
