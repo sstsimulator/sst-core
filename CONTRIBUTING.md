@@ -19,7 +19,7 @@ Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-cor
 * If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/sstsimulator/sst-core/issues/new). Be sure to include: 
    * A **title and clear description** 
    * As much relevant information as possible
-   * A **code sample** or an **executable test case** demonstrating the expected behavior that is not occurring.
+   * A **code sample** or an **executable test case** demonstrating the unexpected behavior.
    
 ---
 
@@ -112,7 +112,7 @@ git fetch --all --prune
 
 #### **Patches to existing code to fix an issue**
 
-* Create a `issue-fix` branch on your forked repo derived from the **devel** branch  
+* Create a `issue-fix` branch on your forked repo derived from the **sst-core/devel** branch  
 * Make all required changes to correct the issue. All the changes must be commited to the `issue-fix` branch.
 * Open a new GitHub pull request from the `issue-fix` branch to the **sst-core/devel** branch.
    * **CRITICAL: ENSURE THAT PULL REQUEST IS TARGETED TO THE `sst-core/devel` BRANCH.**
@@ -126,7 +126,7 @@ git fetch --all --prune
 #### **New Feature**
 
 * Create a `new-feature` branch on your forked repo derived from the **sst-core/devel** branch  
-* Make all required changes to correct the issue. All the changes must be commited to the `new-feature` branch.
+* Make all required changes to implement the new feature(s). All the changes must be commited to the `new-feature` branch.
 * Open a new GitHub pull request from the `new-feature` branch to the **sst-core/devel** branch.
    * **CRITICAL: ENSURE THAT PULL REQUEST IS TARGETED TO THE `sst-core/devel` BRANCH.**
    * Ensure the Pull Request description clearly describes the new feature, and any relevant information.
