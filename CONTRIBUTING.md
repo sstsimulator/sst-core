@@ -101,7 +101,7 @@ git branch master --set-upstream-to sst-official/master
 git pull
 ```
 
-If you desire to keep syncronized with the branches of the official repo, you can occasionally fetch with prune to clear out any remote-tracking references
+If you desire to keep synchronized with the branches of the official repo, you can occasionally fetch with prune to clear out any remote-tracking references
 
 ```
 git checkout devel
