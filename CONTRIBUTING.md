@@ -8,7 +8,8 @@
       * **devel** - Contains the latest offical codeset of SST-Core.  **This branch is unstable and may be broken at any time.**
       * **master** - Contains the latest fully tested stable version of SST-Core.
 
-Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-core).
+* Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-core).
+* Questions can be sent to wg-sst@sandia.gov
 
 ---
 
