@@ -263,6 +263,10 @@ public:
 private:
 
     friend class ConfigGraph;
+    /** Checks to make sure port names are valid and that a port isn't used twice
+     */
+    void checkPorts() const;
+
     /** Create a new Component */
     ConfigComponent(ComponentId_t id, ConfigGraph* graph, const std::string& name, const std::string& type, float weight, RankInfo rank) :
         id(id),
@@ -302,7 +306,7 @@ private:
 /** Map IDs to Components */
 typedef SparseVectorMap<ComponentId_t,ConfigComponent> ConfigComponentMap_t;
 /** Map names to Components */
-typedef std::map<std::string,ConfigComponent*> ConfigComponentNameMap_t;
+typedef std::map<std::string,ComponentId_t> ConfigComponentNameMap_t;
 /** Map names to Parameter Sets: XML only */
 typedef std::map<std::string,Params*> ParamsMap_t;
 /** Map names to variable values:  XML only */

@@ -414,6 +414,50 @@ std::vector<LinkId_t> ConfigComponent::allLinks() const {
 }
 
 void
+ConfigComponent::checkPorts() const
+{
+    std::map<std::string,std::string> ports;
+
+    auto& graph_links = graph->getLinkMap();
+
+    // Loop over all the links
+    for ( unsigned int i = 0; i < links.size(); i++ ) {
+        const ConfigLink& link = graph_links[links[i]];
+        for ( int j = 0; j < 2; j++ ) {
+
+            if ( link.component[j] == id ) {
+                // If port is not found, print an error
+                if (!Factory::getFactory()->isPortNameValid(type, link.port[j]) ) {
+                    // For now this is not a fatal error
+                    // found_error = true;
+                    Output::getDefaultObject().fatal(CALL_INFO, 1, "ERROR:  Attempting to connect to unknown port: %s, "
+                                 "in component %s of type %s.\n",
+                                 link.port[j].c_str(), name.c_str(), type.c_str());
+                }
+
+                // Check for multiple links hooked to port
+                auto ret = ports.insert(std::make_pair(link.port[j],link.name));
+                if ( !ret.second ) {
+#ifndef SST_ENABLE_PREVIEW_BUILD
+                    Output::getDefaultObject().output("Warning: Port %s of Component %s connected to two links: %s, %s (this will become a fatal error in SST 11)\n",
+                                  link.port[j].c_str(),name.c_str(),link.name.c_str(),ret.first->second.c_str());
+
+#else
+                    Output::getDefaultObject().fatal(CALL_INFO,1,"ERROR: Port %s of Component %s connected to two links: %s, %s.\n",
+                                 link.port[j].c_str(),name.c_str(),link.name.c_str(),ret.first->second.c_str());
+#endif
+                }
+            }
+        }
+    }
+
+    // Now loop over all subcomponents and call the check function
+    for ( auto& subcomp : subComponents ) {
+        subcomp.checkPorts();
+    }
+}
+
+void
 ConfigGraph::setComponentRanks(RankInfo rank)
 {
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
@@ -468,6 +512,7 @@ ConfigGraph::checkForStructuralErrors()
     // Check to make sure there are no dangling links.  A dangling
     // link is found by looking though the links in the graph and
     // making sure there are components on both sides of the link.
+
     bool found_error = false;
     for( ConfigLinkMap_t::iterator iter = links.begin();
          iter != links.end(); ++iter )
@@ -488,34 +533,15 @@ ConfigGraph::checkForStructuralErrors()
     }
 
 
-    // Check to see if all the port names are valid
-    int count = 10;
+    // Check to see if all the port names are valid and they are only
+    // used once
+
+    // Loop over all the Components
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
           iter != comps.end(); ++iter )
     {
         ConfigComponent* ccomp = &(*iter);
-
-//        bool found = false;
-        for ( unsigned int i = 0; i < ccomp->links.size(); i++ ) {
-            for ( int j = 0; j < 2; j++ ) {
-                const ConfigLink& link = links[ccomp->links[i]];
-                if ( link.component[j] == ccomp->id ) {
-                    // If port is not found, print a warning
-                    if (!Factory::getFactory()->isPortNameValid(ccomp->type, link.port[j]) ) {
-                        // For now this is not a fatal error
-                        // found_error = true;
-                        output.fatal(CALL_INFO, 1, "ERROR:  Attempting to connect to unknown port: %s, "
-                                      "in component %s of type %s.\n",
-                                      link.port[j].c_str(), ccomp->name.c_str(), ccomp->type.c_str());
-                        count--;
-                    }
-                }
-            }
-        }
-        if ( count <= 0 ) {
-            output.output("Maximum bad port names reached, no more checks will be made.\n");
-            break;
-        }
+        ccomp->checkPorts();
     }
 
     return found_error;
@@ -525,24 +551,28 @@ ConfigGraph::checkForStructuralErrors()
 ComponentId_t
 ConfigGraph::addComponent(const std::string& name, const std::string& type, float weight, RankInfo rank)
 {
-    if ( compsByName.find(name) != compsByName.end() ) {
-        output.fatal(CALL_INFO,1,"ERROR: trying to add Component with name that already exists: %s\n",name.c_str());
-    }
     ComponentId_t cid = nextComponentId++;
     comps.push_back(ConfigComponent(cid, this, name, type, weight, rank));
-    compsByName[name] = &comps[cid];
+
+    auto ret = compsByName.insert(std::make_pair(name,cid));
+    // Check to see if the name has already been used
+    if ( !ret.second ) {
+        output.fatal(CALL_INFO,1,"ERROR: trying to add Component with name that already exists: %s\n",name.c_str());
+    }
     return cid;
 }
 
 ComponentId_t
 ConfigGraph::addComponent(const std::string& name, const std::string& type)
 {
-    if ( compsByName.find(name) != compsByName.end() ) {
-        output.fatal(CALL_INFO,1,"ERROR: trying to add Component with name that already exists: %s\n",name.c_str());
-    }
     ComponentId_t cid = nextComponentId++;
     comps.push_back(ConfigComponent(cid, this, name, type, 1.0f, RankInfo()));
-    compsByName[name] = &comps[cid];
+
+    auto ret = compsByName.insert(std::make_pair(name,cid));
+    // Check to see if the name has already been used
+    if ( !ret.second ) {
+        output.fatal(CALL_INFO,1,"ERROR: trying to add Component with name that already exists: %s\n",name.c_str());
+    }
     return cid;
 }
 
@@ -679,20 +709,6 @@ ConfigGraph::addStatisticParameterForComponentType(const std::string& ComponentT
 void
 ConfigGraph::addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port, const std::string& latency_str, bool no_cut)
 {
-    // Make sure the port hasn't already been connected
-    const std::vector<LinkId_t>& comp_links = findComponent(comp_id)->links;
-    for ( auto x : comp_links ) {
-        const ConfigLink &link = links[x];
-        if ( ( link.component[0] == comp_id && link.port[0] == port ) ||
-             ( link.component[1] == comp_id && link.port[1] == port ) ) {
-#ifndef SST_ENABLE_PREVIEW_BUILD
-            output.output("Warning: Parsing SDL file: Port %s of Component %s is already connected to link %s, trying to connect to link %s (this will become a fatal error in SST 11)\n",port.c_str(),findComponent(comp_id)->name.c_str(),link.name.c_str(),link_name.c_str());
-#else
-            output.fatal(CALL_INFO,1,"ERROR: Parsing SDL file: Port %s of Component %s is already connected to link %s, trying to connect to link %s.\n",port.c_str(),findComponent(comp_id)->name.c_str(),link.name.c_str(),link_name.c_str());
-#endif
-        }
-    }
-
     if ( link_names.find(link_name) == link_names.end() ) {
         LinkId_t id = links.size();
         link_names[link_name] = id;
@@ -759,7 +775,7 @@ ConfigComponent* ConfigGraph::findComponentByName(const std::string& name) {
     // Check to see if component was found
     if ( itr == compsByName.end() ) return nullptr;
 
-    ConfigComponent* cc = compsByName[compname];
+    ConfigComponent* cc = &comps[itr->second];
 
     // If this was just a component name
     if ( index == std::string::npos ) return cc;
