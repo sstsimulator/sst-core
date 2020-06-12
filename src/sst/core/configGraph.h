@@ -263,6 +263,10 @@ public:
 private:
 
     friend class ConfigGraph;
+    /** Checks to make sure port names are valid and that a port isn't used twice
+     */
+    void checkPorts() const;
+
     /** Create a new Component */
     ConfigComponent(ComponentId_t id, ConfigGraph* graph, const std::string& name, const std::string& type, float weight, RankInfo rank) :
         id(id),
@@ -302,7 +306,7 @@ private:
 /** Map IDs to Components */
 typedef SparseVectorMap<ComponentId_t,ConfigComponent> ConfigComponentMap_t;
 /** Map names to Components */
-// typedef std::map<std::string,ConfigComponent*> ConfigComponentNameMap_t;
+typedef std::map<std::string,ComponentId_t> ConfigComponentNameMap_t;
 /** Map names to Parameter Sets: XML only */
 typedef std::map<std::string,Params*> ParamsMap_t;
 /** Map names to variable values:  XML only */
@@ -323,7 +327,10 @@ public:
         }
     }
 
-    ConfigGraph() {
+    ConfigGraph() :
+        output(Output::getDefaultObject()),
+        nextComponentId(0)
+    {
         links.clear();
         comps.clear();
         // Init the statistic output settings
@@ -343,9 +350,9 @@ public:
 
     // API for programmatic initialization
     /** Create a new component with weight and rank */
-    ComponentId_t addComponent(ComponentId_t id, const std::string& name, const std::string& type, float weight, RankInfo rank);
+    ComponentId_t addComponent(const std::string& name, const std::string& type, float weight, RankInfo rank);
     /** Create a new component */
-    ComponentId_t addComponent(ComponentId_t id, const std::string& name, const std::string& type);
+    ComponentId_t addComponent(const std::string& name, const std::string& type);
 
 
     /** Set the statistic output module */
@@ -403,6 +410,7 @@ public:
 
     bool containsComponent(ComponentId_t id) const;
     ConfigComponent* findComponent(ComponentId_t);
+    ConfigComponent* findComponentByName(const std::string& name);
     const ConfigComponent* findComponent(ComponentId_t) const;
 
     /** Return the map of links */
@@ -431,12 +439,15 @@ private:
     friend class Simulation;
     friend class SSTSDLModelDefinition;
 
+    Output& output;
+
+    ComponentId_t nextComponentId;
+
     ConfigLinkMap_t      links;
     ConfigComponentMap_t comps;
-    // ConfigComponentNameMap_t compsByName;
+    ConfigComponentNameMap_t compsByName;
     std::map<std::string, ConfigStatGroup> statGroups;
 
-    // temporary as a test
     std::map<std::string,LinkId_t> link_names;
 
     std::vector<ConfigStatOutput> statOutputs; // [0] is default
