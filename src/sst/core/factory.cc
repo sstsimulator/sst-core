@@ -115,24 +115,25 @@ bool Factory::isPortNameValid(const std::string& type, const std::string& port_n
     auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
     std::stringstream err;
     if (lib) {
-      auto* compInfo = lib->getInfo(elem);
-      if (compInfo){
-        portNames = &compInfo->getPortnames();
-      }
-    } else {
-      auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-      if (lib){
-        auto* subcompInfo = lib->getInfo(elemlib);
-        if (subcompInfo){
-          portNames = &subcompInfo->getPortnames();
-        } else {
-          //this is going to fail
-          err << "Valid SubComponents: ";
-          for (auto& pair : lib->getMap()){
-            err << pair.first << "\n";
-          }
+        auto* compInfo = lib->getInfo(elem);
+        if (compInfo){
+            portNames = &compInfo->getPortnames();
         }
-      }
+    }
+    if ( nullptr == portNames ) {
+        auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+        if (lib){
+            auto* subcompInfo = lib->getInfo(elem);
+            if (subcompInfo){
+                portNames = &subcompInfo->getPortnames();
+            } else {
+                //this is going to fail
+                err << "Valid SubComponents: ";
+                for (auto& pair : lib->getMap()){
+                    err << pair.first << "\n";
+                }
+            }
+        }
     }
 
 

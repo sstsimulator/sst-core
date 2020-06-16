@@ -66,29 +66,12 @@ public:  /* Public, but private.  Called only from Python functions */
     ComponentId_t getNextComponentId() { return nextComponentId++; }
 
     ComponentId_t addComponent(const char *name, const char *type) {
-        ComponentId_t id = getNextComponentId();
-        graph->addComponent(id, name, type);
-        compNameMap[std::string(name)] = id;
+        auto id = graph->addComponent(name, type);
         return id;
     }
 
-    ComponentId_t findComponentByName(const char *name) const {
-        std::string origname(name);
-        auto index = origname.find(":");
-        std::string compname = origname.substr(0,index);
-        auto itr = compNameMap.find(compname);
-        
-        // Check to see if component was found
-        if ( itr == compNameMap.end() ) return UNSET_COMPONENT_ID;
-        
-        // If this was just a component name
-        if ( index == std::string::npos ) return itr->second;
-        
-        // See if this is a valid subcomponent name
-        ConfigComponent* cc = graph->findComponent(itr->second);
-        cc = cc->findSubComponentByName(origname.substr(index+1,std::string::npos));
-        if ( cc ) return cc->id;
-        return UNSET_COMPONENT_ID;
+    ConfigComponent* findComponentByName(const char *name) const {
+        return graph->findComponentByName(std::string(name));
     }
     
     void addLink(ComponentId_t id, const char *link_name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, link_name, port, latency, no_cut); }
