@@ -229,28 +229,28 @@ static PyObject* findComponentByName(PyObject* UNUSED(self), PyObject* args)
     int argOK = PyArg_ParseTuple(args, "s", &name);
 
     if ( argOK ) {
-        ComponentId_t id = gModel->findComponentByName(name);
+        ConfigComponent* cc = gModel->findComponentByName(name);
 
-        if ( id == UNSET_COMPONENT_ID ) {
+        if ( nullptr == cc) {
             Py_INCREF(Py_None);
-	    return Py_None;
-	}
+            return Py_None;
+        }
 
 
-        if ( SUBCOMPONENT_ID_MASK(id) == 0 ) {
+        if ( SUBCOMPONENT_ID_MASK(cc->id) == 0 ) {
             // Component
-            PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", id);
-	    PyObject *res = PyObject_CallObject((PyObject *) &PyModel_ComponentType, argList);
-	    Py_DECREF(argList);
-	    return res;
-	}
-	else {
+            PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", cc->id);
+            PyObject *res = PyObject_CallObject((PyObject *) &PyModel_ComponentType, argList);
+            Py_DECREF(argList);
+            return res;
+        }
+        else {
             // SubComponent
-            PyObject *argList = Py_BuildValue("Ok", Py_None, id);
-	    PyObject *res = PyObject_CallObject((PyObject *) &PyModel_SubComponentType, argList);
-	    Py_DECREF(argList);
-	    return res;
-	}
+            PyObject *argList = Py_BuildValue("Ok", Py_None, cc->id);
+            PyObject *res = PyObject_CallObject((PyObject *) &PyModel_SubComponentType, argList);
+            Py_DECREF(argList);
+            return res;
+        }
     }
     else {
         return nullptr;
@@ -561,13 +561,11 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
         auto params = generateStatisticParameters(statParamDict);
 
         // Get the component
-        ComponentId_t id = gModel->findComponentByName(compName);
-        if ( UNSET_COMPONENT_ID == id ) {
+        ConfigComponent* cc = gModel->findComponentByName(compName);
+        if ( nullptr == cc ) {
             gModel->getOutput()->fatal(CALL_INFO,1,"component name not found in call to enableStatisticsForComponentName(): %s\n",compName);
         }
 
-        ConfigComponent* c = gModel->getGraph()->findComponent(id);
-        
         // Figure out how many stats there are
         numStats = PyList_Size(statList);
 
@@ -575,11 +573,11 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
         for (uint32_t x = 0; x < numStats; x++) {
             PyObject* pylistitem = PyList_GetItem(statList, x);
             const char *name = PyUnicode_AsUTF8(pylistitem);
-            c->enableStatistic(name,apply_to_children);
+            cc->enableStatistic(name,apply_to_children);
 
             // Add the parameters
             for ( auto p : params ) {
-                c->addStatisticParameter(name, p.first, p.second, apply_to_children);
+                cc->addStatisticParameter(name, p.first, p.second, apply_to_children);
             }
 
         }        
@@ -707,14 +705,12 @@ static PyObject* setStatisticLoadLevelForComponentName(PyObject *UNUSED(self), P
 
     if (argOK) {
         // Get the component
-        ComponentId_t id = gModel->findComponentByName(compName);
-        if ( UNSET_COMPONENT_ID == id ) {
+        ConfigComponent* cc = gModel->findComponentByName(compName);
+        if ( nullptr == cc ) {
             gModel->getOutput()->fatal(CALL_INFO,1,"component name not found in call to setStatisticLoadLevelForComponentName(): %s\n",compName);
         }
 
-        ConfigComponent* c = gModel->getGraph()->findComponent(id);
-
-        c->setStatisticLoadLevel(level,apply_to_children);
+        cc->setStatisticLoadLevel(level,apply_to_children);
     }
     else {
         return nullptr;
