@@ -54,6 +54,12 @@ void ConfigLink::updateLatencies(TimeLord *timeLord)
     // }
 }
 
+void ConfigStatistic::addParameter(const std::string& key, const std::string& value, bool overwrite)
+{
+    bool bk = params.enableVerify(false);
+    params.insert(key, value, overwrite);
+    params.enableVerify(bk);
+}
 
 bool ConfigStatGroup::addComponent(ComponentId_t id)
 {
@@ -199,6 +205,22 @@ ComponentId_t ConfigComponent::getNextSubComponentID()
         return graph->findComponent(COMPONENT_ID_MASK(id))->getNextSubComponentID();
     }
 
+}
+
+StatisticId_t ConfigComponent::getNextStatisticID()
+{
+    // If we are the ultimate component, get nextStatID and increment
+    // for next time
+    if ( id == COMPONENT_ID_MASK(id) ) {
+        uint16_t statId = nextStatID;
+        nextStatID++;
+        return STATISTIC_ID_CREATE( id, statId );
+    }
+    else {
+        // Get the ultimate parent and call getNextStatisticID on
+        // it
+        return graph->findComponent(COMPONENT_ID_MASK(id))->getNextStatisticID();
+    }
 }
 
 ConfigComponent* ConfigComponent::getParent() const {
@@ -418,6 +440,69 @@ ConfigComponent* ConfigComponent::findSubComponentByName(const std::string& name
             }
         }
     }
+    return nullptr;
+}
+
+ConfigStatistic* ConfigComponent::addStatistic(StatisticId_t sid, const std::string& statisticName)
+{
+    // Check for Enable All Statistics
+    if (statisticName == STATALLFLAG) {
+        // Force the STATALLFLAG to always be on the bottom of the list.
+        // First check to see if anything is in the vector, if vector is empty,
+        // a STATALLFLAG flag will be added to the vector
+        if (false == enabledStatistics.empty()) {
+            // The vector is populated, so see if the STATALLFLAG
+            // already exists if it does, we are done
+            if (STATALLFLAG != enabledStatistics.back().name) {
+                // Add a STATALLFLAG to end of the vector
+                enabledStatistics.emplace_back(STATALLFLAG);
+                return &(enabledStatistics.back());
+            }
+        } else {
+            // Add a STATALLFLAG to end of the vector
+            enabledStatistics.emplace_back(STATALLFLAG);
+            return &(enabledStatistics.back());
+        }
+    } else {
+
+      /* Check for existing statistic with this name */
+      for ( auto &i : enabledStatistics ) {
+          if ( i.name == statisticName)
+          {
+              return nullptr;
+          }
+      }
+
+      enabledStatistics.emplace(enabledStatistics.begin(),
+          ConfigStatistic(sid, id, statisticName));
+
+
+      return &(enabledStatistics.front());
+    }
+
+    return nullptr;
+}
+
+ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
+{
+    // Check for the current component statistics
+    for ( const ConfigStatistic &s : enabledStatistics ) {
+        if ( s.id == sid ) {
+            ConfigStatistic* res = const_cast<ConfigStatistic*>(&s);
+            if ( res != nullptr ) {
+                return res;
+            }
+        }
+    }
+
+    // Check for the subComponents statistics
+    for ( auto &s : subComponents ) {
+        ConfigStatistic* res = s.findStatistic(sid);
+        if ( res != nullptr ) {
+            return res;
+        }
+    }
+
     return nullptr;
 }
 
@@ -816,6 +901,11 @@ ConfigComponent* ConfigGraph::findComponentByName(const std::string& name) {
     cc = cc->findSubComponentByName(origname.substr(index+1,std::string::npos));
     if ( cc ) return cc;
     return nullptr;
+}
+
+ConfigStatistic* ConfigGraph::findStatistic(StatisticId_t id) const
+{
+   return comps[COMPONENT_ID_MASK(id)].findStatistic(id);
 }
 
 ConfigGraph*

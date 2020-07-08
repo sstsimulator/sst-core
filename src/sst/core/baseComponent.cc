@@ -17,6 +17,7 @@
 #include <string>
 
 #include "sst/core/component.h"
+#include "sst/core/configGraph.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/factory.h"
