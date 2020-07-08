@@ -79,20 +79,9 @@ public:
       return Factory::getFactory()->Create<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
 
-    bool registerStatisticWithEngine(StatisticBase* stat, fieldType_t fieldType, uint8_t comp_stat_level)
+    bool registerStatisticWithEngine(StatisticBase* stat)
     {
-        bool ok;
-        if ((ok = registerStatisticCore(stat,comp_stat_level))) {
-            addStatisticToCompStatMap(stat, fieldType);
-        }
-        return ok;
-    }
-
-    StatisticBase* isStatisticRegisteredWithEngine(const std::string& compName, const ComponentId_t& compId,
-                                                   const std::string& statName, const std::string& statSubId,
-                                                   fieldType_t fieldId)
-    {
-      return isStatisticInCompStatMap(compName, compId, statName, statSubId, fieldId);
+        return registerStatisticCore(stat);
     }
 
     const std::vector<StatisticOutput*>& getStatOutputs() const { return m_statOutputs; }
@@ -110,7 +99,7 @@ private:
 
     StatisticOutput* createStatisticOutput(const ConfigStatOutput &cfg);
 
-    bool registerStatisticCore(StatisticBase* stat, uint8_t comp_stat_level);
+    bool registerStatisticCore(StatisticBase* stat);
 
     StatisticOutput* getOutputForStatistic(const StatisticBase *stat) const;
     StatisticGroup& getGroupForStatistic(const StatisticBase *stat) const;

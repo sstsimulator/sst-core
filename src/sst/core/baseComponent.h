@@ -57,7 +57,6 @@ class BaseComponent {
     friend class ComponentExtension;
 
 public:
-
     BaseComponent(ComponentId_t id);
     BaseComponent() {}
     virtual ~BaseComponent();
@@ -66,6 +65,9 @@ public:
 
     /** Returns unique component ID */
     inline ComponentId_t getId() const { return my_info->id; }
+
+    /** Returns Component Statistic load level */
+    inline uint8_t getStatisticLoadLevel() const { return my_info->statLoadLevel; }
 
     /** Called when SIGINT or SIGTERM has been seen.
      * Allows components opportunity to clean up external state.
@@ -259,7 +261,6 @@ protected:
     TimeConverter* getTimeConverterMicro() const;
     TimeConverter* getTimeConverterMilli() const;
 
-
     bool isStatisticShared(const std::string& statName, bool include_me = false) {
         if ( include_me ) {
             if ( doesComponentInfoStatisticExist(statName)) {
@@ -274,6 +275,37 @@ protected:
         }
     }
 
+
+    template <typename T>
+    Statistics::Statistic<T>* createStatistic(SST::Params& params, StatisticId_t id,
+                                              const std::string& name, const std::string& statSubId){
+      std::string type = configureStatParams(id, params);
+      auto* engine = Statistics::StatisticProcessingEngine::getInstance();
+      Statistics::StatisticBase* existing = findRegisteredStatistic(id, name, statSubId);
+      if (existing){
+        auto statistic = dynamic_cast<Statistics::Statistic<T>*>(existing);
+        if (statistic){
+            return statistic;
+        } else {
+            printf("Error! Bad statistic Type!\n");
+            return nullptr;
+        }
+      } else {
+        auto* stat = engine->createStatistic<T>(my_info->component, type, name, statSubId, params);
+        // Tell the Statistic what collection mode it is in
+        configureCollectionMode(stat, params, name);
+        m_registeredStats[id].push_back(stat);
+        registerStatisticCore(stat);
+        return stat;
+      }
+    }
+
+
+    template <typename T>
+    Statistics::Statistic<T>* createNullStatistic(SST::Params& params, const std::string& name, const std::string& statSubId = ""){
+      auto* engine = Statistics::StatisticProcessingEngine::getInstance();
+      return engine->createStatistic<T>(my_info->component, "sst.NullStatistic", name, statSubId, params);
+    }
 
     /** Registers a statistic.
         If Statistic is allowed to run (controlled by Python runtime parameters),
@@ -292,62 +324,70 @@ protected:
                 depending upon runtime settings.
     */
     template <typename T>
-    Statistic<T>* registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "")
+    Statistics::Statistic<T>* registerStatistic(SST::Params& params, const std::string& statName, const std::string& statSubId = "",
+                                                bool inserting = false)
     {
-        // Verify here that name of the stat is one of the registered
-        // names of the component's ElementInfoStatistic.
-        if (false == doesComponentInfoStatisticExist(statName)) {
-            // I don't define this statistic, so it must be inherited (or non-existant)
-            if ( my_info->sharesStatistics() ) {
-                return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId);
-            }
-            else {
-                printf("Error: Statistic %s name %s is not found in ElementInfoStatistic, exiting...\n",
-                       StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId).c_str(),
-                       statName.c_str());
-                exit(1);
-            }
+        if (my_info->enabledStatNames){
+          auto iter = my_info->enabledStatNames->find(statName);
+          if (iter != my_info->enabledStatNames->end()){
+            //valid, enabled statistic
+            // During initialization, the component should have assigned a mapping between
+            // the local name and globally unique stat ID
+            StatisticId_t id = iter->second;
+            return createStatistic<T>(params, id, statName, statSubId);
+          }
         }
-        // Check to see if the Statistic is previously registered with the Statistics Engine
-        auto* engine = StatisticProcessingEngine::getInstance();
-        StatisticBase* stat = engine->isStatisticRegisteredWithEngine(getName(), my_info->getID(), statName, statSubId, StatisticFieldType<T>::id());
 
-        if (!stat){
-            //stat does not exist yet
-            auto makeInstance = [=](const std::string& type, BaseComponent* comp,
-                                    const std::string& name, const std::string& subName,
-                                    SST::Params& params) -> StatisticBase* {
-                return engine->createStatistic<T>(comp, type, name, subName, params);
-            };
-            stat = registerStatisticCore(params, statName, statSubId, StatisticFieldType<T>::id(),
-                                         std::move(makeInstance));
+        //if we got here, this is not a stat we explicitly enabled
+        if (inserting || doesComponentInfoStatisticExist(statName)){
+          // this is a statistic that I registered
+          if (my_info->enabledAllStats){
+              return createStatistic<T>(params, STATALL_ID, statName, statSubId);
+          } else if (my_info->parent_info && my_info->canInsertStatistics()) {
+            // I did not explicitly enable nor enable all
+            // but I can insert statistics into my parent
+            // and my parent may have enabled all
+            return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId, true);
+          } else {
+            // I did not enable, I cannot insert into parent - so send back null stat
+            return my_info->component->createNullStatistic<T>(params, statName, statSubId);
+          }
+        } else if (my_info->parent_info && my_info->sharesStatistics()) {
+          // this is not a statistic that I registered
+          // but my parent can share statistics, maybe they enabled
+          return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId);
+        } else {
+          //not a valid stat and I won't be able to share my parent's statistic
+          fatal(__LINE__, __FILE__, "registerStatistic", 1,
+                "attempting to register unknown statistic '%s'",
+                statName.c_str());
+          return nullptr; //get rid of warning
         }
-        return dynamic_cast<Statistic<T>*>(stat);
     }
 
     template <typename T>
-    Statistic<T>* registerStatistic(const std::string& statName, const std::string& statSubId = "")
+    Statistics::Statistic<T>* registerStatistic(const std::string& statName, const std::string& statSubId = "")
     {
         SST::Params empty{};
         return registerStatistic<T>(empty, statName, statSubId);
     }
 
     template <typename... Args>
-    Statistic<std::tuple<Args...>>* registerMultiStatistic(const std::string& statName, const std::string& statSubId = "")
+    Statistics::Statistic<std::tuple<Args...>>* registerMultiStatistic(const std::string& statName, const std::string& statSubId = "")
     {
         SST::Params empty{};
         return registerStatistic<std::tuple<Args...>>(empty, statName, statSubId);
     }
 
     template <typename... Args>
-    Statistic<std::tuple<Args...>>* registerMultiStatistic(SST::Params& params, const std::string& statName,
+    Statistics::Statistic<std::tuple<Args...>>* registerMultiStatistic(SST::Params& params, const std::string& statName,
                                                            const std::string& statSubId = "")
     {
         return registerStatistic<std::tuple<Args...>>(params, statName, statSubId);
     }
 
     template <typename T>
-    Statistic<T>* registerStatistic(const char* statName, const char* statSubId = "")
+    Statistics::Statistic<T>* registerStatistic(const char* statName, const char* statSubId = "")
     {
         return registerStatistic<T>(std::string(statName), std::string(statSubId));
     }
@@ -356,7 +396,7 @@ protected:
       * @param stat - Pointer to the statistic.
       * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
       */
-    void performStatisticOutput(StatisticBase* stat);
+    void performStatisticOutput(Statistics::StatisticBase* stat);
 
     /** Performs a global statistic Output.
      * This routine will force ALL Components and Subcomponents to output their statistic information.
@@ -586,6 +626,11 @@ protected:
 
 
 private:
+    void configureCollectionMode(Statistics::StatisticBase* statistic, const SST::Params& params, const std::string& name);
+
+    Statistics::StatisticBase* findRegisteredStatistic(StatisticId_t id, const std::string& statName, const std::string& statSubId);
+
+    std::string configureStatParams(StatisticId_t id, SST::Params& params);
 
     void setDefaultTimeBaseForLinks(TimeConverter* tc);
 
@@ -682,19 +727,15 @@ protected:
 
 
 private:
-
     ComponentInfo* my_info;
     bool isExtension;
 
     void addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port);
 
-    using CreateFxn = std::function<StatisticBase*(const std::string&,
-                            BaseComponent*,const std::string&, const std::string&, SST::Params&)>;
+    void registerStatisticCore(Statistics::StatisticBase* stat);
 
-    StatisticBase* registerStatisticCore(SST::Params& params,
-                                         const std::string& statName, const std::string& statSubId,
-                                         fieldType_t fieldType, CreateFxn&& fxn);
+    std::map<StatisticId_t, std::vector<Statistics::StatisticBase*>> m_registeredStats;
 
 };
 

@@ -26,6 +26,9 @@ class LinkMap;
 class BaseComponent;
 
 class ConfigComponent;
+
+class ConfigStatistic;
+
 class ComponentInfoMap;
 class TimeConverter;
 
@@ -36,7 +39,7 @@ class StatisticInfo;
 class ComponentInfo {
 
 public:
-    typedef std::vector<Statistics::StatisticInfo>      statEnableList_t;        /*!< List of Enabled Statistics */
+    typedef std::vector<ConfigStatistic>      statEnableList_t;        /*!< List of Enabled Statistics */
 
 
     // Share Flags for SubComponent loading
@@ -111,7 +114,10 @@ private:
 
     TimeConverter* defaultTimeBase;
 
-    statEnableList_t * enabledStats;
+    std::map<StatisticId_t, ConfigStatistic>* enabledStatConfigs;
+    std::map<std::string, StatisticId_t>* enabledStatNames;
+    bool enabledAllStats;
+    const ConfigStatistic *allStatConfig;
 
     uint8_t statLoadLevel;
 
@@ -223,8 +229,6 @@ public:
     std::vector<LinkId_t> getAllLinkIds() const;
 
     uint8_t getStatisticLoadLevel() { return statLoadLevel; }
-
-    statEnableList_t* getStatEnableList() { return enabledStats; }
 
     struct HashName {
         size_t operator() (const ComponentInfo* info) const {

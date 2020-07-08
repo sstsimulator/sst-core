@@ -124,7 +124,31 @@ private:
 
 };
 
+class ConfigStatistic : public SST::Core::Serialization::serializable {
+public:
+    StatisticId_t id;                /*!< Unique ID of this statistic */
+    Params params;
 
+    ConfigStatistic(StatisticId_t id) :
+      id(id)
+      { }
+
+    ConfigStatistic() : id(stat_null_id) { }
+
+    inline const StatisticId_t& getId() const { return id; }
+
+    void addParameter(const std::string& key, const std::string& value, bool overwrite);
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+        ser & id;
+        ser & params;
+    }
+
+    ImplementSerializable(ConfigStatistic)
+
+    static constexpr StatisticId_t stat_null_id = std::numeric_limits<StatisticId_t>::max();
+
+};
 
 class ConfigStatGroup : public SST::Core::Serialization::serializable {
 public:
@@ -191,6 +215,7 @@ typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 
 /** Represents the configuration of a generic component */
 class ConfigComponent : public SST::Core::Serialization::serializable {
+    friend class ComponentInfo;
 public:
     ComponentId_t                 id;                /*!< Unique ID of this component */
     ConfigGraph*                  graph;             /*!< Graph that this component belongs to */
@@ -202,15 +227,21 @@ public:
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
     uint8_t                       statLoadLevel;     /*!< Statistic load level for this component */
-    std::vector<Statistics::StatisticInfo> enabledStatistics; /*!< List of statistics to be enabled */
+    //std::vector<ConfigStatistic>  enabledStatistics; /*!< List of subcomponents */
+
+    std::map<std::string,StatisticId_t> enabledStatNames;
+    bool enabledAllStats;
+    ConfigStatistic allStatConfig;
+
     std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
     uint16_t                      nextSubID;         /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
     bool                          visited;           /*! Used when traversing graph to indicate component was visited already */
+    uint16_t                      nextStatID;        /*!< Next statID to use for children */
 
     static constexpr ComponentId_t null_id = std::numeric_limits<ComponentId_t>::max();
 
-    inline const ComponentId_t& key()const { return id; }
+    inline const ComponentId_t& key() const { return id; }
 
     /** Print Component information */
     void print(std::ostream &os) const;
@@ -219,13 +250,13 @@ public:
     ConfigComponent cloneWithoutLinksOrParams() const;
 
     ~ConfigComponent() {}
-    ConfigComponent() : id(null_id), statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), nextSubID(1), visited(false) { }
+    ConfigComponent() : id(null_id), statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), enabledAllStats(false), nextSubID(1), visited(false) { }
 
     ComponentId_t getNextSubComponentID();
+    StatisticId_t getNextStatisticID();
 
     ConfigComponent* getParent() const;
     std::string getFullName() const;
-
 
     void setRank(RankInfo r);
     void setWeight(double w);
@@ -235,7 +266,11 @@ public:
     ConfigComponent* findSubComponent(ComponentId_t);
     const ConfigComponent* findSubComponent(ComponentId_t) const;
     ConfigComponent* findSubComponentByName(const std::string& name);
-    void enableStatistic(const std::string& statisticName, bool recursively = false);
+    ConfigStatistic* findStatistic(const std::string& name) const;
+    ConfigStatistic* insertStatistic(StatisticId_t id);
+    ConfigStatistic* findStatistic(StatisticId_t) const;
+    ConfigStatistic* enableStatistic(const std::string& statisticName, bool recursively = false);
+    void reuseStatistic(const std::string& statisticName, StatisticId_t sid);
     void addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively = false);
     void setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively = false);
     void setStatisticLoadLevel(uint8_t level, bool recursively = false);
@@ -252,16 +287,21 @@ public:
         ser & rank.thread;
         ser & links;
         ser & params;
-        ser & statLoadLevel;
+        ser & enabledStatNames;
+        ser & enabledAllStats;
         ser & enabledStatistics;
+        ser & enabledAllStats;
+        ser & statLoadLevel;
         ser & subComponents;
         ser & coords;
         ser & nextSubID;
+        ser & nextStatID;
     }
 
     ImplementSerializable(SST::ConfigComponent)
 
 private:
+    std::map<StatisticId_t,ConfigStatistic> enabledStatistics;
 
     friend class ConfigGraph;
     /** Checks to make sure port names are valid and that a port isn't used twice
@@ -277,7 +317,9 @@ private:
         weight(weight),
         rank(rank),
         statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
-        nextSubID(1)
+        enabledAllStats(false),
+        nextSubID(1),
+        nextStatID(1)
     {
         coords.resize(3, 0.0);
     }
@@ -291,7 +333,9 @@ private:
         weight(weight),
         rank(rank),
         statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
-        nextSubID(parent_subid)
+        enabledAllStats(false),
+        nextSubID(parent_subid),
+        nextStatID(parent_subid)
     {
         coords.resize(3, 0.0);
     }
@@ -413,6 +457,9 @@ public:
     ConfigComponent* findComponent(ComponentId_t);
     ConfigComponent* findComponentByName(const std::string& name);
     const ConfigComponent* findComponent(ComponentId_t) const;
+
+    bool containsStatistic(StatisticId_t id) const;
+    ConfigStatistic* findStatistic(StatisticId_t) const;
 
     /** Return the map of links */
     ConfigLinkMap_t& getLinkMap() {

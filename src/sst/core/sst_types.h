@@ -13,23 +13,31 @@
 #define SST_CORE_SST_TYPES_H
 
 #include <cstdint>
+#include <limits>
 
 namespace SST {
 
 typedef uint64_t  ComponentId_t;
+typedef uint64_t  StatisticId_t;
 typedef int32_t   LinkId_t;
 typedef uint64_t  Cycle_t;
 typedef uint64_t  SimTime_t;
-typedef double          Time_t;
+typedef double    Time_t;
+
+static constexpr StatisticId_t STATALL_ID = std::numeric_limits<StatisticId_t>::max();
 
 #define MAX_SIMTIME_T 0xFFFFFFFFFFFFFFFFl
 /* Subcomponent IDs are in the high-16 bits of the Component ID */
 #define UNSET_COMPONENT_ID 0xFFFFFFFFFFFFFFFFULL
-#define COMPONENT_ID_BITS 48
-#define COMPONENT_ID_MASK(x) ((x) & 0x0000FFFFFFFFFFFFULL)
+#define UNSET_STATISTIC_ID 0xFFFFFFFFFFFFFFFFULL
+#define COMPONENT_ID_BITS 32
+#define COMPONENT_ID_MASK(x) ((x) & 0xFFFFFFFFULL)
 #define SUBCOMPONENT_ID_BITS 16
 #define SUBCOMPONENT_ID_MASK(x) ((x) >> COMPONENT_ID_BITS)
 #define SUBCOMPONENT_ID_CREATE(compId, sCompId) ((((uint64_t)sCompId) << COMPONENT_ID_BITS) | compId)
+#define CONFIG_COMPONENT_ID_BITS (COMPONENT_ID_BITS + SUBCOMPONENT_ID_BITS)
+#define CONFIG_COMPONENT_ID_MASK(x) ((x) & 0xFFFFFFFFFFFFULL)
+#define STATISTIC_ID_CREATE(compId, statId) ((((uint64_t)statId) << CONFIG_COMPONENT_ID_BITS) | compId)
 #define COMPDEFINED_SUBCOMPONENT_ID_CREATE(compId, sCompId) ((((uint64_t)sCompId) << COMPONENT_ID_BITS) | compId | 0x8000000000000000ULL)
 #define COMPDEFINED_SUBCOMPONENT_ID_MASK(x) ((x) >> 63)
 

@@ -31,6 +31,7 @@ REENABLE_WARNING
 #include "sst/core/sst_types.h"
 #include "sst/core/model/python/pymodel.h"
 #include "sst/core/model/python/pymodel_comp.h"
+#include "sst/core/model/python/pymodel_stat.h"
 #include "sst/core/model/python/pymodel_link.h"
 #include "sst/core/model/python/pymodel_statgroup.h"
 #include "sst/core/model/python/pymodel_unitalgebra.h"
@@ -42,12 +43,10 @@ REENABLE_WARNING
 #include "sst/core/configGraph.h"
 DISABLE_WARN_STRICT_ALIASING
 
+using namespace SST;
 using namespace SST::Core;
 
 SST::Core::SSTPythonModelDefinition *gModel = nullptr;
-
-extern "C" {
-
 
 struct ModuleLoaderPy_t {
     PyObject_HEAD
@@ -73,8 +72,6 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject *self, PyObject 
 
 static PyObject* mlFindModule(PyObject *self, PyObject *args);
 static PyObject* mlLoadModule(PyObject *self, PyObject *args);
-
-
 
 
 static PyMethodDef mlMethods[] = {
@@ -845,13 +842,12 @@ static struct PyModuleDef sstModuleDef {
 };
 #endif
 
-}  /* extern C */
-
 static PyObject* PyInit_sst(void)
 {
     // Initialize our types
     PyModel_ComponentType.tp_new = PyType_GenericNew;
     PyModel_SubComponentType.tp_new = PyType_GenericNew;
+    PyModel_StatType.tp_new = PyType_GenericNew;
     PyModel_LinkType.tp_new = PyType_GenericNew;
     PyModel_UnitAlgebraType.tp_new = PyType_GenericNew;
     PyModel_StatGroupType.tp_new = PyType_GenericNew;
@@ -861,6 +857,7 @@ static PyObject* PyInit_sst(void)
          ( PyType_Ready(&PyModel_SubComponentType) < 0 ) ||
          ( PyType_Ready(&PyModel_LinkType) < 0 ) ||
          ( PyType_Ready(&PyModel_UnitAlgebraType) < 0 ) ||
+         ( PyType_Ready(&PyModel_StatType) < 0 ) ||
          ( PyType_Ready(&PyModel_StatGroupType) < 0 ) ||
          ( PyType_Ready(&PyModel_StatOutputType) < 0 ) ||
          ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
@@ -874,6 +871,7 @@ static PyObject* PyInit_sst(void)
 
     Py_INCREF(&PyModel_ComponentType);
     Py_INCREF(&PyModel_SubComponentType);
+    Py_INCREF(&PyModel_StatType);
     Py_INCREF(&PyModel_LinkType);
     Py_INCREF(&PyModel_UnitAlgebraType);
     Py_INCREF(&PyModel_StatGroupType);
@@ -885,6 +883,7 @@ static PyObject* PyInit_sst(void)
     PyModule_AddObject(module, "UnitAlgebra", (PyObject*)&PyModel_UnitAlgebraType);
     PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
     PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
+    PyModule_AddObject(module, "Statistic", (PyObject*)&PyModel_StatType);
     PyModule_AddObject(module, "StatisticGroup", (PyObject*)&PyModel_StatGroupType);
     PyModule_AddObject(module, "StatisticOutput", (PyObject*)&PyModel_StatOutputType);
     PyModule_AddObject(module, "ModuleLoader", (PyObject*)&ModuleLoaderType);

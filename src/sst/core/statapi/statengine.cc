@@ -86,11 +86,20 @@ StatisticProcessingEngine::~StatisticProcessingEngine()
     }
 }
 
-bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat, uint8_t comp_load_level)
+bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 {
     if ( stat->isNullStatistic() )
         return true;
 
+    auto *comp = stat->getComponent();
+    if ( comp == nullptr ) {
+        m_output.verbose(CALL_INFO, 1, 0,
+                " Error: Statistc %s hasn't any associated component .\n",
+                stat->getFullStatName().c_str());
+        return false;
+    }
+
+    uint8_t comp_load_level = comp->getStatisticLoadLevel();
     uint8_t stat_load_level = comp_load_level == STATISTICLOADLEVELUNINITIALIZED ? m_statLoadLevel : comp_load_level;
 
     if ( 0 == stat_load_level ) {
@@ -109,8 +118,8 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat, uint8
         return false;
     }
 
-    StatisticGroup &group = getGroupForStatistic(stat);
 
+    StatisticGroup &group = getGroupForStatistic(stat);
     if ( group.isDefault ) {
         // If the mode is Periodic Based, the add the statistic to the
         // StatisticProcessingEngine otherwise add it as an Event Based Stat.
