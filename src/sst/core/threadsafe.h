@@ -131,13 +131,8 @@ public:
 
     inline void lock() {
         while ( latch.test_and_set(std::memory_order_acquire) ) {
-#if ( defined( __amd64 ) || defined( __amd64__ ) || \
-        defined( __x86_64 ) || defined( __x86_64__ ) )
-                sst_pause();
-#elif defined(__arm__)
-                sst_pause();
-#elif defined(__PPC64__)
-                sst_pause();
+            sst_pause();
+#if defined(__PPC64__)
                 __sync_synchronize();
 #endif
         }
