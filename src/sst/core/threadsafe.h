@@ -13,8 +13,13 @@
 #define SST_CORE_CORE_THREADSAFE_H
 
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
-        defined( __x86_64 ) || defined( __x86_64__ ) )
+      defined( __x86_64 ) || defined( __x86_64__ ) )
 #include <x86intrin.h>
+#define sst_pause() _mm_pause()
+#elif ( defined(__arm__) || defined(__arm) || defined(__aarch64__) )
+#define sst_pause() __asm__ __volatile__ ("yield")
+#elif defined(__PPC64__)
+#define sst_pause() __asm__ __volatile__ ( "or 27, 27, 27" ::: "memory" );
 #endif
 
 #include <thread>
@@ -91,12 +96,7 @@ public:
                 do {
                     count++;
                     if ( count < 1024 ) {
-#if ( defined( __amd64 ) || defined( __amd64__ ) || \
-        defined( __x86_64 ) || defined( __x86_64__ ) )
-                        _mm_pause();
-#elif defined(__PPC64__)
-           asm volatile( "or 27, 27, 27" ::: "memory" );
-#endif
+                        sst_pause();
             } else if ( count < (1024*1024) ) {
                         std::this_thread::yield();
                     } else {
@@ -133,9 +133,11 @@ public:
         while ( latch.test_and_set(std::memory_order_acquire) ) {
 #if ( defined( __amd64 ) || defined( __amd64__ ) || \
         defined( __x86_64 ) || defined( __x86_64__ ) )
-                _mm_pause();
+                sst_pause();
+#elif defined(__arm__)
+                sst_pause();
 #elif defined(__PPC64__)
-                asm volatile( "or 27, 27, 27" ::: "memory" );
+                sst_pause();
                 __sync_synchronize();
 #endif
         }
@@ -250,12 +252,7 @@ public:
             if ( try_remove(res) ) {
                 return res;
             }
-#if ( defined( __amd64 ) || defined( __amd64__ ) || \
-        defined( __x86_64 ) || defined( __x86_64__ ) )
-            _mm_pause();
-#elif defined(__PPC64__)
-           asm volatile( "or 27, 27, 27" ::: "memory" );
-#endif
+            sst_pause();
         }
     }
 };
@@ -315,12 +312,7 @@ public:
             if ( try_remove(res) ) {
                 return res;
             }
-#if ( defined( __amd64 ) || defined( __amd64__ ) || \
-        defined( __x86_64 ) || defined( __x86_64__ ) )
-            _mm_pause();
-#elif defined(__PPC64__)
-           asm volatile( "or 27, 27, 27" ::: "memory" );
-#endif
+            sst_pause();
         }
     }
 
