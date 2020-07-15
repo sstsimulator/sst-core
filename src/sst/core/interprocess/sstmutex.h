@@ -32,7 +32,9 @@ public:
     void processorPause(int currentCount) {
         if( currentCount < 64 ) {
 #if defined(__x86_64__)
-            asm volatile ("pause" : : : "memory");
+            __asm__ __volatile__ ("pause" : : : "memory");
+#elif ( defined(__arm__) || defined(__aarch64__) )
+            __asm__ __volatile__ ("yield");
 #else
             // Put some pause code in here
 #endif

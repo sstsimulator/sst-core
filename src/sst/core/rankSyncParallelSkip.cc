@@ -279,7 +279,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
             send_queue.try_insert(send);
         }
         else {
-            _mm_pause();
+            sst_pause();
         }
     }
 
