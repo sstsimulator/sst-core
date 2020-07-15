@@ -109,10 +109,11 @@ class SSTTextTestRunner(unittest.TextTestRunner):
             ranks_used = test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
             cores_used = threads_used * ranks_used
             if cores_used >= num_cores_avail:
-                log_forced("\n================== NOTICE =========================")
-                log_forced("The number of concurrent threads ({0}) *  ".format(threads_used))
-                log_forced("number of ranks ({0}) >= available cores ({1})".format(ranks_used, num_cores_avail))
-                log_forced("This may cause unexpected test issues/failures...")
+                log_forced("\n================ !! NOTICE!! =======================")
+                log_forced("=== The number of concurrent testing threads ({0})   ".format(threads_used))
+                log_forced("=== times the number of ranks ({0}) >= available cores ({1})".format(ranks_used, num_cores_avail))
+                log_forced("=== This may cause unexpected test issues/failures")
+                log_forced("=== because each testing thread will consume {0} ranks".format(ranks_used))
                 log_forced("===================================================")
 
         log(("\n=== TEST RESULTS ==================") +
