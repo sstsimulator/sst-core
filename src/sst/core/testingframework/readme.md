@@ -41,6 +41,7 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
      * -t YY = Number of threads to use during SST runs; default = 1
      * -y name = Name of testsuites to discover (SEE Discovery BELOW); default = "default"
      * -w name = Wildcard name of testsuites to discover (SEE Discovery BELOW); default = ""
+        * Note: Quotes are important around the wildcard name to avoid the shell's automatic wildcard expansion Example: use -w "*merlin*" instead of -w *merlin*
      * -p path = Path to testsuites (SEE Discovery BELOW); default = registered tests dir paths
      
 ## Discovery of Tests
@@ -63,7 +64,7 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
          * Example: ```-y = autotester```
       - Files named 'testsuite_*.py' will be added to the list of testsuites to be run when argument `-y = all` is specified. Note: This will run ALL of the testsuites in the directory.
       - Files named 'testsuite_<wildcard_name>.py' will be added to the list of testsuites to be run when <wildcard_name> is specifed using the -w = <wildcard_name> argument. Note: This will run user selected set of testsuites in the directory. 
-         * Example: ```-w = *merlin*```
+         * Example: ```-w = "*merlin*"``` - NOTE: Quotes are important to avoid the shell's automatic wildcard expansion
 
 ## Running Tests Concurrently
    * Tests may be run concurrently in multiple threads to significantly reduce testing runtime.

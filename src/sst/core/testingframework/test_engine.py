@@ -275,7 +275,9 @@ class TestEngine():
                                  nargs="+", default=[],
                                  help=(('Wildcard names of testsuites to') + \
                                        (' run\n("testsuite_<wildcard_name>.py") [""]') + \
-                                       ('\nNote: Mutually exclusive with --testsuite_types')))
+                                       ('\nNote: Mutually exclusive with --testsuite_types') + \
+                                       ('\nNote: Quotes are important to avoid the shell\'s') + \
+                                       ('\n automatic wildcard expansion. Example: -w "*merlin*"')))
         if self._test_mode:
             testsuite_path_str = "TestSuite Files or Dirs to SST-Core\nTestSuites [Registered Dir Path]"
         else:
