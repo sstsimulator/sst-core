@@ -96,3 +96,44 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
      * SDL Testfiles are located in `<elements source dir>/src/sst/elements/<element>/tests`
      * Reference Ouput file for the SDL Tests files located in `<elements source dir>/src/sst/elements/<element>/tests/refFiles`
      * Testscripts that run the SDL Testfiles are located in `<elements source dir>/src/sst/elements/<element>/tests`
+
+## Test Frameworks Design
+ * **Basic Design Concepts**
+     * The test frameworks is built upon Pythons unittest infrastructure.  
+        * No 3rd party Python modules are to be required.  Optional modules may be used to enhance operations (example: concurrent testing via testtools module)
+        * Since it is designed to run on Python 2.7 - 3.x; No Python 3.x specific features are used (unless also implemented for 2.7)
+     * Transparent to the general user and easy to use
+        * The user does not need to launch the test frameworks via python. 
+        * All tests can be run from a single command `sst-test-core` or `sst-test-elements`
+     * Support for any registered components
+        * Any component (ie sst-core, sst-elements or 3rd party elements) can register themselves and will be available for testing.  The directory path does not matter.
+ * **Core Source Directory**
+    * The test frameworks are part of the sst-core and are located at `<CoreRepo>/src/sst/core/testingframework`
+       * Launching scripts
+          * `sst-test-core` - Executable python script than loads and runs the `sst-test-engine-loader.py` configured for sst-core testing
+          * `sst-test-elements` - Executable python script than loads and runs the `sst-test-engine-loader.py` configured for sst-elements testing
+          * `sst-test-engine-loader.py` Python module which loads the main test frameworks infrastructure files and starts the `test_engine.py` module
+       * Frameworks Infrastructure
+          * `readme.md` - This file
+          * `Makefile.inc` - Provides rules for the configure/make system on how to install the test frameworks
+          * `sst_unittest.py` - The main python class (derived from python's unittest) for the testsuites to be created from.
+          * `sst_unittest_support.py` - Support classes/functions for testsuites to help testsuites operate
+          * `test_engine.py` - The main testing frameworks engine.  This provides the entry point for discovery and running testsuites.
+          * `test_engine_globals.py` - Globals used by the testing frameworks
+          * `test_engine_support.py` - Support classes/functions used by the testing frameworks
+          * `test_engine_unittest.py` - Modified flavors of the Python unittest engine (improved useage and reporting) and support for the optional concurrent module from `testtools`
+          * `test_engine_junit.py` - Generates JUnit xml data that can be consumed by Jenkins
+    * The sst-core also contains `tests` and `testelements` directories which implement the tests (using the test frameworks) for the the sst-core
+    
+ * **Install Directories**
+    * When the sst-core is built and installed the frameworks are copied into in 2 subdirectories identifed by the `--prefix` configuration setting:
+       * `<CoreInstallDir>/bin>` contains the launching scripts
+       * `<CoreInstallDir>/libexe>` contains the main test frameworks infrastructure files
+
+ * **General Operation**
+   * COMMING SOON!
+
+
+
+
+
