@@ -127,26 +127,32 @@ class TestEngine():
         # Find all the testsuites we need to run
         self._discover_testsuites()
 
-        # Now run the testsuites, looking for a keyboard interrupt if necessary
-        # to stop testing.
-        try:
-            # Convert test suites to a Concurrent Test Suite type object,
-            self._sst_full_test_suite = SSTTestSuite(self._sst_full_test_suite,
-                                                     self._build_tests_list_helper)
-            # Setup the runner
-            test_runner = SSTTextTestRunner(verbosity=test_engine_globals.TESTENGINE_VERBOSITY,
-                                            failfast=self._fail_fast,
-                                            resultclass=SSTTextTestResult)
-            # run the tests
-            sst_tests_results = test_runner.run(self._sst_full_test_suite)
+        if self.list_testsuites_mode:
+            # dump the discovered testsuites and tests
+            log("\nDISCOVERED TESTS:")
+            self._dump_testsuite_list(self._sst_full_test_suite, log_normal=True)
 
-            if not test_runner.did_tests_pass(sst_tests_results):
-                return 1
-            return 0
+        else:
+            # Now run the testsuites, looking for a keyboard interrupt if necessary
+            # to stop testing.
+            try:
+                # Convert test suites to a Concurrent Test Suite type object,
+                self._sst_full_test_suite = SSTTestSuite(self._sst_full_test_suite,
+                                                         self._build_tests_list_helper)
+                # Setup the runner
+                test_runner = SSTTextTestRunner(verbosity=test_engine_globals.TESTENGINE_VERBOSITY,
+                                                failfast=self._fail_fast,
+                                                resultclass=SSTTextTestResult)
+                # run the tests
+                sst_tests_results = test_runner.run(self._sst_full_test_suite)
 
-        # Handlers of unittest.TestRunner exceptions
-        except KeyboardInterrupt:
-            log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
+                if not test_runner.did_tests_pass(sst_tests_results):
+                    return 1
+                return 0
+
+            # Handlers of unittest.TestRunner exceptions
+            except KeyboardInterrupt:
+                log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
 
 
 ####
@@ -255,6 +261,8 @@ class TestEngine():
                             nargs='?', const=DEF_THREAD_LIMIT,
                             help=('Run Test Suites concurrently using threads\n')
                                + ('TT = thread limit [default {0}]').format(DEF_THREAD_LIMIT))
+        parser.add_argument('-l', '--list_testsuites', action='store_true',
+                            help='List discovered testscipts instead of running tests [False]')
 
         discover_group = parser.add_argument_group('Test Discovery Arguments')
         mutnamegroup = discover_group.add_mutually_exclusive_group()
@@ -287,6 +295,7 @@ class TestEngine():
         """
         # Extract the Arguments into the class variables
         self._fail_fast = args.fail_fast
+        self.list_testsuites_mode = args.list_testsuites
         self._keep_output_dir = args.keep_output
         self._list_of_searchable_testsuite_paths = args.list_of_paths
         lc_testscenario_list = [item.lower() for item in args.scenarios]
@@ -601,12 +610,15 @@ class TestEngine():
 
 ####
 
-    def _dump_testsuite_list(self, suite):
+    def _dump_testsuite_list(self, suite, log_normal=False):
         """ Recursively log all tests in a TestSuite
             :param: The current suite to print
         """
         if hasattr(suite, '__iter__'):
             for sub_suite in suite:
-                self._dump_testsuite_list(sub_suite)
+                self._dump_testsuite_list(sub_suite, log_normal)
         else:
-            log_debug("- {0}".format(suite))
+            if log_normal:
+               log("- {0}".format(suite))
+            else:
+                log_debug("- {0}".format(suite))
