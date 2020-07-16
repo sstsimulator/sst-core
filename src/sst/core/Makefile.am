@@ -153,6 +153,7 @@ nobase_dist_sst_HEADERS = \
 	warnmacros.h \
 	model/element_python.h
 
+
 deprecated_nobase_dist_sst_headers = 
 
 
@@ -319,11 +320,8 @@ nobase_dist_sst_HEADERS += $(deprecated_nobase_dist_sst_headers)
 sst_core_sources += $(deprecated_sst_core_sources)
 endif
 
-if SST_CONFIG_HAVE_PYTHON3
-sst_core_sources += $(sst_core_python3_sources)
-else
-sst_core_sources += $(sst_core_python2_sources)
-endif
+sst_core_sources += $(sst_core_python_sources)
+nobase_dist_sst_HEADERS += $(sst_core_python_headers)
 
 if !SST_COMPILE_OSX
 sstsim_x_LDADD += -lrt
