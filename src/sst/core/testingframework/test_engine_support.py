@@ -198,13 +198,13 @@ class OSCommandResult():
 
     def output(self):
         """ return the run output result """
-        return self._run_output
+        return self._run_output.decode('utf-8')
 
 ####
 
     def error(self):
         """ return the run error output result """
-        return self._run_error
+        return self._run_error.decode('utf-8')
 
 ####
 
