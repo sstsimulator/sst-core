@@ -43,18 +43,26 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
      * -p path = Path to testsuites (SEE Discovery BELOW); default = registered tests dir paths
      
 ## Discovery of Tests
+   * Testsuite files live in the `tests` subdirectory under core and elements and are named `testsuite_<testtype>_<testsuitename>`
+      * `testsuite_` is the required prefix for all testsuites.  The testengine will only find scripts with this prefix.
+      * `<testsuitename>` is the general name of the testsuite and can be of any text.  It does not have to match the element name.
+      * `<testtype>` is a catagory of test types.  A test suites with a type name of `"default"` will be run under normal conditions.  This allows the user to create specialized test suites that are not normally run, but perform other test functions.
    * Finding TestSuites:
       * During Startup, the -p and -y (or -w) arguments are used to create a list of testsuites to be run.
-      - If the -p argument includes a testsuite file, that testsuite file will be directly added to the list of testsuites to be run.  Multiple files can be defined.
+      - If the -p argument includes a testsuite file, that testsuite file will be directly added to the list of testsuites to be run.  Multiple files can be defined.  
+         * Example: `sst-test-elements -p <PathToMerlinTests>/testsuite_default_merlin.py <PathToMerlinTests>/testsuite_extra_merlin.py`
       - If the -p argument includes a directory (containing 1 or more testsuites), that directory will be searched for specific testsuites as described below.  Muliple paths can be defined.  
+         * Example: `sst-test-elements -p <PathToMerlinTests> <PathToSambaTests>`
       - If the 'list_of_paths' argument is empty (by default), test directory paths found in the sstsimulator.conf file (located in the <sstcore_install>/etc directory) will be searched for specific testsuites as described below.
 
    * Searching for testsuites by type or wildcard:
       * Each directory identified by the -p argument will search for testsuites based upon the -y or -w (mutually exclusive) argument as follows:
-      - Files named 'testsuite_default_*.py' will be added to the list of testsuites to be run if argument -y **AND** -w are both **NOT** specified. Note: This will run only the 'default' set of testsuites in the directory.
-      - Files named 'testsuite_<type_name>_*.py' will be added to the list of testsuites to be run when <type_name> is specifed using the -y = <type_name> argument. Note: This will run user selected set of testsuites in the directory. Example: ```-y = autotester```
-      - Files named 'testsuite_*.py' will be added to the list of testsuites to be run when argument -y = all is specified. Note: This will run ALL of the testsuites in the directory.
-      - Files named 'testsuite_<wildcard_name>.py' will be added to the list of testsuites to be run when <wildcard_name> is specifed using the -w = <wildcard_name> argument. Note: This will run user selected set of testsuites in the directory. Example: ```-w = *merlin*```
+      - Files named 'testsuite_default_*.py' will be added to the list of testsuites to be run if argument **-y AND -w** are both **NOT** specified. Note: This will run only the 'default' set of testsuites in the directory.
+      - Files named 'testsuite_<type_name>_*.py' will be added to the list of testsuites to be run when <type_name> is specifed using the `-y = <type_name>` argument. Note: This will run user selected set of testsuites in the directory. 
+         * Example: ```-y = autotester```
+      - Files named 'testsuite_*.py' will be added to the list of testsuites to be run when argument `-y = all` is specified. Note: This will run ALL of the testsuites in the directory.
+      - Files named 'testsuite_<wildcard_name>.py' will be added to the list of testsuites to be run when <wildcard_name> is specifed using the -w = <wildcard_name> argument. Note: This will run user selected set of testsuites in the directory. 
+         * Example: ```-w = *merlin*```
 
 ## Running Tests Concurrently
    * Tests may be run concurrently in multiple threads to significantly reduce testing runtime.
