@@ -13,8 +13,12 @@
  #define SST_TP_COMPARE(x)
  #define SST_TP_RICH_COMPARE(x) x,
  #define SST_TP_AS_SYNC nullptr,
- #define SST_TP_VECTORCALL nullptr,
  #define SST_PY_INIT_MODULE(name, methods, moddef) PyModule_Create(&moddef)
+ #if PY_MINOR_VERSION >= 8
+   #define SST_TP_VECTORCALL nullptr,
+ #else
+   #define SST_TP_VECTORCALL
+ #endif
 #else
  #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
  #define SST_PY_OBJ_HEAD PyVarObject_HEAD_INIT(nullptr, 0)
