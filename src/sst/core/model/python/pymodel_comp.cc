@@ -17,12 +17,13 @@
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
+#include <sst/core/model/python/pymacros.h>
 
 #include <string.h>
 
-#include "sst/core/model/python3/pymodel.h"
-#include "sst/core/model/python3/pymodel_comp.h"
-#include "sst/core/model/python3/pymodel_link.h"
+#include "sst/core/model/python/pymodel.h"
+#include "sst/core/model/python/pymodel_comp.h"
+#include "sst/core/model/python/pymodel_link.h"
 
 #include "sst/core/sst_types.h"
 #include "sst/core/simulation.h"
@@ -55,11 +56,10 @@ std::string ComponentHolder::getName() {
     return getComp()->name;
 }
 
-
 ConfigComponent* ComponentHolder::getComp() {
     return gModel->getGraph()->findComponent(id);
 }
-
+    
 
 int ComponentHolder::compare(ComponentHolder *other) {
     if (id < other->id) return -1;
@@ -68,11 +68,10 @@ int ComponentHolder::compare(ComponentHolder *other) {
 }
 
 
-    
+
 int PySubComponent::getSlot() {
     return getComp()->slot_num;
 }
-
 
 
 static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
@@ -83,7 +82,7 @@ static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
         return -1;
 
     PyComponent *obj;
-     if ( useID == UNSET_COMPONENT_ID ) {
+    if ( useID == UNSET_COMPONENT_ID ) {
         char* prefixed_name = gModel->addNamePrefix(name);
         ComponentId_t id = gModel->addComponent(prefixed_name, type);
         obj = new PyComponent(self,id);
@@ -107,7 +106,7 @@ static void compDealloc(ComponentPy_t *self)
 
 static PyObject* compAddParam(PyObject *self, PyObject *args)
 {
-    char *param = nullptr;
+    char* param = nullptr;
     PyObject *value = nullptr;
     if ( !PyArg_ParseTuple(args, "sO", &param, &value) )
         return nullptr;
@@ -115,11 +114,13 @@ static PyObject* compAddParam(PyObject *self, PyObject *args)
     ConfigComponent *c = getComp(self);
     if ( nullptr == c ) return nullptr;
 
-    PyObject *vstr = PyObject_Str(value);
-    c->addParameter(param, PyUnicode_AsUTF8(vstr), true);
+    // Get the string-ized value by calling __str__ function of the
+    // value object
+    PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
+    c->addParameter(param, SST_ConvertToCppString(vstr), true);
     Py_XDECREF(vstr);
 
-    return PyLong_FromLong(0);
+    return SST_ConvertToPythonLong(0);
 }
 
 
@@ -137,14 +138,14 @@ static PyObject* compAddParams(PyObject *self, PyObject *args)
     long count = 0;
 
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject *kstr = PyObject_Str(key);
-        PyObject *vstr = PyObject_Str(val);
-        c->addParameter(PyUnicode_AsUTF8(kstr), PyUnicode_AsUTF8(vstr), true);
+        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
+        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+        c->addParameter(SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr), true);
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
         count++;
     }
-    return PyLong_FromLong(count);
+    return SST_ConvertToPythonLong(count);
 }
 
 
@@ -164,7 +165,7 @@ static PyObject* compSetRank(PyObject *self, PyObject *args)
 
     c->setRank(RankInfo(rank, thread));
 
-    return PyLong_FromLong(0);
+    return SST_ConvertToPythonLong(0);
 }
 
 
@@ -182,7 +183,7 @@ static PyObject* compSetWeight(PyObject *self, PyObject *arg)
 
     c->setWeight(weight);
 
-    return PyLong_FromLong(0);
+    return SST_ConvertToPythonLong(0);
 }
 
 
@@ -206,20 +207,16 @@ static PyObject* compAddLink(PyObject *self, PyObject *args)
     gModel->getOutput()->verbose(CALL_INFO, 4, 0, "Connecting component %" PRIu64 " to Link %s (lat: %s)\n", id, link->name, lat);
     gModel->addLink(id, link->name, port, lat, link->no_cut);
 
-    return PyLong_FromLong(0);
+    return SST_ConvertToPythonLong(0);
 }
 
 
 static PyObject* compGetFullName(PyObject *self, PyObject *UNUSED(args))
 {
-    return PyUnicode_FromString(getComp(self)->getFullName().c_str());
+    return SST_ConvertToPythonString(getComp(self)->getFullName().c_str());
 }
 
-static PyObject* compGetType(PyObject *self, PyObject *UNUSED(args))
-{
-    return PyUnicode_FromString(getComp(self)->type.c_str());
-}
-
+#if PY_MAJOR_VERSION >= 3
 static PyObject* compCompare(PyObject *obj0, PyObject *obj1, int op) {
     PyObject *result;
     bool cmp = false;
@@ -235,12 +232,23 @@ static PyObject* compCompare(PyObject *obj0, PyObject *obj1, int op) {
     Py_INCREF(result);
     return result;
 }
+#else
+static int compCompare(PyObject *obj0, PyObject *obj1) {
+    return ((ComponentHolder*)obj0)->compare(((ComponentHolder*)obj1));
+}
+#endif
 
+
+static PyObject* compGetType(PyObject *self, PyObject *UNUSED(args))
+{
+    return PyUnicode_FromString(getComp(self)->type.c_str());
+}
 
 static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
 {
     char *name = nullptr, *type = nullptr;
     int slot = 0;
+
     
     if ( !PyArg_ParseTuple(args, "ss|i", &name, &type, &slot) )
         return nullptr;
@@ -249,7 +257,7 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     if ( nullptr == c ) return nullptr;
 
     ComponentId_t subC_id = c->getNextSubComponentID();
-    ConfigComponent* sub = c->addSubComponent( subC_id, name, type, slot);
+    ConfigComponent* sub = c->addSubComponent(subC_id, name, type, slot);
     if ( nullptr != sub ) {
         PyObject *argList = Py_BuildValue("Ok", self, subC_id);
         PyObject *subObj = PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);
@@ -291,7 +299,7 @@ error:
     if ( nullptr == c ) return nullptr;
     c->setCoordinates(coords);
 
-    return PyLong_FromLong(0);
+    return SST_ConvertToPythonLong(0);
 }
 
 static PyObject* compSetStatisticLoadLevel(PyObject *self, PyObject *args) {
@@ -311,7 +319,7 @@ static PyObject* compSetStatisticLoadLevel(PyObject *self, PyObject *args) {
     else {
         return nullptr;
     }
-    return PyLong_FromLong(0);
+    return SST_ConvertToPythonLong(0);
 }
 
 
@@ -325,7 +333,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
     PyErr_Clear();
 
     // Parse the Python Args and get optional Stat Params (as a Dictionary)
-    argOK = PyArg_ParseTuple(args, "|O!i", &PyDict_Type, &statParamDict, &apply_to_children);
+    argOK = PyArg_ParseTuple(args, "|O!i", &PyDict_Type, &statParamDict,&apply_to_children);
 
     if (argOK) {
         c->enableStatistic(STATALLFLAG,apply_to_children);
@@ -339,7 +347,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
         // ParseTuple Failed, return NULL for error
         return nullptr;
     }
-    return PyLong_FromLong(0);
+    return SST_ConvertToPythonLong(0);
 }
 
 
@@ -359,13 +367,12 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     argOK = PyArg_ParseTuple(args,"s|O!i", &stat_str, &PyDict_Type, &statParamDict, &apply_to_children);
     if ( argOK ) {
         statList = PyList_New(1);
-        PyList_SetItem(statList,0,PyUnicode_FromString(stat_str));
+        PyList_SetItem(statList,0,SST_ConvertToPythonString(stat_str));
     }
     else  {
         PyErr_Clear();
         apply_to_children = 0;
         // Try list version
-        // argOK = PyArg_ParseTuple(args, "O!|O!i", &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         argOK = PyArg_ParseTuple(args, "O!|O!i", &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK )  Py_INCREF(statList);
     }
@@ -378,20 +385,19 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
         if ( !PyList_Check(statList) ) {
             return nullptr;
         }
-        
+
         // Get the Number of Stats in the list, and enable them separately,
         // also set their parameters
         numStats = PyList_Size(statList);
         for (uint32_t x = 0; x < numStats; x++) {
             PyObject* pylistitem = PyList_GetItem(statList, x);
-            const char *name = PyUnicode_AsUTF8(pylistitem);
+            PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
 
-            // c->enableStatistic(PyBytes_AsString(pyname),apply_to_children);
-            c->enableStatistic(name,apply_to_children);
+            c->enableStatistic(SST_ConvertToCppString(pyname),apply_to_children);
 
             // Add the parameters
             for ( auto p : params ) {
-                c->addStatisticParameter(name, p.first, p.second, apply_to_children);
+                c->addStatisticParameter(SST_ConvertToCppString(pyname), p.first, p.second, apply_to_children);
             }
 
         }
@@ -400,7 +406,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
         // ParseTuple Failed, return NULL for error
         return nullptr;
     }
-    return PyLong_FromLong(0);
+    return SST_ConvertToPythonLong(0);
 }
 
 
@@ -422,7 +428,7 @@ static PyMethodDef componentMethods[] = {
         "Connects this component to a Link"},
     {   "getFullName",
         compGetFullName, METH_NOARGS,
-        "Returns the full name, after any prefix, of the component."},
+        "Returns the full name of the component."},
     {   "getType",
         compGetType, METH_NOARGS,
         "Returns the type of the component."},
@@ -446,54 +452,57 @@ static PyMethodDef componentMethods[] = {
 
 
 PyTypeObject PyModel_ComponentType = {
-    PyVarObject_HEAD_INIT(nullptr, 0)
+    SST_PY_OBJ_HEAD
     "sst.Component",           /* tp_name */
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)compDealloc,   /* tp_dealloc */
-    0,                         /* tp_vectorcall_offset */
-    nullptr,                   /* tp_getattr */
-    nullptr,                   /* tp_setattr */
-    nullptr,                   /* tp_as_async */
-    nullptr,                   /* tp_repr */
-    nullptr,                   /* tp_as_number */
-    nullptr,                   /* tp_as_sequence */
-    nullptr,                   /* tp_as_mapping */
-    nullptr,                   /* tp_hash */
-    nullptr,                   /* tp_call */
-    nullptr,                   /* tp_str */
-    nullptr,                   /* tp_getattro */
-    nullptr,                   /* tp_setattro */
-    nullptr,                   /* tp_as_buffer */
+    SST_TP_VECTORCALL_OFFSET       /* Python3 only */
+    SST_TP_PRINT                   /* Python2 only */
+    nullptr,                         /* tp_getattr */
+    nullptr,                         /* tp_setattr */
+    SST_TP_COMPARE(compCompare)    /* Python2 only */
+    SST_TP_AS_SYNC                 /* Python3 only */
+    nullptr,                         /* tp_repr */
+    nullptr,                         /* tp_as_number */
+    nullptr,                         /* tp_as_sequence */
+    nullptr,                         /* tp_as_mapping */
+    nullptr,                         /* tp_hash */
+    nullptr,                         /* tp_call */
+    nullptr,                         /* tp_str */
+    nullptr,                         /* tp_getattro */
+    nullptr,                         /* tp_setattro */
+    nullptr,                         /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "SST Component",           /* tp_doc */
-    nullptr,                   /* tp_traverse */
-    nullptr,                   /* tp_clear */
-    compCompare,               /* tp_richcompare */
+    nullptr,                         /* tp_traverse */
+    nullptr,                         /* tp_clear */
+    SST_TP_RICH_COMPARE(compCompare)    /* Python3 only */
     0,                         /* tp_weaklistoffset */
-    nullptr,                   /* tp_iter */
-    nullptr,                   /* tp_iternext */
+    nullptr,                         /* tp_iter */
+    nullptr,                         /* tp_iternext */
     componentMethods,          /* tp_methods */
-    nullptr,                   /* tp_members */
-    nullptr,                   /* tp_getset */
-    nullptr,                   /* tp_base */
-    nullptr,                   /* tp_dict */
-    nullptr,                   /* tp_descr_get */
-    nullptr,                   /* tp_descr_set */
+    nullptr,                         /* tp_members */
+    nullptr,                         /* tp_getset */
+    nullptr,                         /* tp_base */
+    nullptr,                         /* tp_dict */
+    nullptr,                         /* tp_descr_get */
+    nullptr,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
     (initproc)compInit,        /* tp_init */
-    nullptr,                   /* tp_alloc */
-    nullptr,                   /* tp_new */
-    nullptr,                   /* tp_free */
-    nullptr,                   /* tp_is_gc */
-    nullptr,                   /* tp_bases */
-    nullptr,                   /* tp_mro */
-    nullptr,                   /* tp_cache */
-    nullptr,                   /* tp_subclasses */
-    nullptr,                   /* tp_weaklist */
-    nullptr,                   /* tp_del */
+    nullptr,                         /* tp_alloc */
+    nullptr,                         /* tp_new */
+    nullptr,                         /* tp_free */
+    nullptr,                         /* tp_is_gc */
+    nullptr,                         /* tp_bases */
+    nullptr,                         /* tp_mro */
+    nullptr,                         /* tp_cache */
+    nullptr,                         /* tp_subclasses */
+    nullptr,                         /* tp_weaklist */
+    nullptr,                         /* tp_del */
     0,                         /* tp_version_tag */
-    nullptr,                   /* tp_finalize */
+    SST_TP_FINALIZE                /* Python3 only */
+    SST_TP_VECTORCALL              /* Python3 only */
 };
 
 
@@ -540,7 +549,7 @@ static PyMethodDef subComponentMethods[] = {
         "Connects this subComponent to a Link"},
     {   "getFullName",
         compGetFullName, METH_NOARGS,
-        "Returns the full name of the component."},
+        "Returns the full name, after any prefix, of the component."},
     {   "getType",
         compGetType, METH_NOARGS,
         "Returns the type of the component."},
@@ -564,54 +573,57 @@ static PyMethodDef subComponentMethods[] = {
 
 
 PyTypeObject PyModel_SubComponentType = {
-    PyVarObject_HEAD_INIT(nullptr, 0)
+    SST_PY_OBJ_HEAD
     "sst.SubComponent",        /* tp_name */
     sizeof(ComponentPy_t),     /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)subCompDealloc,/* tp_dealloc */
-    0,                         /* tp_vectorcall_offset */
-    nullptr,                   /* tp_getattr */
-    nullptr,                   /* tp_setattr */
-    nullptr,                   /* tp_as_async */
-    nullptr,                   /* tp_repr */
-    nullptr,                   /* tp_as_number */
-    nullptr,                   /* tp_as_sequence */
-    nullptr,                   /* tp_as_mapping */
-    nullptr,                   /* tp_hash */
-    nullptr,                   /* tp_call */
-    nullptr,                   /* tp_str */
-    nullptr,                   /* tp_getattro */
-    nullptr,                   /* tp_setattro */
-    nullptr,                   /* tp_as_buffer */
+    SST_TP_VECTORCALL_OFFSET       /* Python3 only */
+    SST_TP_PRINT                   /* Python2 only */
+    nullptr,                         /* tp_getattr */
+    nullptr,                         /* tp_setattr */
+    SST_TP_COMPARE(nullptr)        /* Python2 only */
+    SST_TP_AS_SYNC                 /* Python3 only */
+    nullptr,                         /* tp_repr */
+    nullptr,                         /* tp_as_number */
+    nullptr,                         /* tp_as_sequence */
+    nullptr,                         /* tp_as_mapping */
+    nullptr,                         /* tp_hash */
+    nullptr,                         /* tp_call */
+    nullptr,                         /* tp_str */
+    nullptr,                         /* tp_getattro */
+    nullptr,                         /* tp_setattro */
+    nullptr,                         /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT,        /* tp_flags */
     "SST SubComponent",        /* tp_doc */
-    nullptr,                   /* tp_traverse */
-    nullptr,                   /* tp_clear */
-    compCompare,               /* tp_richcompare */
+    nullptr,                         /* tp_traverse */
+    nullptr,                         /* tp_clear */
+    SST_TP_RICH_COMPARE(compCompare)    /* Python3 only */
     0,                         /* tp_weaklistoffset */
-    nullptr,                   /* tp_iter */
-    nullptr,                   /* tp_iternext */
+    nullptr,                         /* tp_iter */
+    nullptr,                         /* tp_iternext */
     subComponentMethods,       /* tp_methods */
-    nullptr,                   /* tp_members */
-    nullptr,                   /* tp_getset */
-    nullptr,                   /* tp_base */
-    nullptr,                   /* tp_dict */
-    nullptr,                   /* tp_descr_get */
-    nullptr,                   /* tp_descr_set */
+    nullptr,                         /* tp_members */
+    nullptr,                         /* tp_getset */
+    nullptr,                         /* tp_base */
+    nullptr,                         /* tp_dict */
+    nullptr,                         /* tp_descr_get */
+    nullptr,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
     (initproc)subCompInit,     /* tp_init */
-    nullptr,                   /* tp_alloc */
-    nullptr,                   /* tp_new */
-    nullptr,                   /* tp_free */
-    nullptr,                   /* tp_is_gc */
-    nullptr,                   /* tp_bases */
-    nullptr,                   /* tp_mro */
-    nullptr,                   /* tp_cache */
-    nullptr,                   /* tp_subclasses */
-    nullptr,                   /* tp_weaklist */
-    nullptr,                   /* tp_del */
+    nullptr,                         /* tp_alloc */
+    nullptr,                         /* tp_new */
+    nullptr,                         /* tp_free */
+    nullptr,                         /* tp_is_gc */
+    nullptr,                         /* tp_bases */
+    nullptr,                         /* tp_mro */
+    nullptr,                         /* tp_cache */
+    nullptr,                         /* tp_subclasses */
+    nullptr,                         /* tp_weaklist */
+    nullptr,                         /* tp_del */
     0,                         /* tp_version_tag */
-    nullptr,                   /* tp_finalize */
+    SST_TP_FINALIZE                /* Python3 only */
+    SST_TP_VECTORCALL              /* Python3 only */
 };
 
 
