@@ -228,7 +228,9 @@ class TestEngine():
         out_mode_group = parser.add_argument_group('Output Mode Arguments')
         mutgroup = out_mode_group.add_mutually_exclusive_group()
         mutgroup.add_argument('-v', '--verbose', action='store_true',
-                              help='Run tests in verbose mode')
+                              help='Run tests in verbose mode [default]')
+        mutgroup.add_argument('-n', '--normal', action='store_true',
+                              help='Run tests in normal mode')
         mutgroup.add_argument('-q', '--quiet', action='store_true',
                               help='Run tests in quiet mode')
         mutgroup.add_argument('-d', '--debug', action='store_true',
@@ -305,9 +307,11 @@ class TestEngine():
         lc_testsuitetype_list = [item.lower() for item in args.testsuite_types]
         self._testsuite_types_list = lc_testsuitetype_list
         self._testsuite_wildcards_list = args.testsuite_wildcards
-        test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_NORMAL
+        test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_LOUD
         if args.quiet:
             test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_QUIET
+        if args.normal:
+            test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_NORMAL
         if args.verbose:
             test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_LOUD
         if args.debug:
@@ -344,6 +348,13 @@ class TestEngine():
         ver = sys.version_info
         concurrent_txt = ""
 
+        cmd = "sst --version"
+        rtn = OSCommand(cmd).run()
+        sstcoreversion = rtn.output()
+        sstcoreversion = sstcoreversion.replace("SST-Core Version ", "").rstrip()
+
+        num_cores = get_num_cores_on_system()
+
         if test_engine_globals.TESTENGINE_CONCURRENTMODE:
             concurrent_txt = "[CONCURRENTLY ({0} Threads)]".format(test_engine_globals.TESTENGINE_THREADLIMIT)
 
@@ -354,6 +365,14 @@ class TestEngine():
 
         log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
                  (" {0}".format(get_host_os_distribution_version())), forced=False)
+
+        log_info("Running on Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]), forced=False)
+
+        log_info("TestEngine Version = {0}".format(sstcoreversion), forced=False)
+
+        log_info("Available Cores = {0}; Num Ranks = {1}; Num Threads = {2}".format(num_cores, \
+            test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS, \
+            test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS), forced=False)
 
         if not self._testsuite_wildcards_list:
             if 'all' in self._testsuite_types_list:
@@ -374,18 +393,6 @@ class TestEngine():
             log_info(("Test Scenarios to filter tests: ") +
                      ("{0}").format(" ".join(test_engine_globals.TESTENGINE_SCENARIOSLIST)),
                      forced=False)
-
-        cmd = "sst --version"
-        rtn = OSCommand(cmd).run()
-        sstcoreversion = rtn.output()
-        sstcoreversion = sstcoreversion.replace("SST-Core Version ", "").rstrip()
-
-        log_info("TestEngine Version = {0}".format(sstcoreversion), forced=False)
-        log_info("Running on Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]))
-        num_cores = get_num_cores_on_system()
-        log_info("Available Cores = {0}; Num Ranks = {1}; Num Threads = {2}".format(num_cores, \
-            test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS, \
-            test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS), forced=False)
 
 ####
 
