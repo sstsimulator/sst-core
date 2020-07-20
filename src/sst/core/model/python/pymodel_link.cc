@@ -17,12 +17,13 @@
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
 REENABLE_WARNING
+#include <sst/core/model/python/pymacros.h>
 
 #include <string.h>
 
-#include "sst/core/model/python2/pymodel.h"
-#include "sst/core/model/python2/pymodel_comp.h"
-#include "sst/core/model/python2/pymodel_link.h"
+#include "sst/core/model/python/pymodel.h"
+#include "sst/core/model/python/pymodel_comp.h"
+#include "sst/core/model/python/pymodel_link.h"
 
 #include "sst/core/sst_types.h"
 #include "sst/core/simulation.h"
@@ -52,7 +53,7 @@ static void linkDealloc(LinkPy_t *self)
 {
     if ( self->name ) free(self->name);
     if ( self->latency ) free(self->latency);
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 
@@ -108,7 +109,7 @@ static PyObject* linkConnect(PyObject* self, PyObject *args)
     gModel->addLink(id1, link->name, port1, lat1, link->no_cut);
 
 
-    return PyInt_FromLong(0);
+    return SST_ConvertToPythonLong(0);
 }
 
 
@@ -136,15 +137,17 @@ static PyMethodDef linkMethods[] = {
 
 
 PyTypeObject PyModel_LinkType = {
-    PyVarObject_HEAD_INIT(nullptr, 0)
+    SST_PY_OBJ_HEAD
     "sst.Link",                /* tp_name */
     sizeof(LinkPy_t),          /* tp_basicsize */
     0,                         /* tp_itemsize */
     (destructor)linkDealloc,   /* tp_dealloc */
-    nullptr,                   /* tp_print */
+    SST_TP_VECTORCALL_OFFSET       /* Python3 only */
+    SST_TP_PRINT                   /* Python2 only */
     nullptr,                   /* tp_getattr */
     nullptr,                   /* tp_setattr */
-    nullptr,                   /* tp_compare */
+    SST_TP_COMPARE(nullptr)        /* Python2 only */
+    SST_TP_AS_SYNC                 /* Python3 only */
     nullptr,                   /* tp_repr */
     nullptr,                   /* tp_as_number */
     nullptr,                   /* tp_as_sequence */
@@ -183,6 +186,8 @@ PyTypeObject PyModel_LinkType = {
     nullptr,                   /* tp_weaklist */
     nullptr,                   /* tp_del */
     0,                         /* tp_version_tag */
+    SST_TP_FINALIZE                /* Python3 only */
+    SST_TP_VECTORCALL              /* Python3 only */
 };
 
 
