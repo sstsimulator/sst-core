@@ -31,10 +31,11 @@ There is no guarantee on the order of Testsuites being run, however, all tests w
      * -k = Keep output.  Normally, output directory is deleted before run to ensure clean results, setting this flag will prevent delete of output directory; default = false
      * -c xx = Run tests concurrently; default = 8  (SEE Concurrent Testing BELOW)
      * -l List discovered testscipts instead of running tests; default = false
-     * -v, -q, -d - Screen Output mode as verbose, quiet or debug.  
-        * If not defined, screen output is normal (dots indicate successful tests)
+     * -v, -n, -q, -d - Screen Output mode as verbose, normal, quiet or debug.  
+        * If not defined, screen output is verbose 
+        * -v = Verbose output, tells user what test is running [default]
+        * -n = Normal output, indicates minimal test results (dots indicate successful tests)
         * -q = quiet output, minimal information is displayed on screen
-        * -v = Verbose output, tells user what test is running
         * -d = Debug output, outputs test specific debug data to the screen
      * -s = Scenarios name (SEE Scenarios BELOW); default = NONE
      * -r XX = Number of ranks to use during SST runs; default = 1
