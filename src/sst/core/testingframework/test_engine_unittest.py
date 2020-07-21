@@ -92,6 +92,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
         return run_results.wasSuccessful and \
         len(run_results.failures) == 0 and \
         len(run_results.errors) == 0 and \
+        len(run_results.unexpectedSuccesses) == 0 and \
         test_engine_globals.TESTENGINE_ERRORCOUNT == 0
 
 ###
@@ -116,21 +117,170 @@ class SSTTextTestRunner(unittest.TextTestRunner):
                 log_forced("=== because each testing thread will consume {0} ranks".format(ranks_used))
                 log_forced("===================================================")
 
-        log(("\n=== TEST RESULTS ==================") +
-                   ("===================================\n"))
-        log("Tests Run      = {0}".format(run_results.testsRun))
-        log("Tests Failures = {0}".format(len(run_results.failures)))
-        log("Tests Skipped  = {0}".format(len(run_results.skipped)))
-        log("Tests Errors   = {0}".format(len(run_results.errors)))
+        numpassingtests = run_results.testsRun - len(run_results.failures) \
+                                               - len(run_results.skipped) \
+                                               - len(run_results.errors) \
+                                               - len(run_results.expectedFailures) \
+                                               - len(run_results.unexpectedSuccesses)
+
+        if not self.did_tests_pass(run_results):
+            log(("\n=== TEST RESULTS BREAKDOWN ========") +
+                ("==================================="))
+            run_results.get_test_result_dict().log_fail_error_skip_unexpeced_results()
+
+        log(("\n=== TEST RESULTS SUMMARY ==========") +
+            ("===================================\n"))
+        log("Tests Run            = {0}".format(run_results.testsRun))
+        log(40 * "-")
+        log("Passing              = {0}".format(numpassingtests))
+        log("Failures             = {0}".format(len(run_results.failures)))
+        log("Skipped              = {0}".format(len(run_results.skipped)))
+        log("Errors               = {0}".format(len(run_results.errors)))
+        log("Expected Failures    = {0}".format(len(run_results.expectedFailures)))
+        log("Unexpected Successes = {0}".format(len(run_results.unexpectedSuccesses)))
+
         if self.did_tests_pass(run_results):
-            log_forced("\n== TESTING PASSED ==")
+            log_forced("\n====================")
+            log_forced("== TESTING PASSED ==")
+            log_forced("====================")
         else:
             if test_engine_globals.TESTENGINE_ERRORCOUNT == 0:
-                log_forced("\n== TESTING FAILED ==")
+                log_forced("\n====================")
+                log_forced("== TESTING FAILED ==")
+                log_forced("====================")
             else:
-                log_forced("\n== TESTING FAILED DUE TO ERRORS ==")
+                log_forced("\n==================================")
+                log_forced("== TESTING FAILED DUE TO ERRORS ==")
+                log_forced("==================================")
         log(("\n===================================") +
             ("===================================\n"))
+
+################################################################################
+
+class SSTTestResultData:
+    def __init__(self):
+        self.tests_passing = []
+        self.tests_failing = []
+        self.tests_errored = []
+        self.tests_skiped = []
+        self.tests_expectedfailed = []
+        self.tests_unexpectedsuccess = []
+
+    def add_success(self, test):
+        self.tests_passing.append(test)
+
+    def add_failure(self, test):
+        self.tests_failing.append(test)
+
+    def add_error(self, test):
+        self.tests_errored.append(test)
+
+    def add_skip(self, test):
+        self.tests_skiped.append(test)
+
+    def add_expected_failure(self, test):
+        self.tests_expectedfailed.append(test)
+
+    def add_unexpected_success(self, test):
+        self.tests_unexpectedsuccess.append(test)
+
+    def get_passing(self):
+        return self.tests_passing
+
+    def get_failed(self):
+        return self.tests_failing
+
+    def get_errored(self):
+        return self.tests_errored
+
+    def get_skiped(self):
+        return self.tests_skiped
+
+    def get_expectedfailed(self):
+        return self.tests_expectedfailed
+
+    def get_unexpectedsuccess(self):
+        return self.tests_unexpectedsuccess
+
+###
+
+class SSTTestResultDict:
+
+    def __init__(self):
+        self.testresultdict = {}
+
+    def add_success(self, test):
+        self._get_testresult_from_testmodulecase(test).add_success(test)
+
+    def add_failure(self, test):
+        self._get_testresult_from_testmodulecase(test).add_failure(test)
+
+    def add_error(self, test):
+        self._get_testresult_from_testmodulecase(test).add_error(test)
+
+    def add_skip(self, test):
+        self._get_testresult_from_testmodulecase(test).add_skip(test)
+
+    def add_expected_failure(self, test):
+        self._get_testresult_from_testmodulecase(test).add_expected_failure(test)
+
+    def add_unexpected_success(self, test):
+        self._get_testresult_from_testmodulecase(test).add_unexpected_success(test)
+
+    def log_all_results(self):
+        # Log the data by key
+        for tmtc_name in self.testresultdict:
+            log("\n{0}".format(tmtc_name))
+            for testname in self.testresultdict[tmtc_name].get_passing():
+                log(" - PASSED  : {0}".format(testname))
+            for testname in self.testresultdict[tmtc_name].get_failed():
+                log(" - FAILED  : {0}".format(testname))
+            for testname in self.testresultdict[tmtc_name].get_errored():
+                log(" - ERROR   : {0}".format(testname))
+            for testname in self.testresultdict[tmtc_name].get_skiped():
+                log(" - SKIPPED : {0}".format(testname))
+            for testname in self.testresultdict[tmtc_name].get_expectedfailed():
+                log(" - EXPECTED FAILED    : {0}".format(testname))
+            for testname in self.testresultdict[tmtc_name].get_unexpectedsuccess():
+                log(" - UNEXPECTED SUCCESS : {0}".format(testname))
+
+    def log_fail_error_skip_unexpeced_results(self):
+        # Log the data by key
+        for tmtc_name in self.testresultdict:
+            if len(self.testresultdict[tmtc_name].get_failed()) == 0 and \
+               len(self.testresultdict[tmtc_name].get_errored()) == 0 and \
+               len(self.testresultdict[tmtc_name].get_skiped()) == 0 and \
+               len(self.testresultdict[tmtc_name].get_expectedfailed()) == 0 and \
+               len(self.testresultdict[tmtc_name].get_unexpectedsuccess()) == 0:
+                 pass
+            else:
+                log("\n{0}".format(tmtc_name))
+                for testname in self.testresultdict[tmtc_name].get_failed():
+                    log(" - FAILED  : {0}".format(testname))
+                for testname in self.testresultdict[tmtc_name].get_errored():
+                    log(" - ERROR   : {0}".format(testname))
+                for testname in self.testresultdict[tmtc_name].get_skiped():
+                    log(" - SKIPPED : {0}".format(testname))
+                for testname in self.testresultdict[tmtc_name].get_expectedfailed():
+                    log(" - EXPECTED FAILED    : {0}".format(testname))
+                for testname in self.testresultdict[tmtc_name].get_unexpectedsuccess():
+                    log(" - UNEXPECTED SUCCESS : {0}".format(testname))
+
+    def _get_testresult_from_testmodulecase(self, test):
+        tm_tc = self._get_test_module_test_case_name(test)
+        if not tm_tc in self.testresultdict.keys():
+            self.testresultdict[tm_tc] = SSTTestResultData()
+        return self.testresultdict[tm_tc]
+
+    def _get_test_module_test_case_name(self, test):
+        return "{0}.{1}".format(self._get_test_module_name(test),
+                                self._get_test_case_name(test))
+
+    def _get_test_case_name(self, test):
+        return strqual(test.__class__)
+
+    def _get_test_module_name(self, test):
+        return strclass(test.__class__)
 
 ################################################################################
 
@@ -139,6 +289,7 @@ class SSTTextTestResult(unittest.TextTestResult):
 
     def __init__(self, stream, descriptions, verbosity):
         super(SSTTextTestResult, self).__init__(stream, descriptions, verbosity)
+        self.testresultdict = SSTTestResultDict()
 
 ###
 
@@ -168,10 +319,16 @@ class SSTTextTestResult(unittest.TextTestResult):
 
 ###
 
+    def get_test_result_dict(self):
+        return self.testresultdict
+
+###
+
     def addSuccess(self, test):
         #super(SSTTextTestResult, self).addSuccess(test)
         #log_forced("DEBUG - addSuccess: Test = {0}\n".format(test))
         # Override the "ok" and make it a "PASS" instead
+        self.testresultdict.add_success(test)
         if self.showAll:
             self.stream.writeln("PASS")
         elif self.dots:
@@ -180,6 +337,7 @@ class SSTTextTestResult(unittest.TextTestResult):
 
     def addError(self, test, err):
         super(SSTTextTestResult, self).addError(test, err)
+        self.testresultdict.add_error(test)
         #log_forced("DEBUG - addError: Test = {0}, err = {1}\n".format(test, err))
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
@@ -188,6 +346,7 @@ class SSTTextTestResult(unittest.TextTestResult):
 
     def addFailure(self, test, err):
         super(SSTTextTestResult, self).addFailure(test, err)
+        self.testresultdict.add_failure(test)
         #log_forced("DEBUG - addFailure: Test = {0}, err = {1}\n".format(test, err))
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
@@ -196,18 +355,27 @@ class SSTTextTestResult(unittest.TextTestResult):
 
     def addSkip(self, test, reason):
         super(SSTTextTestResult, self).addSkip(test, reason)
+        self.testresultdict.add_skip(test)
         #log_forced("DEBUG - addSkip: Test = {0}, reason = {1}\n".format(test, reason))
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
             _junit_test_case.junit_add_skipped_info(reason)
 
     def addExpectedFailure(self, test, err):
+        # NOTE: This is not a failure, but an identified pass
+        #       since we are expecting a failure
         super(SSTTextTestResult, self).addExpectedFailure(test, err)
+        self.testresultdict.add_expected_failure(test)
         #log_forced("DEBUG - addExpectedFailure: Test = {0}, err = {1}\n".format(test, err))
 
     def addUnexpectedSuccess(self, test):
+        # NOTE: This is a failure, since we passed, but were expecting a failure
         super(SSTTextTestResult, self).addUnexpectedSuccess(test)
+        self.testresultdict.add_unexpected_success(test)
         #log_forced("DEBUG - addUnexpectedSuccess: Test = {0}\n".format(test))
+        _junit_test_case = getattr(self, '_junit_test_case', None)
+        if _junit_test_case is not None:
+            _junit_test_case.junit_add_failure_info("RECEIVED SUCCESS WHEN EXPECTING A FAILURE")
 
 ###
 
