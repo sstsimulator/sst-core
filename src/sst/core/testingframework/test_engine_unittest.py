@@ -483,6 +483,8 @@ class SSTTestSuite(test_suite_base_class):
                 while len(threads) < thread_limit and test != None:
                     #log_forced("DEBUG: CALLING FOR NEXT TEST; threads = {0}".format(len(threads)))
                     test = next(test_iter, None)
+                    if result.shouldStop:
+                        tests_finished = True
                     test_index += 1
                     #log_forced("DEBUG: TEST = {0}; index = {1}".format(test, test_index))
                     if test != None:
@@ -501,7 +503,7 @@ class SSTTestSuite(test_suite_base_class):
                     #log_forced("DEBUG: FINISHED TEST THREADS keys = {0}".format(threads.keys()))
                 else:
                     tests_finished = True
-                    test_engine_globals.TESTRUN_TESTRUNNINGFLAG = False
+            test_engine_globals.TESTRUN_TESTRUNNINGFLAG = False
 
         except:
             for thread, process_result in threads.values():
