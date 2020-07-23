@@ -42,52 +42,51 @@ DEF_THREAD_LIMIT = 8
 
 HELP_DESC = 'Run {0} Tests'
 HELP_EPILOG = (
-               ("Finding TestSuites:\n") +
-               ("During Startup, the 'list_of_paths' and 'testsuite_types' (or 'testsuite_wildcards')\n") +
-               (" arguments are used to create a list of testsuites to be run.\n") +
-               (" - If the 'list_of_paths' argument includes a testsuite file, that testsuite\n") +
-               ("   file will be directly added to the list of testsuites to be run.\n") +
-               (" - If the 'list_of_paths' argument includes a directory (containing 1 or more \n") +
-               ("   testsuites), that directory will be searched for specific testsuites as\n") +
-               ("   described below.\n") +
-               (" - If the 'list_of_paths' argument is empty (default), testsuites paths found \n") +
-               ("   in the sstsimulator.conf file (located in the <sstcore_install>/etc directory)\n") +
-               ("   will be searched for specific testsuites as described below.\n") +
-               ("\n") +
-               ("Searching for testsuites by type or wildcard:\n") +
-               ("Each directory identified by the 'list_of_paths' argument will search for \n") +
-               ("testsuites based upon the 'testsuite_types' argument or 'testsuite_wildcards'\n") +
-               ("argument (mutually exclusive) as follows:\n") +
-               (" - Files named 'testsuite_default_*.py' will be added to the list of\n") +
-               ("   testsuites to be run if argument --testsuite_types AND\n") +
-               ("   argument --testsuite_wildcards are both NOT specified.\n") +
-               ("   Note: This will run only the 'default' set of testsuites in the directory.\n") +
-               (" - Files named 'testsuite_<type_name>_*.py' will be added to the list of\n") +
-               ("   testsuites to be run when <type_name> is specifed using the \n") +
-               ("   --testsuite_types=<type_name> argument.\n") +
-               ("   Note: This will run user selected set of testsuites in the directory.\n") +
-               (" - Files named 'testsuite_*.py' will be added to the list of testsuites to\n") +
-               ("   be run when argument --testsuite_types=all is specified.\n") +
-               ("   Note: This will run ALL of the testsuites in the directory.\n") +
-               (" - Files named 'testsuite_<wildcard_name>.py' will be added to the list of\n") +
-               ("   testsuites to be run when <wildcard_name> is specifed using the\n") +
-               ("   --testsuite_wildcards = <wildcard_name> argument.\n") +
-               ("   Note: This will run user selected set of testsuites in the directory.\n") +
-               ("\n") +
-               ("Tests Execution:\n") +
-               ("All tests identified inside of the testsuites to be given an opportunity to\n") +
-               ("run.  There will be situations where a tests may not be able to run and will be \n") +
-               ("skipped (cannot run on the OS, or build configuration does not support the\n") +
-               ("test).\n") +
-               (" - The decision to skip is made in the testsuite source code.\n") +
-               ("\n") +
-               ("Test Scenarios:\n") +
-               ("Tests and TestCases identified in testsuites can be skipped from running\n") +
-               ("by using the '--scenarios' argument.  1 or more scenarios can be defined\n") +
-               ("concurrently.\n") +
-               (" - The decision to skip is made in the testsuite source code.\n") +
-               (" \n")
-              )
+    ("Finding TestSuites:\n") +
+    ("During Startup, the 'list_of_paths' and 'testsuite_types' (or 'testsuite_wildcards')\n") +
+    (" arguments are used to create a list of testsuites to be run.\n") +
+    (" - If the 'list_of_paths' argument includes a testsuite file, that testsuite\n") +
+    ("   file will be directly added to the list of testsuites to be run.\n") +
+    (" - If the 'list_of_paths' argument includes a directory (containing 1 or more \n") +
+    ("   testsuites), that directory will be searched for specific testsuites as\n") +
+    ("   described below.\n") +
+    (" - If the 'list_of_paths' argument is empty (default), testsuites paths found \n") +
+    ("   in the sstsimulator.conf file (located in the <sstcore_install>/etc directory)\n") +
+    ("   will be searched for specific testsuites as described below.\n") +
+    ("\n") +
+    ("Searching for testsuites by type or wildcard:\n") +
+    ("Each directory identified by the 'list_of_paths' argument will search for \n") +
+    ("testsuites based upon the 'testsuite_types' argument or 'testsuite_wildcards'\n") +
+    ("argument (mutually exclusive) as follows:\n") +
+    (" - Files named 'testsuite_default_*.py' will be added to the list of\n") +
+    ("   testsuites to be run if argument --testsuite_types AND\n") +
+    ("   argument --testsuite_wildcards are both NOT specified.\n") +
+    ("   Note: This will run only the 'default' set of testsuites in the directory.\n") +
+    (" - Files named 'testsuite_<type_name>_*.py' will be added to the list of\n") +
+    ("   testsuites to be run when <type_name> is specifed using the \n") +
+    ("   --testsuite_types=<type_name> argument.\n") +
+    ("   Note: This will run user selected set of testsuites in the directory.\n") +
+    (" - Files named 'testsuite_*.py' will be added to the list of testsuites to\n") +
+    ("   be run when argument --testsuite_types=all is specified.\n") +
+    ("   Note: This will run ALL of the testsuites in the directory.\n") +
+    (" - Files named 'testsuite_<wildcard_name>.py' will be added to the list of\n") +
+    ("   testsuites to be run when <wildcard_name> is specifed using the\n") +
+    ("   --testsuite_wildcards = <wildcard_name> argument.\n") +
+    ("   Note: This will run user selected set of testsuites in the directory.\n") +
+    ("\n") +
+    ("Tests Execution:\n") +
+    ("All tests identified inside of the testsuites to be given an opportunity to\n") +
+    ("run.  There will be situations where a tests may not be able to run and will be \n") +
+    ("skipped (cannot run on the OS, or build configuration does not support the\n") +
+    ("test).\n") +
+    (" - The decision to skip is made in the testsuite source code.\n") +
+    ("\n") +
+    ("Test Scenarios:\n") +
+    ("Tests and TestCases identified in testsuites can be skipped from running\n") +
+    ("by using the '--scenarios' argument.  1 or more scenarios can be defined\n") +
+    ("concurrently.\n") +
+    (" - The decision to skip is made in the testsuite source code.\n") +
+    (" \n"))
 
 # AVAILABLE TEST MODES
 MODE_TEST_ELEMENTS = 0
@@ -105,8 +104,24 @@ class TestEngine():
             :param: sst_core_bin_dir - The SST-Core binary directory
             :param: test_mode = 1 for Core Testing, 0 for Elements testingt
         """
-        ver = self._validate_python_version()
-        self._init_test_engine_variables(sst_core_bin_dir, test_mode)
+        self._validate_python_version()
+
+        # Init some internal variables
+        self._fail_fast = False
+        self._keep_output_dir = False
+        self._list_discovered_testsuites_mode = False
+        self._list_of_searchable_testsuite_paths = []
+        self._testsuite_types_list = []
+        self._testsuite_wildcards_list = []
+        self._sst_core_bin_dir = sst_core_bin_dir
+        self._test_mode = test_mode
+        self._sst_full_test_suite = unittest.TestSuite()
+        if self._test_mode:
+            self._test_type_str = "SST-Core"
+        else:
+            self._test_type_str = "Registered Elements"
+        test_engine_globals.init_test_engine_globals()
+
         self._parse_arguments()
         verify_concurrent_test_engine_available()
         self._display_startup_info()
@@ -121,39 +136,41 @@ class TestEngine():
         self._create_all_output_directories()
 
         # Build the Config File Parser
-        test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER = self._create_core_config_parser()
-        test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT = self._build_core_config_include_defs_dict()
+        test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER = \
+            self._create_core_config_parser()
+        test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT = \
+        self._build_core_config_include_defs_dict()
 
         # Find all the testsuites we need to run
         self._discover_testsuites()
 
-        if self.list_testsuites_mode:
+        if self._list_discovered_testsuites_mode:
             # dump the discovered testsuites and tests
             log("\nDISCOVERED TESTS:")
             self._dump_testsuite_list(self._sst_full_test_suite, log_normal=True)
+            return 0
 
-        else:
-            # Now run the testsuites, looking for a keyboard interrupt if necessary
-            # to stop testing.
-            try:
-                # Convert test suites to a Concurrent Test Suite type object,
-                self._sst_full_test_suite = SSTTestSuite(self._sst_full_test_suite,
-                                                         self._build_tests_list_helper)
-                # Setup the runner
-                test_runner = SSTTextTestRunner(verbosity=test_engine_globals.TESTENGINE_VERBOSITY,
-                                                failfast=self._fail_fast,
-                                                resultclass=SSTTextTestResult)
-                # run the tests
-                sst_tests_results = test_runner.run(self._sst_full_test_suite)
+        # Now run the testsuites, looking for a keyboard interrupt if necessary
+        # to stop testing.
+        try:
+            # Convert test suites to a Concurrent Test Suite type object,
+            self._sst_full_test_suite = SSTTestSuite(self._sst_full_test_suite,
+                                                     self._build_tests_list_helper)
+            # Setup the runner
+            test_runner = SSTTextTestRunner(verbosity=test_engine_globals.TESTENGINE_VERBOSITY,
+                                            failfast=self._fail_fast,
+                                            resultclass=SSTTextTestResult)
+            # run the tests
+            sst_tests_results = test_runner.run(self._sst_full_test_suite)
 
-                if not test_runner.did_tests_pass(sst_tests_results):
-                    return 1
-                return 0
+            if not test_runner.did_tests_pass(sst_tests_results):
+                return 1
+            return 0
 
-            # Handlers of unittest.TestRunner exceptions
-            except KeyboardInterrupt:
-                log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
-
+        # Handlers of unittest.TestRunner exceptions
+        except KeyboardInterrupt:
+            log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
+        return 2
 
 ####
 
@@ -192,30 +209,6 @@ class TestEngine():
 
 ####
 
-    def _init_test_engine_variables(self, sst_core_bin_dir, test_mode):
-        """ Initialize the variables needed for testing.  This will also
-            initialize the global variables
-            :param: sst_core_bin_dir = The SST-Core binary directory
-            :param: test_mode = 1 for Core Testing, 0 for Elements testing
-        """
-        # Init some internal variables
-        self._fail_fast = False
-        self._keep_output_dir = False
-        self._list_of_searchable_testsuite_paths = []
-        self._testsuite_types_list = []
-        self._testsuite_wildcards_list = []
-        self._sst_core_bin_dir = sst_core_bin_dir
-        self._test_mode = test_mode
-        self._sst_full_test_suite = unittest.TestSuite()
-        if self._test_mode:
-            self._test_type_str = "SST-Core"
-        else:
-            self._test_type_str = "Registered Elements"
-
-        test_engine_globals.init_test_engine_globals()
-
-####
-
     def _parse_arguments(self):
         """ Parse the cmd line arguments
         """
@@ -250,7 +243,7 @@ class TestEngine():
         run_group.add_argument('-a', '--sst_run_args', type=str, metavar='" --arg1 -a2"',
                                nargs=1, default=[''],
                                help=('Runtime args for all SST runs (must be\n')
-                                  + ('identifed as a string; Note:extra space at front)'))
+                               + ('identifed as a string; Note:extra space at front)'))
 
         parser.add_argument('-f', '--fail_fast', action='store_true',
                             help='Stop testing on failure [false]')
@@ -262,28 +255,30 @@ class TestEngine():
         parser.add_argument('-c', '--concurrent', type=int, metavar="TT",
                             nargs='?', const=DEF_THREAD_LIMIT,
                             help=('Run Test Suites concurrently using threads\n')
-                               + ('TT = thread limit [default {0}]').format(DEF_THREAD_LIMIT))
+                            + ('TT = thread limit [default {0}]').format(DEF_THREAD_LIMIT))
         parser.add_argument('-l', '--list_testsuites', action='store_true',
                             help='List discovered testscipts instead of running tests [False]')
 
         discover_group = parser.add_argument_group('Test Discovery Arguments')
         mutnamegroup = discover_group.add_mutually_exclusive_group()
         mutnamegroup.add_argument('-y', '--testsuite_types', type=str, metavar="name",
-                                 nargs="+", default=['default'],
-                                 help=(('Name (in lowercase) of testsuite types to') + \
+                                  nargs="+", default=['default'],
+                                  help=(('Name (in lowercase) of testsuite types to') + \
                                        (' run\n("all" will run all types) ["default"]') + \
                                        ('\nNote: Mutually exclusive with --testsuite_wildcards')))
         mutnamegroup.add_argument('-w', '--testsuite_wildcards', type=str, metavar="name",
-                                 nargs="+", default=[],
-                                 help=(('Wildcard names of testsuites to') + \
+                                  nargs="+", default=[],
+                                  help=(('Wildcard names of testsuites to') + \
                                        (' run\n("testsuite_<wildcard_name>.py") [""]') + \
                                        ('\nNote: Mutually exclusive with --testsuite_types') + \
                                        ('\nNote: Quotes are important to avoid the shell\'s') + \
                                        ('\n automatic wildcard expansion. Example: -w "*merlin*"')))
         if self._test_mode:
-            testsuite_path_str = "TestSuite Files or Dirs to SST-Core\nTestSuites [Registered Dir Path]"
+            testsuite_path_str = \
+            "TestSuite Files or Dirs to SST-Core\nTestSuites [Registered Dir Path]"
         else:
-            testsuite_path_str = "Testsuite Files or Dirs to Registered\nElements TestSuites [Registered Dir Paths]"
+            testsuite_path_str = \
+            "Testsuite Files or Dirs to Registered\nElements TestSuites [Registered Dir Paths]"
         discover_group.add_argument('-p', '--list_of_paths', metavar='path',
                                     nargs='*', default=[], help=testsuite_path_str)
 
@@ -299,7 +294,7 @@ class TestEngine():
         """
         # Extract the Arguments into the class variables
         self._fail_fast = args.fail_fast
-        self.list_testsuites_mode = args.list_testsuites
+        self._list_discovered_testsuites_mode = args.list_testsuites
         self._keep_output_dir = args.keep_output
         self._list_of_searchable_testsuite_paths = args.list_of_paths
         lc_testscenario_list = [item.lower() for item in args.scenarios]
@@ -319,7 +314,7 @@ class TestEngine():
             test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_DEBUG
         test_engine_globals.TESTENGINE_CONCURRENTMODE = False
         test_engine_globals.TESTENGINE_THREADLIMIT = DEF_THREAD_LIMIT
-        if args.concurrent != None:
+        if args.concurrent is not None:
             if args.concurrent > 0:
                 test_engine_globals.TESTENGINE_CONCURRENTMODE = True
                 test_engine_globals.TESTENGINE_THREADLIMIT = args.concurrent
@@ -330,16 +325,19 @@ class TestEngine():
         test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS = args.threads[0]
         test_engine_globals.TESTENGINE_SSTRUN_GLOBALARGS = args.sst_run_args[0]
         test_engine_globals.TESTOUTPUT_TOPDIRPATH = os.path.abspath(args.out_dir[0])
-        test_engine_globals.TESTOUTPUT_RUNDIRPATH = os.path.abspath("{0}/run_data".format(args.out_dir[0]))
-        test_engine_globals.TESTOUTPUT_TMPDIRPATH = os.path.abspath("{0}/tmp_data".format(args.out_dir[0]))
-        test_engine_globals.TESTOUTPUT_XMLDIRPATH = os.path.abspath("{0}/xml_data".format(args.out_dir[0]))
+        test_engine_globals.TESTOUTPUT_RUNDIRPATH = os.path.\
+        abspath("{0}/run_data".format(args.out_dir[0]))
+        test_engine_globals.TESTOUTPUT_TMPDIRPATH = os.path.\
+        abspath("{0}/tmp_data".format(args.out_dir[0]))
+        test_engine_globals.TESTOUTPUT_XMLDIRPATH = os.path.\
+        abspath("{0}/xml_data".format(args.out_dir[0]))
         if args.ranks[0] < 0:
             log_fatal("ranks must be >= 0; currently set to {0}".format(args.ranks[0]))
         if args.threads[0] < 0:
             log_fatal("threads must be >= 0; currently set to {0}".format(args.threads[0]))
-        if test_engine_globals.TESTENGINE_DEBUGMODE == True and \
-           test_engine_globals.TESTENGINE_CONCURRENTMODE == True:
-               log_fatal("debug mode is not available with concurrent mode")
+        if test_engine_globals.TESTENGINE_DEBUGMODE and \
+        test_engine_globals.TESTENGINE_CONCURRENTMODE:
+            log_fatal("debug mode is not available with concurrent mode")
 
 ####
 
@@ -356,7 +354,8 @@ class TestEngine():
         num_cores = get_num_cores_on_system()
 
         if test_engine_globals.TESTENGINE_CONCURRENTMODE:
-            concurrent_txt = "[CONCURRENTLY ({0} Threads)]".format(test_engine_globals.TESTENGINE_THREADLIMIT)
+            concurrent_txt = "[CONCURRENTLY ({0} Threads)]".\
+            format(test_engine_globals.TESTENGINE_THREADLIMIT)
 
         # Display operations info if we are unning in a verbose mode
         log_info(("SST Test Engine Instantiated - Running") +
@@ -366,7 +365,8 @@ class TestEngine():
         log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
                  (" {0}".format(get_host_os_distribution_version())), forced=False)
 
-        log_info("Running on Python Version = {0}.{1}.{2}".format(ver[0], ver[1], ver[2]), forced=False)
+        log_info("Running on Python Version = {0}.{1}.{2}".\
+        format(ver[0], ver[1], ver[2]), forced=False)
 
         log_info("TestEngine Version = {0}".format(sstcoreversion), forced=False)
 
@@ -470,14 +470,14 @@ class TestEngine():
                     else:
                         for testsuite_type in self._testsuite_types_list:
                             testsuite_pattern = 'testsuite_{0}_*.py'.format(testsuite_type)
-                            sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
-                                                                            pattern=testsuite_pattern)
+                            sst_testsuites = unittest.TestLoader().\
+                            discover(start_dir=testsuite_path, pattern=testsuite_pattern)
                             self._sst_full_test_suite.addTests(sst_testsuites)
                 else:
                     for testsuite_wcname in self._testsuite_wildcards_list:
                         testsuite_pattern = 'testsuite_{0}.py'.format(testsuite_wcname)
-                        sst_testsuites = unittest.TestLoader().discover(start_dir=testsuite_path,
-                                                                        pattern=testsuite_pattern)
+                        sst_testsuites = unittest.TestLoader().\
+                        discover(start_dir=testsuite_path, pattern=testsuite_pattern)
                         self._sst_full_test_suite.addTests(sst_testsuites)
 
 
@@ -537,8 +537,8 @@ class TestEngine():
         # Read in the file line by line and discard any lines
         # that do not start with "#define "
         rtn_dict = {}
-        with open(core_conf_include_path, 'r') as f:
-            for read_line in f:
+        with open(core_conf_include_path, 'r') as filehandle:
+            for read_line in filehandle:
                 line = read_line.rstrip()
                 if "#define " in line[0:8]:
                     value = "undefined"
@@ -628,6 +628,6 @@ class TestEngine():
                 self._dump_testsuite_list(sub_suite, log_normal)
         else:
             if log_normal:
-               log("- {0}".format(suite))
+                log("- {0}".format(suite))
             else:
                 log_debug("- {0}".format(suite))

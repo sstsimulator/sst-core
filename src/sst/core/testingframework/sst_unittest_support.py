@@ -39,17 +39,20 @@ from test_engine_support import check_param_type
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
-OS_DIST_OSX    = "OSX"
+OS_DIST_OSX = "OSX"
 OS_DIST_CENTOS = "CENTOS"
-OS_DIST_RHEL   = "RHEL"
-OS_DIST_TOSS   = "TOSS"
+OS_DIST_RHEL = "RHEL"
+OS_DIST_TOSS = "TOSS"
 OS_DIST_UBUNTU = "UBUNTU"
-OS_DIST_UNDEF  = "UNDEFINED"
+OS_DIST_UNDEF = "UNDEFINED"
 
 ################################################################################
 
 class SSTTestCaseException(Exception):
+    """ Generic Exception for SSTTestCase
+    """
     def __init__(self, value):
+        super(SSTTestCaseException, self).__init__(value)
         self.value = value
     def __str__(self):
         return repr(self.value)
@@ -130,12 +133,17 @@ def get_host_os_distribution_type():
     if k_type == 'Linux':
         lin_dist = _get_linux_distribution()
         dist_name = lin_dist[0].lower()
-        if "centos" in dist_name: return OS_DIST_CENTOS
-        if "red hat" in dist_name: return OS_DIST_RHEL
-        if "toss" in dist_name: return OS_DIST_TOSS
-        if "ubuntu" in dist_name: return OS_DIST_UBUNTU
-    elif k_type == 'Darwin': return OS_DIST_OSX
-    else: return "undefined"
+        if "centos" in dist_name:
+            return OS_DIST_CENTOS
+        if "red hat" in dist_name:
+            return OS_DIST_RHEL
+        if "toss" in dist_name:
+            return OS_DIST_TOSS
+        if "ubuntu" in dist_name:
+            return OS_DIST_UBUNTU
+    elif k_type == 'Darwin':
+        return OS_DIST_OSX
+    return OS_DIST_UNDEF
 
 def get_host_os_distribution_version():
     """ Returns the os distribution version as a string"""
@@ -143,11 +151,10 @@ def get_host_os_distribution_version():
     if k_type == 'Linux':
         lin_dist = _get_linux_distribution()
         return lin_dist[1]
-    elif k_type == 'Darwin':
+    if k_type == 'Darwin':
         mac_ver = platform.mac_ver()
         return mac_ver[0]
-    else:
-        return "undefined"
+    return "Undefined"
 
 ###
 
@@ -290,7 +297,7 @@ def get_sstsimulator_conf_value_float(section, key, default=None):
 
 ###
 
-def get_sstsimulator_conf_value_bool(section, key,default=None):
+def get_sstsimulator_conf_value_bool(section, key, default=None):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
        :param: section (str): The [section] to look for the key
        :param: key (str): The key to find
@@ -340,7 +347,7 @@ def get_all_sst_config_keys_values_from_section(section):
        This will raise a SSTTestCaseException if an error occurs
     """
     check_param_type("section", section, str)
-    core_conf_file_parser = TESTENGINE_CORE_CONFFILE_PARSER
+    core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
         return core_conf_file_parser.items(section)
     except configparser.Error as exc_e:
@@ -485,59 +492,59 @@ def get_test_output_tmp_dir():
 ################################################################################
 
 def compare_diff(outfile, reffile, ignore_ws=False):
-   """ compare 2 files for a diff
-       :param: outfile (str) Path to the output file
-       :param: reffile (str) Path to the reference file
-       :param: ignore_ws (bool) Path to the reference file
-       :return: True if the 2 files match
-   """
-   # Use diff (ignore whitespace) to see if the sorted files are the same
-   if not os.path.isfile(outfile):
-       log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
-       return False
+    """ compare 2 files for a diff
+        :param: outfile (str) Path to the output file
+        :param: reffile (str) Path to the reference file
+        :param: ignore_ws (bool) Path to the reference file
+        :return: True if the 2 files match
+    """
+    # Use diff (ignore whitespace) to see if the sorted files are the same
+    if not os.path.isfile(outfile):
+        log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
+        return False
 
-   if not os.path.isfile(reffile):
-       log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
-       return False
+    if not os.path.isfile(reffile):
+        log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
+        return False
 
-   ws_flag = ""
-   if ignore_ws == True:
-       ws_flag = "-b "
+    ws_flag = ""
+    if ignore_ws:
+        ws_flag = "-b "
 
-   cmd = "diff {0}{0} {1} > /dev/null 2>&1".format(ignore_ws, outfile, reffile)
-   filesAreTheSame = (os.system(cmd) == 0)
+    cmd = "diff {0} {1} {2} > /dev/null 2>&1".format(ws_flag, outfile, reffile)
+    filesAreTheSame = (os.system(cmd) == 0)
 
-   return filesAreTheSame
+    return filesAreTheSame
 
 ###
 
 def compare_sorted_diff(test_name, outfile, reffile):
-   """ Sort a output file along with a reference file and compare them
-       :param: test_name (str) Name to prefix the sorted files
-       :param: outfile (str) Path to the output file
-       :param: reffile (str) Path to the reference file
-       :return: True if the 2 sorted file match
-   """
-   if not os.path.isfile(outfile):
-       log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
-       return False
+    """ Sort a output file along with a reference file and compare them
+        :param: test_name (str) Name to prefix the sorted files
+        :param: outfile (str) Path to the output file
+        :param: reffile (str) Path to the reference file
+        :return: True if the 2 sorted file match
+    """
+    if not os.path.isfile(outfile):
+        log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
+        return False
 
-   if not os.path.isfile(reffile):
-       log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
-       return False
+    if not os.path.isfile(reffile):
+        log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
+        return False
 
-   sorted_outfile = "{1}/{0}_sorted_outfile".format(test_name, get_test_output_tmp_dir())
-   sorted_reffile = "{1}/{0}_sorted_reffile".format(test_name, get_test_output_tmp_dir())
-   diff_sorted_file = "{1}/{0}_diff_sorted".format(test_name, get_test_output_tmp_dir())
+    sorted_outfile = "{1}/{0}_sorted_outfile".format(test_name, get_test_output_tmp_dir())
+    sorted_reffile = "{1}/{0}_sorted_reffile".format(test_name, get_test_output_tmp_dir())
+    diff_sorted_file = "{1}/{0}_diff_sorted".format(test_name, get_test_output_tmp_dir())
 
-   os.system("sort -o {0} {1}".format(sorted_outfile, outfile))
-   os.system("sort -o {0} {1}".format(sorted_reffile, reffile))
+    os.system("sort -o {0} {1}".format(sorted_outfile, outfile))
+    os.system("sort -o {0} {1}".format(sorted_reffile, reffile))
 
-   # Use diff (ignore whitespace) to see if the sorted files are the same
-   cmd = "diff -b {0} {1} > {2}".format(sorted_outfile, sorted_reffile, diff_sorted_file)
-   filesAreTheSame = (os.system(cmd) == 0)
+    # Use diff (ignore whitespace) to see if the sorted files are the same
+    cmd = "diff -b {0} {1} > {2}".format(sorted_outfile, sorted_reffile, diff_sorted_file)
+    filesAreTheSame = (os.system(cmd) == 0)
 
-   return filesAreTheSame
+    return filesAreTheSame
 
 ###
 
@@ -569,13 +576,11 @@ def merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
 ### OS Basic Commands
 ################################################################################
 
-def os_simple_command(os_cmd, rtn_value=None):
-    """ Perform an simple os command and get the stdout and the return code if needed
+def os_simple_command(os_cmd):
+    """ Perform an simple os command and return the results code
         NOTE: Simple command cannot have pipes or redirects
     """
     rtn = OSCommand(os_cmd).run()
-#    if rtn_value != None:
-#        rtn_value = rtn.result()
     return rtn.output()
 
 def os_ls(directory="."):
@@ -609,7 +614,7 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
     # Make sure target dir exists, and cd into it
     if not os.path.isdir(targetdir):
         log_error("Download directory {0} does not exist".format(targetdir))
-        return false
+        return False
 
     savedir = os.getcwd()
     os.chdir(targetdir)
@@ -629,23 +634,24 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
         log_debug("wget rtn: {0}".format(rtn_value))
         if os.path.isfile(wgetoutfile):
             with open(wgetoutfile, "rb") as wgetfile:
-                 wgetoutput = "".join(wgetfile.readlines()[1:])
+                wgetoutput = "".join(wgetfile.readlines()[1:])
 
             log_debug("wget output:\n{0}".format(wgetoutput))
         else:
             log_debug("wget output: NOT FOUND")
-        log_debug("Download Failed, waiting {0} seconds and trying again...".format(secsbetweentries))
+        log_debug("Download Failed, waiting {0} seconds and trying again...".\
+            format(secsbetweentries))
         attemptnum = attemptnum + 1
         time.sleep(secsbetweentries)
 
-    if rtn == False:
+    if not rtn:
         log_error("Failed to download via wget {0}".format(fileurl))
 
     # Restore the saved dir and return the results
     os.chdir(savedir)
     return rtn
 
-def os_extract_tar(tarfilepath, targetdir = "."):
+def os_extract_tar(tarfilepath, targetdir="."):
     """ Untar a file
         :return: True on success
     """
@@ -674,41 +680,41 @@ def _get_linux_distribution():
         # This is the easy method for Py2 - p3.7.
     if _linux_distribution is not None:
         return _linux_distribution()
-    else:
-        # We need to do this the hard way, NOTE: order of checking is important
-        distname = "undefined"
-        distver = "undefined"
-        if os.path.isfile("/etc/toss-release"):
-            distname = "toss"
-            distver = _get_linux_version("/etc/toss-release", "-")
-        elif os.path.isfile("/etc/centos-release"):
-            distname = "centos"
-            distver = _get_linux_version("/etc/centos-release", " ")
-        elif os.path.isfile("/etc/redhat-release"):
-            distname = "red hat"
-            distver = _get_linux_version("/etc/redhat-release", " ")
-        elif os.path.isfile("/etc/lsb-release"):
-            # Until we have other OS's, this is Ubuntu.
-            distname = "ubuntu"
-            distver = _get_linux_version("/etc/lsb-release", " ")
-        rtn_data=(distname, distver)
-        return rtn_data
+
+    # We need to do this the hard way, NOTE: order of checking is important
+    distname = "undefined"
+    distver = "undefined"
+    if os.path.isfile("/etc/toss-release"):
+        distname = "toss"
+        distver = _get_linux_version("/etc/toss-release", "-")
+    elif os.path.isfile("/etc/centos-release"):
+        distname = "centos"
+        distver = _get_linux_version("/etc/centos-release", " ")
+    elif os.path.isfile("/etc/redhat-release"):
+        distname = "red hat"
+        distver = _get_linux_version("/etc/redhat-release", " ")
+    elif os.path.isfile("/etc/lsb-release"):
+        # Until we have other OS's, this is Ubuntu.
+        distname = "ubuntu"
+        distver = _get_linux_version("/etc/lsb-release", " ")
+    rtn_data = (distname, distver)
+    return rtn_data
 
 ###
 
 def _get_linux_version(filepath, sep):
     """ return the linux OS version as a string"""
     # Find the first digit + period in the tokenized string list
-    with open(filepath, 'r') as f:
-        for line in f:
+    with open(filepath, 'r') as filehandle:
+        for line in filehandle:
             #print("found line = " + line)
             word_list = line.split(sep)
             for word in word_list:
                 #print("word =" + word)
-                m = re.search(r"[\d.]+", word)
-                #print("found_ver = {0}".format(m))
-                if m is not None:
-                    found_ver = m.string[m.start():m.end()]
+                m_data = re.search(r"[\d.]+", word)
+                #print("found_ver = {0}".format(m_data))
+                if m_data is not None:
+                    found_ver = m_data.string[m_data.start():m_data.end()]
                     #print("found_ver = {0}".format(found_ver))
                     return found_ver
     return "undefined"
@@ -727,16 +733,17 @@ def _get_sst_config_include_file_value(define, default=None, data_type=str):
        This will raise a SSTTestCaseException if a default is not provided or type
        is incorrect
     """
-    if not data_type == int and not data_type == str:
+    if data_type not in (int, str):
         raise SSTTestCaseException("Illegal datatype {0}".format(data_type))
     check_param_type("define", define, str)
-    if default != None:
+    if default is not None:
         check_param_type("default", default, data_type)
     core_conf_inc_dict = test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT
     try:
-        rtn_data =  core_conf_inc_dict[define]
+        rtn_data = core_conf_inc_dict[define]
     except KeyError as exc_e:
-        errmsg = "Reading SST-Core Config include file sst_config.h - Cannot find #define {0}".format(exc_e)
+        errmsg = ("Reading SST-Core Config include file sst_config.h") \
+                 + (" - Cannot find #define {0}".format(exc_e))
         log_warning(errmsg)
         if default is None:
             raise SSTTestCaseException(exc_e)
@@ -755,12 +762,11 @@ def _get_sstsimulator_conf_value(section, key, default=None, data_type=str):
        :return (str|int|float|bool): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """
-    if not data_type == int and not data_type == str and \
-       not data_type == float and not data_type == bool:
+    if data_type not in (int, str, float, bool):
         raise SSTTestCaseException("Illegal datatype {0}".format(data_type))
     check_param_type("section", section, str)
     check_param_type("key", key, str)
-    if default != None:
+    if default is not None:
         check_param_type("default", default, data_type)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
@@ -776,7 +782,7 @@ def _get_sstsimulator_conf_value(section, key, default=None, data_type=str):
         rtn_default = _handle_config_err(exc_e, default)
         if default is None:
             raise SSTTestCaseException(exc_e)
-        return rtn_default
+    return rtn_default
 
 ###
 
@@ -784,4 +790,3 @@ def _handle_config_err(exc_e, default_rtn_data):
     errmsg = "Reading SST-Core Config file sstsimulator.conf - {0}".format(exc_e)
     log_warning(errmsg)
     return default_rtn_data
-

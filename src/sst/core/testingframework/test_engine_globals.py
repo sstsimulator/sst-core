@@ -11,10 +11,10 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
-import os
-
 """ This module is a group of global variables that must be common to all tests
 """
+import os
+
 # Verbose Defines
 VERBOSE_QUIET = 0
 VERBOSE_NORMAL = 1
@@ -55,7 +55,7 @@ def init_test_engine_globals():
     global TESTOUTPUT_RUNDIRPATH
     global TESTOUTPUT_TMPDIRPATH
     global TESTOUTPUT_XMLDIRPATH
-    
+
     global TESTENGINE_CONCURRENTMODE
     global TESTENGINE_THREADLIMIT
     global TESTENGINE_DEBUGMODE

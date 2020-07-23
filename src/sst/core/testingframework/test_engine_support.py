@@ -16,7 +16,6 @@
 """
 
 import os
-import sys
 import subprocess
 import threading
 import traceback
@@ -84,8 +83,6 @@ class OSCommand():
         saved_cwd = os.getcwd()
 
         try:
-            cwd = os.getcwd()
-
             if self._set_cwd is not None:
                 os.chdir(os.path.abspath(self._set_cwd))
 
@@ -285,8 +282,8 @@ def qualname(obj):
     # than once for the same file.
     qualnames = _cache.get(filename)
     if qualnames is None:
-        with open(filename, 'r') as fp:
-            source = fp.read()
+        with open(filename, 'r') as filehandle:
+            source = filehandle.read()
         node = ast.parse(source, filename)
         visitor = _Visitor()
         visitor.visit(node)

@@ -27,8 +27,8 @@ from test_engine_support import check_param_type
 from test_engine_support import strclass
 from test_engine_support import strqual
 from test_engine_junit import JUnitTestSuite
-from test_engine_junit import junit_to_xml_report_string
 from test_engine_junit import junit_to_xml_report_file
+#from test_engine_junit import junit_to_xml_report_string
 
 ################################################################################
 
@@ -44,18 +44,19 @@ class SSTTestCase(unittest.TestCase):
         # NOTE: __init__ is called at startup for all tests before any
         #       setUpModules(), setUpClass(), setUp() and the like are called.
         super(SSTTestCase, self).__init__(methodName)
-        self.testName = methodName
+        self.testname = methodName
         parent_module_path = os.path.dirname(sys.modules[self.__class__.__module__].__file__)
         self._testsuite_dirpath = parent_module_path
-        #log_forced("SSTTestCase: __init__() - {0}".format(self.testName))
-        self.initializeClass(self.testName)
+        #log_forced("SSTTestCase: __init__() - {0}".format(self.testname))
+        self.initializeClass(self.testname)
 
 ###
 
-    def initializeClass(self, testName):
+    def initializeClass(self, testname):
+        """ Called immediately before class is initialized
+        """
         # Placeholder method for overridden method in derived class
-        #log_forced("\nSSTTestCase: initializeClass() - {0}".format(testName))
-        pass
+        #log_forced("\nSSTTestCase: initializeClass() - {0}".format(testname))
 
 ###
 
@@ -63,7 +64,7 @@ class SSTTestCase(unittest.TestCase):
         """ (Single Thread Testing) - Called immediately before a test is run
             (Concurrent Thread Testing) - Called immediately before a test is run
         """
-        #log_forced("SSTTestCase: setUp() - {0}".format(self.testName))
+        #log_forced("SSTTestCase: setUp() - {0}".format(self.testname))
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             test_engine_globals.TESTRUN_TESTRUNNINGFLAG = True
 
@@ -77,7 +78,7 @@ class SSTTestCase(unittest.TestCase):
         """ (Single Thread Testing) - Called immediately after a test finishes
             (Concurrent Thread Testing) - Called immediately after a test finishes
         """
-        #log_forced("SSTTestCase: tearDown() - {0}".format(self.testName))
+        #log_forced("SSTTestCase: tearDown() - {0}".format(self.testname))
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             test_engine_globals.TESTRUN_TESTRUNNINGFLAG = False
 
@@ -89,8 +90,8 @@ class SSTTestCase(unittest.TestCase):
             This is called before any tests in a TestCase are run
             (Concurrent Thread Testing) - NOT CALLED, NOT AVAILABLE
         """
-        #log_forced("SSTTestCase: setUpClass() - {0}".format(sys.modules[cls.__module__].__file__))
-        pass
+        #log_forced("SSTTestCase: setUpClass() - {0}".\
+        #format(sys.modules[cls.__module__].__file__))
 
 ###
 
@@ -100,18 +101,24 @@ class SSTTestCase(unittest.TestCase):
             This is called after all tests in a TestCase have finished running
             (Concurrent Thread Testing) - NOT CALLED, NOT AVAILABLE
         """
-        #log_forced("SSTTestCase: tearDownClass() - {0}".format(sys.modules[cls.__module__].__file__))
-        pass
+        #log_forced("SSTTestCase: tearDownClass() - {0}".\
+        #format(sys.modules[cls.__module__].__file__))
 
 ###
 
     def get_testsuite_name(self):
-        return ("{0}".format(strclass(self.__class__)))
+        """ Return the testsuite (module) name
+           :return: str The Name
+        """
+        return "{0}".format(strclass(self.__class__))
 
 ###
 
     def get_testcase_name(self):
-        return ("{0}".format(strqual(self.__class__)))
+        """ Return the testscase name
+           :return: str The Name
+        """
+        return "{0}".format(strqual(self.__class__))
 ###
 
     def get_testsuite_dir(self):
@@ -125,8 +132,8 @@ class SSTTestCase(unittest.TestCase):
 ################################################################################
 
     def run_sst(self, sdl_file, out_file, err_file=None, set_cwd=None, mpi_out_files="",
-               other_args="", num_ranks=None, num_threads=None, global_args=None,
-               timeout_sec=60):
+                other_args="", num_ranks=None, num_threads=None, global_args=None,
+                timeout_sec=60):
         """ Launch sst with with the command line and send output to the
             output file.  Other parameters can also be passed in.
            :param: sdl_file (str): The FilePath to the sdl file
@@ -145,12 +152,12 @@ class SSTTestCase(unittest.TestCase):
         """
         # NOTE: We cannot set the default of param to the global variable due to
         # oddities on how this class loads, so we do it here.
-        if num_ranks == None:
-            num_ranks=test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
-        if num_threads == None:
-            num_threads=test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
-        if global_args == None:
-            global_args=test_engine_globals.TESTENGINE_SSTRUN_GLOBALARGS
+        if num_ranks is None:
+            num_ranks = test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
+        if num_threads is None:
+            num_threads = test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
+        if global_args is None:
+            global_args = test_engine_globals.TESTENGINE_SSTRUN_GLOBALARGS
 
         # Make sure arguments are of valid types
         check_param_type("sdl_file", sdl_file, str)
@@ -196,14 +203,14 @@ class SSTTestCase(unittest.TestCase):
         num_cores = get_num_cores_on_system()
 
         # Check to see if mpirun is available
-        mpiAvail = False
+        mpi_avail = False
         rtn = os.system("which mpirun > /dev/null")
         if rtn == 0:
-            mpiAvail = True
+            mpi_avail = True
 
         if num_ranks > 1:
             numa_param = ""
-            if num_cores >= 2 and num_cores <= 4:
+            if 2 <= num_cores <= 4:
                 numa_param = "-map-by numa:pe=2 -oversubscribe"
             elif num_cores >= 4:
                 numa_param = "-map-by numa:pe=2"
@@ -215,7 +222,7 @@ class SSTTestCase(unittest.TestCase):
 
         # Identify the working directory that we are launching SST from
         final_wd = os.getcwd()
-        if set_cwd != None:
+        if set_cwd is not None:
             final_wd = os.path.abspath(set_cwd)
 
         # Log some debug info on the launch of SST
@@ -225,7 +232,7 @@ class SSTTestCase(unittest.TestCase):
 
         # Launch SST
         if num_ranks > 1:
-            if mpiAvail == False:
+            if mpi_avail is False:
                 log_fatal("OpenMPI IS NOT FOUND/AVAILABLE")
             rtn = OSCommand(oscmd, out_file, err_file, set_cwd).run(timeout_sec=timeout_sec)
             merge_mpi_files("{0}*".format(mpiout_filename), mpiout_filename, out_file)
@@ -278,11 +285,10 @@ def setUpModuleConcurrent(test):
         This is called before any a testsuite module is loaded, and before
         any TestCases or tests are run
     """
-    testcase_name = test.get_testcase_name()
     testsuite_name = test.get_testsuite_name()
-#    log_forced("\nSSTTestCase - setUpModuleConcurrent suite={0}; case={1}; test={2}".format(testsuite_name,
-#                                                                                            testcase_name,
-#                                                                                            test))
+#    testcase_name = test.get_testcase_name()
+#    log_forced("\nSSTTestCase - setUpModuleConcurrent suite={0}; case={1}; test={2}".\
+#    format(testsuite_name, testcase_name, test))
     if not testsuite_name in test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS:
         test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS[testsuite_name] = []
 
@@ -291,11 +297,10 @@ def tearDownModuleConcurrent(test):
         (Concurrent Thread Testing) - Called immediately after a testing module finishes
         This is called after all tests in all TestCases have finished running
     """
-    testcase_name = test.get_testcase_name()
     testsuite_name = test.get_testsuite_name()
-#    log_forced("\nSSTTestCase - tearDownModuleConcurrent suite={0}; case={1}; test={2}".format(testsuite_name,
-#                                                                                               testcase_name,
-#                                                                                               test))
+#    testcase_name = test.get_testcase_name()
+#    log_forced("\nSSTTestCase - tearDownModuleConcurrent suite={0}; case={1}; test={2}".\
+#    format(testsuite_name, testcase_name, test))
     t_s = JUnitTestSuite(testsuite_name,
                          test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS[testsuite_name])
 
@@ -306,5 +311,3 @@ def tearDownModuleConcurrent(test):
 
     with open(xml_out_filepath, 'w') as file_out:
         junit_to_xml_report_file(file_out, [t_s])
-
-
