@@ -622,13 +622,11 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
         log_error("Download directory {0} does not exist".format(targetdir))
         return False
 
-    savedir = os.getcwd()
-    os.chdir(targetdir)
-
     wgetoutfile = "{0}/wget.out".format(get_test_output_tmp_dir())
 
     log_debug("Downloading file via wget: {0}".format(fileurl))
-    cmd = "wget {0} --no-check-certificate {1} > {2} 2>&1".format(fileurl, wgetparams, wgetoutfile)
+    cmd = "wget {0} --no-check-certificate -P {1} {2} > {3} 2>&1".\
+       format(fileurl, targetdir, wgetparams, wgetoutfile)
     attemptnum = 1
     while attemptnum <= num_tries:
         log_debug("Attempt#{0}; cmd={1}".format(attemptnum, cmd))
@@ -652,10 +650,6 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
 
     if not rtn:
         log_error("Failed to download via wget {0}".format(fileurl))
-
-    # Restore the saved dir and return the results
-    os.chdir(savedir)
-    return rtn
 
 def os_extract_tar(tarfilepath, targetdir="."):
     """ Untar a file
