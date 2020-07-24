@@ -495,7 +495,7 @@ def compare_diff(outfile, reffile, ignore_ws=False):
     """ compare 2 files for a diff
         :param: outfile (str) Path to the output file
         :param: reffile (str) Path to the reference file
-        :param: ignore_ws (bool) Path to the reference file
+        :param: ignore_ws (bool) ignore whitespace
         :return: True if the 2 files match
     """
     # Use diff (ignore whitespace) to see if the sorted files are the same
@@ -586,6 +586,12 @@ def os_simple_command(os_cmd):
 def os_ls(directory="."):
     """ Perform an ls -lia on a directory and dump output to screen """
     cmd = "ls -lia {0}".format(directory)
+    rtn = OSCommand(cmd).run()
+    log("{0}".format(rtn.output()))
+
+def os_pwd():
+    """ Perform an pwd cmd to list the current directory """
+    cmd = "pwd"
     rtn = OSCommand(cmd).run()
     log("{0}".format(rtn.output()))
 

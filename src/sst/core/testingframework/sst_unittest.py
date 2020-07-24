@@ -127,6 +127,22 @@ class SSTTestCase(unittest.TestCase):
         """
         return self._testsuite_dirpath
 
+###
+
+    def get_test_output_run_dir(self):
+        """ Return the path of the output run directory
+           :return: str the dir
+        """
+        return get_test_output_run_dir()
+
+###
+
+    def get_test_output_tmp_dir(self):
+        """ Return the path of the output run directory
+           :return: str the dir
+        """
+        return get_test_output_tmp_dir()
+
 ################################################################################
 ### Method to run an SST simulation
 ################################################################################
