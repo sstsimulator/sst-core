@@ -80,11 +80,12 @@ class OSCommand():
         """ Run the command in a subprocess """
         file_out = None
         file_err = None
-        saved_cwd = os.getcwd()
 
         try:
             if self._set_cwd is not None:
-                os.chdir(os.path.abspath(self._set_cwd))
+                subprocess_path = os.path.abspath(self._set_cwd)
+            else:
+                subprocess_path = None
 
             # If No output files defined, default stdout and stderr to normal output
             if 'stdout' not in kwargs and self._output_file_path is None:
@@ -105,6 +106,7 @@ class OSCommand():
 
             self._process = subprocess.Popen(self._cmd_str,
                                              shell=self._use_shell,
+                                             cwd = subprocess_path,
                                              **kwargs)
             self._run_output, self._run_error = self._process.communicate()
             self._run_status = self._process.returncode
@@ -118,10 +120,6 @@ class OSCommand():
         except:
             self._run_error = traceback.format_exc()
             self._run_status = -1
-
-        # Go back to the orig working dir
-        if self._set_cwd is not None:
-            os.chdir(saved_cwd)
 
         # Close any open files
         if file_out is not None:
