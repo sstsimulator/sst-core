@@ -611,6 +611,27 @@ def os_dir_symlink(srcdir, destdir):
     """ Create a simlink of a directory """
     os.symlink(srcdir, destdir)
 
+def os_awk_print(in_str, fields_index_list):
+    """ Return specific fields of an input string as a string
+        fields_index_list must be a list of ints and in the order user wants returned
+    """
+    finalstrdata = ""
+    split_list = in_str.split()
+    for field_index in fields_index_list:
+        finalstrdata +=  "{0} ".format(split_list[field_index])
+    return finalstrdata
+
+def os_wc(in_file, fields_index_list=[]):
+    """ Run wc on an input file and return optional fields
+        fields_index_list must be a list of ints and in the order user wants returned
+    """
+    cmd = "wc {0}".format(in_file)
+    rtn = OSCommand(cmd).run()
+    wc_out = rtn.output()
+    if fields_index_list:
+        wc_out = os_awk_print(wc_out, fields_index_list)
+    return wc_out
+
 def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams=""):
     """ wget Download a file with retries
         :return: True on success

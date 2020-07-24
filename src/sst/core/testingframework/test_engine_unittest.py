@@ -137,24 +137,6 @@ class SSTTextTestRunner(unittest.TextTestRunner):
                 log_forced("== TESTING FAILED DUE TO ERRORS ==")
                 log_forced("==================================")
 
-        # Check to see if we are using up all the cores on the system
-        # in concurrent mode, warn user of possible failures
-        if test_engine_globals.TESTENGINE_CONCURRENTMODE:
-            num_cores_avail = get_num_cores_on_system()
-            threads_used = test_engine_globals.TESTENGINE_THREADLIMIT
-            ranks_used = test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
-            cores_used = threads_used * ranks_used
-            if cores_used >= num_cores_avail:
-                log_forced("\n================ !! NOTICE!! =======================")
-                log_forced("=== The number of concurrent testing threads ({0})   ".\
-                format(threads_used))
-                log_forced("=== times the number of ranks ({0}) >= available cores ({1})".\
-                format(ranks_used, num_cores_avail))
-                log_forced("=== This may cause unexpected test issues/failures")
-                log_forced("=== because each testing thread will consume {0} ranks".\
-                format(ranks_used))
-                log_forced("===================================================")
-
         log(("\n===================================") +
             ("===================================\n"))
 

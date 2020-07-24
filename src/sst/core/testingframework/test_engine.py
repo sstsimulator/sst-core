@@ -354,7 +354,7 @@ class TestEngine():
         num_cores = get_num_cores_on_system()
 
         if test_engine_globals.TESTENGINE_CONCURRENTMODE:
-            concurrent_txt = "[CONCURRENTLY ({0} Threads)]".\
+            concurrent_txt = "[CONCURRENTLY ({0} Testing Threads)]".\
             format(test_engine_globals.TESTENGINE_THREADLIMIT)
 
         # Display operations info if we are unning in a verbose mode
@@ -373,6 +373,24 @@ class TestEngine():
         log_info("Available Cores = {0}; Num Ranks = {1}; Num Threads = {2}".format(num_cores, \
             test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS, \
             test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS), forced=False)
+
+        # Check to see if we are using up all the cores on the system
+        # in concurrent mode, warn user of possible failures
+        if test_engine_globals.TESTENGINE_CONCURRENTMODE:
+            num_cores_avail = get_num_cores_on_system()
+            threads_used = test_engine_globals.TESTENGINE_THREADLIMIT
+            ranks_used = test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
+            cores_used = threads_used * ranks_used
+            if cores_used >= num_cores_avail:
+                log_forced("\n================ !! NOTICE!! =======================")
+                log_forced("=== The number of concurrent testing threads ({0})   ".\
+                format(threads_used))
+                log_forced("=== times the number of ranks ({0}) >= available cores ({1})".\
+                format(ranks_used, num_cores_avail))
+                log_forced("=== This may cause unexpected test issues/failures")
+                log_forced("=== because each testing thread will consume {0} ranks".\
+                format(ranks_used))
+                log_forced("================ !! NOTICE!! =======================\n")
 
         if not self._testsuite_wildcards_list:
             if 'all' in self._testsuite_types_list:
