@@ -23,6 +23,8 @@ import shlex
 import ast
 import inspect
 
+import test_engine_globals
+
 ################################################################################
 
 class OSCommand():
@@ -82,10 +84,11 @@ class OSCommand():
         file_err = None
 
         try:
-            if self._set_cwd is not None:
-                subprocess_path = os.path.abspath(self._set_cwd)
+            # Run in either the users choosen directory or the run dir
+            if self._set_cwd is None:
+                subprocess_path = test_engine_globals.TESTOUTPUT_RUNDIRPATH
             else:
-                subprocess_path = None
+                subprocess_path = os.path.abspath(self._set_cwd)
 
             # If No output files defined, default stdout and stderr to normal output
             if 'stdout' not in kwargs and self._output_file_path is None:
