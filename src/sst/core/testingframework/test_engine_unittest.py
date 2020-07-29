@@ -164,8 +164,12 @@ class SSTTextTestResult(unittest.TextTestResult):
         _testname = getattr(test, 'testname', None)
         if _testname is not None:
             self._test_name = test.testname
-        self._testcase_name = test.get_testcase_name()
-        self._testsuite_name = test.get_testsuite_name()
+        if self._is_test_of_type_ssttestcase(test):
+            self._testcase_name = test.get_testcase_name()
+            self._testsuite_name = test.get_testsuite_name()
+        else:
+            self._testcase_name = "FailedTest"
+            self._testsuite_name = "FailedTest"
         timestamp = datetime.utcnow().strftime("%Y_%m%d_%H:%M:%S.%f utc")
         self._junit_test_case = JUnitTestCase(self._test_name,
                                               self._testcase_name,
@@ -175,6 +179,10 @@ class SSTTextTestResult(unittest.TextTestResult):
         super(SSTTextTestResult, self).stopTest(test)
         #log_forced("DEBUG - stopTest: Test = {0}\n".format(test))
         self._junit_test_case.junit_add_elapsed_sec(time.time() - self._start_time)
+
+        if not self._is_test_of_type_ssttestcase(test):
+            return
+
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS['singlethread'].\
             append(self._junit_test_case)
@@ -203,6 +211,10 @@ class SSTTextTestResult(unittest.TextTestResult):
 
     def addError(self, test, err):
         super(SSTTextTestResult, self).addError(test, err)
+
+        if not self._is_test_of_type_ssttestcase(test):
+            return
+
         self.testsuitesresultsdict.add_error(test)
         #log_forced("DEBUG - addError: Test = {0}, err = {1}\n".format(test, err))
         _junit_test_case = getattr(self, '_junit_test_case', None)
@@ -265,6 +277,16 @@ class SSTTextTestResult(unittest.TextTestResult):
         msg_lines = traceback.format_exception_only(exctype, value)
         msg_lines = [x.replace('\n', ' ') for x in msg_lines]
         return ''.join(msg_lines)
+
+####
+
+    def _is_test_of_type_ssttestcase(self, test):
+        """ Detirmine if this is is within a valid SSTTestCase object by
+            checking if a unique SSTTestCase function exists
+            return: True if this is a test within a valid SSTTestCase object
+        """
+        return getattr(test, 'get_testcase_name', None) is not None
+
 
 ################################################################################
 

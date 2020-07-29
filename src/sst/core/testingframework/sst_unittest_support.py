@@ -632,6 +632,15 @@ def os_wc(in_file, fields_index_list=[]):
         wc_out = os_awk_print(wc_out, fields_index_list)
     return wc_out
 
+def os_test_file(file_path, expression="-e"):
+    if os.path.exists(file_path):
+        cmd = "test {0} {1}".format(expression, file_path)
+        rtn = OSCommand(cmd).run()
+        return rtn == 0
+    else:
+        log_error("File {0} does not exist".format(file_path))
+        return False
+
 def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams=""):
     """ wget Download a file with retries
         :return: True on success
