@@ -23,6 +23,7 @@ import re
 import time
 import multiprocessing
 import tarfile
+import shutil
 
 # ConfigParser module changes name between Py2->Py3
 try:
@@ -572,6 +573,13 @@ def merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
         cmd = "cat {0} > {1}".format(filepath_wildcard, outputfilepath)
         os.system(cmd)
 
+###
+
+def remove_component_warning_from_file(input_filepath):
+
+    bad_string = 'WARNING: No components are'
+    _remove_lines_with_string_from_file(bad_string, input_filepath)
+
 ################################################################################
 ### OS Basic Commands
 ################################################################################
@@ -820,3 +828,29 @@ def _handle_config_err(exc_e, default_rtn_data):
     errmsg = "Reading SST-Core Config file sstsimulator.conf - {0}".format(exc_e)
     log_warning(errmsg)
     return default_rtn_data
+
+###
+
+def _remove_lines_with_string_from_file(removestring, input_filepath):
+    bad_strings = [removestring]
+
+    # Create a temp file
+    filename = os.path.basename(input_filepath)
+    tmp_output_filepath = "{0}/{1}.removed_lines".format(get_test_output_tmp_dir(), filename)
+    bak_output_filepath = "{0}/{1}.bak".format(get_test_output_tmp_dir(), filename)
+
+    if not os.path.exists(input_filepath):
+        log_error("_remove_lines_with_string_from_file() - File {0} does not exist".\
+            format(input_filepath))
+        return
+
+    # Copy the lines in the input file line by line, to a backup file and to the
+    # tmp file; but skip any lines in the removestring from the tmp file
+    with open(input_filepath) as oldfile, open(tmp_output_filepath, 'w') as newfile, open(bak_output_filepath, 'w') as bakfile:
+        for line in oldfile:
+            bakfile.write(line)
+            if not any(bad_string in line for bad_string in bad_strings):
+                newfile.write(line)
+
+    # Now copy the tmp file back over the input file
+    shutil.copy(tmp_output_filepath, input_filepath)
