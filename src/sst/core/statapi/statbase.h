@@ -610,7 +610,17 @@ struct ImplementsStatFields {
 #define SST_ELI_INSTANTIATE_MULTI_STATISTIC(cls,...) \
   MAKE_MULTI_STATISTIC(cls,STAT_GLUE_NAME(cls,__VA_ARGS__),STAT_TUPLE(__VA_ARGS__),__VA_ARGS__)
 
-
+#define SST_ELI_REGISTER_MULTI_STATISTIC(cls,lib,name,version,desc,...) \
+  SST_ELI_REGISTER_DERIVED(SST::Statistics::MultiStatistic<ELI_FORWARD_AS_ONE(__VA_ARGS__)>,cls,lib,name,ELI_FORWARD_AS_ONE(version),desc) \
+  SST_ELI_INTERFACE_INFO(#cls) \
+  static bool ELI_forceNullLoad() { \
+     return SST::ELI::InstantiateBuilderInfo< \
+       SST::Statistics::Statistic<STAT_TUPLE(__VA_ARGS__)>, \
+       SST::Statistics::NullStatistic<STAT_TUPLE(__VA_ARGS__)>>::isLoaded() \
+     && SST::ELI::InstantiateBuilder< \
+       SST::Statistics::Statistic<STAT_TUPLE(__VA_ARGS__)>, \
+       SST::Statistics::NullStatistic<STAT_TUPLE(__VA_ARGS__)>>::isLoaded(); \
+  }
 
 } //namespace Statistics
 } //namespace SST

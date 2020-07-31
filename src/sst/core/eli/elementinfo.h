@@ -363,6 +363,7 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
 #endif
 
 
+#ifdef __INTEL_COMPILER
 #define SST_ELI_REGISTER_DERIVED(base,cls,lib,name,version,desc) \
   static bool ELI_isLoaded() { \
     return SST::ELI::InstantiateBuilder<base,cls>::isLoaded() \
@@ -370,6 +371,14 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
   } \
   SST_ELI_FORCE_INSTANTIATION(base,cls) \
   SST_ELI_DEFAULT_INFO(lib,name,ELI_FORWARD_AS_ONE(version),desc)
+#else
+#define SST_ELI_REGISTER_DERIVED(base,cls,lib,name,version,desc) \
+  static bool ELI_isLoaded() { \
+    return SST::ELI::InstantiateBuilder<base,cls>::isLoaded() \
+      && SST::ELI::InstantiateBuilderInfo<base,cls>::isLoaded(); \
+  } \
+  SST_ELI_DEFAULT_INFO(lib,name,ELI_FORWARD_AS_ONE(version),desc)
+#endif
 
 #define SST_ELI_REGISTER_EXTERN(base,cls) \
   bool cls::ELI_isLoaded(){ \

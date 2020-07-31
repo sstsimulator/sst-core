@@ -29,6 +29,8 @@ libcoreTestElement_la_SOURCES = \
 	testElements/coreTest_SharedObjectComponent.cc \
 	testElements/coreTest_SubComponent.h \
 	testElements/coreTest_SubComponent.cc \
+	testElements/coreTest_StatisticIntensityComponent.h \
+	testElements/coreTest_StatisticIntensityComponent.cc \
 	testElements/coreTest_Module.h \
 	testElements/coreTest_Module.cc \
 	testElements/coreTest_ParamComponent.h \
