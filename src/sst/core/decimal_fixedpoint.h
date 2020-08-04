@@ -752,6 +752,8 @@ public:
             carry_over = sum / storage_radix_long;
             data[i+whole_words] = static_cast<uint32_t>(sum % storage_radix_long);
         }
+        // Get the sign
+        negative = negative ^ v.negative;
         return *this;
     }
 

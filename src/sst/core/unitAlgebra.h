@@ -111,9 +111,10 @@ private:
     sst_big_num value;
 
     static std::string trim(const std::string& str);
-    void init(const std::string& val);
 
 public:
+    void init(const std::string& val);
+
     UnitAlgebra() {}
     /**
      Create a new UnitAlgebra instance, and pre-populate with a parsed value.

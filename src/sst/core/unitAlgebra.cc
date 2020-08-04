@@ -184,7 +184,7 @@ Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
         return;
     }
     else {
-        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        Output abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO,1,"Invalid unit type: %s\n",type.c_str());
     }
 }
@@ -366,7 +366,7 @@ UnitAlgebra::init(const std::string& val)
         value = sst_big_num(number);
     }
     catch (runtime_error e) {
-        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        Output abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO,1,"Error: invalid number string: %s\n",number.c_str());
     }
 
@@ -449,7 +449,7 @@ UnitAlgebra&
 UnitAlgebra::operator+= (const UnitAlgebra& v)
 {
     if ( unit != v.unit ) {
-        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        Output abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO,1,"Error: Attempting to add UnitAlgebra values "
                     "with non-matching units: %s, %s\n",
                     toString().c_str(), v.toString().c_str());
@@ -462,7 +462,7 @@ UnitAlgebra&
 UnitAlgebra::operator-= (const UnitAlgebra& v)
 {
     if ( unit != v.unit ) {
-        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        Output abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO,1,"Error: Attempting to subtract UnitAlgebra values "
                     "with non-matching units: %s, %s\n",
                     toString().c_str(), v.toString().c_str());
@@ -475,7 +475,7 @@ bool
 UnitAlgebra::operator> (const UnitAlgebra& v) const
 {
     if ( unit != v.unit ) {
-        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        Output abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO,1,"Error: Attempting to compare UnitAlgebra values "
                     "with non-matching units: %s, %s\n",
                     toString().c_str(), v.toString().c_str());
@@ -487,7 +487,7 @@ bool
 UnitAlgebra::operator>= (const UnitAlgebra& v) const
 {
     if ( unit != v.unit ) {
-        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        Output abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO,1,"Error: Attempting to compare UnitAlgebra values "
                     "with non-matching units: %s, %s\n",
                     toString().c_str(), v.toString().c_str());
@@ -499,7 +499,7 @@ bool
 UnitAlgebra::operator< (const UnitAlgebra& v) const
 {
     if ( unit != v.unit ) {
-        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        Output abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO,1,"Error: Attempting to compare UnitAlgebra values "
                     "with non-matching units: %s, %s\n",
                     toString().c_str(), v.toString().c_str());
@@ -511,7 +511,7 @@ bool
 UnitAlgebra::operator<= (const UnitAlgebra& v) const
 {
     if ( unit != v.unit ) {
-        Output abort = Simulation::getSimulation()->getSimulationOutput();
+        Output abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO,1,"Error: Attempting to compare UnitAlgebra values "
                     "with non-matching units: %s, %s\n",
                     toString().c_str(), v.toString().c_str());
