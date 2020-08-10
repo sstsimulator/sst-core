@@ -519,6 +519,20 @@ UnitAlgebra::operator<= (const UnitAlgebra& v) const
     return value <= v.value;
 }
 
+bool
+UnitAlgebra::operator== (const UnitAlgebra& v) const
+{
+    if ( unit != v.unit ) return false;
+    return value == v.value;
+}
+
+bool
+UnitAlgebra::operator!= (const UnitAlgebra& v) const
+{
+    if ( unit != v.unit ) return false;
+    return value != v.value;
+}
+
 
 UnitAlgebra&
 UnitAlgebra::invert()
@@ -552,4 +566,10 @@ UnitAlgebra::getRoundedValue() const
     // return ret;
     // return llround(value);
     return value.toLong();
+}
+
+double
+UnitAlgebra::getDoubleValue() const
+{
+    return value.toDouble();
 }
