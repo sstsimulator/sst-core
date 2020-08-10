@@ -394,6 +394,16 @@ public:
     }
 
     /**
+       Return true if value is zero, otherwise return false.
+     */
+    bool isZero() const {
+        for ( int i = whole_words + fraction_words - 1; i >= 0; --i ) {
+            if ( data[i] != 0 ) return false;
+        }
+        return true;
+    }
+
+    /**
        Templated conversion function for unsigned types.
      */
     template<typename T>

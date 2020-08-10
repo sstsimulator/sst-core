@@ -573,3 +573,9 @@ UnitAlgebra::getDoubleValue() const
 {
     return value.toDouble();
 }
+
+bool
+UnitAlgebra::isValueZero() const
+{
+    return value.isZero();
+}

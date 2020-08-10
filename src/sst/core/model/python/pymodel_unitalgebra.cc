@@ -253,6 +253,13 @@ static PyObject* unitAlgebraToFloat(PyObject *self)
     return ret;
 }
 
+static int unitAlgebraToBool(PyObject *self)
+{
+    UnitAlgebraPy_t *self_ua = (UnitAlgebraPy_t*)self;
+    bool val = !self_ua->obj.isValueZero();
+    return val;
+}
+
 static PyObject* unitAlgebraNegate(PyObject *self)
 {
     PyObject* ret = createUnitAlgebra(self);
@@ -274,7 +281,7 @@ PyNumberMethods PyModel_UnitAlgebraNumMeth = {
     (unaryfunc)unitAlgebraNegate,                // unaryfunc nb_negative
     nullptr,                // unaryfunc nb_positive
     nullptr,                // unaryfunc nb_absolute
-    nullptr,                // inquiry nb_nonzero (py2) nb_bool (py3)       /* Used by PyObject_IsTrue */
+    unitAlgebraToBool,      // inquiry nb_nonzero (py2) nb_bool (py3)       /* Used by PyObject_IsTrue */
     nullptr,                // unaryfunc nb_invert
     nullptr,                // binaryfunc nb_lshift
     nullptr,                // binaryfunc nb_rshift
@@ -325,6 +332,12 @@ static PyObject* unitAlgebraGetFloatValue(PyObject *self, PyObject *UNUSED(args)
     return unitAlgebraToFloat(self);
 }
 
+static PyObject* unitAlgebraIsValueZero(PyObject *self, PyObject *UNUSED(args))
+{
+    bool val = !unitAlgebraToBool(self);
+    return PyBool_FromLong(val);
+}
+
 static PyObject* unitAlgebraHasUnits(PyObject* self, PyObject* args)
 {
     char *units = NULL;
@@ -357,6 +370,9 @@ static PyMethodDef unitAlgebraMethods[] = {
     {   "getFloatValue",
         unitAlgebraGetFloatValue, METH_NOARGS,
         "Returns value portion of UnitAlgebra as a float"},
+    {   "isValueZero",
+        unitAlgebraIsValueZero, METH_NOARGS,
+        "Returns True if value is zero, false otherwise"},
     {   "hasUnits",
         unitAlgebraHasUnits, METH_VARARGS,
         "Checks to see if the UnitAlgebra has the specified units"},

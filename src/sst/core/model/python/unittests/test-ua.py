@@ -237,20 +237,38 @@ ua3 = UnitAlgebra("1.77s")
 print("'%s' to float = %f"%(ua3,float(ua3)))
 print("'%s'.getFloatValue() = %f"%(ua3, ua3.getFloatValue()))
 
+print("")
+print("Conversion to float:")
+ua3 = UnitAlgebra("1.77s")
+print("'%s' to float = %f"%(ua3,float(ua3)))
+print("'%s'.getFloatValue() = %f"%(ua3, ua3.getFloatValue()))
+
+print("")
+print("Conversion to bool:")
+ua3 = UnitAlgebra("0ns")
+print("bool(%s) = %r"%(ua3,bool(ua3)))
+ua3 = UnitAlgebra("5ns")
+print("bool(%s) = %r"%(ua3,bool(ua3)))
 
 # Test the remaining functions that haven't been tested elsewhere
+print("")
+print("isValueZero():")
+ua3 = UnitAlgebra("0ns")
+print("'%s'.isValueZero() = %r"%(ua3,ua3.isValueZero()))
+ua3 = UnitAlgebra("5ns")
+print("'%s'.isValueZero() = %r"%(ua3,ua3.isValueZero()))
+
 print("")
 print("Negate:")
 print("-%s = %s"%(ua1,-ua1))
 
 print("")
 print("Invert:")
-print("%s.invert() = %s"%(ua1,ua1.invert()))
+print("'%s'.invert() = %s"%(ua1,ua1.invert()))
 
 print("")
 print("hasUnits():")
-print("%s hasUnits(\"ns\") = %r"%(ua1,ua1.hasUnits("ns")))
-print("%s hasUnits(\"s\") = %r"%(ua1,ua1.hasUnits("s")))
-print("")
-print("%s hasUnits(\"Hz\") = %r"%(ua1,ua1.hasUnits("Hz")))
+print("'%s'.hasUnits(\"ns\") = %r"%(ua1,ua1.hasUnits("ns")))
+print("'%s'.hasUnits(\"s\") = %r"%(ua1,ua1.hasUnits("s")))
+print("'%s'.hasUnits(\"Hz\") = %r"%(ua1,ua1.hasUnits("Hz")))
 

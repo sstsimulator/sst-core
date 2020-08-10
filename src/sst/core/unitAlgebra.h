@@ -212,7 +212,8 @@ public:
     /** Return the rounded value as a 64bit integer */
     int64_t getRoundedValue() const;
     double getDoubleValue() const;
-
+    bool isValueZero() const;
+    
     void serialize_order(SST::Core::Serialization::serializer &ser) override {
         // Do the unit
         ser & unit.numerator;
