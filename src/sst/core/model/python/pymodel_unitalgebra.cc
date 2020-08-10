@@ -64,87 +64,178 @@ static PyObject* unitAlgebraStr(PyObject* self)
     UnitAlgebraPy_t *ua = (UnitAlgebraPy_t*)self;
     return SST_ConvertToPythonString(ua->obj.toStringBestSI().c_str());
 }
-    
+
+
 static PyObject* unitAlgebraRichCmp (PyObject *self, PyObject *other, int op)
 {
     UnitAlgebraPy_t *self_ua = (UnitAlgebraPy_t*)self;
-    UnitAlgebraPy_t *other_ua = (UnitAlgebraPy_t*)other;
+    if ( Py_TYPE(other) == &PyModel_UnitAlgebraType ) {
+        UnitAlgebraPy_t *other_ua = (UnitAlgebraPy_t*)other;
+        switch (op) {
+        case Py_LT:
+            if ( self_ua->obj < other_ua->obj ) return Py_True;
+            else return Py_False;
+            break;
+        case Py_LE:
+            if ( self_ua->obj <= other_ua->obj ) return Py_True;
+            else return Py_False;
+            break;
+        case Py_GT:
+            if ( self_ua->obj > other_ua->obj ) return Py_True;
+            else return Py_False;
+            break;
+        case Py_GE:
+            if ( self_ua->obj >= other_ua->obj ) return Py_True;
+            else return Py_False;
+            break;
+        case Py_EQ:
+            if ( self_ua->obj == other_ua->obj ) return Py_True;
+            else return Py_False;
+            break;
+        case Py_NE:
+            if ( self_ua->obj != other_ua->obj ) return Py_True;
+            else return Py_False;
+            break;
+        default:
+            break;
+        }
+    }
+
+    // Generate an error message.  Either they types don't match, or
+    // it was an invalid operation.  Either way, the same error
+    // message is created.
+    std::stringstream ss;
     switch (op) {
     case Py_LT:
-        if ( self_ua->obj < other_ua->obj ) return Py_True;
-        else return Py_False;
+        ss << "'<'";
         break;
     case Py_LE:
-        if ( self_ua->obj <= other_ua->obj ) return Py_True;
-        else return Py_False;
+        ss << "'<='";
         break;
     case Py_GT:
-        if ( self_ua->obj > other_ua->obj ) return Py_True;
-        else return Py_False;
+        ss << "'>'";
         break;
     case Py_GE:
-        if ( self_ua->obj >= other_ua->obj ) return Py_True;
-        else return Py_False;
-        break;
+        ss << "'>='";
+            break;
     case Py_EQ:
+        ss << "'=='";
+        break;
     case Py_NE:
-    default:
-        return Py_NotImplemented;
+        ss << "'!='";
         break;
     }
-    return Py_NotImplemented;
+    ss << " operator not supported between instances of " << Py_TYPE(self)->tp_name << " and " << Py_TYPE(other)->tp_name;
+    PyErr_SetString(PyExc_TypeError, ss.str().c_str());
+    return nullptr;
+}
+
+// Utility function for creating a new UnitAlgebra from an existing
+// one
+static PyObject* createUnitAlgebra(PyObject* self)
+{
+    PyObject *argList = Py_BuildValue("(O)", self);
+    PyObject* ret = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);    
+    Py_DECREF(argList);
+    return ret;
 }
 
 
 // Numerical functions
+
+// Utility function to do all the basic math operations.  Using this
+// will make the operation somewhat slower to execute, but will make
+// the code cleaner and more maintainable.  Since this is only used
+// during intialization that's probably the right trade-off.  We can
+// revisit later if it becomes an issue.
+    
+static PyObject* unitAlgebraMathOps(PyObject* self, PyObject* other, char op, bool in_place) {
+
+    if ( Py_TYPE(other) != &PyModel_UnitAlgebraType || Py_TYPE(self) != &PyModel_UnitAlgebraType ) {
+        std::stringstream ss;
+        const char* ip = in_place ? "=\0" : "\0";
+        ss << "'" << op << ip << "'" << " operator not supported between instance of " << Py_TYPE(self)->tp_name << " and " << Py_TYPE(other)->tp_name;
+        PyErr_SetString(PyExc_TypeError, ss.str().c_str());
+        return nullptr;
+    }
+
+    PyObject* ret = createUnitAlgebra(self);
+    UnitAlgebraPy_t *ret_ua = (UnitAlgebraPy_t*)ret;
+
+    UnitAlgebraPy_t *other_ua = (UnitAlgebraPy_t*)other;
+
+    switch ( op ) {
+    case '+':
+        ret_ua->obj += other_ua->obj;
+        break;
+    case '-':
+        ret_ua->obj -= other_ua->obj;
+        break;
+    case '*':
+        ret_ua->obj *= other_ua->obj;
+        break;
+    case '/':
+        ret_ua->obj /= other_ua->obj;
+        break;
+    default:
+        Output::getDefaultObject().fatal(CALL_INFO_LONG,1,"Internal error encountered, terminating.\n");
+        break;
+    };
+
+    return ret;
+}
+    
+// NOTE: Because the python semantics require that the in-place
+// operators return a new reference, the in-place and regular
+// operators end up being the same function.  However, in order to
+// create technically correct error messages if the wrong type of
+// operands are used, there are functions for both, but the inplace
+// functions will just call the normal functions after error checking.
+
+// Add
 static PyObject* unitAlgebraAdd (PyObject *self, PyObject *other)
 {
-    PyObject *argList = Py_BuildValue("(O)", self);
-    PyObject* ret = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);    
-    Py_DECREF(argList);
-    
-    UnitAlgebraPy_t *ret_ua = (UnitAlgebraPy_t*)ret;
-    UnitAlgebraPy_t *other_ua = (UnitAlgebraPy_t*)other;
-    ret_ua->obj += other_ua->obj;
-    return ret;
+    return unitAlgebraMathOps(self,other,'+', false);
+}
+
+static PyObject* unitAlgebraAddIP (PyObject *self, PyObject *other)
+{
+    return unitAlgebraMathOps(self,other,'+', true);
 }
     
-    
+// Sub
 static PyObject* unitAlgebraSub (PyObject *self, PyObject *other)
 {
-    PyObject *argList = Py_BuildValue("(O)", self);
-    PyObject* ret = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);    
-    Py_DECREF(argList);
+    return unitAlgebraMathOps(self,other,'-', false);
+}
 
-    UnitAlgebraPy_t *ret_ua = (UnitAlgebraPy_t*)ret;
-    UnitAlgebraPy_t *other_ua = (UnitAlgebraPy_t*)other;
-    ret_ua->obj -= other_ua->obj;
-    return ret;
+static PyObject* unitAlgebraSubIP (PyObject *self, PyObject *other)
+{
+    return unitAlgebraMathOps(self,other,'-', true);
 }
     
+// Mult
 static PyObject* unitAlgebraMul (PyObject *self, PyObject *other)
 {
-    PyObject *argList = Py_BuildValue("(O)", self);
-    PyObject* ret = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);    
-    Py_DECREF(argList);
+    return unitAlgebraMathOps(self,other,'*', false);
+}
 
-    UnitAlgebraPy_t *ret_ua = (UnitAlgebraPy_t*)ret;
-    UnitAlgebraPy_t *other_ua = (UnitAlgebraPy_t*)other;
-    ret_ua->obj *= other_ua->obj;
-    return ret;
+static PyObject* unitAlgebraMulIP (PyObject *self, PyObject *other)
+{
+    return unitAlgebraMathOps(self,other,'*', true);
 }
     
+// Div
 static PyObject* unitAlgebraDiv (PyObject *self, PyObject *other)
 {
-    PyObject *argList = Py_BuildValue("(O)", self);
-    PyObject* ret = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);    
-    Py_DECREF(argList);
-
-    UnitAlgebraPy_t *ret_ua = (UnitAlgebraPy_t*)ret;
-    UnitAlgebraPy_t *other_ua = (UnitAlgebraPy_t*)other;
-    ret_ua->obj /= other_ua->obj;
-    return ret;
+    return unitAlgebraMathOps(self,other,'/', false);
 }
+
+static PyObject* unitAlgebraDivIP (PyObject *self, PyObject *other)
+{
+    return unitAlgebraMathOps(self,other,'/', true);
+}
+
 
 static PyObject* unitAlgebraToLong(PyObject *self)
 {
@@ -154,11 +245,17 @@ static PyObject* unitAlgebraToLong(PyObject *self)
     return ret;
 }
 
+static PyObject* unitAlgebraToFloat(PyObject *self)
+{
+    UnitAlgebraPy_t *self_ua = (UnitAlgebraPy_t*)self;
+    double val = self_ua->obj.getDoubleValue();
+    PyObject* ret = PyFloat_FromDouble(val);
+    return ret;
+}
+
 static PyObject* unitAlgebraNegate(PyObject *self)
 {
-    PyObject *argList = Py_BuildValue("(O)", self);
-    PyObject* ret = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);    
-    Py_DECREF(argList);
+    PyObject* ret = createUnitAlgebra(self);
 
     UnitAlgebraPy_t *ret_ua = (UnitAlgebraPy_t*)ret;
     ret_ua->obj *= -1;
@@ -166,10 +263,6 @@ static PyObject* unitAlgebraNegate(PyObject *self)
 }
 
 
-// NOTE: Because the python semantics require that the in-place
-// operators return a new reference, the in-place and regular
-// operators end up being the same function.  Thus, the add, sub, mult
-// and div functions are used in both places.
 PyNumberMethods PyModel_UnitAlgebraNumMeth = {
     (binaryfunc)unitAlgebraAdd,    // binaryfunc nb_add
     (binaryfunc)unitAlgebraSub,    // binaryfunc nb_subtract
@@ -190,16 +283,16 @@ PyNumberMethods PyModel_UnitAlgebraNumMeth = {
     nullptr,                // binaryfunc nb_or
     SST_NB_COERCE                // coercion nb_coerce Python 2 only
     SST_NB_INTLONG((unaryfunc)unitAlgebraToLong) // unaryfunc nb_int (py1 nb_ling for py2)
-    SST_NB_RESERVED         // nb_reserved, py3 only
-    nullptr,                // unaryfunc nb_float
+    SST_NB_RESERVED           // nb_reserved, py3 only
+    unitAlgebraToFloat,       // unaryfunc nb_float
     SST_NB_OCT                // unaryfunc nb_oct
     SST_NB_HEX                // unaryfunc nb_hex
     
     /* Added in release 2.0 */
-    (binaryfunc)unitAlgebraAdd,  // binaryfunc nb_inplace_add
-    (binaryfunc)unitAlgebraSub,  // binaryfunc nb_inplace_subtract
-    (binaryfunc)unitAlgebraMul,  // binaryfunc nb_inplace_multiply
-    SST_NB_INPLACE_DIVIDE((binaryfunc)unitAlgebraDiv)   // binaryfunc nb_inplace_divide, py2 only
+    (binaryfunc)unitAlgebraAddIP,  // binaryfunc nb_inplace_add
+    (binaryfunc)unitAlgebraSubIP,  // binaryfunc nb_inplace_subtract
+    (binaryfunc)unitAlgebraMulIP,  // binaryfunc nb_inplace_multiply
+    SST_NB_INPLACE_DIVIDE((binaryfunc)unitAlgebraDivIP)   // binaryfunc nb_inplace_divide, py2 only
     nullptr,                // binaryfunc nb_inplace_remainder
     nullptr,                // ternaryfunc nb_inplace_power
     nullptr,                // binaryfunc nb_inplace_lshift
@@ -212,7 +305,7 @@ PyNumberMethods PyModel_UnitAlgebraNumMeth = {
     nullptr,                // binaryfunc nb_floor_divide
     (binaryfunc)unitAlgebraDiv, // binaryfunc nb_true_divide
     nullptr,                // binaryfunc nb_inplace_floor_divide
-    (binaryfunc)unitAlgebraDiv,  // binaryfunc nb_inplace_true_divide
+    (binaryfunc)unitAlgebraDivIP,  // binaryfunc nb_inplace_true_divide
     
     /* Added in release 2.5 */
     nullptr,                // unaryfunc nb_index
@@ -227,6 +320,11 @@ static PyObject* unitAlgebraGetRoundedValue(PyObject *self, PyObject *UNUSED(arg
     return unitAlgebraToLong(self);
 }
 
+static PyObject* unitAlgebraGetFloatValue(PyObject *self, PyObject *UNUSED(args))
+{
+    return unitAlgebraToFloat(self);
+}
+
 static PyObject* unitAlgebraHasUnits(PyObject* self, PyObject* args)
 {
     char *units = NULL;
@@ -235,14 +333,17 @@ static PyObject* unitAlgebraHasUnits(PyObject* self, PyObject* args)
         UnitAlgebraPy_t *ua = (UnitAlgebraPy_t*)self;
         if ( ua->obj.hasUnits(units) ) Py_RETURN_TRUE;
     }
+    else {
+        PyErr_Clear();
+        PyErr_SetString(PyExc_TypeError,"sst.UnitAlgebra.hasUnits() must be called with a string as it's only argument");
+        return nullptr;
+    }
     Py_RETURN_FALSE;
 }
 
 static PyObject* unitAlgebraInvert(PyObject *self, PyObject *UNUSED(args))
 {
-    PyObject *argList = Py_BuildValue("(O)", self);
-    PyObject* ret = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);    
-    Py_DECREF(argList);
+    PyObject* ret = createUnitAlgebra(self);
     UnitAlgebraPy_t *ret_ua = (UnitAlgebraPy_t*)ret;
     ret_ua->obj.invert();
     return ret;
@@ -253,15 +354,15 @@ static PyMethodDef unitAlgebraMethods[] = {
     {   "getRoundedValue",
         unitAlgebraGetRoundedValue, METH_NOARGS,
         "Rounds value of UnitAlgebra to nearest whole number and returns a long"},
+    {   "getFloatValue",
+        unitAlgebraGetFloatValue, METH_NOARGS,
+        "Returns value portion of UnitAlgebra as a float"},
     {   "hasUnits",
         unitAlgebraHasUnits, METH_VARARGS,
         "Checks to see if the UnitAlgebra has the specified units"},
     {   "invert",
         unitAlgebraInvert, METH_NOARGS,
         "Inverts the UnitAlgebra value and units"},
-    // {   "str",
-    //     unitAlgebraStr, METH_NOARGS,
-    //     "Creates a string representation of the UnitAlgebra."},
     {   NULL, NULL, 0, NULL }
 };
 
