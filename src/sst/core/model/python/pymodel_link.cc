@@ -136,6 +136,11 @@ static PyMethodDef linkMethods[] = {
 };
 
 
+#if PY_MAJOR_VERSION == 3
+#if PY_MINOR_VERSION == 8
+DISABLE_WARN_DEPRECATED_DECLARATION
+#endif
+#endif
 PyTypeObject PyModel_LinkType = {
     SST_PY_OBJ_HEAD
     "sst.Link",                /* tp_name */
@@ -188,7 +193,13 @@ PyTypeObject PyModel_LinkType = {
     0,                         /* tp_version_tag */
     SST_TP_FINALIZE                /* Python3 only */
     SST_TP_VECTORCALL              /* Python3 only */
+    SST_TP_PRINT_DEP               /* Python3.8 only */
 };
+#if PY_MAJOR_VERSION == 3
+#if PY_MINOR_VERSION == 8
+REENABLE_WARNING
+#endif
+#endif
 
 
 
