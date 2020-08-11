@@ -653,7 +653,7 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
     """ wget Download a file with retries
         :return: True on success
     """
-    rtn = False
+    wget_success = False
 
     # Make sure target dir exists, and cd into it
     if not os.path.isdir(targetdir):
@@ -667,13 +667,16 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
        format(fileurl, targetdir, wgetparams, wgetoutfile)
     attemptnum = 1
     while attemptnum <= num_tries:
-        log_debug("Attempt#{0}; cmd={1}".format(attemptnum, cmd))
+        log_debug("wget Attempt#{0}; cmd={1}".format(attemptnum, cmd))
         rtn_value = os.system(cmd)
+        log_debug("wget rtn: {0}".format(rtn_value))
         if rtn_value == 0:
-            rtn = True
+            # wget was successful, force exit of the loop
+            log_debug("wget download successful")
+            wget_success = True
             attemptnum = num_tries + 1
             continue
-        log_debug("wget rtn: {0}".format(rtn_value))
+
         if os.path.isfile(wgetoutfile):
             with open(wgetoutfile, "rb") as wgetfile:
                 wgetoutput = "".join(wgetfile.readlines()[1:])
@@ -681,13 +684,17 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
             log_debug("wget output:\n{0}".format(wgetoutput))
         else:
             log_debug("wget output: NOT FOUND")
+
         log_debug("Download Failed, waiting {0} seconds and trying again...".\
             format(secsbetweentries))
+
         attemptnum = attemptnum + 1
         time.sleep(secsbetweentries)
 
-    if not rtn:
+    if not wget_success:
         log_error("Failed to download via wget {0}".format(fileurl))
+
+    return wget_success
 
 def os_extract_tar(tarfilepath, targetdir="."):
     """ Untar a file
