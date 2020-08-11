@@ -33,6 +33,7 @@ REENABLE_WARNING
 #include "sst/core/model/python/pymodel_comp.h"
 #include "sst/core/model/python/pymodel_link.h"
 #include "sst/core/model/python/pymodel_statgroup.h"
+#include "sst/core/model/python/pymodel_unitalgebra.h"
 #include "sst/core/model/element_python.h"
 
 #include "sst/core/simulation.h"
@@ -82,7 +83,11 @@ static PyMethodDef mlMethods[] = {
     {   nullptr, nullptr, 0, nullptr }
 };
 
-
+#if PY_MAJOR_VERSION == 3
+#if PY_MINOR_VERSION == 8
+DISABLE_WARN_DEPRECATED_DECLARATION
+#endif
+#endif
 static PyTypeObject ModuleLoaderType = {
     SST_PY_OBJ_HEAD
     "ModuleLoader",            /* tp_name */
@@ -135,7 +140,13 @@ static PyTypeObject ModuleLoaderType = {
     0,                         /* tp_version_tag */
     SST_TP_FINALIZE                /* Python3 only */
     SST_TP_VECTORCALL              /* Python3 only */
+    SST_TP_PRINT_DEP               /* Python3.8 only */
 };
+#if PY_MAJOR_VERSION == 3
+#if PY_MINOR_VERSION == 8
+REENABLE_WARNING
+#endif
+#endif
 
 
 // I hate having to do this through a global variable
@@ -842,12 +853,14 @@ static PyObject* PyInit_sst(void)
     PyModel_ComponentType.tp_new = PyType_GenericNew;
     PyModel_SubComponentType.tp_new = PyType_GenericNew;
     PyModel_LinkType.tp_new = PyType_GenericNew;
+    PyModel_UnitAlgebraType.tp_new = PyType_GenericNew;
     PyModel_StatGroupType.tp_new = PyType_GenericNew;
     PyModel_StatOutputType.tp_new = PyType_GenericNew;
     ModuleLoaderType.tp_new = PyType_GenericNew;
     if ( ( PyType_Ready(&PyModel_ComponentType) < 0 ) ||
          ( PyType_Ready(&PyModel_SubComponentType) < 0 ) ||
          ( PyType_Ready(&PyModel_LinkType) < 0 ) ||
+         ( PyType_Ready(&PyModel_UnitAlgebraType) < 0 ) ||
          ( PyType_Ready(&PyModel_StatGroupType) < 0 ) ||
          ( PyType_Ready(&PyModel_StatOutputType) < 0 ) ||
          ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
@@ -862,12 +875,14 @@ static PyObject* PyInit_sst(void)
     Py_INCREF(&PyModel_ComponentType);
     Py_INCREF(&PyModel_SubComponentType);
     Py_INCREF(&PyModel_LinkType);
+    Py_INCREF(&PyModel_UnitAlgebraType);
     Py_INCREF(&PyModel_StatGroupType);
     Py_INCREF(&PyModel_StatOutputType);
     Py_INCREF(&ModuleLoaderType);
 
     // Add the types
     PyModule_AddObject(module, "Link", (PyObject*)&PyModel_LinkType);
+    PyModule_AddObject(module, "UnitAlgebra", (PyObject*)&PyModel_UnitAlgebraType);
     PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
     PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
     PyModule_AddObject(module, "StatisticGroup", (PyObject*)&PyModel_StatGroupType);
