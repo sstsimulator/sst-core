@@ -22,6 +22,8 @@ sst_core_python_sources = \
 	model/python/pymodel_link.cc \
 	model/python/pymodel_comp.h \
 	model/python/pymodel_comp.cc \
+	model/python/pymodel_unitalgebra.h \
+	model/python/pymodel_unitalgebra.cc \
 	model/python/pymodel_statgroup.h \
 	model/python/pymodel_statgroup.cc
 

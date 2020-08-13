@@ -168,6 +168,11 @@ static PyMethodDef sgMethods[] = {
 };
 
 
+#if PY_MAJOR_VERSION == 3
+#if PY_MINOR_VERSION == 8
+DISABLE_WARN_DEPRECATED_DECLARATION
+#endif
+#endif
 PyTypeObject PyModel_StatGroupType = {
     SST_PY_OBJ_HEAD
     "sst.StatisticGroup",      /* tp_name */
@@ -220,7 +225,13 @@ PyTypeObject PyModel_StatGroupType = {
     0,                         /* tp_version_tag */
     SST_TP_FINALIZE            /* Python3 only */
     SST_TP_VECTORCALL          /* Python3 only */
+    SST_TP_PRINT_DEP               /* Python3.8 only */
 };
+#if PY_MAJOR_VERSION == 3
+#if PY_MINOR_VERSION == 8
+REENABLE_WARNING
+#endif
+#endif
 
 
 
@@ -306,6 +317,11 @@ static PyMethodDef soMethods[] = {
 };
 
 
+#if PY_MAJOR_VERSION == 3
+#if PY_MINOR_VERSION == 8
+DISABLE_WARN_DEPRECATED_DECLARATION
+#endif
+#endif
 PyTypeObject PyModel_StatOutputType = {
     SST_PY_OBJ_HEAD
     "sst.StatisticOutput",       /* tp_name */
@@ -358,8 +374,13 @@ PyTypeObject PyModel_StatOutputType = {
     0,                           /* tp_version_tag */
     SST_TP_FINALIZE                /* Python3 only */
     SST_TP_VECTORCALL              /* Python3 only */
+    SST_TP_PRINT_DEP               /* Python3.8 only */
 };
-
+#if PY_MAJOR_VERSION == 3
+#if PY_MINOR_VERSION == 8
+REENABLE_WARNING
+#endif
+#endif
 
 }  /* extern C */
 

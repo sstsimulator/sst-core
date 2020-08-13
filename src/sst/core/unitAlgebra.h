@@ -111,9 +111,10 @@ private:
     sst_big_num value;
 
     static std::string trim(const std::string& str);
-    void init(const std::string& val);
 
 public:
+    void init(const std::string& val);
+
     UnitAlgebra() {}
     /**
      Create a new UnitAlgebra instance, and pre-populate with a parsed value.
@@ -195,6 +196,10 @@ public:
     bool operator< (const UnitAlgebra& v) const;
     /** Compare if this object is less than, or equal to, the argument */
     bool operator<= (const UnitAlgebra& v) const;
+    /** Compare if this object is equal to, the argument */
+    bool operator== (const UnitAlgebra& v) const;
+    /** Compare if this object is not equal to, the argument */
+    bool operator!= (const UnitAlgebra& v) const;
     /** Apply a reciprocal operation to the object */
     UnitAlgebra& invert();
 
@@ -206,7 +211,9 @@ public:
     sst_big_num getValue() const {return value;}
     /** Return the rounded value as a 64bit integer */
     int64_t getRoundedValue() const;
-
+    double getDoubleValue() const;
+    bool isValueZero() const;
+    
     void serialize_order(SST::Core::Serialization::serializer &ser) override {
         // Do the unit
         ser & unit.numerator;
