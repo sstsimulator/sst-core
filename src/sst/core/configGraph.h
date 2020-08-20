@@ -124,6 +124,8 @@ private:
 
 };
 
+namespace EXPERIMENTAL {
+
 class ConfigStatistic : public SST::Core::Serialization::serializable {
 public:
     StatisticId_t id;                /*!< Unique ID of this statistic */
@@ -153,13 +155,14 @@ public:
         ser & params;
     }
 
-    ImplementSerializable(SST::ConfigStatistic)
+    ImplementSerializable(SST::EXPERIMENTAL::ConfigStatistic)
 
 
     static constexpr StatisticId_t stat_null_id = std::numeric_limits<StatisticId_t>::max();
 
 };
 
+}
 
 class ConfigStatGroup : public SST::Core::Serialization::serializable {
 public:
@@ -237,7 +240,7 @@ public:
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
     uint8_t                       statLoadLevel;     /*!< Statistic load level for this component */
-    std::vector<ConfigStatistic>  enabledStatistics; /*!< List of subcomponents */
+    std::vector<EXPERIMENTAL::ConfigStatistic>  enabledStatistics; /*!< List of subcomponents */
     std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
     uint16_t                      nextSubID;         /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
@@ -272,8 +275,8 @@ public:
     ConfigComponent* findSubComponent(ComponentId_t);
     const ConfigComponent* findSubComponent(ComponentId_t) const;
     ConfigComponent* findSubComponentByName(const std::string& name);
-    ConfigStatistic* addStatistic(StatisticId_t, const std::string& statisticName);
-    ConfigStatistic* findStatistic(StatisticId_t) const;
+    EXPERIMENTAL::ConfigStatistic* addStatistic(StatisticId_t, const std::string& statisticName);
+    EXPERIMENTAL::ConfigStatistic* findStatistic(StatisticId_t) const;
     void enableStatistic(const std::string& statisticName, bool recursively = false);
     void addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively = false);
     void setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively = false);
@@ -457,7 +460,7 @@ public:
     const ConfigComponent* findComponent(ComponentId_t) const;
 
     bool containsStatistic(StatisticId_t id) const;
-    ConfigStatistic* findStatistic(StatisticId_t) const;
+    EXPERIMENTAL::ConfigStatistic* findStatistic(StatisticId_t) const;
 
     /** Return the map of links */
     ConfigLinkMap_t& getLinkMap() {

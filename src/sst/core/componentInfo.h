@@ -26,7 +26,13 @@ class LinkMap;
 class BaseComponent;
 
 class ConfigComponent;
+
+namespace EXPERIMENTAL {
+
 class ConfigStatistic;
+
+}
+
 class ComponentInfoMap;
 class TimeConverter;
 
@@ -37,7 +43,7 @@ class StatisticInfo;
 class ComponentInfo {
 
 public:
-    typedef std::vector<ConfigStatistic>      statEnableList_t;        /*!< List of Enabled Statistics */
+    typedef std::vector<EXPERIMENTAL::ConfigStatistic>      statEnableList_t;        /*!< List of Enabled Statistics */
 
 
     // Share Flags for SubComponent loading

@@ -30,6 +30,9 @@ REENABLE_WARNING
 using namespace SST::Core;
 extern SST::Core::SSTPythonModelDefinition *gModel;
 
+namespace SST {
+
+namespace EXPERIMENTAL {
 
 extern "C" {
 
@@ -210,7 +213,9 @@ PyTypeObject PyModel_StatType = {
 };
 
 
-
 }  /* extern C */
 
+}
+
+}
 
