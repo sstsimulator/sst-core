@@ -16,8 +16,10 @@
 
 #include "sst/core/sst_types.h"
 
-extern "C" {
+namespace SST {
+namespace EXPERIMENTAL {
 
+extern "C" {
 
 struct StatisticPy_t;
 struct PyStatistic;
@@ -51,5 +53,7 @@ static inline ConfigStatistic* getStat(PyObject *pobj) {
 
 }  /* extern C */
 
+}
+}
 
 #endif

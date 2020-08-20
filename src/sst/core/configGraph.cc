@@ -36,11 +36,15 @@ void ConfigLink::updateLatencies(TimeLord *timeLord)
     latency[1] = timeLord->getSimCycles(latency_str[1], __FUNCTION__);
 }
 
+namespace EXPERIMENTAL {
+
 void ConfigStatistic::addParameter(const std::string& key, const std::string& value, bool overwrite)
 {
     bool bk = params.enableVerify(false);
     params.insert(key, value, overwrite);
     params.enableVerify(bk);
+}
+
 }
 
 bool ConfigStatGroup::addComponent(ComponentId_t id)
@@ -425,7 +429,7 @@ ConfigComponent* ConfigComponent::findSubComponentByName(const std::string& name
     return nullptr;
 }
 
-ConfigStatistic* ConfigComponent::addStatistic(StatisticId_t sid, const std::string& statisticName)
+EXPERIMENTAL::ConfigStatistic* ConfigComponent::addStatistic(StatisticId_t sid, const std::string& statisticName)
 {
     // Check for Enable All Statistics
     if (statisticName == STATALLFLAG) {
@@ -456,7 +460,7 @@ ConfigStatistic* ConfigComponent::addStatistic(StatisticId_t sid, const std::str
       }
 
       enabledStatistics.emplace(enabledStatistics.begin(),
-          ConfigStatistic(sid, id, statisticName));
+          EXPERIMENTAL::ConfigStatistic(sid, id, statisticName));
 
 
       return &(enabledStatistics.front());
@@ -465,12 +469,12 @@ ConfigStatistic* ConfigComponent::addStatistic(StatisticId_t sid, const std::str
     return nullptr;
 }
 
-ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
+EXPERIMENTAL::ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
 {
     // Check for the current component statistics
-    for ( const ConfigStatistic &s : enabledStatistics ) {
+    for ( const EXPERIMENTAL::ConfigStatistic &s : enabledStatistics ) {
         if ( s.id == sid ) {
-            ConfigStatistic* res = const_cast<ConfigStatistic*>(&s);
+            EXPERIMENTAL::ConfigStatistic* res = const_cast<EXPERIMENTAL::ConfigStatistic*>(&s);
             if ( res != nullptr ) {
                 return res;
             }
@@ -479,7 +483,7 @@ ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
 
     // Check for the subComponents statistics
     for ( auto &s : subComponents ) {
-        ConfigStatistic* res = s.findStatistic(sid);
+        EXPERIMENTAL::ConfigStatistic* res = s.findStatistic(sid);
         if ( res != nullptr ) {
             return res;
         }
@@ -871,7 +875,7 @@ ConfigComponent* ConfigGraph::findComponentByName(const std::string& name) {
     return nullptr;
 }
 
-ConfigStatistic* ConfigGraph::findStatistic(StatisticId_t id) const
+EXPERIMENTAL::ConfigStatistic* ConfigGraph::findStatistic(StatisticId_t id) const
 {
    return comps[COMPONENT_ID_MASK(id)].findStatistic(id);
 }
