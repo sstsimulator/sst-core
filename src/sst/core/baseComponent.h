@@ -435,7 +435,7 @@ protected:
                         slot_name.c_str(), my_info->getType().c_str(), sub_count);
         }
 
-        return isUserSubComponentLoadableUsingAPIByIndex<T>(slot_name,0);
+        return isUserSubComponentLoadableUsingAPIByIndex<T>(slot_name,index);
     }
 
     /**
@@ -526,7 +526,6 @@ protected:
 
         return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);
     }
-
 
     /** Convenience function for reporting fatal conditions.  The
         function will create a new Output object and call fatal()
@@ -621,6 +620,11 @@ private:
 
         return isSubComponentLoadableUsingAPI<T>(sub_info->type);
     }
+
+    // Utility function used by fatal and sst_assert
+    void vfatal(uint32_t line, const char* file, const char* func,
+                int exit_code,
+                const char* format, va_list arg)    const;
 
 
 public:

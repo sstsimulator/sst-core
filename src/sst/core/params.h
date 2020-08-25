@@ -412,9 +412,20 @@ public:
      * not within quotes (double or single).  All whitespace at the
      * beginning and end of a token is ignored (unless inside quotes).
      * Once the tokens are generated, any quoted string will have the
-     * front and back quotes removed.  The '/' for any escaped quote
+     * front and back quotes removed.  The '\' for any escaped quote
      * of the same type as the front and back is also removed.
      *
+     * Examples:
+     *
+     * These will produce the same results:
+     * [1, 2, 3, 4, 5]
+     * ['1', '2', '3', '4', '5']
+     *
+     * Examples of strings using double and/or single quotes:
+     * 'This is "a" test'  ->  This is "a" test
+     * "This is 'a' test" -> This is 'a' test
+     * 'This "is \'a\'" test'  -> This "is 'a'" test
+     * 'This "is \"a\"" test'  -> This "is \"a\"" test
      *
      * @param k - Parameter name
      * @param vec - vector to append array items to

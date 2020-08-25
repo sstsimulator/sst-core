@@ -438,11 +438,11 @@ BaseComponent::loadModule(const std::string& type, Params& params)
 }
 
 void
-BaseComponent::fatal(uint32_t line, const char* file, const char* func,
+BaseComponent::vfatal(uint32_t line, const char* file, const char* func,
                     int exit_code,
-                    const char* format, ...)    const
+                    const char* format, va_list arg)    const
 {
-    Output abort("Rank: @R,@I, time: @t - fatal() called from file: @f, line: @l, function: @p", 5, -1, Output::STDOUT);
+    Output abort("Rank: @R,@I, time: @t - called in file: @f, line: @l, function: @p", 5, -1, Output::STDOUT);
 
     // Get info about the simulation
     std::string name = my_info->getName();
@@ -455,17 +455,27 @@ BaseComponent::fatal(uint32_t line, const char* file, const char* func,
         parent = parent->parent_info;
     }
 
-    char buf[4000];
+    char new_format[256];
 
-    sprintf(buf,"\nElement name: %s,  type: %s (full type tree: %s)\n%s",
-            name.c_str(),type.c_str(),type_tree.c_str(),format);
+    snprintf(new_format,256,"\nElement name: %s,  type: %s (full type tree: %s)\n%s",
+             name.c_str(),type.c_str(),type_tree.c_str(),format);
 
+    char buf[512];
+    vsnprintf(buf,512,new_format,arg);
+    abort.fatal(line,file,func,exit_code,"%s",buf);
+}
 
+void
+BaseComponent::fatal(uint32_t line, const char* file, const char* func,
+                    int exit_code,
+                    const char* format, ...)    const
+{
     va_list arg;
-    va_start(arg, format);
-    abort.fatal(line,file,func,exit_code,buf,arg);
+    va_start(arg,format);
+    vfatal(line,file,func,exit_code,format,arg);
     va_end(arg);
 }
+
 
 void
 BaseComponent::sst_assert(bool condition, uint32_t line, const char* file, const char* func,
@@ -475,7 +485,7 @@ BaseComponent::sst_assert(bool condition, uint32_t line, const char* file, const
     if ( !condition ) {
         va_list arg;
         va_start(arg, format);
-        fatal(line,file,func,exit_code,format,arg);
+        vfatal(line,file,func,exit_code,format,arg);
         va_end(arg);
     }
 }
