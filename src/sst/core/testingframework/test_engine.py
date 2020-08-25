@@ -257,7 +257,7 @@ class TestEngine():
                             help=('Run Test Suites concurrently using threads\n')
                             + ('TT = thread limit [default {0}]').format(DEF_THREAD_LIMIT))
         parser.add_argument('-l', '--list_testsuites', action='store_true',
-                            help='List discovered testscipts instead of running tests [False]')
+                            help='List discovered testscripts instead of running tests [False]')
 
         discover_group = parser.add_argument_group('Test Discovery Arguments')
         mutnamegroup = discover_group.add_mutually_exclusive_group()

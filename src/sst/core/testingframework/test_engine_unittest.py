@@ -22,6 +22,27 @@ import traceback
 import threading
 from datetime import datetime
 
+# See if we can import some optional modules
+try:
+    import blessings
+    from blessings import Terminal
+    blessings_loaded = True
+except ImportError:
+    blessings_loaded = False
+
+try:
+    import pygments
+    from pygments import formatters, highlight
+    pygments_loaded = True
+    try:
+        # Python 2
+        from pygments.lexers import PythonTracebackLexer as Lexer
+    except NameError:
+        # Python 3
+        from pygments.lexers import Python3TracebackLexer as Lexer
+except ImportError:
+    pygments_loaded = False
+
 # Queue module changes name between Py2->Py3
 try:
     import Queue
@@ -48,6 +69,11 @@ from test_engine_support import strclass
 from test_engine_support import strqual
 from test_engine_junit import JUnitTestCase
 
+if is_py_2():
+    text_type = unicode
+else:
+    text_type = str
+
 ################################################################################
 
 def verify_concurrent_test_engine_available():
@@ -71,8 +97,12 @@ class SSTTextTestRunner(unittest.TextTestRunner):
                  failfast=False, buffer=False, resultclass=None):
         super(SSTTextTestRunner, self).__init__(stream, descriptions, verbosity,
                                                 failfast, buffer, resultclass)
-        log(("\n=== TESTS STARTING ================") +
-            ("===================================\n"))
+
+        if not blessings_loaded or not pygments_loaded:
+            log_info(("Full colorized output can be obtained by running") +
+                     (" 'pip install blessings pygments'"))
+
+        log("\n=== TESTS STARTING " + ("=" * 51))
 
 ###
 
@@ -142,10 +172,39 @@ class SSTTextTestRunner(unittest.TextTestRunner):
 
 ################################################################################
 
-class SSTTextTestResult(unittest.TextTestResult):
-    """ A superclass to support SST required testing """
+class SSTTextTestResult(unittest.TestResult):
+    """ A superclass to support SST required testing, this is a modified version
+        of unittestTextTestResult from python 2.7 modified for SST's needs.
+    """
+    separator1 = '=' * 70
+    separator2 = '-' * 70
+    indent = ' ' * 4
 
-    def __init__(self, stream, descriptions, verbosity):
+    _test_class = None
+
+    if blessings_loaded:
+        _terminal = Terminal()
+        colours = {
+            None: text_type,
+            'error': _terminal.bold_red,
+            'expected': _terminal.green,
+            'fail': _terminal.bold_yellow,
+            'skip': text_type,
+            'success': _terminal.green,
+            'title': _terminal.magenta,
+            'unexpected': _terminal.bold_red,
+        }
+    else:
+        colours = {
+            None: text_type
+        }
+
+    if pygments_loaded:
+        formatter = formatters.Terminal256Formatter()
+        lexer = Lexer()
+
+
+    def __init__(self, stream, descriptions, verbosity, no_colour_output=False):
         super(SSTTextTestResult, self).__init__(stream, descriptions, verbosity)
         self.testsuitesresultsdict = SSTTestSuitesResultsDict()
         self._start_time = time.time()
@@ -153,12 +212,50 @@ class SSTTextTestResult(unittest.TextTestResult):
         self._testcase_name = "undefined_testcasename"
         self._testsuite_name = "undefined_testsuitename"
         self._junit_test_case = None
+        self.stream = stream
+        self.showAll = verbosity > 1
+        self.dots = verbosity == 1
+        self.descriptions = descriptions
+        if blessings_loaded:
+            self.no_colour_output = no_colour_output
+        else:
+            self.no_colour_output = True
+
+    def getShortDescription(self, test):
+        doc_first_line = test.shortDescription()
+        if self.descriptions and doc_first_line:
+            return '\n'.join((str(test), doc_first_line))
+        else:
+            return str(test)
+
+    def getLongDescription(self, test):
+        doc_first_line = test.shortDescription()
+        if self.descriptions and doc_first_line:
+            return '\n'.join((str(test), doc_first_line))
+        return str(test)
+
+    def getClassDescription(self, test):
+        test_class = test.__class__
+        doc = test_class.__doc__
+        if self.descriptions and doc:
+            return doc.strip().split('\n')[0].strip()
+        return strclass(test_class)
+
 
 ###
-
     def startTest(self, test):
         super(SSTTextTestResult, self).startTest(test)
-        #log_forced("DEBUG - startTest: Test = {0}\n".format(test))
+        if self.showAll:
+            if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
+                if self._test_class != test.__class__:
+                    self._test_class = test.__class__
+                    title = self.getClassDescription(test)
+                    if self.no_colour_output:
+                        self.stream.writeln(self.colours[None](title))
+                    else:
+                        self.stream.writeln(self.colours['title'](title))
+            self.stream.flush()
+
         self._start_time = time.time()
         self._test_name = "undefined_testname"
         _testname = getattr(test, 'testname', None)
@@ -198,25 +295,40 @@ class SSTTextTestResult(unittest.TextTestResult):
 
 ###
 
-    def addSuccess(self, test):
-        #super(SSTTextTestResult, self).addSuccess(test)
-        #log_forced("DEBUG - addSuccess: Test = {0}\n".format(test))
-        # Override the "ok" and make it a "PASS" instead
-        self.testsuitesresultsdict.add_success(test)
+    def printResult(self, test, short, extended, colour_key=None):
+        if self.no_colour_output:
+            colour = self.colours[None]
+        else:
+            colour = self.colours[colour_key]
         if self.showAll:
-            self.stream.writeln("PASS")
+            self.stream.write(self.indent)
+            self.stream.write(colour(extended))
+            self.stream.write(" -- ")
+            self.stream.writeln(self.getShortDescription(test))
+            self.stream.flush()
         elif self.dots:
-            self.stream.write('.')
+            self.stream.write(colour(short))
             self.stream.flush()
 
-    def addError(self, test, err):
-        super(SSTTextTestResult, self).addError(test, err)
+###
+
+    def addSuccess(self, test):
+        super(SSTTextTestResult, self).addSuccess(test)
+        #log_forced("DEBUG - addSuccess: Test = {0}\n".format(test))
+        self.printResult(test, '.', 'PASS', 'success')
 
         if not self._is_test_of_type_ssttestcase(test):
             return
+        self.testsuitesresultsdict.add_success(test)
 
-        self.testsuitesresultsdict.add_error(test)
+    def addError(self, test, err):
+        super(SSTTextTestResult, self).addError(test, err)
         #log_forced("DEBUG - addError: Test = {0}, err = {1}\n".format(test, err))
+        self.printResult(test, 'E', 'ERROR', 'error')
+
+        if not self._is_test_of_type_ssttestcase(test):
+            return
+        self.testsuitesresultsdict.add_error(test)
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
             err_msg = self._get_err_info(err)
@@ -224,8 +336,12 @@ class SSTTextTestResult(unittest.TextTestResult):
 
     def addFailure(self, test, err):
         super(SSTTextTestResult, self).addFailure(test, err)
-        self.testsuitesresultsdict.add_failure(test)
         #log_forced("DEBUG - addFailure: Test = {0}, err = {1}\n".format(test, err))
+        self.printResult(test, 'F', 'FAIL', 'fail')
+
+        if not self._is_test_of_type_ssttestcase(test):
+            return
+        self.testsuitesresultsdict.add_failure(test)
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
             err_msg = self._get_err_info(err)
@@ -233,8 +349,12 @@ class SSTTextTestResult(unittest.TextTestResult):
 
     def addSkip(self, test, reason):
         super(SSTTextTestResult, self).addSkip(test, reason)
-        self.testsuitesresultsdict.add_skip(test)
         #log_forced("DEBUG - addSkip: Test = {0}, reason = {1}\n".format(test, reason))
+        self.printResult(test, 's', 'skipped {0!r}'.format(reason), 'skip')
+
+        if not self._is_test_of_type_ssttestcase(test):
+            return
+        self.testsuitesresultsdict.add_skip(test)
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
             _junit_test_case.junit_add_skipped_info(reason)
@@ -243,14 +363,21 @@ class SSTTextTestResult(unittest.TextTestResult):
         # NOTE: This is not a failure, but an identified pass
         #       since we are expecting a failure
         super(SSTTextTestResult, self).addExpectedFailure(test, err)
-        self.testsuitesresultsdict.add_expected_failure(test)
         #log_forced("DEBUG - addExpectedFailure: Test = {0}, err = {1}\n".format(test, err))
+        self.printResult(test, 'x', 'expected failure', 'expected')
+        if not self._is_test_of_type_ssttestcase(test):
+            return
+        self.testsuitesresultsdict.add_expected_failure(test)
 
     def addUnexpectedSuccess(self, test):
         # NOTE: This is a failure, since we passed, but were expecting a failure
         super(SSTTextTestResult, self).addUnexpectedSuccess(test)
-        self.testsuitesresultsdict.add_unexpected_success(test)
         #log_forced("DEBUG - addUnexpectedSuccess: Test = {0}\n".format(test))
+        self.printResult(test, 'u', 'unexpected success', 'unexpected')
+
+        if not self._is_test_of_type_ssttestcase(test):
+            return
+        self.testsuitesresultsdict.add_unexpected_success(test)
         _junit_test_case = getattr(self, '_junit_test_case', None)
         if _junit_test_case is not None:
             _junit_test_case.junit_add_failure_info("RECEIVED SUCCESS WHEN EXPECTING A FAILURE")
@@ -260,14 +387,27 @@ class SSTTextTestResult(unittest.TextTestResult):
     def printErrors(self):
         if self.dots or self.showAll:
             self.stream.writeln()
-        log(("===================================") +
-            ("==================================="))
-        log(("=== TESTS FINISHED ================") +
-            ("==================================="))
-        log(("===================================") +
-            ("===================================\n"))
+        log("=" * 70)
+        log("=== TESTS FINISHED " + ("=" * 51))
+        log("=" * 70 + "\n")
         self.printErrorList('ERROR', self.errors)
         self.printErrorList('FAIL', self.failures)
+
+    def printErrorList(self, flavour, errors):
+        if self.no_colour_output:
+            colour = self.colours[None]
+        else:
+            colour = self.colours[flavour.lower()]
+
+        for test, err in errors:
+            self.stream.writeln(self.separator1)
+            title = '%s: %s' % (flavour, self.getLongDescription(test))
+            self.stream.writeln(colour(title))
+            self.stream.writeln(self.separator2)
+            if pygments_loaded:
+                self.stream.writeln(highlight(err, self.lexer, self.formatter))
+            else:
+                self.stream.writeln(err)
 
 ####
 
@@ -286,7 +426,6 @@ class SSTTextTestResult(unittest.TextTestResult):
             return: True if this is a test within a valid SSTTestCase object
         """
         return getattr(test, 'get_testcase_name', None) is not None
-
 
 ################################################################################
 
