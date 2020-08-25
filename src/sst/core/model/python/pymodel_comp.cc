@@ -283,10 +283,10 @@ static PyObject* compSetStatistic(PyObject *self, PyObject *args)
     if ( nullptr == c ) return nullptr;
 
     StatisticId_t stat_id = c->getNextStatisticID();
-    SST::EXPERIMENTAL::ConfigStatistic* stat = c->addStatistic(stat_id, name);
+    SST::Experimental::ConfigStatistic* stat = c->addStatistic(stat_id, name);
     if ( nullptr != stat ) {
         PyObject *argList = Py_BuildValue("Ok", self, stat_id);
-        PyObject *statObj = PyObject_CallObject((PyObject*)&EXPERIMENTAL::PyModel_StatType, argList);
+        PyObject *statObj = PyObject_CallObject((PyObject*)&Experimental::PyModel_StatType, argList);
         Py_DECREF(argList);
         return statObj;
     }

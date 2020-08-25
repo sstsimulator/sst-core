@@ -27,7 +27,7 @@ class BaseComponent;
 
 class ConfigComponent;
 
-namespace EXPERIMENTAL {
+namespace Experimental {
 
 class ConfigStatistic;
 
@@ -43,7 +43,7 @@ class StatisticInfo;
 class ComponentInfo {
 
 public:
-    typedef std::vector<EXPERIMENTAL::ConfigStatistic>      statEnableList_t;        /*!< List of Enabled Statistics */
+    typedef std::vector<Experimental::ConfigStatistic>      statEnableList_t;        /*!< List of Enabled Statistics */
 
 
     // Share Flags for SubComponent loading

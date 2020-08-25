@@ -853,7 +853,7 @@ static PyObject* PyInit_sst(void)
     // Initialize our types
     PyModel_ComponentType.tp_new = PyType_GenericNew;
     PyModel_SubComponentType.tp_new = PyType_GenericNew;
-    EXPERIMENTAL::PyModel_StatType.tp_new = PyType_GenericNew;
+    Experimental::PyModel_StatType.tp_new = PyType_GenericNew;
     PyModel_LinkType.tp_new = PyType_GenericNew;
     PyModel_UnitAlgebraType.tp_new = PyType_GenericNew;
     PyModel_StatGroupType.tp_new = PyType_GenericNew;
@@ -863,7 +863,7 @@ static PyObject* PyInit_sst(void)
          ( PyType_Ready(&PyModel_SubComponentType) < 0 ) ||
          ( PyType_Ready(&PyModel_LinkType) < 0 ) ||
          ( PyType_Ready(&PyModel_UnitAlgebraType) < 0 ) ||
-         ( PyType_Ready(&EXPERIMENTAL::PyModel_StatType) < 0 ) ||
+         ( PyType_Ready(&Experimental::PyModel_StatType) < 0 ) ||
          ( PyType_Ready(&PyModel_StatGroupType) < 0 ) ||
          ( PyType_Ready(&PyModel_StatOutputType) < 0 ) ||
          ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
@@ -877,7 +877,7 @@ static PyObject* PyInit_sst(void)
 
     Py_INCREF(&PyModel_ComponentType);
     Py_INCREF(&PyModel_SubComponentType);
-    Py_INCREF(&EXPERIMENTAL::PyModel_StatType);
+    Py_INCREF(&Experimental::PyModel_StatType);
     Py_INCREF(&PyModel_LinkType);
     Py_INCREF(&PyModel_UnitAlgebraType);
     Py_INCREF(&PyModel_StatGroupType);
@@ -889,7 +889,7 @@ static PyObject* PyInit_sst(void)
     PyModule_AddObject(module, "UnitAlgebra", (PyObject*)&PyModel_UnitAlgebraType);
     PyModule_AddObject(module, "Component", (PyObject*)&PyModel_ComponentType);
     PyModule_AddObject(module, "SubComponent", (PyObject*)&PyModel_SubComponentType);
-    PyModule_AddObject(module, "Statistic", (PyObject*)&EXPERIMENTAL::PyModel_StatType);
+    PyModule_AddObject(module, "Statistic", (PyObject*)&Experimental::PyModel_StatType);
     PyModule_AddObject(module, "StatisticGroup", (PyObject*)&PyModel_StatGroupType);
     PyModule_AddObject(module, "StatisticOutput", (PyObject*)&PyModel_StatOutputType);
     PyModule_AddObject(module, "ModuleLoader", (PyObject*)&ModuleLoaderType);

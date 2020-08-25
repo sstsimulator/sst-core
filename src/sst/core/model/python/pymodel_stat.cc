@@ -32,7 +32,7 @@ extern SST::Core::SSTPythonModelDefinition *gModel;
 
 namespace SST {
 
-namespace EXPERIMENTAL {
+namespace Experimental {
 
 extern "C" {
 

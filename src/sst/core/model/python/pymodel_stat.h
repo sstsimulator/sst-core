@@ -17,7 +17,7 @@
 #include "sst/core/sst_types.h"
 
 namespace SST {
-namespace EXPERIMENTAL {
+namespace Experimental {
 
 extern "C" {
 
