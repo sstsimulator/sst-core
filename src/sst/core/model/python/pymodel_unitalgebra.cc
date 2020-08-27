@@ -400,7 +400,7 @@ PyTypeObject PyModel_UnitAlgebraType = {
     nullptr,                         /* tp_setattr */
     SST_TP_COMPARE(nullptr)          /* Python2 only */
     SST_TP_AS_SYNC                   /* Python3 only */
-    nullptr,                         /* tp_repr */
+    (reprfunc)unitAlgebraStr,        /* tp_repr */
     &PyModel_UnitAlgebraNumMeth,     /* tp_as_number */
     nullptr,                         /* tp_as_sequence */
     nullptr,                         /* tp_as_mapping */
