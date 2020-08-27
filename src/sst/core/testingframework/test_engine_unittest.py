@@ -274,7 +274,7 @@ class SSTTextTestResult(unittest.TestResult):
 
     def stopTest(self, test):
         super(SSTTextTestResult, self).stopTest(test)
-        #log_forced("DEBUG - stopTest: Test = {0}\n".format(test))
+#        log_forced("DEBUG - stopTest: Test = {0}\n".format(test))
         self._junit_test_case.junit_add_elapsed_sec(time.time() - self._start_time)
 
         if not self._is_test_of_type_ssttestcase(test):
@@ -296,6 +296,7 @@ class SSTTextTestResult(unittest.TestResult):
 ###
 
     def printResult(self, test, short, extended, colour_key=None):
+        test_run_time = time.time() - self._start_time
         if self.no_colour_output:
             colour = self.colours[None]
         else:
@@ -304,7 +305,8 @@ class SSTTextTestResult(unittest.TestResult):
             self.stream.write(self.indent)
             self.stream.write(colour(extended))
             self.stream.write(" -- ")
-            self.stream.writeln(self.getShortDescription(test))
+            self.stream.write(self.getShortDescription(test))
+            self.stream.writeln(" [{0:.3f}]".format(test_run_time))
             self.stream.flush()
         elif self.dots:
             self.stream.write(colour(short))
