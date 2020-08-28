@@ -396,12 +396,46 @@ protected:
 
     /**
        Check to see if a given element type is loadable with a particular API
+
        @param name - Name of element to check in lib.name format
        @return True if loadable as the API specified as the template parameter
      */
     template <class T>
     bool isSubComponentLoadableUsingAPI(const std::string& type) {
         return Factory::getFactory()->isSubComponentLoadableUsingAPI<T>(type);
+    }
+
+    /**
+       Check to see if the element type loaded by the user into the.
+       specified slot is loadable with a particular API.  This will
+       only check slot index 0.  If you need to check other slots,
+       please use the SubComponentSlotInfo.
+
+       @param slot_name - Name of slot to check
+       @return True if loadable as the API specified as the template parameter
+     */
+    template<class T>
+    bool isUserSubComponentLoadableUsingAPI(const std::string& slot_name) {
+        // Get list of ComponentInfo objects and make sure that there is
+        // only one SubComponent put into this slot
+        // const std::vector<ComponentInfo>& subcomps = my_info->getSubComponents();
+        const std::map<ComponentId_t,ComponentInfo>& subcomps = my_info->getSubComponents();
+        int sub_count = 0;
+        int index = -1;
+        for ( auto &ci : subcomps ) {
+            if ( ci.second.getSlotName() == slot_name ) {
+                index = ci.second.getSlotNum();
+                sub_count++;
+            }
+        }
+
+        if ( sub_count > 1 ) {
+            SST::Output outXX("SubComponentSlotWarning: ", 0, 0, Output::STDERR);
+            outXX.fatal(CALL_INFO, 1, "Error: ComponentSlot \"%s\" in component \"%s\" only allows for one SubComponent, %d provided.\n",
+                        slot_name.c_str(), my_info->getType().c_str(), sub_count);
+        }
+
+        return isUserSubComponentLoadableUsingAPIByIndex<T>(slot_name,index);
     }
 
     /**
@@ -493,7 +527,6 @@ protected:
         return loadUserSubComponentByIndex<T,ARGS...>(slot_name, index, share_flags, args...);
     }
 
-
     /** Convenience function for reporting fatal conditions.  The
         function will create a new Output object and call fatal()
         using the supplied parameters.  Before calling
@@ -578,6 +611,20 @@ private:
         }
         return nullptr;
     }
+
+    template<class T>
+    bool isUserSubComponentLoadableUsingAPIByIndex(const std::string& slot_name, int slot_num) {
+        // Check to see if the slot exists
+        ComponentInfo* sub_info = my_info->findSubComponent(slot_name,slot_num);
+        if ( sub_info == nullptr ) return false;
+
+        return isSubComponentLoadableUsingAPI<T>(sub_info->type);
+    }
+
+    // Utility function used by fatal and sst_assert
+    void vfatal(uint32_t line, const char* file, const char* func,
+                int exit_code,
+                const char* format, va_list arg)    const;
 
 
 public:
@@ -701,6 +748,18 @@ public:
 
     int getMaxPopulatedSlotNumber() const {
         return max_slot_index;
+    }
+
+    /**
+       Check to see if the element type loaded by the user into the
+       specified slot index is loadable with a particular API.
+
+       @param slot_num Slot index to check
+       @return True if loadable as the API specified as the template parameter
+     */
+    template <class T>
+    bool isLoadableUsingAPI(int slot_num) {
+        return comp->isUserSubComponentLoadableUsingAPIByIndex<T>(slot_name,slot_num);
     }
 
 
