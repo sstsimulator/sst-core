@@ -536,188 +536,71 @@ uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& s
     return Factory::getFactory()->GetComponentInfoStatisticEnableLevel(my_info->type, statisticName);
 }
 
-
-StatisticBase*
-BaseComponent::registerStatisticCore(SST::Params& params, const std::string& statName, const std::string& statSubId,
-                                     fieldType_t fieldType, CreateFxn&& create)
+void
+BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, const SST::Params& params, const std::string& name)
 {
-    SST::Params statParams = params.find_prefix_params(statName);
-    std::string                     fullStatName;
-    bool                            statGood = true;
-    bool                            nameFound = false;
-    StatisticBase::StatMode_t       statCollectionMode = StatisticBase::STAT_MODE_COUNT;
-    Output &                        out = getSimulation()->getSimulationOutput();
-    StatisticProcessingEngine      *engine = StatisticProcessingEngine::getInstance();
-    UnitAlgebra                     collectionRate;
-    std::string                     statRateParam;
-    std::string                     statTypeParam;
-    StatisticBase*                   statistic = nullptr;
+  StatisticBase::StatMode_t statCollectionMode = StatisticBase::STAT_MODE_COUNT;
+  Output& out = getSimulation()->getSimulationOutput();
+  std::string statRateParam = params.find<std::string>("rate", "0ns");
+  UnitAlgebra collectionRate(statRateParam);
 
+  //make sure we have a valid collection rate
+  // Check that the Collection Rate is a valid unit type that we can use
+  if (collectionRate.hasUnits("s") || collectionRate.hasUnits("hz")) {
+      // Rate is Periodic Based
+      statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
+  } else if (collectionRate.hasUnits("event")) {
+      // Rate is Count Based
+      statCollectionMode = StatisticBase::STAT_MODE_COUNT;
+  } else if (collectionRate.getValue() == 0) {
+      // Collection rate is zero and has no units
+      // so we just dump at beginning and end
+      collectionRate = UnitAlgebra("0ns");
+      statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
+  } else {
+      // collectionRate is a unit type we dont recognize
+      out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n",
+                name.c_str(), collectionRate.toString().c_str());
+  }
 
-    // First check to see if this is an "inserted" statistic that has
-    // already been created.
+  if (!statistic->isStatModeSupported(statCollectionMode)) {
+      if (StatisticBase::STAT_MODE_PERIODIC == statCollectionMode) {
+          out.fatal(CALL_INFO, 1, 0,
+                      " Warning: Statistic %s Does not support Periodic Based Collections; Collection Rate = %s\n",
+                      name.c_str(), collectionRate.toString().c_str());
+      } else {
+          out.fatal(CALL_INFO, 1, 0,
+                      " Warning: Statistic %s Does not support Event Based Collections; Collection Rate = %s\n",
+                      name.c_str(), collectionRate.toString().c_str());
+      }
+  }
 
-    // Don't need to look at my cache, that was already done.  Start
-    // with my parent.
-    ComponentInfo* curr_info = my_info;
-    while (curr_info->canInsertStatistics() ) {
-        // Check to see if this was already created, and
-        // if so return the cached copy
-        StatisticBase* prevStat = StatisticProcessingEngine::getInstance()->isStatisticRegisteredWithEngine(
-            curr_info->parent_info->getName(), curr_info->parent_info->getID(), statName, statSubId, fieldType);
-        if (nullptr != prevStat) {
-            // Dynamic cast the base stat to the expected type
-            return prevStat;
-        }
-        curr_info = curr_info->parent_info;
-    }
+  statistic->setRegisteredCollectionMode(statCollectionMode);
+}
 
+std::string
+BaseComponent::configureStatParams(StatisticId_t id, SST::Params& params)
+{
+  auto& cs = my_info->enabledStatConfigs->find(id)->second;
 
-    // Build a name to report errors against
-    fullStatName = StatisticBase::buildStatisticFullName(getName().c_str(), statName, statSubId);
+  // Identify what keys are Allowed in the parameters
+  Params::KeySet_t allowedKeySet;
+  allowedKeySet.insert("type");
+  allowedKeySet.insert("rate");
+  allowedKeySet.insert("startat");
+  allowedKeySet.insert("stopat");
+  allowedKeySet.insert("resetOnRead");
+  cs.params.pushAllowedKeys(allowedKeySet);
 
-    // Make sure that the wireup has not been completed
-    if (true == getSimulation()->isWireUpFinished()) {
-        // We cannot register statistics AFTER the wireup (after all components have been created)
-        out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Cannot be registered after the Components have been wired up.  Statistics must be registered on Component creation.; exiting...\n", fullStatName.c_str());
-    }
+  params.insert(cs.params);
+  return params.find<std::string>("type", "sst.AccumulatorStatistic");
+}
 
-
-    // Need to check my enabled statistics and if it's not there, then
-    // I need to check up my parent tree as long as insertStatistics
-    // is enabled.
-    curr_info = my_info;
-    ComponentInfo* next_info = my_info;
-    // uint8_t stat_load_level;
-
-    // Need to keep track of if the stat was enabled with all flag or
-    // directly and what the enable level for the component that it
-    // was enabled in is set to.  This info is needed to get the final
-    // load level checking correct.  If the stat is enabled
-    // explicitly, then load level doesn't matter.  Also, a locally
-    // set load level will take priority over the global setting.
-    bool all_enabled = false;
-    uint8_t enable_level = STATISTICLOADLEVELUNINITIALIZED;
-    do {
-        curr_info = next_info;
-        // Check each entry in the StatEnableList (from the ConfigGraph via the
-        // Python File) to see if this Statistic is enabled, then check any of
-        // its critical parameters
-
-        // Only check for stat enables if I'm a not a component
-        // defined SubComponet, because component defined
-        // SubComponents don't have a stat enable list.
-        if ( !curr_info->isAnonymous() ) {
-            for ( auto & si : *curr_info->getStatEnableList() ) {
-                // First check to see if the any entry in the StatEnableList matches
-                // the Statistic Name or the STATALLFLAG.  If so, then this Statistic
-                // will be enabled.  Then check any critical parameters
-                if ((std::string(STATALLFLAG) == si.name) || (statName == si.name)) {
-                    // Identify what keys are Allowed in the parameters
-                    Params::KeySet_t allowedKeySet;
-                    allowedKeySet.insert("type");
-                    allowedKeySet.insert("rate");
-                    allowedKeySet.insert("startat");
-                    allowedKeySet.insert("stopat");
-                    allowedKeySet.insert("resetOnRead");
-                    si.params.pushAllowedKeys(allowedKeySet);
-
-                    // We found an acceptable name... Now check its critical Parameters
-                    // Note: If parameter not found, defaults will be provided
-                    statTypeParam = si.params.find<std::string>("type", "sst.AccumulatorStatistic");
-                    statRateParam = si.params.find<std::string>("rate", "0ns");
-
-                    collectionRate = UnitAlgebra(statRateParam);
-                    statParams = si.params;
-                    // Get the load level from the component
-                    // stat_load_level = curr_info->component->getComponentInfoStatisticEnableLevel(si.name);
-                    nameFound = true;
-
-                    all_enabled = (std::string(STATALLFLAG) == si.name);
-                    enable_level = curr_info->getStatisticLoadLevel();
-                    break;
-                }
-            }
-        }
-        next_info = curr_info->parent_info;
-    } while ( curr_info->canInsertStatistics() && !nameFound );
-
-    // hack for now to make sure that an explicitly enabled stat is
-    // always loaded regardless of load level.
-    if ( !all_enabled ) enable_level = 0xfe;
-
-    // Did we find a matching enable name?
-    if (false == nameFound) {
-        statGood = false;
-        out.verbose(CALL_INFO, 1, 0, " Warning: Statistic %s is not enabled in python script, statistic will not be enabled...\n", fullStatName.c_str());
-    }
-
-    if (true == statGood) {
-        // Check that the Collection Rate is a valid unit type that we can use
-        if ((true == collectionRate.hasUnits("s")) ||
-            (true == collectionRate.hasUnits("hz")) ) {
-            // Rate is Periodic Based
-            statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
-        } else if (true == collectionRate.hasUnits("event")) {
-            // Rate is Count Based
-            statCollectionMode = StatisticBase::STAT_MODE_COUNT;
-        } else if (0 == collectionRate.getValue()) {
-            // Collection rate is zero and has no units
-            // so we just dump at beginning and end
-            collectionRate = UnitAlgebra("0ns");
-            statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
-        } else {
-            // collectionRate is a unit type we dont recognize
-            out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", fullStatName.c_str(), collectionRate.toString().c_str());
-        }
-    }
-
-    if (true == statGood) {
-        // Instantiate the Statistic here defined by the type here
-        //statistic = engine->createStatistic<T>(owner, statTypeParam, statName, statSubId, statParams);
-        statistic = create(statTypeParam, curr_info->component, statName, statSubId, statParams);
-        if (nullptr == statistic) {
-            out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Statistic %s; exiting...\n", fullStatName.c_str());
-        }
-
-
-        // Check that the statistic supports this collection rate
-        if (false == statistic->isStatModeSupported(statCollectionMode)) {
-            if (StatisticBase::STAT_MODE_PERIODIC == statCollectionMode) {
-                out.verbose(CALL_INFO, 1, 0, " Warning: Statistic %s Does not support Periodic Based Collections; Collection Rate = %s\n", fullStatName.c_str(), collectionRate.toString().c_str());
-            } else {
-                out.verbose(CALL_INFO, 1, 0, " Warning: Statistic %s Does not support Event Based Collections; Collection Rate = %s\n", fullStatName.c_str(), collectionRate.toString().c_str());
-            }
-            statGood = false;
-        }
-
-        // Tell the Statistic what collection mode it is in
-        statistic->setRegisteredCollectionMode(statCollectionMode);
-    }
-
-    // If Stat is good, Add it to the Statistic Processing Engine
-    if (true == statGood) {
-        statGood = engine->registerStatisticWithEngine(statistic,fieldType,enable_level);
-    }
-
-    if (false == statGood ) {
-        // Delete the original statistic (if created), and return a NULL statistic instead
-        if (nullptr != statistic) {
-            delete statistic;
-        }
-
-        // Instantiate the Statistic here defined by the type here
-        statTypeParam = "sst.NullStatistic";
-        statistic = create(statTypeParam, curr_info->component, statName, statSubId, statParams);
-        if (nullptr == statistic) {
-            statGood = false;
-            out.fatal(CALL_INFO, 1, "ERROR: Unable to instantiate Null Statistic %s; exiting...\n", fullStatName.c_str());
-        }
-        engine->registerStatisticWithEngine(statistic, fieldType, enable_level);
-    }
-
-    // Register the new Statistic with the Statistic Engine
-    return statistic;
+void
+BaseComponent::registerStatisticCore(StatisticBase* stat)
+{
+    //Output &                        out = getSimulation()->getSimulationOutput()
+    StatisticProcessingEngine::getInstance()->registerStatisticWithEngine(stat);
 }
 
 void

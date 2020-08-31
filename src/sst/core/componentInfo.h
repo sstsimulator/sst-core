@@ -118,7 +118,8 @@ private:
 
     TimeConverter* defaultTimeBase;
 
-    statEnableList_t * enabledStats;
+    std::map<StatisticId_t, Experimental::ConfigStatistic>* enabledStatConfigs;
+    std::map<std::string, StatisticId_t>* enabledStatNames;
 
     uint8_t statLoadLevel;
 
@@ -222,8 +223,6 @@ public:
     std::vector<LinkId_t> getAllLinkIds() const;
 
     uint8_t getStatisticLoadLevel() { return statLoadLevel; }
-
-    statEnableList_t* getStatEnableList() { return enabledStats; }
 
     struct HashName {
         size_t operator() (const ComponentInfo* info) const {

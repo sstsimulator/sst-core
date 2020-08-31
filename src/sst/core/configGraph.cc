@@ -143,10 +143,11 @@ void ConfigComponent::print(std::ostream &os) const {
     os << "  Params:" << std::endl;
     params.print_all_params(os, "    ");
     os << "  Statistics:" << std::endl;
-    for ( auto & si : enabledStatistics ) {
-        os << "    " << si.name << std::endl;
+    for ( auto & pair : enabledStatNames ) {
+        os << "    " << pair.first << std::endl;
         os << "      Params:" << std::endl;
-        si.params.print_all_params(os, "      ");
+        auto iter = enabledStatistics.find(pair.second);
+        iter->second.params.print_all_params(os, "      ");
     }
     os << "  SubComponents:\n";
     for ( auto & sc : subComponents ) {
@@ -283,7 +284,7 @@ void ConfigComponent::addParameter(const std::string& key, const std::string& va
     params.enableVerify(bk);
 }
 
-void ConfigComponent::enableStatistic(const std::string& statisticName, bool recursively)
+Experimental::ConfigStatistic* ConfigComponent::enableStatistic(const std::string& statisticName, bool recursively)
 {
     // NOTE: For every statistic in the enabledStatistics List, there must be
     //       a corresponding params entry in enabledStatParams list.  The two
@@ -295,40 +296,43 @@ void ConfigComponent::enableStatistic(const std::string& statisticName, bool rec
         }
     }
 
-    // Check for Enable All Statistics
-    if (statisticName == STATALLFLAG) {
-        // Force the STATALLFLAG to always be on the bottom of the list.
-        // First check to see if anything is in the vector, if vector is empty,
-        // a STATALLFLAG flag will be added to the vector
-        if (false == enabledStatistics.empty()) {
-            // The vector is populated, so see if the STATALLFLAG
-            // already exists if it does, we are done
-            if (STATALLFLAG != enabledStatistics.back().name) {
-                // Add a STATALLFLAG to end of the vector
-                enabledStatistics.emplace_back(STATALLFLAG);
-            }
-        } else {
-            // Add a STATALLFLAG to end of the vector
-            enabledStatistics.emplace_back(STATALLFLAG);
-        }
-    } else {
-        // Check to see if the stat is already in the list
-        for ( auto & si : enabledStatistics ) {
-            if ( statisticName == si.name ) {
-                // We found the name already in the enabledStatistics list, do nothing
-                return;
-            }
-        }
+    if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName)){
+      return nullptr;
+    }
 
-        // statisticName not in list, so add statistic and params to top of the vectors
-        enabledStatistics.emplace(enabledStatistics.begin(), statisticName);
+    auto iter = enabledStatNames.find(statisticName);
+    if (iter == enabledStatNames.end()){
+      StatisticId_t stat_id = getNextStatisticID();
+      enabledStatNames[statisticName] = stat_id;
+      auto* parent = getParent();
+      if (parent){
+        return parent->insertStatistic(stat_id);
+      } else {
+        Experimental::ConfigStatistic& cs = enabledStatistics[stat_id];
+        return &cs;
+      }
+    } else {
+      // okay, allow enable the same statistic twice
+      return findStatistic(iter->second);
     }
 }
+
+/**
+Experimental::ConfigStatistic&
+ConfigComponent::getConfigStatistic(const std::string& statisticName)
+{
+  auto iter = enabledStatNames.find(statisticName);
+  if (iter == statIdMap.end()){
+    throw std::runtime_error("cannot add parameters to statistic, name not found: " + statisticName);
+  }
+  return this->getStatisticConfig(iter->second);
+}
+*/
 
 
 void ConfigComponent::addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively)
 {
-    // NOTE: For every statistic in the enabledStatistics List, there must be
+    // NOTE: For every statistic in the enabledStatistics map, there must be
     //       a corresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
     if ( recursively ) {
@@ -337,15 +341,7 @@ void ConfigComponent::addStatisticParameter(const std::string& statisticName, co
         }
     }
 
-
-    // Scan the enabledStatistics list for the statistic name
-    for ( auto & si : enabledStatistics ) {
-        // Check to see if the names match.  NOTE this also works for the STATALLFLAG
-        if ( statisticName == si.name ) {
-            // Add/set the parameter
-            si.params.insert(param, value);
-        }
-    }
+    findStatistic(statisticName)->params.insert(param, value);
 }
 
 
@@ -357,13 +353,7 @@ void ConfigComponent::setStatisticParameters(const std::string& statisticName, c
         }
     }
 
-    for ( auto & si : enabledStatistics ) {
-        // Check to see if the names match.  NOTE this also works for the STATALLFLAG
-        if ( statisticName == si.name ) {
-            si.params.insert(params);
-        }
-    }
-
+    findStatistic(statisticName)->params.insert(params);
 }
 
 void ConfigComponent::setStatisticLoadLevel(uint8_t level, bool recursively)
@@ -447,67 +437,41 @@ ConfigComponent* ConfigComponent::findSubComponentByName(const std::string& name
     return nullptr;
 }
 
-Experimental::ConfigStatistic* ConfigComponent::addStatistic(StatisticId_t sid, const std::string& statisticName)
+Experimental::ConfigStatistic* ConfigComponent::insertStatistic(StatisticId_t sid)
 {
-    // Check for Enable All Statistics
-    if (statisticName == STATALLFLAG) {
-        // Force the STATALLFLAG to always be on the bottom of the list.
-        // First check to see if anything is in the vector, if vector is empty,
-        // a STATALLFLAG flag will be added to the vector
-        if (false == enabledStatistics.empty()) {
-            // The vector is populated, so see if the STATALLFLAG
-            // already exists if it does, we are done
-            if (STATALLFLAG != enabledStatistics.back().name) {
-                // Add a STATALLFLAG to end of the vector
-                enabledStatistics.emplace_back(STATALLFLAG);
-                return &(enabledStatistics.back());
-            }
-        } else {
-            // Add a STATALLFLAG to end of the vector
-            enabledStatistics.emplace_back(STATALLFLAG);
-            return &(enabledStatistics.back());
-        }
-    } else {
+  ConfigComponent* parent = getParent();
+  if (parent){
+    return parent->insertStatistic(sid);
+  } else {
+    return &enabledStatistics[sid];
+  }
+}
 
-      /* Check for existing statistic with this name */
-      for ( auto &i : enabledStatistics ) {
-          if ( i.name == statisticName)
-          {
-              return nullptr;
-          }
-      }
-
-      enabledStatistics.emplace(enabledStatistics.begin(),
-          Experimental::ConfigStatistic(sid, id, statisticName));
-
-
-      return &(enabledStatistics.front());
-    }
-
+Experimental::ConfigStatistic* ConfigComponent::findStatistic(const std::string& name) const
+{
+  auto iter = enabledStatNames.find(name);
+  if (iter != enabledStatNames.end()){
+    StatisticId_t id = iter->second;
+    return findStatistic(id);
+  } else {
     return nullptr;
+  }
 }
 
 Experimental::ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
 {
-    // Check for the current component statistics
-    for ( const Experimental::ConfigStatistic &s : enabledStatistics ) {
-        if ( s.id == sid ) {
-            Experimental::ConfigStatistic* res = const_cast<Experimental::ConfigStatistic*>(&s);
-            if ( res != nullptr ) {
-                return res;
-            }
-        }
+    ConfigComponent* parent = getParent();
+    if (parent){
+      return parent->findStatistic(sid);
+    } else {
+      auto iter = enabledStatistics.find(sid);
+      if (iter == enabledStatistics.end()){
+        return nullptr;
+      } else {
+        //I hate that I have to do this
+        return const_cast<Experimental::ConfigStatistic*>(&iter->second);
+      }
     }
-
-    // Check for the subComponents statistics
-    for ( auto &s : subComponents ) {
-        Experimental::ConfigStatistic* res = s.findStatistic(sid);
-        if ( res != nullptr ) {
-            return res;
-        }
-    }
-
-    return nullptr;
 }
 
 std::vector<LinkId_t> ConfigComponent::allLinks() const {

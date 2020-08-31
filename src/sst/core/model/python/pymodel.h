@@ -17,7 +17,7 @@
 
 // This only works if we have Python defined from configure, otherwise this is
 // a compile time error.
-#ifdef SST_CONFIG_HAVE_PYTHON
+//#ifdef SST_CONFIG_HAVE_PYTHON
 
 #include <map>
 #include <string>
@@ -107,6 +107,6 @@ std::map<std::string,std::string> generateStatisticParameters(PyObject* statPara
 }
 }
 
-#endif
+//#endif
 
 #endif

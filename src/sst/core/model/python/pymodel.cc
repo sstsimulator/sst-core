@@ -43,12 +43,10 @@ REENABLE_WARNING
 #include "sst/core/configGraph.h"
 DISABLE_WARN_STRICT_ALIASING
 
+using namespace SST;
 using namespace SST::Core;
 
 SST::Core::SSTPythonModelDefinition *gModel = nullptr;
-
-extern "C" {
-
 
 struct ModuleLoaderPy_t {
     PyObject_HEAD
@@ -74,8 +72,6 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject *self, PyObject 
 
 static PyObject* mlFindModule(PyObject *self, PyObject *args);
 static PyObject* mlLoadModule(PyObject *self, PyObject *args);
-
-
 
 
 static PyMethodDef mlMethods[] = {
@@ -845,8 +841,6 @@ static struct PyModuleDef sstModuleDef {
     nullptr,                /* m_free */
 };
 #endif
-
-}  /* extern C */
 
 static PyObject* PyInit_sst(void)
 {

@@ -86,31 +86,12 @@ StatisticProcessingEngine::~StatisticProcessingEngine()
     }
 }
 
-bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat, uint8_t comp_load_level)
+bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 {
     if ( stat->isNullStatistic() )
         return true;
 
-    uint8_t stat_load_level = comp_load_level == STATISTICLOADLEVELUNINITIALIZED ? m_statLoadLevel : comp_load_level;
-
-    if ( 0 == stat_load_level ) {
-        m_output.verbose(CALL_INFO, 1, 0,
-                " Warning: Statistic Load Level = 0 (all statistics disabled); statistic %s is disabled...\n",
-                stat->getFullStatName().c_str());
-        return false;
-    }
-
-
-    uint8_t enableLevel = stat->getComponent()->getComponentInfoStatisticEnableLevel(stat->getStatName());
-    if ( enableLevel > stat_load_level ) {
-        m_output.verbose(CALL_INFO, 1, 0,
-                " Warning: Load Level %d is too low to enable Statistic %s with Enable Level %d, statistic will not be enabled...\n",
-                stat_load_level, stat->getFullStatName().c_str(), enableLevel);
-        return false;
-    }
-
     StatisticGroup &group = getGroupForStatistic(stat);
-
     if ( group.isDefault ) {
         // If the mode is Periodic Based, the add the statistic to the
         // StatisticProcessingEngine otherwise add it as an Event Based Stat.

@@ -41,10 +41,6 @@ StatisticId_t PyStatistic::getID()
     return id;
 }
 
-std::string PyStatistic::getName() {
-    return getStat()->name;
-}
-
 ConfigStatistic* PyStatistic::getStat() {
     return gModel->getGraph()->findStatistic(id);
 }
@@ -66,7 +62,7 @@ static int statInit(StatisticPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
     PyStatistic *obj = new PyStatistic(self,id);
     self->obj = obj;
 
-    gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating statistic [%s]]\n", getStat((PyObject*)self)->name.c_str());
+    //gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating statistic [%s]]\n", getStat((PyObject*)self)->name.c_str());
 
     return 0;
 }

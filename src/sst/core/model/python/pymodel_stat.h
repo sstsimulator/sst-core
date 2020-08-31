@@ -32,7 +32,6 @@ struct PyStatistic {
     virtual ~PyStatistic() { }
     virtual ConfigStatistic* getStat();
     virtual int compare(PyStatistic *other);
-    virtual std::string getName();
     StatisticId_t getID();
 };
 

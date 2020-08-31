@@ -31,13 +31,12 @@ REENABLE_WARNING
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/configGraph.h"
+#include <sst/core/configGraph.h>
+#include <sst/core/componentInfo.h>
 
+using namespace SST;
 using namespace SST::Core;
 extern SST::Core::SSTPythonModelDefinition *gModel;
-
-
-extern "C" {
-
 
 ConfigComponent* ComponentHolder::getSubComp(const std::string& name, int slot_num)
 {
@@ -68,12 +67,9 @@ int ComponentHolder::compare(ComponentHolder *other) {
     else return 0;
 }
 
-
-
 int PySubComponent::getSlot() {
     return getComp()->slot_num;
 }
-
 
 static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
@@ -272,9 +268,16 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     return nullptr;
 }
 
-static PyObject* compSetStatistic(PyObject *self, PyObject *args)
+/**
+static PyObject* compReuseStatistic(PyObject *self, PyObject *args)
 {
     char *name = nullptr;
+
+    if ( !PyArg_ParseTuple(args, "0", &statoObj) )
+        return nullptr;
+
+    c->addStatistic(statObj->configStatistic->id, name);
+
 
     if ( !PyArg_ParseTuple(args, "s", &name) )
         return nullptr;
@@ -286,6 +289,31 @@ static PyObject* compSetStatistic(PyObject *self, PyObject *args)
     SST::Experimental::ConfigStatistic* stat = c->addStatistic(stat_id, name);
     if ( nullptr != stat ) {
         PyObject *argList = Py_BuildValue("Ok", self, stat_id);
+        PyObject *statObj = PyObject_CallObject((PyObject*)&Experimental::PyModel_StatType, argList);
+        Py_DECREF(argList);
+        return statObj;
+    }
+
+    char errMsg[1024] = {0};
+    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create statistic %s on %s. Already attached a statistic with that name ?\n", name, c->name.c_str());
+    PyErr_SetString(PyExc_RuntimeError, errMsg);
+    return nullptr;
+}
+*/
+
+static PyObject* compSetStatistic(PyObject *self, PyObject *args)
+{
+    char *name = nullptr;
+
+    if ( !PyArg_ParseTuple(args, "s", &name) )
+        return nullptr;
+
+    ConfigComponent *c = getComp(self);
+    if ( nullptr == c ) return nullptr;
+
+    SST::Experimental::ConfigStatistic* stat = c->enableStatistic(name);
+    if ( nullptr != stat ) {
+        PyObject *argList = Py_BuildValue("Ok", self, stat->id);
         PyObject *statObj = PyObject_CallObject((PyObject*)&Experimental::PyModel_StatType, argList);
         Py_DECREF(argList);
         return statObj;
@@ -362,13 +390,16 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
     argOK = PyArg_ParseTuple(args, "|O!i", &PyDict_Type, &statParamDict,&apply_to_children);
 
     if (argOK) {
-        c->enableStatistic(STATALLFLAG,apply_to_children);
+      // we know all the statistic names, now go ahead and enable them
+      auto& valid_stats = Factory::getFactory()->GetValidStatistics(c->type);
+      for (auto& name : valid_stats){
+        c->enableStatistic(name, apply_to_children);
+      }
 
-        // Generate and Add the Statistic Parameters
-        for ( auto p : generateStatisticParameters(statParamDict) ) {
-            c->addStatisticParameter(STATALLFLAG, p.first, p.second, apply_to_children);
-        }
-
+      //now add the statistic parameters
+      for ( auto p : generateStatisticParameters(statParamDict) ) {
+          c->addStatisticParameter(STATALLFLAG, p.first, p.second, apply_to_children);
+      }
     } else {
         // ParseTuple Failed, return NULL for error
         return nullptr;
@@ -394,8 +425,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     if ( argOK ) {
         statList = PyList_New(1);
         PyList_SetItem(statList,0,SST_ConvertToPythonString(stat_str));
-    }
-    else  {
+    } else  {
         PyErr_Clear();
         apply_to_children = 0;
         // Try list version
@@ -419,13 +449,19 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
             PyObject* pylistitem = PyList_GetItem(statList, x);
             PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
 
-            c->enableStatistic(SST_ConvertToCppString(pyname),apply_to_children);
+            //TODO create an exception that prints the name of the stat and the component
+            std::string statName = SST_ConvertToCppString(pyname);
+            if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(c->type, statName)){
+              PyErr_SetString(PyExc_LookupError, "unknown statistic name given to component");
+              return nullptr;
+            }
+
+            c->enableStatistic(statName,apply_to_children);
 
             // Add the parameters
             for ( auto p : params ) {
                 c->addStatisticParameter(SST_ConvertToCppString(pyname), p.first, p.second, apply_to_children);
             }
-
         }
         Py_XDECREF(statList);
     } else {
@@ -545,9 +581,6 @@ REENABLE_WARNING
 #endif
 
 
-
-
-
 static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     ComponentId_t id;
@@ -573,8 +606,6 @@ static void subCompDealloc(ComponentPy_t *self)
     }
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
-
-
 
 static PyMethodDef subComponentMethods[] = {
     {   "addParam",
@@ -678,8 +709,5 @@ PyTypeObject PyModel_SubComponentType = {
 REENABLE_WARNING
 #endif
 #endif
-
-
-}  /* extern C */
 
 

@@ -85,27 +85,21 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
     }
     fprintf(outputFile, ")\n");
 
-    for ( auto &si : comp.enabledStatistics ) {
-        if ( si.name == STATALLFLAG ) {
-            fprintf(outputFile, "%s.enableAllStatistics(", objName);
-            if ( !si.params.empty() ) {
-                generateParams(si.params);
-            }
-            fprintf(outputFile, ")\n");
-        } else {
-            char* esStatName = makeEscapeSafe(si.name.c_str());
+    for ( auto &pair : comp.enabledStatNames ) {
+        auto& name = pair.first;
+        auto* si = comp.findStatistic(pair.second);
+        char* esStatName = makeEscapeSafe(name.c_str());
 
-            fprintf(outputFile, "%s.enableStatistics([\"%s\"]", objName, esStatName);
+        fprintf(outputFile, "%s.enableStatistics([\"%s\"]", objName, esStatName);
 
-            // Output the Statistic Parameters
-            if( !si.params.empty() ) {
-                fprintf(outputFile, ", ");
-                generateParams(si.params);
-            }
-            fprintf(outputFile, ")\n");
-
-            free(esStatName);
+        // Output the Statistic Parameters
+        if( !si->params.empty() ) {
+            fprintf(outputFile, ", ");
+            generateParams(si->params);
         }
+        fprintf(outputFile, ")\n");
+
+        free(esStatName);
     }
 
     UnitAlgebra tb = Simulation::getTimeLord()->getTimeBase();
