@@ -65,6 +65,7 @@ public:
             FlushLine,      /*!< Cache flush request - writeback specified line throughout memory system */
             FlushLineInv,   /*!< Cache flush request - writeback and invalidate specified line throughout memory system */
             FlushLineResp,  /*!< Response to FlushLine; flag F_FLUSH_SUCCESS indicates success or failure */
+            Inv,            /*!< Notification of L1 cache invalidation to core */
             TxBegin,        /*!< Start a new transaction */
             TxEnd,          /*!< End the current lowest transaction */
             TxResp,
