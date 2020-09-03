@@ -17,7 +17,6 @@
 
 import sys
 import unittest
-import time
 import traceback
 import threading
 from datetime import datetime
@@ -207,7 +206,6 @@ class SSTTextTestResult(unittest.TestResult):
     def __init__(self, stream, descriptions, verbosity, no_colour_output=False):
         super(SSTTextTestResult, self).__init__(stream, descriptions, verbosity)
         self.testsuitesresultsdict = SSTTestSuitesResultsDict()
-        self._start_time = time.time()
         self._test_name = "undefined_testname"
         self._testcase_name = "undefined_testcasename"
         self._testsuite_name = "undefined_testsuitename"
@@ -241,10 +239,11 @@ class SSTTextTestResult(unittest.TestResult):
             return doc.strip().split('\n')[0].strip()
         return strclass(test_class)
 
-
 ###
+
     def startTest(self, test):
         super(SSTTextTestResult, self).startTest(test)
+        #log_forced("DEBUG - startTest: Test = {0}\n".format(test))
         if self.showAll:
             if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
                 if self._test_class != test.__class__:
@@ -256,7 +255,6 @@ class SSTTextTestResult(unittest.TestResult):
                         self.stream.writeln(self.colours['title'](title))
             self.stream.flush()
 
-        self._start_time = time.time()
         self._test_name = "undefined_testname"
         _testname = getattr(test, 'testname', None)
         if _testname is not None:
@@ -274,8 +272,8 @@ class SSTTextTestResult(unittest.TestResult):
 
     def stopTest(self, test):
         super(SSTTextTestResult, self).stopTest(test)
-#        log_forced("DEBUG - stopTest: Test = {0}\n".format(test))
-        self._junit_test_case.junit_add_elapsed_sec(time.time() - self._start_time)
+        #log_forced("DEBUG - stopTest: Test = {0}\n".format(test))
+        self._junit_test_case.junit_add_elapsed_sec(test.get_test_runtime_sec())
 
         if not self._is_test_of_type_ssttestcase(test):
             return
@@ -296,7 +294,6 @@ class SSTTextTestResult(unittest.TestResult):
 ###
 
     def printResult(self, test, short, extended, colour_key=None):
-        test_run_time = time.time() - self._start_time
         if self.no_colour_output:
             colour = self.colours[None]
         else:
@@ -306,7 +303,7 @@ class SSTTextTestResult(unittest.TestResult):
             self.stream.write(colour(extended))
             self.stream.write(" -- ")
             self.stream.write(self.getShortDescription(test))
-            self.stream.writeln(" [{0:.3f}]".format(test_run_time))
+            self.stream.writeln(" [{0:.3f}s]".format(test.get_test_runtime_sec()))
             self.stream.flush()
         elif self.dots:
             self.stream.write(colour(short))

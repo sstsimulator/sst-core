@@ -26,6 +26,7 @@ import sys
 import os
 import unittest
 import threading
+import time
 
 import test_engine_globals
 from sst_unittest_support import *
@@ -62,6 +63,8 @@ class SSTTestCase(unittest.TestCase):
         self._testsuite_dirpath = parent_module_path
         #log_forced("SSTTestCase: __init__() - {0}".format(self.testname))
         self.initializeClass(self.testname)
+        self._start_test_time = time.time()
+        self._stop_test_time = time.time()
 
 ###
 
@@ -105,6 +108,7 @@ class SSTTestCase(unittest.TestCase):
         # TESTRUN_SINGTHREAD_TESTSUITE_NAME is used for non-concurrent
         # (ie single thread) runs
         test_engine_globals.TESTRUN_SINGTHREAD_TESTSUITE_NAME = self.get_testsuite_name()
+        self._start_test_time = time.time()
 
 ###
 
@@ -123,6 +127,8 @@ class SSTTestCase(unittest.TestCase):
         #log_forced("SSTTestCase: tearDown() - {0}".format(self.testname))
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             test_engine_globals.TESTRUN_TESTRUNNINGFLAG = False
+
+        self._stop_test_time = time.time()
 
 ###
 
@@ -208,6 +214,17 @@ class SSTTestCase(unittest.TestCase):
             str: The path
         """
         return get_test_output_tmp_dir()
+
+###
+
+    def get_test_runtime_sec(self):
+        """ Return the current runtime of the test
+
+        Returns:
+            float: The runtime of the test in seconds
+        """
+        return self._stop_test_time - self._start_test_time
+
 
 ################################################################################
 ### Method to run an SST simulation
