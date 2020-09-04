@@ -460,7 +460,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
 
             // Add the parameters
             for ( auto p : params ) {
-                c->addStatisticParameter(SST_ConvertToCppString(pyname), p.first, p.second, apply_to_children);
+                c->addStatisticParameter(statName, p.first, p.second, apply_to_children);
             }
         }
         Py_XDECREF(statList);

@@ -306,9 +306,12 @@ Experimental::ConfigStatistic* ConfigComponent::enableStatistic(const std::strin
       enabledStatNames[statisticName] = stat_id;
       auto* parent = getParent();
       if (parent){
-        return parent->insertStatistic(stat_id);
+        Experimental::ConfigStatistic* cs = parent->insertStatistic(stat_id);
+        cs->id = stat_id;
+        return cs;
       } else {
         Experimental::ConfigStatistic& cs = enabledStatistics[stat_id];
+        cs.id = stat_id;
         return &cs;
       }
     } else {
@@ -460,7 +463,7 @@ Experimental::ConfigStatistic* ConfigComponent::findStatistic(const std::string&
 
 Experimental::ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
 {
-    ConfigComponent* parent = getParent();
+    auto* parent = getParent();
     if (parent){
       return parent->findStatistic(sid);
     } else {

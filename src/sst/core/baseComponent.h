@@ -265,12 +265,13 @@ protected:
         auto* stat = engine->createStatistic<T>(my_info->component, type, name, statSubId, params);
         // Tell the Statistic what collection mode it is in
         configureCollectionMode(stat, params, name);
+        return stat;
       }
     }
 
 
     template <typename T>
-    Statistics::Statistic<T> createNullStatistic(SST::Params& params, const std::string& name, const std::string& statSubId){
+    Statistics::Statistic<T>* createNullStatistic(SST::Params& params, const std::string& name, const std::string& statSubId = ""){
       auto* engine = Statistics::StatisticProcessingEngine::getInstance();
       return engine->createStatistic<T>(my_info->component, "sst.NullStatistic", name, statSubId, params);
     }
@@ -300,14 +301,14 @@ protected:
         auto iter = my_info->enabledStatNames->find(statName);
         if (iter == my_info->enabledStatNames->end()){
           if (my_info->parent_info->sharesStatistics()){
-            return my_info->parent_info->component->registerStatistic<T>(statName, statSubId);
+            return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId);
           } else {
-            return my_info->component->createNullStatistic<T>(statName, statSubId);
+            return my_info->component->createNullStatistic<T>(params, statName, statSubId);
           }
         } else {
           StatisticId_t id = iter->second;
           auto* stat =  my_info->component->createStatistic<T>(params, id, statName, statSubId);
-          registerStatisticCore(stat, Statistics::StatisticFieldType<T>::id());
+          registerStatisticCore(stat);
           return stat;
         }
     }
