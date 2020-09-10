@@ -408,6 +408,9 @@ def junit_to_xml_report_string(test_suites, prettyprint=True, encoding=None):
     for key, value in iteritems(attributes):
         xml_element.set(key, str(value))
 
+    # Add the name of the testing Frameworks
+    xml_element.set("name", "SST TESTING FRAMEWORKS")
+
     xml_string = ET.tostring(xml_element, encoding=encoding)
     # is encoded now
     xml_string = _junit_clean_illegal_xml_chars(xml_string.decode(encoding or "utf-8"))
