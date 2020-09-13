@@ -300,7 +300,7 @@ protected:
         // the local name and globally unique stat ID
         auto iter = my_info->enabledStatNames->find(statName);
         if (iter == my_info->enabledStatNames->end()){
-          if (my_info->parent_info->sharesStatistics()){
+          if (my_info->parent_info && my_info->parent_info->sharesStatistics()){
             return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId);
           } else {
             return my_info->component->createNullStatistic<T>(params, statName, statSubId);
