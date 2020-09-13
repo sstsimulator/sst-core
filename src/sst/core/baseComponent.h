@@ -27,6 +27,8 @@
 #include "sst/core/componentInfo.h"
 #include "sst/core/eli/elementinfo.h"
 
+using namespace SST::Statistics;
+
 namespace SST {
 
 class Clock;
