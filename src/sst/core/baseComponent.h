@@ -255,6 +255,20 @@ protected:
     TimeConverter* getTimeConverterMicro() const;
     TimeConverter* getTimeConverterMilli() const;
 
+    bool isStatisticShared(const std::string& statName, bool include_me = false) {
+        if ( include_me ) {
+            if ( doesComponentInfoStatisticExist(statName)) {
+                return true;
+            }
+        }
+        if ( my_info->sharesStatistics() ) {
+            return my_info->parent_info->component->isStatisticShared(statName, true);
+        }
+        else {
+            return false;
+        }
+    }
+
 
     template <typename T>
     Statistics::Statistic<T>* createStatistic(SST::Params& params, StatisticId_t id,
