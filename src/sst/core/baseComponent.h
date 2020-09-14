@@ -314,18 +314,24 @@ protected:
         // We know this is a valid statistic name
         // During initialization, the component should have assigned a mapping between
         // the local name and globally unique stat ID
-        auto iter = my_info->enabledStatNames->find(statName);
-        if (iter == my_info->enabledStatNames->end()){
-          if (my_info->parent_info && my_info->parent_info->sharesStatistics()){
-            return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId);
-          } else {
-            return my_info->component->createNullStatistic<T>(params, statName, statSubId);
+        if (my_info->enabledStatNames){
+          auto iter = my_info->enabledStatNames->find(statName);
+          if (iter != my_info->enabledStatNames->end()){
+            //valid, enabled statistic
+            StatisticId_t id = iter->second;
+            auto* stat =  my_info->component->createStatistic<T>(params, id, statName, statSubId);
+            registerStatisticCore(stat);
+            return stat;
           }
+        }
+
+        //if we got here, this was not a stat we enabled
+        if (my_info->sharesStatistics() && my_info->parent_info){
+          //see if the parent enabled it
+          return my_info->parent_info->component->registerStatistic<T>(params, statName, statSubId);
         } else {
-          StatisticId_t id = iter->second;
-          auto* stat =  my_info->component->createStatistic<T>(params, id, statName, statSubId);
-          registerStatisticCore(stat);
-          return stat;
+          // this was not enabled, send back a null statistic
+          return my_info->component->createNullStatistic<T>(params, statName, statSubId);
         }
     }
 
