@@ -256,7 +256,7 @@ public:
     ConfigComponent cloneWithoutLinksOrParams() const;
 
     ~ConfigComponent() {}
-    ConfigComponent() : id(null_id), statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), nextSubID(1), visited(false) { }
+    ConfigComponent() : id(null_id), statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), enabledAllStats(false), nextSubID(1), visited(false) { }
 
     ComponentId_t getNextSubComponentID();
     StatisticId_t getNextStatisticID();
@@ -292,6 +292,8 @@ public:
         ser & rank.thread;
         ser & links;
         ser & params;
+        ser & enabledStatNames;
+        ser & enabledAllStats;
         ser & statLoadLevel;
         ser & enabledStatistics;
         ser & subComponents;
@@ -319,6 +321,7 @@ private:
         weight(weight),
         rank(rank),
         statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
+        enabledAllStats(false),
         nextSubID(1),
         nextStatID(1)
     {
@@ -334,6 +337,7 @@ private:
         weight(weight),
         rank(rank),
         statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
+        enabledAllStats(false),
         nextSubID(parent_subid),
         nextStatID(parent_subid)
     {
