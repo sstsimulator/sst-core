@@ -390,11 +390,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
     argOK = PyArg_ParseTuple(args, "|O!i", &PyDict_Type, &statParamDict,&apply_to_children);
 
     if (argOK) {
-      // we know all the statistic names, now go ahead and enable them
-      auto& valid_stats = Factory::getFactory()->GetValidStatistics(c->type);
-      for (auto& name : valid_stats){
-        c->enableStatistic(name, apply_to_children);
-      }
+      c->enableStatistic(STATALLFLAG, apply_to_children);
 
       //now add the statistic parameters
       for ( auto p : generateStatisticParameters(statParamDict) ) {

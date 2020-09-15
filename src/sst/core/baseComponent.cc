@@ -578,11 +578,22 @@ BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, con
   statistic->setRegisteredCollectionMode(statCollectionMode);
 }
 
+Statistics::StatisticBase*
+BaseComponent::findRegisteredStatistic(const std::string& statName, const std::string& statSubId, fieldType_t fieldType)
+{
+  for (auto* stat : m_registeredStats){
+    if (stat->getStatName() == statName
+     && stat->getStatSubId() == statSubId
+     && stat->getStatDataType() == fieldType) {
+      return stat;
+    }
+  }
+  return nullptr;
+}
+
 std::string
 BaseComponent::configureStatParams(StatisticId_t id, SST::Params& params)
 {
-  auto& cs = my_info->enabledStatConfigs->find(id)->second;
-
   // Identify what keys are Allowed in the parameters
   Params::KeySet_t allowedKeySet;
   allowedKeySet.insert("type");
@@ -590,9 +601,8 @@ BaseComponent::configureStatParams(StatisticId_t id, SST::Params& params)
   allowedKeySet.insert("startat");
   allowedKeySet.insert("stopat");
   allowedKeySet.insert("resetOnRead");
-  cs.params.pushAllowedKeys(allowedKeySet);
-
-  params.insert(cs.params);
+  params.pushAllowedKeys(allowedKeySet);
+  params.insert(my_info->enabledStatConfigs->find(id)->second.params);
   return params.find<std::string>("type", "sst.AccumulatorStatistic");
 }
 

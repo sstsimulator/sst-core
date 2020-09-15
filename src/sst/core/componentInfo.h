@@ -120,6 +120,7 @@ private:
 
     std::map<StatisticId_t, Experimental::ConfigStatistic>* enabledStatConfigs;
     std::map<std::string, StatisticId_t>* enabledStatNames;
+    bool enabledAllStats;
 
     uint8_t statLoadLevel;
 

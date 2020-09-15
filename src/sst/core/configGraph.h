@@ -238,7 +238,6 @@ public:
 
     std::map<std::string,StatisticId_t> enabledStatNames;
     bool enabledAllStats;
-    Params statAllParams;
 
     std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;

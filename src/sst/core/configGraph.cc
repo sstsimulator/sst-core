@@ -214,18 +214,8 @@ ComponentId_t ConfigComponent::getNextSubComponentID()
 
 StatisticId_t ConfigComponent::getNextStatisticID()
 {
-    // If we are the ultimate component, get nextStatID and increment
-    // for next time
-    if ( id == COMPONENT_ID_MASK(id) ) {
-        uint16_t statId = nextStatID;
-        nextStatID++;
-        return STATISTIC_ID_CREATE( id, statId );
-    }
-    else {
-        // Get the ultimate parent and call getNextStatisticID on
-        // it
-        return graph->findComponent(COMPONENT_ID_MASK(id))->getNextStatisticID();
-    }
+    uint16_t statId = nextStatID++;
+    return STATISTIC_ID_CREATE( id, statId );
 }
 
 ConfigComponent* ConfigComponent::getParent() const {
@@ -289,49 +279,37 @@ Experimental::ConfigStatistic* ConfigComponent::enableStatistic(const std::strin
     // NOTE: For every statistic in the enabledStatistics List, there must be
     //       a corresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
-
     if ( recursively ) {
         for ( auto &sc : subComponents ) {
             sc.enableStatistic(statisticName, true);
         }
     }
-
-    if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName)){
+    
+    StatisticId_t stat_id;
+    if (statisticName == STATALLFLAG){
+      // special sentinel id for enable all
+      enabledAllStats = true;
+      stat_id = STATALL_ID;
+    } else if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName)){
+      //this is not a valid statistic
       return nullptr;
-    }
-
-    auto iter = enabledStatNames.find(statisticName);
-    if (iter == enabledStatNames.end()){
-      StatisticId_t stat_id = getNextStatisticID();
-      enabledStatNames[statisticName] = stat_id;
-      auto* parent = getParent();
-      if (parent){
-        Experimental::ConfigStatistic* cs = parent->insertStatistic(stat_id);
-        cs->id = stat_id;
-        return cs;
-      } else {
-        Experimental::ConfigStatistic& cs = enabledStatistics[stat_id];
-        cs.id = stat_id;
-        return &cs;
-      }
     } else {
-      // okay, allow enable the same statistic twice
-      return findStatistic(iter->second);
+      //this is a valid statistic
+      auto iter = enabledStatNames.find(statisticName);
+      if (iter == enabledStatNames.end()){
+        //this is the first time being enabled
+        stat_id = getNextStatisticID();
+        enabledStatNames[statisticName] = stat_id;
+      } else {
+        //this was already enabled
+        stat_id = iter->second;
+      }
     }
+    
+    Experimental::ConfigStatistic& cs = enabledStatistics[stat_id];
+    cs.id = stat_id;
+    return &cs;
 }
-
-/**
-Experimental::ConfigStatistic&
-ConfigComponent::getConfigStatistic(const std::string& statisticName)
-{
-  auto iter = enabledStatNames.find(statisticName);
-  if (iter == statIdMap.end()){
-    throw std::runtime_error("cannot add parameters to statistic, name not found: " + statisticName);
-  }
-  return this->getStatisticConfig(iter->second);
-}
-*/
-
 
 void ConfigComponent::addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively)
 {
@@ -344,7 +322,13 @@ void ConfigComponent::addStatisticParameter(const std::string& statisticName, co
         }
     }
 
-    findStatistic(statisticName)->params.insert(param, value);
+    Experimental::ConfigStatistic* cs = findStatistic(statisticName);
+    if (!cs){
+      Output::getDefaultObject().fatal(CALL_INFO, 1,
+          "cannot add parameter '%s' to unknown statistic '%s'",
+          param.c_str(), statisticName.c_str());
+    }
+    cs->params.insert(param, value);
 }
 
 
@@ -463,17 +447,12 @@ Experimental::ConfigStatistic* ConfigComponent::findStatistic(const std::string&
 
 Experimental::ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
 {
-    auto* parent = getParent();
-    if (parent){
-      return parent->findStatistic(sid);
+    auto iter = enabledStatistics.find(sid);
+    if (iter == enabledStatistics.end()){
+      return nullptr;
     } else {
-      auto iter = enabledStatistics.find(sid);
-      if (iter == enabledStatistics.end()){
-        return nullptr;
-      } else {
-        //I hate that I have to do this
-        return const_cast<Experimental::ConfigStatistic*>(&iter->second);
-      }
+      //I hate that I have to do this
+      return const_cast<Experimental::ConfigStatistic*>(&iter->second);
     }
 }
 
@@ -876,7 +855,8 @@ ConfigComponent* ConfigGraph::findComponentByName(const std::string& name) {
 
 Experimental::ConfigStatistic* ConfigGraph::findStatistic(StatisticId_t id) const
 {
-   return comps[COMPONENT_ID_MASK(id)].findStatistic(id);
+  ComponentId_t cfg_id = CONFIG_COMPONENT_ID_MASK(id);
+  return findComponent(cfg_id)->findStatistic(id);
 }
 
 ConfigGraph*

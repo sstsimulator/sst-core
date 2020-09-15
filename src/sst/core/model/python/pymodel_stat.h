@@ -30,8 +30,8 @@ struct PyStatistic {
 
     PyStatistic(StatisticPy_t *pobj, StatisticId_t id) : pobj(pobj), id(id) { }
     virtual ~PyStatistic() { }
-    virtual ConfigStatistic* getStat();
-    virtual int compare(PyStatistic *other);
+    ConfigStatistic* getStat();
+    int compare(PyStatistic *other);
     StatisticId_t getID();
 };
 
