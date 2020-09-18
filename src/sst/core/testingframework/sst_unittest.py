@@ -223,6 +223,7 @@ class SSTTestCase(unittest.TestCase):
         Returns:
             float: The runtime of the test in seconds
         """
+        self._stop_test_time = time.time()
         return self._stop_test_time - self._start_test_time
 
 
