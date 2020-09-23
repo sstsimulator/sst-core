@@ -584,12 +584,13 @@ def remove_component_warning_from_file(input_filepath):
 ### OS Basic Commands
 ################################################################################
 
-def os_simple_command(os_cmd):
-    """ Perform an simple os command and return the results code
+def os_simple_command(os_cmd, run_dir=None):
+    """ Perform an simple os command and return a tuple of the (rtncode, rtnoutput)
         NOTE: Simple command cannot have pipes or redirects
     """
-    rtn = OSCommand(os_cmd).run()
-    return rtn.output()
+    rtn = OSCommand(os_cmd, set_cwd=run_dir).run()
+    rtn_data = (rtn.result(), rtn.output())
+    return rtn_data
 
 def os_ls(directory="."):
     """ Perform an ls -lia on a directory and dump output to screen """
