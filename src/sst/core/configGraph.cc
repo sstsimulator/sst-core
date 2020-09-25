@@ -290,6 +290,7 @@ Experimental::ConfigStatistic* ConfigComponent::enableStatistic(const std::strin
       // special sentinel id for enable all
       enabledAllStats = true;
       stat_id = STATALL_ID;
+      enabledStatNames[statisticName] = stat_id;
     } else if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName)){
       //this is not a valid statistic
       return nullptr;
