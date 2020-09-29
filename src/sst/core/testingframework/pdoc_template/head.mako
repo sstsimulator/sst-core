@@ -9,7 +9,7 @@
         font-weight: bold;
         color: #555;
         padding-bottom: .5em;
-        border-bottom: 1px solid silver;
+        border-bottom: 3px solid silver;
     }
     .homelink:hover {
         color: inherit;
@@ -23,5 +23,4 @@
 </%def>
 
 <style>${homelink()}</style>
-<link rel="canonical" href="https://pdoc3.github.io/pdoc/doc/${module.url()[:-len('index.html')] if module.is_package else module.url()}">
-<link rel="icon" href="https://pdoc3.github.io/pdoc/logo.png">
+<link rel="icon" href="http://sst-simulator.org/img/sst-logo-small.png">
