@@ -42,50 +42,59 @@ DEF_THREAD_LIMIT = 8
 
 HELP_DESC = 'Run {0} Tests'
 HELP_EPILOG = (
-    ("Finding TestSuites:\n") +
-    ("During Startup, the 'list_of_paths' and 'testsuite_types' (or 'testsuite_wildcards')\n") +
-    (" arguments are used to create a list of testsuites to be run.\n") +
-    (" - If the 'list_of_paths' argument includes a testsuite file, that testsuite\n") +
-    ("   file will be directly added to the list of testsuites to be run.\n") +
-    (" - If the 'list_of_paths' argument includes a directory (containing 1 or more \n") +
-    ("   testsuites), that directory will be searched for specific testsuites as\n") +
-    ("   described below.\n") +
-    (" - If the 'list_of_paths' argument is empty (default), testsuites paths found \n") +
-    ("   in the sstsimulator.conf file (located in the <sstcore_install>/etc directory)\n") +
-    ("   will be searched for specific testsuites as described below.\n") +
+    ("Finding Testsuites:\n") +
+    (" During startup, the -p ('--list_of_paths') and -y ('--testsuite_types')\n") +
+    (" and -w ('--testsuite_wildcards') arguments are used to create a list of\n") +
+    (" testsuites to be run.\n") +
     ("\n") +
-    ("Searching for testsuites by type or wildcard:\n") +
-    ("Each directory identified by the 'list_of_paths' argument will search for \n") +
-    ("testsuites based upon the 'testsuite_types' argument or 'testsuite_wildcards'\n") +
-    ("argument (mutually exclusive) as follows:\n") +
-    (" - Files named 'testsuite_default_*.py' will be added to the list of\n") +
-    ("   testsuites to be run if argument --testsuite_types AND\n") +
-    ("   argument --testsuite_wildcards are both NOT specified.\n") +
-    ("   Note: This will run only the 'default' set of testsuites in the directory.\n") +
-    (" - Files named 'testsuite_<type_name>_*.py' will be added to the list of\n") +
-    ("   testsuites to be run when <type_name> is specifed using the \n") +
-    ("   --testsuite_types=<type_name> argument.\n") +
-    ("   Note: This will run user selected set of testsuites in the directory.\n") +
-    (" - Files named 'testsuite_*.py' will be added to the list of testsuites to\n") +
-    ("   be run when argument --testsuite_types=all is specified.\n") +
-    ("   Note: This will run ALL of the testsuites in the directory.\n") +
-    (" - Files named 'testsuite_<wildcard_name>.py' will be added to the list of\n") +
-    ("   testsuites to be run when <wildcard_name> is specifed using the\n") +
-    ("   --testsuite_wildcards = <wildcard_name> argument.\n") +
-    ("   Note: This will run user selected set of testsuites in the directory.\n") +
+    (" The '-p' (--list_of_paths') argument:\n") +
+    ("   - If the '-p' argument is empty (default), test paths found in the \n") +
+    ("     sstsimulator.conf file (located in the <sstcore_install>/etc directory)\n") +
+    ("     will be searched for testsuites as described in 'searching for\n") +
+    ("     testsuites by type or wildcard' below. \n") +
+    ("     NOTE: This is the default operation of the Test Frameworks.\n") +
+    ("   - If the '-p' argument includes a testsuite file, that testsuite\n") +
+    ("     file will be directly added to the list of testsuites to be run.\n") +
+    ("   - If the '-p' argument includes a directory (containing 1 or more \n") +
+    ("     testsuites), that directory will be searched for specific testsuites\n") +
+    ("     as described in 'searching for testsuites by type or wildcard' below.\n") +
     ("\n") +
-    ("Tests Execution:\n") +
-    ("All tests identified inside of the testsuites to be given an opportunity to\n") +
-    ("run.  There will be situations where a tests may not be able to run and will be \n") +
-    ("skipped (cannot run on the OS, or build configuration does not support the\n") +
-    ("test).\n") +
-    (" - The decision to skip is made in the testsuite source code.\n") +
+    (" Searching for testsuites by type or wildcard:\n") +
+    ("   Each directory identified by the '-p' argument will search for testsuites\n") +
+    ("   based upon the '-y' or '-w' arguments (mutually exclusive) as follows:") +
+    ("   \n") +
+    ("   - The '-y' AND '-w' arguments are NOT specified :\n") +
+    ("     Files named 'testsuite_default_*.py' will be added to the list of\n") +
+    ("     testsuites to be run.\n") +
+    ("     NOTE: This is the default operation of the Test Frameworks.\n") +
+    ("   - The '-y = <type_name>' :\n") +
+    ("     Files named 'testsuite_<type_name>_*.py' will be added to the list of\n") +
+    ("     testsuites to be run. \n") +
+    ("     NOTE: This will run user selected set of testsuites in the directory.\n") +
+    ("   - The '-y = all' :\n") +
+    ("     Files named 'testsuite_*.py' will be added to the list of testsuites to\n") +
+    ("     be run.\n") +
+    ("     NOTE: This will run ALL of the testsuites in the directory.\n") +
+    ("   - The '-w = <wildcard_name>' :\n") +
+    ("     Files named 'testsuite_<wildcard_name>.py' will be added to the list of\n") +
+    ("     testsuites to be run.\n") +
+    ("     NOTE: This will run user selected set of testsuites in the directory.\n") +
+    ("     Example: -w \"*merlin*\" - Quotes are important to avoid the shell's \n") +
+    ("                              automatic wildcard expansion.\n") +
     ("\n") +
     ("Test Scenarios:\n") +
-    ("Tests and TestCases identified in testsuites can be skipped from running\n") +
-    ("by using the '--scenarios' argument.  1 or more scenarios can be defined\n") +
-    ("concurrently.\n") +
+    (" - Tests and TestCases identified within testsuites can be skipped from running\n") +
+    ("   running by using the -s ('--scenarios') argument.  1 or more scenarios can\n") +
+    ("   be defined concurrently.\n") +
     (" - The decision to skip is made in the testsuite source code.\n") +
+    ("\n") +
+    ("Tests Execution:\n") +
+    (" - All tests identified inside of the testsuites to be given an opportunity\n") +
+    ("   to run.\n") +
+    (" - There may be situations where a test may not be able to run and will be \n") +
+    ("   skipped due to OS, build configuration, num ranks, etc\n") +
+    (" - The decision to skip is made in the testsuite source code.\n") +
+    (" - Testsuites and tests are not guaranteed to run in any specific order.\n") +
     (" \n"))
 
 # AVAILABLE TEST MODES
@@ -243,7 +252,7 @@ class TestEngine():
         run_group.add_argument('-a', '--sst_run_args', type=str, metavar='" --arg1 -a2"',
                                nargs=1, default=[''],
                                help=('Runtime args for all SST runs (must be\n')
-                               + ('identifed as a string; Note:extra space at front)'))
+                               + ('identified as a string; Note: Extra space at front)'))
 
         parser.add_argument('-f', '--fail_fast', action='store_true',
                             help='Stop testing on failure [false]')
@@ -251,13 +260,13 @@ class TestEngine():
                             nargs=1, default=['./sst_test_outputs'],
                             help='Set output directory [./sst_test_outputs]')
         parser.add_argument('-k', '--keep_output', action='store_true',
-                            help='Dont clean output directory at start [False]')
+                            help='Keep output directory at startup [False]')
         parser.add_argument('-c', '--concurrent', type=int, metavar="TT",
                             nargs='?', const=DEF_THREAD_LIMIT,
                             help=('Run Test Suites concurrently using threads\n')
-                            + ('TT = thread limit [default {0}]').format(DEF_THREAD_LIMIT))
+                            + ('TT = Num threads [{0}]').format(DEF_THREAD_LIMIT))
         parser.add_argument('-l', '--list_testsuites', action='store_true',
-                            help='List discovered testscripts instead of running tests [False]')
+                            help='List discovered testsuites instead of running tests [False]')
 
         discover_group = parser.add_argument_group('Test Discovery Arguments')
         mutnamegroup = discover_group.add_mutually_exclusive_group()
@@ -275,10 +284,10 @@ class TestEngine():
                                        ('\n automatic wildcard expansion. Example: -w "*merlin*"')))
         if self._test_mode:
             testsuite_path_str = \
-            "TestSuite Files or Dirs to SST-Core\nTestSuites [Registered Dir Path]"
+            "Files for Dirs of testsuites to be discovered for SST-Core\n[Registered Dir Path]"
         else:
             testsuite_path_str = \
-            "Testsuite Files or Dirs to Registered\nElements TestSuites [Registered Dir Paths]"
+            "Files or Dirs of testsuites to be discovered for Elements.\n[Registered Dir Paths]"
         discover_group.add_argument('-p', '--list_of_paths', metavar='path',
                                     nargs='*', default=[], help=testsuite_path_str)
 
