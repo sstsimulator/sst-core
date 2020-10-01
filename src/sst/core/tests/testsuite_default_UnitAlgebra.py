@@ -46,7 +46,7 @@ class testcase_UnitAlgebra(SSTTestCase):
 
     def unitalgebra_test_template(self, testtype):
         testsuitedir = self.get_testsuite_dir()
-        outdir = get_test_output_run_dir()
+        outdir = test_output_get_run_dir()
 
         sdlfile = "{0}/test_{1}.py".format(testsuitedir, testtype)
         reffile = "{0}/refFiles/test_{1}.out".format(testsuitedir, testtype)
@@ -55,6 +55,6 @@ class testcase_UnitAlgebra(SSTTestCase):
         self.run_sst(sdlfile, outfile)
 
         # Perform the test
-        cmp_result = compare_sorted_diff(testtype, outfile, reffile)
+        cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
 

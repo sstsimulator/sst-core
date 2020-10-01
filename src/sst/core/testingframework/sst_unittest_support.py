@@ -11,8 +11,8 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
-""" This module provides the a large number of support functions
-    that tests can call
+""" This module provides the a large number of support functions available
+    for tests within a SSTTestCase.
 """
 
 import sys
@@ -50,7 +50,7 @@ OS_DIST_UNDEF = "UNDEFINED"
 ################################################################################
 
 class SSTTestCaseException(Exception):
-    """ Generic Exception for SSTTestCase
+    """ Generic Exception support for SSTTestCase
     """
     def __init__(self, value):
         super(SSTTestCaseException, self).__init__(value)
@@ -64,33 +64,41 @@ class SSTTestCaseException(Exception):
 # Commandline Information Functions
 ################################################################################
 
-def is_testing_in_debug_mode():
-    """ Identify if test engine is in debug mode
-       :return: True if in debug mode
+def testing_check_is_in_debug_mode():
+    """ Identify if test frameworks is in debug mode
+
+        Returns:
+            (bool) True if test frameworks is in debug mode
     """
     return test_engine_globals.TESTENGINE_DEBUGMODE
 
 ###
 
-def is_testing_in_concurrent_mode():
-    """ Identify if test engine is in debug mode
-       :return: True if in debug mode
+def testing_check_is_in_concurrent_mode():
+    """ Identify if test frameworks is in concurrent mode
+
+        Returns:
+            (bool) True if test frameworks is in concurrent mode
     """
     return test_engine_globals.TESTENGINE_CONCURRENTMODE
 
 ###
 
-def get_testing_num_ranks():
-    """ Get the number of ranks defined to be run during the testing
-       :return: The number of requested run ranks
+def testing_check_get_num_ranks():
+    """ Get the number of ranks defined to be run during testing
+
+        Returns:
+            (int) The number of requested run ranks
     """
     return test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
 
 ###
 
-def get_testing_num_threads():
-    """ Get the number of threads defined to be run during the testing
-       :return: The number of requested run threads
+def testing_check_get_num_threads():
+    """ Get the number of threads defined to be run during testing
+
+        Returns:
+            (int) The number of requested run threads
     """
     return test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
 
@@ -98,39 +106,71 @@ def get_testing_num_threads():
 # System Information Functions
 ################################################################################
 
-def is_py_2():
-    """ Return True if running in Python Version 2"""
+def testing_check_is_py_2():
+    """ Check if Test Frameworks is running via Python Version 2
+
+        Returns:
+            (bool) True if test frameworks is being run by Python Version 2
+    """
     return PY2
 
-def is_py_3():
-    """ Return True if running in Python Version 3"""
+def testing_check_is_py_3():
+    """ Check if Test Frameworks is running via Python Version 3
+
+        Returns:
+            (bool) True if test frameworks is being run by Python Version 3
+    """
     return PY3
 
 ###
 
-def get_system_node_name():
-    """ Returns the node name of the system"""
+def host_os_get_system_node_name():
+    """ Get the node name of the system
+
+        Returns:
+            (str) Returns the system node name
+    """
     return platform.node()
 
 ###
 
-def get_host_os_kernel_type():
-    """ Returns the kernal type Linux | Darwin"""
+def host_os_get_kernel_type():
+    """ Get the Kernel Type
+
+        Returns:
+            (str) 'Linux' or 'Darwin' as the Kernel Type
+    """
     return platform.system()
 
-def get_host_os_kernel_release():
-    """ Returns the release number, this is not the same as OS version"""
+def host_os_get_kernel_release():
+    """ Get the Kernel Release number
+
+        Returns:
+            (str) Kernel Release Number.  Note: This is not the same as OS version
+    """
     return platform.release()
 
-def get_host_os_kernel_arch():
-    """ Returns the system arch x86_64 on Linux, i386 on OSX"""
+def host_os_get_kernel_arch():
+    """ Get the Kernel System Arch
+
+        Returns:
+            (str) 'x86_64' on Linux; 'i386' on OSX as the Kernel Architecture
+    """
     return platform.machine()
 
-###
+def host_os_get_distribution_type():
+    """ Get the os distribution type
 
-def get_host_os_distribution_type():
-    """ Returns the os distribution type as a uppercase string"""
-    k_type = get_host_os_kernel_type()
+        Returns:
+            (str)
+            'OSX' for Mac OSX;
+            'CENTOS' CentOS;
+            'RHEL' for Red Hat Enterprise Linux;
+            'TOSS' for Toss;
+            'UBUNTU' for Ubuntu;
+            'UNDEFINED' an undefined OS.
+    """
+    k_type = host_os_get_kernel_type()
     if k_type == 'Linux':
         lin_dist = _get_linux_distribution()
         dist_name = lin_dist[0].lower()
@@ -146,9 +186,13 @@ def get_host_os_distribution_type():
         return OS_DIST_OSX
     return OS_DIST_UNDEF
 
-def get_host_os_distribution_version():
-    """ Returns the os distribution version as a string"""
-    k_type = get_host_os_kernel_type()
+def host_os_get_distribution_version():
+    """ Get the os distribution version
+
+        Returns:
+            (str) The OS distribution version
+    """
+    k_type = host_os_get_kernel_type()
     if k_type == 'Linux':
         lin_dist = _get_linux_distribution()
         return lin_dist[1]
@@ -159,34 +203,62 @@ def get_host_os_distribution_version():
 
 ###
 
-def is_host_os_osx():
-    """ Returns true if the os distribution is OSX"""
-    return get_host_os_distribution_type() == OS_DIST_OSX
+def host_os_is_osx():
+    """ Check if OS distribution is OSX
 
-def is_host_os_linux():
-    """ Returns true if the os distribution is Linux"""
-    return not get_host_os_distribution_type() == OS_DIST_OSX
+        Returns:
+            (bool) True if OS Distribution is OSX
+    """
+    return host_os_get_distribution_type() == OS_DIST_OSX
 
-def is_host_os_centos():
-    """ Returns true if the os distribution is CentOS"""
-    return get_host_os_distribution_type() == OS_DIST_CENTOS
+def host_os_is_linux():
+    """ Check if OS distribution is Linux
 
-def is_host_os_rhel():
-    """ Returns true if the os distribution is Red Hat"""
-    return get_host_os_distribution_type() == OS_DIST_RHEL
+        Returns:
+            (bool) True if OS Distribution is Linux
+    """
+    return not host_os_get_distribution_type() == OS_DIST_OSX
 
-def is_host_os_toss():
-    """ Returns true if the os distribution is Toss"""
-    return get_host_os_distribution_type() == OS_DIST_TOSS
+def host_os_is_centos():
+    """ Check if OS distribution is CentOS
 
-def is_host_os_ubuntu():
-    """ Returns true if the os distribution is Ubuntu"""
-    return get_host_os_distribution_type() == OS_DIST_UBUNTU
+        Returns:
+            (bool) True if OS Distribution is CentOS
+    """
+    return host_os_get_distribution_type() == OS_DIST_CENTOS
+
+def host_os_is_rhel():
+    """ Check if OS distribution is RHEL
+
+        Returns:
+            (bool) True if OS Distribution is RHEL
+    """
+    return host_os_get_distribution_type() == OS_DIST_RHEL
+
+def host_os_is_toss():
+    """ Check if OS distribution is Toss
+
+        Returns:
+            (bool) True if OS Distribution is Toss
+    """
+    return host_os_get_distribution_type() == OS_DIST_TOSS
+
+def host_os_is_ubuntu():
+    """ Check if OS distribution is Ubuntu
+
+        Returns:
+            (bool) True if OS Distribution is Ubuntu
+    """
+    return host_os_get_distribution_type() == OS_DIST_UBUNTU
 
 ###
 
-def get_num_cores_on_system():
-    """ Figure out how many cores exist on the system"""
+def host_os_get_num_cores_on_system():
+    """ Get number of cores on the system
+
+        Returns:
+            (int) Number of cores on the system
+    """
     num_cores = multiprocessing.cpu_count()
     return num_cores
 
@@ -194,10 +266,14 @@ def get_num_cores_on_system():
 # SST Skipping Support
 ################################################################################
 
-def is_scenario_filtering_enabled(scenario_name):
+def testing_check_is_scenario_filtering_enabled(scenario_name):
     """ Detirmine if a scenario filter name is enabled
-       :param: scenario_name (str): The scenario filter name to check
-       :return: True if the scenario filter name is enabled
+
+        Args:
+            scenario_name (str): The scenario filter name to check
+
+        Returns:
+           (bool) True if the scenario filter name is enabled
     """
     check_param_type("scenario_name", scenario_name, str)
     return scenario_name in test_engine_globals.TESTENGINE_SCENARIOSLIST
@@ -206,12 +282,14 @@ def is_scenario_filtering_enabled(scenario_name):
 
 def skipOnScenario(scenario_name, reason):
     """ Skip a test if a scenario filter name is enabled
-       :param: scenario_name (str): The scenario filter name to check
-       :param: reason (str): The reason for the skip
+
+        Args:
+            scenario_name (str): The scenario filter name to check
+            reason (str): The reason for the skip
     """
     check_param_type("scenario_name", scenario_name, str)
     check_param_type("reason", reason, str)
-    if not is_scenario_filtering_enabled(scenario_name):
+    if not testing_check_is_scenario_filtering_enabled(scenario_name):
         return lambda func: func
     return unittest.skip(reason)
 
@@ -220,14 +298,16 @@ def skipOnScenario(scenario_name, reason):
 def skipOnSSTSimulatorConfEmptyStr(section, key, reason):
     """ Skip a test if a section/key in the sstsimulator.conf file is missing an
         entry
-       :param: section (str): The section in the sstsimulator.conf to check
-       :param: key (str): The key in the sstsimulator.conf to check
-       :param: reason (str): The reason for the skip
+
+        Args:
+            section (str): The section in the sstsimulator.conf to check
+            key (str): The key in the sstsimulator.conf to check
+            reason (str): The reason for the skip
     """
     check_param_type("section", section, str)
     check_param_type("key", key, str)
     check_param_type("reason", reason, str)
-    rtn_str = get_sstsimulator_conf_value_str(section, key, "")
+    rtn_str = sstsimulator_conf_get_value_str(section, key, "")
     if rtn_str != "":
         return lambda func: func
     return unittest.skip(reason)
@@ -236,25 +316,37 @@ def skipOnSSTSimulatorConfEmptyStr(section, key, reason):
 # SST Configuration include file (sst_config.h.conf) Access Functions
 ################################################################################
 
-def get_sst_config_include_file_value_int(define, default=None):
+def sst_config_include_file_get_value_int(define, default=None):
     """ Retrieve a define from the SST Configuration Include File (sst_config.h)
-       :param: section (str): The [section] to look for the key
-       :param: default (int): Default Return if failure occurs
-       :return (int): The returned data or default if not found in the dict
-       This will raise a SSTTestCaseException if a default is not provided or type
-       is incorrect
+
+        Args:
+            define (str): The [section] to look for the key
+            default (int): Default Return if failure occurs
+
+        Returns:
+            (int) The returned data or default if not found in the include file
+
+        Raises:
+            SSTTestCaseException: if type is incorrect OR no data AND default
+                                  is not provided
     """
     return _get_sst_config_include_file_value(define, default, int)
 
 ###
 
-def get_sst_config_include_file_value_str(define, default=None):
+def sst_config_include_file_get_value_str(define, default=None):
     """ Retrieve a define from the SST Configuration Include File (sst_config.h)
-       :param: section (str): The [section] to look for the key
-       :param: default (str): Default Return if failure occurs
-       :return (str): The returned data or default if not found in the dict
-       This will raise a SSTTestCaseException if a default is not provided or type
-       is incorrect
+
+        Args:
+            define (str): The [section] to look for the key
+            default (str): Default Return if failure occurs
+
+        Returns:
+            (str) The returned data or default if not found in the include file
+
+        Raises:
+            SSTTestCaseException: if type is incorrect OR no data AND default
+                                  is not provided
     """
     return _get_sst_config_include_file_value(define, default, str)
 
@@ -262,59 +354,89 @@ def get_sst_config_include_file_value_str(define, default=None):
 # SST Configuration file (sstsimulator.conf) Access Functions
 ################################################################################
 
-def get_sstsimulator_conf_value_str(section, key, default=None):
+def sstsimulator_conf_get_value_str(section, key, default=None):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
-       :param: section (str): The [section] to look for the key
-       :param: key (str): The key to find
-       :param: default (str): Default Return if failure occurs
-       :return (str): The returned data or default if not found in file
-       This will raise a SSTTestCaseException if a default is not provided
+
+        Args:
+            section (str): The [section] to look for the key
+            key (str): The key to find
+            default (str): Default Return if failure occurs
+
+        Returns:
+            (str) The returned data or default if not found in the config file
+
+        Raises:
+            SSTTestCaseException: if no data AND default is not provided
     """
     return _get_sstsimulator_conf_value(section, key, default, str)
 
 ###
 
-def get_sstsimulator_conf_value_int(section, key, default=None):
+def sstsimulator_conf_get_value_int(section, key, default=None):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
-       :param: section (str): The [section] to look for the key
-       :param: key (str): The key to find
-       :param: default (int): Default Return if failure occurs
-       :return (float): The returned data or default if not found in file
-       This will raise a SSTTestCaseException if a default is not provided
+
+        Args:
+            section (str): The [section] to look for the key
+            key (str): The key to find
+            default (int): Default Return if failure occurs
+
+        Returns:
+            (int) The returned data or default if not found in the config file
+
+        Raises:
+            SSTTestCaseException: if no data AND default is not provided
     """
     return _get_sstsimulator_conf_value(section, key, default, int)
 
 ###
 
-def get_sstsimulator_conf_value_float(section, key, default=None):
+def sstsimulator_conf_get_value_float(section, key, default=None):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
-       :param: section (str): The [section] to look for the key
-       :param: key (str): The key to find
-       :param: default (float): Default Return if failure occurs
-       :return (float): The returned data or default if not found in file
-       This will raise a SSTTestCaseException if a default is not provided
+
+        Args:
+            section (str): The [section] to look for the key
+            key (str): The key to find
+            default (float): Default Return if failure occurs
+
+        Returns:
+            (float) The returned data or default if not found in the config file
+
+        Raises:
+            SSTTestCaseException: if no data AND default is not provided
     """
     return _get_sstsimulator_conf_value(section, key, default, float)
 
 ###
 
-def get_sstsimulator_conf_value_bool(section, key, default=None):
+def sstsimulator_conf_get_value_bool(section, key, default=None):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
-       :param: section (str): The [section] to look for the key
-       :param: key (str): The key to find
-       :param: default (bool): Default Return if failure occurs
-       :return (bool): The returned data or default if not found in file
-       NOTE: "1", "yes", "true", and "on" return True
-       This will raise a SSTTestCaseException if a default is not provided
+
+        NOTE: "1", "yes", "true", and "on" will return True;
+              "0", "no", "false", and "off" willl return False
+
+        Args:
+            section (str): The [section] to look for the key
+            key (str): The key to find
+            default (bool): Default Return if failure occurs
+
+        Returns:
+            (bool) The returned data or default if not found in the config file
+
+        Raises:
+            SSTTestCaseException: if no data AND default is not provided
     """
     return _get_sstsimulator_conf_value(section, key, default, bool)
 
 ###
 
-def get_sstsimulator_conf_sections():
+def sstsimulator_conf_get_sections():
     """ Retrieve a list of sections that exist in the SST Configuration File (sstsimulator.conf)
-       :return (list of str): The list of sections in the file
-       This will raise a SSTTestCaseException if an error occurs
+
+        Returns:
+            (list of str) The list of sections in the file
+
+        Raises:
+            SSTTestCaseException: If an error occurs
     """
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
     try:
@@ -324,12 +446,18 @@ def get_sstsimulator_conf_sections():
 
 ###
 
-def get_sstsimulator_conf_section_keys(section):
+def sstsimulator_conf_get_section_keys(section):
     """ Retrieve a list of keys under a section that exist in the
         SST Configuration File  (sstsimulator.conf)
-       :param: section (str): The [section] to look for the key
-       :return (list of str): The list of keys under a section in the file
-       This will raise a SSTTestCaseException if an error occurs
+
+        Args:
+            section (str): The [section] to look for the list of keys
+
+        Returns:
+            (list of str) The list of keys under a section in the file
+
+        Raises:
+            SSTTestCaseException: If an error occurs
     """
     check_param_type("section", section, str)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
@@ -340,12 +468,18 @@ def get_sstsimulator_conf_section_keys(section):
 
 ###
 
-def get_all_sst_config_keys_values_from_section(section):
-    """ Retrieve a list of tuples that contain all the key, value pairs
+def sstsimulator_conf_get_all_keys_values_from_section(section):
+    """ Retrieve a list of tuples that contain all the key - value pairs
         under a section that exists in the SST Configuration File (sstsimulator.conf)
-       :param: section (str): The [section] to look for the key
-       :return (list of tuples): The list of tuples of key, value pairs
-       This will raise a SSTTestCaseException if an error occurs
+
+        Args:
+            section (str): The [section] to look for the key
+
+        Returns:
+            (list of tuples of str) The list of tuples of key - value pairs
+
+        Raises:
+            SSTTestCaseException: If an error occurs
     """
     check_param_type("section", section, str)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
@@ -356,11 +490,18 @@ def get_all_sst_config_keys_values_from_section(section):
 
 ###
 
-def does_sst_config_have_section(section):
-    """ Check if the SST Configuration File  (sstsimulator.conf) have a section
-       :param: section (str): The [section] to look for the key
-       :return (bool):
-       This will raise a SSTTestCaseException if an error occurs
+def sstsimulator_conf_does_have_section(section):
+    """ Check if the SST Configuration File (sstsimulator.conf) has a defined
+        section
+
+        Args:
+            section (str): The [section] to look for
+
+        Returns:
+            (bool) True if the [section] is found
+
+        Raises:
+            SSTTestCaseException: If an error occurs
     """
     check_param_type("section", section, str)
     core_conf_file_parser = test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER
@@ -371,12 +512,18 @@ def does_sst_config_have_section(section):
 
 ###
 
-def does_sst_config_section_have_key(section, key):
-    """ Check if the SST Configuration File  (sstsimulator.conf) has a key under a section
-       :param: section (str): The [section] to look for the key
-       :param: key (str): The key to find
-       :return (bool):
-       This will raise a SSTTestCaseException if an error occurs
+def sstsimulator_conf_does_have_key(section, key):
+    """ Check if the SST Configuration File (sstsimulator.conf) has a defined key
+        within a section
+        Args:
+            section (str): The [section] within to search for the key
+            key (str): The key to search for
+
+        Returns:
+            (bool) True if the key exists within the [section]
+
+        Raises:
+            SSTTestCaseException: If an error occurs
     """
     check_param_type("section", section, str)
     check_param_type("key", key, str)
@@ -391,9 +538,12 @@ def does_sst_config_section_have_key(section, key):
 ################################################################################
 
 def log(logstr):
-    """ Log a message, this will not output unless we are
-        outputing in >= normal mode.
-       :param: logstr = string to be logged
+    """ Log a general message.
+
+        This will not output unless we are outputing in >= normal mode.
+
+        Args:
+            logstr (str): string to be logged
     """
     check_param_type("logstr", logstr, str)
     if test_engine_globals.TESTENGINE_VERBOSITY >= test_engine_globals.VERBOSE_NORMAL:
@@ -402,10 +552,13 @@ def log(logstr):
 ###
 
 def log_forced(logstr):
-    """ Log a message, no matter what the verbosity is
-        if in the middle of testing, it will precede with a \n to slip
+    """ Log a general message, no matter what the verbosity is.
+
+        if in the middle of testing, it will precede with a '\\n' to slip
         in-between unittest outputs
-        :param: logstr = string to be logged
+
+        Args:
+            logstr (str): string to be logged
     """
     check_param_type("logstr", logstr, str)
     extra_lf = ""
@@ -416,8 +569,12 @@ def log_forced(logstr):
 ###
 
 def log_debug(logstr):
-    """ Log a DEBUG: message, only if in debug verbosity mode
-        :param: logstr = string to be logged
+    """ Log a 'DEBUG:' message.
+
+        Log will only happen if in debug verbosity mode.
+
+        Args:
+            logstr (str): string to be logged
     """
     if test_engine_globals.TESTENGINE_DEBUGMODE:
         finalstr = "DEBUG: {0}".format(logstr)
@@ -426,10 +583,12 @@ def log_debug(logstr):
 ###
 
 def log_info(logstr, forced=True):
-    """ Log a INFO: message
-        :param: logstr = string to be logged
-        :param: forced = True to always force the logging regardless of verbosity
-                         otherwise, perform a normal log.
+    """ Log a 'INFO:' message.
+
+        Args:
+            logstr (str): string to be logged
+            forced (bool): If true Always force the logging regardless of verbosity;
+                           otherwise, perform a normal log.
     """
     check_param_type("logstr", logstr, str)
     finalstr = "INFO: {0}".format(logstr)
@@ -440,8 +599,12 @@ def log_info(logstr, forced=True):
 ###
 
 def log_error(logstr):
-    """ Log a ERROR: message, no matter what the verbosity is
-        :param: logstr = string to be logged
+    """ Log a 'ERROR:' message.
+
+        Log will occur no matter what the verbosity is
+
+        Args:
+            logstr (str): string to be logged
     """
     check_param_type("logstr", logstr, str)
     finalstr = "ERROR: {0}".format(logstr)
@@ -451,8 +614,12 @@ def log_error(logstr):
 ###
 
 def log_warning(logstr):
-    """ Log a WARNING: message, no matter what the verbosity is
-        :param: logstr = string to be logged
+    """ Log a 'WARNING:' message.
+
+        Log will occur no matter what the verbosity is
+
+        Args:
+            logstr (str): string to be logged
     """
     check_param_type("logstr", logstr, str)
     finalstr = "WARNING: {0}".format(logstr)
@@ -461,9 +628,13 @@ def log_warning(logstr):
 ###
 
 def log_fatal(errstr):
-    """ Log a FATAL: message, no matter what the verbosity is
+    """ Log a 'FATAL:' message.
+
+        Log will occur no matter what the verbosity is and
         THIS WILL KILL THE TEST ENGINE AND RETURN FAILURE
-        :param: logstr = string to be logged
+
+        Args:
+            errstr (str): string to be logged
     """
     check_param_type("errstr", errstr, str)
     finalstr = "FATAL: {0}".format(errstr)
@@ -474,17 +645,21 @@ def log_fatal(errstr):
 ### Testing Directories
 ################################################################################
 
-def get_test_output_run_dir():
+def test_output_get_run_dir():
     """ Return the path of the output run directory
-       :return: str the dir
+
+        Returns:
+            (str) Path to the output run directory
     """
     return test_engine_globals.TESTOUTPUT_RUNDIRPATH
 
 ###
 
-def get_test_output_tmp_dir():
-    """ Return the path of the output run directory
-       :return: str the dir
+def test_output_get_tmp_dir():
+    """ Return the path of the output tmp directory
+
+        Returns:
+            (str) Path to the output tmp directory
     """
     return test_engine_globals.TESTOUTPUT_TMPDIRPATH
 
@@ -492,13 +667,21 @@ def get_test_output_tmp_dir():
 ### Testing Support
 ################################################################################
 
-def compare_diff(outfile, reffile, ignore_ws=False):
-    """ compare 2 files for a diff
-        :param: outfile (str) Path to the output file
-        :param: reffile (str) Path to the reference file
-        :param: ignore_ws (bool) ignore whitespace
-        :return: True if the 2 files match
+def testing_compare_diff(outfile, reffile, ignore_ws=False):
+    """ compare 2 files for a diff.
+
+        Args:
+            outfile (str): Path to the output file.
+            reffile (str): Path to the reference file.
+            ignore_ws (bool): ignore whitespace during the compare [False].
+
+        Returns:
+            (bool) True if the 2 files match.
     """
+    check_param_type("outfile", outfile, str)
+    check_param_type("reffile", reffile, str)
+    check_param_type("ignore_ws", ignore_ws, bool)
+
     # Use diff (ignore whitespace) to see if the sorted files are the same
     if not os.path.isfile(outfile):
         log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
@@ -519,13 +702,21 @@ def compare_diff(outfile, reffile, ignore_ws=False):
 
 ###
 
-def compare_sorted_diff(test_name, outfile, reffile):
-    """ Sort a output file along with a reference file and compare them
-        :param: test_name (str) Name to prefix the sorted files
-        :param: outfile (str) Path to the output file
-        :param: reffile (str) Path to the reference file
-        :return: True if the 2 sorted file match
+def testing_compare_sorted_diff(test_name, outfile, reffile):
+    """ Sort and then compare 2 files for a difference.
+
+        Args:
+            test_name (str): Unique name to prefix the 2 sorted files.
+            outfile (str): Path to the output file
+            reffile (str): Path to the reference file
+
+        Returns:
+            (bool) True if the 2 sorted files match
     """
+    check_param_type("test_name", test_name, str)
+    check_param_type("outfile", outfile, str)
+    check_param_type("reffile", reffile, str)
+
     if not os.path.isfile(outfile):
         log_error("Cannot diff files: Out File {0} does not exist".format(outfile))
         return False
@@ -534,9 +725,9 @@ def compare_sorted_diff(test_name, outfile, reffile):
         log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
         return False
 
-    sorted_outfile = "{1}/{0}_sorted_outfile".format(test_name, get_test_output_tmp_dir())
-    sorted_reffile = "{1}/{0}_sorted_reffile".format(test_name, get_test_output_tmp_dir())
-    diff_sorted_file = "{1}/{0}_diff_sorted".format(test_name, get_test_output_tmp_dir())
+    sorted_outfile = "{1}/{0}_sorted_outfile".format(test_name, test_output_get_tmp_dir())
+    sorted_reffile = "{1}/{0}_sorted_reffile".format(test_name, test_output_get_tmp_dir())
+    diff_sorted_file = "{1}/{0}_diff_sorted".format(test_name, test_output_get_tmp_dir())
 
     os.system("sort -o {0} {1}".format(sorted_outfile, outfile))
     os.system("sort -o {0} {1}".format(sorted_reffile, reffile))
@@ -549,11 +740,18 @@ def compare_sorted_diff(test_name, outfile, reffile):
 
 ###
 
-def merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
-    """ Merge a group of common files into an output file
-       :param: filepath_wildcard (str) The wildcard Path to the files to be mreged
-       :param: outputfilepath (str) The output file path
+def testing_merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
+    """ Merge a group of common MPI files into an output file
+
+        Args:
+            filepath_wildcard (str): The wildcard Path to the files to be mreged
+            mpiout_filename (str): The name of the MPI output filename
+            outputfilepath (str): The output file path
     """
+    check_param_type("filepath_wildcard", filepath_wildcard, str)
+    check_param_type("mpiout_filename", mpiout_filename, str)
+    check_param_type("outputfilepath", outputfilepath, str)
+
     # Delete any output files that might exist
     cmd = "rm -rf {0}".format(outputfilepath)
     os.system(cmd)
@@ -575,13 +773,21 @@ def merge_mpi_files(filepath_wildcard, mpiout_filename, outputfilepath):
 
 ###
 
-def remove_component_warning_from_file(input_filepath):
+def testing_remove_component_warning_from_file(input_filepath):
+    """ Remove SST Component warnings from a file
+
+        This will re-write back to the file with the removed warnings
+
+        Args:
+            input_filepath (str): Path to the file to have warnings removed from
+    """
+    check_param_type("input_filepath", input_filepath, str)
 
     bad_string = 'WARNING: No components are'
     _remove_lines_with_string_from_file(bad_string, input_filepath)
 
 ################################################################################
-### OS Basic Commands
+### OS Basic Or Equivalent Commands
 ################################################################################
 
 def os_simple_command(os_cmd, run_dir=None):
@@ -661,7 +867,7 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
         log_error("Download directory {0} does not exist".format(targetdir))
         return False
 
-    wgetoutfile = "{0}/wget.out".format(get_test_output_tmp_dir())
+    wgetoutfile = "{0}/wget.out".format(test_output_get_tmp_dir())
 
     log_debug("Downloading file via wget: {0}".format(fileurl))
     cmd = "wget {0} --no-check-certificate -P {1} {2} > {3} 2>&1".\
@@ -844,8 +1050,8 @@ def _remove_lines_with_string_from_file(removestring, input_filepath):
 
     # Create a temp file
     filename = os.path.basename(input_filepath)
-    tmp_output_filepath = "{0}/{1}.removed_lines".format(get_test_output_tmp_dir(), filename)
-    bak_output_filepath = "{0}/{1}.bak".format(get_test_output_tmp_dir(), filename)
+    tmp_output_filepath = "{0}/{1}.removed_lines".format(test_output_get_tmp_dir(), filename)
+    bak_output_filepath = "{0}/{1}.bak".format(test_output_get_tmp_dir(), filename)
 
     if not os.path.exists(input_filepath):
         log_error("_remove_lines_with_string_from_file() - File {0} does not exist".\

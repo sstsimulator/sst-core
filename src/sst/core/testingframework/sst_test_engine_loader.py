@@ -11,8 +11,8 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
-""" This module is the primary loader for the SST Frameworks Test Engine
-    it will verify that the test frameworks files are installed.  Then will
+""" This module is the primary loader for the SST Testing Frameworks Engine
+    it will verify that the test frameworks files are installed, and then will
     load the test_engine module.  Once loaded, tests will be discovered and run.
 """
 
@@ -35,12 +35,22 @@ TEST_SST_CORE = 1
 ################################################################################
 
 def startup_and_run(sst_core_bin_dir, test_mode):
-    """ Entry point for loading and running the SST Test Frameworks Engine.
-        This will first verify that the frameworks files are available, and
-        then load the test_engine.  Then it will tell the test_engine to discover
-        and run the tests.
-        :param: sst_core_bin_dir = The SST-Core binary directory
-        :param: test_mode = 1 for Core Testing, 0 for Elements testing
+    """ This is the main entry point for loading and running the SST Test Frameworks
+        Engine.
+
+        The function will first verify that the frameworks files are available, and
+        then load the test engine.  After loading the test engine, it will then
+        start discovery of testsuites and then run the tests.
+
+        If there is an error loading the test engine the script will error exit.
+
+        Any unhandled expections that occur during the run of the test engine
+        will be handled by a generic exception handler which will log the failure
+        across multiple log files.
+
+        Args:
+            sst_core_bin_dir: The SST-Core installed binary directory.
+            test_mode: 1 for Core Testing, 0 for Elements testing.
     """
     try:
         if test_mode not in (TEST_SST_CORE, TEST_ELEMENTS):

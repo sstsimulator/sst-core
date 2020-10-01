@@ -11,7 +11,7 @@ When the Testing Frameworks system is run, it will automatically discover testsu
 
 There is no guarantee on the order of testsuites being run, however, all tests within a testsuite will be run before the next testsuite is started (see concurrent testing for exceptions).  <br/>Tests within a testsuite are also not guaranteed to run in a specific order.
 
-Optional 3rd party modules can be added to enable additional features.
+Optional 3rd party python modules can be added to enable additional features.
 
    * To enable concurrent testing, the `testtools` module must be pip installed <br/>`(> pip install testtools)`.
    * To enable colorized outputs, the  `blessings` and `pygments` modules must be installed <br/>`(> pip install blessings pygments)`.

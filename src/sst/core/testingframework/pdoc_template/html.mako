@@ -125,6 +125,10 @@
       % endfor
     </nav>
   % endif
+  <h1 class="title">${'Namespace' if module.is_namespace else  \
+                      'Package' if module.is_package and not module.supermodule else \
+                      'Module'}</h1><h2><code>${module.name}</code></h2>
+  <h3>--------------------------------------------------------------------------------</h3>
   </header>
 
   <section id="section-intro">
@@ -296,11 +300,11 @@
       <%include file="_lunr_search.inc.mako"/>
     % endif
 
-    <h1>Index</h1>
+    <h1></h1>
     ${extract_toc(module.docstring) if extract_module_toc_into_sidebar else ''}
     <ul id="index">
     % if supermodule:
-    <li><h3>Super-module</h3>
+    <li><h3>Package</h3>
       <ul>
         <li><code>${link(supermodule)}</code></li>
       </ul>

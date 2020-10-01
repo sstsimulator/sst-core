@@ -68,7 +68,7 @@ from test_engine_support import strclass
 from test_engine_support import strqual
 from test_engine_junit import JUnitTestCase
 
-if is_py_2():
+if testing_check_is_py_2():
     text_type = unicode
 else:
     text_type = str

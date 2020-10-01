@@ -11,14 +11,14 @@
 ## information, see the LICENSE file in the top level directory of the
 ## distribution.
 
-""" This module provides the basic SSTTestCase class (based upon Python UnitTest)
-    for the SST Test Frameworks.
+""" This module provides the basic SSTTestCase class (based upon Python's
+    unittest.TestCase) for the SST Test Frameworks.
 
     SST Tests are expected to derive a class from SSTTestCase to create testssuites.
-    Its general operation follows Pythons Unittest Frameworks and users should
+    Its general operation follows Pythons unittest Frameworks and users should
     reference Pythons documentation for more info.
 
-    There are a number of methonds within the class to provide support to the
+    There are a number of methods within the class to provide support tools for the
     test developer.  More support functions exist within sst_unittest_support.py
 """
 
@@ -48,10 +48,11 @@ PY3 = sys.version_info[0] == 3
 class SSTTestCase(unittest.TestCase):
     """ This class is main SSTTestCase class for the SST Testing Frameworks
 
-        Developers must derive classes from this class to create a TestSuite
-        used by the frameworks.  This class is derived from Python's
-        unittest.TestCase and this is an excellent resource for how to develop
-        tests.
+        Developers must derive classes from this class to create a testsuite
+        discovered by the testing frameworks.
+
+        This class is derived from Python's unittest.TestCase which provides an
+        basic resource for how to develop tests for this frameworks.
     """
 
     def __init__(self, methodName):
@@ -70,16 +71,16 @@ class SSTTestCase(unittest.TestCase):
 
     def initializeClass(self, testname):
         """ The method is called by the Frameworks immediately before class is
-        initialized
+        initialized.
 
-        NOTICE:
+        **NOTICE**:
             If a derived class defines its own copy of this method, this
             method (the parent method) MUST be called for proper operation
             of the testing frameworks
 
-        NOTE:
-            (Single Thread Testing) - Called by frameworks
-            (Concurrent Thread Testing) - Called by frameworks
+        **NOTE**:
+            (Single Thread Testing) - Called by frameworks.
+            (Concurrent Thread Testing) - Called by frameworks.
 
         Args:
             testname (str): Name of the test being initialized
@@ -92,14 +93,14 @@ class SSTTestCase(unittest.TestCase):
     def setUp(self):
         """ The method is called by the Frameworks immediately before a test is run
 
-        NOTICE:
+        **NOTICE**:
             If a derived class defines its own copy of this method, this
             method (the parent method) MUST be called for proper operation
             of the testing frameworks
 
-        NOTE:
-            (Single Thread Testing) - Called by frameworks
-            (Concurrent Thread Testing) - Called by frameworks
+        **NOTE**:
+            (Single Thread Testing) - Called by frameworks.
+            (Concurrent Thread Testing) - Called by frameworks.
         """
         #log_forced("SSTTestCase: setUp() - {0}".format(self.testname))
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
@@ -115,14 +116,14 @@ class SSTTestCase(unittest.TestCase):
     def tearDown(self):
         """ The method is called by the Frameworks immediately after a test finishes
 
-        NOTICE:
+        **NOTICE**:
             If a derived class defines its own copy of this method, this
             method (the parent method) MUST be called for proper operation
             of the testing frameworks
 
-        NOTE:
-            (Single Thread Testing) - Called by frameworks
-            (Concurrent Thread Testing) - Called by frameworks
+        **NOTE**:
+            (Single Thread Testing) - Called by frameworks.
+            (Concurrent Thread Testing) - Called by frameworks.
         """
         #log_forced("SSTTestCase: tearDown() - {0}".format(self.testname))
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
@@ -134,16 +135,16 @@ class SSTTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        """ The method is called by the Frameworks immediately before the TestCase starts
+        """ This method is called by the Frameworks immediately before the TestCase starts
 
-        NOTICE:
+        **NOTICE**:
             If a derived class defines its own copy of this method, this
             method (the parent method) MUST be called for proper operation
             of the testing frameworks
 
-        NOTE:
-            (Single Thread Testing) - Called by frameworks
-            (Concurrent Thread Testing) - NOT CALLED, NOT AVAILABLE
+        **NOTE**:
+            (Single Thread Testing): Called by frameworks.
+            (Concurrent Thread Testing): NOT CALLED, NOT AVAILABLE.
         """
         #log_forced("SSTTestCase: setUpClass() - {0}".\
         #format(sys.modules[cls.__module__].__file__))
@@ -152,16 +153,16 @@ class SSTTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """ The method is called by the Frameworks immediately after a TestCase finishes
+        """ This method is called by the Frameworks immediately after a TestCase finishes
 
-        NOTICE:
+        **NOTICE**:
             If a derived class defines its own copy of this method, this
             method (the parent method) MUST be called for proper operation
             of the testing frameworks
 
-        NOTE:
-            (Single Thread Testing) - Called by frameworks
-            (Concurrent Thread Testing) - NOT CALLED, NOT AVAILABLE
+        **NOTE**:
+            (Single Thread Testing) - Called by frameworks.
+            (Concurrent Thread Testing) - NOT CALLED, NOT AVAILABLE.
         """
         #log_forced("SSTTestCase: tearDownClass() - {0}".\
         #format(sys.modules[cls.__module__].__file__))
@@ -172,7 +173,7 @@ class SSTTestCase(unittest.TestCase):
         """ Return the testsuite (module) name
 
         Returns:
-            str: Testsuite (module) name
+            (str) Testsuite (module) name
         """
         return "{0}".format(strclass(self.__class__))
 
@@ -182,7 +183,7 @@ class SSTTestCase(unittest.TestCase):
         """ Return the testcase name
 
         Returns:
-            str: testcase name
+            (str) testcase name
         """
         return "{0}".format(strqual(self.__class__))
 ###
@@ -191,37 +192,37 @@ class SSTTestCase(unittest.TestCase):
         """ Return the directory path of the testsuite that is being run
 
         Returns:
-            str: The path
+            (str)The path of the testsite directory
         """
         return self._testsuite_dirpath
 
 ###
 
     def get_test_output_run_dir(self):
-        """ Return the path of the output run directory
+        """ Return the path of the test output run directory
 
         Returns:
-            str: The path
+            (str) The path to the output run directory
         """
-        return get_test_output_run_dir()
+        return test_output_get_run_dir()
 
 ###
 
     def get_test_output_tmp_dir(self):
-        """ Return the path of the tmp directory
+        """ Return the path of the test tmp directory
 
         Returns:
-            str: The path
+            (str) The path to the test tmp directory
         """
-        return get_test_output_tmp_dir()
+        return test_output_get_tmp_dir()
 
 ###
 
     def get_test_runtime_sec(self):
-        """ Return the current runtime of the test
+        """ Return the current runtime (walltime) of the test
 
         Returns:
-            float: The runtime of the test in seconds
+            (float) The runtime of the test in seconds
         """
         self._stop_test_time = time.time()
         return self._stop_test_time - self._start_test_time
@@ -235,21 +236,22 @@ class SSTTestCase(unittest.TestCase):
                 other_args="", num_ranks=None, num_threads=None, global_args=None,
                 timeout_sec=60):
         """ Launch sst with with the command line and send output to the
-            output file.  The SST run will be monitored for result errors and
-            timeouts.
+            output file.  The SST execution will be monitored for result errors and
+            timeouts.  On an error or timeout, a SSTTestCase.assert() will be generated
+            indicating the details of the failure.
 
             Args:
-                sdl_file (str): The FilePath to the sdl file.
+                sdl_file (str): The FilePath to the test SDL (python) file.
                 out_file (str): The FilePath to the finalized output file.
-                err_file (str): The FilePath to the finalized error file.\
-                                   The default is the same as the output file.
-                mpi_out_files (str): The FilePath to the mpi run output files
-                                        These will be merged into the out_file at
-                                        the end of a multi-rank run.
+                err_file (str): The FilePath to the finalized error file.
+                                Default = same directory as the output file.
+                mpi_out_files (str): The FilePath to the mpi run output files.
+                                     These will be merged into the out_file at
+                                     the end of a multi-rank run.
                 other_args (str): Any other arguments used in the SST cmd
-                                     that the caller wishes to use
-                num_ranks (int): The number of ranks to run SST with
-                num_threads (int): The number of threads to run SST with
+                                   that the caller wishes to use.
+                num_ranks (int): The number of ranks to run SST with.
+                num_threads (int): The number of threads to run SST with.
                 global_args (str): Global Arguments provided from test engine args
                 timeout_sec (int): Allowed runtime in seconds
         """
@@ -303,7 +305,7 @@ class SSTTestCase(unittest.TestCase):
                                              sdl_file)
 
         # Update the os launch command if we are running multi-rank
-        num_cores = get_num_cores_on_system()
+        num_cores = host_os_get_num_cores_on_system()
 
         # Check to see if mpirun is available
         mpi_avail = False
@@ -338,7 +340,7 @@ class SSTTestCase(unittest.TestCase):
             if mpi_avail is False:
                 log_fatal("OpenMPI IS NOT FOUND/AVAILABLE")
             rtn = OSCommand(oscmd, out_file, err_file, set_cwd).run(timeout_sec=timeout_sec)
-            merge_mpi_files("{0}*".format(mpiout_filename), mpiout_filename, out_file)
+            testing_merge_mpi_files("{0}*".format(mpiout_filename), mpiout_filename, out_file)
         else:
             rtn = OSCommand(oscmd, out_file, err_file, set_cwd).run(timeout_sec=timeout_sec)
 
@@ -359,14 +361,16 @@ def setUpModule():
         defined in the module are run.  This function is only called during
         Single Thread testing mode.
 
-        WARNING: This function is part of the testing Frameworks infrastructure
-        and should not need to be called by testsuites.  However, If a testing module
-        must define its own copy of this function, this function MUST be called
-        for proper operation of the testing frameworks
+        **NOTICE**:
+            This function is part of the testing Frameworks infrastructure
+            and should not need to be defined by testsuites.  However, If a testing module
+            must define its own copy of this function, this function MUST be called
+            for proper operation of the testing frameworks
 
-        NOTE: This function will only be called when the test frameworks is running
-        in Single Thread testing mode.  It will NOT be called in Concurrent Thread
-        testing mode.
+        **NOTE**:
+            This function will only be called when the test frameworks is running
+            in Single Thread testing mode.  It will NOT be called in Concurrent Thread
+            testing mode.
     """
     #log_forced("SSTTestCase: setUpModule() - {0}".format(__file__))
     test_engine_globals.TESTRUN_JUNIT_TESTCASE_DICTLISTS['singlethread'] = []
@@ -380,14 +384,16 @@ def tearDownModule():
         defined in the module.  This function is only called during Single Thread
         testing mode.
 
-        WARNING: This function is part of the testing Frameworks infrastructure
-        and should not need to be called by testsuites.  However, If a testing module
-        must define its own copy of this function, this function MUST be called
-        for proper operation of the testing frameworks
+        **NOTICE**:
+            This function is part of the testing Frameworks infrastructure
+            and should not need to be defined by testsuites.  However, If a testing module
+            must define its own copy of this function, this function MUST be called
+            for proper operation of the testing frameworks
 
-        NOTE: This function will only be called when the test frameworks is running
-        in Single Thread testing mode.  It will NOT be called in Concurrent Thread
-        testing mode.
+        **NOTE**:
+            This function will only be called when the test frameworks is running
+            in Single Thread testing mode.  It will NOT be called in Concurrent Thread
+            testing mode.
     """
     #log_forced("SSTTestCase: tearDownModule() - {0}".format(__file__))
     t_s = JUnitTestSuite(test_engine_globals.TESTRUN_SINGTHREAD_TESTSUITE_NAME,
@@ -407,17 +413,19 @@ def setUpModuleConcurrent(test):
     """ Perform setup functions before the testing Module loads.
 
         This function is called by the Frameworks before tests in any TestCase
-        defined in the module are run.  This function is for Concurrent Threading
-        testing mode.
+        defined in the module are run.  This function is only called during
+        Concurrent Threading testing mode.
 
-        WARNING: This function is part of the testing Frameworks infrastructure
-        and should not need to be called by testsuites.  However, If a testing module
-        must define its own copy of this function, this function MUST be called
-        for proper operation of the testing frameworks
+        **NOTICE**:
+            This function is part of the testing Frameworks infrastructure
+            and should not need to be defined by testsuites.  However, If a testing module
+            must define its own copy of this function, this function MUST be called
+            for proper operation of the testing frameworks
 
-        NOTE: This function will only be called when the test frameworks is running
-        in Concurrent Threading testing mode.  It will NOT be called in Single thread
-        testing mode.
+        **NOTE**:
+            This function will only be called when the test frameworks is running
+            in Concurrent Threading testing mode.  It will NOT be called in Single thread
+            testing mode.
     """
 
     testsuite_name = test.get_testsuite_name()
@@ -433,16 +441,19 @@ def tearDownModuleConcurrent(test):
     """ Perform teardown functions immediately after a testing Module finishes.
 
         This function is called by the Frameworks after all tests in all TestCases
-        defined in the module.  This function is for Concurrent Threading testing mode
+        defined in the module.  This function is only called during Concurrent
+        Threading testing mode
 
-        WARNING: This function is part of the testing Frameworks infrastructure
-        and should not need to be called by testsuites.  However, If a testing module
-        must define its own copy of this function, this function MUST be called
-        for proper operation of the testing frameworks
+        **NOTICE**:
+            This function is part of the testing Frameworks infrastructure
+            and should not need to be defined by testsuites.  However, If a testing module
+            must define its own copy of this function, this function MUST be called
+            for proper operation of the testing frameworks
 
-        NOTE: This function will only be called when the test frameworks is running
-        in Concurrent Thread testing mode.  It will NOT be called in Single thread
-        testing mode.
+        **NOTE**:
+            This function will only be called when the test frameworks is running
+            in Concurrent Thread testing mode.  It will NOT be called in Single thread
+            testing mode.
     """
 
     testsuite_name = test.get_testsuite_name()

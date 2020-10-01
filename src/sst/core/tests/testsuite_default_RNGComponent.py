@@ -7,7 +7,7 @@ from sst_unittest import *
 from sst_unittest_support import *
 
 ################################################################################
-# Code to support a single instance module initialize, must be called setUp method  
+# Code to support a single instance module initialize, must be called setUp method
 
 module_init = 0
 module_sema = threading.Semaphore()
@@ -15,13 +15,13 @@ module_sema = threading.Semaphore()
 def initializeTestModule_SingleInstance(class_inst):
     global module_init
     global module_sema
-    
+
     module_sema.acquire()
     if module_init != 1:
         # Put your single instance Init Code Here
         module_init = 1
     module_sema.release()
-    
+
 ################################################################################
 
 class testcase_RNGComponent(SSTTestCase):
@@ -30,7 +30,7 @@ class testcase_RNGComponent(SSTTestCase):
         super(type(self), self).initializeClass(testName)
         # Put test based setup code here. it is called before testing starts
         # NOTE: This method is called once for every test
-        
+
     def setUp(self):
         super(type(self), self).setUp()
         initializeTestModule_SingleInstance(self)
@@ -55,7 +55,7 @@ class testcase_RNGComponent(SSTTestCase):
 
     def RNG_test_template(self, testtype):
         testsuitedir = self.get_testsuite_dir()
-        outdir = get_test_output_run_dir()
+        outdir = test_output_get_run_dir()
 
         sdlfile = "{0}/test_RNGComponent_{1}.py".format(testsuitedir, testtype)
         reffile = "{0}/refFiles/test_RNGComponent_{1}.out".format(testsuitedir, testtype)

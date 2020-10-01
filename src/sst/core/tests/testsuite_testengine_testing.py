@@ -4,7 +4,7 @@ from sst_unittest import *
 from sst_unittest_support import *
 
 ################################################################################
-# Code to support a single instance module initialize, must be called setUp method  
+# Code to support a single instance module initialize, must be called setUp method
 
 module_init = 0
 module_sema = threading.Semaphore()
@@ -12,13 +12,13 @@ module_sema = threading.Semaphore()
 def initializeTestModule_SingleInstance(class_inst):
     global module_init
     global module_sema
-    
+
     module_sema.acquire()
     if module_init != 1:
         # Put your single instance Init Code Here
         module_init = 1
     module_sema.release()
-    
+
 ################################################################################
 
 class testcase_testengine_testing_1(SSTTestCase):
@@ -27,7 +27,7 @@ class testcase_testengine_testing_1(SSTTestCase):
         super(type(self), self).initializeClass(testName)
         # Put test based setup code here. it is called before testing starts
         # NOTE: This method is called once for every test
-        
+
     def setUp(self):
         super(type(self), self).setUp()
         initializeTestModule_SingleInstance(self)
@@ -77,9 +77,9 @@ class testcase_testengine_testing_1(SSTTestCase):
     def test_TESTING_CASE1_get_info_from_sstsimulator_conf_success(self):
         # This should pass as we give valid data
         log_forced("This Test Has an Expected Pass")
-        sourcedir = get_sstsimulator_conf_value_str("SSTCore", "sourcedir")
+        sourcedir = sstsimulator_conf_get_value_str("SSTCore", "sourcedir")
         log_forced("SSTCore SourceDir = {0}; Type = {1}".format(sourcedir, type(sourcedir)))
-        if is_py_2():
+        if testing_check_is_py_2():
             if type(sourcedir) == str:
                 self.assertEqual(str, type(sourcedir))
             elif type(sourcedir) == unicode:
@@ -93,18 +93,18 @@ class testcase_testengine_testing_1(SSTTestCase):
         # This should pass as we detect an expected exception
         log_forced("This Test Has an Expected Pass - AND GENERATES A WARNING - From a Detected Exception")
         with self.assertRaises(SSTTestCaseException):
-            get_sstsimulator_conf_value_str("invalid_section", "invalid_key")
+            sstsimulator_conf_get_value_str("invalid_section", "invalid_key")
 
     @unittest.expectedFailure
     def test_TESTING_CASE1_get_info_from_sstsimulator_conf_invalid_key_exception_error(self):
         # This should give an error as we detect an exception due to invalid key
         log_forced("This Test Has an Expected ERROR - AND GENERATES A WARNING - Due to invalid Key")
-        get_sstsimulator_conf_value_str("SSTCore", "invalid_key")
+        sstsimulator_conf_get_value_str("SSTCore", "invalid_key")
 
     def test_TESTING_CASE1_get_info_from_sstsimulator_conf_invalid_key_rtn_default_success_with_warning(self):
         # This should pass by returning a default, but should log a warning
         log_forced("This Test Has an Expected Pass - BUT GENERATES A WARNING")
-        sourcedir = get_sstsimulator_conf_value_str("SSTCore", "invalid_key", "kilroy_was_here")
+        sourcedir = sstsimulator_conf_get_value_str("SSTCore", "invalid_key", "kilroy_was_here")
         log_forced("SSTCore SourceDir = {0}".format(sourcedir))
         self.assertEqual(str, type(sourcedir))
         self.assertEqual("kilroy_was_here", sourcedir)
@@ -112,7 +112,7 @@ class testcase_testengine_testing_1(SSTTestCase):
     def test_TESTING_CASE1_get_info_from_sst_config_h_valid_key_rtn_int_success(self):
         # This should pass as we give valid data
         log_forced("This Test Has an Expected Pass")
-        test_define = get_sst_config_include_file_value_int("HAVE_CLOSEDIR", 123)
+        test_define = sst_config_include_get_file_value_int("HAVE_CLOSEDIR", 123)
         log_forced("(#define HAVE_CLOSEDIR)-returneddata={0}; type={1}".format(test_define, type(test_define)))
         self.assertEqual(1, test_define)
         self.assertEqual(int, type(test_define))
@@ -120,7 +120,7 @@ class testcase_testengine_testing_1(SSTTestCase):
     def test_TESTING_CASE1_get_info_from_sst_config_h_valid_key_rtn_str_success(self):
         # This should pass as we give valid data
         log_forced("This Test Has an Expected Pass")
-        test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT", "THIS_IS_DEFAULT_DATA")
+        test_define = sst_config_include_file_get_value_str("PACKAGE_BUGREPORT", "THIS_IS_DEFAULT_DATA")
         log_forced("(#define PACKAGE_BUGREPORT)-returneddata={0}; type={1}".format(test_define, type(test_define)))
         self.assertEqual("sst@sandia.gov", test_define)
         self.assertEqual(str, type(test_define))
@@ -129,7 +129,7 @@ class testcase_testengine_testing_1(SSTTestCase):
         # This should pass as we give valid data
         log_forced("This Test Has an Expected Pass - BUT GENERATES A WARNING")
         # This should pass by returning a default, but should log a warning
-        test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT_KEYINVALID", "THIS_IS_DEFAULT_DATA")
+        test_define = sst_config_include_get_file_value_str("PACKAGE_BUGREPORT_KEYINVALID", "THIS_IS_DEFAULT_DATA")
         log_forced("(#define PACKAGE_BUGREPORT_KEYINVALID)-returneddata={0}; type={1}".format(test_define, type(test_define)))
         self.assertEqual("THIS_IS_DEFAULT_DATA", test_define)
         self.assertEqual(str, type(test_define))
@@ -138,7 +138,7 @@ class testcase_testengine_testing_1(SSTTestCase):
         # This should pass as we detect an expected exception
         log_forced("This Test Has an Expected Pass - BUT GENERATES A WARNING - From a Detected Exception")
         with self.assertRaises(SSTTestCaseException):
-            test_define = get_sst_config_include_file_value_str("PACKAGE_BUGREPORT_KEYINVALID")
+            test_define = sst_config_include_file_get_value_str("PACKAGE_BUGREPORT_KEYINVALID")
             log_forced("(#define PACKAGE_BUGREPORT_KEYINVALID)-returneddata={0}; type={1}".format(test_define, type(test_define)))
 
 
@@ -164,7 +164,7 @@ class testcase_testengine_testing_2(SSTTestCase):
         super(type(self), self).initializeClass(testName)
         # Put test based setup code here. it is called before testing starts
         # NOTE: This method is called once for every test
-        
+
     def setUp(self):
         super(type(self), self).setUp()
         # Put test based setup code here. it is called once before every test

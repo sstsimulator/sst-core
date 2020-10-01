@@ -360,7 +360,7 @@ class TestEngine():
         sstcoreversion = rtn.output()
         sstcoreversion = sstcoreversion.replace("SST-Core Version ", "").rstrip()
 
-        num_cores = get_num_cores_on_system()
+        num_cores = host_os_get_num_cores_on_system()
 
         if test_engine_globals.TESTENGINE_CONCURRENTMODE:
             concurrent_txt = "[CONCURRENTLY ({0} Testing Threads)]".\
@@ -371,8 +371,8 @@ class TestEngine():
                  (" tests on {0} {1}").format(self._test_type_str, concurrent_txt),
                  forced=False)
 
-        log_info(("Test Platform = {0}".format(get_host_os_distribution_type())) +
-                 (" {0}".format(get_host_os_distribution_version())), forced=False)
+        log_info(("Test Platform = {0}".format(host_os_get_distribution_type())) +
+                 (" {0}".format(host_os_get_distribution_version())), forced=False)
 
         log_info("Running on Python Version = {0}.{1}.{2}".\
         format(ver[0], ver[1], ver[2]), forced=False)
@@ -386,7 +386,7 @@ class TestEngine():
         # Check to see if we are using up all the cores on the system
         # in concurrent mode, warn user of possible failures
         if test_engine_globals.TESTENGINE_CONCURRENTMODE:
-            num_cores_avail = get_num_cores_on_system()
+            num_cores_avail = host_os_get_num_cores_on_system()
             threads_used = test_engine_globals.TESTENGINE_THREADLIMIT
             ranks_used = test_engine_globals.TESTENGINE_SSTRUN_NUMRANKS
             cores_used = threads_used * ranks_used
