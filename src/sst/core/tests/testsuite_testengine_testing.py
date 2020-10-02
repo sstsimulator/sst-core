@@ -196,7 +196,7 @@ class testcase_testengine_testing_2(SSTTestCase):
         self.assertEqual(1 / 0, 1)
 
     skipreason = "Demonstrating Skipping using a scenario - if 'skip_scenario' is defined"
-    @skipOnScenario("skip_scenario", skipreason)
+    @skip_on_scenario("skip_scenario", skipreason)
     def test_TESTING_CASE2_scenario_skipping(self):
         log_forced("This Test Has an Expected Skip due to scenario")
         self.assertEqual(1, 1)

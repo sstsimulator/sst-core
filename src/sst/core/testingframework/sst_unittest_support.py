@@ -280,7 +280,7 @@ def testing_check_is_scenario_filtering_enabled(scenario_name):
 
 ###
 
-def skipOnScenario(scenario_name, reason):
+def skip_on_scenario(scenario_name, reason):
     """ Skip a test if a scenario filter name is enabled
 
         Args:
@@ -295,7 +295,7 @@ def skipOnScenario(scenario_name, reason):
 
 ###
 
-def skipOnSSTSimulatorConfEmptyStr(section, key, reason):
+def skip_on_sstsimulator_conf_empty_str(section, key, reason):
     """ Skip a test if a section/key in the sstsimulator.conf file is missing an
         entry
 
