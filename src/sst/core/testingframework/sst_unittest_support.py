@@ -791,45 +791,108 @@ def testing_remove_component_warning_from_file(input_filepath):
 ################################################################################
 
 def os_simple_command(os_cmd, run_dir=None):
-    """ Perform an simple os command and return a tuple of the (rtncode, rtnoutput)
+    """ Perform an simple os command and return a tuple of the (rtncode, rtnoutput).
+
         NOTE: Simple command cannot have pipes or redirects
+
+        Args:
+            os_cmd (str): Command to run
+            run_dir (str): Directory where to run the command; if None (defaut)
+                           current working directory is used.
+
+        Returns:
+            (tuple) Returns a tuple of the (rtncode, rtnoutput) of types (int, str)
     """
+    check_param_type("os_cmd", os_cmd, str)
+    if run_dir is not None:
+        check_param_type("run_dir", run_dir, str)
     rtn = OSCommand(os_cmd, set_cwd=run_dir).run()
     rtn_data = (rtn.result(), rtn.output())
     return rtn_data
 
 def os_ls(directory="."):
-    """ Perform an ls -lia on a directory and dump output to screen """
+    """ Perform an simple ls -lia shell command and dump output to screen.
+
+        Args:
+            directory (str): Directory to run in [.]
+
+        Returns:
+            (str) Output from ls command
+    """
+    check_param_type("directory", directory, str)
     cmd = "ls -lia {0}".format(directory)
     rtn = OSCommand(cmd).run()
     log("{0}".format(rtn.output()))
+    return rtn.output()
 
 def os_pwd():
-    """ Perform an pwd cmd to list the current directory """
+    """ Perform an simple pwd shell command and dump output to screen.
+
+        Returns:
+            (str) Output from pwd command
+    """
     cmd = "pwd"
     rtn = OSCommand(cmd).run()
     log("{0}".format(rtn.output()))
+    return rtn.output()
 
 def os_cat(filepath):
-    """ Perform an cat cmd on a file and dump output to screen """
+    """ Perform an simple cat shell command and dump output to screen.
+
+        Args:
+            filepath (str): Path to file to cat
+
+        Returns:
+            (str) Output from cat command
+    """
+    check_param_type("filepath", filepath, str)
     cmd = "cat {0}".format(filepath)
     rtn = OSCommand(cmd).run()
     log("{0}".format(rtn.output()))
+    return rtn.output()
 
-def os_file_symlink(srcdir, destdir, filename):
-    """ Create a simlink of a file """
+def os_symlink_file(srcdir, destdir, filename):
+    """ Create a symlink of a file
+
+        Args:
+            srcdir (str): Path to source dir of the file
+            destdir (str): Path to destination dir of the file
+            filename (str): Name of the file
+    """
+    check_param_type("srcdir", srcdir, str)
+    check_param_type("destdir", destdir, str)
+    check_param_type("filename", filename, str)
     srcfilepath = "{0}/{1}".format(srcdir, filename)
     dstfilepath = "{0}/{1}".format(destdir, filename)
     os.symlink(srcfilepath, dstfilepath)
 
-def os_dir_symlink(srcdir, destdir):
-    """ Create a simlink of a directory """
+def os_symlink_dir(srcdir, destdir):
+    """ Create a symlink of a directory
+
+        Args:
+            srcdir (str): Path to source dir
+            destdir (str): Path to destination dir
+    """
+    check_param_type("srcdir", srcdir, str)
+    check_param_type("destdir", destdir, str)
     os.symlink(srcdir, destdir)
 
 def os_awk_print(in_str, fields_index_list):
-    """ Return specific fields of an input string as a string
-        fields_index_list must be a list of ints and in the order user wants returned
+    """ Perform an awk / print (equivalent) command which returns specific
+        fields of an input string as a string.
+
+        Args:
+            in_str (str): Input string to parse
+            fields_index_list (list of ints): A list of ints and in the order of
+                                             fields to be returned
+
+        Returns:
+            (str) Space separated string of extracted fields.
     """
+    check_param_type("in_str", in_str, str)
+    check_param_type("fields_index_list", fields_index_list, list)
+    for index, field_index in enumerate(fields_index_list):
+        check_param_type("field_index - {0}".format(index), field_index, int)
     finalstrdata = ""
     split_list = in_str.split()
     for field_index in fields_index_list:
@@ -837,9 +900,21 @@ def os_awk_print(in_str, fields_index_list):
     return finalstrdata
 
 def os_wc(in_file, fields_index_list=[]):
-    """ Run wc on an input file and return optional fields
-        fields_index_list must be a list of ints and in the order user wants returned
+    """ Run a wc (equivalent) command on a file and then extract specific
+        fields of the result as a string.
+
+        Args:
+            in_file (str): Input string to parse
+            fields_index_list (list of ints): A list of ints and in the order of
+                                             fields to be returned
+
+        Returns:
+            (str) Space separated string of extracted fields.
     """
+    check_param_type("in_file", in_file, str)
+    check_param_type("fields_index_list", fields_index_list, list)
+    for index, field_index in enumerate(fields_index_list):
+        check_param_type("field_index - {0}".format(index), field_index, int)
     cmd = "wc {0}".format(in_file)
     rtn = OSCommand(cmd).run()
     wc_out = rtn.output()
@@ -848,6 +923,17 @@ def os_wc(in_file, fields_index_list=[]):
     return wc_out
 
 def os_test_file(file_path, expression="-e"):
+    """ Run a shell 'test' command on a file.
+
+        Args:
+            file_path (str): Path to the file to be tested
+            expression (str): Test expression [-e = exists]
+
+        Returns:
+            (bool) True if test is successful.
+    """
+    check_param_type("file_path", file_path, str)
+    check_param_type("expression", expression, str)
     if os.path.exists(file_path):
         cmd = "test {0} {1}".format(expression, file_path)
         rtn = OSCommand(cmd).run()
@@ -857,9 +943,24 @@ def os_test_file(file_path, expression="-e"):
         return False
 
 def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams=""):
-    """ wget Download a file with retries
-        :return: True on success
+    """ Perform a wget command to download a file from a url.
+
+        Args:
+            fileurl (str): URL to the file to be downloaded.
+            targetdir (str): Where to download the file to
+            num_tries (int): Max number of tries to download [3].
+            secsbetweentries (int): Seconds between tries [10]
+            wgetparams (str): Max number of tries to download.
+
+        Returns:
+            (bool) True if wget is successful.
     """
+    check_param_type("fileurl", fileurl, str)
+    check_param_type("targetdir", targetdir, str)
+    check_param_type("num_tries", num_tries, int)
+    check_param_type("secsbetweentries", secsbetweentries, int)
+    check_param_type("wgetparams", wgetparams, str)
+
     wget_success = False
 
     # Make sure target dir exists, and cd into it
@@ -904,8 +1005,14 @@ def os_wget(fileurl, targetdir, num_tries=3, secsbetweentries=10, wgetparams="")
     return wget_success
 
 def os_extract_tar(tarfilepath, targetdir="."):
-    """ Untar a file
-        :return: True on success
+    """ Extract directories/files from a tar file.
+
+        Args:
+            tarfilepath (str): The filepath to the tar file to be extracted.
+            targetdir (str): Where to extract to [.]
+
+        Returns:
+            (bool) True if wget is successful.
     """
     if not os.path.isfile(tarfilepath):
         errmsg = "tar file{0} does not exist".format(tarfilepath)
