@@ -78,6 +78,9 @@ else:
 def verify_concurrent_test_engine_available():
     """ Check to see if we can load testtools if the user wants to run
         in concurrent mode.
+
+        Will generate a Fatal error if system configuration does not support
+        concurrent testing.
     """
     if test_engine_globals.TESTENGINE_CONCURRENTMODE:
         try:
@@ -106,6 +109,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
 ###
 
     def run(self, test):
+        """ Run the tests."""
         runresults = super(SSTTextTestRunner, self).run(test)
         self._get_and_display_test_results(runresults)
         return runresults
@@ -113,9 +117,13 @@ class SSTTextTestRunner(unittest.TextTestRunner):
 ###
 
     def did_tests_pass(self, run_results):
-        """ Figure out if testing passed
-            :param: run_results -  A unittest.TestResult object
-            :return: True if all tests passing with no errors, false otherwise
+        """ Figure out if testing passed.
+
+            Args:
+                run_results -  A unittest.TestResult object
+
+            Returns:
+                True if all tests passing with no errors, false otherwise
         """
         return run_results.wasSuccessful and \
         len(run_results.failures) == 0 and \
@@ -126,9 +134,13 @@ class SSTTextTestRunner(unittest.TextTestRunner):
 ###
 
     def _get_and_display_test_results(self, run_results):
-        """ Figure out if testing passed, and display the test results
-            :param: sst_tests_results -  A unittest.TestResult object
-            :return: True if all tests passing with no errors, false otherwise
+        """ Figure out if testing passed, and display the test results.
+
+            Args:
+                sst_tests_results -  A unittest.TestResult object
+
+            Returns:
+                True if all tests passing with no errors, false otherwise
         """
         numpassingtests = run_results.testsRun - len(run_results.failures) \
                                                - len(run_results.skipped) \
@@ -434,38 +446,45 @@ class SSTTextTestResult(unittest.TestResult):
 
 ################################################################################
 
-# Note: TestSuiteBaseClass will either unitest.TestSuite or testtools.ConcurrentTestSuite
+# TestSuiteBaseClass will be either unitest.TestSuite or testtools.ConcurrentTestSuite
+# and is defined at the top of this file.
 class SSTTestSuite(TestSuiteBaseClass):
-    """A TestSuite whose run() calls out to a concurrency strategy
-       but also supports the base unittest.TestSuite functionality
-       Note: This is a highly modified version of testtools.ConcurrentTestSuite
-             class to support startUpModuleConcurrent() & tearDownModuleConcurrent()
-             and to also support the limiting of parallel threads in flight.
-       Note: This object will normally be derived from testtools.ConcurrentTestSuite class,
-             however, if the import of testtools failed, it will be derived from
-             unittest.TestSuite.
-       Note: If concurrent mode is false, then it will always make calls to the
-             unittest.TestSuite class EVEN IF it is derived from
-             testtools.ConcurrentTestSuite, which is itself derived from unittest.TestSuite.
+    """A TestSuite whose run() method can execute tests concurrently.
+       but also supports the python base unittest.TestSuite functionality.
+
+       This is a highly modified version of testtools.ConcurrentTestSuite
+       class to support startUpModuleConcurrent() & tearDownModuleConcurrent()
+       and to also support the limiting of parallel threads in flight.
+
+       This object will normally be derived from testtools.ConcurrentTestSuite
+       class, however, if the import of testtools failed, it will be derived from
+       unittest.TestSuite.
+
+       If the user selected concurrent mode is false, then it will always make
+       calls to the unittest.TestSuite class EVEN IF it is derived from
+       testtools.ConcurrentTestSuite, which is itself derived from unittest.TestSuite.
     """
 
     def __init__(self, suite, make_tests, wrap_result=None):
-        """Create a ConcurrentTestSuite or unittest.TestSuite to execute suite.
+        """Create a ConcurrentTestSuite or unittest.TestSuite to execute the suite.
 
-        :param suite: A suite to run concurrently.
-        :param make_tests: A helper function to split the tests in the
-            ConcurrentTestSuite into some number of concurrently executing
-            sub-suites. make_tests must take a suite, and return an iterable
-            of TestCase-like object, each of which must have a run(result)
-            method.  NOT USED IN unittest.TestSuite
-        :param wrap_result: An optional function that takes a thread-safe
-            result and a thread number and must return a ``TestResult``
-            object. If not provided, then ``ConcurrentTestSuite`` will just
-            use a ``ThreadsafeForwardingResult`` wrapped around the result
-            passed to ``run()``.  NOT USED IN unittest.TestSuite
         Note: If concurrent mode is false, then it will always make calls to the
-              unittest.TestSuite class EVEN IF it is derived from
+              unittest.TestSuite class EVEN IF the class is derived from
               testtools.ConcurrentTestSuite.
+
+        Args:
+            suite: A suite to run concurrently.
+            make_tests: A helper function to split the tests in the
+                        ConcurrentTestSuite into some number of concurrently executing
+                        sub-suites. make_tests must take a suite, and return an iterable
+                        of TestCase-like object, each of which must have a run(result)
+                        method.  NOT USED IN unittest.TestSuite.
+            wrap_result: An optional function that takes a thread-safe
+                         result and a thread number and must return a ``TestResult``
+                         object. If not provided, then ``ConcurrentTestSuite`` will just
+                         use a ``ThreadsafeForwardingResult`` wrapped around the result
+                         passed to ``run()``.  NOT USED IN unittest.TestSuite
+
         """
         if not test_engine_globals.TESTENGINE_CONCURRENTMODE:
             # Ignore make_tests and wrap_results
@@ -476,24 +495,25 @@ class SSTTestSuite(TestSuiteBaseClass):
 ####
 
     def run(self, result):
-        """Run the tests concurrently.
+        """Run the tests (possibly concurrently).
 
-        This calls out to the provided make_tests helper, and then serialises
-        the results so that result only sees activity from one TestCase at
-        a time.
+            This calls out to the provided make_tests helper, and then serialises
+            the results so that result only sees activity from one TestCase at
+            a time.
 
-        ConcurrentTestSuite provides no special mechanism to stop the tests
-        returned by make_tests, it is up to the make_tests to honour the
-        shouldStop attribute on the result object they are run with, which will
-        be set if an exception is raised in the thread which
-        ConcurrentTestSuite.run() is called in.
+            ConcurrentTestSuite provides no special mechanism to stop the tests
+            returned by make_tests, it is up to the make_tests to honour the
+            shouldStop attribute on the result object they are run with, which will
+            be set if an exception is raised in the thread which
+            ConcurrentTestSuite.run() is called in.
 
-        NOTE: This is a highly modified version of the
-              testtools.ConcurrentTestSuite.run() method.  It was changed to
-              support running a limited number of concurrent threads.
-        Note: If concurrent mode is false, then it will always make calls to the
-              unittest.TestSuite class EVEN IF it is derived from
-              testtools.ConcurrentTestSuite.
+            NOTE: This is a highly modified version of the
+                  testtools.ConcurrentTestSuite.run() method.  It was changed to
+                  support running a limited number of concurrent threads.
+
+            If concurrent mode is false, then it will always make calls to the
+            unittest.TestSuite class EVEN IF it is derived from
+            testtools.ConcurrentTestSuite.
         """
         # Check to verify if we are NOT in concurrent mode, if so, then
         # just call the run (this will be unittest.TestSuite's run())

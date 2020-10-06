@@ -28,8 +28,8 @@ import test_engine_globals
 ################################################################################
 
 class OSCommand():
-    """ Enables to run subprocess commands in a different thread with TIMEOUT option.
-        This will return a OSCommandResult object
+    """ Enables to run subprocess commands in a different thread with a TIMEOUT option.
+        This will return a OSCommandResult object.
 
         Based on a modified version of jcollado's solution:
         http://stackoverflow.com/questions/1191374/subprocess-with-timeout/4825933#4825933
@@ -38,6 +38,17 @@ class OSCommand():
 
     def __init__(self, cmd_str, output_file_path=None, error_file_path=None,
                  set_cwd=None, use_shell=False):
+        """
+            Args:
+                cmd_str (str): The command to be executed
+                output_file_path (str): The file path to send the std outpput from the cmd
+                                        if None send to stdout.
+                error_file_path (str): The file path to send the std error from the cmd
+                                        if None send to stderr
+                set_cwd (str): Path to change dir to before running cmd; if None then
+                               use current working directory.
+                use_shell (bool): Execute the cmd using the shell (not recommended)
+        """
         self._output_file_path = None
         self._error_file_path = None
         self._cmd_str = None
@@ -56,7 +67,13 @@ class OSCommand():
 ####
 
     def run(self, timeout_sec=60, **kwargs):
-        """ Run a command then return and OSCmdRtn object. """
+        """ Run a command then return and OSCmdRtn object.
+
+            Args:
+                timeout_sec (int): The maximum runtime in seconds before thread
+                                   will be terminated and a timeout error will occur.
+                kwargs: Extra parameters
+        """
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout must be an int or a float")
 
@@ -160,6 +177,14 @@ class OSCommand():
 class OSCommandResult():
     """ This class returns result data about the OSCommand that was executed """
     def __init__(self, cmd_str, status, output, error, timeout):
+        """
+            Args:
+                cmd_str (str): The command to be executed
+                status (int): The return status of the command execution.
+                output (str): The standard output of the command execution.
+                error (str): The error output of the command execution.
+                timeout (bool): True if the command timed out during execution.
+        """
         self._run_cmd_str = cmd_str
         self._run_status = status
         self._run_output = output
@@ -213,12 +238,15 @@ class OSCommandResult():
 ################################################################################
 
 def check_param_type(varname, vardata, datatype):
-    """ Validate a parameter to ensure it is of the correct type
-        :param: varname (str) = The name of the variable
-        :param: vardata (???) = The actual variable of any type
-        :param: datatype (???) = The type that we want to confirm
-        This will raise a ValueErr telling the caller that the variable pass is
-        not of the correct type.
+    """ Validate a parameter to ensure it is of the correct type.
+
+        Args:
+            varname (str) = The string name of the variable
+            vardata (???) = The actual variable of any type
+            datatype (???) = The type that we want to confirm
+
+        Raises:
+            ValueErr: variable is not of the correct type.
     """
     caller = inspect.stack()[1][3]
     if not isinstance(vardata, datatype):
@@ -235,16 +263,16 @@ def strclass(cls):
 
 def strqual(cls):
     """ Return the qualname of a class"""
-    return "%s" % (qualname(cls))
+    return "%s" % (_qualname(cls))
 
 ################################################################################
 # qualname from https://github.com/wbolster/qualname to support Py2 and Py3
 # LICENSE -> https://github.com/wbolster/qualname/blob/master/LICENSE.rst
-__all__ = ['qualname']
+#__all__ = ['qualname']
 
 _cache = {}
 
-def qualname(obj):
+def _qualname(obj):
     """Find out the qualified name for a class or function."""
 
     # For Python 3.3+, this is straight-forward.

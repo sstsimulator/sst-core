@@ -109,9 +109,11 @@ class TestEngine():
     """
 
     def __init__(self, sst_core_bin_dir, test_mode):
-        """ Initialize the TestEngine object, and parse the user arguments
-            :param: sst_core_bin_dir - The SST-Core binary directory
-            :param: test_mode = 1 for Core Testing, 0 for Elements testingt
+        """ Initialize the TestEngine object, and parse the user arguments.
+
+            Args:
+                sst_core_bin_dir (str): The SST-Core binary directory
+                test_mode (int): 1 for Core Testing; 0 for Elements testing
         """
         self._validate_python_version()
 
@@ -140,6 +142,9 @@ class TestEngine():
     def discover_and_run_tests(self):
         """ Create the output directories, then discover the tests, and then
             run them using pythons unittest module
+
+            Returns:
+                0 on success; 1 on test failure; 2 on keyboard interrupt.
         """
         # Setup our output directories
         self._create_all_output_directories()
@@ -184,11 +189,16 @@ class TestEngine():
 ####
 
     def _build_tests_list_helper(self, suite):
-        # A helper function to split the tests for the ConcurrentTestSuite into
-        # some number of concurrently executing sub-suites. _build_tests_list_helper
-        # must take a suite, and return an iterable of TestCase-like object,
-        #each of which must have a run(result) method.
-        # See: SSTTestSuite.__init__() for more info...
+        """
+            A helper function to split the tests for the ConcurrentTestSuite into
+            some number of concurrently executing sub-suites. _build_tests_list_helper
+            must take a suite, and return an iterable of TestCase-like object,
+            each of which must have a run(result) method.
+            See: SSTTestSuite.__init__() for more info...
+
+            Args:
+                suite (SSTTestSuite): The suites to be split up.
+        """
         tests = list(iterate_tests(suite))
         return tests
 
@@ -197,6 +207,11 @@ class TestEngine():
 
     def _validate_python_version(self):
         """ Validate that we are running on a supported Python version.
+
+            Will Fatal error out if version is correct.
+
+            Returns:
+                tuple of version info
         """
         ver = sys.version_info
         # Check for Py2.x or Py3.x Versions
@@ -219,8 +234,7 @@ class TestEngine():
 ####
 
     def _parse_arguments(self):
-        """ Parse the cmd line arguments
-        """
+        """ Parse the cmd line arguments."""
         # Build a parameter parser, adjust its help based upon the test type
         helpdesc = HELP_DESC.format(self._test_type_str)
         parser = argparse.ArgumentParser(description=helpdesc,
@@ -297,7 +311,9 @@ class TestEngine():
 ####
 
     def _decode_parsed_arguments(self, args, parser):
-        """ Decode the parsed arguments into their class or global variables
+        """ Decode the parsed arguments into their class or global variables.
+
+            Args:
             :param: args = The arguments from the cmd line parser
             :param: parser = The parser in case help need to be printed.
         """
@@ -351,6 +367,7 @@ class TestEngine():
 ####
 
     def _display_startup_info(self):
+        """ Display the Test Engine Startup Information"""
 
         ver = sys.version_info
         concurrent_txt = ""
@@ -424,8 +441,7 @@ class TestEngine():
 ####
 
     def _create_all_output_directories(self):
-        """ Create the output directories if needed
-        """
+        """ Create the output directories if needed"""
         top_dir = test_engine_globals.TESTOUTPUT_TOPDIRPATH
         run_dir = test_engine_globals.TESTOUTPUT_RUNDIRPATH
         tmp_dir = test_engine_globals.TESTOUTPUT_TMPDIRPATH
@@ -520,8 +536,10 @@ class TestEngine():
 
     def _create_core_config_parser(self):
         """ Create an Core Configurtion (INI format) parser.  This will allow
-            us to search the Core configuration looking for test file paths
-            :return: An ConfParser.RawConfigParser object
+            us to search the Core configuration looking for test file paths.
+
+            Returns:
+               An ConfParser.RawConfigParser object
         """
         # ID the path to the sst configuration file
         core_conf_file_dir = self._sst_core_bin_dir + "/../etc/sst/"
@@ -548,8 +566,10 @@ class TestEngine():
 
     def _build_core_config_include_defs_dict(self):
         """ Create a dictionary of settings fromt he sst_config.h.  This will
-            allow us to search the includes that the core provides
-            :return: A dict object of defines from the
+            allow us to search the includes that the core provides.
+
+            Returns:
+                A dict object of defines from the sst_config.h file.
         """
         # ID the path to the sst configuration file
         core_conf_include_dir = self._sst_core_bin_dir + "/../include/sst/core/"
@@ -584,9 +604,13 @@ class TestEngine():
 ###
 
     def _build_list_of_testsuite_dirs(self):
-        """ Using a config file parser, build a list of test Suite Dirs.
+        """ Using a config file parser, build a list of Test Suite Dirs.
+
             Note: The discovery method of Test Suites is different
-                  depending if we are testing core vs registered elements.
+                  depending if we are testing Core vs Registered Elements.
+
+            Returns:
+                (list of str) List of Test Suite directories
         """
         final_rtn_paths = []
         testsuite_paths = []
@@ -629,8 +653,13 @@ class TestEngine():
 
     def _create_output_dir(self, out_dir):
         """ Look to see if an output dir exists.  If not, try to create it
-            :param: out_dir = The path to the output directory
-            :return: True if output dir is created (did not exist); else False
+            :param: out_dir = The path to the output directory.
+
+            Args:
+                out_dir (str): The output directory
+
+            Returns:
+                (bool) True if output dir is created (did not exist); else False
         """
         # Is there an directory already existing
         if not os.path.isdir(out_dir):
@@ -647,8 +676,11 @@ class TestEngine():
 ####
 
     def _dump_testsuite_list(self, suite, log_normal=False):
-        """ Recursively log all tests in a TestSuite
-            :param: The current suite to print
+        """ Recursively log all tests in a TestSuite.
+
+            Args:
+                suite (SSTTestSuite): The current suite to print
+                log_normal (bool): True = Log normaly; False = Use log_debug
         """
         if hasattr(suite, '__iter__'):
             for sub_suite in suite:

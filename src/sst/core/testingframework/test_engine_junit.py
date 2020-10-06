@@ -62,17 +62,17 @@ except NameError:  # pragma: nocover
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 if PY3:
-    def iteritems(_d, **kw):
+    def _iteritems(_d, **kw):
         """ Py3 iteritems() """
         return iter(_d.items(**kw))
-    def u(_s):
+    def _u(_s):
         """ Py3 u() """
         return _s
 else:
-    def iteritems(_d, **kw):
+    def _iteritems(_d, **kw):
         """ Py2 iteritems() """
         return _d.iteritems(**kw)
-    def u(_s):
+    def _u(_s):
         """ Py2 u() """
         return unicode(_s.replace(r'\\', r'\\\\'), "unicode_escape")
 
@@ -149,8 +149,12 @@ class JUnitTestSuite(object):
         """
         Builds the XML document for the JUnit test suite.
         Produces clean unicode strings and decodes non-unicode with the help of encoding.
-        @param encoding: Used to decode encoded strings.
-        @return: XML document with unicode string elements
+
+        Args:
+            encoding: Used to decode encoded strings.
+
+        Returns:
+            XML document with unicode string elements
         """
 
         # build the test suite element
@@ -405,7 +409,7 @@ def junit_to_xml_report_string(test_suites, prettyprint=True, encoding=None):
         for key in ["time"]:
             attributes[key] += float(ts_xml.get(key, 0))
         xml_element.append(ts_xml)
-    for key, value in iteritems(attributes):
+    for key, value in _iteritems(attributes):
         xml_element.set(key, str(value))
 
     # Add the name of the testing Frameworks
@@ -496,5 +500,5 @@ def _junit_clean_illegal_xml_chars(string_to_clean):
     illegal_ranges = ["%s-%s" % (unichr(low), unichr(high)) for \
         (low, high) in illegal_unichrs if low < sys.maxunicode]
 
-    illegal_xml_re = re.compile(u("[%s]") % u("").join(illegal_ranges))
+    illegal_xml_re = re.compile(_u("[%s]") % _u("").join(illegal_ranges))
     return illegal_xml_re.sub("", string_to_clean)
