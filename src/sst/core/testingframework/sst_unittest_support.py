@@ -810,11 +810,12 @@ def os_simple_command(os_cmd, run_dir=None):
     rtn_data = (rtn.result(), rtn.output())
     return rtn_data
 
-def os_ls(directory="."):
+def os_ls(directory=".", echo_out=True):
     """ Perform an simple ls -lia shell command and dump output to screen.
 
         Args:
             directory (str): Directory to run in [.]
+            echo_out (bool): echo output to console [True]
 
         Returns:
             (str) Output from ls command
@@ -822,21 +823,26 @@ def os_ls(directory="."):
     check_param_type("directory", directory, str)
     cmd = "ls -lia {0}".format(directory)
     rtn = OSCommand(cmd).run()
-    log("{0}".format(rtn.output()))
+    if echo_out:
+        log("{0}".format(rtn.output()))
     return rtn.output()
 
-def os_pwd():
+def os_pwd(echo_out=True):
     """ Perform an simple pwd shell command and dump output to screen.
+
+        Args:
+            echo_out (bool): echo output to console [True]
 
         Returns:
             (str) Output from pwd command
     """
     cmd = "pwd"
     rtn = OSCommand(cmd).run()
-    log("{0}".format(rtn.output()))
+    if echo_out:
+        log("{0}".format(rtn.output()))
     return rtn.output()
 
-def os_cat(filepath):
+def os_cat(filepath, echo_out=True):
     """ Perform an simple cat shell command and dump output to screen.
 
         Args:
@@ -848,7 +854,8 @@ def os_cat(filepath):
     check_param_type("filepath", filepath, str)
     cmd = "cat {0}".format(filepath)
     rtn = OSCommand(cmd).run()
-    log("{0}".format(rtn.output()))
+    if echo_out:
+        log("{0}".format(rtn.output()))
     return rtn.output()
 
 def os_symlink_file(srcdir, destdir, filename):

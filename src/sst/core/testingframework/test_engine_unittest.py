@@ -197,10 +197,10 @@ class SSTTextTestResult(unittest.TestResult):
         _terminal = Terminal()
         colours = {
             None: text_type,
-            'error': _terminal.bold_red,
+            'error': _terminal.bold_yellow,
             'expected': _terminal.green,
-            'fail': _terminal.bold_yellow,
-            'skip': text_type,
+            'fail': _terminal.bold_red,
+            'skip': _terminal.bold_blue,
             'success': _terminal.green,
             'title': _terminal.magenta,
             'unexpected': _terminal.bold_red,
@@ -367,7 +367,7 @@ class SSTTextTestResult(unittest.TestResult):
     def addSkip(self, test, reason):
         super(SSTTextTestResult, self).addSkip(test, reason)
         #log_forced("DEBUG - addSkip: Test = {0}, reason = {1}\n".format(test, reason))
-        self.printResult(test, 's', 'skipped {0!r}'.format(reason), 'skip')
+        self.printResult(test, 's', 'SKIPPED: {0!r}'.format(reason), 'skip')
 
         if not self._is_test_of_type_ssttestcase(test):
             return
@@ -381,7 +381,7 @@ class SSTTextTestResult(unittest.TestResult):
         #       since we are expecting a failure
         super(SSTTextTestResult, self).addExpectedFailure(test, err)
         #log_forced("DEBUG - addExpectedFailure: Test = {0}, err = {1}\n".format(test, err))
-        self.printResult(test, 'x', 'expected failure', 'expected')
+        self.printResult(test, 'x', 'EXPECTED FAILURE', 'expected')
         if not self._is_test_of_type_ssttestcase(test):
             return
         self.testsuitesresultsdict.add_expected_failure(test)
@@ -390,7 +390,7 @@ class SSTTextTestResult(unittest.TestResult):
         # NOTE: This is a failure, since we passed, but were expecting a failure
         super(SSTTextTestResult, self).addUnexpectedSuccess(test)
         #log_forced("DEBUG - addUnexpectedSuccess: Test = {0}\n".format(test))
-        self.printResult(test, 'u', 'unexpected success', 'unexpected')
+        self.printResult(test, 'u', 'UNEXPECTED SUCCESS', 'unexpected')
 
         if not self._is_test_of_type_ssttestcase(test):
             return
