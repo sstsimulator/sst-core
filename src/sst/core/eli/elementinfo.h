@@ -230,7 +230,6 @@ struct InfoLoader : public LibraryLoader {
 
 template <class Base> void InfoLibrary<Base>::addLoader(const std::string& elemlib, const std::string& elem,
                                                         BaseInfo* info){
-
    auto loader = new InfoLoader<Base,BaseInfo>(elemlib, elem, info);
    LoadedLibraries::addLoader(elemlib, elem, loader);
 }
@@ -255,6 +254,14 @@ struct InfoDatabase {
     static InfoLibrary<T>* getLibrary(const std::string& name){
         return InfoLibraryDatabase<T>::getLibrary(name);
     }
+};
+
+void force_instantiate_bool(bool b, const char* name);
+
+template <class T> struct ForceExport {
+  static bool ELI_isLoaded() {
+    return T::ELI_isLoaded();
+  }
 };
 
 } //namespace ELI
@@ -328,11 +335,40 @@ constexpr unsigned SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_
   bool ELI_isLoaded(); \
   SST_ELI_DEFAULT_INFO(lib,name,ELI_FORWARD_AS_ONE(version),desc)
 
+// The Intel compilers do not correctly instantiate symbols
+// even though they are required. We have to force the instantiation
+// in source files, header files are not good enough
+// we do this by creating a static bool that produces an undefined ref
+// if the instantiate macro is missing in a source file
+#ifdef __INTEL_COMPILER
+#define SST_ELI_FORCE_INSTANTIATION(base,cls) \
+  template <class T> \
+  struct ELI_ForceRegister { \
+    ELI_ForceRegister(){  \
+      bool b = SST::ELI::InstantiateBuilder<base,cls>::isLoaded() \
+        && SST::ELI::InstantiateBuilderInfo<base,cls>::isLoaded(); \
+      SST::ELI::force_instantiate_bool(b, #cls); \
+    } \
+  }; \
+  ELI_ForceRegister<cls> force_instantiate;
+// if the implementation is entirely in a C++ file
+// the Intel compiler will not generate any code because
+// it none of the symbols can be observed by other files
+// this forces the Intel compiler to export symbols self-contained in a C++ file
+#define SST_ELI_EXPORT(cls) \
+  template class SST::ELI::ForceExport<cls>;
+#else
+#define SST_ELI_FORCE_INSTANTIATION(base,cls)
+#define SST_ELI_EXPORT(cls)
+#endif
+
+
 #define SST_ELI_REGISTER_DERIVED(base,cls,lib,name,version,desc) \
-  bool ELI_isLoaded() { \
+  static bool ELI_isLoaded() { \
     return SST::ELI::InstantiateBuilder<base,cls>::isLoaded() \
       && SST::ELI::InstantiateBuilderInfo<base,cls>::isLoaded(); \
   } \
+  SST_ELI_FORCE_INSTANTIATION(base,cls) \
   SST_ELI_DEFAULT_INFO(lib,name,ELI_FORWARD_AS_ONE(version),desc)
 
 #define SST_ELI_REGISTER_EXTERN(base,cls) \
