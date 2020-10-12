@@ -25,10 +25,13 @@ import multiprocessing
 import tarfile
 import shutil
 
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+
 # ConfigParser module changes name between Py2->Py3
-try:
+if PY3:
     import configparser
-except ImportError:
+else:
     import ConfigParser as configparser
 
 import test_engine_globals
@@ -36,9 +39,6 @@ from test_engine_support import OSCommand
 from test_engine_support import check_param_type
 
 ################################################################################
-
-PY2 = sys.version_info[0] == 2
-PY3 = sys.version_info[0] == 3
 
 OS_DIST_OSX = "OSX"
 OS_DIST_CENTOS = "CENTOS"

@@ -21,15 +21,50 @@ import traceback
 import threading
 from datetime import datetime
 
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
+PY3_4_Plus = sys.version_info[1] >= 4
+
+################################################################################
+
+def check_module_conditional_import(module_name):
+    """ Test to see if we can import a module
+
+        See: https://stackoverflow.com/questions/14050281/how-to-check-if-a-python-module-exists-without-importing-it
+
+        Args:
+            module_name (str): Module to be imported
+
+        Returns:
+            True if module is loadable
+    """
+    if PY2:
+        import imp
+        try:
+            imp.find_module(module_name)
+            return True
+        except ImportError:
+            return False
+    else:
+        import importlib
+        if not PY3_4_Plus:
+            avail = importlib.find_loader(module_name)
+            return avail is not None
+        else:
+            avail = importlib.util.find_spec(module_name)
+            return avail is not None
+
+################################################################################
+
 # See if we can import some optional modules
-try:
+blessings_loaded = False
+if check_module_conditional_import('blessings'):
     import blessings
     from blessings import Terminal
     blessings_loaded = True
-except ImportError:
-    blessings_loaded = False
 
-try:
+pygments_loaded = False
+if check_module_conditional_import('pygments'):
     import pygments
     from pygments import formatters, highlight
     pygments_loaded = True
@@ -39,25 +74,23 @@ try:
     except NameError:
         # Python 3
         from pygments.lexers import Python3TracebackLexer as Lexer
-except ImportError:
-    pygments_loaded = False
 
 # Queue module changes name between Py2->Py3
-try:
-    import Queue
-    Queue = Queue.Queue
-except ImportError:
+if PY3:
     import queue
     Queue = queue.Queue
+else:
+    import Queue
+    Queue = Queue.Queue
 
 # Try to import testtools (this may not be installed on system)
-try:
+if check_module_conditional_import('testtools'):
     import testtools
     from testtools.testsuite import ConcurrentTestSuite
     from testtools.testsuite import iterate_tests
     TestSuiteBaseClass = ConcurrentTestSuite
-except ImportError:
-    # If we fail to import, just trick the system to use unittest.TestSuite
+else:
+    # If testtools not available, just trick the system to use unittest.TestSuite
     # This allows us to continue, but not support concurrent testing
     TestSuiteBaseClass = unittest.TestSuite
 
@@ -83,9 +116,7 @@ def verify_concurrent_test_engine_available():
         concurrent testing.
     """
     if test_engine_globals.TESTENGINE_CONCURRENTMODE:
-        try:
-            import testtools
-        except ImportError:
+        if not check_module_conditional_import('testtools'):
             errmsg = ("Test Frameworks Cannot Run Concurrently - ") + \
                      ("User must perform 'pip install testtools'")
             log_fatal(errmsg)

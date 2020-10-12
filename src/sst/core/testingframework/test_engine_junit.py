@@ -48,13 +48,6 @@ import re
 import xml.etree.ElementTree as ET
 import xml.dom.minidom
 
-try:
-    # Python 2
-    unichr
-except NameError:  # pragma: nocover
-    # Python 3
-    unichr = chr
-
 #from six import u, iteritems, PY2
 # The orig code uses 3rd party module "six".
 # We dont want any external modules, so
@@ -62,6 +55,7 @@ except NameError:  # pragma: nocover
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 if PY3:
+    unichr = chr
     def _iteritems(_d, **kw):
         """ Py3 iteritems() """
         return iter(_d.items(**kw))
@@ -69,6 +63,7 @@ if PY3:
         """ Py3 u() """
         return _s
 else:
+    unichr
     def _iteritems(_d, **kw):
         """ Py2 iteritems() """
         return _d.iteritems(**kw)
