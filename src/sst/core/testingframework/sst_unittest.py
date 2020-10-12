@@ -335,14 +335,16 @@ class SSTTestCase(unittest.TestCase):
                    (" Num Cores:{3}) = {4}")).format(final_wd, num_ranks, num_threads,
                                                      num_cores, oscmd))
 
+        # Check for OpenMPI
+        if num_ranks > 1 and mpi_avail is False:
+            log_fatal("OpenMPI IS NOT FOUND/AVAILABLE")
+
         # Launch SST
+        rtn = OSCommand(oscmd, output_file_path = out_file,
+                        error_file_path = err_file,
+                        set_cwd = set_cwd).run(timeout_sec=timeout_sec)
         if num_ranks > 1:
-            if mpi_avail is False:
-                log_fatal("OpenMPI IS NOT FOUND/AVAILABLE")
-            rtn = OSCommand(oscmd, out_file, err_file, set_cwd).run(timeout_sec=timeout_sec)
             testing_merge_mpi_files("{0}*".format(mpiout_filename), mpiout_filename, out_file)
-        else:
-            rtn = OSCommand(oscmd, out_file, err_file, set_cwd).run(timeout_sec=timeout_sec)
 
         # Look for runtime error conditions
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
