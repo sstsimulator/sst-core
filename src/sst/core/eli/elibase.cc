@@ -33,12 +33,15 @@ LoadedLibraries::addLoader(const std::string& lib, const std::string& name,
     loaders_ = std::unique_ptr<LibraryMap>(new LibraryMap);
   }
   (*loaders_)[lib][name].push_back(loader);
-    return true;
+  return true;
 }
 
 const LoadedLibraries::LibraryMap&
 LoadedLibraries::getLoaders(){
-    return *loaders_;
+  if (!loaders_){
+    loaders_ = std::unique_ptr<LibraryMap>(new LibraryMap);
+  }
+  return *loaders_;
 }
 
 bool
