@@ -180,6 +180,7 @@ Under normal operation, testsuites are automatically discovered (from registered
           * `Makefile.inc` - Provides rules for the configure/make system on how to install the test frameworks
           * `sst_unittest.py` - The main python class (derived from python's unittest) for the testsuites to be created from.
           * `sst_unittest_support.py` - Support classes/functions for testsuites to help testsuites operate
+          * `sst_unittest_parameterized.py` - Support for parameterized testcases.  See (https://github.com/wolever/parameterized)
           * `test_engine.py` - The main testing frameworks engine.  This provides the entry point for discovery and running testsuites.
           * `test_engine_globals.py` - Globals used by the testing frameworks
           * `test_engine_support.py` - Support classes/functions used by the testing frameworks

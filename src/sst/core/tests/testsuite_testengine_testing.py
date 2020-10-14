@@ -72,8 +72,12 @@ class testcase_testengine_testing_frameworks_operation(SSTTestCase):
         log_forced("NOTE: This Test is Marked as an 'Expected Error', but should PASS (1 = 1);  and should show as 'UNEXPECTED SUCCESS'")
         self.assertEqual(1,  1)
 
-    @unittest.skip("NOTE: This Test Has an Expected Skip and should show as 'SKIPPED'")
-    def test_frameworks_operation_skipping(self):
+    @unittest.skip("NOTE: Skip Test 1 - This Test Has an Expected Skip and should show as 'SKIPPED'")
+    def test_frameworks_operation_skipping1(self):
+        self.assertEqual(1 / 0, 1)
+
+    def test_frameworks_operation_skipping2(self):
+        self.skipTest("NOTE: Skip Test 2 - This Test Has an Expected Skip and should show as 'SKIPPED'")
         self.assertEqual(1 / 0, 1)
 
     def test_frameworks_operation_run_timeout_success(self):
