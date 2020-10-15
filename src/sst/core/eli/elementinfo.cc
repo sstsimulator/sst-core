@@ -20,6 +20,8 @@ namespace SST {
 **************************************************************************/
 namespace ELI {
 
+void force_instantiate_bool(bool b, const char* name){}
+
 static const std::vector<int> SST_ELI_COMPILED_VERSION = {0, 9, 0};
 
 std::string

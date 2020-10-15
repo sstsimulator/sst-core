@@ -520,6 +520,20 @@ struct ImplementsStatFields {
   static const char* ELI_fieldShortName(){ return #field; }
 
 
+#ifdef __INTEL_COMPILER
+#define SST_ELI_INSTANTIATE_STATISTIC(cls,field) \
+  bool force_instantiate_##cls##_##field = \
+     SST::ELI::InstantiateBuilderInfo< \
+        SST::Statistics::Statistic<field>,cls<field>>::isLoaded() \
+         && SST::ELI::InstantiateBuilder< \
+        SST::Statistics::Statistic<field>,cls<field>>::isLoaded() \
+         && SST::ELI::InstantiateBuilderInfo< \
+        SST::Statistics::Statistic<field>, \
+        SST::Statistics::NullStatistic<field>>::isLoaded() \
+         && SST::ELI::InstantiateBuilder< \
+        SST::Statistics::Statistic<field>, \
+        SST::Statistics::NullStatistic<field>>::isLoaded();
+#else
 #define SST_ELI_INSTANTIATE_STATISTIC(cls,field) \
   struct cls##_##field##_##shortName : public cls<field> { \
     cls##_##field##_##shortName(SST::BaseComponent* bc, const std::string& sn, \
@@ -538,6 +552,7 @@ struct ImplementsStatFields {
         SST::Statistics::NullStatistic<field>>::isLoaded(); \
    } \
   };
+#endif
 
 
 #define PP_NARG(...) PP_NARG_(__VA_ARGS__, PP_NSEQ())
@@ -556,6 +571,22 @@ struct ImplementsStatFields {
 #define STAT_GLUE_NAME(base,...) PP_GLUE(STAT_NAME,PP_NARG(__VA_ARGS__))(base,__VA_ARGS__)
 #define STAT_TUPLE(...) std::tuple<__VA_ARGS__>
 
+#ifdef __INTEL_COMPILER
+#define MAKE_MULTI_STATISTIC(cls,name,tuple,...) \
+  bool force_instantiate_stat_name = \
+     SST::ELI::InstantiateBuilderInfo< \
+        SST::Statistics::Statistic<tuple>,cls<__VA_ARGS__>>::isLoaded() \
+    && SST::ELI::InstantiateBuilder< \
+        SST::Statistics::Statistic<tuple>,cls<__VA_ARGS__>>::isLoaded() \
+    && SST::ELI::InstantiateBuilderInfo< \
+        SST::Statistics::Statistic<tuple>, \
+        SST::Statistics::NullStatistic<tuple>>::isLoaded() \
+    && SST::ELI::InstantiateBuilder< \
+        SST::Statistics::Statistic<tuple>, \
+        SST::Statistics::NullStatistic<tuple>>::isLoaded(); \
+    } \
+  };
+#else
 #define MAKE_MULTI_STATISTIC(cls,name,tuple,...) \
   struct name : public cls<__VA_ARGS__> { \
     name(SST::BaseComponent* bc, const std::string& sn, \
@@ -574,6 +605,7 @@ struct ImplementsStatFields {
         SST::Statistics::NullStatistic<tuple>>::isLoaded(); \
     } \
   };
+#endif
 
 #define SST_ELI_INSTANTIATE_MULTI_STATISTIC(cls,...) \
   MAKE_MULTI_STATISTIC(cls,STAT_GLUE_NAME(cls,__VA_ARGS__),STAT_TUPLE(__VA_ARGS__),__VA_ARGS__)
