@@ -133,7 +133,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
 
         if not blessings_loaded or not pygments_loaded:
             log_info(("Full colorized output can be obtained by running") +
-                     (" 'pip install blessings pygments'"))
+                     (" 'pip install blessings pygments'"), forced=False)
 
         log("\n=== TESTS STARTING " + ("=" * 51))
 
