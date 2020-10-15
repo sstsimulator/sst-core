@@ -40,11 +40,11 @@ endif
 
 EXTRA_DIST += \
     README \
-    tests/testsuite_ParamComponent.py \
-    tests/testsuite_Component.py \
-    tests/testsuite_RNGComponent.py \
-    tests/testsuite_SubComponent.py \
-    tests/testsuite_SubComponentLegacy.py \
+    tests/testsuite_default_Component.py
+    tests/testsuite_default_RNGComponent.py
+    tests/testsuite_default_SubComponent.py
+    tests/testsuite_default_UnitAlgebra.py
+    tests/testsuite_testengine_testing.py
     tests/test_ParamComponent.py \
     tests/test_Component.py \
     tests/test_ClockerComponent.py \
@@ -53,6 +53,8 @@ EXTRA_DIST += \
     tests/test_DistribComponent_gaussian.py \
     tests/test_DistribComponent_poisson.py \
     tests/test_LookupTable.py \
+    tests/test_LookupTable2.py
+    tests/test_RNGComponent.py
     tests/test_RNGComponent_mersenne.py \
     tests/test_RNGComponent_marsaglia.py \
     tests/test_RNGComponent_xorshift.py \
@@ -60,6 +62,9 @@ EXTRA_DIST += \
     tests/test_MessageGeneratorComponent.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
+    tests/test_UnitAlgebra.py
+    tests/test_TracerComponent_1.py
+    tests/test_TracerComponent_2.py
     tests/refFiles/test_Component.out \
     tests/refFiles/test_DistribComponent_discrete.out \
     tests/refFiles/test_DistribComponent_expon.out \
@@ -72,6 +77,7 @@ EXTRA_DIST += \
     tests/refFiles/test_StatisticsComponent.out \
     tests/refFiles/test_SubComponent_2.out \
     tests/refFiles/test_SubComponent.out \
+    tests/refFiles/test_UnitAlgebra.out
     tests/subcomponent_tests/test_sc_2a.py \
     tests/subcomponent_tests/test_sc_2u2u.py \
     tests/subcomponent_tests/test_sc_2u.py \
