@@ -15,6 +15,7 @@
     functions
 """
 
+import sys
 import os
 import subprocess
 import threading
@@ -22,6 +23,9 @@ import traceback
 import shlex
 import ast
 import inspect
+
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
 
 import test_engine_globals
 
@@ -221,13 +225,19 @@ class OSCommandResult():
 
     def output(self):
         """ return the run output result """
-        return self._run_output.decode('utf-8')
+        if PY3:
+            return self._run_output
+        else:
+            return self._run_output.decode('utf-8')
 
 ####
 
     def error(self):
         """ return the run error output result """
-        return self._run_error.decode('utf-8')
+        if PY3:
+            return self._run_error
+        else:
+            return self._run_error.decode('utf-8')
 
 ####
 

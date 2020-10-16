@@ -38,6 +38,9 @@ install-exec-hook:
 endif
 
 EXTRA_DIST += \
+	testingframework/__init__.py \
+	testingframework/readme.md \
+	testingframework/sst-test-core \
 	testingframework/sst-test-core \
 	testingframework/sst-test-elements \
 	testingframework/sst_test_engine_loader.py \
@@ -48,4 +51,16 @@ EXTRA_DIST += \
 	testingframework/test_engine_globals.py \
 	testingframework/test_engine_support.py \
 	testingframework/test_engine_junit.py \
-	testingframework/test_engine_unittest.py
+	testingframework/test_engine_unittest.py \
+	testingframework/build_docs.sh \
+	testingframework/pdoc_template/text.mako \
+	testingframework/pdoc_template/search.mako \
+	testingframework/pdoc_template/pdf.mako \
+	testingframework/pdoc_template/logo.mako \
+	testingframework/pdoc_template/html.mako \
+	testingframework/pdoc_template/head.mako \
+	testingframework/pdoc_template/css.mako \
+	testingframework/pdoc_template/credits.mako \
+	testingframework/pdoc_template/config.mako \
+	testingframework/pdoc_template/_lunr_search.inc.mako \
+	testingframework/pdoc_template/SSTLogo.png

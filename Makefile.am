@@ -19,3 +19,4 @@ EXTRA_DIST = \
 	README.md \
 	VERSION
 
+include tests/Makefile.inc
