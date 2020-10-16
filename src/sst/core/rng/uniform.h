@@ -36,52 +36,54 @@ class SSTUniformDistribution : public SSTRandomDistribution {
             \param probsCount Number of probability bins in this distribution
         */
         SSTUniformDistribution(const uint32_t probsCount) :
-        SSTRandomDistribution(),
-    probCount(probsCount) {
+        	SSTRandomDistribution(), probCount(probsCount), deleteDistrib(true) {
 
-        baseDistrib = new MersenneRNG();
-        deleteDistrib = true;
-    }
+		if( probCount > 0 ) {
+			probPerBin = 1.0 / static_cast<double>( probCount );
+		}
 
-    /**
-        Creates a Uniform distribution with a specific number of bins and user supplied
-    random number generator
-        \param probsCount Number of probability bins in the distribution
-        \param baseDist The base random number generator to take the distribution from.
-    */
-    SSTUniformDistribution(const uint32_t probsCount, SSTRandom* baseDist) :
-    SSTRandomDistribution(),
-    probCount(probsCount) {
+        	baseDistrib = new MersenneRNG();
+    	}
 
-        baseDistrib = baseDist;
-        deleteDistrib = false;
-    }
+    	/**
+	        Creates a Uniform distribution with a specific number of bins and user supplied
+	    	random number generator
+	        \param probsCount Number of probability bins in the distribution
+        	\param baseDist The base random number generator to take the distribution from.
+    	*/
+    	SSTUniformDistribution(const uint32_t probsCount, SSTRandom* baseDist) :
+   		SSTRandomDistribution(), probCount(probsCount), deleteDistrib(false) {
+
+		if( probCount > 0 ) {
+			probPerBin = 1.0 / static_cast<double>( probCount );
+		}
+
+        	baseDistrib = baseDist;
+    	}
 
         /**
             Destroys the distribution and will delete locally allocated RNGs
         */
-    ~SSTUniformDistribution() {
-        if(deleteDistrib) {
-            delete baseDistrib;
-        }
-    }
+    	~SSTUniformDistribution() {
+        	if(deleteDistrib) {
+	            delete baseDistrib;
+        	}
+    	}
 
-    /**
-    Gets the next (random) double value in the distribution
-    \return The next random double from the distribution, this is the double converted of the index where the probability is located
-    */
-    double getNextDouble() {
-        const double nextD = baseDistrib->nextUniform();
-    const double probPerBin = 1.0 / (double)(probCount);
+    	/**
+	    Gets the next (random) double value in the distribution
+	    \return The next random double from the distribution, this is the double converted of the index where the probability is located
+    	*/
+    	double getNextDouble() {
+        	const double nextD = baseDistrib->nextUniform();
+		uint32_t current_bin = 1;
 
-    for(uint32_t i = 0; i < probCount; ++i) {
-        if(nextD < ( ((double) i) * probPerBin )) {
-            return i;
-        }
-    }
+		while( nextD > ( static_cast<double>( current_bin ) * probPerBin ) ) {
+			current_bin++;
+		}
 
-    return probCount;
-    }
+		return static_cast<double>( current_bin - 1 );
+    	}
 
     protected:
         /**
@@ -92,12 +94,17 @@ class SSTUniformDistribution : public SSTRandomDistribution {
         /**
             Controls whether the base distribution should be deleted when this class is destructed.
         */
-        bool deleteDistrib;
+        const bool deleteDistrib;
 
         /**
             Count of discrete probabilities
         */
-        uint32_t probCount;
+        const uint32_t probCount;
+
+	/**
+	    Range 0..1 split into discrete bins
+	*/
+	double probPerBin;
 
 };
 
