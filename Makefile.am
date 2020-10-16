@@ -18,4 +18,5 @@ EXTRA_DIST = \
 	PLATFORMS \
 	README.md \
 	VERSION
-	
+
+include tests/Makefile.inc

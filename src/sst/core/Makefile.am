@@ -314,6 +314,8 @@ include tinyxml/Makefile.inc
 include part/Makefile.inc
 include model/Makefile.inc
 include impl/Makefile.inc
+include testingframework/Makefile.inc
+include testElements/Makefile.inc
 
 if !SST_ENABLE_PREVIEW_BUILD
 nobase_dist_sst_HEADERS += $(deprecated_nobase_dist_sst_headers)

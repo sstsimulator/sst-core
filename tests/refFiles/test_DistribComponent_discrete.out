@@ -1,0 +1,9 @@
+WARNING: Building component "d0" with no links assigned.
+Will create discrete distribution with 5 probabilities.
+Bin:
+100 10001050
+200 30008610
+300 34988384
+400 15002217
+500 9999739
+Simulation is complete, simulated time: 100 ms
