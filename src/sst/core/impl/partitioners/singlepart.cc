@@ -23,9 +23,9 @@ using namespace SST::IMPL::Partition;
 
 SSTSinglePartition::SSTSinglePartition(RankInfo UNUSED(total_ranks), RankInfo UNUSED(my_rank), int UNUSED(verbosity)) {}
 
-void SSTSinglePartition::performPartition(PartitionGraph* graph) {
+void SSTSinglePartition::performPartition(ConfigGraph* graph) {
 
-    PartitionComponentMap_t& compMap = graph->getComponentMap();
+    ConfigComponentMap_t& compMap = graph->getComponentMap();
 
     for(auto compItr = compMap.begin(); compItr != compMap.end(); compItr++) {
         compItr->rank = RankInfo(0,0);

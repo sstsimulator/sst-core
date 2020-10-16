@@ -29,11 +29,28 @@ using namespace std;
 
 namespace SST {
 
+static bool zero_latency_warning = false;
 
 void ConfigLink::updateLatencies(TimeLord *timeLord)
 {
     latency[0] = timeLord->getSimCycles(latency_str[0], __FUNCTION__);
+    if ( latency[0] == 0 ) {
+        latency[0] = 1;
+        if ( !zero_latency_warning ) {
+            Output::getDefaultObject().output("WARNING: Found zero latency link.  Setting all zero latency links to a latency of %s\n",
+                                              Simulation::getTimeLord()->getTimeBase().toStringBestSI().c_str());
+            zero_latency_warning = true;
+        }
+    }
     latency[1] = timeLord->getSimCycles(latency_str[1], __FUNCTION__);
+    if ( latency[1] == 0 ) {
+        latency[1] = 1;
+        if ( !zero_latency_warning ) {
+            Output::getDefaultObject().output("WARNING: Found zero latency link.  Setting all zero latency links to a latency of %s\n",
+                                              Simulation::getTimeLord()->getTimeBase().toStringBestSI().c_str());
+            zero_latency_warning = true;
+        }
+    }
 }
 
 
@@ -904,45 +921,42 @@ ConfigGraph::getCollapsedPartitionGraph()
     PartitionComponentMap_t& pcomps = graph->getComponentMap();
     PartitionLinkMap_t& plinks = graph->getLinkMap();
 
+
+    // Mark all Components as not visited
+    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) it->visited = false;
+
     // SparseVectorMap is slow for random inserts, so make sure we
     // insert both components and links in order of ID, which is the
     // key for the SparseVectorMap in both cases
     ComponentIdMap_t group;
     for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
-        const ConfigComponent& comp = *it;
-
+        if ( it->visited ) continue;
         // Get the no-cut group for this component
         group.clear();
         getConnectedNoCutComps(it->id,group);
 
+        ComponentId_t id = pcomps.size();
+        pcomps.insert(PartitionComponent(id));
+        PartitionComponent& pcomp = pcomps[id];
 
-        // Check to see if this has already been put in map.  Do this
-        // by seeing if the first item in the connected components is
-        // the current ID.  If not, then it's already in the list.
-        if ( *group.begin() == comp.id ) {
-            ComponentId_t id = pcomps.size();
-            pcomps.insert(PartitionComponent(id));
-            PartitionComponent& pcomp = pcomps[id];
+        // Iterate over the group and add the weights and add any
+        // links that connect outside the group
+        for ( ComponentIdMap_t::const_iterator i = group.begin(); i != group.end(); ++i ) {
+            const ConfigComponent& comp = comps[*i];
+            // Compute the new weight
+            pcomp.weight += comp.weight;
+            pcomp.group.insert(comp.id);
 
-            // Iterate over the group and add the weights and add any
-            // links that connect outside the group
-            for ( ComponentIdMap_t::const_iterator i = group.begin(); i != group.end(); ++i ) {
-                const ConfigComponent& comp = comps[*i];
-                // Compute the new weight
-                pcomp.weight += comp.weight;
-                pcomp.group.insert(comp.id);
+            // Walk through all the links and insert the ones that connect
+            // outside the group
+            for ( LinkId_t id : comp.allLinks() ) {
+                const ConfigLink& link = links[id];
 
-                // Walk through all the links and insert the ones that connect
-                // outside the group
-                for ( LinkId_t id : comp.allLinks() ) {
-                    const ConfigLink& link = links[id];
-
-                    if ( !group.contains(COMPONENT_ID_MASK(link.component[0])) || !group.contains(COMPONENT_ID_MASK(link.component[1]) ) ) {
-                        pcomp.links.push_back(link.id);
-                    }
-                    else {
-                        deleted_links.insert(link.id);
-                    }
+                if ( !group.contains(COMPONENT_ID_MASK(link.component[0])) || !group.contains(COMPONENT_ID_MASK(link.component[1]) ) ) {
+                    pcomp.links.push_back(link.id);
+                }
+                else {
+                    deleted_links.insert(link.id);
                 }
             }
         }
@@ -992,6 +1006,7 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group
 
     // First, get the component
     ConfigComponent& comp = comps[start];
+    comp.visited = true;
 
     for ( LinkId_t id : comp.allLinks() ) {
         ConfigLink& link = links[id];
