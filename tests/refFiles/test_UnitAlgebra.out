@@ -1,0 +1,85 @@
+Simple math operations:
+15 ns + 10 ns = 25 ns
+15 ns - 10 ns = 5 ns
+15 ns * 10 ns = 150 as-s
+15 ns / 10 ns = 1.5 
+
+In-place math operations:
+executing the following for each operator:
+ua1 = UnitAlgebra("15ns")
+ua2 = UnitAlgebra("10ns")
+ua3 = ua1
+ua4 = ua3
+ua3 op= ua2
+print(ua3)  -- should have the result of operation
+print(ua4)  -- should be unchanged
+
+Addition:
+25 ns
+15 ns
+Subtraction:
+5 ns
+15 ns
+Multiplication:
+150 as-s
+15 ns
+Division:
+1.5 
+15 ns
+Exception correctly thrown for wrong operand type passed to math operation (+,-,*,/) as second argument
+Exception correctly thrown for wrong operand type passed to math operation (+,-,*,/) as first argument
+
+Comparison functions:
+10 ns > 10 ns = False
+10 ns >= 10 ns = True
+10 ns < 10 ns = False
+10 ns <= 10 ns = True
+10 ns == 10 ns = True
+10 ns != 10 ns = False
+
+10 ns > 15 ns = False
+10 ns >= 15 ns = False
+10 ns < 15 ns = True
+10 ns <= 15 ns = True
+10 ns == 15 ns = False
+10 ns != 15 ns = True
+
+Correctly got exception when comparing against invalid operand type as second argument
+Correctly got exception when comparing against invalid operand type as first argument
+Correctly got exception when checking equals against invalid operand type as second argument
+Correctly got exception when checking equals against invalid operand type as first argument
+Correctly got exception when checking not equals against invalid operand type as second argument
+Correctly got exception when checking not equals against invalid operand type as first argument
+
+Conversion to int:
+'1 GHz' to long = 1000000000
+'1 GHz'.getRoundedValue() = 1000000000
+
+Conversion to float:
+'1.77 s' to float = 1.770000
+'1.77 s'.getFloatValue() = 1.770000
+
+Conversion to float:
+'1.77 s' to float = 1.770000
+'1.77 s'.getFloatValue() = 1.770000
+
+Conversion to bool:
+bool(0 s) = False
+bool(5 ns) = True
+
+isValueZero():
+'0 s'.isValueZero() = True
+'5 ns'.isValueZero() = False
+
+Negate:
+-10 ns = -10 ns
+
+Invert:
+'10 ns'.invert() = 100 MHz
+
+hasUnits():
+'10 ns'.hasUnits("ns") = True
+'10 ns'.hasUnits("s") = True
+'10 ns'.hasUnits("Hz") = False
+WARNING: No components are assigned to rank: 0.0
+Simulation is complete, simulated time: 0 s

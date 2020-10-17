@@ -79,6 +79,7 @@ AC_CHECK_PROG([DOXYGEN], [doxygen], [doxygen])
 AM_CONDITIONAL([HAVE_DOXYGEN], [test "$DOXYGEN" = "doxygen"])
 
 SST_CHECK_PREVIEW_BUILD()
+SST_ENABLE_TESTFRAMEWORK_DEV()
 
 SST_CHECK_OSX()
 SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
@@ -195,7 +196,7 @@ if test "x$SSTCORE_GIT_HEADSHA" != "x$PACKAGE_VERSION"; then
 printf "%38s : %s\n" "Git Branch" "$SSTCORE_GIT_BRANCH"
 printf "%38s : %s\n" "Git HEAD SHA" "$SSTCORE_GIT_HEADSHA"
 printf "%38s : %s\n" "Branch Commit Count" "$SSTCORE_GIT_COMMITCOUNT"
-else 
+else
 printf "%38s : %s\n" "Version" "SST-Core $PACKAGE_VERSION"
 fi
 printf "%38s : %s\n" "Prefix" "$prefix"
@@ -241,5 +242,5 @@ else
     printf "%38s : No\n" "libz compression library"
 fi
 
-echo "-------------------------------------------------------" 
+echo "-------------------------------------------------------"
 
