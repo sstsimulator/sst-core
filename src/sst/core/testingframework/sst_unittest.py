@@ -307,13 +307,14 @@ class SSTTestCase(unittest.TestCase):
         # Update the os launch command if we are running multi-rank
         num_cores = host_os_get_num_cores_on_system()
 
-        # Check to see if mpirun is available
+        # Perform any multi-rank checks/setup
         mpi_avail = False
-        rtn = os.system("which mpirun > /dev/null")
-        if rtn == 0:
-            mpi_avail = True
-
         if num_ranks > 1:
+            # Check to see if mpirun is available
+            rtn = os.system("which mpirun > /dev/null")
+            if rtn == 0:
+                mpi_avail = True
+
             numa_param = ""
             if 2 <= num_cores <= 4:
                 numa_param = "-map-by numa:pe=2 -oversubscribe"
