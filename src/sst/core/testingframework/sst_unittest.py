@@ -309,17 +309,14 @@ class SSTTestCase(unittest.TestCase):
 
         # Perform any multi-rank checks/setup
         mpi_avail = False
+        numa_param = ""
         if num_ranks > 1:
             # Check to see if mpirun is available
-            rtn = os.system("which mpirun > /dev/null")
+            rtn = os.system("which mpirun > /dev/null 2>&1")
             if rtn == 0:
                 mpi_avail = True
 
-            numa_param = ""
-            if 2 <= num_cores <= 4:
-                numa_param = "-map-by numa:pe=2 -oversubscribe"
-            elif num_cores >= 4:
-                numa_param = "-map-by numa:pe=2"
+            numa_param = "-map-by numa:PE={0}".format(num_threads)
 
             oscmd = "mpirun -np {0} {1} -output-filename {2} {3}".format(num_ranks,
                                                                          numa_param,
