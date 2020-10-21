@@ -426,9 +426,6 @@ main(int argc, char *argv[])
     double start_graph_gen = sst_get_cpu_time();
     graph = new ConfigGraph();
 
-    // Need to initialize TimeLord before we use UnitAlgebra
-    Simulation::getTimeLord()->init(cfg.timeBase);
-
     // Only rank 0 will populate the graph
     if ( myRank.rank == 0 ) {
         graph = modelGen->createConfigGraph();
@@ -440,6 +437,9 @@ main(int argc, char *argv[])
         Comms::broadcast(cfg, 0);
     }
 #endif
+
+    // Need to initialize TimeLord
+    Simulation::getTimeLord()->init(cfg.timeBase);
 
     if ( myRank.rank == 0 ) {
         graph->postCreationCleanup();
