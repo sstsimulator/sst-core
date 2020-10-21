@@ -667,10 +667,11 @@ def test_output_get_tmp_dir():
 ### Testing Support
 ################################################################################
 
-def testing_compare_diff(outfile, reffile, ignore_ws=False):
+def testing_compare_diff(test_name, outfile, reffile, ignore_ws=False):
     """ compare 2 files for a diff.
 
         Args:
+            test_name (str): Unique name to prefix the diff file.
             outfile (str): Path to the output file.
             reffile (str): Path to the reference file.
             ignore_ws (bool): ignore whitespace during the compare [False].
@@ -678,6 +679,7 @@ def testing_compare_diff(outfile, reffile, ignore_ws=False):
         Returns:
             (bool) True if the 2 files match.
     """
+    check_param_type("test_name", test_name, str)
     check_param_type("outfile", outfile, str)
     check_param_type("reffile", reffile, str)
     check_param_type("ignore_ws", ignore_ws, bool)
@@ -691,11 +693,13 @@ def testing_compare_diff(outfile, reffile, ignore_ws=False):
         log_error("Cannot diff files: Ref File {0} does not exist".format(reffile))
         return False
 
+    diff_file = "{1}/{0}_diff_file".format(test_name, test_output_get_tmp_dir())
+
     ws_flag = ""
     if ignore_ws:
         ws_flag = "-b "
 
-    cmd = "diff {0} {1} {2} > /dev/null 2>&1".format(ws_flag, outfile, reffile)
+    cmd = "diff {0} {1} {2} > {3}".format(ws_flag, outfile, reffile, diff_file)
     filesAreTheSame = (os.system(cmd) == 0)
 
     return filesAreTheSame
@@ -706,7 +710,7 @@ def testing_compare_sorted_diff(test_name, outfile, reffile):
     """ Sort and then compare 2 files for a difference.
 
         Args:
-            test_name (str): Unique name to prefix the 2 sorted files.
+            test_name (str): Unique name to prefix the diff file and 2 sorted files.
             outfile (str): Path to the output file
             reffile (str): Path to the reference file
 
@@ -727,16 +731,42 @@ def testing_compare_sorted_diff(test_name, outfile, reffile):
 
     sorted_outfile = "{1}/{0}_sorted_outfile".format(test_name, test_output_get_tmp_dir())
     sorted_reffile = "{1}/{0}_sorted_reffile".format(test_name, test_output_get_tmp_dir())
-    diff_sorted_file = "{1}/{0}_diff_sorted".format(test_name, test_output_get_tmp_dir())
+    diff_file = "{1}/{0}_diff_file".format(test_name, test_output_get_tmp_dir())
 
     os.system("sort -o {0} {1}".format(sorted_outfile, outfile))
     os.system("sort -o {0} {1}".format(sorted_reffile, reffile))
 
     # Use diff (ignore whitespace) to see if the sorted files are the same
-    cmd = "diff -b {0} {1} > {2}".format(sorted_outfile, sorted_reffile, diff_sorted_file)
+    cmd = "diff -b {0} {1} > {2}".format(sorted_outfile, sorted_reffile, diff_file)
     filesAreTheSame = (os.system(cmd) == 0)
 
     return filesAreTheSame
+
+###
+
+def testing_get_diff_data(test_name):
+    """ Return the diff data file from a regular diff. This should be used after
+        a call to testing_compare_sorted_diff() or testing_compare_diff() to
+        return the sorted diff data
+
+        Args:
+            test_name (str): Unique name used to generate the diff file.
+
+        Returns:
+            (str) The diff data file if it exists; otherwise an empty string
+    """
+    check_param_type("test_name", test_name, str)
+
+    diff_file = "{1}/{0}_diff_file".format(test_name, test_output_get_tmp_dir())
+
+    if not os.path.isfile(diff_file):
+        log_debug("diff_file {0} is not found".format(diff_file))
+        return ""
+
+    with open(diff_file, 'r') as file:
+        data = file.read()
+
+    return data
 
 ###
 
