@@ -438,7 +438,7 @@ main(int argc, char *argv[])
     }
 #endif
 
-    // Need to initialize TimeLord before we use UnitAlgebra
+    // Need to initialize TimeLord
     Simulation::getTimeLord()->init(cfg.timeBase);
 
     if ( myRank.rank == 0 ) {
