@@ -447,10 +447,6 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
 
             //TODO create an exception that prints the name of the stat and the component
             std::string statName = SST_ConvertToCppString(pyname);
-            if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(c->type, statName)){
-              PyErr_SetString(PyExc_LookupError, "unknown statistic name given to component");
-              return nullptr;
-            }
 
             c->enableStatistic(statName,apply_to_children);
 
