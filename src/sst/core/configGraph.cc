@@ -168,6 +168,8 @@ ConfigComponent::cloneWithoutLinks() const
     ret.params = params;
     ret.statLoadLevel = statLoadLevel;
     ret.enabledStatistics = enabledStatistics;
+    ret.enabledStatNames = enabledStatNames;
+    ret.enabledAllStats = enabledAllStats;
     ret.coords = coords;
     for ( auto &i : subComponents ) {
         ret.subComponents.emplace_back(i.cloneWithoutLinks());

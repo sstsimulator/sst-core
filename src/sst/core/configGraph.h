@@ -294,8 +294,8 @@ public:
         ser & params;
         ser & enabledStatNames;
         ser & enabledAllStats;
-        ser & statLoadLevel;
         ser & enabledStatistics;
+        ser & statLoadLevel;
         ser & subComponents;
         ser & coords;
         ser & nextSubID;
