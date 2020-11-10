@@ -977,7 +977,8 @@ def os_test_file(file_path, expression="-e"):
     if os.path.exists(file_path):
         cmd = "test {0} {1}".format(expression, file_path)
         rtn = OSCommand(cmd).run()
-        return rtn == 0
+        log_debug("Test cmd = {0}; rtn = {1}".format(cmd, rtn.result()))
+        return rtn.result() == 0
     else:
         log_error("File {0} does not exist".format(file_path))
         return False
