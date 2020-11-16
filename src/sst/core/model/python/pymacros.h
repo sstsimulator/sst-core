@@ -29,13 +29,16 @@
  #define SST_TP_RICH_COMPARE(x) x,
  #define SST_TP_AS_SYNC nullptr,
  #define SST_PY_INIT_MODULE(name, methods, moddef) PyModule_Create(&moddef)
- #if PY_MINOR_VERSION >= 8
-   #define SST_TP_VECTORCALL nullptr,
-   #define SST_TP_PRINT_DEP nullptr,
+ #if PY_MINOR_VERSION == 8
+    #define SST_TP_PRINT_DEP nullptr,
 //#define SST_TP_PRINT_DEP DISABLE_WARN_DEPRECATED_DECLARATION nullptr, REENABLE_WARNING
-#else
-   #define SST_TP_VECTORCALL
-   #define SST_TP_PRINT_DEP
+ #else
+    #define SST_TP_PRINT_DEP
+ #endif
+ #if PY_MINOR_VERSION >= 8
+    #define SST_TP_VECTORCALL nullptr,
+ #else
+    #define SST_TP_VECTORCALL
  #endif
 
 // Number protocol macros
