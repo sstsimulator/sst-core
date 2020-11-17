@@ -929,7 +929,10 @@ def os_awk_print(in_str, fields_index_list):
     if PY2:
         check_param_type("in_str", in_str, unicode)
     else:
-        check_param_type("in_str", in_str, str)
+        if isinstance(in_str, bytes):
+            check_param_type("in_str", in_str, bytes)
+        else:
+            check_param_type("in_str", in_str, str)
     check_param_type("fields_index_list", fields_index_list, list)
     for index, field_index in enumerate(fields_index_list):
         check_param_type("field_index - {0}".format(index), field_index, int)
