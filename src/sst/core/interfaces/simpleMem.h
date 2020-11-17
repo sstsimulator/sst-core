@@ -361,6 +361,21 @@ public:
      */
     virtual Request* recvResponse(void) = 0;
 
+    /**
+     * Get cache/memory line size from the memory system
+     *
+     * The memory system should provide this and it should be 
+     * valid after the init() phase is complete, so processors 
+     * can call this function during setup().
+     *
+     * For backward compatibiity, the function returns 0 by default.
+     * Eventually, interfaces will be required to implement this
+     * function.
+     *
+     * @return 0 if the interface does not provide this capability
+     * @return line size of the memory system
+     */
+    virtual Addr getLineSize() { return 0; } 
 
 };
 
