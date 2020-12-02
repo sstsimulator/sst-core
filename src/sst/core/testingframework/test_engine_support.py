@@ -89,7 +89,7 @@ class OSCommand():
         thread.join(self._timeout_sec)
         if thread.is_alive():
             self._run_timeout = True
-            self._process.terminate()
+            self._process.kill()
             thread.join()
 
         # Build a OSCommandResult object to hold the results
