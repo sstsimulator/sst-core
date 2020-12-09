@@ -313,15 +313,16 @@ def skip_on_sstsimulator_conf_empty_str(section, key, reason):
     return unittest.skip(reason)
 
 ################################################################################
-# SST Configuration include file (sst_config.h.conf) Access Functions
+# SST Core Configuration include file (sst_config.h.conf) Access Functions
 ################################################################################
 
-def sst_config_include_file_get_value_int(define, default=None):
-    """ Retrieve a define from the SST Configuration Include File (sst_config.h)
+def sst_core_config_include_file_get_value_int(define, default=None, disable_warning = False):
+    """ Retrieve a define from the SST Core Configuration Include File (sst_config.h)
 
         Args:
-            define (str): The [section] to look for the key
+            define (str): The define to look for
             default (int): Default Return if failure occurs
+            disable_warning (bool): Disable logging the warning if define is not found
 
         Returns:
             (int) The returned data or default if not found in the include file
@@ -330,16 +331,18 @@ def sst_config_include_file_get_value_int(define, default=None):
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
-    return _get_sst_config_include_file_value(define, default, int)
+    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
+                                              "sst_config.h", define, default, int, disable_warning)
 
 ###
 
-def sst_config_include_file_get_value_str(define, default=None):
-    """ Retrieve a define from the SST Configuration Include File (sst_config.h)
+def sst_core_config_include_file_get_value_str(define, default=None, disable_warning = False):
+    """ Retrieve a define from the SST Core Configuration Include File (sst_config.h)
 
         Args:
-            define (str): The [section] to look for the key
+            define (str): The define to look for
             default (str): Default Return if failure occurs
+            disable_warning (bool): Disable logging the warning if define is not found
 
         Returns:
             (str) The returned data or default if not found in the include file
@@ -348,7 +351,50 @@ def sst_config_include_file_get_value_str(define, default=None):
             SSTTestCaseException: if type is incorrect OR no data AND default
                                   is not provided
     """
-    return _get_sst_config_include_file_value(define, default, str)
+    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT,
+                                              "sst_config.h", define, default, str, disable_warning)
+
+################################################################################
+# SST Elements Configuration include file (sst_element_config.h.conf) Access Functions
+################################################################################
+
+def sst_elements_config_include_file_get_value_int(define, default=None, disable_warning = False):
+    """ Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
+
+        Args:
+            define (str): The define to look for
+            default (int): Default Return if failure occurs
+            disable_warning (bool): Disable logging the warning if define is not found
+
+        Returns:
+            (int) The returned data or default if not found in the include file
+
+        Raises:
+            SSTTestCaseException: if type is incorrect OR no data AND default
+                                  is not provided
+    """
+    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
+                                              "sst_element_config.h", define, default, int, disable_warning)
+
+###
+
+def sst_elements_config_include_file_get_value_str(define, default=None, disable_warning = False):
+    """ Retrieve a define from the SST Elements Configuration Include File (sst_element_config.h)
+
+        Args:
+            define (str): The define to look for
+            default (str): Default Return if failure occurs
+            disable_warning (bool): Disable logging the warning if define is not found
+
+        Returns:
+            (str) The returned data or default if not found in the include file
+
+        Raises:
+            SSTTestCaseException: if type is incorrect OR no data AND default
+                                  is not provided
+    """
+    return _get_sst_config_include_file_value(test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT,
+                                              "sst_element_config.h", define, default, str, disable_warning)
 
 ################################################################################
 # SST Configuration file (sstsimulator.conf) Access Functions
@@ -1127,27 +1173,32 @@ def _get_linux_version(filepath, sep):
 ### Generic Internal Support Functions
 ################################################################################
 
-def _get_sst_config_include_file_value(define, default=None, data_type=str):
-    """ Retrieve a define from the SST Configuration Include File (sst_config.h)
-       :param: section (str): The [section] to look for the key
-       :param: default (str|int): Default Return if failure occurs
-       :param: data_type (str|int): The data type to return
+def _get_sst_config_include_file_value(include_dict, include_source, define, default=None,
+                                       data_type=str, disable_warning = False):
+    """ Retrieve a define from an SST Configuration Include File (sst_config.h or sst-element_config.h)
+       include_dict (dict): The dictionary to search for the define
+       include_source (str): The name of the include file we are searching
+       define (str): The define to look for
+       default (str|int): Default Return if failure occurs
+       data_type (str|int): The data type to return
+       disable_warning (bool): Disable the warning if define not found
        :return (str|int): The returned data or default if not found in the dict
        This will raise a SSTTestCaseException if a default is not provided or type
        is incorrect
     """
     if data_type not in (int, str):
         raise SSTTestCaseException("Illegal datatype {0}".format(data_type))
+    check_param_type("include_source", include_source, str)
     check_param_type("define", define, str)
     if default is not None:
         check_param_type("default", default, data_type)
-    core_conf_inc_dict = test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT
     try:
-        rtn_data = core_conf_inc_dict[define]
+        rtn_data = include_dict[define]
     except KeyError as exc_e:
-        errmsg = ("Reading SST-Core Config include file sst_config.h") \
-                 + (" - Cannot find #define {0}".format(exc_e))
-        log_warning(errmsg)
+        errmsg = ("Reading Config include file {0}") \
+                 + (" - Cannot find #define {1}".format(include_source, exc_e))
+        if disable_warning == False:
+            log_warning(errmsg)
         if default is None:
             raise SSTTestCaseException(exc_e)
         rtn_data = default
@@ -1159,9 +1210,9 @@ def _get_sst_config_include_file_value(define, default=None, data_type=str):
 
 def _get_sstsimulator_conf_value(section, key, default=None, data_type=str):
     """ Retrieve a Section/Key from the SST Configuration File (sstsimulator.conf)
-       :param: section (str): The [section] to look for the key
-       :param: key (str): The key to find
-       :param: default (str|int|float|bool): Default Return if failure occurs
+       section (str): The [section] to look for the key
+       key (str): The key to find
+       default (str|int|float|bool): Default Return if failure occurs
        :return (str|int|float|bool): The returned data or default if not found in file
        This will raise a SSTTestCaseException if a default is not provided
     """

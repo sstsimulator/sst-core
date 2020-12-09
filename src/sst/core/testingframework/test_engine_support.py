@@ -262,6 +262,7 @@ def check_param_type(varname, vardata, datatype):
     if not isinstance(vardata, datatype):
         err_str = (("TEST-ERROR: {0}() param {1} = {2} is a not a {3}; it is a ") +
                    ("{4}")).format(caller, varname, vardata, datatype, type(vardata))
+        print(err_str)
         raise ValueError(err_str)
 
 
