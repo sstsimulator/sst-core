@@ -259,10 +259,10 @@ class TestEngine():
                               help='Run tests in quiet mode')
         mutgroup.add_argument('-d', '--debug', action='store_true',
                               help='Run tests in debug mode')
-        mutgroup.add_argument('-z', '--logfailmode', action='store_true',
-                              help='Display failure data during test runs (test dependent)')
 
         run_group = parser.add_argument_group('SST Run Options')
+        run_group.add_argument('-z', '--logfailmode', action='store_true',
+                               help='Display failure data during test runs (test dependent)')
         run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
                                nargs="+", default=[],
                                help=(('Names of test scenarios that filter') + \
