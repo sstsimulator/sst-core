@@ -74,6 +74,16 @@ def testing_check_is_in_debug_mode():
 
 ###
 
+def testing_check_is_in_log_failures_mode():
+    """ Identify if test frameworks is in log failures mode
+
+        Returns:
+            (bool) True if test frameworks is in log failures mode
+    """
+    return test_engine_globals.TESTENGINE_LOGFAILMODE
+
+###
+
 def testing_check_is_in_concurrent_mode():
     """ Identify if test frameworks is in concurrent mode
 
@@ -624,6 +634,25 @@ def log_debug(logstr):
     """
     if test_engine_globals.TESTENGINE_DEBUGMODE:
         finalstr = "DEBUG: {0}".format(logstr)
+        log_forced(finalstr)
+
+###
+
+def log_failure(logstr):
+    """ Log a test failure.
+
+        Log will only happen if in log failure mode.
+        NOTE: Testcases may call log_failure to log any test failure data.  Log
+              Log output will only occur if log failure mode is enabled.
+              The intent of this function is to allow tests to log failure info
+              (useful for troubleshooting) during a run if the 'log failure mode'
+              is enabled.
+
+        Args:
+            logstr (str): string to be logged
+    """
+    if test_engine_globals.TESTENGINE_LOGFAILMODE:
+        finalstr = "{0}".format(logstr)
         log_forced(finalstr)
 
 ###

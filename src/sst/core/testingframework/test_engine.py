@@ -259,6 +259,8 @@ class TestEngine():
                               help='Run tests in quiet mode')
         mutgroup.add_argument('-d', '--debug', action='store_true',
                               help='Run tests in debug mode')
+        mutgroup.add_argument('-z', '--logfailmode', action='store_true',
+                              help='Display failure data during test runs (test dependent)')
 
         run_group = parser.add_argument_group('SST Run Options')
         run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
@@ -345,6 +347,8 @@ class TestEngine():
         if args.debug:
             test_engine_globals.TESTENGINE_DEBUGMODE = True
             test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_DEBUG
+        if args.logfailmode:
+            test_engine_globals.TESTENGINE_LOGFAILMODE = True
         test_engine_globals.TESTENGINE_CONCURRENTMODE = False
         test_engine_globals.TESTENGINE_THREADLIMIT = DEF_THREAD_LIMIT
         if args.concurrent is not None:
