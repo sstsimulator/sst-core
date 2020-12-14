@@ -18,6 +18,22 @@
 import sys
 import os.path
 
+# Validate Python Versions
+ver = sys.version_info
+# Check for Py2.x or Py3.x Versions
+if (ver[0] < 2) or (ver[0] > 3):
+    print(("SST Test Engine requires Python major version 2 or 3\n" +
+          "Found Python version is:\n{0}").format(sys.version))
+    sys.exit(1)
+
+# Check to ensure minimum Py2.7.5
+if (ver[0] == 2) and ((ver[1] < 7) or (ver[2] < 5)):
+    print(("SST Test Engine requires Python version 2.7.5 or greater\n" +
+           "Found Python version is:\n{0}").format(sys.version))
+    sys.exit(1)
+
+####
+
 try:
     import sst_test_engine_loader as te_load
 except ImportError as exc_e:

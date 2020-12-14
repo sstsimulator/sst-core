@@ -64,8 +64,9 @@ The SST Testing frameworks documentation is build using `pdoc` and requires Pyth
         * If not defined, screen output is verbose
         * `-v` = Verbose output, tells user what test is running `[default]`
         * `-n` = Normal output, indicates minimal test results (dots indicate successful tests)
-        * `-q` = quiet output, minimal information is displayed on screen
+        * `-q` = Quiet output, minimal information is displayed on screen
         * `-d` = Debug output, outputs test specific debug data to the screen
+     * `-z` = Display failure data during test runs (test dependent)
      * `-s = Scenarios name (SEE Scenarios BELOW); `[NONE]`
      * `-r XX` = Number of ranks to use during SST runs; `[1]`
      * `-t YY` = Number of threads to use during SST runs; `[1]`

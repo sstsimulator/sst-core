@@ -47,6 +47,7 @@ def check_module_conditional_import(module_name):
             return False
     else:
         import importlib
+        import importlib.util
         if not PY3_4_Plus:
             avail = importlib.find_loader(module_name)
             return avail is not None

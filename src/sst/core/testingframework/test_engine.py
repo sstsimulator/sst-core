@@ -155,8 +155,13 @@ class TestEngine():
         # Build the Config File Parser
         test_engine_globals.TESTENGINE_CORE_CONFFILE_PARSER = \
             self._create_core_config_parser()
+        # Build the Core Include File Dict
         test_engine_globals.TESTENGINE_CORE_CONFINCLUDE_DICT = \
         self._build_core_config_include_defs_dict()
+        # Build the Elements Include File Dict (if its available and testing elements)
+        if self._test_mode == 0:
+            test_engine_globals.TESTENGINE_ELEM_CONFINCLUDE_DICT = \
+            self._build_elem_config_include_defs_dict()
 
         # Find all the testsuites we need to run
         self._discover_testsuites()
@@ -256,6 +261,8 @@ class TestEngine():
                               help='Run tests in debug mode')
 
         run_group = parser.add_argument_group('SST Run Options')
+        run_group.add_argument('-z', '--logfailmode', action='store_true',
+                               help='Display failure data during test runs (test dependent)')
         run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
                                nargs="+", default=[],
                                help=(('Names of test scenarios that filter') + \
@@ -340,6 +347,8 @@ class TestEngine():
         if args.debug:
             test_engine_globals.TESTENGINE_DEBUGMODE = True
             test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_DEBUG
+        if args.logfailmode:
+            test_engine_globals.TESTENGINE_LOGFAILMODE = True
         test_engine_globals.TESTENGINE_CONCURRENTMODE = False
         test_engine_globals.TESTENGINE_THREADLIMIT = DEF_THREAD_LIMIT
         if args.concurrent is not None:
@@ -570,13 +579,13 @@ class TestEngine():
 ###
 
     def _build_core_config_include_defs_dict(self):
-        """ Create a dictionary of settings fromt he sst_config.h.  This will
-            allow us to search the includes that the core provides.
+        """ Create a dictionary of settings from the sst_config.h.
+            This will allow us to search the includes that the core provides.
 
             Returns:
                 A dict object of defines from the sst_config.h file.
         """
-        # ID the path to the sst configuration file
+        # ID the path to the sst core configuration file
         core_conf_include_dir = self._sst_core_bin_dir + "/../include/sst/core/"
         core_conf_include_path = core_conf_include_dir + "sst_config.h"
         if not os.path.isdir(core_conf_include_dir):
@@ -586,10 +595,52 @@ class TestEngine():
             log_fatal((("SST-Core Configuration Include File {0} - Does not exist - ") +
                        ("testing cannot continue")).format(core_conf_include_path))
 
+        rtn_dict = self._read_config_include_defs_dict(core_conf_include_path)
+
+        return rtn_dict
+
+###
+
+    def _build_elem_config_include_defs_dict(self):
+        """ Create a dictionary of settings from the sst_element_config.h.
+            This will allow us to search the includes that the elements provides.
+            Note: The Frameworks is runnable even if elements are not built or
+                  registered, it this case, no data will be found.
+
+            Returns:
+                A dict object of defines from the sst_element_config.h file.
+        """
+        # ID the path to the sst element configuration file
+        elem_root = sstsimulator_conf_get_value_str("SST_ELEMENT_LIBRARY",
+                                                    "SST_ELEMENT_LIBRARY_SOURCE_ROOT",
+                                                    "undefined")
+        # If the element root is not found, then elements have not yet been registerd
+        if elem_root == "undefined":
+            log_warning((("SST-Elements Root Directory is not registered with the ") +
+                       ("SST Core (is SST-Elements installed?)")))
+            return {}
+
+        # The elements root has been registered, dbl-check all is well
+        elem_conf_include_dir = elem_root + "/src/"
+        elem_conf_include_path = elem_conf_include_dir + "sst_element_config.h"
+        if not os.path.isdir(elem_conf_include_dir):
+            log_fatal((("SST-Elements Directory {0} - Does not exist - ") +
+                       ("testing cannot continue")).format(elem_conf_include_dir))
+        if not os.path.isfile(elem_conf_include_path):
+            log_fatal((("SST-Elements Configuration Include File {0} - Does not exist - ") +
+                       ("testing cannot continue")).format(elem_conf_include_path))
+
+        rtn_dict = self._read_config_include_defs_dict(elem_conf_include_path)
+
+        return rtn_dict
+
+###
+
+    def _read_config_include_defs_dict(self, conf_include_path):
         # Read in the file line by line and discard any lines
         # that do not start with "#define "
         rtn_dict = {}
-        with open(core_conf_include_path, 'r') as filehandle:
+        with open(conf_include_path, 'r') as filehandle:
             for read_line in filehandle:
                 line = read_line.rstrip()
                 if "#define " in line[0:8]:
