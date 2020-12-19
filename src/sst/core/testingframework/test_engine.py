@@ -38,9 +38,6 @@ from test_engine_unittest import *
 
 ################################################################################
 
-REQUIRED_PY_MAJ_VER_2 = 2 # Required Major Version Min
-REQUIRED_PY_MAJ_VER_MAX = 3 # Required Major Version Max
-REQUIRED_PY_MAJ_VER_2_MINOR_VER = 7 # Required Minor Version
 DEF_THREAD_LIMIT = 8
 
 HELP_DESC = 'Run {0} Tests'
@@ -118,8 +115,6 @@ class TestEngine():
                 sst_core_bin_dir (str): The SST-Core binary directory
                 test_mode (int): 1 for Core Testing; 0 for Elements testing
         """
-        self._validate_python_version()
-
         # Init some internal variables
         self._fail_fast = False
         self._keep_output_dir = False
@@ -212,34 +207,6 @@ class TestEngine():
 
 ################################################################################
 ################################################################################
-
-    def _validate_python_version(self):
-        """ Validate that we are running on a supported Python version.
-
-            Will Fatal error out if version is correct.
-
-            Returns:
-                tuple of version info
-        """
-        ver = sys.version_info
-        # Check for Py2.x or Py3.x Versions
-        if (ver[0] < REQUIRED_PY_MAJ_VER_2) or (ver[0] > REQUIRED_PY_MAJ_VER_MAX):
-            log_fatal(("SST Test Engine requires Python major version {1} or {2}\n" +
-                       "Found Python version is:\n{3}").format(os.path.basename(__file__),
-                                                               REQUIRED_PY_MAJ_VER_2,
-                                                               REQUIRED_PY_MAJ_VER_MAX,
-                                                               sys.version))
-
-        # Check to ensure minimum Py2.7
-        if (ver[0] == REQUIRED_PY_MAJ_VER_2) and (ver[1] < REQUIRED_PY_MAJ_VER_2_MINOR_VER):
-            log_fatal(("SST Test Engine requires Python version {1}.{2} or greater\n" +
-                       "Found Python version is:\n{3}").format(os.path.basename(__file__),
-                                                               REQUIRED_PY_MAJ_VER_2,
-                                                               REQUIRED_PY_MAJ_VER_2_MINOR_VER,
-                                                               sys.version))
-        return ver
-
-####
 
     def _parse_arguments(self):
         """ Parse the cmd line arguments."""
