@@ -129,7 +129,7 @@ def startup_and_run(sst_core_bin_dir, test_mode):
 def _generic_exception_handler(exc_e):
 
     # Dump Exception info to the a log file
-    log_filename = "./sst_test_framesworks_crashreport.log"
+    log_filename = "./sst_test_frameworks_crashreport.log"
     logfile_available = True
     try:
         crashlogger = logging.getLogger("SST_TEST_FRAMEWORKS_CRASHLOGGER")
