@@ -570,7 +570,7 @@ ComponentId_t
 ConfigGraph::addComponent(const std::string& name, const std::string& type, float weight, RankInfo rank)
 {
     ComponentId_t cid = nextComponentId++;
-    comps.push_back(ConfigComponent(cid, this, name, type, weight, rank));
+    comps.insert(ConfigComponent(cid, this, name, type, weight, rank));
 
     auto ret = compsByName.insert(std::make_pair(name,cid));
     // Check to see if the name has already been used
@@ -584,7 +584,7 @@ ComponentId_t
 ConfigGraph::addComponent(const std::string& name, const std::string& type)
 {
     ComponentId_t cid = nextComponentId++;
-    comps.push_back(ConfigComponent(cid, this, name, type, 1.0f, RankInfo()));
+    comps.insert(ConfigComponent(cid, this, name, type, 1.0f, RankInfo()));
 
     auto ret = compsByName.insert(std::make_pair(name,cid));
     // Check to see if the name has already been used
@@ -727,27 +727,41 @@ ConfigGraph::addStatisticParameterForComponentType(const std::string& ComponentT
 void
 ConfigGraph::addLink(ComponentId_t comp_id, const std::string& link_name, const std::string& port, const std::string& latency_str, bool no_cut)
 {
-    if ( link_names.find(link_name) == link_names.end() ) {
-        LinkId_t id = links.size();
-        link_names[link_name] = id;
-        links.insert(ConfigLink(id, link_name));
-    }
-    ConfigLink &link = links[link_names[link_name]];
+    auto link_name_it = link_names.find(link_name);
+
+    // Because we are using references, we need to initialize in a
+    // single statement.  If the link already exists, it just gets it
+    // out of the links data structure.  If the link does not exist,
+    // we create it, add the link_name to id mapping (the id is
+    // links.size()) and add the link to the links data structure.
+    // The insert function returns a reference to the newly inserted
+    // link.
+    ConfigLink& link = (link_name_it == link_names.end()) ?
+        links.insert(ConfigLink(link_names[link_name] = links.size(), link_name)) :
+        links[link_name_it->second];
+
+    // Check to make sure the link has not been referenced too many
+    // times.
     if ( link.current_ref >= 2 ) {
         output.fatal(CALL_INFO,1,"ERROR: Parsing SDL file: Link %s referenced more than two times\n",link_name.c_str());
     }
 
-    // Convert the latency string to a number
-
+    // Update link information
     int index = link.current_ref++;
     link.component[index] = comp_id;
     link.port[index] = port;
     link.latency_str[index] = latency_str;
     link.no_cut = link.no_cut | no_cut;
 
-    // Check to make sure the link doesn't already exist in the component
-    auto compLinks = &findComponent(comp_id)->links;
-    if (std::find(compLinks->begin(), compLinks->end(), link.id) == compLinks->end()){
+    // Need to add this link to the ConfigComponent's link list.
+    // Check to make sure the link doesn't already exist in the
+    // component.  Only possible way it could be there is if the link
+    // is attached to the component at both ends.  So, if this is the
+    // first reference to the link, or if link.component[0] is not
+    // equal to the current component sent into this call, then it is
+    // not already in the list.
+    if ( link.current_ref == 1 || link.component[0] != comp_id) {
+        auto compLinks = &findComponent(comp_id)->links;
         compLinks->push_back(link.id);
     }
 }
@@ -826,7 +840,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
         const ConfigComponent& comp = *it;
 
         if ( rank_set.find(comp.rank.rank) != rank_set.end() ) {
-            graph->comps.push_back(comp.cloneWithoutLinks());
+            graph->comps.insert(comp.cloneWithoutLinks());
         }
         else {
             // See if the other side of any of component's links is in
@@ -836,7 +850,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
                 ComponentId_t remote = COMPONENT_ID_MASK(link.component[0]) == COMPONENT_ID_MASK(comp.id) ?
                     link.component[1] : link.component[0];
                 if ( rank_set.find(comps[COMPONENT_ID_MASK(remote)].rank.rank) != rank_set.end() ) {
-                    graph->comps.push_back(comp.cloneWithoutLinksOrParams());
+                    graph->comps.insert(comp.cloneWithoutLinksOrParams());
                     break;
                 }
             }
@@ -917,7 +931,7 @@ ConfigGraph::getCollapsedPartitionGraph()
 {
     PartitionGraph* graph = new PartitionGraph();
 
-    SparseVectorMap<LinkId_t> deleted_links;
+    std::set<LinkId_t> deleted_links;
 
     PartitionComponentMap_t& pcomps = graph->getComponentMap();
     PartitionLinkMap_t& plinks = graph->getLinkMap();
@@ -929,31 +943,40 @@ ConfigGraph::getCollapsedPartitionGraph()
     // SparseVectorMap is slow for random inserts, so make sure we
     // insert both components and links in order of ID, which is the
     // key for the SparseVectorMap in both cases
-    ComponentIdMap_t group;
+
+    // Use an ordered set so that when we insert the ids for the group
+    // into a SparseVectorMap, we are inserting in order.
+    std::set<ComponentId_t> group;
     for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
+        // If this component ended up in a connected group we already
+        // looked at, skip it
         if ( it->visited ) continue;
+
         // Get the no-cut group for this component
         group.clear();
         getConnectedNoCutComps(it->id,group);
 
+        // Create a new PartitionComponent for this group
         ComponentId_t id = pcomps.size();
-        pcomps.insert(PartitionComponent(id));
-        PartitionComponent& pcomp = pcomps[id];
+        PartitionComponent& pcomp = pcomps.insert(PartitionComponent(id));
 
         // Iterate over the group and add the weights and add any
         // links that connect outside the group
-        for ( ComponentIdMap_t::const_iterator i = group.begin(); i != group.end(); ++i ) {
+        for ( std::set<ComponentId_t>::const_iterator i = group.begin(); i != group.end(); ++i ) {
             const ConfigComponent& comp = comps[*i];
             // Compute the new weight
             pcomp.weight += comp.weight;
-            pcomp.group.insert(comp.id);
+            // Inserting in order because the iterator is from an
+            // ordered set
+            pcomp.group.insert(*i);
 
             // Walk through all the links and insert the ones that connect
             // outside the group
             for ( LinkId_t id : comp.allLinks() ) {
                 const ConfigLink& link = links[id];
 
-                if ( !group.contains(COMPONENT_ID_MASK(link.component[0])) || !group.contains(COMPONENT_ID_MASK(link.component[1]) ) ) {
+                if ( group.find(COMPONENT_ID_MASK(link.component[0])) == group.end() ||
+                     group.find(COMPONENT_ID_MASK(link.component[1])) == group.end() ) {
                     pcomp.links.push_back(link.id);
                 }
                 else {
@@ -963,13 +986,19 @@ ConfigGraph::getCollapsedPartitionGraph()
         }
     }
 
-    // Now add all but the deleted links to the partition graph
+    // Now add all but the deleted links to the partition graph.  We
+    // do it here so that we insert in order because we are using a
+    // SparseVectorMap.  It may look like we are inserting the actual
+    // ConfigLink into the map, but this actually adds a PartitionLink
+    // to the set by passing the ConfigLink into the constructor.
+    // This will insert in order since the iterator is from a
+    // SparseVectorMap.
     for ( ConfigLinkMap_t::iterator i = links.begin(); i != links.end(); ++i ) {
-        if ( !deleted_links.contains(i->id) ) plinks.push_back(*i);
+        if ( deleted_links.find(i->id) == deleted_links.end() ) plinks.insert(*i);
     }
 
     // Just need to fix up the component fields for the links.  Do
-    // this by walking through the components and checking each of it
+    // this by walking through the components and checking each of it's
     // links to see if it points to something in the group.  If so,
     // change ID to point to super group.
     for ( PartitionComponentMap_t::iterator i = pcomps.begin(); i != pcomps.end(); ++i ) {
@@ -1000,7 +1029,7 @@ ConfigGraph::annotateRanks(PartitionGraph* graph)
 }
 
 void
-ConfigGraph::getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group)
+ConfigGraph::getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>& group)
 {
     // We'll do this as a simple recursive depth first search
     group.insert(COMPONENT_ID_MASK(start));
@@ -1015,8 +1044,15 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group
         // If this is a no_cut link, need to follow it to next
         // component if next component is not already in group
         if ( link.no_cut ) {
-            ComponentId_t id = COMPONENT_ID_MASK((COMPONENT_ID_MASK(link.component[0]) == COMPONENT_ID_MASK(start) ? link.component[1] : link.component[0]));
-            if ( !group.contains(id) ) {
+            ComponentId_t id = COMPONENT_ID_MASK((COMPONENT_ID_MASK(link.component[0]) == COMPONENT_ID_MASK(start) ?
+                                                  link.component[1] : link.component[0]));
+            // Check to see if this id is already in the group.  We
+            // can do it one of two ways: check the visited variable,
+            // or see if it is in the group set already.  We look in
+            // the group set because they are both lookups into
+            // associative structures, but the group will be much
+            // smaller.
+            if ( group.find(id) == group.end() ) {
                 getConnectedNoCutComps(id,group);
             }
         }
