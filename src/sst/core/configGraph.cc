@@ -336,8 +336,8 @@ void ConfigComponent::reuseStatistic(const std::string& statisticName, Statistic
     auto iter = comp->enabledStatistics.find(sid);
     if (iter == comp->enabledStatistics.end()){
         // We cannot reuse a statistic that doesn't exist for the parent
-        Output::getDefaultObject().fatal(CALL_INFO, 1, "ERROR: %s: Cannot reuse a statistic %i that doesn't exist for the parent",
-                     statisticName, sid);
+        Output::getDefaultObject().fatal(CALL_INFO, 1, "ERROR: %s: Cannot reuse a statistic %lli that doesn't exist for the parent",
+                     statisticName.c_str(), sid);
     } else {
         enabledStatNames[statisticName] = sid;
     }
@@ -359,7 +359,7 @@ void ConfigComponent::addStatisticParameter(const std::string& statisticName, co
     if (statisticName == STATALLFLAG){
         cs = &allStatConfig;
     } else {
-        ConfigStatistic* cs = findStatistic(statisticName);
+        cs = findStatistic(statisticName);
     }
     if (!cs){
       Output::getDefaultObject().fatal(CALL_INFO, 1,
@@ -378,7 +378,6 @@ void ConfigComponent::setStatisticParameters(const std::string& statisticName, c
         }
     }
 
-    ConfigStatistic* cs = nullptr;
     if (statisticName == STATALLFLAG){
         allStatConfig.params.insert(params);;
     } else {
