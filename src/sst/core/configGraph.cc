@@ -54,15 +54,12 @@ void ConfigLink::updateLatencies(TimeLord *timeLord)
     // }
 }
 
-namespace Experimental {
 
 void ConfigStatistic::addParameter(const std::string& key, const std::string& value, bool overwrite)
 {
     bool bk = params.enableVerify(false);
     params.insert(key, value, overwrite);
     params.enableVerify(bk);
-}
-
 }
 
 bool ConfigStatGroup::addComponent(ComponentId_t id)
@@ -276,7 +273,7 @@ void ConfigComponent::addParameter(const std::string& key, const std::string& va
     params.enableVerify(bk);
 }
 
-Experimental::ConfigStatistic* ConfigComponent::enableStatistic(const std::string& statisticName, bool recursively)
+ConfigStatistic* ConfigComponent::enableStatistic(const std::string& statisticName, bool recursively)
 {
     // NOTE: For every statistic in the enabledStatistics List, there must be
     //       a corresponding params entry in enabledStatParams list.  The two
@@ -289,10 +286,13 @@ Experimental::ConfigStatistic* ConfigComponent::enableStatistic(const std::strin
     
     StatisticId_t stat_id;
     if (statisticName == STATALLFLAG){
-      // special sentinel id for enable all
+      // Special sentinel id for enable all
+      // The ConfigStatistic object for STATALLFLAG is not an entry of the enabledStatistics
+      // It has its own ConfigStatistic as a member variable of ConfigComponent which must be used
+      // in case of enabledAllStats == true.
       enabledAllStats = true;
-      stat_id = STATALL_ID;
-      enabledStatNames[statisticName] = stat_id;
+      allStatConfig.id = STATALL_ID;
+      return &allStatConfig;
     } else if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName)){
       //this is not a valid statistic
       return nullptr;
@@ -303,16 +303,46 @@ Experimental::ConfigStatistic* ConfigComponent::enableStatistic(const std::strin
         //this is the first time being enabled
         stat_id = getNextStatisticID();
         enabledStatNames[statisticName] = stat_id;
+        auto* parent = getParent();
+        if (parent){
+          ConfigStatistic* cs = parent->insertStatistic(stat_id);
+          cs->id = stat_id;
+          return cs;
+        }
       } else {
         //this was already enabled
         stat_id = iter->second;
       }
     }
     
-    Experimental::ConfigStatistic& cs = enabledStatistics[stat_id];
+    ConfigStatistic& cs = enabledStatistics[stat_id];
     cs.id = stat_id;
     return &cs;
 }
+
+void ConfigComponent::reuseStatistic(const std::string& statisticName, StatisticId_t sid) {
+
+    if(statisticName == STATALLFLAG){
+        // We cannot use reuseStatistic with STATALLFLAG
+        Output::getDefaultObject().fatal(CALL_INFO, 1, "ERROR: Cannot reuse a Statistic with STATALLFLAG as parameter");
+    }
+
+    auto* comp = getParent();
+
+    if (comp == nullptr){
+        comp = this;
+    }
+
+    auto iter = comp->enabledStatistics.find(sid);
+    if (iter == comp->enabledStatistics.end()){
+        // We cannot reuse a statistic that doesn't exist for the parent
+        Output::getDefaultObject().fatal(CALL_INFO, 1, "ERROR: %s: Cannot reuse a statistic %i that doesn't exist for the parent",
+                     statisticName, sid);
+    } else {
+        enabledStatNames[statisticName] = sid;
+    }
+}
+
 
 void ConfigComponent::addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively)
 {
@@ -325,7 +355,12 @@ void ConfigComponent::addStatisticParameter(const std::string& statisticName, co
         }
     }
 
-    Experimental::ConfigStatistic* cs = findStatistic(statisticName);
+    ConfigStatistic* cs = nullptr;
+    if (statisticName == STATALLFLAG){
+        cs = &allStatConfig;
+    } else {
+        ConfigStatistic* cs = findStatistic(statisticName);
+    }
     if (!cs){
       Output::getDefaultObject().fatal(CALL_INFO, 1,
           "cannot add parameter '%s' to unknown statistic '%s'",
@@ -343,7 +378,12 @@ void ConfigComponent::setStatisticParameters(const std::string& statisticName, c
         }
     }
 
-    findStatistic(statisticName)->params.insert(params);
+    ConfigStatistic* cs = nullptr;
+    if (statisticName == STATALLFLAG){
+        allStatConfig.params.insert(params);;
+    } else {
+        findStatistic(statisticName)->params.insert(params);
+    }
 }
 
 void ConfigComponent::setStatisticLoadLevel(uint8_t level, bool recursively)
@@ -427,7 +467,7 @@ ConfigComponent* ConfigComponent::findSubComponentByName(const std::string& name
     return nullptr;
 }
 
-Experimental::ConfigStatistic* ConfigComponent::insertStatistic(StatisticId_t sid)
+ConfigStatistic* ConfigComponent::insertStatistic(StatisticId_t sid)
 {
   ConfigComponent* parent = getParent();
   if (parent){
@@ -437,7 +477,7 @@ Experimental::ConfigStatistic* ConfigComponent::insertStatistic(StatisticId_t si
   }
 }
 
-Experimental::ConfigStatistic* ConfigComponent::findStatistic(const std::string& name) const
+ConfigStatistic* ConfigComponent::findStatistic(const std::string& name) const
 {
   auto iter = enabledStatNames.find(name);
   if (iter != enabledStatNames.end()){
@@ -448,14 +488,19 @@ Experimental::ConfigStatistic* ConfigComponent::findStatistic(const std::string&
   }
 }
 
-Experimental::ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
+ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
 {
-    auto iter = enabledStatistics.find(sid);
-    if (iter == enabledStatistics.end()){
-      return nullptr;
+    auto* parent = getParent();
+    if (parent){
+      return parent->findStatistic(sid);
     } else {
-      //I hate that I have to do this
-      return const_cast<Experimental::ConfigStatistic*>(&iter->second);
+      auto iter = enabledStatistics.find(sid);
+      if (iter == enabledStatistics.end()){
+        return nullptr;
+      } else {
+        //I hate that I have to do this
+        return const_cast<ConfigStatistic*>(&iter->second);
+      }
     }
 }
 
@@ -856,7 +901,7 @@ ConfigComponent* ConfigGraph::findComponentByName(const std::string& name) {
     return nullptr;
 }
 
-Experimental::ConfigStatistic* ConfigGraph::findStatistic(StatisticId_t id) const
+ConfigStatistic* ConfigGraph::findStatistic(StatisticId_t id) const
 {
   ComponentId_t cfg_id = CONFIG_COMPONENT_ID_MASK(id);
   return findComponent(cfg_id)->findStatistic(id);

@@ -268,38 +268,21 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     return nullptr;
 }
 
-/**
 static PyObject* compReuseStatistic(PyObject *self, PyObject *args)
 {
+    PyObject *statObj;
     char *name = nullptr;
-
-    if ( !PyArg_ParseTuple(args, "0", &statoObj) )
-        return nullptr;
-
-    c->addStatistic(statObj->configStatistic->id, name);
-
-
-    if ( !PyArg_ParseTuple(args, "s", &name) )
+    if ( !PyArg_ParseTuple(args, "sO", &name,  &statObj) )
         return nullptr;
 
     ConfigComponent *c = getComp(self);
     if ( nullptr == c ) return nullptr;
 
-    StatisticId_t stat_id = c->getNextStatisticID();
-    SST::Experimental::ConfigStatistic* stat = c->addStatistic(stat_id, name);
-    if ( nullptr != stat ) {
-        PyObject *argList = Py_BuildValue("Ok", self, stat_id);
-        PyObject *statObj = PyObject_CallObject((PyObject*)&Experimental::PyModel_StatType, argList);
-        Py_DECREF(argList);
-        return statObj;
-    }
+    ConfigStatistic *s = getStat(statObj);
+    c->reuseStatistic(name, s->id);
 
-    char errMsg[1024] = {0};
-    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create statistic %s on %s. Already attached a statistic with that name ?\n", name, c->name.c_str());
-    PyErr_SetString(PyExc_RuntimeError, errMsg);
-    return nullptr;
+    return statObj;
 }
-*/
 
 static PyObject* compSetStatistic(PyObject *self, PyObject *args)
 {
@@ -311,10 +294,10 @@ static PyObject* compSetStatistic(PyObject *self, PyObject *args)
     ConfigComponent *c = getComp(self);
     if ( nullptr == c ) return nullptr;
 
-    SST::Experimental::ConfigStatistic* stat = c->enableStatistic(name);
+    ConfigStatistic* stat = c->enableStatistic(name);
     if ( nullptr != stat ) {
         PyObject *argList = Py_BuildValue("Ok", self, stat->id);
-        PyObject *statObj = PyObject_CallObject((PyObject*)&Experimental::PyModel_StatType, argList);
+        PyObject *statObj = PyObject_CallObject((PyObject*)&PyModel_StatType, argList);
         Py_DECREF(argList);
         return statObj;
     }
@@ -324,6 +307,7 @@ static PyObject* compSetStatistic(PyObject *self, PyObject *args)
     PyErr_SetString(PyExc_RuntimeError, errMsg);
     return nullptr;
 }
+
 
 static PyObject* compSetCoords(PyObject *self, PyObject *args)
 {
@@ -627,6 +611,9 @@ static PyMethodDef subComponentMethods[] = {
     {   "setStatistic",
         compSetStatistic, METH_VARARGS,
         "Bind a statistic with name <name>"},
+    {   "reuseStatistic",
+        compReuseStatistic, METH_VARARGS,
+        "Reuse a statistic for the binding"},
     {   "setSubComponent",
         compSetSubComponent, METH_VARARGS,
         "Bind a subcomponent to slot <name>, with type <type>"},

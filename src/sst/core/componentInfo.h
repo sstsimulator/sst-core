@@ -27,11 +27,7 @@ class BaseComponent;
 
 class ConfigComponent;
 
-namespace Experimental {
-
 class ConfigStatistic;
-
-}
 
 class ComponentInfoMap;
 class TimeConverter;
@@ -43,7 +39,7 @@ class StatisticInfo;
 class ComponentInfo {
 
 public:
-    typedef std::vector<Experimental::ConfigStatistic>      statEnableList_t;        /*!< List of Enabled Statistics */
+    typedef std::vector<ConfigStatistic>      statEnableList_t;        /*!< List of Enabled Statistics */
 
 
     // Share Flags for SubComponent loading
@@ -118,9 +114,10 @@ private:
 
     TimeConverter* defaultTimeBase;
 
-    std::map<StatisticId_t, Experimental::ConfigStatistic>* enabledStatConfigs;
+    std::map<StatisticId_t, ConfigStatistic>* enabledStatConfigs;
     std::map<std::string, StatisticId_t>* enabledStatNames;
     bool enabledAllStats;
+    const ConfigStatistic *allStatConfig;
 
     uint8_t statLoadLevel;
 

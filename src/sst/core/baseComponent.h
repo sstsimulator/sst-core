@@ -66,6 +66,9 @@ public:
     /** Returns unique component ID */
     inline ComponentId_t getId() const { return my_info->id; }
 
+    /** Returns Component Statistic load level */
+    inline uint8_t getStatisticLoadLevel() const { return my_info->statLoadLevel; }
+
     /** Called when SIGINT or SIGTERM has been seen.
      * Allows components opportunity to clean up external state.
      */
@@ -275,14 +278,20 @@ protected:
                                               const std::string& name, const std::string& statSubId){
       std::string type = configureStatParams(id, params);
       auto* engine = Statistics::StatisticProcessingEngine::getInstance();
-      Statistics::StatisticBase* existing = findRegisteredStatistic(name, statSubId, StatisticFieldType<T>::id());
+      Statistics::StatisticBase* existing = findRegisteredStatistic(id, name, statSubId);
       if (existing){
-        return dynamic_cast<Statistics::Statistic<T>*>(existing);
+        auto statistic = dynamic_cast<Statistics::Statistic<T>*>(existing);
+        if (statistic){
+            return statistic;
+        } else {
+            printf("Error! Bad statistic Type!\n");
+            return nullptr;
+        }
       } else {
         auto* stat = engine->createStatistic<T>(my_info->component, type, name, statSubId, params);
         // Tell the Statistic what collection mode it is in
         configureCollectionMode(stat, params, name);
-        m_registeredStats.push_back(stat);
+        m_registeredStats[id].push_back(stat);
         registerStatisticCore(stat);
         return stat;
       }
@@ -616,7 +625,7 @@ protected:
 private:
     void configureCollectionMode(Statistics::StatisticBase* statistic, const SST::Params& params, const std::string& name);
 
-    Statistics::StatisticBase* findRegisteredStatistic(const std::string& statName, const std::string& statSubId, fieldType_t fieldId);
+    Statistics::StatisticBase* findRegisteredStatistic(StatisticId_t id, const std::string& statName, const std::string& statSubId);
 
     std::string configureStatParams(StatisticId_t id, SST::Params& params);
 
@@ -723,7 +732,7 @@ private:
 
     void registerStatisticCore(Statistics::StatisticBase* stat);
 
-    std::list<Statistics::StatisticBase*> m_registeredStats;
+    std::map<StatisticId_t, std::vector<Statistics::StatisticBase*>> m_registeredStats;
 
 };
 

@@ -579,15 +579,17 @@ BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, con
 }
 
 Statistics::StatisticBase*
-BaseComponent::findRegisteredStatistic(const std::string& statName, const std::string& statSubId, fieldType_t fieldType)
+BaseComponent::findRegisteredStatistic(StatisticId_t id, const std::string& statName, const std::string& statSubId)
 {
-  for (auto* stat : m_registeredStats){
-    if (stat->getStatName() == statName
-     && stat->getStatSubId() == statSubId
-     && stat->getStatDataType() == fieldType) {
-      return stat;
+  auto iter = m_registeredStats.find(id);
+  if (iter != m_registeredStats.end()) {
+    for(auto *stat: iter->second) {
+      if (stat->getStatName() == statName && stat->getStatSubId() == statSubId){
+        return stat;
+      }
     }
   }
+
   return nullptr;
 }
 
@@ -602,7 +604,16 @@ BaseComponent::configureStatParams(StatisticId_t id, SST::Params& params)
   allowedKeySet.insert("stopat");
   allowedKeySet.insert("resetOnRead");
   params.pushAllowedKeys(allowedKeySet);
-  params.insert(my_info->enabledStatConfigs->find(id)->second.params);
+  if(id == STATALL_ID) {
+    params.insert(my_info->allStatConfig->params);
+  }
+  else {
+    auto my_parent_info = my_info;
+    while(my_parent_info->parent_info != nullptr) {
+        my_parent_info = my_info->parent_info;
+    }
+    params.insert(my_parent_info->enabledStatConfigs->find(id)->second.params);
+  }
   return params.find<std::string>("type", "sst.AccumulatorStatistic");
 }
 

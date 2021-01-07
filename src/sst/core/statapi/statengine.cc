@@ -91,7 +91,16 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
     if ( stat->isNullStatistic() )
         return true;
 
-    uint8_t stat_load_level = m_statLoadLevel;
+    auto *comp = stat->getComponent();
+    if ( comp == nullptr ) {
+        m_output.verbose(CALL_INFO, 1, 0,
+                " Error: Statistc %s hasn't any associated component .\n",
+                stat->getFullStatName().c_str());
+        return false;
+    }
+
+    uint8_t comp_load_level = comp->getStatisticLoadLevel();
+    uint8_t stat_load_level = comp_load_level == STATISTICLOADLEVELUNINITIALIZED ? m_statLoadLevel : comp_load_level;
 
     if ( 0 == stat_load_level ) {
         m_output.verbose(CALL_INFO, 1, 0,

@@ -32,8 +32,6 @@ extern SST::Core::SSTPythonModelDefinition *gModel;
 
 namespace SST {
 
-namespace Experimental {
-
 extern "C" {
 
 StatisticId_t PyStatistic::getID()
@@ -67,14 +65,11 @@ static int statInit(StatisticPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
     return 0;
 }
 
-
 static void statDealloc(StatisticPy_t *self)
 {
     if ( self->obj ) delete self->obj;
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
-
-
 
 static PyObject* statAddParam(PyObject *self, PyObject *args)
 {
@@ -94,7 +89,6 @@ static PyObject* statAddParam(PyObject *self, PyObject *args)
 
     return SST_ConvertToPythonLong(0);
 }
-
 
 static PyObject* statAddParams(PyObject *self, PyObject *args)
 {
@@ -212,6 +206,3 @@ PyTypeObject PyModel_StatType = {
 }  /* extern C */
 
 }
-
-}
-

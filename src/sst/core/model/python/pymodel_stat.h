@@ -17,7 +17,6 @@
 #include "sst/core/sst_types.h"
 
 namespace SST {
-namespace Experimental {
 
 extern "C" {
 
@@ -52,7 +51,6 @@ static inline ConfigStatistic* getStat(PyObject *pobj) {
 
 }  /* extern C */
 
-}
 }
 
 #endif
