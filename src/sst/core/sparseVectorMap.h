@@ -154,7 +154,7 @@ public:
     // Essentially insert with a hint to look at end first.  this is
     // just here for backward compatibility for now.  Will be replaced
     // with insert() once things stabilize.
-    classT& push_back(const classT& val) __attribute__ ((deprecated("SparseVectorMap::push_back() is deprecated and will be removed in sst 12. please simply use sparsevectormap::insert.")))
+    classT& push_back(const classT& val) __attribute__ ((deprecated("SparseVectorMap::push_back() is deprecated and will be removed in sst 12. please simply use SparseVectorMap::insert().")))
     {
         // first look to see if it goes on the end.  if not, then find
         // where it goes.
