@@ -164,6 +164,7 @@ def _generic_exception_handler(exc_e):
         # Dump Exception info to the Console
         print(("FATAL: SST Test Frameworks encountered ") +
               ("an unexpected exception ({0}))".format(exc_e)))
+        print("{0} ".format(traceback.format_exc()))
         print("SEE FILE {0} FOR TRACE INFORMATION".format(log_filename))
     else:
         # Cannot send crash report to file, so send to console as last resort
