@@ -225,13 +225,22 @@ class OSCommandResult():
 
     def output(self):
         """ return the run output result """
-        return self._run_output.decode('utf-8')
+        # Sometimes the output can be a unicode or a byte string - convert it
+        if PY3:
+
+            return str(self._run_output, "utf-8")
+        else:
+            return self._run_output.decode('utf-8')
 
 ####
 
     def error(self):
         """ return the run error output result """
-        return self._run_error.decode('utf-8')
+        # Sometimes the output can be a unicode or a byte string - convert it
+        if PY3:
+            return str(self._run_error, "utf-8")
+        else:
+            return self._run_error.decode('utf-8')
 
 ####
 
