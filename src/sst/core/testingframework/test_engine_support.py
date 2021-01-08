@@ -227,8 +227,9 @@ class OSCommandResult():
         """ return the run output result """
         # Sometimes the output can be a unicode or a byte string - convert it
         if PY3:
-
-            return str(self._run_output, "utf-8")
+            if type(self._run_output) is bytes:
+                self._run_output = self._run_output.decode(encoding='UTF-8')
+            return self._run_output
         else:
             return self._run_output.decode('utf-8')
 
@@ -238,7 +239,9 @@ class OSCommandResult():
         """ return the run error output result """
         # Sometimes the output can be a unicode or a byte string - convert it
         if PY3:
-            return str(self._run_error, "utf-8")
+            if type(self._run_error) is bytes:
+                self._run_output = self._run_error.decode(encoding='UTF-8')
+            return self._run_error
         else:
             return self._run_error.decode('utf-8')
 

@@ -354,8 +354,6 @@ class TestEngine():
         cmd = "sst --version"
         rtn = OSCommand(cmd).run()
         sstcoreversion = rtn.output()
-        if type(sstcoreversion) is bytes:
-            sstcoreversion= sstcoreversion.decode(encoding='UTF-8')
         sstcoreversion = sstcoreversion.replace("SST-Core Version ", "").rstrip()
 
         num_cores = host_os_get_num_cores_on_system()
