@@ -219,7 +219,7 @@ uint32_t
 Params::getKey(const std::string& str) const
 {
     std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(keyLock);
-    std::map<std::string, uint32_t>::iterator i = keyMap.find(str);
+    auto i = keyMap.find(str);
     if ( i == keyMap.end() ) {
         return (uint32_t)-1;
     }
@@ -230,7 +230,7 @@ uint32_t
 Params::getKey(const std::string& str)
 {
     std::lock_guard<SST::Core::ThreadSafe::Spinlock> lock(keyLock);
-    std::map<std::string, uint32_t>::iterator i = keyMap.find(str);
+    auto i = keyMap.find(str);
     if ( i == keyMap.end() ) {
         uint32_t id = nextKeyID++;
         keyMap.insert(std::make_pair(str, id));

@@ -425,7 +425,7 @@ public:
     PartitionGraph* getPartitionGraph();
     PartitionGraph* getCollapsedPartitionGraph();
     void annotateRanks(PartitionGraph* graph);
-    void getConnectedNoCutComps(ComponentId_t start, ComponentIdMap_t& group);
+    void getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>& group);
 
     void serialize_order(SST::Core::Serialization::serializer &ser) override
     {
@@ -444,9 +444,9 @@ private:
 
     ComponentId_t nextComponentId;
 
-    ConfigLinkMap_t      links;
-    ConfigComponentMap_t comps;
-    ConfigComponentNameMap_t compsByName;
+    ConfigLinkMap_t      links;  // SparseVectorMap
+    ConfigComponentMap_t comps;  // SparseVectorMap
+    ConfigComponentNameMap_t compsByName;  // std::map
     std::map<std::string, ConfigStatGroup> statGroups;
 
     std::map<std::string,LinkId_t> link_names;
