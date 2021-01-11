@@ -49,6 +49,10 @@ OS_DIST_UNDEF = "UNDEFINED"
 
 ################################################################################
 
+pin_exec_path = ""
+
+################################################################################
+
 class SSTTestCaseException(Exception):
     """ Generic Exception support for SSTTestCase
     """
@@ -111,6 +115,54 @@ def testing_check_get_num_threads():
             (int) The number of requested run threads
     """
     return test_engine_globals.TESTENGINE_SSTRUN_NUMTHREADS
+
+################################################################################
+# PIN Information Functions
+################################################################################
+
+def testing_is_PIN_loaded():
+    # Look to see if PIN is available
+    pindir_found = False
+    pin_path = os.environ.get('INTEL_PIN_DIRECTORY')
+    if pin_path is not None:
+        pindir_found = os.path.isdir(pin_path)
+    log_debug("testing_is_PIN_loaded() - Intel_PIN_Path = {0}; Valid Dir = {1}".format(pin_path, pindir_found))
+    return pindir_found
+
+def testing_is_PIN_Compiled():
+    global pin_exec_path
+    pin_crt = sst_elements_config_include_file_get_value_int("HAVE_PINCRT", 0, True)
+    pin_exec = sst_elements_config_include_file_get_value_str("PINTOOL_EXECUTABLE", "", True)
+    log_debug("testing_is_PIN_Compiled() - Detected PIN_CRT = {0}".format(pin_crt))
+    log_debug("testing_is_PIN_Compiled() - Detected PIN_EXEC = {0}".format(pin_exec))
+    pin_exec_path = pin_exec
+    return pin_exec != ""
+
+def testing_is_PIN2_used():
+    global pin_exec_path
+    if testing_is_PIN_Compiled():
+        if "/pin.sh" in pin_exec_path:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+def testing_is_PIN3_used():
+    global pin_exec_path
+    if testing_is_PIN_Compiled():
+        if testing_is_PIN2_used():
+            return False
+        else:
+            # Make sure pin is at the end of the string
+            pinstr = "/pin"
+            idx = pin_exec_path.rfind(pinstr)
+            if idx == -1:
+                return False
+            else:
+                return (idx+len(pinstr)) == len(pin_exec_path)
+    else:
+        return False
 
 ################################################################################
 # System Information Functions
