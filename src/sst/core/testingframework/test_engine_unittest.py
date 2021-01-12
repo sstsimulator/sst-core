@@ -355,6 +355,8 @@ class SSTTextTestResult(unittest.TestResult):
                 testruntime = test.get_test_runtime_sec()
             if showruntime:
                 self.stream.writeln(" [{0:.3f}s]".format(testruntime))
+            else:
+                self.stream.writeln(" ".format(testruntime))
             self.stream.flush()
         elif self.dots:
             self.stream.write(colour(short))
