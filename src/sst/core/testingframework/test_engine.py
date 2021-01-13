@@ -576,17 +576,17 @@ class TestEngine():
                 A dict object of defines from the sst_element_config.h file.
         """
         # ID the path to the sst element configuration file
-        elem_root = sstsimulator_conf_get_value_str("SST_ELEMENT_LIBRARY",
-                                                    "SST_ELEMENT_LIBRARY_SOURCE_ROOT",
+        build_root = sstsimulator_conf_get_value_str("SST_ELEMENT_LIBRARY",
+                                                    "SST_ELEMENT_LIBRARY_BUILDDIR",
                                                     "undefined")
         # If the element root is not found, then elements have not yet been registerd
-        if elem_root == "undefined":
-            log_warning((("SST-Elements Root Directory is not registered with the ") +
+        if build_root == "undefined":
+            log_warning((("SST-Elements Build Directory is not registered with the ") +
                        ("SST Core (is SST-Elements installed?)")))
             return {}
 
         # The elements root has been registered, dbl-check all is well
-        elem_conf_include_dir = elem_root + "/src/"
+        elem_conf_include_dir = build_root + "/src/"
         elem_conf_include_path = elem_conf_include_dir + "sst_element_config.h"
         if not os.path.isdir(elem_conf_include_dir):
             log_fatal((("SST-Elements Directory {0} - Does not exist - ") +
