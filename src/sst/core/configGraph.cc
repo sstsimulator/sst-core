@@ -143,7 +143,7 @@ void ConfigComponent::print(std::ostream &os) const {
     for ( auto & pair : enabledStatNames ) {
         os << "    " << pair.first << std::endl;
         os << "      Params:" << std::endl;
-        auto iter = enabledStatistics.find(pair.second);
+        auto iter = statistics.find(pair.second);
         iter->second.params.print_all_params(os, "      ");
     }
     os << "  SubComponents:\n";
@@ -164,7 +164,7 @@ ConfigComponent::cloneWithoutLinks() const
     ret.rank = rank;
     ret.params = params;
     ret.statLoadLevel = statLoadLevel;
-    ret.enabledStatistics = enabledStatistics;
+    ret.statistics = statistics;
     ret.enabledStatNames = enabledStatNames;
     ret.enabledAllStats = enabledAllStats;
     ret.coords = coords;
@@ -186,7 +186,6 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.weight = weight;
     ret.rank = rank;
     ret.statLoadLevel = statLoadLevel;
-    ret.enabledStatistics = enabledStatistics;
     ret.coords = coords;
     for ( auto &i : subComponents ) {
         ret.subComponents.emplace_back(i.cloneWithoutLinksOrParams());
@@ -273,9 +272,24 @@ void ConfigComponent::addParameter(const std::string& key, const std::string& va
     params.enableVerify(bk);
 }
 
+ConfigStatistic* ConfigComponent::createStatistic()
+{
+    StatisticId_t stat_id = getNextStatisticID();;
+    auto* parent = getParent();
+    ConfigStatistic* cs = nullptr;
+    if (parent){
+        cs = parent->insertStatistic(stat_id);
+    } else {
+        cs = &statistics[stat_id];
+    }
+    cs->id = stat_id;
+    return cs;
+}
+
+
 ConfigStatistic* ConfigComponent::enableStatistic(const std::string& statisticName, bool recursively)
 {
-    // NOTE: For every statistic in the enabledStatistics List, there must be
+    // NOTE: For every statistic in the statistics List, there must be
     //       a corresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
     if ( recursively ) {
@@ -286,36 +300,36 @@ ConfigStatistic* ConfigComponent::enableStatistic(const std::string& statisticNa
     
     StatisticId_t stat_id;
     if (statisticName == STATALLFLAG){
-      // Special sentinel id for enable all
-      // The ConfigStatistic object for STATALLFLAG is not an entry of the enabledStatistics
-      // It has its own ConfigStatistic as a member variable of ConfigComponent which must be used
-      // in case of enabledAllStats == true.
-      enabledAllStats = true;
-      allStatConfig.id = STATALL_ID;
-      return &allStatConfig;
+        // Special sentinel id for enable all
+        // The ConfigStatistic object for STATALLFLAG is not an entry of the statistics
+        // It has its own ConfigStatistic as a member variable of ConfigComponent which must be used
+        // in case of enabledAllStats == true.
+        enabledAllStats = true;
+        allStatConfig.id = STATALL_ID;
+        return &allStatConfig;
     } else if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName)){
-      //this is not a valid statistic
-      return nullptr;
+        //this is not a valid statistic
+        return nullptr;
     } else {
-      //this is a valid statistic
-      auto iter = enabledStatNames.find(statisticName);
-      if (iter == enabledStatNames.end()){
-        //this is the first time being enabled
-        stat_id = getNextStatisticID();
-        enabledStatNames[statisticName] = stat_id;
-        auto* parent = getParent();
-        if (parent){
-          ConfigStatistic* cs = parent->insertStatistic(stat_id);
-          cs->id = stat_id;
-          return cs;
+        //this is a valid statistic
+        auto iter = enabledStatNames.find(statisticName);
+        if (iter == enabledStatNames.end()){
+            //this is the first time being enabled
+            stat_id = getNextStatisticID();
+            enabledStatNames[statisticName] = stat_id;
+            auto* parent = getParent();
+            if (parent){
+                ConfigStatistic* cs = parent->insertStatistic(stat_id);
+                cs->id = stat_id;
+                return cs;
+            }
+        } else {
+            //this was already enabled
+            stat_id = iter->second;
         }
-      } else {
-        //this was already enabled
-        stat_id = iter->second;
-      }
     }
     
-    ConfigStatistic& cs = enabledStatistics[stat_id];
+    ConfigStatistic& cs = statistics[stat_id];
     cs.id = stat_id;
     return &cs;
 }
@@ -333,8 +347,8 @@ void ConfigComponent::reuseStatistic(const std::string& statisticName, Statistic
         comp = this;
     }
 
-    auto iter = comp->enabledStatistics.find(sid);
-    if (iter == comp->enabledStatistics.end()){
+    auto iter = comp->statistics.find(sid);
+    if (iter == comp->statistics.end()){
         // We cannot reuse a statistic that doesn't exist for the parent
         Output::getDefaultObject().fatal(CALL_INFO, 1, "ERROR: %s: Cannot reuse a statistic %lli that doesn't exist for the parent",
                      statisticName.c_str(), sid);
@@ -346,7 +360,7 @@ void ConfigComponent::reuseStatistic(const std::string& statisticName, Statistic
 
 void ConfigComponent::addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively)
 {
-    // NOTE: For every statistic in the enabledStatistics map, there must be
+    // NOTE: For every statistic in the statistics map, there must be
     //       a corresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
     if ( recursively ) {
@@ -472,7 +486,7 @@ ConfigStatistic* ConfigComponent::insertStatistic(StatisticId_t sid)
   if (parent){
     return parent->insertStatistic(sid);
   } else {
-    return &enabledStatistics[sid];
+    return &statistics[sid];
   }
 }
 
@@ -493,8 +507,8 @@ ConfigStatistic* ConfigComponent::findStatistic(StatisticId_t sid) const
     if (parent){
       return parent->findStatistic(sid);
     } else {
-      auto iter = enabledStatistics.find(sid);
-      if (iter == enabledStatistics.end()){
+      auto iter = statistics.find(sid);
+      if (iter == statistics.end()){
         return nullptr;
       } else {
         //I hate that I have to do this

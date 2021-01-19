@@ -270,6 +270,7 @@ public:
     ConfigStatistic* insertStatistic(StatisticId_t id);
     ConfigStatistic* findStatistic(StatisticId_t) const;
     ConfigStatistic* enableStatistic(const std::string& statisticName, bool recursively = false);
+    ConfigStatistic* createStatistic();
     void reuseStatistic(const std::string& statisticName, StatisticId_t sid);
     void addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively = false);
     void setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively = false);
@@ -289,7 +290,7 @@ public:
         ser & params;
         ser & enabledStatNames;
         ser & enabledAllStats;
-        ser & enabledStatistics;
+        ser & statistics;
         ser & enabledAllStats;
         ser & statLoadLevel;
         ser & subComponents;
@@ -301,7 +302,7 @@ public:
     ImplementSerializable(SST::ConfigComponent)
 
 private:
-    std::map<StatisticId_t,ConfigStatistic> enabledStatistics;
+    std::map<StatisticId_t,ConfigStatistic> statistics;
 
     friend class ConfigGraph;
     /** Checks to make sure port names are valid and that a port isn't used twice

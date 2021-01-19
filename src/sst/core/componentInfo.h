@@ -114,7 +114,7 @@ private:
 
     TimeConverter* defaultTimeBase;
 
-    std::map<StatisticId_t, ConfigStatistic>* enabledStatConfigs;
+    std::map<StatisticId_t, ConfigStatistic>* statConfigs;
     std::map<std::string, StatisticId_t>* enabledStatNames;
     bool enabledAllStats;
     const ConfigStatistic *allStatConfig;
