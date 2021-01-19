@@ -579,22 +579,67 @@ BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, con
 }
 
 Statistics::StatisticBase*
-BaseComponent::findRegisteredStatistic(StatisticId_t id, const std::string& statName, const std::string& statSubId)
+BaseComponent::createStatistic(Params& cpp_params, const Params& python_params,
+                               const std::string& name, const std::string& subId,
+                               StatCreateFunction fxn)
 {
-  auto iter = m_registeredStats.find(id);
-  if (iter != m_registeredStats.end()) {
-    for(auto *stat: iter->second) {
-      if (stat->getStatName() == statName && stat->getStatSubId() == statSubId){
-        return stat;
-      }
+  auto* engine = Statistics::StatisticProcessingEngine::getInstance();
+
+  configureAllowedStatParams(cpp_params);
+  cpp_params.insert(python_params);
+  std::string type =  cpp_params.find<std::string>("type", "sst.AccumulatorStatistic");
+  auto* stat = fxn(this, engine, type, name, subId, cpp_params);
+  configureCollectionMode(stat, cpp_params, name);
+  engine->registerStatisticWithEngine(stat);
+
+  return stat;
+}
+
+Statistics::StatisticBase*
+BaseComponent::createEnabledAllStatistic(Params& params, const std::string &name, const std::string &statSubId,
+                                         StatCreateFunction fxn)
+{
+  for (auto* stat : m_enabledAllStats){
+    if (stat->getStatName() == name && stat->getStatSubId() == statSubId){
+      return stat;
     }
   }
 
-  return nullptr;
+  auto* stat = createStatistic(params, my_info->allStatConfig->params, name, statSubId, std::move(fxn));
+  m_enabledAllStats.push_back(stat);
+  return stat;
 }
 
-std::string
-BaseComponent::configureStatParams(StatisticId_t id, SST::Params& params)
+Statistics::StatisticBase*
+BaseComponent::createExplicitlyEnabledStatistic(Params &params, StatisticId_t id,
+                                                const std::string &name, const std::string &statSubId,
+                                                StatCreateFunction fxn)
+{
+  if (my_info->parent_info){
+    fatal(__LINE__, __FILE__, "createExplicitlyEnabledStatistic", 1,
+         "creating explicitly enabled statistic '%s' should only happen in parent component",
+         name.c_str());
+  }
+
+  auto iter = m_explicitlyEnabledStats.find(id);
+  if (iter != m_explicitlyEnabledStats.end()){
+    return iter->second;
+  }
+
+  auto piter = my_info->enabledStatConfigs->find(id);
+  if (piter == my_info->enabledStatConfigs->end()){
+    fatal(__LINE__, __FILE__, "createExplicitlyEnabledStatistic", 1,
+         "explicitly enabled statistic '%s' does not have parameters mapped to its ID",
+         name.c_str());
+  }
+
+  auto* stat = createStatistic(params, piter->second.params, name, statSubId, std::move(fxn));
+  m_explicitlyEnabledStats[id] = stat;
+  return stat;
+}
+
+void
+BaseComponent::configureAllowedStatParams(SST::Params& params)
 {
   // Identify what keys are Allowed in the parameters
   Params::KeySet_t allowedKeySet;
@@ -604,24 +649,6 @@ BaseComponent::configureStatParams(StatisticId_t id, SST::Params& params)
   allowedKeySet.insert("stopat");
   allowedKeySet.insert("resetOnRead");
   params.pushAllowedKeys(allowedKeySet);
-  if(id == STATALL_ID) {
-    params.insert(my_info->allStatConfig->params);
-  }
-  else {
-    auto my_parent_info = my_info;
-    while(my_parent_info->parent_info != nullptr) {
-        my_parent_info = my_info->parent_info;
-    }
-    params.insert(my_parent_info->enabledStatConfigs->find(id)->second.params);
-  }
-  return params.find<std::string>("type", "sst.AccumulatorStatistic");
-}
-
-void
-BaseComponent::registerStatisticCore(StatisticBase* stat)
-{
-    //Output &                        out = getSimulation()->getSimulationOutput()
-    StatisticProcessingEngine::getInstance()->registerStatisticWithEngine(stat);
 }
 
 void

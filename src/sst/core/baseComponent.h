@@ -141,6 +141,12 @@ public:
 
 
 protected:
+    using StatCreateFunction = std::function<
+      Statistics::StatisticBase*(BaseComponent*, Statistics::StatisticProcessingEngine*,
+                                 const std::string& /*type*/,
+                                 const std::string& /*name*/,
+                                 const std::string& /*subId*/,
+                                 Params&)>;
 
     /** Determine if a port name is connected to any links */
     bool isPortConnected(const std::string& name) const;
@@ -273,27 +279,41 @@ protected:
     }
 
 
+
     template <typename T>
     Statistics::Statistic<T>* createStatistic(SST::Params& params, StatisticId_t id,
                                               const std::string& name, const std::string& statSubId){
-      std::string type = configureStatParams(id, params);
-      auto* engine = Statistics::StatisticProcessingEngine::getInstance();
-      Statistics::StatisticBase* existing = findRegisteredStatistic(id, name, statSubId);
-      if (existing){
-        auto statistic = dynamic_cast<Statistics::Statistic<T>*>(existing);
-        if (statistic){
-            return statistic;
-        } else {
-            printf("Error! Bad statistic Type!\n");
-            return nullptr;
-        }
+
+      /* I would prefer to avoid this std::function with dynamic cast,
+       * but the code is just a lot cleaner and avoids many unnecessary template instantiations
+       * doing it this way. At some point in the future, we would need to clean up
+       * the rule around enabling all statistics to make this better
+       */
+
+      StatCreateFunction create = [=](BaseComponent* comp, Statistics::StatisticProcessingEngine* engine,
+                                      const std::string& type, const std::string& name, const std::string& subId,
+                                      SST::Params& params)
+          -> Statistics::StatisticBase* {
+        return engine->createStatistic<T>(comp, type, name, subId, params);
+      };
+
+      // We follow two distinct paths depending on if it is enable all, verus explicitly enabled
+      // Enable all is "scoped" to the (sub)component
+      // Explicitly enabled stats are assigned component-unique IDs and can be shared across subcomponents
+      // so creation and management happens in the parent component
+      Statistics::StatisticBase* base_stat = id == STATALL_ID
+         ? createEnabledAllStatistic(params, name, statSubId, std::move(create))
+         : getParentComponent()->createExplicitlyEnabledStatistic(params, id, name, statSubId, std::move(create));
+
+      // Ugh, dynamic casts hurt my eyes, but I must do this
+      auto* statistic = dynamic_cast<Statistics::Statistic<T>*>(base_stat);
+      if (statistic){
+         return statistic;
       } else {
-        auto* stat = engine->createStatistic<T>(my_info->component, type, name, statSubId, params);
-        // Tell the Statistic what collection mode it is in
-        configureCollectionMode(stat, params, name);
-        m_registeredStats[id].push_back(stat);
-        registerStatisticCore(stat);
-        return stat;
+        fatal(__LINE__, __FILE__, "createStatistic", 1,
+             "failed to cast created statistic '%s' to expected type",
+             name.c_str());
+        return nullptr; //avoid compiler warnings
       }
     }
 
@@ -625,9 +645,35 @@ protected:
 private:
     void configureCollectionMode(Statistics::StatisticBase* statistic, const SST::Params& params, const std::string& name);
 
-    Statistics::StatisticBase* findRegisteredStatistic(StatisticId_t id, const std::string& statName, const std::string& statSubId);
+    /**
+     * @brief findExplicitlyEnabledStatistic
+     * @param params
+     * @param id
+     * @param name
+     * @param statSubId
+     * @return that matching stat if the stat already was created for the given ID, otherwise nullptr
+     */
+    Statistics::StatisticBase* createExplicitlyEnabledStatistic(SST::Params& params, StatisticId_t id,
+                                                                const std::string& name, const std::string& statSubId,
+                                                                StatCreateFunction create);
 
-    std::string configureStatParams(StatisticId_t id, SST::Params& params);
+    /**
+     * @brief createStatistic Helper function used by both enable all and explicit enable
+     * @param cpp_params Any parameters given in C++ specific to this statistic
+     * @param python_params Any parameters given in Python for this statistic
+     * @param name The name (different from type) for this statistic
+     * @param statSubId An optional sub ID for this statistic if multiple stats might have the same name
+     * @param create A type-erased factory for creating stats of a particulary type T
+     * @return The statistic created
+     */
+    Statistics::StatisticBase* createStatistic(SST::Params& cpp_params, const SST::Params& python_params,
+                                               const std::string& name, const std::string& statSubId,
+                                               StatCreateFunction create);
+
+    Statistics::StatisticBase* createEnabledAllStatistic(SST::Params& params, const std::string& name,
+                                                         const std::string& statSubId, StatCreateFunction create);
+
+    void configureAllowedStatParams(SST::Params& params);
 
     void setDefaultTimeBaseForLinks(TimeConverter* tc);
 
@@ -730,9 +776,18 @@ private:
     void addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port);
 
-    void registerStatisticCore(Statistics::StatisticBase* stat);
 
-    std::map<StatisticId_t, std::vector<Statistics::StatisticBase*>> m_registeredStats;
+    std::map<StatisticId_t, Statistics::StatisticBase*> m_explicitlyEnabledStats;
+    std::vector<Statistics::StatisticBase*> m_enabledAllStats;
+
+    BaseComponent* getParentComponent(){
+      ComponentInfo* base_info = my_info;
+      while (base_info->parent_info){
+        base_info = base_info->parent_info;
+      }
+      return base_info->component;
+    }
+
 
 };
 
