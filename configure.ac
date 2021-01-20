@@ -225,7 +225,6 @@ echo ""
 
 printf "%38s : %s (%s)\n" "Found Python" "$PYTHON_EXE" "$PYTHON_VERSION"
 printf "%38s : %s\n" "Python3" "$PYTHON_VERSION3"
-
 if test "x$sst_check_zoltan_happy" = "xyes" ; then
     printf "%38s : YES\n" "Zoltan Partitioner"
 else
@@ -240,6 +239,10 @@ if test "x$sst_check_libz_happy" = "xyes" ; then
     printf "%38s : YES\n" "libz compression library"
 else
     printf "%38s : No\n" "libz compression library"
+fi
+
+if test "x$PYTHON_VERSION3" = "xno"; then
+    printf "DEPRECATION NOTICE: Use of Python 2 is deprecated in favor of Python 3.5 or greater. Support for Python 2 may be removed in SST 12 or later.\n"
 fi
 
 echo "-------------------------------------------------------"
