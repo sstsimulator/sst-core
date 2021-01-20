@@ -181,13 +181,13 @@ class TestEngine():
             sst_tests_results = test_runner.run(self._sst_full_test_suite)
 
             if not test_runner.did_tests_pass(sst_tests_results):
-                return 1
-            return 0
+                exit(1)
+            exit(0)
 
         # Handlers of unittest.TestRunner exceptions
         except KeyboardInterrupt:
             log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
-        return 2
+        exit(2)
 
 ####
 

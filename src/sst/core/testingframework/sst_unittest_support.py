@@ -766,7 +766,7 @@ def log_fatal(errstr):
     check_param_type("errstr", errstr, str)
     finalstr = "FATAL: {0}".format(errstr)
     log_forced(finalstr)
-    sys.exit(1)
+    sys.exit(2)
 
 ################################################################################
 ### Testing Directories
