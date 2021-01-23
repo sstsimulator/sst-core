@@ -13,11 +13,11 @@ dnl check if user provided a specific python-config
     [AS_IF([test -x "$with_python"],
         [PYTHON_CONFIG_EXE=$with_python])])
 
-dnl search python2-config
+dnl search python3-config
   AS_IF([test $PYTHON_CONFIG_EXE = "NOTFOUND"],
     [AS_IF([test -n "$with_python"],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config" "python2.7-config" "python2.6-config"], ["NOTFOUND"], ["$with_python/bin"])],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config" "python2.7-config" "python2.6-config"], ["NOTFOUND"])])])
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.8-config" "python3.7-config" "python3.6-config" "python3.5-config"], ["NOTFOUND"], ["$with_python/bin"])],
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.8-config" "python3.7-config" "python3.6-config" "python3.5-config"], ["NOTFOUND"])])])
 
 dnl search python-config
   AS_IF([test $PYTHON_CONFIG_EXE = "NOTFOUND"],
@@ -25,11 +25,11 @@ dnl search python-config
         [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python-config"], ["NOTFOUND"], ["$with_python/bin"])],
         [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python-config"], ["NOTFOUND"])])])
 
-dnl search python3-config
+dnl search python2-config
   AS_IF([test $PYTHON_CONFIG_EXE = "NOTFOUND"],
     [AS_IF([test -n "$with_python"],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.8-config" "python3.7-config" "python3.6-config" "python3.5-config"], ["NOTFOUND"], ["$with_python/bin"])],
-        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python3-config" "python3.8-config" "python3.7-config" "python3.6-config" "python3.5-config"], ["NOTFOUND"])])])
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config" "python2.7-config" "python2.6-config"], ["NOTFOUND"], ["$with_python/bin"])],
+        [AC_PATH_PROGS([PYTHON_CONFIG_EXE], ["python2-config" "python2.7-config" "python2.6-config"], ["NOTFOUND"])])])
 
 
   AS_IF([test "$PYTHON_CONFIG_EXE" != "NOTFOUND"],
