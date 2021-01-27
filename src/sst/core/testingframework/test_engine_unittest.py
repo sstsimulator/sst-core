@@ -340,7 +340,7 @@ class SSTTextTestResult(unittest.TestResult):
 
 ###
 
-    def printResult(self, test, short, extended, colour_key=None):
+    def printResult(self, test, short, extended, colour_key=None, showruntime=True):
         if self.no_colour_output:
             colour = self.colours[None]
         else:
@@ -353,7 +353,10 @@ class SSTTextTestResult(unittest.TestResult):
             testruntime = 0
             if self._is_test_of_type_ssttestcase(test):
                 testruntime = test.get_test_runtime_sec()
-            self.stream.writeln(" [{0:.3f}s]".format(testruntime))
+            if showruntime:
+                self.stream.writeln(" [{0:.3f}s]".format(testruntime))
+            else:
+                self.stream.writeln(" ".format(testruntime))
             self.stream.flush()
         elif self.dots:
             self.stream.write(colour(short))
@@ -399,7 +402,7 @@ class SSTTextTestResult(unittest.TestResult):
     def addSkip(self, test, reason):
         super(SSTTextTestResult, self).addSkip(test, reason)
         #log_forced("DEBUG - addSkip: Test = {0}, reason = {1}\n".format(test, reason))
-        self.printResult(test, 's', 'SKIPPED: {0!r}'.format(reason), 'skip')
+        self.printResult(test, 's', 'SKIPPED: {0!r}'.format(reason), 'skip', showruntime=False)
 
         if not self._is_test_of_type_ssttestcase(test):
             return
