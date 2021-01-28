@@ -292,17 +292,24 @@ class SSTTestCase(unittest.TestCase):
         else:
             mpiout_filename = mpi_out_files
 
+        # Get the path to sst binary application
+        sst_app_path = sstsimulator_conf_get_value_str('SSTCore', 'bindir', default="UNDEFINED")
+        err_str = "Path to SST {0}; does not exist...".format(sst_app_path)
+        self.assertTrue(os.path.isdir(sst_app_path), err_str)
+
         # Set the initial os launch command for sst.
         # If multi-threaded, include the number of threads
         if num_threads > 1:
-            oscmd = "sst -n {0} {1} {2} {3}".format(num_threads,
-                                                    global_args,
-                                                    other_args,
-                                                    sdl_file)
+            oscmd = "{0}/sst -n {1} {2} {3} {4}".format(sst_app_path,
+                                                        num_threads,
+                                                        global_args,
+                                                        other_args,
+                                                        sdl_file)
         else:
-            oscmd = "sst {0} {1} {2}".format(global_args,
-                                             other_args,
-                                             sdl_file)
+            oscmd = "{0}/sst {1} {2} {3}".format(sst_app_path,
+                                                 global_args,
+                                                 other_args,
+                                                 sdl_file)
 
         # Update the os launch command if we are running multi-rank
         num_cores = host_os_get_num_cores_on_system()
