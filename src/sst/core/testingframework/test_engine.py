@@ -181,13 +181,13 @@ class TestEngine():
             sst_tests_results = test_runner.run(self._sst_full_test_suite)
 
             if not test_runner.did_tests_pass(sst_tests_results):
-                return 1
-            return 0
+                exit(1)
+            exit(0)
 
         # Handlers of unittest.TestRunner exceptions
         except KeyboardInterrupt:
             log_fatal("TESTING TERMINATED DUE TO KEYBOARD INTERRUPT...")
-        return 2
+        exit(2)
 
 ####
 
@@ -354,8 +354,6 @@ class TestEngine():
         cmd = "sst --version"
         rtn = OSCommand(cmd).run()
         sstcoreversion = rtn.output()
-        if type(sstcoreversion) is bytes:
-            sstcoreversion= sstcoreversion.decode(encoding='UTF-8')
         sstcoreversion = sstcoreversion.replace("SST-Core Version ", "").rstrip()
 
         num_cores = host_os_get_num_cores_on_system()
@@ -578,17 +576,17 @@ class TestEngine():
                 A dict object of defines from the sst_element_config.h file.
         """
         # ID the path to the sst element configuration file
-        elem_root = sstsimulator_conf_get_value_str("SST_ELEMENT_LIBRARY",
-                                                    "SST_ELEMENT_LIBRARY_SOURCE_ROOT",
+        build_root = sstsimulator_conf_get_value_str("SST_ELEMENT_LIBRARY",
+                                                    "SST_ELEMENT_LIBRARY_BUILDDIR",
                                                     "undefined")
         # If the element root is not found, then elements have not yet been registerd
-        if elem_root == "undefined":
-            log_warning((("SST-Elements Root Directory is not registered with the ") +
+        if build_root == "undefined":
+            log_warning((("SST-Elements Build Directory is not registered with the ") +
                        ("SST Core (is SST-Elements installed?)")))
             return {}
 
         # The elements root has been registered, dbl-check all is well
-        elem_conf_include_dir = elem_root + "/src/"
+        elem_conf_include_dir = build_root + "/src/"
         elem_conf_include_path = elem_conf_include_dir + "sst_element_config.h"
         if not os.path.isdir(elem_conf_include_dir):
             log_fatal((("SST-Elements Directory {0} - Does not exist - ") +
