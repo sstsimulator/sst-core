@@ -626,14 +626,16 @@ BaseComponent::createExplicitlyEnabledStatistic(Params &params, StatisticId_t id
     return iter->second;
   }
 
-  auto piter = my_info->enabledStatConfigs->find(id);
-  if (piter == my_info->enabledStatConfigs->end()){
+  auto piter = my_info->statConfigs->find(id);
+  if (piter == my_info->statConfigs->end()){
     fatal(__LINE__, __FILE__, "createExplicitlyEnabledStatistic", 1,
          "explicitly enabled statistic '%s' does not have parameters mapped to its ID",
          name.c_str());
   }
 
-  auto* stat = createStatistic(params, piter->second.params, name, statSubId, std::move(fxn));
+  const std::string paramStatName = piter->second.params.find<std::string>("name", name);
+  const std::string paramSubId = piter->second.params.find<std::string>("subid", statSubId);
+  auto* stat = createStatistic(params, piter->second.params, paramStatName, paramSubId, std::move(fxn));
   m_explicitlyEnabledStats[id] = stat;
   return stat;
 }

@@ -299,6 +299,8 @@ static PyObject* compSetStatistic(PyObject *self, PyObject *args)
         PyObject *argList = Py_BuildValue("Ok", self, stat->id);
         PyObject *statObj = PyObject_CallObject((PyObject*)&PyModel_StatType, argList);
         Py_DECREF(argList);
+
+        stat->addParameter("name", name, true);
         return statObj;
     }
 
@@ -447,6 +449,55 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     return SST_ConvertToPythonLong(0);
 }
 
+static PyObject* compCreateStatistics(PyObject *self, PyObject *args)
+{
+//    char* param = nullptr;
+    ConfigComponent *comp = getComp(self);
+    if ( nullptr == comp )
+        return nullptr;
+
+    if ( !PyDict_Check(args) ) {
+        return nullptr;
+    }
+
+    if ( nullptr == comp ) return nullptr;
+    ConfigStatistic *stat = comp->createStatistic();
+    if ( nullptr == stat ) return nullptr;
+
+    const char *expectedKey = "subid";
+    bool expectedKeyfound = false;
+
+    Py_ssize_t pos = 0;
+    PyObject *key, *val;
+
+    while ( PyDict_Next(args, &pos, &key, &val) ) {
+        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
+        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+        const char *kstrAsCppString = SST_ConvertToCppString(kstr);
+        if (strcmp(kstrAsCppString, expectedKey) == 0) {
+            expectedKeyfound = true;
+        }
+        stat->addParameter(SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr), true);
+        Py_XDECREF(kstr);
+        Py_XDECREF(vstr);
+    }
+    if (!expectedKeyfound) {
+        stat->addParameter(expectedKey, "", true);
+    }
+
+    if ( nullptr != stat ) {
+        PyObject *argList = Py_BuildValue("Ok", self, stat->id);
+        PyObject *statObj = PyObject_CallObject((PyObject*)&PyModel_StatType, argList);
+        Py_DECREF(argList);
+        return statObj;
+    }
+
+    char errMsg[1024] = {0};
+    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create statistic on %s.\n", comp->name.c_str());
+    PyErr_SetString(PyExc_RuntimeError, errMsg);
+    return nullptr;
+}
+
 
 static PyMethodDef componentMethods[] = {
     {   "addParam",
@@ -473,6 +524,9 @@ static PyMethodDef componentMethods[] = {
     {   "setStatisticLoadLevel",
         compSetStatisticLoadLevel, METH_VARARGS,
         "Sets the statistics load level for this component"},
+    {   "createStatistics",
+        compCreateStatistics, METH_O,
+        "Create a Statistics in the component with optional parameters"},
     {   "enableAllStatistics",
         compEnableAllStatistics, METH_VARARGS,
         "Enable all Statistics in the component with optional parameters"},
