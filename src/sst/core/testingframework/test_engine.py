@@ -45,7 +45,9 @@ HELP_EPILOG = (
     ("Finding Testsuites:\n") +
     (" During startup, the -p ('--list_of_paths') and -y ('--testsuite_types')\n") +
     (" and -w ('--testsuite_wildcards') arguments are used to create a list of\n") +
-    (" testsuites to be run.\n") +
+    (" testsuites to be run.  Normally all tests in a testsuite will be run.\n") +
+    (" The -e (--test_names) can be used to pick specific tests in the discovered\n") +
+    (" testsuites to be run\n") +
     ("\n") +
     (" The '-p' (--list_of_paths') argument:\n") +
     ("   - If the '-p' argument is empty (default), test paths found in the \n") +
@@ -81,6 +83,12 @@ HELP_EPILOG = (
     ("     NOTE: This will run user selected set of testsuites in the directory.\n") +
     ("     Example: -w \"*merlin*\" - Quotes are important to avoid the shell's \n") +
     ("                              automatic wildcard expansion.\n") +
+    ("\n") +
+    ("Running Specific Tests:\n") +
+    (" - Normally all tests in the discovered testsuites are run.  However, the\n") +
+    ("   user may identify tests from the discovered testsuites using \n") +
+    ("   the -e ('--test_names') parameter.  The names must match the desired testnames\n") +
+    ("   exactly.  Only these specific tests will be run.\n") +
     ("\n") +
     ("Test Scenarios:\n") +
     (" - Tests and TestCases identified within testsuites can be skipped from running\n") +
@@ -120,6 +128,7 @@ class TestEngine():
         self._keep_output_dir = False
         self._list_discovered_testsuites_mode = False
         self._list_of_searchable_testsuite_paths = []
+        self._list_of_specific_testnames = []
         self._testsuite_types_list = []
         self._testsuite_wildcards_list = []
         self._sst_core_bin_dir = sst_core_bin_dir
@@ -219,7 +228,7 @@ class TestEngine():
         out_mode_group = parser.add_argument_group('Output Mode Arguments')
         mutgroup = out_mode_group.add_mutually_exclusive_group()
         mutgroup.add_argument('-v', '--verbose', action='store_true',
-                              help='Run tests in verbose mode [default]')
+                              help='Run tests in verbose mode (default)')
         mutgroup.add_argument('-n', '--normal', action='store_true',
                               help='Run tests in normal mode')
         mutgroup.add_argument('-q', '--quiet', action='store_true',
@@ -264,23 +273,29 @@ class TestEngine():
         mutnamegroup.add_argument('-y', '--testsuite_types', type=str, metavar="name",
                                   nargs="+", default=['default'],
                                   help=(('Name (in lowercase) of testsuite types to') + \
-                                       (' run\n("all" will run all types) ["default"]') + \
+                                       (' run\n("all" will run all types)\ndefault = ["default"]') + \
                                        ('\nNote: Mutually exclusive with --testsuite_wildcards')))
         mutnamegroup.add_argument('-w', '--testsuite_wildcards', type=str, metavar="name",
                                   nargs="+", default=[],
                                   help=(('Wildcard names of testsuites to') + \
-                                       (' run\n("testsuite_<wildcard_name>.py") [""]') + \
+                                       (' run\n("testsuite_<wildcard_name>.py")\ndefault = [""]') + \
                                        ('\nNote: Mutually exclusive with --testsuite_types') + \
                                        ('\nNote: Quotes are important to avoid the shell\'s') + \
                                        ('\n automatic wildcard expansion. Example: -w "*merlin*"')))
         if self._test_mode:
             testsuite_path_str = \
-            "Files for Dirs of testsuites to be discovered for SST-Core\n[Registered Dir Path]"
+            "Files for Dirs of testsuites to be discovered for SST-Core\ndefault = [Registered Dir Path]"
         else:
             testsuite_path_str = \
-            "Files or Dirs of testsuites to be discovered for Elements.\n[Registered Dir Paths]"
+            "Files or Dirs of testsuites to be discovered for Elements.\ndefault = [Registered Dir Paths]"
         discover_group.add_argument('-p', '--list_of_paths', metavar='path',
                                     nargs='*', default=[], help=testsuite_path_str)
+
+        discover_group.add_argument('-e', '--test_names', type=str, metavar="name",
+                                  nargs="+", default=[],
+                                  help=(('Names of specific tests from discovered testsuites') + \
+                                       (' to run\ndefault = [run all tests]; Example: -e "test_UnitAlgebra"') + \
+                                       ('\nNote: Will only add tests from discovered testsuites')))
 
         args = parser.parse_args()
         self._decode_parsed_arguments(args, parser)
@@ -299,6 +314,7 @@ class TestEngine():
         self._list_discovered_testsuites_mode = args.list_testsuites
         self._keep_output_dir = args.keep_output
         self._list_of_searchable_testsuite_paths = args.list_of_paths
+        self._list_of_specific_testnames = args.test_names
         lc_testscenario_list = [item.lower() for item in args.scenarios]
         test_engine_globals.TESTENGINE_SCENARIOSLIST = lc_testscenario_list
         lc_testsuitetype_list = [item.lower() for item in args.testsuite_types]
@@ -459,6 +475,10 @@ class TestEngine():
             log_debug("- {0}".format(search_path))
 
         self._add_testsuites_from_identifed_paths()
+
+        # Handle the option of user selected specific test names
+        if len(self._list_of_specific_testnames) != 0:
+            self._sst_full_test_suite = self._prune_unwanted_tests(self._sst_full_test_suite)
 
         log_debug("DISCOVERED TESTS (FROM TESTSUITES):")
         self._dump_testsuite_list(self._sst_full_test_suite)
@@ -696,18 +716,46 @@ class TestEngine():
 
 ####
 
-    def _dump_testsuite_list(self, suite, log_normal=False):
+    def _dump_testsuite_list(self, suite, log_normal=False, show_suites=False, iterlevel=0):
         """ Recursively log all tests in a TestSuite.
 
             Args:
                 suite (SSTTestSuite): The current suite to print
                 log_normal (bool): True = Log normaly; False = Use log_debug
         """
+        iterspace = ""
+        if show_suites:
+            iterspace = "--" * iterlevel
+
         if hasattr(suite, '__iter__'):
             for sub_suite in suite:
-                self._dump_testsuite_list(sub_suite, log_normal)
+                if show_suites:
+                    log("{0}SUITE - {1}".format(iterspace, sub_suite))
+                self._dump_testsuite_list(sub_suite, log_normal, show_suites, iterlevel+1)
         else:
             if log_normal:
-                log("- {0}".format(suite))
+                log("{0}TEST - {1}".format(iterspace, suite))
             else:
-                log_debug("- {0}".format(suite))
+                log_debug("{0}TEST - {1}".format(iterspace, suite))
+
+####
+
+    def _prune_unwanted_tests(self, suite):
+        """ Recursively remove any tests that dont match the name
+
+            Args:
+                suite (SSTTestSuite): The current suite to print
+        """
+        allowed_tests_list = self._list_of_specific_testnames
+        new_suite = unittest.TestSuite()
+
+        if hasattr(suite, '__iter__'):
+            for sub_suite in suite:
+                new_suite.addTest(self._prune_unwanted_tests(sub_suite))
+        else:
+            testname = suite._testMethodName
+
+            if testname in allowed_tests_list:
+                new_suite.addTest(suite)
+
+        return new_suite
