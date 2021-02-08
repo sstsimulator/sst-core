@@ -186,7 +186,6 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret.weight = weight;
     ret.rank = rank;
     ret.statLoadLevel = statLoadLevel;
-    ret.statistics = statistics;
     ret.coords = coords;
     for ( auto &i : subComponents ) {
         ret.subComponents.emplace_back(i.cloneWithoutLinksOrParams());
@@ -279,9 +278,9 @@ ConfigStatistic* ConfigComponent::createStatistic()
     auto* parent = getParent();
     ConfigStatistic* cs = nullptr;
     if (parent){
-      cs = parent->insertStatistic(stat_id);
+        cs = parent->insertStatistic(stat_id);
     } else {
-      cs = &statistics[stat_id];
+        cs = &statistics[stat_id];
     }
     cs->id = stat_id;
     return cs;
@@ -301,33 +300,33 @@ ConfigStatistic* ConfigComponent::enableStatistic(const std::string& statisticNa
     
     StatisticId_t stat_id;
     if (statisticName == STATALLFLAG){
-      // Special sentinel id for enable all
-      // The ConfigStatistic object for STATALLFLAG is not an entry of the statistics
-      // It has its own ConfigStatistic as a member variable of ConfigComponent which must be used
-      // in case of enabledAllStats == true.
-      enabledAllStats = true;
-      allStatConfig.id = STATALL_ID;
-      return &allStatConfig;
+        // Special sentinel id for enable all
+        // The ConfigStatistic object for STATALLFLAG is not an entry of the statistics
+        // It has its own ConfigStatistic as a member variable of ConfigComponent which must be used
+        // in case of enabledAllStats == true.
+        enabledAllStats = true;
+        allStatConfig.id = STATALL_ID;
+        return &allStatConfig;
     } else if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName)){
-      //this is not a valid statistic
-      return nullptr;
+        //this is not a valid statistic
+        return nullptr;
     } else {
-      //this is a valid statistic
-      auto iter = enabledStatNames.find(statisticName);
-      if (iter == enabledStatNames.end()){
-        //this is the first time being enabled
-        stat_id = getNextStatisticID();
-        enabledStatNames[statisticName] = stat_id;
-        auto* parent = getParent();
-        if (parent){
-          ConfigStatistic* cs = parent->insertStatistic(stat_id);
-          cs->id = stat_id;
-          return cs;
+        //this is a valid statistic
+        auto iter = enabledStatNames.find(statisticName);
+        if (iter == enabledStatNames.end()){
+            //this is the first time being enabled
+            stat_id = getNextStatisticID();
+            enabledStatNames[statisticName] = stat_id;
+            auto* parent = getParent();
+            if (parent){
+                ConfigStatistic* cs = parent->insertStatistic(stat_id);
+                cs->id = stat_id;
+                return cs;
+            }
+        } else {
+            //this was already enabled
+            stat_id = iter->second;
         }
-      } else {
-        //this was already enabled
-        stat_id = iter->second;
-      }
     }
     
     ConfigStatistic& cs = statistics[stat_id];

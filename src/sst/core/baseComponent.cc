@@ -553,7 +553,7 @@ BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, con
       // Rate is Count Based
       statCollectionMode = StatisticBase::STAT_MODE_COUNT;
   } else if (collectionRate.getValue() == 0) {
-      // Collection rate is zero and has no units
+      // Collection rate is zero
       // so we just dump at beginning and end
       collectionRate = UnitAlgebra("0ns");
       statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
@@ -599,15 +599,15 @@ Statistics::StatisticBase*
 BaseComponent::createEnabledAllStatistic(Params& params, const std::string &name, const std::string &statSubId,
                                          StatCreateFunction fxn)
 {
-  for (auto* stat : m_enabledAllStats){
-    if (stat->getStatName() == name && stat->getStatSubId() == statSubId){
-      return stat;
+    for (auto* stat : m_enabledAllStats){
+        if (stat->getStatName() == name && stat->getStatSubId() == statSubId){
+            return stat;
+        }
     }
-  }
 
-  auto* stat = createStatistic(params, my_info->allStatConfig->params, name, statSubId, std::move(fxn));
-  m_enabledAllStats.push_back(stat);
-  return stat;
+    auto* stat = createStatistic(params, my_info->allStatConfig->params, name, statSubId, std::move(fxn));
+    m_enabledAllStats.push_back(stat);
+    return stat;
 }
 
 Statistics::StatisticBase*
@@ -615,29 +615,30 @@ BaseComponent::createExplicitlyEnabledStatistic(Params &params, StatisticId_t id
                                                 const std::string &name, const std::string &statSubId,
                                                 StatCreateFunction fxn)
 {
-  if (my_info->parent_info){
-    fatal(__LINE__, __FILE__, "createExplicitlyEnabledStatistic", 1,
-         "creating explicitly enabled statistic '%s' should only happen in parent component",
-         name.c_str());
-  }
+    Output& out = getSimulation()->getSimulationOutput();
+    if (my_info->parent_info){
+        out.fatal(CALL_INFO, 1, 0,
+                  "Creating explicitly enabled statistic '%s' should only happen in parent component",
+                  name.c_str());
+    }
 
-  auto iter = m_explicitlyEnabledStats.find(id);
-  if (iter != m_explicitlyEnabledStats.end()){
-    return iter->second;
-  }
+    auto iter = m_explicitlyEnabledStats.find(id);
+    if (iter != m_explicitlyEnabledStats.end()){
+        return iter->second;
+    }
 
-  auto piter = my_info->statConfigs->find(id);
-  if (piter == my_info->statConfigs->end()){
-    fatal(__LINE__, __FILE__, "createExplicitlyEnabledStatistic", 1,
-         "explicitly enabled statistic '%s' does not have parameters mapped to its ID",
-         name.c_str());
-  }
+    auto piter = my_info->statConfigs->find(id);
+    if (piter == my_info->statConfigs->end()){
+        out.fatal(CALL_INFO, 1, 0,
+                  "Explicitly enabled statistic '%s' does not have parameters mapped to its ID",
+                  name.c_str());
+    }
 
-  const std::string paramStatName = piter->second.params.find<std::string>("name", name);
-  const std::string paramSubId = piter->second.params.find<std::string>("subid", statSubId);
-  auto* stat = createStatistic(params, piter->second.params, paramStatName, paramSubId, std::move(fxn));
-  m_explicitlyEnabledStats[id] = stat;
-  return stat;
+    const std::string paramStatName = piter->second.params.find<std::string>("name", name);
+    const std::string paramSubId = piter->second.params.find<std::string>("subid", statSubId);
+    auto* stat = createStatistic(params, piter->second.params, paramStatName, paramSubId, std::move(fxn));
+    m_explicitlyEnabledStats[id] = stat;
+    return stat;
 }
 
 void
