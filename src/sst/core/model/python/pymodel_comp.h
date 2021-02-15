@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -26,7 +26,7 @@ struct ComponentHolder {
     ComponentPy_t *pobj;
     // ConfigComponent* config;
     ComponentId_t id;
-    
+
     ComponentHolder(ComponentPy_t *pobj, ComponentId_t id) : pobj(pobj), id(id) { }
     virtual ~ComponentHolder() { }
     virtual ConfigComponent* getComp();

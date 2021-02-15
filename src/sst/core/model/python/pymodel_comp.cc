@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -59,12 +59,12 @@ std::string ComponentHolder::getName() {
 ConfigComponent* ComponentHolder::getComp() {
     return gModel->getGraph()->findComponent(id);
 }
-    
+
 
 int ComponentHolder::compare(ComponentHolder *other) {
     if (id < other->id) return -1;
     else if (id > other->id ) return 1;
-    else return 0;    
+    else return 0;
 }
 
 
@@ -249,7 +249,7 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     char *name = nullptr, *type = nullptr;
     int slot = 0;
 
-    
+
     if ( !PyArg_ParseTuple(args, "ss|i", &name, &type, &slot) )
         return nullptr;
 
@@ -312,7 +312,7 @@ static PyObject* compSetStatisticLoadLevel(PyObject *self, PyObject *args) {
 
     argOK = PyArg_ParseTuple(args, "H|i", &loadLevel, &apply_to_children);
     loadLevel = loadLevel & 0xff;
-    
+
     if (argOK) {
         c->setStatisticLoadLevel(loadLevel,apply_to_children);
     }
@@ -376,7 +376,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
         argOK = PyArg_ParseTuple(args, "O!|O!i", &PyList_Type, &statList, &PyDict_Type, &statParamDict, &apply_to_children);
         if ( argOK )  Py_INCREF(statList);
     }
-        
+
     if (argOK) {
         // Generate the Statistic Parameters
         auto params = generateStatisticParameters(statParamDict);
@@ -528,7 +528,7 @@ static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwd
         return -1;
 
     PySubComponent *obj = new PySubComponent(self,id);
-    
+
     self->obj = obj;
 
     gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating subcomponent [%s] of type [%s]]\n", getComp((PyObject*)self)->name.c_str(), getComp((PyObject*)self)->type.c_str());

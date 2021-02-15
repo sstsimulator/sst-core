@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -107,7 +107,7 @@ public:
 #else
     static void shutdown();
 #endif
-    
+
     /** Sets an internal flag for signaling the simulation.  Used internally */
 #if !SST_BUILDING_CORE
     static void setSignal(int signal) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
@@ -115,7 +115,7 @@ public:
     static void setSignal(int signal);
 #endif
 
-    
+
     /********* Public Static API ************/
 
     /** Return a pointer to the singleton instance of the Simulation */
@@ -179,9 +179,9 @@ public:
      */
     void printStatus(bool fullStatus);
 
-    
+
     /******** Core only API *************/
-    
+
     /** Processes the ConfigGraph to pull out any need information
      * about relationships among the threads
      */
@@ -189,7 +189,7 @@ public:
     void processGraphInfo( ConfigGraph& graph, const RankInfo &myRank, SimTime_t min_part ) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     void processGraphInfo( ConfigGraph& graph, const RankInfo &myRank, SimTime_t min_part );
-#endif    
+#endif
 
     /** Converts a ConfigGraph graph into actual set of links and components */
 #if !SST_BUILDING_CORE
@@ -197,41 +197,41 @@ public:
 #else
     int performWireUp( ConfigGraph& graph, const RankInfo &myRank, SimTime_t min_part );
 #endif
-    
+
     /** Set cycle count, which, if reached, will cause the simulation to halt. */
 #if !SST_BUILDING_CORE
     void setStopAtCycle( Config* cfg ) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     void setStopAtCycle( Config* cfg );
 #endif
-    
+
     /** Perform the init() phase of simulation */
 #if !SST_BUILDING_CORE
     void initialize() __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     void initialize();
 #endif
-    
+
     /** Perform the complete() phase of simulation */
 #if !SST_BUILDING_CORE
     void complete() __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     void complete();
 #endif
-    
+
     /** Perform the setup() and run phases of the simulation. */
 #if !SST_BUILDING_CORE
     void setup() __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     void setup();
 #endif
-    
+
 #if !SST_BUILDING_CORE
     void run() __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     void run();
 #endif
-    
+
 #if !SST_BUILDING_CORE
     void finish() __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
@@ -253,7 +253,7 @@ public:
 #else
     TimeConverter* registerOneShot(const std::string& timeDelay, OneShot::HandlerBase* handler, int priority);
 #endif
-    
+
 #if !SST_BUILDING_CORE
     TimeConverter* registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
@@ -277,7 +277,7 @@ public:
 #else
     static TimeConverter* getMinPartTC() { return minPartTC; }
 #endif
-    
+
     /** Return pointer to map of links for a given component id */
 #if !SST_BUILDING_CORE
     LinkMap* getComponentLinkMap(ComponentId_t id) const __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11."))) {
@@ -297,7 +297,7 @@ public:
     const ComponentInfoMap& getComponentInfoMap(void) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11."))) { return compInfoMap; }
 #else
     const ComponentInfoMap& getComponentInfoMap(void) { return compInfoMap; }
-#endif   
+#endif
 
     /** returns the component with the given ID */
 #if !SST_BUILDING_CORE
@@ -366,7 +366,7 @@ public:
 #else
     SimTime_t getNextActivityTime() const;
 #endif
-    
+
     /**
      *  Gets the minimum next activity time across all TimeVortices in
      *  the Rank
@@ -376,7 +376,7 @@ public:
 #else
     static SimTime_t getLocalMinimumNextActivityTime();
 #endif
-    
+
     /**
     * Returns true when the Wireup is finished.
     */
@@ -385,7 +385,7 @@ public:
 #else
     bool isWireUpFinished() {return wireUpFinished; }
 #endif
-    
+
 
 
 #if !SST_BUILDING_CORE
@@ -405,37 +405,37 @@ public:
 #else
     uint64_t getSyncQueueDataSize() const;
 #endif
-    
-    
+
+
     /******** API provided through BaseComponent only ***********/
 
-    
+
     /** Register a handler to be called on a set frequency */
 #if !SST_BUILDING_CORE
     TimeConverter* registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     TimeConverter* registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority);
 #endif
-    
+
 #if !SST_BUILDING_CORE
     TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority);
 #endif
-    
+
 #if !SST_BUILDING_CORE
     TimeConverter* registerClock(TimeConverter *tcFreq, Clock::HandlerBase* handler, int priority) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     TimeConverter* registerClock(TimeConverter *tcFreq, Clock::HandlerBase* handler, int priority);
 #endif
-    
+
     /** Remove a clock handler from the list of active clock handlers */
 #if !SST_BUILDING_CORE
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
 #else
     void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority);
 #endif
-    
+
     /** Reactivate an existing clock and handler.
      * @return time when handler will next fire
      */
@@ -444,7 +444,7 @@ public:
 #else
     Cycle_t reregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority);
 #endif
-    
+
     /** Returns the next Cycle that the TImeConverter would fire. */
 #if !SST_BUILDING_CORE
     Cycle_t getNextClockCycle(TimeConverter* tc, int priority = CLOCKPRIORITY) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
@@ -458,7 +458,7 @@ public:
 #else
     Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const;
 #endif
-    
+
 
 
 
