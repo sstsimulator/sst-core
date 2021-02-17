@@ -19,6 +19,7 @@ import sys
 import unittest
 import traceback
 import threading
+import time
 from datetime import datetime
 
 PY2 = sys.version_info[0] == 2
@@ -142,8 +143,11 @@ class SSTTextTestRunner(unittest.TextTestRunner):
 
     def run(self, test):
         """ Run the tests."""
+        testing_start_time = time.time()
         runresults = super(SSTTextTestRunner, self).run(test)
-        self._get_and_display_test_results(runresults)
+        testing_stop_time = time.time()
+        total_testing_time = testing_stop_time - testing_start_time
+        self._get_and_display_test_results(runresults, total_testing_time)
         return runresults
 
 ###
@@ -165,7 +169,7 @@ class SSTTextTestRunner(unittest.TextTestRunner):
 
 ###
 
-    def _get_and_display_test_results(self, run_results):
+    def _get_and_display_test_results(self, run_results, total_testing_time):
         """ Figure out if testing passed, and display the test results.
 
             Args:
@@ -195,6 +199,11 @@ class SSTTextTestRunner(unittest.TextTestRunner):
         log("Errors               = {0}".format(len(run_results.errors)))
         log("Expected Failures    = {0}".format(len(run_results.expectedFailures)))
         log("Unexpected Successes = {0}".format(len(run_results.unexpectedSuccesses)))
+        log(("-----------------------------------") +
+            ("-----------------------------------"))
+        t_min, t_sec = divmod(total_testing_time, 60)
+        t_hr, t_min = divmod(t_min, 60)
+        log("-- Total Test Time = {0:d} Hours, {1:d} Minutes, {2:2.3f} Seconds --".format(int(t_hr), int(t_min), t_sec))
 
         if self.did_tests_pass(run_results):
             log_forced("\n====================")
