@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -253,7 +253,7 @@ static PyObject* findComponentByName(PyObject* UNUSED(self), PyObject* args)
         Py_INCREF(Py_None);
         return Py_None;
     }
-    
+
     if ( SUBCOMPONENT_ID_MASK(cc->id) == 0 ) {
         // Component
         PyObject *argList = Py_BuildValue("ssk", name, "irrelephant", cc->id);
@@ -495,7 +495,7 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *UNUSED(self), PyO
     char*         compName = nullptr;
     PyObject*     statParamDict = nullptr;
     int           apply_to_children = 0;
-    
+
     PyErr_Clear();
 
     // Parse the Python Args Component Name and get optional Stat Params (as a Dictionary)
@@ -569,7 +569,7 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
         if ( argOK )  Py_INCREF(statList);
     }
 
-    
+
     if (argOK) {
         // Generate the Statistic Parameters
         auto params = generateStatisticParameters(statParamDict);
@@ -580,7 +580,7 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
             gModel->getOutput()->fatal(CALL_INFO,1,"component name not found in call to enableStatisticsForComponentName(): %s\n",compName);
         }
 
-        
+
         // Figure out how many stats there are
         numStats = PyList_Size(statList);
 
@@ -596,7 +596,7 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
                 cc->addStatisticParameter(SST_ConvertToCppString(pyname), p.first, p.second, apply_to_children);
             }
 
-        }        
+        }
     } else {
         // ParseTuple Failed, return NULL for error
         return nullptr;
@@ -692,7 +692,7 @@ static PyObject* enableStatisticsForComponentType(PyObject *UNUSED(self), PyObje
             PyObject* pylistitem = PyList_GetItem(statList, x);
             PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
             std::string statName = SST_ConvertToCppString(pyname);
-            
+
             gModel->enableStatisticForComponentType(compType, statName, apply_to_children);
 
             // Generate and Add the Statistic Parameters

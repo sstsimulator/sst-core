@@ -1,9 +1,9 @@
 // -*- mode: c++ -*-
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -364,8 +364,8 @@ public:
     /**
      * Get cache/memory line size from the memory system
      *
-     * The memory system should provide this and it should be 
-     * valid after the init() phase is complete, so processors 
+     * The memory system should provide this and it should be
+     * valid after the init() phase is complete, so processors
      * can call this function during setup().
      *
      * For backward compatibiity, the function returns 0 by default.
@@ -375,7 +375,7 @@ public:
      * @return 0 if the interface does not provide this capability
      * @return line size of the memory system
      */
-    virtual Addr getLineSize() { return 0; } 
+    virtual Addr getLineSize() { return 0; }
 
 };
 
