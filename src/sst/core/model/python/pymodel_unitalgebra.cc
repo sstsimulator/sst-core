@@ -1,10 +1,10 @@
 // -*- c++ -*-
 
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -39,8 +39,8 @@ static int unitAlgebraInit(UnitAlgebraPy_t *self, PyObject *args, PyObject *UNUS
     char *init_str = NULL;
     // PyObject* obj;
     UnitAlgebraPy_t* new_obj;
-    
-    
+
+
     if ( PyArg_ParseTuple(args, "s", &init_str) ) {
         self->obj = init_str;
         return 0;
@@ -58,7 +58,7 @@ static void unitAlgebraDealloc(UnitAlgebraPy_t *self)
 {
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
-    
+
 static PyObject* unitAlgebraStr(PyObject* self)
 {
     UnitAlgebraPy_t *ua = (UnitAlgebraPy_t*)self;
@@ -135,7 +135,7 @@ static PyObject* unitAlgebraRichCmp (PyObject *self, PyObject *other, int op)
 static PyObject* createUnitAlgebra(PyObject* self)
 {
     PyObject *argList = Py_BuildValue("(O)", self);
-    PyObject* ret = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);    
+    PyObject* ret = PyObject_CallObject((PyObject*)&PyModel_UnitAlgebraType, argList);
     Py_DECREF(argList);
     return ret;
 }
@@ -148,7 +148,7 @@ static PyObject* createUnitAlgebra(PyObject* self)
 // the code cleaner and more maintainable.  Since this is only used
 // during intialization that's probably the right trade-off.  We can
 // revisit later if it becomes an issue.
-    
+
 static PyObject* unitAlgebraMathOps(PyObject* self, PyObject* other, char op, bool in_place) {
 
     if ( Py_TYPE(other) != &PyModel_UnitAlgebraType || Py_TYPE(self) != &PyModel_UnitAlgebraType ) {
@@ -184,7 +184,7 @@ static PyObject* unitAlgebraMathOps(PyObject* self, PyObject* other, char op, bo
 
     return ret;
 }
-    
+
 // NOTE: Because the python semantics require that the in-place
 // operators return a new reference, the in-place and regular
 // operators end up being the same function.  However, in order to
@@ -202,7 +202,7 @@ static PyObject* unitAlgebraAddIP (PyObject *self, PyObject *other)
 {
     return unitAlgebraMathOps(self,other,'+', true);
 }
-    
+
 // Sub
 static PyObject* unitAlgebraSub (PyObject *self, PyObject *other)
 {
@@ -213,7 +213,7 @@ static PyObject* unitAlgebraSubIP (PyObject *self, PyObject *other)
 {
     return unitAlgebraMathOps(self,other,'-', true);
 }
-    
+
 // Mult
 static PyObject* unitAlgebraMul (PyObject *self, PyObject *other)
 {
@@ -224,7 +224,7 @@ static PyObject* unitAlgebraMulIP (PyObject *self, PyObject *other)
 {
     return unitAlgebraMathOps(self,other,'*', true);
 }
-    
+
 // Div
 static PyObject* unitAlgebraDiv (PyObject *self, PyObject *other)
 {
@@ -294,7 +294,7 @@ PyNumberMethods PyModel_UnitAlgebraNumMeth = {
     unitAlgebraToFloat,       // unaryfunc nb_float
     SST_NB_OCT                // unaryfunc nb_oct
     SST_NB_HEX                // unaryfunc nb_hex
-    
+
     /* Added in release 2.0 */
     (binaryfunc)unitAlgebraAddIP,  // binaryfunc nb_inplace_add
     (binaryfunc)unitAlgebraSubIP,  // binaryfunc nb_inplace_subtract
@@ -307,19 +307,19 @@ PyNumberMethods PyModel_UnitAlgebraNumMeth = {
     nullptr,                // binaryfunc nb_inplace_and
     nullptr,                // binaryfunc nb_inplace_xor
     nullptr,                // binaryfunc nb_inplace_or
-    
+
     /* Added in release 2.2 */
     nullptr,                // binaryfunc nb_floor_divide
     (binaryfunc)unitAlgebraDiv, // binaryfunc nb_true_divide
     nullptr,                // binaryfunc nb_inplace_floor_divide
     (binaryfunc)unitAlgebraDivIP,  // binaryfunc nb_inplace_true_divide
-    
+
     /* Added in release 2.5 */
     nullptr,                // unaryfunc nb_index
     SST_NB_MATRIX_MULTIPLY     // py3 only
     SST_NB_INPLACE_MATRIX_MULTIPLY // py3 only
-}; 
-    
+};
+
 // Other methods
 
 static PyObject* unitAlgebraGetRoundedValue(PyObject *self, PyObject *UNUSED(args))
@@ -341,7 +341,7 @@ static PyObject* unitAlgebraIsValueZero(PyObject *self, PyObject *UNUSED(args))
 static PyObject* unitAlgebraHasUnits(PyObject* self, PyObject* args)
 {
     char *units = NULL;
-        
+
     if ( PyArg_ParseTuple(args, "s", &units) ) {
         UnitAlgebraPy_t *ua = (UnitAlgebraPy_t*)self;
         if ( ua->obj.hasUnits(units) ) Py_RETURN_TRUE;

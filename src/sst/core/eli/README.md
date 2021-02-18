@@ -53,4 +53,4 @@ where `Base2` itself inherits from `Base1`.
 The derived constructor for `Base2` must register a class `T` to itself and to the original `Base1`.
 The meaning of the type alias `is_constructible` applies only to the most derived base class.
 
-#### Copyright (c) 2009-2020, National Technology and Engineering Solutions of Sandia, LLC (NTESS)
+#### Copyright (c) 2009-2021, National Technology and Engineering Solutions of Sandia, LLC (NTESS)
