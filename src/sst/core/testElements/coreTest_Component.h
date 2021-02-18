@@ -84,6 +84,10 @@ private:
     SST::Link* S;
     SST::Link* E;
     SST::Link* W;
+    SST::Statistics::Statistic<int>* countN;
+    SST::Statistics::Statistic<int>* countS;
+    SST::Statistics::Statistic<int>* countE;
+    SST::Statistics::Statistic<int>* countW;
 };
 
 } // namespace CoreTestComponent

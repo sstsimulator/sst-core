@@ -287,8 +287,9 @@ static PyObject* compReuseStatistic(PyObject *self, PyObject *args)
 static PyObject* compSetStatistic(PyObject *self, PyObject *args)
 {
     char *name = nullptr;
+    char *subid = nullptr;
 
-    if ( !PyArg_ParseTuple(args, "s", &name) )
+    if ( !PyArg_ParseTuple(args, "s|s", &name, &subid) )
         return nullptr;
 
     ConfigComponent *c = getComp(self);
@@ -301,6 +302,12 @@ static PyObject* compSetStatistic(PyObject *self, PyObject *args)
         Py_DECREF(argList);
 
         stat->addParameter("name", name, true);
+        if (subid){
+          stat->addParameter("subid", subid);
+        } else {
+          stat->addParameter("subid", "");
+        }
+
         return statObj;
     }
 
@@ -449,52 +456,48 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     return SST_ConvertToPythonLong(0);
 }
 
-static PyObject* compCreateStatistics(PyObject *self, PyObject *args)
+static PyObject* compCreateStatistic(PyObject *self, PyObject *args)
 {
 //    char* param = nullptr;
     ConfigComponent *comp = getComp(self);
     if ( nullptr == comp )
         return nullptr;
 
-    if ( !PyDict_Check(args) ) {
+
+    //we can have 1 or 2 arguments
+    //mandatory name
+    //optional subid
+    //optional parameters
+    PyObject* name = nullptr;
+    PyObject* subid = nullptr;
+
+    if ( !PyArg_ParseTuple(args, "O|O", &name, &subid) )
         return nullptr;
-    }
 
     if ( nullptr == comp ) return nullptr;
-    ConfigStatistic *stat = comp->createStatistic();
-    if ( nullptr == stat ) return nullptr;
-
-    const char *expectedKey = "subid";
-    bool expectedKeyfound = false;
-
-    Py_ssize_t pos = 0;
-    PyObject *key, *val;
-
-    while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
-        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
-        const char *kstrAsCppString = SST_ConvertToCppString(kstr);
-        if (strcmp(kstrAsCppString, expectedKey) == 0) {
-            expectedKeyfound = true;
-        }
-        stat->addParameter(SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr), true);
-        Py_XDECREF(kstr);
-        Py_XDECREF(vstr);
+    ConfigStatistic *stat = comp ? comp->createStatistic() : nullptr;
+    if ( nullptr == stat ){
+      char errMsg[1024] = {0};
+      snprintf(errMsg, sizeof(errMsg)-1, "Failed to create statistic on %s.\n", comp->name.c_str());
+      PyErr_SetString(PyExc_RuntimeError, errMsg);
+      return nullptr;
     }
-    if (!expectedKeyfound) {
-        stat->addParameter(expectedKey, "", true);
+
+    stat->addParameter("name", SST_ConvertToCppString(name), true);
+    if (subid && subid != Py_None){
+      stat->addParameter("subid", SST_ConvertToCppString(subid), true);
+    } else {
+      stat->addParameter("subid", "", true); //empty
     }
 
     if ( nullptr != stat ) {
-        PyObject *argList = Py_BuildValue("Ok", self, stat->id);
-        PyObject *statObj = PyObject_CallObject((PyObject*)&PyModel_StatType, argList);
-        Py_DECREF(argList);
-        return statObj;
+      PyObject *argList = Py_BuildValue("Ok", self, stat->id);
+      PyObject *statObj = PyObject_CallObject((PyObject*)&PyModel_StatType, argList);
+      Py_DECREF(argList);
+      return statObj;
     }
 
-    char errMsg[1024] = {0};
-    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create statistic on %s.\n", comp->name.c_str());
-    PyErr_SetString(PyExc_RuntimeError, errMsg);
+    //this should be unreachable
     return nullptr;
 }
 
@@ -524,8 +527,8 @@ static PyMethodDef componentMethods[] = {
     {   "setStatisticLoadLevel",
         compSetStatisticLoadLevel, METH_VARARGS,
         "Sets the statistics load level for this component"},
-    {   "createStatistics",
-        compCreateStatistics, METH_O,
+    {   "createStatistic",
+        compCreateStatistic, METH_O,
         "Create a Statistics in the component with optional parameters"},
     {   "enableAllStatistics",
         compEnableAllStatistics, METH_VARARGS,
