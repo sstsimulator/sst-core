@@ -74,6 +74,7 @@ The SST Testing frameworks documentation is build using `pdoc` and requires Pyth
      * `-w name` = Wildcard name of testsuites to discover (SEE Discovery BELOW); `[""]`
         * __Note: Quotes are important around the wildcard name to avoid the shell's automatic wildcard expansion Example: use -w "\*merlin\*" instead of -w \*merlin\*__
      * `-p path` = Path to testsuites (SEE Discovery BELOW); `[<registered tests dir paths>]`
+     * `-e name` = Names of specific tests from discovered testsuites to run (SEE Discovery BELOW); `[<registered tests dir paths>]`
 
 ---
 ## **Testsuite File Naming**
@@ -109,6 +110,13 @@ Under normal operation, testsuites are automatically discovered (from registered
             * `-w = <wildcard_name>` :
                 * Files named `testsuite_<wildcard_name>.py` will be added to the list of testsuites to be run.  This will run user selected set of testsuites in the directory.
                 * Example: `-w = "*merlin*"` - **NOTE: Quotes are important to avoid the shell's automatic wildcard expansion**
+
+---
+
+## **Running Specific Tests**
+   * Normally all tests in the discovered testsuites are run.  However, the user may identify tests from the discovered testsuites using the -e ('--test_names') parameter.
+      * The names must match the desired testnames exactly.
+   * Only the specific tests will be run.
 
 ---
 
