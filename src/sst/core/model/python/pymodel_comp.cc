@@ -303,9 +303,9 @@ static PyObject* compSetStatistic(PyObject *self, PyObject *args)
 
         stat->addParameter("name", name, true);
         if (subid){
-          stat->addParameter("subid", subid);
+          stat->addParameter("subid", subid, true);
         } else {
-          stat->addParameter("subid", "");
+          stat->addParameter("subid", "", true);
         }
 
         return statObj;
