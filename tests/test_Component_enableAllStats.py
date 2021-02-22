@@ -1,12 +1,9 @@
 # Automatically generated SST Python input
 import sst
 
-# Define SST core options
-sst.setProgramOption("timebase", "1 ps")
 sst.setProgramOption("stopAtCycle", "25us")
 
 # Define the simulation components
-comps
 size = 2
 params = {
   "workPerCycle" : 1000,
@@ -15,7 +12,7 @@ params = {
 }
 
 def make_component(row, col):
-  return sst.Component("c%d.%d" % (i,j), "coreTestElement.coreTestComponent")
+  return sst.Component("c%d.%d" % (row,col), "coreTestElement.coreTestComponent")
 
 comps = [[make_component(i,j) for i in range(size)] for j in range(size)]
 
@@ -35,9 +32,10 @@ def connect(src_port, dst_port, comps, row, col, shift_x=0, shift_y=0, latency="
 for row in range(size):
   for col in range(size):
     connect("Nlink", "Slink", comps, row, col, shift_y=1)
-    connect("Slink", "Nlink", comps, row, col, shift_y=-1)
     connect("Elink", "Wlink", comps, row, col, shift_x=1)
-    connect("Wlink", "Elink", comps, row, col, shift_x=-1)
 
     comps[row][col].enableAllStatistics()
     comps[row][col].addParams(params)
+
+sst.setStatisticLoadLevel(7)
+sst.setStatisticOutput("sst.statOutputCSV")

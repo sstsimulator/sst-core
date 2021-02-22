@@ -51,13 +51,11 @@ int PyStatistic::compare(PyStatistic *other) {
 
 static int statInit(StatisticPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
-    StatisticId_t id;
-    PyObject *parent;
-    // if ( !PyArg_ParseTuple(args, "Ossii", &parent, &name, &type, &slot, &id) )
-    if ( !PyArg_ParseTuple(args, "Ok", &parent, &id) )
+    StatisticId_t id = 0;
+    if ( !PyArg_ParseTuple(args, "k", &id) )
         return -1;
 
-    PyStatistic *obj = new PyStatistic(self,id);
+    PyStatistic *obj = new PyStatistic(id);
     self->obj = obj;
 
     //gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating statistic [%s]]\n", getStat((PyObject*)self)->name.c_str());

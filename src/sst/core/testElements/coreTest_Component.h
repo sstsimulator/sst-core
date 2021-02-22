@@ -43,8 +43,11 @@ public:
         { "commSize",     "Size of communication to send.", "16"}
     )
 
-    // Optional since there is nothing to document
     SST_ELI_DOCUMENT_STATISTICS(
+        {"N", "events sent on N link", "counts", 1},
+        {"S", "events sent on S link", "counts", 1},
+        {"E", "events sent on E link", "counts", 1},
+        {"W", "events sent on W link", "counts", 1},
     )
 
     SST_ELI_DOCUMENT_PORTS(

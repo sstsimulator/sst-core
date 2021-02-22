@@ -128,9 +128,13 @@ class ConfigStatistic : public SST::Core::Serialization::serializable {
 public:
     StatisticId_t id;                /*!< Unique ID of this statistic */
     Params params;
+    bool shared;
+    std::string name;
 
-    ConfigStatistic(StatisticId_t id) :
-      id(id)
+    ConfigStatistic(StatisticId_t _id, bool _shared=false, std::string _name="") :
+      id(_id),
+      shared(_shared),
+      name(_name)
       { }
 
     ConfigStatistic() : id(stat_null_id) { }
@@ -141,6 +145,8 @@ public:
 
     void serialize_order(SST::Core::Serialization::serializer &ser) override {
         ser & id;
+        ser & shared;
+        ser & name;
         ser & params;
     }
 
@@ -269,9 +275,9 @@ public:
     ConfigStatistic* findStatistic(const std::string& name) const;
     ConfigStatistic* insertStatistic(StatisticId_t id);
     ConfigStatistic* findStatistic(StatisticId_t) const;
-    ConfigStatistic* enableStatistic(const std::string& statisticName, bool recursively = false);
+    ConfigStatistic* enableStatistic(const std::string& statisticName, const SST::Params& params, bool recursively = false);
     ConfigStatistic* createStatistic();
-    void reuseStatistic(const std::string& statisticName, StatisticId_t sid);
+    bool reuseStatistic(const std::string& statisticName, StatisticId_t sid);
     void addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively = false);
     void setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively = false);
     void setStatisticLoadLevel(uint8_t level, bool recursively = false);
@@ -413,17 +419,10 @@ public:
     /** Set the statistic system load level */
     void setStatisticLoadLevel(uint8_t loadLevel);
 
-    /** Enable a Statistics assigned to a component */
-    void enableStatisticForComponentName(const std::string& ComponentName, const std::string& statisticName, bool recursive = false);
-    void enableStatisticForComponentType(const std::string& ComponentType, const std::string& statisticName, bool recursive = false);
-
-    /** Add Parameters for a Statistic */
-    void addStatisticParameterForComponentName(const std::string& ComponentName, const std::string& statisticName, const std::string& param, const std::string& value, bool recursively);
-    void addStatisticParameterForComponentType(const std::string& ComponentType, const std::string& statisticName, const std::string& param, const std::string& value, bool recursively);
-    void setStatisticLoadLevelForComponentType(const std::string& compType, uint8_t level, bool recursively = false);
-
     std::vector<ConfigStatOutput>& getStatOutputs() {return statOutputs;}
+
     const ConfigStatOutput& getStatOutput(size_t index = 0) const {return statOutputs[index];}
+
     long getStatLoadLevel() const {return statLoadLevel;}
 
     /** Add a Link to a Component on a given Port */

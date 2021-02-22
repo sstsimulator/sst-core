@@ -779,9 +779,11 @@ private:
     void addSelfLink(const std::string& name);
     Link* getLinkFromParentSharedPort(const std::string& port);
 
+    using StatNameMap = std::map<std::string, std::map<std::string, Statistics::StatisticBase*>>;
 
-    std::map<StatisticId_t, Statistics::StatisticBase*> m_explicitlyEnabledStats;
-    std::vector<Statistics::StatisticBase*> m_enabledAllStats;
+    std::map<StatisticId_t, Statistics::StatisticBase*> m_explicitlyEnabledSharedStats;
+    std::map<StatisticId_t, StatNameMap> m_explicitlyEnabledUniqueStats;
+    StatNameMap m_enabledAllStats;
 
     BaseComponent* getParentComponent(){
       ComponentInfo* base_info = my_info;

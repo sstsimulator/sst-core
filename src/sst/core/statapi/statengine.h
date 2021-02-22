@@ -84,6 +84,10 @@ public:
         return registerStatisticCore(stat);
     }
 
+    uint8_t statLoadLevel() const {
+      return m_statLoadLevel;
+    }
+
     const std::vector<StatisticOutput*>& getStatOutputs() const { return m_statOutputs; }
 
 private:

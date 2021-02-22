@@ -74,6 +74,10 @@ public:  /* Public, but private.  Called only from Python functions */
         return graph->findComponentByName(std::string(name));
     }
 
+    ConfigComponentMap_t& components() {
+      return graph->getComponentMap();
+    }
+    
     void addLink(ComponentId_t id, const char *link_name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, link_name, port, latency, no_cut); }
     void setLinkNoCut(const char *link_name) const {graph->setLinkNoCut(link_name); }
 
@@ -85,28 +89,17 @@ public:  /* Public, but private.  Called only from Python functions */
     void addStatisticOutputParameter(const std::string& param, const std::string& value) { graph->addStatisticOutputParameter(param, value); }
     void setStatisticLoadLevel(uint8_t loadLevel) { graph->setStatisticLoadLevel(loadLevel); }
 
-    void enableStatisticForComponentName(const std::string& compname, const std::string& statname, bool apply_to_children = false) const {
-        graph->enableStatisticForComponentName(compname,statname,apply_to_children);
-    }
-
-    void enableStatisticForComponentType(const std::string& comptype, const std::string& statname, bool apply_to_children = false) const  {
-        graph->enableStatisticForComponentType(comptype, statname, apply_to_children);
-    }
-
-    void addStatisticParameterForComponentName(const std::string& compname, const std::string& statname, const std::string& param, const std::string& value, bool apply_to_children = false) {
-        graph->addStatisticParameterForComponentName(compname,statname,param,value,apply_to_children);
-    }
-
-    void addStatisticParameterForComponentType(const std::string& comptype, const std::string& statname, const std::string& param, const std::string& value, bool apply_to_children = false) {
-        graph->addStatisticParameterForComponentType(comptype, statname, param, value, apply_to_children);
-    }
 };
 
 std::map<std::string,std::string> generateStatisticParameters(PyObject* statParamDict);
+SST::Params pythonToCppParams(PyObject* statParamDict);
+PyObject* buildStatisticObject(StatisticId_t id);
+PyObject* buildEnabledStatistic(ConfigComponent* cc, const char* statName,
+                                PyObject* statParamDict, bool apply_to_children);
+PyObject* buildEnabledStatistics(ConfigComponent* cc, PyObject* statList,
+                                 PyObject* paramDict, bool apply_to_children);
 
 }
 }
-
-//#endif
 
 #endif

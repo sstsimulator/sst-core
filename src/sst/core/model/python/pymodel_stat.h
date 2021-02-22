@@ -24,10 +24,9 @@ struct StatisticPy_t;
 struct PyStatistic;
 
 struct PyStatistic {
-    StatisticPy_t *pobj;
     StatisticId_t id;
 
-    PyStatistic(StatisticPy_t *pobj, StatisticId_t id) : pobj(pobj), id(id) { }
+    PyStatistic(StatisticId_t id) : id(id) { }
     virtual ~PyStatistic() { }
     ConfigStatistic* getStat();
     int compare(PyStatistic *other);
