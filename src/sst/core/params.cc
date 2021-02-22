@@ -73,7 +73,7 @@ Params::clear()
 
 
 size_t
-Params::count(const key_type& k)
+Params::count(const key_type& k) const
 {
     return data.count(getKey(k));
 }
@@ -170,7 +170,7 @@ Params::find_prefix_params(const std::string& prefix) const
 }
 
 bool
-Params::contains(const key_type &k)
+Params::contains(const key_type &k) const
 {
     return data.find(getKey(k)) != data.end();
 }

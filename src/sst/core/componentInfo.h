@@ -195,6 +195,14 @@ public:
         return name;
     }
 
+    inline const std::string& getParentComponentName() const {
+        // First, get the actual component (parent pointer will be
+        // nullptr).
+        const ComponentInfo* real_comp = this;
+        while ( real_comp->parent_info != nullptr) real_comp = real_comp->parent_info;
+        return real_comp->getName();
+    }
+
     inline const std::string& getSlotName() const { return slot_name; }
 
     inline int getSlotNum() const { return slot_num; }
