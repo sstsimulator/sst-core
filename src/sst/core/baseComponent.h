@@ -73,9 +73,12 @@ public:
     virtual void emergencyShutdown(void) {}
 
 
-    /** Returns component Name */
-    /* inline const std::string& getName() const { return name; } */
+    /** Returns Component/SubComponent Name */
     inline const std::string& getName() const { return my_info->getName(); }
+
+    /** Returns the name of the parent Component, or, if called on a
+     * Component, the name of that Component. */
+    inline const std::string& getParentComponentName() const { return my_info->getParentComponentName(); }
 
 
     /** Used during the init phase.  The method will be called each phase of initialization.

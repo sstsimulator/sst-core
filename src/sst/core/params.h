@@ -236,7 +236,7 @@ public:
      *  (either 1 or 0).
      *
      */
-    size_t count(const key_type& k);
+    size_t count(const key_type& k) const;
 
     /** Find a Parameter value in the set, and return its value as a type T.
      * Type T must be either a basic numeric type (including bool) ,
@@ -503,7 +503,7 @@ public:
      * @param k   Key to search for
      * @return    True if the params contains the key, false otherwise
      */
-    bool contains(const key_type &k);
+    bool contains(const key_type &k) const;
 
     /**
      * @param keys   Set of keys to consider valid to add to the stack
