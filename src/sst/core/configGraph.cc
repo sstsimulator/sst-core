@@ -308,9 +308,6 @@ ConfigStatistic* ConfigComponent::enableStatistic(const std::string& statisticNa
         allStatConfig.id = STATALL_ID;
         allStatConfig.params.insert(params);
         return &allStatConfig;
-    } else if (!Factory::getFactory()->DoesComponentInfoStatisticNameExist(type, statisticName)){
-        //this is not a valid statistic
-        return nullptr;
     } else {
         //this is a valid statistic
         auto iter = enabledStatNames.find(statisticName);

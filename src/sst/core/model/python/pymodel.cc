@@ -1162,15 +1162,6 @@ PyObject* SST::Core::buildStatisticObject(StatisticId_t id)
 PyObject* SST::Core::buildEnabledStatistic(ConfigComponent* cc, const char* statName, PyObject* statParamDict, bool apply_to_children)
 {
   ConfigStatistic* cs = cc->enableStatistic(statName, pythonToCppParams(statParamDict), apply_to_children);
-  if (cs == nullptr){
-    char errMsg[1024] = {0};
-    snprintf(errMsg, sizeof(errMsg)-1, "Failed to create statistic '%s' on '%s'"
-             "- ensure this is a valid statistic in Python and has been registerd in C++ component\n",
-             statName, cc->name.c_str());
-    PyErr_SetString(PyExc_RuntimeError, errMsg);
-    return nullptr;
-  }
-
   return buildStatisticObject(cs->id);
 }
 
@@ -1186,7 +1177,8 @@ PyObject* SST::Core::buildEnabledStatistics(ConfigComponent* cc, PyObject* statL
   for (uint32_t x = 0; x < numStats; x++) {
       PyObject* pylistitem = PyList_GetItem(statList, x);
       PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
-      ConfigStatistic* cs = cc->enableStatistic(SST_ConvertToCppString(pyname),params,apply_to_children);
+      std::string name = SST_ConvertToCppString(pyname);
+      ConfigStatistic* cs = cc->enableStatistic(name,params,apply_to_children);
       PyObject* statObj = buildStatisticObject(cs->id);
       PyList_SetItem(statList, x, statObj);
   }
