@@ -1,8 +1,8 @@
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -73,9 +73,12 @@ public:
     virtual void emergencyShutdown(void) {}
 
 
-    /** Returns component Name */
-    /* inline const std::string& getName() const { return name; } */
+    /** Returns Component/SubComponent Name */
     inline const std::string& getName() const { return my_info->getName(); }
+
+    /** Returns the name of the parent Component, or, if called on a
+     * Component, the name of that Component. */
+    inline const std::string& getParentComponentName() const { return my_info->getParentComponentName(); }
 
 
     /** Used during the init phase.  The method will be called each phase of initialization.

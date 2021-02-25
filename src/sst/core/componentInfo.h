@@ -1,8 +1,8 @@
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -193,6 +193,14 @@ public:
     inline const std::string& getName() const {
         if ( name.empty() && parent_info ) return parent_info->getName();
         return name;
+    }
+
+    inline const std::string& getParentComponentName() const {
+        // First, get the actual component (parent pointer will be
+        // nullptr).
+        const ComponentInfo* real_comp = this;
+        while ( real_comp->parent_info != nullptr) real_comp = real_comp->parent_info;
+        return real_comp->getName();
     }
 
     inline const std::string& getSlotName() const { return slot_name; }

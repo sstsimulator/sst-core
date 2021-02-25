@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-## Copyright 2009-2020 NTESS. Under the terms
+## Copyright 2009-2021 NTESS. Under the terms
 ## of Contract DE-NA0003525 with NTESS, the U.S.
 ## Government retains certain rights in this software.
 ##
-## Copyright (c) 2009-2020, NTESS
+## Copyright (c) 2009-2021, NTESS
 ## All rights reserved.
 ##
 ## This file is part of the SST software package. For license
@@ -126,42 +126,52 @@ def testing_is_PIN_loaded():
     pin_path = os.environ.get('INTEL_PIN_DIRECTORY')
     if pin_path is not None:
         pindir_found = os.path.isdir(pin_path)
-    log_debug("testing_is_PIN_loaded() - Intel_PIN_Path = {0}; Valid Dir = {1}".format(pin_path, pindir_found))
+    #log_debug("testing_is_PIN_loaded() - Intel_PIN_Path = {0}; Valid Dir = {1}".format(pin_path, pindir_found))
     return pindir_found
 
 def testing_is_PIN_Compiled():
     global pin_exec_path
     pin_crt = sst_elements_config_include_file_get_value_int("HAVE_PINCRT", 0, True)
     pin_exec = sst_elements_config_include_file_get_value_str("PINTOOL_EXECUTABLE", "", True)
-    log_debug("testing_is_PIN_Compiled() - Detected PIN_CRT = {0}".format(pin_crt))
-    log_debug("testing_is_PIN_Compiled() - Detected PIN_EXEC = {0}".format(pin_exec))
+    #log_debug("testing_is_PIN_Compiled() - Detected PIN_CRT = {0}".format(pin_crt))
+    #log_debug("testing_is_PIN_Compiled() - Detected PIN_EXEC = {0}".format(pin_exec))
     pin_exec_path = pin_exec
-    return pin_exec != ""
+    rtn = pin_exec != ""
+    #log_debug("testing_is_PIN_Compiled() - Rtn {0}".format(rtn))
+    return rtn
 
 def testing_is_PIN2_used():
     global pin_exec_path
     if testing_is_PIN_Compiled():
         if "/pin.sh" in pin_exec_path:
+            #log_debug("testing_is_PIN2_used() - Rtn True because pin.sh is found")
             return True
         else:
+            #log_debug("testing_is_PIN2_used() - Rtn False because pin.sh not found")
             return False
     else:
+        #log_debug("testing_is_PIN2_used() - Rtn False because PIN Not Compiled")
         return False
 
 def testing_is_PIN3_used():
     global pin_exec_path
     if testing_is_PIN_Compiled():
         if testing_is_PIN2_used():
+            #log_debug("testing_is_PIN3_used() - Rtn False because PIN2 is used")
             return False
         else:
             # Make sure pin is at the end of the string
             pinstr = "/pin"
             idx = pin_exec_path.rfind(pinstr)
             if idx == -1:
+                #log_debug("testing_is_PIN3_used() - Rtn False because 'pin' is not in path")
                 return False
             else:
-                return (idx+len(pinstr)) == len(pin_exec_path)
+                found_pin = (idx+len(pinstr)) == len(pin_exec_path)
+                #log_debug("testing_is_PIN3_used() - Rtn {0} comparing path lengths".format(found_pin))
+                return found_pin
     else:
+        #log_debug("testing_is_PIN3_used() - Rtn False because PIN Not Compiled")
         return False
 
 ################################################################################

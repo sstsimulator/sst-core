@@ -1,8 +1,8 @@
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -236,7 +236,7 @@ public:
      *  (either 1 or 0).
      *
      */
-    size_t count(const key_type& k);
+    size_t count(const key_type& k) const;
 
     /** Find a Parameter value in the set, and return its value as a type T.
      * Type T must be either a basic numeric type (including bool) ,
@@ -503,7 +503,7 @@ public:
      * @param k   Key to search for
      * @return    True if the params contains the key, false otherwise
      */
-    bool contains(const key_type &k);
+    bool contains(const key_type &k) const;
 
     /**
      * @param keys   Set of keys to consider valid to add to the stack

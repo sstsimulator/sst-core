@@ -1,8 +1,8 @@
-// Copyright 2009-2020 NTESS. Under the terms
+// Copyright 2009-2021 NTESS. Under the terms
 // of Contract DE-NA0003525 with NTESS, the U.S.
 // Government retains certain rights in this software.
 //
-// Copyright (c) 2009-2020, NTESS
+// Copyright (c) 2009-2021, NTESS
 // All rights reserved.
 //
 // This file is part of the SST software package. For license
@@ -73,7 +73,7 @@ Params::clear()
 
 
 size_t
-Params::count(const key_type& k)
+Params::count(const key_type& k) const
 {
     return data.count(getKey(k));
 }
@@ -170,7 +170,7 @@ Params::find_prefix_params(const std::string& prefix) const
 }
 
 bool
-Params::contains(const key_type &k)
+Params::contains(const key_type &k) const
 {
     return data.find(getKey(k)) != data.end();
 }
