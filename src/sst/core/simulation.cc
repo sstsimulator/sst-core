@@ -416,7 +416,11 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 void Simulation::initialize() {
     bool done = false;
     initBarrier.wait();
-    if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
+    if ( my_rank.thread == 0 ) {
+        DISABLE_WARN_DEPRECATED_DECLARATION;
+        sharedRegionManager->updateState(false);
+        REENABLE_WARNING;
+    }
 
     do {
         initBarrier.wait();
@@ -433,8 +437,11 @@ void Simulation::initialize() {
         initBarrier.wait();
         // We're done if no new messages were sent
         if ( untimed_msg_count == 0 ) done = true;
-        if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
-
+        if ( my_rank.thread == 0 ) {
+            DISABLE_WARN_DEPRECATED_DECLARATION;
+            sharedRegionManager->updateState(false);
+            REENABLE_WARNING;
+        }
         untimed_phase++;
     } while ( !done);
 
@@ -501,7 +508,11 @@ void Simulation::setup() {
     setupBarrier.wait();
 
     /* Enforce finalization of shared regions */
-    if ( my_rank.thread == 0 ) sharedRegionManager->updateState(true);
+    if ( my_rank.thread == 0 ) {
+        DISABLE_WARN_DEPRECATED_DECLARATION;
+        sharedRegionManager->updateState(true);
+        REENABLE_WARNING;
+    }
 
 }
 
