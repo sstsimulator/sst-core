@@ -74,10 +74,8 @@ public:  /* Public, but private.  Called only from Python functions */
         return graph->findComponentByName(std::string(name));
     }
 
-    ConfigComponentMap_t& components() {
-      return graph->getComponentMap();
-    }
-    
+    ConfigComponentMap_t& components() { return graph->getComponentMap(); }
+
     void addLink(ComponentId_t id, const char *link_name, const char *port, const char *latency, bool no_cut) const {graph->addLink(id, link_name, port, latency, no_cut); }
     void setLinkNoCut(const char *link_name) const {graph->setLinkNoCut(link_name); }
 
@@ -94,11 +92,9 @@ public:  /* Public, but private.  Called only from Python functions */
 std::map<std::string,std::string> generateStatisticParameters(PyObject* statParamDict);
 SST::Params pythonToCppParams(PyObject* statParamDict);
 PyObject* buildStatisticObject(StatisticId_t id);
-PyObject* buildEnabledStatistic(ConfigComponent* cc, const char* statName,
-                                PyObject* statParamDict, bool apply_to_children);
-PyObject* buildEnabledStatistics(ConfigComponent* cc, PyObject* statList,
-                                 PyObject* paramDict, bool apply_to_children);
-
+PyObject* buildEnabledStatistic(ConfigComponent* cc, const char* statName, PyObject* statParamDict,
+                                bool apply_to_children);
+PyObject* buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObject* paramDict, bool apply_to_children);
 }
 }
 

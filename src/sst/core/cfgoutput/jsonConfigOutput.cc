@@ -91,7 +91,7 @@ void JSONConfigGraphOutput::generateJSON(const std::string& indent, const Config
     num = comp.enabledStatNames.size();
     if (num > 0){
         fprintf(outputFile, "%s\"statistics\" : [\n", indent.c_str());
-        for (auto & pair : comp.enabledStatNames) {
+        for (auto& pair : comp.enabledStatNames) {
             auto& name = pair.first;
             auto* si = comp.findStatistic(pair.second);
             temp = indent + "\t{\n" + indent + "\t\t\"name\" : \"" + name + "\"";
@@ -99,8 +99,9 @@ void JSONConfigGraphOutput::generateJSON(const std::string& indent, const Config
             int num2 = si->params.size();
             if (num2 > 0){
                 fprintf(outputFile, ",\n%s\t\t\"params\" : [\n", indent.c_str());
-                for(auto &paramsItr : si->params.getKeys()) {
-                    temp = indent + "\t\t\t{ \"name\" : \"" + paramsItr + "\", \"value\" : \"" + si->params.find<std::string>(paramsItr) + "\" }";
+                for (auto& paramsItr : si->params.getKeys()) {
+                    temp = indent + "\t\t\t{ \"name\" : \"" + paramsItr + "\", \"value\" : \""
+                           + si->params.find<std::string>(paramsItr) + "\" }";
                     fprintf(outputFile, "%s", temp.c_str());
                     num2--; (num2 > 0) ? fprintf(outputFile, ",\n") : fprintf(outputFile, "\n");
                 }

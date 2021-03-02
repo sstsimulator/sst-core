@@ -284,56 +284,52 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
     return false;
 }
 
-
-
 const std::vector<std::string>&
-Factory::GetValidStatistics(const std::string& compType)
-{
-  std::string compTypeToLoad = compType;
-  if (compType.empty()) {
-      compTypeToLoad = loadingComponentType;
-  }
+Factory::GetValidStatistics(const std::string& compType) {
+    std::string compTypeToLoad = compType;
+    if (compType.empty()) {
+        compTypeToLoad = loadingComponentType;
+    }
 
-  std::string elemlib, elem;
-  std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
+    std::string elemlib, elem;
+    std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
-  // ensure library is already loaded...
-  std::stringstream error_os;
-  requireLibrary(elemlib, error_os);
+    // ensure library is already loaded...
+    std::stringstream error_os;
+    requireLibrary(elemlib, error_os);
 
-  std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
 
-  // Check to see if library is loaded into new
-  // ElementLibraryDatabase
-  auto* sublib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-  if (sublib){
-      auto* info = sublib->getInfo(elem);
-      if (info){
-        return info->getStatnames();
-      }
-  }
+    // Check to see if library is loaded into new
+    // ElementLibraryDatabase
+    auto* sublib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    if (sublib) {
+        auto* info = sublib->getInfo(elem);
+        if (info) {
+            return info->getStatnames();
+        }
+    }
 
-  auto* complib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-  if (complib){
-      auto* info = complib->getInfo(elem);
-      if (info){
-        return info->getStatnames();
-      }
-  }
+    auto* complib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    if (complib) {
+        auto* info = complib->getInfo(elem);
+        if (info) {
+            return info->getStatnames();
+        }
+    }
 
-  // If we get to here, element doesn't exist
-  out.fatal(CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n",
-            compType.c_str(), error_os.str().c_str());
-  static std::vector<std::string> null_return;
-  return null_return; // to avoid compiler warnings
+    // If we get to here, element doesn't exist
+    out.fatal(CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n", compType.c_str(),
+              error_os.str().c_str());
+    static std::vector<std::string> null_return;
+    return null_return; // to avoid compiler warnings
 }
 
 bool
-Factory::DoesComponentInfoStatisticNameExist(const std::string& compType, const std::string& statisticName)
-{
+Factory::DoesComponentInfoStatisticNameExist(const std::string& compType, const std::string& statisticName) {
     auto& my_list = GetValidStatistics(compType);
-    for ( auto& item : my_list ) {
-        if ( statisticName == item ) {
+    for (auto& item : my_list) {
+        if (statisticName == item) {
             return true;
         }
     }

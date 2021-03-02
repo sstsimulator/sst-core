@@ -28,73 +28,82 @@ REENABLE_WARNING
 #include "sst/core/configGraph.h"
 
 using namespace SST::Core;
-extern SST::Core::SSTPythonModelDefinition *gModel;
+extern SST::Core::SSTPythonModelDefinition* gModel;
 
 namespace SST {
 
 extern "C" {
 
-StatisticId_t PyStatistic::getID()
-{
+StatisticId_t
+PyStatistic::getID() {
     return id;
 }
 
-ConfigStatistic* PyStatistic::getStat() {
+ConfigStatistic*
+PyStatistic::getStat() {
     return gModel->getGraph()->findStatistic(id);
 }
 
-int PyStatistic::compare(PyStatistic *other) {
-    if (id < other->id) return -1;
-    else if (id > other->id ) return 1;
-    else return 0;
+int
+PyStatistic::compare(PyStatistic* other) {
+    if (id < other->id)
+        return -1;
+    else if (id > other->id)
+        return 1;
+    else
+        return 0;
 }
 
-static int statInit(StatisticPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
-{
+static int
+statInit(StatisticPy_t* self, PyObject* args, PyObject* UNUSED(kwds)) {
     StatisticId_t id = 0;
-    if ( !PyArg_ParseTuple(args, "k", &id) )
+    if (!PyArg_ParseTuple(args, "k", &id))
         return -1;
 
-    PyStatistic *obj = new PyStatistic(id);
+    PyStatistic* obj = new PyStatistic(id);
     self->obj = obj;
 
-    //gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating statistic [%s]]\n", getStat((PyObject*)self)->name.c_str());
+    // gModel->getOutput()->verbose(CALL_INFO, 3, 0, "Creating statistic [%s]]\n",
+    // getStat((PyObject*)self)->name.c_str());
 
     return 0;
 }
 
-static void statDealloc(StatisticPy_t *self)
-{
-    if ( self->obj ) delete self->obj;
+static void
+statDealloc(StatisticPy_t* self) {
+    if (self->obj)
+        delete self->obj;
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-static PyObject* statAddParam(PyObject *self, PyObject *args)
-{
+static PyObject*
+statAddParam(PyObject* self, PyObject* args) {
     char* param = nullptr;
-    PyObject *value = nullptr;
-    if ( !PyArg_ParseTuple(args, "sO", &param, &value) )
+    PyObject* value = nullptr;
+    if (!PyArg_ParseTuple(args, "sO", &param, &value))
         return nullptr;
 
-    ConfigStatistic *c = getStat(self);
-    if ( nullptr == c ) return nullptr;
+    ConfigStatistic* c = getStat(self);
+    if (nullptr == c)
+        return nullptr;
 
     // Get the string-ized value by calling __str__ function of the
     // value object
-    PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
+    PyObject* vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
     c->addParameter(param, SST_ConvertToCppString(vstr), true);
     Py_XDECREF(vstr);
 
     return SST_ConvertToPythonLong(0);
 }
 
-static PyObject* statAddParams(PyObject *self, PyObject *args)
-{
+static PyObject*
+statAddParams(PyObject* self, PyObject* args) {
 
-    ConfigStatistic *c = getStat(self);
-    if ( nullptr == c ) return nullptr;
+    ConfigStatistic* c = getStat(self);
+    if (nullptr == c)
+        return nullptr;
 
-    if ( !PyDict_Check(args) ) {
+    if (!PyDict_Check(args)) {
         return nullptr;
     }
 
@@ -102,9 +111,9 @@ static PyObject* statAddParams(PyObject *self, PyObject *args)
     PyObject *key, *val;
     long count = 0;
 
-    while ( PyDict_Next(args, &pos, &key, &val) ) {
-        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
-        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+    while (PyDict_Next(args, &pos, &key, &val)) {
+        PyObject* kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
+        PyObject* vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
         c->addParameter(SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr), true);
         Py_XDECREF(kstr);
         Py_XDECREF(vstr);
@@ -114,50 +123,57 @@ static PyObject* statAddParams(PyObject *self, PyObject *args)
 }
 
 #if PY_MAJOR_VERSION >= 3
-static PyObject* statCompare(PyObject *obj0, PyObject *obj1, int op) {
-    PyObject *result;
+static PyObject*
+statCompare(PyObject* obj0, PyObject* obj1, int op) {
+    PyObject* result;
     bool cmp = false;
-    switch(op) {
-        case Py_LT: cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) == -1; break;
-        case Py_LE: cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) != 1; break;
-        case Py_EQ: cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) == 0; break;
-        case Py_NE: cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) != 0; break;
-        case Py_GT: cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) == 1; break;
-        case Py_GE: cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) != -1; break;
+    switch (op) {
+    case Py_LT:
+        cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) == -1;
+        break;
+    case Py_LE:
+        cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) != 1;
+        break;
+    case Py_EQ:
+        cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) == 0;
+        break;
+    case Py_NE:
+        cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) != 0;
+        break;
+    case Py_GT:
+        cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) == 1;
+        break;
+    case Py_GE:
+        cmp = ((PyStatistic*)obj0)->compare(((StatisticPy_t*)obj1)->obj) != -1;
+        break;
     }
     result = cmp ? Py_True : Py_False;
     Py_INCREF(result);
     return result;
 }
 #else
-static int statCompare(PyObject *obj0, PyObject *obj1) {
+static int
+statCompare(PyObject* obj0, PyObject* obj1) {
     return ((PyStatistic*)obj0)->compare(((PyStatistic*)obj1));
 }
 #endif
 
-static PyMethodDef statisticMethods[] = {
-    {   "addParam",
-        statAddParam, METH_VARARGS,
-        "Adds a parameter(name, value)"},
-    {   "addParams",
-        statAddParams, METH_O,
-        "Adds Multiple Parameters from a dict"},
-     {   nullptr, nullptr, 0, nullptr }
-};
-
+static PyMethodDef statisticMethods[]
+    = { { "addParam", statAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
+        { "addParams", statAddParams, METH_O, "Adds Multiple Parameters from a dict" },
+        { nullptr, nullptr, 0, nullptr } };
 
 PyTypeObject PyModel_StatType = {
-    SST_PY_OBJ_HEAD
-    "sst.Statistic",           /* tp_name */
-    sizeof(StatisticPy_t),     /* tp_basicsize */
-    0,                         /* tp_itemsize */
-    (destructor)statDealloc,/* tp_dealloc */
-    SST_TP_VECTORCALL_OFFSET       /* Python3 only */
-    SST_TP_PRINT                   /* Python2 only */
+    SST_PY_OBJ_HEAD "sst.Statistic", /* tp_name */
+    sizeof(StatisticPy_t),           /* tp_basicsize */
+    0,                               /* tp_itemsize */
+    (destructor)statDealloc,         /* tp_dealloc */
+    SST_TP_VECTORCALL_OFFSET         /* Python3 only */
+        SST_TP_PRINT                 /* Python2 only */
     nullptr,                         /* tp_getattr */
     nullptr,                         /* tp_setattr */
-    SST_TP_COMPARE(nullptr)        /* Python2 only */
-    SST_TP_AS_SYNC                 /* Python3 only */
+    SST_TP_COMPARE(nullptr)          /* Python2 only */
+    SST_TP_AS_SYNC                   /* Python3 only */
     nullptr,                         /* tp_repr */
     nullptr,                         /* tp_as_number */
     nullptr,                         /* tp_as_sequence */
@@ -172,7 +188,7 @@ PyTypeObject PyModel_StatType = {
     "SST Statistic",                 /* tp_doc */
     nullptr,                         /* tp_traverse */
     nullptr,                         /* tp_clear */
-    SST_TP_RICH_COMPARE(statCompare)    /* Python3 only */
+    SST_TP_RICH_COMPARE(statCompare) /* Python3 only */
     0,                               /* tp_weaklistoffset */
     nullptr,                         /* tp_iter */
     nullptr,                         /* tp_iternext */
@@ -196,11 +212,10 @@ PyTypeObject PyModel_StatType = {
     nullptr,                         /* tp_weaklist */
     nullptr,                         /* tp_del */
     0,                               /* tp_version_tag */
-    SST_TP_FINALIZE                /* Python3 only */
-    SST_TP_VECTORCALL              /* Python3 only */
+    SST_TP_FINALIZE                  /* Python3 only */
+        SST_TP_VECTORCALL            /* Python3 only */
 };
 
+} /* extern C */
 
-}  /* extern C */
-
-}
+} // namespace SST

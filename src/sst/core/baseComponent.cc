@@ -537,163 +537,158 @@ uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& s
 }
 
 void
-BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, const SST::Params& params, const std::string& name)
-{
-  StatisticBase::StatMode_t statCollectionMode = StatisticBase::STAT_MODE_COUNT;
-  Output& out = getSimulation()->getSimulationOutput();
-  std::string statRateParam = params.find<std::string>("rate", "0ns");
-  UnitAlgebra collectionRate(statRateParam);
+BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, const SST::Params& params,
+                                       const std::string& name) {
+    StatisticBase::StatMode_t statCollectionMode = StatisticBase::STAT_MODE_COUNT;
+    Output& out = getSimulation()->getSimulationOutput();
+    std::string statRateParam = params.find<std::string>("rate", "0ns");
+    UnitAlgebra collectionRate(statRateParam);
 
-  //make sure we have a valid collection rate
-  // Check that the Collection Rate is a valid unit type that we can use
-  if (collectionRate.hasUnits("s") || collectionRate.hasUnits("hz")) {
-      // Rate is Periodic Based
-      statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
-  } else if (collectionRate.hasUnits("event")) {
-      // Rate is Count Based
-      statCollectionMode = StatisticBase::STAT_MODE_COUNT;
-  } else if (collectionRate.getValue() == 0) {
-      // Collection rate is zero
-      // so we just dump at beginning and end
-      collectionRate = UnitAlgebra("0ns");
-      statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
-  } else {
-      // collectionRate is a unit type we dont recognize
-      out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n",
-                name.c_str(), collectionRate.toString().c_str());
-  }
-
-  if (!statistic->isStatModeSupported(statCollectionMode)) {
-      if (StatisticBase::STAT_MODE_PERIODIC == statCollectionMode) {
-          out.fatal(CALL_INFO, 1,
-                    " Warning: Statistic %s Does not support Periodic Based Collections; Collection Rate = %s\n",
-                    name.c_str(), collectionRate.toString().c_str());
-      } else {
-          out.fatal(CALL_INFO, 1,
-                    " Warning: Statistic %s Does not support Event Based Collections; Collection Rate = %s\n",
-                    name.c_str(), collectionRate.toString().c_str());
-      }
-  }
-
-  statistic->setRegisteredCollectionMode(statCollectionMode);
-}
-
-Statistics::StatisticBase*
-BaseComponent::createStatistic(Params& cpp_params, const Params& python_params,
-                               const std::string& name, const std::string& subId,
-                               StatCreateFunction fxn)
-{
-  auto* engine = Statistics::StatisticProcessingEngine::getInstance();
-
-  uint8_t my_load_level = getStatisticLoadLevel();
-  uint8_t stat_load_level = my_load_level == STATISTICLOADLEVELUNINITIALIZED ? engine->statLoadLevel() : my_load_level;
-  if (stat_load_level == 0){
-    getSimulation()->getSimulationOutput().verbose(CALL_INFO, 1, 0,
-            " Warning: Statistic Load Level = 0 (all statistics disabled); statistic '%s' is disabled...\n",
-            name.c_str());
-    return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
-  }
-
-  uint8_t stat_enable_level = getComponentInfoStatisticEnableLevel(name);
-  if (stat_enable_level > stat_load_level){
-    getSimulation()->getSimulationOutput().verbose(CALL_INFO, 1, 0,
-            " Warning: Load Level %d is too low to enable Statistic '%s' with Enable Level %d, statistic will not be enabled...\n",
-            int(stat_load_level), name.c_str(), int(stat_enable_level));
-    return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
-  }
-
-  //this is enabled
-  configureAllowedStatParams(cpp_params);
-  cpp_params.insert(python_params);
-  std::string type =  cpp_params.find<std::string>("type", "sst.AccumulatorStatistic");
-  auto* stat = fxn(this, engine, type, name, subId, cpp_params);
-  configureCollectionMode(stat, cpp_params, name);
-  engine->registerStatisticWithEngine(stat);
-  return stat;
-}
-
-Statistics::StatisticBase*
-BaseComponent::createEnabledAllStatistic(Params& params, const std::string &name, const std::string &statSubId,
-                                         StatCreateFunction fxn)
-{
-    auto iter = m_enabledAllStats.find(name);
-    if (iter != m_enabledAllStats.end()){
-      auto& submap = iter->second;
-      auto subiter = submap.find(statSubId);
-      if (subiter != submap.end()){
-        return subiter->second;
-      }
+    // make sure we have a valid collection rate
+    // Check that the Collection Rate is a valid unit type that we can use
+    if (collectionRate.hasUnits("s") || collectionRate.hasUnits("hz")) {
+        // Rate is Periodic Based
+        statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
+    } else if (collectionRate.hasUnits("event")) {
+        // Rate is Count Based
+        statCollectionMode = StatisticBase::STAT_MODE_COUNT;
+    } else if (collectionRate.getValue() == 0) {
+        // Collection rate is zero
+        // so we just dump at beginning and end
+        collectionRate = UnitAlgebra("0ns");
+        statCollectionMode = StatisticBase::STAT_MODE_PERIODIC;
+    } else {
+        // collectionRate is a unit type we dont recognize
+        out.fatal(CALL_INFO, 1, "ERROR: Statistic %s - Collection Rate = %s not valid; exiting...\n", name.c_str(),
+                  collectionRate.toString().c_str());
     }
 
-    //a matching statistic was not found
+    if (!statistic->isStatModeSupported(statCollectionMode)) {
+        if (StatisticBase::STAT_MODE_PERIODIC == statCollectionMode) {
+            out.fatal(CALL_INFO, 1,
+                      " Warning: Statistic %s Does not support Periodic Based Collections; Collection Rate = %s\n",
+                      name.c_str(), collectionRate.toString().c_str());
+        } else {
+            out.fatal(CALL_INFO, 1,
+                      " Warning: Statistic %s Does not support Event Based Collections; Collection Rate = %s\n",
+                      name.c_str(), collectionRate.toString().c_str());
+        }
+    }
+
+    statistic->setRegisteredCollectionMode(statCollectionMode);
+}
+
+Statistics::StatisticBase*
+BaseComponent::createStatistic(Params& cpp_params, const Params& python_params, const std::string& name,
+                               const std::string& subId, StatCreateFunction fxn) {
+    auto* engine = Statistics::StatisticProcessingEngine::getInstance();
+
+    uint8_t my_load_level = getStatisticLoadLevel();
+    uint8_t stat_load_level
+        = my_load_level == STATISTICLOADLEVELUNINITIALIZED ? engine->statLoadLevel() : my_load_level;
+    if (stat_load_level == 0) {
+        getSimulation()->getSimulationOutput().verbose(
+            CALL_INFO, 1, 0,
+            " Warning: Statistic Load Level = 0 (all statistics disabled); statistic '%s' is disabled...\n",
+            name.c_str());
+        return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
+    }
+
+    uint8_t stat_enable_level = getComponentInfoStatisticEnableLevel(name);
+    if (stat_enable_level > stat_load_level) {
+        getSimulation()->getSimulationOutput().verbose(CALL_INFO, 1, 0,
+                                                       " Warning: Load Level %d is too low to enable Statistic '%s' "
+                                                       "with Enable Level %d, statistic will not be enabled...\n",
+                                                       int(stat_load_level), name.c_str(), int(stat_enable_level));
+        return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
+    }
+
+    // this is enabled
+    configureAllowedStatParams(cpp_params);
+    cpp_params.insert(python_params);
+    std::string type = cpp_params.find<std::string>("type", "sst.AccumulatorStatistic");
+    auto* stat = fxn(this, engine, type, name, subId, cpp_params);
+    configureCollectionMode(stat, cpp_params, name);
+    engine->registerStatisticWithEngine(stat);
+    return stat;
+}
+
+Statistics::StatisticBase*
+BaseComponent::createEnabledAllStatistic(Params& params, const std::string& name, const std::string& statSubId,
+                                         StatCreateFunction fxn) {
+    auto iter = m_enabledAllStats.find(name);
+    if (iter != m_enabledAllStats.end()) {
+        auto& submap = iter->second;
+        auto subiter = submap.find(statSubId);
+        if (subiter != submap.end()) {
+            return subiter->second;
+        }
+    }
+
+    // a matching statistic was not found
     auto* stat = createStatistic(params, my_info->allStatConfig->params, name, statSubId, std::move(fxn));
     m_enabledAllStats[name][statSubId] = stat;
     return stat;
 }
 
 Statistics::StatisticBase*
-BaseComponent::createExplicitlyEnabledStatistic(Params &params, StatisticId_t id,
-                                                const std::string &name, const std::string &statSubId,
-                                                StatCreateFunction fxn)
-{
+BaseComponent::createExplicitlyEnabledStatistic(Params& params, StatisticId_t id, const std::string& name,
+                                                const std::string& statSubId, StatCreateFunction fxn) {
     Output& out = getSimulation()->getSimulationOutput();
-    if (my_info->parent_info){
-        out.fatal(CALL_INFO, 1, 0,
-                  "Creating explicitly enabled statistic '%s' should only happen in parent component",
+    if (my_info->parent_info) {
+        out.fatal(CALL_INFO, 1, 0, "Creating explicitly enabled statistic '%s' should only happen in parent component",
                   name.c_str());
     }
 
     auto piter = my_info->statConfigs->find(id);
-    if (piter == my_info->statConfigs->end()){
-        out.fatal(CALL_INFO, 1, 0,
-                  "Explicitly enabled statistic '%s' does not have parameters mapped to its ID",
+    if (piter == my_info->statConfigs->end()) {
+        out.fatal(CALL_INFO, 1, 0, "Explicitly enabled statistic '%s' does not have parameters mapped to its ID",
                   name.c_str());
     }
     auto& cfg = piter->second;
-    if (cfg.shared){
-      auto iter = m_explicitlyEnabledSharedStats.find(id);
-      if (iter != m_explicitlyEnabledSharedStats.end()){
-          return iter->second;
-      } else {
-        //no subid
-        auto* stat = createStatistic(params, cfg.params, cfg.name, "", std::move(fxn));
-        m_explicitlyEnabledSharedStats[id] = stat;
-        return stat;
-      }
-    } else {
-      auto iter = m_explicitlyEnabledUniqueStats.find(id);
-      if (iter != m_explicitlyEnabledUniqueStats.end()){
-        auto& map = iter->second;
-        auto subiter = map.find(name);
-        if (subiter != map.end()){
-          auto& submap = subiter->second;
-          auto subsubiter = submap.find(statSubId);
-          if (subsubiter != submap.end()){
-            return subsubiter->second;
-          }
+    if (cfg.shared) {
+        auto iter = m_explicitlyEnabledSharedStats.find(id);
+        if (iter != m_explicitlyEnabledSharedStats.end()) {
+            return iter->second;
+        } else {
+            // no subid
+            auto* stat = createStatistic(params, cfg.params, cfg.name, "", std::move(fxn));
+            m_explicitlyEnabledSharedStats[id] = stat;
+            return stat;
         }
-      }
-      //stat does not exist yet
-      auto* stat = createStatistic(params, cfg.params, name, statSubId, std::move(fxn));
-      m_explicitlyEnabledUniqueStats[id][name][statSubId] = stat;
-      return stat;
+    } else {
+        auto iter = m_explicitlyEnabledUniqueStats.find(id);
+        if (iter != m_explicitlyEnabledUniqueStats.end()) {
+            auto& map = iter->second;
+            auto subiter = map.find(name);
+            if (subiter != map.end()) {
+                auto& submap = subiter->second;
+                auto subsubiter = submap.find(statSubId);
+                if (subsubiter != submap.end()) {
+                    return subsubiter->second;
+                }
+            }
+        }
+        // stat does not exist yet
+        auto* stat = createStatistic(params, cfg.params, name, statSubId, std::move(fxn));
+        m_explicitlyEnabledUniqueStats[id][name][statSubId] = stat;
+        return stat;
     }
 
-    //unreachable
+    // unreachable
     return nullptr;
 }
 
 void
-BaseComponent::configureAllowedStatParams(SST::Params& params)
-{
-  // Identify what keys are Allowed in the parameters
-  Params::KeySet_t allowedKeySet;
-  allowedKeySet.insert("type");
-  allowedKeySet.insert("rate");
-  allowedKeySet.insert("startat");
-  allowedKeySet.insert("stopat");
-  allowedKeySet.insert("resetOnRead");
-  params.pushAllowedKeys(allowedKeySet);
+BaseComponent::configureAllowedStatParams(SST::Params& params) {
+    // Identify what keys are Allowed in the parameters
+    Params::KeySet_t allowedKeySet;
+    allowedKeySet.insert("type");
+    allowedKeySet.insert("rate");
+    allowedKeySet.insert("startat");
+    allowedKeySet.insert("stopat");
+    allowedKeySet.insert("resetOnRead");
+    params.pushAllowedKeys(allowedKeySet);
 }
 
 void

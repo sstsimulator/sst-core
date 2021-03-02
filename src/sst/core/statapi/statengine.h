@@ -79,14 +79,9 @@ public:
       return Factory::getFactory()->Create<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
 
-    bool registerStatisticWithEngine(StatisticBase* stat)
-    {
-        return registerStatisticCore(stat);
-    }
+    bool registerStatisticWithEngine(StatisticBase* stat) { return registerStatisticCore(stat); }
 
-    uint8_t statLoadLevel() const {
-      return m_statLoadLevel;
-    }
+    uint8_t statLoadLevel() const { return m_statLoadLevel; }
 
     const std::vector<StatisticOutput*>& getStatOutputs() const { return m_statOutputs; }
 

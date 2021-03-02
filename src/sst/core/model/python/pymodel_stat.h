@@ -26,30 +26,30 @@ struct PyStatistic;
 struct PyStatistic {
     StatisticId_t id;
 
-    PyStatistic(StatisticId_t id) : id(id) { }
-    virtual ~PyStatistic() { }
+    PyStatistic(StatisticId_t id) : id(id) {}
+    virtual ~PyStatistic() {}
     ConfigStatistic* getStat();
-    int compare(PyStatistic *other);
+    int compare(PyStatistic* other);
     StatisticId_t getID();
 };
 
 struct StatisticPy_t {
-    PyObject_HEAD
-    PyStatistic *obj;
+    PyObject_HEAD PyStatistic* obj;
 };
 
 extern PyTypeObject PyModel_StatType;
 
-static inline ConfigStatistic* getStat(PyObject *pobj) {
-    ConfigStatistic *c = ((StatisticPy_t*)pobj)->obj->getStat();
-    if ( c == nullptr ) {
+static inline ConfigStatistic*
+getStat(PyObject* pobj) {
+    ConfigStatistic* c = ((StatisticPy_t*)pobj)->obj->getStat();
+    if (c == nullptr) {
         PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigStatistic");
     }
     return c;
 }
 
-}  /* extern C */
+} /* extern C */
 
-}
+} // namespace SST
 
 #endif

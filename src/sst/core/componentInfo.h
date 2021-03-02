@@ -39,8 +39,7 @@ class StatisticInfo;
 class ComponentInfo {
 
 public:
-    typedef std::vector<ConfigStatistic>      statEnableList_t;        /*!< List of Enabled Statistics */
-
+    typedef std::vector<ConfigStatistic> statEnableList_t; /*!< List of Enabled Statistics */
 
     // Share Flags for SubComponent loading
     static const uint64_t SHARE_PORTS = 0x1;
@@ -117,7 +116,7 @@ private:
     std::map<StatisticId_t, ConfigStatistic>* statConfigs;
     std::map<std::string, StatisticId_t>* enabledStatNames;
     bool enabledAllStats;
-    const ConfigStatistic *allStatConfig;
+    const ConfigStatistic* allStatConfig;
 
     uint8_t statLoadLevel;
 

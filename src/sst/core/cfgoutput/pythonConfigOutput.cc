@@ -85,7 +85,7 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
     }
     fprintf(outputFile, ")\n");
 
-    for ( auto &pair : comp.enabledStatNames ) {
+    for (auto& pair : comp.enabledStatNames) {
         auto& name = pair.first;
         auto* si = comp.findStatistic(pair.second);
         char* esStatName = makeEscapeSafe(name.c_str());
@@ -93,7 +93,7 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
         fprintf(outputFile, "%s.enableStatistics([\"%s\"]", objName, esStatName);
 
         // Output the Statistic Parameters
-        if( !si->params.empty() ) {
+        if (!si->params.empty()) {
             fprintf(outputFile, ", ");
             generateParams(si->params);
         }

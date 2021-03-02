@@ -85,16 +85,15 @@ StatisticProcessingEngine::~StatisticProcessingEngine()
     }
 }
 
-bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
-{
+bool
+StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat) {
     if ( stat->isNullStatistic() )
         return true;
 
-    auto *comp = stat->getComponent();
-    if ( comp == nullptr ) {
-        m_output.verbose(CALL_INFO, 1, 0,
-                " Error: Statistc %s hasn't any associated component .\n",
-                stat->getFullStatName().c_str());
+    auto* comp = stat->getComponent();
+    if (comp == nullptr) {
+        m_output.verbose(CALL_INFO, 1, 0, " Error: Statistc %s hasn't any associated component .\n",
+                         stat->getFullStatName().c_str());
         return false;
     }
 
@@ -158,8 +157,6 @@ bool StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat)
 
     return true;
 }
-
-
 
 void StatisticProcessingEngine::finalizeInitialization()
 {

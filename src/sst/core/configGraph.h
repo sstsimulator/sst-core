@@ -126,24 +126,21 @@ private:
 
 class ConfigStatistic : public SST::Core::Serialization::serializable {
 public:
-    StatisticId_t id;                /*!< Unique ID of this statistic */
+    StatisticId_t id; /*!< Unique ID of this statistic */
     Params params;
     bool shared;
     std::string name;
 
-    ConfigStatistic(StatisticId_t _id, bool _shared=false, std::string _name="") :
-      id(_id),
-      shared(_shared),
-      name(_name)
-      { }
+    ConfigStatistic(StatisticId_t _id, bool _shared = false, std::string _name = "")
+        : id(_id), shared(_shared), name(_name) {}
 
-    ConfigStatistic() : id(stat_null_id) { }
+    ConfigStatistic() : id(stat_null_id) {}
 
     inline const StatisticId_t& getId() const { return id; }
 
     void addParameter(const std::string& key, const std::string& value, bool overwrite);
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+    void serialize_order(SST::Core::Serialization::serializer& ser) override {
         ser & id;
         ser & shared;
         ser & name;
@@ -153,7 +150,6 @@ public:
     ImplementSerializable(ConfigStatistic)
 
     static constexpr StatisticId_t stat_null_id = std::numeric_limits<StatisticId_t>::max();
-
 };
 
 class ConfigStatGroup : public SST::Core::Serialization::serializable {
@@ -222,6 +218,7 @@ typedef SparseVectorMap<LinkId_t,ConfigLink> ConfigLinkMap_t;
 /** Represents the configuration of a generic component */
 class ConfigComponent : public SST::Core::Serialization::serializable {
     friend class ComponentInfo;
+
 public:
     ComponentId_t                 id;                /*!< Unique ID of this component */
     ConfigGraph*                  graph;             /*!< Graph that this component belongs to */
@@ -233,9 +230,9 @@ public:
     std::vector<LinkId_t>         links;             /*!< List of links connected */
     Params                        params;            /*!< Set of Parameters */
     uint8_t                       statLoadLevel;     /*!< Statistic load level for this component */
-    //std::vector<ConfigStatistic>  enabledStatistics; /*!< List of subcomponents */
+    // std::vector<ConfigStatistic>  enabledStatistics; /*!< List of subcomponents */
 
-    std::map<std::string,StatisticId_t> enabledStatNames;
+    std::map<std::string, StatisticId_t> enabledStatNames;
     bool enabledAllStats;
     ConfigStatistic allStatConfig;
 
@@ -243,7 +240,7 @@ public:
     std::vector<double>           coords;
     uint16_t                      nextSubID;         /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
     bool                          visited;           /*! Used when traversing graph to indicate component was visited already */
-    uint16_t                      nextStatID;        /*!< Next statID to use for children */
+    uint16_t nextStatID;                             /*!< Next statID to use for children */
 
     static constexpr ComponentId_t null_id = std::numeric_limits<ComponentId_t>::max();
 
@@ -256,7 +253,9 @@ public:
     ConfigComponent cloneWithoutLinksOrParams() const;
 
     ~ConfigComponent() {}
-    ConfigComponent() : id(null_id), statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), enabledAllStats(false), nextSubID(1), visited(false) { }
+    ConfigComponent()
+        : id(null_id), statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), enabledAllStats(false), nextSubID(1),
+          visited(false) {}
 
     ComponentId_t getNextSubComponentID();
     StatisticId_t getNextStatisticID();
@@ -275,7 +274,8 @@ public:
     ConfigStatistic* findStatistic(const std::string& name) const;
     ConfigStatistic* insertStatistic(StatisticId_t id);
     ConfigStatistic* findStatistic(StatisticId_t) const;
-    ConfigStatistic* enableStatistic(const std::string& statisticName, const SST::Params& params, bool recursively = false);
+    ConfigStatistic* enableStatistic(const std::string& statisticName, const SST::Params& params,
+                                     bool recursively = false);
     ConfigStatistic* createStatistic();
     bool reuseStatistic(const std::string& statisticName, StatisticId_t sid);
     void addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively = false);
@@ -308,7 +308,7 @@ public:
     ImplementSerializable(SST::ConfigComponent)
 
 private:
-    std::map<StatisticId_t,ConfigStatistic> statistics;
+    std::map<StatisticId_t, ConfigStatistic> statistics;
 
     friend class ConfigGraph;
     /** Checks to make sure port names are valid and that a port isn't used twice
@@ -316,38 +316,20 @@ private:
     void checkPorts() const;
 
     /** Create a new Component */
-    ConfigComponent(ComponentId_t id, ConfigGraph* graph, const std::string& name, const std::string& type, float weight, RankInfo rank) :
-        id(id),
-        graph(graph),
-        name(name),
-        type(type),
-        weight(weight),
-        rank(rank),
-        statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
-        enabledAllStats(false),
-        nextSubID(1),
-        nextStatID(1)
-    {
+    ConfigComponent(ComponentId_t id, ConfigGraph* graph, const std::string& name, const std::string& type,
+                    float weight, RankInfo rank)
+        : id(id), graph(graph), name(name), type(type), weight(weight), rank(rank),
+          statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), enabledAllStats(false), nextSubID(1), nextStatID(1) {
         coords.resize(3, 0.0);
     }
 
-    ConfigComponent(ComponentId_t id, ConfigGraph* graph, uint16_t parent_subid, const std::string& name, int slot_num, const std::string& type, float weight, RankInfo rank) :
-        id(id),
-        graph(graph),
-        name(name),
-        slot_num(slot_num),
-        type(type),
-        weight(weight),
-        rank(rank),
-        statLoadLevel(STATISTICLOADLEVELUNINITIALIZED),
-        enabledAllStats(false),
-        nextSubID(parent_subid),
-        nextStatID(parent_subid)
-    {
+    ConfigComponent(ComponentId_t id, ConfigGraph* graph, uint16_t parent_subid, const std::string& name, int slot_num,
+                    const std::string& type, float weight, RankInfo rank)
+        : id(id), graph(graph), name(name), slot_num(slot_num), type(type), weight(weight), rank(rank),
+          statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), enabledAllStats(false), nextSubID(parent_subid),
+          nextStatID(parent_subid) {
         coords.resize(3, 0.0);
     }
-
-
 };
 
 

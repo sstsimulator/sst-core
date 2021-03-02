@@ -471,8 +471,8 @@ static PyObject* enableAllStatisticsForAllComponents(PyObject* UNUSED(self), PyO
     argOK = PyArg_ParseTuple(args, "|O!", &PyDict_Type, &statParamDict);
 
     if (argOK) {
-        for (auto& cc : gModel->components()){
-          cc.enableStatistic(STATALLFLAG, pythonToCppParams(statParamDict), true /*recursive*/);
+        for (auto& cc : gModel->components()) {
+            cc.enableStatistic(STATALLFLAG, pythonToCppParams(statParamDict), true /*recursive*/);
         }
     } else {
         // ParseTuple Failed, return NULL for error
@@ -503,7 +503,6 @@ static PyObject* enableAllStatisticsForComponentName(PyObject *UNUSED(self), PyO
     }
     return SST_ConvertToPythonLong(0);
 }
-
 
 static PyObject* enableStatisticForComponentName(PyObject *UNUSED(self), PyObject *args)
 {
@@ -565,19 +564,19 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
         // ParseTuple Failed, return NULL for error
         return nullptr;
     }
-    //unreachable
+    // unreachable
     return SST_ConvertToPythonLong(0);
 }
 
-static void enableStatisticForComponentType(ConfigComponent& cc, const std::string& compType, const std::string& statName,
-                                            const SST::Params& params, bool is_all_types, bool apply_to_children)
-{
-  if (is_all_types || cc.type == compType){
-    cc.enableStatistic(statName, params, apply_to_children);
-  }
-  for (auto& sc : cc.subComponents){
-    enableStatisticForComponentType(sc, compType, statName, params, is_all_types, apply_to_children);
-  }
+static void
+enableStatisticForComponentType(ConfigComponent& cc, const std::string& compType, const std::string& statName,
+                                const SST::Params& params, bool is_all_types, bool apply_to_children) {
+    if (is_all_types || cc.type == compType) {
+        cc.enableStatistic(statName, params, apply_to_children);
+    }
+    for (auto& sc : cc.subComponents) {
+        enableStatisticForComponentType(sc, compType, statName, params, is_all_types, apply_to_children);
+    }
 }
 
 static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyObject *args)
@@ -595,8 +594,8 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyO
     if (argOK) {
         bool is_all_types = std::string(compType) == STATALLFLAG;
         auto params = pythonToCppParams(statParamDict);
-        for (ConfigComponent& cc : gModel->components()){
-          enableStatisticForComponentType(cc, compType, STATALLFLAG, params, is_all_types, apply_to_children);
+        for (ConfigComponent& cc : gModel->components()) {
+            enableStatisticForComponentType(cc, compType, STATALLFLAG, params, is_all_types, apply_to_children);
         }
     } else {
         // ParseTuple Failed, return NULL for error
@@ -605,13 +604,13 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyO
     return SST_ConvertToPythonLong(0);
 }
 
-static void enableStatisticForComponentType(const std::string& compType, const std::string& statName,
-                                            const SST::Params& params, bool apply_to_children)
-{
-  bool is_all_types = compType == STATALLFLAG;
-  for (auto& cc : gModel->components()){
-    enableStatisticForComponentType(cc, compType, statName, params, is_all_types, apply_to_children);
-  }
+static void
+enableStatisticForComponentType(const std::string& compType, const std::string& statName, const SST::Params& params,
+                                bool apply_to_children) {
+    bool is_all_types = compType == STATALLFLAG;
+    for (auto& cc : gModel->components()) {
+        enableStatisticForComponentType(cc, compType, statName, params, is_all_types, apply_to_children);
+    }
 }
 
 static PyObject* enableStatisticForComponentType(PyObject *UNUSED(self), PyObject *args)
@@ -628,8 +627,8 @@ static PyObject* enableStatisticForComponentType(PyObject *UNUSED(self), PyObjec
     argOK = PyArg_ParseTuple(args, "ss|O!i", &compType, &statName, &PyDict_Type, &statParamDict, &apply_to_children);
 
     if (argOK) {
-      auto params = pythonToCppParams(statParamDict);
-      enableStatisticForComponentType(compType, statName, params, apply_to_children);
+        auto params = pythonToCppParams(statParamDict);
+        enableStatisticForComponentType(compType, statName, params, apply_to_children);
     } else {
         // ParseTuple Failed, return NULL for error
         return nullptr;
@@ -709,15 +708,15 @@ static PyObject* setStatisticLoadLevelForComponentName(PyObject *UNUSED(self), P
     return SST_ConvertToPythonLong(0);
 }
 
-static void setStatisticLoadLevelForComponentType(ConfigComponent& cc, bool is_all_types, const std::string& compType,
-                                                  uint8_t level, int apply_to_children)
-{
-  if (is_all_types || cc.type == compType){
-    cc.setStatisticLoadLevel(level, apply_to_children);
-  }
-  for (auto& sc : cc.subComponents){
-    setStatisticLoadLevelForComponentType(sc, is_all_types, compType, level, apply_to_children);
-  }
+static void
+setStatisticLoadLevelForComponentType(ConfigComponent& cc, bool is_all_types, const std::string& compType,
+                                      uint8_t level, int apply_to_children) {
+    if (is_all_types || cc.type == compType) {
+        cc.setStatisticLoadLevel(level, apply_to_children);
+    }
+    for (auto& sc : cc.subComponents) {
+        setStatisticLoadLevelForComponentType(sc, is_all_types, compType, level, apply_to_children);
+    }
 }
 
 static PyObject* setStatisticLoadLevelForComponentType(PyObject *UNUSED(self), PyObject *args)
@@ -734,8 +733,8 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject *UNUSED(self), P
 
     if (argOK) {
         bool is_all_types = std::string(compType) == STATALLFLAG;
-        for (ConfigComponent& cc : gModel->components()){
-          setStatisticLoadLevelForComponentType(cc, is_all_types, compType, level, apply_to_children);
+        for (ConfigComponent& cc : gModel->components()) {
+            setStatisticLoadLevelForComponentType(cc, is_all_types, compType, level, apply_to_children);
         }
     } else {
         // ParseTuple Failed, return NULL for error
@@ -843,14 +842,10 @@ static PyObject* PyInit_sst(void)
     PyModel_StatGroupType.tp_new = PyType_GenericNew;
     PyModel_StatOutputType.tp_new = PyType_GenericNew;
     ModuleLoaderType.tp_new = PyType_GenericNew;
-    if ( ( PyType_Ready(&PyModel_ComponentType) < 0 ) ||
-         ( PyType_Ready(&PyModel_SubComponentType) < 0 ) ||
-         ( PyType_Ready(&PyModel_LinkType) < 0 ) ||
-         ( PyType_Ready(&PyModel_UnitAlgebraType) < 0 ) ||
-         ( PyType_Ready(&PyModel_StatType) < 0 ) ||
-         ( PyType_Ready(&PyModel_StatGroupType) < 0 ) ||
-         ( PyType_Ready(&PyModel_StatOutputType) < 0 ) ||
-         ( PyType_Ready(&ModuleLoaderType) < 0 ) ) {
+    if ((PyType_Ready(&PyModel_ComponentType) < 0) || (PyType_Ready(&PyModel_SubComponentType) < 0)
+        || (PyType_Ready(&PyModel_LinkType) < 0) || (PyType_Ready(&PyModel_UnitAlgebraType) < 0)
+        || (PyType_Ready(&PyModel_StatType) < 0) || (PyType_Ready(&PyModel_StatGroupType) < 0)
+        || (PyType_Ready(&PyModel_StatOutputType) < 0) || (PyType_Ready(&ModuleLoaderType) < 0)) {
         return nullptr; // TODO better error message
     }
 
@@ -1141,48 +1136,49 @@ std::map<std::string,std::string> SST::Core::generateStatisticParameters(PyObjec
     return p;
 }
 
-SST::Params SST::Core::pythonToCppParams(PyObject* statParamDict)
-{
-  auto themap = generateStatisticParameters(statParamDict);
-  SST::Params p;
-  for (auto& pair : themap){
-    p.insert(pair.first, pair.second);
-  }
-  return p;
+SST::Params
+SST::Core::pythonToCppParams(PyObject* statParamDict) {
+    auto themap = generateStatisticParameters(statParamDict);
+    SST::Params p;
+    for (auto& pair : themap) {
+        p.insert(pair.first, pair.second);
+    }
+    return p;
 }
 
-PyObject* SST::Core::buildStatisticObject(StatisticId_t id)
-{
-  PyObject *argList = Py_BuildValue("(k)", id);
-  PyObject *statObj = PyObject_CallObject((PyObject*)&PyModel_StatType, argList);
-  Py_DECREF(argList);
-  return statObj;
+PyObject*
+SST::Core::buildStatisticObject(StatisticId_t id) {
+    PyObject* argList = Py_BuildValue("(k)", id);
+    PyObject* statObj = PyObject_CallObject((PyObject*)&PyModel_StatType, argList);
+    Py_DECREF(argList);
+    return statObj;
 }
 
-PyObject* SST::Core::buildEnabledStatistic(ConfigComponent* cc, const char* statName, PyObject* statParamDict, bool apply_to_children)
-{
-  ConfigStatistic* cs = cc->enableStatistic(statName, pythonToCppParams(statParamDict), apply_to_children);
-  return buildStatisticObject(cs->id);
+PyObject*
+SST::Core::buildEnabledStatistic(ConfigComponent* cc, const char* statName, PyObject* statParamDict,
+                                 bool apply_to_children) {
+    ConfigStatistic* cs = cc->enableStatistic(statName, pythonToCppParams(statParamDict), apply_to_children);
+    return buildStatisticObject(cs->id);
 }
 
-PyObject* SST::Core::buildEnabledStatistics(ConfigComponent* cc, PyObject* statList,
-                                            PyObject* paramDict, bool apply_to_children)
-{
-  // Figure out how many stats there are
-  Py_ssize_t numStats = PyList_Size(statList);
-  // Generate the Statistic Parameters
-  auto params = pythonToCppParams(paramDict);
-  PyObject* statObjectList = PyList_New(numStats);
-  // For each stat, enable on compoennt
-  for (uint32_t x = 0; x < numStats; x++) {
-      PyObject* pylistitem = PyList_GetItem(statList, x);
-      PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
-      std::string name = SST_ConvertToCppString(pyname);
-      ConfigStatistic* cs = cc->enableStatistic(name,params,apply_to_children);
-      PyObject* statObj = buildStatisticObject(cs->id);
-      PyList_SetItem(statList, x, statObj);
-  }
-  return statObjectList;
+PyObject*
+SST::Core::buildEnabledStatistics(ConfigComponent* cc, PyObject* statList, PyObject* paramDict,
+                                  bool apply_to_children) {
+    // Figure out how many stats there are
+    Py_ssize_t numStats = PyList_Size(statList);
+    // Generate the Statistic Parameters
+    auto params = pythonToCppParams(paramDict);
+    PyObject* statObjectList = PyList_New(numStats);
+    // For each stat, enable on compoennt
+    for (uint32_t x = 0; x < numStats; x++) {
+        PyObject* pylistitem = PyList_GetItem(statList, x);
+        PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
+        std::string name = SST_ConvertToCppString(pyname);
+        ConfigStatistic* cs = cc->enableStatistic(name, params, apply_to_children);
+        PyObject* statObj = buildStatisticObject(cs->id);
+        PyList_SetItem(statList, x, statObj);
+    }
+    return statObjectList;
 }
 
 REENABLE_WARNING
