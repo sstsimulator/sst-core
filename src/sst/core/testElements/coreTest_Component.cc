@@ -62,6 +62,11 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
     W = configureLink("Wlink", new Event::Handler<coreTestComponent>(this,
                                &coreTestComponent::handleEvent));
 
+    countN = registerStatistic<int>("N");
+    countS = registerStatistic<int>("S");
+    countE = registerStatistic<int>("E");
+    countW = registerStatistic<int>("W");
+
     assert(N);
     assert(S);
     assert(E);
@@ -138,15 +143,19 @@ bool coreTestComponent::clockTic( Cycle_t )
         switch (neighbor) {
         case 0:
             N->send(e);
+            countN->addData(1);
             break;
         case 1:
             S->send(e);
+            countS->addData(1);
             break;
         case 2:
             E->send(e);
+            countE->addData(1);
             break;
         case 3:
             W->send(e);
+            countW->addData(1);
             break;
         default:
             printf("bad neighbor\n");

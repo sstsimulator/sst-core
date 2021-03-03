@@ -19,24 +19,10 @@
 
 namespace SST {
 
-ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
-    id(id),
-    parent_info(nullptr),
-    name(name),
-    type(""),
-    link_map(nullptr),
-    component(nullptr),
-    params(nullptr),
-    defaultTimeBase(nullptr),
-    enabledStats(nullptr),
-    coordinates(3, 0.0),
-    subIDIndex(1),
-    slot_name(""),
-    slot_num(-1),
-    share_flags(0)
-{
-}
-
+ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name)
+    : id(id), parent_info(nullptr), name(name), type(""), link_map(nullptr), component(nullptr), params(nullptr),
+      defaultTimeBase(nullptr), statConfigs(nullptr), enabledStatNames(nullptr), enabledAllStats(false),
+      allStatConfig(nullptr), coordinates(3, 0.0), subIDIndex(1), slot_name(""), slot_num(-1), share_flags(0) {}
 
 // ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type, const Params *params, const ComponentInfo *parent) :
 //     id(parent->id),
@@ -57,44 +43,22 @@ ComponentInfo::ComponentInfo(ComponentId_t id, const std::string& name) :
 
 // Constructor used for Anonymous SubComponents
 ComponentInfo::ComponentInfo(ComponentId_t id, ComponentInfo* parent_info, const std::string& type,
-                             const std::string& slot_name, int slot_num, uint64_t share_flags/*, const Params& params_in*/) :
-    id(id),
-    parent_info(parent_info),
-    name(""),
-    type(type),
-    link_map(nullptr),
-    component(nullptr),
-    params(/*new Params()*/ nullptr),
-    defaultTimeBase(nullptr),
-    enabledStats(nullptr),
-    statLoadLevel(0),
-    coordinates(parent_info->coordinates),
-    subIDIndex(1),
-    slot_name(slot_name),
-    slot_num(slot_num),
-    share_flags(share_flags)
-{
+                             const std::string& slot_name, int slot_num,
+                             uint64_t share_flags /*, const Params& params_in*/)
+    : id(id), parent_info(parent_info), name(""), type(type), link_map(nullptr), component(nullptr),
+      params(/*new Params()*/ nullptr), defaultTimeBase(nullptr), statConfigs(nullptr), enabledStatNames(nullptr),
+      enabledAllStats(false), allStatConfig(nullptr), statLoadLevel(0), coordinates(parent_info->coordinates),
+      subIDIndex(1), slot_name(slot_name), slot_num(slot_num), share_flags(share_flags) {
     /*params.insert(params_in.getParams());*/
 }
 
-
-ComponentInfo::ComponentInfo(ConfigComponent *ccomp, const std::string& name, ComponentInfo* parent_info, LinkMap* link_map) :
-    id(ccomp->id),
-    parent_info(parent_info),
-    name(name),
-    type(ccomp->type),
-    link_map(link_map),
-    component(nullptr),
-    params(&ccomp->params),
-    defaultTimeBase(nullptr),
-    enabledStats(&ccomp->enabledStatistics),
-    statLoadLevel(ccomp->statLoadLevel),
-    coordinates(ccomp->coords),
-    subIDIndex(1),
-    slot_name(ccomp->name),
-    slot_num(ccomp->slot_num),
-    share_flags(0)
-{
+ComponentInfo::ComponentInfo(ConfigComponent* ccomp, const std::string& name, ComponentInfo* parent_info,
+                             LinkMap* link_map)
+    : id(ccomp->id), parent_info(parent_info), name(name), type(ccomp->type), link_map(link_map), component(nullptr),
+      params(&ccomp->params), defaultTimeBase(nullptr), statConfigs(&ccomp->statistics),
+      enabledStatNames(&ccomp->enabledStatNames), enabledAllStats(ccomp->enabledAllStats),
+      allStatConfig(&ccomp->allStatConfig), statLoadLevel(ccomp->statLoadLevel), coordinates(ccomp->coords),
+      subIDIndex(1), slot_name(ccomp->name), slot_num(ccomp->slot_num), share_flags(0) {
     // printf("ComponentInfo(ConfigComponent): id = %llx\n",ccomp->id);
 
     // See how many subcomponents are in each slot so we know how to name them
@@ -118,30 +82,17 @@ ComponentInfo::ComponentInfo(ConfigComponent *ccomp, const std::string& name, Co
     }
 }
 
-ComponentInfo::ComponentInfo(ComponentInfo &&o) :
-    id(o.id),
-    parent_info(o.parent_info),
-    name(std::move(o.name)),
-    type(std::move(o.type)),
-    link_map(o.link_map),
-    component(o.component),
-    subComponents(std::move(o.subComponents)),
-    params(o.params),
-    defaultTimeBase(o.defaultTimeBase),
-    enabledStats(o.enabledStats),
-    statLoadLevel(o.statLoadLevel),
-    coordinates(o.coordinates),
-    subIDIndex(o.subIDIndex),
-    slot_name(o.slot_name),
-    slot_num(o.slot_num),
-    share_flags(o.share_flags)
-{
+ComponentInfo::ComponentInfo(ComponentInfo&& o)
+    : id(o.id), parent_info(o.parent_info), name(std::move(o.name)), type(std::move(o.type)), link_map(o.link_map),
+      component(o.component), subComponents(std::move(o.subComponents)), params(o.params),
+      defaultTimeBase(o.defaultTimeBase), statConfigs(o.statConfigs), allStatConfig(o.allStatConfig),
+      statLoadLevel(o.statLoadLevel), coordinates(o.coordinates), subIDIndex(o.subIDIndex), slot_name(o.slot_name),
+      slot_num(o.slot_num), share_flags(o.share_flags) {
     o.parent_info = nullptr;
     o.link_map = nullptr;
     o.component = nullptr;
     o.defaultTimeBase = nullptr;
 }
-
 
 ComponentInfo::~ComponentInfo() {
     if ( link_map ) delete link_map;

@@ -284,11 +284,10 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
     return false;
 }
 
-bool
-Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std::string& statisticName)
-{
-    std::string compTypeToLoad = type;
-    if (true == type.empty()) {
+const std::vector<std::string>&
+Factory::GetValidStatistics(const std::string& compType) {
+    std::string compTypeToLoad = compType;
+    if (compType.empty()) {
         compTypeToLoad = loadingComponentType;
     }
 
@@ -304,35 +303,36 @@ Factory::DoesComponentInfoStatisticNameExist(const std::string& type, const std:
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* sublib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if (sublib){
+    if (sublib) {
         auto* info = sublib->getInfo(elem);
-        if (info){
-            for ( auto& item : info->getStatnames() ) {
-                if ( statisticName == item ) {
-                    return true;
-                }
-            }
-            return false;
+        if (info) {
+            return info->getStatnames();
         }
     }
 
     auto* complib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if (complib){
+    if (complib) {
         auto* info = complib->getInfo(elem);
-        if (info){
-            for ( auto& item : info->getStatnames() ) {
-                if ( statisticName == item ) {
-                    return true;
-                }
-            }
-            return false;
+        if (info) {
+            return info->getStatnames();
         }
     }
 
-
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested subcomponent '%s'\n%s\n",
-              type.c_str(), error_os.str().c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n", compType.c_str(),
+              error_os.str().c_str());
+    static std::vector<std::string> null_return;
+    return null_return; // to avoid compiler warnings
+}
+
+bool
+Factory::DoesComponentInfoStatisticNameExist(const std::string& compType, const std::string& statisticName) {
+    auto& my_list = GetValidStatistics(compType);
+    for (auto& item : my_list) {
+        if (statisticName == item) {
+            return true;
+        }
+    }
     return false;
 }
 
