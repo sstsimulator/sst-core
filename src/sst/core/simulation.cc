@@ -25,6 +25,7 @@
 #include "sst/core/linkMap.h"
 #include "sst/core/linkPair.h"
 #include "sst/core/sharedRegionImpl.h"
+#include "sst/core/shared/sharedObject.h"
 #include "sst/core/output.h"
 #include "sst/core/stopAction.h"
 #include "sst/core/stringize.h"
@@ -41,6 +42,7 @@
 #define SST_SIMTIME_MAX  0xffffffffffffffff
 
 using namespace SST::Statistics;
+using namespace SST::Shared;
 
 namespace SST {
 
@@ -420,6 +422,7 @@ void Simulation::initialize() {
         DISABLE_WARN_DEPRECATED_DECLARATION;
         sharedRegionManager->updateState(false);
         REENABLE_WARNING;
+        SharedObject::manager.updateState(false);
     }
 
     do {
@@ -441,6 +444,7 @@ void Simulation::initialize() {
             DISABLE_WARN_DEPRECATED_DECLARATION;
             sharedRegionManager->updateState(false);
             REENABLE_WARNING;
+            SharedObject::manager.updateState(false);
         }
         untimed_phase++;
     } while ( !done);
@@ -498,6 +502,13 @@ void Simulation::complete() {
 }
 
 void Simulation::setup() {
+
+    setupBarrier.wait();
+
+    /* Enforce finalization of SharedObjects */
+    if ( my_rank.thread == 0 ) {
+        SharedObject::manager.updateState(true);
+    }
 
     setupBarrier.wait();
 

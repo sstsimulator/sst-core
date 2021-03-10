@@ -5,6 +5,7 @@
 EXTRA_DIST += \
     tests/testsuite_default_Component.py \
     tests/testsuite_default_RNGComponent.py \
+    tests/testsuite_default_SharedObjects.py \
     tests/testsuite_default_SubComponent.py \
     tests/testsuite_default_UnitAlgebra.py \
     tests/testsuite_testengine_testing.py \
@@ -21,6 +22,7 @@ EXTRA_DIST += \
     tests/test_RNGComponent_mersenne.py \
     tests/test_RNGComponent_marsaglia.py \
     tests/test_RNGComponent_xorshift.py \
+    tests/test_SharedObject.py \
     tests/test_StatisticsComponent.py \
     tests/test_MessageGeneratorComponent.py \
     tests/test_SubComponent.py \

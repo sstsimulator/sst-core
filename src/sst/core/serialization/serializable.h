@@ -135,7 +135,7 @@ class serializable_type
 
 #define ImplementVirtualSerializable(obj)     \
     protected:                                \
-       obj(cxn_flag_t flag){}
+       obj(cxn_flag_t flag __attribute__((unused))){}
 
 
 #define NotSerializable(obj) \
@@ -194,9 +194,11 @@ private:\
     return false; \
   }
 
-#define ImplementSerializable(obj) \
+#define SER_FORWARD_AS_ONE(...) __VA_ARGS__
+
+#define ImplementSerializable(...) \
  public: \
- ImplementSerializableDefaultConstructor(obj)
+ ImplementSerializableDefaultConstructor(SER_FORWARD_AS_ONE(__VA_ARGS__))
 
 
 class serializable_builder

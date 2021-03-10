@@ -54,7 +54,11 @@ class testcase_UnitAlgebra(SSTTestCase):
 
         self.run_sst(sdlfile, outfile)
 
+        testing_remove_component_warning_from_file(outfile)
+
         # Perform the test
         cmp_result = testing_compare_sorted_diff(testtype, outfile, reffile)
+        if (cmp_result == False):
+            diffdata = testing_get_diff_data("UnitAlgebra")
+            log_failure(diffdata)
         self.assertTrue(cmp_result, "Output/Compare file {0} does not match Reference File {1}".format(outfile, reffile))
-
