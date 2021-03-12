@@ -39,7 +39,13 @@ public:
     Config () {} // For serialization
     ~Config();
 
-    /** Parse command-line arguments to update configuration values */
+    /**
+       Parse command-line arguments to update configuration values.
+
+       @return Returns 0 if execution should continue.  Returns -1
+       if there was an error.  Returns 1 if run command line only
+       asked for information to be print (e.g. --help or -V).
+     */
     int parseCmdLine( int argc, char* argv[] );
     /** Set a configuration string to update configuration values */
     bool setConfigEntryFromModel( const std::string& entryName, const std::string& value );
