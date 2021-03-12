@@ -254,6 +254,7 @@ class SSTTestCase(unittest.TestCase):
                 num_threads (int): The number of threads to run SST with.
                 global_args (str): Global Arguments provided from test engine args
                 timeout_sec (int): Allowed runtime in seconds
+                expected_rc (int): The expected return code from the SST run
         """
         # NOTE: We cannot set the default of param to the global variable due to
         # oddities on how this class loads, so we do it here.
@@ -281,6 +282,7 @@ class SSTTestCase(unittest.TestCase):
             check_param_type("global_args", global_args, str)
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout_sec must be a postive int or a float")
+        check_param_type("expected_rc", expected_rc, int)
 
         # Make sure sdl file is exists and is a file
         if not os.path.exists(sdl_file) or not os.path.isfile(sdl_file):

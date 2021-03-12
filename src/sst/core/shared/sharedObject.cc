@@ -12,8 +12,9 @@
 
 #include "sst_config.h"
 #include "sst/core/shared/sharedObject.h"
-#include "sst/core/shared/sharedMap.h"
 #include "sst/core/shared/sharedArray.h"
+#include "sst/core/shared/sharedMap.h"
+#include "sst/core/shared/sharedSet.h"
 #include "sst/core/warnmacros.h"
 #include "sst/core/objectComms.h"
 

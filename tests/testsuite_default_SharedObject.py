@@ -93,7 +93,7 @@ class testcase_SharedObject(SSTTestCase):
 
     def test_SharedObject_array_partial_late_nopub(self):
         self.sharedobject_test_template("array_partial_late_nopub", 1, "--param=object_type:array --param=num_entities:12 --param=full_initialization:false --param=late_write:true --param=publish:false")
-        
+
     def test_SharedObject_array_partial_doubleinit(self):
         self.sharedobject_test_template("array_partial_doubleinit", 1, "--param=object_type:array --param=num_entities:12 --param=full_initialization:false --param=double_initialize:true")
 
@@ -132,10 +132,46 @@ class testcase_SharedObject(SSTTestCase):
 
     def test_SharedObject_map_partial_late_nopub(self):
         self.sharedobject_test_template("map_partial_late_nopub", 1, "--param=object_type:map --param=num_entities:12 --param=full_initialization:false --param=late_write:true --param=publish:false")
-        
+
     def test_SharedObject_map_partial_doubleinit(self):
         self.sharedobject_test_template("map_partial_doubleinit", 1, "--param=object_type:map --param=num_entities:12 --param=full_initialization:false --param=double_initialize:true")
-        
+
+
+    # SharedSet Tests
+    # Full Initialization
+    #   single - only ID 0 initializes array
+    #   multi - also has ID N-1 initialize array
+    #     no conflict - both IDs write same data
+    #     conflict - IDs write different data
+    # Partial initialize (everyone initializes their own portion)
+    #   late_write = true
+    #   do not publish = true
+    #   nopub and late_write true
+    #   double_initialize
+    def test_SharedObject_set_full_single(self):
+        self.sharedobject_test_template("set_full_single", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true")
+
+    def test_SharedObject_set_full_multi(self):
+        self.sharedobject_test_template("set_full_multi", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true")
+
+    def test_SharedObject_set_full_multi_conflict(self):
+        self.sharedobject_test_template("set_full_multi_conflict", 1, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true")
+
+    def test_SharedObject_set_partial(self):
+        self.sharedobject_test_template("set_partial", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:false")
+
+    def test_SharedObject_set_partial_nopub(self):
+        self.sharedobject_test_template("set_partial_nopub", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:false --param=publish:false")
+
+    def test_SharedObject_set_partial_late(self):
+        self.sharedobject_test_template("set_partial_late", 1, "--param=object_type:set --param=num_entities:12 --param=full_initialization:false --param=late_write:true")
+
+    def test_SharedObject_set_partial_late_nopub(self):
+        self.sharedobject_test_template("set_partial_late_nopub", 1, "--param=object_type:set --param=num_entities:12 --param=full_initialization:false --param=late_write:true --param=publish:false")
+
+    def test_SharedObject_set_partial_doubleinit(self):
+        self.sharedobject_test_template("set_partial_doubleinit", 1, "--param=object_type:set --param=num_entities:12 --param=full_initialization:false --param=double_initialize:true")
+
 #####
 
     def sharedobject_test_template(self, testtype, exp_rc, options):
@@ -143,7 +179,6 @@ class testcase_SharedObject(SSTTestCase):
         outdir = test_output_get_run_dir()
 
         model_options = '--model-options="{0}"'.format(options)
-        print(model_options)
 
         # Set the various file paths
         sdlfile = "{0}/test_SharedObject.py".format(testsuitedir)
@@ -154,4 +189,3 @@ class testcase_SharedObject(SSTTestCase):
 
         # No need to perform test since we're just looking for it to
         # complete without an error
-

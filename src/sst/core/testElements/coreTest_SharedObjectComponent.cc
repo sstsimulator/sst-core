@@ -34,6 +34,7 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     Component(id),
     test_array(false),
     test_map(false),
+    test_set(false),
     count(0),
     check(true),
     late_write(false),
@@ -50,6 +51,9 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     }
     else if ( obj_type == "map" ) {
         test_map = true;
+    }
+    else if ( obj_type == "set" ) {
+        test_set = true;
     }
 
     myid = params.find<int>("myid",-1);
@@ -121,6 +125,23 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
         }
         if ( pub ) map.publish();
     }
+    else if ( test_set && !late_initialize ) {
+        if ( full_initialization ) {
+            set.initialize("test_shared_set");
+            if ( double_initialize ) set.initialize("test_shared_set");
+            if ( myid == 0 || ( multiple_initializers && (myid == num_entities - 1)) ) {
+                for ( int i = 0; i < num_entities; ++i ) {
+                    set.insert(setItem(i,i + (conflicting_write ? myid : 0)));
+                }
+            }
+        }
+        else {
+            set.initialize("test_shared_set");
+            if ( double_initialize ) map.initialize("test_shared_set");
+            set.insert(setItem(myid,myid));
+        }
+        if ( pub ) set.publish();
+    }
 
     registerAsPrimaryComponent();
     primaryComponentDoNotEndSim();
@@ -147,6 +168,14 @@ void coreTestSharedObjectsComponent::init(unsigned int UNUSED(phase))
         }
         if ( map.isFullyPublished() && !pub ) {
             out.fatal(CALL_INFO,100,"ERROR: SharedMap fully published, but should not have been\n");
+        }
+    }
+    else if (test_set ) {
+        if ( !set.isFullyPublished() && pub ) {
+            out.fatal(CALL_INFO,100,"ERROR: SharedSet not fully published, but should have been\n");
+        }
+        if ( set.isFullyPublished() && !pub ) {
+            out.fatal(CALL_INFO,100,"ERROR: SharedSet fully published, but should not have been\n");
         }
     }
 }
@@ -180,6 +209,18 @@ void coreTestSharedObjectsComponent::setup()
             for ( auto x : map ) {
                 if ( x.second < 0 ) {
                     out.fatal(CALL_INFO,100,"ERROR: SharedArray data is messed up\n");
+                }
+            }
+        }
+    }
+    else if (test_set ) {
+        if ( late_write ) {
+            set.insert(setItem(0,0));
+        }
+        else {
+            for ( auto x : set ) {
+                if ( x.key < 0 ) {
+                    out.fatal(CALL_INFO,100,"ERROR: SharedSet data is messed up\n");
                 }
             }
         }

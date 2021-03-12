@@ -20,9 +20,45 @@
 #include <sst/core/output.h>
 #include <sst/core/shared/sharedArray.h>
 #include <sst/core/shared/sharedMap.h>
+#include <sst/core/shared/sharedSet.h>
 
 namespace SST {
 namespace CoreTestSharedObjectsComponent {
+
+// Class so that we can check to see if the equivalence check works
+// for sets
+struct setItem : public SST::Core::Serialization::serializable {
+    int key;
+    int value;
+
+    setItem() :
+        key(0),
+        value(0)
+    {}
+
+    setItem(int key, int value) :
+        key(key),
+        value(value)
+    {}
+
+    bool operator<(const setItem& lhs) const {
+        return key < lhs.key;
+    }
+
+    bool operator==(const setItem& lhs) const {
+        if ( key != lhs.key ) return false;
+        if ( value != lhs.value ) return false;
+        return true;
+    }
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override {
+        ser & key;
+        ser & value;
+    }
+
+    ImplementSerializable(SST::CoreTestSharedObjectsComponent::setItem);
+
+};
 
 class coreTestSharedObjectsComponent : public SST::Component
 {
@@ -39,7 +75,7 @@ public:
     )
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "object_type", "Type of object to test ( array | map )", "array"},
+        { "object_type", "Type of object to test ( array | map | set )", "array"},
         { "num_entities", "Number of entities in the sim", "12"},
         { "myid", "ID Number (0 <= myid < num_entities)", nullptr},
         { "full_initialization", "If true, id 0 will initialize whole array, otherwise each id will contribute", "true"},
@@ -78,6 +114,7 @@ private:
 
     bool test_array;
     bool test_map;
+    bool test_set;
 
     int myid;
     int num_entities;
@@ -90,6 +127,7 @@ private:
 
     Shared::SharedArray<int> array;
     Shared::SharedMap<int,int> map;
+    Shared::SharedSet<setItem> set;
 };
 
 }

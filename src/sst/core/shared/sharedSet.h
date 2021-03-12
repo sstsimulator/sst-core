@@ -9,42 +9,42 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_CORE_SHARED_SHAREDMAP_H
-#define SST_CORE_CORE_SHARED_SHAREDMAP_H
+#ifndef SST_CORE_CORE_SHARED_SHAREDSET_H
+#define SST_CORE_CORE_SHARED_SHAREDSET_H
 
 #include "sst/core/sst_types.h"
 #include "sst/core/shared/sharedObject.h"
 
-#include <map>
+#include <set>
 
 namespace SST {
 namespace Shared {
 
 /**
-   SharedMap class.  The class is templated to allow for Map of any
-   non-pointer type as value.  The type must be serializable.
+   SharedSet class.  The class is templated to allow for an array
+   of any non-pointer type.  The type must be serializable.
  */
-template <typename keyT, typename valT>
-class SharedMap : public SharedObject {
-    static_assert(!std::is_pointer<valT>::value, "Cannot use a pointer type as value with SharedMap");
+template <typename valT>
+class SharedSet : public SharedObject {
+    static_assert(!std::is_pointer<valT>::value, "Cannot use a pointer type as value with SharedSet");
 
     // Forward declaration.  Defined below
     class Data;
     
 public:
 
-    SharedMap() :
+    SharedSet() :
         SharedObject(), published(false), data(nullptr)
     {}
 
-    ~SharedMap() {
+    ~SharedSet() {
         // data does not need to be deleted since the
         // SharedObjectManager owns the pointer
     }
 
 
     /**
-       Initialize the SharedMap.
+       Initialize the SharedSet.
 
        @param obj_name Name of the object.  This name is how the
        object is uniquely identified across ranks.
@@ -53,7 +53,7 @@ public:
     void initialize(const std::string& obj_name) {
         if ( data ) {
             Simulation::getSimulationOutput().fatal(
-                CALL_INFO,1,"ERROR: called initialize() of SharedMap %s more than once\n",obj_name.c_str());
+                CALL_INFO,1,"ERROR: called initialize() of SharedSet %s more than once\n",obj_name.c_str());
         }
 
         data = manager.getSharedObjectData<Data>(obj_name);
@@ -61,66 +61,66 @@ public:
     }
 
     /*** Typedefs and functions to mimic parts of the vector API ***/
-    typedef typename std::map<keyT,valT>::const_iterator const_iterator;
-    typedef typename std::map<keyT,valT>::const_reverse_iterator const_reverse_iterator;
+    typedef typename std::set<valT>::const_iterator const_iterator;
+    typedef typename std::set<valT>::const_reverse_iterator const_reverse_iterator;
 
     /**
-       Get the size of the map.
+       Get the size of the set.
 
-       @return size of the map
+       @return size of the set
      */
     inline size_t size() const { return data->getSize(); }
 
     /**
-       Tests if the map is empty.
+       Tests if the set is empty.
 
-       @return true if map is empty, false otherwise
+       @return true if set is empty, false otherwise
      */
-    inline bool empty() const { return data->map.empty(); }
+    inline bool empty() const { return data->set.empty(); }
 
 
     /**
-       Counts elements with a specific key.  Becuase this is not a
-       multimap, it will either return 1 or 0.
+       Counts elements with a specific value.  Becuase this is not a
+       multiset, it will either return 1 or 0.
 
-       @return Count of elements with specified key
+       @return Count of elements with specified value
      */
-    size_t count (const keyT& k) const {
-        return data->map.count(k);
+    size_t count (const valT& k) const {
+        return data->set.count(k);
     }
 
     /**
-       Get const_iterator to beginning of underlying map
+       Get const_iterator to beginning of underlying set
      */
     const_iterator begin() const {
-        return data->map.cbegin();
+        return data->set.cbegin();
     }
     
     /**
-       Get const_iterator to end of underlying map
+       Get const_iterator to end of underlying set
      */
     const_iterator end() const {
-        return data->map.cend();
+        return data->set.cend();
     }
     
     /**
-       Get const_reverse_iterator to beginning of underlying map
+       Get const_reverse_iterator to beginning of underlying set
      */
     const_reverse_iterator rbegin() const {
-        return data->map.crbegin();
+        return data->set.crbegin();
     }
     
     /**
-       Get const_reverse_iterator to end of underlying map
+       Get const_reverse_iterator to end of underlying set
      */
     const_reverse_iterator rend() const {
-        return data->map.crend();
+        return data->set.crend();
     }
     
 
     /**
        Indicate that the calling element has written all the data it
-       plans to write.  Writing to the map through this instance
+       plans to write.  Writing to the set through this instance
        after publish() is called will create an error.
      */
     void publish() {
@@ -130,10 +130,10 @@ public:
     }
 
     /**
-       Check whether all instances of this SharedMap have called
+       Check whether all instances of this SharedSet have called
        publish().  NOTE: Is is possible that this could return true
        one round, but false the next if a new instance of the
-       SharedMap was initialized but not published after the last
+       SharedSet was initialized but not published after the last
        call.
      */
     bool isFullyPublished() {
@@ -142,62 +142,54 @@ public:
 
     
     /**
-       Write data to the map.  This function is thread-safe, as a
-       mutex is used to ensure only one write at a time.
+       Insert data to the set.  This function is thread-safe, as a
+       mutex is used to ensure only one insert at a time.
 
-       @param key key of the write
-
-       @param value value to be written
+       @param val value of the insert
      */
-    inline void write(const keyT& key, const valT& value) {
+    inline void insert(const valT& value) {
         if ( published ) {
             Simulation::getSimulationOutput().fatal(
-                CALL_INFO,1,"ERROR: write to SharedMap %s after publish() was called\n",
+                CALL_INFO,1,"ERROR: insert into SharedSet %s after publish() was called\n",
                 data->getName().c_str());
         }
-        return data->write(key, value);
+        return data->write(value);
     }
 
     /**
-       Read data from the map.  This returns a const reference, so is
-       read only.  If the key is not in the map, an out_of_range
-       exception will be thrown.
+       Searches the SharedSet for an element equivalent to value and
+       returns a const iterator to it if found, otherwise it returns
+       an iterator to SharedSet::end.
+
+       @param value value to search for
 
        NOTE: This function does not use a mutex, so it is possible to
        get invalid results if another thread is simulateously writing
-       to the map.  However, after the init() phase of simulation is
+       to the set.  However, after the init() phase of simulation is
        complete (in setup() and beyond), this is always a safe
        operation.  If reading during init() and you can't guarantee
        that all elements have already written all elements to the
-       SharedMap, use mutex_read() to guarantee thread safety.
+       SharedSet, use mutex_find() to guarantee thread safety.
 
-       @param key key to read
-
-       @return const reference to data referenced by key
-
-       @exception std::out_of_range key is not found in map
+       @return read-only iterator to data referenced by value
      */
-    inline const valT& operator[](const keyT& key) const {
-        return data->read(key);
+    inline const_iterator find(const valT& value) const {
+        return data->find(value);
     }
 
     /**
-       Read data from the map.  This returns a const reference, so
-       is read only.  This version of read is always thread safe (@see
-       operator[]).  If the key is not in the map, an out_of_range
-       exception will be thrown.
+       Searches the SharedSet for an element equivalent to value and
+       returns a const iterator to it if found, otherwise it returns
+       an iterator to SharedSet::end. This version of find is always thread safe (@see
+       find()).
 
-       @param key key to read
+       @param value value to search for
 
-       @return const reference to data at index
-
-       @exception std::out_of_range key is not found in map
+       @return read-only iterator to data reference by value
     */
-    inline const valT& mutex_read(const keyT& key) const {
-        return data->mutex_read(key);
+    inline const valT& mutex_find(const valT& value) const {
+        return data->mutex_read(value);
     }
-
-
 
     
 private:
@@ -212,7 +204,7 @@ private:
 
     public:
         
-        std::map<keyT,valT> map;
+        std::set<valT> set;
         ChangeSet* change_set;
 
         Data(const std::string& name) :
@@ -231,44 +223,44 @@ private:
 
         size_t getSize() const {
             std::lock_guard<std::mutex> lock(mtx);
-            return map.size();
+            return set.size();
         }
 
-        void update_write(const keyT& key, const valT& value) {
+        void update_write(const valT& value) {
             // Don't need to mutex because this is only ever called
             // from one thread at a time, with barrier before and
             // after, or from write(), which does mutex.
-            auto success = map.insert(std::make_pair(key,value));
+            auto success = set.insert(value);
             if ( !success.second ) {
-                // Wrote to a key that already existed
-                if ( value != success.first->second ) {
+                // Wrote to a value that already existed
+                if ( !(value == *(success.first)) ) {
                     Simulation::getSimulationOutput().fatal(
-                        CALL_INFO, 1, "ERROR: wrote two different values to same key in SharedMap %s\n",name.c_str());
+                        CALL_INFO, 1, "ERROR: wrote two non-equal values to same set item in SharedSet %s\n",name.c_str());
                 }
             }
         }
 
-        void write(const keyT& key, const valT& value) {
-            std::lock_guard<std::mutex> lock(mtx);
-            check_lock_for_write("SharedMap");
-            update_write(key,value);
-            if ( change_set ) change_set->addChange(key,value);
+        void write(const valT& value) {
+            // std::lock_guard<std::mutex> lock(mtx);
+            check_lock_for_write("SharedSet");
+            update_write(value);
+            if ( change_set ) change_set->addChange(value);
         }
 
         // Inline the read since it may be called often during run().
         // This read is not protected from data races in the case
-        // where the map may be simulataeously written by another
+        // where the set may be simulataeously written by another
         // thread.  If there is a danger of simultaneous access
         // during init, use the mutex_read function until after the
         // init phase.
-        inline const valT& read(const keyT& key) {
-            return map.at(key);
+        inline const_iterator find(const valT& value) {
+            return set.find(value);
         }
 
         // Mutexed read for use if you are resizing the array as you go
-        inline const valT& mutex_read(const keyT& key) {
+        inline const valT& mutex_find(const valT& value) {
             std::lock_guard<std::mutex> lock(mtx);
-            auto ret = map.at(key);
+            auto ret = set.find(value);
             return ret;
         }
 
@@ -283,14 +275,14 @@ private:
     private:
         class ChangeSet : public SharedObjectChangeSet {
 
-            std::map<keyT,valT> changes;
+            std::set<valT> changes;
 
             void serialize_order(SST::Core::Serialization::serializer& ser) override {
                 SharedObjectChangeSet::serialize_order(ser);
                 ser & changes;
             }
 
-            ImplementSerializable(SST::Shared::SharedMap<keyT,valT>::Data::ChangeSet);
+            ImplementSerializable(SST::Shared::SharedSet<valT>::Data::ChangeSet);
 
         public:
             // For serialization
@@ -301,14 +293,14 @@ private:
                 SharedObjectChangeSet(name)
                 {}
 
-            void addChange(const keyT& key, const valT& value) {
-                changes[key] = value;
+            void addChange(const valT& value) {
+                changes.insert(value);
             }
 
             void applyChanges(SharedObjectDataManager* manager) override {
                 auto data = manager->getSharedObjectData<Data>(getName());
                 for ( auto x : changes ) {
-                    data->update_write(x.first, x.second);
+                    data->update_write(x);
                 }
             }
 

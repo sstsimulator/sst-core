@@ -44,7 +44,7 @@ public:
        Default constructor for SharedArray.
     */
     SharedArray() :
-        published(false), data(nullptr)
+        SharedObject(), published(false), data(nullptr)
     {}
 
     /**
