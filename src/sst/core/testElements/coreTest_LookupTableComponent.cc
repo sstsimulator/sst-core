@@ -32,7 +32,7 @@ namespace CoreTestLookupTableComponent {
 coreTestLookupTableComponent::coreTestLookupTableComponent(SST::ComponentId_t id, SST::Params &params) : Component(id)
 {
     char buffer[128] = {0};
-    snprintf(buffer, 128, "LookupTableComponent %3llu  [@t]  ", id);
+    snprintf(buffer, 128, "LookupTableComponent %3" PRIu64 "  [@t]  ", id);
     out.init(buffer, 0, 0, Output::STDOUT);
 
     const std::string & fname = params.find<std::string>("filename", "");

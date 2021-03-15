@@ -18,6 +18,9 @@
 #include <string>
 #include <vector>
 
+#if !SST_BUILDING_CORE
+#warning "SharedRegion and it's accompanying classes have been deprecated and will be removed in SST 12. Please use the new SharedObject classes found in sst/core/shared."
+#endif
 
 namespace SST {
 
@@ -119,13 +122,13 @@ public:
     // The following functions will become protected in SST 12.  Need
     // to look for instances of these used in the core, they will be
     // bracketed with DISABLE_WARN_DEPRECATED_DECLARATION.
-    virtual void publishRegion(SharedRegion*) __attribute__ ((deprecated("publishRegion() was never intended to be used outside of SST Core and will become a protected function in SST 12."))) = 0;
+    virtual void publishRegion(SharedRegion*) = 0;
 
-    virtual bool isRegionReady(const SharedRegion*) __attribute__ ((deprecated("isRegionReady() was never intended to be used outside of SST Core and will become a protected function in SST 12."))) = 0;
+    virtual bool isRegionReady(const SharedRegion*) = 0;
 
-    virtual void shutdownSharedRegion(SharedRegion*) __attribute__ ((deprecated("shutdownSharedRegion() was never intended to be used outside of SST Core and will become a protected function in SST 12."))) = 0;
+    virtual void shutdownSharedRegion(SharedRegion*) = 0;
 
-    virtual void updateState(bool finalize) __attribute__ ((deprecated("updateState() was never intended to be used outside of SST Core and will become a protected function in SST 12."))) = 0;
+    virtual void updateState(bool finalize) = 0;
 
 };
 

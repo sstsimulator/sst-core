@@ -230,7 +230,6 @@ private:
 
 
         size_t getSize() const {
-            std::lock_guard<std::mutex> lock(mtx);
             return map.size();
         }
 
