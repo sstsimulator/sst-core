@@ -51,7 +51,12 @@ class testcase_sstinfo(SSTTestCase):
         outfile = "{0}/test_sstinfo_{1}.out".format(outdir, testtype)
         errfile = "{0}/test_sstinfo_{1}.err".format(outdir, testtype)
 
-        cmd = 'sst-info -q {0}'.format(testtype)
+        # Get the path to sst-info binary application
+        sst_app_path = sstsimulator_conf_get_value_str('SSTCore', 'bindir', default="UNDEFINED")
+        err_str = "Path to SST-INFO {0}; does not exist...".format(sst_app_path)
+        self.assertTrue(os.path.isdir(sst_app_path), err_str)
+
+        cmd = '{0}/sst-info -q {1}'.format(sst_app_path, testtype)
         rtn = OSCommand(cmd, output_file_path = outfile, error_file_path = errfile).run()
         if rtn.result() != 0:
             self.assertEquals(rtn.result(), 0, "sst-info Test failed running cmdline {0} - return = {1}".format(cmd, rtn.result()))
