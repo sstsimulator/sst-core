@@ -24,19 +24,19 @@ REENABLE_WARNING
 #include "sst/core/model/python/pymodel.h"
 #include "sst/core/model/python/pymodel_comp.h"
 #include "sst/core/model/python/pymodel_link.h"
+#include "sst/core/model/python/pymodel_stat.h"
 
 #include "sst/core/sst_types.h"
 #include "sst/core/simulation.h"
 #include "sst/core/component.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/configGraph.h"
+#include <sst/core/configGraph.h>
+#include <sst/core/componentInfo.h>
 
+using namespace SST;
 using namespace SST::Core;
 extern SST::Core::SSTPythonModelDefinition *gModel;
-
-
-extern "C" {
-
 
 ConfigComponent* ComponentHolder::getSubComp(const std::string& name, int slot_num)
 {
@@ -67,12 +67,9 @@ int ComponentHolder::compare(ComponentHolder *other) {
     else return 0;
 }
 
-
-
 int PySubComponent::getSlot() {
     return getComp()->slot_num;
 }
-
 
 static int compInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
@@ -271,6 +268,55 @@ static PyObject* compSetSubComponent(PyObject *self, PyObject *args)
     return nullptr;
 }
 
+/**
+ * @brief compSetStatistic Fill a stat slot with a shared statistic
+ * @param self The Python component
+ * @param args The name of the stat slot to fill and the Python stat object o use
+ * @return The Python stat object is returned back on success
+ */
+static PyObject*
+compSetStatistic(PyObject* self, PyObject* args) {
+    PyObject* statObj;
+    char* name = nullptr;
+    if (!PyArg_ParseTuple(args, "sO", &name, &statObj))
+        return nullptr;
+
+    ConfigComponent* c = getComp(self);
+    if (nullptr == c)
+        return nullptr;
+
+    ConfigStatistic* s = getStat(statObj);
+    bool valid = c->reuseStatistic(name, s->id);
+    if (valid) {
+        Py_INCREF(statObj);
+        return statObj;
+    } else {
+        return nullptr;
+    }
+}
+
+/**
+ * @brief compEnableStatistic. Creates a new statistic object unique to this slot
+ *        rather than using a shared statistic created by compCreateStatistic
+ * @param self The Python component
+ * @param args The name of the stat slot to fill and optionally a params dictionary
+ * @return The Python stat object assigned to this slot
+ */
+static PyObject*
+compEnableStatistic(PyObject* self, PyObject* args) {
+    char* name = nullptr;
+    PyObject* py_params = nullptr;
+
+    if (!PyArg_ParseTuple(args, "s|O", &name, &py_params)) {
+        return nullptr;
+    }
+    ConfigComponent* c = getComp(self);
+    if (nullptr == c)
+        return nullptr;
+
+    return buildEnabledStatistic(c, name, py_params, false /*do not apply to children*/);
+}
+
 static PyObject* compSetCoords(PyObject *self, PyObject *args)
 {
     std::vector<double> coords(3, 0.0);
@@ -322,7 +368,13 @@ static PyObject* compSetStatisticLoadLevel(PyObject *self, PyObject *args) {
     return SST_ConvertToPythonLong(0);
 }
 
-
+/**
+ * @brief compEnableAllStatistics
+ * @param self The Python component
+ * @param args Optionally a params dictionary
+ * @return Just a flag (0) indicating success. The enable all functions
+ *         do not return Python stat handles.
+ */
 static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
 {
     int           argOK = 0;
@@ -336,13 +388,7 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
     argOK = PyArg_ParseTuple(args, "|O!i", &PyDict_Type, &statParamDict,&apply_to_children);
 
     if (argOK) {
-        c->enableStatistic(STATALLFLAG,apply_to_children);
-
-        // Generate and Add the Statistic Parameters
-        for ( auto p : generateStatisticParameters(statParamDict) ) {
-            c->addStatisticParameter(STATALLFLAG, p.first, p.second, apply_to_children);
-        }
-
+        c->enableStatistic(STATALLFLAG, pythonToCppParams(statParamDict), apply_to_children);
     } else {
         // ParseTuple Failed, return NULL for error
         return nullptr;
@@ -350,16 +396,22 @@ static PyObject* compEnableAllStatistics(PyObject *self, PyObject *args)
     return SST_ConvertToPythonLong(0);
 }
 
-
+/**
+ * @brief compEnableStatistics
+ * @param self  The Python component
+ * @param args  The statistic slot to enable (single) or a list of slots to enable, optionally also params dictionary
+ * @return A list of Python statistic templates.  Each Statistic template will generate a unique object
+ *         in C++ rather than a shared object.  If wanted a shared object, use compCreateStatistic
+ *         and then assigned the created statistic to slots.
+ */
 static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
 {
     int           argOK = 0;
     PyObject*     statList = nullptr;
     char*         stat_str = nullptr;
     PyObject*     statParamDict = nullptr;
-    Py_ssize_t    numStats = 0;
     int           apply_to_children = 0;
-    ConfigComponent *c = getComp(self);
+    ConfigComponent* cc = getComp(self);
 
     PyErr_Clear();
 
@@ -368,8 +420,7 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     if ( argOK ) {
         statList = PyList_New(1);
         PyList_SetItem(statList,0,SST_ConvertToPythonString(stat_str));
-    }
-    else  {
+    } else {
         PyErr_Clear();
         apply_to_children = 0;
         // Try list version
@@ -379,29 +430,13 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
 
     if (argOK) {
         // Generate the Statistic Parameters
-        auto params = generateStatisticParameters(statParamDict);
-
         // Make sure we have a list
         if ( !PyList_Check(statList) ) {
             return nullptr;
         }
-
-        // Get the Number of Stats in the list, and enable them separately,
-        // also set their parameters
-        numStats = PyList_Size(statList);
-        for (uint32_t x = 0; x < numStats; x++) {
-            PyObject* pylistitem = PyList_GetItem(statList, x);
-            PyObject* pyname = PyObject_CallMethod(pylistitem, (char*)"__str__", nullptr);
-
-            c->enableStatistic(SST_ConvertToCppString(pyname),apply_to_children);
-
-            // Add the parameters
-            for ( auto p : params ) {
-                c->addStatisticParameter(SST_ConvertToCppString(pyname), p.first, p.second, apply_to_children);
-            }
-
-        }
+        PyObject* statObjList = buildEnabledStatistics(cc, statList, statParamDict, apply_to_children);
         Py_XDECREF(statList);
+        return statObjList;
     } else {
         // ParseTuple Failed, return NULL for error
         return nullptr;
@@ -409,46 +444,74 @@ static PyObject* compEnableStatistics(PyObject *self, PyObject *args)
     return SST_ConvertToPythonLong(0);
 }
 
+/**
+ * @brief compCreateStatistic
+ * @param self The Python component
+ * @param args The name assigned to the statistic in Python (not C++). Optionally params.
+ * @return A Python object representing the statistic. All statistic slots this is assigned to
+ *         will be linked to the same statistic object.
+ */
+static PyObject*
+compCreateStatistic(PyObject* self, PyObject* args) {
+    //    char* param = nullptr;
+    ConfigComponent* comp = getComp(self);
+    if (nullptr == comp)
+        return nullptr;
 
-static PyMethodDef componentMethods[] = {
-    {   "addParam",
-        compAddParam, METH_VARARGS,
-        "Adds a parameter(name, value)"},
-    {   "addParams",
-        compAddParams, METH_O,
-        "Adds Multiple Parameters from a dict"},
-    {   "setRank",
-        compSetRank, METH_VARARGS,
-        "Sets which rank on which this component should sit"},
-    {   "setWeight",
-        compSetWeight, METH_O,
-        "Sets the weight of the component"},
-    {   "addLink",
-        compAddLink, METH_VARARGS,
-        "Connects this component to a Link"},
-    {   "getFullName",
-        compGetFullName, METH_NOARGS,
-        "Returns the full name of the component."},
-    {   "getType",
-        compGetType, METH_NOARGS,
-        "Returns the type of the component."},
-    {   "setStatisticLoadLevel",
-        compSetStatisticLoadLevel, METH_VARARGS,
-        "Sets the statistics load level for this component"},
-    {   "enableAllStatistics",
-        compEnableAllStatistics, METH_VARARGS,
-        "Enable all Statistics in the component with optional parameters"},
-    {   "enableStatistics",
-        compEnableStatistics, METH_VARARGS,
-        "Enables Multiple Statistics in the component with optional parameters"},
-    {   "setSubComponent",
-        compSetSubComponent, METH_VARARGS,
-        "Bind a subcomponent to slot <name>, with type <type>"},
-    {   "setCoordinates",
-        compSetCoords, METH_VARARGS,
-        "Set (X,Y,Z) coordinates of this component, for use with visualization"},
-    {   nullptr, nullptr, 0, nullptr }
-};
+    // we can have 1 or 2 arguments
+    // mandatory name
+    // optional parameters
+    char* name = nullptr;
+    PyObject* py_params;
+
+    if (!PyArg_ParseTuple(args, "s|O", &name, &py_params))
+        return nullptr;
+
+    if (nullptr == comp)
+        return nullptr;
+
+    ConfigStatistic* cs = comp->createStatistic();
+    if (cs == nullptr) {
+        char errMsg[1024] = { 0 };
+        snprintf(errMsg, sizeof(errMsg) - 1, "Failed to create statistic '%s' on '%s'", name, comp->name.c_str());
+        PyErr_SetString(PyExc_RuntimeError, errMsg);
+        return nullptr;
+    }
+
+    if (py_params) {
+        cs->params.insert(pythonToCppParams(py_params));
+    }
+
+    cs->shared = true;
+    cs->name = name;
+
+    return buildStatisticObject(cs->id);
+}
+
+static PyMethodDef componentMethods[]
+    = { { "addParam", compAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
+        { "addParams", compAddParams, METH_O, "Adds Multiple Parameters from a dict" },
+        { "setRank", compSetRank, METH_VARARGS, "Sets which rank on which this component should sit" },
+        { "setWeight", compSetWeight, METH_O, "Sets the weight of the component" },
+        { "addLink", compAddLink, METH_VARARGS, "Connects this component to a Link" },
+        { "getFullName", compGetFullName, METH_NOARGS, "Returns the full name of the component." },
+        { "getType", compGetType, METH_NOARGS, "Returns the type of the component." },
+        { "setStatisticLoadLevel", compSetStatisticLoadLevel, METH_VARARGS,
+          "Sets the statistics load level for this component" },
+        { "createStatistic", compCreateStatistic, METH_VARARGS,
+          "Create a Statistics in the component with optional parameters" },
+        { "enableAllStatistics", compEnableAllStatistics, METH_VARARGS,
+          "Enable all Statistics in the component with optional parameters" },
+        { "enableStatistic", compEnableStatistic, METH_VARARGS,
+          "Enable a statistic with a name and return a handle to it" },
+        { "enableStatistics", compEnableStatistics, METH_VARARGS,
+          "Enables Multiple Statistics in the component with optional parameters" },
+        { "setStatistic", compSetStatistic, METH_VARARGS, "Bind a statistic with name <name>" },
+        { "setSubComponent", compSetSubComponent, METH_VARARGS,
+          "Bind a subcomponent to slot <name>, with type <type>" },
+        { "setCoordinates", compSetCoords, METH_VARARGS,
+          "Set (X,Y,Z) coordinates of this component, for use with visualization" },
+        { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
@@ -516,9 +579,6 @@ REENABLE_WARNING
 #endif
 
 
-
-
-
 static int subCompInit(ComponentPy_t *self, PyObject *args, PyObject *UNUSED(kwds))
 {
     ComponentId_t id;
@@ -545,42 +605,26 @@ static void subCompDealloc(ComponentPy_t *self)
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
-
-
-static PyMethodDef subComponentMethods[] = {
-    {   "addParam",
-        compAddParam, METH_VARARGS,
-        "Adds a parameter(name, value)"},
-    {   "addParams",
-        compAddParams, METH_O,
-        "Adds Multiple Parameters from a dict"},
-    {   "addLink",
-        compAddLink, METH_VARARGS,
-        "Connects this subComponent to a Link"},
-    {   "getFullName",
-        compGetFullName, METH_NOARGS,
-        "Returns the full name, after any prefix, of the component."},
-    {   "getType",
-        compGetType, METH_NOARGS,
-        "Returns the type of the component."},
-    {   "setStatisticLoadLevel",
-        compSetStatisticLoadLevel, METH_VARARGS,
-        "Sets the statistics load level for this component"},
-    {   "enableAllStatistics",
-        compEnableAllStatistics, METH_VARARGS,
-        "Enable all Statistics in the component with optional parameters"},
-    {   "enableStatistics",
-        compEnableStatistics, METH_VARARGS,
-        "Enables Multiple Statistics in the component with optional parameters"},
-    {   "setSubComponent",
-        compSetSubComponent, METH_VARARGS,
-        "Bind a subcomponent to slot <name>, with type <type>"},
-    {   "setCoordinates",
-        compSetCoords, METH_VARARGS,
-        "Set (X,Y,Z) coordinates of this component, for use with visualization"},
-    {   nullptr, nullptr, 0, nullptr }
-};
-
+static PyMethodDef subComponentMethods[]
+    = { { "addParam", compAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
+        { "addParams", compAddParams, METH_O, "Adds Multiple Parameters from a dict" },
+        { "addLink", compAddLink, METH_VARARGS, "Connects this subComponent to a Link" },
+        { "getFullName", compGetFullName, METH_NOARGS, "Returns the full name, after any prefix, of the component." },
+        { "getType", compGetType, METH_NOARGS, "Returns the type of the component." },
+        { "setStatisticLoadLevel", compSetStatisticLoadLevel, METH_VARARGS,
+          "Sets the statistics load level for this component" },
+        { "enableAllStatistics", compEnableAllStatistics, METH_VARARGS,
+          "Enable all Statistics in the component with optional parameters" },
+        { "enableStatistics", compEnableStatistics, METH_VARARGS,
+          "Enables Multiple Statistics in the component with optional parameters" },
+        { "enableStatistic", compEnableStatistic, METH_VARARGS,
+          "Enable a statistic with a name and return a handle to it" },
+        { "setStatistic", compSetStatistic, METH_VARARGS, "Reuse a statistic for the binding" },
+        { "setSubComponent", compSetSubComponent, METH_VARARGS,
+          "Bind a subcomponent to slot <name>, with type <type>" },
+        { "setCoordinates", compSetCoords, METH_VARARGS,
+          "Set (X,Y,Z) coordinates of this component, for use with visualization" },
+        { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
@@ -646,8 +690,5 @@ PyTypeObject PyModel_SubComponentType = {
 REENABLE_WARNING
 #endif
 #endif
-
-
-}  /* extern C */
 
 
