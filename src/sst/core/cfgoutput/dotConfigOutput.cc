@@ -34,7 +34,7 @@ void DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph) {
     const auto linkMap = graph->getLinkMap();
 
     // High detail original SST dot graph output
-    if (cfg->dot_verbosity >= 6) {
+    if (cfg->dot_verbosity >= 10) {
         fprintf(outputFile, "newrank = true;\n");
         fprintf(outputFile, "node [shape=record];\n");
         // Find the maximum rank which is marked for the graph partitioning
@@ -82,7 +82,7 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
     }
 
     // Display ports
-    if (dot_verbosity >= 4) {
+    if (dot_verbosity >= 6) {
         int j = comp.links.size();
         if(j != 0){
             fprintf(outputFile, " |\n");
@@ -100,7 +100,7 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
     fprintf(outputFile, "}\"];\n\n");
 
     // Display subComponents
-    if (dot_verbosity >= 3) {
+    if (dot_verbosity >= 4) {
         for ( auto &sc : comp.subComponents ) {
             fprintf(outputFile, "%" PRIu64 " [color=gray,label=\"{<main> %s\\n%s", sc.id, sc.name.c_str(), sc.type.c_str());
             int j = sc.links.size();
@@ -126,7 +126,8 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
 void DotConfigGraphOutput::generateDot(const ConfigLink& link, const uint32_t dot_verbosity) const {
 
     int minLatIdx = (link.latency[0] <= link.latency[1]) ? 0 : 1;
-    if (dot_verbosity >= 5) {
+    // Link name and latency displayed. Connected to specific port on component
+    if (dot_verbosity >= 8) {
         fprintf(outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\" [label=\"%s\\n%s\"]; \n",
             link.component[0], link.port[0].c_str(),
             link.component[1], link.port[1].c_str(),
@@ -134,7 +135,7 @@ void DotConfigGraphOutput::generateDot(const ConfigLink& link, const uint32_t do
             link.latency_str[minLatIdx].c_str());
 
     // No link name or latency. Connected to specific port on component
-} else if (dot_verbosity >= 4) {
+    } else if (dot_verbosity >= 6) {
         fprintf(outputFile, "%" PRIu64 ":\"%s\" -- %" PRIu64 ":\"%s\"\n",
             link.component[0], link.port[0].c_str(),
             link.component[1], link.port[1].c_str());
