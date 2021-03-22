@@ -49,14 +49,26 @@ public:
        @param obj_name Name of the object.  This name is how the
        object is uniquely identified across ranks.
 
+       @param verify_mode Specifies how multiply written data should
+       be verified.  Since the underlying set knows if the data has
+       already been written, FE_VERIFY and INIT_VERIFY simply use this
+       built-in mechanism to know when an item has previously been
+       written.  When these modes are enabled, multiply written data
+       must match what was written before.  When NO_VERIFY is passed,
+       no verification will occur.  This is mostly useful when you can
+       guarantee that multiple elements won't write the same value and
+       you want to do in-place modifications as you initialize.
+       VERIFY_UNITIALIZED is a reserved value and should not be
+       passed.
      */
-    void initialize(const std::string& obj_name) {
+    void initialize(const std::string& obj_name, verify_type v_type) {
         if ( data ) {
             Simulation::getSimulationOutput().fatal(
                 CALL_INFO,1,"ERROR: called initialize() of SharedSet %s more than once\n",obj_name.c_str());
         }
 
         data = manager.getSharedObjectData<Data>(obj_name);
+        data->setVerify(v_type);
         incShareCount(data);
     }
 
@@ -207,9 +219,12 @@ private:
         std::set<valT> set;
         ChangeSet* change_set;
 
+        verify_type verify;
+
         Data(const std::string& name) :
             SharedObjectData(name),
-            change_set(nullptr)
+            change_set(nullptr),
+            verify(VERIFY_UNITIALIZED)
         {
             if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) {
                 change_set = new ChangeSet(name);
@@ -220,6 +235,14 @@ private:
             delete change_set;
         }
 
+        void setVerify(verify_type v_type) {
+            if ( v_type != verify && verify != VERIFY_UNITIALIZED ) {
+                Simulation::getSimulationOutput().fatal(
+                    CALL_INFO,1,"ERROR: Type different verify_types specified for SharedSet %s\n",name.c_str());
+            }
+            verify = v_type;
+            if ( change_set ) change_set->setVerify(v_type);
+        }
 
         size_t getSize() const {
             std::lock_guard<std::mutex> lock(mtx);
@@ -233,7 +256,7 @@ private:
             auto success = set.insert(value);
             if ( !success.second ) {
                 // Wrote to a value that already existed
-                if ( !(value == *(success.first)) ) {
+                if ( verify != NO_VERIFY && !(value == *(success.first)) ) {
                     Simulation::getSimulationOutput().fatal(
                         CALL_INFO, 1, "ERROR: wrote two non-equal values to same set item in SharedSet %s\n",name.c_str());
                 }
@@ -276,10 +299,12 @@ private:
         class ChangeSet : public SharedObjectChangeSet {
 
             std::set<valT> changes;
+            verify_type verify;
 
             void serialize_order(SST::Core::Serialization::serializer& ser) override {
                 SharedObjectChangeSet::serialize_order(ser);
                 ser & changes;
+                ser & verify;
             }
 
             ImplementSerializable(SST::Shared::SharedSet<valT>::Data::ChangeSet);
@@ -297,8 +322,13 @@ private:
                 changes.insert(value);
             }
 
+            void setVerify(verify_type v_type) {
+                verify = v_type;
+            }
+
             void applyChanges(SharedObjectDataManager* manager) override {
                 auto data = manager->getSharedObjectData<Data>(getName());
+                data->setVerify(verify);
                 for ( auto x : changes ) {
                     data->update_write(x);
                 }

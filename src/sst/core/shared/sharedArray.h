@@ -22,12 +22,6 @@ namespace Shared {
 
 
 /**
-   Enum of verify types.  See SharedArray::initialize() function for
-   descriptions.
-*/
-enum SHARED_ARRAY_VERIFY_TYPE { VERIFY_UNITIALIZED, FE_VERIFY, INIT_VERIFY, NO_VERIFY };
-
-/**
    SharedArray class.  The class is templated to allow for an array
    of any non-pointer type.  The type must be serializable.
  */
@@ -79,11 +73,13 @@ public:
        the two values match.  INIT_VERIFY will simply compare writes
        against the current value and will error unless the values
        aren't the same or the existing value is the init_value.  When
-       NO_VERIFY is passed, no verification will occur.
-       VERIFY_UNITIALIZED is a reserved value and should not be
-       passed.
+       NO_VERIFY is passed, no verification will occur.  This is
+       mostly useful when you can guarantee that multiple elements
+       won't write the same value and you want to do in-place
+       modifications as you initialize.  VERIFY_UNITIALIZED is a
+       reserved value and should not be passed.
      */
-    void initialize(const std::string& obj_name, size_t length = 0, T init_value = T(), SHARED_ARRAY_VERIFY_TYPE v_type = INIT_VERIFY) {
+    void initialize(const std::string& obj_name, size_t length = 0, T init_value = T(), verify_type v_type = INIT_VERIFY) {
         if ( data ) {
             Simulation::getSimulationOutput().fatal(
                 CALL_INFO,1,"ERROR: called initialize() of SharedArray %s more than once\n",obj_name.c_str());
@@ -244,7 +240,7 @@ private:
         std::vector<bool> written;
         ChangeSet* change_set;
         T init;
-        SHARED_ARRAY_VERIFY_TYPE verify;
+        verify_type verify;
 
 
         Data(const std::string& name) :
@@ -269,7 +265,7 @@ private:
            size requested.  We use a vector underneatch the covers to
            manage the memory/copying of data.
         */
-        void setSize(size_t size, const T& init_data, SHARED_ARRAY_VERIFY_TYPE v_type) {
+        void setSize(size_t size, const T& init_data, verify_type v_type) {
             std::lock_guard<std::mutex> lock(mtx);
             if ( size > array.size() ) {
                 // Need to resize the vector
@@ -362,7 +358,7 @@ private:
             std::vector<std::pair<int,T> > changes;
             size_t size;
             T init;
-            SHARED_ARRAY_VERIFY_TYPE verify;
+            verify_type verify;
 
             void serialize_order(SST::Core::Serialization::serializer& ser) override {
                 SharedObjectChangeSet::serialize_order(ser);
@@ -388,7 +384,7 @@ private:
                 changes.emplace_back(index,value);
             }
 
-            void setSize(size_t length, const T& init_data, SHARED_ARRAY_VERIFY_TYPE v_type) {
+            void setSize(size_t length, const T& init_data, verify_type v_type) {
                 size = length;
                 init = init_data;
                 verify = v_type;

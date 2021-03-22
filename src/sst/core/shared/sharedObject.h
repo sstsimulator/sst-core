@@ -253,6 +253,14 @@ class SharedObject {
 
 
 public:
+
+    /**
+       Enum of verify types.
+    */
+    enum verify_type { VERIFY_UNITIALIZED, FE_VERIFY, INIT_VERIFY, NO_VERIFY };
+
+
+
     SharedObject() {}
     virtual ~SharedObject() {}
 

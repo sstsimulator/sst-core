@@ -80,10 +80,10 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     // Get the verify mode
     std::string mode = params.find<std::string>("verify_mode","INIT");
 
-    SHARED_ARRAY_VERIFY_TYPE v_type = INIT_VERIFY;
-    if ( mode == "FE" ) v_type = FE_VERIFY;
+    SharedObject::verify_type v_type = SharedObject::INIT_VERIFY;
+    if ( mode == "FE" ) v_type = SharedObject::FE_VERIFY;
     else if ( mode == "NONE" ) {
-        v_type = NO_VERIFY;
+        v_type = SharedObject::NO_VERIFY;
         // Don't check values, since there is no guarantee what
         // they'll be
         check = false;
@@ -110,8 +110,8 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     }
     else if ( test_map && !late_initialize ) {
         if ( full_initialization ) {
-            map.initialize("test_shared_map");
-            if ( double_initialize ) map.initialize("test_shared_map");
+            map.initialize("test_shared_map",v_type);
+            if ( double_initialize ) map.initialize("test_shared_map",v_type);
             if ( myid == 0 || ( multiple_initializers && (myid == num_entities - 1)) ) {
                 for ( int i = 0; i < num_entities; ++i ) {
                     map.write(i,i + (conflicting_write ? myid : 0));
@@ -119,16 +119,16 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
             }
         }
         else {
-            map.initialize("test_shared_map");
-            if ( double_initialize ) map.initialize("test_shared_map");
+            map.initialize("test_shared_map",v_type);
+            if ( double_initialize ) map.initialize("test_shared_map",v_type);
             map.write(myid,myid);
         }
         if ( pub ) map.publish();
     }
     else if ( test_set && !late_initialize ) {
         if ( full_initialization ) {
-            set.initialize("test_shared_set");
-            if ( double_initialize ) set.initialize("test_shared_set");
+            set.initialize("test_shared_set",v_type);
+            if ( double_initialize ) set.initialize("test_shared_set",v_type);
             if ( myid == 0 || ( multiple_initializers && (myid == num_entities - 1)) ) {
                 for ( int i = 0; i < num_entities; ++i ) {
                     set.insert(setItem(i,i + (conflicting_write ? myid : 0)));
@@ -136,8 +136,8 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
             }
         }
         else {
-            set.initialize("test_shared_set");
-            if ( double_initialize ) map.initialize("test_shared_set");
+            set.initialize("test_shared_set",v_type);
+            if ( double_initialize ) map.initialize("test_shared_set",v_type);
             set.insert(setItem(myid,myid));
         }
         if ( pub ) set.publish();

@@ -103,23 +103,43 @@ class testcase_SharedObject(SSTTestCase):
 
     # SharedMap Tests
     # Full Initialization
-    #   single - only ID 0 initializes array
-    #   multi - also has ID N-1 initialize array
+    #   single - only ID 0 initializes map
+    #     init_verify
+    #     fe_verify
+    #     no_verify
+    #   multi - also has ID N-1 initialize map
     #     no conflict - both IDs write same data
     #     conflict - IDs write different data
+    #       init_verify
+    #       fe_verify
+    #       no_verify
     # Partial initialize (everyone initializes their own portion)
     #   late_write = true
     #   do not publish = true
     #   nopub and late_write true
     #   double_initialize
-    def test_SharedObject_map_full_single(self):
-        self.sharedobject_test_template("map_full_single", 0, "--param=object_type:map --param=num_entities:12 --param=full_initialization:true")
+    # Late_initialize
+
+    def test_SharedObject_map_full_single_init(self):
+        self.sharedobject_test_template("map_full_single_init", 0, "--param=object_type:map --param=num_entities:12 --param=full_initialization:true")
+
+    def test_SharedObject_map_full_single_fe(self):
+        self.sharedobject_test_template("map_full_single_fe", 0, "--param=object_type:map --param=num_entities:12 --param=full_initialization:true --param=verify_mode:FE")
+
+    def test_SharedObject_map_full_single_none(self):
+        self.sharedobject_test_template("map_full_single_none", 0, "--param=object_type:map --param=num_entities:12 --param=full_initialization:true --param=verify_mode:NONE")
 
     def test_SharedObject_map_full_multi(self):
         self.sharedobject_test_template("map_full_multi", 0, "--param=object_type:map --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true")
 
-    def test_SharedObject_map_full_multi_conflict(self):
-        self.sharedobject_test_template("map_full_multi_conflict", 1, "--param=object_type:map --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true")
+    def test_SharedObject_map_full_multi_conflict_init(self):
+        self.sharedobject_test_template("map_full_multi_conflict_init", 1, "--param=object_type:map --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true")
+
+    def test_SharedObject_map_full_multi_conflict_fe(self):
+        self.sharedobject_test_template("map_full_multi_conflict_fe", 1, "--param=object_type:map --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true --param=verify_mode:FE")
+
+    def test_SharedObject_map_full_multi_conflict_none(self):
+        self.sharedobject_test_template("map_full_multi_conflict_none", 0, "--param=object_type:map --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true --param=verify_mode:NONE")
 
     def test_SharedObject_map_partial(self):
         self.sharedobject_test_template("map_partial", 0, "--param=object_type:map --param=num_entities:12 --param=full_initialization:false")
@@ -136,26 +156,48 @@ class testcase_SharedObject(SSTTestCase):
     def test_SharedObject_map_partial_doubleinit(self):
         self.sharedobject_test_template("map_partial_doubleinit", 1, "--param=object_type:map --param=num_entities:12 --param=full_initialization:false --param=double_initialize:true")
 
+    def test_SharedObject_map_late_initialize(self):
+        self.sharedobject_test_template("map_late_initialize", 1, "--param=object_type:map --param=num_entities:12 --param=late_initialize:true")
 
     # SharedSet Tests
     # Full Initialization
-    #   single - only ID 0 initializes array
-    #   multi - also has ID N-1 initialize array
+    #   single - only ID 0 initializes set
+    #     init_verify
+    #     fe_verify
+    #     no_verify
+    #   multi - also has ID N-1 initialize set
     #     no conflict - both IDs write same data
     #     conflict - IDs write different data
+    #       init_verify
+    #       fe_verify
+    #       no_verify
     # Partial initialize (everyone initializes their own portion)
     #   late_write = true
     #   do not publish = true
     #   nopub and late_write true
     #   double_initialize
-    def test_SharedObject_set_full_single(self):
-        self.sharedobject_test_template("set_full_single", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true")
+    # Late_initialize
+
+    def test_SharedObject_set_full_single_init(self):
+        self.sharedobject_test_template("set_full_single_init", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true")
+
+    def test_SharedObject_set_full_single_fe(self):
+        self.sharedobject_test_template("set_full_single_fe", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=verify_mode:FE")
+
+    def test_SharedObject_set_full_single_none(self):
+        self.sharedobject_test_template("set_full_single_none", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=verify_mode:NONE")
 
     def test_SharedObject_set_full_multi(self):
         self.sharedobject_test_template("set_full_multi", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true")
 
-    def test_SharedObject_set_full_multi_conflict(self):
-        self.sharedobject_test_template("set_full_multi_conflict", 1, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true")
+    def test_SharedObject_set_full_multi_conflict_init(self):
+        self.sharedobject_test_template("set_full_multi_conflict_init", 1, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true")
+
+    def test_SharedObject_set_full_multi_conflict_fe(self):
+        self.sharedobject_test_template("set_full_multi_conflict_fe", 1, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true --param=verify_mode:FE")
+
+    def test_SharedObject_set_full_multi_conflict_none(self):
+        self.sharedobject_test_template("set_full_multi_conflict_none", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:true --param=multiple_initializers:true --param=conflicting_write:true --param=verify_mode:NONE")
 
     def test_SharedObject_set_partial(self):
         self.sharedobject_test_template("set_partial", 0, "--param=object_type:set --param=num_entities:12 --param=full_initialization:false")
@@ -171,6 +213,9 @@ class testcase_SharedObject(SSTTestCase):
 
     def test_SharedObject_set_partial_doubleinit(self):
         self.sharedobject_test_template("set_partial_doubleinit", 1, "--param=object_type:set --param=num_entities:12 --param=full_initialization:false --param=double_initialize:true")
+
+    def test_SharedObject_set_late_initialize(self):
+        self.sharedobject_test_template("set_late_initialize", 1, "--param=object_type:set --param=num_entities:12 --param=late_initialize:true")
 
 #####
 
