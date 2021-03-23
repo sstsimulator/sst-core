@@ -81,5 +81,4 @@ hasUnits():
 '10 ns'.hasUnits("ns") = True
 '10 ns'.hasUnits("s") = True
 '10 ns'.hasUnits("Hz") = False
-WARNING: No components are assigned to rank: 0.0
 Simulation is complete, simulated time: 0 s

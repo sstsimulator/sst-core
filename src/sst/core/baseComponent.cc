@@ -636,13 +636,13 @@ BaseComponent::createExplicitlyEnabledStatistic(Params& params, StatisticId_t id
                                                 const std::string& statSubId, StatCreateFunction fxn) {
     Output& out = getSimulation()->getSimulationOutput();
     if (my_info->parent_info) {
-        out.fatal(CALL_INFO, 1, 0, "Creating explicitly enabled statistic '%s' should only happen in parent component",
+        out.fatal(CALL_INFO, 1, "Creating explicitly enabled statistic '%s' should only happen in parent component",
                   name.c_str());
     }
 
     auto piter = my_info->statConfigs->find(id);
     if (piter == my_info->statConfigs->end()) {
-        out.fatal(CALL_INFO, 1, 0, "Explicitly enabled statistic '%s' does not have parameters mapped to its ID",
+        out.fatal(CALL_INFO, 1, "Explicitly enabled statistic '%s' does not have parameters mapped to its ID",
                   name.c_str());
     }
     auto& cfg = piter->second;
