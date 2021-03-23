@@ -78,8 +78,11 @@ public:
        won't write the same value and you want to do in-place
        modifications as you initialize.  VERIFY_UNITIALIZED is a
        reserved value and should not be passed.
+
+       @return returns the number of instances that have intialized
+       themselve before this instance on this MPI rank.
      */
-    void initialize(const std::string& obj_name, size_t length = 0, T init_value = T(), verify_type v_type = INIT_VERIFY) {
+    int initialize(const std::string& obj_name, size_t length = 0, T init_value = T(), verify_type v_type = INIT_VERIFY) {
         if ( data ) {
             Simulation::getSimulationOutput().fatal(
                 CALL_INFO,1,"ERROR: called initialize() of SharedArray %s more than once\n",obj_name.c_str());
@@ -92,8 +95,9 @@ public:
         }
 
         data = manager.getSharedObjectData<Data>(obj_name);
+        int ret = incShareCount(data);
         if ( length != 0 ) data->setSize(length,init_value,v_type);
-        incShareCount(data);
+        return ret;
     }
 
 

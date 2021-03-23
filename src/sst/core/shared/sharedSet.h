@@ -60,16 +60,20 @@ public:
        you want to do in-place modifications as you initialize.
        VERIFY_UNITIALIZED is a reserved value and should not be
        passed.
+
+       @return returns the number of instances that have intialized
+       themselve before this instance on this MPI rank.
      */
-    void initialize(const std::string& obj_name, verify_type v_type) {
+    int initialize(const std::string& obj_name, verify_type v_type) {
         if ( data ) {
             Simulation::getSimulationOutput().fatal(
                 CALL_INFO,1,"ERROR: called initialize() of SharedSet %s more than once\n",obj_name.c_str());
         }
 
         data = manager.getSharedObjectData<Data>(obj_name);
+        int ret = incShareCount(data);
         data->setVerify(v_type);
-        incShareCount(data);
+        return ret;
     }
 
     /*** Typedefs and functions to mimic parts of the vector API ***/

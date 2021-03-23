@@ -145,12 +145,20 @@ protected:
        Increment the count of sharers.  This should only be called
        once per instance.
      */
-    virtual void incShareCount() { share_count++; }
+    virtual int incShareCount() {
+        std::lock_guard<std::mutex> lock(mtx);
+        int ret = share_count;
+        share_count++;
+        return ret;
+    }
     /**
        Increment the count of instances that have called publish.
        This should only be called once per instance.
      */
-    virtual void incPublishCount() { publish_count++; }
+    virtual void incPublishCount() {
+        std::lock_guard<std::mutex> lock(mtx);
+        publish_count++;
+    }
 
 
     /* For merging across ranks */
@@ -273,8 +281,8 @@ protected:
         data->incPublishCount();
     }
 
-    void incShareCount(SharedObjectData* data) {
-        data->incShareCount();
+    int incShareCount(SharedObjectData* data) {
+        return data->incShareCount();
     }
 
 

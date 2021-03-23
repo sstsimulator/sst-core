@@ -19,7 +19,7 @@
 #include <vector>
 
 #if !SST_BUILDING_CORE
-#warning "SharedRegion and it's accompanying classes have been deprecated and will be removed in SST 12. Please use the new SharedObject classes found in sst/core/shared."
+#warning "SharedRegion and its accompanying classes have been deprecated and will be removed in SST 12. Please use the new SharedObject classes found in sst/core/shared."
 #endif
 
 namespace SST {
