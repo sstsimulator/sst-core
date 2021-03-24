@@ -69,6 +69,7 @@ public:
     std::string     timeVortex;         /*!< TimeVortex implementation to use */
     std::string     output_config_graph;  /*!< File to dump configuration graph */
     std::string     output_dot;         /*!< File to dump dot output */
+    uint32_t        dot_verbosity;      /*!< Amount of detail to include in the dot graph output */
     std::string     output_xml;         /*!< File to dump XML output */
     std::string     output_json;        /*!< File to dump JSON output */
     std::string     output_directory;   /*!< Output directory to dump all files to */
@@ -114,6 +115,7 @@ public:
     bool setOutputDir(const std::string& arg);
     bool setWriteConfig(const std::string& arg);
     bool setWriteDot(const std::string& arg);
+    bool setDotVerbosity(const std::string& arg);
     bool setWriteXML(const std::string& arg);
     bool setWriteJSON(const std::string& arg);
     bool setWritePartition(const std::string& arg);
@@ -138,6 +140,8 @@ public:
         std::cout << "timeBase = " << timeBase << std::endl;
         std::cout << "partitioner = " << partitioner << std::endl;
         std::cout << "output_config_graph = " << output_config_graph << std::endl;
+        std::cout << "output_dot = " << output_dot << std::endl;
+        std::cout << "dot_verbosity = " << dot_verbosity << std::endl;
         std::cout << "output_xml = " << output_xml << std::endl;
         std::cout << "no_env_config = " << no_env_config << std::endl;
         std::cout << "output_directory = " << output_directory << std::endl;
@@ -175,6 +179,8 @@ public:
         ser & partitioner;
         ser & dump_component_graph_file;
         ser & output_config_graph;
+        ser & output_dot;
+        ser & dot_verbosity;
         ser & output_xml;
         ser & output_json;
         ser & no_env_config;

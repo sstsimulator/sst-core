@@ -70,6 +70,7 @@ Config::Config(RankInfo rankInfo)
 
     model_options = "";
     verbose     = 0;
+    dot_verbosity = 0;
     world_size.rank = rankInfo.rank;
     world_size.thread = 1;
     no_env_config = false;
@@ -137,6 +138,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARGOPT("output-directory",  "DIR",          "directory into which all SST output files should reside", &Config::setOutputDir),
     DEF_ARGOPT("output-config",     "FILE",         "file to write SST configuration (in Python format)", &Config::setWriteConfig),
     DEF_ARGOPT("output-dot",        "FILE",         "file to write SST configuration graph (in GraphViz format)", &Config::setWriteDot),
+    DEF_ARGOPT("dot-verbosity",     "INT",          "amount of detail to include in the dot graph output", &Config::setDotVerbosity),
     DEF_ARGOPT("output-xml",        "FILE",         "file to write SST configuration graph (in XML format)", &Config::setWriteXML),
     DEF_ARGOPT("output-json",       "FILE",         "file to write SST configuration graph (in JSON format)", &Config::setWriteJSON),
     DEF_ARGOPT("output-partition",  "FILE",         "file to write SST component partitioning information", &Config::setWritePartition),
@@ -462,6 +464,16 @@ bool Config::setTimeVortex(const std::string& arg) {
 bool Config::setOutputDir(const std::string& arg) { output_directory = arg ;  return true; }
 bool Config::setWriteConfig(const std::string& arg) { output_config_graph = arg;  return true; }
 bool Config::setWriteDot(const std::string& arg) { output_dot = arg; return true; }
+bool Config::setDotVerbosity(const std::string& arg) {
+    errno = E_OK;
+    unsigned long val = strtoul(arg.c_str(), nullptr, 0);
+    if ( errno == E_OK ) {
+        dot_verbosity = val;
+        return true;
+    }
+    fprintf(stderr, "Failed to parse [%s] as number\n", arg.c_str());
+    return false;
+}
 bool Config::setWriteXML(const std::string& arg){ output_xml = arg; return true; }
 bool Config::setWriteJSON(const std::string& arg) { output_json = arg; return true; }
 bool Config::setWritePartition(const std::string& arg) { dump_component_graph_file = arg; return true; }
