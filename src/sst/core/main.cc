@@ -376,8 +376,14 @@ main(int argc, char *argv[])
 
 
     // All ranks parse the command line
-    if ( cfg.parseCmdLine(argc, argv) ) {
+    auto ret_value = cfg.parseCmdLine(argc, argv);
+    if ( ret_value == -1 ) {
+        // Error in command line arguments
         return -1;
+    }
+    else if ( ret_value == 1 ) {
+        // Just asked for info, clean exit
+        return 0;
     }
     world_size.thread = cfg.getNumThreads();
 

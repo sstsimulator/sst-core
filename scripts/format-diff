@@ -1,0 +1,72 @@
+#! /usr/bin/env python3
+
+import sys
+import re
+from subprocess import check_output,STDOUT
+
+choke_points = [
+  "ser &",
+]
+
+commit  = sys.argv[1]
+paths = sys.argv[2:]
+
+def getoutput(cmd_arr):
+    result = check_output(cmd_arr,stderr=STDOUT,stdin=None).decode("utf-8").rstrip("\n")
+    return result
+
+def format_diff(commit, path):
+  cmd = ["git", "diff", commit, "HEAD", path ]
+  diff_text = getoutput(cmd)
+
+  line_re = re.compile(r'@@ -[0-9]+(,[0-9]+)? [+]([0-9]+)(,[0-9]+)? @@.*')
+
+  intervals = []
+  lines_changed = []
+  start_line = 0
+  diff_lines = diff_text.splitlines()
+  while not diff_lines[start_line][:2] == "@@":
+      start_line += 1
+
+  for line in diff_lines[start_line:]: #the first 4 are metadata garbage
+      match = line_re.search(line)
+      if match:
+          line_number = int(match.groups()[1])
+      elif line[0] == "-":
+          pass #do nothing on subtracted lines
+      else:
+          if line[0] == "+":
+              add_line = True
+              #clang-format chokes re-formatting certain lines
+              for pattern in choke_points:
+                  if pattern in line:
+                      add_line = False
+                      break
+              if add_line:
+                lines_changed.append(line_number)
+          line_number += 1
+
+  if lines_changed:
+      #create a list of contiguous intervals
+      last_changed = lines_changed[0]
+      interval_start = last_changed
+      lines_changed.append(-1) #flushes last interval
+      for line_number in lines_changed[1:]:
+          if not line_number == (last_changed+1):
+              intervals.append("%d:%d" % (interval_start,last_changed))
+              interval_start = line_number
+          last_changed = line_number
+
+  cmd = ["clang-format", "-i"]
+  for interval in intervals:
+      cmd.append("--lines=%s" % interval)
+  cmd.append(path)
+  print(" ".join(cmd))
+  getoutput(cmd)
+
+#we are not given an explicit list of paths
+if not paths: 
+    paths = getoutput(["git", "diff", "--name-only", "HEAD", commit]).splitlines()
+for path in paths:
+    if path.endswith(".h") or path.endswith(".cc"):
+        format_diff(commit, path)

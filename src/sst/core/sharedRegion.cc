@@ -101,11 +101,47 @@ RegionInfo::~RegionInfo(void)
     }
 }
 
-
-bool RegionInfo::initialize(const std::string& key, size_t size, uint8_t initByte, SharedRegionMerger *mergeObj)
+bool RegionInfo::initialize(const std::string& key, size_t size, uint8_t initByte_in, SharedRegionMerger *mergeObj)
 {
-    if ( initialized ) return true;
 
+    if ( !initialized ) {
+        myKey = key;
+        shareCount = 0;
+        publishCount = 0;
+        merger = mergeObj;
+        initialized = true;
+    }
+    else {
+        // Only need to keep one copy of the merger
+        delete mergeObj;
+    }
+
+    return setSize(size, initByte_in);
+}
+
+bool RegionInfo::setSize(size_t size, uint8_t initByte_in) {
+    if ( size == 0 ) return true;
+
+    // Now check the size
+    if ( apparentSize != 0 ) {
+        // Check to see if the initByte values match
+        if ( initByte != initByte_in ) {
+            Simulation::getSimulationOutput().
+                fatal(CALL_INFO,1,"ERROR: ShareRegion %s was intialized with two different initByte values: %" PRIu8 ", %" PRIu8 "\n",
+                      myKey.c_str(), initByte_in, initByte);
+        }
+
+        // Check to see if sizes match
+        if ( size != apparentSize ) {
+            Simulation::getSimulationOutput().
+                fatal(CALL_INFO,1,"ERROR: ShareRegion %s was intialized to two different sizes: %zu, %zu\n",
+                      myKey.c_str(), size, apparentSize);
+        }
+        // Size already set and sizes match. Just return.
+        return true;
+    }
+
+    initByte = initByte_in;
     size_t pagesize = (size_t)sysconf(_SC_PAGE_SIZE);
     size_t npages = size / pagesize;
     if ( size % pagesize ) npages++;
@@ -118,21 +154,21 @@ bool RegionInfo::initialize(const std::string& key, size_t size, uint8_t initByt
     }
     memset(memory, initByte, realSize);
 
-    myKey = key;
-    shareCount = 0;
-    publishCount = 0;
     apparentSize = size;
-    merger = mergeObj;
-    initialized = true;
+
+    // Notify all Sharer's that the size has been set.  This is needed
+    // so that we can take action on deferred setting of pointers.
+    for ( auto x : sharers ) {
+        x->notifySetSize();
+    }
+
     return true;
-
 }
-
 
 SharedRegionImpl* RegionInfo::addSharer(SharedRegionManager *manager)
 {
     size_t id = sharers.size();
-    SharedRegionImpl *sr = new SharedRegionImpl(manager, id, apparentSize, this);
+    SharedRegionImpl *sr = new SharedRegionImpl(manager, id, this);
     sharers.push_back(sr);
     shareCount++;
     return sr;
@@ -190,11 +226,11 @@ RegionInfo::RegionMergeInfo* RegionInfo::getMergeInfo()
 {
     int rank = Simulation::getSimulation()->getRank().rank;
     if ( didBulk ) {
-        return new BulkMergeInfo(rank, myKey, memory, apparentSize);
+        return new BulkMergeInfo(rank, myKey, memory, apparentSize, initByte);
     } else if ( !changesets.empty() ) {
-        return new ChangeSetMergeInfo(rank, myKey, changesets);
+        return new ChangeSetMergeInfo(rank, myKey, apparentSize, initByte, changesets);
     }
-    return new RegionMergeInfo(rank, myKey);
+    return new RegionMergeInfo(rank, myKey, apparentSize, initByte);
 }
 
 
@@ -223,11 +259,7 @@ SharedRegion* SharedRegionManagerImpl::getLocalSharedRegion(const std::string& k
 {
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
-    if ( ri.isInitialized() ) {
-        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Mismatched Sizes!\n");
-    } else {
-        if ( false == ri.initialize(key, size, initByte, nullptr) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Shared Region Initialized Failed!\n");
-    }
+    if ( false == ri.initialize(key, size, initByte, nullptr) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Shared Region Initialization Failed!\n");
     return ri.addSharer(this);
 }
 
@@ -236,11 +268,7 @@ SharedRegion* SharedRegionManagerImpl::getGlobalSharedRegion(const std::string& 
 {
     std::lock_guard<std::mutex> lock(mtx);
     RegionInfo& ri = regions[key];
-    if ( ri.isInitialized() ) {
-        if ( ri.getSize() != size ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Mismatched Sizes!\n");
-    } else {
         if ( false == ri.initialize(key, size, initByte, merger) ) Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Shared Region Initialized Failed!\n");
-    }
     return ri.addSharer(this);
 }
 
@@ -269,6 +297,13 @@ const void* SharedRegionManagerImpl::getConstPtr(const SharedRegion *sr) const
     return ri->getConstPtr();
 }
 
+size_t SharedRegionManagerImpl::getSize(const SharedRegion *sr) const
+{
+    const SharedRegionImpl *sri = static_cast<const SharedRegionImpl*>(sr);
+    RegionInfo *ri = sri->getRegion();
+    return ri->getSize();
+}
+
 
 void SharedRegionManagerImpl::updateState(bool finalize)
 {
@@ -281,6 +316,8 @@ void SharedRegionManagerImpl::updateState(bool finalize)
 
         std::map<std::string, CommInfo_t> commInfo;
 
+        // Get a set of all the keys that have been registered across
+        // all ranks
         std::set<std::pair<std::string, size_t> > myKeys;
         std::vector<std::set<std::pair<std::string, size_t> > > allKeysVec;
         for ( auto &&rii = regions.begin() ; rii != regions.end() ; ++rii ) {
@@ -416,5 +453,3 @@ void SharedRegionManagerImpl::shutdownSharedRegion(SharedRegion *sr)
 
 
 }
-
-

@@ -25,6 +25,7 @@
 #include "sst/core/linkMap.h"
 #include "sst/core/linkPair.h"
 #include "sst/core/sharedRegionImpl.h"
+#include "sst/core/shared/sharedObject.h"
 #include "sst/core/output.h"
 #include "sst/core/stopAction.h"
 #include "sst/core/stringize.h"
@@ -41,6 +42,7 @@
 #define SST_SIMTIME_MAX  0xffffffffffffffff
 
 using namespace SST::Statistics;
+using namespace SST::Shared;
 
 namespace SST {
 
@@ -416,7 +418,12 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
 void Simulation::initialize() {
     bool done = false;
     initBarrier.wait();
-    if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
+    if ( my_rank.thread == 0 ) {
+        DISABLE_WARN_DEPRECATED_DECLARATION;
+        sharedRegionManager->updateState(false);
+        REENABLE_WARNING;
+        SharedObject::manager.updateState(false);
+    }
 
     do {
         initBarrier.wait();
@@ -433,8 +440,12 @@ void Simulation::initialize() {
         initBarrier.wait();
         // We're done if no new messages were sent
         if ( untimed_msg_count == 0 ) done = true;
-        if ( my_rank.thread == 0 ) sharedRegionManager->updateState(false);
-
+        if ( my_rank.thread == 0 ) {
+            DISABLE_WARN_DEPRECATED_DECLARATION;
+            sharedRegionManager->updateState(false);
+            REENABLE_WARNING;
+            SharedObject::manager.updateState(false);
+        }
         untimed_phase++;
     } while ( !done);
 
@@ -494,6 +505,13 @@ void Simulation::setup() {
 
     setupBarrier.wait();
 
+    /* Enforce finalization of SharedObjects */
+    if ( my_rank.thread == 0 ) {
+        SharedObject::manager.updateState(true);
+    }
+
+    setupBarrier.wait();
+
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
         (*iter)->getComponent()->setup();
     }
@@ -501,7 +519,11 @@ void Simulation::setup() {
     setupBarrier.wait();
 
     /* Enforce finalization of shared regions */
-    if ( my_rank.thread == 0 ) sharedRegionManager->updateState(true);
+    if ( my_rank.thread == 0 ) {
+        DISABLE_WARN_DEPRECATED_DECLARATION;
+        sharedRegionManager->updateState(true);
+        REENABLE_WARNING;
+    }
 
 }
 

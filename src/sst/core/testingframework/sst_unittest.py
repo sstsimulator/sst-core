@@ -234,7 +234,7 @@ class SSTTestCase(unittest.TestCase):
 
     def run_sst(self, sdl_file, out_file, err_file=None, set_cwd=None, mpi_out_files="",
                 other_args="", num_ranks=None, num_threads=None, global_args=None,
-                timeout_sec=60):
+                timeout_sec=60, expected_rc=0):
         """ Launch sst with with the command line and send output to the
             output file.  The SST execution will be monitored for result errors and
             timeouts.  On an error or timeout, a SSTTestCase.assert() will be generated
@@ -254,6 +254,7 @@ class SSTTestCase(unittest.TestCase):
                 num_threads (int): The number of threads to run SST with.
                 global_args (str): Global Arguments provided from test engine args
                 timeout_sec (int): Allowed runtime in seconds
+                expected_rc (int): The expected return code from the SST run
         """
         # NOTE: We cannot set the default of param to the global variable due to
         # oddities on how this class loads, so we do it here.
@@ -281,6 +282,7 @@ class SSTTestCase(unittest.TestCase):
             check_param_type("global_args", global_args, str)
         if not (isinstance(timeout_sec, (int, float)) and not isinstance(timeout_sec, bool)):
             raise ValueError("ERROR: Timeout_sec must be a postive int or a float")
+        check_param_type("expected_rc", expected_rc, int)
 
         # Make sure sdl file is exists and is a file
         if not os.path.exists(sdl_file) or not os.path.isfile(sdl_file):
@@ -355,7 +357,7 @@ class SSTTestCase(unittest.TestCase):
         err_str = "SST Timed-Out ({0} secs) while running {1}".format(timeout_sec, oscmd)
         self.assertFalse(rtn.timeout(), err_str)
         err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
-        self.assertEqual(rtn.result(), 0, err_str)
+        self.assertEqual(rtn.result(), expected_rc, err_str)
 
 ################################################################################
 ### Module level support

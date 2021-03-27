@@ -154,7 +154,7 @@ nobase_dist_sst_HEADERS = \
 	model/element_python.h
 
 
-deprecated_nobase_dist_sst_headers = 
+deprecated_nobase_dist_sst_headers =
 
 
 nobase_nodist_sst_HEADERS = \
@@ -313,6 +313,7 @@ sstinfo_x_LDFLAGS = \
 include tinyxml/Makefile.inc
 include part/Makefile.inc
 include model/Makefile.inc
+include shared/Makefile.inc
 include impl/Makefile.inc
 include testingframework/Makefile.inc
 include testElements/Makefile.inc

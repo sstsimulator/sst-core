@@ -70,6 +70,7 @@ Config::Config(RankInfo rankInfo)
 
     model_options = "";
     verbose     = 0;
+    dot_verbosity = 0;
     world_size.rank = rankInfo.rank;
     world_size.thread = 1;
     no_env_config = false;
@@ -137,6 +138,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARGOPT("output-directory",  "DIR",          "directory into which all SST output files should reside", &Config::setOutputDir),
     DEF_ARGOPT("output-config",     "FILE",         "file to write SST configuration (in Python format)", &Config::setWriteConfig),
     DEF_ARGOPT("output-dot",        "FILE",         "file to write SST configuration graph (in GraphViz format)", &Config::setWriteDot),
+    DEF_ARGOPT("dot-verbosity",     "INT",          "amount of detail to include in the dot graph output", &Config::setDotVerbosity),
     DEF_ARGOPT("output-xml",        "FILE",         "file to write SST configuration graph (in XML format)", &Config::setWriteXML),
     DEF_ARGOPT("output-json",       "FILE",         "file to write SST configuration graph (in JSON format)", &Config::setWriteJSON),
     DEF_ARGOPT("output-partition",  "FILE",         "file to write SST component partitioning information", &Config::setWritePartition),
@@ -144,7 +146,7 @@ static const struct sstLongOpts_s sstOptions[] = {
 #ifdef USE_MEMPOOL
     DEF_ARGOPT("output-undeleted-events",   "FILE", "file to write information about all undeleted events at the end of simulation (STDOUT and STDERR can be used to output to console)", &Config::setWriteUndeleted),
 #endif
-    DEF_ARGOPT("model-options",     "STR",          "provide options to the python configuration script", &Config::setModelOptions),
+    DEF_ARGOPT("model-options",     "STR",          "provide options to the python configuration script.  Additionally, any arguments provided after -- will be used as model options (Note that using -- will override anything supplied in --model-options).", &Config::setModelOptions),
     DEF_ARGOPT_SHORT("num_threads", 'n',   "NUM",   "number of parallel threads to use per rank", &Config::setNumThreads),
     {{nullptr, 0, nullptr, 0}, nullptr, nullptr, nullptr, nullptr}
 };
@@ -229,6 +231,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
     run_name = argv[0];
 
     bool ok = true;
+    bool clean_exit = false;
     while (ok) {
         int option_index = 0;
         const int intC = getopt_long(argc, argv, sst_short_options, sst_long_options, &option_index);
@@ -236,7 +239,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
         if ( intC == -1 ) /* We're done */
             break;
 
-    const char c = static_cast<char>(intC);
+        const char c = static_cast<char>(intC);
 
         switch (c) {
         case 0:
@@ -259,8 +262,10 @@ Config::parseCmdLine(int argc, char* argv[]) {
 
         case 'V':
             ok = printVersion();
+            clean_exit = true;
             break;
         case 'h':
+            clean_exit = true;
         case '?':
         default:
 
@@ -268,7 +273,10 @@ Config::parseCmdLine(int argc, char* argv[]) {
         }
     }
 
-    if ( !ok ) return 1;
+    if ( !ok ) {
+        if ( clean_exit ) return 1;
+        return -1;
+    }
 
     /* Handle non-positional arguments */
     if ( optind < argc ) {
@@ -279,7 +287,7 @@ Config::parseCmdLine(int argc, char* argv[]) {
         }
     }
 
-    if ( !ok ) return 1;
+    if ( !ok ) return -1;
 
     /* Sanity check, and other duties */
     Output::setFileName( debugFile != "/dev/null" ? debugFile : "sst_output" );
@@ -299,23 +307,23 @@ Config::parseCmdLine(int argc, char* argv[]) {
 
     // Now make sure all the files we are generating go into a directory
     if( output_config_graph.size() > 0 && isFileNameOnly(output_config_graph) ) {
-    output_config_graph.insert( 0, output_directory );
+        output_config_graph.insert( 0, output_directory );
     }
 
     if( output_dot.size() > 0 && isFileNameOnly(output_dot) ) {
-    output_dot.insert( 0, output_directory );
+        output_dot.insert( 0, output_directory );
     }
 
     if( output_xml.size() > 0 && isFileNameOnly(output_xml) ) {
-    output_xml.insert( 0, output_directory );
+        output_xml.insert( 0, output_directory );
     }
 
     if( output_json.size() > 0 && isFileNameOnly(output_json) ) {
-    output_json.insert( 0, output_directory );
+        output_json.insert( 0, output_directory );
     }
 
     if( debugFile.size() > 0 && isFileNameOnly(debugFile) ) {
-    debugFile.insert( 0, output_directory );
+        debugFile.insert( 0, output_directory );
     }
 
     return 0;
@@ -456,6 +464,16 @@ bool Config::setTimeVortex(const std::string& arg) {
 bool Config::setOutputDir(const std::string& arg) { output_directory = arg ;  return true; }
 bool Config::setWriteConfig(const std::string& arg) { output_config_graph = arg;  return true; }
 bool Config::setWriteDot(const std::string& arg) { output_dot = arg; return true; }
+bool Config::setDotVerbosity(const std::string& arg) {
+    errno = E_OK;
+    unsigned long val = strtoul(arg.c_str(), nullptr, 0);
+    if ( errno == E_OK ) {
+        dot_verbosity = val;
+        return true;
+    }
+    fprintf(stderr, "Failed to parse [%s] as number\n", arg.c_str());
+    return false;
+}
 bool Config::setWriteXML(const std::string& arg){ output_xml = arg; return true; }
 bool Config::setWriteJSON(const std::string& arg) { output_json = arg; return true; }
 bool Config::setWritePartition(const std::string& arg) { dump_component_graph_file = arg; return true; }
