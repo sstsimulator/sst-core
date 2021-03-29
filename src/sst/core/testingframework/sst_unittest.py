@@ -255,6 +255,9 @@ class SSTTestCase(unittest.TestCase):
                 global_args (str): Global Arguments provided from test engine args
                 timeout_sec (int): Allowed runtime in seconds
                 expected_rc (int): The expected return code from the SST run
+
+            Returns:
+                (str) The command string used to launch sst
         """
         # NOTE: We cannot set the default of param to the global variable due to
         # oddities on how this class loads, so we do it here.
@@ -358,6 +361,9 @@ class SSTTestCase(unittest.TestCase):
         self.assertFalse(rtn.timeout(), err_str)
         err_str = "SST returned {0}; while running {1}".format(rtn.result(), oscmd)
         self.assertEqual(rtn.result(), expected_rc, err_str)
+
+        # Return the command used to launch SST
+        return oscmd
 
 ################################################################################
 ### Module level support
