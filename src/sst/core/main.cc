@@ -435,13 +435,21 @@ main(int argc, char *argv[])
 
     // Only rank 0 will populate the graph
     if ( myRank.rank == 0 ) {
-        graph = modelGen->createConfigGraph();
+	try {
+          graph = modelGen->createConfigGraph();
+        } catch( std::exception& e ) {
+          g_output.fatal(CALL_INFO, -1, "Error encountered during config-graph generation: %s\n", e.what());
+        }
     }
 
 #ifdef SST_CONFIG_HAVE_MPI
     // Config is done - broadcast it
     if ( world_size.rank > 1 ) {
-        Comms::broadcast(cfg, 0);
+       try {
+          Comms::broadcast(cfg, 0);
+       } catch( std::exception& e ) {
+          g_output.fatal(CALL_INFO, -1, "Error encountered during config-graph broadcast step: %s\n", e.what());
+       }
     }
 #endif
 
@@ -482,26 +490,27 @@ main(int argc, char *argv[])
     // Get the partitioner.  Built in partitioners are in the "sst" library.
     SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner, world_size, myRank, cfg.verbose);
 
+    try {
+      if ( partitioner->requiresConfigGraph() ) {
+          partitioner->performPartition(graph);
+      } else {
+          PartitionGraph* pgraph;
+          if ( myRank.rank == 0 ) {
+              pgraph = graph->getCollapsedPartitionGraph();
+          } else {
+              pgraph = new PartitionGraph();
+          }
 
-    if ( partitioner->requiresConfigGraph() ) {
-        partitioner->performPartition(graph);
-    }
-    else {
-        PartitionGraph* pgraph;
-        if ( myRank.rank == 0 ) {
-            pgraph = graph->getCollapsedPartitionGraph();
-        }
-        else {
-            pgraph = new PartitionGraph();
-        }
+          if ( myRank.rank == 0 || partitioner->spawnOnAllRanks() ) {
+              partitioner->performPartition(pgraph);
 
-        if ( myRank.rank == 0 || partitioner->spawnOnAllRanks() ) {
-            partitioner->performPartition(pgraph);
+              if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
+          }
 
-            if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
-        }
-
-        delete pgraph;
+          delete pgraph;
+       }
+    } catch( std::exception& e ) {
+	g_output.fatal(CALL_INFO, -1, "Error encountered during graph partitioning phase: %s\n", e.what());
     }
 
     delete partitioner;
