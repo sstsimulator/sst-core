@@ -27,6 +27,7 @@ REENABLE_WARNING
 #include <iostream>
 #include <fstream>
 #include <cinttypes>
+#include <exception>
 #include <signal.h>
 #include <time.h>
 
@@ -434,13 +435,21 @@ main(int argc, char *argv[])
 
     // Only rank 0 will populate the graph
     if ( myRank.rank == 0 ) {
-        graph = modelGen->createConfigGraph();
+	try {
+          graph = modelGen->createConfigGraph();
+        } catch( std::exception& e ) {
+          g_output.fatal(CALL_INFO, -1, "Error encountered during config-graph generation: %s\n", e.what());
+        }
     }
 
 #ifdef SST_CONFIG_HAVE_MPI
     // Config is done - broadcast it
     if ( world_size.rank > 1 ) {
-        Comms::broadcast(cfg, 0);
+       try {
+          Comms::broadcast(cfg, 0);
+       } catch( std::exception& e ) {
+          g_output.fatal(CALL_INFO, -1, "Error encountered during config-graph broadcast step: %s\n", e.what());
+       }
     }
 #endif
 
@@ -481,26 +490,27 @@ main(int argc, char *argv[])
     // Get the partitioner.  Built in partitioners are in the "sst" library.
     SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner, world_size, myRank, cfg.verbose);
 
+    try {
+      if ( partitioner->requiresConfigGraph() ) {
+          partitioner->performPartition(graph);
+      } else {
+          PartitionGraph* pgraph;
+          if ( myRank.rank == 0 ) {
+              pgraph = graph->getCollapsedPartitionGraph();
+          } else {
+              pgraph = new PartitionGraph();
+          }
 
-    if ( partitioner->requiresConfigGraph() ) {
-        partitioner->performPartition(graph);
-    }
-    else {
-        PartitionGraph* pgraph;
-        if ( myRank.rank == 0 ) {
-            pgraph = graph->getCollapsedPartitionGraph();
-        }
-        else {
-            pgraph = new PartitionGraph();
-        }
+          if ( myRank.rank == 0 || partitioner->spawnOnAllRanks() ) {
+              partitioner->performPartition(pgraph);
 
-        if ( myRank.rank == 0 || partitioner->spawnOnAllRanks() ) {
-            partitioner->performPartition(pgraph);
+              if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
+          }
 
-            if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
-        }
-
-        delete pgraph;
+          delete pgraph;
+       }
+    } catch( std::exception& e ) {
+	g_output.fatal(CALL_INFO, -1, "Error encountered during graph partitioning phase: %s\n", e.what());
     }
 
     delete partitioner;
@@ -577,54 +587,56 @@ main(int argc, char *argv[])
     ////// Broadcast Graph //////
 #ifdef SST_CONFIG_HAVE_MPI
     if ( world_size.rank > 1 ) {
-        Comms::broadcast(Params::keyMap, 0);
-        Comms::broadcast(Params::keyMapReverse, 0);
-        Comms::broadcast(Params::nextKeyID, 0);
+        try {
+          Comms::broadcast(Params::keyMap, 0);
+          Comms::broadcast(Params::keyMapReverse, 0);
+          Comms::broadcast(Params::nextKeyID, 0);
 
-        std::set<uint32_t> my_ranks;
-        std::set<uint32_t> your_ranks;
+          std::set<uint32_t> my_ranks;
+          std::set<uint32_t> your_ranks;
 
-        if ( 0 == myRank.rank ) {
-            // Split the rank space in half
-            for ( uint32_t i = 0; i < world_size.rank/2; i++ ) {
-                my_ranks.insert(i);
-            }
+          if ( 0 == myRank.rank ) {
+              // Split the rank space in half
+              for ( uint32_t i = 0; i < world_size.rank/2; i++ ) {
+                  my_ranks.insert(i);
+              }
 
-            for ( uint32_t i = world_size.rank/2; i < world_size.rank; i++ ) {
-                your_ranks.insert(i);
-            }
+              for ( uint32_t i = world_size.rank/2; i < world_size.rank; i++ ) {
+                  your_ranks.insert(i);
+              }
 
-            // Need to send the your_ranks set and the proper
-            // subgraph for further distribution
-            ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
-            int dest = *your_ranks.begin();
-            Comms::send(dest, 0, your_ranks);
-            Comms::send(dest, 0, *your_graph);
-            your_ranks.clear();
-        }
-        else {
-            Comms::recv(MPI_ANY_SOURCE, 0, my_ranks);
-            Comms::recv(MPI_ANY_SOURCE, 0, *graph);
-        }
+              // Need to send the your_ranks set and the proper
+              // subgraph for further distribution
+              ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+              int dest = *your_ranks.begin();
+              Comms::send(dest, 0, your_ranks);
+              Comms::send(dest, 0, *your_graph);
+              your_ranks.clear();
+          } else {
+              Comms::recv(MPI_ANY_SOURCE, 0, my_ranks);
+              Comms::recv(MPI_ANY_SOURCE, 0, *graph);
+          }
 
+          while ( my_ranks.size() != 1 ) {
+              // This means I have more data to pass on to other ranks
+              std::set<uint32_t>::iterator mid = my_ranks.begin();
+              for ( unsigned int i = 0; i < my_ranks.size() / 2; i++ ) {
+                  ++mid;
+              }
 
-        while ( my_ranks.size() != 1 ) {
-            // This means I have more data to pass on to other ranks
-            std::set<uint32_t>::iterator mid = my_ranks.begin();
-            for ( unsigned int i = 0; i < my_ranks.size() / 2; i++ ) {
-                ++mid;
-            }
+              your_ranks.insert(mid,my_ranks.end());
+              my_ranks.erase(mid,my_ranks.end());
 
-            your_ranks.insert(mid,my_ranks.end());
-            my_ranks.erase(mid,my_ranks.end());
+              ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
+              uint32_t dest = *your_ranks.begin();
 
-            ConfigGraph* your_graph = graph->getSubGraph(your_ranks);
-            uint32_t dest = *your_ranks.begin();
-
-            Comms::send(dest, 0, your_ranks);
-            Comms::send(dest, 0, *your_graph);
-            your_ranks.clear();
-            delete your_graph;
+              Comms::send(dest, 0, your_ranks);
+              Comms::send(dest, 0, *your_graph);
+              your_ranks.clear();
+              delete your_graph;
+          }
+        } catch( std::exception& e ) {
+          g_output.fatal(CALL_INFO, -1, "Error encountered during graph broadcast: %s\n", e.what());
         }
     }
 #endif
@@ -673,19 +685,22 @@ main(int argc, char *argv[])
 
     double end_serial_build = sst_get_cpu_time();
 
-    Output::setThreadID(std::this_thread::get_id(), 0);
-    for ( uint32_t i = 1 ; i < world_size.thread ; i++ ) {
-        threads[i] = std::thread(start_simulation, i, std::ref(threadInfo[i]), std::ref(mainBarrier));
-        Output::setThreadID(threads[i].get_id(), i);
+    try {
+      Output::setThreadID(std::this_thread::get_id(), 0);
+      for ( uint32_t i = 1 ; i < world_size.thread ; i++ ) {
+          threads[i] = std::thread(start_simulation, i, std::ref(threadInfo[i]), std::ref(mainBarrier));
+          Output::setThreadID(threads[i].get_id(), i);
+      }
+
+      start_simulation(0, threadInfo[0], mainBarrier);
+      for ( uint32_t i = 1 ; i < world_size.thread ; i++ ) {
+          threads[i].join();
+      }
+
+      Simulation::shutdown();
+    } catch( std::exception& e ) {
+      g_output.fatal(CALL_INFO, -1, "Error encountered during simulation: %s\n", e.what());
     }
-
-
-    start_simulation(0, threadInfo[0], mainBarrier);
-    for ( uint32_t i = 1 ; i < world_size.thread ; i++ ) {
-        threads[i].join();
-    }
-
-    Simulation::shutdown();
 
     double total_end_time = sst_get_cpu_time();
 
