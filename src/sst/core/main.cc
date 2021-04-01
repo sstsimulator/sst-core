@@ -72,12 +72,21 @@ using namespace SST;
 
 static SST::Output g_output;
 
+class SimulationHelper {
+public:
+    static void setSignal(int sig) {
+        Simulation::setSignal(sig);
+    }
 
+    static Simulation* createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks) {
+        return Simulation::createSimulation(config,my_rank,num_ranks);
+    }
+};
 
 static void
 SimulationSigHandler(int sig)
 {
-    Simulation::setSignal(sig);
+    SimulationHelper::setSignal(sig);
     if ( sig == SIGINT || sig == SIGTERM ) {
         signal(sig, SIG_DFL); // Restore default handler
     }
@@ -231,7 +240,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     }
 
     ////// Create Simulation Objects //////
-    SST::Simulation* sim = Simulation::createSimulation(info.config, info.myRank, info.world_size, info.min_part);
+    SST::Simulation* sim = SimulationHelper::createSimulation(info.config, info.myRank, info.world_size);
 
     barrier.wait();
 
