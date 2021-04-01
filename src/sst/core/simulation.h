@@ -35,6 +35,7 @@
 /* Forward declare for Friendship */
 extern int main(int argc, char **argv);
 
+class SimulationHelper;
 
 namespace SST {
 
@@ -76,7 +77,7 @@ public:
     typedef enum {
         UNKNOWN,    /*!< Unknown mode - Invalid for running */
         INIT,       /*!< Initialize-only.  Useful for debugging initialization and graph generation */
-        RUN,        /*!< Run-only.  Useful when restoring from a checkpoint */
+        RUN,        /*!< Run-only.  Useful when restoring from a checkpoint (not currently supported) */
         BOTH        /*!< Default.  Both initialize and Run the simulation */
     } Mode_t;
 
@@ -86,6 +87,7 @@ public:
 
     ~Simulation();
 
+protected:
     /*********  Static Core-only Functions *********/
 
     /** Create new simulation
@@ -93,29 +95,17 @@ public:
      * @param my_rank - Parallel Rank of this simulation object
      * @param num_ranks - How many Ranks are in the simulation
      */
-#if !SST_BUILDING_CORE
-    static Simulation *createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks, SimTime_t min_part) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
-#else
-    static Simulation *createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks, SimTime_t min_part);
-#endif
+    static Simulation* createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks);
 
     /**
      * Used to signify the end of simulation.  Cleans up any existing Simulation Objects
      */
-#if !SST_BUILDING_CORE
-    static void shutdown() __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
-#else
     static void shutdown();
-#endif
 
     /** Sets an internal flag for signaling the simulation.  Used internally */
-#if !SST_BUILDING_CORE
-    static void setSignal(int signal) __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 11.")));
-#else
     static void setSignal(int signal);
-#endif
 
-
+public:
     /********* Public Static API ************/
 
     /** Return a pointer to the singleton instance of the Simulation */
@@ -124,8 +114,12 @@ public:
     /**
      * Returns the Simulation's SharedRegionManager
      */
-    static SharedRegionManager* getSharedRegionManager() { return sharedRegionManager; }
 
+#if !SST_BUILDING_CORE
+    static SharedRegionManager* getSharedRegionManager() __attribute__ ((deprecated("SharedRegion and its accompanying classes have been deprecated and will be removed in SST 12. Please use the new SharedObject classes found in sst/core/shared."))) { return sharedRegionManager; }
+#else
+    static SharedRegionManager* getSharedRegionManager() { return sharedRegionManager; }
+#endif
     /** Return the TimeLord associated with this Simulation */
     static TimeLord* getTimeLord(void) { return &timeLord; }
 
@@ -468,9 +462,10 @@ private:
     friend class Output;
     // To enable main to set up globals
     friend int ::main(int argc, char **argv);
+    friend class ::SimulationHelper;
 
     Simulation(); // Don't call.  Only rational way to serialize
-    Simulation(Config* config, RankInfo my_rank, RankInfo num_ranks, SimTime_t min_part);
+    Simulation(Config* config, RankInfo my_rank, RankInfo num_ranks);
     Simulation(Simulation const&);     // Don't Implement
     void operator=(Simulation const&); // Don't implement
 
@@ -508,7 +503,7 @@ private:
     static void emergencyShutdown();
     /** Normal Shutdown
      */
-    void endSimulation(void) { endSimulation(currentSimCycle); }
+    void endSimulation(void);
     void endSimulation(SimTime_t end);
 
     typedef enum {
