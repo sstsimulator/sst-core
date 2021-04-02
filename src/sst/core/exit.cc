@@ -144,6 +144,22 @@ Exit::execute()
 
 }
 
+SimTime_t Exit::computeEndTime()
+{
+#ifdef SST_CONFIG_HAVE_MPI
+    // Do an all_reduce to get the end_time
+    SimTime_t end_value;
+    if ( !single_rank ) {
+        MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
+        end_time = end_value;
+    }
+#endif
+    if (single_rank) {
+        endSimulation(end_time);
+    }
+    return end_time;
+}
+
 // bool Exit::handler( Event* e )
 void Exit::check()
 {
@@ -164,17 +180,7 @@ void Exit::check()
     global_count = out;
     // If out is 0, then it's time to end
     if ( !out ) {
-#ifdef SST_CONFIG_HAVE_MPI
-        // Do an all_reduce to get the end_time
-        SimTime_t end_value;
-        if ( !single_rank ) {
-            MPI_Allreduce( &end_time, &end_value, 1, MPI_UINT64_T, MPI_MAX, MPI_COMM_WORLD );
-            end_time = end_value;
-        }
-#endif
-        if (single_rank) {
-            endSimulation(end_time);
-        }
+        computeEndTime();
     }
     // else {
     //     // Reinsert into TimeVortex.  We do this even when ending so that

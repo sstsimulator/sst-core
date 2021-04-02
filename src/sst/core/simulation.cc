@@ -98,10 +98,10 @@ Simulation::~Simulation()
 }
 
 Simulation*
-Simulation::createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks, SimTime_t min_part)
+Simulation::createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks)
 {
     std::thread::id tid = std::this_thread::get_id();
-    Simulation* instance = new Simulation(config, my_rank, num_ranks, min_part);
+    Simulation* instance = new Simulation(config, my_rank, num_ranks);
 
     std::lock_guard<std::mutex> lock(simulationMutex);
     instanceMap[tid] = instance;
@@ -118,7 +118,7 @@ void Simulation::shutdown()
 
 
 
-Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTime_t min_part) :
+Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
     runMode(cfg->runMode),
     timeVortex(nullptr),
     interThreadMinLatency(MAX_SIMTIME_T),
@@ -141,7 +141,7 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks, SimTi
     //params get passed twice - both the params and a ctor argument
     timeVortex = factory->Create<TimeVortex>(cfg->timeVortex,p,p);
     if( my_rank.thread == 0 ) {
-        m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), min_part == MAX_SIMTIME_T );
+        m_exit = new Exit( num_ranks.thread, timeLord.getTimeConverter("100ns"), num_ranks.rank == 1 );
     }
 
     if(strcmp(cfg->heartbeatPeriod.c_str(), "N") != 0 && my_rank.thread == 0) {
@@ -563,6 +563,7 @@ void Simulation::run() {
         current_activity = timeVortex->pop();
         current_activity->execute();
 
+        // printf("%d: Activity at %" PRIu64 "\n",my_rank.rank,currentSimCycle);
 
         if ( UNLIKELY( 0 != lastRecvdSignal ) ) {
             switch ( lastRecvdSignal ) {
@@ -588,6 +589,13 @@ void Simulation::run() {
     ThreadSync::disable();
 
     runBarrier.wait();  // TODO<- Is this needed?
+
+    // If we have no links that are cut by a partition, we need to do
+    // a final check to get the right simulated time.
+    if ( minPart == MAX_SIMTIME_T && num_ranks.rank > 1 && my_rank.thread == 0 ) {
+        endSimCycle = m_exit->computeEndTime();
+    }
+
     if (num_ranks.rank != 1 && num_ranks.thread == 0) delete m_exit;
 }
 
@@ -609,6 +617,13 @@ void Simulation::emergencyShutdown()
 
 }
 
+// If this version is called, we need to set the end time in the exit
+// object as well
+void Simulation::endSimulation(void)
+{
+    m_exit->setEndTime(currentSimCycle);
+    endSimulation(currentSimCycle);
+}
 
 void Simulation::endSimulation(SimTime_t end)
 {

@@ -365,7 +365,7 @@ UnitAlgebra::init(const std::string& val)
     try {
         value = sst_big_num(number);
     }
-    catch (runtime_error e) {
+    catch (runtime_error& e) {
         Output abort = Output::getDefaultObject();
         abort.fatal(CALL_INFO,1,"Error: invalid number string: %s\n",number.c_str());
     }

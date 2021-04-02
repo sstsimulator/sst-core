@@ -744,8 +744,8 @@ protected:
 
 
     /** Find a lookup table */
-    SharedRegion* getLocalSharedRegion(const std::string& key, size_t size);
-    SharedRegion* getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger *merger = nullptr);
+    SharedRegion* getLocalSharedRegion(const std::string& key, size_t size) __attribute__ ((deprecated("SharedRegion and its accompanying classes have been deprecated and will be removed in SST 12. Please use the new SharedObject classes found in sst/core/shared.")));
+    SharedRegion* getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger *merger = nullptr) __attribute__ ((deprecated("SharedRegion and its accompanying classes have been deprecated and will be removed in SST 12. Please use the new SharedObject classes found in sst/core/shared.")));
 
     /* Get the Simulation */
     Simulation* getSimulation() const { return sim; }

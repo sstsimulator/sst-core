@@ -57,7 +57,9 @@ public:
 
     unsigned int getRefCount();
     SimTime_t getEndTime() { return end_time; }
+    void setEndTime(SimTime_t time) { end_time = time; }
 
+    SimTime_t computeEndTime();
     void execute(void) override;
     void check();
 
