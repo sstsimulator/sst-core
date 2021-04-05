@@ -42,7 +42,7 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     late_initialize(false)
 {
     char buffer[128] = {0};
-    snprintf(buffer, 128, "SharedObjectsComponent %3llu  [@t]  ", id);
+    snprintf(buffer, 128, "SharedObjectsComponent %3" PRIu64 "  [@t]  ", id);
     out.init(buffer, 0, 0, Output::STDOUT);
 
     std::string obj_type = params.find<std::string>("object_type","array");
