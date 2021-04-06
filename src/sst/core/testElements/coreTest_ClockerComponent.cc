@@ -90,11 +90,11 @@ bool coreTestClockerComponent::Clock3Tick(SST::Cycle_t CycleNum, uint32_t Param)
     // NOTE: THIS IS THE 15NS CLOCK
     std::cout << "  CLOCK #3 - TICK Num " << CycleNum << "; Param = " << Param << std::endl;
 
-    if ((CycleNum == 1) || (CycleNum == 4))  {
-        std::cout << "*** REGISTERING ONESHOTS " << std::endl ;
-        registerOneShot("10ns", callback1Handler);
-        registerOneShot("18ns", callback2Handler);
-    }
+//    if ((CycleNum == 1) || (CycleNum == 4))  {
+//        std::cout << "*** REGISTERING ONESHOTS " << std::endl ;
+//        registerOneShot("10ns", callback1Handler);
+//        registerOneShot("18ns", callback2Handler);
+//    }
 
     // return false so we keep going or true to stop
     if (CycleNum == 15) {

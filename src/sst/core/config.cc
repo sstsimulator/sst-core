@@ -419,7 +419,10 @@ bool Config::setStopAfter(const std::string& arg) {
         "%Ss"
     };
     const size_t n_templ = sizeof(templates) / sizeof(templates[0]);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
     struct tm res = {}; /* This warns on GCC 4.8 due to a bug in GCC */
+#pragma GCC diagnostic pop
     char *p;
 
     for ( size_t i = 0 ; i < n_templ ; i++ ) {
