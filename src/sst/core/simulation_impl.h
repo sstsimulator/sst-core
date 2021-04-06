@@ -368,7 +368,7 @@ public:
     std::vector<SimTime_t> interThreadLatencies;
     SimTime_t        interThreadMinLatency;
     SyncManager*     syncManager;
-    ThreadSync*      threadSync;
+    // ThreadSync*      threadSync;
     ComponentInfoMap compInfoMap;
     clockMap_t       clockMap;
     oneShotMap_t     oneShotMap;

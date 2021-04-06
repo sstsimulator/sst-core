@@ -10,7 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/rankSyncSerialSkip.h"
+#include "sst/core/sync/rankSyncSerialSkip.h"
 
 #include "sst/core/serialization/serializer.h"
 
@@ -18,7 +18,7 @@
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
 #include "sst/core/simulation_impl.h"
-#include "sst/core/syncQueue.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/profile.h"
 
@@ -40,7 +40,7 @@ SimTime_t RankSyncSerialSkip::myNextSyncTime = 0;
 
 
 RankSyncSerialSkip::RankSyncSerialSkip(TimeConverter* UNUSED(minPartTC)) :
-    NewRankSync(),
+    RankSync(),
     mpiWaitTime(0.0),
     deserializeTime(0.0)
 {

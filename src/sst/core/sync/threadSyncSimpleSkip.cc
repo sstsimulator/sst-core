@@ -10,7 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/threadSyncSimpleSkip.h"
+#include "sst/core/sync/threadSyncSimpleSkip.h"
 
 #include "sst/core/event.h"
 #include "sst/core/exit.h"
@@ -24,7 +24,7 @@ SimTime_t ThreadSyncSimpleSkip::localMinimumNextActivityTime = 0;
 
 /** Create a new ThreadSyncSimpleSkip object */
 ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulation_impl* sim) :
-    NewThreadSync(),
+    ThreadSync(),
     num_threads(num_threads),
     thread(thread),
     sim(sim),

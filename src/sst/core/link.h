@@ -24,7 +24,7 @@ class TimeConverter;
 class LinkPair;
 class Simulation_impl;
 class ActivityQueue;
-class SyncBase;
+// class SyncBase;
 
 class UnitAlgebra;
 
@@ -34,10 +34,10 @@ class Link {
 public:
 
     friend class LinkPair;
-    friend class NewRankSync;
-    friend class NewThreadSync;
+    friend class RankSync;
+    friend class ThreadSync;
     friend class Simulation_impl;
-    friend class SyncBase;
+    // friend class SyncBase;
     friend class ThreadSync;
     friend class SyncManager;
     friend class ComponentInfo;

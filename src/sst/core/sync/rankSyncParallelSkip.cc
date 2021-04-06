@@ -10,7 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/rankSyncParallelSkip.h"
+#include "sst/core/sync/rankSyncParallelSkip.h"
 
 #include "sst/core/warnmacros.h"
 
@@ -20,7 +20,7 @@
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
 #include "sst/core/simulation_impl.h"
-#include "sst/core/syncQueue.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/profile.h"
 
@@ -40,7 +40,7 @@ SimTime_t RankSyncParallelSkip::myNextSyncTime = 0;
 ///// RankSyncParallelSkip class /////
 
 RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* UNUSED(minPartTC)) :
-    NewRankSync(),
+    RankSync(),
     mpiWaitTime(0.0),
     deserializeTime(0.0),
     send_count(0),

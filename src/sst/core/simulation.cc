@@ -29,10 +29,8 @@
 #include "sst/core/output.h"
 #include "sst/core/stopAction.h"
 #include "sst/core/stringize.h"
-#include "sst/core/syncBase.h"
-#include "sst/core/syncManager.h"
-#include "sst/core/syncQueue.h"
-#include "sst/core/threadSync.h"
+#include "sst/core/sync/syncManager.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
@@ -185,7 +183,6 @@ Simulation_impl::Simulation_impl( Config* cfg, RankInfo my_rank, RankInfo num_ra
     Simulation(),
     timeVortex(nullptr),
     interThreadMinLatency(MAX_SIMTIME_T),
-    threadSync(nullptr),
     endSim(false),
     untimed_phase(0),
     lastRecvdSignal(0),
@@ -214,7 +211,6 @@ Simulation_impl::Simulation_impl( Config* cfg, RankInfo my_rank, RankInfo num_ra
 
     // Need to create the thread sync if there is more than one thread
     if ( num_ranks.thread > 1 ) {
-        threadSync = new ThreadSync(num_ranks.thread, this);
     }
 }
 
@@ -630,7 +626,6 @@ void Simulation_impl::run() {
             case SIGALRM:
             case SIGINT:
             case SIGTERM:
-                ThreadSync::disable();
                 shutdown_mode = SHUTDOWN_SIGNAL;
                 sim_output.output("EMERGENCY SHUTDOWN (%u,%u)!\n",
                         my_rank.rank, my_rank.thread);
@@ -644,7 +639,6 @@ void Simulation_impl::run() {
         }
     }
     /* We shouldn't need to do this, but to be safe... */
-    ThreadSync::disable();
 
     runBarrier.wait();  // TODO<- Is this needed?
 

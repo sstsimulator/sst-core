@@ -10,20 +10,18 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/syncManager.h"
+#include "sst/core/sync/syncManager.h"
 
 #include "sst/core/warnmacros.h"
 
 #include "sst/core/exit.h"
 #include "sst/core/simulation_impl.h"
-#include "sst/core/syncBase.h"
-#include "sst/core/threadSyncQueue.h"
 #include "sst/core/timeConverter.h"
 
-#include "sst/core/rankSyncSerialSkip.h"
-#include "sst/core/rankSyncParallelSkip.h"
-#include "sst/core/rankSyncParallelSkip.h"
-#include "sst/core/threadSyncSimpleSkip.h"
+#include "sst/core/sync/threadSyncQueue.h"
+#include "sst/core/sync/rankSyncSerialSkip.h"
+#include "sst/core/sync/rankSyncParallelSkip.h"
+#include "sst/core/sync/threadSyncSimpleSkip.h"
 
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
@@ -37,12 +35,12 @@ REENABLE_WARNING
 namespace SST {
 
 // Static data members
-NewRankSync* SyncManager::rankSync = nullptr;
+RankSync* SyncManager::rankSync = nullptr;
 Core::ThreadSafe::Barrier SyncManager::RankExecBarrier[6];
 Core::ThreadSafe::Barrier SyncManager::LinkUntimedBarrier[3];
 SimTime_t SyncManager::next_rankSync = MAX_SIMTIME_T;
 
-class EmptyRankSync : public NewRankSync {
+class EmptyRankSync : public RankSync {
 public:
     EmptyRankSync() {
         nextSyncTime = MAX_SIMTIME_T;
@@ -82,7 +80,7 @@ public:
     uint64_t getDataSize() const override { return 0; }
 };
 
-class EmptyThreadSync : public NewThreadSync {
+class EmptyThreadSync : public ThreadSync {
 public:
     EmptyThreadSync () {
         nextSyncTime = MAX_SIMTIME_T;
@@ -164,7 +162,7 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Li
         threadSync->registerLink(link_id, link);
 
         // Need to get target queue from the remote ThreadSync
-        NewThreadSync* remoteSync = Simulation_impl::instanceVec[to_rank.thread]->syncManager->threadSync;
+        ThreadSync* remoteSync = Simulation_impl::instanceVec[to_rank.thread]->syncManager->threadSync;
         return remoteSync->getQueueForThread(from_rank.thread);
     }
     else {
