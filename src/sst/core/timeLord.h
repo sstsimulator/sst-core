@@ -19,7 +19,7 @@
 #include <map>
 #include <string>
 
-#include "sst/core/simulation.h"
+//#include "sst/core/simulation.h"
 #include "sst/core/unitAlgebra.h"
 #include "sst/core/threadsafe.h"
 
@@ -27,6 +27,8 @@ extern int main(int argc, char **argv);
 
 namespace SST {
 
+class Simulation;
+class Simulation_impl;
 class TimeConverter;
 class UnitAlgebra;
 
@@ -77,6 +79,7 @@ class TimeLord {
 
  private:
     friend class SST::Simulation;
+    friend class SST::Simulation_impl;
     friend int ::main(int argc, char **argv);
 
     void init(const std::string& timeBaseString);

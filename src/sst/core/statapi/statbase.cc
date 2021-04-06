@@ -12,7 +12,7 @@
 #include "sst_config.h"
 #include "sst/core/statapi/statbase.h"
 
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/baseComponent.h"
 #include "sst/core/statapi/stataccumulator.h"
 #include "sst/core/statapi/stathistogram.h"
@@ -56,7 +56,7 @@ const std::string& StatisticBase::getCompName() const
 void
 Statistic<void>::outputStatisticFields(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag))
 {
-  Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+  Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
     "void statistic %s, type %s for component %s does not support outputing fields",
     getStatTypeName().c_str(), getFullStatName().c_str(), getComponent()->getName().c_str());
 }
@@ -64,7 +64,7 @@ Statistic<void>::outputStatisticFields(StatisticFieldsOutput* UNUSED(statOutput)
 void
 Statistic<void>::registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput))
 {
-  Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
+  Simulation_impl::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1,
     "void statistic %s, type %s for component %s does not support outputing fields",
     getStatTypeName().c_str(), getFullStatName().c_str(), getComponent()->getName().c_str());
 }
@@ -154,7 +154,7 @@ void StatisticBase::delayOutput(const char* delayTime)
         m_outputEnabled = false;
         m_outputDelayed = true;
 
-        Simulation::getSimulation()->registerOneShot(delayTime, m_outputDelayedHandler, STATISTICCLOCKPRIORITY);
+        Simulation_impl::getSimulation()->registerOneShot(delayTime, m_outputDelayedHandler, STATISTICCLOCKPRIORITY);
     }
 }
 
@@ -168,7 +168,7 @@ void StatisticBase::delayCollection(const char* delayTime)
         m_statEnabled = false;
         m_collectionDelayed = true;
 
-        Simulation::getSimulation()->registerOneShot(delayTime, m_collectionDelayedHandler, STATISTICCLOCKPRIORITY);
+        Simulation_impl::getSimulation()->registerOneShot(delayTime, m_collectionDelayedHandler, STATISTICCLOCKPRIORITY);
     }
 }
 

@@ -30,7 +30,7 @@ extern void finalize_statEngineConfig(void);
 
 namespace SST {
 class BaseComponent;
-class Simulation;
+class Simulation_impl;
 class ConfigGraph;
 class ConfigStatGroup;
 class ConfigStatOutput;
@@ -86,7 +86,7 @@ public:
     const std::vector<StatisticOutput*>& getStatOutputs() const { return m_statOutputs; }
 
 private:
-    friend class SST::Simulation;
+    friend class SST::Simulation_impl;
     friend int ::main(int argc, char **argv);
     friend void ::finalize_statEngineConfig(void);
 

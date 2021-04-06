@@ -15,14 +15,14 @@
 #include "sst/core/event.h"
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 
 namespace SST {
 
 
 /** Create a new ThreadSync object */
-ThreadSync::ThreadSync(int num_threads, Simulation* sim) :
+ThreadSync::ThreadSync(int num_threads, Simulation_impl* sim) :
     Action(),
     num_threads(num_threads),
     sim(sim),
@@ -84,7 +84,7 @@ ThreadSync::execute()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 SimTime_t delay = ev->getDeliveryTime() - sim->getCurrentSimCycle();
                 link->second->send(delay,ev);
@@ -116,7 +116,7 @@ ThreadSync::processLinkUntimedData()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 link->second->sendUntimedData_sync(ev);
             }

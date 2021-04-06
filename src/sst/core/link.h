@@ -22,7 +22,7 @@ namespace SST {
 
 class TimeConverter;
 class LinkPair;
-class Simulation;
+class Simulation_impl;
 class ActivityQueue;
 class SyncBase;
 
@@ -36,7 +36,7 @@ public:
     friend class LinkPair;
     friend class NewRankSync;
     friend class NewThreadSync;
-    friend class Simulation;
+    friend class Simulation_impl;
     friend class SyncBase;
     friend class ThreadSync;
     friend class SyncManager;

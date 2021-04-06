@@ -15,7 +15,7 @@
 #include "sst/core/event.h"
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 
 namespace SST {
@@ -23,7 +23,7 @@ namespace SST {
 SimTime_t ThreadSyncSimpleSkip::localMinimumNextActivityTime = 0;
 
 /** Create a new ThreadSyncSimpleSkip object */
-ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulation* sim) :
+ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulation_impl* sim) :
     NewThreadSync(),
     num_threads(num_threads),
     thread(thread),
@@ -81,7 +81,7 @@ ThreadSyncSimpleSkip::before()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 SimTime_t delay = ev->getDeliveryTime() - sim->getCurrentSimCycle();
                 link->second->send(delay,ev);
@@ -126,7 +126,7 @@ ThreadSyncSimpleSkip::processLinkUntimedData()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 sendUntimedData_sync(link->second,ev);
             }

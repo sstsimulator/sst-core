@@ -17,6 +17,7 @@
 
 #include "sst/core/testElements/coreTest_StatisticsComponent.h"
 
+#include "sst/core/simulation.h"
 #include "sst/core/rng/mersenne.h"
 #include "sst/core/rng/marsaglia.h"
 

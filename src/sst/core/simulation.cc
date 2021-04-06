@@ -11,7 +11,7 @@
 
 
 #include "sst_config.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/warnmacros.h"
 
 #include <utility>
@@ -47,13 +47,76 @@ using namespace SST::Shared;
 namespace SST {
 
 
+/**   Simulation functions **/
 
-TimeConverter* Simulation::minPartToTC(SimTime_t cycles) const {
+/** Static functions **/
+Simulation*
+Simulation::getSimulation()
+{
+    return Simulation_impl::instanceMap.at(std::this_thread::get_id());
+}
+
+SharedRegionManager*
+Simulation::getSharedRegionManager()
+{
+    return Simulation_impl::sharedRegionManager;
+}
+
+TimeLord*
+Simulation::getTimeLord()
+{
+    return &Simulation_impl::timeLord;
+}
+
+Output&
+Simulation::getSimulationOutput()
+{
+    return Simulation_impl::sim_output;
+}
+
+/** Non-static functions **/
+SimTime_t
+Simulation_impl::getCurrentSimCycle() const
+{
+    return currentSimCycle;
+}
+
+SimTime_t
+Simulation_impl::getEndSimCycle() const
+{
+    return endSimCycle;
+}
+
+int
+Simulation_impl::getCurrentPriority() const
+{
+    return currentPriority;
+}
+
+
+UnitAlgebra Simulation_impl::getElapsedSimTime() const
+{
+    return timeLord.getTimeBase() * getCurrentSimCycle();
+}
+
+UnitAlgebra Simulation_impl::getFinalSimTime() const
+{
+    return timeLord.getTimeBase() * getEndSimCycle();
+}
+
+
+
+Simulation::~Simulation() {}
+
+
+/** Simulation_impl functions **/
+
+TimeConverter* Simulation_impl::minPartToTC(SimTime_t cycles) const {
     return getTimeLord()->getTimeConverter(cycles);
 }
 
 
-Simulation::~Simulation()
+Simulation_impl::~Simulation_impl()
 {
     // Clean up as best we can
 
@@ -97,11 +160,11 @@ Simulation::~Simulation()
 
 }
 
-Simulation*
-Simulation::createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks)
+Simulation_impl*
+Simulation_impl::createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks)
 {
     std::thread::id tid = std::this_thread::get_id();
-    Simulation* instance = new Simulation(config, my_rank, num_ranks);
+    Simulation_impl* instance = new Simulation_impl(config, my_rank, num_ranks);
 
     std::lock_guard<std::mutex> lock(simulationMutex);
     instanceMap[tid] = instance;
@@ -111,32 +174,32 @@ Simulation::createSimulation(Config *config, RankInfo my_rank, RankInfo num_rank
 }
 
 
-void Simulation::shutdown()
+void Simulation_impl::shutdown()
 {
     instanceMap.clear();
 }
 
 
 
-Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
-    runMode(cfg->runMode),
+Simulation_impl::Simulation_impl( Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
+    Simulation(),
     timeVortex(nullptr),
     interThreadMinLatency(MAX_SIMTIME_T),
     threadSync(nullptr),
-    currentSimCycle(0),
-    endSimCycle(0),
-    currentPriority(0),
     endSim(false),
-    my_rank(my_rank),
-    num_ranks(num_ranks),
     untimed_phase(0),
     lastRecvdSignal(0),
     shutdown_mode(SHUTDOWN_CLEAN),
-    wireUpFinished(false)
+    wireUpFinished(false),
+    runMode(cfg->runMode),
+    currentSimCycle(0),
+    endSimCycle(0),
+    currentPriority(0),
+    my_rank(my_rank),
+    num_ranks(num_ranks)
 {
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
     output_directory = "";
-
     Params p;
     //params get passed twice - both the params and a ctor argument
     timeVortex = factory->Create<TimeVortex>(cfg->timeVortex,p,p);
@@ -156,7 +219,7 @@ Simulation::Simulation( Config* cfg, RankInfo my_rank, RankInfo num_ranks) :
 }
 
 void
-Simulation::setStopAtCycle( Config* cfg )
+Simulation_impl::setStopAtCycle( Config* cfg )
 {
     SimTime_t stopAt = timeLord.getSimCycles(cfg->stopAtCycle,"StopAction configure");
     if ( stopAt != 0 ) {
@@ -166,14 +229,9 @@ Simulation::setStopAtCycle( Config* cfg )
     }
 }
 
-Simulation::Simulation()
-{
-    // serialization only, so everything will be restored.  I think.
-}
-
 
 Component*
-Simulation::createComponent( ComponentId_t id, const std::string& name,
+Simulation_impl::createComponent( ComponentId_t id, const std::string& name,
                              Params &params )
 {
     return factory->CreateComponent(id, name, params);
@@ -181,19 +239,19 @@ Simulation::createComponent( ComponentId_t id, const std::string& name,
 
 
 void
-Simulation::requireEvent(const std::string& name)
+Simulation_impl::requireEvent(const std::string& name)
 {
     factory->RequireEvent(name);
 }
 
 SimTime_t
-Simulation::getNextActivityTime() const
+Simulation_impl::getNextActivityTime() const
 {
     return timeVortex->front()->getDeliveryTime();
 }
 
 SimTime_t
-Simulation::getLocalMinimumNextActivityTime()
+Simulation_impl::getLocalMinimumNextActivityTime()
 {
     SimTime_t ret = MAX_SIMTIME_T;
     for ( auto && instance : instanceVec ) {
@@ -207,10 +265,10 @@ Simulation::getLocalMinimumNextActivityTime()
 }
 
 void
-Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank), SimTime_t min_part )
+Simulation_impl::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank), SimTime_t min_part )
 {
     // Set minPartTC (only thread 0 will do this)
-    Simulation::minPart = min_part;
+    Simulation_impl::minPart = min_part;
     if ( my_rank.thread == 0 ) {
         minPartTC = minPartToTC(min_part);
     }
@@ -281,7 +339,7 @@ Simulation::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(myRank)
     }
 }
 
-int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
+int Simulation_impl::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
     // Create the Statistics Engine
     if ( myRank.thread == 0 ) {
@@ -415,7 +473,7 @@ int Simulation::performWireUp( ConfigGraph& graph, const RankInfo& myRank, SimTi
     return 0;
 }
 
-void Simulation::initialize() {
+void Simulation_impl::initialize() {
     bool done = false;
     initBarrier.wait();
     if ( my_rank.thread == 0 ) {
@@ -466,7 +524,7 @@ void Simulation::initialize() {
 
 }
 
-void Simulation::complete() {
+void Simulation_impl::complete() {
 
     completeBarrier.wait();
     untimed_phase = 0;
@@ -501,7 +559,7 @@ void Simulation::complete() {
 
 }
 
-void Simulation::setup() {
+void Simulation_impl::setup() {
 
     setupBarrier.wait();
 
@@ -527,7 +585,7 @@ void Simulation::setup() {
 
 }
 
-void Simulation::run() {
+void Simulation_impl::run() {
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.
     // In general, this shouldn't happen, especially for parallel
@@ -558,9 +616,9 @@ void Simulation::run() {
     header += SST::to_string(my_rank.thread);
     header += ":  ";
     while( LIKELY( ! endSim ) ) {
-        currentSimCycle = timeVortex->front()->getDeliveryTime();
-        currentPriority = timeVortex->front()->getPriority();
         current_activity = timeVortex->pop();
+        currentSimCycle = current_activity->getDeliveryTime();
+        currentPriority = current_activity->getPriority();
         current_activity->execute();
 
         // printf("%d: Activity at %" PRIu64 "\n",my_rank.rank,currentSimCycle);
@@ -600,7 +658,7 @@ void Simulation::run() {
 }
 
 
-void Simulation::emergencyShutdown()
+void Simulation_impl::emergencyShutdown()
 {
     std::lock_guard<std::mutex> lock(simulationMutex);
 
@@ -619,13 +677,13 @@ void Simulation::emergencyShutdown()
 
 // If this version is called, we need to set the end time in the exit
 // object as well
-void Simulation::endSimulation(void)
+void Simulation_impl::endSimulation(void)
 {
     m_exit->setEndTime(currentSimCycle);
     endSimulation(currentSimCycle);
 }
 
-void Simulation::endSimulation(SimTime_t end)
+void Simulation_impl::endSimulation(SimTime_t end)
 {
     // shutdown_mode = SHUTDOWN_CLEAN;
 
@@ -642,7 +700,7 @@ void Simulation::endSimulation(SimTime_t end)
 }
 
 
-void Simulation::finish() {
+void Simulation_impl::finish() {
 
     currentSimCycle = endSimCycle;
 
@@ -673,60 +731,13 @@ void Simulation::finish() {
     }
 }
 
-const SimTime_t&
-Simulation::getCurrentSimCycle() const
-{
-    return currentSimCycle;
-}
-
-SimTime_t
-Simulation::getEndSimCycle() const
-{
-    return endSimCycle;
-}
-
-int
-Simulation::getCurrentPriority() const
-{
-    return currentPriority;
-}
-
-
-// void Simulation::getElapsedSimTime(double *value, char *prefix) const
-// {
-//     static const char siprefix[] = {
-//         'a', 'f', 'p', 'n', 'u', 'm', ' '
-//     };
-//     const int max = sizeof(siprefix) / sizeof(char);
-
-//     double val = getCurrentSimCycle() * 1000;
-//     int lvl = 0;
-//     while ( (lvl < max) && (val > 1000.0) ) {
-//         val /= 1000.0;
-//         ++lvl;
-//     }
-//     *value = val;
-//     *prefix = siprefix[lvl];
-
-// }
-
-UnitAlgebra Simulation::getElapsedSimTime() const
-{
-    return timeLord.getTimeBase() * getCurrentSimCycle();
-}
-
-UnitAlgebra Simulation::getFinalSimTime() const
-{
-    return timeLord.getTimeBase() * getEndSimCycle();
-}
-
-void Simulation::setSignal(int signal)
+void Simulation_impl::setSignal(int signal)
 {
     for ( auto &instance : instanceVec )
         instance->lastRecvdSignal = signal;
 }
 
-void Simulation::printStatus(bool fullStatus)
+void Simulation_impl::printStatus(bool fullStatus)
 {
     Output out("SimStatus: @R:@t:", 0, 0, Output::STDERR);
     out.output("\tCurrentSimCycle:  %" PRIu64 "\n", currentSimCycle);
@@ -742,19 +753,19 @@ void Simulation::printStatus(bool fullStatus)
 
 }
 
-TimeConverter* Simulation::registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority)
+TimeConverter* Simulation_impl::registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority)
 {
     TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
     return registerClock(tcFreq, handler, priority);
 }
 
-TimeConverter* Simulation::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority)
+TimeConverter* Simulation_impl::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority)
 {
     TimeConverter* tcFreq = timeLord.getTimeConverter(freq);
     return registerClock(tcFreq, handler, priority);
 }
 
-TimeConverter* Simulation::registerClock(TimeConverter *tcFreq, Clock::HandlerBase* handler, int priority)
+TimeConverter* Simulation_impl::registerClock(TimeConverter *tcFreq, Clock::HandlerBase* handler, int priority)
 {
     clockMap_t::key_type mapKey = std::make_pair(tcFreq->getFactor(), priority);
     if ( clockMap.find( mapKey ) == clockMap.end() ) {
@@ -768,7 +779,7 @@ TimeConverter* Simulation::registerClock(TimeConverter *tcFreq, Clock::HandlerBa
 }
 
 
-Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* handler, int priority )
+Cycle_t Simulation_impl::reregisterClock( TimeConverter* tc, Clock::HandlerBase* handler, int priority )
 {
     clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
     if ( clockMap.find( mapKey ) == clockMap.end() ) {
@@ -779,7 +790,7 @@ Cycle_t Simulation::reregisterClock( TimeConverter* tc, Clock::HandlerBase* hand
     return clockMap[ mapKey ]->getNextCycle();
 }
 
-Cycle_t Simulation::getNextClockCycle(TimeConverter* tc, int priority) {
+Cycle_t Simulation_impl::getNextClockCycle(TimeConverter* tc, int priority) {
     clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
     if ( clockMap.find( mapKey ) == clockMap.end() ) {
         Output out("Simulation: @R:@t:", 0, 0, Output::STDERR);
@@ -789,7 +800,7 @@ Cycle_t Simulation::getNextClockCycle(TimeConverter* tc, int priority) {
     return clockMap[ mapKey ]->getNextCycle();
 }
 
-void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority) {
+void Simulation_impl::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority) {
     clockMap_t::key_type mapKey = std::make_pair(tc->getFactor(), priority);
     if ( clockMap.find( mapKey ) != clockMap.end() ) {
         bool empty;
@@ -797,12 +808,12 @@ void Simulation::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler,
     }
 }
 
-TimeConverter* Simulation::registerOneShot(const std::string& timeDelay, OneShot::HandlerBase* handler, int priority)
+TimeConverter* Simulation_impl::registerOneShot(const std::string& timeDelay, OneShot::HandlerBase* handler, int priority)
 {
     return registerOneShot(UnitAlgebra(timeDelay), handler, priority);
 }
 
-TimeConverter* Simulation::registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority)
+TimeConverter* Simulation_impl::registerOneShot(const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler, int priority)
 {
     TimeConverter* tcTimeDelay = timeLord.getTimeConverter(timeDelay);
     clockMap_t::key_type mapKey = std::make_pair(tcTimeDelay->getFactor(), priority);
@@ -821,25 +832,25 @@ TimeConverter* Simulation::registerOneShot(const UnitAlgebra& timeDelay, OneShot
     return tcTimeDelay;
 }
 
-void Simulation::insertActivity(SimTime_t time, Activity* ev) {
+void Simulation_impl::insertActivity(SimTime_t time, Activity* ev) {
     ev->setDeliveryTime(time);
     timeVortex->insert(ev);
 
 }
 
-uint64_t Simulation::getTimeVortexMaxDepth() const {
+uint64_t Simulation_impl::getTimeVortexMaxDepth() const {
     return timeVortex->getMaxDepth();
 }
 
-uint64_t Simulation::getTimeVortexCurrentDepth() const {
+uint64_t Simulation_impl::getTimeVortexCurrentDepth() const {
     return timeVortex->getCurrentDepth();
 }
 
-uint64_t Simulation::getSyncQueueDataSize() const {
+uint64_t Simulation_impl::getSyncQueueDataSize() const {
     return syncManager->getDataSize();
 }
 
-Statistics::StatisticProcessingEngine* Simulation::getStatisticsProcessingEngine(void) const
+Statistics::StatisticProcessingEngine* Simulation_impl::getStatisticsProcessingEngine(void) const
 {
     return Statistics::StatisticProcessingEngine::getInstance();
 }
@@ -867,7 +878,7 @@ void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_
 
 
 
-void Simulation::resizeBarriers(uint32_t nthr) {
+void Simulation_impl::resizeBarriers(uint32_t nthr) {
     initBarrier.resize(nthr);
     completeBarrier.resize(nthr);
     setupBarrier.resize(nthr);
@@ -878,27 +889,27 @@ void Simulation::resizeBarriers(uint32_t nthr) {
 
 
 /* Define statics */
-Factory* Simulation::factory;
-TimeLord Simulation::timeLord;
-Output Simulation::sim_output;
-Core::ThreadSafe::Barrier Simulation::initBarrier;
-Core::ThreadSafe::Barrier Simulation::completeBarrier;
-Core::ThreadSafe::Barrier Simulation::setupBarrier;
-Core::ThreadSafe::Barrier Simulation::runBarrier;
-Core::ThreadSafe::Barrier Simulation::exitBarrier;
-Core::ThreadSafe::Barrier Simulation::finishBarrier;
-std::mutex Simulation::simulationMutex;
-TimeConverter* Simulation::minPartTC = nullptr;
-SimTime_t Simulation::minPart;
+Factory* Simulation_impl::factory;
+TimeLord Simulation_impl::timeLord;
+Output Simulation_impl::sim_output;
+Core::ThreadSafe::Barrier Simulation_impl::initBarrier;
+Core::ThreadSafe::Barrier Simulation_impl::completeBarrier;
+Core::ThreadSafe::Barrier Simulation_impl::setupBarrier;
+Core::ThreadSafe::Barrier Simulation_impl::runBarrier;
+Core::ThreadSafe::Barrier Simulation_impl::exitBarrier;
+Core::ThreadSafe::Barrier Simulation_impl::finishBarrier;
+std::mutex Simulation_impl::simulationMutex;
+TimeConverter* Simulation_impl::minPartTC = nullptr;
+SimTime_t Simulation_impl::minPart;
 
 
 
 /* Define statics (Simulation) */
-SharedRegionManager* Simulation::sharedRegionManager = new SharedRegionManagerImpl();
-std::unordered_map<std::thread::id, Simulation*> Simulation::instanceMap;
-std::vector<Simulation*> Simulation::instanceVec;
-std::atomic<int> Simulation::untimed_msg_count;
-Exit* Simulation::m_exit;
+SharedRegionManager* Simulation_impl::sharedRegionManager = new SharedRegionManagerImpl();
+std::unordered_map<std::thread::id, Simulation_impl*> Simulation_impl::instanceMap;
+std::vector<Simulation_impl*> Simulation_impl::instanceVec;
+std::atomic<int> Simulation_impl::untimed_msg_count;
+Exit* Simulation_impl::m_exit;
 
 
 } // namespace SST

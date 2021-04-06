@@ -29,13 +29,13 @@ class Link;
 class TimeConverter;
 class Exit;
 class Event;
-class Simulation;
+class Simulation_impl;
 class ThreadSyncQueue;
 
 class ThreadSync : public Action {
 public:
     /** Create a new ThreadSync object */
-    ThreadSync(int num_threads, Simulation* sim);
+    ThreadSync(int num_threads, Simulation_impl* sim);
     ~ThreadSync();
 
     void setMaxPeriod(TimeConverter* period);
@@ -62,7 +62,7 @@ private:
     std::unordered_map<LinkId_t, Link*> link_map;
     TimeConverter* max_period;
     int num_threads;
-    Simulation* sim;
+    Simulation_impl* sim;
     static bool disabled;
     static Core::ThreadSafe::Barrier barrier;
     double totalWaitTime;

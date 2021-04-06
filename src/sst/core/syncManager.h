@@ -25,7 +25,7 @@
 namespace SST {
 
 class Exit;
-class Simulation;
+class Simulation_impl;
 class SyncBase;
 class ThreadSyncQueue;
 class TimeConverter;
@@ -143,7 +143,7 @@ private:
     static SimTime_t        next_rankSync;
     NewThreadSync*   threadSync;
     Exit* exit;
-    Simulation * sim;
+    Simulation_impl* sim;
 
     sync_type_t      next_sync_type;
     SimTime_t min_part;

@@ -21,7 +21,7 @@ REENABLE_WARNING
 #endif
 
 #include "sst/core/component.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/stopAction.h"
 
@@ -91,7 +91,7 @@ bool Exit::refDec( ComponentId_t id, uint32_t thread )
     std::lock_guard<Spinlock> lock(slock);
     if ( m_idSet.find( id ) == m_idSet.end() ) {
         Simulation::getSimulation()->getSimulationOutput().verbose(CALL_INFO, 1, 1, "component (%s) multiple decrement\n",
-                Simulation::getSimulation()->getComponent(id)->getName().c_str() );
+                Simulation_impl::getSimulation()->getComponent(id)->getName().c_str() );
         return true;
     }
 
@@ -109,7 +109,7 @@ bool Exit::refDec( ComponentId_t id, uint32_t thread )
     if ( single_rank && num_threads == 1 && m_refCount == 0 ) {
         //std::cout << "Exiting..." << std::endl;
         end_time = Simulation::getSimulation()->getCurrentSimCycle();
-        Simulation* sim = Simulation::getSimulation();
+        Simulation_impl* sim = Simulation_impl::getSimulation();
         // sim->insertActivity( sim->getCurrentSimCycle() + m_period->getFactor(), this );
         sim->insertActivity( sim->getCurrentSimCycle() + 1, this );
     }
@@ -118,10 +118,10 @@ bool Exit::refDec( ComponentId_t id, uint32_t thread )
         // trace.getOutput().output(CALL_INFO,"end_time_new = %llu\n",end_time_new);
         // trace.getOutput().output(CALL_INFO,"end_time = %llu\n",end_time);
         if ( end_time_new > end_time ) end_time = end_time_new;
-        if ( Simulation::getSimulation()->isIndependentThread() ) {
+        if ( Simulation_impl::getSimulation()->isIndependentThread() ) {
             // Need to exit just this thread, so we'll need to use a
             // StopAction
-            Simulation* sim = Simulation::getSimulation();
+            Simulation_impl* sim = Simulation_impl::getSimulation();
             sim->insertActivity( sim->getCurrentSimCycle(), new StopAction() );
         }
     }
@@ -140,7 +140,7 @@ Exit::execute()
     check();
 
     SimTime_t next = Simulation::getSimulation()->getCurrentSimCycle() + m_period->getFactor();
-    Simulation::getSimulation()->insertActivity( next, this );
+    Simulation_impl::getSimulation()->insertActivity( next, this );
 
 }
 

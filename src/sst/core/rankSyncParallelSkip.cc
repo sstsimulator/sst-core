@@ -19,7 +19,7 @@
 #include "sst/core/event.h"
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/syncQueue.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/profile.h"
@@ -49,7 +49,7 @@ RankSyncParallelSkip::RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* UN
     allDoneBarrier(num_ranks.thread)
 {
     // TraceFunction(CALL_INFO_LONG);
-    max_period = Simulation::getSimulation()->getMinPartTC();
+    max_period = Simulation_impl::getSimulation()->getMinPartTC();
     myNextSyncTime = max_period->getFactor();
     recv_count = new int[num_ranks.thread];
     for ( uint32_t i = 0; i < num_ranks.thread; i++ ) {
@@ -181,7 +181,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
 
     // Do nothing until there are events to be sent on this thread's
     // links
-    Simulation* sim = Simulation::getSimulation();
+    Simulation* sim = Simulation_impl::getSimulation();
     SimTime_t current_cycle = sim->getCurrentSimCycle();
 
     // Two things left to do.  Deserialize receives and send
@@ -199,7 +199,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
                 Event* ev = static_cast<Event*>(recv->activity_vec[i]);
                 link_map_t::iterator link = link_map.find(ev->getLinkId());
                 if (link == link_map.end()) {
-                    Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                    Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
                 } else {
                     // Need to figure out what the "delay" is for this event.
                     SimTime_t delay = ev->getDeliveryTime() - current_cycle;
@@ -337,8 +337,8 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     // min + max_period.
 
     // Need to get the local minimum, then do a global minimum
-    // SimTime_t input = Simulation::getSimulation()->getNextActivityTime();
-    SimTime_t input = Simulation::getLocalMinimumNextActivityTime();
+    // SimTime_t input = Simulation_impl::getSimulation()->getNextActivityTime();
+    SimTime_t input = Simulation_impl::getLocalMinimumNextActivityTime();
     SimTime_t min_time;
     MPI_Allreduce( &input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD );
 
@@ -429,7 +429,7 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
             Event* ev = static_cast<Event*>(activities[j]);
             link_map_t::iterator link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 sendUntimedData_sync(link->second,ev);
             }

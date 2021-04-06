@@ -35,7 +35,7 @@ using namespace SST::Statistics;
 namespace SST {
 
 
-class Simulation;
+class Simulation_impl;
 
 class Config;
 class TimeLord;
@@ -466,7 +466,7 @@ public:
     }
 
 private:
-    friend class Simulation;
+    friend class Simulation_impl;
     friend class SSTSDLModelDefinition;
 
     Output& output;

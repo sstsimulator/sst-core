@@ -15,7 +15,7 @@
 #include "sst/core/warnmacros.h"
 
 #include "sst/core/exit.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/syncBase.h"
 #include "sst/core/threadSyncQueue.h"
 #include "sst/core/timeConverter.h"
@@ -109,7 +109,7 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeCo
     threadSync(nullptr),
     min_part(min_part)
 {
-    sim = Simulation::getSimulation();
+    sim = Simulation_impl::getSimulation();
 
 
     if ( rank.thread == 0  ) {
@@ -133,7 +133,7 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeCo
     // of the active threadsyncs.
     SimTime_t interthread_minlat = sim->getInterThreadMinLatency();
     if ( num_ranks.thread > 1 && interthread_minlat != MAX_SIMTIME_T ) {
-        threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, rank.thread, Simulation::getSimulation());
+        threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, rank.thread, Simulation_impl::getSimulation());
     }
     else {
         threadSync = new EmptyThreadSync();
@@ -164,7 +164,7 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Li
         threadSync->registerLink(link_id, link);
 
         // Need to get target queue from the remote ThreadSync
-        NewThreadSync* remoteSync = Simulation::instanceVec[to_rank.thread]->syncManager->threadSync;
+        NewThreadSync* remoteSync = Simulation_impl::instanceVec[to_rank.thread]->syncManager->threadSync;
         return remoteSync->getQueueForThread(from_rank.thread);
     }
     else {

@@ -230,7 +230,8 @@ sst_core_sources = \
 	statapi/statoutputjson.cc \
 	statapi/statbase.cc \
 	cputimer.cc \
-	iouse.cc
+	iouse.cc \
+	simulation_impl.h
 
 bin_PROGRAMS = sst sst-info sst-config sst-register
 libexec_PROGRAMS = sstsim.x sstinfo.x

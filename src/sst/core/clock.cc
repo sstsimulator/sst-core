@@ -12,7 +12,7 @@
 #include "sst_config.h"
 #include "sst/core/clock.h"
 
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 
 namespace SST {
@@ -72,7 +72,7 @@ Clock::getNextCycle()
 }
 
 void Clock::execute( void ) {
-    Simulation *sim = Simulation::getSimulation();
+    Simulation_impl *sim = Simulation_impl::getSimulation();
 
     if ( staticHandlerMap.empty() ) {
         // std::cout << "Not rescheduling clock" << std::endl;
@@ -102,7 +102,7 @@ void Clock::execute( void ) {
 void
 Clock::schedule()
 {
-    Simulation* sim = Simulation::getSimulation();
+    Simulation_impl* sim = Simulation_impl::getSimulation();
     currentCycle = sim->getCurrentSimCycle() / period->getFactor();
     SimTime_t next = (currentCycle * period->getFactor()) + period->getFactor();
 

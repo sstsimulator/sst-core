@@ -11,6 +11,7 @@
 
 
 #include "sst_config.h"
+#include "sst/core/output.h"
 #include "sst/core/shared/sharedObject.h"
 #include "sst/core/shared/sharedArray.h"
 #include "sst/core/shared/sharedMap.h"

@@ -18,7 +18,7 @@
 #include "sst/core/event.h"
 #include "sst/core/initQueue.h"
 #include "sst/core/pollingLinkQueue.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
@@ -43,7 +43,7 @@ Link::Link(LinkId_t id) :
 {
     recvQueue = uninitQueue;
     untimedQueue = nullptr;
-    configuredQueue = Simulation::getSimulation()->getTimeVortex();
+    configuredQueue = Simulation_impl::getSimulation()->getTimeVortex();
 }
 
 Link::Link() :
@@ -56,7 +56,7 @@ Link::Link() :
 {
     recvQueue = uninitQueue;
     untimedQueue = nullptr;
-    configuredQueue = Simulation::getSimulation()->getTimeVortex();
+    configuredQueue = Simulation_impl::getSimulation()->getTimeVortex();
 }
 
 Link::~Link() {
@@ -97,7 +97,7 @@ void Link::setLatency(Cycle_t lat) {
 }
 
 void Link::addSendLatency(int cycles, const std::string& timebase) {
-    SimTime_t tb = Simulation::getSimulation()->getTimeLord()->getSimCycles(timebase,"addOutputLatency");
+    SimTime_t tb = Simulation_impl::getSimulation()->getTimeLord()->getSimCycles(timebase,"addOutputLatency");
     latency += (cycles * tb);
 }
 
@@ -164,8 +164,8 @@ void Link::sendUntimedData(Event* data)
     if ( pair_link->untimedQueue == nullptr ) {
         pair_link->untimedQueue = new InitQueue();
     }
-    Simulation::getSimulation()->untimed_msg_count++;
-    data->setDeliveryTime(Simulation::getSimulation()->untimed_phase + 1);
+    Simulation_impl::getSimulation()->untimed_msg_count++;
+    data->setDeliveryTime(Simulation_impl::getSimulation()->untimed_phase + 1);
     data->setDeliveryLink(id,pair_link);
 
     pair_link->untimedQueue->insert(data);
@@ -192,7 +192,7 @@ Event* Link::recvUntimedData()
     Event* event = nullptr;
     if ( !untimedQueue->empty() ) {
     Activity* activity = untimedQueue->front();
-    if ( activity->getDeliveryTime() <= Simulation::getSimulation()->untimed_phase ) {
+    if ( activity->getDeliveryTime() <= Simulation_impl::getSimulation()->untimed_phase ) {
         event = static_cast<Event*>(activity);
         untimedQueue->pop();
     }
