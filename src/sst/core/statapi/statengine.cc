@@ -17,7 +17,7 @@
 #include "sst/core/factory.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/timeConverter.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statoutput.h"
 #include "sst/core/configGraph.h"
@@ -131,7 +131,7 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat) {
     }
 
     // Make sure that the wireup has not been completed
-    if (true == stat->getComponent()->getSimulation()->isWireUpFinished()) {
+    if (true == Simulation_impl::getSimulation()->isWireUpFinished()) {
       if (!group.output->supportsDynamicRegistration()){
         m_output.fatal(CALL_INFO, 1, "ERROR: Statistic %s - "
              "Cannot be registered for output %s after the Components have been wired up. "
@@ -160,9 +160,9 @@ StatisticProcessingEngine::registerStatisticCore(StatisticBase* stat) {
 
 void StatisticProcessingEngine::finalizeInitialization()
 {
-    bool master = ( Simulation::getSimulation()->getRank().thread == 0 );
+    bool master = ( Simulation_impl::getSimulation()->getRank().thread == 0 );
     if ( master ) {
-        m_barrier.resize(Simulation::getSimulation()->getNumRanks().thread);
+        m_barrier.resize(Simulation_impl::getSimulation()->getNumRanks().thread);
     }
     for ( auto & g : m_statGroups ) {
         if ( master ) {
@@ -171,7 +171,7 @@ void StatisticProcessingEngine::finalizeInitialization()
 
         /* Register group clock, if rate is set */
         if ( g.outputFreq.getValue() != 0 ) {
-            Simulation::getSimulation()->registerClock(
+            Simulation_impl::getSimulation()->registerClock(
                     g.outputFreq,
                     new Clock::Handler<StatisticProcessingEngine, StatisticGroup*>(this,
                         &StatisticProcessingEngine::handleGroupClockEvent, &g),
@@ -261,7 +261,7 @@ void
 StatisticProcessingEngine::castError(const std::string& type, const std::string& statName,
                                      const std::string& fieldName)
 {
-  Simulation::getSimulationOutput().fatal(CALL_INFO,1,
+  Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,
                   "Unable to cast statistic %s of type %s to correct field type %s",
                   statName.c_str(), type.c_str(), fieldName.c_str());
 }
@@ -291,7 +291,7 @@ StatisticProcessingEngine::addEndOfSimStatistic(StatisticBase* /*stat*/)
 
 bool StatisticProcessingEngine::addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* stat)
 {
-    Simulation*         sim = Simulation::getSimulation();
+    Simulation_impl*    sim = Simulation_impl::getSimulation();
     TimeConverter*      tcFreq = sim->getTimeLord()->getTimeConverter(freq);
     SimTime_t           tcFactor = tcFreq->getFactor();
     Clock::HandlerBase* ClockHandler;
@@ -363,7 +363,7 @@ UnitAlgebra StatisticProcessingEngine::getParamTime(StatisticBase *stat, const s
 void StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat)
 {
     UnitAlgebra startTime = getParamTime(stat, "startat");
-    Simulation*           sim = Simulation::getSimulation();
+    Simulation_impl*      sim = Simulation_impl::getSimulation();
     TimeConverter*        tcStartTime = sim->getTimeLord()->getTimeConverter(startTime);
     SimTime_t             tcFactor = tcStartTime->getFactor();
     StatArray_t*          statArray;
@@ -398,7 +398,7 @@ void StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat)
 void StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat)
 {
     UnitAlgebra stopTime = getParamTime(stat, "startat");
-    Simulation*           sim = Simulation::getSimulation();
+    Simulation_impl*      sim = Simulation_impl::getSimulation();
     TimeConverter*        tcStopTime = sim->getTimeLord()->getTimeConverter(stopTime);
     SimTime_t             tcFactor = tcStopTime->getFactor();
     StatArray_t*          statArray;
@@ -545,7 +545,7 @@ bool StatisticProcessingEngine::handleStatisticEngineClockEvent(Cycle_t UNUSED(C
 bool StatisticProcessingEngine::handleGroupClockEvent(Cycle_t UNUSED(CycleNum), StatisticGroup *group)
 {
     m_barrier.wait();
-    if ( Simulation::getSimulation()->getRank().thread == 0 ) {
+    if ( Simulation_impl::getSimulation()->getRank().thread == 0 ) {
         performStatisticGroupOutputImpl(*group, false);
     }
     m_barrier.wait();

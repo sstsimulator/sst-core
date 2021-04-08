@@ -106,6 +106,17 @@ public:
     }
 
     /**
+       Searches the container for an element with a key equivalent to
+       k and returns an iterator to it if found, otherwise it returns
+       an iterator to SharedMap::end().
+
+       @param key key to search for
+     */
+    const_iterator find (const keyT& key) const {
+        return data->map.find(key);
+    }
+
+    /**
        Get const_iterator to beginning of underlying map
      */
     const_iterator begin() const {
@@ -133,6 +144,26 @@ public:
         return data->map.crend();
     }
 
+    /**
+       Returns an iterator pointing to the first element in the
+       container whose key is not considered to go before k (i.e.,
+       either it is equivalent or goes after).
+
+       @param key key to compare to
+     */
+    inline const_iterator lower_bound(const keyT& key) const {
+        return data->map.lower_bound(key);
+    }
+
+    /**
+       Returns an iterator pointing to the first element in the
+       container whose key is considered to go after k.
+
+       @param key key to compare to
+    */
+    inline const_iterator upper_bound(const keyT& key) const {
+        return data->map.lower_bound(key);
+    }
 
     /**
        Indicate that the calling element has written all the data it
@@ -212,8 +243,6 @@ public:
     inline const valT& mutex_read(const keyT& key) const {
         return data->mutex_read(key);
     }
-
-
 
 
 private:

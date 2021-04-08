@@ -57,8 +57,6 @@ nobase_dist_sst_HEADERS = \
 	pollingLinkQueue.h \
 	profile.h \
 	rankInfo.h \
-	rankSyncParallelSkip.h \
-	rankSyncSerialSkip.h \
 	simulation.h \
 	sparseVectorMap.h \
 	sst_types.h \
@@ -67,12 +65,6 @@ nobase_dist_sst_HEADERS = \
 	stopAction.h \
 	stringize.h \
 	subcomponent.h \
-	syncBase.h \
-	syncManager.h \
-	syncQueue.h \
-	threadSync.h \
-	threadSyncSimpleSkip.h \
-	threadSyncQueue.h \
 	sharedRegion.h \
 	sharedRegionImpl.h \
 	timeConverter.h \
@@ -190,15 +182,8 @@ sst_core_sources = \
 	output.cc \
 	params.cc \
 	pollingLinkQueue.cc \
-	rankSyncParallelSkip.cc \
-	rankSyncSerialSkip.cc \
 	simulation.cc \
 	subcomponent.cc \
-	syncBase.cc \
-	syncManager.cc \
-	syncQueue.cc \
-	threadSync.cc \
-	threadSyncSimpleSkip.cc \
 	sharedRegion.cc \
 	timeLord.cc \
 	uninitializedQueue.cc \
@@ -230,7 +215,8 @@ sst_core_sources = \
 	statapi/statoutputjson.cc \
 	statapi/statbase.cc \
 	cputimer.cc \
-	iouse.cc
+	iouse.cc \
+	simulation_impl.h
 
 bin_PROGRAMS = sst sst-info sst-config sst-register
 libexec_PROGRAMS = sstsim.x sstinfo.x
@@ -315,6 +301,7 @@ include part/Makefile.inc
 include model/Makefile.inc
 include shared/Makefile.inc
 include impl/Makefile.inc
+include sync/Makefile.inc
 include testingframework/Makefile.inc
 include testElements/Makefile.inc
 

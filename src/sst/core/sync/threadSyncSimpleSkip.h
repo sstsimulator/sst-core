@@ -17,8 +17,8 @@
 #include <unordered_map>
 
 #include "sst/core/action.h"
-#include "sst/core/syncManager.h"
-#include "sst/core/threadSyncQueue.h"
+#include "sst/core/sync/syncManager.h"
+#include "sst/core/sync/threadSyncQueue.h"
 
 namespace SST {
 
@@ -27,13 +27,13 @@ class Link;
 class TimeConverter;
 class Exit;
 class Event;
-class Simulation;
+class Simulation_impl;
 class ThreadSyncQueue;
 
-class ThreadSyncSimpleSkip : public NewThreadSync {
+class ThreadSyncSimpleSkip : public ThreadSync {
 public:
     /** Create a new ThreadSync object */
-    ThreadSyncSimpleSkip(int num_threads, int thread, Simulation* sim);
+    ThreadSyncSimpleSkip(int num_threads, int thread, Simulation_impl* sim);
     ~ThreadSyncSimpleSkip();
 
     void setMaxPeriod(TimeConverter* period);
@@ -63,7 +63,7 @@ private:
     int num_threads;
     int thread;
     static SimTime_t localMinimumNextActivityTime;
-    Simulation* sim;
+    Simulation_impl* sim;
     static Core::ThreadSafe::Barrier barrier[3];
     double totalWaitTime;
     bool single_rank;

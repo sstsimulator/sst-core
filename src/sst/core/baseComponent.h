@@ -36,6 +36,7 @@ class Link;
 class LinkMap;
 class Module;
 class Params;
+class Simulation_impl;
 class SubComponent;
 class TimeConverter;
 class UnitAlgebra;
@@ -237,16 +238,6 @@ protected:
     Cycle_t reregisterClock(TimeConverter *freq, Clock::HandlerBase* handler);
     /** Returns the next Cycle that the TimeConverter would fire */
     Cycle_t getNextClockCycle(TimeConverter *freq);
-
-    /** Registers a OneShot event for this component.
-        Note: OneShot cannot be canceled, and will always callback after
-          the timedelay.
-        @param timeDelay Time delay for the OneShot in SI units
-        @param handler Pointer to OneShot::HandlerBase which is to be invoked
-        at the specified interval
-    */
-    TimeConverter* registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler) __attribute__ ((deprecated("registerOneShot is deprecated and will be removed in  SST 11. Please use configureSelfLink to create a mechanism for waking up Component/SubComponents")));
-    TimeConverter* registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler) __attribute__ ((deprecated("registerOneShot is deprecated and will be removed in  SST 11. Please use configureSelfLink to create a mechanism for waking up Component/SubComponents")));
 
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for
@@ -748,7 +739,7 @@ protected:
     SharedRegion* getGlobalSharedRegion(const std::string& key, size_t size, SharedRegionMerger *merger = nullptr) __attribute__ ((deprecated("SharedRegion and its accompanying classes have been deprecated and will be removed in SST 12. Please use the new SharedObject classes found in sst/core/shared.")));
 
     /* Get the Simulation */
-    Simulation* getSimulation() const { return sim; }
+    Simulation* getSimulation() const;
 
     // Does the statisticName exist in the ElementInfoStatistic
     virtual bool doesComponentInfoStatisticExist(const std::string& statisticName) const;
@@ -756,11 +747,6 @@ protected:
     uint8_t getComponentInfoStatisticEnableLevel(const std::string& statisticName) const;
     // Return the Units for the statisticName from the ElementInfoStatistic
     // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
-
-
-protected:
-    Simulation *sim;
-
 
 
 private:
