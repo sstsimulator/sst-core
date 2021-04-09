@@ -21,6 +21,7 @@
 #include "sst/core/output.h"
 #include "sst/core/linkMap.h"
 #include "sst/core/timeConverter.h"
+#include "sst/core/simulation_impl.h"
 
 namespace SST {
 
@@ -121,6 +122,11 @@ SimTime_t TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSE
         return tc->getFactor();
     }
     return parseCache[ts]->getFactor();
+}
+
+UnitAlgebra TimeConverter::getPeriod()
+{
+    return Simulation_impl::getTimeLord()->getTimeBase() * factor;
 }
 
 } // namespace SST

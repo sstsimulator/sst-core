@@ -11,7 +11,7 @@
 
 
 #include "sst_config.h"
-#include "sst/core/syncQueue.h"
+#include "sst/core/sync/syncQueue.h"
 
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/event.h"

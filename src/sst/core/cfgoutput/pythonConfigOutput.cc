@@ -13,7 +13,7 @@
 #include "sst_config.h"
 #include "pythonConfigOutput.h"
 
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/config.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/timeConverter.h"
@@ -102,7 +102,7 @@ void PythonConfigGraphOutput::generateCommonComponent( const char* objName, cons
         free(esStatName);
     }
 
-    UnitAlgebra tb = Simulation::getTimeLord()->getTimeBase();
+    UnitAlgebra tb = Simulation_impl::getTimeLord()->getTimeBase();
 
     for ( auto linkID : comp.links ) {
         const ConfigLink & link = getGraph()->getLinkMap()[linkID];

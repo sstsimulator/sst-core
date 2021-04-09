@@ -30,6 +30,7 @@ class ConfigComponent;
 class ConfigStatistic;
 
 class ComponentInfoMap;
+class Simulation_impl;
 class TimeConverter;
 
 namespace Statistics {
@@ -56,7 +57,7 @@ private:
     static const uint64_t USER_FLAGS = 0x7;
 
     // Friend classes
-    friend class Simulation;
+    friend class Simulation_impl;
     friend class BaseComponent;
     friend class ComponentInfoMap;
 

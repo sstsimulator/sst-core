@@ -24,7 +24,7 @@
 #include <execinfo.h>
 
 // Core Headers
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/warnmacros.h"
 
 #ifdef SST_CONFIG_HAVE_MPI
@@ -205,7 +205,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
     free(backtrace_names);
 
-    Simulation::emergencyShutdown();
+    Simulation_impl::emergencyShutdown();
 
 #ifdef SST_CONFIG_HAVE_MPI
     // If MPI exists, abort
@@ -414,7 +414,7 @@ std::string Output::buildPrefixString(uint32_t line, const std::string& file, co
                 startindex = findindex + 2;
                 break;
             case 't' :
-                sprintf(tempBuf, "%" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
+                sprintf(tempBuf, "%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
@@ -493,15 +493,15 @@ TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, 
     indent_length(2)
 {
     if ( print_sim_info ) {
-        RankInfo ri = Simulation::getSimulation()->getNumRanks();
+        RankInfo ri = Simulation_impl::getSimulation()->getNumRanks();
         if ( ri.rank > 1 || ri.thread > 1 ) {
             output_obj.init("@R, @I (@t): " /*prefix*/, 0, 0, Output::STDOUT);
         }
         else {
             output_obj.init("(@t): ", 0, 0, Output::STDOUT);
         }
-        // rank = Simulation::getSimulation()->getRank().rank;
-        // thread = Simulation::getSimulation()->getRank().thread;
+        // rank = Simulation_impl::getSimulation()->getRank().rank;
+        // thread = Simulation_impl::getSimulation()->getRank().thread;
     }
     else {
         output_obj.init("" /*prefix*/, 0, 0, Output::STDOUT);

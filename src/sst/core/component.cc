@@ -13,7 +13,7 @@
 #include "sst/core/component.h"
 
 #include "sst/core/exit.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/factory.h"
 
 using namespace SST::Statistics;
@@ -44,14 +44,14 @@ void
 Component::primaryComponentDoNotEndSim()
 {
     int thread = getSimulation()->getRank().thread;
-    getSimulation()->getExit()->refInc( getId(), thread );
+    Simulation_impl::getSimulation()->getExit()->refInc( getId(), thread );
 }
 
 void
 Component::primaryComponentOKToEndSim()
 {
     int thread = getSimulation()->getRank().thread;
-    getSimulation()->getExit()->refDec( getId(), thread );
+    Simulation_impl::getSimulation()->getExit()->refDec( getId(), thread );
 }
 
 

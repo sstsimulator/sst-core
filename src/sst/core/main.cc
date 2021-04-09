@@ -37,7 +37,7 @@ REENABLE_WARNING
 #include "sst/core/factory.h"
 #include "sst/core/rankInfo.h"
 #include "sst/core/threadsafe.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/timeVortex.h"
 #include "sst/core/part/sstpart.h"
@@ -72,21 +72,10 @@ using namespace SST;
 
 static SST::Output g_output;
 
-class SimulationHelper {
-public:
-    static void setSignal(int sig) {
-        Simulation::setSignal(sig);
-    }
-
-    static Simulation* createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks) {
-        return Simulation::createSimulation(config,my_rank,num_ranks);
-    }
-};
-
 static void
 SimulationSigHandler(int sig)
 {
-    SimulationHelper::setSignal(sig);
+    Simulation_impl::setSignal(sig);
     if ( sig == SIGINT || sig == SIGTERM ) {
         signal(sig, SIG_DFL); // Restore default handler
     }
@@ -164,7 +153,7 @@ static void dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo &size
 }
 
 static void do_graph_wireup(ConfigGraph* graph,
-        SST::Simulation* sim,
+        SST::Simulation_impl* sim,
         const RankInfo &myRank, SimTime_t min_part) {
 
     if ( !graph->containsComponentInRank( myRank ) ) {
@@ -240,7 +229,7 @@ static void start_simulation(uint32_t tid, SimThreadInfo_t &info, Core::ThreadSa
     }
 
     ////// Create Simulation Objects //////
-    SST::Simulation* sim = SimulationHelper::createSimulation(info.config, info.myRank, info.world_size);
+    SST::Simulation_impl* sim = Simulation_impl::createSimulation(info.config, info.myRank, info.world_size);
 
     barrier.wait();
 
@@ -463,7 +452,7 @@ main(int argc, char *argv[])
 #endif
 
     // Need to initialize TimeLord
-    Simulation::getTimeLord()->init(cfg.timeBase);
+    Simulation_impl::getTimeLord()->init(cfg.timeBase);
 
     if ( myRank.rank == 0 ) {
         graph->postCreationCleanup();
@@ -577,7 +566,7 @@ main(int argc, char *argv[])
         // conditions being met.
         // if ( min_part == MAX_SIMTIME_T ) {
         //     // std::cout << "No links cross rank boundary" << std::endl;
-        //     min_part = Simulation::getTimeLord()->getSimCycles("1us","");
+        //     min_part = Simulation_impl::getTimeLord()->getSimCycles("1us","");
         // }
 
         Comms::broadcast(min_part, 0);
@@ -656,12 +645,12 @@ main(int argc, char *argv[])
     //     std::cout << "Rank 0 graph:" << std::endl;
     //     graph->print(std::cout);
     // }
-    // Simulation::barrier.wait();
+    // Simulation_impl::barrier.wait();
     // if ( myRank.rank == 1 ) {
     //     std::cout << "Rank 1 graph:" << std::endl;
     //     graph->print(std::cout);
     // }
-    // Simulation::barrier.wait();
+    // Simulation_impl::barrier.wait();
 
     ///// Set up StatisticEngine /////
 
@@ -673,9 +662,9 @@ main(int argc, char *argv[])
     ////// Create Simulation //////
     Core::ThreadSafe::Barrier mainBarrier(world_size.thread);
 
-    Simulation::factory = factory;
-    Simulation::sim_output = g_output;
-    Simulation::resizeBarriers(world_size.thread);
+    Simulation_impl::factory = factory;
+    Simulation_impl::sim_output = g_output;
+    Simulation_impl::resizeBarriers(world_size.thread);
     #ifdef USE_MEMPOOL
     /* Estimate that we won't have more than 128 sizes of events */
     Activity::memPools.reserve(world_size.thread * 128);
@@ -706,7 +695,7 @@ main(int argc, char *argv[])
           threads[i].join();
       }
 
-      Simulation::shutdown();
+      Simulation_impl::shutdown();
     } catch( std::exception& e ) {
       g_output.fatal(CALL_INFO, -1, "Error encountered during simulation: %s\n", e.what());
     }

@@ -10,39 +10,48 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/threadSync.h"
+#include "sst/core/sync/threadSyncSimpleSkip.h"
 
 #include "sst/core/event.h"
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 
 namespace SST {
 
+SimTime_t ThreadSyncSimpleSkip::localMinimumNextActivityTime = 0;
 
-/** Create a new ThreadSync object */
-ThreadSync::ThreadSync(int num_threads, Simulation* sim) :
-    Action(),
+/** Create a new ThreadSyncSimpleSkip object */
+ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulation_impl* sim) :
+    ThreadSync(),
     num_threads(num_threads),
+    thread(thread),
     sim(sim),
     totalWaitTime(0.0)
 {
+    // TraceFunction trace(CALL_INFO_LONG);
     for ( int i = 0; i < num_threads; i++ ) {
         queues.push_back(new ThreadSyncQueue());
     }
 
-    if ( sim->getRank().thread == 0 )
-        barrier.resize(num_threads);
+    if ( sim->getRank().thread == 0 ) {
+        barrier[0].resize(num_threads);
+        barrier[1].resize(num_threads);
+        barrier[2].resize(num_threads);
+    }
 
     if ( sim->getNumRanks().rank > 1 ) single_rank = false;
     else single_rank = true;
+
+    my_max_period = sim->getInterThreadMinLatency();
+    nextSyncTime = my_max_period;
 }
 
-ThreadSync::~ThreadSync()
+ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
 {
     if ( totalWaitTime > 0.0 )
-        Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "ThreadSync total wait time: %lg seconds.\n", totalWaitTime);
+        Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "ThreadSyncSimpleSkip total wait time: %lg seconds.\n", totalWaitTime);
     for ( int i = 0; i < num_threads; i++ ) {
         delete queues[i];
     }
@@ -50,32 +59,20 @@ ThreadSync::~ThreadSync()
 }
 
 void
-ThreadSync::setMaxPeriod(TimeConverter* period)
-{
-    max_period = period;
-    SimTime_t next = sim->getCurrentSimCycle() + period->getFactor();
-    setPriority(THREADSYNCPRIORITY);
-    sim->insertActivity( next, this );
-}
-
-void
-ThreadSync::registerLink(LinkId_t link_id, Link* link)
+ThreadSyncSimpleSkip::registerLink(LinkId_t link_id, Link* link)
 {
     link_map[link_id] = link;
 }
 
 ActivityQueue*
-ThreadSync::getQueueForThread(int tid)
+ThreadSyncSimpleSkip::getQueueForThread(int tid)
 {
     return queues[tid];
 }
 
 void
-ThreadSync::execute()
+ThreadSyncSimpleSkip::before()
 {
-    TraceFunction trace(CALL_INFO_LONG);
-    totalWaitTime += barrier.wait();
-    if ( disabled ) return;
     // Empty all the queues and send events on the links
     for ( size_t i = 0; i < queues.size(); i++ ) {
         ThreadSyncQueue* queue = queues[i];
@@ -84,7 +81,7 @@ ThreadSync::execute()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 SimTime_t delay = ev->getDeliveryTime() - sim->getCurrentSimCycle();
                 link->second->send(delay,ev);
@@ -92,20 +89,33 @@ ThreadSync::execute()
         }
         queue->clear();
     }
-
-    Exit* exit = sim->getExit();
-    if ( single_rank && exit->getRefCount() == 0 ) {
-        endSimulation(exit->getEndTime());
-    }
-
-    totalWaitTime += barrier.wait();
-
-    SimTime_t next = sim->getCurrentSimCycle() + max_period->getFactor();
-    sim->insertActivity( next, this );
 }
 
 void
-ThreadSync::processLinkUntimedData()
+ThreadSyncSimpleSkip::after()
+{
+    // Use this nextSyncTime computation for no skip
+    // nextSyncTime = sim->getCurrentSimCycle() + max_period;
+
+    // Use this nextSyncTime computation for skipping
+
+    auto nextmin = sim->getLocalMinimumNextActivityTime();
+    auto nextminPlus = nextmin + my_max_period;
+    nextSyncTime = nextmin > nextminPlus ? nextmin : nextminPlus;
+}
+
+void
+ThreadSyncSimpleSkip::execute()
+{
+    totalWaitTime = barrier[0].wait();
+    before();
+    totalWaitTime = barrier[1].wait();
+    after();
+    totalWaitTime += barrier[2].wait();
+}
+
+void
+ThreadSyncSimpleSkip::processLinkUntimedData()
 {
     // Need to walk through all the queues and send the data to the
     // correct links
@@ -116,9 +126,9 @@ ThreadSync::processLinkUntimedData()
             Event* ev = static_cast<Event*>(vec[j]);
             auto link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
-                link->second->sendUntimedData_sync(ev);
+                sendUntimedData_sync(link->second,ev);
             }
         }
         queue->clear();
@@ -126,29 +136,26 @@ ThreadSync::processLinkUntimedData()
 }
 
 void
-ThreadSync::finalizeLinkConfigurations() {
+ThreadSyncSimpleSkip::finalizeLinkConfigurations() {
     for (auto i = link_map.begin() ; i != link_map.end() ; ++i) {
-        i->second->finalizeConfiguration();
+        finalizeConfiguration(i->second);
+    }
+}
+
+void
+ThreadSyncSimpleSkip::prepareForComplete() {
+    for (auto i = link_map.begin() ; i != link_map.end() ; ++i) {
+        prepareForCompleteInt(i->second);
     }
 }
 
 uint64_t
-ThreadSync::getDataSize() const {
+ThreadSyncSimpleSkip::getDataSize() const {
     size_t count = 0;
     return count;
 }
 
 
-void
-ThreadSync::print(const std::string& header, Output &out) const
-{
-    out.output("%s ThreadSync with period %" PRIu64 " to be delivered at %" PRIu64
-               " with priority %d\n",
-               header.c_str(), max_period->getFactor(), getDeliveryTime(), getPriority());
-}
-
-
-bool ThreadSync::disabled = false;
-Core::ThreadSafe::Barrier ThreadSync::barrier;
+Core::ThreadSafe::Barrier ThreadSyncSimpleSkip::barrier[3];
 
 } // namespace SST

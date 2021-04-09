@@ -13,7 +13,7 @@
 
 #include "sst/core/oneshot.h"
 
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 
 
@@ -81,7 +81,7 @@ void OneShot::registerHandler(OneShot::HandlerBase* handler)
 SimTime_t OneShot::computeDeliveryTime()
 {
     // Get current simulation time
-    Simulation* sim = Simulation::getSimulation();
+    Simulation_impl* sim = Simulation_impl::getSimulation();
 
     // Figure out what the next time should be for when the OneShot should fire
     SimTime_t nextEventTime = sim->getCurrentSimCycle() + m_timeDelay->getFactor();
@@ -94,7 +94,7 @@ void OneShot::scheduleOneShot()
     // schedule based on the oldest entry in queue.
     if ( !m_scheduled && !m_HandlerVectorMap.empty() ) {
         // Add this one shot to the Activity queue, and mark this OneShot at scheduled
-        Simulation::getSimulation()->insertActivity(m_HandlerVectorMap.back().first, this);
+        Simulation_impl::getSimulation()->insertActivity(m_HandlerVectorMap.back().first, this);
         m_scheduled = true;
     }
 }

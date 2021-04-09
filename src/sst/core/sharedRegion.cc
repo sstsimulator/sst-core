@@ -23,6 +23,7 @@
 #include <unistd.h>
 
 #include <sys/types.h>
+#include <sys/mman.h>
 
 #include "sst/core/simulation.h"
 #include "sst/core/objectComms.h"

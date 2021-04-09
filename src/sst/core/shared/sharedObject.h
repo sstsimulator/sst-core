@@ -20,6 +20,9 @@
 #include <string>
 
 namespace SST {
+
+class Simulation_impl;
+
 namespace Shared {
 
 // NOTE: The classes in this header file are not part of the public
@@ -273,7 +276,7 @@ public:
     virtual ~SharedObject() {}
 
 protected:
-    friend class SST::Simulation;
+    friend class SST::Simulation_impl;
     static SharedObjectDataManager manager;
 
 

@@ -23,7 +23,7 @@
 #include "sst/core/factory.h"
 #include "sst/core/link.h"
 #include "sst/core/linkMap.h"
-#include "sst/core/simulation.h"
+#include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/timeLord.h"
 #include "sst/core/unitAlgebra.h"
@@ -35,8 +35,7 @@ namespace SST {
 
 
 BaseComponent::BaseComponent(ComponentId_t id) :
-    sim(Simulation::getSimulation()),
-    my_info(Simulation::getSimulation()->getComponentInfo(id)),
+    my_info(Simulation_impl::getSimulation()->getComponentInfo(id)),
     isExtension(false)
 {
     if ( my_info->component == nullptr ) {
@@ -117,7 +116,7 @@ BaseComponent::pushValidParams(Params& params, const std::string& type)
 
 
 TimeConverter* BaseComponent::registerClock( const std::string& freq, Clock::HandlerBase* handler, bool regAll) {
-    TimeConverter* tc = getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
+    TimeConverter* tc = Simulation_impl::getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -129,7 +128,7 @@ TimeConverter* BaseComponent::registerClock( const std::string& freq, Clock::Han
 }
 
 TimeConverter* BaseComponent::registerClock( const UnitAlgebra& freq, Clock::HandlerBase* handler, bool regAll) {
-    TimeConverter* tc = getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
+    TimeConverter* tc = Simulation_impl::getSimulation()->registerClock(freq, handler, CLOCKPRIORITY);
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -141,7 +140,7 @@ TimeConverter* BaseComponent::registerClock( const UnitAlgebra& freq, Clock::Han
 }
 
 TimeConverter* BaseComponent::registerClock( TimeConverter* tc, Clock::HandlerBase* handler, bool regAll) {
-    TimeConverter* tcRet = getSimulation()->registerClock(tc, handler, CLOCKPRIORITY);
+    TimeConverter* tcRet = Simulation_impl::getSimulation()->registerClock(tc, handler, CLOCKPRIORITY);
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -153,27 +152,19 @@ TimeConverter* BaseComponent::registerClock( TimeConverter* tc, Clock::HandlerBa
 }
 
 Cycle_t BaseComponent::reregisterClock( TimeConverter* freq, Clock::HandlerBase* handler) {
-    return getSimulation()->reregisterClock(freq, handler, CLOCKPRIORITY);
+    return Simulation_impl::getSimulation()->reregisterClock(freq, handler, CLOCKPRIORITY);
 }
 
 Cycle_t BaseComponent::getNextClockCycle( TimeConverter* freq ) {
-    return getSimulation()->getNextClockCycle(freq, CLOCKPRIORITY);
+    return Simulation_impl::getSimulation()->getNextClockCycle(freq, CLOCKPRIORITY);
 }
 
 void BaseComponent::unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler) {
-    getSimulation()->unregisterClock(tc, handler, CLOCKPRIORITY);
-}
-
-TimeConverter* BaseComponent::registerOneShot( const std::string& timeDelay, OneShot::HandlerBase* handler) {
-    return getSimulation()->registerOneShot(timeDelay, handler, ONESHOTPRIORITY);
-}
-
-TimeConverter* BaseComponent::registerOneShot( const UnitAlgebra& timeDelay, OneShot::HandlerBase* handler) {
-    return getSimulation()->registerOneShot(timeDelay, handler, ONESHOTPRIORITY);
+    Simulation_impl::getSimulation()->unregisterClock(tc, handler, CLOCKPRIORITY);
 }
 
 TimeConverter* BaseComponent::registerTimeBase( const std::string& base, bool regAll) {
-    TimeConverter* tc = getSimulation()->getTimeLord()->getTimeConverter(base);
+    TimeConverter* tc = Simulation_impl::getTimeLord()->getTimeConverter(base);
 
     // if regAll is true set tc as the default for the component and
     // for all the links
@@ -187,31 +178,31 @@ TimeConverter* BaseComponent::registerTimeBase( const std::string& base, bool re
 TimeConverter*
 BaseComponent::getTimeConverter( const std::string& base ) const
 {
-    return getSimulation()->getTimeLord()->getTimeConverter(base);
+    return Simulation_impl::getTimeLord()->getTimeConverter(base);
 }
 
 TimeConverter*
 BaseComponent::getTimeConverter( const UnitAlgebra& base ) const
 {
-    return getSimulation()->getTimeLord()->getTimeConverter(base);
+    return Simulation_impl::getTimeLord()->getTimeConverter(base);
 }
 
 TimeConverter*
 BaseComponent::getTimeConverterNano() const
 {
-    return Simulation::getSimulation()->getTimeLord()->getNano();
+    return Simulation_impl::getTimeLord()->getNano();
 }
 
 TimeConverter*
 BaseComponent::getTimeConverterMicro() const
 {
-    return Simulation::getSimulation()->getTimeLord()->getMicro();
+    return Simulation_impl::getTimeLord()->getMicro();
 }
 
 TimeConverter*
 BaseComponent::getTimeConverterMilli() const
 {
-    return Simulation::getSimulation()->getTimeLord()->getMilli();
+    return Simulation_impl::getTimeLord()->getMilli();
 }
 
 
@@ -315,7 +306,7 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
 Link*
 BaseComponent::configureLink(const std::string& name, const std::string& time_base, Event::HandlerBase* handler)
 {
-    return configureLink(name,getSimulation()->getTimeLord()->getTimeConverter(time_base),handler);
+    return configureLink(name,Simulation_impl::getTimeLord()->getTimeConverter(time_base),handler);
 }
 
 Link*
@@ -365,64 +356,64 @@ BaseComponent::configureSelfLink( const std::string& name, Event::HandlerBase* h
 SimTime_t
 BaseComponent::getCurrentSimCycle() const
 {
-    return Simulation::getSimulation()->getCurrentSimCycle();
+    return Simulation_impl::getSimulation()->getCurrentSimCycle();
 }
 
 int
 BaseComponent::getCurrentPriority() const
 {
-    return Simulation::getSimulation()->getCurrentPriority();
+    return Simulation_impl::getSimulation()->getCurrentPriority();
 }
 
 UnitAlgebra
 BaseComponent::getElapsedSimTime() const
 {
-    return Simulation::getSimulation()->getElapsedSimTime();
+    return Simulation_impl::getSimulation()->getElapsedSimTime();
 }
 
 UnitAlgebra
 BaseComponent::getFinalSimTime() const
 {
-    return Simulation::getSimulation()->getFinalSimTime();
+    return Simulation_impl::getSimulation()->getFinalSimTime();
 }
 
 RankInfo
 BaseComponent::getRank() const
 {
-    return Simulation::getSimulation()->getRank();
+    return Simulation_impl::getSimulation()->getRank();
 }
 
 RankInfo
 BaseComponent::getNumRanks() const
 {
-    return Simulation::getSimulation()->getNumRanks();
+    return Simulation_impl::getSimulation()->getNumRanks();
 }
 
 Output&
 BaseComponent::getSimulationOutput() const
 {
-    return Simulation::getSimulation()->getSimulationOutput();
+    return Simulation_impl::getSimulationOutput();
 }
 
 
 SimTime_t BaseComponent::getCurrentSimTime(TimeConverter *tc) const {
-    return tc->convertFromCoreTime(getSimulation()->getCurrentSimCycle());
+    return tc->convertFromCoreTime(Simulation_impl::getSimulation()->getCurrentSimCycle());
 }
 
 SimTime_t BaseComponent::getCurrentSimTime(const std::string& base) const {
-    return getCurrentSimTime(getSimulation()->getTimeLord()->getTimeConverter(base));
+    return getCurrentSimTime(Simulation_impl::getTimeLord()->getTimeConverter(base));
 }
 
 SimTime_t BaseComponent::getCurrentSimTimeNano() const {
-    return getCurrentSimTime(getSimulation()->getTimeLord()->getNano());
+    return getCurrentSimTime(Simulation_impl::getTimeLord()->getNano());
 }
 
 SimTime_t BaseComponent::getCurrentSimTimeMicro() const {
-    return getCurrentSimTime(getSimulation()->getTimeLord()->getMicro());
+    return getCurrentSimTime(Simulation_impl::getTimeLord()->getMicro());
 }
 
 SimTime_t BaseComponent::getCurrentSimTimeMilli() const {
-    return getCurrentSimTime(getSimulation()->getTimeLord()->getMilli());
+    return getCurrentSimTime(Simulation_impl::getTimeLord()->getMilli());
 }
 
 bool BaseComponent::doesComponentInfoStatisticExist(const std::string& statisticName) const
@@ -502,7 +493,7 @@ BaseComponent::getSubComponentSlotInfo(const std::string& name, bool fatalOnEmpt
         return nullptr;
     }
     if ( !info->isAllPopulated() && fatalOnEmptyIndex ) {
-        Simulation::getSimulationOutput().
+        Simulation_impl::getSimulationOutput().
             fatal(CALL_INFO,1,
                   "SubComponent slot %s requires a dense allocation of SubComponents and did not get one.\n",
                   name.c_str());
@@ -529,6 +520,11 @@ SharedRegion* BaseComponent::getGlobalSharedRegion(const std::string& key, size_
     return mgr->getGlobalSharedRegion(key, size, merger);
 }
 
+Simulation* BaseComponent::getSimulation() const
+{
+    return Simulation_impl::getSimulation();
+}
+
 
 
 uint8_t BaseComponent::getComponentInfoStatisticEnableLevel(const std::string& statisticName) const
@@ -540,7 +536,7 @@ void
 BaseComponent::configureCollectionMode(Statistics::StatisticBase* statistic, const SST::Params& params,
                                        const std::string& name) {
     StatisticBase::StatMode_t statCollectionMode = StatisticBase::STAT_MODE_COUNT;
-    Output& out = getSimulation()->getSimulationOutput();
+    Output& out = Simulation_impl::getSimulationOutput();
     std::string statRateParam = params.find<std::string>("rate", "0ns");
     UnitAlgebra collectionRate(statRateParam);
 
@@ -587,7 +583,7 @@ BaseComponent::createStatistic(Params& cpp_params, const Params& python_params, 
     uint8_t stat_load_level
         = my_load_level == STATISTICLOADLEVELUNINITIALIZED ? engine->statLoadLevel() : my_load_level;
     if (stat_load_level == 0) {
-        getSimulation()->getSimulationOutput().verbose(
+        Simulation_impl::getSimulationOutput().verbose(
             CALL_INFO, 1, 0,
             " Warning: Statistic Load Level = 0 (all statistics disabled); statistic '%s' is disabled...\n",
             name.c_str());
@@ -596,10 +592,11 @@ BaseComponent::createStatistic(Params& cpp_params, const Params& python_params, 
 
     uint8_t stat_enable_level = getComponentInfoStatisticEnableLevel(name);
     if (stat_enable_level > stat_load_level) {
-        getSimulation()->getSimulationOutput().verbose(CALL_INFO, 1, 0,
-                                                       " Warning: Load Level %d is too low to enable Statistic '%s' "
-                                                       "with Enable Level %d, statistic will not be enabled...\n",
-                                                       int(stat_load_level), name.c_str(), int(stat_enable_level));
+        Simulation_impl::getSimulationOutput().verbose(
+            CALL_INFO, 1, 0,
+            " Warning: Load Level %d is too low to enable Statistic '%s' "
+            "with Enable Level %d, statistic will not be enabled...\n",
+            int(stat_load_level), name.c_str(), int(stat_enable_level));
         return fxn(this, engine, "sst.NullStatistic", name, subId, cpp_params);
     }
 
@@ -634,7 +631,7 @@ BaseComponent::createEnabledAllStatistic(Params& params, const std::string& name
 Statistics::StatisticBase*
 BaseComponent::createExplicitlyEnabledStatistic(Params& params, StatisticId_t id, const std::string& name,
                                                 const std::string& statSubId, StatCreateFunction fxn) {
-    Output& out = getSimulation()->getSimulationOutput();
+    Output& out = Simulation_impl::getSimulationOutput();
     if (my_info->parent_info) {
         out.fatal(CALL_INFO, 1, "Creating explicitly enabled statistic '%s' should only happen in parent component",
                   name.c_str());
@@ -694,16 +691,14 @@ BaseComponent::configureAllowedStatParams(SST::Params& params) {
 void
 BaseComponent::performStatisticOutput(StatisticBase* stat)
 {
-    Simulation::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(stat);
+    Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->performStatisticOutput(stat);
 }
 
 void
 BaseComponent::performGlobalStatisticOutput()
 {
-    Simulation::getSimulation()->getStatisticsProcessingEngine()->performGlobalStatisticOutput(false);
+    Simulation_impl::getSimulation()->getStatisticsProcessingEngine()->performGlobalStatisticOutput(false);
 }
 
 
 } // namespace SST
-
-

@@ -25,15 +25,15 @@
 namespace SST {
 
 class Exit;
-class Simulation;
-class SyncBase;
+class Simulation_impl;
+// class SyncBase;
 class ThreadSyncQueue;
 class TimeConverter;
 
-class NewRankSync {
+class RankSync {
 public:
-    NewRankSync() {}
-    virtual ~NewRankSync() {}
+    RankSync() {}
+    virtual ~RankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
     virtual ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) = 0;
@@ -70,10 +70,10 @@ private:
 
 };
 
-class NewThreadSync {
+class ThreadSync {
 public:
-    NewThreadSync () {}
-    virtual ~NewThreadSync() {}
+    ThreadSync () {}
+    virtual ~ThreadSync() {}
 
     virtual void before() = 0;
     virtual void after() = 0;
@@ -139,11 +139,11 @@ private:
     // static SimTime_t min_next_time;
     // static int min_count;
 
-    static NewRankSync*     rankSync;
+    static RankSync*     rankSync;
     static SimTime_t        next_rankSync;
-    NewThreadSync*   threadSync;
+    ThreadSync*   threadSync;
     Exit* exit;
-    Simulation * sim;
+    Simulation_impl* sim;
 
     sync_type_t      next_sync_type;
     SimTime_t min_part;

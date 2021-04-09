@@ -10,15 +10,15 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/rankSyncSerialSkip.h"
+#include "sst/core/sync/rankSyncSerialSkip.h"
 
 #include "sst/core/serialization/serializer.h"
 
 #include "sst/core/event.h"
 #include "sst/core/exit.h"
 #include "sst/core/link.h"
-#include "sst/core/simulation.h"
-#include "sst/core/syncQueue.h"
+#include "sst/core/simulation_impl.h"
+#include "sst/core/sync/syncQueue.h"
 #include "sst/core/timeConverter.h"
 #include "sst/core/profile.h"
 
@@ -40,11 +40,11 @@ SimTime_t RankSyncSerialSkip::myNextSyncTime = 0;
 
 
 RankSyncSerialSkip::RankSyncSerialSkip(TimeConverter* UNUSED(minPartTC)) :
-    NewRankSync(),
+    RankSync(),
     mpiWaitTime(0.0),
     deserializeTime(0.0)
 {
-    max_period = Simulation::getSimulation()->getMinPartTC();
+    max_period = Simulation_impl::getSimulation()->getMinPartTC();
     myNextSyncTime = max_period->getFactor();
 }
 
@@ -134,7 +134,7 @@ RankSyncSerialSkip::exchange(void)
         char* send_buffer = i->second.squeue->getData();
         // Cast to Header so we can get/fill in data
         SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
-        // Simulation::getSimulation()->getSimulationOutput().output("Data size = %d\n", hdr->buffer_size);
+        // Simulation_impl::getSimulation()->getSimulationOutput().output("Data size = %d\n", hdr->buffer_size);
         int tag = 1;
         // Check to see if remote queue is big enough for data
         if ( i->second.remote_size < hdr->buffer_size ) {
@@ -157,7 +157,7 @@ RankSyncSerialSkip::exchange(void)
     }
 
     // Wait for all sends and recvs to complete
-    Simulation* sim = Simulation::getSimulation();
+    Simulation* sim = Simulation_impl::getSimulation();
     SimTime_t current_cycle = sim->getCurrentSimCycle();
 
     auto waitStart = SST::Core::Profile::now();
@@ -200,7 +200,7 @@ RankSyncSerialSkip::exchange(void)
             Event* ev = static_cast<Event*>(activities[j]);
             link_map_t::iterator link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 // Need to figure out what the "delay" is for this event.
                 SimTime_t delay = ev->getDeliveryTime() - current_cycle;
@@ -229,8 +229,8 @@ RankSyncSerialSkip::exchange(void)
     // min + max_period.
 
     // Need to get the local minimum, then do a global minimum
-    // SimTime_t input = Simulation::getSimulation()->getNextActivityTime();
-    SimTime_t input = Simulation::getLocalMinimumNextActivityTime();
+    // SimTime_t input = Simulation_impl::getSimulation()->getNextActivityTime();
+    SimTime_t input = Simulation_impl::getLocalMinimumNextActivityTime();
     SimTime_t min_time;
     MPI_Allreduce( &input, &min_time, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD );
 
@@ -312,7 +312,7 @@ RankSyncSerialSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atom
             Event* ev = static_cast<Event*>(activities[j]);
             link_map_t::iterator link = link_map.find(ev->getLinkId());
             if (link == link_map.end()) {
-                Simulation::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
             } else {
                 sendUntimedData_sync(link->second,ev);
             }

@@ -32,7 +32,7 @@ class TimeConverter {
        \param time time to convert to core time
      */
     SimTime_t convertToCoreTime(SimTime_t time) {
-    return time * factor;
+        return time * factor;
     }
 
     /**
@@ -41,15 +41,21 @@ class TimeConverter {
        \param time time to convert from core time
      */
     SimTime_t convertFromCoreTime(SimTime_t time) {
-    return time/factor;
+        return time/factor;
     }
 
     /**
      * Return the factor used for conversions with Core Time
      */
     SimTime_t getFactor() {
-    return factor;
+        return factor;
     }
+
+    /**
+       Return the period represented by this TimeConverter as a
+       UnitAlgebra
+     */
+    UnitAlgebra getPeriod(); // Implemented in timeLord.cc
 
  private:
     /**

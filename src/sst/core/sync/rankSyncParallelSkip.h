@@ -13,7 +13,7 @@
 #define SST_CORE_RANKSYNCPARALLELSKIP_H
 
 #include "sst/core/sst_types.h"
-#include "sst/core/syncManager.h"
+#include "sst/core/sync/syncManager.h"
 #include "sst/core/threadsafe.h"
 #include "sst/core/warnmacros.h"
 
@@ -30,7 +30,7 @@ namespace SST {
 class SyncQueue;
 class TimeConverter;
 
-class RankSyncParallelSkip : public NewRankSync {
+class RankSyncParallelSkip : public RankSync {
 public:
     /** Create a new Sync object which fires with a specified period */
     RankSyncParallelSkip(RankInfo num_ranks, TimeConverter* minPartTC);
