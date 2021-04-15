@@ -192,7 +192,7 @@ public:
      * of Params.  Useful when generating a new set of Params to
      * pass off to a module.
      *
-     * @return returns the previous state of the flay
+     * @return returns the previous state of the flag
      */
     bool enableVerify(bool enable) { bool old = verify_enabled; verify_enabled = enable; return old; }
 
