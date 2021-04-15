@@ -41,6 +41,8 @@ REENABLE_WARNING
 #include "sst/core/factory.h"
 #include "sst/core/component.h"
 #include "sst/core/configGraph.h"
+#include "sst/core/cputimer.h"
+#include "sst/core/memuse.h"
 DISABLE_WARN_STRICT_ALIASING
 
 using namespace SST;
@@ -68,7 +70,6 @@ static PyObject* enableStatisticForComponentType(PyObject *self, PyObject *args)
 
 static PyObject* setStatisticLoadLevelForComponentName(PyObject *self, PyObject *args);
 static PyObject* setStatisticLoadLevelForComponentType(PyObject *self, PyObject *args);
-
 
 static PyObject* mlFindModule(PyObject *self, PyObject *args);
 static PyObject* mlLoadModule(PyObject *self, PyObject *args);
@@ -471,8 +472,8 @@ static PyObject* enableAllStatisticsForAllComponents(PyObject* UNUSED(self), PyO
     argOK = PyArg_ParseTuple(args, "|O!", &PyDict_Type, &statParamDict);
 
     if (argOK) {
-        for (auto& cc : gModel->components()) {
-            cc.enableStatistic(STATALLFLAG, pythonToCppParams(statParamDict), true /*recursive*/);
+        for (auto cc : gModel->components()) {
+            cc->enableStatistic(STATALLFLAG, pythonToCppParams(statParamDict), true /*recursive*/);
         }
     } else {
         // ParseTuple Failed, return NULL for error
@@ -569,12 +570,12 @@ static PyObject* enableStatisticsForComponentName(PyObject *UNUSED(self), PyObje
 }
 
 static void
-enableStatisticForComponentType(ConfigComponent& cc, const std::string& compType, const std::string& statName,
+enableStatisticForComponentType(ConfigComponent* cc, const std::string& compType, const std::string& statName,
                                 const SST::Params& params, bool is_all_types, bool apply_to_children) {
-    if (is_all_types || cc.type == compType) {
-        cc.enableStatistic(statName, params, apply_to_children);
+    if (is_all_types || cc->type == compType) {
+        cc->enableStatistic(statName, params, apply_to_children);
     }
-    for (auto& sc : cc.subComponents) {
+    for (auto sc : cc->subComponents) {
         enableStatisticForComponentType(sc, compType, statName, params, is_all_types, apply_to_children);
     }
 }
@@ -594,7 +595,7 @@ static PyObject* enableAllStatisticsForComponentType(PyObject *UNUSED(self), PyO
     if (argOK) {
         bool is_all_types = std::string(compType) == STATALLFLAG;
         auto params = pythonToCppParams(statParamDict);
-        for (ConfigComponent& cc : gModel->components()) {
+        for (ConfigComponent* cc : gModel->components()) {
             enableStatisticForComponentType(cc, compType, STATALLFLAG, params, is_all_types, apply_to_children);
         }
     } else {
@@ -709,12 +710,12 @@ static PyObject* setStatisticLoadLevelForComponentName(PyObject *UNUSED(self), P
 }
 
 static void
-setStatisticLoadLevelForComponentType(ConfigComponent& cc, bool is_all_types, const std::string& compType,
+setStatisticLoadLevelForComponentType(ConfigComponent* cc, bool is_all_types, const std::string& compType,
                                       uint8_t level, int apply_to_children) {
-    if (is_all_types || cc.type == compType) {
-        cc.setStatisticLoadLevel(level, apply_to_children);
+    if (is_all_types || cc->type == compType) {
+        cc->setStatisticLoadLevel(level, apply_to_children);
     }
-    for (auto& sc : cc.subComponents) {
+    for (auto sc : cc->subComponents) {
         setStatisticLoadLevelForComponentType(sc, is_all_types, compType, level, apply_to_children);
     }
 }
@@ -733,7 +734,7 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject *UNUSED(self), P
 
     if (argOK) {
         bool is_all_types = std::string(compType) == STATALLFLAG;
-        for (ConfigComponent& cc : gModel->components()) {
+        for (ConfigComponent* cc : gModel->components()) {
             setStatisticLoadLevelForComponentType(cc, is_all_types, compType, level, apply_to_children);
         }
     } else {
@@ -742,6 +743,77 @@ static PyObject* setStatisticLoadLevelForComponentType(PyObject *UNUSED(self), P
     }
     return SST_ConvertToPythonLong(0);
 }
+
+
+static PyObject* globalAddParam(PyObject* UNUSED(self), PyObject* args)
+{
+    char* set = nullptr;
+    char* param = nullptr;
+    PyObject *value = nullptr;
+    if ( !PyArg_ParseTuple(args, "ssO", &set, &param, &value) )
+        return nullptr;
+
+    // Get the string-ized value by calling __str__ function of the
+    // value object
+    PyObject *vstr = PyObject_CallMethod(value, (char*)"__str__", nullptr);
+    gModel->addGlobalParameter(set, param, SST_ConvertToCppString(vstr), true);
+    Py_XDECREF(vstr);
+
+
+    return SST_ConvertToPythonLong(0);
+}
+
+
+static PyObject* globalAddParams(PyObject* UNUSED(self), PyObject* args)
+{
+    char* set = nullptr;
+    PyObject *dict = nullptr;
+    if ( !PyArg_ParseTuple(args, "sO", &set, &dict) )
+        return nullptr;
+
+    if ( !PyDict_Check(dict) ) {
+        return nullptr;
+    }
+
+    Py_ssize_t pos = 0;
+    PyObject *key, *val;
+    long count = 0;
+
+    while ( PyDict_Next(dict, &pos, &key, &val) ) {
+        PyObject *kstr = PyObject_CallMethod(key, (char*)"__str__", nullptr);
+        PyObject *vstr = PyObject_CallMethod(val, (char*)"__str__", nullptr);
+        gModel->addGlobalParameter(set, SST_ConvertToCppString(kstr), SST_ConvertToCppString(vstr), true);
+        Py_XDECREF(kstr);
+        Py_XDECREF(vstr);
+        count++;
+    }
+    return SST_ConvertToPythonLong(count);
+}
+
+static PyObject* getElapsedExecutionTime(PyObject* UNUSED(self), PyObject* UNUSED(args))
+{
+    // Get the elapsed runtime
+    UnitAlgebra time = gModel->getElapsedExecutionTime();
+    std::string time_str = time.toString();
+
+    PyObject *argList = Py_BuildValue("(s)", time_str.c_str());
+    PyObject *res = PyObject_CallObject((PyObject *) &PyModel_UnitAlgebraType, argList);
+    Py_DECREF(argList);
+    return res;
+}
+
+static PyObject* getLocalMemoryUsage(PyObject* UNUSED(self), PyObject* UNUSED(args))
+{
+    // Get the elapsed runtime
+    UnitAlgebra memsize = gModel->getLocalMemoryUsage();
+    std::string memsize_str = memsize.toString();
+
+    PyObject *argList = Py_BuildValue("(s)", memsize_str.c_str());
+    PyObject *res = PyObject_CallObject((PyObject *) &PyModel_UnitAlgebraType, argList);
+    Py_DECREF(argList);
+    return res;
+}
+
 
 
 static PyMethodDef sstModuleMethods[] = {
@@ -814,6 +886,18 @@ static PyMethodDef sstModuleMethods[] = {
   {   "findComponentByName",
       findComponentByName, METH_O,
       "Looks up to find a previously created component/subcomponent, based off of its name.  Returns None if none are to be found."},
+  {   "addGlobalParam",
+      globalAddParam, METH_VARARGS,
+      "Add a parameter to the specified global set."},
+  {   "addGlobalParams",
+      globalAddParams, METH_VARARGS,
+      "Add parameters in dictionary to the specified global set."},
+  {   "getElapsedExecutionTime",
+      getElapsedExecutionTime, METH_NOARGS,
+      "Gets the real elapsed time since simluation start, returned as a UnitAlgebra.  Not precise enough for getting fine timings.  For that, use the built-in time module." },
+  {   "getLocalMemoryUsage",
+      getLocalMemoryUsage, METH_NOARGS,
+      "Gets the current memory use, returned as a UnitAlgebra" },
   {   nullptr, nullptr, 0, nullptr }
 };
 
@@ -941,8 +1025,8 @@ void SSTPythonModelDefinition::initModel(const std::string& script_file, int ver
 
 }
 
-SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* configObj) :
-    SSTModelDescription(), scriptName(script_file), config(configObj), namePrefix(nullptr), namePrefixLen(0)
+SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* configObj, double start_time) :
+    SSTModelDescription(), scriptName(script_file), config(configObj), namePrefix(nullptr), namePrefixLen(0), start_time(start_time)
 {
     std::vector<std::string> argv_vector;
     argv_vector.push_back("sstsim.x");
@@ -1008,8 +1092,8 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_fil
 }
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(const std::string& script_file, int verbosity,
-    Config* configObj, int argc, char **argv) :
-    SSTModelDescription(), scriptName(script_file), config(configObj)
+                                                   Config* configObj, double start_time, int argc, char **argv) :
+    SSTModelDescription(), scriptName(script_file), config(configObj), start_time(start_time)
 {
     initModel(script_file, verbosity, configObj, argc, argv);
 }
@@ -1105,6 +1189,22 @@ char* SSTPythonModelDefinition::addNamePrefix(const char *name) const
     strcat(buf, name);
 
     return buf;
+}
+
+UnitAlgebra SSTPythonModelDefinition::getElapsedExecutionTime() const
+{
+    double current_time = sst_get_cpu_time();
+    double elapsed_time = current_time - start_time;
+    UnitAlgebra ret("1s");
+    ret *= elapsed_time;
+    return ret;
+}
+
+UnitAlgebra SSTPythonModelDefinition::getLocalMemoryUsage() const
+{
+    UnitAlgebra ret("1kB");
+    ret *= localMemSize();
+    return ret;
 }
 
 std::map<std::string,std::string> SST::Core::generateStatisticParameters(PyObject* statParamDict)

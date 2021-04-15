@@ -36,7 +36,7 @@ void SSTRoundRobinPartition::performPartition(PartitionGraph* graph) {
             compItr != compMap.end();
             compItr++) {
 
-        compItr->rank = rank;
+        (*compItr)->rank = rank;
 
         rank.rank++;
         if ( rank.rank == world_size.rank ) {

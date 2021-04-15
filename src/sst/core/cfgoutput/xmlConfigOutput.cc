@@ -49,17 +49,17 @@ void XMLConfigGraphOutput::generate(const Config* UNUSED(cfg),
     fprintf(outputFile, "</component>\n");
 }
 
-void XMLConfigGraphOutput::generateXML(const std::string& indent, const ConfigComponent& comp,
+void XMLConfigGraphOutput::generateXML(const std::string& indent, const ConfigComponent* comp,
                 const ConfigLinkMap_t& UNUSED(linkMap)) const {
 
     fprintf(outputFile, "%s<component id=\"system.%s\" name=\"%s\" type=\"%s\">\n",
-        indent.c_str(), comp.name.c_str(), comp.name.c_str(), comp.type.c_str());
+        indent.c_str(), comp->name.c_str(), comp->name.c_str(), comp->type.c_str());
 
-    // for(auto paramsItr = comp.params.begin(); paramsItr != comp.params.end(); paramsItr++) {
-    auto keys = comp.params.getKeys();
+    // for(auto paramsItr = comp->params.begin(); paramsItr != comp->params.end(); paramsItr++) {
+    auto keys = comp->params.getKeys();
     for(auto paramsItr = keys.begin(); paramsItr != keys.end(); paramsItr++) {
         std::string paramName  = *paramsItr;
-        std::string paramValue = comp.params.find<std::string>(*paramsItr);
+        std::string paramValue = comp->params.find<std::string>(*paramsItr);
 
         fprintf(outputFile, "%s%s<param name=\"%s\" value=\"%s\"/>\n",
             indent.c_str(), "   ",
@@ -72,8 +72,8 @@ void XMLConfigGraphOutput::generateXML(const std::string& indent, const ConfigCo
 void XMLConfigGraphOutput::generateXML(const std::string& indent, const ConfigLink& link,
     const ConfigComponentMap_t& compMap) const {
 
-    const ConfigComponent* link_left  = &compMap[link.component[0]];
-    const ConfigComponent* link_right = &compMap[link.component[1]];
+    const ConfigComponent* link_left  = compMap[link.component[0]];
+    const ConfigComponent* link_right = compMap[link.component[1]];
 
     fprintf(outputFile, "%s<link id=\"%s\" name=\"%s\"\n%s%sleft=\"%s\" right=\"%s\"\n%s%sleftport=\"%s\" rightport=\"%s\"/>\n",
         indent.c_str(), link.name.c_str(), link.name.c_str(),

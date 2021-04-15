@@ -191,6 +191,8 @@ public:
      * Enable or disable parameter verification on an instance
      * of Params.  Useful when generating a new set of Params to
      * pass off to a module.
+     *
+     * @return returns the previous state of the flay
      */
     bool enableVerify(bool enable) { bool old = verify_enabled; verify_enabled = enable; return old; }
 
@@ -201,9 +203,19 @@ public:
      */
     static void enableVerify() { g_verify_enabled = true; };
 
-    /** Returns the size of the Params.  */
+    /**
+     * Returns the size of the Params.  This will count both local and
+     * global params.
+     *
+     * @return number of key/value pairs in this Params object
+     */
     size_t size() const;
-    /** Returns true if the Params is empty.  (Thus begin() would equal end().) */
+    /**
+     * Returns true if the Params is empty.  Checks both local and
+     * global param sets.
+     *
+     * @return true if this Params object is empty, false otherwise
+     */
     bool empty() const;
 
 
@@ -219,18 +231,25 @@ public:
      *  @brief  Assignment operator.
      *  @param  old  Param to be copied
      *
-     *  All the elements of old are copied,
+     *  All the elements of old are copied,  This will also copy
+     *  over any references to global param sets
      */
     Params& operator=(const Params& old);
 
     /**
-     *  Erases all elements.
+     * Erases all elements, including deleting reference to global
+     * param sets.
      */
     void clear();
 
 
     /**
      *  @brief  Finds the number of elements with given key.
+     *
+     *  The call will check both local and global params, but will
+     *  still only report one instance if the given key is found in
+     *  both the local and global param sets.
+     *
      *  @param  k  Key of (key, value) pairs to be located.
      *  @return  Number of elements with specified key
      *  (either 1 or 0).
@@ -480,26 +499,66 @@ public:
 
     /** Print all key/value parameter pairs to specified ostream */
     void print_all_params(std::ostream &os, const std::string& prefix = "") const;
+    /** Print all key/value parameter pairs to specified ostream */
     void print_all_params(Output &out, const std::string& prefix = "") const;
 
 
 
-    /** Add a key value pair into the param object.
+    /**
+     * Add a key/value pair into the param object.
+     *
+     * @param key key to add to the map
+     *
+     * @param value value to add to the map
+     *
+     * @param overwrite controls whether the key/value pair will
+     * overwrite an existing pair in the set
      */
     void insert(const std::string& key, const std::string& value, bool overwrite = true);
 
+    /**
+     * Add contents of input Params object to current Params object.
+     * This will also add any pointers to global param sets after the
+     * existing pointers to global param sets in this object.
+     *
+     * @param params Params object that should added to current object
+     */
     void insert(const Params& params);
 
+
+    /**
+       Get all the keys contained in the Params object.  This will
+       give both local and global params.
+     */
     std::set<std::string> getKeys() const;
+
+     /**
+      * Returns a new parameter object with parameters that match the
+      * specified scoped prefix (scopes are separated with "."  The
+      * keys will be stripped of the "scope." prefix.
+      *
+      * Function will search both local and global params, but all
+      * params will be copied into the local space of the new Params
+      * object.
+      *
+      * @param scope Scope to search (anything prefixed with "scope."
+      * will be included in the return Params object
+      *
+      * @return New Params object with the found scoped params.
+     */
+    Params get_scoped_params(const std::string& scope) const;
 
      /** Returns a new parameter object with parameters that match
      * the specified prefix.
      */
-    Params find_prefix_params(const std::string& prefix) const;
+    Params find_prefix_params(const std::string& prefix) const __attribute__ ((deprecated("Params::find_prefix_params() is deprecated and will be removed in SST 12. Please use the new Params::get_scoped_params() function.  As of SST 12, only a \".\" will be allowed as a scoping delimiter.")));
 
-    Params find_scoped_params(const std::string& scope, const char* delims = ".:") const;
+    Params find_scoped_params(const std::string& scope, const char* delims = ".:") const __attribute__ ((deprecated("Params::find_scoped_params() is deprecated and will be removed in SST 12. Please use the new Params::get_scoped_params() function.  As of SST 12, only a \".\" will be allowed as a scoping delimiter.")));
 
     /**
+     * Search the container for a particular key.  This will search
+     * both local and global params.
+     *
      * @param k   Key to search for
      * @return    True if the params contains the key, false otherwise
      */
@@ -524,6 +583,45 @@ public:
 
 
     /**
+     * Adds a global param set to be looked at in this Params object
+     * if the key isn't found locally.  It will search the global sets
+     * in the order they were inserted and return immediately after
+     * finding the key in one of the sets.
+     *
+     * @param set set to add to the search list for this object
+     */
+    void addGlobalParamSet(const std::string& set);
+
+    /**
+     * Adds a key/value pair to the specified global set
+     *
+     * @param set global set to add the key/value pair to
+     *
+     * @param key key to add to the map
+     *
+     * @param value value to add to the map
+     *
+     * @param overwrite controls whether the key/value pair will
+     * overwrite an existing pair in the set
+     */
+    static void insert_global(const std::string& set, const key_type& key, const key_type& value, bool overwrite = true);
+
+    void serialize_order(SST::Core::Serialization::serializer &ser) override;
+    ImplementSerializable(SST::Params)
+
+
+
+private:
+    std::map<uint32_t, std::string> my_data;
+    std::vector<std::map<uint32_t, std::string>*> data;
+    std::vector<KeySet_t> allowedKeys;
+    bool verify_enabled;
+    static bool g_verify_enabled;
+
+    static uint32_t getKey(const std::string& str);
+    // static uint32_t getKey(const std::string& str);
+
+    /**
      * Given a Parameter Key ID, return the Name of the matching parameter
      * @param id  Key ID to look up
      * @return    String name of the parameter
@@ -531,27 +629,17 @@ public:
     static const std::string& getParamName(uint32_t id);
 
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) override;
-    ImplementSerializable(SST::Params)
-
-private:
-    std::map<uint32_t, std::string> data;
-    std::vector<KeySet_t> allowedKeys;
-    bool verify_enabled;
-    static bool g_verify_enabled;
-
-    uint32_t getKey(const std::string& str) const;
-    uint32_t getKey(const std::string& str);
-
     /* Friend main() because it broadcasts the maps */
     friend int ::main(int argc, char *argv[]);
 
     static std::map<std::string, uint32_t> keyMap;
     static std::vector<std::string> keyMapReverse;
     static SST::Core::ThreadSafe::Spinlock keyLock;
+    static SST::Core::ThreadSafe::Spinlock globalLock;
     static uint32_t nextKeyID;
 
 
+    static std::map<std::string,std::map<uint32_t,std::string> > global_params;
 };
 
 #if 0

@@ -53,7 +53,7 @@ void SSTLinearPartition::performPartition(PartitionGraph* graph) {
         compItr != compMap.end();
         compItr++) {
 
-        compItr->rank = currentAllocatingRank;
+        (*compItr)->rank = currentAllocatingRank;
         componentsOnCurrentRank++;
 
 
@@ -62,7 +62,7 @@ void SSTLinearPartition::performPartition(PartitionGraph* graph) {
             if ( componentRemainder > 0 ) {
                 --componentRemainder;
                 ++compItr;
-                compItr->rank = currentAllocatingRank;
+                (*compItr)->rank = currentAllocatingRank;
             }
 
             /* Advance our currentAllocatingRank */

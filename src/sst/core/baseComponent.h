@@ -675,14 +675,8 @@ private:
         sub_info->share_flags = share_flags;
         sub_info->parent_info = my_info;
 
-        // Check to see if this is documented, and if so, try to load it through the ElementBuilder
-        Params myParams;
-        if ( sub_info->getParams() != nullptr ) {
-            myParams.insert(*sub_info->getParams());
-        }
-
         if ( isSubComponentLoadableUsingAPI<T>(sub_info->type) ) {
-            auto ret = Factory::getFactory()->Create<T>(sub_info->type, myParams, sub_info->id, myParams, args...);
+            auto ret = Factory::getFactory()->Create<T>(sub_info->type, *sub_info->params, sub_info->id, *sub_info->params, args...);
             return ret;
         }
         return nullptr;

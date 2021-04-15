@@ -63,22 +63,22 @@ ComponentInfo::ComponentInfo(ConfigComponent* ccomp, const std::string& name, Co
 
     // See how many subcomponents are in each slot so we know how to name them
     std::map<std::string, int> counts;
-    for ( auto &sc : ccomp->subComponents ) {
-        counts[sc.name]++;
+    for ( auto sc : ccomp->subComponents ) {
+        counts[sc->name]++;
     }
 
-    for ( auto &sc : ccomp->subComponents ) {
+    for ( auto sc : ccomp->subComponents ) {
         std::string sub_name(name);
         sub_name += ":";
-        sub_name += sc.name;
+        sub_name += sc->name;
         // If there is more than one subcomponent in this slot, need
         // to add [index] to the end.
-        if ( counts[sc.name] > 1 ) {
+        if ( counts[sc->name] > 1 ) {
             sub_name += "[";
-            sub_name += std::to_string(sc.slot_num);
+            sub_name += std::to_string(sc->slot_num);
             sub_name += "]";
         }
-        subComponents.emplace_hint(subComponents.end(), std::piecewise_construct, std::make_tuple(sc.id), std::forward_as_tuple(&sc, sub_name, this, new LinkMap()));
+        subComponents.emplace_hint(subComponents.end(), std::piecewise_construct, std::make_tuple(sc->id), std::forward_as_tuple(sc, sub_name, this, new LinkMap()));
     }
 }
 

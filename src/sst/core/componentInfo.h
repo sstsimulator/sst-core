@@ -110,7 +110,7 @@ private:
        For python defined SubComponents, this field is created during
        python execution.
     */
-    const Params *params;
+    Params *params;
 
     TimeConverter* defaultTimeBase;
 

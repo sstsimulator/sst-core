@@ -40,9 +40,9 @@ extern SST::Core::SSTPythonModelDefinition *gModel;
 
 ConfigComponent* ComponentHolder::getSubComp(const std::string& name, int slot_num)
 {
-    for ( auto &sc : getComp()->subComponents ) {
-        if ( sc.name == name && sc.slot_num == slot_num)
-            return &sc;
+    for ( auto sc : getComp()->subComponents ) {
+        if ( sc->name == name && sc->slot_num == slot_num)
+            return sc;
     }
     return nullptr;
 }
@@ -488,6 +488,22 @@ compCreateStatistic(PyObject* self, PyObject* args) {
     return buildStatisticObject(cs->id);
 }
 
+static PyObject* compAddGlobalParamSet(PyObject* self, PyObject* arg)
+{
+    const char *set = nullptr;
+    PyErr_Clear();
+    set = SST_ConvertToCppString(arg);
+
+    ConfigComponent *c = getComp(self);
+
+    if ( set != nullptr ) {
+        c->addGlobalParamSet(set);
+    } else {
+        return nullptr;
+    }
+    return SST_ConvertToPythonLong(0);
+}
+
 static PyMethodDef componentMethods[]
     = { { "addParam", compAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
         { "addParams", compAddParams, METH_O, "Adds Multiple Parameters from a dict" },
@@ -511,6 +527,8 @@ static PyMethodDef componentMethods[]
           "Bind a subcomponent to slot <name>, with type <type>" },
         { "setCoordinates", compSetCoords, METH_VARARGS,
           "Set (X,Y,Z) coordinates of this component, for use with visualization" },
+        { "addGlobalParamSet", compAddGlobalParamSet, METH_O,
+          "Add global parameter set to the component" },
         { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
@@ -622,6 +640,8 @@ static PyMethodDef subComponentMethods[]
         { "setStatistic", compSetStatistic, METH_VARARGS, "Reuse a statistic for the binding" },
         { "setSubComponent", compSetSubComponent, METH_VARARGS,
           "Bind a subcomponent to slot <name>, with type <type>" },
+        { "addGlobalParamSet", compAddGlobalParamSet, METH_O,
+          "Add global parameter set to the component" },
         { "setCoordinates", compSetCoords, METH_VARARGS,
           "Set (X,Y,Z) coordinates of this component, for use with visualization" },
         { nullptr, nullptr, 0, nullptr } };

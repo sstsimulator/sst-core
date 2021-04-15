@@ -131,13 +131,14 @@ static void dump_partition(Config& cfg, ConfigGraph* graph, const RankInfo &size
 
                 RankInfo r(i, t);
                 for (ConfigComponentMap_t::const_iterator j = component_map.begin() ; j != component_map.end() ; ++j) {
-                    if(j->rank == r) {
-                        graph_file << "   " << j->name << " (ID=" << j->id << ")" << std::endl;
-                        graph_file << "      -> type      " << j->type << std::endl;
-                        graph_file << "      -> weight    " << j->weight << std::endl;
-                        graph_file << "      -> linkcount " << j->links.size() << std::endl;
-                        graph_file << "      -> rank      " << j->rank.rank << std::endl;
-                        graph_file << "      -> thread    " << j->rank.thread << std::endl;
+                    auto c = *j;
+                    if(c->rank == r) {
+                        graph_file << "   " << c->name << " (ID=" << c->id << ")" << std::endl;
+                        graph_file << "      -> type      " << c->type << std::endl;
+                        graph_file << "      -> weight    " << c->weight << std::endl;
+                        graph_file << "      -> linkcount " << c->links.size() << std::endl;
+                        graph_file << "      -> rank      " << c->rank.rank << std::endl;
+                        graph_file << "      -> thread    " << c->rank.thread << std::endl;
                     }
                 }
             }
@@ -388,6 +389,8 @@ main(int argc, char *argv[])
 
     SSTModelDescription* modelGen = nullptr;
 
+    double start = sst_get_cpu_time();
+
     if ( cfg.configFile != "NONE" ) {
         string file_ext = "";
 
@@ -400,7 +403,7 @@ main(int argc, char *argv[])
                 file_ext = ".py";
             }
             if(file_ext == ".py") {
-                modelGen = new SSTPythonModelDefinition(cfg.configFile, cfg.verbose, &cfg);
+                modelGen = new SSTPythonModelDefinition(cfg.configFile, cfg.verbose, &cfg, start);
             }
             else {
                 std::cerr << "Unsupported SDL file type: " << file_ext << std::endl;
@@ -411,8 +414,6 @@ main(int argc, char *argv[])
         }
 
     }
-
-    double start = sst_get_cpu_time();
 
     /* Build objected needed for startup */
     Factory *factory = new Factory(cfg.getLibPath());
@@ -549,8 +550,8 @@ main(int argc, char *argv[])
                     iter != links.end(); ++iter ) {
                 ConfigLink &clink = *iter;
                 RankInfo rank[2];
-                rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])].rank;
-                rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])].rank;
+                rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])]->rank;
+                rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])]->rank;
                 if ( rank[0].rank == rank[1].rank ) continue;
                 if ( clink.getMinLatency() < min_part ) {
                     min_part = clink.getMinLatency();
@@ -589,6 +590,7 @@ main(int argc, char *argv[])
           Comms::broadcast(Params::keyMap, 0);
           Comms::broadcast(Params::keyMapReverse, 0);
           Comms::broadcast(Params::nextKeyID, 0);
+          Comms::broadcast(Params::global_params, 0);
 
           std::set<uint32_t> my_ranks;
           std::set<uint32_t> your_ranks;
@@ -853,4 +855,3 @@ main(int argc, char *argv[])
 
     return 0;
 }
-

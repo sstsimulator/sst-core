@@ -30,9 +30,9 @@ public:
 protected:
     ConfigGraph* getGraph() { return graph; }
     void generateParams( const Params &params );
-    void generateCommonComponent( const char* objName, const ConfigComponent &comp);
-    void generateSubComponent( const char* owner, const ConfigComponent &comp );
-    void generateComponent( const ConfigComponent &comp );
+    void generateCommonComponent( const char* objName, const ConfigComponent* comp);
+    void generateSubComponent( const char* owner, const ConfigComponent* comp );
+    void generateComponent( const ConfigComponent* comp );
     void generateStatGroup(const ConfigGraph* graph, const ConfigStatGroup &grp);
 
     const std::string& getLinkObject(LinkId_t id);
