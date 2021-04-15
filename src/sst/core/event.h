@@ -53,7 +53,11 @@ public:
     virtual Event* clone();
 
     /** Sets the link id used for delivery.  For use by SST Core only */
+#if !SST_BUILDING_CORE
+    inline void setDeliveryLink(LinkId_t id, Link *link) __attribute__ ((deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12."))) {
+#else
     inline void setDeliveryLink(LinkId_t id, Link *link) {
+#endif
 #ifdef SST_ENFORCE_EVENT_ORDERING
         enforce_link_order = id;
 #else
@@ -63,17 +67,29 @@ public:
     }
 
     /** Gets the link id used for delivery.  For use by SST Core only */
+#if !SST_BUILDING_CORE
+    inline Link* getDeliveryLink() __attribute__ ((deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12."))) {
+#else
     inline Link* getDeliveryLink() {
+#endif
         return delivery_link;
     }
 
     /** For use by SST Core only */
+#if !SST_BUILDING_CORE
+    inline void setRemoteEvent() __attribute__  ((deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12."))) {
+#else
     inline void setRemoteEvent() {
+#endif
         delivery_link = nullptr;
     }
 
     /** Gets the link id associated with this event.  For use by SST Core only */
+#if !SST_BUILDING_CORE
+    inline LinkId_t getLinkId(void) const __attribute__ ((deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12."))) {
+#else
     inline LinkId_t getLinkId(void) const {
+#endif
 #ifdef SST_ENFORCE_EVENT_ORDERING
         return enforce_link_order;
 #else

@@ -33,18 +33,9 @@ public:
         SST::Event(), str(str)
     { }
 
-    /** Copies an existing StringEvent */
-    StringEvent(const StringEvent &me) : SST::Event()
-    {
-        str = me.str;
-        setDeliveryLink(me.getLinkId(), nullptr);
-    }
-
-    /** Copies an existing StringEvent */
-    StringEvent(const StringEvent *me) : SST::Event()
-    {
-        str = me->str;
-        setDeliveryLink(me->getLinkId(), nullptr);
+    /** Clone a StringEvent */
+    virtual Event* clone() override {
+        return new StringEvent(*this);
     }
 
     /** Returns the contents of this Event */

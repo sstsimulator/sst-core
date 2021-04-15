@@ -291,8 +291,9 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
         // If no functor, this is a polling link
         if ( handler == nullptr ) {
             tmp->setPolling();
+        } else {
+            tmp->setFunctor(handler);
         }
-        tmp->setFunctor(handler);
         if ( nullptr != time_base ) tmp->setDefaultTimeBase(time_base);
         else tmp->setDefaultTimeBase(my_info->defaultTimeBase);
         tmp->setAsConfigured();
