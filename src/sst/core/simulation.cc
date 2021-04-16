@@ -285,8 +285,8 @@ Simulation_impl::processGraphInfo( ConfigGraph& graph, const RankInfo& UNUSED(my
         for ( auto iter = links.begin(); iter != links.end(); ++iter ) {
             ConfigLink &clink = *iter;
             RankInfo rank[2];
-            rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])].rank;
-            rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])].rank;
+            rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])]->rank;
+            rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])]->rank;
             // We only care about links that are on my rank, but
             // different threads
 
@@ -351,7 +351,7 @@ int Simulation_impl::performWireUp( ConfigGraph& graph, const RankInfo& myRank, 
     for ( ConfigComponentMap_t::iterator iter = graph.comps.begin();
             iter != graph.comps.end(); ++iter )
     {
-        ConfigComponent* ccomp = &(*iter);
+        ConfigComponent* ccomp = *iter;
         if ( ccomp->rank == myRank ) {
             compInfoMap.insert(new ComponentInfo(ccomp, ccomp->name, nullptr, new LinkMap()));
         }
@@ -365,8 +365,8 @@ int Simulation_impl::performWireUp( ConfigGraph& graph, const RankInfo& myRank, 
     {
         ConfigLink &clink = *iter;
         RankInfo rank[2];
-        rank[0] = graph.comps[COMPONENT_ID_MASK(clink.component[0])].rank;
-        rank[1] = graph.comps[COMPONENT_ID_MASK(clink.component[1])].rank;
+        rank[0] = graph.comps[COMPONENT_ID_MASK(clink.component[0])]->rank;
+        rank[1] = graph.comps[COMPONENT_ID_MASK(clink.component[1])]->rank;
 
         if ( rank[0] != myRank && rank[1] != myRank ) {
             // Nothing to be done
@@ -443,7 +443,7 @@ int Simulation_impl::performWireUp( ConfigGraph& graph, const RankInfo& myRank, 
     // Now, build all the components
     for ( auto iter = graph.comps.begin(); iter != graph.comps.end(); ++iter )
     {
-        ConfigComponent* ccomp = &(*iter);
+        ConfigComponent* ccomp = *iter;
 
         if ( ccomp->rank == myRank ) {
             Component* tmp;

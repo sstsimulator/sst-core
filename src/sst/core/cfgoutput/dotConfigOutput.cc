@@ -45,7 +45,7 @@ void DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph) {
                 fprintf(outputFile, "subgraph cluster_%u_%u {\n", r, t);
                 fprintf(outputFile, "label=\"Thread %u\";\n", t);
                 for ( auto compItr : compMap ) {
-                    if ( compItr.rank.rank == r && compItr.rank.thread == t ) {
+                    if ( compItr->rank.rank == r && compItr->rank.thread == t ) {
                         generateDot( compItr, linkMap, cfg->dot_verbosity );
                     }
                 }
@@ -58,7 +58,7 @@ void DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph) {
     } else {
         fprintf(outputFile, "node [shape=record];\ngraph [style=invis];\n\n");
         for ( auto compItr : compMap ) {
-            fprintf(outputFile, "subgraph cluster_%" PRIu64 " {\n", compItr.id);
+            fprintf(outputFile, "subgraph cluster_%" PRIu64 " {\n", compItr->id);
             generateDot( compItr, linkMap, cfg->dot_verbosity );
             fprintf(outputFile, "}\n\n");
         }
@@ -72,24 +72,24 @@ void DotConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph) {
 }
 
 
-void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const ConfigLinkMap_t& linkMap, const uint32_t dot_verbosity) const {
+void DotConfigGraphOutput::generateDot(const ConfigComponent* comp, const ConfigLinkMap_t& linkMap, const uint32_t dot_verbosity) const {
 
     // Display component type
     if (dot_verbosity >= 2) {
-        fprintf(outputFile, "%" PRIu64 " [label=\"{<main> %s\\n%s", comp.id, comp.name.c_str(), comp.type.c_str());
+        fprintf(outputFile, "%" PRIu64 " [label=\"{<main> %s\\n%s", comp->id, comp->name.c_str(), comp->type.c_str());
     } else {
-        fprintf(outputFile, "%" PRIu64 " [label=\"{<main> %s", comp.id, comp.name.c_str());
+        fprintf(outputFile, "%" PRIu64 " [label=\"{<main> %s", comp->id, comp->name.c_str());
     }
 
     // Display ports
     if (dot_verbosity >= 6) {
-        int j = comp.links.size();
+        int j = comp->links.size();
         if(j != 0){
             fprintf(outputFile, " |\n");
         }
-        for(LinkId_t i : comp.links) {
+        for(LinkId_t i : comp->links) {
             const ConfigLink &link = linkMap[i];
-            const int port = (link.component[0] == comp.id) ? 0 : 1;
+            const int port = (link.component[0] == comp->id) ? 0 : 1;
             fprintf(outputFile, "<%s> Port: %s", link.port[port].c_str(), link.port[port].c_str());
             if(j > 1){
                 fprintf(outputFile, " |\n");
@@ -101,15 +101,15 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
 
     // Display subComponents
     if (dot_verbosity >= 4) {
-        for ( auto &sc : comp.subComponents ) {
-            fprintf(outputFile, "%" PRIu64 " [color=gray,label=\"{<main> %s\\n%s", sc.id, sc.name.c_str(), sc.type.c_str());
-            int j = sc.links.size();
+        for ( auto &sc : comp->subComponents ) {
+            fprintf(outputFile, "%" PRIu64 " [color=gray,label=\"{<main> %s\\n%s", sc->id, sc->name.c_str(), sc->type.c_str());
+            int j = sc->links.size();
             if(j != 0){
                 fprintf(outputFile, " |\n");
             }
-            for(LinkId_t i : sc.links) {
+            for(LinkId_t i : sc->links) {
                 const ConfigLink &link = linkMap[i];
-                const int port = (link.component[0] == sc.id) ? 0 : 1;
+                const int port = (link.component[0] == sc->id) ? 0 : 1;
                 fprintf(outputFile, "<%s> Port: %s", link.port[port].c_str(), link.port[port].c_str());
                 if(j > 1){
                     fprintf(outputFile, " |\n");
@@ -117,7 +117,7 @@ void DotConfigGraphOutput::generateDot(const ConfigComponent& comp, const Config
                 j--;
             }
             fprintf(outputFile, "}\"];\n");
-            fprintf(outputFile, "%" PRIu64 ":\"main\" -- %" PRIu64 ":\"main\" [style=dotted];\n\n", comp.id, sc.id);
+            fprintf(outputFile, "%" PRIu64 ":\"main\" -- %" PRIu64 ":\"main\" [style=dotted];\n\n", comp->id, sc->id);
         }
     }
 }

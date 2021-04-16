@@ -57,9 +57,9 @@ static void sst_zoltan_get_vertex_list(void* data, int UNUSED(sizeGID), int UNUS
 
         for(PartitionComponentMap_t::iterator comp_itr = c_graph->getComponentMap().begin();
             comp_itr != c_graph->getComponentMap().end(); comp_itr++) {
-            globalIDs[next_entry] = (int) comp_itr->id;
+            globalIDs[next_entry] = (int) (*comp_itr)->id;
             localIDs[next_entry] = localID++;
-            obj_wgts[next_entry] = comp_itr->weight;
+            obj_wgts[next_entry] = (*comp_itr)->weight;
 
             next_entry++;
         }
@@ -291,14 +291,14 @@ void SSTZoltanPartition::performPartition(PartitionGraph* graph) {
         PartitionComponentMap_t& config_map = graph->getComponentMap();
         PartitionComponentMap_t::iterator config_map_itr;
         for(config_map_itr = config_map.begin(); config_map_itr != config_map.end(); config_map_itr++) {
-            config_map_itr->rank = RankInfo(0,0);
+            (*config_map_itr)->rank = RankInfo(0,0);
         }
 
         partOutput->verbose(CALL_INFO, 1, 0, "Rank 0 will export %d partition graph vertices.\n", num_vertices_export);
 
         // Go over what we have to export, set the component to the appropriate rank
         for(int i = 0; i < num_vertices_export; ++i) {
-            config_map[export_global_ids[i]].rank = RankInfo(export_ranks[i], 0);
+            config_map[export_global_ids[i]]->rank = RankInfo(export_ranks[i], 0);
             rank_assignments[export_ranks[i]]++;
         }
     }

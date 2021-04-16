@@ -55,11 +55,15 @@ coreTestParamComponent::coreTestParamComponent(ComponentId_t id, Params& params)
 
 	const std::string f64v_str = params.find<std::string>("double-param");
 	const double f64v = params.find<double>("double-param");
-	printf("double       value = \"%s\" = %f = %e\n", f64v_str.c_str(), f64v, f64v);
+	printf("double       value = \"%s\" = %lf = %e\n", f64v_str.c_str(), f64v, f64v);
 
 	const std::string strv = params.find<std::string>("string-param");
 	printf("string       value = \"%s\"\n", strv.c_str());
 
+
+    // Test scoped params
+    Params p = params.get_scoped_params("scope");
+    p.print_all_params(Simulation::getSimulationOutput());
 }
 
 coreTestParamComponent::coreTestParamComponent() :

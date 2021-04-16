@@ -37,7 +37,7 @@ std::vector<char> serialize(dataType &data)
     ser.start_sizing();
     ser & data;
 
-    int size = ser.size();
+    size_t size = ser.size();
 
     std::vector<char> buffer;
     buffer.resize(size);
