@@ -557,14 +557,8 @@ ConfigComponent::checkPorts() const
                 // Check for multiple links hooked to port
                 auto ret = ports.insert(std::make_pair(link.port[j],link.name));
                 if ( !ret.second ) {
-#ifndef SST_ENABLE_PREVIEW_BUILD
-                    Output::getDefaultObject().output("Warning: Port %s of Component %s connected to two links: %s, %s (this will become a fatal error in SST 11)\n",
-                                  link.port[j].c_str(),name.c_str(),link.name.c_str(),ret.first->second.c_str());
-
-#else
                     Output::getDefaultObject().fatal(CALL_INFO,1,"ERROR: Port %s of Component %s connected to two links: %s, %s.\n",
                                  link.port[j].c_str(),name.c_str(),link.name.c_str(),ret.first->second.c_str());
-#endif
                 }
             }
         }
