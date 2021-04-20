@@ -26,8 +26,8 @@ public:
     virtual void generate(const Config* cfg, ConfigGraph* graph) override;
 
 protected:
-    void generateJSON(const std::string& indent, const ConfigComponent& comp, const ConfigLinkMap_t& linkMap) const;
-  void generateJSON(const ConfigLink& link, const ConfigComponentMap_t& compMap) const;
+    void generateJSON(const std::string& indent, const ConfigComponent* comp, const ConfigLinkMap_t& linkMap) const;
+    void generateJSON(const ConfigLink& link, const ConfigComponentMap_t& compMap) const;
 };
 
 }

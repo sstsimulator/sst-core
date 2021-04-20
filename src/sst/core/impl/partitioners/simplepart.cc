@@ -118,11 +118,11 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
         /////////////////////////////////////////////////////////////////////////////////////
         // Sub-divide and repeat
         for(int i = 0; i < lengthA; i++) {
-            component_map[setA[i]].rank = convertPartNum(rankA);
+            component_map[setA[i]]->rank = convertPartNum(rankA);
         }
 
         for(int i = 0; i < lengthB; i++) {
-            component_map[setB[i]].rank = convertPartNum(rankB);
+            component_map[setB[i]]->rank = convertPartNum(rankB);
         }
 
         const uint32_t A1_rank = rankA;
@@ -192,7 +192,7 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
                 compItr != component_map.end();
                 ++compItr) {
 
-                compItr->rank = RankInfo(0,0);
+                (*compItr)->rank = RankInfo(0,0);
             }
         } else {
 
@@ -216,7 +216,7 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
                  compItr != component_map.end();
                  ++compItr) {
 
-                ComponentId_t theComponent = (*compItr).id;
+                ComponentId_t theComponent = (*compItr)->id;
 
                 map<ComponentId_t, SimTime_t>* compConnectMap = new map<ComponentId_t, SimTime_t>();
                 timeTable[theComponent] = compConnectMap;
@@ -227,7 +227,7 @@ SimplePartitioner::SimplePartitioner(RankInfo total_ranks, RankInfo UNUSED(my_ra
                     setB[indexB++] = theComponent;
                 }
 
-                LinkIdMap_t component_links = (*compItr).links;
+                LinkIdMap_t component_links = (*compItr)->links;
 
                 PartitionLinkMap_t& linkMap = graph->getLinkMap();
 

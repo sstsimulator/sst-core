@@ -236,7 +236,7 @@ public:
     bool enabledAllStats;
     ConfigStatistic allStatConfig;
 
-    std::vector<ConfigComponent>  subComponents; /*!< List of subcomponents */
+    std::vector<ConfigComponent*> subComponents; /*!< List of subcomponents */
     std::vector<double>           coords;
     uint16_t                      nextSubID;         /*!< Next subID to use for children, if component, if subcomponent, subid of parent */
     bool                          visited;           /*! Used when traversing graph to indicate component was visited already */
@@ -249,13 +249,14 @@ public:
     /** Print Component information */
     void print(std::ostream &os) const;
 
-    ConfigComponent cloneWithoutLinks() const;
-    ConfigComponent cloneWithoutLinksOrParams() const;
+    ConfigComponent* cloneWithoutLinks() const;
+    ConfigComponent* cloneWithoutLinksOrParams() const;
 
     ~ConfigComponent() {}
     ConfigComponent()
         : id(null_id), statLoadLevel(STATISTICLOADLEVELUNINITIALIZED), enabledAllStats(false), nextSubID(1),
-          visited(false) {}
+          visited(false) {
+    }
 
     ComponentId_t getNextSubComponentID();
     StatisticId_t getNextStatisticID();
@@ -281,6 +282,9 @@ public:
     void addStatisticParameter(const std::string& statisticName, const std::string& param, const std::string& value, bool recursively = false);
     void setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively = false);
     void setStatisticLoadLevel(uint8_t level, bool recursively = false);
+
+    void addGlobalParamSet(const std::string& set) {
+        params.addGlobalParamSet(set); }
 
     std::vector<LinkId_t> allLinks() const;
 
@@ -338,7 +342,7 @@ private:
 // typedef std::map<std::string,ConfigLink> ConfigLinkMap_t;
 // typedef SparseVectorMap<std::string,ConfigLink> ConfigLinkMap_t;
 /** Map IDs to Components */
-typedef SparseVectorMap<ComponentId_t,ConfigComponent> ConfigComponentMap_t;
+typedef SparseVectorMap<ComponentId_t,ConfigComponent*> ConfigComponentMap_t;
 /** Map names to Components */
 typedef std::map<std::string,ComponentId_t> ConfigComponentNameMap_t;
 /** Map names to Parameter Sets: XML only */
@@ -357,7 +361,7 @@ public:
     void print(std::ostream &os) const {
         os << "Printing graph" << std::endl;
         for (ConfigComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-            i->print(os);
+            (*i)->print(os);
         }
     }
 
@@ -388,6 +392,8 @@ public:
     /** Create a new component */
     ComponentId_t addComponent(const std::string& name, const std::string& type);
 
+    /** Add a parameter to a global param set */
+    void addGlobalParam(const std::string& global_set, const std::string& key, const std::string& value);
 
     /** Set the statistic output module */
     void setStatisticOutput(const std::string& name);
@@ -497,10 +503,10 @@ public:
 
     ComponentIdMap_t          group;
 
-    PartitionComponent(const ConfigComponent& cc) {
-        id = cc.id;
-        weight = cc.weight;
-        rank = cc.rank;
+    PartitionComponent(const ConfigComponent* cc) {
+        id = cc->id;
+        weight = cc->weight;
+        rank = cc->rank;
     }
 
     PartitionComponent(LinkId_t id) :
@@ -549,7 +555,7 @@ public:
     }
 };
 
-typedef SparseVectorMap<ComponentId_t,PartitionComponent> PartitionComponentMap_t;
+typedef SparseVectorMap<ComponentId_t,PartitionComponent*> PartitionComponentMap_t;
 typedef SparseVectorMap<LinkId_t,PartitionLink> PartitionLinkMap_t;
 
 class PartitionGraph {
@@ -562,7 +568,7 @@ public:
     void print(std::ostream &os) const {
         os << "Printing graph" << std::endl;
         for (PartitionComponentMap_t::const_iterator i = comps.begin() ; i != comps.end() ; ++i) {
-            i->print(os,this);
+            (*i)->print(os,this);
         }
     }
 

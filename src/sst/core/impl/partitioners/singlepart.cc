@@ -27,8 +27,8 @@ void SSTSinglePartition::performPartition(ConfigGraph* graph) {
 
     ConfigComponentMap_t& compMap = graph->getComponentMap();
 
-    for(auto compItr = compMap.begin(); compItr != compMap.end(); compItr++) {
-        compItr->rank = RankInfo(0,0);
+    for(auto comp : compMap ) {
+        comp->rank = RankInfo(0,0);
     }
 
 }

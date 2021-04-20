@@ -37,8 +37,8 @@ namespace Core {
 class SSTPythonModelDefinition : public SSTModelDescription {
 
 public:
-    SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config, int argc, char **argv);
-    SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config);
+    SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config, double start_time, int argc, char **argv);
+    SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config, double start_time);
     virtual ~SSTPythonModelDefinition();
 
     ConfigGraph* createConfigGraph() override;
@@ -54,7 +54,7 @@ protected:
     std::vector<size_t> nameStack;
     std::map<std::string, ComponentId_t> compNameMap;
     ComponentId_t nextComponentId;
-
+    double start_time;
 
 public:  /* Public, but private.  Called only from Python functions */
     Config* getConfig(void) const { return config; }
@@ -87,6 +87,12 @@ public:  /* Public, but private.  Called only from Python functions */
     void addStatisticOutputParameter(const std::string& param, const std::string& value) { graph->addStatisticOutputParameter(param, value); }
     void setStatisticLoadLevel(uint8_t loadLevel) { graph->setStatisticLoadLevel(loadLevel); }
 
+    void addGlobalParameter(const char* set, const char* key, const char* value, bool overwrite) {
+        Params::insert_global(set,key,value,overwrite);
+    }
+
+    UnitAlgebra getElapsedExecutionTime() const;
+    UnitAlgebra getLocalMemoryUsage() const;
 };
 
 std::map<std::string,std::string> generateStatisticParameters(PyObject* statParamDict);

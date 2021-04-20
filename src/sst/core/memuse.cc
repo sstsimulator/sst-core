@@ -26,6 +26,21 @@ REENABLE_WARNING
 
 using namespace SST::Core;
 
+uint64_t SST::Core::localMemSize() {
+
+    struct rusage sim_ruse;
+    getrusage(RUSAGE_SELF, &sim_ruse);
+
+    uint64_t local_rss = sim_ruse.ru_maxrss;
+
+#ifdef SST_COMPILE_MACOSX
+    return (local_rss / 1024);
+#else
+    return local_rss;
+#endif
+
+};
+
 uint64_t SST::Core::maxLocalMemSize() {
 
     struct rusage sim_ruse;

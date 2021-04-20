@@ -18,6 +18,7 @@
 namespace SST {
 namespace Core {
 
+uint64_t localMemSize();
 uint64_t maxLocalMemSize();
 uint64_t maxGlobalMemSize();
 uint64_t maxLocalPageFaults();

@@ -25,7 +25,7 @@ public:
     virtual void generate(const Config* cfg,
                 ConfigGraph* graph) override;
 protected:
-        void generateXML(const std::string& indent, const ConfigComponent& comp,
+        void generateXML(const std::string& indent, const ConfigComponent* comp,
         const ConfigLinkMap_t& linkMap) const;
         void generateXML(const std::string& indent, const ConfigLink& link,
         const ConfigComponentMap_t& compMap) const;

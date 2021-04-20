@@ -114,6 +114,23 @@ void Link::addRecvLatency(SimTime_t cycles, TimeConverter* timebase) {
     pair_link->latency += timebase->convertToCoreTime(cycles);
 }
 
+void Link::setFunctor(Event::HandlerBase* functor) {
+    if ( UNLIKELY( type != HANDLER ) ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Cannot call setFunctor on a Polling Link\n");
+    }
+
+    rFunctor = functor;
+}
+
+void Link::replaceFunctor(Event::HandlerBase* functor) {
+    if ( UNLIKELY( type != HANDLER ) ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Cannot call replaceFunctor on a Polling Link\n");
+    }
+
+    if ( rFunctor ) delete rFunctor;
+    rFunctor = functor;
+}
+
 void Link::send( SimTime_t delay, TimeConverter* tc, Event* event ) {
     if ( tc == nullptr ) {
         Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, 1, "Cannot send an event on Link with nullptr TimeConverter\n");

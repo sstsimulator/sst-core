@@ -146,48 +146,48 @@ void ConfigComponent::print(std::ostream &os) const {
         iter->second.params.print_all_params(os, "      ");
     }
     os << "  SubComponents:\n";
-    for ( auto & sc : subComponents ) {
-        sc.print(os);
+    for ( auto sc : subComponents ) {
+        sc->print(os);
     }
 }
 
-ConfigComponent
+ConfigComponent*
 ConfigComponent::cloneWithoutLinks() const
 {
-    ConfigComponent ret;
-    ret.id = id;
-    ret.name = name;
-    ret.slot_num = slot_num;
-    ret.type = type;
-    ret.weight = weight;
-    ret.rank = rank;
-    ret.params = params;
-    ret.statLoadLevel = statLoadLevel;
-    ret.statistics = statistics;
-    ret.enabledStatNames = enabledStatNames;
-    ret.enabledAllStats = enabledAllStats;
-    ret.coords = coords;
-    for ( auto &i : subComponents ) {
-        ret.subComponents.emplace_back(i.cloneWithoutLinks());
+    ConfigComponent* ret = new ConfigComponent();
+    ret->id = id;
+    ret->name = name;
+    ret->slot_num = slot_num;
+    ret->type = type;
+    ret->weight = weight;
+    ret->rank = rank;
+    ret->params = params;
+    ret->statLoadLevel = statLoadLevel;
+    ret->statistics = statistics;
+    ret->enabledStatNames = enabledStatNames;
+    ret->enabledAllStats = enabledAllStats;
+    ret->coords = coords;
+    for ( auto i : subComponents ) {
+        ret->subComponents.emplace_back(i->cloneWithoutLinks());
     }
     return ret;
 }
 
 
-ConfigComponent
+ConfigComponent*
 ConfigComponent::cloneWithoutLinksOrParams() const
 {
-    ConfigComponent ret;
-    ret.id = id;
-    ret.name = name;
-    ret.slot_num = slot_num;
-    ret.type = type;
-    ret.weight = weight;
-    ret.rank = rank;
-    ret.statLoadLevel = statLoadLevel;
-    ret.coords = coords;
-    for ( auto &i : subComponents ) {
-        ret.subComponents.emplace_back(i.cloneWithoutLinksOrParams());
+    ConfigComponent* ret = new ConfigComponent();
+    ret->id = id;
+    ret->name = name;
+    ret->slot_num = slot_num;
+    ret->type = type;
+    ret->weight = weight;
+    ret->rank = rank;
+    ret->statLoadLevel = statLoadLevel;
+    ret->coords = coords;
+    for ( auto i : subComponents ) {
+        ret->subComponents.emplace_back(i->cloneWithoutLinksOrParams());
     }
     return ret;
 }
@@ -240,8 +240,8 @@ std::string ConfigComponent::getFullName() const {
 void ConfigComponent::setRank(RankInfo r)
 {
     rank = r;
-    for ( auto &i : subComponents ) {
-        i.setRank(r);
+    for ( auto i : subComponents ) {
+        i->setRank(r);
     }
 
 }
@@ -250,8 +250,8 @@ void ConfigComponent::setRank(RankInfo r)
 void ConfigComponent::setWeight(double w)
 {
     weight = w;
-    for ( auto &i : subComponents ) {
-        i.setWeight(w);
+    for ( auto i : subComponents ) {
+        i->setWeight(w);
     }
 }
 
@@ -293,7 +293,7 @@ ConfigComponent::enableStatistic(const std::string& statisticName, const SST::Pa
     //       lists will always be the same size.
     if ( recursively ) {
         for ( auto &sc : subComponents ) {
-            sc.enableStatistic(statisticName, params, true);
+            sc->enableStatistic(statisticName, params, true);
         }
     }
 
@@ -369,8 +369,8 @@ void ConfigComponent::addStatisticParameter(const std::string& statisticName, co
     //       a corresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
     if ( recursively ) {
-        for ( auto &sc : subComponents ) {
-            sc.addStatisticParameter(statisticName, param, value, true);
+        for ( auto sc : subComponents ) {
+            sc->addStatisticParameter(statisticName, param, value, true);
         }
     }
 
@@ -391,8 +391,8 @@ void ConfigComponent::addStatisticParameter(const std::string& statisticName, co
 void ConfigComponent::setStatisticParameters(const std::string& statisticName, const Params &params, bool recursively)
 {
     if ( recursively ) {
-        for ( auto &sc : subComponents ) {
-            sc.setStatisticParameters(statisticName, params, true);
+        for ( auto sc : subComponents ) {
+            sc->setStatisticParameters(statisticName, params, true);
         }
     }
 
@@ -409,8 +409,8 @@ void ConfigComponent::setStatisticLoadLevel(uint8_t level, bool recursively)
     statLoadLevel = level;
 
     if ( recursively ) {
-        for ( auto &sc : subComponents ) {
-            sc.setStatisticLoadLevel(level, true);
+        for ( auto sc : subComponents ) {
+            sc->setStatisticLoadLevel(level, true);
         }
     }
 }
@@ -419,17 +419,17 @@ void ConfigComponent::setStatisticLoadLevel(uint8_t level, bool recursively)
 ConfigComponent* ConfigComponent::addSubComponent(ComponentId_t sid, const std::string& name, const std::string& type, int slot_num)
 {
     /* Check for existing subComponent with this name */
-    for ( auto &i : subComponents ) {
-        if ( i.name == name && i.slot_num == slot_num )
+    for ( auto i : subComponents ) {
+        if ( i->name == name && i->slot_num == slot_num )
             return nullptr;
     }
 
     uint16_t parent_sub_id = SUBCOMPONENT_ID_MASK(id);
 
-    subComponents.emplace_back(
-        ConfigComponent(sid, graph, parent_sub_id, name, slot_num, type, this->weight, this->rank));
+    subComponents.push_back(
+        new ConfigComponent(sid, graph, parent_sub_id, name, slot_num, type, this->weight, this->rank));
 
-    return &(subComponents.back());
+    return subComponents.back();
 }
 
 ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid)
@@ -441,8 +441,8 @@ const ConfigComponent* ConfigComponent::findSubComponent(ComponentId_t sid) cons
 {
     if ( sid == this->id ) return this;
 
-    for ( auto &s : subComponents ) {
-        const ConfigComponent* res = s.findSubComponent(sid);
+    for ( auto s : subComponents ) {
+        const ConfigComponent* res = s->findSubComponent(sid);
         if ( res != nullptr )
             return res;
     }
@@ -470,15 +470,15 @@ ConfigComponent* ConfigComponent::findSubComponentByName(const std::string& name
     }
 
     // Now, see if we have something in this slot and slot_num
-    for ( auto& sc : subComponents ) {
-        if ( sc.name == slot && sc.slot_num == slot_num ) {
+    for ( auto sc : subComponents ) {
+        if ( sc->name == slot && sc->slot_num == slot_num ) {
             // Found the subcomponent
             if ( colon_index == std::string::npos ) {
                 // Last level of hierarchy
-                return &sc;
+                return sc;
             }
             else {
-                return sc.findSubComponentByName(slot.substr(colon_index+1,std::string::npos));
+                return sc->findSubComponentByName(slot.substr(colon_index+1,std::string::npos));
             }
         }
     }
@@ -525,8 +525,8 @@ ConfigComponent::findStatistic(StatisticId_t sid) const {
 std::vector<LinkId_t> ConfigComponent::allLinks() const {
     std::vector<LinkId_t> res;
     res.insert(res.end(), links.begin(), links.end());
-    for ( auto& sc : subComponents ) {
-        std::vector<LinkId_t> s = sc.allLinks();
+    for ( auto sc : subComponents ) {
+        std::vector<LinkId_t> s = sc->allLinks();
         res.insert(res.end(), s.begin(), s.end());
     }
     return res;
@@ -557,22 +557,16 @@ ConfigComponent::checkPorts() const
                 // Check for multiple links hooked to port
                 auto ret = ports.insert(std::make_pair(link.port[j],link.name));
                 if ( !ret.second ) {
-#ifndef SST_ENABLE_PREVIEW_BUILD
-                    Output::getDefaultObject().output("Warning: Port %s of Component %s connected to two links: %s, %s (this will become a fatal error in SST 11)\n",
-                                  link.port[j].c_str(),name.c_str(),link.name.c_str(),ret.first->second.c_str());
-
-#else
                     Output::getDefaultObject().fatal(CALL_INFO,1,"ERROR: Port %s of Component %s connected to two links: %s, %s.\n",
                                  link.port[j].c_str(),name.c_str(),link.name.c_str(),ret.first->second.c_str());
-#endif
                 }
             }
         }
     }
 
     // Now loop over all subcomponents and call the check function
-    for ( auto& subcomp : subComponents ) {
-        subcomp.checkPorts();
+    for ( auto subcomp : subComponents ) {
+        subcomp->checkPorts();
     }
 }
 
@@ -582,7 +576,7 @@ ConfigGraph::setComponentRanks(RankInfo rank)
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
     {
-        iter->setRank(rank);
+        (*iter)->setRank(rank);
     }
 }
 
@@ -592,7 +586,7 @@ ConfigGraph::containsComponentInRank(RankInfo rank)
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
     {
-        if ( iter->rank == rank ) return true;
+        if ( (*iter)->rank == rank ) return true;
     }
     return false;
 
@@ -604,8 +598,8 @@ ConfigGraph::checkRanks(RankInfo ranks)
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
                             iter != comps.end(); ++iter )
     {
-        if ( !iter->rank.isAssigned() || !ranks.inRange(iter->rank) ) {
-            fprintf(stderr, "Bad rank: %u %u\n", iter->rank.rank, iter->rank.thread);
+        if ( !(*iter)->rank.isAssigned() || !ranks.inRange((*iter)->rank) ) {
+            fprintf(stderr, "Bad rank: %u %u\n", (*iter)->rank.rank, (*iter)->rank.thread);
             return false;
         }
     }
@@ -641,12 +635,12 @@ ConfigGraph::checkForStructuralErrors()
         // initialized in order, but just in case...
         if ( clink.component[0] == ULONG_MAX ) {
             output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",clink.name.c_str(),
-                   comps[clink.component[1]].name.c_str());
+                   comps[clink.component[1]]->name.c_str());
             found_error = true;
         }
         if ( clink.component[1] == ULONG_MAX ) {
             output.output("WARNING:  Found dangling link: %s.  It is connected on one side to component %s.\n",clink.name.c_str(),
-                   comps[clink.component[0]].name.c_str());
+                   comps[clink.component[0]]->name.c_str());
             found_error = true;
         }
     }
@@ -659,7 +653,7 @@ ConfigGraph::checkForStructuralErrors()
     for ( ConfigComponentMap_t::iterator iter = comps.begin();
           iter != comps.end(); ++iter )
     {
-        ConfigComponent* ccomp = &(*iter);
+        ConfigComponent* ccomp = *iter;
         ccomp->checkPorts();
     }
 
@@ -671,7 +665,7 @@ ComponentId_t
 ConfigGraph::addComponent(const std::string& name, const std::string& type, float weight, RankInfo rank)
 {
     ComponentId_t cid = nextComponentId++;
-    comps.insert(ConfigComponent(cid, this, name, type, weight, rank));
+    comps.insert(new ConfigComponent(cid, this, name, type, weight, rank));
 
     auto ret = compsByName.insert(std::make_pair(name,cid));
     // Check to see if the name has already been used
@@ -685,7 +679,7 @@ ComponentId_t
 ConfigGraph::addComponent(const std::string& name, const std::string& type)
 {
     ComponentId_t cid = nextComponentId++;
-    comps.insert(ConfigComponent(cid, this, name, type, 1.0f, RankInfo()));
+    comps.insert(new ConfigComponent(cid, this, name, type, 1.0f, RankInfo()));
 
     auto ret = compsByName.insert(std::make_pair(name,cid));
     // Check to see if the name has already been used
@@ -695,6 +689,11 @@ ConfigGraph::addComponent(const std::string& name, const std::string& type)
     return cid;
 }
 
+void
+ConfigGraph::addGlobalParam(const std::string& global_set, const std::string& key, const std::string& value)
+{
+    Params::insert_global(global_set,key,value);
+}
 
 
 void
@@ -789,10 +788,10 @@ const ConfigComponent* ConfigGraph::findComponent(ComponentId_t id) const
 {
     /* Check to make sure we're part of the same component */
     if ( COMPONENT_ID_MASK(id) == id ) {
-        return &comps[id];
+        return comps[id];
     }
 
-    return comps[COMPONENT_ID_MASK(id)].findSubComponent(id);
+    return comps[COMPONENT_ID_MASK(id)]->findSubComponent(id);
 }
 
 ConfigComponent* ConfigGraph::findComponentByName(const std::string& name) {
@@ -804,7 +803,7 @@ ConfigComponent* ConfigGraph::findComponentByName(const std::string& name) {
     // Check to see if component was found
     if ( itr == compsByName.end() ) return nullptr;
 
-    ConfigComponent* cc = &comps[itr->second];
+    ConfigComponent* cc = comps[itr->second];
 
     // If this was just a component name
     if ( index == std::string::npos ) return cc;
@@ -840,20 +839,20 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     // sure things go in in order into both comps and links, then tie
     // it all together.
     for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it) {
-        const ConfigComponent& comp = *it;
+        const ConfigComponent* comp = *it;
 
-        if ( rank_set.find(comp.rank.rank) != rank_set.end() ) {
-            graph->comps.insert(comp.cloneWithoutLinks());
+        if ( rank_set.find(comp->rank.rank) != rank_set.end() ) {
+            graph->comps.insert(comp->cloneWithoutLinks());
         }
         else {
             // See if the other side of any of component's links is in
             // set, if so, add to graph
-            for ( LinkId_t l : comp.allLinks() ) {
+            for ( LinkId_t l : comp->allLinks() ) {
                 const ConfigLink& link = links[l];
-                ComponentId_t remote = COMPONENT_ID_MASK(link.component[0]) == COMPONENT_ID_MASK(comp.id) ?
+                ComponentId_t remote = COMPONENT_ID_MASK(link.component[0]) == COMPONENT_ID_MASK(comp->id) ?
                     link.component[1] : link.component[0];
-                if ( rank_set.find(comps[COMPONENT_ID_MASK(remote)].rank.rank) != rank_set.end() ) {
-                    graph->comps.insert(comp.cloneWithoutLinksOrParams());
+                if ( rank_set.find(comps[COMPONENT_ID_MASK(remote)]->rank.rank) != rank_set.end() ) {
+                    graph->comps.insert(comp->cloneWithoutLinksOrParams());
                     break;
                 }
             }
@@ -909,22 +908,22 @@ ConfigGraph::getPartitionGraph()
     // insert both components and links in order of ID, which is the
     // key for the SparseVectorMap
     for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
-        const ConfigComponent& comp = *it;
+        const ConfigComponent* comp = *it;
 
-        pcomps.insert(PartitionComponent(comp));
+        pcomps.insert(new PartitionComponent(comp));
     }
 
 
     for ( ConfigLinkMap_t::iterator it = links.begin(); it != links.end(); ++it ) {
         const ConfigLink& link = *it;
 
-        const ConfigComponent& comp0 = comps[COMPONENT_ID_MASK(link.component[0])];
-        const ConfigComponent& comp1 = comps[COMPONENT_ID_MASK(link.component[1])];
+        const ConfigComponent* comp0 = comps[COMPONENT_ID_MASK(link.component[0])];
+        const ConfigComponent* comp1 = comps[COMPONENT_ID_MASK(link.component[1])];
 
         plinks.insert(PartitionLink(link));
 
-        pcomps[comp0.id].links.push_back(link.id);
-        pcomps[comp1.id].links.push_back(link.id);
+        pcomps[comp0->id]->links.push_back(link.id);
+        pcomps[comp1->id]->links.push_back(link.id);
     }
     return graph;
 }
@@ -941,7 +940,7 @@ ConfigGraph::getCollapsedPartitionGraph()
 
 
     // Mark all Components as not visited
-    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) it->visited = false;
+    for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) (*it)->visited = false;
 
     // SparseVectorMap is slow for random inserts, so make sure we
     // insert both components and links in order of ID, which is the
@@ -951,36 +950,37 @@ ConfigGraph::getCollapsedPartitionGraph()
     // into a SparseVectorMap, we are inserting in order.
     std::set<ComponentId_t> group;
     for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
+        auto comp = *it;
         // If this component ended up in a connected group we already
         // looked at, skip it
-        if ( it->visited ) continue;
+        if ( comp->visited ) continue;
 
         // Get the no-cut group for this component
         group.clear();
-        getConnectedNoCutComps(it->id,group);
+        getConnectedNoCutComps(comp->id,group);
 
         // Create a new PartitionComponent for this group
         ComponentId_t id = pcomps.size();
-        PartitionComponent& pcomp = pcomps.insert(PartitionComponent(id));
+        PartitionComponent* pcomp = pcomps.insert(new PartitionComponent(id));
 
         // Iterate over the group and add the weights and add any
         // links that connect outside the group
         for ( std::set<ComponentId_t>::const_iterator i = group.begin(); i != group.end(); ++i ) {
-            const ConfigComponent& comp = comps[*i];
+            const ConfigComponent* comp = comps[*i];
             // Compute the new weight
-            pcomp.weight += comp.weight;
+            pcomp->weight += comp->weight;
             // Inserting in order because the iterator is from an
             // ordered set
-            pcomp.group.insert(*i);
+            pcomp->group.insert(*i);
 
             // Walk through all the links and insert the ones that connect
             // outside the group
-            for ( LinkId_t id : comp.allLinks() ) {
+            for ( LinkId_t id : comp->allLinks() ) {
                 const ConfigLink& link = links[id];
 
                 if ( group.find(COMPONENT_ID_MASK(link.component[0])) == group.end() ||
                      group.find(COMPONENT_ID_MASK(link.component[1])) == group.end() ) {
-                    pcomp.links.push_back(link.id);
+                    pcomp->links.push_back(link.id);
                 }
                 else {
                     deleted_links.insert(link.id);
@@ -1005,11 +1005,11 @@ ConfigGraph::getCollapsedPartitionGraph()
     // links to see if it points to something in the group.  If so,
     // change ID to point to super group.
     for ( PartitionComponentMap_t::iterator i = pcomps.begin(); i != pcomps.end(); ++i ) {
-        PartitionComponent& pcomp = *i;
-        for ( LinkIdMap_t::iterator j = pcomp.links.begin(); j != pcomp.links.end(); ++j ) {
+        PartitionComponent* pcomp = *i;
+        for ( LinkIdMap_t::iterator j = pcomp->links.begin(); j != pcomp->links.end(); ++j ) {
             PartitionLink& plink = plinks[*j];
-            if ( pcomp.group.contains(plink.component[0]) ) plink.component[0] = pcomp.id;
-            if ( pcomp.group.contains(plink.component[1]) ) plink.component[1] = pcomp.id;
+            if ( pcomp->group.contains(plink.component[0]) ) plink.component[0] = pcomp->id;
+            if ( pcomp->group.contains(plink.component[1]) ) plink.component[1] = pcomp->id;
         }
     }
 
@@ -1022,11 +1022,11 @@ ConfigGraph::annotateRanks(PartitionGraph* graph)
     PartitionComponentMap_t& pcomps = graph->getComponentMap();
 
     for ( PartitionComponentMap_t::iterator it = pcomps.begin(); it != pcomps.end(); ++it ) {
-        const PartitionComponent& comp = *it;
+        const PartitionComponent* comp = *it;
 
-        for ( ComponentIdMap_t::const_iterator c_iter = comp.group.begin();
-              c_iter != comp.group.end(); ++ c_iter ) {
-            comps[*c_iter].setRank(comp.rank);
+        for ( ComponentIdMap_t::const_iterator c_iter = comp->group.begin();
+              c_iter != comp->group.end(); ++ c_iter ) {
+            comps[*c_iter]->setRank(comp->rank);
         }
     }
 }
@@ -1038,10 +1038,10 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>
     group.insert(COMPONENT_ID_MASK(start));
 
     // First, get the component
-    ConfigComponent& comp = comps[start];
-    comp.visited = true;
+    ConfigComponent* comp = comps[start];
+    comp->visited = true;
 
-    for ( LinkId_t id : comp.allLinks() ) {
+    for ( LinkId_t id : comp->allLinks() ) {
         ConfigLink& link = links[id];
 
         // If this is a no_cut link, need to follow it to next
