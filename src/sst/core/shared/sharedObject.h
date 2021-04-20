@@ -268,7 +268,7 @@ public:
     /**
        Enum of verify types.
     */
-    enum verify_type { VERIFY_UNITIALIZED, FE_VERIFY, INIT_VERIFY, NO_VERIFY };
+    enum verify_type { VERIFY_UNINITIALIZED, FE_VERIFY, INIT_VERIFY, NO_VERIFY };
 
 
 

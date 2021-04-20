@@ -76,7 +76,7 @@ public:
        NO_VERIFY is passed, no verification will occur.  This is
        mostly useful when you can guarantee that multiple elements
        won't write the same value and you want to do in-place
-       modifications as you initialize.  VERIFY_UNITIALIZED is a
+       modifications as you initialize.  VERIFY_UNINITIALIZED is a
        reserved value and should not be passed.
 
        @return returns the number of instances that have intialized
@@ -88,9 +88,9 @@ public:
                 CALL_INFO,1,"ERROR: called initialize() of SharedArray %s more than once\n",obj_name.c_str());
         }
 
-        if ( v_type == VERIFY_UNITIALIZED ) {
+        if ( v_type == VERIFY_UNINITIALIZED ) {
             Simulation::getSimulationOutput().fatal(
-                CALL_INFO,1,"ERROR: VERIFY_UNITIALIZED passed into instance of SharedArray %s.  "
+                CALL_INFO,1,"ERROR: VERIFY_UNINITIALIZED passed into instance of SharedArray %s.  "
                 "This is a reserved value and cannot be passed in here. \n",obj_name.c_str());
         }
 
@@ -250,7 +250,7 @@ private:
         Data(const std::string& name) :
             SharedObjectData(name),
             change_set(nullptr),
-            verify(VERIFY_UNITIALIZED)
+            verify(VERIFY_UNINITIALIZED)
             {
                 if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) {
                     change_set = new ChangeSet(name);
@@ -270,6 +270,8 @@ private:
            manage the memory/copying of data.
         */
         void setSize(size_t size, const T& init_data, verify_type v_type) {
+            // If the data is uninitialized, then there is nothing to do
+            if ( v_type == VERIFY_UNINITIALIZED ) return;
             std::lock_guard<std::mutex> lock(mtx);
             if ( size > array.size() ) {
                 // Need to resize the vector
@@ -281,12 +283,13 @@ private:
             }
             // init and verify must match across all intances.  We can
             // tell that they have been when verify is not
-            // VERIFY_UNITIALIZED.
-            if ( verify != VERIFY_UNITIALIZED ) {
+            // VERIFY_UNINITIALIZED.
+            if ( verify != VERIFY_UNINITIALIZED ) {
                 if ( init != init_data ) {
                     Simulation::getSimulationOutput().fatal(
-                        CALL_INFO,1,"ERROR: Two different init_data value passed into SharedArray %s\n",name.c_str());
+                        CALL_INFO,1,"ERROR: Two different init_data values passed into SharedArray %s\n",name.c_str());
                 }
+
                 if ( verify != v_type ) {
                     Simulation::getSimulationOutput().fatal(
                         CALL_INFO,1,"ERROR: Two different verify types passed into SharedArray %s\n",name.c_str());
@@ -381,7 +384,8 @@ private:
                 {}
             ChangeSet(const std::string& name) :
                 SharedObjectChangeSet(name),
-                size(0)
+                size(0),
+                verify(VERIFY_UNINITIALIZED)
                 {}
 
             void addChange(int index, const T& value) {
