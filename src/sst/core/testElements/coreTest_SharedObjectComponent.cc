@@ -92,7 +92,12 @@ coreTestSharedObjectsComponent::coreTestSharedObjectsComponent(SST::ComponentId_
     // Initialize SharedObject
     if ( test_array && !late_initialize ) {
         if ( full_initialization ) {
-            array.initialize("test_shared_array",num_entities,-1,v_type);
+            if ( myid == 0 || ( multiple_initializers && (myid == num_entities - 1)) ) {
+                array.initialize("test_shared_array",num_entities,-1,v_type);
+            }
+            else {
+                array.initialize("test_shared_array");
+            }
             if ( double_initialize ) array.initialize("test_shared_array",num_entities,-1,v_type);
 
             if ( myid == 0 || ( multiple_initializers && (myid == num_entities - 1)) ) {
