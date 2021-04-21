@@ -132,7 +132,7 @@ protected:
     bool locked;
 
     // Mutex for locking across threads
-    std::mutex mtx;
+    mutable std::mutex mtx;
 
     // Check to see if object data is locked.  If so, fatal
     inline void check_lock_for_write(const std::string& obj) {
