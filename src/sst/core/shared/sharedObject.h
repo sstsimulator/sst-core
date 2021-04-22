@@ -132,7 +132,7 @@ protected:
     bool locked;
 
     // Mutex for locking across threads
-    std::mutex mtx;
+    mutable std::mutex mtx;
 
     // Check to see if object data is locked.  If so, fatal
     inline void check_lock_for_write(const std::string& obj) {
@@ -268,7 +268,7 @@ public:
     /**
        Enum of verify types.
     */
-    enum verify_type { VERIFY_UNITIALIZED, FE_VERIFY, INIT_VERIFY, NO_VERIFY };
+    enum verify_type { VERIFY_UNINITIALIZED, FE_VERIFY, INIT_VERIFY, NO_VERIFY };
 
 
 

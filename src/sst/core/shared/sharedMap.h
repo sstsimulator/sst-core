@@ -58,7 +58,7 @@ public:
        no verification will occur.  This is mostly useful when you can
        guarantee that multiple elements won't write the same value and
        you want to do in-place modifications as you initialize.
-       VERIFY_UNITIALIZED is a reserved value and should not be
+       VERIFY_UNINITIALIZED is a reserved value and should not be
        passed.
 
        @return returns the number of instances that have intialized
@@ -264,7 +264,7 @@ private:
         Data(const std::string& name) :
             SharedObjectData(name),
             change_set(nullptr),
-            verify(VERIFY_UNITIALIZED)
+            verify(VERIFY_UNINITIALIZED)
         {
             if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) {
                 change_set = new ChangeSet(name);
@@ -276,9 +276,9 @@ private:
         }
 
         void setVerify(verify_type v_type) {
-            if ( v_type != verify && verify != VERIFY_UNITIALIZED ) {
+            if ( v_type != verify && verify != VERIFY_UNINITIALIZED ) {
                 Simulation::getSimulationOutput().fatal(
-                    CALL_INFO,1,"ERROR: Type different verify_types specified for SharedMap %s\n",name.c_str());
+                    CALL_INFO,1,"ERROR: Two different verify_types specified for SharedMap %s\n",name.c_str());
             }
             verify = v_type;
             if ( change_set ) change_set->setVerify(v_type);
@@ -351,10 +351,12 @@ private:
         public:
             // For serialization
             ChangeSet() :
-                SharedObjectChangeSet()
+                SharedObjectChangeSet(),
+                verify(VERIFY_UNINITIALIZED)
                 {}
             ChangeSet(const std::string& name) :
-                SharedObjectChangeSet(name)
+                SharedObjectChangeSet(name),
+                verify(VERIFY_UNINITIALIZED)
                 {}
 
             void addChange(const keyT& key, const valT& value) {
