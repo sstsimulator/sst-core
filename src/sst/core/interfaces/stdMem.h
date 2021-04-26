@@ -135,11 +135,11 @@ public:
         bool getTrace() { return flags & static_cast<int>(Flag::F_TRACE); }
 
         void setFlag(flags_t flag) { flags |= flag; }
-        void setFlag(Flag flag) { flags |= static_cast<int>(flag); }
+        void setFlag(Flag flag) { flags |= static_cast<flags_t>(flag); }
         void unsetFlag(flags_t flag) { flags &= (~flag); }
-        void unsetFlag(Flag flag) { flags &= ~(static_cast<int>(flag)); }
+        void unsetFlag(Flag flag) { flags &= ~(static_cast<flags_t>(flag)); }
         bool getFlag(flags_t flag) { return flags & flag; }
-        bool getFlag(Flag flag) { return flags & static_cast<int>(flag); }
+        bool getFlag(Flag flag) { return flags & static_cast<flags_t>(flag); }
 
         void clearAllFlags() { flags = 0; }
         flags_t getAllFlags() { return flags; }
@@ -507,6 +507,7 @@ public:
         /* This needs to be serializable so that we can use it in events in parallel simulations */
         virtual void serialize_order(SST::Core::Serialization::serializer &UNUSED(ser)) override = 0;
         //ImplementSerializable(SST::Experimental::Interfaces::StandardMem::CustomData);
+        ImplementVirtualSerializable(CustomData);
     };
 
 
