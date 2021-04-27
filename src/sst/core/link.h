@@ -142,6 +142,11 @@ public:
      */
     TimeConverter* getDefaultTimeBase();
 
+    /** Return the default Time Base for this link 
+     * @return the default Time Base for this link
+     */
+    const TimeConverter* getDefaultTimeBase() const;
+
     /** Causes an event to be delivered to the registered callback */
 #if !SST_BUILDING_CORE
     inline void deliverEvent(Event* event) const __attribute__ ((deprecated("this function was not intended to be used outside of SST core and will be removed in SST 12."))) {

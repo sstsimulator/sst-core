@@ -70,6 +70,13 @@ public:
             data(data)
         {}
 
+        /**
+           Calls underlying handler function, passing in the current
+           cycle count and additional metadata supplied by the user.
+
+           If the hander function returns true, the handler will be
+           removed from the clock list.
+         */
         bool operator()(Cycle_t cycle) override {
             return (object->*member)(cycle,data);
         }
@@ -95,6 +102,13 @@ public:
             member(member)
         {}
 
+        /**
+           Calls underlying handler function, passing in the current
+           cycle count.
+
+           If the hander function returns true, the handler will be
+           removed from the clock list.
+         */
         bool operator()(Cycle_t cycle) override {
             return (object->*member)(cycle);
         }

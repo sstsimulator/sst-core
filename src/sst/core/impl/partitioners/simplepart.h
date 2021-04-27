@@ -55,10 +55,6 @@ public:
 
     void performPartition(PartitionGraph* graph) override;
 
-    void performPartition(ConfigGraph* graph) override {
-        SST::Partition::SSTPartitioner::performPartition(graph);
-    }
-
     bool requiresConfigGraph() override { return false; }
     bool spawnOnAllRanks() override { return false; }
 

@@ -38,11 +38,7 @@ public:
        Performs a partition of an SST simulation configuration
        \param graph The simulation configuration to partition
     */
-      void performPartition(PartitionGraph* graph) override;
-
-    void performPartition(ConfigGraph* graph) override {
-            SST::Partition::SSTPartitioner::performPartition(graph);
-        }
+    void performPartition(PartitionGraph* graph) override;
 
     bool requiresConfigGraph() override { return false; }
     bool spawnOnAllRanks() override { return false; }

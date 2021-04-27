@@ -725,6 +725,10 @@ protected:
         return my_info->defaultTimeBase;
     }
 
+    const TimeConverter* getDefaultTimeBase() const {
+        return my_info->defaultTimeBase;
+    }
+
     bool doesSubComponentExist(const std::string& type);
 
 
