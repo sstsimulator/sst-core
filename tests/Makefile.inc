@@ -24,6 +24,7 @@ EXTRA_DIST += \
     tests/test_RNGComponent_xorshift.py \
     tests/test_SharedObject.py \
     tests/test_StatisticsComponent.py \
+    tests/test_StatisticsIntensityComponent.py \
     tests/test_MessageGeneratorComponent.py \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \

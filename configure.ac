@@ -88,6 +88,7 @@ SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for 
 SST_CHECK_LIBZ([have_zlib="yes"],[have_zlib="no"],[AC_MSG_ERROR([zlib was requested but could not be found.])])
 SST_CHECK_HDF5()
 SST_CHECK_MEM_POOL()
+SST_CHECK_VTK()
 
 SST_ENABLE_DEBUG_OUTPUT()
 SST_ENABLE_DEBUG_EVENT_TRACKING()
@@ -245,5 +246,12 @@ if test "x$PYTHON_VERSION3" = "xno"; then
     printf "DEPRECATION NOTICE: Use of Python 2 is deprecated in favor of Python 3.5 or greater. Support for Python 2 may be removed in SST 12 or later.\n"
 fi
 
-echo "-------------------------------------------------------"
+if test -d "$vtk_path"; then
+    printf "%38s : $vtk_version @ $vtk_path\n" "VTK"
+else
+    printf "%38s : No\n" "VTK"
+fi
+
+echo "-------------------------------------------------------" 
+
 
