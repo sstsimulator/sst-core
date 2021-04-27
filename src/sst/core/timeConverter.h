@@ -31,7 +31,7 @@ class TimeConverter {
        Converts from the component's view to the core's view of time.
        \param time time to convert to core time
      */
-    SimTime_t convertToCoreTime(SimTime_t time) {
+    SimTime_t convertToCoreTime(SimTime_t time) const {
         return time * factor;
     }
 
@@ -40,14 +40,14 @@ class TimeConverter {
        The result is truncated, not rounded.
        \param time time to convert from core time
      */
-    SimTime_t convertFromCoreTime(SimTime_t time) {
+    SimTime_t convertFromCoreTime(SimTime_t time) const {
         return time/factor;
     }
 
     /**
      * Return the factor used for conversions with Core Time
      */
-    SimTime_t getFactor() {
+    SimTime_t getFactor() const {
         return factor;
     }
 
@@ -55,7 +55,7 @@ class TimeConverter {
        Return the period represented by this TimeConverter as a
        UnitAlgebra
      */
-    UnitAlgebra getPeriod(); // Implemented in timeLord.cc
+    UnitAlgebra getPeriod() const ; // Implemented in timeLord.cc
 
  private:
     /**
@@ -64,7 +64,7 @@ class TimeConverter {
     SimTime_t factor;
 
     TimeConverter(SimTime_t fact) {
-    factor = fact;
+        factor = fact;
     }
 
     ~TimeConverter() {

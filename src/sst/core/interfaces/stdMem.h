@@ -182,13 +182,13 @@ public:
          * User must manually set read data on response if simulation is using actual data values 
          * @return ReadResp formatted as a response to this Read request
          */
-        Request* makeResponse() {
+        Request* makeResponse() override {
             std::vector<uint8_t> datavec(size, 0); /* Placeholder. If actual data values are used in simulation, the model should update this */
             ReadResp* resp = new ReadResp(this, datavec);
             return resp;
         }
 
-        bool needsResponse() { return true; }
+        bool needsResponse() override { return true; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
@@ -213,8 +213,8 @@ public:
         
         virtual ~ReadResp() {}
 
-        Request* makeResponse() { return nullptr; } /* No response type */
-        bool needsResponse() { return false; }
+        Request* makeResponse() override { return nullptr; } /* No response type */
+        bool needsResponse() override { return false; }
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
 
@@ -240,8 +240,8 @@ public:
         /* Destructor */
         virtual ~Write() {}
 
-        virtual Request* makeResponse() { return new WriteResp(this); }
-        virtual bool needsResponse() { return !posted; }
+        virtual Request* makeResponse() override { return new WriteResp(this); }
+        virtual bool needsResponse() override { return !posted; }
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
 
@@ -267,8 +267,8 @@ public:
         /** Destructor */
         virtual ~WriteResp() {}
 
-        virtual Request* makeResponse() { return nullptr; }
-        virtual bool needsResponse() { return false; }
+        virtual Request* makeResponse() override { return nullptr; }
+        virtual bool needsResponse() override { return false; }
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
 
@@ -291,8 +291,8 @@ public:
             Request(flags), pAddr(physAddr), vAddr(virtAddr), size(size), inv(inv), depth(depth), iPtr(instPtr), tid(tid) {}
         virtual ~FlushAddr() {}
 
-        virtual Request* makeResponse() { return new FlushResp(this); }
-        virtual bool needsResponse() { return true; }
+        virtual Request* makeResponse() override { return new FlushResp(this); }
+        virtual bool needsResponse() override { return true; }
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
 
@@ -318,8 +318,8 @@ public:
             iPtr(fl->iPtr), tid(fl->tid) {}
         virtual ~FlushResp() {}
 
-        virtual Request* makeResponse() { return nullptr; }
-        virtual bool needsResponse() { return false; }
+        virtual Request* makeResponse() override { return nullptr; }
+        virtual bool needsResponse() override { return false; }
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
         
@@ -344,12 +344,12 @@ public:
             Request(flags), pAddr(physAddr), vAddr(virtAddr), size(size), iPtr(instPtr), tid(tid) { }
         virtual ~ReadLock() {}
 
-        Request* makeResponse() {
+        Request* makeResponse() override {
             std::vector<uint8_t> datavec(size, 0); /* This is a placeholder. If actual data values are used in simulation, the model should update this */
             return new ReadResp(id, pAddr, size, datavec, flags, vAddr, iPtr, tid);
         }
 
-        bool needsResponse() { return true; }
+        bool needsResponse() override { return true; }
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
 
@@ -373,8 +373,8 @@ public:
 
         virtual ~WriteUnlock() {}
 
-        virtual Request* makeResponse() { return new WriteResp(id, pAddr, size, flags, vAddr = 0, iPtr, tid); }
-        virtual bool needsResponse() { return !posted; }
+        virtual Request* makeResponse() override { return new WriteResp(id, pAddr, size, flags, vAddr = 0, iPtr, tid); }
+        virtual bool needsResponse() override { return !posted; }
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
 
@@ -402,12 +402,12 @@ public:
             Request(flags), pAddr(physAddr), vAddr(virtAddr), size(size), iPtr(instPtr), tid(tid) { }
         virtual ~LoadLink() {}
 
-        Request* makeResponse() {
+        Request* makeResponse() override {
             std::vector<uint8_t> datavec(size, 0); /* This is a placeholder. If actual data values are used in simulation, the model should update this */
             return new ReadResp(id, pAddr, size, datavec, flags, vAddr, iPtr, tid);
         }
 
-        bool needsResponse() { return true; }
+        bool needsResponse() override { return true; }
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
 
@@ -432,8 +432,8 @@ public:
         virtual ~StoreConditional() {}
 
         /* Model must also call setSuccess() on response if LLSC succeeded */
-        virtual Request* makeResponse() { return new WriteResp(id, pAddr, size, flags, vAddr, iPtr, tid); }
-        virtual bool needsResponse() { return true; }
+        virtual Request* makeResponse() override  { return new WriteResp(id, pAddr, size, flags, vAddr, iPtr, tid); }
+        virtual bool needsResponse() override { return true; }
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
         void handle(RequestHandler* handler) override { return handler->handle(this); }
 
