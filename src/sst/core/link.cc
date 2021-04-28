@@ -225,5 +225,9 @@ TimeConverter* Link::getDefaultTimeBase() {
     return defaultTimeBase;
 }
 
+const TimeConverter* Link::getDefaultTimeBase() const {
+    return defaultTimeBase;
+}
+
 
 } // namespace SST

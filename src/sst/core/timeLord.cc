@@ -124,7 +124,7 @@ SimTime_t TimeLord::getSimCycles(const std::string& ts, const std::string& UNUSE
     return parseCache[ts]->getFactor();
 }
 
-UnitAlgebra TimeConverter::getPeriod()
+UnitAlgebra TimeConverter::getPeriod() const
 {
     return Simulation_impl::getTimeLord()->getTimeBase() * factor;
 }
