@@ -32,7 +32,7 @@ PROJECT_NAME           = SST
 # This could be handy for archiving the generated documentation or
 # if some version control system is used.
 
-PROJECT_NUMBER         = @SST_SVN_REVISION@
+PROJECT_NUMBER         = 11.0.0
 
 # Using the PROJECT_BRIEF tag one can provide an optional one line description
 # for a project that appears at the top of each page and should give viewer
@@ -706,7 +706,7 @@ EXCLUDE_PATTERNS       = sst_config.h \
                          */.deps \
                          */.deps/* \
                          */.metadata \
-                         */.metadata/*  
+                         */.metadata/*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
