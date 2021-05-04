@@ -170,6 +170,13 @@ protected:
     Link* configureLink( const std::string& name, const std::string& time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a Link
      * @param name - Port Name on which the link to configure is attached.
+     * @param time_base - Time Base of the link as a string
+     * @param handler - Optional Handler to be called when an Event is received
+     * @return A pointer to the configured link, or nullptr if an error occured.
+     */
+    Link* configureLink( const std::string& name, const UnitAlgebra& time_base, Event::HandlerBase* handler = nullptr);
+    /** Configure a Link
+     * @param name - Port Name on which the link to configure is attached.
      * @param handler - Optional Handler to be called when an Event is received
      * @return A pointer to the configured link, or nullptr if an error occured.
      */
@@ -190,6 +197,13 @@ protected:
      * @return A pointer to the configured link, or nullptr if an error occured.
      */
     Link* configureSelfLink( const std::string& name, const std::string& time_base, Event::HandlerBase* handler = nullptr);
+    /** Configure a SelfLink  (Loopback link)
+     * @param name - Name of the self-link port
+     * @param time_base - Time Base of the link
+     * @param handler - Optional Handler to be called when an Event is received
+     * @return A pointer to the configured link, or nullptr if an error occured.
+     */
+    Link* configureSelfLink( const std::string& name, const UnitAlgebra& time_base, Event::HandlerBase* handler = nullptr);
     /** Configure a SelfLink  (Loopback link)
      * @param name - Name of the self-link port
      * @param handler - Optional Handler to be called when an Event is received
