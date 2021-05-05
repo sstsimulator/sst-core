@@ -374,27 +374,42 @@ int Simulation_impl::performWireUp( ConfigGraph& graph, const RankInfo& myRank, 
         }
         // Same rank, same thread
         else if ( rank[0] == rank[1] ) {
-            // Create a LinkPair to represent this link
-            LinkPair lp(clink.id);
+            // Check to see if this is loopback link
+            if ( clink.component[0] == clink.component[1] && clink.port[0] == clink.port[1] ) {
+                // This is a loopback, so there is only one link
+                Link* link = new SelfLink();
+                link->setLatency(clink.latency[0]);
 
-            lp.getLeft()->setLatency(clink.latency[0]);
-            lp.getRight()->setLatency(clink.latency[1]);
-
-            // Add this link to the appropriate LinkMap
-            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[0]);
-            if ( cinfo == nullptr ) {
-                // This shouldn't happen and is an error
-                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
+                // Add this link to the appropriate LinkMap
+                ComponentInfo* cinfo = compInfoMap.getByID(clink.component[0]);
+                if ( cinfo == nullptr ) {
+                    // This shouldn't happen and is an error
+                    sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
+                }
+                cinfo->getLinkMap()->insertLink(clink.port[0],link);
             }
-            cinfo->getLinkMap()->insertLink(clink.port[0],lp.getLeft());
+            else {
+                // Create a LinkPair to represent this link
+                LinkPair lp(clink.id);
 
-            cinfo = compInfoMap.getByID(clink.component[1]);
-            if ( cinfo == nullptr ) {
-                // This shouldn't happen and is an error
-                sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
+                lp.getLeft()->setLatency(clink.latency[0]);
+                lp.getRight()->setLatency(clink.latency[1]);
+
+                // Add this link to the appropriate LinkMap
+                ComponentInfo* cinfo = compInfoMap.getByID(clink.component[0]);
+                if ( cinfo == nullptr ) {
+                    // This shouldn't happen and is an error
+                    sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
+                }
+                cinfo->getLinkMap()->insertLink(clink.port[0],lp.getLeft());
+
+                cinfo = compInfoMap.getByID(clink.component[1]);
+                if ( cinfo == nullptr ) {
+                    // This shouldn't happen and is an error
+                    sim_output.fatal(CALL_INFO,1,"Couldn't find ComponentInfo in map.");
+                }
+                cinfo->getLinkMap()->insertLink(clink.port[1],lp.getRight());
             }
-            cinfo->getLinkMap()->insertLink(clink.port[1],lp.getRight());
-
         }
         // If the components are not in the same thread, then the
         // SyncManager will handle things

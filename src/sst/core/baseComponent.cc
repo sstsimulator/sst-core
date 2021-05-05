@@ -311,6 +311,12 @@ BaseComponent::configureLink(const std::string& name, const std::string& time_ba
 }
 
 Link*
+BaseComponent::configureLink(const std::string& name, const UnitAlgebra& time_base, Event::HandlerBase* handler)
+{
+    return configureLink(name,Simulation_impl::getTimeLord()->getTimeConverter(time_base),handler);
+}
+
+Link*
 BaseComponent::configureLink(const std::string& name, Event::HandlerBase* handler)
 {
     return configureLink(name,nullptr,handler);
@@ -342,6 +348,13 @@ BaseComponent::configureSelfLink( const std::string& name, TimeConverter* time_b
 
 Link*
 BaseComponent::configureSelfLink( const std::string& name,  const std::string& time_base, Event::HandlerBase* handler)
+{
+    addSelfLink(name);
+    return configureLink(name,time_base,handler);
+}
+
+Link*
+BaseComponent::configureSelfLink( const std::string& name,  const UnitAlgebra& time_base, Event::HandlerBase* handler)
 {
     addSelfLink(name);
     return configureLink(name,time_base,handler);

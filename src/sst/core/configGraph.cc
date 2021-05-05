@@ -557,7 +557,10 @@ ConfigComponent::checkPorts() const
                 // Check for multiple links hooked to port
                 auto ret = ports.insert(std::make_pair(link.port[j],link.name));
                 if ( !ret.second ) {
-                    Output::getDefaultObject().fatal(CALL_INFO,1,"ERROR: Port %s of Component %s connected to two links: %s, %s.\n",
+                    // Check to see if this is a loopback link
+                    if ( ret.first->second != link.name )
+                        // Not a loopback link, fatal...
+                        Output::getDefaultObject().fatal(CALL_INFO,1,"ERROR: Port %s of Component %s connected to two links: %s, %s.\n",
                                  link.port[j].c_str(),name.c_str(),link.name.c_str(),ret.first->second.c_str());
                 }
             }
