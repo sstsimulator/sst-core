@@ -99,11 +99,6 @@ SST_ENABLE_CORE_PROFILE()
 
 SST_CHECK_FPIC()
 
-SST_CHECK_ZOLTAN([have_zoltan=1],[have_zoltan=0],[AC_MSG_ERROR([Zoltan requested but not found])])
-AS_IF([test "x$have_zoltan" = "x1"], [AC_DEFINE_UNQUOTED([HAVE_ZOLTAN], [1],
-	[Define if you have the Zoltan library.])])
-AM_CONDITIONAL([HAVE_ZOLTAN], [test "$have_zoltan" = 1])
-
 AC_DEFINE_UNQUOTED([SST_CPPFLAGS], ["$CPPFLAGS"], [Defines the CPPFLAGS used to build SST])
 AC_DEFINE_UNQUOTED([SST_CFLAGS], ["$CFLAGS"], [Defines the CFLAGS used to build SST])
 AC_DEFINE_UNQUOTED([SST_CXXFLAGS], ["$CXXFLAGS"], [Defines the CXXFLAGS used to build SST])
@@ -225,11 +220,7 @@ echo ""
 
 printf "%38s : %s (%s)\n" "Found Python" "$PYTHON_EXE" "$PYTHON_VERSION"
 printf "%38s : %s\n" "Python3" "$PYTHON_VERSION3"
-if test "x$sst_check_zoltan_happy" = "xyes" ; then
-    printf "%38s : YES\n" "Zoltan Partitioner"
-else
-    printf "%38s : No\n" "Zoltan Partitioner"
-fi
+
 if test "x$sst_check_hdf5_happy" = "xyes" ; then
     printf "%38s : YES\n" "HDF5 Support"
 else
