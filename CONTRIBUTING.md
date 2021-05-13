@@ -9,7 +9,7 @@
          * **While this branch is fairly stable, unexpected events can cause it to be broken at any time.**
       * **master** - Contains the latest fully tested stable version of SST-Core that is under development.
 
-* Backwards compatibility for changes of existing SST-Core features should be maintained for one year and indicated with a deprecation notice via compile and/or release notes.
+* Backwards compatibility for changes to existing SST-Core features should be maintained for one major release cycle. During this time, deprecation notices should be provided via compile, runtime warning, and/or release notes.
 * Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-core).
 * Questions can be sent to wg-sst@sandia.gov
 
