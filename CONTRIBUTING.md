@@ -5,9 +5,11 @@
 * SST-Core is the repository for the Sandia developed SST Simulation Core.  The repository is hosted on [GitHub](https://github.com).
    * An understanding of [git scm](https://git-scm.com/) is essential to developing code for SST.
    * There are 2 primary branches used for SST development
-      * **devel** - Contains the latest offical codeset of SST-Core.  **This branch is unstable and may be broken at any time.**
-      * **master** - Contains the latest fully tested stable version of SST-Core.
+      * **devel** - Contains the latest development codeset of SST-Core.
+         * **While this branch is fairly stable, unexpected events can cause it to be broken at any time.**
+      * **master** - Contains the latest fully tested stable version of SST-Core that is under development.
 
+* Backwards compatibility for changes of existing SST-Core features should be maintained for one year and indicated with a deprecation notice via compile and/or release notes.
 * Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-core).
 * Questions can be sent to wg-sst@sandia.gov
 
