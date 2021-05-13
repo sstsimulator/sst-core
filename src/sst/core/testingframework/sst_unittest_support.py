@@ -781,7 +781,7 @@ def log_fatal(errstr):
 ###
 
 def log_testing_note(note_str):
-    """ Log a 'FATAL:' message.
+    """ Log a testing note
 
         Add a testing note that will be displayed at the end of the test run
         in the results section.  These notes can be used for adding any
