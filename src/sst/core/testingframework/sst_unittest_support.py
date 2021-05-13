@@ -778,6 +778,27 @@ def log_fatal(errstr):
     log_forced(finalstr)
     sys.exit(2)
 
+###
+
+def log_testing_note(note_str):
+    """ Log a 'FATAL:' message.
+
+        Add a testing note that will be displayed at the end of the test run
+        in the results section.  These notes can be used for adding any
+        info/notes/observations that is desired to be reviewed by the user at the
+        end of the test run.  Adding a note has no impact on the Pass/Fail status
+        of any test.  Also, if debug mode is enabled, the note will be logged
+        to the console.  The text "NOTE : " will be prepended to the front of the
+        note_str.
+
+        Args:
+            note_str (str): string to be added to notes list
+    """
+    check_param_type("note_str", note_str, str)
+    final_note = "NOTE: {0}".format(note_str)
+    test_engine_globals.TESTENGINE_TESTNOTESLIST.append(final_note)
+    log_debug(final_note)
+
 ################################################################################
 ### Testing Directories
 ################################################################################
