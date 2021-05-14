@@ -90,7 +90,7 @@ void StatisticOutputJSON::startOfSimulation()
         const int thisRank = Simulation::getSimulation()->getRank().rank;
 
         printIndent();
-        fprintf(m_hFile, "\"rank\" : %d\n\n", thisRank);
+        fprintf(m_hFile, "\"rank\" : %d,\n\n", thisRank);
     }
 
     printIndent();
