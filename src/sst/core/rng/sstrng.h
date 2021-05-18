@@ -20,7 +20,7 @@ namespace RNG {
 
 using SSTRandom = SST::RNG::Random;
 
-} //namespace RNG
-} //namespace SST
+} // namespace RNG
+} // namespace SST
 
-#endif //SST_CORE_RNG_SSTRNG_H
+#endif // SST_CORE_RNG_SSTRNG_H

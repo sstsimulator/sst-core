@@ -26,11 +26,11 @@ namespace RNG {
 */
 class Random {
 
-    public:
+public:
     /**
         Generates the next random number in the range 0 to 1.
     */
-    virtual double   nextUniform() = 0;
+    virtual double nextUniform() = 0;
 
     /**
         Generates the next random number as an unsigned 32-bit integer.
@@ -45,21 +45,20 @@ class Random {
     /**
         Generates the next random number as a signed 64-bit integer.
     */
-    virtual int64_t     generateNextInt64() = 0;
+    virtual int64_t generateNextInt64() = 0;
 
     /**
         Generates the next random number as a signed 32-bit integer
     */
-        virtual int32_t  generateNextInt32() = 0;
+    virtual int32_t generateNextInt32() = 0;
 
     /**
         Destroys the random number generator
     */
-    virtual ~Random() { }
-
+    virtual ~Random() {}
 };
 
-} //namespace RNG
-} //namespace SST
+} // namespace RNG
+} // namespace SST
 
-#endif //SST_CORE_RNG_RNG_H
+#endif // SST_CORE_RNG_RNG_H
