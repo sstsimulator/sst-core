@@ -11,6 +11,7 @@
 
 #include "sst_config.h"
 
+#include "rng.h"
 #include "xorshift.h"
 #include <cstdlib>
 #include <cassert>
@@ -21,7 +22,8 @@ using namespace SST::RNG;
     Generate a new random number generator with a random selection for the
     seed.
 */
-XORShiftRNG::XORShiftRNG() {
+XORShiftRNG::XORShiftRNG() :
+	SST::RNG::Random() {
     struct timeval now;
     gettimeofday(&now, nullptr);
 
@@ -34,7 +36,9 @@ XORShiftRNG::XORShiftRNG() {
 /*
     Seed the Mersenne and then make a group of numbers
 */
-XORShiftRNG::XORShiftRNG(unsigned int startSeed) {
+XORShiftRNG::XORShiftRNG(unsigned int startSeed) :
+	SST::RNG::Random() {
+
     assert(startSeed != 0);
 
     seed(startSeed);

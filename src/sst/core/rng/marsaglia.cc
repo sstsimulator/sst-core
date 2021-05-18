@@ -11,6 +11,7 @@
 
 #include "sst_config.h"
 
+#include "rng.h"
 #include "marsaglia.h"
 
 #include <cstdlib>
@@ -22,7 +23,8 @@ using namespace SST::RNG;
 /*
     Seed the Marsaglia method with two initializers that must be non-zero.
 */
-MarsagliaRNG::MarsagliaRNG(unsigned int initial_z, unsigned int initial_w) {
+MarsagliaRNG::MarsagliaRNG(unsigned int initial_z, unsigned int initial_w) :
+	SST::RNG::Random() {
     m_z = initial_z;
     m_w = initial_w;
 }
@@ -31,7 +33,8 @@ MarsagliaRNG::MarsagliaRNG(unsigned int initial_z, unsigned int initial_w) {
     Generate a new random number generator with a random selection for the
     seed.
 */
-MarsagliaRNG::MarsagliaRNG() {
+MarsagliaRNG::MarsagliaRNG() :
+	SST::RNG::Random() {
     struct timeval now;
         gettimeofday(&now, nullptr);
 
