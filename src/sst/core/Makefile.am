@@ -204,7 +204,6 @@ sst_core_sources = \
 	interprocess/ipctunnel.cc \
 	interprocess/mmapparent.cc \
 	interprocess/shmparent.cc \
-	rng/rng.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
 	rng/xorshift.cc \
