@@ -47,7 +47,7 @@ class SSTPoissonDistribution : public SSTRandomDistribution {
             \param lambda The lambda of the Poisson distribution
             \param baseDist The base random number generator to take the distribution from.
         */
-    SSTPoissonDistribution(const double mn, SSTRandom* baseDist)  :
+    SSTPoissonDistribution(const double mn, SST::RNG::Random* baseDist)  :
     SSTRandomDistribution(), lambda(mn) {
 
         baseDistrib = baseDist;
@@ -96,7 +96,7 @@ class SSTPoissonDistribution : public SSTRandomDistribution {
         /**
             Sets the base random number generator for the distribution.
         */
-        SSTRandom* baseDistrib;
+        SST::RNG::Random* baseDistrib;
 
         /**
             Controls whether the base distribution should be deleted when this class is destructed.
