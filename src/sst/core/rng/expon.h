@@ -48,7 +48,7 @@ class SSTExponentialDistribution : public SSTRandomDistribution {
             \param mn The lambda of the exponential distribution
             \param baseDist The base random number generator to take the distribution from.
         */
-    SSTExponentialDistribution(const double mn, SSTRandom* baseDist)  :
+    SSTExponentialDistribution(const double mn, SST::RNG::Random* baseDist)  :
     SSTRandomDistribution() {
 
         lambda = mn;
@@ -91,7 +91,7 @@ class SSTExponentialDistribution : public SSTRandomDistribution {
         /**
             Sets the base random number generator for the distribution.
         */
-        SSTRandom* baseDistrib;
+        SST::RNG::Random* baseDistrib;
 
         /**
             Controls whether the base distribution should be deleted when this class is destructed.

@@ -117,6 +117,7 @@ nobase_dist_sst_HEADERS = \
 	interprocess/sstmutex.h \
 	interprocess/ipctunnel.h \
 	rng/sstrng.h \
+	rng/rng.h \
 	rng/marsaglia.h \
 	rng/poisson.h \
 	rng/mersenne.h \
@@ -203,7 +204,7 @@ sst_core_sources = \
 	interprocess/ipctunnel.cc \
 	interprocess/mmapparent.cc \
 	interprocess/shmparent.cc \
-	rng/sstrng.cc \
+	rng/rng.cc \
 	rng/marsaglia.cc \
 	rng/mersenne.cc \
 	rng/xorshift.cc \

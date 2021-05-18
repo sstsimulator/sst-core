@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <sys/time.h>
 
-#include "sstrng.h"
+#include "rng.h"
 
 #define XORSHIFT_UINT32_MAX 4294967295U
 #define XORSHIFT_UINT64_MAX 18446744073709551615ULL
@@ -32,7 +32,7 @@ namespace RNG {
     lightweight and inexpensive RNG.
 
 */
-class XORShiftRNG : public SSTRandom {
+class XORShiftRNG : public SST::RNG::Random {
 
     public:
     /**
