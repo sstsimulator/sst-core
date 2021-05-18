@@ -16,6 +16,7 @@
 #include <stdint.h>
 #include <sys/time.h>
 
+#include "rng.h"
 #include "sstrng.h"
 
 #define MARSAGLIA_UINT32_MAX 4294967295U
@@ -36,7 +37,7 @@ namespace RNG {
         For more information see the Multiply-with-carry Random Number Generator article
     at Wikipedia (http://en.wikipedia.org/wiki/Multiply-with-carry).
 */
-class MarsagliaRNG : public SSTRandom {
+class MarsagliaRNG : public SST::RNG::Random {
 
     public:
     /**

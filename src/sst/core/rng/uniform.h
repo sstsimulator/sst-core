@@ -51,7 +51,7 @@ class SSTUniformDistribution : public SSTRandomDistribution {
 	        \param probsCount Number of probability bins in the distribution
         	\param baseDist The base random number generator to take the distribution from.
     	*/
-    	SSTUniformDistribution(const uint32_t probsCount, SSTRandom* baseDist) :
+    	SSTUniformDistribution(const uint32_t probsCount, SST::RNG::Random* baseDist) :
    		SSTRandomDistribution(), probCount(probsCount), deleteDistrib(false) {
 
 		if( probCount > 0 ) {
@@ -89,7 +89,7 @@ class SSTUniformDistribution : public SSTRandomDistribution {
         /**
             Sets the base random number generator for the distribution.
         */
-        SSTRandom* baseDistrib;
+        SST::RNG::Random* baseDistrib;
 
         /**
             Controls whether the base distribution should be deleted when this class is destructed.

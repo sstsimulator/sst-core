@@ -53,7 +53,7 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
             \param sd The standard deviation of the Gaussian distribution
             \param baseRNG The random number generator as the base of the distribution
         */
-    SSTGaussianDistribution(double mn, double sd, SSTRandom* baseRNG)  :
+    SSTGaussianDistribution(double mn, double sd, SST::RNG::Random* baseRNG)  :
     SSTRandomDistribution() {
 
         mean = mn;
@@ -135,7 +135,7 @@ class SSTGaussianDistribution : public SSTRandomDistribution {
         /**
             The base random number generator for the distribution
         */
-        SSTRandom* baseDistrib;
+        SST::RNG::Random* baseDistrib;
         /**
             Random numbers for the distribution are read in pairs, this stores the second of the pair
         */
