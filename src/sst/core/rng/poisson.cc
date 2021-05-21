@@ -12,31 +12,32 @@
 
 #include "sst_config.h"
 
+#include "distrib.h"
 #include "poisson.h"
 
 using namespace SST::RNG;
 
-SSTPoissonDistribution::SSTPoissonDistribution(const double mn) :
-    SSTRandomDistribution(), lambda(mn) {
+PoissonDistribution::PoissonDistribution(const double mn) :
+    RandomDistribution(), lambda(mn) {
 
     baseDistrib = new MersenneRNG();
     deleteDistrib = true;
 }
 
-SSTPoissonDistribution::SSTPoissonDistribution(const double mn, SSTRandom* baseDist) :
-    SSTRandomDistribution(), lambda(mn) {
+PoissonDistribution::PoissonDistribution(const double mn, SST::RNG::Random* baseDist) :
+    RandomDistribution(), lambda(mn) {
 
     baseDistrib = baseDist;
     deleteDistrib = false;
 }
 
-SSTPoissonDistribution::~SSTPoissonDistribution() {
+PoissonDistribution::~PoissonDistribution() {
     if(deleteDistrib) {
         delete baseDistrib;
     }
 }
 
-double SSTPoissonDistribution::getNextDouble() {
+double PoissonDistribution::getNextDouble() {
     const double L = exp(-lambda);
           double p = 1.0;
           int k = 0;
@@ -49,6 +50,6 @@ double SSTPoissonDistribution::getNextDouble() {
     return k - 1;
 }
 
-double SSTPoissonDistribution::getLambda() {
+double PoissonDistribution::getLambda() {
     return lambda;
 }

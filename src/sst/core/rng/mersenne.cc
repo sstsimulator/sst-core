@@ -11,6 +11,7 @@
 
 #include "sst_config.h"
 
+#include "rng.h"
 #include "mersenne.h"
 
 #include <cstdlib>
@@ -22,7 +23,8 @@ using namespace SST::RNG;
     Generate a new random number generator with a random selection for the
     seed.
 */
-MersenneRNG::MersenneRNG() {
+MersenneRNG::MersenneRNG() :
+	SST::RNG::Random() {
     numbers = (uint32_t*) malloc(sizeof(uint32_t) * 624);
 
     struct timeval now;
@@ -40,7 +42,8 @@ MersenneRNG::MersenneRNG() {
 /*
     Seed the Mersenne and then make a group of numbers
 */
-MersenneRNG::MersenneRNG(unsigned int startSeed) {
+MersenneRNG::MersenneRNG(unsigned int startSeed) :
+	SST::RNG::Random() {
     seed(startSeed);
 }
 

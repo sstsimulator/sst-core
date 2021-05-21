@@ -16,12 +16,13 @@
 #include <stdint.h>
 #include <sys/time.h>
 
+#include "rng.h"
 #include "sstrng.h"
 
 #define MARSAGLIA_UINT32_MAX 4294967295U
 #define MARSAGLIA_UINT64_MAX 18446744073709551615ULL
-#define MARSAGLIA_INT32_MAX  2147483647L
-#define MARSAGLIA_INT64_MAX  9223372036854775807LL
+#define MARSAGLIA_INT32_MAX 2147483647L
+#define MARSAGLIA_INT64_MAX 9223372036854775807LL
 
 namespace SST {
 namespace RNG {
@@ -36,35 +37,34 @@ namespace RNG {
         For more information see the Multiply-with-carry Random Number Generator article
     at Wikipedia (http://en.wikipedia.org/wiki/Multiply-with-carry).
 */
-class MarsagliaRNG : public SSTRandom {
+class MarsagliaRNG : public SST::RNG::Random {
 
-    public:
+public:
     /**
         Creates a new Marsaglia RNG using the initial seeds.
         @param[in] initial_z One of the random seed pairs
         @param[in] initial_w One of the random seed pairs.
     */
-        MarsagliaRNG(unsigned int initial_z,
-                unsigned int initial_w);
+    MarsagliaRNG(unsigned int initial_z, unsigned int initial_w);
 
     /**
         Creates a new Marsaglia RNG using random initial seeds (which are
         read from the system clock). Note that these will create variation
         between runs and between platforms.
     */
-        MarsagliaRNG();
+    MarsagliaRNG();
 
     /**
         Restart the random number generator with new seeds
         @param[in] new_z A new Z-seed
         @param[in] new_w A new W-seed
     */
-    void    restart(unsigned int new_z, unsigned int new_w);
+    void restart(unsigned int new_z, unsigned int new_w);
 
     /**
         Generates the next random number as a double in the range 0 to 1.
     */
-    double   nextUniform() override;
+    double nextUniform() override;
 
     /**
         Generates the next random number as an unsigned 32-bit integer.
@@ -79,37 +79,36 @@ class MarsagliaRNG : public SSTRandom {
     /**
         Generates the next number as a signed 64-bit integer.
     */
-    int64_t  generateNextInt64() override;
+    int64_t generateNextInt64() override;
 
     /**
         Generates the next number as a signed 32-bit integer.
     */
-    int32_t   generateNextInt32() override;
+    int32_t generateNextInt32() override;
 
     /**
         Seed the XOR RNG
     */
     void seed(uint64_t newSeed);
 
-    private:
+private:
     /**
         Generates the next random number
     */
-        unsigned int generateNext();
+    unsigned int generateNext();
 
     /**
         The Z seed of the Marsaglia generator
     */
-        unsigned int m_z;
+    unsigned int m_z;
 
     /**
         The W seed of the Marsaglia generator
     */
-        unsigned int m_w;
-
+    unsigned int m_w;
 };
 
-} //namespace RNG
-} //namespace SST
+} // namespace RNG
+} // namespace SST
 
-#endif //SST_CORE_RNG_MARSAGLIA_H
+#endif // SST_CORE_RNG_MARSAGLIA_H
