@@ -29,9 +29,8 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX_0X], [
 
   AC_CACHE_CHECK(if C++ supports C++0x features without additional flags,
   ax_cv_cxx_compile_cxx0x_native,
-  [AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-  AC_TRY_COMPILE([
+  [AC_LANG_PUSH([C++])
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
   template <typename T>
     struct check
     {
@@ -45,20 +44,19 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX_0X], [
 
     typedef check<int> check_type;
     check_type c;
-    check_type&& cr = static_cast<check_type&&>(c);],,
-  ax_cv_cxx_compile_cxx0x_native=yes, ax_cv_cxx_compile_cxx0x_native=no)
-  AC_LANG_RESTORE
+    check_type&& cr = static_cast<check_type&&>(c);]], [])],
+  [ax_cv_cxx_compile_cxx0x_native=yes], [ax_cv_cxx_compile_cxx0x_native=no])
+  AC_LANG_POP([C++])
   ])
 
   SST_CXX0X_FLAGS=""
 
   AC_CACHE_CHECK(if C++ supports C++0x features with -std=c++11,
   ax_cv_cxx_compile_cxx11_cxx,
-  [AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
+  [AC_LANG_PUSH([C++])
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -std=c++11 -D__STDC_FORMAT_MACROS"
-  AC_TRY_COMPILE([
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
   template <typename T>
     struct check
     {
@@ -72,23 +70,22 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX_0X], [
 
     typedef check<int> check_type;
     check_type c;
-    check_type&& cr = static_cast<check_type&&>(c);],,
-  ax_cv_cxx_compile_cxx11_cxx=yes, ax_cv_cxx_compile_cxx11_cxx=no)
+    check_type&& cr = static_cast<check_type&&>(c);]], [])],
+  [ax_cv_cxx_compile_cxx11_cxx=yes], [ax_cv_cxx_compile_cxx11_cxx=no])
   CXXFLAGS=$ac_save_CXXFLAGS
   AS_IF([test "$ax_cv_cxx_compile_cxx11_cxx" = "yes" ], [SST_CXX0X_FLAGS="-std=c++11 -D__STDC_FORMAT_MACROS"])
 
-  AC_LANG_RESTORE
+  AC_LANG_POP([C++])
   ])
 
   AS_IF([test "$ax_cv_cxx_compile_cxx11_cxx" != "yes"], [
 
   AC_CACHE_CHECK(if C++ supports C++0x features with -std=c++0x,
   ax_cv_cxx_compile_cxx0x_cxx,
-  [AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
+  [AC_LANG_PUSH([C++])
   ac_save_CXXFLAGS="$CXXFLAGS"
   CXXFLAGS="$CXXFLAGS -std=c++0x -D__STDC_FORMAT_MACROS"
-  AC_TRY_COMPILE([
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
   template <typename T>
     struct check
     {
@@ -102,11 +99,11 @@ AC_DEFUN([AX_CXX_COMPILE_STDCXX_0X], [
 
     typedef check<int> check_type;
     check_type c;
-    check_type&& cr = static_cast<check_type&&>(c);],,
-  ax_cv_cxx_compile_cxx0x_cxx=yes, ax_cv_cxx_compile_cxx0x_cxx=no)
+    check_type&& cr = static_cast<check_type&&>(c);]], [])],
+  [ax_cv_cxx_compile_cxx0x_cxx=yes], [ax_cv_cxx_compile_cxx0x_cxx=no])
   CXXFLAGS=$ac_save_CXXFLAGS
   AS_IF([test "$ax_cv_cxx_compile_cxx0x_cxx" = "yes" ], [SST_CXX0X_FLAGS="-std=c++0x -D__STDC_FORMAT_MACROS"])
-  AC_LANG_RESTORE
+  AC_LANG_POP([C++])
 
   ])
   ])
