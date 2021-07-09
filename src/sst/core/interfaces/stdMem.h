@@ -156,17 +156,29 @@ public:
                 comma = true;
             }
             if (getSuccess()) {
-                comma ? str << "," : comma = true;
+                if (comma) { 
+                    str << ","; 
+                } else { 
+                    comma = true; 
+                }
                 str << "F_SUCCESS";
             }
             if (getTrace()) {
-                comma ? str << "," : comma = true;
+                if (comma) {
+                    str << ",";
+                } else {
+                    comma = true;
+                }
                 str << "F_TRACE";
             }
             for (unsigned int i = 4; i < sizeof(flags_t); i++) {
                 flags_t shift = 1 << i;
                 if (getFlag(shift)) {
-                    comma ? str << "," : comma = true;
+                    if (comma) {
+                        str << ",";
+                    } else {
+                        comma = true;
+                    }
                     str << "F_" << i;
                 }
             }
