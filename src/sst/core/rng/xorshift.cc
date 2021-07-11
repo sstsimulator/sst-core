@@ -10,6 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
+#include "sst/core/sst_types.h"
 
 #include "rng.h"
 #include "xorshift.h"
@@ -40,17 +41,22 @@ XORShiftRNG::XORShiftRNG(unsigned int startSeed) :
 	SST::RNG::Random() {
 
     assert(startSeed != 0);
-
     seed(startSeed);
 }
 
 /*
     Transform an unsigned integer into a uniform double from which other
-    distributed can be generated
+    distribution can be generated. Guarantees to select values in the
+    range of [0, 1).
 */
 double XORShiftRNG::nextUniform() {
-    uint32_t temp = generateNextUInt32();
-    return ( (double) temp ) / (double) XORSHIFT_UINT32_MAX;
+    double temp_dbl = 1.0;
+
+    do {
+        temp_dbl = static_cast<double>(generateNextUInt32()) / static_cast<double>(XORSHIFT_UINT32_MAX);
+    } while( UNLIKELY(temp_dbl >= 1.0) );
+
+    return temp_dbl;
 }
 
 uint32_t XORShiftRNG::generateNextUInt32() {
