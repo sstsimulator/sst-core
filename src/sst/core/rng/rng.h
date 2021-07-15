@@ -28,7 +28,7 @@ class Random {
 
 public:
     /**
-        Generates the next random number in the range 0 to 1.
+        Generates the next random number in the range [0,1).
     */
     virtual double nextUniform() = 0;
 

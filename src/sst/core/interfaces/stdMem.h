@@ -121,6 +121,9 @@ public:
 
         virtual void handle(RequestHandler* handler) = 0;
 
+        /* Return string representation of event for debug/output/etc. */
+        virtual std::string getString() = 0;
+
         /* Flag handling */
         void setNoncacheable() { flags |= static_cast<int>(Flag::F_NONCACHEABLE); }
         void unsetNoncacheable() { flags &= ~(static_cast<int>(Flag::F_NONCACHEABLE)); }
@@ -143,6 +146,44 @@ public:
 
         void clearAllFlags() { flags = 0; }
         flags_t getAllFlags() { return flags; }
+
+        std::string getFlagString() {
+            /* Print flag name for known ones and F_XX where XX is the bit index for unknown ones */
+            std::ostringstream str;
+            bool comma = false;
+            if (getNoncacheable()) { 
+                str << "F_NONCACHEABLE";
+                comma = true;
+            }
+            if (getSuccess()) {
+                if (comma) { 
+                    str << ","; 
+                } else { 
+                    comma = true; 
+                }
+                str << "F_SUCCESS";
+            }
+            if (getTrace()) {
+                if (comma) {
+                    str << ",";
+                } else {
+                    comma = true;
+                }
+                str << "F_TRACE";
+            }
+            for (unsigned int i = 4; i < sizeof(flags_t); i++) {
+                flags_t shift = 1 << i;
+                if (getFlag(shift)) {
+                    if (comma) {
+                        str << ",";
+                    } else {
+                        comma = true;
+                    }
+                    str << "F_" << i;
+                }
+            }
+            return str.str();
+        }
 
     protected:
         id_t id;
@@ -191,7 +232,15 @@ public:
         bool needsResponse() override { return true; }
 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: Read, Flags: [" << getFlagString() << "] PhysAddr: 0x" << std::hex << pAddr << ", VirtAddr: 0x" << vAddr;
+            str << ", Size: " << std::dec << size << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
 
         /* Data members */
         Addr pAddr;     /* Physical address */
@@ -214,9 +263,24 @@ public:
         virtual ~ReadResp() {}
 
         Request* makeResponse() override { return nullptr; } /* No response type */
+     
         bool needsResponse() override { return false; }
+     
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+     
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+     
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: ReadResp, Flags: [" << getFlagString() << "] PhysAddr: 0x" << std::hex << pAddr;
+            str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size << ", InstPtr: 0x" << std::hex << iPtr;
+            str << ", ThreadID: " << std::dec << tid << ", Payload: 0x" << std::hex;
+            str << std::setfill('0');
+            for (std::vector<uint8_t>::iterator it = data.begin(); it != data.end(); it++) {
+                str << std::setw(2) << static_cast<unsigned>(*it);
+            }
+            return str.str();
+        }
 
         /* Data members */
         Addr pAddr;     /* Physical address */
@@ -241,9 +305,24 @@ public:
         virtual ~Write() {}
 
         virtual Request* makeResponse() override { return new WriteResp(this); }
+        
         virtual bool needsResponse() override { return !posted; }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+        
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: Write, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex << pAddr;
+            str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size << ", Posted: " << (posted ? "T" : "F");
+            str << ", InstPtr: 0x" << std::hex << iPtr <<", ThreadID: " << std::dec << tid << ", Payload: 0x" << std::hex;
+            str << std::setfill('0');
+            for (std::vector<uint8_t>::iterator it = data.begin(); it != data.end(); it++) {
+                str << std::setw(2) << static_cast<unsigned>(*it);
+            }
+            return str.str();
+        }
 
         /* Data members */
         Addr pAddr;     /* Physical address */
@@ -268,9 +347,20 @@ public:
         virtual ~WriteResp() {}
 
         virtual Request* makeResponse() override { return nullptr; }
+ 
         virtual bool needsResponse() override { return false; }
+ 
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+ 
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID:" << id << ", Type: WriteResp, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex << pAddr;
+            str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size << ", InstPtr: 0x" << std::hex << iPtr;
+            str << ", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
 
         /* Data members */
         Addr pAddr;     /* Physical address */
@@ -292,9 +382,20 @@ public:
         virtual ~FlushAddr() {}
 
         virtual Request* makeResponse() override { return new FlushResp(this); }
+        
         virtual bool needsResponse() override { return true; }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+        
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID:" << id << ", Type: FlushAddr, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex << pAddr;
+            str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size << ", Inv: " << (inv ? "T" : "F");
+            str << ", Depth: " << depth << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
 
         Addr pAddr;     /* Physical address */
         Addr vAddr;     /* Virtual address */
@@ -319,10 +420,21 @@ public:
         virtual ~FlushResp() {}
 
         virtual Request* makeResponse() override { return nullptr; }
+        
         virtual bool needsResponse() override { return false; }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
         
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID:" << id << ", Type: FlushResp, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex << pAddr;
+            str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size;
+            str << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
+
         Addr pAddr;     /* Physical address */
         Addr vAddr;     /* Virtual address */
         uint64_t size;  /* Number of bytes to invalidate */
@@ -350,8 +462,17 @@ public:
         }
 
         bool needsResponse() override { return true; }
+
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: ReadLock, Flags: [" << getFlagString() << "] PhysAddr: 0x" << std::hex << pAddr << ", VirtAddr: 0x" << vAddr;
+            str << ", Size: " << std::dec << size << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
 
         /* Data members */
         Addr pAddr;     /* Physical address */
@@ -374,9 +495,24 @@ public:
         virtual ~WriteUnlock() {}
 
         virtual Request* makeResponse() override { return new WriteResp(id, pAddr, size, flags, vAddr = 0, iPtr, tid); }
+        
         virtual bool needsResponse() override { return !posted; }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+        
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: WriteUnlock, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex << pAddr;
+            str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size << ", Posted: " << (posted ? "T" : "F");
+            str << ", InstPtr: 0x" << std::hex << iPtr <<", ThreadID: " << std::dec << tid << ", Payload: 0x" << std::hex;
+            str << std::setfill('0');
+            for (std::vector<uint8_t>::iterator it = data.begin(); it != data.end(); it++) {
+                str << std::setw(2) << static_cast<unsigned>(*it);
+            }
+            return str.str();
+        }
 
         /* Data members */
         Addr pAddr;     /* Physical address */
@@ -408,8 +544,17 @@ public:
         }
 
         bool needsResponse() override { return true; }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+        
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: LoadLink, Flags: [" << getFlagString() << "] PhysAddr: 0x" << std::hex << pAddr << ", VirtAddr: 0x" << vAddr;
+            str << ", Size: " << std::dec << size << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
 
         /* Data members */
         Addr pAddr;     /* Physical address */
@@ -433,9 +578,24 @@ public:
 
         /* Model must also call setSuccess() on response if LLSC succeeded */
         virtual Request* makeResponse() override  { return new WriteResp(id, pAddr, size, flags, vAddr, iPtr, tid); }
+        
         virtual bool needsResponse() override { return true; }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+        
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: StoreConditional, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex << pAddr;
+            str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size;
+            str << ", InstPtr: 0x" << std::hex << iPtr <<", ThreadID: " << std::dec << tid << ", Payload: 0x" << std::hex;
+            str << std::setfill('0');
+            for (std::vector<uint8_t>::iterator it = data.begin(); it != data.end(); it++) {
+                str << std::setw(2) << static_cast<unsigned>(*it);
+            }
+            return str.str();
+        }
 
         /* Data members */
         Addr pAddr;     /* Physical address */
@@ -457,9 +617,21 @@ public:
         virtual ~MoveData() {}
 
         virtual Request* makeResponse() override { return new WriteResp(id, pDst, size, flags, vDst, iPtr, tid); }
+        
         virtual bool needsResponse() override { return posted; }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+        
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: MoveData, Flags: [" << getFlagString() << "], SrcPhysAddr: 0x" << std::hex << pSrc;
+            str << ", SrcVirtAddr: 0x" << vSrc << ", DstPhysAddr: 0x" << pDst << ", DstVirtAddr: 0x" << vDst;
+            str << ", Size: " << std::dec << size << ", Posted: " << (posted ? "T" : "F");
+            str << ", InstPtr: 0x" << std::hex << iPtr <<", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
 
         /* Data members */
         Addr pSrc;   /* Physical address of source */
@@ -481,9 +653,20 @@ public:
         virtual ~InvNotify() {}
 
         virtual Request* makeResponse() override { return nullptr; }
+        
         virtual bool needsResponse() override { return false; }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+       
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: InvNotify, Flags: [" << getFlagString() << "], PhysAddr: 0x" << std::hex << pAddr;
+            str << ", VirtAddr: 0x" << vAddr << ", Size: " << std::dec << size;
+            str << ", InstPtr: 0x" << std::hex << iPtr <<", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
 
         Addr pAddr; /* Physical address */
         Addr vAddr; /* Virtual address */
@@ -503,6 +686,7 @@ public:
         virtual uint64_t getSize() = 0;         /* Return size to use when accounting for bandwidth used is needed */
         virtual CustomData* makeResponse() = 0; /* Return a CustomData* object formatted as a response */
         virtual bool needsResponse() = 0;       /* Return whether a response is needed */
+        virtual std::string getString() = 0;    /* String representation for debug/output/etc. */
 
         /* This needs to be serializable so that we can use it in events in parallel simulations */
         virtual void serialize_order(SST::Core::Serialization::serializer &UNUSED(ser)) override = 0;
@@ -518,9 +702,19 @@ public:
         virtual ~CustomReq() {}
 
         virtual Request* makeResponse() override { return new CustomResp(this); }
+        
         virtual bool needsResponse() override { return data->needsResponse(); }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+        
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: CustomReq, Flags: [" << getFlagString() << "], " << data->getString();
+            str << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
 
         CustomData* data; /* Custom class that holds data for this event */
         Addr iPtr;      /* Instruction pointer */
@@ -536,9 +730,19 @@ public:
         virtual ~CustomResp() {}
 
         virtual Request* makeResponse() override { return nullptr; }
+        
         virtual bool needsResponse() override { return false; }
+        
         SST::Event* convert(RequestConverter* converter) override { return converter->convert(this); }
+        
         void handle(RequestHandler* handler) override { return handler->handle(this); }
+        
+        std::string getString() override {
+            std::ostringstream str;
+            str << "ID: " << id << ", Type: CustomResp, Flags: [" << getFlagString() << "], " << data->getString();
+            str << ", InstPtr: 0x" << std::hex << iPtr << ", ThreadID: " << std::dec << tid;
+            return str.str();
+        }
 
         CustomData* data;   /* Custom class that holds data for this event */
         Addr iPtr;      /* Instruction pointer */

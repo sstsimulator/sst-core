@@ -10,6 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
+#include "sst/core/sst_types.h"
 
 #include "rng.h"
 #include "marsaglia.h"
@@ -62,13 +63,18 @@ unsigned int MarsagliaRNG::generateNext() {
 
 /*
     Transform an unsigned integer into a uniform double from which other
-    distributed can be generated
+    distributions can be generated. Guarantees to produce random numbers
+    in the range of [0, 1).
 */
 double MarsagliaRNG::nextUniform() {
-    unsigned int next_uint = generateNext();
-        return (next_uint + 1) * 2.328306435454494e-10;
-}
+    double next_dbl = 1.0;
 
+    do {
+        next_dbl = static_cast<double>(generateNext() + 1) * 2.328306435454494e-10;
+    } while( UNLIKELY(next_dbl >= 1.0) );
+
+    return next_dbl;
+}
 
 uint64_t MarsagliaRNG::generateNextUInt64() {
     int64_t nextInt64 = generateNextInt64();

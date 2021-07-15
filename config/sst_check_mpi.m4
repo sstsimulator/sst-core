@@ -1,6 +1,6 @@
 AC_DEFUN([SST_CHECK_MPI], [
   AC_ARG_ENABLE([mpi],
-     [AC_HELP_STRING([--disable-mpi],
+     [AS_HELP_STRING([--disable-mpi],
                      [Disable support for multi-node simulations using MPI.])])
   AS_IF([test "$enable_mpi" = "no"], [sst_use_mpi=0], [sst_use_mpi=1])
   SST_CHECK_USING_MPI([
