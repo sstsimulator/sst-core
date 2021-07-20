@@ -23,8 +23,8 @@ namespace ELI {
 
 template <class T, class Enable=void>
 struct InfoPorts {
-  static const std::vector<SST::ElementInfoPort2>& get() {
-    static std::vector<SST::ElementInfoPort2> var = { };
+  static const std::vector<SST::ElementInfoPort>& get() {
+    static std::vector<SST::ElementInfoPort> var = { };
     return var;
   }
 };
@@ -32,7 +32,7 @@ struct InfoPorts {
 template <class T>
 struct InfoPorts<T,
       typename MethodDetect<decltype(T::ELI_getPorts())>::type> {
-  static const std::vector<SST::ElementInfoPort2>& get() {
+  static const std::vector<SST::ElementInfoPort>& get() {
     return T::ELI_getPorts();
   }
 };
@@ -41,7 +41,7 @@ struct InfoPorts<T,
 class ProvidesPorts {
  public:
   const std::vector<std::string>& getPortnames() { return portnames; }
-  const std::vector<ElementInfoPort2>& getValidPorts() const {
+  const std::vector<ElementInfoPort>& getValidPorts() const {
     return ports_;
   }
 
@@ -71,7 +71,7 @@ class ProvidesPorts {
   void init();
 
   std::vector<std::string> portnames;
-  std::vector<ElementInfoPort2> ports_;
+  std::vector<ElementInfoPort> ports_;
 
 };
 
@@ -79,10 +79,14 @@ class ProvidesPorts {
 }
 
 #define SST_ELI_DOCUMENT_PORTS(...)                              \
-    static const std::vector<SST::ElementInfoPort2>& ELI_getPorts() { \
-        static std::vector<SST::ElementInfoPort2> var = { __VA_ARGS__ } ;      \
+    static const std::vector<SST::ElementInfoPort>& ELI_getPorts() { \
+        static std::vector<SST::ElementInfoPort> var = { __VA_ARGS__ } ;      \
+        auto parent = ELI::InfoPorts<std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
+        ELI::combineEliInfo(var,parent);                   \
         return var; \
     }
+
+#define SST_ELI_DELETE_PORT(port) {port, nullptr, {} }
 
 #endif
 
