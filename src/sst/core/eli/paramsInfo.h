@@ -85,8 +85,8 @@ private:
 #define SST_ELI_DOCUMENT_PARAMS(...)                              \
     static const std::vector<SST::ElementInfoParam>& ELI_getParams() { \
         static std::vector<SST::ElementInfoParam> var = { __VA_ARGS__ } ; \
-        auto parent = ELI::GetParams<std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
-        ELI::combineEliInfo(var,parent);                   \
+        auto parent = SST::ELI::GetParams<std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
+        SST::ELI::combineEliInfo(var,parent);                           \
         return var;                                               \
     }
 

@@ -81,8 +81,8 @@ class ProvidesPorts {
 #define SST_ELI_DOCUMENT_PORTS(...)                              \
     static const std::vector<SST::ElementInfoPort>& ELI_getPorts() { \
         static std::vector<SST::ElementInfoPort> var = { __VA_ARGS__ } ;      \
-        auto parent = ELI::InfoPorts<std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
-        ELI::combineEliInfo(var,parent);                   \
+        auto parent = SST::ELI::InfoPorts<std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
+        SST::ELI::combineEliInfo(var,parent);                           \
         return var; \
     }
 
