@@ -72,9 +72,14 @@ class ProvidesSubComponentSlots {
 
 #define SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(...)                              \
     static const std::vector<SST::ElementInfoSubComponentSlot>& ELI_getSubComponentSlots() { \
-    static std::vector<SST::ElementInfoSubComponentSlot> var = { __VA_ARGS__ } ; \
+        static std::vector<SST::ElementInfoSubComponentSlot> var = { __VA_ARGS__ } ; \
+        auto parent = ELI::InfoSubs<std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
+        ELI::combineEliInfo(var,parent);                   \
         return var; \
     }
+
+
+#define SST_ELI_DELETE_SUBCOMPONENT_SLOT(slot) {slot, nullptr, nullptr}
 
 #endif
 

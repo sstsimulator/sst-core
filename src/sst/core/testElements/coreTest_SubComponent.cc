@@ -79,7 +79,7 @@ bool SubComponentLoader::tick(Cycle_t cyc)
  *
  ***********************************************************************/
 SubCompSlot::SubCompSlot(ComponentId_t id, Params &params) :
-    SubCompInterface(id)
+    SubCompSlotInterface(id)
 {
     std::string unnamed_sub = params.find<std::string>("unnamed_subcomponent","");
     int num_subcomps = params.find<int>("num_subcomps",1);
@@ -115,7 +115,7 @@ void SubCompSlot::clock(Cycle_t cyc)
  *
  ***********************************************************************/
 SubCompSender::SubCompSender(ComponentId_t id, Params &params) :
-    SubCompInterface(id)
+    SubCompSendRecvInterface(id)
 {
     // Determine if I'm loading as a named or unmamed SubComponent
     std::string port_name;
@@ -162,7 +162,7 @@ void SubCompSender::clock(Cycle_t cyc)
  *
  ***********************************************************************/
 SubCompReceiver::SubCompReceiver(ComponentId_t id, Params &params) :
-    SubCompInterface(id)
+    SubCompSendRecvInterface(id)
 {
     // Determine if I'm loading as a named or unmamed SubComponent
     std::string port_name;

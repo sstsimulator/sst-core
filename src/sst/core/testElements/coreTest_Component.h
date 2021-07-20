@@ -23,7 +23,56 @@
 namespace SST {
 namespace CoreTestComponent {
 
-class coreTestComponent : public SST::Component
+
+// These first two classes are just base classes to test ELI
+// inheritance.  The definition of the ELI items are spread through 2
+// component base classes to make sure they get inherited in the
+// actual component that can be instanced.
+class coreTestComponentBase : public SST::Component {
+public:
+    SST_ELI_REGISTER_COMPONENT_BASE(SST::CoreTestComponent::coreTestComponentBase)
+
+    SST_ELI_DOCUMENT_PARAMS(
+        { "workPerCycle", "Count of busy work to do during a clock tick.", NULL}
+    )
+
+    SST_ELI_DOCUMENT_STATISTICS(
+        { "N", "events sent on N link", "counts", 1 }
+    )
+
+    SST_ELI_DOCUMENT_PORTS(
+        {"Nlink", "Link to the coreTestComponent to the North", { "coreTestComponent.coreTestComponentEvent", "" } }
+    )
+
+    coreTestComponentBase(ComponentId_t id) :
+        SST::Component(id)
+        {}
+    ~coreTestComponentBase() {}
+};
+
+class coreTestComponentBase2 : public coreTestComponentBase {
+public:
+    SST_ELI_REGISTER_COMPONENT_DERIVED_BASE(SST::CoreTestComponent::coreTestComponentBase2,SST::CoreTestComponent::coreTestComponentBase)
+
+    SST_ELI_DOCUMENT_PARAMS(
+        { "commFreq",     "Approximate frequency of sending an event during a clock tick.", NULL},
+    )
+
+    SST_ELI_DOCUMENT_STATISTICS(
+        { "S", "events sent on S link", "counts", 1 }
+    )
+
+    SST_ELI_DOCUMENT_PORTS(
+        {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } }
+    )
+
+    coreTestComponentBase2(ComponentId_t id) :
+        coreTestComponentBase(id)
+        {}
+    ~coreTestComponentBase2() {}
+};
+
+class coreTestComponent : public coreTestComponentBase2
 {
 public:
 
@@ -38,19 +87,15 @@ public:
     )
 
     SST_ELI_DOCUMENT_PARAMS(
-        { "workPerCycle", "Count of busy work to do during a clock tick.", NULL},
-        { "commFreq",     "Approximate frequency of sending an event during a clock tick.", NULL},
         { "commSize",     "Size of communication to send.", "16"}
     )
 
-    SST_ELI_DOCUMENT_STATISTICS({ "N", "events sent on N link", "counts", 1 },
-                                { "S", "events sent on S link", "counts", 1 },
-                                { "E", "events sent on E link", "counts", 1 },
-                                { "W", "events sent on W link", "counts", 1 }, )
+    SST_ELI_DOCUMENT_STATISTICS(
+        { "E", "events sent on E link", "counts", 1 },
+        { "W", "events sent on W link", "counts", 1 }
+    )
 
     SST_ELI_DOCUMENT_PORTS(
-        {"Nlink", "Link to the coreTestComponent to the North", { "coreTestComponent.coreTestComponentEvent", "" } },
-        {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } },
         {"Elink", "Link to the coreTestComponent to the East",  { "coreTestComponent.coreTestComponentEvent", "" } },
         {"Wlink", "Link to the coreTestComponent to the West",  { "coreTestComponent.coreTestComponentEvent", "" } }
     )
