@@ -85,8 +85,12 @@ class ProvidesStats {
 #define SST_ELI_DOCUMENT_STATISTICS(...)                                \
     static const std::vector<SST::ElementInfoStatistic>& ELI_getStatistics() {  \
         static std::vector<SST::ElementInfoStatistic> var = { __VA_ARGS__ } ;  \
-        return var; \
+        auto parent = ELI::InfoStats<std::conditional<(__EliDerivedLevel > __EliBaseLevel), __LocalEliBase, __ParentEliBase>::type>::get(); \
+        ELI::combineEliInfo(var,parent);                   \
+        return var;                                               \
     }
+
+#define SST_ELI_DELETE_STAT(stat) {stat, nullptr, nullptr, 0}
 
 #endif
 
