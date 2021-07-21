@@ -11,7 +11,9 @@ if(BUILD_ALL_TESTING)
   add_test(NAME sst-test-core
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMAND ${Python_EXECUTABLE} ${CMAKE_INSTALL_PREFIX}/bin/sst-test-core )
-  set_test_properties( sst-test-core PROPERTIES PASS_REGULAR_EXPRESSION "TESTING PASSED")
+  set_tests_properties( sst-test-core
+                        PROPERTIES
+                        PASS_REGULAR_EXPRESSION "TESTING PASSED" )
 endif()
 
 # EOF
