@@ -15,18 +15,18 @@
 
 #include "sst_config.h"
 
-#include "sst/core/simulation.h"
 #include "sst/core/testElements/coreTest_Component.h"
+
+#include "sst/core/event.h"
+#include "sst/core/simulation.h"
 #include "sst/core/testElements/coreTest_ComponentEvent.h"
 
 #include <assert.h>
-#include "sst/core/event.h"
 
 using namespace SST;
 using namespace SST::CoreTestComponent;
 
-coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
-  coreTestComponentBase2(id)
+coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) : coreTestComponentBase2(id)
 {
     bool found;
 
@@ -34,13 +34,14 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
 
     // get parameters
     workPerCycle = params.find<int64_t>("workPerCycle", 0, found);
-    if (!found) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1,"couldn't find work per cycle\n");
+    if ( !found ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1, "couldn't find work per cycle\n");
     }
 
     commFreq = params.find<int64_t>("commFreq", 0, found);
-    if (!found) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO, -1,"couldn't find communication frequency\n");
+    if ( !found ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(
+            CALL_INFO, -1, "couldn't find communication frequency\n");
     }
 
     commSize = params.find<int64_t>("commSize", 16);
@@ -54,14 +55,10 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
     primaryComponentDoNotEndSim();
 
     // configure out links
-    N = configureLink("Nlink", new Event::Handler<coreTestComponent>(this,
-                               &coreTestComponent::handleEvent));
-    S = configureLink("Slink", new Event::Handler<coreTestComponent>(this,
-                               &coreTestComponent::handleEvent));
-    E = configureLink("Elink", new Event::Handler<coreTestComponent>(this,
-                               &coreTestComponent::handleEvent));
-    W = configureLink("Wlink", new Event::Handler<coreTestComponent>(this,
-                               &coreTestComponent::handleEvent));
+    N = configureLink("Nlink", new Event::Handler<coreTestComponent>(this, &coreTestComponent::handleEvent));
+    S = configureLink("Slink", new Event::Handler<coreTestComponent>(this, &coreTestComponent::handleEvent));
+    E = configureLink("Elink", new Event::Handler<coreTestComponent>(this, &coreTestComponent::handleEvent));
+    W = configureLink("Wlink", new Event::Handler<coreTestComponent>(this, &coreTestComponent::handleEvent));
 
     countN = registerStatistic<int>("N");
     countS = registerStatistic<int>("S");
@@ -73,14 +70,13 @@ coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
     assert(E);
     assert(W);
 
-    //set our clock
-    registerClock("1GHz", new Clock::Handler<coreTestComponent>(this,
-                  &coreTestComponent::clockTic));
+    // set our clock
+    registerClock("1GHz", new Clock::Handler<coreTestComponent>(this, &coreTestComponent::clockTic));
 }
 
 coreTestComponent::~coreTestComponent()
 {
-	delete rng;
+    delete rng;
 }
 
 coreTestComponent::coreTestComponent() : coreTestComponentBase2(-1)
@@ -89,19 +85,20 @@ coreTestComponent::coreTestComponent() : coreTestComponentBase2(-1)
 }
 
 // incoming events are scanned and deleted
-void coreTestComponent::handleEvent(Event *ev)
+void
+coreTestComponent::handleEvent(Event* ev)
 {
-    //printf("recv\n");
-    coreTestComponentEvent *event = dynamic_cast<coreTestComponentEvent*>(ev);
-    if (event) {
+    // printf("recv\n");
+    coreTestComponentEvent* event = dynamic_cast<coreTestComponentEvent*>(ev);
+    if ( event ) {
         // scan through each element in the payload and do something to it
         volatile int sum = 0;
-        for (coreTestComponentEvent::dataVec::iterator i = event->payload.begin();
-             i != event->payload.end(); ++i) {
+        for ( coreTestComponentEvent::dataVec::iterator i = event->payload.begin(); i != event->payload.end(); ++i ) {
             sum += *i;
         }
         delete event;
-    } else {
+    }
+    else {
         printf("Error! Bad Event Type!\n");
     }
 }
@@ -109,39 +106,39 @@ void coreTestComponent::handleEvent(Event *ev)
 // each clock tick we do 'workPerCycle' iterations of a coreTest loop.
 // We have a 1/commFreq chance of sending an event of size commSize to
 // one of our neighbors.
-bool coreTestComponent::clockTic( Cycle_t )
+bool coreTestComponent::clockTic(Cycle_t)
 {
-  // do work
-  // loop becomes:
-  /*  00001ab5        movl    0xe0(%ebp),%eax
-      00001ab8        incl    %eax
-      00001ab9        movl    %eax,0xe0(%ebp)
-      00001abc        incl    %edx
-      00001abd        cmpl    %ecx,%edx
-      00001abf        jne     0x00001ab5
+    // do work
+    // loop becomes:
+    /*  00001ab5        movl    0xe0(%ebp),%eax
+        00001ab8        incl    %eax
+        00001ab9        movl    %eax,0xe0(%ebp)
+        00001abc        incl    %edx
+        00001abd        cmpl    %ecx,%edx
+        00001abf        jne     0x00001ab5
 
-      6 instructions.
-  */
+        6 instructions.
+    */
 
     volatile int v = 0;
-    for (int i = 0; i < workPerCycle; ++i) {
+    for ( int i = 0; i < workPerCycle; ++i ) {
         v++;
     }
 
     // communicate?
-    if ((rng->generateNextInt32() % commFreq) == 0) {
+    if ( (rng->generateNextInt32() % commFreq) == 0 ) {
         // yes, communicate
         // create event
-        coreTestComponentEvent *e = new coreTestComponentEvent();
+        coreTestComponentEvent* e = new coreTestComponentEvent();
         // fill payload with commSize bytes
-        for (int i = 0; i < (commSize); ++i) {
+        for ( int i = 0; i < (commSize); ++i ) {
             e->payload.push_back(1);
         }
         // find target
-        neighbor = neighbor+1;
+        neighbor = neighbor + 1;
         neighbor = neighbor % 4;
         // send
-        switch (neighbor) {
+        switch ( neighbor ) {
         case 0:
             N->send(e);
             countN->addData(1);
@@ -161,7 +158,7 @@ bool coreTestComponent::clockTic( Cycle_t )
         default:
             printf("bad neighbor\n");
         }
-        //printf("sent\n");
+        // printf("sent\n");
     }
 
     // return false so we keep going
@@ -169,6 +166,3 @@ bool coreTestComponent::clockTic( Cycle_t )
 }
 
 // Element Libarary / Serialization stuff
-
-
-

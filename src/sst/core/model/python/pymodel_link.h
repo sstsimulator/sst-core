@@ -15,6 +15,11 @@
 #define SST_CORE_MODEL_PYTHON_PYMODEL_LINK_H
 
 #include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
+
+DISABLE_WARN_DEPRECATED_REGISTER
+#include <Python.h>
+REENABLE_WARNING
 
 extern "C" {
 

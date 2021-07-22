@@ -17,9 +17,9 @@
 
 #include "sst/core/testElements/coreTest_StatisticsComponent.h"
 
-#include "sst/core/simulation.h"
-#include "sst/core/rng/mersenne.h"
 #include "sst/core/rng/marsaglia.h"
+#include "sst/core/rng/mersenne.h"
+#include "sst/core/simulation.h"
 
 using namespace SST;
 using namespace SST::RNG;
@@ -31,29 +31,31 @@ coreTestStatisticsComponent::coreTestStatisticsComponent(ComponentId_t id, Param
 {
     // Get runtime parameters from the input file (.py),
     // these will set the random number generation.
-    rng_count = 0;
+    rng_count     = 0;
     rng_max_count = params.find<int64_t>("count", 1000);
 
     std::string rngType = params.find<std::string>("rng", "mersenne");
 
-    if (rngType == "mersenne") {
-        unsigned int seed =  params.find<int64_t>("seed", 1447);
+    if ( rngType == "mersenne" ) {
+        unsigned int seed = params.find<int64_t>("seed", 1447);
 
-        output.output("Using Mersenne Random Number Generator with seed = %u\n",seed);
+        output.output("Using Mersenne Random Number Generator with seed = %u\n", seed);
         rng = new MersenneRNG(seed);
-    } else if (rngType == "marsaglia") {
+    }
+    else if ( rngType == "marsaglia" ) {
         unsigned int m_w = params.find<int64_t>("seed_w", 0);
         unsigned int m_z = params.find<int64_t>("seed_z", 0);
 
-        if(m_w == 0 || m_z == 0) {
+        if ( m_w == 0 || m_z == 0 ) {
             output.output("Using Marsaglia Random Number Generator with no seeds ...\n");
             rng = new MarsagliaRNG();
-        } else {
-            output.output("Using Marsaglia Random Number Generator with seeds m_z = %u, m_w = %u\n",m_z,m_w);
+        }
+        else {
+            output.output("Using Marsaglia Random Number Generator with seeds m_z = %u, m_w = %u\n", m_z, m_w);
             rng = new MarsagliaRNG(m_z, m_w);
         }
-
-    } else {
+    }
+    else {
         output.output("RNG provided but unknown %s, so using Mersenne with seed = 1447...\n", rngType.c_str());
         rng = new MersenneRNG(1447);
     }
@@ -67,25 +69,28 @@ coreTestStatisticsComponent::coreTestStatisticsComponent(ComponentId_t id, Param
 
     // First 1ns Clock
     output.output("REGISTER CLOCK #1 at 1 ns\n");
-    registerClock("1 ns", new Clock::Handler<coreTestStatisticsComponent>(this, &coreTestStatisticsComponent::Clock1Tick));
+    registerClock(
+        "1 ns", new Clock::Handler<coreTestStatisticsComponent>(this, &coreTestStatisticsComponent::Clock1Tick));
 
     /////////////////////////////////////////
     // Create the Statistics objects
     stat1_U32 = registerStatistic<uint32_t>("stat1_U32", "1");
     stat2_U64 = registerStatistic<uint64_t>("stat2_U64", "2");
-    stat3_I32 = registerStatistic<int32_t> ("stat3_I32", "3");
-    stat4_I64 = registerStatistic<int64_t> ("stat4_I64", "4");
+    stat3_I32 = registerStatistic<int32_t>("stat3_I32", "3");
+    stat4_I64 = registerStatistic<int64_t>("stat4_I64", "4");
     stat5_U32 = registerStatistic<uint32_t>("stat5_U32", "5");
     stat6_U64 = registerStatistic<uint64_t>("stat6_U64", "6");
 
     // Try to Register A duplicate Statistic Name
-    //printf("STATISTIC TESTING: TRYING TO REGISTER A DUPLICATE STAT NAME - SHOULD RETURN THE PREVIOUSLY REGISTERED STATISTIC\n");
-    stat7_U32_NOTUSED = registerStatistic<uint32_t>("stat5_U32", "5");   // This registration will return the previously registered stat
+    // printf("STATISTIC TESTING: TRYING TO REGISTER A DUPLICATE STAT NAME - SHOULD RETURN THE PREVIOUSLY REGISTERED
+    // STATISTIC\n");
+    stat7_U32_NOTUSED
+        = registerStatistic<uint32_t>("stat5_U32", "5"); // This registration will return the previously registered stat
 
     // Test Statistic functions for delayed output and collection and to disable Stat
-//    stat1_U32->disable();
-//    stat1_U32->delayOutput("10 ns");
-//    stat1_U32->delayCollection("10 ns");
+    //    stat1_U32->disable();
+    //    stat1_U32->delayOutput("10 ns");
+    //    stat1_U32->delayCollection("10 ns");
 }
 
 coreTestStatisticsComponent::coreTestStatisticsComponent() :
@@ -95,10 +100,11 @@ coreTestStatisticsComponent::coreTestStatisticsComponent() :
     // for serialization only
 }
 
-bool coreTestStatisticsComponent::Clock1Tick(Cycle_t CycleNum)
+bool
+coreTestStatisticsComponent::Clock1Tick(Cycle_t CycleNum)
 {
     // NOTE: THIS IS THE 1NS CLOCK
-//    std::cout << "@ " << CycleNum << std::endl;
+    //    std::cout << "@ " << CycleNum << std::endl;
 
     rng->nextUniform();
     uint32_t U32 = rng->generateNextUInt32();
@@ -113,11 +119,12 @@ bool coreTestStatisticsComponent::Clock1Tick(Cycle_t CycleNum)
     int32_t  scaled_I32 = I32 / 10000000;
     int64_t  scaled_I64 = I64 / 1000000000000000;
 
-//    std::cout << "Raw Random: " << rng_count << " of " << rng_max_count << ": " <<
-//    rng << ", U32 = " << U32 << ", U64 = " << U64 << ", I32 = " << I32 << ", I64 = " << I64 << std::endl;
+    //    std::cout << "Raw Random: " << rng_count << " of " << rng_max_count << ": " <<
+    //    rng << ", U32 = " << U32 << ", U64 = " << U64 << ", I32 = " << I32 << ", I64 = " << I64 << std::endl;
 
-//    std::cout << "Scaled Random: " << rng_count << " of " << rng_max_count << ": " <<
-//    rng << ", U32 = " << scaled_U32 << ", U64 = " << scaled_U64 << ", I32 = " << scaled_I32 << ", I64 = " << scaled_I64 << std::endl;
+    //    std::cout << "Scaled Random: " << rng_count << " of " << rng_max_count << ": " <<
+    //    rng << ", U32 = " << scaled_U32 << ", U64 = " << scaled_U64 << ", I32 = " << scaled_I32 << ", I64 = " <<
+    //    scaled_I64 << std::endl;
 
     // Add the Statistic Data
     stat1_U32->addData(scaled_U32);
@@ -127,22 +134,22 @@ bool coreTestStatisticsComponent::Clock1Tick(Cycle_t CycleNum)
     stat5_U32->addData(scaled_U32);
     stat6_U64->addData(scaled_U64);
 
+    ////////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////
-
-    if (CycleNum == 60) {
-        output.output("@ %" PRIu64 "\n",CycleNum);
+    if ( CycleNum == 60 ) {
+        output.output("@ %" PRIu64 "\n", CycleNum);
         output.output("*** STATISTIC TESTING: DISABLE stat1_U32 OUTPUT FOR 15ns PERIOD\n");
         stat1_U32->delayOutput("15 ns");
     }
 
-////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////
 
     // return false so we keep going or true to stop
-    if(rng_count >= rng_max_count) {
+    if ( rng_count >= rng_max_count ) {
         primaryComponentOKToEndSim();
         return true;
-    } else {
+    }
+    else {
         return false;
     }
 }
@@ -153,6 +160,3 @@ bool coreTestStatisticsComponent::Clock1Tick(Cycle_t CycleNum)
 ////////////////////////////////////////////////////////////////////////////
 
 // Serialization
-
-
-

@@ -14,13 +14,19 @@
 #ifndef SST_CORE_MODEL_PYTHON_PYMODEL_UNITALGEBRA_H
 #define SST_CORE_MODEL_PYTHON_PYMODEL_UNITALGEBRA_H
 
-#include <sst/core/sst_types.h>
+#include "sst/core/sst_types.h"
+#include "sst/core/unitAlgebra.h"
+#include "sst/core/warnmacros.h"
+
+DISABLE_WARN_DEPRECATED_REGISTER
+#include <Python.h>
+REENABLE_WARNING
 
 extern "C" {
 
 struct UnitAlgebraPy_t
 {
-    PyObject_HEAD UnitAlgebra obj;
+    PyObject_HEAD SST::UnitAlgebra obj;
 };
 
 extern PyTypeObject PyModel_UnitAlgebraType;

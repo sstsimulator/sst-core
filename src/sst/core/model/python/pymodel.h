@@ -23,6 +23,11 @@
 #include "sst/core/model/sstmodel.h"
 #include "sst/core/output.h"
 #include "sst/core/rankInfo.h"
+#include "sst/core/warnmacros.h"
+
+DISABLE_WARN_DEPRECATED_REGISTER
+#include <Python.h>
+REENABLE_WARNING
 
 #include <map>
 #include <string>
