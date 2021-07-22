@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_RNG_DISTRIB
-#define _H_SST_CORE_RNG_DISTRIB
+#ifndef SST_CORE_RNG_DISTRIB_H
+#define SST_CORE_RNG_DISTRIB_H
 
 namespace SST {
 namespace RNG {
@@ -19,7 +19,8 @@ namespace RNG {
  * \class RandomDistribution
  * Base class of statistical distributions in SST.
  */
-class RandomDistribution {
+class RandomDistribution
+{
 
 public:
     /**
@@ -44,4 +45,4 @@ using SSTRandomDistribution = SST::RNG::RandomDistribution;
 } // namespace RNG
 } // namespace SST
 
-#endif
+#endif // SST_CORE_RNG_DISTRIB_H

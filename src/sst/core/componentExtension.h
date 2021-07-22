@@ -9,12 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_COMPONENTEXTENSION_H
 #define SST_CORE_COMPONENTEXTENSION_H
 
-#include "sst/core/warnmacros.h"
 #include "sst/core/baseComponent.h"
+#include "sst/core/warnmacros.h"
 
 namespace SST {
 
@@ -26,16 +25,15 @@ namespace SST {
    ComponentExtension is loaded into a ComponentExtension; they will
    both act like they are in the parent.
 */
-class ComponentExtension : public BaseComponent {
+class ComponentExtension : public BaseComponent
+{
 
 public:
-
     ComponentExtension(ComponentId_t id);
 
     virtual ~ComponentExtension() {};
-
 };
 
-} //namespace SST
+} // namespace SST
 
 #endif // SST_CORE_COMPONENTEXTENSION_H

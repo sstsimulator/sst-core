@@ -9,14 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_RNG_EXP
-#define _H_SST_CORE_RNG_EXP
+#ifndef SST_CORE_RNG_EXPON_H
+#define SST_CORE_RNG_EXPON_H
 
-#include "math.h"
-
-#include "rng.h"
 #include "distrib.h"
+#include "math.h"
 #include "mersenne.h"
+#include "rng.h"
 
 using namespace SST::RNG;
 
@@ -29,17 +28,19 @@ namespace RNG {
     Creates an exponential distribution for use within SST. This distribution is the same across
     platforms and compilers.
 */
-class ExponentialDistribution : public RandomDistribution {
+class ExponentialDistribution : public RandomDistribution
+{
 
 public:
     /**
         Creates an exponential distribution with a specific lambda
         \param mn The lambda of the exponential distribution
     */
-    ExponentialDistribution(const double mn) : RandomDistribution() {
+    ExponentialDistribution(const double mn) : RandomDistribution()
+    {
 
-        lambda = mn;
-        baseDistrib = new MersenneRNG();
+        lambda        = mn;
+        baseDistrib   = new MersenneRNG();
         deleteDistrib = true;
     }
 
@@ -48,27 +49,28 @@ public:
         \param mn The lambda of the exponential distribution
         \param baseDist The base random number generator to take the distribution from.
     */
-    ExponentialDistribution(const double mn, SST::RNG::Random* baseDist) : RandomDistribution() {
+    ExponentialDistribution(const double mn, SST::RNG::Random* baseDist) : RandomDistribution()
+    {
 
-        lambda = mn;
-        baseDistrib = baseDist;
+        lambda        = mn;
+        baseDistrib   = baseDist;
         deleteDistrib = false;
     }
 
     /**
         Destroys the exponential distribution
     */
-    ~ExponentialDistribution() {
-        if (deleteDistrib) {
-            delete baseDistrib;
-        }
+    ~ExponentialDistribution()
+    {
+        if ( deleteDistrib ) { delete baseDistrib; }
     }
 
     /**
         Gets the next (random) double value in the distribution
         \return The next random double from the distribution
     */
-    double getNextDouble() {
+    double getNextDouble()
+    {
         const double next = baseDistrib->nextUniform();
         return log(1 - next) / (-1 * lambda);
     }
@@ -83,7 +85,7 @@ protected:
     /**
         Sets the lambda of the exponential distribution.
     */
-    double lambda;
+    double            lambda;
     /**
         Sets the base random number generator for the distribution.
     */
@@ -100,4 +102,4 @@ using SSTExponentialDistribution = SST::RNG::ExponentialDistribution;
 } // namespace RNG
 } // namespace SST
 
-#endif
+#endif // SST_CORE_RNG_EXPON_H

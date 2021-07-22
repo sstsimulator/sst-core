@@ -22,59 +22,49 @@ class TimeLord;
    A class to convert between a component's view of time and the
    core's view of time.
 */
-class TimeConverter {
+class TimeConverter
+{
 
     friend class TimeLord;
 
- public:
+public:
     /**
        Converts from the component's view to the core's view of time.
        \param time time to convert to core time
      */
-    SimTime_t convertToCoreTime(SimTime_t time) const {
-        return time * factor;
-    }
+    SimTime_t convertToCoreTime(SimTime_t time) const { return time * factor; }
 
     /**
        Converts from the core's view to the components's view of time.
        The result is truncated, not rounded.
        \param time time to convert from core time
      */
-    SimTime_t convertFromCoreTime(SimTime_t time) const {
-        return time/factor;
-    }
+    SimTime_t convertFromCoreTime(SimTime_t time) const { return time / factor; }
 
     /**
      * Return the factor used for conversions with Core Time
      */
-    SimTime_t getFactor() const {
-        return factor;
-    }
+    SimTime_t getFactor() const { return factor; }
 
     /**
        Return the period represented by this TimeConverter as a
        UnitAlgebra
      */
-    UnitAlgebra getPeriod() const ; // Implemented in timeLord.cc
+    UnitAlgebra getPeriod() const; // Implemented in timeLord.cc
 
- private:
+private:
     /**
        Factor for converting between core and component time
     */
     SimTime_t factor;
 
-    TimeConverter(SimTime_t fact) {
-        factor = fact;
-    }
+    TimeConverter(SimTime_t fact) { factor = fact; }
 
-    ~TimeConverter() {
-    }
+    ~TimeConverter() {}
 
-
-    TimeConverter() {}   // Only needed to simplify serialization
-
+    TimeConverter() {} // Only needed to simplify serialization
 };
 
 } // namespace SST
 
-#endif //SST_CORE_TIMECONVERTER_H
+#endif // SST_CORE_TIMECONVERTER_H

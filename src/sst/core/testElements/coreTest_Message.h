@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTMESSAGE_H
-#define _CORETESTMESSAGE_H
+#ifndef SST_CORE_CORETEST_MESSAGE_H
+#define SST_CORE_CORETEST_MESSAGE_H
 
 namespace SST {
 namespace CoreTestMessageGeneratorComponent {
@@ -22,12 +22,10 @@ namespace CoreTestMessageGeneratorComponent {
 class coreTestMessage : public SST::Event
 {
 public:
-    coreTestMessage() : SST::Event() { }
+    coreTestMessage() : SST::Event() {}
 
 public:
-    void serialize_order(SST::Core::Serialization::serializer &ser)  override {
-        Event::serialize_order(ser);
-    }
+    void serialize_order(SST::Core::Serialization::serializer& ser) override { Event::serialize_order(ser); }
 
     ImplementSerializable(SST::CoreTestMessageGeneratorComponent::coreTestMessage);
 };
@@ -35,4 +33,4 @@ public:
 } // namespace CoreTestMessageGeneratorComponent
 } // namespace SST
 
-#endif /* _CORETESTMESSAGE_H */
+#endif // SST_CORE_CORETEST_MESSAGE_H

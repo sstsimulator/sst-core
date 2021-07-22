@@ -11,18 +11,20 @@
 
 #ifndef SST_CORE_RNG_MARSAGLIA_H
 #define SST_CORE_RNG_MARSAGLIA_H
+
 #include "sst/core/sst_types.h"
+
+#include "rng.h"
 
 #include <stdint.h>
 #include <sys/time.h>
 
-#include "rng.h"
 #include "sstrng.h"
 
 #define MARSAGLIA_UINT32_MAX 4294967295U
 #define MARSAGLIA_UINT64_MAX 18446744073709551615ULL
-#define MARSAGLIA_INT32_MAX 2147483647L
-#define MARSAGLIA_INT64_MAX 9223372036854775807LL
+#define MARSAGLIA_INT32_MAX  2147483647L
+#define MARSAGLIA_INT64_MAX  9223372036854775807LL
 
 namespace SST {
 namespace RNG {
@@ -37,7 +39,8 @@ namespace RNG {
         For more information see the Multiply-with-carry Random Number Generator article
     at Wikipedia (http://en.wikipedia.org/wiki/Multiply-with-carry).
 */
-class MarsagliaRNG : public SST::RNG::Random {
+class MarsagliaRNG : public SST::RNG::Random
+{
 
 public:
     /**

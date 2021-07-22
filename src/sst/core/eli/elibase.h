@@ -9,58 +9,64 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_ELIBASE_H
-#define SST_CORE_ELIBASE_H
+#ifndef SST_CORE_ELI_ELIBASE_H
+#define SST_CORE_ELI_ELIBASE_H
 
 #include "sst/core/sst_types.h"
 
 #include <functional>
-#include <string>
-#include <vector>
-#include <set>
 #include <list>
 #include <map>
-#include <functional>
 #include <memory>
+#include <set>
+#include <string>
+#include <vector>
 
 // Component Category Definitions
-#define COMPONENT_CATEGORY_UNCATEGORIZED  0x00
-#define COMPONENT_CATEGORY_PROCESSOR      0x01
-#define COMPONENT_CATEGORY_MEMORY         0x02
-#define COMPONENT_CATEGORY_NETWORK        0x04
-#define COMPONENT_CATEGORY_SYSTEM         0x08
+#define COMPONENT_CATEGORY_UNCATEGORIZED 0x00
+#define COMPONENT_CATEGORY_PROCESSOR     0x01
+#define COMPONENT_CATEGORY_MEMORY        0x02
+#define COMPONENT_CATEGORY_NETWORK       0x04
+#define COMPONENT_CATEGORY_SYSTEM        0x08
 
 namespace SST {
 
 /** Describes Statistics used by a Component.
  */
-struct ElementInfoStatistic {
-    const char* name;           /*!< Name of the Statistic to be Enabled */
-    const char* description;    /*!< Brief description of the Statistic */
-    const char* units;          /*!< Units associated with this Statistic value */
-    const uint8_t enableLevel;  /*!< Level to meet to enable statistic 0 = disabled */
+struct ElementInfoStatistic
+{
+    const char*   name;        /*!< Name of the Statistic to be Enabled */
+    const char*   description; /*!< Brief description of the Statistic */
+    const char*   units;       /*!< Units associated with this Statistic value */
+    const uint8_t enableLevel; /*!< Level to meet to enable statistic 0 = disabled */
 };
 
 /** Describes Parameters to a Component.
  */
-struct ElementInfoParam {
-    const char *name;           /*!< Name of the parameter */
-    const char *description;    /*!< Brief description of the parameter (ie, what it controls) */
-    const char *defaultValue;   /*!< Default value (if any) nullptr == required parameter with no default, "" == optional parameter, blank default, "foo" == default value */
+struct ElementInfoParam
+{
+    const char* name;         /*!< Name of the parameter */
+    const char* description;  /*!< Brief description of the parameter (ie, what it controls) */
+    const char* defaultValue; /*!< Default value (if any) nullptr == required parameter with no default, "" == optional
+                                 parameter, blank default, "foo" == default value */
 };
 
 /** Describes Ports that the Component can use
  */
-struct ElementInfoPort {
-    const char *name;           /*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx being the controlling component parameter */
-    const char *description;    /*!< Brief description of the port (ie, what it is used for) */
-    const std::vector<std::string> validEvents;    /*!< List of fully-qualified event types that this Port expects to send or receive */
+struct ElementInfoPort
+{
+    const char* name; /*!< Name of the port.  Can contain %d for a dynamic port, also %(xxx)d for dynamic port with xxx
+                         being the controlling component parameter */
+    const char* description; /*!< Brief description of the port (ie, what it is used for) */
+    const std::vector<std::string>
+        validEvents; /*!< List of fully-qualified event types that this Port expects to send or receive */
 };
 
-struct ElementInfoSubComponentSlot {
-    const char * name;
-    const char * description;
-    const char * superclass;
+struct ElementInfoSubComponentSlot
+{
+    const char* name;
+    const char* description;
+    const char* superclass;
 };
 
 typedef ElementInfoSubComponentSlot ElementInfoSubComponentHook;
@@ -78,14 +84,16 @@ namespace ELI {
 // The function creates a new vector and the uses vector::swap because
 // the ElementInfo* classes have const data members so deleting from
 // the vector does not compile (copy constructor is deleted).
-template<typename T>
-static void combineEliInfo(std::vector<T>& base, std::vector<T>& add) {
+template <typename T>
+static void
+combineEliInfo(std::vector<T>& base, std::vector<T>& add)
+{
     std::vector<T> combined;
     // Add in any item that isn't already defined
     for ( auto x : add ) {
         bool add = true;
         for ( auto y : base ) {
-            if ( !strcmp(x.name,y.name ) ) {
+            if ( !strcmp(x.name, y.name) ) {
                 add = false;
                 break;
             }
@@ -96,42 +104,44 @@ static void combineEliInfo(std::vector<T>& base, std::vector<T>& add) {
     // Now add all the locals.  We will skip any one that has nullptr
     // in the description field
     for ( auto x : base ) {
-        if ( x.description != nullptr ) {
-            combined.emplace_back(x);
-        }
+        if ( x.description != nullptr ) { combined.emplace_back(x); }
     }
     base.swap(combined);
 }
 
-template <class T> struct MethodDetect { using type=void; };
-
-struct LibraryLoader {
-  virtual void load() = 0;
-  virtual ~LibraryLoader(){}
+template <class T>
+struct MethodDetect
+{
+    using type = void;
 };
 
-class LoadedLibraries {
+struct LibraryLoader
+{
+    virtual void load() = 0;
+    virtual ~LibraryLoader() {}
+};
+
+class LoadedLibraries
+{
 public:
-    using InfoMap=std::map<std::string,std::list<LibraryLoader*>>;
-    using LibraryMap=std::map<std::string,InfoMap>;
+    using InfoMap    = std::map<std::string, std::list<LibraryLoader*>>;
+    using LibraryMap = std::map<std::string, InfoMap>;
 
     static bool isLoaded(const std::string& name);
 
     /**
        @return A boolean indicated successfully added
     */
-    static bool addLoader(const std::string& lib, const std::string& name,
-                          LibraryLoader* loader);
+    static bool addLoader(const std::string& lib, const std::string& name, LibraryLoader* loader);
 
     static const LibraryMap& getLoaders();
 
 private:
     static std::unique_ptr<LibraryMap> loaders_;
-
 };
 
-} //namespace ELI
-} //namespace SST
+} // namespace ELI
+} // namespace SST
 
 #define ELI_FORWARD_AS_ONE(...) __VA_ARGS__
 
@@ -149,18 +159,19 @@ private:
 // called either of the *_BASE macros, then they are APIs and if you
 // derive a class from it, then you need to use that class also as the
 // ELI parent.
-#define SST_ELI_DECLARE_BASE(Base)            \
-    using __LocalEliBase = Base;              \
-    using __ParentEliBase = void;             \
-    static constexpr int __EliBaseLevel = 0;  \
-    static constexpr int __EliDerivedLevel = 0;  \
-    static const char* ELI_baseName(){ return #Base; }
+#define SST_ELI_DECLARE_BASE(Base)                 \
+    using __LocalEliBase                   = Base; \
+    using __ParentEliBase                  = void; \
+    static constexpr int __EliBaseLevel    = 0;    \
+    static constexpr int __EliDerivedLevel = 0;    \
+    static const char*   ELI_baseName() { return #Base; }
 
-#define SST_ELI_DECLARE_INFO_COMMON()                               \
-    using InfoLibrary = ::SST::ELI::InfoLibrary<__LocalEliBase>;    \
-    template <class __TT>                                           \
-    static bool addDerivedInfo(const std::string& lib, const std::string& elem){ \
-        return addInfo(lib,elem,new BuilderInfo(lib,elem,(__TT*)nullptr)); \
+#define SST_ELI_DECLARE_INFO_COMMON()                                           \
+    using InfoLibrary = ::SST::ELI::InfoLibrary<__LocalEliBase>;                \
+    template <class __TT>                                                       \
+    static bool addDerivedInfo(const std::string& lib, const std::string& elem) \
+    {                                                                           \
+        return addInfo(lib, elem, new BuilderInfo(lib, elem, (__TT*)nullptr));  \
     }
 
 // This macro can be used to declare a new base class that inherits
@@ -169,18 +180,17 @@ private:
 // the child will overwrite items in the parent.  See comment for
 // combineEliInfo() for information about deleting items from the
 // parent API.
-#define SST_ELI_DECLARE_NEW_BASE(OldBase,NewBase)                            \
-  using __LocalEliBase = NewBase;                                            \
-  using __ParentEliBase = OldBase;                                           \
-  static constexpr int __EliBaseLevel = OldBase::__EliBaseLevel + 2;         \
-  SST_ELI_DECLARE_INFO_COMMON()                                              \
-  static const char* ELI_baseName(){ return #NewBase; }                      \
-  template <class InfoImpl>                                                  \
-  static bool addInfo(const std::string& elemlib, const std::string& elem,   \
-                      InfoImpl* info){                                       \
-    return OldBase::addInfo(elemlib, elem, info)                             \
-      && ::SST::ELI::InfoDatabase::getLibrary<NewBase>(elemlib)->addInfo(elem,info); \
-  }
+#define SST_ELI_DECLARE_NEW_BASE(OldBase, NewBase)                                             \
+    using __LocalEliBase                = NewBase;                                             \
+    using __ParentEliBase               = OldBase;                                             \
+    static constexpr int __EliBaseLevel = OldBase::__EliBaseLevel + 2;                         \
+    SST_ELI_DECLARE_INFO_COMMON()                                                              \
+    static const char* ELI_baseName() { return #NewBase; }                                     \
+    template <class InfoImpl>                                                                  \
+    static bool addInfo(const std::string& elemlib, const std::string& elem, InfoImpl* info)   \
+    {                                                                                          \
+        return OldBase::addInfo(elemlib, elem, info)                                           \
+               && ::SST::ELI::InfoDatabase::getLibrary<NewBase>(elemlib)->addInfo(elem, info); \
+    }
 
-
-#endif // SST_CORE_ELIBASE_H
+#endif // SST_CORE_ELI_ELIBASE_H

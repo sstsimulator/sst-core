@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTSTATISTICSCOMPONENT_H
-#define _CORETESTSTATISTICSCOMPONENT_H
+#ifndef SST_CORE_CORETEST_STATISTICSCOMPONENT_H
+#define SST_CORE_CORETEST_STATISTICSCOMPONENT_H
 
 #include "sst/core/component.h"
 #include "sst/core/rng/sstrng.h"
@@ -29,7 +29,6 @@ namespace CoreTestStatisticsComponent {
 class coreTestStatisticsComponent : public SST::Component
 {
 public:
-
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestStatisticsComponent,
@@ -66,36 +65,35 @@ public:
     )
 
     coreTestStatisticsComponent(ComponentId_t id, Params& params);
-    void setup()  { }
-    void finish() { }
+    void setup() {}
+    void finish() {}
 
 private:
-    coreTestStatisticsComponent();  // for serialization only
+    coreTestStatisticsComponent();                                   // for serialization only
     coreTestStatisticsComponent(const coreTestStatisticsComponent&); // do not implement
-    void operator=(const coreTestStatisticsComponent&); // do not implement
+    void operator=(const coreTestStatisticsComponent&);              // do not implement
 
     virtual bool Clock1Tick(SST::Cycle_t);
 
-    SSTRandom* rng;
+    SSTRandom*  rng;
     std::string rng_type;
-    int rng_max_count;
-    int rng_count;
-    Output& output;
+    int         rng_max_count;
+    int         rng_count;
+    Output&     output;
 
     // Histogram Statistics
-    Statistic<uint32_t>*  stat1_U32;
-    Statistic<uint64_t>*  stat2_U64;
-    Statistic<int32_t>*   stat3_I32;
-    Statistic<int64_t>*   stat4_I64;
+    Statistic<uint32_t>* stat1_U32;
+    Statistic<uint64_t>* stat2_U64;
+    Statistic<int32_t>*  stat3_I32;
+    Statistic<int64_t>*  stat4_I64;
 
     // Accumulator Statistics
-    Statistic<uint32_t>*  stat5_U32;
-    Statistic<uint64_t>*  stat6_U64;
-    Statistic<uint32_t>*  stat7_U32_NOTUSED;
-
+    Statistic<uint32_t>* stat5_U32;
+    Statistic<uint64_t>* stat6_U64;
+    Statistic<uint32_t>* stat7_U32_NOTUSED;
 };
 
-} // namespace CoreTestStatistics
+} // namespace CoreTestStatisticsComponent
 } // namespace SST
 
-#endif /* _CORETESTSTATISTICSCOMPONENT_H */
+#endif // SST_CORE_CORETEST_STATISTICSCOMPONENT_H

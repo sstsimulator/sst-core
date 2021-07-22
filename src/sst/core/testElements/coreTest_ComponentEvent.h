@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTCOMPONENTEVENT_H
-#define _CORETESTCOMPONENTEVENT_H
+#ifndef SST_CORE_CORETEST_COMPONENTEVENT_H
+#define SST_CORE_CORETEST_COMPONENTEVENT_H
 
 namespace SST {
 namespace CoreTestComponent {
@@ -23,13 +23,14 @@ class coreTestComponentEvent : public SST::Event
 {
 public:
     typedef std::vector<char> dataVec;
-    coreTestComponentEvent() : SST::Event() { }
+    coreTestComponentEvent() : SST::Event() {}
     dataVec payload;
 
 public:
-    void serialize_order(SST::Core::Serialization::serializer &ser)  override {
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
         Event::serialize_order(ser);
-        ser & payload;
+        ser& payload;
     }
 
     ImplementSerializable(SST::CoreTestComponent::coreTestComponentEvent);
@@ -38,4 +39,4 @@ public:
 } // namespace CoreTestComponent
 } // namespace SST
 
-#endif /* _CORETESTCOMPONENTEVENT_H */
+#endif // SST_CORE_CORETEST_COMPONENTEVENT_H
