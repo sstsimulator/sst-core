@@ -17,6 +17,7 @@
 #include "sst/core/from_string.h"
 
 #include <iomanip>
+#include <limits>
 #include <sstream>
 #include <type_traits>
 

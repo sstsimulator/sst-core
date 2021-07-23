@@ -12,6 +12,7 @@
 #ifndef SST_CORE_FROM_STRING_H
 #define SST_CORE_FROM_STRING_H
 
+#include <stdexcept>
 #include <string>
 #include <type_traits>
 
