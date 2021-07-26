@@ -14,6 +14,7 @@
 
 #include "sst/core/sst_types.h"
 
+#include <cstring>
 #include <functional>
 #include <list>
 #include <map>
