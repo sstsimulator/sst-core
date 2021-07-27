@@ -26,7 +26,7 @@ using namespace SST;
 using namespace SST::CoreTestComponent;
 
 coreTestComponent::coreTestComponent(ComponentId_t id, Params& params) :
-  Component(id)
+  coreTestComponentBase2(id)
 {
     bool found;
 
@@ -83,7 +83,7 @@ coreTestComponent::~coreTestComponent()
 	delete rng;
 }
 
-coreTestComponent::coreTestComponent() : Component(-1)
+coreTestComponent::coreTestComponent() : coreTestComponentBase2(-1)
 {
     // for serialization only
 }

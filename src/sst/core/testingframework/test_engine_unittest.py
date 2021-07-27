@@ -449,7 +449,8 @@ class SSTTextTestResult(unittest.TestResult):
     def addSkip(self, test, reason):
         super(SSTTextTestResult, self).addSkip(test, reason)
         #log_forced("DEBUG - addSkip: Test = {0}, reason = {1}\n".format(test, reason))
-        self.printResult(test, 's', 'SKIPPED: {0!r}'.format(reason), 'skip', showruntime=False)
+        if not test_engine_globals.TESTENGINE_IGNORESKIPS:
+            self.printResult(test, 's', 'SKIPPED', 'skip', showruntime=False)
 
         if not self._is_test_of_type_ssttestcase(test):
             return
@@ -489,6 +490,8 @@ class SSTTextTestResult(unittest.TestResult):
         log("=" * 70)
         log("=== TESTS FINISHED " + ("=" * 51))
         log("=" * 70 + "\n")
+        if not test_engine_globals.TESTENGINE_IGNORESKIPS:
+            self.printSkipList('SKIPPED', self.skipped)
         self.printErrorList('ERROR', self.errors)
         self.printErrorList('FAIL', self.failures)
 
@@ -503,6 +506,20 @@ class SSTTextTestResult(unittest.TestResult):
             title = '%s: %s' % (flavour, self.getLongDescription(test))
             self.stream.writeln(colour(title))
             self.stream.writeln(self.separator2)
+            if pygments_loaded:
+                self.stream.writeln(highlight(err, self.lexer, self.formatter))
+            else:
+                self.stream.writeln(err)
+
+    def printSkipList(self, flavour, errors):
+        if self.no_colour_output:
+            colour = self.colours[None]
+        else:
+            colour = self.colours["skip"]
+
+        for test, err in errors:
+            title = '%s: %s' % (flavour, self.getLongDescription(test))
+            self.stream.writeln(colour(title))
             if pygments_loaded:
                 self.stream.writeln(highlight(err, self.lexer, self.formatter))
             else:
@@ -789,7 +806,6 @@ class SSTTestSuitesResultsDict:
             # Dont log if everything passes
             if len(self.testsuitesresultsdict[tmtc_name].get_failed()) == 0 and \
                len(self.testsuitesresultsdict[tmtc_name].get_errored()) == 0 and \
-               len(self.testsuitesresultsdict[tmtc_name].get_skiped()) == 0 and \
                len(self.testsuitesresultsdict[tmtc_name].get_expectedfailed()) == 0 and \
                len(self.testsuitesresultsdict[tmtc_name].get_unexpectedsuccess()) == 0:
                 pass
@@ -799,8 +815,6 @@ class SSTTestSuitesResultsDict:
                     log(" - FAILED  : {0}".format(testname))
                 for testname in self.testsuitesresultsdict[tmtc_name].get_errored():
                     log(" - ERROR   : {0}".format(testname))
-                for testname in self.testsuitesresultsdict[tmtc_name].get_skiped():
-                    log(" - SKIPPED : {0}".format(testname))
                 for testname in self.testsuitesresultsdict[tmtc_name].get_expectedfailed():
                     log(" - EXPECTED FAILED    : {0}".format(testname))
                 for testname in self.testsuitesresultsdict[tmtc_name].get_unexpectedsuccess():
