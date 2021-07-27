@@ -10,15 +10,14 @@
 // distribution.
 
 #include "sst_config.h"
+
 #include "sst/core/componentExtension.h"
 
 namespace SST {
 
-ComponentExtension::ComponentExtension(ComponentId_t id) :
-    BaseComponent(id)
+ComponentExtension::ComponentExtension(ComponentId_t id) : BaseComponent(id)
 {
     isExtension = true;
 }
-
 
 } // namespace SST

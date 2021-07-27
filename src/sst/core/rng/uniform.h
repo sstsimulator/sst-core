@@ -9,14 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_RNG_UNIFORM
-#define _H_SST_CORE_RNG_UNIFORM
+#ifndef SST_CORE_RNG_UNIFORM_H
+#define SST_CORE_RNG_UNIFORM_H
 
-#include "math.h"
-
-#include "rng.h"
 #include "distrib.h"
+#include "math.h"
 #include "mersenne.h"
+#include "rng.h"
 
 using namespace SST::RNG;
 
@@ -29,18 +28,18 @@ namespace RNG {
     Creates a Uniform distribution for use within SST. This distribution is the same across
     platforms and compilers.
 */
-class UniformDistribution : public RandomDistribution {
+class UniformDistribution : public RandomDistribution
+{
 
 public:
     /**
         Creates an uniform distribution with a specific number of bins
         \param probsCount Number of probability bins in this distribution
     */
-    UniformDistribution(const uint32_t probsCount) : RandomDistribution(), probCount(probsCount), deleteDistrib(true) {
+    UniformDistribution(const uint32_t probsCount) : RandomDistribution(), probCount(probsCount), deleteDistrib(true)
+    {
 
-        if (probCount > 0) {
-            probPerBin = 1.0 / static_cast<double>(probCount);
-        }
+        if ( probCount > 0 ) { probPerBin = 1.0 / static_cast<double>(probCount); }
 
         baseDistrib = new MersenneRNG();
     }
@@ -51,12 +50,13 @@ public:
             \param probsCount Number of probability bins in the distribution
             \param baseDist The base random number generator to take the distribution from.
     */
-    UniformDistribution(const uint32_t probsCount, SST::RNG::Random* baseDist)
-        : RandomDistribution(), probCount(probsCount), deleteDistrib(false) {
+    UniformDistribution(const uint32_t probsCount, SST::RNG::Random* baseDist) :
+        RandomDistribution(),
+        probCount(probsCount),
+        deleteDistrib(false)
+    {
 
-        if (probCount > 0) {
-            probPerBin = 1.0 / static_cast<double>(probCount);
-        }
+        if ( probCount > 0 ) { probPerBin = 1.0 / static_cast<double>(probCount); }
 
         baseDistrib = baseDist;
     }
@@ -64,10 +64,9 @@ public:
     /**
         Destroys the distribution and will delete locally allocated RNGs
     */
-    ~UniformDistribution() {
-        if (deleteDistrib) {
-            delete baseDistrib;
-        }
+    ~UniformDistribution()
+    {
+        if ( deleteDistrib ) { delete baseDistrib; }
     }
 
     /**
@@ -75,11 +74,12 @@ public:
         \return The next random double from the distribution, this is the double converted of the index where the
        probability is located
     */
-    double getNextDouble() {
-        const double nextD = baseDistrib->nextUniform();
-        uint32_t current_bin = 1;
+    double getNextDouble()
+    {
+        const double nextD       = baseDistrib->nextUniform();
+        uint32_t     current_bin = 1;
 
-        while (nextD > (static_cast<double>(current_bin) * probPerBin)) {
+        while ( nextD > (static_cast<double>(current_bin) * probPerBin) ) {
             current_bin++;
         }
 
@@ -113,4 +113,4 @@ using SSTUniformDistribution = SST::RNG::UniformDistribution;
 } // namespace RNG
 } // namespace SST
 
-#endif
+#endif // SST_CORE_RNG_UNIFORM_H

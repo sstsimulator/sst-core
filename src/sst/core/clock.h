@@ -9,16 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_CLOCK_H
 #define SST_CORE_CLOCK_H
 
-#include <vector>
-#include <cinttypes>
-
 #include "sst/core/action.h"
 
-#define _CLE_DBG( fmt, args...)__DBG( DBG_CLOCK, Clock, fmt, ## args )
+#include <cinttypes>
+#include <vector>
+
+#define _CLE_DBG(fmt, args...) __DBG(DBG_CLOCK, Clock, fmt, ##args)
 
 namespace SST {
 
@@ -32,31 +31,31 @@ class TimeConverter;
 class Clock : public Action
 {
 public:
-
     /** Create a new clock with a specified period */
-    Clock( TimeConverter* period, int priority = CLOCKPRIORITY);
+    Clock(TimeConverter* period, int priority = CLOCKPRIORITY);
     ~Clock();
 
     /** Functor classes for Clock handling */
-    class HandlerBase {
+    class HandlerBase
+    {
     public:
         /** Function called when Handler is invoked */
         virtual bool operator()(Cycle_t) = 0;
         virtual ~HandlerBase() {}
     };
 
-
     /** Event Handler class with user-data argument
      * @tparam classT Type of the Object
      * @tparam argT Type of the argument
      */
     template <typename classT, typename argT = void>
-    class Handler : public HandlerBase {
+    class Handler : public HandlerBase
+    {
     private:
         typedef bool (classT::*PtrMember)(Cycle_t, argT);
-        classT* object;
+        classT*         object;
         const PtrMember member;
-        argT data;
+        argT            data;
 
     public:
         /** Constructor
@@ -64,11 +63,7 @@ public:
          * @param member - Member function to call as the handler
          * @param data - Additional argument to pass to handler
          */
-        Handler( classT* const object, PtrMember member, argT data ) :
-            object(object),
-            member(member),
-            data(data)
-        {}
+        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
 
         /**
            Calls underlying handler function, passing in the current
@@ -77,19 +72,18 @@ public:
            If the hander function returns true, the handler will be
            removed from the clock list.
          */
-        bool operator()(Cycle_t cycle) override {
-            return (object->*member)(cycle,data);
-        }
+        bool operator()(Cycle_t cycle) override { return (object->*member)(cycle, data); }
     };
 
     /** Event Handler class without user-data
      * @tparam classT Type of the Object
      */
     template <typename classT>
-    class Handler<classT, void> : public HandlerBase {
+    class Handler<classT, void> : public HandlerBase
+    {
     private:
         typedef bool (classT::*PtrMember)(Cycle_t);
-        classT* object;
+        classT*         object;
         const PtrMember member;
 
     public:
@@ -97,10 +91,7 @@ public:
          * @param object - Pointer to Object upon which to call the handler
          * @param member - Member function to call as the handler
          */
-        Handler( classT* const object, PtrMember member ) :
-            object(object),
-            member(member)
-        {}
+        Handler(classT* const object, PtrMember member) : object(object), member(member) {}
 
         /**
            Calls underlying handler function, passing in the current
@@ -109,9 +100,7 @@ public:
            If the hander function returns true, the handler will be
            removed from the clock list.
          */
-        bool operator()(Cycle_t cycle) override {
-            return (object->*member)(cycle);
-        }
+        bool operator()(Cycle_t cycle) override { return (object->*member)(cycle); }
     };
 
     /**
@@ -124,30 +113,27 @@ public:
     Cycle_t getNextCycle();
 
     /** Add a handler to be called on this clock's tick */
-    bool registerHandler( Clock::HandlerBase* handler );
+    bool registerHandler(Clock::HandlerBase* handler);
     /** Remove a handler from the list of handlers to be called on the clock tick */
-    bool unregisterHandler( Clock::HandlerBase* handler, bool& empty );
+    bool unregisterHandler(Clock::HandlerBase* handler, bool& empty);
 
-    void print(const std::string& header, Output &out) const override;
+    void print(const std::string& header, Output& out) const override;
 
 private:
-/*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */
+    /*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */
     typedef std::vector<Clock::HandlerBase*> StaticHandlerMap_t;
 
+    Clock() {}
 
-    Clock() { }
-
-    void execute( void ) override;
+    void execute(void) override;
 
     Cycle_t            currentCycle;
     TimeConverter*     period;
     StaticHandlerMap_t staticHandlerMap;
     SimTime_t          next;
     bool               scheduled;
-
 };
 
 } // namespace SST
-
 
 #endif // SST_CORE_CLOCK_H

@@ -11,40 +11,47 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_MODEL_PYMODEL_STAT_H
-#define SST_CORE_MODEL_PYMODEL_STAT_H
+#ifndef SST_CORE_MODEL_PYTHON_PYMODEL_STAT_H
+#define SST_CORE_MODEL_PYTHON_PYMODEL_STAT_H
 
 #include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
+
+DISABLE_WARN_DEPRECATED_REGISTER
+#include <Python.h>
+REENABLE_WARNING
 
 namespace SST {
+class ConfigStatistic;
 
 extern "C" {
 
 struct StatisticPy_t;
 struct PyStatistic;
 
-struct PyStatistic {
+struct PyStatistic
+{
     StatisticId_t id;
 
     PyStatistic(StatisticId_t id) : id(id) {}
     virtual ~PyStatistic() {}
     ConfigStatistic* getStat();
-    int compare(PyStatistic* other);
-    StatisticId_t getID();
+    int              compare(PyStatistic* other);
+    StatisticId_t    getID();
 };
 
-struct StatisticPy_t {
+struct StatisticPy_t
+{
     PyObject_HEAD PyStatistic* obj;
 };
 
 extern PyTypeObject PyModel_StatType;
 
 static inline ConfigStatistic*
-getStat(PyObject* pobj) {
+getStat(PyObject* pobj)
+{
     ConfigStatistic* c = ((StatisticPy_t*)pobj)->obj->getStat();
-    if (c == nullptr) {
-        PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigStatistic");
-    }
+    if ( c == nullptr ) { PyErr_SetString(PyExc_RuntimeError, "Failed to find ConfigStatistic"); }
     return c;
 }
 
@@ -52,4 +59,4 @@ getStat(PyObject* pobj) {
 
 } // namespace SST
 
-#endif
+#endif // SST_CORE_MODEL_PYTHON_PYMODEL_STAT_H

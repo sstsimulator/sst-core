@@ -9,11 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_RNG_EMPTY
-#define _H_SST_CORE_RNG_EMPTY
+#ifndef SST_CORE_RNG_CONSTANT_H
+#define SST_CORE_RNG_CONSTANT_H
 
-#include "math.h"
 #include "distrib.h"
+#include "math.h"
 
 using namespace SST::RNG;
 
@@ -26,7 +26,8 @@ namespace RNG {
     Implements a distribution which always returns a constant value (provided by the user). This
     can be used in situations where the user may not want to apply a distribution.
 */
-class ConstantDistribution : public RandomDistribution {
+class ConstantDistribution : public RandomDistribution
+{
 
 public:
     /**
@@ -65,4 +66,4 @@ using SSTConstantDistribution = SST::RNG::ConstantDistribution;
 } // namespace RNG
 } // namespace SST
 
-#endif
+#endif // SST_CORE_RNG_CONSTANT_H

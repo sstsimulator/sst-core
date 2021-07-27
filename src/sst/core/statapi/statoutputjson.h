@@ -9,11 +9,10 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_STATISTICS_OUTPUT_JSON
-#define _H_SST_CORE_STATISTICS_OUTPUT_JSON
+#ifndef SST_CORE_STATAPI_STATOUTPUTJSON_H
+#define SST_CORE_STATAPI_STATOUTPUTJSON_H
 
 #include "sst/core/sst_types.h"
-
 #include "sst/core/statapi/statoutput.h"
 
 namespace SST {
@@ -90,29 +89,28 @@ protected:
     void printIndent();
 
 protected:
-    StatisticOutputJSON() {;} // For serialization
+    StatisticOutputJSON() { ; } // For serialization
 
 private:
     bool openFile();
     void closeFile();
 
 private:
-    FILE*                    m_hFile;
-    std::string              m_FilePath;
-    std::string              m_currentComponentName;
-    std::string              m_currentStatisticName;
-    std::string              m_currentStatisticSubId;
-    std::string              m_currentStatisticType;
-    bool                     m_outputSimTime;
-    bool                     m_outputRank;
-    bool                     m_firstEntry;
-    bool                     m_firstField;
-    bool                     m_processedAnyStats;
-    int                      m_curIndentLevel;
-
+    FILE*       m_hFile;
+    std::string m_FilePath;
+    std::string m_currentComponentName;
+    std::string m_currentStatisticName;
+    std::string m_currentStatisticSubId;
+    std::string m_currentStatisticType;
+    bool        m_outputSimTime;
+    bool        m_outputRank;
+    bool        m_firstEntry;
+    bool        m_firstField;
+    bool        m_processedAnyStats;
+    int         m_curIndentLevel;
 };
 
-} //namespace Statistics
-} //namespace SST
+} // namespace Statistics
+} // namespace SST
 
-#endif
+#endif // SST_CORE_STATAPI_STATOUTPUTJSON_H

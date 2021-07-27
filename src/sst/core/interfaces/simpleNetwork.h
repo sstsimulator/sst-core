@@ -11,18 +11,17 @@
 // distribution.
 //
 
-#ifndef SST_CORE_INTERFACES_SIMPLENETWORK_H_
-#define SST_CORE_INTERFACES_SIMPLENETWORK_H_
+#ifndef SST_CORE_INTERFACES_SIMPLENETWORK_H
+#define SST_CORE_INTERFACES_SIMPLENETWORK_H
+
+#include "sst/core/params.h"
+#include "sst/core/serialization/serializable.h"
+#include "sst/core/sst_types.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/warnmacros.h"
 
 #include <string>
 #include <unordered_map>
-
-#include "sst/core/sst_types.h"
-#include "sst/core/warnmacros.h"
-#include "sst/core/subcomponent.h"
-#include "sst/core/params.h"
-
-#include "sst/core/serialization/serializable.h"
 
 namespace SST {
 
@@ -32,14 +31,13 @@ class Link;
 
 namespace Interfaces {
 
-
 /**
  * Generic network interface
  */
-class SimpleNetwork : public SubComponent {
+class SimpleNetwork : public SubComponent
+{
 
 public:
-
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork,int)
 
     /** All Addresses can be 64-bit */
@@ -50,29 +48,27 @@ public:
     /**
      * Represents both network sends and receives
      */
-    class Request : public SST::Core::Serialization::serializable, SST::Core::Serialization::serializable_type<Request> {
+    class Request : public SST::Core::Serialization::serializable, SST::Core::Serialization::serializable_type<Request>
+    {
 
     public:
-        nid_t  dest;          /*!< Node ID of destination */
-        nid_t  src;           /*!< Node ID of source */
-        int    vn;            /*!< Virtual network of packet */
-        size_t size_in_bits;  /*!< Size of packet in bits */
-        bool   head;          /*!< True if this is the head of a stream */
-        bool   tail;          /*!< True if this is the tail of a steram */
+        nid_t  dest;           /*!< Node ID of destination */
+        nid_t  src;            /*!< Node ID of source */
+        int    vn;             /*!< Virtual network of packet */
+        size_t size_in_bits;   /*!< Size of packet in bits */
+        bool   head;           /*!< True if this is the head of a stream */
+        bool   tail;           /*!< True if this is the tail of a steram */
         bool   allow_adaptive; /*!< Indicates whether adaptive routing is allowed or not. */
 
     private:
-        Event* payload;       /*!< Payload of the request */
+        Event* payload; /*!< Payload of the request */
 
     public:
-
         /**
            Sets the payload field for this request
            @param payload_in Event to set as payload.
          */
-        inline void givePayload(Event *event) {
-            payload = event;
-        }
+        inline void givePayload(Event* event) { payload = event; }
 
         /**
            Returns the payload for the request.  This will also set
@@ -80,9 +76,10 @@ public:
            data one time after each givePayload call.
            @return Event that was set as payload of the request.
         */
-        inline Event* takePayload() {
+        inline Event* takePayload()
+        {
             Event* ret = payload;
-            payload = nullptr;
+            payload    = nullptr;
             return ret;
         }
 
@@ -93,39 +90,49 @@ public:
            going to be deleted, use takePayload instead.
            @return Event that was set as payload of the request.
         */
-        inline Event* inspectPayload() {
-            return payload;
-        }
+        inline Event* inspectPayload() { return payload; }
 
         /**
          * Trace types
          */
         typedef enum {
-            NONE,       /*!< No tracing enabled */
-            ROUTE,      /*!< Trace route information only */
-            FULL        /*!< Trace all movements of packets through network */
+            NONE,  /*!< No tracing enabled */
+            ROUTE, /*!< Trace route information only */
+            FULL   /*!< Trace all movements of packets through network */
         } TraceType;
-
 
         /** Constructor */
         Request() :
-            dest(0), src(0), size_in_bits(0), head(false), tail(false), allow_adaptive(true),
-            payload(nullptr), trace(NONE), traceID(0)
+            dest(0),
+            src(0),
+            size_in_bits(0),
+            head(false),
+            tail(false),
+            allow_adaptive(true),
+            payload(nullptr),
+            trace(NONE),
+            traceID(0)
         {}
 
-        Request(nid_t dest, nid_t src, size_t size_in_bits,
-                bool head, bool tail, Event* payload = nullptr) :
-            dest(dest), src(src), size_in_bits(size_in_bits), head(head), tail(tail), allow_adaptive(true),
-            payload(payload), trace(NONE), traceID(0)
-        {
-        }
+        Request(nid_t dest, nid_t src, size_t size_in_bits, bool head, bool tail, Event* payload = nullptr) :
+            dest(dest),
+            src(src),
+            size_in_bits(size_in_bits),
+            head(head),
+            tail(tail),
+            allow_adaptive(true),
+            payload(payload),
+            trace(NONE),
+            traceID(0)
+        {}
 
         virtual ~Request()
         {
             if ( payload != nullptr ) delete payload;
         }
 
-        inline Request* clone() {
+        inline Request* clone()
+        {
             Request* req = new Request(*this);
             // Copy constructor only makes a shallow copy, need to
             // clone the event.
@@ -133,70 +140,68 @@ public:
             return req;
         }
 
-        void setTraceID(int id) {traceID = id;}
-        void setTraceType(TraceType type) {trace = type;}
-        int getTraceID() {return traceID;}
-        TraceType getTraceType() {return trace;}
+        void      setTraceID(int id) { traceID = id; }
+        void      setTraceType(TraceType type) { trace = type; }
+        int       getTraceID() { return traceID; }
+        TraceType getTraceType() { return trace; }
 
-        void serialize_order(SST::Core::Serialization::serializer &ser) override {
-            ser & dest;
-            ser & src;
-            ser & vn;
-            ser & size_in_bits;
-            ser & head;
-            ser & tail;
-            ser & payload;
-            ser & trace;
-            ser & traceID;
-            ser & allow_adaptive;
+        void serialize_order(SST::Core::Serialization::serializer& ser) override
+        {
+            ser& dest;
+            ser& src;
+            ser& vn;
+            ser& size_in_bits;
+            ser& head;
+            ser& tail;
+            ser& payload;
+            ser& trace;
+            ser& traceID;
+            ser& allow_adaptive;
         }
 
     protected:
         TraceType trace;
-        int traceID;
+        int       traceID;
 
     private:
-
         ImplementSerializable(SST::Interfaces::SimpleNetwork::Request)
     };
     /**
        Class used to inspect network requests going through the network.
      */
-    class NetworkInspector : public SubComponent {
+    class NetworkInspector : public SubComponent
+    {
 
     public:
         SST_ELI_REGISTER_SUBCOMPONENT_API(SST::Interfaces::SimpleNetwork::NetworkInspector,std::string)
 
-
-        NetworkInspector(ComponentId_t id) :
-            SubComponent(id)
-        {}
+        NetworkInspector(ComponentId_t id) : SubComponent(id) {}
 
         virtual ~NetworkInspector() {}
 
         virtual void inspectNetworkData(Request* req) = 0;
-
     };
 
     /** Functor classes for handling of callbacks */
-    class HandlerBase {
+    class HandlerBase
+    {
     public:
         virtual bool operator()(int) = 0;
         virtual ~HandlerBase() {}
     };
-
 
     /** Event Handler class with user-data argument
      * @tparam classT Type of the Object
      * @tparam argT Type of the argument
      */
     template <typename classT, typename argT = void>
-    class Handler : public HandlerBase {
+    class Handler : public HandlerBase
+    {
     private:
         typedef bool (classT::*PtrMember)(int, argT);
-        classT* object;
+        classT*         object;
         const PtrMember member;
-        argT data;
+        argT            data;
 
     public:
         /** Constructor
@@ -204,25 +209,20 @@ public:
          * @param member - Member function to call as the handler
          * @param data - Additional argument to pass to handler
          */
-        Handler( classT* const object, PtrMember member, argT data ) :
-            object(object),
-            member(member),
-            data(data)
-        {}
+        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
 
-        bool operator()(int vn) {
-            return (object->*member)(vn,data);
-        }
+        bool operator()(int vn) { return (object->*member)(vn, data); }
     };
 
     /** Event Handler class without user-data
      * @tparam classT Type of the Object
      */
     template <typename classT>
-    class Handler<classT, void> : public HandlerBase {
+    class Handler<classT, void> : public HandlerBase
+    {
     private:
         typedef bool (classT::*PtrMember)(int);
-        classT* object;
+        classT*         object;
         const PtrMember member;
 
     public:
@@ -230,27 +230,19 @@ public:
          * @param object - Pointer to Object upon which to call the handler
          * @param member - Member function to call as the handler
          */
-        Handler( classT* const object, PtrMember member ) :
-            object(object),
-            member(member)
-        {}
+        Handler(classT* const object, PtrMember member) : object(object), member(member) {}
 
-        bool operator()(int vn) {
-            return (object->*member)(vn);
-        }
+        bool operator()(int vn) { return (object->*member)(vn); }
     };
 
 public:
-
     /** Constructor, designed to be used via 'loadUserSubComponent or loadAnonymousSubComponent'. */
-    SimpleNetwork(SST::ComponentId_t id) :
-        SubComponent(id)
-    { }
+    SimpleNetwork(SST::ComponentId_t id) : SubComponent(id) {}
 
     /**
      * Sends a network request during the init() phase
      */
-    virtual void sendInitData(Request *req) = 0;
+    virtual void sendInitData(Request* req) = 0;
 
     /**
      * Receive any data during the init() phase.
@@ -271,9 +263,7 @@ public:
      * Init version call the Untimed version) until sendInitData is
      * removed in SST 9.0.
      */
-    virtual void sendUntimedData(Request *req) {
-        sendInitData(req);
-    }
+    virtual void sendUntimedData(Request* req) { sendInitData(req); }
 
     /**
      * Receive any data during untimed phases (init() and complete()).
@@ -287,9 +277,7 @@ public:
      * Init version call the Untimed version) until recvInitData is
      * removed in SST 9.0.
      */
-    virtual Request* recvUntimedData() {
-        return recvInitData();
-    }
+    virtual Request* recvUntimedData() { return recvInitData(); }
 
     // /**
     //  * Returns a handle to the underlying SST::Link
@@ -299,7 +287,7 @@ public:
     /**
      * Send a Request to the network.
      */
-    virtual bool send(Request *req, int vn) = 0;
+    virtual bool send(Request* req, int vn) = 0;
 
     /**
      * Receive a Request from the network.
@@ -326,8 +314,7 @@ public:
      * to send
      * @return true if there is space in the output, false otherwise
      */
-     virtual bool spaceToSend(int vn, int num_bits) = 0;
-
+    virtual bool spaceToSend(int vn, int num_bits) = 0;
 
     /**
      * Checks if there is a waiting network request request pending in
@@ -336,7 +323,7 @@ public:
      * @return true if a network request is pending in the specified
      * virtual network, false otherwise
      */
-    virtual bool requestToReceive( int vn ) = 0;
+    virtual bool requestToReceive(int vn) = 0;
 
     /**
      * Registers a functor which will fire when a new request is
@@ -353,7 +340,7 @@ public:
      * available space.
      * @param functor Functor to call when request is sent
      */
-    virtual void setNotifyOnSend(HandlerBase* functor) = 0;
+    virtual void setNotifyOnSend(HandlerBase* functor)    = 0;
 
     /**
      * Check to see if network is initialized.  If network is not
@@ -377,11 +364,9 @@ public:
      * @return Link bandwidth of associated link
      */
     virtual const UnitAlgebra& getLinkBW() const = 0;
-
-
 };
 
-}
-}
+} // namespace Interfaces
+} // namespace SST
 
-#endif
+#endif // SST_CORE_INTERFACES_SIMPLENETWORK_H

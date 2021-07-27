@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_STATISTICS_GROUP
-#define _H_SST_CORE_STATISTICS_GROUP
+#ifndef SST_CORE_STATAPI_STATGROUP_H
+#define SST_CORE_STATAPI_STATGROUP_H
 
 #include "sst/core/sst_types.h"
 #include "sst/core/unitAlgebra.h"
@@ -24,28 +24,27 @@ namespace Statistics {
 class StatisticBase;
 class StatisticOutput;
 
-
-
-class StatisticGroup {
+class StatisticGroup
+{
 public:
-    StatisticGroup() : isDefault(true), name("default") { };
-    StatisticGroup(const ConfigStatGroup &csg);
+    StatisticGroup() : isDefault(true), name("default") {};
+    StatisticGroup(const ConfigStatGroup& csg);
 
-    bool containsStatistic(const StatisticBase *stat) const;
-    bool claimsStatistic(const StatisticBase *stat) const;
-    void addStatistic(StatisticBase *stat);
+    bool containsStatistic(const StatisticBase* stat) const;
+    bool claimsStatistic(const StatisticBase* stat) const;
+    void addStatistic(StatisticBase* stat);
 
-    bool isDefault;
-    std::string name;
-    StatisticOutput *output;
-    UnitAlgebra outputFreq;
+    bool             isDefault;
+    std::string      name;
+    StatisticOutput* output;
+    UnitAlgebra      outputFreq;
 
-    std::vector<ComponentId_t> components;
-    std::vector<std::string> statNames;
+    std::vector<ComponentId_t>  components;
+    std::vector<std::string>    statNames;
     std::vector<StatisticBase*> stats;
 };
 
-} //namespace Statistics
-} //namespace SST
+} // namespace Statistics
+} // namespace SST
 
-#endif
+#endif // SST_CORE_STATAPI_STATGROUP_H

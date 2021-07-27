@@ -9,38 +9,37 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_ACTION_H
 #define SST_CORE_ACTION_H
 
+#include "sst/core/activity.h"
+#include "sst/core/output.h"
 #include "sst/core/serialization/serializer.h"
 
 #include <cinttypes>
-
-#include "sst/core/activity.h"
-#include "sst/core/output.h"
-
-
 
 namespace SST {
 
 /**
  * An Action is a schedulable Activity which is not an Event.
  */
-class Action : public Activity {
+class Action : public Activity
+{
 public:
-    Action() {
+    Action()
+    {
 #ifdef SST_ENFORCE_EVENT_ORDERING
         enforce_link_order = 0;
 #endif
     }
     ~Action() {}
 
-    void print(const std::string& header, Output &out) const override {
-        out.output("%s Generic Action to be delivered at %" PRIu64 " with priority %d\n",
-                header.c_str(), getDeliveryTime(), getPriority());
+    void print(const std::string& header, Output& out) const override
+    {
+        out.output(
+            "%s Generic Action to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), getDeliveryTime(),
+            getPriority());
     }
-
 
 protected:
     /** Called to signal to the Simulation object to end the simulation */
@@ -51,6 +50,6 @@ private:
     NotSerializable(Action)
 };
 
-} //namespace SST
+} // namespace SST
 
 #endif // SST_CORE_ACTION_H

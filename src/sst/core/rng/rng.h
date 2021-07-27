@@ -24,7 +24,8 @@ namespace RNG {
     implement an actual RNG itself only the base class which describes the methods each
     class will implement.
 */
-class Random {
+class Random
+{
 
 public:
     /**

@@ -10,19 +10,18 @@
 // distribution.
 
 #ifndef SST_CORE_INTERPROCESS_TUNNEL_SHM_PARENT_H
-#define SST_CORE_INTERPROCESS_TUNNEL_SHM_PARENT_H 1
+#define SST_CORE_INTERPROCESS_TUNNEL_SHM_PARENT_H
 
-
-#include <fcntl.h>
 #include <cstdio>
-#include <string>
-#include <errno.h>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
+#include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <string>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <inttypes.h>
 
 namespace SST {
 namespace Core {
@@ -33,8 +32,9 @@ namespace Interprocess {
  *
  * @tparam TunnelType Tunnel definition
  */
-template<typename TunnelType>
-class SHMParent {
+template <typename TunnelType>
+class SHMParent
+{
 
 public:
     /** Parent/master manager for an IPC tunnel
@@ -46,7 +46,9 @@ public:
      * @param bufferSize How large each core's buffer should be
      * @param expectedChildren How many child processes will connect to the tunnel
      */
-    SHMParent(uint32_t comp_id, size_t numBuffers, size_t bufferSize, uint32_t expectedChildren = 1) : shmPtr(nullptr), fd(-1)
+    SHMParent(uint32_t comp_id, size_t numBuffers, size_t bufferSize, uint32_t expectedChildren = 1) :
+        shmPtr(nullptr),
+        fd(-1)
     {
         char key[256];
         memset(key, '\0', sizeof(key));
@@ -54,7 +56,7 @@ public:
             snprintf(key, sizeof(key), "/sst_shmem_%u-%" PRIu32 "-%d", getpid(), comp_id, rand());
             filename = key;
 
-            fd = shm_open(filename.c_str(), O_RDWR|O_CREAT|O_EXCL, S_IRUSR|S_IWUSR);
+            fd = shm_open(filename.c_str(), O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
             /* There's a rare chance that a file we are looking to use exists.
              * It's unlikely, but perhaps a previous run (with the same PID
              * and random number) crashed before the * clients all connected.
@@ -69,7 +71,7 @@ public:
             exit(1);
         }
 
-        tunnel = new TunnelType(numBuffers, bufferSize, expectedChildren);
+        tunnel  = new TunnelType(numBuffers, bufferSize, expectedChildren);
         shmSize = tunnel->getTunnelSize();
 
         if ( ftruncate(fd, shmSize) ) {
@@ -78,7 +80,7 @@ public:
             exit(1);
         }
 
-        shmPtr = mmap(nullptr, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+        shmPtr = mmap(nullptr, shmSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if ( shmPtr == MAP_FAILED ) {
             // Not using Output because IPC means Output might not be available
             fprintf(stderr, "mmap failed: %s\n", strerror(errno));
@@ -94,7 +96,7 @@ public:
         delete tunnel;
         if ( shmPtr ) {
             munmap(shmPtr, shmSize);
-            shmPtr = nullptr;
+            shmPtr  = nullptr;
             shmSize = 0;
         }
         if ( fd >= 0 ) {
@@ -110,19 +112,17 @@ public:
     TunnelType* getTunnel() { return tunnel; }
 
 private:
-    void *shmPtr;
-    int fd;
+    void* shmPtr;
+    int   fd;
 
     std::string filename;
-    size_t shmSize;
+    size_t      shmSize;
 
     TunnelType* tunnel;
 };
 
-}
-}
-}
+} // namespace Interprocess
+} // namespace Core
+} // namespace SST
 
-
-
-#endif
+#endif // SST_CORE_INTERPROCESS_TUNNEL_SHM_PARENT_H

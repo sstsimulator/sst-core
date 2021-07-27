@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SERIALIZE_ARRAY_H
-#define SERIALIZE_ARRAY_H
+#ifndef SST_CORE_SERIALIZATION_SERIALIZE_ARRAY_H
+#define SST_CORE_SERIALIZATION_SERIALIZE_ARRAY_H
 
 #include "sst/core/serialization/serializer.h"
 
@@ -23,10 +23,9 @@ template <class TPtr, class IntType>
 class ser_array_wrapper
 {
 public:
-    TPtr*& bufptr;
+    TPtr*&   bufptr;
     IntType& sizeptr;
-    ser_array_wrapper(TPtr*& buf, IntType& size) :
-        bufptr(buf), sizeptr(size) {}
+    ser_array_wrapper(TPtr*& buf, IntType& size) : bufptr(buf), sizeptr(size) {}
 };
 
 // template <class IntType>
@@ -44,25 +43,24 @@ class raw_ptr_wrapper
 {
 public:
     TPtr*& bufptr;
-    raw_ptr_wrapper(TPtr*& ptr) :
-        bufptr(ptr) {}
+    raw_ptr_wrapper(TPtr*& ptr) : bufptr(ptr) {}
 };
 
-}
+} // namespace pvt
 /** I have typedefing pointers, but no other way.
  *  T could be "void and TPtr void* */
 template <class TPtr, class IntType>
-inline pvt::ser_array_wrapper<TPtr,IntType>
+inline pvt::ser_array_wrapper<TPtr, IntType>
 array(TPtr*& buf, IntType& size)
 {
-    return pvt::ser_array_wrapper<TPtr,IntType>(buf, size);
+    return pvt::ser_array_wrapper<TPtr, IntType>(buf, size);
 }
 
 template <class IntType>
-inline pvt::ser_array_wrapper<void,IntType>
+inline pvt::ser_array_wrapper<void, IntType>
 buffer(void*& buf, IntType& size)
 {
-    return pvt::ser_array_wrapper<void,IntType>(buf, size);
+    return pvt::ser_array_wrapper<void, IntType>(buf, size);
 }
 
 template <class TPtr>
@@ -81,11 +79,10 @@ raw_ptr(TPtr*& ptr)
    fundamental types and enums.
  */
 template <class T, int N>
-class serialize<T[N], typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type> {
+class serialize<T[N], typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+{
 public:
-    void operator()(T arr[N], serializer& ser){
-        ser.array<T,N>(arr);
-    }
+    void operator()(T arr[N], serializer& ser) { ser.array<T, N>(arr); }
 };
 
 /**
@@ -93,11 +90,13 @@ public:
    non base types.
  */
 template <class T, int N>
-class serialize<T[N], typename std::enable_if<!std::is_fundamental<T>::value && !std::is_enum<T>::value>::type> {
-  public:
-    void operator()(T arr[N], serializer& ser){
+class serialize<T[N], typename std::enable_if<!std::is_fundamental<T>::value && !std::is_enum<T>::value>::type>
+{
+public:
+    void operator()(T arr[N], serializer& ser)
+    {
         for ( int i = 0; i < N; i++ ) {
-            serialize<T>()(arr[i],ser);
+            serialize<T>()(arr[i], ser);
         }
     }
 };
@@ -109,11 +108,12 @@ class serialize<T[N], typename std::enable_if<!std::is_fundamental<T>::value && 
    fundamental types and enums.
  */
 template <class T, class IntType>
-class serialize<pvt::ser_array_wrapper<T,IntType>, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type> {
+class serialize<
+    pvt::ser_array_wrapper<T, IntType>,
+    typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+{
 public:
-    void operator()(pvt::ser_array_wrapper<T,IntType> arr, serializer& ser) {
-        ser.binary(arr.bufptr, arr.sizeptr);
-    }
+    void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser) { ser.binary(arr.bufptr, arr.sizeptr); }
 };
 
 /**
@@ -121,12 +121,16 @@ public:
    non base types.
  */
 template <class T, class IntType>
-class serialize<pvt::ser_array_wrapper<T,IntType>, typename std::enable_if<!std::is_fundamental<T>::value && !std::is_enum<T>::value>::type> {
+class serialize<
+    pvt::ser_array_wrapper<T, IntType>,
+    typename std::enable_if<!std::is_fundamental<T>::value && !std::is_enum<T>::value>::type>
+{
 public:
-    void operator()(pvt::ser_array_wrapper<T,IntType> arr, serializer& ser) {
+    void operator()(pvt::ser_array_wrapper<T, IntType> arr, serializer& ser)
+    {
         ser.primitive(arr.sizeptr);
         for ( int i = 0; i < arr.sizeptr; i++ ) {
-            serialize<T>()(arr[i],ser);
+            serialize<T>()(arr[i], ser);
         }
     }
 };
@@ -136,11 +140,10 @@ public:
    void*.
  */
 template <class IntType>
-class serialize<pvt::ser_array_wrapper<void,IntType> > {
+class serialize<pvt::ser_array_wrapper<void, IntType>>
+{
 public:
-    void operator()(pvt::ser_array_wrapper<void,IntType> arr, serializer& ser) {
-        ser.binary(arr.bufptr, arr.sizeptr);
-    }
+    void operator()(pvt::ser_array_wrapper<void, IntType> arr, serializer& ser) { ser.binary(arr.bufptr, arr.sizeptr); }
 };
 
 /***   Other Specializations (raw_ptr and trivially_serializable)  ***/
@@ -152,23 +155,20 @@ public:
    won't be valid on the other rank.
  */
 template <class TPtr>
-class serialize<pvt::raw_ptr_wrapper<TPtr> > {
+class serialize<pvt::raw_ptr_wrapper<TPtr>>
+{
 public:
-    void operator()(pvt::raw_ptr_wrapper<TPtr> ptr, serializer& ser) {
-        ser.primitive(ptr.bufptr);
-    }
+    void operator()(pvt::raw_ptr_wrapper<TPtr> ptr, serializer& ser) { ser.primitive(ptr.bufptr); }
 };
-
-
-
 
 // Needed only because the default version in serialize.h can't get
 // the template expansions quite right trying to look through several
 // levels of expansion
 template <class TPtr, class IntType>
 inline void
-operator&(serializer& ser, pvt::ser_array_wrapper<TPtr,IntType> arr){
-    serialize<pvt::ser_array_wrapper<TPtr,IntType> >()(arr,ser);
+operator&(serializer& ser, pvt::ser_array_wrapper<TPtr, IntType> arr)
+{
+    serialize<pvt::ser_array_wrapper<TPtr, IntType>>()(arr, ser);
 }
 
 // Needed only because the default version in serialize.h can't get
@@ -176,11 +176,13 @@ operator&(serializer& ser, pvt::ser_array_wrapper<TPtr,IntType> arr){
 // levels of expansion
 template <class TPtr>
 inline void
-operator&(serializer& ser, pvt::raw_ptr_wrapper<TPtr> ptr){
-    serialize<pvt::raw_ptr_wrapper<TPtr> >()(ptr,ser);
+operator&(serializer& ser, pvt::raw_ptr_wrapper<TPtr> ptr)
+{
+    serialize<pvt::raw_ptr_wrapper<TPtr>>()(ptr, ser);
 }
 
-}
-}
-}
-#endif // SERIALIZE_ARRAY_H
+} // namespace Serialization
+} // namespace Core
+} // namespace SST
+
+#endif // SST_CORE_SERIALIZATION_SERIALIZE_ARRAY_H

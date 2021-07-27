@@ -9,37 +9,38 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_INTERFACES_TEST_EVENT_H
 #define SST_CORE_INTERFACES_TEST_EVENT_H
 
 #include "sst/core/event.h"
 
-namespace SST{
+namespace SST {
 namespace Interfaces {
 
 /**  Test Event
  *   Useful for early-testing of components.
  */
-class TestEvent : public SST::Event, public SST::Core::Serialization::serializable_type<TestEvent> {
+class TestEvent : public SST::Event, public SST::Core::Serialization::serializable_type<TestEvent>
+{
 public:
     TestEvent();
     ~TestEvent();
     /** Unused */
-    int count;
+    int  count;
     /** Prints a message to stdout when the message is deleted. */
     bool print_on_delete;
 
 public:
-    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
         Event::serialize_order(ser);
-        ser & count;
+        ser& count;
     }
 
     ImplementSerializable(SST::Interfaces::TestEvent);
 };
 
-} //namespace Interfaces
-} //namespace SST
+} // namespace Interfaces
+} // namespace SST
 
-#endif
+#endif // SST_CORE_INTERFACES_TEST_EVENT_H

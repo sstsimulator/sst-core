@@ -9,10 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SERIALIZE_PACKER_H
-#define SERIALIZE_PACKER_H
+#ifndef SST_CORE_SERIALIZATION_SERIALIZE_PACKER_H
+#define SST_CORE_SERIALIZATION_SERIALIZE_PACKER_H
 
 #include "sst/core/serialization/serialize_buffer_accessor.h"
+
 #include <string>
 
 namespace SST {
@@ -20,32 +21,29 @@ namespace Core {
 namespace Serialization {
 namespace pvt {
 
-class ser_packer :
-  public ser_buffer_accessor
+class ser_packer : public ser_buffer_accessor
 {
- public:
-  template <class T>
-  void
-  pack(T& t){
-    T* buf = ser_buffer_accessor::next<T>();
-    *buf = t;
-  }
+public:
+    template <class T>
+    void pack(T& t)
+    {
+        T* buf = ser_buffer_accessor::next<T>();
+        *buf   = t;
+    }
 
-  /**
-   * @brief pack_buffer
-   * @param buf  Must be non-null
-   * @param size Must be non-zero
-   */
-  void
-  pack_buffer(void* buf, int size);
+    /**
+     * @brief pack_buffer
+     * @param buf  Must be non-null
+     * @param size Must be non-zero
+     */
+    void pack_buffer(void* buf, int size);
 
-  void
-  pack_string(std::string& str);
-
+    void pack_string(std::string& str);
 };
 
-} }
-}
-}
+} // namespace pvt
+} // namespace Serialization
+} // namespace Core
+} // namespace SST
 
 #endif // SERIALIZE_PACKER_H

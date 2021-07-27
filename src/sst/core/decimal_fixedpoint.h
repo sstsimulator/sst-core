@@ -14,11 +14,12 @@
 #ifndef SST_CORE_DECIMAL_FIXEDPOINT_H
 #define SST_CORE_DECIMAL_FIXEDPOINT_H
 
+#include "sst/core/from_string.h"
+
 #include <iomanip>
+#include <limits>
 #include <sstream>
 #include <type_traits>
-
-#include "sst/core/from_string.h"
 
 namespace SST {
 /**
@@ -36,29 +37,25 @@ namespace SST {
    digits.
 */
 template <int whole_words, int fraction_words>
-class decimal_fixedpoint {
+class decimal_fixedpoint
+{
 
 public:
-    static constexpr uint32_t storage_radix = 100000000;
+    static constexpr uint32_t storage_radix      = 100000000;
     static constexpr uint64_t storage_radix_long = 100000000l;
-    static constexpr int32_t  digits_per_word = 8;
+    static constexpr int32_t  digits_per_word    = 8;
 
     /**
        Get the value of whole_words template parameter.
      */
-    constexpr int getWholeWords() const {
-        return whole_words;
-    }
+    constexpr int getWholeWords() const { return whole_words; }
 
     /**
        Get the value of fraction_words template parameter.
      */
-    constexpr int getFractionWords() const {
-        return fraction_words;
-    }
+    constexpr int getFractionWords() const { return fraction_words; }
 
 private:
-
     // I should be a friend of all versions of this class
     template <int A, int B>
     friend class sst_dec_fixed;
@@ -79,7 +76,6 @@ private:
      */
     bool negative;
 
-
     /**
        initialize a decimal_fixedpoint using a string initializer
 
@@ -87,7 +83,8 @@ private:
        the c++ double precision strings.  For example 1.234, -1.234,
        0.234, 1.234e14, 1.234e14, etc.
      */
-    void from_string(const std::string& init_str) {
+    void from_string(const std::string& init_str)
+    {
         std::string init(init_str);
         negative = false;
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
@@ -97,47 +94,44 @@ private:
         // Look for a negative sign
         if ( init[0] == '-' ) {
             negative = true;
-            init = init.substr(1,init.npos);
+            init     = init.substr(1, init.npos);
         }
 
         // See if we have an exponent
-        size_t exponent_pos = init.find_last_of("eE");
-        int32_t exponent = 0;
+        size_t  exponent_pos = init.find_last_of("eE");
+        int32_t exponent     = 0;
         if ( exponent_pos != init.npos ) {
-            exponent = static_cast<int32_t>(SST::Core::from_string<double>(init.substr(exponent_pos+1,init.npos)));
-            init = init.substr(0,exponent_pos);
+            exponent = static_cast<int32_t>(SST::Core::from_string<double>(init.substr(exponent_pos + 1, init.npos)));
+            init     = init.substr(0, exponent_pos);
         }
 
         int dp = init.length();
         for ( size_t i = 0; i < init.length(); ++i ) {
-            if ( init[i] == '.' ) {
-                dp = i;
-            }
+            if ( init[i] == '.' ) { dp = i; }
         }
 
         // get rid of the decimal point
-        init.erase(dp,1);
+        init.erase(dp, 1);
 
         //                     pos of decimal pt       digits after dec pt
         int start_of_digits = (fraction_words * digits_per_word) - (init.length() - dp) + exponent;
         // Convert digits to numbers
 
         // Compute the first mult
-        int start_pos_word = start_of_digits % digits_per_word;
-        uint32_t mult = 1;
+        int      start_pos_word = start_of_digits % digits_per_word;
+        uint32_t mult           = 1;
         for ( int i = 0; i < start_pos_word; i++ ) {
             mult *= 10;
         }
 
         for ( int i = init.length() - 1; i >= 0; --i ) {
-            int digit = start_of_digits + ( init.length() - 1 - i );
-            int word = ( digit / digits_per_word );
+            int digit = start_of_digits + (init.length() - 1 - i);
+            int word  = (digit / digits_per_word);
 
-            data[word] += (SST::Core::from_string<uint32_t>(init.substr(i,1)) * mult);
+            data[word] += (SST::Core::from_string<uint32_t>(init.substr(i, 1)) * mult);
             mult *= 10;
-            if (mult == storage_radix) mult = 1;
+            if ( mult == storage_radix ) mult = 1;
         }
-
     }
 
     /**
@@ -145,7 +139,8 @@ private:
 
        @param init Initialization value.
      */
-    void from_uint64(uint64_t init) {
+    void from_uint64(uint64_t init)
+    {
         negative = false;
 
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
@@ -172,7 +167,8 @@ private:
 
        @param init Initialization value.
      */
-    void from_double(double init) {
+    void from_double(double init)
+    {
         negative = false;
 
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
@@ -192,13 +188,13 @@ private:
     }
 
 public:
-
     /**
        Default constructor.
 
        Builds a decimal_fixedpoint with the value 0;
      */
-    decimal_fixedpoint() {
+    decimal_fixedpoint()
+    {
         negative = false;
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
             data[i] = 0;
@@ -212,10 +208,7 @@ public:
        the c++ double precision strings.  For example 1.234, -1.234,
        0.234, 1.234e14, 1.234e14, etc.
      */
-    decimal_fixedpoint(const std::string& init) {
-        from_string(init);
-    }
-
+    decimal_fixedpoint(const std::string& init) { from_string(init); }
 
     /**
        Build a decimal_fixedpoint using a 64-bit unsigned number.
@@ -223,10 +216,10 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(T init, typename std::enable_if<std::is_unsigned<T>::value >::type* = nullptr) {
+    decimal_fixedpoint(T init, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr)
+    {
         from_uint64(init);
     }
-
 
     /**
        Build a decimal_fixedpoint using a 64-bit signed number.
@@ -234,8 +227,9 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(T init, typename std::enable_if<std::is_signed<T>::value &&
-                       std::is_integral<T>::value >::type* = nullptr) {
+    decimal_fixedpoint(
+        T init, typename std::enable_if<std::is_signed<T>::value && std::is_integral<T>::value>::type* = nullptr)
+    {
         if ( init < 0 ) {
             from_uint64(-init);
             negative = true;
@@ -251,7 +245,8 @@ public:
        @param init Initialization value.
      */
     template <class T>
-    decimal_fixedpoint(const T init, typename std::enable_if<std::is_floating_point<T>::value >::type* = nullptr) {
+    decimal_fixedpoint(const T init, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr)
+    {
         from_double(init);
     }
 
@@ -260,9 +255,10 @@ public:
 
        @param init Initialization value.
      */
-    decimal_fixedpoint(const decimal_fixedpoint& init) {
+    decimal_fixedpoint(const decimal_fixedpoint& init)
+    {
         negative = init.negative;
-        for (int i = 0; i < whole_words + fraction_words; ++i ) {
+        for ( int i = 0; i < whole_words + fraction_words; ++i ) {
             data[i] = init.data[i];
         }
     }
@@ -270,9 +266,10 @@ public:
     /**
        Equal operator for other decimal_fixedpoint objects.
      */
-    decimal_fixedpoint& operator=(const decimal_fixedpoint& v) {
+    decimal_fixedpoint& operator=(const decimal_fixedpoint& v)
+    {
         negative = v.negative;
-        for (int i = 0; i < whole_words + fraction_words; ++i ) {
+        for ( int i = 0; i < whole_words + fraction_words; ++i ) {
             data[i] = v.data[i];
         }
         return *this;
@@ -281,7 +278,8 @@ public:
     /**
        Equal operator for 64-bit unsigned int.
      */
-    decimal_fixedpoint& operator=(uint64_t v) {
+    decimal_fixedpoint& operator=(uint64_t v)
+    {
         from_uint64(v);
         return *this;
     }
@@ -289,7 +287,8 @@ public:
     /**
        Equal operator for 64-bit signed int.
      */
-    decimal_fixedpoint& operator=(int64_t v) {
+    decimal_fixedpoint& operator=(int64_t v)
+    {
         if ( v < 0 ) {
             from_uint64(-v);
             negative = true;
@@ -303,7 +302,8 @@ public:
     /**
        Equal operator for double.
      */
-    decimal_fixedpoint& operator=(double v) {
+    decimal_fixedpoint& operator=(double v)
+    {
         from_double(v);
         return *this;
     }
@@ -311,32 +311,31 @@ public:
     /**
        Equal operator for string.
      */
-    decimal_fixedpoint& operator=(const std::string& v) {
+    decimal_fixedpoint& operator=(const std::string& v)
+    {
         from_string(v);
         return *this;
     }
 
-
     /**
        Negate the value (change the sign bit).
      */
-    void negate() {
-        negative = negative ^ 0x1;
-    }
+    void negate() { negative = negative ^ 0x1; }
 
     /**
        Return a double precision version of the decimal_fixedpoint.
        There is possible precision loss in this conversion.
      */
-    double toDouble() const {
-        double ret = 0;
+    double toDouble() const
+    {
+        double ret    = 0;
         double factor = 1;
         for ( int i = 0; i < fraction_words; ++i ) {
             factor /= storage_radix;
         }
 
-        for ( int i = 0; i <whole_words + fraction_words; ++i ) {
-            ret += ( static_cast<double>(data[i]) * factor );
+        for ( int i = 0; i < whole_words + fraction_words; ++i ) {
+            ret += (static_cast<double>(data[i]) * factor);
             factor *= storage_radix;
         }
 
@@ -347,20 +346,19 @@ public:
        Return a int64_t version of the decimal_fixedpoint.  There is
        possible precision loss in this conversion.
      */
-    int64_t toLong() const {
-        int64_t ret = 0;
+    int64_t toLong() const
+    {
+        int64_t ret    = 0;
         int64_t factor = 1;
         for ( int i = 0; i < whole_words; ++i ) {
-            ret += ( static_cast<int64_t>(data[fraction_words + i]) * factor );
+            ret += (static_cast<int64_t>(data[fraction_words + i]) * factor);
             factor *= storage_radix;
         }
 
         // Check to see if we need to round
         bool round = false;
-        if ( data[fraction_words - 1] > ( storage_radix / 2 ) ) {
-            round = true;
-        }
-        else if ( data[fraction_words - 1] == ( storage_radix / 2 ) ) {
+        if ( data[fraction_words - 1] > (storage_radix / 2) ) { round = true; }
+        else if ( data[fraction_words - 1] == (storage_radix / 2) ) {
             for ( int i = fraction_words - 2; i >= 0; --i ) {
                 if ( data[i] != 0 ) {
                     round = true;
@@ -383,11 +381,12 @@ public:
        Return a uint64_t version of the decimal_fixedpoint.  There is
        possible precision loss in this conversion.
      */
-    uint64_t toUnsignedLong() const {
-        uint64_t ret = 0;
+    uint64_t toUnsignedLong() const
+    {
+        uint64_t ret    = 0;
         uint64_t factor = 1;
         for ( int i = 0; i < whole_words; ++i ) {
-            ret += ( static_cast<int64_t>(data[i]) * factor );
+            ret += (static_cast<int64_t>(data[i]) * factor);
             factor *= storage_radix;
         }
         return ret;
@@ -396,7 +395,8 @@ public:
     /**
        Return true if value is zero, otherwise return false.
      */
-    bool isZero() const {
+    bool isZero() const
+    {
         for ( int i = whole_words + fraction_words - 1; i >= 0; --i ) {
             if ( data[i] != 0 ) return false;
         }
@@ -406,25 +406,27 @@ public:
     /**
        Templated conversion function for unsigned types.
      */
-    template<typename T>
-    T convert_to(typename std::enable_if<std::is_unsigned<T>::value>::type* = 0) const {
+    template <typename T>
+    T convert_to(typename std::enable_if<std::is_unsigned<T>::value>::type* = 0) const
+    {
         return static_cast<T>(toUnsignedLong());
     }
 
     /**
        Templated conversion function for signed integral types.
      */
-    template<typename T>
-    T convert_to(typename std::enable_if<std::is_signed<T>::value &&
-                 std::is_integral<T>::value >::type* = 0)  const {
+    template <typename T>
+    T convert_to(typename std::enable_if<std::is_signed<T>::value && std::is_integral<T>::value>::type* = 0) const
+    {
         return static_cast<T>(toLong());
     }
 
     /**
        Templated conversion function for floating point types.
      */
-    template<typename T>
-    T convert_to(typename std::enable_if<std::is_floating_point<T>::value >::type* = 0) const {
+    template <typename T>
+    T convert_to(typename std::enable_if<std::is_floating_point<T>::value>::type* = 0) const
+    {
         return static_cast<T>(toDouble());
     }
 
@@ -434,10 +436,11 @@ public:
        @param precision Precision to use when printing number
 
     */
-    std::string toString(int32_t precision = 6) const {
+    std::string toString(int32_t precision = 6) const
+    {
 
         std::stringstream stream;
-        if ( precision <= 0 || precision > ((whole_words + fraction_words) * digits_per_word ) )
+        if ( precision <= 0 || precision > ((whole_words + fraction_words) * digits_per_word) )
             precision = (whole_words + fraction_words) * digits_per_word;
 
         // First create a digit by digit representation so we can
@@ -448,7 +451,7 @@ public:
         for ( int i = 0; i < whole_words + fraction_words; ++i ) {
             uint32_t value = data[i];
             for ( int j = 0; j < digits_per_word; ++j ) {
-                digits[i*digits_per_word+j] = value % 10;
+                digits[i * digits_per_word + j] = value % 10;
                 value /= 10;
             }
         }
@@ -466,14 +469,16 @@ public:
         if ( first_non_zero == -1 ) return "0";
 
         // Now, we will round to the precision asked for
-        int round_position = first_non_zero - precision;
-        bool round = false;
+        int  round_position = first_non_zero - precision;
+        bool round          = false;
 
         // If round_position < 0 then we have already gotten all the
         // digits that exist, so no need to round
         if ( round_position >= 0 ) {
-            if ( digits[round_position] > 5 ) round = true;
-            else if ( digits[round_position] < 5 ) round = false;
+            if ( digits[round_position] > 5 )
+                round = true;
+            else if ( digits[round_position] < 5 )
+                round = false;
             else { // Round if the rest aren't zeros
 
                 for ( int i = round_position - 1; i >= 0; --i ) {
@@ -485,7 +490,7 @@ public:
                 if ( !round ) {
                     // There were no extra zeros, so we need to do round
                     // to nearest even.
-                    if ( digits[round_position+1] % 2 == 1 ) round = true;
+                    if ( digits[round_position + 1] % 2 == 1 ) round = true;
                 }
             }
 
@@ -494,7 +499,7 @@ public:
                 unsigned char carry = 1;
                 for ( int i = round_position + 1; i < num_digits; ++i ) {
                     digits[i] += carry;
-                    carry = digits[i] / 10;
+                    carry     = digits[i] / 10;
                     digits[i] = digits[i] % 10;
                 }
             }
@@ -507,7 +512,6 @@ public:
 
         // print possible negative sign
         if ( negative ) stream << '-';
-
 
         // Find the first non-zero
         first_non_zero = -1;
@@ -522,23 +526,24 @@ public:
         if ( first_non_zero == -1 ) {
             // This means we rounded to a number bigger than we can
             // support
-            stream << "1e+" << (whole_words*digits_per_word);
+            stream << "1e+" << (whole_words * digits_per_word);
             return stream.str();
         }
 
         // There are several cases to cover:
 
         // Need to switch to exponent notation for numbers > 1
-        if ( first_non_zero >= ((fraction_words*digits_per_word) + precision) ) {
+        if ( first_non_zero >= ((fraction_words * digits_per_word) + precision) ) {
             // Need to use exponent notation
-            int exponent = first_non_zero - (fraction_words * digits_per_word );
+            int exponent = first_non_zero - (fraction_words * digits_per_word);
             stream << static_cast<uint32_t>(digits[first_non_zero]) << ".";
             int zeros = 0;
             for ( int i = first_non_zero - 1; i >= first_non_zero - precision; --i ) {
                 // Avoid printing trailing zeros.  Keep track of runs
                 // of zeros and only print them if we hit another
                 // non-xero
-                if ( digits[i] == 0 ) zeros++;
+                if ( digits[i] == 0 )
+                    zeros++;
                 else {
                     for ( int j = 0; j < zeros; ++j ) {
                         stream << "0";
@@ -548,8 +553,8 @@ public:
                 }
             }
             std::string ret = stream.str();
-            if ( ret[ret.length()-1] == '.' ) {
-                ret = ret.substr(0,ret.length()-1);
+            if ( ret[ret.length() - 1] == '.' ) {
+                ret = ret.substr(0, ret.length() - 1);
                 stream.str(std::string(""));
                 stream << ret;
             }
@@ -558,7 +563,7 @@ public:
         }
 
         // Decimal point is within the string of digits to print
-        else if ( first_non_zero >= (fraction_words * digits_per_word)) {
+        else if ( first_non_zero >= (fraction_words * digits_per_word) ) {
             int zeros = 0;
             for ( int i = first_non_zero; i >= (fraction_words * digits_per_word); --i ) {
                 // Digits before the decimal point
@@ -567,13 +572,12 @@ public:
 
             stream << ".";
 
-            for ( int i = (fraction_words * digits_per_word) - 1;
-                  i >= first_non_zero - precision && (i >= 0);
-                  --i ) {
+            for ( int i = (fraction_words * digits_per_word) - 1; i >= first_non_zero - precision && (i >= 0); --i ) {
                 // Avoid printing trailing zeros.  Keep track of runs
                 // of zeros and only print them if we hit another
                 // non-xero
-                if ( digits[i] == 0 ) zeros++;
+                if ( digits[i] == 0 )
+                    zeros++;
                 else {
                     for ( int j = 0; j < zeros; ++j ) {
                         stream << "0";
@@ -583,8 +587,8 @@ public:
                 }
             }
             std::string ret = stream.str();
-            if ( ret[ret.length()-1] == '.' ) {
-                ret = ret.substr(0,ret.length()-1);
+            if ( ret[ret.length() - 1] == '.' ) {
+                ret = ret.substr(0, ret.length() - 1);
                 stream.str(std::string(""));
                 stream << ret;
             }
@@ -599,13 +603,12 @@ public:
                 stream << "0";
             }
             int zeros = 0;
-            for ( int i = first_non_zero;
-                  (i >= first_non_zero - precision) && (i >= 0);
-                  --i ) {
+            for ( int i = first_non_zero; (i >= first_non_zero - precision) && (i >= 0); --i ) {
                 // Avoid printing trailing zeros.  Keep track of runs
                 // of zeros and only print them if we hit another
                 // non-xero
-                if ( digits[i] == 0 ) zeros++;
+                if ( digits[i] == 0 )
+                    zeros++;
                 else {
                     for ( int j = 0; j < zeros; ++j ) {
                         stream << "0";
@@ -618,17 +621,16 @@ public:
         // Switch to exponent notation
         else {
             // Need to use exponent notation
-            int exponent = first_non_zero - (fraction_words * digits_per_word );
-            exponent = -exponent;
+            int exponent = first_non_zero - (fraction_words * digits_per_word);
+            exponent     = -exponent;
             stream << static_cast<uint32_t>(digits[first_non_zero]) << ".";
             int zeros = 0;
-            for ( int i = first_non_zero - 1;
-                  (i >= first_non_zero - precision) && (i >= 0);
-                  --i ) {
+            for ( int i = first_non_zero - 1; (i >= first_non_zero - precision) && (i >= 0); --i ) {
                 // Avoid printing trailing zeros.  Keep track of runs
                 // of zeros and only print them if we hit another
                 // non-xero
-                if ( digits[i] == 0 ) zeros++;
+                if ( digits[i] == 0 )
+                    zeros++;
                 else {
                     for ( int j = 0; j < zeros; ++j ) {
                         stream << "0";
@@ -638,8 +640,8 @@ public:
                 }
             }
             std::string ret = stream.str();
-            if ( ret[ret.length()-1] == '.' ) {
-                ret = ret.substr(0,ret.length()-1);
+            if ( ret[ret.length() - 1] == '.' ) {
+                ret = ret.substr(0, ret.length() - 1);
                 stream.str(std::string(""));
                 stream << ret;
             }
@@ -655,19 +657,18 @@ public:
 
        @param v Number to add to this one
     */
-    decimal_fixedpoint& operator+= (const decimal_fixedpoint& v) {
+    decimal_fixedpoint& operator+=(const decimal_fixedpoint& v)
+    {
         // Depending on the signs, this may be a subtract
         if ( (negative ^ v.negative) == 0 ) {
             // Signs match, just do an add
             // Calculate the result for each digit.
             uint64_t carry_over = 0;
             for ( int i = 0; i < whole_words + fraction_words; i++ ) {
-                uint64_t value = static_cast<uint64_t>(data[i])
-                    + static_cast<uint64_t>(v.data[i])
-                    + carry_over;
-                carry_over = value / storage_radix;
+                uint64_t value = static_cast<uint64_t>(data[i]) + static_cast<uint64_t>(v.data[i]) + carry_over;
+                carry_over     = value / storage_radix;
                 // data[i] = static_cast<uint32_t>(value % storage_radix);
-                data[i] = value % storage_radix;
+                data[i]        = value % storage_radix;
             }
             return *this;
         }
@@ -680,11 +681,9 @@ public:
             for ( int i = 0; i < whole_words + fraction_words; i++ ) {
                 uint64_t negate = static_cast<uint64_t>(storage_radix - 1) - static_cast<uint64_t>(v.data[i]);
 
-                uint64_t value = static_cast<uint64_t>(data[i])
-                    + negate
-                    + carry_over;
-                carry_over = value / storage_radix;
-                data[i] = static_cast<uint32_t>(value % storage_radix);
+                uint64_t value = static_cast<uint64_t>(data[i]) + negate + carry_over;
+                carry_over     = value / storage_radix;
+                data[i]        = static_cast<uint32_t>(value % storage_radix);
             }
             return *this;
         }
@@ -695,11 +694,9 @@ public:
             for ( int i = 0; i < whole_words + fraction_words; i++ ) {
                 uint64_t negate = static_cast<uint64_t>(storage_radix - 1) - static_cast<uint64_t>(data[i]);
 
-                uint64_t value = static_cast<uint64_t>(v.data[i])
-                    + negate
-                    + carry_over;
-                carry_over = value / storage_radix;
-                data[i] = static_cast<uint32_t>(value % storage_radix);
+                uint64_t value = static_cast<uint64_t>(v.data[i]) + negate + carry_over;
+                carry_over     = value / storage_radix;
+                data[i]        = static_cast<uint32_t>(value % storage_radix);
             }
             // Since the other one is bigger, I take his sign
             negative = v.negative;
@@ -707,19 +704,18 @@ public:
         }
     }
 
-
     /**
        Subtracts another number from this one and sets it equal to the
        result.
 
        @param v Number to subtract from this one
      */
-    decimal_fixedpoint& operator-= (const decimal_fixedpoint& v) {
+    decimal_fixedpoint& operator-=(const decimal_fixedpoint& v)
+    {
         decimal_fixedpoint ret(v);
         ret.negate();
         return operator+=(ret);
     }
-
 
     /**
        Multiplies another number to this one and sets it equal to the
@@ -727,9 +723,10 @@ public:
 
        @param v Number to multiply to this one
      */
-    decimal_fixedpoint& operator*= (const decimal_fixedpoint& v) {
+    decimal_fixedpoint& operator*=(const decimal_fixedpoint& v)
+    {
         // Need to do the multiply accumulate for each digit.
-        decimal_fixedpoint<whole_words,fraction_words> me(*this);
+        decimal_fixedpoint<whole_words, fraction_words> me(*this);
 
         // The first "fraction_words" digits only matter as far as
         // their carries go.  They get dropped in the final output
@@ -738,7 +735,7 @@ public:
         for ( int i = 0; i < fraction_words; ++i ) {
             uint64_t sum = carry_over;
             for ( int j = 0; j <= i; ++j ) {
-                sum += static_cast<uint64_t>(me.data[j]) * static_cast<uint64_t>(v.data[i-j]);
+                sum += static_cast<uint64_t>(me.data[j]) * static_cast<uint64_t>(v.data[i - j]);
             }
             carry_over = sum / storage_radix_long;
         }
@@ -747,20 +744,20 @@ public:
         for ( int i = fraction_words; i < whole_words + fraction_words; ++i ) {
             uint64_t sum = carry_over;
             for ( int j = 0; j <= i; ++j ) {
-                sum += static_cast<uint64_t>(me.data[j]) * static_cast<uint64_t>(v.data[i-j]);
+                sum += static_cast<uint64_t>(me.data[j]) * static_cast<uint64_t>(v.data[i - j]);
             }
-            carry_over = sum / storage_radix_long;
-            data[i-fraction_words] = static_cast<uint32_t>(sum % storage_radix_long);
+            carry_over               = sum / storage_radix_long;
+            data[i - fraction_words] = static_cast<uint32_t>(sum % storage_radix_long);
         }
 
         for ( int i = 0; i < fraction_words; ++i ) {
             uint64_t sum = carry_over;
-            for ( int j = i+1; j < whole_words + fraction_words; ++j ) {
+            for ( int j = i + 1; j < whole_words + fraction_words; ++j ) {
                 sum += static_cast<uint64_t>(me.data[j])
-                    * static_cast<uint64_t>(v.data[whole_words+fraction_words+i-j]);
+                       * static_cast<uint64_t>(v.data[whole_words + fraction_words + i - j]);
             }
-            carry_over = sum / storage_radix_long;
-            data[i+whole_words] = static_cast<uint32_t>(sum % storage_radix_long);
+            carry_over            = sum / storage_radix_long;
+            data[i + whole_words] = static_cast<uint32_t>(sum % storage_radix_long);
         }
         // Get the sign
         negative = negative ^ v.negative;
@@ -773,7 +770,8 @@ public:
 
        @param v Number to divide from this one
      */
-    decimal_fixedpoint& operator/= (const decimal_fixedpoint& v) {
+    decimal_fixedpoint& operator/=(const decimal_fixedpoint& v)
+    {
         decimal_fixedpoint inv(v);
         inv.inverse();
         operator*=(inv);
@@ -784,17 +782,18 @@ public:
        Inverts the number (1 divided by this number)
      */
 
-    decimal_fixedpoint& inverse() {
+    decimal_fixedpoint& inverse()
+    {
         // We will use the Newton-Raphson method to compute the
         // inverse
 
         // First, get an estimate of the inverse by converting to a
         // double and inverting
-        decimal_fixedpoint me(*this);
-        decimal_fixedpoint<whole_words,fraction_words> inv(1.0 / toDouble());
+        decimal_fixedpoint                              me(*this);
+        decimal_fixedpoint<whole_words, fraction_words> inv(1.0 / toDouble());
         // decimal_fixedpoint<whole_words,fraction_words> inv("400");
 
-        decimal_fixedpoint<whole_words,fraction_words> two(2.0);
+        decimal_fixedpoint<whole_words, fraction_words> two(2.0);
 
         // Since we converted to double to get an estimate of the
         // inverse, we have approximated a double's worth of precision
@@ -820,7 +819,8 @@ public:
 
        @param v Number to check equality against
      */
-    bool operator== (const decimal_fixedpoint& v) const {
+    bool operator==(const decimal_fixedpoint& v) const
+    {
         for ( int i = whole_words + fraction_words - 1; i >= 0; --i ) {
             if ( data[i] != v.data[i] ) return false;
         }
@@ -832,7 +832,8 @@ public:
 
        @param v Number to check equality against
      */
-    bool operator!= (const decimal_fixedpoint& v) const {
+    bool operator!=(const decimal_fixedpoint& v) const
+    {
         for ( int i = whole_words + fraction_words - 1; i >= 0; --i ) {
             if ( data[i] != v.data[i] ) return true;
         }
@@ -844,8 +845,9 @@ public:
 
        @param v Number to compare to
      */
-    bool operator> (const decimal_fixedpoint& v) const {
-        for ( int i = whole_words +fraction_words - 1; i >= 0; --i ) {
+    bool operator>(const decimal_fixedpoint& v) const
+    {
+        for ( int i = whole_words + fraction_words - 1; i >= 0; --i ) {
             if ( data[i] > v.data[i] ) return true;
             if ( data[i] < v.data[i] ) return false;
         }
@@ -858,7 +860,8 @@ public:
 
        @param v Number to compare to
      */
-    bool operator>= (const decimal_fixedpoint& v) const {
+    bool operator>=(const decimal_fixedpoint& v) const
+    {
         for ( int i = whole_words + fraction_words - 1; i >= 0; --i ) {
             if ( data[i] > v.data[i] ) return true;
             if ( data[i] < v.data[i] ) return false;
@@ -871,7 +874,8 @@ public:
 
        @param v Number to compare to
      */
-    bool operator< (const decimal_fixedpoint& v) const {
+    bool operator<(const decimal_fixedpoint& v) const
+    {
         for ( int i = whole_words + fraction_words - 1; i >= 0; --i ) {
             if ( data[i] < v.data[i] ) return true;
             if ( data[i] > v.data[i] ) return false;
@@ -885,60 +889,70 @@ public:
 
        @param v Number to compare to
      */
-    bool operator<= (const decimal_fixedpoint& v) const {
+    bool operator<=(const decimal_fixedpoint& v) const
+    {
         for ( int i = whole_words + fraction_words - 1; i >= 0; --i ) {
             if ( data[i] < v.data[i] ) return true;
             if ( data[i] > v.data[i] ) return false;
         }
         return true;
     }
-
 };
 
 template <int whole_words, int fraction_words>
-decimal_fixedpoint<whole_words,fraction_words> operator+(decimal_fixedpoint<whole_words,fraction_words> lhs,
-                                                    decimal_fixedpoint<whole_words,fraction_words> rhs) {
-    decimal_fixedpoint<whole_words,fraction_words> ret(lhs);
+decimal_fixedpoint<whole_words, fraction_words>
+operator+(decimal_fixedpoint<whole_words, fraction_words> lhs, decimal_fixedpoint<whole_words, fraction_words> rhs)
+{
+    decimal_fixedpoint<whole_words, fraction_words> ret(lhs);
     return ret += rhs;
 }
 
 template <int whole_words, int fraction_words>
-decimal_fixedpoint<whole_words,fraction_words> operator-(decimal_fixedpoint<whole_words,fraction_words> lhs,
-                                                    decimal_fixedpoint<whole_words,fraction_words> rhs) {
-    decimal_fixedpoint<whole_words,fraction_words> ret(lhs);
+decimal_fixedpoint<whole_words, fraction_words>
+operator-(decimal_fixedpoint<whole_words, fraction_words> lhs, decimal_fixedpoint<whole_words, fraction_words> rhs)
+{
+    decimal_fixedpoint<whole_words, fraction_words> ret(lhs);
     return ret -= rhs;
 }
 
 template <int whole_words, int fraction_words>
-decimal_fixedpoint<whole_words,fraction_words> operator*(decimal_fixedpoint<whole_words,fraction_words> lhs,
-                                                    decimal_fixedpoint<whole_words,fraction_words> rhs) {
-    decimal_fixedpoint<whole_words,fraction_words> ret(lhs);
+decimal_fixedpoint<whole_words, fraction_words>
+operator*(decimal_fixedpoint<whole_words, fraction_words> lhs, decimal_fixedpoint<whole_words, fraction_words> rhs)
+{
+    decimal_fixedpoint<whole_words, fraction_words> ret(lhs);
     return ret *= rhs;
 }
 
 template <int whole_words, int fraction_words>
-decimal_fixedpoint<whole_words,fraction_words> operator/(decimal_fixedpoint<whole_words,fraction_words> lhs,
-                                                    decimal_fixedpoint<whole_words,fraction_words> rhs) {
-    decimal_fixedpoint<whole_words,fraction_words> ret(lhs);
+decimal_fixedpoint<whole_words, fraction_words>
+operator/(decimal_fixedpoint<whole_words, fraction_words> lhs, decimal_fixedpoint<whole_words, fraction_words> rhs)
+{
+    decimal_fixedpoint<whole_words, fraction_words> ret(lhs);
     return ret /= rhs;
 }
 
 template <int whole_words, int fraction_words, typename T>
-bool operator==(const T& lhs, const decimal_fixedpoint<whole_words,fraction_words>& rhs) {
-    return rhs == decimal_fixedpoint<whole_words,fraction_words>(lhs);
+bool
+operator==(const T& lhs, const decimal_fixedpoint<whole_words, fraction_words>& rhs)
+{
+    return rhs == decimal_fixedpoint<whole_words, fraction_words>(lhs);
 }
 
 template <int whole_words, int fraction_words, typename T>
-bool operator!=(const T& lhs, const decimal_fixedpoint<whole_words,fraction_words>& rhs) {
-    return rhs != decimal_fixedpoint<whole_words,fraction_words>(lhs);
+bool
+operator!=(const T& lhs, const decimal_fixedpoint<whole_words, fraction_words>& rhs)
+{
+    return rhs != decimal_fixedpoint<whole_words, fraction_words>(lhs);
 }
 
 template <int whole_words, int fraction_words>
-std::ostream& operator <<(std::ostream& os, const decimal_fixedpoint<whole_words,fraction_words>& rhs) {
+std::ostream&
+operator<<(std::ostream& os, const decimal_fixedpoint<whole_words, fraction_words>& rhs)
+{
     os << rhs.toString(os.precision());
     return os;
 }
 
 } // namespace SST
 
-#endif
+#endif // SST_CORE_DECIMAL_FIXEDPOINT_H

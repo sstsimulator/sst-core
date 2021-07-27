@@ -12,16 +12,17 @@
 #ifndef SST_CORE_RNG_MERSENNE_H
 #define SST_CORE_RNG_MERSENNE_H
 
+#include "rng.h"
+
 #include <stdint.h>
 #include <sys/time.h>
 
-#include "rng.h"
 #include "sstrng.h"
 
 #define MERSENNE_UINT32_MAX 4294967295U
 #define MERSENNE_UINT64_MAX 18446744073709551615ULL
-#define MERSENNE_INT32_MAX 2147483647L
-#define MERSENNE_INT64_MAX 9223372036854775807LL
+#define MERSENNE_INT32_MAX  2147483647L
+#define MERSENNE_INT64_MAX  9223372036854775807LL
 
 namespace SST {
 namespace RNG {
@@ -32,7 +33,8 @@ namespace RNG {
     RNG provides a better "randomness" to the distribution of outputs but is computationally
     more expensive than the Marsaglia RNG.
 */
-class MersenneRNG : public SST::RNG::Random {
+class MersenneRNG : public SST::RNG::Random
+{
 
 public:
     /**
