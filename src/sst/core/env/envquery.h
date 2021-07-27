@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_ENV_QUERY_H
-#define _H_SST_CORE_ENV_QUERY_H
+#ifndef SST_CORE_ENV_ENVQUERY_H
+#define SST_CORE_ENV_ENVQUERY_H
 
 #include "sst_config.h"
 
@@ -18,8 +18,8 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <iostream>
 #include <cstring>
+#include <iostream>
 #include <string>
 
 namespace SST {
@@ -37,15 +37,13 @@ void configReadLine(FILE* theFile, char* lineBuffer);
 Opens a configuration file specified and populates an
 EnvironmentConfiguration instance with the contents.
 */
-void populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg,
-    bool errorOnNotOpen);
+void populateEnvironmentConfig(const std::string& path, EnvironmentConfiguration* cfg, bool errorOnNotOpen);
 
 /**
 Uses an already open file, reads the contents and populates an instance
 of an EnvironmentConfiguration with the contents
 */
-void populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg,
-    bool errorOnNotOpen);
+void populateEnvironmentConfig(FILE* configFile, EnvironmentConfiguration* cfg, bool errorOnNotOpen);
 
 /**
 Provides an SST-guaranteed precedence ordering loading of configuration
@@ -54,8 +52,8 @@ take precedence over the default configuration locations.
 */
 EnvironmentConfiguration* getSSTEnvironmentConfiguration(const std::vector<std::string>& overridePaths);
 
-}
-}
-}
+} // namespace Environment
+} // namespace Core
+} // namespace SST
 
-#endif
+#endif // SST_CORE_ENV_ENVQUERY_H

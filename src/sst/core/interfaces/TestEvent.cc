@@ -10,21 +10,17 @@
 // distribution.
 
 #include "sst_config.h"
-#include "TestEvent.h"
 
+#include "TestEvent.h"
 
 using namespace SST;
 using namespace SST::Interfaces;
 
 // Yes, this is trivially easy and could be inlined, but it's useful to make sure
 // the requireEvent code works properly.
-TestEvent::TestEvent() : SST::Event(), print_on_delete(false)
-{
-}
+TestEvent::TestEvent() : SST::Event(), print_on_delete(false) {}
 
 TestEvent::~TestEvent()
 {
-    if ( print_on_delete ) {
-    printf("Deleting TestEvent\n");
-    }
+    if ( print_on_delete ) { printf("Deleting TestEvent\n"); }
 }

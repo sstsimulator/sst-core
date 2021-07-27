@@ -10,31 +10,33 @@
 // distribution.
 
 #include "sst_config.h"
+
 #include "sst/core/statapi/statoutputhdf5.h"
 
-#include <algorithm>
-
-#include "sst/core/simulation.h"
-#include "sst/core/warnmacros.h"
 #include "sst/core/baseComponent.h"
+#include "sst/core/simulation.h"
 #include "sst/core/statapi/statgroup.h"
 #include "sst/core/stringize.h"
+#include "sst/core/warnmacros.h"
+
+#include <algorithm>
 
 namespace SST {
 namespace Statistics {
 
-StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters)
-    : StatisticFieldsOutput (outputParameters),
+StatisticOutputHDF5::StatisticOutputHDF5(Params& outputParameters) :
+    StatisticFieldsOutput(outputParameters),
     m_hFile(nullptr),
     m_currentDataSet(nullptr)
 {
     // Announce this output object's name
-    Output &out = Simulation::getSimulationOutput();
+    Output& out = Simulation::getSimulationOutput();
     out.verbose(CALL_INFO, 1, 0, " : StatisticOutputHDF5 enabled...\n");
     setStatisticOutputName("StatisticOutputHDF5");
 }
 
-bool StatisticOutputHDF5::checkOutputParameters()
+bool
+StatisticOutputHDF5::checkOutputParameters()
 {
     bool foundKey;
 
@@ -43,14 +45,12 @@ bool StatisticOutputHDF5::checkOutputParameters()
 
     // Look for Help Param
     getOutputParameters().find<std::string>("help", "1", foundKey);
-    if (true == foundKey) {
-        return false;
-    }
+    if ( true == foundKey ) { return false; }
 
     // Get the parameters
     std::string m_filePath = getOutputParameters().find<std::string>("filepath", "./StatisticOutput.h5");
 
-    if (0 == m_filePath.length()) {
+    if ( 0 == m_filePath.length() ) {
         // Filepath is zero length
         return false;
     }
@@ -62,7 +62,8 @@ bool StatisticOutputHDF5::checkOutputParameters()
     return true;
 }
 
-void StatisticOutputHDF5::printUsage()
+void
+StatisticOutputHDF5::printUsage()
 {
     // Display how to use this output object
     Output out("", 0, 0, Output::STDOUT);
@@ -72,58 +73,55 @@ void StatisticOutputHDF5::printUsage()
     out.output(" : filepath = <Path to .h5 file> - Default is ./StatisticOutput.h5\n");
 }
 
-
-void StatisticOutputHDF5::startRegisterFields(StatisticBase *stat)
+void
+StatisticOutputHDF5::startRegisterFields(StatisticBase* stat)
 {
     StatisticFieldsOutput::startRegisterFields(stat);
-    if ( m_currentDataSet != nullptr ) {
-        m_currentDataSet->setCurrentStatistic(stat);
-    } else {
+    if ( m_currentDataSet != nullptr ) { m_currentDataSet->setCurrentStatistic(stat); }
+    else {
         m_currentDataSet = initStatistic(stat);
     }
 }
 
-
-void StatisticOutputHDF5::implRegisteredField(fieldHandle_t fieldHandle)
+void
+StatisticOutputHDF5::implRegisteredField(fieldHandle_t fieldHandle)
 {
     StatisticFieldInfo* fi = getRegisteredField(fieldHandle);
     m_currentDataSet->registerField(fi);
 }
 
-void StatisticOutputHDF5::stopRegisterFields()
+void
+StatisticOutputHDF5::stopRegisterFields()
 {
     StatisticFieldsOutput::stopRegisterFields();
     m_currentDataSet->finalizeCurrentStatistic();
-    if ( !m_currentDataSet->isGroup() )
-        m_currentDataSet = nullptr;
+    if ( !m_currentDataSet->isGroup() ) m_currentDataSet = nullptr;
 }
 
-
-void StatisticOutputHDF5::startRegisterGroup(StatisticGroup* group )
+void
+StatisticOutputHDF5::startRegisterGroup(StatisticGroup* group)
 {
     StatisticFieldsOutput::startRegisterGroup(group);
-    m_statGroups.emplace(std::piecewise_construct,
-            std::forward_as_tuple(group->name),
-            std::forward_as_tuple(group, m_hFile));
+    m_statGroups.emplace(
+        std::piecewise_construct, std::forward_as_tuple(group->name), std::forward_as_tuple(group, m_hFile));
     m_currentDataSet = &m_statGroups.at(group->name);
     m_currentDataSet->beginGroupRegistration(group);
 }
 
-
-void StatisticOutputHDF5::stopRegisterGroup()
+void
+StatisticOutputHDF5::stopRegisterGroup()
 {
     StatisticFieldsOutput::stopRegisterGroup();
     m_currentDataSet->finalizeGroupRegistration();
     m_currentDataSet = nullptr;
 }
 
+void
+StatisticOutputHDF5::startOfSimulation()
+{}
 
-void StatisticOutputHDF5::startOfSimulation()
-{
-}
-
-
-void StatisticOutputHDF5::endOfSimulation()
+void
+StatisticOutputHDF5::endOfSimulation()
 {
     for ( auto i : m_statistics ) {
         delete i.second;
@@ -131,177 +129,175 @@ void StatisticOutputHDF5::endOfSimulation()
     delete m_hFile;
 }
 
-
-void StatisticOutputHDF5::implStartOutputEntries(StatisticBase* statistic)
+void
+StatisticOutputHDF5::implStartOutputEntries(StatisticBase* statistic)
 {
-    if ( m_currentDataSet == nullptr )
-        m_currentDataSet = getStatisticInfo(statistic);
+    if ( m_currentDataSet == nullptr ) m_currentDataSet = getStatisticInfo(statistic);
     m_currentDataSet->startNewEntry(statistic);
 }
 
-void StatisticOutputHDF5::implStopOutputEntries()
+void
+StatisticOutputHDF5::implStopOutputEntries()
 {
     m_currentDataSet->finishEntry();
-    if ( !m_currentDataSet->isGroup() )
-        m_currentDataSet = nullptr;
+    if ( !m_currentDataSet->isGroup() ) m_currentDataSet = nullptr;
 }
 
-
-
-void StatisticOutputHDF5::startOutputGroup(StatisticGroup* group)
+void
+StatisticOutputHDF5::startOutputGroup(StatisticGroup* group)
 {
     StatisticFieldsOutput::startOutputGroup(group);
     m_currentDataSet = &m_statGroups.at(group->name);
     m_currentDataSet->startNewGroupEntry();
 }
 
-
-void StatisticOutputHDF5::stopOutputGroup()
+void
+StatisticOutputHDF5::stopOutputGroup()
 {
     StatisticFieldsOutput::stopOutputGroup();
     m_currentDataSet->finishGroupEntry();
     m_currentDataSet = nullptr;
 }
 
-
-void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, int32_t data)
+void
+StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).i32 = data;
 }
 
-void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, uint32_t data)
+void
+StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, uint32_t data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).u32 = data;
 }
 
-void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, int64_t data)
+void
+StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, int64_t data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).i64 = data;
 }
 
-void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, uint64_t data)
+void
+StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, uint64_t data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).u64 = data;
 }
 
-void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, float data)
+void
+StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, float data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).f = data;
 }
 
-void StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, double data)
+void
+StatisticOutputHDF5::outputField(fieldHandle_t fieldHandle, double data)
 {
     m_currentDataSet->getFieldLoc(fieldHandle).d = data;
 }
 
-
-
-StatisticOutputHDF5::StatisticInfo* StatisticOutputHDF5::initStatistic(StatisticBase* statistic)
+StatisticOutputHDF5::StatisticInfo*
+StatisticOutputHDF5::initStatistic(StatisticBase* statistic)
 {
-    StatisticInfo *si = new StatisticInfo(statistic, m_hFile);
+    StatisticInfo* si       = new StatisticInfo(statistic, m_hFile);
     m_statistics[statistic] = si;
     return si;
 }
 
-
-StatisticOutputHDF5::StatisticInfo* StatisticOutputHDF5::getStatisticInfo(StatisticBase* statistic)
+StatisticOutputHDF5::StatisticInfo*
+StatisticOutputHDF5::getStatisticInfo(StatisticBase* statistic)
 {
     return m_statistics.at(statistic);
 }
 
-void StatisticOutputHDF5::StatisticInfo::startNewEntry(StatisticBase *UNUSED(stat))
+void
+StatisticOutputHDF5::StatisticInfo::startNewEntry(StatisticBase* UNUSED(stat))
 {
-    for ( StatData_u &i : currentData ) {
+    for ( StatData_u& i : currentData ) {
         memset(&i, '\0', sizeof(i));
     }
     currentData[0].u64 = Simulation::getSimulation()->getCurrentSimCycle();
 }
 
-
-StatisticOutputHDF5::StatData_u& StatisticOutputHDF5::StatisticInfo::getFieldLoc(fieldHandle_t fieldHandle)
+StatisticOutputHDF5::StatData_u&
+StatisticOutputHDF5::StatisticInfo::getFieldLoc(fieldHandle_t fieldHandle)
 {
     size_t nItems = indexMap.size();
-    for ( size_t i = 0 ; i < nItems ; i++ ) {
-        if ( indexMap[i] == fieldHandle )
-            return currentData[i];
+    for ( size_t i = 0; i < nItems; i++ ) {
+        if ( indexMap[i] == fieldHandle ) return currentData[i];
     }
     Output::getDefaultObject().fatal(CALL_INFO, 1, "Attempting to access unregistered Field Handle\n");
     // Not reached
     return currentData[0];
 }
 
-
-void StatisticOutputHDF5::StatisticInfo::finishEntry()
+void
+StatisticOutputHDF5::StatisticInfo::finishEntry()
 {
-    hsize_t dims[1] = {1};
+    hsize_t dims[1]   = { 1 };
     hsize_t offset[1] = { nEntries };
 
     hsize_t newSize[1] = { ++nEntries };
     dataset->extend(newSize);
 
     H5::DataSpace fspace = dataset->getSpace();
-    H5::DataSpace memSpace( 1, dims );
-    fspace.selectHyperslab( H5S_SELECT_SET, dims, offset );
+    H5::DataSpace memSpace(1, dims);
+    fspace.selectHyperslab(H5S_SELECT_SET, dims, offset);
     dataset->write(currentData.data(), *memType, memSpace, fspace);
-
 }
 
-
-
-void StatisticOutputHDF5::StatisticInfo::registerField(StatisticFieldInfo *fi)
+void
+StatisticOutputHDF5::StatisticInfo::registerField(StatisticFieldInfo* fi)
 {
     typeList.push_back(fi->getFieldType());
     indexMap.push_back(fi->getFieldHandle());
     fieldNames.push_back(fi->getFieldName());
 }
 
+static H5::DataType
+getMemTypeForStatType(StatisticOutput::fieldType_t type)
+{
+    static std::map<StatisticOutput::fieldType_t, H5::DataType> sst_hdf5_map;
+    if ( sst_hdf5_map.empty() ) {
+        sst_hdf5_map[StatisticFieldType<uint32_t>::id()] = H5::PredType::NATIVE_UINT32;
+        sst_hdf5_map[StatisticFieldType<uint64_t>::id()] = H5::PredType::NATIVE_UINT64;
+        sst_hdf5_map[StatisticFieldType<int32_t>::id()]  = H5::PredType::NATIVE_INT32;
+        sst_hdf5_map[StatisticFieldType<int64_t>::id()]  = H5::PredType::NATIVE_INT64;
+        sst_hdf5_map[StatisticFieldType<float>::id()]    = H5::PredType::NATIVE_FLOAT;
+        sst_hdf5_map[StatisticFieldType<double>::id()]   = H5::PredType::NATIVE_DOUBLE;
+    }
 
+    auto iter = sst_hdf5_map.find(type);
+    if ( iter == sst_hdf5_map.end() ) {
+        Output::getDefaultObject().fatal(CALL_INFO, 1, "Unhandled UNDEFINED datatype.\n");
+    }
 
-
-static H5::DataType getMemTypeForStatType(StatisticOutput::fieldType_t type) {
-   static std::map<StatisticOutput::fieldType_t,H5::DataType> sst_hdf5_map;
-   if (sst_hdf5_map.empty()){
-    sst_hdf5_map[StatisticFieldType<uint32_t>::id()] = H5::PredType::NATIVE_UINT32;
-    sst_hdf5_map[StatisticFieldType<uint64_t>::id()] = H5::PredType::NATIVE_UINT64;
-    sst_hdf5_map[StatisticFieldType<int32_t>::id()]  = H5::PredType::NATIVE_INT32;
-    sst_hdf5_map[StatisticFieldType<int64_t>::id()]  = H5::PredType::NATIVE_INT64;
-    sst_hdf5_map[StatisticFieldType<float>::id()]    = H5::PredType::NATIVE_FLOAT;
-    sst_hdf5_map[StatisticFieldType<double>::id()]   = H5::PredType::NATIVE_DOUBLE;
-   }
-
-   auto iter = sst_hdf5_map.find(type);
-   if (iter == sst_hdf5_map.end()){
-     Output::getDefaultObject().fatal(CALL_INFO, 1, "Unhandled UNDEFINED datatype.\n");
-   }
-
-   return iter->second;
+    return iter->second;
 }
 
-
-void StatisticOutputHDF5::StatisticInfo::finalizeCurrentStatistic()
+void
+StatisticOutputHDF5::StatisticInfo::finalizeCurrentStatistic()
 {
     size_t nFields = typeList.size();
     currentData.resize(nFields);
 
     /* Build HDF5 datatypes */
     size_t dataSize = currentData.size() * sizeof(StatData_u);
-    memType = new H5::CompType(dataSize);
-    for ( size_t i = 0 ; i < nFields ; i++ ) {
-        const std::string& name = fieldNames[i];
-        size_t offset = (char*)&currentData[i] - (char*)&currentData[0];
-        H5::DataType type = getMemTypeForStatType(typeList[i]);
+    memType         = new H5::CompType(dataSize);
+    for ( size_t i = 0; i < nFields; i++ ) {
+        const std::string& name   = fieldNames[i];
+        size_t             offset = (char*)&currentData[i] - (char*)&currentData[0];
+        H5::DataType       type   = getMemTypeForStatType(typeList[i]);
         memType->insertMember(name, offset, type);
     }
-
-
 
     /* Create the file hierarchy */
     std::string objName = "/" + statistic->getCompName();
     try {
-        H5::Group* compGroup = new H5::Group( file->createGroup(objName));
+        H5::Group* compGroup = new H5::Group(file->createGroup(objName));
         compGroup->close();
         delete compGroup;
-    } catch (H5::FileIException ex) {
+    }
+    catch ( H5::FileIException ex ) {
         /* Ignore - group already exists.*/
     }
 
@@ -309,37 +305,35 @@ void StatisticOutputHDF5::StatisticInfo::finalizeCurrentStatistic()
 
     if ( statistic->getStatSubId().length() > 0 ) {
         try {
-            H5::Group* statGroup = new H5::Group( file->createGroup(statName));
+            H5::Group* statGroup = new H5::Group(file->createGroup(statName));
             statGroup->close();
             delete statGroup;
-        } catch (H5::FileIException ie) {
+        }
+        catch ( H5::FileIException ie ) {
             /* Ignore - group already exists. */
         }
         statName += "/" + statistic->getStatSubId();
     }
 
-
     /* Create dataspace & Dataset */
-    hsize_t dims[1] = {0};
-    hsize_t maxdims[1] = { H5S_UNLIMITED };
-    H5::DataSpace dspace(1, dims, maxdims);
+    hsize_t               dims[1]    = { 0 };
+    hsize_t               maxdims[1] = { H5S_UNLIMITED };
+    H5::DataSpace         dspace(1, dims, maxdims);
     H5::DSetCreatPropList cparms;
-    hsize_t chunk_dims[1] = {1024};
+    hsize_t               chunk_dims[1] = { 1024 };
     cparms.setChunk(1, chunk_dims);
     cparms.setDeflate(7);
 
-    dataset = new H5::DataSet( file->createDataSet(statName, *memType, dspace, cparms) );
-
+    dataset = new H5::DataSet(file->createDataSet(statName, *memType, dspace, cparms));
 
     typeList.clear();
     fieldNames.clear();
 }
 
-
-
-
-StatisticOutputHDF5::GroupInfo::GroupInfo(StatisticGroup *group, H5::H5File *file) :
-    DataSet(file), nEntries(0), m_statGroup(group)
+StatisticOutputHDF5::GroupInfo::GroupInfo(StatisticGroup* group, H5::H5File* file) :
+    DataSet(file),
+    nEntries(0),
+    m_statGroup(group)
 {
     /* We need to store component pointers, not just IDs */
     m_components.resize(m_statGroup->components.size());
@@ -347,70 +341,62 @@ StatisticOutputHDF5::GroupInfo::GroupInfo(StatisticGroup *group, H5::H5File *fil
     /* Create group directory */
     std::string objName = "/" + getName();
     try {
-        H5::Group* compGroup = new H5::Group( file->createGroup(objName));
+        H5::Group* compGroup = new H5::Group(file->createGroup(objName));
         compGroup->close();
         delete compGroup;
-    } catch (H5::FileIException ex) {
+    }
+    catch ( H5::FileIException ex ) {
         /* Ignore - group already exists.*/
     }
-
 }
 
-
-
-void StatisticOutputHDF5::GroupInfo::setCurrentStatistic(StatisticBase *stat)
+void
+StatisticOutputHDF5::GroupInfo::setCurrentStatistic(StatisticBase* stat)
 {
     std::string statName = GroupStat::getStatName(stat);
     if ( m_statGroups.find(statName) == m_statGroups.end() ) {
-        m_statGroups.emplace(std::piecewise_construct,
-            std::forward_as_tuple(statName),
-            std::forward_as_tuple(this, stat));
+        m_statGroups.emplace(
+            std::piecewise_construct, std::forward_as_tuple(statName), std::forward_as_tuple(this, stat));
     }
     m_currentStat = &(m_statGroups.at(statName));
 
-
     /* Find and set in our m_components vector */
     ComponentId_t id = stat->getComponent()->getId();
-    for ( size_t i = 0 ; i < m_statGroup->components.size() ; i++ ) {
-        if ( m_statGroup->components.at(i) == id ) {
-            m_components.at(i) = stat->getComponent();
-        }
+    for ( size_t i = 0; i < m_statGroup->components.size(); i++ ) {
+        if ( m_statGroup->components.at(i) == id ) { m_components.at(i) = stat->getComponent(); }
     }
 }
 
-
-void StatisticOutputHDF5::GroupInfo::registerField(StatisticFieldInfo *fi)
+void
+StatisticOutputHDF5::GroupInfo::registerField(StatisticFieldInfo* fi)
 {
-    size_t index = 0;
-    std::string name = fi->getFieldUniqueName();
+    size_t      index = 0;
+    std::string name  = fi->getFieldUniqueName();
 
-    auto location = std::find(
-            m_currentStat->registeredFields.begin(),
-            m_currentStat->registeredFields.end(),
-            name);
+    auto location  = std::find(m_currentStat->registeredFields.begin(), m_currentStat->registeredFields.end(), name);
     bool firstSeen = (location == m_currentStat->registeredFields.end());
 
     if ( firstSeen ) {
         index = m_currentStat->registeredFields.size();
         m_currentStat->registeredFields.push_back(name);
         m_currentStat->typeList.push_back(fi->getFieldType());
-    } else {
+    }
+    else {
         index = std::distance(m_currentStat->registeredFields.begin(), location);
     }
     m_currentStat->handleIndexMap[fi->getFieldHandle()] = index;
 }
 
-
-
-void StatisticOutputHDF5::GroupInfo::finalizeCurrentStatistic()
+void
+StatisticOutputHDF5::GroupInfo::finalizeCurrentStatistic()
 {
     m_currentStat = nullptr;
 }
 
-
-void StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
+void
+StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
 {
-    for ( auto &stat : m_statGroups ) {
+    for ( auto& stat : m_statGroups ) {
         stat.second.finalizeRegistration();
     }
     /* Create:
@@ -425,45 +411,48 @@ void StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
      *          Array of timestamps for each entry
      */
 
-
     /* Create components sub-group */
     std::string groupName = "/" + getName() + "/components";
     try {
-        H5::Group* statGroup = new H5::Group( getFile()->createGroup(groupName) );
+        H5::Group* statGroup = new H5::Group(getFile()->createGroup(groupName));
         statGroup->close();
         delete statGroup;
-    } catch (H5::FileIException ie) {
+    }
+    catch ( H5::FileIException ie ) {
         /* Ignore - group already exists. */
     }
 
     H5::DSetCreatPropList cparms;
-    hsize_t chunk_dims[1] = {std::min(m_statGroup->components.size(), (size_t)64)};
+    hsize_t               chunk_dims[1] = { std::min(m_statGroup->components.size(), (size_t)64) };
     cparms.setChunk(1, chunk_dims);
     cparms.setDeflate(7);
 
-
-
     /* Create arrays */
-    hsize_t infoDim[1] = {m_statGroup->components.size()};
+    hsize_t       infoDim[1] = { m_statGroup->components.size() };
     H5::DataSpace infoSpace(1, infoDim);
-    H5::DataSet *idSet = new H5::DataSet(getFile()->createDataSet(groupName + "/ids", H5::PredType::NATIVE_UINT64, infoSpace, cparms));
-    H5::DataSet *nameSet = new H5::DataSet(getFile()->createDataSet(groupName + "/names", H5::StrType(H5::PredType::C_S1, H5T_VARIABLE), infoSpace, cparms));
-    H5::DataSet *coordXSet = new H5::DataSet(getFile()->createDataSet(groupName + "/coord_x", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
-    H5::DataSet *coordYSet = new H5::DataSet(getFile()->createDataSet(groupName + "/coord_y", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
-    H5::DataSet *coordZSet = new H5::DataSet(getFile()->createDataSet(groupName + "/coord_z", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
+    H5::DataSet*  idSet
+        = new H5::DataSet(getFile()->createDataSet(groupName + "/ids", H5::PredType::NATIVE_UINT64, infoSpace, cparms));
+    H5::DataSet* nameSet   = new H5::DataSet(getFile()->createDataSet(
+        groupName + "/names", H5::StrType(H5::PredType::C_S1, H5T_VARIABLE), infoSpace, cparms));
+    H5::DataSet* coordXSet = new H5::DataSet(
+        getFile()->createDataSet(groupName + "/coord_x", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
+    H5::DataSet* coordYSet = new H5::DataSet(
+        getFile()->createDataSet(groupName + "/coord_y", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
+    H5::DataSet* coordZSet = new H5::DataSet(
+        getFile()->createDataSet(groupName + "/coord_z", H5::PredType::NATIVE_DOUBLE, infoSpace, cparms));
 
-    std::vector<uint64_t> idVec;
+    std::vector<uint64_t>    idVec;
     std::vector<const char*> nameVec;
-    std::vector<double> xVec;
-    std::vector<double> yVec;
-    std::vector<double> zVec;
+    std::vector<double>      xVec;
+    std::vector<double>      yVec;
+    std::vector<double>      zVec;
 
-    for ( size_t i = 0 ; i < infoDim[0] ; i++ ) {
+    for ( size_t i = 0; i < infoDim[0]; i++ ) {
         BaseComponent* comp = m_components.at(i);
 
         idVec.push_back(comp->getId());
         nameVec.push_back(comp->getName().c_str());
-        const std::vector<double> &coords = comp->getCoordinates();
+        const std::vector<double>& coords = comp->getCoordinates();
         xVec.push_back(coords[0]);
         yVec.push_back(coords[1]);
         zVec.push_back(coords[2]);
@@ -482,165 +471,156 @@ void StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
     delete coordZSet;
 
     /* Create timestamp array */
-    hsize_t tdim[1] = {0};
-    hsize_t maxdims[1] = { H5S_UNLIMITED };
+    hsize_t       tdim[1]    = { 0 };
+    hsize_t       maxdims[1] = { H5S_UNLIMITED };
     H5::DataSpace tspace(1, tdim, maxdims);
-    timeDataSet = new H5::DataSet(getFile()->createDataSet("/" + getName() + "/timestamps", H5::PredType::NATIVE_UINT64, tspace, cparms));
-
+    timeDataSet = new H5::DataSet(
+        getFile()->createDataSet("/" + getName() + "/timestamps", H5::PredType::NATIVE_UINT64, tspace, cparms));
 }
 
-
-
-
-
-
-
-
-void StatisticOutputHDF5::GroupInfo::startNewGroupEntry() {
+void
+StatisticOutputHDF5::GroupInfo::startNewGroupEntry()
+{
     /* Record current timestamp */
-    for ( auto & gs : m_statGroups ) {
+    for ( auto& gs : m_statGroups ) {
         gs.second.startNewGroupEntry();
     }
 
-    hsize_t dims[1] = {1};
+    hsize_t dims[1]   = { 1 };
     hsize_t offset[1] = { nEntries };
 
     hsize_t newSize[1] = { ++nEntries };
     timeDataSet->extend(newSize);
 
     H5::DataSpace fspace = timeDataSet->getSpace();
-    H5::DataSpace memSpace( 1, dims );
-    fspace.selectHyperslab( H5S_SELECT_SET, dims, offset );
+    H5::DataSpace memSpace(1, dims);
+    fspace.selectHyperslab(H5S_SELECT_SET, dims, offset);
     uint64_t currTime = Simulation::getSimulation()->getCurrentSimCycle();
     timeDataSet->write(&currTime, H5::PredType::NATIVE_UINT64, memSpace, fspace);
 }
 
-
-
-void StatisticOutputHDF5::GroupInfo::startNewEntry(StatisticBase *stat)
+void
+StatisticOutputHDF5::GroupInfo::startNewEntry(StatisticBase* stat)
 {
-    m_currentStat = &(m_statGroups.at(GroupStat::getStatName(stat)));
-    size_t compIndex = std::distance(m_components.begin(),
-            std::find(m_components.begin(), m_components.end(), stat->getComponent()));
+    m_currentStat    = &(m_statGroups.at(GroupStat::getStatName(stat)));
+    size_t compIndex = std::distance(
+        m_components.begin(), std::find(m_components.begin(), m_components.end(), stat->getComponent()));
     m_currentStat->startNewEntry(compIndex, stat);
 }
 
-
-void StatisticOutputHDF5::GroupInfo::finishEntry()
+void
+StatisticOutputHDF5::GroupInfo::finishEntry()
 {
     m_currentStat->finishEntry();
     m_currentStat = nullptr;
 }
 
-void StatisticOutputHDF5::GroupInfo::finishGroupEntry()
+void
+StatisticOutputHDF5::GroupInfo::finishGroupEntry()
 {
-    for ( auto & gs : m_statGroups ) {
+    for ( auto& gs : m_statGroups ) {
         gs.second.finishGroupEntry();
     }
 }
 
-const std::string& StatisticOutputHDF5::GroupInfo::getName() const
+const std::string&
+StatisticOutputHDF5::GroupInfo::getName() const
 {
     return m_statGroup->name;
 }
 
-
-
-std::string StatisticOutputHDF5::GroupInfo::GroupStat::getStatName(StatisticBase* stat)
+std::string
+StatisticOutputHDF5::GroupInfo::GroupStat::getStatName(StatisticBase* stat)
 {
-    if ( stat->getStatSubId().empty() )
-        return stat->getStatName();
+    if ( stat->getStatSubId().empty() ) return stat->getStatName();
     return stat->getStatName() + "." + stat->getStatSubId();
 }
 
-StatisticOutputHDF5::GroupInfo::GroupStat::GroupStat(GroupInfo* group, StatisticBase* stat) :
-    gi(group), nEntries(0)
+StatisticOutputHDF5::GroupInfo::GroupStat::GroupStat(GroupInfo* group, StatisticBase* stat) : gi(group), nEntries(0)
 {
 
     /* Create the file hierarchy */
     statPath = "/" + group->getName() + "/" + stat->getStatName();
     if ( stat->getStatSubId().length() > 0 ) {
         try {
-            H5::Group* statGroup = new H5::Group( group->getFile()->createGroup(statPath));
+            H5::Group* statGroup = new H5::Group(group->getFile()->createGroup(statPath));
             statGroup->close();
             delete statGroup;
-        } catch (H5::FileIException ie) {
+        }
+        catch ( H5::FileIException ie ) {
             /* Ignore - group already exists. */
         }
         statPath += "/" + stat->getStatSubId();
     }
-
 }
 
-void StatisticOutputHDF5::GroupInfo::GroupStat::finalizeRegistration()
+void
+StatisticOutputHDF5::GroupInfo::GroupStat::finalizeRegistration()
 {
     size_t nslots = registeredFields.size();
     currentData.resize(nslots * gi->getNumComponents());
 
     /* Build a HDF5 in-Memory datatype */
     size_t dataSize = nslots * sizeof(StatData_u);
-    memType = new H5::CompType(dataSize);
-    for ( size_t i = 0 ; i < nslots ; i++ ) {
+    memType         = new H5::CompType(dataSize);
+    for ( size_t i = 0; i < nslots; i++ ) {
         H5::DataType type = getMemTypeForStatType(typeList[i]);
-        memType->insertMember(registeredFields.at(i), i*sizeof(StatData_u), type);
+        memType->insertMember(registeredFields.at(i), i * sizeof(StatData_u), type);
     }
     typeList.clear();
 
-    hsize_t dims[2] = {gi->getNumComponents(), 0};
-    hsize_t maxdims[2] = {gi->getNumComponents(), H5S_UNLIMITED};
+    hsize_t dims[2]    = { gi->getNumComponents(), 0 };
+    hsize_t maxdims[2] = { gi->getNumComponents(), H5S_UNLIMITED };
 
-    H5::DataSpace dspace(2, dims, maxdims);
+    H5::DataSpace         dspace(2, dims, maxdims);
     H5::DSetCreatPropList cparms;
-    hsize_t chunk_dims[2] = {std::min((hsize_t)16, dims[0]), 128};
+    hsize_t               chunk_dims[2] = { std::min((hsize_t)16, dims[0]), 128 };
     cparms.setChunk(2, chunk_dims);
     cparms.setDeflate(7);
 
-    dataset = new H5::DataSet( gi->getFile()->createDataSet(statPath, *memType, dspace, cparms) );
+    dataset = new H5::DataSet(gi->getFile()->createDataSet(statPath, *memType, dspace, cparms));
 }
 
-
-
-
-void StatisticOutputHDF5::GroupInfo::GroupStat::startNewGroupEntry() {
-    for ( StatData_u &i : currentData ) {
+void
+StatisticOutputHDF5::GroupInfo::GroupStat::startNewGroupEntry()
+{
+    for ( StatData_u& i : currentData ) {
         memset(&i, '\0', sizeof(i));
     }
 }
 
-
-void StatisticOutputHDF5::GroupInfo::GroupStat::startNewEntry(size_t componentIndex, StatisticBase *UNUSED(stat))
+void
+StatisticOutputHDF5::GroupInfo::GroupStat::startNewEntry(size_t componentIndex, StatisticBase* UNUSED(stat))
 {
     currentCompOffset = componentIndex * registeredFields.size();
 }
 
-
-StatisticOutputHDF5::StatData_u& StatisticOutputHDF5::GroupInfo::GroupStat::getFieldLoc(fieldHandle_t fieldHandle)
+StatisticOutputHDF5::StatData_u&
+StatisticOutputHDF5::GroupInfo::GroupStat::getFieldLoc(fieldHandle_t fieldHandle)
 {
     size_t fieldIndex = handleIndexMap.at(fieldHandle);
     return currentData[currentCompOffset + fieldIndex];
 }
 
+void
+StatisticOutputHDF5::GroupInfo::GroupStat::finishEntry()
+{}
 
-void StatisticOutputHDF5::GroupInfo::GroupStat::finishEntry()
-{
-}
-
-
-void StatisticOutputHDF5::GroupInfo::GroupStat::finishGroupEntry()
+void
+StatisticOutputHDF5::GroupInfo::GroupStat::finishGroupEntry()
 {
     /* TODO */
-    hsize_t dims[2] = {gi->getNumComponents(), 1};
+    hsize_t dims[2]   = { gi->getNumComponents(), 1 };
     hsize_t offset[2] = { 0, nEntries };
 
     hsize_t newSize[2] = { gi->getNumComponents(), ++nEntries };
     dataset->extend(newSize);
 
     H5::DataSpace fspace = dataset->getSpace();
-    H5::DataSpace memSpace( 2, dims );
-    fspace.selectHyperslab( H5S_SELECT_SET, dims, offset );
+    H5::DataSpace memSpace(2, dims);
+    fspace.selectHyperslab(H5S_SELECT_SET, dims, offset);
     dataset->write(currentData.data(), *memType, memSpace, fspace);
 }
 
-
-} //namespace Statistics
-} //namespace SST
+} // namespace Statistics
+} // namespace SST

@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef spkt_serializer_FWD_H
-#define spkt_serializer_FWD_H
+#ifndef SST_CORE_SERIALIZATION_SERIALIZER_FWD_H
+#define SST_CORE_SERIALIZATION_SERIALIZER_FWD_H
 
 namespace SST {
 namespace Core {
@@ -19,8 +19,7 @@ namespace Serialization {
 class serializer;
 
 }
-}
-}
+} // namespace Core
+} // namespace SST
 
-#endif // spkt_serializer_FWD_H
-
+#endif // SST_CORE_SERIALIZATION_SERIALIZER_FWD_H

@@ -9,7 +9,6 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_UNINITIALIZEDQUEUE_H
 #define SST_CORE_UNINITIALIZEDQUEUE_H
 
@@ -21,7 +20,8 @@ namespace SST {
  * @brief Used for debugging, and preventing accidentally sending messages
  * into an incorrect queue
  */
-class UninitializedQueue : public ActivityQueue {
+class UninitializedQueue : public ActivityQueue
+{
 public:
     /** Create a new Queue
      * @param message - Message to print when something attempts to use this Queue
@@ -30,18 +30,16 @@ public:
     UninitializedQueue(); // Only used for serialization
     ~UninitializedQueue();
 
-    bool empty() override;
-    int size() override;
-    void insert(Activity* activity) override;
+    bool      empty() override;
+    int       size() override;
+    void      insert(Activity* activity) override;
     Activity* pop() override;
     Activity* front() override;
 
-
 private:
     std::string message;
-
 };
 
-} //namespace SST
+} // namespace SST
 
 #endif // SST_CORE_UNINITIALIZEDQUEUE_H

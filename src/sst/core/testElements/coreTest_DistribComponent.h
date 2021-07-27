@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTDISTRIBCOMPONENT_H
-#define _CORETESTDISTRIBCOMPONENT_H
+#ifndef SST_CORE_CORETEST_DISTRIBCOMPONENT_H
+#define SST_CORE_CORETEST_DISTRIBCOMPONENT_H
 
 #include <sst/core/component.h>
 #include <sst/core/rng/distrib.h>
@@ -28,7 +28,6 @@ namespace CoreTestDistribComponent {
 class coreTestDistribComponent : public SST::Component
 {
 public:
-
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestDistribComponent,
@@ -64,20 +63,20 @@ public:
 
     coreTestDistribComponent(SST::ComponentId_t id, SST::Params& params);
     void finish();
-    void setup()  { }
+    void setup() {}
 
 private:
-    coreTestDistribComponent();  // for serialization only
+    coreTestDistribComponent();                                // for serialization only
     coreTestDistribComponent(const coreTestDistribComponent&); // do not implement
-    void operator=(const coreTestDistribComponent&); // do not implement
+    void operator=(const coreTestDistribComponent&);           // do not implement
 
-    virtual bool tick( SST::Cycle_t );
+    virtual bool tick(SST::Cycle_t);
 
     SSTRandomDistribution* comp_distrib;
 
-    int  rng_max_count;
-    int  rng_count;
-    bool bin_results;
+    int         rng_max_count;
+    int         rng_count;
+    bool        bin_results;
     std::string dist_type;
 
     std::map<int64_t, uint64_t>* bins;
@@ -86,4 +85,4 @@ private:
 } // namespace CoreTestDistribComponent
 } // namespace SST
 
-#endif /* _CORETESTDISTRIBCOMPONENT_H */
+#endif // SST_CORE_CORETEST_DISTRIBCOMPONENT_H

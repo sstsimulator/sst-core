@@ -14,30 +14,29 @@
 #ifndef SST_CORE_UNITALGEBRA_H
 #define SST_CORE_UNITALGEBRA_H
 
-#include "sst/core/sst_types.h"
+#include "sst/core/decimal_fixedpoint.h"
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/serialization/serializer.h"
-
-#include <string>
-#include <map>
-#include <vector>
-#include <mutex>
-
+#include "sst/core/sst_types.h"
 #include "sst/core/warnmacros.h"
-#include "sst/core/decimal_fixedpoint.h"
 
+#include <map>
+#include <mutex>
+#include <string>
+#include <vector>
 
 namespace SST {
 
 // typedef decimal_fixedpoint<3,3> sst_dec_float;
-typedef decimal_fixedpoint<3,3> sst_big_num;
+typedef decimal_fixedpoint<3, 3> sst_big_num;
 
 /**
  * Helper class internal to UnitAlgebra.
  *
  * Contains information on valid units
  */
-class Units {
+class Units
+{
 
     typedef uint8_t unit_id_t;
 
@@ -45,12 +44,12 @@ private:
     friend class UnitAlgebra;
 
     // Static data members and functions
-    static std::recursive_mutex unit_lock;
-    static std::map<std::string,unit_id_t> valid_base_units;
-    static std::map<std::string,std::pair<Units,sst_big_num> > valid_compound_units;
-    static std::map<unit_id_t,std::string> unit_strings;
-    static unit_id_t count;
-    static bool initialized;
+    static std::recursive_mutex                                 unit_lock;
+    static std::map<std::string, unit_id_t>                     valid_base_units;
+    static std::map<std::string, std::pair<Units, sst_big_num>> valid_compound_units;
+    static std::map<unit_id_t, std::string>                     unit_strings;
+    static unit_id_t                                            count;
+    static bool                                                 initialized;
 
     static bool initialize();
 
@@ -82,15 +81,15 @@ public:
     Units(const Units&) = default;
 
     /** Assignment operator */
-    Units& operator= (const Units& v);
+    Units& operator=(const Units& v);
     /** Self-multiplication operator */
-    Units& operator*= (const Units& v);
+    Units& operator*=(const Units& v);
     /** Self-division operator */
-    Units& operator/= (const Units& v);
+    Units& operator/=(const Units& v);
     /** Equality Operator */
-    bool operator== (const Units &lhs) const;
+    bool   operator==(const Units& lhs) const;
     /** Inequality Operator */
-    bool operator!= (const Units &lhs) const {return !(*this == lhs);}
+    bool   operator!=(const Units& lhs) const { return !(*this == lhs); }
     /** Perform a reciprocal operation.  Numerator and Denominator swap. */
     Units& invert();
 
@@ -104,10 +103,12 @@ public:
  * Allows operations such as multiplying a frequency by 2.
  *
  */
-class UnitAlgebra : public SST::Core::Serialization::serializable,
-                       public SST::Core::Serialization::serializable_type<UnitAlgebra> {
+class UnitAlgebra :
+    public SST::Core::Serialization::serializable,
+    public SST::Core::Serialization::serializable_type<UnitAlgebra>
+{
 private:
-    Units unit;
+    Units       unit;
     sst_big_num value;
 
     static std::string trim(const std::string& str);
@@ -138,11 +139,11 @@ public:
     UnitAlgebra(const UnitAlgebra&) = default;
 
     /** Print to an ostream the value */
-    void print(std::ostream& stream);
+    void        print(std::ostream& stream);
     /** Print to an ostream the value
      * Formats the number using SI-prefixes
      */
-    void printWithBestSI(std::ostream& stream);
+    void        printWithBestSI(std::ostream& stream);
     /** Return a string representation of this value */
     std::string toString() const;
     /** Return a string representation of this value
@@ -150,88 +151,95 @@ public:
      */
     std::string toStringBestSI() const;
 
-    UnitAlgebra& operator= (const std::string& v);
+    UnitAlgebra& operator=(const std::string& v);
 
     /** Multiply by an argument; */
-    UnitAlgebra& operator*= (const UnitAlgebra& v);
+    UnitAlgebra& operator*=(const UnitAlgebra& v);
     /** Multiply by an argument; */
     template <typename T>
-    UnitAlgebra& operator*= (const T& v) {
+    UnitAlgebra& operator*=(const T& v)
+    {
         value *= v;
         return *this;
     }
 
     /** Divide by an argument; */
-    UnitAlgebra& operator/= (const UnitAlgebra& v);
+    UnitAlgebra& operator/=(const UnitAlgebra& v);
     /** Divide by an argument; */
     template <typename T>
-    UnitAlgebra& operator/= (const T& v) {
+    UnitAlgebra& operator/=(const T& v)
+    {
         value /= v;
         return *this;
     }
 
     /** Add an argument; */
-    UnitAlgebra& operator+= (const UnitAlgebra& v);
+    UnitAlgebra& operator+=(const UnitAlgebra& v);
     /** Multiply by an argument; */
     template <typename T>
-    UnitAlgebra& operator+= (const T& v) {
+    UnitAlgebra& operator+=(const T& v)
+    {
         value += v;
         return *this;
     }
 
     /** Subtract an argument; */
-    UnitAlgebra& operator-= (const UnitAlgebra& v);
+    UnitAlgebra& operator-=(const UnitAlgebra& v);
     /** Divide by an argument; */
     template <typename T>
-    UnitAlgebra& operator-= (const T& v) {
+    UnitAlgebra& operator-=(const T& v)
+    {
         value -= v;
         return *this;
     }
 
     /** Compare if this object is greater than the argument */
-    bool operator> (const UnitAlgebra& v) const;
+    bool         operator>(const UnitAlgebra& v) const;
     /** Compare if this object is greater than, or equal to, the argument */
-    bool operator>= (const UnitAlgebra& v) const;
+    bool         operator>=(const UnitAlgebra& v) const;
     /** Compare if this object is less than the argument */
-    bool operator< (const UnitAlgebra& v) const;
+    bool         operator<(const UnitAlgebra& v) const;
     /** Compare if this object is less than, or equal to, the argument */
-    bool operator<= (const UnitAlgebra& v) const;
+    bool         operator<=(const UnitAlgebra& v) const;
     /** Compare if this object is equal to, the argument */
-    bool operator== (const UnitAlgebra& v) const;
+    bool         operator==(const UnitAlgebra& v) const;
     /** Compare if this object is not equal to, the argument */
-    bool operator!= (const UnitAlgebra& v) const;
+    bool         operator!=(const UnitAlgebra& v) const;
     /** Apply a reciprocal operation to the object */
     UnitAlgebra& invert();
 
     /** Returns true if the units in the parameter string are found
      * in this object.
      */
-    bool hasUnits(const std::string& u) const;
+    bool        hasUnits(const std::string& u) const;
     /** Return the raw value */
-    sst_big_num getValue() const {return value;}
+    sst_big_num getValue() const { return value; }
     /** Return the rounded value as a 64bit integer */
-    int64_t getRoundedValue() const;
-    double getDoubleValue() const;
-    bool isValueZero() const;
+    int64_t     getRoundedValue() const;
+    double      getDoubleValue() const;
+    bool        isValueZero() const;
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
         // Do the unit
-        ser & unit.numerator;
-        ser & unit.denominator;
+        ser& unit.numerator;
+        ser& unit.denominator;
 
         // For value, need to convert cpp_dec_float to string and
         // reinit from string
-        switch(ser.mode()) {
+        switch ( ser.mode() ) {
         case SST::Core::Serialization::serializer::SIZER:
-        case SST::Core::Serialization::serializer::PACK: {
+        case SST::Core::Serialization::serializer::PACK:
+        {
             // std::string s = value.str(40, std::ios_base::fixed);
             std::string s = value.toString(0);
-            ser & s;
-        break;
+            ser&        s;
+            break;
         }
-        case SST::Core::Serialization::serializer::UNPACK: {
+        case SST::Core::Serialization::serializer::UNPACK:
+        {
             std::string s;
-            ser & s;
+            ser&        s;
             value = sst_big_num(s);
             break;
         }
@@ -239,7 +247,6 @@ public:
     }
     ImplementSerializable(SST::UnitAlgebra)
 };
-
 
 // template <typename T>
 // UnitAlgebra operator* (UnitAlgebra lhs, const T& rhs);
@@ -257,7 +264,8 @@ public:
 // std::ostream& operator<< (std::ostream& os, const Units& r);
 
 template <typename T>
-UnitAlgebra operator* (UnitAlgebra lhs, const T& rhs)
+UnitAlgebra
+operator*(UnitAlgebra lhs, const T& rhs)
 {
     lhs *= rhs;
     return lhs;
@@ -270,59 +278,67 @@ UnitAlgebra operator* (UnitAlgebra lhs, const T& rhs)
 //     return rhs;
 // }
 
-inline UnitAlgebra operator* (UnitAlgebra lhs, const UnitAlgebra& rhs)
+inline UnitAlgebra
+operator*(UnitAlgebra lhs, const UnitAlgebra& rhs)
 {
     lhs *= rhs;
     return lhs;
 }
 
 template <typename T>
-UnitAlgebra operator/ (UnitAlgebra lhs, const T& rhs)
+UnitAlgebra
+operator/(UnitAlgebra lhs, const T& rhs)
 {
     lhs /= rhs;
     return lhs;
 }
 
-inline UnitAlgebra operator/ (UnitAlgebra lhs, const UnitAlgebra& rhs)
+inline UnitAlgebra
+operator/(UnitAlgebra lhs, const UnitAlgebra& rhs)
 {
     lhs /= rhs;
     return lhs;
 }
 
 template <typename T>
-UnitAlgebra operator+ (UnitAlgebra lhs, const T& rhs)
+UnitAlgebra
+operator+(UnitAlgebra lhs, const T& rhs)
 {
     lhs += rhs;
     return lhs;
 }
 
-inline UnitAlgebra operator+ (UnitAlgebra lhs, const UnitAlgebra& rhs)
+inline UnitAlgebra
+operator+(UnitAlgebra lhs, const UnitAlgebra& rhs)
 {
     lhs += rhs;
     return lhs;
 }
 
 template <typename T>
-UnitAlgebra operator- (UnitAlgebra lhs, const T& rhs)
+UnitAlgebra
+operator-(UnitAlgebra lhs, const T& rhs)
 {
     lhs -= rhs;
     return lhs;
 }
 
-inline UnitAlgebra operator- (UnitAlgebra lhs, const UnitAlgebra& rhs)
+inline UnitAlgebra
+operator-(UnitAlgebra lhs, const UnitAlgebra& rhs)
 {
     lhs -= rhs;
     return lhs;
 }
 
-
-inline std::ostream& operator<< (std::ostream& os, const UnitAlgebra& r)
+inline std::ostream&
+operator<<(std::ostream& os, const UnitAlgebra& r)
 {
     os << r.toString();
     return os;
 }
 
-inline std::ostream& operator<< (std::ostream& os, const Units& r)
+inline std::ostream&
+operator<<(std::ostream& os, const Units& r)
 {
     os << r.toString();
     return os;
@@ -330,5 +346,4 @@ inline std::ostream& operator<< (std::ostream& os, const Units& r)
 
 } // namespace SST
 
-
-#endif //SST_CORE_UNITALGEBRA_H
+#endif // SST_CORE_UNITALGEBRA_H

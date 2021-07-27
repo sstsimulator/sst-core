@@ -9,11 +9,10 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_STATISTICS_OUTPUTCSV
-#define _H_SST_CORE_STATISTICS_OUTPUTCSV
+#ifndef SST_CORE_STATAPI_STATOUTPUTCSV_H
+#define SST_CORE_STATAPI_STATOUTPUTCSV_H
 
 #include "sst/core/sst_types.h"
-
 #include "sst/core/statapi/statoutput.h"
 
 #ifdef HAVE_LIBZ
@@ -31,7 +30,7 @@ namespace Statistics {
 class StatisticOutputCSV : public StatisticFieldsOutput
 {
 public:
-  SST_ELI_REGISTER_DERIVED(
+    SST_ELI_REGISTER_DERIVED(
       StatisticOutput,
       StatisticOutputCSV,
       "sst",
@@ -93,16 +92,16 @@ protected:
     void outputField(fieldHandle_t fieldHandle, double data) override;
 
 protected:
-    StatisticOutputCSV() {;} // For serialization
+    StatisticOutputCSV() { ; } // For serialization
 
 private:
     bool openFile();
     void closeFile();
-    int print(const char* fmt, ...);
+    int  print(const char* fmt, ...);
 
 private:
 #ifdef HAVE_LIBZ
-    gzFile                   m_gzFile;
+    gzFile m_gzFile;
 #endif
     FILE*                    m_hFile;
     std::vector<std::string> m_OutputBufferArray;
@@ -116,10 +115,9 @@ private:
     bool                     m_outputSimTime;
     bool                     m_outputRank;
     bool                     m_useCompression;
-
 };
 
-} //namespace Statistics
-} //namespace SST
+} // namespace Statistics
+} // namespace SST
 
-#endif
+#endif // SST_CORE_STATAPI_STATOUTPUTCSV_H

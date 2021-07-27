@@ -9,48 +9,47 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #include "sst_config.h"
-#include "sst/core/output.h"
+
 #include "sst/core/shared/sharedObject.h"
+
+#include "sst/core/objectComms.h"
+#include "sst/core/output.h"
 #include "sst/core/shared/sharedArray.h"
 #include "sst/core/shared/sharedMap.h"
 #include "sst/core/shared/sharedSet.h"
 #include "sst/core/warnmacros.h"
-#include "sst/core/objectComms.h"
-
 
 namespace SST {
 namespace Shared {
 
 SharedObjectDataManager SharedObject::manager;
-std::mutex SharedObjectDataManager::mtx;
+std::mutex              SharedObjectDataManager::mtx;
 
 std::mutex SharedObjectDataManager::update_mtx;
 
-
-void SharedObjectDataManager::updateState(bool finalize)
+void
+SharedObjectDataManager::updateState(bool finalize)
 {
     std::lock_guard<std::mutex> lock(update_mtx);
 
 #ifdef SST_CONFIG_HAVE_MPI
     // Exchange data between ranks
     if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) {
-        int myRank = Simulation::getSimulation()->getRank().rank;
+        int                                 myRank = Simulation::getSimulation()->getRank().rank;
         // Create a vector off all my changesets
         std::vector<SharedObjectChangeSet*> myChanges;
 
         // Create a vector to check to see if regions are fully
         // published
-        std::vector<std::pair<std::string,bool> > myFullPub;
+        std::vector<std::pair<std::string, bool>> myFullPub;
         for ( auto x : shared_data ) {
             myChanges.push_back(x.second->getChangeSet());
-            myFullPub.emplace_back(x.second->getName(),
-                                   x.second->getPublishCount() == x.second->getShareCount());
+            myFullPub.emplace_back(x.second->getName(), x.second->getPublishCount() == x.second->getShareCount());
         }
 
-        std::vector<std::vector<SharedObjectChangeSet*> > allChanges;
-        std::vector<std::vector<std::pair<std::string,bool> > > allFullyPub;
+        std::vector<std::vector<SharedObjectChangeSet*>>       allChanges;
+        std::vector<std::vector<std::pair<std::string, bool>>> allFullyPub;
 
         // Get and apply all the changes
         Comms::all_gather(myChanges, allChanges);
@@ -73,9 +72,7 @@ void SharedObjectDataManager::updateState(bool finalize)
         for ( auto x : allFullyPub ) {
             for ( auto y : x ) {
                 auto it = pub_map.find(y.first);
-                if ( it == pub_map.end() ) {
-                    pub_map[y.first] = y.second;
-                }
+                if ( it == pub_map.end() ) { pub_map[y.first] = y.second; }
                 else {
                     it->second = it->second & y.second;
                 }
@@ -91,8 +88,10 @@ void SharedObjectDataManager::updateState(bool finalize)
         // We don't need to exchange data, but we do need to do the
         // ready flags
         for ( auto x : shared_data ) {
-            if ( x.second->getPublishCount() == x.second->getShareCount() ) x.second->fully_published = true;
-            else x.second->fully_published = false;
+            if ( x.second->getPublishCount() == x.second->getShareCount() )
+                x.second->fully_published = true;
+            else
+                x.second->fully_published = false;
         }
 #ifdef SST_CONFIG_HAVE_MPI
     }
@@ -105,10 +104,7 @@ void SharedObjectDataManager::updateState(bool finalize)
         }
         locked = true;
     }
-
 }
 
-}  // namespace Shared
-}  // namespace SST
-
-
+} // namespace Shared
+} // namespace SST

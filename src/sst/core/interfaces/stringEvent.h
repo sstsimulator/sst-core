@@ -12,9 +12,8 @@
 #ifndef SST_CORE_INTERFACES_STRINGEVENT_H
 #define SST_CORE_INTERFACES_STRINGEVENT_H
 
-#include "sst/core/sst_types.h"
-
 #include "sst/core/event.h"
+#include "sst/core/sst_types.h"
 
 namespace SST {
 namespace Interfaces {
@@ -22,21 +21,18 @@ namespace Interfaces {
 /**
  * Simple event to pass strings between components
  */
-class StringEvent : public SST::Event, public SST::Core::Serialization::serializable_type<StringEvent> {
+class StringEvent : public SST::Event, public SST::Core::Serialization::serializable_type<StringEvent>
+{
 public:
     StringEvent() {} // For serialization only
 
     /** Create a new StringEvent
      * @param str - The String contents of this event
      */
-    StringEvent(const std::string& str) :
-        SST::Event(), str(str)
-    { }
+    StringEvent(const std::string& str) : SST::Event(), str(str) {}
 
     /** Clone a StringEvent */
-    virtual Event* clone() override {
-        return new StringEvent(*this);
-    }
+    virtual Event* clone() override { return new StringEvent(*this); }
 
     /** Returns the contents of this Event */
     const std::string& getString(void) { return str; }
@@ -45,15 +41,16 @@ private:
     std::string str;
 
 public:
-    void serialize_order(SST::Core::Serialization::serializer &ser) override {
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
         Event::serialize_order(ser);
-        ser & str;
+        ser& str;
     }
 
     ImplementSerializable(SST::Interfaces::StringEvent);
 };
 
-} //namespace Interfaces
-} //namespace SST
+} // namespace Interfaces
+} // namespace SST
 
-#endif /* INTERFACES_STRINGEVENT_H */
+#endif // SST_CORE_INTERFACES_STRINGEVENT_H

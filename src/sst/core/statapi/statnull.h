@@ -9,14 +9,12 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef _H_SST_CORE_NULL_STATISTIC_
-#define _H_SST_CORE_NULL_STATISTIC_
+#ifndef SST_CORE_STATAPI_STATNULL_H
+#define SST_CORE_STATAPI_STATNULL_H
 
 #include "sst/core/sst_types.h"
-#include "sst/core/warnmacros.h"
-
 #include "sst/core/statapi/statbase.h"
+#include "sst/core/warnmacros.h"
 
 namespace SST {
 namespace Statistics {
@@ -38,62 +36,67 @@ namespace Statistics {
     @tparam T A template for holding the main data type of this statistic
 */
 template <class T, bool B = std::is_fundamental<T>::value>
-struct NullStatisticBase {};
+struct NullStatisticBase
+{};
 
 template <class T>
-struct NullStatisticBase<T,true> : public Statistic<T> {
+struct NullStatisticBase<T, true> : public Statistic<T>
+{
 
-  NullStatisticBase(BaseComponent* comp, const std::string& statName,
-                    const std::string& statSubId, Params& statParams)
-  : Statistic<T>(comp, statName, statSubId, statParams)
-  {
-      // Set the Name of this Statistic
-      this->setStatisticTypeName("NULL");
-  }
+    NullStatisticBase(
+        BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
+        Statistic<T>(comp, statName, statSubId, statParams)
+    {
+        // Set the Name of this Statistic
+        this->setStatisticTypeName("NULL");
+    }
 
-  void addData_impl(T UNUSED(data)) override {}
+    void addData_impl(T UNUSED(data)) override {}
 
-  void addData_impl_Ntimes(uint64_t UNUSED(N), T UNUSED(data)) override {}
+    void addData_impl_Ntimes(uint64_t UNUSED(N), T UNUSED(data)) override {}
 };
 
 template <class... Args>
-struct NullStatisticBase<std::tuple<Args...>,false> : public Statistic<std::tuple<Args...>> {
+struct NullStatisticBase<std::tuple<Args...>, false> : public Statistic<std::tuple<Args...>>
+{
 
-  NullStatisticBase(BaseComponent* comp, const std::string& statName,
-                    const std::string& statSubId, Params& statParams)
-    : Statistic<std::tuple<Args...>>(comp, statName, statSubId, statParams)
-  {
-      // Set the Name of this Statistic
-      this->setStatisticTypeName("NULL");
-  }
+    NullStatisticBase(
+        BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
+        Statistic<std::tuple<Args...>>(comp, statName, statSubId, statParams)
+    {
+        // Set the Name of this Statistic
+        this->setStatisticTypeName("NULL");
+    }
 
-  void addData_impl(Args... UNUSED(data)) override {}
+    void addData_impl(Args... UNUSED(data)) override {}
 
-  void addData_impl_Ntimes(uint64_t UNUSED(N), Args... UNUSED(data)) override {}
+    void addData_impl_Ntimes(uint64_t UNUSED(N), Args... UNUSED(data)) override {}
 };
 
 template <class T>
-struct NullStatisticBase<T,false> : public Statistic<T> {
+struct NullStatisticBase<T, false> : public Statistic<T>
+{
 
-  NullStatisticBase(BaseComponent* comp, const std::string& statName,
-                    const std::string& statSubId, Params& statParams)
-  : Statistic<T>(comp, statName, statSubId, statParams)
-  {
-      // Set the Name of this Statistic
-      this->setStatisticTypeName("NULL");
-  }
+    NullStatisticBase(
+        BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
+        Statistic<T>(comp, statName, statSubId, statParams)
+    {
+        // Set the Name of this Statistic
+        this->setStatisticTypeName("NULL");
+    }
 
-  void addData_impl(T&& UNUSED(data)) override {}
-  void addData_impl(const T& UNUSED(data)) override {}
+    void addData_impl(T&& UNUSED(data)) override {}
+    void addData_impl(const T& UNUSED(data)) override {}
 
-  void addData_impl(uint64_t UNUSED(N), T&& UNUSED(data)) override {}
-  void addData_impl(uint64_t UNUSED(N), const T& UNUSED(data)) override {}
+    void addData_impl(uint64_t UNUSED(N), T&& UNUSED(data)) override {}
+    void addData_impl(uint64_t UNUSED(N), const T& UNUSED(data)) override {}
 };
 
 template <class T>
-struct NullStatistic : public NullStatisticBase<T> {
+struct NullStatistic : public NullStatisticBase<T>
+{
 
-  SST_ELI_DECLARE_STATISTIC_TEMPLATE(
+    SST_ELI_DECLARE_STATISTIC_TEMPLATE(
       NullStatistic,
       "sst",
       "NullStatistic",
@@ -101,51 +104,44 @@ struct NullStatistic : public NullStatisticBase<T> {
       "Null object it ignore all collections",
       "SST::Statistic<T>")
 
-  NullStatistic(BaseComponent* comp, const std::string& statName,
-                const std::string& statSubId, Params& statParam)
-      : NullStatisticBase<T>(comp, statName, statSubId, statParam)
-  {}
+    NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParam) :
+        NullStatisticBase<T>(comp, statName, statSubId, statParam)
+    {}
 
-  ~NullStatistic(){}
+    ~NullStatistic() {}
 
-  void clearStatisticData() override
-  {
-      // Do Nothing
-  }
+    void clearStatisticData() override
+    {
+        // Do Nothing
+    }
 
-  void registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput)) override
-  {
-      // Do Nothing
-  }
+    void registerOutputFields(StatisticFieldsOutput* UNUSED(statOutput)) override
+    {
+        // Do Nothing
+    }
 
-  void outputStatisticFields(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
-  {
-      // Do Nothing
-  }
+    void outputStatisticFields(StatisticFieldsOutput* UNUSED(statOutput), bool UNUSED(EndOfSimFlag)) override
+    {
+        // Do Nothing
+    }
 
-  bool isReady() const override
-  {
-      return true;
-  }
+    bool isReady() const override { return true; }
 
-  bool isNullStatistic() const override
-  {
-      return true;
-  }
+    bool isNullStatistic() const override { return true; }
 
-  static bool isLoaded() {
-    return loaded_;
-  }
- private:
-  static bool loaded_;
+    static bool isLoaded() { return loaded_; }
+
+private:
+    static bool loaded_;
 };
 
-template <class T> bool NullStatistic<T>::loaded_ = true;
+template <class T>
+bool NullStatistic<T>::loaded_ = true;
 
 template <>
 struct NullStatistic<void> : public Statistic<void>
 {
-  SST_ELI_REGISTER_DERIVED(
+    SST_ELI_REGISTER_DERIVED(
     Statistic<void>,
     NullStatistic<void>,
     "sst",
@@ -154,19 +150,17 @@ struct NullStatistic<void> : public Statistic<void>
     "Null statistic for custom (void) stats"
   )
 
-  SST_ELI_INTERFACE_INFO("Statistic<void>")
+    SST_ELI_INTERFACE_INFO("Statistic<void>")
 
-  NullStatistic(BaseComponent* comp, const std::string& statName,
-                    const std::string& statSubId, Params& statParams)
-  : Statistic<void>(comp, statName, statSubId, statParams)
-  {
-      // Set the Name of this Statistic
-      this->setStatisticTypeName("NULL");
-  }
+    NullStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
+        Statistic<void>(comp, statName, statSubId, statParams)
+    {
+        // Set the Name of this Statistic
+        this->setStatisticTypeName("NULL");
+    }
 };
 
+} // namespace Statistics
+} // namespace SST
 
-} //namespace Statistics
-} //namespace SST
-
-#endif
+#endif // SST_CORE_STATAPI_STATNULL_H

@@ -14,11 +14,9 @@
 #ifndef SST_CORE_SIMULATION_H
 #define SST_CORE_SIMULATION_H
 
-
-#include "sst/core/sst_types.h"
-
 #include "sst/core/output.h"
 #include "sst/core/rankInfo.h"
+#include "sst/core/sst_types.h"
 #include "sst/core/unitAlgebra.h"
 
 namespace SST {
@@ -30,23 +28,22 @@ class Output;
 class TimeLord;
 class SharedRegionManager;
 
-
 /**
  * Main control class for a SST Simulation.
  * Provides base features for managing the simulation
  */
-class Simulation {
+class Simulation
+{
 public:
     /** Type of Run Modes */
     typedef enum {
-        UNKNOWN,    /*!< Unknown mode - Invalid for running */
-        INIT,       /*!< Initialize-only.  Useful for debugging initialization and graph generation */
-        RUN,        /*!< Run-only.  Useful when restoring from a checkpoint (not currently supported) */
-        BOTH        /*!< Default.  Both initialize and Run the simulation */
+        UNKNOWN, /*!< Unknown mode - Invalid for running */
+        INIT,    /*!< Initialize-only.  Useful for debugging initialization and graph generation */
+        RUN,     /*!< Run-only.  Useful when restoring from a checkpoint (not currently supported) */
+        BOTH     /*!< Default.  Both initialize and Run the simulation */
     } Mode_t;
 
     virtual ~Simulation();
-
 
     /********* Public Static API ************/
 
@@ -58,18 +55,18 @@ public:
      */
 
 #if !SST_BUILDING_CORE
-    static SharedRegionManager* getSharedRegionManager() __attribute__ ((deprecated("SharedRegion and its accompanying classes have been deprecated and will be removed in SST 12. Please use the new SharedObject classes found in sst/core/shared.")));
+    static SharedRegionManager* getSharedRegionManager()
+        __attribute__((deprecated("SharedRegion and its accompanying classes have been deprecated and will be removed "
+                                  "in SST 12. Please use the new SharedObject classes found in sst/core/shared.")));
 #else
     static SharedRegionManager* getSharedRegionManager();
 #endif
-    
+
     /** Return the TimeLord associated with this Simulation */
     static TimeLord* getTimeLord(void);
 
     /** Return the base simulation Output class instance */
     static Output& getSimulationOutput();
-
-
 
     /********* Public API ************/
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
@@ -86,7 +83,7 @@ public:
 
     /** Return the elapsed simulation time as a time */
     virtual UnitAlgebra getElapsedSimTime() const = 0;
-    
+
     /** Return the end simulation time as a time */
     virtual UnitAlgebra getFinalSimTime() const = 0;
 
@@ -114,10 +111,7 @@ public:
      */
     virtual void printStatus(bool fullStatus) = 0;
 
-
 protected:
-
-
     Simulation() {}
     // Simulation(Config* config, RankInfo my_rank, RankInfo num_ranks);
     Simulation(Simulation const&);     // Don't Implement
@@ -126,4 +120,4 @@ protected:
 
 } // namespace SST
 
-#endif //SST_CORE_SIMULATION_H
+#endif // SST_CORE_SIMULATION_H

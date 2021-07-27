@@ -9,12 +9,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SERIALIZE_SERIALIZABLE_H
-#define SERIALIZE_SERIALIZABLE_H
+#ifndef SST_CORE_SERIALIZATION_SERIALIZE_SERIALIZABLE_H
+#define SST_CORE_SERIALIZATION_SERIALIZE_SERIALIZABLE_H
 
 #include "sst/core/serialization/serializable.h"
-#include "sst/core/serialization/serializer.h"
 #include "sst/core/serialization/serialize.h"
+#include "sst/core/serialization/serializer.h"
+
 #include <iostream>
 
 namespace SST {
@@ -23,87 +24,83 @@ namespace Serialization {
 
 namespace pvt {
 
-void
-size_serializable(serializable* s, serializer& ser);
+void size_serializable(serializable* s, serializer& ser);
 
-void
-pack_serializable(serializable* s, serializer& ser);
+void pack_serializable(serializable* s, serializer& ser);
 
-void
-unpack_serializable(serializable*& s, serializer& ser);
+void unpack_serializable(serializable*& s, serializer& ser);
 
-}
+} // namespace pvt
 
 template <>
-class serialize<serializable*> {
+class serialize<serializable*>
+{
 
 public:
-void
-operator()(serializable*& s, serializer& ser)
-{
-    switch (ser.mode()){
-    case serializer::SIZER:
-        pvt::size_serializable(s,ser);
-        break;
-    case serializer::PACK:
-        pvt::pack_serializable(s,ser);
-        break;
-    case serializer::UNPACK:
-        pvt::unpack_serializable(s,ser);
-        break;
+    void operator()(serializable*& s, serializer& ser)
+    {
+        switch ( ser.mode() ) {
+        case serializer::SIZER:
+            pvt::size_serializable(s, ser);
+            break;
+        case serializer::PACK:
+            pvt::pack_serializable(s, ser);
+            break;
+        case serializer::UNPACK:
+            pvt::unpack_serializable(s, ser);
+            break;
+        }
     }
-}
-
 };
 
-
 template <class T>
-class serialize<T*, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable,T>::value>::type> {
+class serialize<T*, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
+{
 
 public:
-void
-operator()(T*& s, serializer& ser)
-{
-    serializable* sp = static_cast<serializable*>(s);
-    switch (ser.mode()){
-    case serializer::SIZER:
-        pvt::size_serializable(sp,ser);
-        break;
-    case serializer::PACK:
-        pvt::pack_serializable(sp,ser);
-        break;
-    case serializer::UNPACK:
-        pvt::unpack_serializable(sp,ser);
-        break;
+    void operator()(T*& s, serializer& ser)
+    {
+        serializable* sp = static_cast<serializable*>(s);
+        switch ( ser.mode() ) {
+        case serializer::SIZER:
+            pvt::size_serializable(sp, ser);
+            break;
+        case serializer::PACK:
+            pvt::pack_serializable(sp, ser);
+            break;
+        case serializer::UNPACK:
+            pvt::unpack_serializable(sp, ser);
+            break;
+        }
+        s = static_cast<T*>(sp);
     }
-    s = static_cast<T*>(sp);
-}
-
 };
 
 template <class T>
 void
 serialize_intrusive_ptr(T*& t, serializer& ser)
 {
-  serializable* s = t;
-  switch (ser.mode()){
-case serializer::SIZER:
-  pvt::size_serializable(s,ser);
-  break;
-case serializer::PACK:
-  pvt::pack_serializable(s,ser);
-  break;
-case serializer::UNPACK:
-  pvt::unpack_serializable(s,ser);
-  t = dynamic_cast<T*>(s);
-  break;
-  }
+    serializable* s = t;
+    switch ( ser.mode() ) {
+    case serializer::SIZER:
+        pvt::size_serializable(s, ser);
+        break;
+    case serializer::PACK:
+        pvt::pack_serializable(s, ser);
+        break;
+    case serializer::UNPACK:
+        pvt::unpack_serializable(s, ser);
+        t = dynamic_cast<T*>(s);
+        break;
+    }
 }
 
 template <class T>
-class serialize <T, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable,T>::value>::type> {
+class serialize<T, typename std::enable_if<std::is_base_of<SST::Core::Serialization::serializable, T>::value>::type>
+{
 public:
-    inline void operator()(T& t, serializer& ser){
+    inline void operator()(T& t, serializer& ser)
+    {
         // T* tmp = &t;
         // serialize_intrusive_ptr(tmp, ser);
         t.serialize_order(ser);
@@ -114,16 +111,15 @@ public:
 // in the case of inheritance
 //
 // template <class T>
-// class serialize <T, typename std::enable_if<std::is_base_of<SST::Core::Serialization::trivially_serializable,T>::value>::type> {
-// public:
+// class serialize <T, typename
+// std::enable_if<std::is_base_of<SST::Core::Serialization::trivially_serializable,T>::value>::type> { public:
 //     inline void operator()(T& t, serializer& ser){
 //         ser.primitive(t);
 //     }
 // };
 
+} // namespace Serialization
+} // namespace Core
+} // namespace SST
 
-}
-}
-}
-
-#endif // SERIALIZE_SERIALIZABLE_H
+#endif // SST_CORE_SERIALIZATION_SERIALIZE_SERIALIZABLE_H
