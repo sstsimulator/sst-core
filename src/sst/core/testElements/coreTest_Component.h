@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTCOMPONENT_H
-#define _CORETESTCOMPONENT_H
+#ifndef SST_CORE_CORETEST_COMPONENT_H
+#define SST_CORE_CORETEST_COMPONENT_H
 
 #include <sst/core/component.h>
 #include <sst/core/link.h>
@@ -23,12 +23,12 @@
 namespace SST {
 namespace CoreTestComponent {
 
-
 // These first two classes are just base classes to test ELI
 // inheritance.  The definition of the ELI items are spread through 2
 // component base classes to make sure they get inherited in the
 // actual component that can be instanced.
-class coreTestComponentBase : public SST::Component {
+class coreTestComponentBase : public SST::Component
+{
 public:
     SST_ELI_REGISTER_COMPONENT_BASE(SST::CoreTestComponent::coreTestComponentBase)
 
@@ -44,15 +44,15 @@ public:
         {"Nlink", "Link to the coreTestComponent to the North", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    coreTestComponentBase(ComponentId_t id) :
-        SST::Component(id)
-        {}
+    coreTestComponentBase(ComponentId_t id) : SST::Component(id) {}
     ~coreTestComponentBase() {}
 };
 
-class coreTestComponentBase2 : public coreTestComponentBase {
+class coreTestComponentBase2 : public coreTestComponentBase
+{
 public:
-    SST_ELI_REGISTER_COMPONENT_DERIVED_BASE(SST::CoreTestComponent::coreTestComponentBase2,SST::CoreTestComponent::coreTestComponentBase)
+    SST_ELI_REGISTER_COMPONENT_DERIVED_BASE(
+        SST::CoreTestComponent::coreTestComponentBase2, SST::CoreTestComponent::coreTestComponentBase)
 
     SST_ELI_DOCUMENT_PARAMS(
         { "commFreq",     "Approximate frequency of sending an event during a clock tick.", NULL},
@@ -66,16 +66,13 @@ public:
         {"Slink", "Link to the coreTestComponent to the South", { "coreTestComponent.coreTestComponentEvent", "" } }
     )
 
-    coreTestComponentBase2(ComponentId_t id) :
-        coreTestComponentBase(id)
-        {}
+    coreTestComponentBase2(ComponentId_t id) : coreTestComponentBase(id) {}
     ~coreTestComponentBase2() {}
 };
 
 class coreTestComponent : public coreTestComponentBase2
 {
 public:
-
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestComponent,
@@ -107,17 +104,15 @@ public:
     coreTestComponent(SST::ComponentId_t id, SST::Params& params);
     ~coreTestComponent();
 
-    void setup() { }
-    void finish() {
-    	printf("Component Finished.\n");
-    }
+    void setup() {}
+    void finish() { printf("Component Finished.\n"); }
 
 private:
-    coreTestComponent();  // for serialization only
+    coreTestComponent();                         // for serialization only
     coreTestComponent(const coreTestComponent&); // do not implement
-    void operator=(const coreTestComponent&); // do not implement
+    void operator=(const coreTestComponent&);    // do not implement
 
-    void handleEvent(SST::Event *ev);
+    void         handleEvent(SST::Event* ev);
     virtual bool clockTic(SST::Cycle_t);
 
     int workPerCycle;
@@ -125,11 +120,11 @@ private:
     int commSize;
     int neighbor;
 
-    SST::RNG::MarsagliaRNG* rng;
-    SST::Link* N;
-    SST::Link* S;
-    SST::Link* E;
-    SST::Link* W;
+    SST::RNG::MarsagliaRNG*          rng;
+    SST::Link*                       N;
+    SST::Link*                       S;
+    SST::Link*                       E;
+    SST::Link*                       W;
     SST::Statistics::Statistic<int>* countN;
     SST::Statistics::Statistic<int>* countS;
     SST::Statistics::Statistic<int>* countE;
@@ -139,4 +134,4 @@ private:
 } // namespace CoreTestComponent
 } // namespace SST
 
-#endif /* _CORETESTCOMPONENT_H */
+#endif // SST_CORE_CORETEST_COMPONENT_H

@@ -10,6 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
+
 #include "sst/core/sync/threadSyncSimpleSkip.h"
 
 #include "sst/core/event.h"
@@ -41,17 +42,20 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
         barrier[2].resize(num_threads);
     }
 
-    if ( sim->getNumRanks().rank > 1 ) single_rank = false;
-    else single_rank = true;
+    if ( sim->getNumRanks().rank > 1 )
+        single_rank = false;
+    else
+        single_rank = true;
 
     my_max_period = sim->getInterThreadMinLatency();
-    nextSyncTime = my_max_period;
+    nextSyncTime  = my_max_period;
 }
 
 ThreadSyncSimpleSkip::~ThreadSyncSimpleSkip()
 {
     if ( totalWaitTime > 0.0 )
-        Output::getDefaultObject().verbose(CALL_INFO, 1, 0, "ThreadSyncSimpleSkip total wait time: %lg seconds.\n", totalWaitTime);
+        Output::getDefaultObject().verbose(
+            CALL_INFO, 1, 0, "ThreadSyncSimpleSkip total wait time: %lg seconds.\n", totalWaitTime);
     for ( int i = 0; i < num_threads; i++ ) {
         delete queues[i];
     }
@@ -75,16 +79,17 @@ ThreadSyncSimpleSkip::before()
 {
     // Empty all the queues and send events on the links
     for ( size_t i = 0; i < queues.size(); i++ ) {
-        ThreadSyncQueue* queue = queues[i];
-        std::vector<Activity*>& vec = queue->getVector();
+        ThreadSyncQueue*        queue = queues[i];
+        std::vector<Activity*>& vec   = queue->getVector();
         for ( size_t j = 0; j < vec.size(); j++ ) {
-            Event* ev = static_cast<Event*>(vec[j]);
-            auto link = link_map.find(ev->getLinkId());
-            if (link == link_map.end()) {
-                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
-            } else {
+            Event* ev   = static_cast<Event*>(vec[j]);
+            auto   link = link_map.find(ev->getLinkId());
+            if ( link == link_map.end() ) {
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
+            }
+            else {
                 SimTime_t delay = ev->getDeliveryTime() - sim->getCurrentSimCycle();
-                link->second->send(delay,ev);
+                link->second->send(delay, ev);
             }
         }
         queue->clear();
@@ -99,9 +104,9 @@ ThreadSyncSimpleSkip::after()
 
     // Use this nextSyncTime computation for skipping
 
-    auto nextmin = sim->getLocalMinimumNextActivityTime();
+    auto nextmin     = sim->getLocalMinimumNextActivityTime();
     auto nextminPlus = nextmin + my_max_period;
-    nextSyncTime = nextmin > nextminPlus ? nextmin : nextminPlus;
+    nextSyncTime     = nextmin > nextminPlus ? nextmin : nextminPlus;
 }
 
 void
@@ -120,15 +125,16 @@ ThreadSyncSimpleSkip::processLinkUntimedData()
     // Need to walk through all the queues and send the data to the
     // correct links
     for ( int i = 0; i < num_threads; i++ ) {
-        ThreadSyncQueue* queue = queues[i];
-        std::vector<Activity*>& vec = queue->getVector();
+        ThreadSyncQueue*        queue = queues[i];
+        std::vector<Activity*>& vec   = queue->getVector();
         for ( size_t j = 0; j < vec.size(); j++ ) {
-            Event* ev = static_cast<Event*>(vec[j]);
-            auto link = link_map.find(ev->getLinkId());
-            if (link == link_map.end()) {
-                Simulation_impl::getSimulationOutput().fatal(CALL_INFO,1,"Link not found in map!\n");
-            } else {
-                sendUntimedData_sync(link->second,ev);
+            Event* ev   = static_cast<Event*>(vec[j]);
+            auto   link = link_map.find(ev->getLinkId());
+            if ( link == link_map.end() ) {
+                Simulation_impl::getSimulationOutput().fatal(CALL_INFO, 1, "Link not found in map!\n");
+            }
+            else {
+                sendUntimedData_sync(link->second, ev);
             }
         }
         queue->clear();
@@ -136,25 +142,27 @@ ThreadSyncSimpleSkip::processLinkUntimedData()
 }
 
 void
-ThreadSyncSimpleSkip::finalizeLinkConfigurations() {
-    for (auto i = link_map.begin() ; i != link_map.end() ; ++i) {
+ThreadSyncSimpleSkip::finalizeLinkConfigurations()
+{
+    for ( auto i = link_map.begin(); i != link_map.end(); ++i ) {
         finalizeConfiguration(i->second);
     }
 }
 
 void
-ThreadSyncSimpleSkip::prepareForComplete() {
-    for (auto i = link_map.begin() ; i != link_map.end() ; ++i) {
+ThreadSyncSimpleSkip::prepareForComplete()
+{
+    for ( auto i = link_map.begin(); i != link_map.end(); ++i ) {
         prepareForCompleteInt(i->second);
     }
 }
 
 uint64_t
-ThreadSyncSimpleSkip::getDataSize() const {
+ThreadSyncSimpleSkip::getDataSize() const
+{
     size_t count = 0;
     return count;
 }
-
 
 Core::ThreadSafe::Barrier ThreadSyncSimpleSkip::barrier[3];
 

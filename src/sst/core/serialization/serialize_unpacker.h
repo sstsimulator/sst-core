@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SERIALIZE_UNPACKER_H
-#define SERIALIZE_UNPACKER_H
+#ifndef SST_CORE_SERIALIZATION_SERIALIZE_UNPACKER_H
+#define SST_CORE_SERIALIZATION_SERIALIZE_UNPACKER_H
 
 #include "sst/core/serialization/serialize_buffer_accessor.h"
 
@@ -19,32 +19,29 @@ namespace Core {
 namespace Serialization {
 namespace pvt {
 
-class ser_unpacker :
-  public ser_buffer_accessor
+class ser_unpacker : public ser_buffer_accessor
 {
- public:
-  template <class T>
-  void
-  unpack(T& t){
-    T* bufptr = ser_buffer_accessor::next<T>();
-    t = *bufptr;
-  }
+public:
+    template <class T>
+    void unpack(T& t)
+    {
+        T* bufptr = ser_buffer_accessor::next<T>();
+        t         = *bufptr;
+    }
 
-  /**
-   * @brief unpack_buffer
-   * @param buf   Must unpack to non-null buffer
-   * @param size  Must be non-zero
-   */
-  void
-  unpack_buffer(void* buf, int size);
+    /**
+     * @brief unpack_buffer
+     * @param buf   Must unpack to non-null buffer
+     * @param size  Must be non-zero
+     */
+    void unpack_buffer(void* buf, int size);
 
-  void
-  unpack_string(std::string& str);
-
+    void unpack_string(std::string& str);
 };
 
-} }
-}
-}
+} // namespace pvt
+} // namespace Serialization
+} // namespace Core
+} // namespace SST
 
-#endif // SERIALIZE_UNPACKER_H
+#endif // SST_CORE_SERIALIZATION_SERIALIZE_UNPACKER_H

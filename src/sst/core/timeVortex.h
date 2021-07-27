@@ -22,35 +22,32 @@ class Output;
 /**
  * Primary Event Queue
  */
-class TimeVortex : public ActivityQueue {
+class TimeVortex : public ActivityQueue
+{
 public:
     SST_ELI_DECLARE_BASE(TimeVortex)
     SST_ELI_DECLARE_INFO_EXTERN(ELI::ProvidesParams)
     SST_ELI_DECLARE_CTOR_EXTERN(SST::Params&)
 
-    TimeVortex() {
-        max_depth = MAX_SIMTIME_T;
-    }
+    TimeVortex() { max_depth = MAX_SIMTIME_T; }
     ~TimeVortex() {}
 
     // Inherited from ActivityQueue
-    virtual bool empty() override = 0;
-    virtual int size() override = 0;
-    virtual void insert(Activity* activity) override = 0;
-    virtual Activity* pop() override = 0;
-    virtual Activity* front() override = 0;
+    virtual bool      empty() override                    = 0;
+    virtual int       size() override                     = 0;
+    virtual void      insert(Activity* activity) override = 0;
+    virtual Activity* pop() override                      = 0;
+    virtual Activity* front() override                    = 0;
 
     /** Print the state of the TimeVortex */
-    virtual void print(Output &out) const = 0;
+    virtual void     print(Output& out) const = 0;
     virtual uint64_t getMaxDepth() const { return max_depth; }
     virtual uint64_t getCurrentDepth() const = 0;
 
-
 protected:
     uint64_t max_depth;
-
 };
 
-} //namespace SST
+} // namespace SST
 
 #endif // SST_CORE_TIMEVORTEX_H

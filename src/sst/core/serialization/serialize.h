@@ -9,13 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SERIALIZE_H
-#define SERIALIZE_H
+#ifndef SST_CORE_SERIALIZATION_SERIALIZE_H
+#define SST_CORE_SERIALIZATION_SERIALIZE_H
 
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/warnmacros.h"
-//#include <sprockit/debug.h>
-//DeclareDebugSlot(serialize);
 
 #include <iostream>
 #include <typeinfo>
@@ -30,9 +28,11 @@ namespace Serialization {
    this class and do all the real serialization.
  */
 template <class T, class Enable = void>
-class serialize {
+class serialize
+{
 public:
-    inline void operator()(T& UNUSED(t), serializer& UNUSED(ser)){
+    inline void operator()(T& UNUSED(t), serializer& UNUSED(ser))
+    {
         // If the default gets called, then it's actually invalid
         // because we don't know how to serialize it.
 
@@ -41,8 +41,8 @@ public:
         // std::is_* then it seems to only trigger if something expands
         // to this version of the template.
         // static_assert(false,"Trying to serialize an object that is not serializable.");
-        static_assert(std::is_fundamental<T>::value,"Trying to serialize an object that is not serializable.");
-        static_assert(!std::is_fundamental<T>::value,"Trying to serialize an object that is not serializable.");
+        static_assert(std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
+        static_assert(!std::is_fundamental<T>::value, "Trying to serialize an object that is not serializable.");
     }
 };
 
@@ -50,11 +50,10 @@ public:
    Version of serialize that works for fundamental types and enums.
  */
 template <class T>
-class serialize <T, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type> {
+class serialize<T, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+{
 public:
-    inline void operator()(T& t, serializer& ser){
-        ser.primitive(t);
-    }
+    inline void operator()(T& t, serializer& ser) { ser.primitive(t); }
 };
 
 // template <class U, class V>
@@ -67,14 +66,15 @@ public:
 //     }
 // };
 
-
 /**
    Version of serialize that works for bool.
  */
 template <>
-class serialize<bool> {
+class serialize<bool>
+{
 public:
-    void operator()(bool &t, serializer& ser){
+    void operator()(bool& t, serializer& ser)
+    {
         int bval = t;
         ser.primitive(bval);
         t = bool(bval);
@@ -89,10 +89,12 @@ public:
    after deserialization.
  */
 template <class T>
-class serialize<T*, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type> {
+class serialize<T*, typename std::enable_if<std::is_fundamental<T>::value || std::is_enum<T>::value>::type>
+{
 public:
-    inline void operator()(T*& t, serializer& ser){
-        switch (ser.mode()){
+    inline void operator()(T*& t, serializer& ser)
+    {
+        switch ( ser.mode() ) {
         case serializer::SIZER:
             ser.size(*t);
             break;
@@ -111,30 +113,33 @@ public:
    Version of serialize that works for std::pair.
  */
 template <class U, class V>
-class serialize<std::pair<U,V> > {
+class serialize<std::pair<U, V>>
+{
 public:
-    inline void operator()(std::pair<U,V>& t, serializer& ser){
-        serialize<U>()(t.first,ser);
-        serialize<V>()(t.second,ser);
+    inline void operator()(std::pair<U, V>& t, serializer& ser)
+    {
+        serialize<U>()(t.first, ser);
+        serialize<V>()(t.second, ser);
     }
 };
 
 template <class T>
 inline void
-operator&(serializer& ser, T& t){
+operator&(serializer& ser, T& t)
+{
     serialize<T>()(t, ser);
 }
 
-}
-}
-}
+} // namespace Serialization
+} // namespace Core
+} // namespace SST
 
 #include "sst/core/serialization/serialize_array.h"
 #include "sst/core/serialization/serialize_deque.h"
 #include "sst/core/serialization/serialize_list.h"
 #include "sst/core/serialization/serialize_map.h"
 #include "sst/core/serialization/serialize_set.h"
-#include "sst/core/serialization/serialize_vector.h"
 #include "sst/core/serialization/serialize_string.h"
+#include "sst/core/serialization/serialize_vector.h"
 
-#endif // SERIALIZE_H
+#endif // SST_CORE_SERIALIZATION_SERIALIZE_H

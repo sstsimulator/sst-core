@@ -12,14 +12,13 @@
 #ifndef SST_CORE_CORE_PROFILE_H
 #define SST_CORE_CORE_PROFILE_H
 
-#include <chrono>
 #include "sst/core/warnmacros.h"
+
+#include <chrono>
 
 namespace SST {
 namespace Core {
 namespace Profile {
-
-
 
 #ifdef __SST_ENABLE_PROFILE__
 
@@ -29,54 +28,52 @@ namespace Profile {
 #define CLOCK std::chrono::steady_clock
 #endif
 
-
 typedef CLOCK::time_point ProfData_t;
 
-inline ProfData_t now()
+inline ProfData_t
+now()
 {
     return CLOCK::now();
 }
 
-inline double getElapsed(const ProfData_t &begin, const ProfData_t &end)
+inline double
+getElapsed(const ProfData_t& begin, const ProfData_t& end)
 {
     std::chrono::duration<double> elapsed = (end - begin);
     return elapsed.count();
 }
 
-
-inline double getElapsed(const ProfData_t &since)
+inline double
+getElapsed(const ProfData_t& since)
 {
     return getElapsed(since, now());
 }
 
-
 #else
 typedef double ProfData_t;
 
-inline ProfData_t now()
+inline ProfData_t
+now()
 {
     return 0.0;
 }
 
-inline double getElapsed(const ProfData_t &UNUSED(begin), const ProfData_t &UNUSED(end))
+inline double
+getElapsed(const ProfData_t& UNUSED(begin), const ProfData_t& UNUSED(end))
 {
     return 0.0;
 }
 
-
-inline double getElapsed(const ProfData_t &UNUSED(since))
+inline double
+getElapsed(const ProfData_t& UNUSED(since))
 {
     return 0.0;
 }
-
-
 
 #endif
 
+} // namespace Profile
+} // namespace Core
+} // namespace SST
 
-
-}
-}
-}
-
-#endif
+#endif // SST_CORE_CORE_PROFILE_H

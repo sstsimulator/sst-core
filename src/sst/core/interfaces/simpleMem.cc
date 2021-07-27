@@ -11,7 +11,7 @@
 // distribution.
 //
 #include "sst_config.h"
+
 #include "sst/core/interfaces/simpleMem.h"
 
 std::atomic<uint64_t> SST::Interfaces::SimpleMem::Request::main_id(0);
-

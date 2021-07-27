@@ -10,20 +10,19 @@
 // distribution.
 
 #ifndef SST_CORE_INTERPROCESS_TUNNEL_SHM_CHILD_H
-#define SST_CORE_INTERPROCESS_TUNNEL_SHM_CHILD_H 1
+#define SST_CORE_INTERPROCESS_TUNNEL_SHM_CHILD_H
 
+#include "sst/core/interprocess/tunneldef.h"
 
-#include <fcntl.h>
 #include <cstdio>
-#include <string>
-#include <errno.h>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
+#include <errno.h>
+#include <fcntl.h>
+#include <string>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
-#include "sst/core/interprocess/tunneldef.h"
 
 namespace SST {
 namespace Core {
@@ -34,8 +33,9 @@ namespace Interprocess {
  *
  * @tparam TunnelType Tunnel definition
  */
-template<typename TunnelType>
-class SHMChild {
+template <typename TunnelType>
+class SHMChild
+{
 
 public:
     /** Child-side tunnel manager for an IPC tunnel
@@ -45,13 +45,12 @@ public:
      */
     SHMChild(const std::string& region_name) : shmPtr(nullptr), fd(-1)
     {
-        fd = shm_open(region_name.c_str(), O_RDWR, S_IRUSR|S_IWUSR);
+        fd       = shm_open(region_name.c_str(), O_RDWR, S_IRUSR | S_IWUSR);
         filename = region_name;
 
         if ( fd < 0 ) {
             // Not using Output because IPC means Output might not be available
-            fprintf(stderr, "Failed to open IPC region '%s': %s\n",
-                    filename.c_str(), strerror(errno));
+            fprintf(stderr, "Failed to open IPC region '%s': %s\n", filename.c_str(), strerror(errno));
             exit(1);
         }
 
@@ -62,23 +61,20 @@ public:
             exit(1);
         }
 
-        tunnel = new TunnelType(shmPtr);
+        tunnel  = new TunnelType(shmPtr);
         shmSize = tunnel->getTunnelSize();
 
         munmap(shmPtr, sizeof(InternalSharedData));
 
-        shmPtr = mmap(nullptr, shmSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+        shmPtr = mmap(nullptr, shmSize, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
         if ( shmPtr == MAP_FAILED ) {
             // Not using Output because IPC means Output might not be available
             fprintf(stderr, "mmap 1 failed: %s\n", strerror(errno));
             exit(1);
         }
         uint32_t childnum = tunnel->initialize(shmPtr);
-        if ( childnum == 0) {
-            shm_unlink(filename.c_str());
-        }
+        if ( childnum == 0 ) { shm_unlink(filename.c_str()); }
     }
-
 
     /** Destructor */
     virtual ~SHMChild()
@@ -86,7 +82,7 @@ public:
         delete tunnel;
         if ( shmPtr ) {
             munmap(shmPtr, shmSize);
-            shmPtr = nullptr;
+            shmPtr  = nullptr;
             shmSize = 0;
         }
         if ( fd >= 0 ) {
@@ -102,19 +98,17 @@ public:
     const std::string& getRegionName(void) const { return filename; }
 
 private:
-    void *shmPtr;
-    int fd;
+    void* shmPtr;
+    int   fd;
 
     std::string filename;
-    size_t shmSize;
+    size_t      shmSize;
 
     TunnelType* tunnel;
 };
 
-}
-}
-}
+} // namespace Interprocess
+} // namespace Core
+} // namespace SST
 
-
-
-#endif
+#endif // SST_CORE_INTERPROCESS_TUNNEL_SHM_CHILD_H

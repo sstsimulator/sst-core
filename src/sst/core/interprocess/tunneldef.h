@@ -10,7 +10,7 @@
 // distribution.
 
 #ifndef SST_CORE_INTERPROCESS_TUNNEL_DEF_H
-#define SST_CORE_INTERPROCESS_TUNNEL_DEF_H 1
+#define SST_CORE_INTERPROCESS_TUNNEL_DEF_H
 
 /*
  * This may be compiled into both SST and an Intel Pin3 tool
@@ -20,25 +20,25 @@
  *  - Includes must all be PinCRT-enabled but not require PinCRT
  */
 
-#include <inttypes.h>
-#include <vector>
-#include <unistd.h>
-
 #include "sst/core/interprocess/circularBuffer.h"
+
+#include <inttypes.h>
+#include <unistd.h>
+#include <vector>
 
 namespace SST {
 namespace Core {
 namespace Interprocess {
 
-
 extern uint32_t globalMMAPIPCCount;
 
 /* Internal bookkeeping */
-struct InternalSharedData {
+struct InternalSharedData
+{
     volatile uint32_t expectedChildren;
-    size_t shmSegSize;
-    size_t numBuffers;
-    size_t offsets[0];  // offset[0] points to user region, offset[1]... points to circular buffers
+    size_t            shmSegSize;
+    size_t            numBuffers;
+    size_t            offsets[0]; // offset[0] points to user region, offset[1]... points to circular buffers
 };
 
 /**
@@ -52,8 +52,9 @@ struct InternalSharedData {
  * @tparam ShareDataType  Type to put in the shared data region
  * @tparam MsgType Type of messages being sent in the circular buffers
  */
-template<typename ShareDataType, typename MsgType>
-class TunnelDef {
+template <typename ShareDataType, typename MsgType>
+class TunnelDef
+{
 
     typedef SST::Core::Interprocess::CircularBuffer<MsgType> CircBuff_t;
 
@@ -64,20 +65,22 @@ public:
      * @param bufferSize How large each buffer should be
      * @param expectedChildren Number of child processes that will connect to this tunnel
      */
-    TunnelDef(size_t numBuffers, size_t bufferSize, uint32_t expectedChildren) : master(true), shmPtr(NULL) {
+    TunnelDef(size_t numBuffers, size_t bufferSize, uint32_t expectedChildren) : master(true), shmPtr(NULL)
+    {
         // Locally buffer info
         numBuffs = numBuffers;
         buffSize = bufferSize;
         children = expectedChildren;
-        shmSize = calculateShmemSize(numBuffers, bufferSize);
+        shmSize  = calculateShmemSize(numBuffers, bufferSize);
     }
 
     /** Access an existing tunnel
      * Child creates the TunnelDef, reads the shmSize, and then resizes its map accordingly
      * @param sPtr Location of shared memory region
      */
-    TunnelDef(void* sPtr) : master(false), shmPtr(sPtr) {
-        isd = (InternalSharedData*)shmPtr;
+    TunnelDef(void* sPtr) : master(false), shmPtr(sPtr)
+    {
+        isd     = (InternalSharedData*)shmPtr;
         shmSize = isd->shmSegSize;
     }
 
@@ -86,46 +89,48 @@ public:
      * @param sPtr Location of shared memory region
      * returns number of children left to attach
      */
-    uint32_t initialize(void* sPtr) {
+    uint32_t initialize(void* sPtr)
+    {
         shmPtr = sPtr;
 
-        if (master) {
+        if ( master ) {
             nextAllocPtr = (uint8_t*)shmPtr;
 
             // Reserve space for InternalSharedData
             // Including an offset array entry for each buffer & sharedData structure
-            std::pair<size_t, InternalSharedData*> aResult = reserveSpace<InternalSharedData>((1 + numBuffs) * sizeof(size_t));
-            isd = aResult.second;
+            std::pair<size_t, InternalSharedData*> aResult
+                = reserveSpace<InternalSharedData>((1 + numBuffs) * sizeof(size_t));
+            isd                   = aResult.second;
             isd->expectedChildren = children;
-            isd->shmSegSize = shmSize;
-            isd->numBuffers = numBuffs;
+            isd->shmSegSize       = shmSize;
+            isd->numBuffers       = numBuffs;
 
             // Reserve space for ShareDataType structure
             std::pair<size_t, ShareDataType*> bResult = reserveSpace<ShareDataType>(0);
-            isd->offsets[0] = bResult.first;
-            sharedData = bResult.second;
+            isd->offsets[0]                           = bResult.first;
+            sharedData                                = bResult.second;
 
             // Reserve space for circular buffers
             const size_t cbSize = sizeof(MsgType) * buffSize;
-            for (size_t c = 0; c < isd->numBuffers; c++) {
+            for ( size_t c = 0; c < isd->numBuffers; c++ ) {
                 CircBuff_t* cPtr = NULL;
 
                 std::pair<size_t, CircBuff_t*> cResult = reserveSpace<CircBuff_t>(cbSize);
-                isd->offsets[1+c] = cResult.first;
-                cPtr = cResult.second;
-                if (!cPtr->setBufferSize(buffSize))
-                    exit(1); // function prints error message
+                isd->offsets[1 + c]                    = cResult.first;
+                cPtr                                   = cResult.second;
+                if ( !cPtr->setBufferSize(buffSize) ) exit(1); // function prints error message
                 circBuffs.push_back(cPtr);
             }
             return isd->expectedChildren;
-        } else {
-            isd = (InternalSharedData*)shmPtr;
+        }
+        else {
+            isd     = (InternalSharedData*)shmPtr;
             shmSize = isd->shmSegSize;
 
             sharedData = (ShareDataType*)((uint8_t*)shmPtr + isd->offsets[0]);
 
-            for ( size_t c = 0 ; c < isd->numBuffers ; c++ ) {
-                circBuffs.push_back((CircBuff_t*)((uint8_t*)shmPtr + isd->offsets[c+1]));
+            for ( size_t c = 0; c < isd->numBuffers; c++ ) {
+                circBuffs.push_back((CircBuff_t*)((uint8_t*)shmPtr + isd->offsets[c + 1]));
             }
             numBuffs = isd->numBuffers;
 
@@ -133,26 +138,23 @@ public:
         }
     }
 
-
     /** Destructor */
-    virtual ~TunnelDef()
-    {
-        shutdown();
-    }
+    virtual ~TunnelDef() { shutdown(); }
 
     /** Clean up a region */
-    void shutdown() {
+    void shutdown()
+    {
         if ( master ) {
-            for (size_t i = 0; i < circBuffs.size(); i++) {
+            for ( size_t i = 0; i < circBuffs.size(); i++ ) {
                 circBuffs[i]->~CircBuff_t();
             }
         }
 
-        if (shmPtr) {
-            shmPtr = NULL;
-            isd = NULL;
+        if ( shmPtr ) {
+            shmPtr     = NULL;
+            isd        = NULL;
             sharedData = NULL;
-            shmSize = 0;
+            shmSize    = 0;
         }
     }
 
@@ -166,38 +168,28 @@ public:
      * @param buffer which buffer index to write to
      * @param command message to write to buffer
      */
-    void writeMessage(size_t  buffer, const MsgType &command) {
-        circBuffs[buffer]->write(command);
-    }
+    void writeMessage(size_t buffer, const MsgType& command) { circBuffs[buffer]->write(command); }
 
     /** Read data from buffer, blocks until message received
      * @param buffer which buffer to read from
      * return the message
      */
-    MsgType readMessage(size_t buffer) {
-        return circBuffs[buffer]->read();
-    }
+    MsgType readMessage(size_t buffer) { return circBuffs[buffer]->read(); }
 
     /** Read data from buffer, non-blocking
      * @param buffer which buffer to read from
      * @param result pointer to return read message at
      * return whether a message was read
      */
-    bool readMessageNB(size_t buffer, MsgType *result) {
-        return circBuffs[buffer]->readNB(result);
-    }
+    bool readMessageNB(size_t buffer, MsgType* result) { return circBuffs[buffer]->readNB(result); }
 
     /** Empty the messages in a buffer
      * @param buffer which buffer to empty
      */
-    void clearBuffer(size_t buffer) {
-       circBuffs[buffer]->clearBuffer();
-    }
+    void clearBuffer(size_t buffer) { circBuffs[buffer]->clearBuffer(); }
 
     /** return whether this is a master-side tunnel or a child*/
-    bool isMaster() {
-        return master;
-    }
+    bool isMaster() { return master; }
 
 private:
     /** Allocate space for a data structure in the shared region
@@ -209,55 +201,52 @@ private:
     std::pair<size_t, T*> reserveSpace(size_t extraSpace = 0)
     {
         size_t space = sizeof(T) + extraSpace;
-        if ( (size_t)((nextAllocPtr + space) - (uint8_t*)shmPtr) > shmSize )
-            return std::make_pair<size_t, T*>(0, NULL);
+        if ( (size_t)((nextAllocPtr + space) - (uint8_t*)shmPtr) > shmSize ) return std::make_pair<size_t, T*>(0, NULL);
         T* ptr = (T*)nextAllocPtr;
         nextAllocPtr += space;
-        new (ptr) T();  // Call constructor if need be
+        new (ptr) T(); // Call constructor if need be
         return std::make_pair((uint8_t*)ptr - (uint8_t*)shmPtr, ptr);
     }
 
     /** Calculate the size of the tunnel */
-    static size_t calculateShmemSize(size_t numBuffers, size_t bufferSize) {
-        long pagesize = sysconf(_SC_PAGESIZE);
+    static size_t calculateShmemSize(size_t numBuffers, size_t bufferSize)
+    {
+        long   pagesize = sysconf(_SC_PAGESIZE);
         /* Count how many pages are needed, at minimum */
-        size_t isd = 1 + ((sizeof(InternalSharedData) + (1+numBuffers)*sizeof(size_t)) / pagesize);
-        size_t buffer = 1 + ((sizeof(CircularBuffer<MsgType>) + bufferSize*sizeof(MsgType)) / pagesize);
-        size_t shdata = 1 + ((sizeof(ShareDataType) + sizeof(InternalSharedData)) / pagesize);
+        size_t isd      = 1 + ((sizeof(InternalSharedData) + (1 + numBuffers) * sizeof(size_t)) / pagesize);
+        size_t buffer   = 1 + ((sizeof(CircularBuffer<MsgType>) + bufferSize * sizeof(MsgType)) / pagesize);
+        size_t shdata   = 1 + ((sizeof(ShareDataType) + sizeof(InternalSharedData)) / pagesize);
 
         /* Alloc 2 extra pages just in case */
-        return (2 + isd + shdata + numBuffers*buffer) * pagesize;
+        return (2 + isd + shdata + numBuffers * buffer) * pagesize;
     }
-
 
 protected:
     /** Pointer to the Shared Data Region */
-    ShareDataType *sharedData;
+    ShareDataType* sharedData;
 
     /** Return the number of buffers */
     size_t getNumBuffers() { return numBuffs; }
 
 private:
-    bool master;
-    void *shmPtr;
+    bool  master;
+    void* shmPtr;
 
-    uint8_t *nextAllocPtr;
-    size_t shmSize;
+    uint8_t* nextAllocPtr;
+    size_t   shmSize;
 
     // Local data
-    size_t numBuffs;
-    size_t buffSize;
+    size_t   numBuffs;
+    size_t   buffSize;
     uint32_t children;
 
     // Shared objects
-    InternalSharedData *isd;
-    std::vector<CircBuff_t* > circBuffs;
+    InternalSharedData*      isd;
+    std::vector<CircBuff_t*> circBuffs;
 };
 
-}
-}
-}
+} // namespace Interprocess
+} // namespace Core
+} // namespace SST
 
-
-
-#endif
+#endif // SST_CORE_INTERPROCESS_TUNNEL_DEF_H

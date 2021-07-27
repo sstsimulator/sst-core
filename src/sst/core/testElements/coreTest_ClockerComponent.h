@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTCLOCKERCOMPONENT_H
-#define _CORETESTCLOCKERCOMPONENT_H
+#ifndef SST_CORE_CORETEST_CLOCKERCOMPONENT_H
+#define SST_CORE_CORETEST_CLOCKERCOMPONENT_H
 
 #include <sst/core/component.h>
 
@@ -24,7 +24,6 @@ namespace CoreTestClockerComponent {
 class coreTestClockerComponent : public SST::Component
 {
 public:
-
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestClockerComponent,
@@ -53,13 +52,13 @@ public:
     )
 
     coreTestClockerComponent(SST::ComponentId_t id, SST::Params& params);
-    void setup()  { }
-    void finish() { }
+    void setup() {}
+    void finish() {}
 
 private:
-    coreTestClockerComponent();  // for serialization only
+    coreTestClockerComponent();                                // for serialization only
     coreTestClockerComponent(const coreTestClockerComponent&); // do not implement
-    void operator=(const coreTestClockerComponent&); // do not implement
+    void operator=(const coreTestClockerComponent&);           // do not implement
 
     virtual bool tick(SST::Cycle_t);
 
@@ -77,10 +76,10 @@ private:
     OneShot::HandlerBase* callback2Handler;
 
     std::string clock_frequency_str;
-    int clock_count;
+    int         clock_count;
 };
 
 } // namespace CoreTestClockerComponent
 } // namespace SST
 
-#endif /* _CORETESTCLOCKERCOMPONENT_H */
+#endif // SST_CORE_CORETEST_CLOCKERCOMPONENT_H

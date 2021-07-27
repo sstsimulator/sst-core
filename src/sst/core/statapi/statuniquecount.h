@@ -9,14 +9,12 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef _H_SST_CORE_UNIQUE_COUNT_STATISTIC_
-#define _H_SST_CORE_UNIQUE_COUNT_STATISTIC_
+#ifndef SST_CORE_STATAPI_STATUNIQUECOUNT_H
+#define SST_CORE_STATAPI_STATUNIQUECOUNT_H
 
 #include "sst/core/sst_types.h"
-#include "sst/core/warnmacros.h"
-
 #include "sst/core/statapi/statbase.h"
+#include "sst/core/warnmacros.h"
 
 namespace SST {
 class BaseComponent;
@@ -34,56 +32,50 @@ template <typename T>
 class UniqueCountStatistic : public Statistic<T>
 {
 public:
-  SST_ELI_DECLARE_STATISTIC_TEMPLATE(
-      UniqueCountStatistic,
-      "sst",
-      "UniqueCountStatistic",
-      SST_ELI_ELEMENT_VERSION(1,0,0),
-      "Track unique occurrences of statistic",
-      "SST::Statistic<T>")
+    SST_ELI_DECLARE_STATISTIC_TEMPLATE(
+        UniqueCountStatistic,
+        "sst",
+        "UniqueCountStatistic",
+        SST_ELI_ELEMENT_VERSION(1, 0, 0),
+        "Track unique occurrences of statistic",
+        "SST::Statistic<T>")
 
-    UniqueCountStatistic(BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams)
-        : Statistic<T>(comp, statName, statSubId, statParams)
+    UniqueCountStatistic(
+        BaseComponent* comp, const std::string& statName, const std::string& statSubId, Params& statParams) :
+        Statistic<T>(comp, statName, statSubId, statParams)
     {
         // Set the Name of this Statistic
         this->setStatisticTypeName("UniqueCount");
     }
 
-    ~UniqueCountStatistic(){};
+    ~UniqueCountStatistic() {};
 
 protected:
     /**
     Present a new value to the Statistic to be included in the unique set
         @param data New data item to be included in the unique set
     */
-    void addData_impl(T data) override {
-    uniqueSet.insert(data);
-    }
+    void addData_impl(T data) override { uniqueSet.insert(data); }
 
 private:
-    void clearStatisticData() override
-    {
-      uniqueSet.clear();
-    }
+    void clearStatisticData() override { uniqueSet.clear(); }
 
     void registerOutputFields(StatisticFieldsOutput* statOutput) override
     {
-      uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
+        uniqueCountField = statOutput->registerField<uint64_t>("UniqueItems");
     }
 
     void outputStatisticFields(StatisticFieldsOutput* statOutput, bool UNUSED(EndOfSimFlag)) override
     {
-      statOutput->outputField(uniqueCountField, (uint64_t) uniqueSet.size());
+        statOutput->outputField(uniqueCountField, (uint64_t)uniqueSet.size());
     }
 
 private:
-    std::set<T> uniqueSet;
+    std::set<T>                    uniqueSet;
     StatisticOutput::fieldHandle_t uniqueCountField;
-
 };
 
+} // namespace Statistics
+} // namespace SST
 
-} //namespace Statistics
-} //namespace SST
-
-#endif
+#endif // SST_CORE_STATAPI_STATUNIQUECOUNT_H

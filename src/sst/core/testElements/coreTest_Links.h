@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETEST_LINKS_H
-#define _CORETEST_LINKS_H
+#ifndef SST_CORE_CORETEST_LINKS_H
+#define SST_CORE_CORETEST_LINKS_H
 
 #include <sst/core/component.h>
 #include <sst/core/link.h>
@@ -26,7 +26,6 @@ namespace CoreTestComponent {
 class coreTestLinks : public SST::Component
 {
 public:
-
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestLinks,
@@ -59,22 +58,21 @@ public:
     coreTestLinks(SST::ComponentId_t id, SST::Params& params);
     ~coreTestLinks();
 
-    void setup() { }
-    void finish() { }
+    void setup() {}
+    void finish() {}
 
 private:
-
     int my_id;
     int recv_count;
-    
-    void handleEvent(SST::Event *ev, std::string from);
+
+    void         handleEvent(SST::Event* ev, std::string from);
     virtual bool clockTic(SST::Cycle_t);
 
     SST::Link* E;
     SST::Link* W;
 };
 
-} // namespace CoreTestLinks
+} // namespace CoreTestComponent
 } // namespace SST
 
-#endif /* _CORETEST_LINKS_H */
+#endif // SST_CORE_CORETEST_LINKS_H

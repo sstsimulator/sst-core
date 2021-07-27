@@ -9,24 +9,22 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_IMPL_PARTITONERS_SINGLEPART_H
 #define SST_CORE_IMPL_PARTITONERS_SINGLEPART_H
 
-#include "sst/core/sstpart.h"
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/sstpart.h"
 
 namespace SST {
 namespace IMPL {
 namespace Partition {
 
-
-
 /**
    Single partitioner is a virtual partitioner used for serial jobs.
    It simply ensures that all components are assigned to rank 0.
 */
-class SSTSinglePartition : public SST::Partition::SSTPartitioner {
+class SSTSinglePartition : public SST::Partition::SSTPartitioner
+{
 
 public:
     SST_ELI_REGISTER_PARTITIONER(
@@ -49,12 +47,10 @@ public:
 
     bool requiresConfigGraph() override { return true; }
     bool spawnOnAllRanks() override { return false; }
-
-
 };
 
-}
-}
-}
+} // namespace Partition
+} // namespace IMPL
+} // namespace SST
 
 #endif

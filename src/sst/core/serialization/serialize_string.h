@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SERIALIZE_STRING_H
-#define SERIALIZE_STRING_H
+#ifndef SST_CORE_SERIALIZATION_SERIALIZE_STRING_H
+#define SST_CORE_SERIALIZATION_SERIALIZE_STRING_H
 
 #include "sst/core/serialization/serializer.h"
 
@@ -19,15 +19,14 @@ namespace Core {
 namespace Serialization {
 
 template <>
-class serialize<std::string> {
- public:
- void operator()(std::string& str, serializer& ser){
-   ser.string(str);
- }
+class serialize<std::string>
+{
+public:
+    void operator()(std::string& str, serializer& ser) { ser.string(str); }
 };
 
-}
-}
-}
+} // namespace Serialization
+} // namespace Core
+} // namespace SST
 
-#endif // SERIALIZE_STRING_H
+#endif // SST_CORE_SERIALIZATION_SERIALIZE_STRING_H

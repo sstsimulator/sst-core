@@ -9,8 +9,6 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-
 #ifndef SST_CORE_OUTPUT_H
 #define SST_CORE_OUTPUT_H
 
@@ -20,25 +18,24 @@
 // CHOOSE THE --enable-debug OPTION DURING SST CONFIGURATION
 //#define __SST_DEBUG_OUTPUT__
 
-//This must be defined before inclusion of intttypes.h
+// This must be defined before inclusion of intttypes.h
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
 #endif
+#include "sst/core/rankInfo.h"
+
 #include <cinttypes>
 #include <cstdio>
+#include <stdarg.h>
 #include <thread>
 #include <unordered_map>
 
-#include <stdarg.h>
-
-#include "sst/core/rankInfo.h"
-
-extern int main(int argc, char **argv);
+extern int main(int argc, char** argv);
 
 namespace SST {
 
 // MACROS TO HELP BUILD THE CALLING FUNCTIONS INFORMATION
-#define CALL_INFO      __LINE__, __FILE__, __FUNCTION__
+#define CALL_INFO __LINE__, __FILE__, __FUNCTION__
 
 #if defined(__GNUC__) || defined(__clang__)
 #define CALL_INFO_LONG __LINE__, __FILE__, __PRETTY_FUNCTION__
@@ -57,10 +54,10 @@ public:
     /** Choice of output location
      */
     enum output_location_t {
-        NONE,           /*!< No output */
-        STDOUT,     /*!< Print to stdout */
-        STDERR,     /*!< Print to stderr */
-        FILE        /*!< Print to a file */
+        NONE,   /*!< No output */
+        STDOUT, /*!< Print to stdout */
+        STDERR, /*!< Print to stderr */
+        FILE    /*!< Print to a file */
     };
 
     static constexpr uint32_t PrintAll = std::numeric_limits<uint32_t>::max();
@@ -112,17 +109,16 @@ public:
                intended for special case debug purposes only.
     */
     // CONSTRUCTION / DESTRUCTION
-    Output(const std::string& prefix, uint32_t verbose_level,
-           uint32_t verbose_mask, output_location_t location,
-           const std::string& localoutputfilename = "");
+    Output(
+        const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
+        const std::string& localoutputfilename = "");
 
     /** Default Constructor.  User must call init() to properly initialize obj.
         Until init() is called, no output will occur.
     */
-    Output();  // Default constructor
+    Output(); // Default constructor
 
     virtual ~Output();
-
 
     /** Initialize the object after construction
         @param prefix Prefix to be prepended to all strings emitted by calls to
@@ -171,9 +167,9 @@ public:
                intended for special case debug purposes only.
     */
     // INITIALIZATION
-    void init(const std::string& prefix, uint32_t verbose_level,
-               uint32_t verbose_mask, output_location_t location,
-               const std::string& localoutputfilename = "");
+    void init(
+        const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
+        const std::string& localoutputfilename = "");
 
     /** Output the message with formatting as specified by the format parameter.
         The output will be prepended with the expanded prefix set in the object.
@@ -183,12 +179,11 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Argument strings for format.
      */
-    void output(uint32_t line, const char* file, const char* func,
-                const char* format, ...) const
-        __attribute__ ((format (printf, 5, 6)))
+    void output(uint32_t line, const char* file, const char* func, const char* format, ...) const
+        __attribute__((format(printf, 5, 6)))
     {
         va_list arg;
-        if (true == m_objInitialized && NONE != m_targetLoc ) {
+        if ( true == m_objInitialized && NONE != m_targetLoc ) {
             // Get the argument list and then print it out
             va_start(arg, format);
             outputprintf(line, file, func, format, arg);
@@ -200,16 +195,15 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void output(const char* format, ...) const
-         __attribute__ ((format (printf, 2, 3)))
+    void output(const char* format, ...) const __attribute__((format(printf, 2, 3)))
     {
-            va_list arg;
-            if (true == m_objInitialized && NONE != m_targetLoc) {
-                // Get the argument list and then print it out
-                va_start(arg, format);
-                outputprintf(format, arg);
-                va_end(arg);
-            }
+        va_list arg;
+        if ( true == m_objInitialized && NONE != m_targetLoc ) {
+            // Get the argument list and then print it out
+            va_start(arg, format);
+            outputprintf(format, arg);
+            va_end(arg);
+        }
     }
 
     /** Output the verbose message with formatting as specified by the format
@@ -228,18 +222,16 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void verbose(uint32_t line, const char* file, const char* func,
-                 uint32_t output_level, uint32_t output_bits,
-                 const char* format, ...)    const
-        __attribute__ ((format (printf, 7, 8)))
+    void verbose(
+        uint32_t line, const char* file, const char* func, uint32_t output_level, uint32_t output_bits,
+        const char* format, ...) const __attribute__((format(printf, 7, 8)))
     {
         va_list arg;
 
-        if (true == m_objInitialized && NONE != m_targetLoc ) {
+        if ( true == m_objInitialized && NONE != m_targetLoc ) {
             // First check to see if we are allowed to send output based upon the
             // verbose_mask and verbose_level checks
-            if (((output_bits & ~m_verboseMask) == 0) &&
-                (output_level <= m_verboseLevel)){
+            if ( ((output_bits & ~m_verboseMask) == 0) && (output_level <= m_verboseLevel) ) {
                 // Get the argument list and then print it out
                 va_start(arg, format);
                 outputprintf(line, file, func, format, arg);
@@ -265,22 +257,20 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void verbosePrefix(const char* tempPrefix, uint32_t line, const char* file, const char* func,
-                 uint32_t output_level, uint32_t output_bits,
-                 const char* format, ...)
-        __attribute__ ((format (printf, 8, 9)))
+    void verbosePrefix(
+        const char* tempPrefix, uint32_t line, const char* file, const char* func, uint32_t output_level,
+        uint32_t output_bits, const char* format, ...) __attribute__((format(printf, 8, 9)))
     {
 
         va_list arg;
 
-        if (true == m_objInitialized && NONE != m_targetLoc ) {
+        if ( true == m_objInitialized && NONE != m_targetLoc ) {
             const std::string normalPrefix = m_outputPrefix;
-            m_outputPrefix = tempPrefix;
+            m_outputPrefix                 = tempPrefix;
 
             // First check to see if we are allowed to send output based upon the
             // verbose_mask and verbose_level checks
-            if (((output_bits & ~m_verboseMask) == 0) &&
-                (output_level <= m_verboseLevel)){
+            if ( ((output_bits & ~m_verboseMask) == 0) && (output_level <= m_verboseLevel) ) {
                 // Get the argument list and then print it out
                 va_start(arg, format);
                 outputprintf(line, file, func, format, arg);
@@ -308,23 +298,21 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void debugPrefix(const char* tempPrefix, uint32_t line, const char* file, const char* func,
-                 uint32_t output_level, uint32_t output_bits,
-                 const char* format, ...)
-        __attribute__ ((format (printf, 8, 9)))
+    void debugPrefix(
+        const char* tempPrefix, uint32_t line, const char* file, const char* func, uint32_t output_level,
+        uint32_t output_bits, const char* format, ...) __attribute__((format(printf, 8, 9)))
     {
 
 #ifdef __SST_DEBUG_OUTPUT__
         va_list arg;
 
-        if (true == m_objInitialized && NONE != m_targetLoc ) {
+        if ( true == m_objInitialized && NONE != m_targetLoc ) {
             const std::string normalPrefix = m_outputPrefix;
-            m_outputPrefix = tempPrefix;
+            m_outputPrefix                 = tempPrefix;
 
             // First check to see if we are allowed to send output based upon the
             // verbose_mask and verbose_level checks
-            if (((output_bits & ~m_verboseMask) == 0) &&
-                (output_level <= m_verboseLevel)){
+            if ( ((output_bits & ~m_verboseMask) == 0) && (output_level <= m_verboseLevel) ) {
                 // Get the argument list and then print it out
                 va_start(arg, format);
                 outputprintf(line, file, func, format, arg);
@@ -364,18 +352,16 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void debug(uint32_t line, const char* file, const char* func,
-               uint32_t output_level, uint32_t output_bits,
-               const char* format, ...)   const
-        __attribute__ ((format (printf, 7, 8)))
+    void debug(
+        uint32_t line, const char* file, const char* func, uint32_t output_level, uint32_t output_bits,
+        const char* format, ...) const __attribute__((format(printf, 7, 8)))
     {
 #ifdef __SST_DEBUG_OUTPUT__
         va_list arg;
-        if (true == m_objInitialized && NONE != m_targetLoc ) {
+        if ( true == m_objInitialized && NONE != m_targetLoc ) {
             // First check to see if we are allowed to send output based upon the
             // verbose_mask and verbose_level checks
-            if (((output_bits & ~m_verboseMask) == 0) &&
-                (output_level <= m_verboseLevel)){
+            if ( ((output_bits & ~m_verboseMask) == 0) && (output_level <= m_verboseLevel) ) {
                 // Get the argument list and then print it out
                 va_start(arg, format);
                 outputprintf(line, file, func, format, arg);
@@ -393,7 +379,6 @@ public:
 #endif
     }
 
-
     /** Output the fatal message with formatting as specified by the format
         parameter.  Message will be sent to the output location and to stderr.
         The output will be prepended with the expanded prefix set
@@ -407,11 +392,8 @@ public:
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void fatal(uint32_t line, const char* file, const char* func,
-               int exit_code,
-               const char* format, ...)    const
-                  __attribute__ ((format (printf, 6, 7))) ;
-
+    void fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
+        __attribute__((format(printf, 6, 7)));
 
     // GET / SET METHODS
 
@@ -483,8 +465,7 @@ public:
     output_location_t getOutputLocation() const;
 
     /** This method allows for the manual flushing of the output. */
-    inline void flush() const {std::fflush(*m_targetOutputRef);}
-
+    inline void flush() const { std::fflush(*m_targetOutputRef); }
 
     /** This method sets the static filename used by SST.  It can only be called
         once, and is automatically called by the SST Core.  No components should
@@ -495,47 +476,37 @@ public:
     static Output& getDefaultObject() { return m_defaultObject; }
 
 private:
-
     friend class TraceFunction;
     // Support Methods
-    void setTargetOutput(output_location_t location);
-    void openSSTTargetFile() const;
-    void closeSSTTargetFile();
+    void        setTargetOutput(output_location_t location);
+    void        openSSTTargetFile() const;
+    void        closeSSTTargetFile();
     // std::string getMPIProcName() const;
-    int getMPIWorldRank() const;
-    int getMPIWorldSize() const;
-    uint32_t getNumThreads() const;
-    uint32_t getThreadRank() const;
-    std::string buildPrefixString(uint32_t line,
-                                  const std::string& file,
-                                  const std::string& func) const;
-    void outputprintf(uint32_t line,
-                      const std::string& file,
-                      const std::string& func,
-                      const char *format,
-                      va_list arg) const;
-    void outputprintf(const char *format, va_list arg) const;
+    int         getMPIWorldRank() const;
+    int         getMPIWorldSize() const;
+    uint32_t    getNumThreads() const;
+    uint32_t    getThreadRank() const;
+    std::string buildPrefixString(uint32_t line, const std::string& file, const std::string& func) const;
+    void        outputprintf(
+               uint32_t line, const std::string& file, const std::string& func, const char* format, va_list arg) const;
+    void outputprintf(const char* format, va_list arg) const;
 
-    friend int ::main(int argc, char **argv);
-    static Output& setDefaultObject(const std::string& prefix, uint32_t verbose_level,
-               uint32_t verbose_mask, output_location_t location,
-               const std::string& localoutputfilename = "")
+    friend int ::main(int argc, char** argv);
+    static Output& setDefaultObject(
+        const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
+        const std::string& localoutputfilename = "")
     {
         m_defaultObject.init(prefix, verbose_level, verbose_mask, location, localoutputfilename);
         return getDefaultObject();
     }
 
-    static void setWorldSize(const RankInfo &ri, int mpiRank)
+    static void setWorldSize(const RankInfo& ri, int mpiRank)
     {
         m_worldSize = ri;
-        m_mpiRank = mpiRank;
+        m_mpiRank   = mpiRank;
     }
 
-    static void setThreadID(std::thread::id mach, uint32_t user)
-    {
-        m_threadMap.insert(std::make_pair(mach, user));
-    }
-
+    static void setThreadID(std::thread::id mach, uint32_t user) { m_threadMap.insert(std::make_pair(mach, user)); }
 
     // Internal Member Variables
     bool              m_objInitialized;
@@ -544,7 +515,7 @@ private:
     uint32_t          m_verboseMask;
     output_location_t m_targetLoc;
 
-    static Output     m_defaultObject;
+    static Output m_defaultObject;
 
     // m_targetOutputRef is a pointer to a FILE* object.  This is because
     // the actual FILE* object (m_sstFileHandle) is not created on construction,
@@ -553,61 +524,58 @@ private:
     // depending upon constructor for the object.  However m_sstFileHandle is a
     // static variable that is set by the startup of SST, and the location
     // cannot be changed in the constructor or a call to setFileName().
-    std::FILE**       m_targetOutputRef;
+    std::FILE** m_targetOutputRef;
 
     // m_targetFileHandleRef, m_targetFileNameRef, and m_targetFileAccessCount
     // are pointers to their associated types.  These point to either the local
     // output file information or to the global simulation output file information.
-    std::FILE**        m_targetFileHandleRef;
-    std::string*       m_targetFileNameRef;
-    uint32_t*          m_targetFileAccessCountRef;
+    std::FILE**  m_targetFileHandleRef;
+    std::string* m_targetFileNameRef;
+    uint32_t*    m_targetFileAccessCountRef;
 
     // Static Member Variables regarding the Global simulation file info
-    static std::string  m_sstGlobalSimFileName;
-    static std::FILE*   m_sstGlobalSimFileHandle;
-    static uint32_t     m_sstGlobalSimFileAccessCount;
+    static std::string m_sstGlobalSimFileName;
+    static std::FILE*  m_sstGlobalSimFileHandle;
+    static uint32_t    m_sstGlobalSimFileAccessCount;
 
     // File Member Variables regarding the local simulation file info
-    std::string  m_sstLocalFileName;
-    std::FILE*   m_sstLocalFileHandle;
-    uint32_t     m_sstLocalFileAccessCount;
+    std::string m_sstLocalFileName;
+    std::FILE*  m_sstLocalFileHandle;
+    uint32_t    m_sstLocalFileAccessCount;
 
     static std::unordered_map<std::thread::id, uint32_t> m_threadMap;
-    static RankInfo m_worldSize;
-    static int m_mpiRank;
-
+    static RankInfo                                      m_worldSize;
+    static int                                           m_mpiRank;
 };
 
 // Class to easily trace function enter and exit
-class TraceFunction {
+class TraceFunction
+{
 
-    static int trace_level;
+    static int               trace_level;
     static std::vector<char> indent_array;
 
 public:
     TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info = true);
     ~TraceFunction();
 
-    Output& getOutput() {return output_obj;}
+    Output& getOutput() { return output_obj; }
 
     /** Output the message with formatting as specified by the format parameter.
         @param format Format string.  All valid formats for printf are available.
         @param ... Arguments for format.
      */
-    void output(const char* format, ...) const
-        __attribute__ ((format (printf, 2, 3)));
-
+    void output(const char* format, ...) const __attribute__((format(printf, 2, 3)));
 
 private:
-    Output output_obj;
-    uint32_t line;
+    Output      output_obj;
+    uint32_t    line;
     std::string file;
     std::string function;
     // uint32_t rank;
     // uint32_t thread;
-    int indent_length;
+    int         indent_length;
 };
-
 
 } // namespace SST
 

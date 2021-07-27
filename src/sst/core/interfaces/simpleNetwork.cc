@@ -24,4 +24,3 @@ const SimpleNetwork::nid_t SimpleNetwork::INIT_BROADCAST_ADDR = 0xffffffffffffff
 
 } // namespace Interfaces
 } // namespace SST
-

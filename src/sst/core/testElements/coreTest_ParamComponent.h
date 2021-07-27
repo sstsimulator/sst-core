@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETEST_PARAM_COMPONENT_H
-#define _CORETEST_PARAM_COMPONENT_H
+#ifndef SST_CORE_CORETEST_PARAMCOMPONENT_H
+#define SST_CORE_CORETEST_PARAMCOMPONENT_H
 
 #include <sst/core/component.h>
 
@@ -24,7 +24,6 @@ namespace CoreTestParamComponent {
 class coreTestParamComponent : public SST::Component
 {
 public:
-
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestParamComponent,
@@ -36,18 +35,18 @@ public:
     )
 
     SST_ELI_DOCUMENT_PARAMS(
- 	{ "int32t-param",  "Check for integer values", "-1" },
- 	{ "uint32t-param",  "Check for integer values", "0" },
- 	{ "int64t-param",  "Check for integer values", "-1" },
- 	{ "uint64t-param",  "Check for integer values", "0" },
- 	{ "bool-true-param",  "Check for bool values", "true" },
- 	{ "bool-false-param",  "Check for bool values", "false" },
- 	{ "float-param",  "Check for float values", "1.0" },
- 	{ "double-param",  "Check for double values", "1.0" },
-	{ "string-param",  "Check for string values",  "test" },
-	{ "scope.int32", "Check scoped params", "-1" },
-	{ "scope.bool", "Check scoped params", "true" },
-	{ "scope.string", "Check scoped params", "test" }
+        { "int32t-param",  "Check for integer values", "-1" },
+        { "uint32t-param",  "Check for integer values", "0" },
+        { "int64t-param",  "Check for integer values", "-1" },
+        { "uint64t-param",  "Check for integer values", "0" },
+        { "bool-true-param",  "Check for bool values", "true" },
+        { "bool-false-param",  "Check for bool values", "false" },
+        { "float-param",  "Check for float values", "1.0" },
+        { "double-param",  "Check for double values", "1.0" },
+        { "string-param",  "Check for string values",  "test" },
+        { "scope.int32", "Check scoped params", "-1" },
+        { "scope.bool", "Check scoped params", "true" },
+        { "scope.string", "Check scoped params", "test" }
     )
 
     // Optional since there is nothing to document
@@ -63,16 +62,16 @@ public:
     )
 
     coreTestParamComponent(SST::ComponentId_t id, SST::Params& params);
-    void setup()  { }
-    void finish() { }
+    void setup() {}
+    void finish() {}
 
 private:
-    coreTestParamComponent();  // for serialization only
+    coreTestParamComponent();                              // for serialization only
     coreTestParamComponent(const coreTestParamComponent&); // do not implement
-    void operator=(const coreTestParamComponent&); // do not implement
+    void operator=(const coreTestParamComponent&);         // do not implement
 };
 
-} // namespace coreTestParamComponent
+} // namespace CoreTestParamComponent
 } // namespace SST
 
-#endif /* coreTestParamComponent */
+#endif // SST_CORE_CORETEST_PARAMCOMPONENT_H

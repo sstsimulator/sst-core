@@ -16,16 +16,16 @@
 
 #include "sst/core/output.h"
 
-// C++ System Headers
-#include <cinttypes>
-#include <cerrno>
-
-// System Headers
-#include <execinfo.h>
-
 // Core Headers
 #include "sst/core/simulation_impl.h"
 #include "sst/core/warnmacros.h"
+
+// C++ System Headers
+#include <cerrno>
+#include <cinttypes>
+
+// System Headers
+#include <execinfo.h>
 
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
@@ -37,24 +37,22 @@ namespace SST {
 
 // Initialize The Static Member Variables
 Output      Output::m_defaultObject;
-std::string Output::m_sstGlobalSimFileName = "";
-std::FILE*  Output::m_sstGlobalSimFileHandle = nullptr;
+std::string Output::m_sstGlobalSimFileName        = "";
+std::FILE*  Output::m_sstGlobalSimFileHandle      = nullptr;
 uint32_t    Output::m_sstGlobalSimFileAccessCount = 0;
 
 std::unordered_map<std::thread::id, uint32_t> Output::m_threadMap;
-RankInfo Output::m_worldSize;
-int Output::m_mpiRank = 0;
+RankInfo                                      Output::m_worldSize;
+int                                           Output::m_mpiRank = 0;
 
-
-Output::Output(const std::string& prefix, uint32_t verbose_level,
-               uint32_t verbose_mask,output_location_t location,
-               const std::string& localoutputfilename /*=""*/)
+Output::Output(
+    const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
+    const std::string& localoutputfilename /*=""*/)
 {
     m_objInitialized = false;
 
     init(prefix, verbose_level, verbose_mask, location, localoutputfilename);
 }
-
 
 Output::Output()
 {
@@ -63,27 +61,28 @@ Output::Output()
     // Set Member Variables
     m_outputPrefix = "";
     m_verboseLevel = 0;
-    m_verboseMask  = 0;;
-    m_targetLoc    = NONE;
+    m_verboseMask  = 0;
+    ;
+    m_targetLoc = NONE;
 }
 
-
-void Output::init(const std::string& prefix, uint32_t verbose_level,
-                  uint32_t verbose_mask, output_location_t location,
-                  const std::string& localoutputfilename /*=""*/)
+void
+Output::init(
+    const std::string& prefix, uint32_t verbose_level, uint32_t verbose_mask, output_location_t location,
+    const std::string& localoutputfilename /*=""*/)
 {
     // Only initialize if the object has not yet been initialized.
-    if (false == m_objInitialized) {
+    if ( false == m_objInitialized ) {
 
         // Set Member Variables
-        m_outputPrefix = prefix;
-        m_verboseLevel = verbose_level;
-        m_verboseMask  = verbose_mask;
-        m_sstLocalFileName = localoutputfilename;
-        m_sstLocalFileHandle = nullptr;
-        m_sstLocalFileAccessCount = 0;
-        m_targetFileHandleRef = nullptr;
-        m_targetFileNameRef = nullptr;
+        m_outputPrefix             = prefix;
+        m_verboseLevel             = verbose_level;
+        m_verboseMask              = verbose_mask;
+        m_sstLocalFileName         = localoutputfilename;
+        m_sstLocalFileHandle       = nullptr;
+        m_sstLocalFileAccessCount  = 0;
+        m_targetFileHandleRef      = nullptr;
+        m_targetFileNameRef        = nullptr;
         m_targetFileAccessCountRef = nullptr;
 
         setTargetOutput(location);
@@ -92,51 +91,50 @@ void Output::init(const std::string& prefix, uint32_t verbose_level,
     }
 }
 
-
 Output::~Output()
 {
     // Check to see if we need to close the file
     closeSSTTargetFile();
 }
 
-
-void Output::setVerboseLevel(uint32_t verbose_level)
+void
+Output::setVerboseLevel(uint32_t verbose_level)
 {
     m_verboseLevel = verbose_level;
 }
 
-
-uint32_t Output::getVerboseLevel() const
+uint32_t
+Output::getVerboseLevel() const
 {
     return m_verboseLevel;
 }
 
-
-void Output::setVerboseMask(uint32_t verbose_mask)
+void
+Output::setVerboseMask(uint32_t verbose_mask)
 {
     m_verboseMask = verbose_mask;
 }
 
-
-uint32_t Output::getVerboseMask() const
+uint32_t
+Output::getVerboseMask() const
 {
     return m_verboseMask;
 }
 
-
-void Output::setPrefix(const std::string& prefix)
+void
+Output::setPrefix(const std::string& prefix)
 {
     m_outputPrefix = prefix;
 }
 
-
-std::string Output::getPrefix() const
+std::string
+Output::getPrefix() const
 {
     return m_outputPrefix;
 }
 
-
-void Output::setOutputLocation(output_location_t location)
+void
+Output::setOutputLocation(output_location_t location)
 {
     // Check to see if we need to close the file (if we are set to FILE)
     closeSSTTargetFile();
@@ -145,16 +143,14 @@ void Output::setOutputLocation(output_location_t location)
     setTargetOutput(location);
 }
 
-
-Output::output_location_t Output::getOutputLocation() const
+Output::output_location_t
+Output::getOutputLocation() const
 {
     return m_targetLoc;
 }
 
-
-void Output::fatal(uint32_t line, const char* file, const char* func,
-                   int exit_code,
-                   const char* format, ...) const
+void
+Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, const char* format, ...) const
 {
     va_list     arg1;
     va_list     arg2;
@@ -170,7 +166,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
     // Output to the target location as long is it is not NONE or
     // STDERR (prevent 2 outputs to stderr)
-    if (true == m_objInitialized && NONE != m_targetLoc && STDERR != m_targetLoc) {
+    if ( true == m_objInitialized && NONE != m_targetLoc && STDERR != m_targetLoc ) {
         // Print it out to the target location
         va_start(arg2, format);
 
@@ -180,7 +176,7 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
         // Check to make sure output location is not NONE
         // Also make sure we are not redundantly printing to screen
         // We have already printed to stderr
-        if (NONE != m_targetLoc && STDERR != m_targetLoc && STDOUT != m_targetLoc) {
+        if ( NONE != m_targetLoc && STDERR != m_targetLoc && STDOUT != m_targetLoc ) {
             std::vfprintf(*m_targetOutputRef, newFmt.c_str(), arg2);
         }
 
@@ -193,14 +189,14 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 
     // Back trace so we know where this happened.
     const int backtrace_max_count = 64;
-    void* backtrace_elements[backtrace_max_count];
-    char** backtrace_names;
-    size_t backtrace_count = backtrace(backtrace_elements, backtrace_max_count);
-    backtrace_names = backtrace_symbols(backtrace_elements, backtrace_max_count);
+    void*     backtrace_elements[backtrace_max_count];
+    char**    backtrace_names;
+    size_t    backtrace_count = backtrace(backtrace_elements, backtrace_max_count);
+    backtrace_names           = backtrace_symbols(backtrace_elements, backtrace_max_count);
 
     fprintf(stderr, "SST Fatal Backtrace Information:\n");
-    for(size_t i = 0; i < backtrace_count; ++i) {
-    fprintf(stderr, "%5" PRIu64 " : %s\n", (uint64_t) i, backtrace_names[i]);
+    for ( size_t i = 0; i < backtrace_count; ++i ) {
+        fprintf(stderr, "%5" PRIu64 " : %s\n", (uint64_t)i, backtrace_names[i]);
     }
 
     free(backtrace_names);
@@ -215,9 +211,8 @@ void Output::fatal(uint32_t line, const char* file, const char* func,
 #endif
 }
 
-
-
-void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
+void
+Output::setFileName(const std::string& filename) /* STATIC METHOD */
 {
     // This method will be called by the SST core during startup parameter
     // checking to set the output file name.  It is not intended to be called
@@ -226,23 +221,24 @@ void Output::setFileName(const std::string& filename)  /* STATIC METHOD */
     // NOTE: This method can be called only once
 
     // Make sure we do not have a empty string from the user.
-    if (0 == filename.length()) {
+    if ( 0 == filename.length() ) {
         // We need to abort here, this is an illegal condition
         fprintf(stderr, "ERROR: Output::setFileName(filename) - Parameter filename cannot be an empty string.\n");
         exit(-1);
     }
 
     // Set the Filename, only if it has not yet been set.
-    if (0 == m_sstGlobalSimFileName.length()) {
-        m_sstGlobalSimFileName = filename;
-    } else {
-        fprintf(stderr, "ERROR: Output::setFileName() - Filename is already set to %s, and cannot be changed.\n", m_sstGlobalSimFileName.c_str());
+    if ( 0 == m_sstGlobalSimFileName.length() ) { m_sstGlobalSimFileName = filename; }
+    else {
+        fprintf(
+            stderr, "ERROR: Output::setFileName() - Filename is already set to %s, and cannot be changed.\n",
+            m_sstGlobalSimFileName.c_str());
         exit(-1);
     }
 }
 
-
-void Output::setTargetOutput(output_location_t location)
+void
+Output::setTargetOutput(output_location_t location)
 {
     // Set the Target location
     m_targetLoc = location;
@@ -250,16 +246,17 @@ void Output::setTargetOutput(output_location_t location)
     // Figure out where we need to send the output, we do this here rather
     // than over and over in the output methods.  If set to NONE, we choose
     // stdout, but will not output any value (checked in the output methods)
-    switch (m_targetLoc) {
+    switch ( m_targetLoc ) {
     case FILE:
         // Decide if we are sending output to the System Output file or the local debug file
-        if (0 == m_sstLocalFileName.length()) {
+        if ( 0 == m_sstLocalFileName.length() ) {
             // Set the references to the Global Simulation target file info
             m_targetOutputRef          = &m_sstGlobalSimFileHandle;
             m_targetFileHandleRef      = &m_sstGlobalSimFileHandle;
             m_targetFileNameRef        = &m_sstGlobalSimFileName;
             m_targetFileAccessCountRef = &m_sstGlobalSimFileAccessCount;
-        } else {
+        }
+        else {
             // Set the references to the Local output target file info
             m_targetOutputRef          = &m_sstLocalFileHandle;
             m_targetFileHandleRef      = &m_sstLocalFileHandle;
@@ -280,34 +277,35 @@ void Output::setTargetOutput(output_location_t location)
     }
 }
 
-
-void Output::openSSTTargetFile() const
+void
+Output::openSSTTargetFile() const
 {
     std::FILE*  handle;
     std::string tempFileName;
     char        tempBuf[256];
 
-    if (true == m_objInitialized) {
+    if ( true == m_objInitialized ) {
         // If the target output is a file, See if the output file is created and opened
-        if ((FILE == m_targetLoc) && (nullptr == *m_targetFileHandleRef)) {
+        if ( (FILE == m_targetLoc) && (nullptr == *m_targetFileHandleRef) ) {
 
             // Check to see if the File has not been opened.
-            if ((*m_targetFileAccessCountRef > 0) && (nullptr == *m_targetFileHandleRef)) {
+            if ( (*m_targetFileAccessCountRef > 0) && (nullptr == *m_targetFileHandleRef) ) {
                 tempFileName = *m_targetFileNameRef;
 
                 // Append the rank to file name if MPI_COMM_WORLD is GT 1
-                if (getMPIWorldSize() > 1) {
+                if ( getMPIWorldSize() > 1 ) {
                     sprintf(tempBuf, "%d", getMPIWorldRank());
                     tempFileName += tempBuf;
                 }
 
                 // Now try to open the file
                 handle = fopen(tempFileName.c_str(), "w");
-                if (nullptr != handle){
-                    *m_targetFileHandleRef = handle;
-                } else {
+                if ( nullptr != handle ) { *m_targetFileHandleRef = handle; }
+                else {
                     // We got an error of some sort
-                    fprintf(stderr, "ERROR: Output::openSSTTargetFile() - Problem opening File %s - %s\n", tempFileName.c_str(), strerror(errno));
+                    fprintf(
+                        stderr, "ERROR: Output::openSSTTargetFile() - Problem opening File %s - %s\n",
+                        tempFileName.c_str(), strerror(errno));
                     exit(-1);
                 }
             }
@@ -315,82 +313,74 @@ void Output::openSSTTargetFile() const
     }
 }
 
-
-void Output::closeSSTTargetFile()
+void
+Output::closeSSTTargetFile()
 {
-    if ((true == m_objInitialized) && (FILE == m_targetLoc)) {
+    if ( (true == m_objInitialized) && (FILE == m_targetLoc) ) {
         // Decrement the Access count for the file
-        if (*m_targetFileAccessCountRef > 0) {
-            (*m_targetFileAccessCountRef)--;
-        }
+        if ( *m_targetFileAccessCountRef > 0 ) { (*m_targetFileAccessCountRef)--; }
 
         // If the access count is zero, and the file has been opened, then close it
-        if ((0 == *m_targetFileAccessCountRef) &&
-            (nullptr != *m_targetFileHandleRef) &&
-            (FILE == m_targetLoc)) {
-            fclose (*m_targetFileHandleRef);
+        if ( (0 == *m_targetFileAccessCountRef) && (nullptr != *m_targetFileHandleRef) && (FILE == m_targetLoc) ) {
+            fclose(*m_targetFileHandleRef);
         }
     }
 }
 
-
-std::string Output::buildPrefixString(uint32_t line, const std::string& file, const std::string& func) const
+std::string
+Output::buildPrefixString(uint32_t line, const std::string& file, const std::string& func) const
 {
-    std::string rtnstring = "";
+    std::string rtnstring  = "";
     size_t      startindex = 0;
-    size_t      findindex = 0;
+    size_t      findindex  = 0;
     char        tempBuf[256];
 
     // Scan the string for tokens
-    while(std::string::npos != findindex){
+    while ( std::string::npos != findindex ) {
 
         // Find the next '@' from the starting index
         findindex = m_outputPrefix.find("@", startindex);
 
         // Check to see if we found anything
-        if (std::string::npos != findindex){
+        if ( std::string::npos != findindex ) {
 
             // We found the @, copy the string up to this point
             rtnstring += m_outputPrefix.substr(startindex, findindex - startindex);
 
             // check the next character to see what we need to do
-            switch (m_outputPrefix[findindex+1])
-            {
-            case 'f' :
+            switch ( m_outputPrefix[findindex + 1] ) {
+            case 'f':
                 rtnstring += file;
                 startindex = findindex + 2;
                 break;
-            case 'l' :
+            case 'l':
                 sprintf(tempBuf, "%d", line);
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
-            case 'p' :
+            case 'p':
                 rtnstring += func;
                 startindex = findindex + 2;
                 break;
-            case 'r' :
-                if (1 == getMPIWorldSize()){
-                    rtnstring += "";
-                } else {
+            case 'r':
+                if ( 1 == getMPIWorldSize() ) { rtnstring += ""; }
+                else {
                     sprintf(tempBuf, "%d", getMPIWorldRank());
                     rtnstring += tempBuf;
                 }
                 startindex = findindex + 2;
                 break;
-            case 'R' :
-                if (1 == getMPIWorldSize()){
-                    rtnstring += "0";
-                } else {
+            case 'R':
+                if ( 1 == getMPIWorldSize() ) { rtnstring += "0"; }
+                else {
                     sprintf(tempBuf, "%d", getMPIWorldRank());
                     rtnstring += tempBuf;
                 }
                 startindex = findindex + 2;
                 break;
             case 'i':
-                if ( 1 == getNumThreads()) {
-                    rtnstring += "";
-                } else {
+                if ( 1 == getNumThreads() ) { rtnstring += ""; }
+                else {
                     sprintf(tempBuf, "%u", getThreadRank());
                     rtnstring += tempBuf;
                 }
@@ -413,13 +403,13 @@ std::string Output::buildPrefixString(uint32_t line, const std::string& file, co
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
-            case 't' :
+            case 't':
                 sprintf(tempBuf, "%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
 
-            default :
+            default:
                 // This character is not one of our tokens, so just copy it
                 rtnstring += "@";
                 startindex = findindex + 1;
@@ -433,9 +423,9 @@ std::string Output::buildPrefixString(uint32_t line, const std::string& file, co
     return rtnstring;
 }
 
-
-void Output::outputprintf(uint32_t line, const std::string& file,
-                          const std::string& func, const char* format, va_list arg) const
+void
+Output::outputprintf(
+    uint32_t line, const std::string& file, const std::string& func, const char* format, va_list arg) const
 {
     std::string newFmt;
 
@@ -443,48 +433,53 @@ void Output::outputprintf(uint32_t line, const std::string& file,
     openSSTTargetFile();
 
     // Check to make sure output location is not NONE
-    if (NONE != m_targetLoc) {
+    if ( NONE != m_targetLoc ) {
         newFmt = buildPrefixString(line, file, func) + format;
         std::vfprintf(*m_targetOutputRef, newFmt.c_str(), arg);
-        if ( FILE == m_targetLoc) fflush(*m_targetOutputRef);
+        if ( FILE == m_targetLoc ) fflush(*m_targetOutputRef);
     }
 }
 
-
-void Output::outputprintf(const char* format, va_list arg) const
+void
+Output::outputprintf(const char* format, va_list arg) const
 {
     // If the target output is a file, Make sure that the file is created and opened
     openSSTTargetFile();
 
     // Check to make sure output location is not NONE
-    if (NONE != m_targetLoc) {
+    if ( NONE != m_targetLoc ) {
         std::vfprintf(*m_targetOutputRef, format, arg);
-        if ( FILE == m_targetLoc) fflush(*m_targetOutputRef);
+        if ( FILE == m_targetLoc ) fflush(*m_targetOutputRef);
     }
 }
 
-
-int Output::getMPIWorldSize() const {
+int
+Output::getMPIWorldSize() const
+{
     return m_worldSize.rank;
 }
 
-
-int Output::getMPIWorldRank() const {
+int
+Output::getMPIWorldRank() const
+{
     return m_mpiRank;
 }
 
-uint32_t Output::getNumThreads() const {
+uint32_t
+Output::getNumThreads() const
+{
     return m_worldSize.thread;
 }
 
-uint32_t Output::getThreadRank() const {
+uint32_t
+Output::getThreadRank() const
+{
     return m_threadMap[std::this_thread::get_id()];
 }
 
-
-std::vector<char> TraceFunction::indent_array(100,' ');
+std::vector<char> TraceFunction::indent_array(100, ' ');
 // std::vector<char> TraceFunction::indent_array;
-int TraceFunction::trace_level = 0;
+int               TraceFunction::trace_level = 0;
 
 TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info) :
     line(line),
@@ -494,9 +489,7 @@ TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, 
 {
     if ( print_sim_info ) {
         RankInfo ri = Simulation_impl::getSimulation()->getNumRanks();
-        if ( ri.rank > 1 || ri.thread > 1 ) {
-            output_obj.init("@R, @I (@t): " /*prefix*/, 0, 0, Output::STDOUT);
-        }
+        if ( ri.rank > 1 || ri.thread > 1 ) { output_obj.init("@R, @I (@t): " /*prefix*/, 0, 0, Output::STDOUT); }
         else {
             output_obj.init("(@t): ", 0, 0, Output::STDOUT);
         }
@@ -508,38 +501,39 @@ TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, 
     }
 
     // Set up the indent
-    int indent = trace_level * indent_length;
+    int indent           = trace_level * indent_length;
     indent_array[indent] = '\0';
-    output_obj.output(line,file,func,"%s%s enter function\n",indent_array.data(),function.c_str());
+    output_obj.output(line, file, func, "%s%s enter function\n", indent_array.data(), function.c_str());
     indent_array[indent] = ' ';
     trace_level++;
 }
 
-TraceFunction::~TraceFunction() {
+TraceFunction::~TraceFunction()
+{
     trace_level--;
-    int indent = trace_level * indent_length;
+    int indent           = trace_level * indent_length;
     indent_array[indent] = '\0';
-    output_obj.output(line, file.c_str(), function.c_str(), "%s%s exit function\n",indent_array.data(),function.c_str());
+    output_obj.output(
+        line, file.c_str(), function.c_str(), "%s%s exit function\n", indent_array.data(), function.c_str());
     indent_array[indent] = ' ';
 }
 
-void TraceFunction::output(const char* format, ...) const
+void
+TraceFunction::output(const char* format, ...) const
 {
 
     // Need to add the indent
     char buf[200];
 
-    int indent = trace_level * indent_length;
+    int indent           = trace_level * indent_length;
     indent_array[indent] = '\0';
-    sprintf(buf,"%s%s",indent_array.data(),format);
+    sprintf(buf, "%s%s", indent_array.data(), format);
     indent_array[indent] = ' ';
 
     va_list arg;
     va_start(arg, format);
-    output_obj.outputprintf(line,file.c_str(),function.c_str(), buf, arg);
+    output_obj.outputprintf(line, file.c_str(), function.c_str(), buf, arg);
     va_end(arg);
 }
-
-
 
 } // namespace SST

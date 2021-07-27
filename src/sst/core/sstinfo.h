@@ -9,16 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef SST_INFO_H
-#define SST_INFO_H
-
-#include <map>
-#include <vector>
-#include <set>
+#ifndef SST_CORE_SST_INFO_H
+#define SST_CORE_SST_INFO_H
 
 #include "sst/core/eli/elementinfo.h"
 #include "sst/core/tinyxml/tinyxml.h"
+
+#include <map>
+#include <set>
+#include <vector>
 
 class TiXmlNode;
 
@@ -35,7 +34,8 @@ namespace SST {
  * This class will parse the command line, and setup internal
  * lists of elements and components to be processed.
  */
-class SSTInfoConfig {
+class SSTInfoConfig
+{
 public:
     typedef std::multimap<std::string, std::string> FilterMap_t;
     /** Create a new SSTInfo configuration and parse the Command Line. */
@@ -52,7 +52,7 @@ public:
     std::set<std::string> getElementsToProcessArray()
     {
         std::set<std::string> res;
-        for ( auto &i : m_filters )
+        for ( auto& i : m_filters )
             res.insert(i.first);
         return res;
     }
@@ -61,15 +61,15 @@ public:
     FilterMap_t& getFilterMap() { return m_filters; }
 
     /** Return the bit field of various command line options enabled. */
-    unsigned int              getOptionBits() {return m_optionBits;}
+    unsigned int getOptionBits() { return m_optionBits; }
 
     /** Return the user defined path the XML File. */
-    std::string&              getXMLFilePath() {return m_XMLFilePath;}
+    std::string& getXMLFilePath() { return m_XMLFilePath; }
 
     /** Is debugging output enabled? */
-    bool                      debugEnabled() const { return m_debugEnabled; }
-    bool                      processAllElements() const { return m_filters.empty(); }
-    bool                      doVerbose() const { return m_optionBits & CFG_VERBOSE; }
+    bool debugEnabled() const { return m_debugEnabled; }
+    bool processAllElements() const { return m_filters.empty(); }
+    bool doVerbose() const { return m_optionBits & CFG_VERBOSE; }
 
 private:
     void outputUsage();
@@ -77,12 +77,12 @@ private:
     void addFilter(const std::string& name);
 
 private:
-    char*                     m_AppName;
-    std::vector<std::string>  m_elementsToProcess;
-    unsigned int              m_optionBits;
-    std::string               m_XMLFilePath;
-    bool                      m_debugEnabled;
-    FilterMap_t               m_filters;
+    char*                    m_AppName;
+    std::vector<std::string> m_elementsToProcess;
+    unsigned int             m_optionBits;
+    std::string              m_XMLFilePath;
+    bool                     m_debugEnabled;
+    FilterMap_t              m_filters;
 };
 
 /**
@@ -91,20 +91,18 @@ private:
  * This class is used internally by SSTInfo to load and process
  * ElementLibraryInfo objects.
  */
-class SSTLibraryInfo {
+class SSTLibraryInfo
+{
 
 public:
     /** Create a new SSTInfoElement_LibraryInfo object.
      * @param eli Pointer to an ElementLibraryInfo object.
      */
-    SSTLibraryInfo(const std::string& name) :
-        m_name(name)
-    {
-    }
+    SSTLibraryInfo(const std::string& name) : m_name(name) {}
 
     /** Return the Name of the Library. */
     // std::string getLibraryName() {if (m_eli && m_eli->name) return m_eli->name; else return ""; }
-    std::string getLibraryName() {return m_name; }
+    std::string getLibraryName() { return m_name; }
 
     /** Output the Library Information.
      * @param LibIndex The Index of the Library.
@@ -117,19 +115,17 @@ public:
      */
     void outputXML(int Index, TiXmlNode* XMLParentElement);
 
-    template <class BaseType> void outputHumanReadable(std::ostream& os, bool printAll);
-    template <class BaseType> void outputXML(TiXmlElement* node);
+    template <class BaseType>
+    void outputHumanReadable(std::ostream& os, bool printAll);
+    template <class BaseType>
+    void outputXML(TiXmlElement* node);
 
-    std::string getLibraryDescription() {
-      return "";
-    }
+    std::string getLibraryDescription() { return ""; }
 
- private:
+private:
     std::string m_name;
-
 };
-
 
 } // namespace SST
 
-#endif  // SST_INFO_H
+#endif // SST_CORE_SST_INFO_H
