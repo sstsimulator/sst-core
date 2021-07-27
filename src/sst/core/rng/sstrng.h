@@ -12,8 +12,9 @@
 #ifndef SST_CORE_RNG_SSTRNG_H
 #define SST_CORE_RNG_SSTRNG_H
 
-#include <stdint.h>
 #include "sst/core/rng/rng.h"
+
+#include <stdint.h>
 
 namespace SST {
 namespace RNG {

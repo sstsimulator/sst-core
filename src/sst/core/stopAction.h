@@ -12,11 +12,11 @@
 #ifndef SST_CORE_STOPACTION_H
 #define SST_CORE_STOPACTION_H
 
-#include <iostream>
-#include <cinttypes>
-
 #include "sst/core/action.h"
 #include "sst/core/output.h"
+
+#include <cinttypes>
+#include <iostream>
 
 namespace SST {
 
@@ -26,37 +26,37 @@ namespace SST {
 class StopAction : public Action
 {
 private:
-
     std::string message;
-    bool print_message;
+    bool        print_message;
 
 public:
-    StopAction() {
+    StopAction()
+    {
         setPriority(STOPACTIONPRIORITY);
         print_message = false;
     }
 
     /** Create a new StopAction which includes a message to be printed when it fires
      */
-    StopAction(const std::string& msg) {
+    StopAction(const std::string& msg)
+    {
         setPriority(STOPACTIONPRIORITY);
         print_message = true;
-        message = msg;
+        message       = msg;
     }
 
-    void execute() override {
-        if ( print_message ) {
-            Output::getDefaultObject().output("%s\n", message.c_str());
-        }
+    void execute() override
+    {
+        if ( print_message ) { Output::getDefaultObject().output("%s\n", message.c_str()); }
         endSimulation();
     }
 
-    void print(const std::string& header, Output &out) const override {
+    void print(const std::string& header, Output& out) const override
+    {
         out.output("%s StopAction to be delivered at %" PRIu64 "\n", header.c_str(), getDeliveryTime());
     }
-
 };
 
 } // namespace SST
 
-#endif //SST_CORE_STOPACTION_H
+#endif // SST_CORE_STOPACTION_H

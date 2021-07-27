@@ -9,9 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef SST_CORE_THREADSYNCQUEUE_H
-#define SST_CORE_THREADSYNCQUEUE_H
+#ifndef SST_CORE_SYNC_THREADSYNCQUEUE_H
+#define SST_CORE_SYNC_THREADSYNCQUEUE_H
 
 #include "sst/core/activityQueue.h"
 
@@ -19,53 +18,43 @@ namespace SST {
 
 /** Base Class for a queue of Activities
  */
-class ThreadSyncQueue : public ActivityQueue {
+class ThreadSyncQueue : public ActivityQueue
+{
 public:
-    ThreadSyncQueue() :
-        ActivityQueue()
-        {}
+    ThreadSyncQueue() : ActivityQueue() {}
     ~ThreadSyncQueue() {}
 
     /** Returns true if the queue is empty */
-    bool empty() override {
-        return activities.empty();
-    }
+    bool empty() override { return activities.empty(); }
 
     /** Returns the number of activities in the queue */
-    int size() override {
-        return activities.size();
-    }
+    int size() override { return activities.size(); }
 
     /** Not supported */
-    Activity* pop() override {
+    Activity* pop() override
+    {
         // Need to fatal
         return nullptr;
     }
 
     /** Insert a new activity into the queue */
-    void insert(Activity* activity) override {
-        activities.push_back(activity);
-    }
+    void insert(Activity* activity) override { activities.push_back(activity); }
 
     /** Not supported */
-    Activity* front() override {
+    Activity* front() override
+    {
         // Need to fatal
         return nullptr;
     }
 
-    void clear() {
-        activities.clear();
-    }
+    void clear() { activities.clear(); }
 
-    std::vector<Activity*>& getVector() {
-        return activities;
-    }
+    std::vector<Activity*>& getVector() { return activities; }
 
 private:
     std::vector<Activity*> activities;
-
 };
 
-} //namespace SST
+} // namespace SST
 
-#endif // SST_CORE_THREADSYNCQUEUE_H
+#endif // SST_CORE_SYNC_THREADSYNCQUEUE_H

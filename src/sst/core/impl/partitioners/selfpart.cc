@@ -10,4 +10,5 @@
 // distribution.
 
 #include "sst_config.h"
+
 #include "sst/core/impl/partitioners/selfpart.h"

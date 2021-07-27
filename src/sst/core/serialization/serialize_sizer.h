@@ -9,10 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SERIALIZE_SIZER_H
-#define SERIALIZE_SIZER_H
+#ifndef SST_CORE_SERIALIZATION_SERIALIZE_SIZER_H
+#define SST_CORE_SERIALIZATION_SERIALIZE_SIZER_H
 
 #include "sst/core/warnmacros.h"
+
 namespace SST {
 namespace Core {
 namespace Serialization {
@@ -20,43 +21,30 @@ namespace pvt {
 
 class ser_sizer
 {
- public:
-  ser_sizer() :
-    size_(0)
-  {
-  }
+public:
+    ser_sizer() : size_(0) {}
 
-  template <class T>
-  void
-  size(T& UNUSED(t)){
-    size_ += sizeof(T);
-  }
+    template <class T>
+    void size(T& UNUSED(t))
+    {
+        size_ += sizeof(T);
+    }
 
-  void
-  size_string(std::string& str);
+    void size_string(std::string& str);
 
-  void
-  add(size_t s) {
-    size_ += s;
-  }
+    void add(size_t s) { size_ += s; }
 
-  size_t
-  size() const {
-    return size_;
-  }
+    size_t size() const { return size_; }
 
-  void
-  reset() {
-    size_ = 0;
-  }
+    void reset() { size_ = 0; }
 
- protected:
-  size_t size_;
-
+protected:
+    size_t size_;
 };
 
-} }
-}
-}
+} // namespace pvt
+} // namespace Serialization
+} // namespace Core
+} // namespace SST
 
-#endif // SERIALIZE_SIZER_H
+#endif // SST_CORE_SERIALIZATION_SERIALIZE_SIZER_H

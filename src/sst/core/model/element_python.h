@@ -9,23 +9,23 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_MODEL_ELEMENT_PYTHON_H
 #define SST_CORE_MODEL_ELEMENT_PYTHON_H
 
-#include <vector>
-#include <string>
 #include "sst/core/eli/elementinfo.h"
+
+#include <string>
+#include <vector>
 
 namespace SST {
 
 typedef void* (*genPythonModuleFunction)(void);
 
-
 /** Class to represent the code that needs to be added to create the
  * python module struture for the library.
  */
-class SSTElementPythonModuleCode {
+class SSTElementPythonModuleCode
+{
 
 private:
     //! Pointer to parent module.
@@ -62,18 +62,16 @@ private:
      *  \param filename filname used when reporting errors
      *  \sa parent, module_name, code, filename
      */
-    SSTElementPythonModuleCode(SSTElementPythonModuleCode* parent, const std::string& module_name, char* code, std::string filename) :
+    SSTElementPythonModuleCode(
+        SSTElementPythonModuleCode* parent, const std::string& module_name, char* code, std::string filename) :
         parent(parent),
         module_name(module_name),
         code(code),
         filename(filename)
     {
         // If no filename for debug is given, just set it to the full name of the module
-        if ( filename == "" ) {
-            filename = getFullModuleName();
-        }
+        if ( filename == "" ) { filename = getFullModuleName(); }
     }
-
 
     //! load the code as a module into the interpreter
     /**
@@ -89,17 +87,16 @@ private:
     //! Vector of sub_modules
     std::vector<SSTElementPythonModuleCode*> sub_modules;
 
-
     friend class SSTElementPythonModule;
 
 public:
-
     //! Add a submodule to the module
     ///
     /// Python files will need to be turned into a char array (code parameter).  One way to do
     /// this is to use the following in your Makefile:
     /// \verbatim %.inc: %.py
-    ///         od -v -t x1 < $< | sed -e 's/^[^ ]*[ ]*//g' -e '/^\s*$$/d' -e 's/\([0-9a-f]*\)[ $$]*/0x\1,/g' > $@ \endverbatim
+    ///         od -v -t x1 < $< | sed -e 's/^[^ ]*[ ]*//g' -e '/^\s*$$/d' -e 's/\([0-9a-f]*\)[ $$]*/0x\1,/g' > $@
+    ///         \endverbatim
     /// \param module_name simple name of the module
     /// \param code code to be compiled
     /// \param filename filname used when reporting errors
@@ -120,9 +117,7 @@ public:
      *  \return full name of module as a string
      */
     std::string getFullModuleName();
-
 };
-
 
 /**
    Base class for python modules in element libraries.
@@ -130,15 +125,16 @@ public:
    Element libraries can include a class derived from this class and
    create a python module hierarchy.
  */
-class SSTElementPythonModule {
+class SSTElementPythonModule
+{
 
 protected:
     std::string library;
     std::string pylibrary;
     std::string sstlibrary;
-    char* primary_module;
+    char*       primary_module;
 
-    std::vector<std::pair<std::string,char*> > sub_modules;
+    std::vector<std::pair<std::string, char*>> sub_modules;
 
     SSTElementPythonModuleCode* primary_code_module;
 
@@ -160,32 +156,29 @@ public:
      */
     SSTElementPythonModule(const std::string& library);
 
-
     virtual void* load();
 
     //! Create the top level python module (i.e. the one named sst.library)
     /// Python files will need to be turned into a char array (code parameter).  One way to do
     /// this is to use the following in your Makefile:
     /// \verbatim %.inc: %.py
-    ///         od -v -t x1 < $< | sed -e 's/^[^ ]*[ ]*//g' -e '/^\s*$$/d' -e 's/\([0-9a-f]*\)[ $$]*/0x\1,/g' > $@ \endverbatim
+    ///         od -v -t x1 < $< | sed -e 's/^[^ ]*[ ]*//g' -e '/^\s*$$/d' -e 's/\([0-9a-f]*\)[ $$]*/0x\1,/g' > $@
+    ///         \endverbatim
     /// \param code code to be compiled
     /// \param filename filname used when reporting errors
     ///
     ///
     SSTElementPythonModuleCode* createPrimaryModule(char* code, const std::string& filename);
 
-
     //! Create and empty top level python module (i.e. the one named sst.library)
     ///
     ///
     SSTElementPythonModuleCode* createPrimaryModule();
-
 };
 
+} // namespace SST
 
-} //end SST
-
-#define SST_ELI_REGISTER_PYTHON_MODULE(cls,lib,version)    \
-  SST_ELI_REGISTER_DERIVED(SST::SSTElementPythonModule,cls,lib,lib,ELI_FORWARD_AS_ONE(version),"Python module " #cls)
+#define SST_ELI_REGISTER_PYTHON_MODULE(cls, lib, version) \
+    SST_ELI_REGISTER_DERIVED(SST::SSTElementPythonModule,cls,lib,lib,ELI_FORWARD_AS_ONE(version),"Python module " #cls)
 
 #endif // SST_CORE_MODEL_ELEMENT_PYTHON_H

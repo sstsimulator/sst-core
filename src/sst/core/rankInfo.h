@@ -18,70 +18,62 @@
 
 namespace SST {
 
-class RankInfo : public SST::Core::Serialization::serializable {
+class RankInfo : public SST::Core::Serialization::serializable
+{
 public:
     static const uint32_t UNASSIGNED = (uint32_t)-1;
-    uint32_t rank;
-    uint32_t thread;
+    uint32_t              rank;
+    uint32_t              thread;
 
-    RankInfo(uint32_t rank, uint32_t thread) :
-        rank(rank), thread(thread)
-    { }
+    RankInfo(uint32_t rank, uint32_t thread) : rank(rank), thread(thread) {}
 
-    RankInfo() : rank(UNASSIGNED), thread(UNASSIGNED)
-    { };
+    RankInfo() : rank(UNASSIGNED), thread(UNASSIGNED) {};
 
-    bool isAssigned() const {
-        return (rank != UNASSIGNED && thread != UNASSIGNED);
-    }
+    bool isAssigned() const { return (rank != UNASSIGNED && thread != UNASSIGNED); }
 
     /**
      * @return true if other's rank and thread are less than ours
      */
-    bool inRange(const RankInfo& other) const {
-        return ((rank > other.rank) && (thread > other.thread));
-    }
+    bool inRange(const RankInfo& other) const { return ((rank > other.rank) && (thread > other.thread)); }
 
-    bool operator==(const RankInfo& other) const {
-        return (rank == other.rank) && (thread == other.thread);
-    }
+    bool operator==(const RankInfo& other) const { return (rank == other.rank) && (thread == other.thread); }
 
-    bool operator!=(const RankInfo& other) const {
-        return !(operator==(other));
-    }
+    bool operator!=(const RankInfo& other) const { return !(operator==(other)); }
 
-    bool operator<(const RankInfo& other) const {
+    bool operator<(const RankInfo& other) const
+    {
         if ( rank == other.rank ) return thread < other.thread;
         return rank < other.rank;
     }
 
-    bool operator<=(const RankInfo& other) const {
+    bool operator<=(const RankInfo& other) const
+    {
         if ( rank == other.rank ) return thread <= other.thread;
         return rank <= other.rank;
     }
 
-    bool operator>(const RankInfo& other) const {
+    bool operator>(const RankInfo& other) const
+    {
         if ( rank == other.rank ) return thread > other.thread;
         return rank > other.rank;
     }
 
-    bool operator>=(const RankInfo& other) const {
+    bool operator>=(const RankInfo& other) const
+    {
         if ( rank == other.rank ) return thread >= other.thread;
         return rank >= other.rank;
     }
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) override
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser & rank;
-        ser & thread;
+        ser& rank;
+        ser& thread;
     }
 
-
 private:
-
     ImplementSerializable(SST::RankInfo)
 };
 
-}
+} // namespace SST
 
-#endif
+#endif // SST_CORE_RANKINFO_H
