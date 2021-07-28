@@ -171,7 +171,7 @@ recv(int src, int tag, dataType& data)
     MPI_Recv(&size, 1, MPI_INT64_T, src, tag, MPI_COMM_WORLD, &status);
 
     // Now get the data
-    auto buffer = std::unique_ptr<char[]>(new char[size]);
+    auto    buffer        = std::unique_ptr<char[]>(new char[size]);
     int64_t offset        = 0;
     int32_t fragment_size = 1000000000;
     int64_t rem_size      = size;
@@ -219,7 +219,7 @@ all_gather(dataType& data, std::vector<dataType>& out_data)
 
     out_data.resize(world);
     for ( int i = 0; i < world; i++ ) {
-        auto *bbuf = bigBuff.get();
+        auto* bbuf = bigBuff.get();
         Comms::deserialize(&bbuf[displ[i]], allSizes[i], out_data[i]);
     }
 }
