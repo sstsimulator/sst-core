@@ -116,6 +116,7 @@ nobase_dist_sst_HEADERS = \
 	interprocess/circularBuffer.h \
 	interprocess/sstmutex.h \
 	interprocess/ipctunnel.h \
+	nlohmann/json.hpp \
 	rng/sstrng.h \
 	rng/rng.h \
 	rng/marsaglia.h \
