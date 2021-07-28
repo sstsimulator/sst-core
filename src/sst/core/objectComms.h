@@ -21,6 +21,7 @@ DISABLE_WARN_MISSING_OVERRIDE
 REENABLE_WARNING
 #endif
 
+#include <memory>
 #include <typeinfo>
 
 namespace SST {
@@ -129,11 +130,11 @@ broadcast(dataType& data, int root)
         MPI_Bcast(&size, 1, MPI_INT, root, MPI_COMM_WORLD);
 
         // Now get the data
-        char* buffer = new char[size];
-        MPI_Bcast(buffer, size, MPI_BYTE, root, MPI_COMM_WORLD);
+        auto buffer = std::unique_ptr<char[]>(new char[size]);
+        MPI_Bcast(buffer.get(), size, MPI_BYTE, root, MPI_COMM_WORLD);
 
         // Now deserialize data
-        Comms::deserialize(buffer, size, data);
+        Comms::deserialize(buffer.get(), size, data);
     }
 }
 
@@ -170,20 +171,20 @@ recv(int src, int tag, dataType& data)
     MPI_Recv(&size, 1, MPI_INT64_T, src, tag, MPI_COMM_WORLD, &status);
 
     // Now get the data
-    char*   buffer        = new char[size];
+    auto buffer = std::unique_ptr<char[]>(new char[size]);
     int64_t offset        = 0;
     int32_t fragment_size = 1000000000;
     int64_t rem_size      = size;
 
     while ( rem_size >= fragment_size ) {
-        MPI_Recv(buffer + offset, fragment_size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
+        MPI_Recv(buffer.get() + offset, fragment_size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
         rem_size -= fragment_size;
         offset += fragment_size;
     }
-    MPI_Recv(buffer + offset, rem_size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
+    MPI_Recv(buffer.get() + offset, rem_size, MPI_BYTE, src, tag, MPI_COMM_WORLD, &status);
 
     // Now deserialize data
-    Comms::deserialize(buffer, size, data);
+    Comms::deserialize(buffer.get(), size, data);
 }
 
 template <typename dataType>
@@ -212,16 +213,15 @@ all_gather(dataType& data, std::vector<dataType>& out_data)
         if ( i > 0 ) displ[i] = displ[i - 1] + allSizes[i - 1];
     }
 
-    char* bigBuff = new char[totalBuf];
+    auto bigBuff = std::unique_ptr<char[]>(new char[totalBuf]);
 
-    MPI_Allgatherv(buffer.data(), buffer.size(), MPI_BYTE, bigBuff, allSizes, displ, MPI_BYTE, MPI_COMM_WORLD);
+    MPI_Allgatherv(buffer.data(), buffer.size(), MPI_BYTE, bigBuff.get(), allSizes, displ, MPI_BYTE, MPI_COMM_WORLD);
 
     out_data.resize(world);
     for ( int i = 0; i < world; i++ ) {
-        Comms::deserialize(&bigBuff[displ[i]], allSizes[i], out_data[i]);
+        auto *bbuf = bigBuff.get();
+        Comms::deserialize(&bbuf[displ[i]], allSizes[i], out_data[i]);
     }
-
-    delete[] bigBuff;
 }
 
 #endif
