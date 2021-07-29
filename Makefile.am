@@ -12,6 +12,7 @@ sstconf_DATA = src/sst/sstsimulator.conf
 EXTRA_DIST = \
 	autogen.sh \
 	CONTRIBUTING.md \
+	scrips/clang-format-test.sh \
 	INSTALL \
 	ISSUES \
 	LICENSE \
