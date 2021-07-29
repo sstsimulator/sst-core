@@ -7,7 +7,7 @@
 # See LICENSE for full license details
 #
 
-cmake_minimum_required(VERSION 3.4.3)
+cmake_minimum_required(VERSION 3.12)
 project(sst-core)
 set(VERSION "11.1.0")
 
