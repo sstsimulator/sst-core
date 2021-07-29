@@ -1,3 +1,4 @@
+#!/bin/bash
 # This script will run clang-format on directories in sst-core to test/verify format
 
 # Check for running in the root dir of SST-Core
