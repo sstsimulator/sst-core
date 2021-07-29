@@ -3,7 +3,7 @@
 #
 
 AM_CPPFLAGS += \
-	-I$(top_srcdir)/sst/tinyxml
+	-I$(top_srcdir)/external
 
 sst_x_SOURCES += \
 	src/clockEvent.cc \

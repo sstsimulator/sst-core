@@ -10,6 +10,7 @@ AM_CPPFLAGS =  \
 	-DSST_BUILDING_CORE=1 \
 	$(ZOLTAN_CPPFLAGS) \
 	$(PYTHON_CPPFLAGS) \
+	-I$(top_srcdir)/external \
 	$(LTDLINCL)
 
 DIST_SUBDIRS = libltdl .
@@ -298,7 +299,7 @@ sstinfo_x_LDFLAGS = \
 	-export-dynamic \
 	$(SST_LTLIBS_ELEMLIBS)
 
-include tinyxml/Makefile.inc
+include ../../../external/tinyxml/Makefile.inc
 include part/Makefile.inc
 include model/Makefile.inc
 include shared/Makefile.inc

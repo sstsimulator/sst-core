@@ -3,39 +3,39 @@
 #
 
 sst_xml_sources = \
-	tinyxml/tinystr.cpp \
-	tinyxml/tinyxml.cpp \
-	tinyxml/tinyxmlerror.cpp \
-	tinyxml/tinyxmlparser.cpp \
-	tinyxml/tinystr.h \
-	tinyxml/tinyxml.h
+	$(top_srcdir)/external/tinyxml/tinystr.cpp \
+	$(top_srcdir)/external/tinyxml/tinyxml.cpp \
+	$(top_srcdir)/external/tinyxml/tinyxmlerror.cpp \
+	$(top_srcdir)/external/tinyxml/tinyxmlparser.cpp \
+	$(top_srcdir)/external/tinyxml/tinystr.h \
+	$(top_srcdir)/external/tinyxml/tinyxml.h
 
 EXTRA_DIST += \
-	tinyxml/Makefile.orig \
-	tinyxml/changes.txt \
-	tinyxml/demotest.xml \
-	tinyxml/echo.dsp \
-	tinyxml/readme.txt \
-	tinyxml/test5.xml \
-	tinyxml/test6.xml \
-	tinyxml/test7.xml \
-	tinyxml/textfile.txt \
-	tinyxml/tinyXmlTest.dsp \
-	tinyxml/tinyXmlTest.vcproj \
-	tinyxml/tinyXmlTestSTL.dsp \
-	tinyxml/tinyXmlTestSTL.vcproj \
-	tinyxml/tinyxml.dsw \
-	tinyxml/tinyxml.sln \
-	tinyxml/tinyxmlSTL.dsp \
-	tinyxml/tinyxmlSTL.vcproj \
-	tinyxml/tinyxml_lib.dsp \
-	tinyxml/tinyxml_lib.vcproj \
-	tinyxml/utf8test.gif \
-	tinyxml/utf8test.xml \
-	tinyxml/utf8testout.xml \
-	tinyxml/utf8testverify.xml \
-	tinyxml/xmltest.cpp \
-	tinyxml/docs
+	$(top_srcdir)/external/tinyxml/Makefile.orig \
+	$(top_srcdir)/external/tinyxml/changes.txt \
+	$(top_srcdir)/external/tinyxml/demotest.xml \
+	$(top_srcdir)/external/tinyxml/echo.dsp \
+	$(top_srcdir)/external/tinyxml/readme.txt \
+	$(top_srcdir)/external/tinyxml/test5.xml \
+	$(top_srcdir)/external/tinyxml/test6.xml \
+	$(top_srcdir)/external/tinyxml/test7.xml \
+	$(top_srcdir)/external/tinyxml/textfile.txt \
+	$(top_srcdir)/external/tinyxml/tinyXmlTest.dsp \
+	$(top_srcdir)/external/tinyxml/tinyXmlTest.vcproj \
+	$(top_srcdir)/external/tinyxml/tinyXmlTestSTL.dsp \
+	$(top_srcdir)/external/tinyxml/tinyXmlTestSTL.vcproj \
+	$(top_srcdir)/external/tinyxml/tinyxml.dsw \
+	$(top_srcdir)/external/tinyxml/tinyxml.sln \
+	$(top_srcdir)/external/tinyxml/tinyxmlSTL.dsp \
+	$(top_srcdir)/external/tinyxml/tinyxmlSTL.vcproj \
+	$(top_srcdir)/external/tinyxml/tinyxml_lib.dsp \
+	$(top_srcdir)/external/tinyxml/tinyxml_lib.vcproj \
+	$(top_srcdir)/external/tinyxml/utf8test.gif \
+	$(top_srcdir)/external/tinyxml/utf8test.xml \
+	$(top_srcdir)/external/tinyxml/utf8testout.xml \
+	$(top_srcdir)/external/tinyxml/utf8testverify.xml \
+	$(top_srcdir)/external/tinyxml/xmltest.cpp \
+	$(top_srcdir)/external/tinyxml/docs
 
 dist-hook:
 	rm -rf `find $(distdir)/tinyxml/docs -name .svn`

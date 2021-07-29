@@ -13,7 +13,7 @@
 #define SST_CORE_SST_INFO_H
 
 #include "sst/core/eli/elementinfo.h"
-#include "sst/core/tinyxml/tinyxml.h"
+#include "tinyxml/tinyxml.h"
 
 #include <map>
 #include <set>
