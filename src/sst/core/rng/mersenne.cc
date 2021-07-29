@@ -10,6 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
+#include "sst/core/sst_types.h"
 
 #include "rng.h"
 #include "mersenne.h"
@@ -63,24 +64,31 @@ void MersenneRNG::generateNextBatch() {
 
 /*
     Transform an unsigned integer into a uniform double from which other
-    distributed can be generated
+    distribution can be generated. Guarantees to select values in the
+    range [0,1).
 */
 double MersenneRNG::nextUniform() {
-    uint32_t temp = generateNextUInt32();
-    return ( (double) temp ) / (double) MERSENNE_UINT32_MAX;
+    double temp_dbl = 1.0;
+
+    do {
+        temp_dbl = static_cast<double>(generateNextUInt32()) / static_cast<double>(MERSENNE_UINT32_MAX);
+    } while( UNLIKELY(temp_dbl >= 1.0) );
+
+    return temp_dbl;
 }
 
 uint32_t MersenneRNG::generateNextUInt32() {
-    if(index == 0)
-                generateNextBatch();
+    if(index == 0) {
+        generateNextBatch();
+    }
 
-        uint32_t temp = numbers[index];
-        temp = temp ^ (temp >> 11);
-        temp = temp ^ ((temp << 7) & 2636928640UL);
-        temp = temp ^ ((temp << 15) & 4022730752UL);
-        temp = temp ^ (temp >> 18);
+    uint32_t temp = numbers[index];
+    temp = temp ^ (temp >> 11);
+    temp = temp ^ ((temp << 7) & 2636928640UL);
+    temp = temp ^ ((temp << 15) & 4022730752UL);
+    temp = temp ^ (temp >> 18);
 
-        index = (index + 1) % 624;
+    index = (index + 1) % 624;
     return (uint32_t) temp;
 }
 
