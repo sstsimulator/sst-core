@@ -12,7 +12,7 @@ pwd
 # Setup SST-Core Directories to be skipped for clang-format checks
 DIRS_TO_SKIP="-path ./build "
 DIRS_TO_SKIP="$DIRS_TO_SKIP -or -path ./src/sst/core/libltdl"
-DIRS_TO_SKIP="$DIRS_TO_SKIP -or -path ./src/sst/core/tinyxml"
+DIRS_TO_SKIP="$DIRS_TO_SKIP -or -path ./external"
 # Add additional directories to skip here...
 
 echo "======================================="
