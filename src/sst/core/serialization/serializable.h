@@ -139,8 +139,8 @@ class serializable_type
 {};
 
 #define ImplementVirtualSerializable(obj) \
-protected:                                \
-    obj(cxn_flag_t flag __attribute__((unused))) {}
+public:                                   \
+    virtual const char* cls_name() const override { return #obj; }
 
 #define NotSerializable(obj)                                                                                      \
 public:                                                                                                           \

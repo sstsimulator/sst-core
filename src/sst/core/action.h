@@ -34,20 +34,12 @@ public:
     }
     ~Action() {}
 
-    void print(const std::string& header, Output& out) const override
-    {
-        out.output(
-            "%s Generic Action to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), getDeliveryTime(),
-            getPriority());
-    }
-
 protected:
     /** Called to signal to the Simulation object to end the simulation */
     void endSimulation();
     void endSimulation(SimTime_t end);
 
-private:
-    NotSerializable(Action)
+    NotSerializable(SST::Action)
 };
 
 } // namespace SST
