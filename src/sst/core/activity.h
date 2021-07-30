@@ -21,6 +21,7 @@
 #include <cinttypes>
 #include <cstring>
 #include <errno.h>
+#include <sstream>
 #include <unordered_map>
 
 // Default Priority Settings
@@ -65,14 +66,14 @@ public:
             if ( lhs->delivery_time == rhs->delivery_time ) {
                 if ( lhs->priority == rhs->priority ) {
                     /* TODO:  Handle 64-bit wrap-around */
-                    return lhs->enforce_link_order > rhs->enforce_link_order;
+                    return lhs->enforce_link_order < rhs->enforce_link_order;
                 }
                 else {
-                    return lhs->priority > rhs->priority;
+                    return lhs->priority < rhs->priority;
                 }
             }
             else {
-                return lhs->delivery_time > rhs->delivery_time;
+                return lhs->delivery_time < rhs->delivery_time;
             }
         }
 
@@ -85,11 +86,11 @@ public:
                     return lhs.enforce_link_order > rhs.enforce_link_order;
                 }
                 else {
-                    return lhs.priority > rhs.priority;
+                    return lhs.priority < rhs.priority;
                 }
             }
             else {
-                return lhs.delivery_time > rhs.delivery_time;
+                return lhs.delivery_time < rhs.delivery_time;
             }
         }
     };
@@ -232,14 +233,36 @@ public:
     /** Return the Priority of this Activity */
     inline int getPriority() const { return priority; }
 
+    std::string getDeliveryTimeInfo() const
+    {
+        std::stringstream buf;
+        buf << "time: " << delivery_time << ", priority: " << priority;
+        return buf.str();
+    }
+
+    /** Get a string represenation of the event.  The default version
+     * will just use the name of the class, retrieved through the
+     * cls_name() function inherited from the serialzable class, which
+     * will return the name of the last class to call one of the
+     * serialization macros (ImplementSerializable(),
+     * ImplementVirtualSerializable(), or NotSerializable()).
+     * Subclasses can override this function if they want to add
+     * additional information.
+     */
+    virtual std::string toString() const
+    {
+        std::stringstream buf;
+
+        buf << cls_name() << " to be delivered at " << getDeliveryTimeInfo();
+        return buf.str();
+    }
+
     /** Generic print-print function for this Activity.
      * Subclasses should override this function.
      */
     virtual void print(const std::string& header, Output& out) const
     {
-        out.output(
-            "%s Generic Activity to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), delivery_time,
-            priority);
+        out.output("%s%s\n", header.c_str(), toString().c_str());
     }
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
@@ -391,6 +414,8 @@ private:
     static std::mutex              poolMutex;
     static std::vector<PoolInfo_t> memPools;
 #endif
+
+    ImplementVirtualSerializable(SST::Activity)
 };
 
 } // namespace SST

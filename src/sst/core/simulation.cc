@@ -188,7 +188,13 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     endSimCycle(0),
     currentPriority(0),
     my_rank(my_rank),
-    num_ranks(num_ranks)
+    num_ranks(num_ranks),
+    run_phase_start_time(0.0),
+    run_phase_total_time(0.0),
+    init_phase_start_time(0.0),
+    init_phase_total_time(0.0),
+    complete_phase_start_time(0.0),
+    complete_phase_total_time(0.0)
 {
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
     output_directory = "";
@@ -464,7 +470,8 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
 void
 Simulation_impl::initialize()
 {
-    bool done = false;
+    init_phase_start_time = sst_get_cpu_time();
+    bool done             = false;
     initBarrier.wait();
     if ( my_rank.thread == 0 ) {
         DISABLE_WARN_DEPRECATED_DECLARATION;
@@ -497,6 +504,8 @@ Simulation_impl::initialize()
         untimed_phase++;
     } while ( !done );
 
+    init_phase_total_time = sst_get_cpu_time() - init_phase_start_time;
+
     // Walk through all the links and call finalizeConfiguration
 
     for ( auto& i : compInfoMap ) {
@@ -516,7 +525,7 @@ Simulation_impl::initialize()
 void
 Simulation_impl::complete()
 {
-
+    complete_phase_start_time = sst_get_cpu_time();
     completeBarrier.wait();
     untimed_phase = 0;
     // Walk through all the links and call prepareForComplete()
@@ -546,6 +555,7 @@ Simulation_impl::complete()
 
         untimed_phase++;
     } while ( !done );
+    complete_phase_total_time = sst_get_cpu_time() - complete_phase_start_time;
 }
 
 void
@@ -604,6 +614,9 @@ Simulation_impl::run()
     header += ", ";
     header += SST::to_string(my_rank.thread);
     header += ":  ";
+
+    run_phase_start_time = sst_get_cpu_time();
+
     while ( LIKELY(!endSim) ) {
         current_activity = timeVortex->pop();
         currentSimCycle  = current_activity->getDeliveryTime();
@@ -638,6 +651,8 @@ Simulation_impl::run()
     /* We shouldn't need to do this, but to be safe... */
 
     runBarrier.wait(); // TODO<- Is this needed?
+
+    run_phase_total_time = sst_get_cpu_time() - run_phase_start_time;
 
     // If we have no links that are cut by a partition, we need to do
     // a final check to get the right simulated time.
@@ -736,6 +751,36 @@ Simulation_impl::printStatus(bool fullStatus)
         for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
             (*iter)->getComponent()->printStatus(out);
         }
+    }
+}
+
+double
+Simulation_impl::getRunPhaseElapsedRealTime() const
+{
+    if ( run_phase_start_time == 0.0 ) return 0.0; // Not in run phase yet
+    if ( run_phase_total_time == 0.0 ) { return sst_get_cpu_time() - run_phase_start_time; }
+    else {
+        return run_phase_total_time;
+    }
+}
+
+double
+Simulation_impl::getInitPhaseElapsedRealTime() const
+{
+    if ( init_phase_start_time == 0.0 ) return 0.0; // Not in init phase yet
+    if ( init_phase_total_time == 0.0 ) { return sst_get_cpu_time() - init_phase_start_time; }
+    else {
+        return init_phase_total_time;
+    }
+}
+
+double
+Simulation_impl::getCompletePhaseElapsedRealTime() const
+{
+    if ( complete_phase_start_time == 0.0 ) return 0.0; // Not in complete phase yet
+    if ( complete_phase_total_time == 0.0 ) { return sst_get_cpu_time() - complete_phase_start_time; }
+    else {
+        return complete_phase_total_time;
     }
 }
 

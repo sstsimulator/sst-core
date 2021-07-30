@@ -161,13 +161,6 @@ public:
         void operator()(Event* event) { (object->*member)(event); }
     };
 
-    /** Virtual function to "pretty-print" this event.  Should be implemented by subclasses. */
-    virtual void print(const std::string& header, Output& out) const override
-    {
-        out.output(
-            "%s Generic Event to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), getDeliveryTime(),
-            getPriority());
-    }
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
 
@@ -244,6 +237,8 @@ private:
     std::string last_type;
     std::string last_port;
 #endif
+
+    ImplementVirtualSerializable(SST::Action)
 };
 
 /**
@@ -256,13 +251,6 @@ public:
     ~NullEvent() {}
 
     void execute(void) override;
-
-    virtual void print(const std::string& header, Output& out) const override
-    {
-        out.output(
-            "%s NullEvent to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), getDeliveryTime(),
-            getPriority());
-    }
 
 private:
     ImplementSerializable(SST::NullEvent)

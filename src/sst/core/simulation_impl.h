@@ -111,6 +111,10 @@ public:
      */
     virtual void printStatus(bool fullStatus) override;
 
+    virtual double getRunPhaseElapsedRealTime() const override;
+    virtual double getInitPhaseElapsedRealTime() const override;
+    virtual double getCompletePhaseElapsedRealTime() const override;
+
     /******** End Public API from Simulation ********/
 
     typedef std::map<std::pair<SimTime_t, int>, Clock*>   clockMap_t;   /*!< Map of times to clocks */
@@ -366,6 +370,13 @@ public:
 
     std::string                 output_directory;
     static SharedRegionManager* sharedRegionManager;
+
+    double run_phase_start_time;
+    double run_phase_total_time;
+    double init_phase_start_time;
+    double init_phase_total_time;
+    double complete_phase_start_time;
+    double complete_phase_total_time;
 
     static std::unordered_map<std::thread::id, Simulation_impl*> instanceMap;
     static std::vector<Simulation_impl*>                         instanceVec;
