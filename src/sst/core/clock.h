@@ -132,6 +132,8 @@ private:
     StaticHandlerMap_t staticHandlerMap;
     SimTime_t          next;
     bool               scheduled;
+
+    NotSerializable(SST::Clock)
 };
 
 } // namespace SST

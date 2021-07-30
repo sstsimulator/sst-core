@@ -13,6 +13,7 @@
 #define SST_CORE_TIMECONVERTER_H
 
 #include "sst/core/sst_types.h"
+#include "sst/core/unitAlgebra.h"
 
 namespace SST {
 

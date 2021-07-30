@@ -93,10 +93,9 @@ public:
     /** Get the number of parallel ranks in the simulation */
     virtual RankInfo getNumRanks() const = 0;
 
-    /**
-    Returns the output directory of the simulation
-    @return Directory in which simulation outputs are placed
-    */
+    /** Returns the output directory of the simulation
+     *  @return Directory in which simulation outputs are placed
+     */
     virtual std::string& getOutputDirectory() = 0;
 
     /** Signifies that an event type is required for this simulation
@@ -110,6 +109,27 @@ public:
      *        as print the base Simulation's status
      */
     virtual void printStatus(bool fullStatus) = 0;
+
+    /** Get the amount of real-time spent executing the run phase of
+     * the simulation.
+     *
+     * @return real-time in seconds spent executing the run phase
+     */
+    virtual double getRunPhaseElapsedRealTime() const = 0;
+
+    /** Get the amount of real-time spent executing the init phase of
+     * the simulation.
+     *
+     * @return real-time in seconds spent executing the init phase
+     */
+    virtual double getInitPhaseElapsedRealTime() const = 0;
+
+    /** Get the amount of real-time spent executing the complete phase of
+     * the simulation.
+     *
+     * @return real-time in seconds spent executing the complete phase
+     */
+    virtual double getCompletePhaseElapsedRealTime() const = 0;
 
 protected:
     Simulation() {}
