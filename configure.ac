@@ -84,6 +84,7 @@ SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 
 SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
 SST_CHECK_LIBZ([have_zlib="yes"],[have_zlib="no"],[AC_MSG_ERROR([zlib was requested but could not be found.])])
+SST_CHECK_BACKTRACE()
 SST_CHECK_HDF5()
 SST_CHECK_MEM_POOL()
 
