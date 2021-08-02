@@ -40,6 +40,8 @@ endif
 EXTRA_DIST += \
 	testingframework/__init__.py \
 	testingframework/readme.md \
+	testingframework/sst-test-core.in \
+   testingframework/sst-test-elements.in \
 	testingframework/sst_test_engine_loader.py \
 	testingframework/sst_unittest.py \
 	testingframework/sst_unittest_support.py \
