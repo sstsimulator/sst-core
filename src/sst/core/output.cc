@@ -25,7 +25,9 @@
 #include <cinttypes>
 
 // System Headers
+#ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
+#endif // HAVE_EXECINFO_H
 
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
@@ -187,6 +189,7 @@ Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, 
     std::fflush(stderr);
     flush();
 
+#ifdef HAVE_EXECINFO_H
     // Back trace so we know where this happened.
     const int backtrace_max_count = 64;
     void*     backtrace_elements[backtrace_max_count];
@@ -200,6 +203,9 @@ Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, 
     }
 
     free(backtrace_names);
+#else
+    fprintf(stderr, "Backtrace not available on this build/platform.\n");
+#endif
 
     Simulation_impl::emergencyShutdown();
 

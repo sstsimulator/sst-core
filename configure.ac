@@ -69,7 +69,7 @@ CXXFLAGS="$CXXFLAGS $WARNFLAGS"
 dnl Fix flags - seems to be only way to make libltdl play nice
 CPPFLAGS='-I$(top_builddir) -I$(top_srcdir)/src -I$(top_builddir)/src'" $CPPFLAGS"
 
-AC_CHECK_HEADERS([c_asm.h dlfcn.h intrinsics.h mach/mach_time.h sys/time.h sys/stat.h sys/types.h unistd.h])
+AC_CHECK_HEADERS([c_asm.h dlfcn.h execinfo.h intrinsics.h mach/mach_time.h sys/time.h sys/stat.h sys/types.h unistd.h])
 
 AC_CACHE_SAVE
 
