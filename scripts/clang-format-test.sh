@@ -56,13 +56,13 @@ echo "======================================="
 
 # Run clang-format on all specific .h files
 echo
-find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.h' -exec clang-format --dry-run {} \;  > clang_format_results_h.txt 2>&1
+find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.h' -exec ${CLANG_FORMAT_EXE} --dry-run {} \;  > clang_format_results_h.txt 2>&1
 rtncode=$?
 echo "=== CLANG-FORMAT FINISHED *.h CHECKS WITH RTN CODE $rtncode"
 
 # Run clang-format on all specific .cc files
 echo
-find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.cc' -exec clang-format --dry-run {} \; > clang_format_results_cc.txt 2>&1
+find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.cc' -exec ${CLANG_FORMAT_EXE} --dry-run {} \; > clang_format_results_cc.txt 2>&1
 rtncode=$?
 echo "=== CLANG-FORMAT FINISHED *.cc CHECKS WITH RTN CODE $rtncode"
 
