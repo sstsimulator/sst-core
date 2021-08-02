@@ -7,8 +7,42 @@ if [ ! -f ./scripts/clang-format-test.sh  ]; then
     exit 1
 fi
 
+CLANG_FORMAT_EXE="clang-format"
 
-pwd
+while :; do
+  case $1 in 
+    -h | --help)
+      echo "Run as scripts/clang-format-test.sh [--format-exe <path_to_clang-format>]"
+      exit
+      ;;
+    --format-exe)
+      if [ "$2" ]; then
+        CLANG_FORMAT_EXE=$2
+        shift
+      else
+        echo 'Error, --format-exe requires a path to a clang-format.'
+        exit
+      fi
+      ;;
+    * )
+      break
+  esac
+done
+
+echo "Using clang-format ${CLANG_FORMAT_EXE}."
+
+clang_format_version="$(${CLANG_FORMAT_EXE} --version)"
+currentver="$(${CLANG_FORMAT_EXE} --version | cut -d' ' -f3 | tr -dc '0-9')"
+if [ $currentver -lt 1200 ]; then
+  echo "clang-format version is $clang_format_version. We require version 12."
+  exit 1
+fi
+
+if [ $currentver -ge 1300 ]; then
+  echo "clang-format version is $clang_format_version. We require version 12."
+  exit 1
+fi
+
 
 # Setup SST-Core Directories to be skipped for clang-format checks
 DIRS_TO_SKIP="-path ./build "
@@ -22,13 +56,13 @@ echo "======================================="
 
 # Run clang-format on all specific .h files
 echo
-find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.h' -exec clang-format --dry-run {} \;  > clang_format_results_h.txt 2>&1
+find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.h' -exec ${CLANG_FORMAT_EXE} --dry-run {} \;  > clang_format_results_h.txt 2>&1
 rtncode=$?
 echo "=== CLANG-FORMAT FINISHED *.h CHECKS WITH RTN CODE $rtncode"
 
 # Run clang-format on all specific .cc files
 echo
-find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.cc' -exec clang-format --dry-run {} \; > clang_format_results_cc.txt 2>&1
+find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.cc' -exec ${CLANG_FORMAT_EXE} --dry-run {} \; > clang_format_results_cc.txt 2>&1
 rtncode=$?
 echo "=== CLANG-FORMAT FINISHED *.cc CHECKS WITH RTN CODE $rtncode"
 
