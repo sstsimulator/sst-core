@@ -69,7 +69,7 @@ CXXFLAGS="$CXXFLAGS $WARNFLAGS"
 dnl Fix flags - seems to be only way to make libltdl play nice
 CPPFLAGS='-I$(top_builddir) -I$(top_srcdir)/src -I$(top_builddir)/src'" $CPPFLAGS"
 
-AC_CHECK_HEADERS([c_asm.h dlfcn.h execinfo.h intrinsics.h mach/mach_time.h sys/time.h sys/stat.h sys/types.h unistd.h])
+AC_CHECK_HEADERS([c_asm.h dlfcn.h intrinsics.h mach/mach_time.h sys/time.h sys/stat.h sys/types.h unistd.h])
 
 AC_CACHE_SAVE
 
@@ -84,6 +84,7 @@ SST_CHECK_MPI([], [AC_MSG_ERROR([Could not find MPI package])])
 
 SST_CHECK_PYTHON([], [AC_MSG_ERROR([Could not find Python, this is required for SST to build])])
 SST_CHECK_LIBZ([have_zlib="yes"],[have_zlib="no"],[AC_MSG_ERROR([zlib was requested but could not be found.])])
+SST_CHECK_BACKTRACE()
 SST_CHECK_HDF5()
 SST_CHECK_MEM_POOL()
 

@@ -189,7 +189,7 @@ Output::fatal(uint32_t line, const char* file, const char* func, int exit_code, 
     std::fflush(stderr);
     flush();
 
-#ifdef HAVE_EXECINFO_H
+#ifdef HAVE_BACKTRACE
     // Back trace so we know where this happened.
     const int backtrace_max_count = 64;
     void*     backtrace_elements[backtrace_max_count];
