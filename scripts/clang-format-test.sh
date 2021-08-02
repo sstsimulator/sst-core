@@ -12,7 +12,7 @@ CLANG_FORMAT_EXE="clang-format"
 while :; do
   case $1 in 
     -h | --help)
-      echo "Run as scripts/clang-format-test.sh.sh [--format-exe <path_to_clang-format>]"
+      echo "Run as scripts/clang-format-test.sh [--format-exe <path_to_clang-format>]"
       exit
       ;;
     --format-exe)
