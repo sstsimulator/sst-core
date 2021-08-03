@@ -300,6 +300,7 @@ sstinfo_x_LDFLAGS = \
 	$(SST_LTLIBS_ELEMLIBS)
 
 include ../../../external/tinyxml/Makefile.inc
+include ../../../external/nlohmann/Makefile.inc
 include part/Makefile.inc
 include model/Makefile.inc
 include shared/Makefile.inc
