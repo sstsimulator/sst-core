@@ -116,7 +116,6 @@ nobase_dist_sst_HEADERS = \
 	interprocess/circularBuffer.h \
 	interprocess/sstmutex.h \
 	interprocess/ipctunnel.h \
-	nlohmann/json.hpp \
 	rng/sstrng.h \
 	rng/rng.h \
 	rng/marsaglia.h \
@@ -301,6 +300,7 @@ sstinfo_x_LDFLAGS = \
 	$(SST_LTLIBS_ELEMLIBS)
 
 include ../../../external/tinyxml/Makefile.inc
+include ../../../external/nlohmann/Makefile.inc
 include part/Makefile.inc
 include model/Makefile.inc
 include shared/Makefile.inc

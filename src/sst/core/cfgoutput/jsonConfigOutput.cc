@@ -20,6 +20,8 @@
 #include "sst/core/params.h"
 #include "sst/core/nlohmann/json.hpp"
 
+#include "nlohmann/json.hpp"
+
 #include <map>
 #include <sstream>
 
