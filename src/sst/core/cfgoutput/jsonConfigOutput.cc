@@ -48,17 +48,6 @@ struct StatPair
     SST::ConfigComponent const*                  comp;
 };
 
-struct ParamsPair
-{
-    std::string const&          paramItr;
-    SST::ConfigStatistic const* si;
-};
-
-void
-to_json(json::json& j, ParamsPair const& pp)
-{
-    j = json::json { { "name", pp.paramItr }, { "value", pp.si->params.find<std::string>(pp.paramItr) } };
-}
 
 void
 to_json(json::json& j, StatPair const& sp)
@@ -68,7 +57,7 @@ to_json(json::json& j, StatPair const& sp)
 
     auto* si = sp.comp->findStatistic(sp.statkey.second);
     for ( auto const& parmItr : si->params.getKeys() ) {
-        j["params"].push_back(ParamsPair { parmItr, si });
+        j["params"][parmItr] = si->params.find<std::string>(parmItr);
     }
 }
 
@@ -82,7 +71,7 @@ to_json(json::json& j, CompLinkPair const& pair)
     for ( auto const& i : comp->links ) {
         auto const& link = linkMap[i];
         const auto  port = (link.component[0] == comp->id) ? 0 : 1;
-        j["ports"].push_back({ { "name", link.port[port] } });
+        j["ports"].push_back(link.port[port]);
     }
 
     for ( auto const& scItr : comp->subComponents ) {
@@ -94,7 +83,7 @@ to_json(json::json& j, CompLinkPair const& pair)
     }
 
     for ( auto const& paramsItr : comp->params.getKeys() ) {
-        j["params"].push_back({ { "name", paramsItr }, { "value", comp->params.find<std::string>(paramsItr) } });
+        j["params"][paramsItr] = comp->params.find<std::string>(paramsItr);
     }
 }
 
