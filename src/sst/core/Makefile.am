@@ -15,7 +15,7 @@ AM_CPPFLAGS =  \
 
 DIST_SUBDIRS = libltdl .
 SUBDIRS = libltdl .
-EXTRA_DIST = sstinfo.h mainpage.dox eli/README.md
+EXTRA_DIST = mainpage.dox eli/README.md
 
 sstdir = $(includedir)/sst/core
 nobase_dist_sst_HEADERS = \
@@ -197,6 +197,7 @@ sst_core_sources = \
 	serialization/serialize_serializable.cc \
 	serialization/serializer.cc \
 	serialization/statics.cc \
+	sstinfo.h \
 	interfaces/TestEvent.cc \
 	interfaces/simpleMem.cc \
 	interfaces/stdMem.cc \
