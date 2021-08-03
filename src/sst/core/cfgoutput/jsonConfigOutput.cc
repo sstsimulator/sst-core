@@ -95,8 +95,8 @@ to_json(json::json& j, LinkConfPair const& pair)
 
     // These accesses into compMap are not checked
     j              = json::json { { "name", link.name } };
-    j["left"]      = graph->findComponent(link.component[0])->name;
-    j["right"]     = graph->findComponent(link.component[1])->name;
+    j["left"]      = graph->findComponent(link.component[0])->getFullName();
+    j["right"]     = graph->findComponent(link.component[1])->getFullName();
     j["rightPort"] = link.port[1];
     j["latency"]   = link.latency_str[(link.latency[0] <= link.latency[1]) ? 0 : 1];
 }
