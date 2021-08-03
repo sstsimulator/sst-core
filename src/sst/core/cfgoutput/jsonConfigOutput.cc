@@ -18,7 +18,6 @@
 #include "sst/core/configGraph.h"
 #include "sst/core/configGraphOutput.h"
 #include "sst/core/params.h"
-#include "sst/core/nlohmann/json.hpp"
 
 #include "nlohmann/json.hpp"
 
@@ -31,99 +30,105 @@ namespace json = ::nlohmann;
 JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) : ConfigGraphOutput(path) {}
 
 namespace {
-struct CompLinkPair {
+struct CompLinkPair
+{
     SST::ConfigComponent const* comp;
     SST::ConfigLinkMap_t const& linkMap;
 };
 
-struct LinkConfPair {
-    SST::ConfigLink const& link;
-    SST::ConfigComponentMap_t const& compMap;
+struct LinkConfPair
+{
+    SST::ConfigLink const&  link;
+    SST::ConfigGraph const* graph;
 };
 
-struct StatPair {
+struct StatPair
+{
     std::pair<std::string, unsigned long> const& statkey;
-    SST::ConfigComponent const* comp;
+    SST::ConfigComponent const*                  comp;
 };
 
-struct ParamsPair {
-    std::string const& paramItr;
+struct ParamsPair
+{
+    std::string const&          paramItr;
     SST::ConfigStatistic const* si;
 };
 
 void
-to_json(json::json& j, ParamsPair const& pp) {
+to_json(json::json& j, ParamsPair const& pp)
+{
     j = json::json { { "name", pp.paramItr }, { "value", pp.si->params.find<std::string>(pp.paramItr) } };
 }
 
 void
-to_json(json::json& j, StatPair const& sp) {
+to_json(json::json& j, StatPair const& sp)
+{
     auto const& name = sp.statkey.first;
-    j = json::json { { "name", name } };
+    j                = json::json { { "name", name } };
 
     auto* si = sp.comp->findStatistic(sp.statkey.second);
-    for (auto const& parmItr : si->params.getKeys()) {
+    for ( auto const& parmItr : si->params.getKeys() ) {
         j["params"].push_back(ParamsPair { parmItr, si });
     }
 }
 
 void
-to_json(json::json& j, CompLinkPair const& pair) {
-    auto& comp = pair.comp;
+to_json(json::json& j, CompLinkPair const& pair)
+{
+    auto& comp    = pair.comp;
     auto& linkMap = pair.linkMap;
-    j = json::json { { "name", comp->name }, { "type", comp->type } };
+    j             = json::json { { "name", comp->name }, { "type", comp->type } };
 
-    for (auto const& i : comp->links) {
+    for ( auto const& i : comp->links ) {
         auto const& link = linkMap[i];
-        const auto port = (link.component[0] == comp->id) ? 0 : 1;
+        const auto  port = (link.component[0] == comp->id) ? 0 : 1;
         j["ports"].push_back({ { "name", link.port[port] } });
     }
 
-    for (auto const& scItr : comp->subComponents) {
+    for ( auto const& scItr : comp->subComponents ) {
         j["subcomponents"].push_back(CompLinkPair { scItr, linkMap });
     }
 
-    for (auto const& pair : comp->enabledStatNames) {
+    for ( auto const& pair : comp->enabledStatNames ) {
         j["statistics"].push_back(StatPair { pair, comp });
     }
 
-    for (auto const& paramsItr : comp->params.getKeys()) {
+    for ( auto const& paramsItr : comp->params.getKeys() ) {
         j["params"].push_back({ { "name", paramsItr }, { "value", comp->params.find<std::string>(paramsItr) } });
     }
 }
 
 void
-to_json(json::json& j, LinkConfPair const& pair) {
-    auto const& link = pair.link;
-    auto const& compMap = pair.compMap;
+to_json(json::json& j, LinkConfPair const& pair)
+{
+    auto const& link  = pair.link;
+    auto const* graph = pair.graph;
 
     // These accesses into compMap are not checked
-    j = json::json { { "name", link.name } };
-    j["left"] = compMap[link.component[0]]->name;
-    j["leftPort"] = link.port[0];
-    j["right"] = compMap[link.component[1]]->name;
+    j              = json::json { { "name", link.name } };
+    j["left"]      = graph->findComponent(link.component[0])->name;
+    j["right"]     = graph->findComponent(link.component[1])->name;
     j["rightPort"] = link.port[1];
-    j["latency"] = link.latency_str[(link.latency[0] <= link.latency[1]) ? 0 : 1];
+    j["latency"]   = link.latency_str[(link.latency[0] <= link.latency[1]) ? 0 : 1];
 }
 
 } // namespace
 
 void
-JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph) {
-    if (nullptr == outputFile) {
-        throw ConfigGraphOutputException("Output file is not open for writing");
-    }
+JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph)
+{
+    if ( nullptr == outputFile ) { throw ConfigGraphOutputException("Output file is not open for writing"); }
 
     auto compMap = graph->getComponentMap();
     auto linkMap = graph->getLinkMap();
 
     json::json outputJson;
-    for (auto compItr : compMap) {
+    for ( auto compItr : compMap ) {
         outputJson["compenents"].emplace_back(CompLinkPair { compItr, linkMap });
     }
 
-    for (auto linkItr : linkMap) {
-        outputJson["links"].push_back(LinkConfPair { linkItr, compMap });
+    for ( auto linkItr : linkMap ) {
+        outputJson["links"].push_back(LinkConfPair { linkItr, graph });
     }
 
     std::stringstream ss;
