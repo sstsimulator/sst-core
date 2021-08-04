@@ -9,13 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-
 #include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 extern char** environ;
 

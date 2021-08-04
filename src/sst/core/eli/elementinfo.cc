@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #include "sst_config.h"
+
 #include "sst/core/eli/elementinfo.h"
 
 namespace SST {
@@ -20,18 +20,22 @@ namespace SST {
 **************************************************************************/
 namespace ELI {
 
-void force_instantiate_bool(bool UNUSED(b), const char* UNUSED(name)){}
+void
+force_instantiate_bool(bool UNUSED(b), const char* UNUSED(name))
+{}
 
-static const std::vector<int> SST_ELI_COMPILED_VERSION = {0, 9, 0};
+static const std::vector<int> SST_ELI_COMPILED_VERSION = { 0, 9, 0 };
 
 std::string
 ProvidesDefaultInfo::getELIVersionString() const
 {
     std::stringstream stream;
-    bool first = true;
-    for (int item : SST_ELI_COMPILED_VERSION) {
-        if ( first ) first = false;
-        else stream << ".";
+    bool              first = true;
+    for ( int item : SST_ELI_COMPILED_VERSION ) {
+        if ( first )
+            first = false;
+        else
+            stream << ".";
         stream << item;
     }
     return stream.str();
@@ -40,7 +44,7 @@ ProvidesDefaultInfo::getELIVersionString() const
 const std::vector<int>&
 ProvidesDefaultInfo::getELICompiledVersion() const
 {
-  return SST_ELI_COMPILED_VERSION;
+    return SST_ELI_COMPILED_VERSION;
 }
 
 void
@@ -48,12 +52,11 @@ ProvidesParams::toString(std::ostream& os) const
 {
     os << "         NUM PARAMETERS = " << getValidParams().size() << "\n";
     int index = 0;
-    for (const ElementInfoParam& item : getValidParams() ) {
-      os << "            PARAMETER " << index
-         << " = " << item.name
-         << " (" << (item.description == nullptr ? "<empty>" : item.description) << ")"
-         << " [" << (item.defaultValue == nullptr ? "<required>" : item.defaultValue) << "]\n";
-      index++;
+    for ( const ElementInfoParam& item : getValidParams() ) {
+        os << "            PARAMETER " << index << " = " << item.name << " ("
+           << (item.description == nullptr ? "<empty>" : item.description) << ")"
+           << " [" << (item.defaultValue == nullptr ? "<required>" : item.defaultValue) << "]\n";
+        index++;
     }
 }
 
@@ -63,10 +66,9 @@ ProvidesPorts::toString(std::ostream& os) const
     os << "         NUM PORTS = " << getValidPorts().size() << "\n";
     int index = 0;
     for ( auto& item : getValidPorts() ) {
-      os << "            PORT " << index
-         << " = " << item.name
-         << " (" << (item.description == nullptr ? "<empty>" : item.description) << ")\n";
-      ++index;
+        os << "            PORT " << index << " = " << item.name << " ("
+           << (item.description == nullptr ? "<empty>" : item.description) << ")\n";
+        ++index;
     }
 }
 
@@ -76,11 +78,10 @@ ProvidesSubComponentSlots::toString(std::ostream& os) const
     os << "         NUM SUBCOMPONENT SLOTS = " << getSubComponentSlots().size() << "\n";
     int index = 0;
     for ( auto& item : getSubComponentSlots() ) {
-      os << "            SUB COMPONENT SLOT " << index
-         << " = " << item.name
-         << " (" << (item.description == nullptr ? "<empty>" : item.description) << ")"
-         << " [" << (item.superclass == nullptr ? "<none>" : item.superclass) << "]\n";
-      ++index;
+        os << "            SUB COMPONENT SLOT " << index << " = " << item.name << " ("
+           << (item.description == nullptr ? "<empty>" : item.description) << ")"
+           << " [" << (item.superclass == nullptr ? "<none>" : item.superclass) << "]\n";
+        ++index;
     }
 }
 
@@ -90,41 +91,37 @@ ProvidesStats::toString(std::ostream& os) const
     os << "         NUM STATISTICS = " << getValidStats().size() << "\n";
     int index = 0;
     for ( auto& item : getValidStats() ) {
-      os << "            STATISTIC " << index
-         << " = " << item.name
-         << " [" << (item.description == nullptr ? "<empty>" : item.description) << "]"
-         << " (" << (item.units == nullptr ? "<empty>" : item.units) << ")"
-         << " Enable level = " << (int16_t)item.enableLevel << "\n";
+        os << "            STATISTIC " << index << " = " << item.name << " ["
+           << (item.description == nullptr ? "<empty>" : item.description) << "]"
+           << " (" << (item.units == nullptr ? "<empty>" : item.units) << ")"
+           << " Enable level = " << (int16_t)item.enableLevel << "\n";
         ++index;
     }
 }
 
 void
-ProvidesDefaultInfo::toString(std::ostream &os) const
+ProvidesDefaultInfo::toString(std::ostream& os) const
 {
-  os << "    " << getName() << ": " << getDescription() << std::endl;
-  os << "    Using ELI version " << getELIVersionString() << std::endl;
-  os << "    Compiled on: " << getCompileDate() << ", using file: "
-         << getCompileFile() << std::endl;
+    os << "    " << getName() << ": " << getDescription() << std::endl;
+    os << "    Using ELI version " << getELIVersionString() << std::endl;
+    os << "    Compiled on: " << getCompileDate() << ", using file: " << getCompileFile() << std::endl;
 }
-
 
 void
 ProvidesPorts::init()
 {
-  for (auto& item : ports_) {
-    portnames.push_back(item.name);
-  }
+    for ( auto& item : ports_ ) {
+        portnames.push_back(item.name);
+    }
 }
-
 
 void
 ProvidesParams::init()
 {
-  for (auto& item : params_){
-    allowedKeys.insert(item.name);
-  }
+    for ( auto& item : params_ ) {
+        allowedKeys.insert(item.name);
+    }
 }
 
-}
-} //namespace SST
+} // namespace ELI
+} // namespace SST

@@ -19,16 +19,19 @@ namespace Core {
 namespace Interprocess {
 
 template <typename T>
-class CircularBuffer {
+class CircularBuffer
+{
 
 public:
-    CircularBuffer(size_t mSize = 0) {
-        buffSize = mSize;
-        readIndex = 0;
+    CircularBuffer(size_t mSize = 0)
+    {
+        buffSize   = mSize;
+        readIndex  = 0;
         writeIndex = 0;
     }
 
-    bool setBufferSize(const size_t bufferSize) {
+    bool setBufferSize(const size_t bufferSize)
+    {
         if ( buffSize != 0 ) {
             fprintf(stderr, "Already specified size for buffer\n");
             return false;
@@ -39,15 +42,16 @@ public:
         return true;
     }
 
-    T read() {
+    T read()
+    {
         int loop_counter = 0;
 
-        while( true ) {
+        while ( true ) {
             bufferMutex.lock();
 
-            if( readIndex != writeIndex ) {
+            if ( readIndex != writeIndex ) {
                 const T result = buffer[readIndex];
-                readIndex = (readIndex + 1) % buffSize;
+                readIndex      = (readIndex + 1) % buffSize;
 
                 bufferMutex.unlock();
                 return result;
@@ -58,10 +62,11 @@ public:
         }
     }
 
-    bool readNB(T* result) {
-        if( bufferMutex.try_lock() ) {
-            if( readIndex != writeIndex ) {
-                *result = buffer[readIndex];
+    bool readNB(T* result)
+    {
+        if ( bufferMutex.try_lock() ) {
+            if ( readIndex != writeIndex ) {
+                *result   = buffer[readIndex];
                 readIndex = (readIndex + 1) % buffSize;
 
                 bufferMutex.unlock();
@@ -74,15 +79,16 @@ public:
         return false;
     }
 
-    void write(const T& v) {
+    void write(const T& v)
+    {
         int loop_counter = 0;
 
-        while( true ) {
+        while ( true ) {
             bufferMutex.lock();
 
-            if( ((writeIndex + 1) % buffSize) != readIndex ) {
+            if ( ((writeIndex + 1) % buffSize) != readIndex ) {
                 buffer[writeIndex] = v;
-                writeIndex = (writeIndex + 1) % buffSize;
+                writeIndex         = (writeIndex + 1) % buffSize;
 
                 __sync_synchronize();
                 bufferMutex.unlock();
@@ -94,11 +100,10 @@ public:
         }
     }
 
-    ~CircularBuffer() {
+    ~CircularBuffer() {}
 
-    }
-
-    void clearBuffer() {
+    void clearBuffer()
+    {
         bufferMutex.lock();
         readIndex = writeIndex;
         __sync_synchronize();
@@ -107,15 +112,14 @@ public:
 
 private:
     SSTMutex bufferMutex;
-    size_t buffSize;
-    size_t readIndex;
-    size_t writeIndex;
-    T buffer[0];
-
+    size_t   buffSize;
+    size_t   readIndex;
+    size_t   writeIndex;
+    T        buffer[0];
 };
 
-}
-}
-}
+} // namespace Interprocess
+} // namespace Core
+} // namespace SST
 
-#endif
+#endif // SST_CORE_INTERPROCESS_CIRCULARBUFFER_H

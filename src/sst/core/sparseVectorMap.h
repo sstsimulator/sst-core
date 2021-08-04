@@ -14,11 +14,11 @@
 #ifndef SST_CORE_SPARSEVECTORMAP_H
 #define SST_CORE_SPARSEVECTORMAP_H
 
-#include "sst/core/sst_types.h"
 #include "sst/core/serialization/serializable.h"
+#include "sst/core/sst_types.h"
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 namespace SST {
 
@@ -40,9 +40,10 @@ namespace SST {
    structure.
  */
 template <typename keyT, typename classT = keyT>
-class SparseVectorMap {
+class SparseVectorMap
+{
 private:
-    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT,classT> >;
+    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT, classT>>;
 
     /**
        Finds the insertion point for new data
@@ -53,7 +54,7 @@ private:
        already in the map, it will return -1.
      */
     std::vector<classT> data;
-    int binary_search_insert(keyT id) const
+    int                 binary_search_insert(keyT id) const
     {
         // For insert, we've found the right place when id < n && id >
         // n-1.  We then insert at n.
@@ -62,21 +63,22 @@ private:
 
         // Check to see if it goes top or bottom
         if ( size == 0 ) return 0;
-        if ( id > data[size-1].key() ) return size;
+        if ( id > data[size - 1].key() ) return size;
         if ( id < data[0].key() ) return 0;
 
         int bottom = 0;
-        int top = size - 1;
+        int top    = size - 1;
         int middle;
 
         while ( bottom <= top ) {
             middle = bottom + (top - bottom) / 2;
-            if ( id == data[middle].key() ) return -1;  // Already in map
+            if ( id == data[middle].key() ) return -1; // Already in map
             if ( id < data[middle].key() ) {
                 // May be the right place, need to see if id is greater
                 // than the one before the current middle.  If so, then we
                 // have the right place.
-                if ( id > data[middle-1].key() ) return middle;
+                if ( id > data[middle - 1].key() )
+                    return middle;
                 else {
                     top = middle - 1;
                 }
@@ -101,15 +103,18 @@ private:
     int binary_search_find(keyT id) const
     {
         int bottom = 0;
-        int top = data.size() - 1;
+        int top    = data.size() - 1;
         int middle;
 
         if ( data.size() == 0 ) return -1;
-        while (bottom <= top) {
-            middle = bottom + ( top - bottom ) / 2;
-            if ( id == data[middle].key() ) return middle;
-            else if ( id < data[middle].key() ) top = middle - 1;
-            else bottom = middle + 1;
+        while ( bottom <= top ) {
+            middle = bottom + (top - bottom) / 2;
+            if ( id == data[middle].key() )
+                return middle;
+            else if ( id < data[middle].key() )
+                top = middle - 1;
+            else
+                bottom = middle + 1;
         }
         return -1;
     }
@@ -117,7 +122,6 @@ private:
     friend class ConfigGraph;
 
 public:
-
     /**
        Default constructor for SparseVectorMap
      */
@@ -139,18 +143,15 @@ public:
     SparseVectorMap(std::vector<classT>& new_data, bool sorted = false)
     {
         data.swap(new_data);
-        if (!sorted) {
-            std::sort(data.begin(),data.end,
-                [] (const classT& lhs, const classT& rhs) -> bool
-                    {
-                        return lhs.key() < rhs.key();
-                    });
+        if ( !sorted ) {
+            std::sort(data.begin(), data.end, [](const classT& lhs, const classT& rhs) -> bool {
+                return lhs.key() < rhs.key();
+            });
         }
     }
 
-    typedef typename std::vector<classT>::iterator iterator;
+    typedef typename std::vector<classT>::iterator       iterator;
     typedef typename std::vector<classT>::const_iterator const_iterator;
-
 
     /**
        Insert new value into SparseVectorMap.  The inserted class must
@@ -162,10 +163,10 @@ public:
        if it was already present in the map.
 
     */
-   classT& insert(const classT& val)
+    classT& insert(const classT& val)
     {
         int index = binary_search_insert(val.key());
-        if ( index == -1 ) return data[binary_search_find(val.key())];  // already in the map
+        if ( index == -1 ) return data[binary_search_find(val.key())]; // already in the map
         iterator it = data.begin();
         it += index;
         data.insert(it, val);
@@ -223,7 +224,7 @@ public:
        @return reference to the requested item.
 
     */
-    classT& operator[] (keyT id)
+    classT& operator[](keyT id)
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
@@ -243,7 +244,7 @@ public:
        @return const reference to the requested item.
 
     */
-    const classT& operator[] (keyT id) const
+    const classT& operator[](keyT id) const
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
@@ -263,9 +264,7 @@ public:
        @return number of items
      */
     size_t size() { return data.size(); }
-
 };
-
 
 /**
    Class that stores data in a vector, but can access the data similar
@@ -285,9 +284,10 @@ public:
    structure.
  */
 template <typename keyT, typename classT>
-class SparseVectorMap<keyT,classT*> {
+class SparseVectorMap<keyT, classT*>
+{
 private:
-    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT,classT*> >;
+    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT, classT*>>;
 
     /**
        Finds the insertion point for new data
@@ -298,7 +298,7 @@ private:
        already in the map, it will return -1.
      */
     std::vector<classT*> data;
-    int binary_search_insert(keyT id) const
+    int                  binary_search_insert(keyT id) const
     {
         // For insert, we've found the right place when id < n && id >
         // n-1.  We then insert at n.
@@ -307,21 +307,22 @@ private:
 
         // Check to see if it goes top or bottom
         if ( size == 0 ) return 0;
-        if ( id > data[size-1]->key() ) return size;
+        if ( id > data[size - 1]->key() ) return size;
         if ( id < data[0]->key() ) return 0;
 
         int bottom = 0;
-        int top = size - 1;
+        int top    = size - 1;
         int middle;
 
         while ( bottom <= top ) {
             middle = bottom + (top - bottom) / 2;
-            if ( id == data[middle]->key() ) return -1;  // Already in map
+            if ( id == data[middle]->key() ) return -1; // Already in map
             if ( id < data[middle]->key() ) {
                 // May be the right place, need to see if id is greater
                 // than the one before the current middle.  If so, then we
                 // have the right place.
-                if ( id > data[middle-1]->key() ) return middle;
+                if ( id > data[middle - 1]->key() )
+                    return middle;
                 else {
                     top = middle - 1;
                 }
@@ -346,15 +347,18 @@ private:
     int binary_search_find(keyT id) const
     {
         int bottom = 0;
-        int top = data.size() - 1;
+        int top    = data.size() - 1;
         int middle;
 
         if ( data.size() == 0 ) return -1;
-        while (bottom <= top) {
-            middle = bottom + ( top - bottom ) / 2;
-            if ( id == data[middle]->key() ) return middle;
-            else if ( id < data[middle]->key() ) top = middle - 1;
-            else bottom = middle + 1;
+        while ( bottom <= top ) {
+            middle = bottom + (top - bottom) / 2;
+            if ( id == data[middle]->key() )
+                return middle;
+            else if ( id < data[middle]->key() )
+                top = middle - 1;
+            else
+                bottom = middle + 1;
         }
         return -1;
     }
@@ -362,7 +366,6 @@ private:
     friend class ConfigGraph;
 
 public:
-
     /**
        Default constructor for SparseVectorMap
      */
@@ -384,16 +387,14 @@ public:
     SparseVectorMap(std::vector<classT*>& new_data, bool sorted = false)
     {
         data.swap(new_data);
-        if (!sorted) {
-            std::sort(data.begin(),data.end,
-                [] (const classT* lhs, const classT* rhs) -> bool
-                    {
-                        return lhs->key() < rhs->key();
-                    });
+        if ( !sorted ) {
+            std::sort(data.begin(), data.end, [](const classT* lhs, const classT* rhs) -> bool {
+                return lhs->key() < rhs->key();
+            });
         }
     }
 
-    typedef typename std::vector<classT*>::iterator iterator;
+    typedef typename std::vector<classT*>::iterator       iterator;
     typedef typename std::vector<classT*>::const_iterator const_iterator;
 
     /**
@@ -406,10 +407,10 @@ public:
        if it was already present in the map.
 
     */
-   classT* insert(classT* val)
+    classT* insert(classT* val)
     {
         int index = binary_search_insert(val->key());
-        if ( index == -1 ) return data[binary_search_find(val->key())];  // already in the map
+        if ( index == -1 ) return data[binary_search_find(val->key())]; // already in the map
         iterator it = data.begin();
         it += index;
         data.insert(it, val);
@@ -467,7 +468,7 @@ public:
        @return reference to the requested item.
 
     */
-    classT* operator[] (keyT id)
+    classT* operator[](keyT id)
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
@@ -487,7 +488,7 @@ public:
        @return const reference to the requested item.
 
     */
-    const classT* operator[] (keyT id) const
+    const classT* operator[](keyT id) const
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
@@ -507,9 +508,7 @@ public:
        @return number of items
      */
     size_t size() { return data.size(); }
-
 };
-
 
 /**
    Templated version of SparseVectorMap where the data and key are the
@@ -518,9 +517,10 @@ public:
    for use with native types.
  */
 template <typename keyT>
-class SparseVectorMap<keyT,keyT> {
+class SparseVectorMap<keyT, keyT>
+{
 private:
-    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT,keyT> >;
+    friend class SST::Core::Serialization::serialize<SparseVectorMap<keyT, keyT>>;
 
     /**
        Finds the insertion point for new data
@@ -531,7 +531,7 @@ private:
        already in the map, it will return -1.
      */
     std::vector<keyT> data;
-    int binary_search_insert(keyT id) const
+    int               binary_search_insert(keyT id) const
     {
         // For insert, we've found the right place when id < n && id >
         // n-1.  We then insert at n.
@@ -541,20 +541,21 @@ private:
         // Check to see if it goes top or bottom
         if ( size == 0 ) return 0;
         if ( id < data[0] ) return 0;
-        if ( id > data[size-1] ) return size;
+        if ( id > data[size - 1] ) return size;
 
         int bottom = 0;
-        int top = size - 1;
+        int top    = size - 1;
         int middle;
 
         while ( bottom <= top ) {
             middle = bottom + (top - bottom) / 2;
-            if ( id == data[middle] ) return -1;  // Already in map
+            if ( id == data[middle] ) return -1; // Already in map
             if ( id < data[middle] ) {
                 // May be the right place, need to see if id is greater
                 // than the one before the current middle.  If so, then we
                 // have the right place.
-                if ( id > data[middle-1] ) return middle;
+                if ( id > data[middle - 1] )
+                    return middle;
                 else {
                     top = middle - 1;
                 }
@@ -579,15 +580,18 @@ private:
     int binary_search_find(keyT id) const
     {
         int bottom = 0;
-        int top = data.size() - 1;
+        int top    = data.size() - 1;
         int middle;
 
         if ( data.size() == 0 ) return -1;
-        while (bottom <= top) {
-            middle = bottom + ( top - bottom ) / 2;
-            if ( id == data[middle] ) return middle;
-            else if ( id < data[middle] ) top = middle - 1;
-            else bottom = middle + 1;
+        while ( bottom <= top ) {
+            middle = bottom + (top - bottom) / 2;
+            if ( id == data[middle] )
+                return middle;
+            else if ( id < data[middle] )
+                top = middle - 1;
+            else
+                bottom = middle + 1;
         }
         return -1;
     }
@@ -595,7 +599,6 @@ private:
     friend class ConfigGraph;
 
 public:
-
     /**
        Default constructor for SparseVectorMap
      */
@@ -617,17 +620,12 @@ public:
     SparseVectorMap(std::vector<keyT>& new_data, bool sorted = false)
     {
         data.swap(new_data);
-        if (!sorted) {
-            std::sort(data.begin(),data.end,
-                [] (const keyT& lhs, const keyT& rhs) -> bool
-                    {
-                        return lhs < rhs;
-                    });
+        if ( !sorted ) {
+            std::sort(data.begin(), data.end, [](const keyT& lhs, const keyT& rhs) -> bool { return lhs < rhs; });
         }
     }
 
-
-    typedef typename std::vector<keyT>::iterator iterator;
+    typedef typename std::vector<keyT>::iterator       iterator;
     typedef typename std::vector<keyT>::const_iterator const_iterator;
 
     /**
@@ -643,7 +641,7 @@ public:
     keyT& insert(const keyT& val)
     {
         int index = binary_search_insert(val);
-        if ( index == -1 ) return data[binary_search_find(val)];  // already in the map
+        if ( index == -1 ) return data[binary_search_find(val)]; // already in the map
         iterator it = data.begin();
         it += index;
         data.insert(it, val);
@@ -701,7 +699,7 @@ public:
        @return reference to the requested item.
 
     */
-    keyT& operator[] (keyT id)
+    keyT& operator[](keyT id)
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
@@ -721,7 +719,7 @@ public:
        @return const reference to the requested item.
 
     */
-    const keyT& operator[] (keyT id) const
+    const keyT& operator[](keyT id) const
     {
         int index = binary_search_find(id);
         if ( index == -1 ) {
@@ -741,10 +739,7 @@ public:
        @return number of items
      */
     size_t size() { return data.size(); }
-
 };
-
-
 
 } // namespace SST
 
@@ -753,16 +748,13 @@ namespace Core {
 namespace Serialization {
 
 template <typename keyT, typename classT>
-class serialize <SST::SparseVectorMap<keyT,classT>> {
+class serialize<SST::SparseVectorMap<keyT, classT>>
+{
 public:
-    void
-        operator()(SST::SparseVectorMap<keyT,classT>& v, SST::Core::Serialization::serializer& ser) {
-        ser & v.data;
-    }
+    void operator()(SST::SparseVectorMap<keyT, classT>& v, SST::Core::Serialization::serializer& ser) { ser& v.data; }
 };
-}
-}
-}
+} // namespace Serialization
+} // namespace Core
+} // namespace SST
 
-
-#endif // SST_CORE_CONFIGGRAPH_H
+#endif // SST_CORE_SPARSEVECTORMAP_H

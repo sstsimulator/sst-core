@@ -9,16 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_CORE_EVENT_H
-#define SST_CORE_CORE_EVENT_H
+#ifndef SST_CORE_EVENT_H
+#define SST_CORE_EVENT_H
 
+#include "sst/core/activity.h"
 #include "sst/core/sst_types.h"
 
 #include <atomic>
-#include <string>
 #include <cinttypes>
-
-#include "sst/core/activity.h"
+#include <string>
 
 namespace SST {
 
@@ -28,20 +27,20 @@ class Link;
  * Base class for Events - Items sent across links to communicate between
  * components.
  */
-class Event : public Activity {
+class Event : public Activity
+{
 public:
-
     /** Type definition of unique identifiers */
     typedef std::pair<uint64_t, int> id_type;
     /** Constant, default value for id_types */
-    static const id_type NO_ID;
+    static const id_type             NO_ID;
 
-
-    Event() : Activity() {
+    Event() : Activity()
+    {
         setPriority(EVENTPRIORITY);
 #if __SST_DEBUG_EVENT_TRACKING__
         first_comp = "";
-        last_comp = "";
+        last_comp  = "";
 #endif
     }
     virtual ~Event() = 0;
@@ -54,9 +53,12 @@ public:
 
     /** Sets the link id used for delivery.  For use by SST Core only */
 #if !SST_BUILDING_CORE
-    inline void setDeliveryLink(LinkId_t id, Link *link) __attribute__ ((deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12."))) {
+    inline void setDeliveryLink(LinkId_t id, Link* link) __attribute__((
+        deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
+    {
 #else
-    inline void setDeliveryLink(LinkId_t id, Link *link) {
+    inline void setDeliveryLink(LinkId_t id, Link* link)
+    {
 #endif
 #ifdef SST_ENFORCE_EVENT_ORDERING
         enforce_link_order = id;
@@ -68,27 +70,36 @@ public:
 
     /** Gets the link id used for delivery.  For use by SST Core only */
 #if !SST_BUILDING_CORE
-    inline Link* getDeliveryLink() __attribute__ ((deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12."))) {
+    inline Link* getDeliveryLink() __attribute__((
+        deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
+    {
 #else
-    inline Link* getDeliveryLink() {
+    inline Link* getDeliveryLink()
+    {
 #endif
         return delivery_link;
     }
 
     /** For use by SST Core only */
 #if !SST_BUILDING_CORE
-    inline void setRemoteEvent() __attribute__  ((deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12."))) {
+    inline void setRemoteEvent() __attribute__((
+        deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
+    {
 #else
-    inline void setRemoteEvent() {
+    inline void setRemoteEvent()
+    {
 #endif
         delivery_link = nullptr;
     }
 
     /** Gets the link id associated with this event.  For use by SST Core only */
 #if !SST_BUILDING_CORE
-    inline LinkId_t getLinkId(void) const __attribute__ ((deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12."))) {
+    inline LinkId_t getLinkId(void) const __attribute__((
+        deprecated("this function was not intended to be used outside of SST Core and will be removed in SST 12.")))
+    {
 #else
-    inline LinkId_t getLinkId(void) const {
+    inline LinkId_t getLinkId(void) const
+    {
 #endif
 #ifdef SST_ENFORCE_EVENT_ORDERING
         return enforce_link_order;
@@ -97,26 +108,26 @@ public:
 #endif
     }
 
-
     /// Functor classes for Event handling
-    class HandlerBase {
+    class HandlerBase
+    {
     public:
         /** Handler function */
         virtual void operator()(Event*) = 0;
         virtual ~HandlerBase() {}
     };
 
-
     /**
      * Event Handler class with user-data argument
      */
     template <typename classT, typename argT = void>
-    class Handler : public HandlerBase {
+    class Handler : public HandlerBase
+    {
     private:
         typedef void (classT::*PtrMember)(Event*, argT);
-        classT* object;
+        classT*         object;
         const PtrMember member;
-        argT data;
+        argT            data;
 
     public:
         /** Constructor
@@ -124,55 +135,41 @@ public:
          * @param member - Member function to call as the handler
          * @param data - Additional argument to pass to handler
          */
-        Handler( classT* const object, PtrMember member, argT data ) :
-            object(object),
-            member(member),
-            data(data)
-        {}
+        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
 
-        void operator()(Event* event) {
-            (object->*member)(event,data);
-        }
+        void operator()(Event* event) { (object->*member)(event, data); }
     };
-
 
     /**
      * Event Handler class with no user-data.
      */
     template <typename classT>
-    class Handler<classT, void> : public HandlerBase {
-        private:
-            typedef void (classT::*PtrMember)(Event*);
-            const PtrMember member;
-            classT* object;
+    class Handler<classT, void> : public HandlerBase
+    {
+    private:
+        typedef void (classT::*PtrMember)(Event*);
+        const PtrMember member;
+        classT*         object;
 
-        public:
+    public:
         /** Constructor
          * @param object - Pointer to Object upon which to call the handler
          * @param member - Member function to call as the handler
          */
-            Handler( classT* const object, PtrMember member ) :
-                member(member),
-                object(object)
-            {}
+        Handler(classT* const object, PtrMember member) : member(member), object(object) {}
 
-            void operator()(Event* event) {
-                (object->*member)(event);
-            }
-        };
+        void operator()(Event* event) { (object->*member)(event); }
+    };
 
-    /** Virtual function to "pretty-print" this event.  Should be implemented by subclasses. */
-    virtual void print(const std::string& header, Output &out) const override {
-        out.output("%s Generic Event to be delivered at %" PRIu64 " with priority %d\n",
-                header.c_str(), getDeliveryTime(), getPriority());
-    }
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
 
-    virtual void printTrackingInfo(const std::string& header, Output &out) const {
-        out.output("%s Event first sent from: %s:%s (type: %s) and last received by %s:%s (type: %s)\n", header.c_str(),
-                   first_comp.c_str(),first_port.c_str(),first_type.c_str(),
-                   last_comp.c_str(),last_port.c_str(),last_type.c_str());
+    virtual void printTrackingInfo(const std::string& header, Output& out) const
+    {
+        out.output(
+            "%s Event first sent from: %s:%s (type: %s) and last received by %s:%s (type: %s)\n", header.c_str(),
+            first_comp.c_str(), first_port.c_str(), first_type.c_str(), last_comp.c_str(), last_port.c_str(),
+            last_type.c_str());
     }
 
     const std::string& getFirstComponentName() { return first_comp; }
@@ -182,14 +179,16 @@ public:
     const std::string& getLastComponentType() { return last_type; }
     const std::string& getLastPort() { return last_port; }
 
-    void addSendComponent(const std::string& comp, const std::string& type, const std::string& port) {
+    void addSendComponent(const std::string& comp, const std::string& type, const std::string& port)
+    {
         if ( first_comp == "" ) {
             first_comp = comp;
             first_type = type;
             first_port = port;
         }
     }
-    void addRecvComponent(const std::string& comp, const std::string& type, const std::string& port) {
+    void addRecvComponent(const std::string& comp, const std::string& type, const std::string& port)
+    {
         last_comp = comp;
         last_type = type;
         last_port = port;
@@ -197,20 +196,20 @@ public:
 
 #endif
 
-    void serialize_order(SST::Core::Serialization::serializer &ser) override{
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
         Activity::serialize_order(ser);
 #ifndef SST_ENFORCE_EVENT_ORDERING
-        ser & link_id;
+        ser& link_id;
 #endif
 #ifdef __SST_DEBUG_EVENT_TRACKING__
-        ser & first_comp;
-        ser & first_type;
-        ser & first_port;
-        ser & last_comp;
-        ser & last_type;
-        ser & last_port;
+        ser& first_comp;
+        ser& first_type;
+        ser& first_port;
+        ser& last_comp;
+        ser& last_type;
+        ser& last_port;
 #endif
-
     }
 
 protected:
@@ -239,30 +238,23 @@ private:
     std::string last_port;
 #endif
 
+    ImplementVirtualSerializable(SST::Action)
 };
-
 
 /**
  * Null Event.  Does nothing.
  */
-class NullEvent : public Event, public SST::Core::Serialization::serializable_type<NullEvent> {
+class NullEvent : public Event, public SST::Core::Serialization::serializable_type<NullEvent>
+{
 public:
     NullEvent() : Event() {}
     ~NullEvent() {}
 
     void execute(void) override;
 
-    virtual void print(const std::string& header, Output &out) const override {
-        out.output("%s NullEvent to be delivered at %" PRIu64 " with priority %d\n",
-                header.c_str(), getDeliveryTime(), getPriority());
-    }
-
-
-
 private:
     ImplementSerializable(SST::NullEvent)
-
 };
-} //namespace SST
+} // namespace SST
 
 #endif // SST_CORE_EVENT_H

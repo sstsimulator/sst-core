@@ -9,9 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef SST_CORE_MODEL_H
-#define SST_CORE_MODEL_H
+#ifndef SST_CORE_MODEL_SSTMODEL_H
+#define SST_CORE_MODEL_SSTMODEL_H
 
 namespace SST {
 
@@ -19,22 +18,22 @@ class ConfigGraph;
 
 /** Base class for Model Generation
  */
-class SSTModelDescription {
+class SSTModelDescription
+{
 
-    public:
-        SSTModelDescription();
-        virtual ~SSTModelDescription() {};
-        /** Create the ConfigGraph
-         *
-         * This function should be overridden by subclasses.
-         *
-         * This function is responsible for reading any configuration
-         * files and generating a ConfigGraph object.
-         */
-        virtual ConfigGraph* createConfigGraph() = 0;
-
+public:
+    SSTModelDescription();
+    virtual ~SSTModelDescription() {};
+    /** Create the ConfigGraph
+     *
+     * This function should be overridden by subclasses.
+     *
+     * This function is responsible for reading any configuration
+     * files and generating a ConfigGraph object.
+     */
+    virtual ConfigGraph* createConfigGraph() = 0;
 };
 
-}
+} // namespace SST
 
-#endif
+#endif // SST_CORE_MODEL_SSTMODEL_H

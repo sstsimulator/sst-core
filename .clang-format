@@ -2,64 +2,65 @@
 Language:        Cpp
 # BasedOnStyle:  LLVM
 AccessModifierOffset: -4
-AlignAfterOpenBracket: Align
-AlignConsecutiveMacros: false
-AlignConsecutiveAssignments: false
-AlignConsecutiveBitFields: false
-AlignConsecutiveDeclarations: false
-AlignEscapedNewlines: Right
+AlignAfterOpenBracket: AlwaysBreak
+AlignConsecutiveMacros: AcrossComments
+AlignConsecutiveAssignments: AcrossComments
+AlignConsecutiveBitFields: AcrossComments
+AlignConsecutiveDeclarations: AcrossComments
+AlignEscapedNewlines: Left
 AlignOperands:   Align
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: true
-AllowAllConstructorInitializersOnNextLine: true
+AllowAllConstructorInitializersOnNextLine: false
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortEnumsOnASingleLine: true
-AllowShortBlocksOnASingleLine: Never
+AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: false
-AllowShortFunctionsOnASingleLine: All
+AllowShortFunctionsOnASingleLine: Inline #All
 AllowShortLambdasOnASingleLine: All
-AllowShortIfStatementsOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: WithoutElse  
 AllowShortLoopsOnASingleLine: false
-AlwaysBreakAfterDefinitionReturnType: None
+#AlwaysBreakAfterDefinitionReturnType: None #depricated
 AlwaysBreakAfterReturnType: TopLevelDefinitions
+#AlwaysBreakAfterReturnType: AllDefinitions
 AlwaysBreakBeforeMultilineStrings: false
-AlwaysBreakTemplateDeclarations: MultiLine
+AlwaysBreakTemplateDeclarations: Yes
 AttributeMacros:
   - __capability
 BinPackArguments: true
 BinPackParameters: true
+BreakBeforeBraces: Custom
 BraceWrapping:
-  AfterCaseLabel:  false
-  AfterClass:      false
+  AfterCaseLabel:  true
+  AfterClass:      true
   AfterControlStatement: Never
   AfterEnum:       false
-  AfterFunction:   false
+  AfterFunction:   true   #modified
   AfterNamespace:  false
   AfterObjCDeclaration: false
-  AfterStruct:     false
+  AfterStruct:     true
   AfterUnion:      false
   AfterExternBlock: false
-  BeforeCatch:     false
-  BeforeElse:      false
+  BeforeCatch:     true
+  BeforeElse:      true
   BeforeLambdaBody: false
   BeforeWhile:     false
   IndentBraces:    false
-  SplitEmptyFunction: true
-  SplitEmptyRecord: true
-  SplitEmptyNamespace: true
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
 BreakBeforeBinaryOperators: All
-BreakBeforeBraces: Attach
 BreakBeforeInheritanceComma: false
-BreakInheritanceList: BeforeColon
+BreakInheritanceList: AfterColon
 BreakBeforeTernaryOperators: true
 BreakConstructorInitializersBeforeComma: false
-BreakConstructorInitializers: BeforeColon
+BreakConstructorInitializers: AfterColon
 BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: true
 ColumnLimit:     120
 CommentPragmas:  '^ IWYU pragma:'
 CompactNamespaces: false
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 Cpp11BracedListStyle: false
@@ -72,22 +73,30 @@ ForEachMacros:
   - foreach
   - Q_FOREACH
   - BOOST_FOREACH
-IncludeBlocks:   Preserve
+#updated to force the re-sort as specified below in IncludeCategories 
+IncludeBlocks: Regroup
+#sst_config.h always first, so set to negative priority to be above 'main' include (priority 0)
+#main header included after - main include assumed to have no suffix
+#prioritize all headers in "sst/core" next
+#next include other external headers - characterized by headers wrappped with ' " " ' that do NOT have "sst" in the name 
+#finally include all system headers - characterized as headers wrapped with '< >'
 IncludeCategories:
-  - Regex:           '^"(llvm|llvm-c|clang|clang-c)/'
-    Priority:        2
-    SortPriority:    0
-  - Regex:           '^(<|"(gtest|gmock|isl|json)/)'
+  - Regex:           '(<.*>)'
     Priority:        3
-    SortPriority:    0
-  - Regex:           '.*'
+    SortPriority:    3
+  - Regex:           '("[^\(sst\)].*")'
+    Priority:        2
+    SortPriority:    2
+  - Regex:           '("sst/core/.*")'
     Priority:        1
-    SortPriority:    0
-IncludeIsMainRegex: '(Test)?$'
+    SortPriority:    1
+  - Regex:            'sst_config.h'
+    Priority:        -1
+IncludeIsMainRegex: '$'
 IncludeIsMainSourceRegex: ''
 IndentCaseLabels: false
 IndentCaseBlocks: false
-IndentGotoLabels: true
+IndentGotoLabels: false
 IndentPPDirectives: None
 IndentExternBlock: AfterExternBlock
 IndentWidth:     4
@@ -98,7 +107,7 @@ JavaScriptWrapImports: true
 KeepEmptyLinesAtTheStartOfBlocks: true
 MacroBlockBegin: ''
 MacroBlockEnd:   ''
-MaxEmptyLinesToKeep: 1
+MaxEmptyLinesToKeep: 2
 NamespaceIndentation: None
 ObjCBinPackProtocolList: Auto
 ObjCBlockIndentWidth: 2
@@ -115,13 +124,14 @@ PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 60
 PointerAlignment: Left
 ReflowComments:  true
-SortIncludes:    false
+SortIncludes:   true    #updated to enable Include files to be Re-sorted
 SortJavaStaticImport: Before
 SortUsingDeclarations: true
 SpaceAfterCStyleCast: false
 SpaceAfterLogicalNot: false
 SpaceAfterTemplateKeyword: true
 SpaceBeforeAssignmentOperators: true
+SpaceBeforeCaseColon: false
 SpaceBeforeCpp11BracedList: true
 SpaceBeforeCtorInitializerColon: true
 SpaceBeforeInheritanceColon: true
@@ -132,7 +142,7 @@ SpaceInEmptyBlock: false
 SpaceInEmptyParentheses: false
 SpacesBeforeTrailingComments: 1
 SpacesInAngles:  false
-SpacesInConditionalStatement: false
+SpacesInConditionalStatement: true 
 SpacesInContainerLiterals: true
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
@@ -144,14 +154,34 @@ StatementMacros:
   - Q_UNUSED
   - QT_REQUIRE_VERSION
   - ImplementSerializable
-  - SST_ELI_REGISTER_COMPONENT
-  - SST_ELI_DOCUMENT_PARAMS
-  - SST_ELI_DOCUMENT_PORTS
-  - SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS
 TabWidth:        8
 UseCRLF:         false
 UseTab:          Never
+# Can't get the ELI macros to format properly,
+# so we'll just leave them untouched
 WhitespaceSensitiveMacros:
+  - DIAG_DISABLE
+  - SST_ELI_DECLARE_BASE
+  - SST_ELI_DECLARE_CTOR_EXTERN
+  - SST_ELI_DECLARE_DEFAULT_INFO
+  - SST_ELI_DECLARE_INFO
+  - SST_ELI_DECLARE_INFO_COMMON
+  - SST_ELI_DECLARE_INFO_EXTERN
+  - SST_ELI_DECLARE_NEW_BASE
+  - SST_ELI_DECLARE_STATISTIC_TEMPLATE
+  - SST_ELI_DOCUMENT_PARAMS
+  - SST_ELI_DOCUMENT_PORTS
+  - SST_ELI_DOCUMENT_STATISTICS
+  - SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS
+  - SST_ELI_INTERFACE_INFO
+  - SST_ELI_NEW_BASE_CTOR
+  - SST_ELI_REGISTER_COMPONENT
+  - SST_ELI_REGISTER_DERIVED
+  - SST_ELI_REGISTER_MODULE
+  - SST_ELI_REGISTER_PARTITIONER
+  - SST_ELI_REGISTER_SUBCOMPONENT_API
+  - SST_ELI_REGISTER_SUBCOMPONENT_DERIVED
+  - SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API
   - STRINGIZE
   - PP_STRINGIZE
   - BOOST_PP_STRINGIZE

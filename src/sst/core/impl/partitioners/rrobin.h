@@ -11,14 +11,15 @@
 #ifndef SST_CORE_IMPL_PARTITONERS_RROBIN_H
 #define SST_CORE_IMPL_PARTITONERS_RROBIN_H
 
-#include "sst/core/sstpart.h"
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/sstpart.h"
 
 namespace SST {
 namespace IMPL {
 namespace Partition {
 
-class SSTRoundRobinPartition : public SST::Partition::SSTPartitioner {
+class SSTRoundRobinPartition : public SST::Partition::SSTPartitioner
+{
 
 public:
     SST_ELI_REGISTER_PARTITIONER(
@@ -26,7 +27,8 @@ public:
         "sst",
         "roundrobin",
         SST_ELI_ELEMENT_VERSION(1,0,0),
-        "Partitions components using a simple round robin scheme based on ComponentID.  Sequential IDs will be placed on different ranks.")
+        "Partitions components using a simple round robin scheme based on ComponentID.  "
+        "Sequential IDs will be placed on different ranks.")
 
 private:
     RankInfo world_size;
@@ -42,11 +44,9 @@ public:
 
     bool requiresConfigGraph() override { return false; }
     bool spawnOnAllRanks() override { return false; }
-
-
 };
 
 } // namespace Partition
 } // namespace IMPL
-} //namespace SST
-#endif //SST_CORE_IMPL_PARTITONERS_RROBIN_H
+} // namespace SST
+#endif // SST_CORE_IMPL_PARTITONERS_RROBIN_H

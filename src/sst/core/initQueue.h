@@ -12,31 +12,31 @@
 #ifndef SST_CORE_INITQUEUE_H
 #define SST_CORE_INITQUEUE_H
 
-#include <deque>
-
 #include "sst/core/activityQueue.h"
+
+#include <deque>
 
 namespace SST {
 
 /**
  * ActivityQueue for use during the init() phase
  */
-class InitQueue : public ActivityQueue {
+class InitQueue : public ActivityQueue
+{
 public:
     InitQueue();
     ~InitQueue();
 
-    bool empty() override;
-    int size() override;
-    void insert(Activity* activity) override;
+    bool      empty() override;
+    int       size() override;
+    void      insert(Activity* activity) override;
     Activity* pop() override;
     Activity* front() override;
 
 private:
     std::deque<Activity*> data;
-
 };
 
-} //namespace SST
+} // namespace SST
 
 #endif // SST_CORE_INITQUEUE_H

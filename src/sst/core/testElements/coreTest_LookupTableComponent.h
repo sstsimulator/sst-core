@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTLOOKUPTABLECOMPONENT_H
-#define _CORETESTLOOKUPTABLECOMPONENT_H
+#ifndef SST_CORE_CORETEST_LOOKUPTABLECOMPONENT_H
+#define SST_CORE_CORETEST_LOOKUPTABLECOMPONENT_H
 
 #include <sst/core/component.h>
 #include <sst/core/output.h>
@@ -26,7 +26,6 @@ namespace CoreTestLookupTableComponent {
 class coreTestLookupTableComponent : public SST::Component
 {
 public:
-
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestLookupTableComponent,
@@ -63,14 +62,15 @@ public:
     virtual void finish();
 
     bool tick(SST::Cycle_t);
+
 private:
-    Output out;
-    const uint8_t * table;
-    size_t tableSize;
-    SharedRegion *sregion;
+    Output         out;
+    const uint8_t* table;
+    size_t         tableSize;
+    SharedRegion*  sregion;
 };
 
-}
-}
+} // namespace CoreTestLookupTableComponent
+} // namespace SST
 
-#endif
+#endif // SST_CORE_CORETEST_LOOKUPTABLECOMPONENT_H

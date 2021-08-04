@@ -10,48 +10,51 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/statapi/statgroup.h"
-
-#include <algorithm>
 
 #include "sst/core/statapi/statgroup.h"
+
+#include "sst/core/baseComponent.h"
+#include "sst/core/configGraph.h"
+#include "sst/core/output.h"
 #include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statengine.h"
+#include "sst/core/statapi/statgroup.h"
 #include "sst/core/statapi/statoutput.h"
-#include "sst/core/configGraph.h"
-#include "sst/core/baseComponent.h"
-#include "sst/core/output.h"
+
+#include <algorithm>
 
 namespace SST {
 namespace Statistics {
 
-
-StatisticGroup::StatisticGroup(const ConfigStatGroup &csg) :
-    isDefault(false), name(csg.name),
+StatisticGroup::StatisticGroup(const ConfigStatGroup& csg) :
+    isDefault(false),
+    name(csg.name),
     output(const_cast<StatisticOutput*>(StatisticProcessingEngine::getInstance()->getStatOutputs()[csg.outputID])),
     outputFreq(csg.outputFrequency),
     components(csg.components)
 {
 
     if ( !output->acceptsGroups() ) {
-        Output::getDefaultObject().fatal(CALL_INFO, 1, "Statistic Output type %s cannot handle Statistic Groups\n", output->getStatisticOutputName().c_str());
+        Output::getDefaultObject().fatal(
+            CALL_INFO, 1, "Statistic Output type %s cannot handle Statistic Groups\n",
+            output->getStatisticOutputName().c_str());
     }
 
-    for ( auto & kv : csg.statMap ) {
+    for ( auto& kv : csg.statMap ) {
         statNames.push_back(kv.first);
     }
 }
 
-
-bool StatisticGroup::containsStatistic(const StatisticBase *stat) const
+bool
+StatisticGroup::containsStatistic(const StatisticBase* stat) const
 {
     if ( isDefault ) return true;
     std::find(stats.begin(), stats.end(), stat);
     return false;
 }
 
-
-bool StatisticGroup::claimsStatistic(const StatisticBase *stat) const
+bool
+StatisticGroup::claimsStatistic(const StatisticBase* stat) const
 {
     if ( isDefault ) return true;
     if ( std::find(statNames.begin(), statNames.end(), stat->getStatName()) != statNames.end() ) {
@@ -62,14 +65,12 @@ bool StatisticGroup::claimsStatistic(const StatisticBase *stat) const
     return false;
 }
 
-
-void StatisticGroup::addStatistic(StatisticBase *stat)
+void
+StatisticGroup::addStatistic(StatisticBase* stat)
 {
     stats.push_back(stat);
     stat->setGroup(this);
 }
 
-
-} //namespace Statistics
-} //namespace SST
-
+} // namespace Statistics
+} // namespace SST

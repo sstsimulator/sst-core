@@ -9,36 +9,36 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #include "sst_config.h"
-#include "sst/core/warnmacros.h"
+
 #include "sst/core/factory.h"
 
-#include <set>
-#include <tuple>
-#include <stdio.h>
-#include <fstream>
-
-#include "sst/core/elemLoader.h"
-#include "sst/core/simulation.h"
 #include "sst/core/component.h"
-#include "sst/core/subcomponent.h"
-#include "sst/core/part/sstpart.h"
+#include "sst/core/elemLoader.h"
 #include "sst/core/eli/elementinfo.h"
-#include "sst/core/params.h"
 #include "sst/core/linkMap.h"
 #include "sst/core/model/element_python.h"
+#include "sst/core/params.h"
+#include "sst/core/part/sstpart.h"
+#include "sst/core/simulation.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/warnmacros.h"
+
+#include <fstream>
+#include <set>
+#include <stdio.h>
+#include <tuple>
 
 // Statistic Output Objects
 #include "sst/core/statapi/statoutputconsole.h"
-#include "sst/core/statapi/statoutputtxt.h"
 #include "sst/core/statapi/statoutputcsv.h"
 #include "sst/core/statapi/statoutputjson.h"
+#include "sst/core/statapi/statoutputtxt.h"
 #ifdef HAVE_HDF5
 #include "sst/core/statapi/statoutputhdf5.h"
 #endif
-#include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/stataccumulator.h"
+#include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/stathistogram.h"
 #include "sst/core/statapi/statnull.h"
 #include "sst/core/statapi/statuniquecount.h"
@@ -49,46 +49,43 @@ namespace SST {
 
 Factory* Factory::instance = nullptr;
 
-
-Factory::Factory(const std::string& searchPaths) :
-    searchPaths(searchPaths),
-    out(Output::getDefaultObject())
+Factory::Factory(const std::string& searchPaths) : searchPaths(searchPaths), out(Output::getDefaultObject())
 {
     if ( instance ) out.fatal(CALL_INFO, 1, "Already initialized a factory.\n");
     instance = this;
-    loader = new ElemLoader(searchPaths);
+    loader   = new ElemLoader(searchPaths);
     loaded_libraries.insert("sst");
 }
-
 
 Factory::~Factory()
 {
     delete loader;
 }
 
-
-
-static bool checkPort(const std::string& def, const std::string& offered)
+static bool
+checkPort(const std::string& def, const std::string& offered)
 {
-    const char * x = def.c_str();
-    const char * y = offered.c_str();
+    const char* x = def.c_str();
+    const char* y = offered.c_str();
 
     /* Special case.  Name of '*' matches everything */
-    if ( *x == '*' && *(x+1) == '\0' ) return true;
+    if ( *x == '*' && *(x + 1) == '\0' ) return true;
 
     do {
-        if ( *x == '%' && (*(x+1) == '(' || *(x+1) == 'd') ) {
+        if ( *x == '%' && (*(x + 1) == '(' || *(x + 1) == 'd') ) {
             // We have a %d or %(var)d to eat
             x++;
             if ( *x == '(' ) {
-                while ( *x && (*x != ')') ) x++;
-                x++;  /* *x should now == 'd' */
+                while ( *x && (*x != ')') )
+                    x++;
+                x++; /* *x should now == 'd' */
             }
-            if ( *x != 'd') /* Malformed string.  Fail all the things */
+            if ( *x != 'd' ) /* Malformed string.  Fail all the things */
                 return false;
             x++; /* Finish eating the variable */
             /* Now, eat the corresponding digits of y */
-            while ( *y && isdigit(*y) ) y++;
+            while ( *y && isdigit(*y) )
+                y++;
         }
         if ( *x != *y ) return false;
         if ( *x == '\0' ) return true;
@@ -99,59 +96,53 @@ static bool checkPort(const std::string& def, const std::string& offered)
     return true;
 }
 
-bool Factory::isPortNameValid(const std::string& type, const std::string& port_name)
+bool
+Factory::isPortNameValid(const std::string& type, const std::string& port_name)
 {
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) { findLibrary(elemlib); }
 
-    const std::vector<std::string> *portNames = nullptr;
+    const std::vector<std::string>* portNames = nullptr;
 
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
-    auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
+    auto*             lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
     std::stringstream err;
-    if (lib) {
+    if ( lib ) {
         auto* compInfo = lib->getInfo(elem);
-        if (compInfo){
-            portNames = &compInfo->getPortnames();
-        }
+        if ( compInfo ) { portNames = &compInfo->getPortnames(); }
     }
     if ( nullptr == portNames ) {
         auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-        if (lib){
+        if ( lib ) {
             auto* subcompInfo = lib->getInfo(elem);
-            if (subcompInfo){
-                portNames = &subcompInfo->getPortnames();
-            } else {
-                //this is going to fail
+            if ( subcompInfo ) { portNames = &subcompInfo->getPortnames(); }
+            else {
+                // this is going to fail
                 err << "Valid SubComponents: ";
-                for (auto& pair : lib->getMap()){
+                for ( auto& pair : lib->getMap() ) {
                     err << pair.first << "\n";
                 }
             }
         }
     }
 
-
     std::string tmp = elemlib + "." + elem;
 
-    if (portNames == nullptr) {
-      err << "Valid Components: ";
-      for (auto& pair : lib->getMap()){
-        err << pair.first << "\n";
-      }
-      std::cerr << err.str() << std::endl;
-      out.fatal(CALL_INFO, 1, "can't find requested component or subcomponent '%s'\n ", tmp.c_str());
-      return false;
+    if ( portNames == nullptr ) {
+        err << "Valid Components: ";
+        for ( auto& pair : lib->getMap() ) {
+            err << pair.first << "\n";
+        }
+        std::cerr << err.str() << std::endl;
+        out.fatal(CALL_INFO, 1, "can't find requested component or subcomponent '%s'\n ", tmp.c_str());
+        return false;
     }
 
     for ( auto p : *portNames ) {
-        if ( checkPort(p, port_name) )
-            return true;
+        if ( checkPort(p, port_name) ) return true;
     }
     return false;
 }
@@ -166,14 +157,12 @@ Factory::getParamNames(const std::string& type)
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(type);
     // ensure library is already loaded...
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib);
-    }
+    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) { findLibrary(elemlib); }
 
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if (lib) {
+    if ( lib ) {
         auto* compInfo = lib->getInfo(elem);
         if ( compInfo ) return compInfo->getParamNames();
     }
@@ -193,16 +182,12 @@ Factory::getParamNames(const std::string& type)
     }
     // If we made it to here we didn't find an element that has params
     // with the given name
-    out.fatal(CALL_INFO, 1,"can't find requested element %s.\n ", type.c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested element %s.\n ", type.c_str());
     return empty_keyset;
 }
 
-
-
 Component*
-Factory::CreateComponent(ComponentId_t id,
-                         const std::string& type,
-                         Params& params)
+Factory::CreateComponent(ComponentId_t id, const std::string& type, Params& params)
 {
     std::string elemlib, elem;
 
@@ -217,29 +202,27 @@ Factory::CreateComponent(ComponentId_t id,
     // ElementLibraryDatabase
 
     auto* lib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if (lib){
-      auto* compInfo = lib->getInfo(elem);
-      if (compInfo) {
-        auto* compLib = Component::getBuilderLibrary(elemlib);
-        if (compLib){
-          auto* fact = compLib->getBuilder(elem);
-          if (fact){
-            loadingComponentType = type;
-            params.pushAllowedKeys(compInfo->getParamNames());
-            Component* ret = fact->create(id,params);
-            params.popAllowedKeys();
-            loadingComponentType = "";
-            return ret;
-          }
+    if ( lib ) {
+        auto* compInfo = lib->getInfo(elem);
+        if ( compInfo ) {
+            auto* compLib = Component::getBuilderLibrary(elemlib);
+            if ( compLib ) {
+                auto* fact = compLib->getBuilder(elem);
+                if ( fact ) {
+                    loadingComponentType = type;
+                    params.pushAllowedKeys(compInfo->getParamNames());
+                    Component* ret = fact->create(id, params);
+                    params.popAllowedKeys();
+                    loadingComponentType = "";
+                    return ret;
+                }
+            }
         }
-      }
     }
     // If we make it to here, component not found
-    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n",
-              type.c_str(), sstr.str().c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n", type.c_str(), sstr.str().c_str());
     return nullptr;
 }
-
 
 bool
 Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& slotName)
@@ -257,39 +240,38 @@ Factory::DoesSubComponentSlotExist(const std::string& type, const std::string& s
 
     // Check to see if library is loaded into new ElementLibraryDatabase
     auto* compLib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if (compLib){
+    if ( compLib ) {
         auto* info = compLib->getInfo(elem);
-        if (info){
-            for (auto& item : info->getSubComponentSlots()){
-                if (item.name == slotName) return true;
+        if ( info ) {
+            for ( auto& item : info->getSubComponentSlots() ) {
+                if ( item.name == slotName ) return true;
             }
             return false;
         }
     }
 
     auto* subLib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if (subLib){
+    if ( subLib ) {
         auto* info = subLib->getInfo(elem);
-        if (info){
-            for (auto& item : info->getSubComponentSlots()){
-                if (item.name == slotName) return true;
+        if ( info ) {
+            for ( auto& item : info->getSubComponentSlots() ) {
+                if ( item.name == slotName ) return true;
             }
             return false;
         }
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n",
-              type.c_str(), error_os.str().c_str());
+    out.fatal(
+        CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n", type.c_str(), error_os.str().c_str());
     return false;
 }
 
 const std::vector<std::string>&
-Factory::GetValidStatistics(const std::string& compType) {
+Factory::GetValidStatistics(const std::string& compType)
+{
     std::string compTypeToLoad = compType;
-    if (compType.empty()) {
-        compTypeToLoad = loadingComponentType;
-    }
+    if ( compType.empty() ) { compTypeToLoad = loadingComponentType; }
 
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
@@ -303,35 +285,31 @@ Factory::GetValidStatistics(const std::string& compType) {
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* sublib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if (sublib) {
+    if ( sublib ) {
         auto* info = sublib->getInfo(elem);
-        if (info) {
-            return info->getStatnames();
-        }
+        if ( info ) { return info->getStatnames(); }
     }
 
     auto* complib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if (complib) {
+    if ( complib ) {
         auto* info = complib->getInfo(elem);
-        if (info) {
-            return info->getStatnames();
-        }
+        if ( info ) { return info->getStatnames(); }
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n", compType.c_str(),
-              error_os.str().c_str());
+    out.fatal(
+        CALL_INFO, 1, "can't find requested component/subcomponent '%s'\n%s\n", compType.c_str(),
+        error_os.str().c_str());
     static std::vector<std::string> null_return;
     return null_return; // to avoid compiler warnings
 }
 
 bool
-Factory::DoesComponentInfoStatisticNameExist(const std::string& compType, const std::string& statisticName) {
+Factory::DoesComponentInfoStatisticNameExist(const std::string& compType, const std::string& statisticName)
+{
     auto& my_list = GetValidStatistics(compType);
-    for (auto& item : my_list) {
-        if (statisticName == item) {
-            return true;
-        }
+    for ( auto& item : my_list ) {
+        if ( statisticName == item ) { return true; }
     }
     return false;
 }
@@ -340,9 +318,7 @@ uint8_t
 Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
-    if (true == type.empty()) {
-        compTypeToLoad = loadingComponentType;
-    }
+    if ( true == type.empty() ) { compTypeToLoad = loadingComponentType; }
 
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
@@ -356,34 +332,29 @@ Factory::GetComponentInfoStatisticEnableLevel(const std::string& type, const std
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* compLib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if (compLib){
-      auto* info = compLib->getInfo(elem);
-      if (info){
-        for ( auto& item : info->getValidStats() ) {
-            if ( statisticName == item.name ) {
-                return item.enableLevel;
+    if ( compLib ) {
+        auto* info = compLib->getInfo(elem);
+        if ( info ) {
+            for ( auto& item : info->getValidStats() ) {
+                if ( statisticName == item.name ) { return item.enableLevel; }
             }
         }
-      }
-      return 0;
+        return 0;
     }
 
     auto* subLib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if (subLib){
-      auto* info = subLib->getInfo(elem);
-      if (info){
-        for ( auto& item : info->getValidStats() ) {
-            if ( statisticName == item.name ) {
-                return item.enableLevel;
+    if ( subLib ) {
+        auto* info = subLib->getInfo(elem);
+        if ( info ) {
+            for ( auto& item : info->getValidStats() ) {
+                if ( statisticName == item.name ) { return item.enableLevel; }
             }
         }
-      }
-      return 0;
+        return 0;
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n",
-              type.c_str(), error_os.str().c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n", type.c_str(), error_os.str().c_str());
     return 0;
 }
 
@@ -391,45 +362,38 @@ std::string
 Factory::GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName)
 {
     std::string compTypeToLoad = type;
-    if (true == type.empty()) {
-        compTypeToLoad = loadingComponentType;
-    }
+    if ( true == type.empty() ) { compTypeToLoad = loadingComponentType; }
 
     std::string elemlib, elem;
     std::tie(elemlib, elem) = parseLoadName(compTypeToLoad);
 
     // ensure library is already loaded...
     std::stringstream error_os;
-    if (loaded_libraries.find(elemlib) == loaded_libraries.end()) {
-        findLibrary(elemlib, error_os);
-    }
+    if ( loaded_libraries.find(elemlib) == loaded_libraries.end() ) { findLibrary(elemlib, error_os); }
 
     auto* compLib = ELI::InfoDatabase::getLibrary<Component>(elemlib);
-    if (compLib){
-      auto* info = compLib->getInfo(elem);
-      if (info){
-        for ( auto& item : info->getValidStats() ) {
-            if ( statisticName == item.name ) {
-                return item.units;
+    if ( compLib ) {
+        auto* info = compLib->getInfo(elem);
+        if ( info ) {
+            for ( auto& item : info->getValidStats() ) {
+                if ( statisticName == item.name ) { return item.units; }
             }
         }
-      }
-      return nullptr;
+        return nullptr;
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n",
-              type.c_str(), error_os.str().c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested component '%s'\n%s\n", type.c_str(), error_os.str().c_str());
     return nullptr;
 }
-
 
 Module*
 Factory::CreateModule(const std::string& type, Params& params)
 {
-    if("" == type) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(CALL_INFO,
-                1, "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
+    if ( "" == type ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(
+            CALL_INFO, 1,
+            "Error: Core attempted to load an empty module name, did you miss a module string in your input deck?\n");
     }
 
     std::string elemlib, elem;
@@ -442,25 +406,24 @@ Factory::CreateModule(const std::string& type, Params& params)
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* lib = ELI::InfoDatabase::getLibrary<Module>(elemlib);
-    if (lib){
-      auto* info = lib->getInfo(elem);
-      if (info){
-        auto* builderLib = Module::getBuilderLibraryTemplate<Params&>(elemlib);
-        if (builderLib){
-          auto* fact = builderLib->getBuilder(elem);
-          if (fact){
-            params.pushAllowedKeys(info->getParamNames());
-            Module* ret = fact->create(params);
-            params.popAllowedKeys();
-            return ret;
-          }
+    if ( lib ) {
+        auto* info = lib->getInfo(elem);
+        if ( info ) {
+            auto* builderLib = Module::getBuilderLibraryTemplate<Params&>(elemlib);
+            if ( builderLib ) {
+                auto* fact = builderLib->getBuilder(elem);
+                if ( fact ) {
+                    params.pushAllowedKeys(info->getParamNames());
+                    Module* ret = fact->create(params);
+                    params.popAllowedKeys();
+                    return ret;
+                }
+            }
         }
-      }
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n%s\n",
-              type.c_str(), error_os.str().c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n%s\n", type.c_str(), error_os.str().c_str());
     return nullptr;
 }
 
@@ -479,28 +442,26 @@ Factory::CreateModuleWithComponent(const std::string& type, Component* comp, Par
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* lib = ELI::InfoDatabase::getLibrary<Module>(elemlib);
-    if (lib){
-      auto* info = lib->getInfo(elem);
-      if (info){
-        auto* builderLib = Module::getBuilderLibraryTemplate<Component*,Params&>(elemlib);
-        if (builderLib){
-          auto* fact = builderLib->getBuilder(elem);
-          if (fact){
-            params.pushAllowedKeys(info->getParamNames());
-            Module* ret = fact->create(comp,params);
-            params.popAllowedKeys();
-            return ret;
-          }
+    if ( lib ) {
+        auto* info = lib->getInfo(elem);
+        if ( info ) {
+            auto* builderLib = Module::getBuilderLibraryTemplate<Component*, Params&>(elemlib);
+            if ( builderLib ) {
+                auto* fact = builderLib->getBuilder(elem);
+                if ( fact ) {
+                    params.pushAllowedKeys(info->getParamNames());
+                    Module* ret = fact->create(comp, params);
+                    params.popAllowedKeys();
+                    return ret;
+                }
+            }
         }
-      }
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n%s\n",
-              type.c_str(), error_os.str().c_str());
+    out.fatal(CALL_INFO, 1, "can't find requested module '%s'\n%s\n", type.c_str(), error_os.str().c_str());
     return nullptr;
 }
-
 
 bool
 Factory::doesSubComponentExist(const std::string& type)
@@ -514,10 +475,10 @@ Factory::doesSubComponentExist(const std::string& type)
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
-    auto* lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
-    if (lib){
-      auto* info = lib->getInfo(elem);
-      if ( info ) return true;
+    auto*                                 lib = ELI::InfoDatabase::getLibrary<SubComponent>(elemlib);
+    if ( lib ) {
+        auto* info = lib->getInfo(elem);
+        if ( info ) return true;
     }
 
     // If we get to here, element doesn't exist
@@ -548,26 +509,24 @@ Factory::CreatePartitioner(const std::string& name, RankInfo total_ranks, RankIn
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* lib = ELI::InfoDatabase::getLibrary<Partition::SSTPartitioner>(elemlib);
-    if (lib){
-      auto* info = lib->getInfo(elem);
-      if (info){
-        auto* builderLib = Partition::SSTPartitioner::getBuilderLibrary(elemlib);
-        if (builderLib){
-          auto* fact = builderLib->getBuilder(elem);
-          if (fact){
-            return fact->create(total_ranks, my_rank, verbosity);
-          }
+    if ( lib ) {
+        auto* info = lib->getInfo(elem);
+        if ( info ) {
+            auto* builderLib = Partition::SSTPartitioner::getBuilderLibrary(elemlib);
+            if ( builderLib ) {
+                auto* fact = builderLib->getBuilder(elem);
+                if ( fact ) { return fact->create(total_ranks, my_rank, verbosity); }
+            }
         }
-      }
     }
 
     // If we get to here, element doesn't exist
-    out.fatal(CALL_INFO, 1,
-              "Error: Unable to find requested partitioner '%s', check --help for information on partitioners.\n%s\n",
-              name.c_str(), error_os.str().c_str());
+    out.fatal(
+        CALL_INFO, 1,
+        "Error: Unable to find requested partitioner '%s', check --help for information on partitioners.\n%s\n",
+        name.c_str(), error_os.str().c_str());
     return nullptr;
 }
-
 
 // genPythonModuleFunction
 SSTElementPythonModule*
@@ -579,68 +538,65 @@ Factory::getPythonModule(const std::string& name)
     // Check to see if library is loaded into new
     // ElementLibraryDatabase
     auto* lib = ELI::InfoDatabase::getLibrary<SSTElementPythonModule>(elemlib);
-    if (lib) {
-      auto* info = lib->getInfo(elem);
-      if (info){
-        auto* builderLib = SSTElementPythonModule::getBuilderLibrary(elemlib);
-        if (builderLib){
-          auto* fact = builderLib->getBuilder(elemlib);
-          if (fact){
-            auto* ret = fact->create(elemlib);
-            return ret;
-          }
+    if ( lib ) {
+        auto* info = lib->getInfo(elem);
+        if ( info ) {
+            auto* builderLib = SSTElementPythonModule::getBuilderLibrary(elemlib);
+            if ( builderLib ) {
+                auto* fact = builderLib->getBuilder(elemlib);
+                if ( fact ) {
+                    auto* ret = fact->create(elemlib);
+                    return ret;
+                }
+            }
         }
-      }
     }
 
     return nullptr;
 }
 
-
-
-bool Factory::hasLibrary(const std::string& elemlib, std::ostream& error_os)
+bool
+Factory::hasLibrary(const std::string& elemlib, std::ostream& error_os)
 {
     return findLibrary(elemlib, error_os);
 }
 
-
-void Factory::requireLibrary(const std::string& elemlib)
+void
+Factory::requireLibrary(const std::string& elemlib)
 {
     if ( elemlib == "sst" ) return;
 
-    //ignore error messages here
+    // ignore error messages here
     std::ofstream ofs("/dev/null", std::ofstream::out | std::ofstream::app);
     requireLibrary(elemlib, ofs);
 }
 
-void Factory::requireLibrary(const std::string& elemlib, std::ostream& error_os)
+void
+Factory::requireLibrary(const std::string& elemlib, std::ostream& error_os)
 {
     if ( elemlib == "sst" ) return;
 
-    //ignore error messages here
-    //std::ofstream ofs("/dev/null", std::ofstream::out | std::ofstream::app);
+    // ignore error messages here
+    // std::ofstream ofs("/dev/null", std::ofstream::out | std::ofstream::app);
     findLibrary(elemlib, error_os);
 }
 
-
-void Factory::getLoadedLibraryNames(std::set<std::string>& lib_names)
+void
+Factory::getLoadedLibraryNames(std::set<std::string>& lib_names)
 {
 
     for ( auto& lib : loaded_libraries ) {
         lib_names.insert(lib);
     }
-
 }
 
-void Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
+void
+Factory::loadUnloadedLibraries(const std::set<std::string>& lib_names)
 {
-    for ( std::set<std::string>::const_iterator i = lib_names.begin();
-          i != lib_names.end(); ++i )
-        {
-            findLibrary(*i);
-        }
+    for ( std::set<std::string>::const_iterator i = lib_names.begin(); i != lib_names.end(); ++i ) {
+        findLibrary(*i);
+    }
 }
-
 
 bool
 Factory::findLibrary(const std::string& elemlib, std::ostream& err_os)
@@ -652,19 +608,19 @@ Factory::findLibrary(const std::string& elemlib, std::ostream& err_os)
     return loadLibrary(elemlib, err_os);
 }
 
-
-
 std::pair<std::string, std::string>
 Factory::parseLoadName(const std::string& wholename)
 {
     std::size_t found = wholename.find_first_of(".");
-    if (found == std::string::npos) {
-      if (wholename.empty()){
-          out.output(CALL_INFO, "Warning: got empty element library. "
-                     "You might have a missing parameter that causes a default empty string.");
-      }
-      return make_pair(wholename, wholename);
-    } else {
+    if ( found == std::string::npos ) {
+        if ( wholename.empty() ) {
+            out.output(
+                CALL_INFO, "Warning: got empty element library. "
+                           "You might have a missing parameter that causes a default empty string.");
+        }
+        return make_pair(wholename, wholename);
+    }
+    else {
         std::string eli(wholename, 0, found);
         std::string el(wholename, (size_t)(found + 1));
         return make_pair(eli, el);
@@ -672,25 +628,23 @@ Factory::parseLoadName(const std::string& wholename)
 }
 
 void
-Factory::notFound(const std::string& baseName, const std::string& type,
-                  const std::string& error_msg)
+Factory::notFound(const std::string& baseName, const std::string& type, const std::string& error_msg)
 {
-    out.fatal(CALL_INFO, 1, "can't find requested element library '%s' with element type '%s'\n%s\n",
-            baseName.c_str(), type.c_str(), error_msg.c_str());
+    out.fatal(
+        CALL_INFO, 1, "can't find requested element library '%s' with element type '%s'\n%s\n", baseName.c_str(),
+        type.c_str(), error_msg.c_str());
 }
 
-
-bool Factory::loadLibrary(const std::string& name, std::ostream& err_os)
+bool
+Factory::loadLibrary(const std::string& name, std::ostream& err_os)
 {
     loader->loadLibrary(name, err_os);
 
-    if (!ELI::LoadedLibraries::isLoaded(name)) {
-        return false;
-    }
+    if ( !ELI::LoadedLibraries::isLoaded(name) ) { return false; }
 
     // The library was loaded, put it in loadedlibraries
     loaded_libraries.insert(name);
     return true;
 }
 
-} //namespace SST
+} // namespace SST

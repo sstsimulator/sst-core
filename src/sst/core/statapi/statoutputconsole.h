@@ -9,11 +9,10 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_STATISTICS_OUTPUTCONSOLE
-#define _H_SST_CORE_STATISTICS_OUTPUTCONSOLE
+#ifndef SST_CORE_STATAPI_STATOUTPUTCONSOLE_H
+#define SST_CORE_STATAPI_STATOUTPUTCONSOLE_H
 
 #include "sst/core/sst_types.h"
-
 #include "sst/core/statapi/statoutput.h"
 
 namespace SST {
@@ -36,7 +35,6 @@ public:
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Output directly to console screen"
      )
-
 
     /** Construct a StatOutputConsole
      * @param outputParameters - Parameters used for this Statistic Output
@@ -91,14 +89,13 @@ protected:
     void outputField(fieldHandle_t fieldHandle, double data) override;
 
 protected:
-    StatisticOutputConsole() {;} // For serialization
+    StatisticOutputConsole() { ; } // For serialization
 
 private:
     std::string m_OutputBuffer;
-
 };
 
-} //namespace Statistics
-} //namespace SST
+} // namespace Statistics
+} // namespace SST
 
-#endif
+#endif // SST_CORE_STATAPI_STATOUTPUTCONSOLE_H

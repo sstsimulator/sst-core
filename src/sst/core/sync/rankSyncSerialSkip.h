@@ -9,8 +9,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_RANKSYNCSERIALSKIP_H
-#define SST_CORE_RANKSYNCSERIALSKIP_H
+#ifndef SST_CORE_SYNC_RANKSYNCSERIALSKIP_H
+#define SST_CORE_SYNC_RANKSYNCSERIALSKIP_H
 
 #include "sst/core/sst_types.h"
 #include "sst/core/sync/syncManager.h"
@@ -23,14 +23,16 @@ namespace SST {
 class SyncQueue;
 class TimeConverter;
 
-class RankSyncSerialSkip : public RankSync {
+class RankSyncSerialSkip : public RankSync
+{
 public:
     /** Create a new Sync object which fires with a specified period */
     RankSyncSerialSkip(TimeConverter* minPartTC);
     virtual ~RankSyncSerialSkip();
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) override;
+    ActivityQueue*
+         registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) override;
     void execute(int thread) override;
 
     /** Cause an exchange of Untimed Data to occur */
@@ -45,20 +47,20 @@ public:
     uint64_t getDataSize() const override;
 
 private:
-
     static SimTime_t myNextSyncTime;
 
     // Function that actually does the exchange during run
     void exchange();
 
-    struct comm_pair {
+    struct comm_pair
+    {
         SyncQueue* squeue; // SyncQueue
-        char* rbuf; // receive buffer
-        uint32_t local_size;
-        uint32_t remote_size;
+        char*      rbuf;   // receive buffer
+        uint32_t   local_size;
+        uint32_t   remote_size;
     };
 
-    typedef std::map<int, comm_pair > comm_map_t;
+    typedef std::map<int, comm_pair>  comm_map_t;
     typedef std::map<LinkId_t, Link*> link_map_t;
 
     // TimeConverter* period;
@@ -67,9 +69,8 @@ private:
 
     double mpiWaitTime;
     double deserializeTime;
-
 };
 
 } // namespace SST
 
-#endif // SST_CORE_SYNCMANAGER_H
+#endif // SST_CORE_SYNC_RANKSYNCSERIALSKIP_H

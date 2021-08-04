@@ -9,52 +9,55 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #include "sst_config.h"
 
 #include "sst/core/initQueue.h"
 
 namespace SST {
 
-    InitQueue::InitQueue() : ActivityQueue() {}
-    InitQueue::~InitQueue() {
+InitQueue::InitQueue() : ActivityQueue() {}
+InitQueue::~InitQueue()
+{
     // Need to delete any events left in the queue
     int size = data.size();
     for ( int i = 0; i < size; ++i ) {
         delete data.front();
         data.pop_front();
     }
-    }
+}
 
-    bool InitQueue::empty()
-    {
+bool
+InitQueue::empty()
+{
     return data.empty();
-    }
+}
 
-    int InitQueue::size()
-    {
+int
+InitQueue::size()
+{
     return data.size();
-    }
+}
 
-    void InitQueue::insert(Activity* activity)
-    {
+void
+InitQueue::insert(Activity* activity)
+{
     data.push_back(activity);
-    }
+}
 
-    Activity* InitQueue::pop()
-    {
+Activity*
+InitQueue::pop()
+{
     if ( data.size() == 0 ) return nullptr;
     Activity* ret_val = data.front();
     data.pop_front();
     return ret_val;
-    }
+}
 
-    Activity* InitQueue::front()
-    {
+Activity*
+InitQueue::front()
+{
     if ( data.size() == 0 ) return nullptr;
     return data.front();
-    }
-
+}
 
 } // namespace SST
-

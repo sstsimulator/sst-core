@@ -13,9 +13,8 @@
 
 #include "sst/core/impl/partitioners/singlepart.h"
 
-#include "sst/core/warnmacros.h"
-
 #include "sst/core/configGraph.h"
+#include "sst/core/warnmacros.h"
 
 using namespace std;
 
@@ -23,12 +22,12 @@ using namespace SST::IMPL::Partition;
 
 SSTSinglePartition::SSTSinglePartition(RankInfo UNUSED(total_ranks), RankInfo UNUSED(my_rank), int UNUSED(verbosity)) {}
 
-void SSTSinglePartition::performPartition(ConfigGraph* graph) {
-
+void
+SSTSinglePartition::performPartition(ConfigGraph* graph)
+{
     ConfigComponentMap_t& compMap = graph->getComponentMap();
 
-    for(auto comp : compMap ) {
-        comp->rank = RankInfo(0,0);
+    for ( auto comp : compMap ) {
+        comp->rank = RankInfo(0, 0);
     }
-
 }

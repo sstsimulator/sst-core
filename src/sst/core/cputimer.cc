@@ -9,13 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #include "sst_config.h"
+
 #include "cputimer.h"
 
-double sst_get_cpu_time() {
+double
+sst_get_cpu_time()
+{
     struct timeval the_time;
     gettimeofday(&the_time, nullptr);
 
-    return ((double) the_time.tv_sec) + (((double) the_time.tv_usec) * 1.0e-6);
+    return ((double)the_time.tv_sec) + (((double)the_time.tv_usec) * 1.0e-6);
 }

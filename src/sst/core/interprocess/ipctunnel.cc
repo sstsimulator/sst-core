@@ -14,9 +14,9 @@
 #include <inttypes.h>
 
 namespace SST {
-    namespace Core {
-        namespace Interprocess {
-            uint32_t globalIPCTunnelCount = 0;
-        }
-    }
+namespace Core {
+namespace Interprocess {
+uint32_t globalIPCTunnelCount = 0;
 }
+} // namespace Core
+} // namespace SST

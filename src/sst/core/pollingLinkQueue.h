@@ -12,32 +12,31 @@
 #ifndef SST_CORE_POLLINGLINKQUEUE_H
 #define SST_CORE_POLLINGLINKQUEUE_H
 
-#include <set>
-
 #include "sst/core/activityQueue.h"
+
+#include <set>
 
 namespace SST {
 
 /**
  * A link queue which is used for polling only.
  */
-class PollingLinkQueue : public ActivityQueue {
+class PollingLinkQueue : public ActivityQueue
+{
 public:
     PollingLinkQueue();
     ~PollingLinkQueue();
 
-    bool empty() override;
-    int size() override;
-    void insert(Activity* activity) override;
+    bool      empty() override;
+    int       size() override;
+    void      insert(Activity* activity) override;
     Activity* pop() override;
     Activity* front() override;
 
-
 private:
-    std::multiset<Activity*,Activity::less_time> data;
-
+    std::multiset<Activity*, Activity::less_time> data;
 };
 
-} //namespace SST
+} // namespace SST
 
 #endif // SST_CORE_POLLINGLINKQUEUE_H

@@ -9,12 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
-#ifndef _SST_CORE_CPU_TIMER
-#define _SST_CORE_CPU_TIMER
+#ifndef SST_CORE_CPU_TIMER_H
+#define SST_CORE_CPU_TIMER_H
 
 #include <sys/time.h>
 
 double sst_get_cpu_time();
 
-#endif
+#endif // SST_CORE_CPU_TIMER_H

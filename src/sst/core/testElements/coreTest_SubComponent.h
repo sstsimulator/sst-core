@@ -13,14 +13,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTSUBCOMPONENT_H
-#define _CORETESTSUBCOMPONENT_H
-
-#include <vector>
+#ifndef SST_CORE_CORETEST_SUBCOMPONENT_H
+#define SST_CORE_CORETEST_SUBCOMPONENT_H
 
 #include <sst/core/component.h>
-#include <sst/core/subcomponent.h>
 #include <sst/core/link.h>
+#include <sst/core/subcomponent.h>
+#include <vector>
 
 namespace SST {
 namespace CoreTestSubComponent {
@@ -38,18 +37,13 @@ namespace CoreTestSubComponent {
   depending on the configuration.
  */
 
-
 class SubCompInterface : public SST::SubComponent
 {
 public:
     SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTestSubComponent::SubCompInterface)
 
-    SubCompInterface(ComponentId_t id) :
-        SubComponent(id)
-    { }
-    SubCompInterface(ComponentId_t id, Params& UNUSED(params)) :
-        SubComponent(id)
-    { }
+    SubCompInterface(ComponentId_t id) : SubComponent(id) {}
+    SubCompInterface(ComponentId_t id, Params& UNUSED(params)) : SubComponent(id) {}
     virtual ~SubCompInterface() {}
     virtual void clock(SST::Cycle_t) {}
 };
@@ -57,7 +51,8 @@ public:
 class SubCompSlotInterface : public SubCompInterface
 {
 public:
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API(SST::CoreTestSubComponent::SubCompSlotInterface,SST::CoreTestSubComponent::SubCompInterface)
+    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API(SST::CoreTestSubComponent::SubCompSlotInterface,
+                                              SST::CoreTestSubComponent::SubCompInterface)
 
     SST_ELI_DOCUMENT_PARAMS(
         {"num_subcomps","Number of anonymous SubComponents to load.  Ignored if using name SubComponents.","1"}
@@ -70,12 +65,8 @@ public:
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
     )
 
-    SubCompSlotInterface(ComponentId_t id) :
-        SubCompInterface(id)
-    { }
-    SubCompSlotInterface(ComponentId_t id, Params& UNUSED(params)) :
-        SubCompInterface(id)
-    { }
+    SubCompSlotInterface(ComponentId_t id) : SubCompInterface(id) {}
+    SubCompSlotInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
     virtual ~SubCompSlotInterface() {}
 };
 
@@ -84,12 +75,13 @@ class SubComponentLoader : public Component
 {
 public:
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
-    SST_ELI_REGISTER_COMPONENT(SubComponentLoader,
-                               "coreTestElement",
-                               "SubComponentLoader",
-                               SST_ELI_ELEMENT_VERSION(1,0,0),
-                               "Demonstrates subcomponents",
-                               COMPONENT_CATEGORY_UNCATEGORIZED
+    SST_ELI_REGISTER_COMPONENT(
+        SubComponentLoader,
+        "coreTestElement",
+        "SubComponentLoader",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Demonstrates subcomponents",
+        COMPONENT_CATEGORY_UNCATEGORIZED
     )
 
     SST_ELI_DOCUMENT_PARAMS(
@@ -114,11 +106,9 @@ public:
     SubComponentLoader(ComponentId_t id, SST::Params& params);
 
 private:
-
-    bool tick(SST::Cycle_t);
+    bool                           tick(SST::Cycle_t);
     std::vector<SubCompInterface*> subComps;
 };
-
 
 /* Our example subcomponents */
 class SubCompSlot : public SubCompSlotInterface
@@ -146,7 +136,6 @@ public:
         {"mySubCompSlot", "Test slot", "SST::CoreTestSubComponent::SubCompInterface" }
     )
 
-
 private:
     std::vector<SubCompInterface*> subComps;
 
@@ -159,12 +148,12 @@ public:
     void clock(Cycle_t);
 };
 
-
 // Add in some extra levels of ELI hierarchy for testing
 class SubCompSendRecvInterface : public SubCompInterface
 {
 public:
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API(SST::CoreTestSubComponent::SubCompSendRecvInterface,SST::CoreTestSubComponent::SubCompInterface)
+    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API(SST::CoreTestSubComponent::SubCompSendRecvInterface,
+                                              SST::CoreTestSubComponent::SubCompInterface)
 
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
@@ -192,15 +181,10 @@ public:
         {"numRecv", "# of msgs recv", "", 1},
     )
 
-    SubCompSendRecvInterface(ComponentId_t id) :
-        SubCompInterface(id)
-    { }
-    SubCompSendRecvInterface(ComponentId_t id, Params& UNUSED(params)) :
-        SubCompInterface(id)
-    { }
+    SubCompSendRecvInterface(ComponentId_t id) : SubCompInterface(id) {}
+    SubCompSendRecvInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
     virtual ~SubCompSendRecvInterface() {}
 };
-
 
 class SubCompSender : public SubCompSendRecvInterface
 {
@@ -232,18 +216,18 @@ public:
     )
 
 private:
-    Statistic<uint32_t> *nMsgSent;
-    Statistic<uint32_t> *totalMsgSent;
-    uint32_t nToSend;
-    SST::Link *link;
+    Statistic<uint32_t>* nMsgSent;
+    Statistic<uint32_t>* totalMsgSent;
+    uint32_t             nToSend;
+    SST::Link*           link;
+
 public:
-    SubCompSender(ComponentId_t id, Params &params);
+    SubCompSender(ComponentId_t id, Params& params);
     // Direct API
     SubCompSender(ComponentId_t id, uint32_t nToSend, const std::string& port_name);
     ~SubCompSender() {}
     void clock(Cycle_t);
 };
-
 
 class SubCompReceiver : public SubCompSendRecvInterface
 {
@@ -277,15 +261,14 @@ public:
     )
 
 private:
+    Statistic<uint32_t>* nMsgReceived;
+    SST::Link*           link;
 
-    Statistic<uint32_t> *nMsgReceived;
-    SST::Link *link;
-
-    void handleEvent(SST::Event *ev);
+    void handleEvent(SST::Event* ev);
 
 public:
-    SubCompReceiver(ComponentId_t id, Params &params);
-    SubCompReceiver(ComponentId_t id, std::string port) ;
+    SubCompReceiver(ComponentId_t id, Params& params);
+    SubCompReceiver(ComponentId_t id, std::string port);
     ~SubCompReceiver() {}
     void clock(Cycle_t);
 };
@@ -293,4 +276,4 @@ public:
 } // namespace CoreTestSubComponent
 } // namespace SST
 
-#endif /* _CORETESTSUBCOMPONENT_H */
+#endif // SST_CORE_CORETEST_SUBCOMPONENT_H

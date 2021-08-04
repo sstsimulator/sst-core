@@ -9,12 +9,12 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _SST_CORE_ELEMLOADER_H
-#define _SST_CORE_ELEMLOADER_H
+#ifndef SST_CORE_ELEMLOADER_H
+#define SST_CORE_ELEMLOADER_H
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 namespace SST {
 
@@ -22,9 +22,11 @@ struct LoaderData;
 struct ElementInfoGenerator;
 
 /** Class to load Element Libraries */
-class ElemLoader {
-    LoaderData *loaderData;
+class ElemLoader
+{
+    LoaderData* loaderData;
     std::string searchPaths;
+
 public:
     /** Create a new ElementLoader with a given searchpath of directories */
     ElemLoader(const std::string& searchPaths);
@@ -43,6 +45,6 @@ public:
     std::vector<std::string> getPotentialElements();
 };
 
-}
+} // namespace SST
 
-#endif /* _SST_CORE_ELEMLOADER_H */
+#endif // SST_CORE_ELEMLOADER_H
