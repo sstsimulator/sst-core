@@ -12,21 +12,16 @@
 #ifndef SST_CORE_ELEMLOADER_H
 #define SST_CORE_ELEMLOADER_H
 
-#include <map>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace SST {
 
-// struct LoaderData;
 struct ElementInfoGenerator;
 
 /** Class to load Element Libraries */
 class ElemLoader
 {
-    //    LoaderData* loaderData;
-
 public:
     /** Create a new ElementLoader with a given searchpath of directories */
     ElemLoader(const std::string& searchPaths);
