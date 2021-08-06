@@ -14,18 +14,18 @@
 
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace SST {
 
-struct LoaderData;
+// struct LoaderData;
 struct ElementInfoGenerator;
 
 /** Class to load Element Libraries */
 class ElemLoader
 {
-    LoaderData* loaderData;
-    std::string searchPaths;
+    //    LoaderData* loaderData;
 
 public:
     /** Create a new ElementLoader with a given searchpath of directories */
@@ -40,9 +40,15 @@ public:
     void loadLibrary(const std::string& elemlib, std::ostream& err_os);
 
     /**
-     * Returns a list of potential element libraries in the search path
+     * Search paths for potential elements and add them to the provided vector
+     *
+     * @param potElems - vector of potential elements that could contain elements
+     * @return void
      */
-    std::vector<std::string> getPotentialElements();
+    void getPotentialElements(std::vector<std::string>& potElems);
+
+private:
+    std::string searchPaths;
 };
 
 } // namespace SST
