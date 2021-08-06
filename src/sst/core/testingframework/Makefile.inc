@@ -23,18 +23,20 @@ libexec_SCRIPTS += \
 else
 # Install test frameworks using symbolic links to the source (we can do development)
 install-exec-hook:
-	ln -s $(abs_builddir)/src/sst/core/sst-test-core   				$(bindir)/sst-test-core
-	ln -s $(abs_builddir)/src/sst/core/sst-test-elements				$(bindir)/sst-test-elements
-	ln -s $(abs_srcdir)/testingframework/sst_test_engine_loader.py $(bindir)/sst_test_engine_loader.py
+	chmod +x $(abs_builddir)/sst-test-core
+	chmod +x $(abs_builddir)/sst-test-elements
+	ln -sf $(abs_builddir)/sst-test-core                            $(bindir)/sst-test-core
+	ln -sf $(abs_builddir)/sst-test-elements                        $(bindir)/sst-test-elements
+	ln -sf $(abs_srcdir)/testingframework/sst_test_engine_loader.py $(abs_builddir)/sst_test_engine_loader.py
 
-	ln -s $(abs_srcdir)/testingframework/sst_unittest.py           $(libexecdir)/sst_unittest.py
-	ln -s $(abs_srcdir)/testingframework/sst_unittest_support.py   $(libexecdir)/sst_unittest_support.py
-	ln -s $(abs_srcdir)/testingframework/sst_unittest_support.py   $(libexecdir)/sst_unittest_parameterized.py
-	ln -s $(abs_srcdir)/testingframework/test_engine.py            $(libexecdir)/test_engine.py
-	ln -s $(abs_srcdir)/testingframework/test_engine_globals.py    $(libexecdir)/test_engine_globals.py
-	ln -s $(abs_srcdir)/testingframework/test_engine_support.py    $(libexecdir)/test_engine_support.py
-	ln -s $(abs_srcdir)/testingframework/test_engine_junit.py      $(libexecdir)/test_engine_junit.py
-	ln -s $(abs_srcdir)/testingframework/test_engine_unittest.py   $(libexecdir)/test_engine_unittest.py
+	ln -sf $(abs_srcdir)/testingframework/sst_unittest.py           $(libexecdir)/sst_unittest.py
+	ln -sf $(abs_srcdir)/testingframework/sst_unittest_support.py   $(libexecdir)/sst_unittest_support.py
+	ln -sf $(abs_srcdir)/testingframework/sst_unittest_support.py   $(libexecdir)/sst_unittest_parameterized.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine.py            $(libexecdir)/test_engine.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine_globals.py    $(libexecdir)/test_engine_globals.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine_support.py    $(libexecdir)/test_engine_support.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine_junit.py      $(libexecdir)/test_engine_junit.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine_unittest.py   $(libexecdir)/test_engine_unittest.py
 endif
 
 EXTRA_DIST += \
@@ -66,11 +68,11 @@ EXTRA_DIST += \
 
 sst-test-core:
 	echo "#!$(PYTHON_EXE)" > $@; \
-   cat $(abs_srcdir)/testingframework/sst-test-core.in >> $@
+	cat $(abs_srcdir)/testingframework/sst-test-core.in >> $@
 
 sst-test-elements:
 	echo "#!$(PYTHON_EXE)" > $@; \
-   cat $(abs_srcdir)/testingframework/sst-test-elements.in >> $@
+	cat $(abs_srcdir)/testingframework/sst-test-elements.in >> $@
 
 BUILT_SOURCES = \
 	sst-test-core \
@@ -78,4 +80,5 @@ BUILT_SOURCES = \
 
 CLEANFILES = \
 	sst-test-core \
-   sst-test-elements
+	sst-test-elements \
+	sst_test_engine_loader.py
