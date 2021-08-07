@@ -80,6 +80,15 @@ ElemLoader::ElemLoader(const std::string& searchPaths) : searchPaths(searchPaths
 
     const char* verbose_env = getenv("SST_CORE_DL_VERBOSE");
     if ( nullptr != verbose_env ) { verbose = atoi(verbose_env) > 0; }
+
+    const char* bind_env = getenv("SST_CORE_DL_BIND_POLICY");
+    if ( nullptr == bind_env ) { bindPolicy = RTLD_LAZY | RTLD_GLOBAL; }
+    else if ( (!strcmp(bind_env, "lazy")) || (!strcmp(bind_env, "LAZY")) ) {
+        bindPolicy = RTLD_LAZY | RTLD_GLOBAL;
+    }
+    else if ( (!strcmp(bind_env, "now")) || (!strcmp(bind_env, "NOW")) ) {
+        bindPolicy = RTLD_NOW | RTLD_GLOBAL;
+    }
 }
 
 ElemLoader::~ElemLoader() {}
@@ -87,7 +96,6 @@ ElemLoader::~ElemLoader() {}
 void
 ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
 {
-    std::string              libname = "lib" + elemlib;
     std::vector<std::string> paths   = splitPath(searchPaths);
 
     char* full_path     = new char[PATH_MAX];
@@ -96,44 +104,38 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
     for ( std::string& next_path : paths ) {
         if ( verbose ) { printf("SST-DL: Searching: %s\n", next_path.c_str()); }
 
-        DIR* current_dir = opendir(next_path.c_str());
+        if ( next_path.at(next_path.size() - 1) == '/' ) {
+            sprintf(full_path, "%slib%s.so", next_path.c_str(), elemlib.c_str());
+        }
+        else {
+            sprintf(full_path, "%s/lib%s.so", next_path.c_str(), elemlib.c_str());
+        }
 
-        if ( current_dir ) {
-            struct dirent* dir_file;
+        if ( verbose ) { printf("SST-DL: Attempting to load %s\n", full_path); }
 
-            while ( (dir_file = readdir(current_dir)) != nullptr ) {
-                if ( verbose ) { printf("SST-DL: Checking file types: %s\n", dir_file->d_name); }
+        // use a global bind policy read from environment, default to RTLD_LAZY
+        void* handle = dlopen(full_path, bindPolicy);
 
-                if ( (dir_file->d_type | DT_REG) || (dir_file->d_type | DT_LNK) ) {
-                    if ( !strncmp("lib", dir_file->d_name, 3) ) {
-                        sprintf(full_path, "%s/%s", next_path.c_str(), dir_file->d_name);
-                        if ( verbose ) { printf("SST-DL: Attempting dynamic load of %s\n", full_path); }
-                        void* handle = dlopen(full_path, RTLD_NOW | RTLD_GLOBAL);
+        if ( nullptr == handle ) {
+            if ( verbose ) { printf("SST-DL: Loading failed, error: %s\n", dlerror()); }
+        }
+        else {
+            if ( verbose ) { printf("SST-DL: Load was successful.\n"); }
 
-                        if ( nullptr != handle ) {
-                            found_element = true;
+            found_element = true;
 
-                            if ( verbose ) { printf("SST-DL: Load of %s was successful.\n", full_path); }
-
-                            // loading a library can "wipe" previously loaded libraries depending
-                            // on how weak symbol resolution works in dlopen
-                            // rerun the loaders to make sure everything is still registered
-                            for ( auto& libpair : ELI::LoadedLibraries::getLoaders() ) {
-                                // loop all the elements in the element lib
-                                for ( auto& elempair : libpair.second ) {
-                                    // loop all the loaders in the element
-                                    for ( auto* loader : elempair.second ) {
-                                        loader->load();
-                                    }
-                                }
-                            }
-                        }
-                        else {
-                            if ( verbose ) { printf("SST-DL: Load of %s failed, %s\n", full_path, dlerror()); }
-                        }
+            for ( auto& libpair : ELI::LoadedLibraries::getLoaders() ) {
+                // loop all the elements in the element lib
+                for ( auto& elempair : libpair.second ) {
+                    // loop all the loaders in the element
+                    for ( auto* loader : elempair.second ) {
+                        loader->load();
                     }
                 }
             }
+
+				// exit the search loop, we have found the library we tried to load
+				break;
         }
     }
 

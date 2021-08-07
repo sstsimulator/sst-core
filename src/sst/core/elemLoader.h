@@ -45,6 +45,7 @@ public:
 private:
     std::string searchPaths;
     bool        verbose;
+    int         bindPolicy;
 };
 
 } // namespace SST
