@@ -8,6 +8,7 @@ if [ ! -f ./scripts/clang-format-test.sh  ]; then
 fi
 
 CLANG_FORMAT_EXE="clang-format"
+CLANG_FORMAT_ARG="--dry-run"
 
 while :; do
   case $1 in 
@@ -18,18 +19,22 @@ while :; do
     --format-exe)
       if [ "$2" ]; then
         CLANG_FORMAT_EXE=$2
-        shift
+        shift 2
       else
         echo 'Error, --format-exe requires a path to a clang-format.'
         exit
       fi
+      ;;
+    -i)
+      CLANG_FORMAT_ARG="-i"
+      shift
       ;;
     * )
       break
   esac
 done
 
-echo "Using clang-format ${CLANG_FORMAT_EXE}."
+echo "Using clang-format ${CLANG_FORMAT_EXE} with arguments ${CLANG_FORMAT_ARG}."
 
 clang_format_version="$(${CLANG_FORMAT_EXE} --version)"
 currentver="$(${CLANG_FORMAT_EXE} --version | cut -d' ' -f3 | tr -dc '0-9')"
@@ -56,13 +61,13 @@ echo "======================================="
 
 # Run clang-format on all specific .h files
 echo
-find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.h' -exec ${CLANG_FORMAT_EXE} --dry-run {} \;  > clang_format_results_h.txt 2>&1
+find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.h' -exec ${CLANG_FORMAT_EXE} ${CLANG_FORMAT_ARG} {} \;  > clang_format_results_h.txt 2>&1
 rtncode=$?
 echo "=== CLANG-FORMAT FINISHED *.h CHECKS WITH RTN CODE $rtncode"
 
 # Run clang-format on all specific .cc files
 echo
-find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.cc' -exec ${CLANG_FORMAT_EXE} --dry-run {} \; > clang_format_results_cc.txt 2>&1
+find . -type d \( $DIRS_TO_SKIP \) -prune -false -o -name '*.cc' -exec ${CLANG_FORMAT_EXE} ${CLANG_FORMAT_ARG} {} \; > clang_format_results_cc.txt 2>&1
 rtncode=$?
 echo "=== CLANG-FORMAT FINISHED *.cc CHECKS WITH RTN CODE $rtncode"
 
