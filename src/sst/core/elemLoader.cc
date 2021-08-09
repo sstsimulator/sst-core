@@ -98,18 +98,23 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
 
 #ifdef SST_COMPILE_MACOSX
 	// macOS will also allow files to use the dylib extension so this
-	// must also be checked
-        if ( next_path.at(next_path.size() - 1) == '/' ) {
-            sprintf(full_path, "%slib%s.dylib", next_path.c_str(), elemlib.c_str());
-        }
-        else {
-            sprintf(full_path, "%s/lib%s.dylib", next_path.c_str(), elemlib.c_str());
-        }
+	// must also be checked. But only check this is the .so attempt
+	// failed first (because we may have had a successful load already)
+	// this implies ordering of .so before .dylib in priority.
 
-        if ( verbose ) { printf("SST-DL: Attempting to load %s\n", full_path); }
+	if( nullptr == handle ) {
+	        if ( next_path.at(next_path.size() - 1) == '/' ) {
+	            sprintf(full_path, "%slib%s.dylib", next_path.c_str(), elemlib.c_str());
+	        }
+	        else {
+	            sprintf(full_path, "%s/lib%s.dylib", next_path.c_str(), elemlib.c_str());
+	        }
 
-        // use a global bind policy read from environment, default to RTLD_LAZY
-        handle = dlopen(full_path, bindPolicy);
+	        if ( verbose ) { printf("SST-DL: Attempting to load %s\n", full_path); }
+
+	        // use a global bind policy read from environment, default to RTLD_LAZY
+        	handle = dlopen(full_path, bindPolicy);
+	}
 #endif
 
         if ( nullptr == handle ) {
