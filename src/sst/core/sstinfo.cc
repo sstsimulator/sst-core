@@ -152,10 +152,10 @@ addELI(ElemLoader& loader, const std::string& lib, bool optional)
 static void
 processSSTElementFiles()
 {
-    std::vector<bool> EntryProcessedArray;
-    ElemLoader        loader(g_searchPath);
-
-    std::vector<std::string> potentialLibs = loader.getPotentialElements();
+    std::vector<bool>        EntryProcessedArray;
+    ElemLoader               loader(g_searchPath);
+    std::vector<std::string> potentialLibs;
+    loader.getPotentialElements(potentialLibs);
 
     // Which libraries should we (attempt) to process
     std::set<std::string> processLibs(g_configuration.getElementsToProcessArray());
