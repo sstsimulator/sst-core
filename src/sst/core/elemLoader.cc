@@ -38,23 +38,6 @@
 #include <unistd.h>
 #endif
 
-/* This needs to happen before lt_dlinit() and sets up the preload
-   libraries properly.  The macro declares an extern symbol, so if we
-   do this in the sst namespace, the symbol is namespaced and then not
-   found in linking.  So have this short function here.
-
-   Only do this when building with element libraries.
-   */
-static void
-preload_symbols(void)
-{
-    // README: This is only set if we are not building any elements
-    // in the split up build this is now default so must always be called.
-    //#ifndef __SST_BUILD_CORE_ONLY__
-    //    LTDL_SET_PRELOADED_SYMBOLS();
-    //#endif
-}
-
 namespace SST {
 
 static std::vector<std::string>
@@ -73,11 +56,8 @@ splitPath(const std::string& searchPaths)
     return paths;
 }
 
-ElemLoader::ElemLoader(const std::string& searchPaths) : searchPaths(searchPaths)
+ElemLoader::ElemLoader(const std::string& searchPaths) : searchPaths(searchPaths), verbose(false)
 {
-    preload_symbols();
-    verbose = false;
-
     const char* verbose_env = getenv("SST_CORE_DL_VERBOSE");
     if ( nullptr != verbose_env ) { verbose = atoi(verbose_env) > 0; }
 
@@ -115,6 +95,22 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
 
         // use a global bind policy read from environment, default to RTLD_LAZY
         void* handle = dlopen(full_path, bindPolicy);
+
+#ifdef SST_COMPILE_MACOSX
+	// macOS will also allow files to use the dylib extension so this
+	// must also be checked
+        if ( next_path.at(next_path.size() - 1) == '/' ) {
+            sprintf(full_path, "%slib%s.dylib", next_path.c_str(), elemlib.c_str());
+        }
+        else {
+            sprintf(full_path, "%s/lib%s.dylib", next_path.c_str(), elemlib.c_str());
+        }
+
+        if ( verbose ) { printf("SST-DL: Attempting to load %s\n", full_path); }
+
+        // use a global bind policy read from environment, default to RTLD_LAZY
+        handle = dlopen(full_path, bindPolicy);
+#endif
 
         if ( nullptr == handle ) {
             if ( verbose ) { printf("SST-DL: Loading failed, error: %s\n", dlerror()); }
