@@ -56,17 +56,17 @@ splitPath(const std::string& searchPaths)
     return paths;
 }
 
-ElemLoader::ElemLoader(const std::string& searchPaths) : searchPaths(searchPaths), verbose(false)
+ElemLoader::ElemLoader(const std::string& searchPaths) :
+    searchPaths(searchPaths),
+    verbose(false),
+    bindPolicy(RTLD_LAZY | RTLD_GLOBAL)
 {
+
     const char* verbose_env = getenv("SST_CORE_DL_VERBOSE");
     if ( nullptr != verbose_env ) { verbose = atoi(verbose_env) > 0; }
 
     const char* bind_env = getenv("SST_CORE_DL_BIND_POLICY");
-    if ( nullptr == bind_env ) { bindPolicy = RTLD_LAZY | RTLD_GLOBAL; }
-    else if ( (!strcmp(bind_env, "lazy")) || (!strcmp(bind_env, "LAZY")) ) {
-        bindPolicy = RTLD_LAZY | RTLD_GLOBAL;
-    }
-    else if ( (!strcmp(bind_env, "now")) || (!strcmp(bind_env, "NOW")) ) {
+    if ( (nullptr != bind_env) && ((!strcmp(bind_env, "now")) || (!strcmp(bind_env, "NOW"))) ) {
         bindPolicy = RTLD_NOW | RTLD_GLOBAL;
     }
 }
@@ -81,7 +81,7 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
     char* full_path     = new char[PATH_MAX];
     bool  found_element = false;
 
-    for ( std::string& next_path : paths ) {
+    for ( std::string const& next_path : paths ) {
         if ( verbose ) { printf("SST-DL: Searching: %s\n", next_path.c_str()); }
 
         if ( next_path.at(next_path.size() - 1) == '/' ) {
@@ -152,7 +152,7 @@ ElemLoader::getPotentialElements(std::vector<std::string>& potential_elements)
 {
     std::vector<std::string> paths = splitPath(searchPaths);
 
-    for ( std::string& next_path : paths ) {
+    for ( std::string const& next_path : paths ) {
         DIR* current_dir = opendir(next_path.c_str());
 
         if ( current_dir ) {
