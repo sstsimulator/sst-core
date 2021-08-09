@@ -160,7 +160,6 @@ AC_CONFIG_FILES([
   src/sst/Makefile
   src/sst/SST-${PACKAGE_VERSION}.pc:src/sst/sst.pc.in
   src/sst/core/Makefile
-  src/sst/core/libltdl/Makefile
   src/sst/core/build_info.h:src/sst/core/build_info.h.in
 ])
 AC_OUTPUT

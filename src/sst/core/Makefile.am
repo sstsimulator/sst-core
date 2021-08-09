@@ -265,7 +265,6 @@ sstinfo_x_SOURCES = \
 	$(sst_xml_sources)
 
 sstsim_x_LDADD = \
-	$(LIBLTDL) \
 	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
@@ -282,7 +281,6 @@ sstsim_x_LDFLAGS = \
 	$(SST_LTLIBS_ELEMLIBS)
 
 sstinfo_x_LDADD = \
-	$(LIBLTDL) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
 	$(MPILIBS) \
