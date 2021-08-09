@@ -30,26 +30,7 @@ AC_CANONICAL_HOST
 
 AC_CACHE_SAVE
 
-LT_CONFIG_LTDL_DIR([src/sst/core/libltdl])
 LT_INIT([shared disable-static dlopen])
-LTDL_INIT([recursive])
-
-if test "x$with_included_ltdl" != "xyes"; then
-   save_CFLAGS="$CFLAGS"
-   save_LDFLAGS="$LDFLAGS"
-   save_LIBS="$LIBS"
-   CFLAGS="$CFLAGS $LTDLINCL"
-   LDFLAGS="$LDFLAGS $LIBLTDL"
-   AC_CHECK_LIB([ltdl], [lt_dladvise_init],
-                 [],
-                 [AC_MSG_ERROR([installed libltdl is too old])])
-   LIBS="$save_LIBS"
-   LDFLAGS="$save_LDFLAGS"
-   CFLAGS="$save_CFLAGS"
-fi
-
-AC_SUBST([LTDLINCL])
-AC_SUBST([LIBLTDL])
 
 dnl Work out the C++ standard which we are going to use
 AX_CXX_COMPILE_STDCXX_1Y

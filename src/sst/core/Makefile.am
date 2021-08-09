@@ -13,8 +13,6 @@ AM_CPPFLAGS =  \
 	-I$(top_srcdir)/external \
 	$(LTDLINCL)
 
-DIST_SUBDIRS = libltdl .
-SUBDIRS = libltdl .
 EXTRA_DIST = mainpage.dox eli/README.md
 
 sstdir = $(includedir)/sst/core

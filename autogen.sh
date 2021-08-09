@@ -15,22 +15,8 @@ if [ -z $LIBTOOL ] || [ -z $LIBTOOLIZE ] ; then
     exit 1
 fi
 
-
-# Delete the old libtool output
-rm -rf libltdl src/sst/core/libltdl
-
 echo "Running ${LIBTOOLIZE}..."
-$LIBTOOLIZE --automake --copy --ltdl
-
-if test -d libltdl; then
-	echo "Moving libltdl to src .."
-	mv libltdl ./src/sst/core
-fi
-
-if test ! -d src/sst/core/libltdl ; then
-    echo "libltdl doesn't exist.  Aborting."
-    exit 1
-fi
+$LIBTOOLIZE --automake --copy
 
 aclocal -I config
 autoheader
