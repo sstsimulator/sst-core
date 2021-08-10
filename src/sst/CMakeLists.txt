@@ -8,15 +8,3 @@
 #
 
 add_subdirectory(core)
-
-install(DIRECTORY "."
-        DESTINATION "etc/sst"
-        FILES_MATCHING
-        PATTERN "sstsimulator.conf")
-
-install(DIRECTORY "."
-        DESTINATION "lib/pkgconfig"
-        FILES_MATCHING
-        PATTERN "*.pc")
-
-# EOF
