@@ -242,4 +242,6 @@ else()
   set(SST_HAVE_UNISTD_H_MACRO "/* #undef HAVE_UNISTD_H */")
 endif()
 
+set(SST_BUILD_WITH_CMAKE ON)
+
 # EOF

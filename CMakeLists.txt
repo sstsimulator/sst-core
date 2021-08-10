@@ -7,26 +7,22 @@
 # See LICENSE for full license details
 #
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
 project(sst-core)
 set(VERSION "11.1.0")
-
 #------------------------------------------------------------------------
 #-- EXTERNAL CMAKE SCRIPTS
 #------------------------------------------------------------------------
-set(CMAKE_MODULE_PATH
-  "${CMAKE_SOURCE_DIR}/cmake"
-  ${CMAKE_MODULE_PATH}
-)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(sst REQUIRED)
 
 #------------------------------------------------------------------------
 #-- COMPILER OPTIONS
 #------------------------------------------------------------------------
-set(CMAKE_C_FLAGS "-DHAVE_CONFIG_H -g -O2 -Wall -Wextra ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "-DHAVE_CONFIG_H -g -O2 -std=c++1y -D__STDC_FORMAT_MACROS -Wall -Wextra ${CMAKE_CXX_FLAGS}")
-set(CMAKE_ELEMENT_CXXFLAGS "-std=c++1y -D__STDC_FORMAT_MACROS -fPIC -DHAVE_CONFIG_H -I${CMAKE_INSTALL_PREFIX}/include")
-set(CMAKE_ELEMENT_LDFLAGS "-shared -fno-common -Wl,-undefined -Wl,dynamic_lookup")
+ set(CMAKE_C_FLAGS "-DHAVE_CONFIG_H -g -O2 -Wall -Wextra ${CMAKE_C_FLAGS}")
+ set(CMAKE_CXX_FLAGS "-DHAVE_CONFIG_H -g -O2 -std=c++1y -D__STDC_FORMAT_MACROS -Wall -Wextra ${CMAKE_CXX_FLAGS}")
+ set(CMAKE_ELEMENT_CXXFLAGS "-std=c++1y -D__STDC_FORMAT_MACROS -fPIC -DHAVE_CONFIG_H -I${CMAKE_INSTALL_PREFIX}/include")
+ set(CMAKE_ELEMENT_LDFLAGS "-shared -fno-common -Wl,-undefined -Wl,dynamic_lookup")
 
 set(SST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(SST_LINK_LIBS "")
