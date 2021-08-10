@@ -31,7 +31,6 @@
 #include <dlfcn.h>
 #include <getopt.h>
 #include <list>
-#include <ltdl.h>
 #include <sys/stat.h>
 
 using namespace std;
