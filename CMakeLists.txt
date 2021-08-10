@@ -187,8 +187,10 @@ else()
 endif()
 
 #-- Doxygen
+if(SST_BUILD_DOCUMENTATION)
 find_package(Doxygen)
 option(BUILD_DOCUMENTATION "Create and install the doxygen-ized API documentation (requires Doxygen)" ${DOXYGEN_FOUND})
+endif(SST_BUILD_DOCUMENTATION)
 
 #------------------------------------------------------------------------
 #-- SST-CORE LINKER OPTIONS
@@ -516,7 +518,7 @@ enable_testing()
 #------------------------------------------------------------------------
 #-- DOCUMENTATION
 #------------------------------------------------------------------------
-if(BUILD_DOCUMENTATION)
+if(SST_BUILD_DOCUMENTATION AND BUILD_DOCUMENTATION)
   find_package(Git)
   if( NOT Git_FOUND )
     message(FATAL_ERROR "Git is required to tag the source documentation.")
@@ -550,8 +552,8 @@ if(BUILD_DOCUMENTATION)
     VERBATIM)
 
   install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/html DESTINATION share/doc)
+endif(SST_BUILD_DOCUMENTATION AND BUILD_DOCUMENTATION)
 
-endif()
 
 #------------------------------------------------------------------------
 #-- PACKAGING
@@ -595,6 +597,7 @@ endif()
 #------------------------------------------------------------------------
 #-- SUBDIRECTORIES
 #------------------------------------------------------------------------
+add_subdirectory(external)
 add_subdirectory(src)
 add_subdirectory(tests)
 add_subdirectory(share)
