@@ -596,8 +596,8 @@ StatisticProcessingEngine::isStatisticInCompStatMap(
     for ( StatArray_t::iterator it_v = statArray->begin(); it_v != statArray->end(); it_v++ ) {
         TestStat = *it_v;
 
-        if ( (TestStat->getCompName() == compName) && (TestStat->getStatName() == statName)
-             && (TestStat->getStatSubId() == statSubId) && (TestStat->getStatDataType() == fieldType) ) {
+        if ( (TestStat->getCompName() == compName) && (TestStat->getStatName() == statName) &&
+             (TestStat->getStatSubId() == statSubId) && (TestStat->getStatDataType() == fieldType) ) {
             return TestStat;
         }
     }

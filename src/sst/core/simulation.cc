@@ -314,8 +314,8 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
     // Create the SyncManager for this rank.  It gets created even if
     // we are single rank/single thread because it also manages the
     // Exit and Heartbeat actions.
-    syncManager
-        = new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
+    syncManager =
+        new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.

@@ -109,8 +109,8 @@ NO_VARIABLE:
             return SST::Core::from_string<T>(val);
         }
         catch ( const std::invalid_argument& e ) {
-            std::string msg = "Params::find(): No conversion for value: key = " + key + ", value =  " + val
-                              + ".  Original error: " + e.what();
+            std::string msg = "Params::find(): No conversion for value: key = " + key + ", value =  " + val +
+                              ".  Original error: " + e.what();
             std::invalid_argument t(msg);
             throw t;
         }
@@ -161,8 +161,8 @@ NO_VARIABLE:
                 return SST::Core::from_string<T>(default_value);
             }
             catch ( const std::invalid_argument& e ) {
-                std::string msg = "Params::find(): Invalid default value specified: key = " + k
-                                  + ", value =  " + default_value + ".  Original error: " + e.what();
+                std::string msg = "Params::find(): Invalid default value specified: key = " + k +
+                                  ", value =  " + default_value + ".  Original error: " + e.what();
                 std::invalid_argument t(msg);
                 throw t;
             }
@@ -173,8 +173,8 @@ NO_VARIABLE:
                 return SST::Core::from_string<T>(value);
             }
             catch ( const std::invalid_argument& e ) {
-                std::string msg = "Params::find(): No conversion for value: key = " + k + ", value =  " + value
-                                  + ".  Original error: " + e.what();
+                std::string msg = "Params::find(): No conversion for value: key = " + k + ", value =  " + value +
+                                  ".  Original error: " + e.what();
                 std::invalid_argument t(msg);
                 throw t;
             }

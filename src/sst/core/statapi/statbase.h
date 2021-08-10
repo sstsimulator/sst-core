@@ -498,12 +498,12 @@ private:
 #define SST_ELI_DECLARE_STATISTIC(cls, field, lib, name, version, desc, interface)                                   \
     static bool ELI_isLoaded()                                                                                       \
     {                                                                                                                \
-        return SST::Statistics::Statistic<field>::template addDerivedInfo<cls>(lib, name)                            \
-               && SST::Statistics::Statistic<field>::template addDerivedBuilder<cls>(lib, name)                      \
-               && SST::Statistics::Statistic<field>::template addDerivedInfo<SST::Statistics::NullStatistic<field>>( \
-                   lib, name)                                                                                        \
-               && SST::Statistics::Statistic<field>::template addDerivedBuilder<                                     \
-                   SST::Statistics::NullStatistic<field>>(lib, name);                                                \
+        return SST::Statistics::Statistic<field>::template addDerivedInfo<cls>(lib, name) &&                         \
+               SST::Statistics::Statistic<field>::template addDerivedBuilder<cls>(lib, name) &&                      \
+               SST::Statistics::Statistic<field>::template addDerivedInfo<SST::Statistics::NullStatistic<field>>(    \
+                   lib, name) &&                                                                                     \
+               SST::Statistics::Statistic<field>::template addDerivedBuilder<SST::Statistics::NullStatistic<field>>( \
+                   lib, name);                                                                                       \
     }                                                                                                                \
     SST_ELI_DEFAULT_INFO(lib, name, ELI_FORWARD_AS_ONE(version), desc)                                               \
     SST_ELI_INTERFACE_INFO(interface)                                                                                \
@@ -511,33 +511,33 @@ private:
     static const char* ELI_fieldShortName() { return #field; }
 
 #ifdef __INTEL_COMPILER
-#define SST_ELI_INSTANTIATE_STATISTIC(cls, field)                                                     \
-    bool force_instantiate_##cls##_##field                                                            \
-        = SST::ELI::InstantiateBuilderInfo<SST::Statistics::Statistic<field>, cls<field>>::isLoaded() \
-          && SST::ELI::InstantiateBuilder<SST::Statistics::Statistic<field>, cls<field>>::isLoaded()  \
-          && SST::ELI::InstantiateBuilderInfo<                                                        \
-              SST::Statistics::Statistic<field>, SST::Statistics::NullStatistic<field>>::isLoaded()   \
-          && SST::ELI::InstantiateBuilder<                                                            \
-              SST::Statistics::Statistic<field>, SST::Statistics::NullStatistic<field>>::isLoaded();
+#define SST_ELI_INSTANTIATE_STATISTIC(cls, field)                                                      \
+    bool force_instantiate_##cls##_##field =                                                           \
+        SST::ELI::InstantiateBuilderInfo<SST::Statistics::Statistic<field>, cls<field>>::isLoaded() && \
+        SST::ELI::InstantiateBuilder<SST::Statistics::Statistic<field>, cls<field>>::isLoaded() &&     \
+        SST::ELI::InstantiateBuilderInfo<                                                              \
+            SST::Statistics::Statistic<field>, SST::Statistics::NullStatistic<field>>::isLoaded() &&   \
+        SST::ELI::InstantiateBuilder<                                                                  \
+            SST::Statistics::Statistic<field>, SST::Statistics::NullStatistic<field>>::isLoaded();
 #else
-#define SST_ELI_INSTANTIATE_STATISTIC(cls, field)                                                             \
-    struct cls##_##field##_##shortName : public cls<field>                                                    \
-    {                                                                                                         \
-        cls##_##field##_##shortName(                                                                          \
-            SST::BaseComponent* bc, const std::string& sn, const std::string& si, SST::Params& p) :           \
-            cls<field>(bc, sn, si, p)                                                                         \
-        {}                                                                                                    \
-        static bool ELI_isLoaded()                                                                            \
-        {                                                                                                     \
-            return SST::ELI::InstantiateBuilderInfo<                                                          \
-                       SST::Statistics::Statistic<field>, cls##_##field##_##shortName>::isLoaded()            \
-                   && SST::ELI::InstantiateBuilder<                                                           \
-                       SST::Statistics::Statistic<field>, cls##_##field##_##shortName>::isLoaded()            \
-                   && SST::ELI::InstantiateBuilderInfo<                                                       \
-                       SST::Statistics::Statistic<field>, SST::Statistics::NullStatistic<field>>::isLoaded()  \
-                   && SST::ELI::InstantiateBuilder<                                                           \
-                       SST::Statistics::Statistic<field>, SST::Statistics::NullStatistic<field>>::isLoaded(); \
-        }                                                                                                     \
+#define SST_ELI_INSTANTIATE_STATISTIC(cls, field)                                                               \
+    struct cls##_##field##_##shortName : public cls<field>                                                      \
+    {                                                                                                           \
+        cls##_##field##_##shortName(                                                                            \
+            SST::BaseComponent* bc, const std::string& sn, const std::string& si, SST::Params& p) :             \
+            cls<field>(bc, sn, si, p)                                                                           \
+        {}                                                                                                      \
+        static bool ELI_isLoaded()                                                                              \
+        {                                                                                                       \
+            return SST::ELI::InstantiateBuilderInfo<                                                            \
+                       SST::Statistics::Statistic<field>, cls##_##field##_##shortName>::isLoaded() &&           \
+                   SST::ELI::InstantiateBuilder<                                                                \
+                       SST::Statistics::Statistic<field>, cls##_##field##_##shortName>::isLoaded() &&           \
+                   SST::ELI::InstantiateBuilderInfo<                                                            \
+                       SST::Statistics::Statistic<field>, SST::Statistics::NullStatistic<field>>::isLoaded() && \
+                   SST::ELI::InstantiateBuilder<                                                                \
+                       SST::Statistics::Statistic<field>, SST::Statistics::NullStatistic<field>>::isLoaded();   \
+        }                                                                                                       \
     };
 #endif
 
@@ -558,33 +558,33 @@ private:
 #define STAT_TUPLE(...)           std::tuple<__VA_ARGS__>
 
 #ifdef __INTEL_COMPILER
-#define MAKE_MULTI_STATISTIC(cls, name, tuple, ...)                                                         \
-    bool force_instantiate_stat_name                                                                        \
-        = SST::ELI::InstantiateBuilderInfo<SST::Statistics::Statistic<tuple>, cls<__VA_ARGS__>>::isLoaded() \
-          && SST::ELI::InstantiateBuilder<SST::Statistics::Statistic<tuple>, cls<__VA_ARGS__>>::isLoaded()  \
-          && SST::ELI::InstantiateBuilderInfo<                                                              \
-              SST::Statistics::Statistic<tuple>, SST::Statistics::NullStatistic<tuple>>::isLoaded()         \
-          && SST::ELI::InstantiateBuilder<                                                                  \
-              SST::Statistics::Statistic<tuple>, SST::Statistics::NullStatistic<tuple>>::isLoaded();        \
-    }                                                                                                       \
-    }                                                                                                       \
+#define MAKE_MULTI_STATISTIC(cls, name, tuple, ...)                                                          \
+    bool force_instantiate_stat_name =                                                                       \
+        SST::ELI::InstantiateBuilderInfo<SST::Statistics::Statistic<tuple>, cls<__VA_ARGS__>>::isLoaded() && \
+        SST::ELI::InstantiateBuilder<SST::Statistics::Statistic<tuple>, cls<__VA_ARGS__>>::isLoaded() &&     \
+        SST::ELI::InstantiateBuilderInfo<                                                                    \
+            SST::Statistics::Statistic<tuple>, SST::Statistics::NullStatistic<tuple>>::isLoaded() &&         \
+        SST::ELI::InstantiateBuilder<                                                                        \
+            SST::Statistics::Statistic<tuple>, SST::Statistics::NullStatistic<tuple>>::isLoaded();           \
+    }                                                                                                        \
+    }                                                                                                        \
     ;
 #else
-#define MAKE_MULTI_STATISTIC(cls, name, tuple, ...)                                                           \
-    struct name : public cls<__VA_ARGS__>                                                                     \
-    {                                                                                                         \
-        name(SST::BaseComponent* bc, const std::string& sn, const std::string& si, SST::Params& p) :          \
-            cls<__VA_ARGS__>(bc, sn, si, p)                                                                   \
-        {}                                                                                                    \
-        bool ELI_isLoaded() const                                                                             \
-        {                                                                                                     \
-            return SST::ELI::InstantiateBuilderInfo<SST::Statistics::Statistic<tuple>, name>::isLoaded()      \
-                   && SST::ELI::InstantiateBuilder<SST::Statistics::Statistic<tuple>, name>::isLoaded()       \
-                   && SST::ELI::InstantiateBuilderInfo<                                                       \
-                       SST::Statistics::Statistic<tuple>, SST::Statistics::NullStatistic<tuple>>::isLoaded()  \
-                   && SST::ELI::InstantiateBuilder<                                                           \
-                       SST::Statistics::Statistic<tuple>, SST::Statistics::NullStatistic<tuple>>::isLoaded(); \
-        }                                                                                                     \
+#define MAKE_MULTI_STATISTIC(cls, name, tuple, ...)                                                             \
+    struct name : public cls<__VA_ARGS__>                                                                       \
+    {                                                                                                           \
+        name(SST::BaseComponent* bc, const std::string& sn, const std::string& si, SST::Params& p) :            \
+            cls<__VA_ARGS__>(bc, sn, si, p)                                                                     \
+        {}                                                                                                      \
+        bool ELI_isLoaded() const                                                                               \
+        {                                                                                                       \
+            return SST::ELI::InstantiateBuilderInfo<SST::Statistics::Statistic<tuple>, name>::isLoaded() &&     \
+                   SST::ELI::InstantiateBuilder<SST::Statistics::Statistic<tuple>, name>::isLoaded() &&         \
+                   SST::ELI::InstantiateBuilderInfo<                                                            \
+                       SST::Statistics::Statistic<tuple>, SST::Statistics::NullStatistic<tuple>>::isLoaded() && \
+                   SST::ELI::InstantiateBuilder<                                                                \
+                       SST::Statistics::Statistic<tuple>, SST::Statistics::NullStatistic<tuple>>::isLoaded();   \
+        }                                                                                                       \
     };
 #endif
 

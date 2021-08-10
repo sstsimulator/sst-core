@@ -297,8 +297,8 @@ validModel(const std::string& s)
 void
 autoUnregister()
 {
-    std::vector<std::string> elementsArray
-        = listModels(2); // passes 2 to listModels to tell the function to only store INVALID models
+    std::vector<std::string> elementsArray =
+        listModels(2); // passes 2 to listModels to tell the function to only store INVALID models
     for ( unsigned i = 0; i < elementsArray.size(); i++ ) {
         sstUnregister(elementsArray[i]);
     }

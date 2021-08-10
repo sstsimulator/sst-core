@@ -170,8 +170,8 @@ mlFindModule(PyObject* self, PyObject* args)
                 return self;
             }
             else {
-                loadErrors += std::string("Succeeded in loading library for ") + (const char*)modName
-                              + " but library does not contain a Python module\n";
+                loadErrors += std::string("Succeeded in loading library for ") + (const char*)modName +
+                              " but library does not contain a Python module\n";
                 loadErrors += err_sstr.str();
             }
         }
@@ -831,58 +831,58 @@ getLocalMemoryUsage(PyObject* UNUSED(self), PyObject* UNUSED(args))
     return res;
 }
 
-static PyMethodDef sstModuleMethods[]
-    = { { "setProgramOption", setProgramOption, METH_VARARGS,
-          "Sets a single program configuration option (form:  setProgramOption(name, value))" },
-        { "setProgramOptions", setProgramOptions, METH_O, "Sets multiple program configuration option from a dict." },
-        { "getProgramOptions", getProgramOptions, METH_NOARGS, "Returns a dict of the current program options." },
-        { "pushNamePrefix", pushNamePrefix, METH_O, "Pushes a string onto the prefix of new component and link names" },
-        { "popNamePrefix", popNamePrefix, METH_NOARGS,
-          "Removes the most recent addition to the prefix of new component and link names" },
-        { "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
-        { "getMPIRankCount", getSSTMPIWorldSize, METH_NOARGS,
-          "Gets the number of MPI ranks currently being used to run SST" },
-        { "getThreadCount", getSSTThreadCount, METH_NOARGS,
-          "Gets the number of MPI ranks currently being used to run SST" },
-        { "setThreadCount", setSSTThreadCount, METH_O, "Gets the number of MPI ranks currently being used to run SST" },
-        { "setStatisticOutput", setStatisticOutput, METH_VARARGS,
-          "Sets the Statistic Output - default is console output." },
-        { "setStatisticLoadLevel", setStatisticLoadLevel, METH_O,
-          "Sets the Statistic Load Level (0 - 10) - default is 0 (disabled)." },
-        { "setStatisticOutputOption", setStatisticOutputOption, METH_VARARGS,
-          "Sets a single Statistic output option (form: setStatisticOutputOption(name, value))" },
-        { "setStatisticOutputOptions", setStatisticOutputOptions, METH_O,
-          "Sets multiple Statistic output options from a dict." },
-        { "enableAllStatisticsForAllComponents", enableAllStatisticsForAllComponents, METH_VARARGS,
-          "Enables all statistics on all components with output at end of simulation." },
-        { "enableAllStatisticsForComponentName", enableAllStatisticsForComponentName, METH_VARARGS,
-          "Enables all statistics on a component with output occurring at defined rate." },
-        { "enableStatisticForComponentName", enableStatisticForComponentName, METH_VARARGS,
-          "Enables a single statistic on a component with output occurring at defined rate." },
-        { "enableStatisticsForComponentName", enableStatisticsForComponentName, METH_VARARGS,
-          "Enables a mulitple statistics on a component with output occurring at defined rate." },
-        { "enableAllStatisticsForComponentType", enableAllStatisticsForComponentType, METH_VARARGS,
-          "Enables all statistics on all components of component type with output occurring at defined rate." },
-        { "enableStatisticForComponentType", enableStatisticForComponentType, METH_VARARGS,
-          "Enables a single statistic on all components of component type with output occurring at defined rate." },
-        { "enableStatisticsForComponentType", enableStatisticsForComponentType, METH_VARARGS,
-          "Enables a list of statistics on all components of component type with output occurring at defined rate." },
-        { "setStatisticLoadLevelForComponentName", setStatisticLoadLevelForComponentName, METH_VARARGS,
-          "Sets the statistic load level for the specified component name." },
-        { "setStatisticLoadLevelForComponentType", setStatisticLoadLevelForComponentType, METH_VARARGS,
-          "Sets the statistic load level for all components of the specified type." },
-        { "findComponentByName", findComponentByName, METH_O,
-          "Looks up to find a previously created component/subcomponent, based off of its name.  Returns None if none "
-          "are to be found." },
-        { "addGlobalParam", globalAddParam, METH_VARARGS, "Add a parameter to the specified global set." },
-        { "addGlobalParams", globalAddParams, METH_VARARGS,
-          "Add parameters in dictionary to the specified global set." },
-        { "getElapsedExecutionTime", getElapsedExecutionTime, METH_NOARGS,
-          "Gets the real elapsed time since simluation start, returned as a UnitAlgebra.  Not precise enough for "
-          "getting fine timings.  For that, use the built-in time module." },
-        { "getLocalMemoryUsage", getLocalMemoryUsage, METH_NOARGS,
-          "Gets the current memory use, returned as a UnitAlgebra" },
-        { nullptr, nullptr, 0, nullptr } };
+static PyMethodDef sstModuleMethods[] = {
+    { "setProgramOption", setProgramOption, METH_VARARGS,
+      "Sets a single program configuration option (form:  setProgramOption(name, value))" },
+    { "setProgramOptions", setProgramOptions, METH_O, "Sets multiple program configuration option from a dict." },
+    { "getProgramOptions", getProgramOptions, METH_NOARGS, "Returns a dict of the current program options." },
+    { "pushNamePrefix", pushNamePrefix, METH_O, "Pushes a string onto the prefix of new component and link names" },
+    { "popNamePrefix", popNamePrefix, METH_NOARGS,
+      "Removes the most recent addition to the prefix of new component and link names" },
+    { "exit", exitsst, METH_NOARGS, "Exits SST - indicates the script wanted to exit." },
+    { "getMPIRankCount", getSSTMPIWorldSize, METH_NOARGS,
+      "Gets the number of MPI ranks currently being used to run SST" },
+    { "getThreadCount", getSSTThreadCount, METH_NOARGS,
+      "Gets the number of MPI ranks currently being used to run SST" },
+    { "setThreadCount", setSSTThreadCount, METH_O, "Gets the number of MPI ranks currently being used to run SST" },
+    { "setStatisticOutput", setStatisticOutput, METH_VARARGS,
+      "Sets the Statistic Output - default is console output." },
+    { "setStatisticLoadLevel", setStatisticLoadLevel, METH_O,
+      "Sets the Statistic Load Level (0 - 10) - default is 0 (disabled)." },
+    { "setStatisticOutputOption", setStatisticOutputOption, METH_VARARGS,
+      "Sets a single Statistic output option (form: setStatisticOutputOption(name, value))" },
+    { "setStatisticOutputOptions", setStatisticOutputOptions, METH_O,
+      "Sets multiple Statistic output options from a dict." },
+    { "enableAllStatisticsForAllComponents", enableAllStatisticsForAllComponents, METH_VARARGS,
+      "Enables all statistics on all components with output at end of simulation." },
+    { "enableAllStatisticsForComponentName", enableAllStatisticsForComponentName, METH_VARARGS,
+      "Enables all statistics on a component with output occurring at defined rate." },
+    { "enableStatisticForComponentName", enableStatisticForComponentName, METH_VARARGS,
+      "Enables a single statistic on a component with output occurring at defined rate." },
+    { "enableStatisticsForComponentName", enableStatisticsForComponentName, METH_VARARGS,
+      "Enables a mulitple statistics on a component with output occurring at defined rate." },
+    { "enableAllStatisticsForComponentType", enableAllStatisticsForComponentType, METH_VARARGS,
+      "Enables all statistics on all components of component type with output occurring at defined rate." },
+    { "enableStatisticForComponentType", enableStatisticForComponentType, METH_VARARGS,
+      "Enables a single statistic on all components of component type with output occurring at defined rate." },
+    { "enableStatisticsForComponentType", enableStatisticsForComponentType, METH_VARARGS,
+      "Enables a list of statistics on all components of component type with output occurring at defined rate." },
+    { "setStatisticLoadLevelForComponentName", setStatisticLoadLevelForComponentName, METH_VARARGS,
+      "Sets the statistic load level for the specified component name." },
+    { "setStatisticLoadLevelForComponentType", setStatisticLoadLevelForComponentType, METH_VARARGS,
+      "Sets the statistic load level for all components of the specified type." },
+    { "findComponentByName", findComponentByName, METH_O,
+      "Looks up to find a previously created component/subcomponent, based off of its name.  Returns None if none "
+      "are to be found." },
+    { "addGlobalParam", globalAddParam, METH_VARARGS, "Add a parameter to the specified global set." },
+    { "addGlobalParams", globalAddParams, METH_VARARGS, "Add parameters in dictionary to the specified global set." },
+    { "getElapsedExecutionTime", getElapsedExecutionTime, METH_NOARGS,
+      "Gets the real elapsed time since simluation start, returned as a UnitAlgebra.  Not precise enough for "
+      "getting fine timings.  For that, use the built-in time module." },
+    { "getLocalMemoryUsage", getLocalMemoryUsage, METH_NOARGS,
+      "Gets the current memory use, returned as a UnitAlgebra" },
+    { nullptr, nullptr, 0, nullptr }
+};
 
 #if PY_MAJOR_VERSION >= 3
 static struct PyModuleDef sstModuleDef
@@ -911,10 +911,10 @@ PyInit_sst(void)
     PyModel_StatGroupType.tp_new    = PyType_GenericNew;
     PyModel_StatOutputType.tp_new   = PyType_GenericNew;
     ModuleLoaderType.tp_new         = PyType_GenericNew;
-    if ( (PyType_Ready(&PyModel_ComponentType) < 0) || (PyType_Ready(&PyModel_SubComponentType) < 0)
-         || (PyType_Ready(&PyModel_LinkType) < 0) || (PyType_Ready(&PyModel_UnitAlgebraType) < 0)
-         || (PyType_Ready(&PyModel_StatType) < 0) || (PyType_Ready(&PyModel_StatGroupType) < 0)
-         || (PyType_Ready(&PyModel_StatOutputType) < 0) || (PyType_Ready(&ModuleLoaderType) < 0) ) {
+    if ( (PyType_Ready(&PyModel_ComponentType) < 0) || (PyType_Ready(&PyModel_SubComponentType) < 0) ||
+         (PyType_Ready(&PyModel_LinkType) < 0) || (PyType_Ready(&PyModel_UnitAlgebraType) < 0) ||
+         (PyType_Ready(&PyModel_StatType) < 0) || (PyType_Ready(&PyModel_StatGroupType) < 0) ||
+         (PyType_Ready(&PyModel_StatOutputType) < 0) || (PyType_Ready(&ModuleLoaderType) < 0) ) {
         return nullptr; // TODO better error message
     }
 

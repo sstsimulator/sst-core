@@ -388,8 +388,6 @@ main(int argc, char* argv[])
     double start = sst_get_cpu_time();
 
     if ( cfg.configFile != "NONE" ) {
-        string file_ext = "";
-
         // Get the file extension by finding the last .
         std::string extension = cfg.configFile.substr(cfg.configFile.find_last_of("."));
 

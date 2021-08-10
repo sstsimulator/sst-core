@@ -160,10 +160,10 @@ statCompare(PyObject* obj0, PyObject* obj1)
 }
 #endif
 
-static PyMethodDef statisticMethods[]
-    = { { "addParam", statAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
-        { "addParams", statAddParams, METH_O, "Adds Multiple Parameters from a dict" },
-        { nullptr, nullptr, 0, nullptr } };
+static PyMethodDef statisticMethods[] = { { "addParam", statAddParam, METH_VARARGS, "Adds a parameter(name, value)" },
+                                          { "addParams", statAddParams, METH_O,
+                                            "Adds Multiple Parameters from a dict" },
+                                          { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8
