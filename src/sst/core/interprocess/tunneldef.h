@@ -98,8 +98,8 @@ public:
 
             // Reserve space for InternalSharedData
             // Including an offset array entry for each buffer & sharedData structure
-            std::pair<size_t, InternalSharedData*> aResult
-                = reserveSpace<InternalSharedData>((1 + numBuffs) * sizeof(size_t));
+            std::pair<size_t, InternalSharedData*> aResult =
+                reserveSpace<InternalSharedData>((1 + numBuffs) * sizeof(size_t));
             isd                   = aResult.second;
             isd->expectedChildren = children;
             isd->shmSegSize       = shmSize;

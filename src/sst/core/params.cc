@@ -460,8 +460,8 @@ Params::getArrayTokens(const std::string& value, std::vector<std::string>& token
         if ( str.back() != quote_char ) {
             // ERROR
             std::string msg = "Params::find_array(): Invalid formatting: If token begins with a double or single "
-                              "quote, it must end with the same quote style: "
-                              + str;
+                              "quote, it must end with the same quote style: " +
+                              str;
             std::invalid_argument t(msg);
             throw t;
         }

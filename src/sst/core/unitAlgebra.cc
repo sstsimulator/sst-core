@@ -40,17 +40,18 @@ split(const std::string& input, const std::string& delims, vector<string>& token
     } while ( stop != string::npos );
 }
 
-static map<string, sst_big_num> si_unit_map
-    = { { "a", sst_big_num("1e-18") }, { "f", sst_big_num("1e-15") },
-        { "p", sst_big_num("1e-12") }, { "n", sst_big_num("1e-9") },
-        { "u", sst_big_num("1e-6") },  { "m", sst_big_num("1e-3") },
-        { "k", sst_big_num("1e3") },   { "K", sst_big_num("1e3") },
-        { "ki", sst_big_num(1024l) },  { "Ki", sst_big_num(1024l) },
-        { "M", sst_big_num("1e6") },   { "Mi", sst_big_num(1024l * 1024l) },
-        { "G", sst_big_num("1e9") },   { "Gi", sst_big_num(1024l * 1024l * 1024l) },
-        { "T", sst_big_num("1e12") },  { "Ti", sst_big_num(1024l * 1024l * 1024l * 1024l) },
-        { "P", sst_big_num("1e15") },  { "Pi", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l) },
-        { "E", sst_big_num("1e18") },  { "Ei", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l * 1024l) } };
+static map<string, sst_big_num> si_unit_map = {
+    { "a", sst_big_num("1e-18") }, { "f", sst_big_num("1e-15") },
+    { "p", sst_big_num("1e-12") }, { "n", sst_big_num("1e-9") },
+    { "u", sst_big_num("1e-6") },  { "m", sst_big_num("1e-3") },
+    { "k", sst_big_num("1e3") },   { "K", sst_big_num("1e3") },
+    { "ki", sst_big_num(1024l) },  { "Ki", sst_big_num(1024l) },
+    { "M", sst_big_num("1e6") },   { "Mi", sst_big_num(1024l * 1024l) },
+    { "G", sst_big_num("1e9") },   { "Gi", sst_big_num(1024l * 1024l * 1024l) },
+    { "T", sst_big_num("1e12") },  { "Ti", sst_big_num(1024l * 1024l * 1024l * 1024l) },
+    { "P", sst_big_num("1e15") },  { "Pi", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l) },
+    { "E", sst_big_num("1e18") },  { "Ei", sst_big_num(1024l * 1024l * 1024l * 1024l * 1024l * 1024l) }
+};
 
 // Class Units
 
@@ -115,8 +116,8 @@ Units::addUnit(const std::string& units, sst_big_num& multiplier, bool invert)
     // names.  If not, check for SI units and strip them, then check
     // again.
     int                                   si_length = 0;
-    if ( valid_base_units.find(units) == valid_base_units.end()
-         && valid_compound_units.find(units) == valid_compound_units.end() ) {
+    if ( valid_base_units.find(units) == valid_base_units.end() &&
+         valid_compound_units.find(units) == valid_compound_units.end() ) {
         // Now get the si prefix
         switch ( units[0] ) {
         case 'a':
