@@ -13,9 +13,9 @@ add_library(
   coreTest_ParamComponent.cc)
 
 # NEED To double check this
-target_compile_definitions(coreTestElement
-                           PUBLIC "LINKER:-module,-avoid-version")
-
+target_include_directories(coreTestElement PRIVATE ${CMAKE_SOURCE_DIR}/src)
+target_link_libraries(coreTestElement PRIVATE sst-config-headers)
 install(TARGETS coreTestElement DESTINATION lib/sstcore)
+set_target_properties(coreTestElement PROPERTIES NO_SONAME 1)
 
 # NEED To figure out how to deal with distributing the README

@@ -1,247 +1,164 @@
-# cmake/sst.cmake
-#
-# Copyright 2009-2021 National Technology and Engineering Solutions of Sandia,
-# LLC (NTESS).  Under the terms of Contract DE-NA-0003525, the U.S. Government
-# retains certain rights in this software.
-#
-# See LICENSE for full license details
-#
-
-INCLUDE(CheckIncludeFile)
-INCLUDE(CheckSymbolExists)
-INCLUDE(CheckLibraryExists)
+# Set variables for sst_config.h attempt to just go in order
+include(CheckSymbolExists)
+include(CheckIncludeFile)
+include(CheckLibraryExists)
 
 check_symbol_exists(argz_add "argz.h" HAVE_ARGZ_ADD)
-if( HAVE_ARGZ_ADD )
-  set(SST_HAVE_ARGZ_ADD_MACRO "#define HAVE_ARGZ_ADD 1")
-  set(SST_HAVE_ERROR_T_MACRO "#define HAVE_ERROR_T 1")
-  set(SST_HAVE_WORKING_ARGZ_MACRO "#define HAVE_WORKING_ARGZ 1")
-else()
-  set(SST_HAVE_ARGZ_ADD_MACRO "/* #undef HAVE_ARGZ_ADD */")
-  set(SST_HAVE_ERROR_T_MACRO "/* #undef HAVE_ERROR_T */")
-  set(SST_HAVE_WORKING_ARGZ_MACRO "/* #undef  HAVE_WORKING_ARGZ */")
-endif()
-
 check_symbol_exists(argz_append "argz.h" HAVE_ARGZ_APPEND)
-if( HAVE_ARGZ_APPEND )
-  set(SST_HAVE_ARGZ_APPEND_MACRO "#define HAVE_ARGZ_APPEND 1")
-else()
-  set(SST_HAVE_ARGZ_APPEND_MACRO "/* #undef HAVE_ARGZ_APPEND */")
-endif()
-
 check_symbol_exists(argz_count "argz.h" HAVE_ARGZ_COUNT)
-if( HAVE_ARGZ_COUNT )
-  set(SST_HAVE_ARGZ_COUNT_MACRO "#define HAVE_ARGZ_COUNT 1")
-else()
-  set(SST_HAVE_ARGZ_COUNT_MACRO "/* #undef HAVE_ARGZ_COUNT */")
-endif()
-
 check_symbol_exists(argz_create_sep "argz.h" HAVE_ARGZ_CREATE_SEP)
-if( HAVE_ARGZ_CREATE_SEP )
-  set(SST_HAVE_ARGZ_CREATE_SEP_MACRO "#define HAVE_ARGZ_CREATE_SEP 1")
-else()
-  set(SST_HAVE_ARGZ_CREATE_SEP_MACRO "/* #undef HAVE_ARGZ_CREATE_SEP */")
-endif()
-
-check_include_file("argz.h" HAVE_ARGZ_H)
-if( HAVE_ARGZ_H )
-  set(SST_HAVE_ARGZ_H_MACRO "#define HAVE_ARGZ_H 1")
-else()
-  set(SST_HAVE_ARGZ_H_MACRO "/* #undef HAVE_ARGZ_H */")
-endif()
-
+check_include_file(argz.h HAVE_ARGZ_H)
 check_symbol_exists(argz_insert "argz.h" HAVE_ARGZ_INSERT)
-if( HAVE_ARGZ_INSERT )
-  set(SST_HAVE_ARGZ_INSERT_MACRO "#define HAVE_ARGZ_INSERT 1")
-else()
-  set(SST_HAVE_ARGZ_INSERT_MACRO "/* #undef HAVE_ARGZ_INSERT */")
-endif()
-
 check_symbol_exists(argz_next "argz.h" HAVE_ARGZ_NEXT)
-if( HAVE_ARGZ_NEXT )
-  set(SST_HAVE_ARGZ_NEXT_MACRO "#define HAVE_ARGZ_NEXT 1")
-else()
-  set(SST_HAVE_ARGZ_NEXT_MACRO "/* #undef HAVE_ARGZ_NEXT */")
-endif()
-
 check_symbol_exists(argz_stringify "argz.h" HAVE_ARGZ_STRINGIFY)
-if( HAVE_ARGZ_STRINGIFY )
-  set(SST_HAVE_ARGZ_STRINGIFY_MACRO "#define HAVE_ARGZ_STRINGIFY 1")
-else()
-  set(SST_HAVE_ARGZ_STRINGIFY_MACRO "/* #undef HAVE_ARGZ_STRINGIFY */")
-endif()
-
 check_symbol_exists(closedir "sys/types.h" HAVE_CLOSEDIR)
-if( HAVE_CLOSEDIR )
-  set(SST_HAVE_CLOSEDIR_MACRO "#define HAVE_CLOSEDIR 1")
-else()
-  set(SST_HAVE_CLOSEDIR_MACRO "/* #undef HAVE_CLOSEDIR */")
-endif()
-
-check_include_file("c_asm.h" HAVE_C_ASM_H)
-if( HAVE_C_ASM_H )
-  set(SST_HAVE_C_ASM_H_MACRO "#define HAVE_C_ASM_H 1")
-else()
-  set(SST_HAVE_C_ASM_H_MACRO "/* #undef HAVE_C_ASM_H */")
-endif()
-
+check_include_file(c_asm.h HAVE_C_ASM_H)
 check_symbol_exists(cygwin_conv_path "sys/cygwin.h" HAVE_DECL_CYGWIN_CONV_PATH)
-if( HAVE_DECL_CYGWIN_CONV_PATH )
-  set(SST_HAVE_DECL_CYGWIN_CONV_PATH_MACRO "#define HAVE_DECL_CYGWIN_CONV_PATH 1")
-else()
-  set(SST_HAVE_DECL_CYGWIN_CONV_PATH_MACRO "/* #undef HAVE_DECL_CYGWIN_CONV_PATH */")
-endif()
-
-check_include_file("dirent.h" HAVE_DIRENT_H)
-if( HAVE_DIRENT_H )
-  set(SST_HAVE_DIRENT_H_MACRO "#define HAVE_DIRENT_H 1")
-else()
-  set(SST_HAVE_DIRENT_H_MACRO "/* #undef HAVE_DIRENT_H */")
-endif()
-
-check_include_file("dld.h" HAVE_DLD_H)
-if( HAVE_DLD_H )
-  set(SST_HAVE_DLD_MACRO "#define HAVE_DLD 1")
-  set(SST_HAVE_DLD_H_MACRO "#define HAVE_DLD_H 1")
-else()
-  set(SST_HAVE_DLD_MACRO "/* #undef HAVE_DLD */")
-  set(SST_HAVE_DLD_H_MACRO "/* #undef HAVE_DLD_H */")
-endif()
-
-check_library_exists(dl dlerror "" HAVE_DLERROR)
-if( HAVE_DLERROR )
-  set(SST_HAVE_DLERROR_MACRO "#define HAVE_DLERROR 1")
-  set(SST_HAVE_LIBDL_MACRO "#define HAVE_LIBDL 1")
-else()
-  set(SST_HAVE_DLERROR_MACRO "/* #undef HAVE_DLERROR */")
-  set(SST_HAVE_LIBDL_MACRO "/* #undef HAVE_LIBDL */")
-endif()
-
-check_include_file("dlfcn.h" HAVE_DLFCN_H)
-if( HAVE_DLFCN_H )
-  set(SST_HAVE_DLFCN_H_MACRO "#define HAVE_DLFCN_H 1")
-else()
-  set(SST_HAVE_DLFCN_H_MACRO "/* #undef HAVE_DLFCN_H */")
-endif()
-
-check_include_file("dl.h" HAVE_DL_H)
-if( HAVE_DL_H )
-  set(SST_HAVE_DL_H_MACRO "#define HAVE_DL_H 1")
-else()
-  set(SST_HAVE_DL_H_MACRO "/* #undef HAVE_DL_H */")
-endif()
-
+check_include_file(dirent.h HAVE_DIRENT_H)
+check_library_exists(dld dld_init "" HAVE_DLD)
+check_include_file(dld.h HAVE_DLD_H)
+check_symbol_exists(dlerror "dlfcn.h" HAVE_DLERROR)
+check_include_file(dlfcn.h HAVE_DLFCN_H)
+check_include_file(dl.h HAVE_DL_H)
 check_symbol_exists(_dyld_func_lookup "dyld.h" HAVE_DYLD)
-if( HAVE_DYLD )
-  set(SST_HAVE_DYLD_MACRO "#define HAVE_DYLD 1")
-else()
-  set(SST_HAVE_DYLD_MACRO "/* #undef HAVE_DYLD */")
-endif()
+check_symbol_exists(error_t "errno.h" HAVE_ERROR_T)
 
-check_include_file("intrinsics.h" HAVE_INTRINSICS_H)
-if( HAVE_INTRINSICS_H )
-  set(SST_HAVE_INTRINSICS_H_MACRO "#define HAVE_INTRINSICS_H 1")
-else()
-  set(SST_HAVE_INTRINSICS_H_MACRO "/* #undef HAVE_INTRINSICS_H */")
-endif()
+if(HDF5_FOUND)
+  set(HAVE_HDF5 ON)
+endif(HDF5_FOUND)
 
-check_include_file("inttypes.h" HAVE_INTTYPES_H)
-if( HAVE_INTTYPES_H )
-  set(SST_HAVE_INTTYPES_H_MACRO "#define HAVE_INTTYPES_H 1")
-else()
-  set(SST_HAVE_INTTYPES_H_MACRO "/* #undef HAVE_INTTYPES_H */")
-endif()
+check_include_file(intrinsics.h HAVE_INTRINSICS_H)
+check_include_file(inttypes.h HAVE_INTTYPES_H)
+if(HAVE_INTTYPES_H)
+  # TODO do we need to check that symbols like PRIu64 exist first? 
+  set(__STDC_FORMAT_MACROS ON)
+endif(HAVE_INTTYPES_H)
 
-check_library_exists(ltdl lt_dlinit "" HAVE_LIBLTDL)
-if( HAVE_LIBLTDL )
-  set(SST_HAVE_LIBLTDL_MACRO "#define HAVE_LIBLTDL 1")
-  set(SST_HAVE_LTDL_MACRO "#define HAVE_LTDL 1")
-  set(SST_LTDL_LIBS "-lltdl")
-else()
-  set(SST_HAVE_LIBLTDL_MACRO "/* #undef HAVE_LIBLTDL */")
-  set(SST_HAVE_LTDL_MACRO "/* #undef HAVE_LTDL */")
-  set(SST_LTDL_LIBS "")
-endif()
+if(CMAKE_DL_LIBS)
+  set(HAVE_LIBDL ON)
+endif(CMAKE_DL_LIBS)
 
-check_include_file("mach/mach_time.h" HAVE_MACH_MACH_TIME_H)
-if( HAVE_MACH_MACH_TIME_H )
-  set(SST_HAVE_MACH_MACH_TIME_H_MACRO "#define HAVE_MACH_MACH_TIME_H 1")
-else()
-  set(SST_HAVE_MACH_MACH_TIME_H_MACRO "/* #undef HAVE_MACH_MACH_TIME_H */")
-endif()
+if(ZLIB_FOUND)
+  set(HAVE_LIBZ ON)
+endif(ZLIB_FOUND)
 
-check_include_file("mach-o/dyld.h" HAVE_MACH_O_DYLD_H)
-if( HAVE_MACH_O_DYLD_H )
-  set(SST_HAVE_MACH_O_DYLD_H_MACRO "#define HAVE_MACH_O_DYLD_H 1")
-else()
-  set(SST_HAVE_MACH_O_DYLD_H_MACRO "/* #undef HAVE_MACH_O_DYLD_H */")
-endif()
-
-check_include_file("memory.h" HAVE_MEMORY_H)
-if( HAVE_MEMORY_H )
-  set(SST_HAVE_MEMORY_H_MACRO "#define HAVE_MEMORY_H 1")
-else()
-  set(SST_HAVE_MEMORY_H_MACRO "/* #undef HAVE_MEMORY_H */")
-endif()
-
+check_include_file(mach/mach_time.h HAVE_MACH_MACH_TIME_H)
+check_include_file(mach-o/dyld.h HAVE_MACH_O_DYLD_H)
 check_symbol_exists(opendir "dirent.h" HAVE_OPENDIR)
-if( HAVE_OPENDIR )
-  set(SST_HAVE_OPENDIR_MACRO "#define HAVE_OPENDIR 1")
-else()
-  set(SST_HAVE_OPENDIR_MACRO "/* #undef  HAVE_OPENDIR */")
-endif()
-
-check_include_file("Python.h" HAVE_PYTHON_H)
-if( HAVE_PYTHON_H )
-  set(SST_HAVE_PYTHON_H_MACRO "#define HAVE_PYTHON_H 1")
-else()
-  set(SST_HAVE_PYTHON_H_MACRO "/* #undef HAVE_PYTHON_H */")
-endif()
-
 check_symbol_exists(readdir "dirent.h" HAVE_READDIR)
-if( HAVE_READDIR )
-  set(SST_HAVE_READDIR_MACRO "#define HAVE_READDIR 1")
-else()
-  set(SST_HAVE_READDIR_MACRO "/* #undef  HAVE_READDIR */")
-endif()
 
-set(SST_HAVE_STDCXX_1Y_MACRO "#define HAVE_STDCXX_1Y 1")
+# TODO we really should fix how we do c++ std flags
+if(CMAKE_CXX_STANDARD EQUAL 14)
+  set(HAVE_STDCXX_1Y ON)
+endif(CMAKE_CXX_STANDARD EQUAL 14)
 
-check_include_file("stdint.h" HAVE_STDINT_H)
-if( HAVE_STDINT_H )
-  set(SST_HAVE_STDINT_H_MACRO "#define HAVE_STDINT_H 1")
-else()
-  set(SST_HAVE_STDINT_H_MACRO "/* #undef  HAVE_STDINT_H */")
-endif()
+check_include_file(stdint.h HAVE_STDINT_H)
+check_include_file(stdio.h HAVE_STDIO_H)
+check_include_file(stdlib.h HAVE_STDLIB_H)
+check_include_file(strings.h HAVE_STRINGS_H)
+check_include_file(string.h HAVE_STRING_H)
+check_symbol_exists(strlcat "string.h" HAVE_STRLCAT)
+check_symbol_exists(strlcpy "string.h" HAVE_STRLCPY)
+check_include_file(sys/dl.h HAVE_SYS_DL_H)
+check_include_file(sys/stat.h HAVE_SYS_STAT_H)
+check_include_file(sys/stat.h HAVE_SYS_STAT_H)
+check_include_file(sys/time.h HAVE_SYS_TIME_H)
+check_include_file(sys/types.h HAVE_SYS_TYPES_H)
+check_include_file(unistd.h HAVE_UNISTD_H)
 
-check_include_file("sys/stat.h" HAVE_SYS_STAT_H)
-if( HAVE_SYS_STAT_H )
-  set(SST_HAVE_SYS_STAT_H_MACRO "#define HAVE_SYS_STAT_H 1")
-else()
-  set(SST_HAVE_SYS_STAT_H_MACRO "/* #undef HAVE_SYS_STAT_H */")
-endif()
+if(HAVE_ARGZ_H)
+  set(HAVE_WORKING_ARGZ ON)
+endif(HAVE_ARGZ_H)
 
-check_include_file("sys/time.h" HAVE_SYS_TIME_H)
-if( HAVE_SYS_TIME_H )
-  set(SST_HAVE_SYS_TIME_H_MACRO "#define HAVE_SYS_TIME_H 1")
-else()
-  set(SST_HAVE_SYS_TIME_H_MACRO "/* #undef HAVE_SYS_TIME_H */")
-endif()
+set(PACKAGE_BUGREPORT "https://github.com/sstsimulator/sst-core/issues")
+set(PACKAGE_NAME "SSTCore")
+set(PACKAGE_NAME "https://github.com/sstsimulator/sst-core")
 
-check_include_file("sys/types.h" HAVE_SYS_TYPES_H)
-if( HAVE_SYS_TYPES_H )
-  set(SST_HAVE_SYS_TYPES_H_MACRO "#define HAVE_SYS_TYPES_H 1")
-else()
-  set(SST_HAVE_SYS_TYPES_H_MACRO "/* #undef HAVE_SYS_TYPES_H */")
-endif()
+set(SST_CC ${CMAKE_C_COMPILER})
+set(SST_CFLAGS ${CMAKE_C_FLAGS})
 
-check_include_file("unistd.h" HAVE_UNISTD_H)
-if( HAVE_UNISTD_H )
-  set(SST_UNISTD_H_MACRO "#define HAVE_UNISTD_H 1")
-else()
-  set(SST_HAVE_UNISTD_H_MACRO "/* #undef HAVE_UNISTD_H */")
-endif()
+if(APPLE)
+  set(SST_COMPILE_MACOSX 1)
+endif(APPLE)
+
+if(MPI_FOUND)
+  set(SST_CONFIG_HAVE_MPI ON)
+  set(SST_MPICC ${MPI_C_COMPILER})
+  set(SST_MPICXX ${MPI_CXX_COMPILER})
+endif(MPI_FOUND)
+
+if(Python_FOUND)
+  set(HAVE_PYTHON_H 1)
+  set(SST_CONFIG_HAVE_PYTHON ON)
+  # CMAKE build can just require PYTHON3
+  set(SST_CONFIG_HAVE_PYTHON3 ON)
+  set(SST_PTYHON_LDFLAGS "${Python_LIBRARIES}")
+  set(SST_PYTHON_CPPFLAGS "-I${Python_INCLUDE_DIRS}")
+
+  # NOTE I think we should try to avoid using python-config if possible
+  # find_program(PYCONFIG NAMES python-config "${Python_EXECUTABLE}-config")
+  # if(PYCONFIG) message(STATUS "Found PYCONFIG ${PYCONFIG}.")
+  #
+  # #execute_process( #  COMMAND ${PYCONFIG} --ldflags #  RESULT_VARIABLE
+  # PYCONFIG_RESULT #  OUTPUT_VARIABLE SST_PYTHON_LDFLAGS #
+  # OUTPUT_STRIP_TRAILING_WHITESPACE)
+  #
+  # #if(PYCONFIG_RESULT AND NOT PYCONFIG_RESULT EQUAL 0) #  message( #
+  # FATAL_ERROR #      "python-config (${PYCONFIG}) --ldflags failed with
+  # ${PYCONFIG_RESULT}") #endif(PYCONFIG_RESULT AND NOT PYCONFIG_RESULT EQUAL 0)
+  # set(SST_PTYHON_LDFLAGS ${Python_LIBRARIES})
+  #
+  # execute_process( COMMAND ${PYCONFIG} --cppflags RESULT_VARIABLE
+  # PYCONFIG_RESULT OUTPUT_VARIABLE SST_PYTHON_CPPFLAGS
+  # OUTPUT_STRIP_TRAILING_WHITESPACE) else(PYCONFIG) message(FATAL_ERROR "Failed
+  # to find python-config") endif(PYCONFIG)
+endif(Python_FOUND)
+
+set(SST_CPP ${CMAKE_CXX_COMPILER})
+set(SST_CPPFLAGS ${CMAKE_CXX_FLAGS})
+set(SST_CXXCPP ${CMAKE_CXX_COMPILER})
+set(SST_CXX ${CMAKE_CXX_COMPILER})
+set(SST_CXXFLAGS ${CMAKE_CXX_FLAGS})
+set(SST_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
+set(SST_LD ${CMAKE_LINKER})
+set(SST_LDFLAGS "${CMAKE_CXX_LINK_FLAGS} ${LINK_FLAGS}")
+
+if(SST_USE_MEMPOOL)
+  set(USE_MEMPOOL)
+endif(SST_USE_MEMPOOL)
 
 set(SST_BUILD_WITH_CMAKE ON)
+set(PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
 
-# EOF
+if(Python_VERSION AND Python_VERSION_MAJOR GREATER_EQUAL 3)
+  set(SST_CONFIG_HAVE_PYTHON3 ON)
+  set(HAVE_PYTHON_H ON)
+endif(Python_VERSION AND Python_VERSION_MAJOR GREATER_EQUAL 3)
+
+if(APPLE)
+  set(SST_COMPILE_MACOSX ON)
+endif(APPLE)
+
+find_package(Git REQUIRED)
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} --git-dir=${CMAKE_SOURCE_DIR}/.git rev-parse HEAD
+  RESULT_VARIABLE HASH_RESULT
+  OUTPUT_VARIABLE SSTCORE_GIT_HEADSHA
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+execute_process(
+  COMMAND ${GIT_EXECUTABLE} --git-dir=${CMAKE_SOURCE_DIR}/.git branch
+          --show-current
+  RESULT_VARIABLE BRANCH_RESULT
+  OUTPUT_VARIABLE SSTCORE_GIT_BRANCH
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+check_include_file(sys/stat.h HAVE_SYS_STAT_H)
+check_include_file(dlfcn.h HAVE_DLFCN_H)
+check_include_file(sys/types HAVE_SYS_TYPES_H)
+check_include_file(unistd.h HAVE_UNISTD_H)
+
+check_library_exists(m sin "" HAVE_LIBM)
+if(NOT HAVE_LIBM)
+  message(FATAL_ERROR "Failed to detect libm")
+endif(NOT HAVE_LIBM)
