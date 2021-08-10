@@ -8,7 +8,7 @@
 #
 
 # -- override the default flags set(CMAKE_CXX_FLAGS
-# "${CMAKE_CXX_FLAGS} -DSST_BUILDING_CORE=1 ${Python_CPPFLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSST_BUILDING_CORE=1")
 
 add_subdirectory(impl)
 add_subdirectory(model)
@@ -31,8 +31,6 @@ add_library(
   cfgoutput/dotConfigOutput.cc
   cfgoutput/xmlConfigOutput.cc
   cfgoutput/jsonConfigOutput.cc
-  env/envquery.cc
-  env/envconfig.cc
   eli/elibase.cc
   eli/elementinfo.cc
   elemLoader.cc
@@ -84,9 +82,9 @@ add_library(
 
 target_include_directories(sst-core-lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
 target_compile_definitions(sst-core-lib PUBLIC SST_BUILDING_CORE=1)
-if(USE_MEMPOOL)
-  target_compile_definitions(sst-core-lib PUBLIC USE_MEMPOOL=1)
-endif(USE_MEMPOOL)
+#if(USE_MEMPOOL)
+#  target_compile_definitions(sst-core-lib PUBLIC USE_MEMPOOL=1)
+#endif(USE_MEMPOOL)
 
 if(SST_ENABLE_EVENT_TRACKING)
   target_compile_definitions(sst-core-lib PUBLIC __SST_DEBUG_EVENT_TRACKING__=1)
@@ -129,6 +127,7 @@ add_executable(sstsim.x main.cc)
 target_link_libraries(sstsim.x 
   PRIVATE 
   sst-core-lib
+  sst-env-lib
   partitioner
   timeVortex
   modelCore
@@ -141,6 +140,7 @@ target_link_options(sstsim.x PRIVATE "LINKER:-export-dynamic")
 add_executable(sstinfo.x sstinfo.cc)
 target_link_libraries(sstinfo.x PRIVATE 
   sst-core-lib 
+  sst-env-lib
   partitioner
   timeVortex
   modelCore
@@ -152,6 +152,7 @@ target_link_libraries(sstinfo.x PRIVATE
 target_link_options(sstsim.x PRIVATE "LINKER:-export-dynamic")
 
 if(NOT APPLE)
+  message(STATUS "NOT APPLE WHAT")
   target_link_options(sstinfo.x PRIVATE "LINKER:-lrt")
   target_link_options(sstsim.x PRIVATE "LINKER:-lrt")
 endif(NOT APPLE)
