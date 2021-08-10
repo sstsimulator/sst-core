@@ -19,6 +19,7 @@
 #include "sst/core/eli/interfaceInfo.h"
 #include "sst/core/eli/paramsInfo.h"
 #include "sst/core/eli/portsInfo.h"
+#include "sst/core/eli/simpleInfo.h"
 #include "sst/core/eli/statsInfo.h"
 #include "sst/core/eli/subcompSlotInfo.h"
 #include "sst/core/params.h"
@@ -183,6 +184,21 @@ public:
     using BaseInfo = typename Library::BaseInfo;
     using Map      = std::map<std::string, Library*>;
 
+    static std::vector<std::string> getRegisteredElementNames()
+    {
+        // Need to pull out all the elements from the libraries that
+        // have an element of this type
+
+        std::vector<std::string> ret;
+        // First iterate over libraries
+        for ( auto x : (*libraries) ) {
+            for ( auto& y : x.second->getMap() ) {
+                ret.push_back(x.first + "." + y.first);
+            }
+        }
+        return ret;
+    }
+
     static Library* getLibrary(const std::string& name)
     {
         if ( !libraries ) { libraries = new Map; }
@@ -257,6 +273,12 @@ struct InfoDatabase
     static InfoLibrary<T>* getLibrary(const std::string& name)
     {
         return InfoLibraryDatabase<T>::getLibrary(name);
+    }
+
+    template <class T>
+    static std::vector<std::string> getRegisteredElementNames()
+    {
+        return InfoLibraryDatabase<T>::getRegisteredElementNames();
     }
 };
 

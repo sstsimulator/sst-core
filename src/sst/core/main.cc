@@ -368,6 +368,21 @@ main(int argc, char* argv[])
     }
     world_size.thread = cfg.getNumThreads();
 
+    // Create the factory.  This may be needed to load an external model definition
+    Factory* factory = new Factory(cfg.getLibPath());
+
+    // Get a list of all the available SSTModelDescriptions
+    std::vector<std::string> models = ELI::InfoDatabase::getRegisteredElementNames<SSTModelDescription>();
+
+    // Create a map of extensions to the model that supports them
+    std::map<std::string, std::string> extension_map;
+    for ( auto x : models ) {
+        auto extensions = factory->getSimpleInfo<SSTModelDescription, 1, std::vector<std::string>>(x);
+        for ( auto y : extensions ) {
+            extension_map[y] = x;
+        }
+    }
+
     SSTModelDescription* modelGen = nullptr;
 
     double start = sst_get_cpu_time();
@@ -375,29 +390,22 @@ main(int argc, char* argv[])
     if ( cfg.configFile != "NONE" ) {
         string file_ext = "";
 
-        if ( cfg.configFile.size() > 3 ) {
-            file_ext = cfg.configFile.substr(cfg.configFile.size() - 3);
+        // Get the file extension by finding the last .
+        std::string extension = cfg.configFile.substr(cfg.configFile.find_last_of("."));
 
-            if ( file_ext == "xml" || file_ext == "sdl" ) {
-                cfg.model_options = cfg.configFile;
-                cfg.configFile    = SST_INSTALL_PREFIX "/libexec/xmlToPython.py";
-                file_ext          = ".py";
-            }
-            if ( file_ext == ".py" ) {
-                modelGen = new SSTPythonModelDefinition(cfg.configFile, cfg.verbose, &cfg, start);
-            }
-            else {
-                std::cerr << "Unsupported SDL file type: " << file_ext << std::endl;
-                return -1;
-            }
+        std::string model_name;
+        try {
+            model_name = extension_map.at(extension);
         }
-        else {
+        catch ( exception& e ) {
+            std::cerr << "Unsupported SDL file type: \"" << extension << "\"" << std::endl;
             return -1;
         }
+
+        modelGen = factory->Create<SSTModelDescription>(model_name, cfg.configFile, cfg.verbose, &cfg, start);
     }
 
     /* Build objected needed for startup */
-    Factory* factory = new Factory(cfg.getLibPath());
     Output::setWorldSize(world_size, myrank);
     g_output = Output::setDefaultObject(cfg.output_core_prefix, cfg.getVerboseLevel(), 0, Output::STDOUT);
 

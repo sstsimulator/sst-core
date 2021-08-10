@@ -438,7 +438,7 @@ protected:
     {
 
         // Check to see if this can be loaded with new API or if we have to fallback to old
-        return Factory::getFactory()->Create<T>(type, params, params, args...);
+        return Factory::getFactory()->CreateWithParams<T>(type, params, params, args...);
     }
 
 protected:
@@ -533,7 +533,7 @@ protected:
 
         // Check to see if this can be loaded with new API or if we have to fallback to old
         if ( isSubComponentLoadableUsingAPI<T>(type) ) {
-            auto ret = Factory::getFactory()->Create<T>(type, params, sub_info->id, params, args...);
+            auto ret = Factory::getFactory()->CreateWithParams<T>(type, params, sub_info->id, params, args...);
             return ret;
         }
         return nullptr;
@@ -698,7 +698,7 @@ private:
         sub_info->parent_info = my_info;
 
         if ( isSubComponentLoadableUsingAPI<T>(sub_info->type) ) {
-            auto ret = Factory::getFactory()->Create<T>(
+            auto ret = Factory::getFactory()->CreateWithParams<T>(
                 sub_info->type, *sub_info->params, sub_info->id, *sub_info->params, args...);
             return ret;
         }
