@@ -141,8 +141,8 @@ public:
     {
         config->model_options = script_file;
 
-        actual_model_
-            = new SSTPythonModelDefinition(SST_INSTALL_PREFIX "/libexec/xmlToPython.py", verbosity, config, start_time);
+        actual_model_ =
+            new SSTPythonModelDefinition(SST_INSTALL_PREFIX "/libexec/xmlToPython.py", verbosity, config, start_time);
     }
 
     ConfigGraph* createConfigGraph() override { return actual_model_->createConfigGraph(); }

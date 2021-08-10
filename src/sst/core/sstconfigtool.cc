@@ -103,8 +103,8 @@ main(int argc, char* argv[])
     }
 
     std::vector<std::string>                          overrideConfigFiles;
-    SST::Core::Environment::EnvironmentConfiguration* database
-        = SST::Core::Environment::getSSTEnvironmentConfiguration(overrideConfigFiles);
+    SST::Core::Environment::EnvironmentConfiguration* database =
+        SST::Core::Environment::getSSTEnvironmentConfiguration(overrideConfigFiles);
     bool keyFound = false;
 
     if ( dumpEnv ) {

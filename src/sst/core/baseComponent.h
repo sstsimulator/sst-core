@@ -296,9 +296,9 @@ protected:
         // Enable all is "scoped" to the (sub)component
         // Explicitly enabled stats are assigned component-unique IDs and can be shared across subcomponents
         // so creation and management happens in the parent component
-        Statistics::StatisticBase* base_stat
-            = id == STATALL_ID ? createEnabledAllStatistic(params, name, statSubId, std::move(create))
-                               : getParentComponent()->createExplicitlyEnabledStatistic(
+        Statistics::StatisticBase* base_stat =
+            id == STATALL_ID ? createEnabledAllStatistic(params, name, statSubId, std::move(create))
+                             : getParentComponent()->createExplicitlyEnabledStatistic(
                                    params, id, name, statSubId, std::move(create));
 
         // Ugh, dynamic casts hurt my eyes, but I must do this

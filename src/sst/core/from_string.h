@@ -41,13 +41,13 @@ from_string(const std::string& input)
             std::string transform(input);
             for ( auto& c : transform )
                 c = std::tolower(c);
-            if ( transform == "true" || transform == "t" || transform == "yes" || transform == "y" || transform == "on"
-                 || transform == "1" ) {
+            if ( transform == "true" || transform == "t" || transform == "yes" || transform == "y" ||
+                 transform == "on" || transform == "1" ) {
                 return true;
             }
             else if (
-                transform == "false" || transform == "f" || transform == "no" || transform == "n" || transform == "off"
-                || transform == "0" ) {
+                transform == "false" || transform == "f" || transform == "no" || transform == "n" ||
+                transform == "off" || transform == "0" ) {
                 return false;
             }
             else {

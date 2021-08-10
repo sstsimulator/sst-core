@@ -46,15 +46,15 @@ coreTestClockerComponent::coreTestClockerComponent(ComponentId_t id, Params& par
 
     // Third Clock (15ns)
     std::cout << "REGISTER CLOCK #3 at 15 ns" << std::endl;
-    Clock3Handler
-        = new Clock::Handler<coreTestClockerComponent, uint32_t>(this, &coreTestClockerComponent::Clock3Tick, 333);
+    Clock3Handler =
+        new Clock::Handler<coreTestClockerComponent, uint32_t>(this, &coreTestClockerComponent::Clock3Tick, 333);
     tc = registerClock("15 ns", Clock3Handler);
 
     // Create the OneShot Callback Handlers
     callback1Handler = new OneShot::Handler<coreTestClockerComponent, uint32_t>(
         this, &coreTestClockerComponent::Oneshot1Callback, 456);
-    callback2Handler
-        = new OneShot::Handler<coreTestClockerComponent>(this, &coreTestClockerComponent::Oneshot2Callback);
+    callback2Handler =
+        new OneShot::Handler<coreTestClockerComponent>(this, &coreTestClockerComponent::Oneshot2Callback);
 }
 
 coreTestClockerComponent::coreTestClockerComponent() : Component(-1)

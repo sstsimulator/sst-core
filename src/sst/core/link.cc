@@ -32,8 +32,8 @@ ActivityQueue* Link::uninitQueue = new UninitializedQueue(
     "ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before setup.");
 ActivityQueue* Link::afterInitQueue = new UninitializedQueue(
     "ERROR: Trying to call sendUntimedData/sendInitData or recvUntimedData/recvInitData during the run phase.");
-ActivityQueue* Link::afterRunQueue
-    = new UninitializedQueue("ERROR: Trying to call send or recv during complete phase.");
+ActivityQueue* Link::afterRunQueue =
+    new UninitializedQueue("ERROR: Trying to call send or recv during complete phase.");
 
 Link::Link(LinkId_t id) :
     rFunctor(nullptr),

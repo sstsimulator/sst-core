@@ -109,10 +109,10 @@ linkSetNoCut(PyObject* self, PyObject* UNUSED(args))
     return PyBool_FromLong(prev ? 1 : 0);
 }
 
-static PyMethodDef linkMethods[]
-    = { { "connect", linkConnect, METH_VARARGS, "Connects two components to a Link" },
-        { "setNoCut", linkSetNoCut, METH_NOARGS, "Specifies that this link should not be partitioned across" },
-        { nullptr, nullptr, 0, nullptr } };
+static PyMethodDef linkMethods[] = { { "connect", linkConnect, METH_VARARGS, "Connects two components to a Link" },
+                                     { "setNoCut", linkSetNoCut, METH_NOARGS,
+                                       "Specifies that this link should not be partitioned across" },
+                                     { nullptr, nullptr, 0, nullptr } };
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8

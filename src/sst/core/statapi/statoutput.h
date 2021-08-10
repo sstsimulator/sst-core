@@ -189,8 +189,8 @@ public:
     {
         StatisticFieldInfo*             NewStatFieldInfo;
         StatisticFieldInfo*             ExistingStatFieldInfo;
-        StatisticFieldInfo::fieldType_t FieldType
-            = StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
+        StatisticFieldInfo::fieldType_t FieldType =
+            StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
 
         NewStatFieldInfo = new StatisticFieldInfo(statisticName, fieldName, FieldType);
 
@@ -238,8 +238,8 @@ public:
     template <typename T>
     fieldHandle_t registerField(const char* fieldName)
     {
-        StatisticFieldInfo::fieldType_t FieldType
-            = StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
+        StatisticFieldInfo::fieldType_t FieldType =
+            StatisticFieldInfo::StatisticFieldInfo::getFieldTypeFromTemplate<T>();
 
         auto res = generateFieldHandle(addFieldToLists(fieldName, FieldType));
         implRegisteredField(res);
