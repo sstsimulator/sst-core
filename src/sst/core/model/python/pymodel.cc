@@ -1079,15 +1079,15 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     free(argv);
 }
 
-SSTPythonModelDefinition::SSTPythonModelDefinition(
-    const std::string& script_file, int verbosity, Config* configObj, double start_time, int argc, char** argv) :
-    SSTModelDescription(),
-    scriptName(script_file),
-    config(configObj),
-    start_time(start_time)
-{
-    initModel(script_file, verbosity, configObj, argc, argv);
-}
+// SSTPythonModelDefinition::SSTPythonModelDefinition(
+//     const std::string& script_file, int verbosity, Config* configObj, double start_time, int argc, char** argv) :
+//     SSTModelDescription(),
+//     scriptName(script_file),
+//     config(configObj),
+//     start_time(start_time)
+// {
+//     initModel(script_file, verbosity, configObj, argc, argv);
+// }
 
 SSTPythonModelDefinition::~SSTPythonModelDefinition()
 {
