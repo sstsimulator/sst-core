@@ -8,7 +8,7 @@
 #
 
 #-- override the default flags
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DTIXML_USE_STL -DSST_BUILDING_CORE=1 ${Python_CPPFLAGS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DSST_BUILDING_CORE=1 ${Python_CPPFLAGS}")
 
 set(SSTHeaders
 activityQueue.h
@@ -358,14 +358,6 @@ env/envquery.cc
 env/envconfig.cc
 )
 
-set(SSTXMLSrcs
-tinyxml/tinystr.cpp
-tinyxml/tinyxml.cpp
-tinyxml/tinyxmlerror.cpp
-tinyxml/tinyxmlparser.cpp
-tinyxml/tinystr.h
-tinyxml/tinyxml.h
-)
 
 set(SST_Dist_Hdrs
 build_info.h
@@ -383,27 +375,13 @@ ${SSTCoreSrcs}
 set(SSTInfo_X_Srcs
 sstinfo.cc
 ${SSTCoreSrcs}
-${SSTXMLSrcs}
 )
 
 set(SSTLibexec
-testingframework/test_engine.py
-testingframework/sst_unittest_parameterized.py
-testingframework/sst_unittest.py
-testingframework/test_engine_globals.py
-testingframework/test_engine_junit.py
-testingframework/test_engine.py
-testingframework/test_engine_support.py
-testingframework/test_engine_unittest.py
 model/xmlToPython.py
 )
 
-set(SSTPythonBin
-testingframework/sst_test_engine_loader.py
-testingframework/sst-test-core
-testingframework/sst-test-elements
-)
-
+add_subdirectory(testingframework)
 
 add_executable(sst ${SST_X_Srcs})
 add_executable(sst-info ${SSTInfo_X_Srcs})
@@ -414,8 +392,8 @@ add_library(coreTestElement MODULE ${SSTTestElements})
 
 set_target_properties(sst PROPERTIES LINK_FLAGS ${SST_SIM_LDFLAGS})
 set_target_properties(sst-info PROPERTIES LINK_FLAGS ${SST_INFO_LDFLAGS})
-target_link_libraries(sst "${SST_LIB}")
-target_link_libraries(sst-info "${SST_LIB}")
+target_link_libraries(sst PRIVATE "${SST_LIB}" libjson)
+target_link_libraries(sst-info PRIVATE "${SST_LIB}" libtinyxml)
 
 include_directories(${SST_INCLUDE_DIRS})
 include_directories(${ZLIB_INCLUDE_DIRS})
@@ -428,7 +406,6 @@ install(TARGETS sst-config DESTINATION bin)
 install(TARGETS sst-register DESTINATION bin)
 install(TARGETS coreTestElement DESTINATION lib/sstcore)
 install(FILES ${SSTLibexec} DESTINATION libexec)
-install(FILES ${SSTPythonBin} DESTINATION bin)
 install(FILES testElements/libcoreTestElement.la DESTINATION lib/sstcore)
 
 install(DIRECTORY "."
