@@ -87,8 +87,42 @@ void Clock::execute( void ) {
     StaticHandlerMap_t::iterator sop_iter;
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
         Clock::HandlerBase* handler = *sop_iter;
+
+        #ifdef CLOCK_PROFILING
+        #ifdef HIGH_RESOLUTION_CLOCK
+        auto start = std::chrono::high_resolution_clock::now();
+        #else
+        struct timeval clockStart, clockEnd, clockDiff;
+        gettimeofday(&clockStart, NULL);
+        #endif
+        #endif
+
         if ( (*handler)(currentCycle) ) sop_iter = staticHandlerMap.erase(sop_iter);
         else ++sop_iter;
+
+        #ifdef CLOCK_PROFILING
+        #ifdef HIGH_RESOLUTION_CLOCK
+        auto finish = std::chrono::high_resolution_clock::now();
+        #else
+        gettimeofday(&clockEnd, NULL);
+        timersub(&clockEnd, &clockStart, &clockDiff);
+        #endif
+
+        auto it = sim->clockHandlers.find((uint64_t) handler);
+
+        #ifdef HIGH_RESOLUTION_CLOCK
+        it->second += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        #else
+        it->second += clockDiff.tv_usec + clockDiff.tv_sec * 1e6;
+        #endif
+
+        auto iter = sim->clockCounters.find((uint64_t) handler);
+        if(iter != sim->clockCounters.end())
+        {
+            iter->second ++;
+        }
+        #endif
+
         // (*handler)(currentCycle);
         // ++sop_iter;
     }

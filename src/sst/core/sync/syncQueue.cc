@@ -23,6 +23,11 @@ namespace SST {
 using namespace Core::ThreadSafe;
 using namespace Core::Serialization;
 
+#ifdef EVENT_PROFILING
+extern uint64_t messageSizeRecv;
+extern uint64_t messageSizeSent;
+#endif
+
 SyncQueue::SyncQueue() :
     ActivityQueue(), buffer(nullptr), buf_size(0)
 {
@@ -51,6 +56,18 @@ SyncQueue::insert(Activity* activity)
 {
     std::lock_guard<Spinlock> lock(slock);
     activities.push_back(activity);
+
+#ifdef EVENT_PROFILING
+    serializer ser;
+
+    ser.start_sizing();
+
+    ser & activity;
+
+    size_t size = ser.size();
+
+    messageSizeSent += (uint64_t) size;
+#endif
 }
 
 Activity*
@@ -91,6 +108,10 @@ SyncQueue::getData()
     ser & activities;
 
     size_t size = ser.size();
+
+    #ifdef EVENT_PROFILING
+    messageSizeRecv += (uint64_t) size;
+    #endif
 
     if ( buf_size < ( size + sizeof(SyncQueue::Header) ) ) {
         if ( buffer != nullptr ) {
