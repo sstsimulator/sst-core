@@ -12,7 +12,7 @@ defaults:
     shell: bash -l {0}
 
 jobs:
-  Build_and_Test:
+  Test_With_clang-format:
     strategy:
       fail-fast: false
       matrix:
@@ -23,78 +23,14 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-    - name: System Information Dump - Startup
-      run: |
-        echo "*******************************************"
-        echo "*** SYSTEM INFO DUMP AT STARTUP"
-        echo "*******************************************"
-        echo
-        echo "pwd = " `pwd`
-        echo "***"
-        echo "env | sort = "
-        env | sort
-        echo "***"
-    - name: Set Source and General Install Env Variables
-      run: |
-        echo "*******************************************"
-        echo "*** SET SOURCE AND LOCAL DIR ENV VAR (THIS AFFECTS FUTURE STEPS)"
-        echo "*******************************************"
-        echo "SST_SOURCE_PATH=$HOME/work/sst-core/sst-core" >> $GITHUB_ENV
-        echo "***"
-        echo "LOCATION OF GITHUB_ENV SCRIPT"
-        echo $GITHUB_ENV
-        echo "***"
-        echo "CONTENTS OF GITHUB_ENV"
-        cat $GITHUB_ENV
-        echo "***"
-    - name: Set SST Core Install Env Variables
-      run: |
-        echo "*******************************************"
-        echo "*** SET ENV VARS (THIS AFFECTS FUTURE STEPS)"
-        echo "*******************************************"
-        echo "SST_CORE_SOURCE_PATH=$SST_SOURCE_PATH/sst-core_source" >> $GITHUB_ENV
-        echo "***"
-        echo "LOCATION OF GITHUB_ENV SCRIPT"
-        echo $GITHUB_ENV
-        echo "***"
-        echo "CONTENTS OF GITHUB_ENV"
-        cat $GITHUB_ENV
-        echo "***"
-
 #   Checkout this users SST-core repo/branch
     - name: Checkout Users SST-Core source
       uses: actions/checkout@v2
       with:
         path: ./sst-core_source
 
-    - name: System Information Dump - Before Build
-      run: |
-        echo "*******************************************"
-        echo "*** SYSTEM INFO DUMP BEFORE RUN"
-        echo "*******************************************"
-        echo
-        echo "pwd = " `pwd`
-        echo "***"
-        echo "env | sort = "
-        env | sort
-        echo "***"
-
-    - name: Run the clang-format script
-      run: |
-        echo "*******************************************"
-        echo "*** CHANGE DIRECTORY TO SST-Core SOURCE DIR"
-        echo "*******************************************"
-        cd $SST_CORE_SOURCE_PATH
-
-        echo "CLANG FORMAT VERSION"
-        clang-format --version
-
-        ./scripts/clang-format-test.sh
-        rtn_code=$?
-        echo "*** clang-format-test.sh returned =" $rtn_code
-
-#   Try running the github action for clang format
-    - name: Run Action  clang-format-lint
+#   Running the github action for clang format
+    - name: Run Action clang-format-lint
       uses: DoozyX/clang-format-lint-action@v0.12
       with:
         source: './sst-core_source/'
@@ -103,3 +39,12 @@ jobs:
         clangFormatVersion: 12
         inplace: False
 
+# Label the Results
+    - name: Label Results
+      if: ${{ failure() }}
+        run: |
+          echo "LABEL FAILURE"
+      if: ${{ success() }}
+        run: |
+          echo "LABEL SUCCESS"
+#      uses: actions/heroku@1.0.0
