@@ -94,12 +94,13 @@ jobs:
         echo "*** clang-format-test.sh returned =" $rtn_code
 
 #   Try running the github action for clang format
-    - name: Rut clang-format-lint-action
+    - name: Run Action  clang-format-lint
       uses: DoozyX/clang-format-lint-action@v0.12
       with:
         source: './sst-core_source/'
         exclude: './sst-core_source/src/sst/core/libltdl ./sst-core_source/external ./sst-core_source/build'
         extensions: 'h,cc'
-        clangFormatVersion: 12
+#        clangFormatVersion: 12
+        clangFormatVersion: 11
         inplace: False
 
