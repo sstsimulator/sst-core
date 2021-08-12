@@ -2,10 +2,10 @@ name: SST-CORE clang-format TEST
 
 on:
   workflow_dispatch:
-#  push:
-#    branches-ignore:
-#      - master
-#      - devel
+  push:
+    branches-ignore:
+      - master
+      - devel
 
 defaults:
   run:
