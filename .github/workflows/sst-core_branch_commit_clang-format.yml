@@ -2,10 +2,10 @@ name: SST-CORE clang-format TEST
 
 on:
   workflow_dispatch:
-  push:
-    branches-ignore:
-      - master
-      - devel
+#  push:
+#    branches-ignore:
+#      - master
+#      - devel
 
 defaults:
   run:
@@ -48,7 +48,7 @@ jobs:
         echo "CONTENTS OF GITHUB_ENV"
         cat $GITHUB_ENV
         echo "***"
-    - name: Set SST Core and Elements Install Env Variables
+    - name: Set SST Core Install Env Variables
       run: |
         echo "*******************************************"
         echo "*** SET ENV VARS (THIS AFFECTS FUTURE STEPS)"
@@ -73,7 +73,7 @@ jobs:
     - name: System Information Dump - Before Build
       run: |
         echo "*******************************************"
-        echo "*** SYSTEM INFO DUMP BEFORE BUILD"
+        echo "*** SYSTEM INFO DUMP BEFORE RUN"
         echo "*******************************************"
         echo
         echo "pwd = " `pwd`
@@ -88,9 +88,13 @@ jobs:
         echo "*** CHANGE DIRECTORY TO SST-Core SOURCE DIR"
         echo "*******************************************"
         cd $SST_CORE_SOURCE_PATH
+
+        echo "CLANG FORMAT VERSION"
+        clang-format --version
+
         ./scripts/clang-format-test.sh
-        rtn_code = $?
-        echo "*** clang-format-test.sh returned $rtn_code"
+        rtn_code=$?
+        echo "*** clang-format-test.sh returned =" $rtn_code
 
 
 
