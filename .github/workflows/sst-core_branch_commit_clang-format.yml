@@ -40,10 +40,12 @@ jobs:
         inplace: False
 
 # Label the Results
-    - name: Label Results
+    - name: Label Results for Failure
       if: ${{ failure() }}
       run: |
         echo "LABEL FAILURE"
+
+    - name: Label Results for Success
       if: ${{ success() }}
       run: |
         echo "LABEL SUCCESS"
