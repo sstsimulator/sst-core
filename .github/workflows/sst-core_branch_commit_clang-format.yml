@@ -100,7 +100,6 @@ jobs:
         source: './sst-core_source/'
         exclude: './sst-core_source/src/sst/core/libltdl ./sst-core_source/external ./sst-core_source/build'
         extensions: 'h,cc'
-#        clangFormatVersion: 12
-        clangFormatVersion: 11
+        clangFormatVersion: 12
         inplace: False
 
