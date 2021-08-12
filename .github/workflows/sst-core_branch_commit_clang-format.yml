@@ -40,7 +40,6 @@ jobs:
         echo "*** SET SOURCE AND LOCAL DIR ENV VAR (THIS AFFECTS FUTURE STEPS)"
         echo "*******************************************"
         echo "SST_SOURCE_PATH=$HOME/work/sst-core/sst-core" >> $GITHUB_ENV
-        echo "SST_GEN_INSTALL_PATH=$HOME/local" >> $GITHUB_ENV
         echo "***"
         echo "LOCATION OF GITHUB_ENV SCRIPT"
         echo $GITHUB_ENV
@@ -54,8 +53,6 @@ jobs:
         echo "*** SET ENV VARS (THIS AFFECTS FUTURE STEPS)"
         echo "*******************************************"
         echo "SST_CORE_SOURCE_PATH=$SST_SOURCE_PATH/sst-core_source" >> $GITHUB_ENV
-        echo "SST_CORE_HOME=$SST_GEN_INSTALL_PATH/sstcore_install" >> $GITHUB_ENV
-        echo "SST_CORE_BIN=$SST_GEN_INSTALL_PATH/sstcore_install/bin" >> $GITHUB_ENV
         echo "***"
         echo "LOCATION OF GITHUB_ENV SCRIPT"
         echo $GITHUB_ENV
@@ -100,8 +97,8 @@ jobs:
     - name: Rut clang-format-lint-action
       uses: DoozyX/clang-format-lint-action@v0.12
       with:
-        source: '$SST_CORE_SOURCE_PATH'
-        exclude: '$SST_CORE_SOURCE_PATH//src/sst/core/libltdl $SST_CORE_SOURCE_PATH/external'
+        source: './sst-core_source/'
+        exclude: './sst-core_source/src/sst/core/libltdl ./sst-core_source/external ./sst-core_source/build'
         extensions: 'h,cc'
         clangFormatVersion: 12
         inplace: False
