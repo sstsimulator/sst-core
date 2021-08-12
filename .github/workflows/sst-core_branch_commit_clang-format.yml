@@ -42,9 +42,9 @@ jobs:
 # Label the Results
     - name: Label Results
       if: ${{ failure() }}
-        run: |
-          echo "LABEL FAILURE"
+      run: |
+        echo "LABEL FAILURE"
       if: ${{ success() }}
-        run: |
-          echo "LABEL SUCCESS"
+      run: |
+        echo "LABEL SUCCESS"
 #      uses: actions/heroku@1.0.0
