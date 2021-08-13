@@ -1,3 +1,12 @@
+# SST-CORE src/sst/core/testElements CMake
+#
+# Copyright 2009-2021 National Technology and Engineering Solutions of Sandia,
+# LLC (NTESS).  Under the terms of Contract DE-NA-0003525, the U.S. Government
+# retains certain rights in this software.
+#
+# See LICENSE for full license details
+#
+
 add_library(
   coreTestElement MODULE
   coreTest_Component.cc
@@ -19,3 +28,5 @@ install(TARGETS coreTestElement DESTINATION lib/sstcore)
 set_target_properties(coreTestElement PROPERTIES NO_SONAME 1)
 
 # NEED To figure out how to deal with distributing the README
+
+# EOF

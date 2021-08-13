@@ -1,3 +1,12 @@
+# SST-CORE src/sst/core/testingframework CMake
+#
+# Copyright 2009-2021 National Technology and Engineering Solutions of Sandia,
+# LLC (NTESS).  Under the terms of Contract DE-NA-0003525, the U.S. Government
+# retains certain rights in this software.
+#
+# See LICENSE for full license details
+#
+
 configure_file(sst-test-core-cmake.in sst-test-core)
 configure_file(sst-test-elements-cmake.in sst-test-elements)
 
@@ -25,3 +34,5 @@ install(
         test_engine_unittest.py
         sst_unittest_support.py
   DESTINATION libexec)
+
+# EOF

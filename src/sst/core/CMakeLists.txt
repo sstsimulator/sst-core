@@ -9,12 +9,25 @@
 
 add_definitions(-DSST_BUILDING_CORE=1)
 
+#-- Required for build
 add_subdirectory(impl)
 add_subdirectory(model)
 add_subdirectory(shared)
 add_subdirectory(sync)
 add_subdirectory(testingframework)
 add_subdirectory(testElements)
+
+#-- Required for header installation
+add_subdirectory(cfgoutput)
+add_subdirectory(eli)
+add_subdirectory(env)
+add_subdirectory(interfaces)
+add_subdirectory(interprocess)
+add_subdirectory(math)
+add_subdirectory(part)
+add_subdirectory(rng)
+add_subdirectory(serialization)
+add_subdirectory(statapi)
 
 add_library(
   sst-core-lib OBJECT
@@ -79,11 +92,64 @@ add_library(
   cputimer.cc
   iouse.cc)
 
+set(SSTHeaders
+  action.h
+  activity.h
+  activityQueue.h
+  baseComponent.h
+  build_info.h
+  clock.h
+  componentExtension.h
+  component.h
+  componentInfo.h
+  configGraph.h
+  configGraphOutput.h
+  config.h
+  cputimer.h
+  decimal_fixedpoint.h
+  elemLoader.h
+  event.h
+  exit.h
+  factory.h
+  from_string.h
+  heartbeat.h
+  initQueue.h
+  iouse.h
+  link.h
+  linkMap.h
+  linkPair.h
+  mempool.h
+  memuse.h
+  module.h
+  objectComms.h
+  oneshot.h
+  output.h
+  params.h
+  pollingLinkQueue.h
+  profile.h
+  rankInfo.h
+  sharedRegion.h
+  sharedRegionImpl.h
+  simulation.h
+  sparseVectorMap.h
+  sstinfo.h
+  sstpart.h
+  sst_types.h
+  stopAction.h
+  stringize.h
+  subcomponent.h
+  threadsafe.h
+  timeConverter.h
+  timeLord.h
+  timeVortex.h
+  uninitializedQueue.h
+  unitAlgebra.h
+  warnmacros.h
+)
+
 target_include_directories(sst-core-lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(sst-core-lib PUBLIC ${CMAKE_BINARY_DIR}/src)
 target_compile_definitions(sst-core-lib PUBLIC SST_BUILDING_CORE=1)
-#if(USE_MEMPOOL)
-#  target_compile_definitions(sst-core-lib PUBLIC USE_MEMPOOL=1)
-#endif(USE_MEMPOOL)
 
 if(SST_ENABLE_EVENT_TRACKING)
   target_compile_definitions(sst-core-lib PUBLIC __SST_DEBUG_EVENT_TRACKING__=1)
@@ -100,10 +166,10 @@ target_link_libraries(
          sst-config-headers
          ${CMAKE_DL_LIBS}
          m
-         )
+)
 
 if(MPI_FOUND)
-  target_link_libraries(sst-core-lib PUBLIC MPI::MPI_C)
+  target_link_libraries(sst-core-lib PUBLIC MPI::MPI_CXX)
 endif(MPI_FOUND)
 
 if(HDF5_FOUND)
@@ -123,8 +189,8 @@ target_link_libraries(sst-env-lib PUBLIC sst-config-headers)
 target_include_directories(sst-env-lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
 
 add_executable(sstsim.x main.cc)
-target_link_libraries(sstsim.x 
-  PRIVATE 
+target_link_libraries(sstsim.x
+  PRIVATE
   sst-core-lib
   sst-env-lib
   partitioner
@@ -133,12 +199,12 @@ target_link_libraries(sstsim.x
   modelpython
   sync
   shared
-  )
+)
 target_link_options(sstsim.x PRIVATE "LINKER:-export-dynamic")
 
 add_executable(sstinfo.x sstinfo.cc)
-target_link_libraries(sstinfo.x PRIVATE 
-  sst-core-lib 
+target_link_libraries(sstinfo.x PRIVATE
+  sst-core-lib
   sst-env-lib
   partitioner
   timeVortex
@@ -146,15 +212,20 @@ target_link_libraries(sstinfo.x PRIVATE
   modelpython
   sync
   shared
-  tinyxml 
-  )
+  tinyxml
+)
 target_link_options(sstsim.x PRIVATE "LINKER:-export-dynamic")
 
-if(NOT APPLE)
-  message(STATUS "NOT APPLE WHAT")
-  target_link_options(sstinfo.x PRIVATE "LINKER:-lrt")
-  target_link_options(sstsim.x PRIVATE "LINKER:-lrt")
-endif(NOT APPLE)
+if(UNIX AND NOT APPLE)
+  message(STATUS "LINKING AGAINST LIBRT")
+  target_link_libraries(sstinfo.x PRIVATE rt)
+  target_link_libraries(sstsim.x PRIVATE rt)
+endif()
+
+if(Threads_FOUND)
+  target_link_libraries(sstinfo.x PRIVATE Threads::Threads)
+  target_link_libraries(sstsim.x PRIVATE Threads::Threads)
+endif()
 
 
 add_executable(sst bootsst.cc)
@@ -169,17 +240,11 @@ target_link_libraries(sst-config PRIVATE sst-env-lib)
 add_executable(sst-register sstregistertool.cc)
 target_link_libraries(sst-register PRIVATE sst-env-lib)
 
-# set_target_properties(sst PROPERTIES LINK_FLAGS ${SST_SIM_LDFLAGS})
-# set_target_properties(sst-info PROPERTIES LINK_FLAGS ${SST_INFO_LDFLAGS})
 
 install(TARGETS sst sst-info sst-config sst-register)
 install(TARGETS sstsim.x sstinfo.x DESTINATION libexec)
 
-# Don't build this it's an old thing that nots needed by cmake install(FILES
-# testElements/libcoreTestElement.la DESTINATION lib/sstcore)
+install(FILES ${SSTHeaders}
+        DESTINATION "include/sst/core")
 
-install(
-  DIRECTORY "."
-  DESTINATION "include/sst/core"
-  FILES_MATCHING
-  PATTERN "*.h")
+# EOF

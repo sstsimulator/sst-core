@@ -1,4 +1,4 @@
-# SST-CORE src/sst/impl CMake
+# SST-CORE src/sst/core/part CMake
 #
 # Copyright 2009-2021 National Technology and Engineering Solutions of Sandia,
 # LLC (NTESS).  Under the terms of Contract DE-NA-0003525, the U.S. Government
@@ -7,7 +7,10 @@
 # See LICENSE for full license details
 #
 
-add_subdirectory(partitioners)
-add_subdirectory(timevortex)
+set(SSTPartHeaders
+  sstpart.h)
+
+install(FILES ${SSTPartHeaders}
+        DESTINATION "include/sst/core/part")
 
 # EOF
