@@ -15,6 +15,7 @@
 #include "sst/core/simulation.h"
 
 #include "sst/core/link.h"
+#include "sst/core/simulation_impl.h"
 
 namespace SST {
 
@@ -24,14 +25,12 @@ const SST::Event::id_type SST::Event::NO_ID = std::make_pair(0, -1);
 
 Event::~Event() {}
 
-extern std::map<std::string, uint64_t> eventHandlers;
-extern std::map<std::string, uint64_t> eventSendCounters;
-extern std::map<std::string, uint64_t> eventRecvCounters;
-
 void Event::execute(void)
 {
 
     #ifdef EVENT_PROFILING
+    Simulation_impl *sim = Simulation_impl::getSimulation();
+
     #ifdef HIGH_RESOLUTION_CLOCK
     auto eventStart = std::chrono::high_resolution_clock::now();
     #else
@@ -51,8 +50,8 @@ void Event::execute(void)
     #endif
 
     // Track receiver processing time
-    auto eventHandler = eventHandlers.find(getLastComponentName());
-    if(eventHandler != eventHandlers.end())
+    auto eventHandler = sim->eventHandlers.find(getLastComponentName());
+    if(eventHandler != sim->eventHandlers.end())
     {
         #ifdef HIGH_RESOLUTION_CLOCK
         eventHandler->second += std::chrono::duration_cast<std::chrono::nanoseconds>(eventFinish - eventStart).count();
@@ -62,27 +61,27 @@ void Event::execute(void)
     }
 
     // Track sending and receiving counters
-    auto eventCount = eventRecvCounters.find(getLastComponentName());
-    if(eventCount != eventRecvCounters.end())
+    auto eventCount = sim->eventRecvCounters.find(getLastComponentName());
+    if(eventCount != sim->eventRecvCounters.end())
     {
         eventCount->second ++;
     }else{
         if(getLastComponentName() != "")
         {
-            eventRecvCounters.insert(std::pair<std::string, uint64_t>(getLastComponentName().c_str(), 1));
-            eventHandlers.insert(std::pair<std::string, uint64_t>(getLastComponentName().c_str(), 0));
+            sim->eventRecvCounters.insert(std::pair<std::string, uint64_t>(getLastComponentName().c_str(), 1));
+            sim->eventHandlers.insert(std::pair<std::string, uint64_t>(getLastComponentName().c_str(), 0));
         }
     }
-    auto eventSend = eventSendCounters.find(getFirstComponentName());
-    if(eventSend != eventSendCounters.end())
+    auto eventSend = sim->eventSendCounters.find(getFirstComponentName());
+    if(eventSend != sim->eventSendCounters.end())
     {
        eventSend->second++;
     }else{
         // Insert handler and counter for the subcomponent so that all link traffic is monitored
         if(getFirstComponentName() != "")
         {
-            eventSendCounters.insert(std::pair<std::string, uint64_t>(getFirstComponentName().c_str(),1));
-            eventHandlers.insert(std::pair<std::string, uint64_t>(getFirstComponentName().c_str(), 0));
+            sim->eventSendCounters.insert(std::pair<std::string, uint64_t>(getFirstComponentName().c_str(),1));
+            sim->eventHandlers.insert(std::pair<std::string, uint64_t>(getFirstComponentName().c_str(), 0));
        }
     }
     #endif

@@ -596,14 +596,6 @@ void Simulation_impl::setup() {
 
 }
 
-#ifdef EVENT_PROFILING
-std::map<std::string, uint64_t> eventHandlers;
-std::map<std::string, uint64_t> eventRecvCounters;
-std::map<std::string, uint64_t> eventSendCounters;
-uint64_t messageSizeSent = 0;
-uint64_t messageSizeRecv = 0;
-#endif
-
 void Simulation_impl::run() {
     // Put a stop event at the end of the timeVortex. Simulation will
     // only get to this is there are no other events in the queue.

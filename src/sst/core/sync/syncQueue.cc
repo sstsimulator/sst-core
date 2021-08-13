@@ -16,17 +16,12 @@
 #include "sst/core/serialization/serializer.h"
 #include "sst/core/event.h"
 #include "sst/core/simulation.h"
-
+#include "sst/core/simulation_impl.h"
 
 namespace SST {
 
 using namespace Core::ThreadSafe;
 using namespace Core::Serialization;
-
-#ifdef EVENT_PROFILING
-extern uint64_t messageSizeRecv;
-extern uint64_t messageSizeSent;
-#endif
 
 SyncQueue::SyncQueue() :
     ActivityQueue(), buffer(nullptr), buf_size(0)
@@ -58,6 +53,8 @@ SyncQueue::insert(Activity* activity)
     activities.push_back(activity);
 
 #ifdef EVENT_PROFILING
+    Simulation_impl *sim = Simulation_impl::getSimulation();
+
     serializer ser;
 
     ser.start_sizing();
@@ -66,7 +63,7 @@ SyncQueue::insert(Activity* activity)
 
     size_t size = ser.size();
 
-    messageSizeSent += (uint64_t) size;
+    sim->messageSizeSent += (uint64_t) size;
 #endif
 }
 
@@ -110,7 +107,8 @@ SyncQueue::getData()
     size_t size = ser.size();
 
     #ifdef EVENT_PROFILING
-    messageSizeRecv += (uint64_t) size;
+    Simulation_impl *sim = Simulation_impl::getSimulation();
+    sim->messageSizeRecv += (uint64_t) size;
     #endif
 
     if ( buf_size < ( size + sizeof(SyncQueue::Header) ) ) {

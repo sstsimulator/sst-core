@@ -418,6 +418,11 @@ public:
     #ifdef EVENT_PROFILING
     uint64_t rankLatency = 0;
     uint64_t rankExchangeCounter = 0;
+    std::map<std::string, uint64_t> eventHandlers;
+    std::map<std::string, uint64_t> eventRecvCounters;
+    std::map<std::string, uint64_t> eventSendCounters;
+    uint64_t messageSizeSent = 0;
+    uint64_t messageSizeRecv = 0;
     #endif
 
     #ifdef SYNC_PROFILING
