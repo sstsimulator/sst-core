@@ -10,8 +10,49 @@ The Structural Simulation Toolkit (SST) was developed to explore innovations in 
 
 ---
 
+
+### Getting Started
+
+#### Building From Source
+
+##### Centos/RHEL 7
+
+```sh
+sudo yum install gcc gcc-c++ python3 python3-devel make automake git libtool libtool-ltdl-devel openmpi openmpi-devel
+mkdir sst-core && cd sst-core
+git clone https://github.com/sstsimulator/sst-core.git sst-core-src
+(cd sst-core-src && ./autogen.sh)
+mkdir build && cd build
+../sst-core-src/configure \
+  MPICC=/usr/lib64/openmpi/bin/mpicc \
+  MPICXX=/usr/lib64/openmpi/bin/mpic++ \
+  --prefix=$PWD/../sst-core-install
+make install 
+```
+
+##### Ubuntu 20.04
+
+```sh
+DEBIAN_FRONTEND=noninteractive sudo apt install openmpi-bin openmpi-common libtool libtool-bin autoconf python3 python3-dev automake build-essential git 
+mkdir sst-core && cd sst-core
+git clone https://github.com/sstsimulator/sst-core.git sst-core-src
+(cd sst-core-src && ./autogen.sh)
+mkdir build && cd build
+../sst-core-src/configure --prefix=$PWD/../sst-core-install
+make install 
+```
+
+#### Testing Your Install
+
+``` sh
+/path/to/sst-core/install/bin/sst-test-core
+```
+
+
+---
+
 Visit [sst-simulator.org](http://sst-simulator.org) to learn more about SST.
 
 See [Contributing](https://github.com/sstsimulator/sst-core/blob/devel/CONTRIBUTING.md) to learn how to contribute to SST.
 
-##### [LICENSE](https://github.com/sstsimulator/sst-core/blob/devel/LICENSE)
+See [LICENSE](https://github.com/sstsimulator/sst-core/blob/devel/LICENSE) for our license
