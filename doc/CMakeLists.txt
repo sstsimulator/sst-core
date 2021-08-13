@@ -30,14 +30,7 @@ if(BUILD_DOCUMENTATION)
 
   configure_file(Doxyfile.in Doxyfile.conf)
 
-  doxygen_add_docs(doc Doxyfile.conf)
-
-  #add_custom_target(
-  #  doc
-  #  COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
-  #  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  #  COMMENT "Generating API documentation with Doxygen"
-  #  VERBATIM)
+  doxygen_add_docs(doc ${CMAKE_BINARY_DIR}/doc/Doxyfile.conf)
 
   #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/html DESTINATION share/doc)
 endif(BUILD_DOCUMENTATION)
