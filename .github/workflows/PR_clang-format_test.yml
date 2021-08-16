@@ -1,0 +1,173 @@
+name: SST-CORE clang-format TEST
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches-ignore:
+      - master
+      - devel
+# Push option may be used in the future for developers forks
+#  push:
+#    branches-ignore:
+#      - master
+#      - devel
+
+# This script is used to do a quick and dirty clang-format v12 check on the
+# PR source repo to ensure it is formatted correctly.  It will initially set
+# the AT: WIP label to try to stop the Autottester from processing the PR, and
+# then perform the clang-format test using a 3rd party action.  It will then
+# set labels and add comments in the conversation  for Pass or Failure as
+# appropriate.  Any labels that do not exist will be created.  Also we use
+# the step command "continue-on-error" to prevent a trying to remove a
+# missing label from failing the script.
+
+### NOTE: This script owes a lot to the work of Stephanie Eckles; see:
+### https://dev.to/5t3ph/github-workflows-for-newbies-add-labels-and-comments-to-pull-requests-37da
+### Also look at https://octokit.github.io/rest.js/v18 for available script commands
+
+defaults:
+  run:
+    shell: bash -l {0}
+
+jobs:
+  Test_With_clang-format:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04]
+        python-version: [3.8]
+    name: Test:${{ matrix.os }}/PY-${{ matrix.python-version }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+# Set the WIP label immediately before testing
+    - name: SET WIP Label before testing
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['AT: WIP']
+            })
+
+#   Checkout this users SST-core repo/branch
+    - name: Checkout Users SST-Core source
+      uses: actions/checkout@v2
+      with:
+        path: ./sst-core_source
+
+#   Running the github action for clang format
+    - name: Run Action clang-format-lint
+      uses: DoozyX/clang-format-lint-action@v0.12
+      with:
+        source: './sst-core_source/'
+        exclude: './sst-core_source/src/sst/core/libltdl ./sst-core_source/external ./sst-core_source/build'
+        extensions: 'h,cc'
+        clangFormatVersion: 12
+        inplace: False
+
+#############################################
+# LABEL RESULTS - USING actions/github-script
+#############################################
+
+# Label the Results - FOR FAILURE
+    - name: ADD FAIL + WIP Label Results for Failure
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['AT: CLANG-FORMAT FAIL', 'AT: WIP']
+            })
+      if: ${{ failure() }}
+
+    - name: REMOVE PASS Label Results for Failure
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+            github.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'AT: CLANG-FORMAT PASS'
+            })
+      if: ${{ failure() }}
+      continue-on-error: true
+
+    - name: ADD COMMENT ABOUT FAIL
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '**CLANG-FORMAT TEST - FAILED** (on last commit): <br>Run > ./scripts/clang-format-test.sh using clang-format v12 to check formatting'
+            })
+      if: ${{ failure() }}
+
+#############################
+
+# Label the Results - FOR SUCCESS
+    - name: ADD PASS Label Results for Success
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['AT: CLANG-FORMAT PASS']
+            })
+      if: ${{ success() }}
+
+    - name: REMOVE WIP Label Results for Success
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+            github.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'AT: WIP'
+            })
+      if: ${{ success() }}
+      continue-on-error: true
+
+    - name: REMOVE FAIL Label Results for Success
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+            github.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              name: 'AT: CLANG-FORMAT FAIL'
+            })
+      if: ${{ success() }}
+      continue-on-error: true
+
+    - name: ADD COMMENT ABOUT SUCCESS
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '**CLANG-FORMAT TEST - PASSED**'
+            })
+      if: ${{ success() }}
