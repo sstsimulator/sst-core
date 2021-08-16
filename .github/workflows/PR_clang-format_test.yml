@@ -5,12 +5,10 @@ on:
   pull_request:
     branches-ignore:
       - master
-      - devel
 # Push option may be used in the future for developers forks
 #  push:
 #    branches-ignore:
 #      - master
-#      - devel
 
 # This script is used to do a quick and dirty clang-format v12 check on the
 # PR source repo to ensure it is formatted correctly.  It will initially set
