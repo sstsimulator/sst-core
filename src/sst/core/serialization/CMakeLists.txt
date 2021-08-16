@@ -28,7 +28,7 @@ set(SSTSerializationHeaders
   ser_ptr_type.h
   statics.h)
 
-install(FILES ${SSTSerialziationHeaders}
+install(FILES ${SSTSerializationHeaders}
         DESTINATION "include/sst/core/serialization")
 
 # EOF

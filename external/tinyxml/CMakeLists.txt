@@ -9,7 +9,7 @@ target_compile_definitions(tinyxml PUBLIC TIXML_USE_STL)
 target_include_directories(tinyxml
   PUBLIC
   ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_SOURCE_DIR}/external
+  ${sst-core_SOURCE_DIR}/../external
   PRIVATE
-  ${CMAKE_SOURCE_DIR}/src
+  ${sst-core_SOURCE_DIR}/../src # For warning suppression
 )
