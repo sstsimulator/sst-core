@@ -19,40 +19,43 @@ if(NOT CMAKE_CXX_STANDARD)
   message(
     STATUS "CMAKE_CXX_STANDARD was not set, defaulting the cmake standard to 11"
   )
-else(NOT CMAKE_CXX_STANDARD)
+else()
   if(CMAKE_CXX_STANDARD LESS 11)
     message(FATAL_ERROR "We require the c++ standard to be at least 11")
-  endif(CMAKE_CXX_STANDARD LESS 11)
-endif(NOT CMAKE_CXX_STANDARD)
+  endif()
+endif()
 
 # ------------------------------------------------------------------------
 # -- EXTERNAL CMAKE SCRIPTS
 # ------------------------------------------------------------------------
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${sst-core_SOURCE_DIR}/cmake)
 
 find_package(Python 3.5 REQUIRED COMPONENTS Interpreter Development)
-
 find_package(Threads)
 
-if(SST_ENABLE_LIBZ)
-  find_package(ZLIB REQUIRED)
-endif(SST_ENABLE_LIBZ)
+option(SST_ENABLE_ZLIB "Use zlib compression library" ON)
+if(SST_ENABLE_ZLIB)
+  find_package(ZLIB)
+endif()
 
+option(SST_ENABLE_HDF5 "Use HDF5 library" OFF)
 if(SST_ENABLE_HDF5)
   find_package(HDF5 REQUIRED)
-endif(SST_ENABLE_HDF5)
+endif()
 
+option(SST_DISABLE_MPI "Compile without MPI" OFF)
 if(NOT SST_DISABLE_MPI)
   find_package(MPI REQUIRED)
-endif(NOT SST_DISABLE_MPI)
+endif()
 
 # sst sets all the variables needed for our *.in files
 include(sst REQUIRED)
-add_subdirectory(cmake_configure_files)
+add_subdirectory(${sst-core_SOURCE_DIR}/cmake_configure_files)
 
 # ------------------------------------------------------------------------
 # -- COMPILER OPTIONS
 # ------------------------------------------------------------------------
+option(SST_DISABLE_MEM_POOLS "Compile without using memory pools" OFF)
 if(SST_DISABLE_MEM_POOLS)
   message(STATUS "SST: Disabling Mem Pools")
 else()
@@ -81,7 +84,7 @@ endif()
 # ------------------------------------------------------------------------
 
 # -- LibZ
-if(SST_ENABLE_LIBZ)
+if(SST_ENABLE_ZLIB)
   if(ZLIB_FOUND)
     message(STATUS "LibZ Headers found at ${ZLIB_INCLUDE_DIRS}")
     message(STATUS "LibZ Libraries found at ${ZLIB_LIBRARIES}")
@@ -110,15 +113,13 @@ if(NOT SST_DISABLE_MPI)
   if(MPI_FOUND)
     message(STATUS "MPI C Compiler found at ${MPI_C_COMPILER}")
     message(STATUS "MPI CXX Compiler found at ${MPI_CXX_COMPILER}")
-  else()
-    message(FATAL_ERROR "MPI not found")
   endif()
 else()
   message(STATUS "MPI support disabled")
 endif()
 
 # -- Doxygen
-add_subdirectory(doc)
+add_subdirectory(${sst-core_SOURCE_DIR}/../doc ${sst-core_BINARY_DIR}/doc)
 
 
 # ------------------------------------------------------------------------
@@ -172,9 +173,9 @@ endif()
 # ------------------------------------------------------------------------
 # -- SUBDIRECTORIES
 # ------------------------------------------------------------------------
-add_subdirectory(external)
-add_subdirectory(src)
-add_subdirectory(tests)
-add_subdirectory(share)
+add_subdirectory(${sst-core_SOURCE_DIR}/../external ${sst-core_BINARY_DIR}/external)
+add_subdirectory(${sst-core_SOURCE_DIR}/../src ${sst-core_BINARY_DIR}/src)
+add_subdirectory(${sst-core_SOURCE_DIR}/../tests ${sst-core_BINARY_DIR}/tests)
+add_subdirectory(${sst-core_SOURCE_DIR}/../share ${sst-core_BINARY_DIR}/share)
 
 # EOF
