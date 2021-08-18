@@ -84,8 +84,8 @@ coreTestStatisticsComponent::coreTestStatisticsComponent(ComponentId_t id, Param
     // Try to Register A duplicate Statistic Name
     // printf("STATISTIC TESTING: TRYING TO REGISTER A DUPLICATE STAT NAME - SHOULD RETURN THE PREVIOUSLY REGISTERED
     // STATISTIC\n");
-    stat7_U32_NOTUSED
-        = registerStatistic<uint32_t>("stat5_U32", "5"); // This registration will return the previously registered stat
+    stat7_U32_NOTUSED =
+        registerStatistic<uint32_t>("stat5_U32", "5"); // This registration will return the previously registered stat
 
     // Test Statistic functions for delayed output and collection and to disable Stat
     //    stat1_U32->disable();

@@ -397,14 +397,15 @@ unitAlgebraInvert(PyObject* self, PyObject* UNUSED(args))
     return ret;
 }
 
-static PyMethodDef unitAlgebraMethods[]
-    = { { "getRoundedValue", unitAlgebraGetRoundedValue, METH_NOARGS,
-          "Rounds value of UnitAlgebra to nearest whole number and returns a long" },
-        { "getFloatValue", unitAlgebraGetFloatValue, METH_NOARGS, "Returns value portion of UnitAlgebra as a float" },
-        { "isValueZero", unitAlgebraIsValueZero, METH_NOARGS, "Returns True if value is zero, false otherwise" },
-        { "hasUnits", unitAlgebraHasUnits, METH_VARARGS, "Checks to see if the UnitAlgebra has the specified units" },
-        { "invert", unitAlgebraInvert, METH_NOARGS, "Inverts the UnitAlgebra value and units" },
-        { NULL, NULL, 0, NULL } };
+static PyMethodDef unitAlgebraMethods[] = {
+    { "getRoundedValue", unitAlgebraGetRoundedValue, METH_NOARGS,
+      "Rounds value of UnitAlgebra to nearest whole number and returns a long" },
+    { "getFloatValue", unitAlgebraGetFloatValue, METH_NOARGS, "Returns value portion of UnitAlgebra as a float" },
+    { "isValueZero", unitAlgebraIsValueZero, METH_NOARGS, "Returns True if value is zero, false otherwise" },
+    { "hasUnits", unitAlgebraHasUnits, METH_VARARGS, "Checks to see if the UnitAlgebra has the specified units" },
+    { "invert", unitAlgebraInvert, METH_NOARGS, "Inverts the UnitAlgebra value and units" },
+    { NULL, NULL, 0, NULL }
+};
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8

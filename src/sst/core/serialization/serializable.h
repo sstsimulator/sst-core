@@ -246,8 +246,8 @@ public:
 template <class T>
 const char* serializable_builder_impl<T>::name_ = typeid(T).name();
 template <class T>
-const uint32_t serializable_builder_impl<T>::cls_id_
-    = serializable_factory::add_builder(new serializable_builder_impl<T>, typeid(T).name());
+const uint32_t serializable_builder_impl<T>::cls_id_ =
+    serializable_factory::add_builder(new serializable_builder_impl<T>, typeid(T).name());
 
 // Hold off on trivially_serializable for now, as it's not really safe
 // in the case of inheritance

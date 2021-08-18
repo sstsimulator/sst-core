@@ -12,7 +12,7 @@
 
 #include "sst_config.h"
 
-#include "sst/core/cfgoutput/pythonConfigOutput.h"
+#include "pythonConfigOutput.h"
 
 #include "sst/core/config.h"
 #include "sst/core/simulation_impl.h"

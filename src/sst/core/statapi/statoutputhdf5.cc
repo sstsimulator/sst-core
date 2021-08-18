@@ -430,8 +430,8 @@ StatisticOutputHDF5::GroupInfo::finalizeGroupRegistration()
     /* Create arrays */
     hsize_t       infoDim[1] = { m_statGroup->components.size() };
     H5::DataSpace infoSpace(1, infoDim);
-    H5::DataSet*  idSet
-        = new H5::DataSet(getFile()->createDataSet(groupName + "/ids", H5::PredType::NATIVE_UINT64, infoSpace, cparms));
+    H5::DataSet*  idSet =
+        new H5::DataSet(getFile()->createDataSet(groupName + "/ids", H5::PredType::NATIVE_UINT64, infoSpace, cparms));
     H5::DataSet* nameSet   = new H5::DataSet(getFile()->createDataSet(
         groupName + "/names", H5::StrType(H5::PredType::C_S1, H5T_VARIABLE), infoSpace, cparms));
     H5::DataSet* coordXSet = new H5::DataSet(
@@ -502,9 +502,9 @@ StatisticOutputHDF5::GroupInfo::startNewGroupEntry()
 void
 StatisticOutputHDF5::GroupInfo::startNewEntry(StatisticBase* stat)
 {
-    m_currentStat    = &(m_statGroups.at(GroupStat::getStatName(stat)));
-    size_t compIndex = std::distance(
-        m_components.begin(), std::find(m_components.begin(), m_components.end(), stat->getComponent()));
+    m_currentStat = &(m_statGroups.at(GroupStat::getStatName(stat)));
+    size_t compIndex =
+        std::distance(m_components.begin(), std::find(m_components.begin(), m_components.end(), stat->getComponent()));
     m_currentStat->startNewEntry(compIndex, stat);
 }
 

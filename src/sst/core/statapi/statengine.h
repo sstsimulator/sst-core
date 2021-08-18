@@ -74,7 +74,7 @@ public:
         Params& params)
     {
 
-        return Factory::getFactory()->Create<Statistic<T>>(type, params, comp, statName, statSubId, params);
+        return Factory::getFactory()->CreateWithParams<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
 
     bool registerStatisticWithEngine(StatisticBase* stat) { return registerStatisticCore(stat); }

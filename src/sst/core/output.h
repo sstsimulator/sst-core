@@ -22,7 +22,6 @@
 #ifndef __STDC_FORMAT_MACROS
 #define __STDC_FORMAT_MACROS
 #endif
-
 #include "sst/core/rankInfo.h"
 
 #include <cinttypes>

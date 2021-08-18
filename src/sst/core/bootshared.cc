@@ -35,8 +35,8 @@ update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(argv[])
 
     if ( nullptr != current_ld_path ) { sprintf(new_ld_path, "%s", current_ld_path); }
     std::vector<std::string>                          configFiles;
-    SST::Core::Environment::EnvironmentConfiguration* envConfig
-        = SST::Core::Environment::getSSTEnvironmentConfiguration(configFiles);
+    SST::Core::Environment::EnvironmentConfiguration* envConfig =
+        SST::Core::Environment::getSSTEnvironmentConfiguration(configFiles);
     std::set<std::string> groups = envConfig->getGroupNames();
 
     for ( auto groupItr = groups.begin(); groupItr != groups.end(); groupItr++ ) {

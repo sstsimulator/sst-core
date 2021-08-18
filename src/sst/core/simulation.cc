@@ -200,7 +200,7 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     output_directory = "";
     Params p;
     // params get passed twice - both the params and a ctor argument
-    timeVortex = factory->Create<TimeVortex>(cfg->timeVortex, p, p);
+    timeVortex = factory->Create<TimeVortex>(cfg->timeVortex, p);
     if ( my_rank.thread == 0 ) {
         m_exit = new Exit(num_ranks.thread, timeLord.getTimeConverter("100ns"), num_ranks.rank == 1);
     }
@@ -314,8 +314,8 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
     // Create the SyncManager for this rank.  It gets created even if
     // we are single rank/single thread because it also manages the
     // Exit and Heartbeat actions.
-    syncManager
-        = new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
+    syncManager =
+        new SyncManager(my_rank, num_ranks, minPartTC = minPartToTC(min_part), min_part, interThreadLatencies);
 
     // Determine if this thread is independent.  That means there is
     // no need to synchronize with any other threads or ranks.

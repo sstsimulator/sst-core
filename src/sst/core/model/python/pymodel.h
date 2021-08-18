@@ -40,10 +40,20 @@ namespace Core {
 
 class SSTPythonModelDefinition : public SSTModelDescription
 {
-
 public:
-    SSTPythonModelDefinition(
-        const std::string& script_file, int verbosity, Config* config, double start_time, int argc, char** argv);
+    SST_ELI_REGISTER_MODEL_DESCRIPTION(
+        SST::Core::SSTPythonModelDefinition,
+        "sst",
+        "model.python",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Python model for building SST simulation graphs",
+        true)
+
+    SST_ELI_DOCUMENT_MODEL_SUPPORTED_EXTENSIONS(".py")
+
+
+    // SSTPythonModelDefinition(
+    //     const std::string& script_file, int verbosity, Config* config, double start_time, int argc, char** argv);
     SSTPythonModelDefinition(const std::string& script_file, int verbosity, Config* config, double start_time);
     virtual ~SSTPythonModelDefinition();
 
@@ -108,6 +118,39 @@ public: /* Public, but private.  Called only from Python functions */
 
     UnitAlgebra getElapsedExecutionTime() const;
     UnitAlgebra getLocalMemoryUsage() const;
+};
+
+// For xml inputs (.xml or .sdl), we just use a python script to parse
+// the xml.  So, this model definition just uses the python model with
+// a few tweaked inputs to the constructor.
+class SSTXmlModelDefinition : public SSTModelDescription
+{
+public:
+    SST_ELI_REGISTER_MODEL_DESCRIPTION(
+        SST::Core::SSTXmlModelDefinition,
+        "sst",
+        "model.xml",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "XML model for building SST simulation graphs",
+        false)
+
+    SST_ELI_DOCUMENT_MODEL_SUPPORTED_EXTENSIONS(".xml",".sdl")
+
+
+    SSTXmlModelDefinition(const std::string& script_file, int verbosity, Config* config, double start_time)
+    {
+        config->model_options = script_file;
+
+        actual_model_ =
+            new SSTPythonModelDefinition(SST_INSTALL_PREFIX "/libexec/xmlToPython.py", verbosity, config, start_time);
+    }
+
+    ConfigGraph* createConfigGraph() override { return actual_model_->createConfigGraph(); }
+
+    virtual ~SSTXmlModelDefinition() {}
+
+private:
+    SSTPythonModelDefinition* actual_model_;
 };
 
 std::map<std::string, std::string> generateStatisticParameters(PyObject* statParamDict);

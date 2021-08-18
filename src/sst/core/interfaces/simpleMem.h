@@ -83,8 +83,8 @@ public:
                                      write (to unlock) */
             F_LLSC      = 1 << 3,
             F_LLSC_RESP = 1 << 4,
-            F_FLUSH_SUCCESS
-            = 1 << 5, /*!< This flag is set if the flush was successful. Flush may fail due to LOCKED lines */
+            F_FLUSH_SUCCESS =
+                1 << 5, /*!< This flag is set if the flush was successful. Flush may fail due to LOCKED lines */
             F_TRANSACTION = 1 << 6
         } Flags;
 

@@ -147,6 +147,7 @@ set(SSTHeaders
 
 target_include_directories(sst-core-lib PUBLIC ${sst-core_SOURCE_DIR}/../src)
 target_include_directories(sst-core-lib PUBLIC ${sst-core_BINARY_DIR}/src)
+target_include_directories(sst-core-lib PUBLIC ${sst-core_SOURCE_DIR}/../src/sst/core)
 target_compile_definitions(sst-core-lib PUBLIC SST_BUILDING_CORE=1)
 
 if(SST_ENABLE_EVENT_TRACKING)

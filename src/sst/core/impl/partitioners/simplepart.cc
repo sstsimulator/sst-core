@@ -195,8 +195,8 @@ SimplePartitioner::performPartition(PartitionGraph* graph)
 
         // const int A_size = component_map.size() % 2 == 1 ? (component_map.size() / 2) + 1 : (component_map.size() /
         // 2); const int B_size = component_map.size() / 2;
-        const int A_size = graph->getNumComponents() % 2 == 1 ? (graph->getNumComponents() / 2) + 1
-                                                              : (graph->getNumComponents() / 2);
+        const int A_size =
+            graph->getNumComponents() % 2 == 1 ? (graph->getNumComponents() / 2) + 1 : (graph->getNumComponents() / 2);
         const int B_size = graph->getNumComponents() / 2;
 
         ComponentId_t setA[A_size];

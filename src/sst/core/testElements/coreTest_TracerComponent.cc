@@ -119,8 +119,8 @@ coreTestTracerComponent::clock(Cycle_t current)
     SST::MemHierarchy::Addr addr          = 0;
     // uint64_t picoseconds = (uint64_t)
     // picoTimeConv->convertFromCoreTime(Simulation::getSimulation()->getCurrentSimCycle());
-    uint64_t                nanoseconds
-        = (uint64_t)nanoTimeConv->convertFromCoreTime(Simulation::getSimulation()->getCurrentSimCycle());
+    uint64_t                nanoseconds =
+        (uint64_t)nanoTimeConv->convertFromCoreTime(Simulation::getSimulation()->getCurrentSimCycle());
 
     // process Memevents from north-side to south-side
     while ( (ev = northBus->recv()) ) {
