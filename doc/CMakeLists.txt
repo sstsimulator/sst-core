@@ -20,7 +20,7 @@ if(BUILD_DOCUMENTATION)
   execute_process(
     COMMAND "${GIT_EXECUTABLE}" describe --match=NeVeRmAtCh --always --abbrev=40
             --dirty
-    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    WORKING_DIRECTORY "${sst-core_SOURCE_DIR}/.."
     OUTPUT_VARIABLE SST_SVN_REVISION
     ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -30,7 +30,7 @@ if(BUILD_DOCUMENTATION)
 
   configure_file(Doxyfile.in Doxyfile.conf)
 
-  doxygen_add_docs(doc ${CMAKE_BINARY_DIR}/doc/Doxyfile.conf)
+  doxygen_add_docs(doc ${sst-core_BINARY_DIR}/doc/Doxyfile.conf)
 
   #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/html DESTINATION share/doc)
 endif(BUILD_DOCUMENTATION)

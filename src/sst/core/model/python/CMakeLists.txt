@@ -13,11 +13,11 @@ add_library(
   pymodel_stat.cc pymodel_statgroup.cc)
 
 
-target_include_directories(modelpython PUBLIC ${CMAKE_SOURCE_DIR}/src/)
+target_include_directories(modelpython PUBLIC ${sst-core_SOURCE_DIR}/../src/)
 target_link_libraries(modelpython PRIVATE Python::Python sst-config-headers)
 
 if(MPI_FOUND)
-  target_link_libraries(modelpython PRIVATE MPI::MPI_C)
+  target_link_libraries(modelpython PRIVATE MPI::MPI_CXX)
 endif(MPI_FOUND)
 
 install(FILES pymacros.h DESTINATION "include/sst/core/model/python")

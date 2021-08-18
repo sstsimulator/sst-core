@@ -9,7 +9,7 @@
 
 add_definitions(-DSST_BUILDING_CORE=1)
 
-#-- Required for build
+# -- Required for build
 add_subdirectory(impl)
 add_subdirectory(model)
 add_subdirectory(shared)
@@ -17,7 +17,7 @@ add_subdirectory(sync)
 add_subdirectory(testingframework)
 add_subdirectory(testElements)
 
-#-- Required for header installation
+# -- Required for header installation
 add_subdirectory(cfgoutput)
 add_subdirectory(eli)
 add_subdirectory(env)
@@ -93,62 +93,60 @@ add_library(
   iouse.cc)
 
 set(SSTHeaders
-  action.h
-  activity.h
-  activityQueue.h
-  baseComponent.h
-  build_info.h
-  clock.h
-  componentExtension.h
-  component.h
-  componentInfo.h
-  configGraph.h
-  configGraphOutput.h
-  config.h
-  cputimer.h
-  decimal_fixedpoint.h
-  elemLoader.h
-  event.h
-  exit.h
-  factory.h
-  from_string.h
-  heartbeat.h
-  initQueue.h
-  iouse.h
-  link.h
-  linkMap.h
-  linkPair.h
-  mempool.h
-  memuse.h
-  module.h
-  objectComms.h
-  oneshot.h
-  output.h
-  params.h
-  pollingLinkQueue.h
-  profile.h
-  rankInfo.h
-  sharedRegion.h
-  sharedRegionImpl.h
-  simulation.h
-  sparseVectorMap.h
-  sstinfo.h
-  sstpart.h
-  sst_types.h
-  stopAction.h
-  stringize.h
-  subcomponent.h
-  threadsafe.h
-  timeConverter.h
-  timeLord.h
-  timeVortex.h
-  uninitializedQueue.h
-  unitAlgebra.h
-  warnmacros.h
-)
+    action.h
+    activity.h
+    activityQueue.h
+    baseComponent.h
+    clock.h
+    componentExtension.h
+    component.h
+    componentInfo.h
+    configGraph.h
+    configGraphOutput.h
+    config.h
+    cputimer.h
+    decimal_fixedpoint.h
+    elemLoader.h
+    event.h
+    exit.h
+    factory.h
+    from_string.h
+    heartbeat.h
+    initQueue.h
+    iouse.h
+    link.h
+    linkMap.h
+    linkPair.h
+    mempool.h
+    memuse.h
+    module.h
+    objectComms.h
+    oneshot.h
+    output.h
+    params.h
+    pollingLinkQueue.h
+    profile.h
+    rankInfo.h
+    sharedRegion.h
+    sharedRegionImpl.h
+    simulation.h
+    sparseVectorMap.h
+    sstinfo.h
+    sstpart.h
+    sst_types.h
+    stopAction.h
+    stringize.h
+    subcomponent.h
+    threadsafe.h
+    timeConverter.h
+    timeLord.h
+    timeVortex.h
+    uninitializedQueue.h
+    unitAlgebra.h
+    warnmacros.h)
 
-target_include_directories(sst-core-lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
-target_include_directories(sst-core-lib PUBLIC ${CMAKE_BINARY_DIR}/src)
+target_include_directories(sst-core-lib PUBLIC ${sst-core_SOURCE_DIR}/../src)
+target_include_directories(sst-core-lib PUBLIC ${sst-core_BINARY_DIR}/src)
 target_compile_definitions(sst-core-lib PUBLIC SST_BUILDING_CORE=1)
 
 if(SST_ENABLE_EVENT_TRACKING)
@@ -159,65 +157,59 @@ if(SST_ENABLE_DEBUG_OUTPUT)
   target_compile_definitions(sst-core-lib PUBLIC __SST_DEBUG_OUTPUT__=1)
 endif(SST_ENABLE_DEBUG_OUTPUT)
 
-target_link_libraries(
-  sst-core-lib
-  PUBLIC nlohjson
-         Python::Python
-         sst-config-headers
-         ${CMAKE_DL_LIBS}
-         m
-)
+target_link_libraries(sst-core-lib PUBLIC nlohjson Python::Python
+                                          sst-config-headers ${CMAKE_DL_LIBS} m)
 
 if(MPI_FOUND)
   target_link_libraries(sst-core-lib PUBLIC MPI::MPI_CXX)
-endif(MPI_FOUND)
+endif()
 
 if(HDF5_FOUND)
   target_link_libraries(sst-core-lib PRIVATE HDF5::HDF5)
-endif(HDF5_FOUND)
+endif()
 
 if(ZLIB_FOUND)
   target_link_libraries(sst-core-lib PRIVATE ZLIB::ZLIB)
-endif(ZLIB_FOUND)
+endif()
 
 add_library(sst-boot-lib OBJECT bootshared.cc)
 target_link_libraries(sst-boot-lib PUBLIC sst-config-headers)
-target_include_directories(sst-boot-lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(sst-boot-lib PUBLIC ${sst-core_SOURCE_DIR}/../src)
 
 add_library(sst-env-lib OBJECT env/envquery.cc env/envconfig.cc)
 target_link_libraries(sst-env-lib PUBLIC sst-config-headers)
-target_include_directories(sst-env-lib PUBLIC ${CMAKE_SOURCE_DIR}/src)
+target_include_directories(sst-env-lib PUBLIC ${sst-core_SOURCE_DIR}/../src)
 
 add_executable(sstsim.x main.cc)
-target_link_libraries(sstsim.x
-  PRIVATE
-  sst-core-lib
-  sst-env-lib
-  partitioner
-  timeVortex
-  modelCore
-  modelpython
-  sync
-  shared
-)
+target_link_libraries(
+  sstsim.x
+  PRIVATE sst-core-lib
+          sst-env-lib
+          partitioner
+          timeVortex
+          modelCore
+          modelpython
+          sync
+          shared)
 target_link_options(sstsim.x PRIVATE "LINKER:-export-dynamic")
 
 add_executable(sstinfo.x sstinfo.cc)
-target_link_libraries(sstinfo.x PRIVATE
-  sst-core-lib
-  sst-env-lib
-  partitioner
-  timeVortex
-  modelCore
-  modelpython
-  sync
-  shared
-  tinyxml
-)
-target_link_options(sstsim.x PRIVATE "LINKER:-export-dynamic")
+target_link_libraries(
+  sstinfo.x
+  PRIVATE sst-core-lib
+          sst-env-lib
+          partitioner
+          timeVortex
+          modelCore
+          modelpython
+          sync
+          shared
+          tinyxml)
+target_link_options(sstinfo.x PRIVATE "LINKER:-export-dynamic")
 
-if(UNIX AND NOT APPLE)
-  message(STATUS "LINKING AGAINST LIBRT")
+if(UNIX
+   AND (NOT APPLE)
+   AND HAVE_LIBRT)
   target_link_libraries(sstinfo.x PRIVATE rt)
   target_link_libraries(sstsim.x PRIVATE rt)
 endif()
@@ -226,7 +218,6 @@ if(Threads_FOUND)
   target_link_libraries(sstinfo.x PRIVATE Threads::Threads)
   target_link_libraries(sstsim.x PRIVATE Threads::Threads)
 endif()
-
 
 add_executable(sst bootsst.cc)
 target_link_libraries(sst PRIVATE sst-boot-lib sst-env-lib)
@@ -240,11 +231,13 @@ target_link_libraries(sst-config PRIVATE sst-env-lib)
 add_executable(sst-register sstregistertool.cc)
 target_link_libraries(sst-register PRIVATE sst-env-lib)
 
-
 install(TARGETS sst sst-info sst-config sst-register)
 install(TARGETS sstsim.x sstinfo.x DESTINATION libexec)
 
-install(FILES ${SSTHeaders}
+install(FILES ${SSTHeaders} DESTINATION "include/sst/core")
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sst_config.h
+              ${CMAKE_CURRENT_BINARY_DIR}/build_info.h
         DESTINATION "include/sst/core")
 
 # EOF

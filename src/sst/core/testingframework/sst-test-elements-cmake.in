@@ -1,3 +1,4 @@
+#! @Python_EXECUTABLE@
 # -*- coding: utf-8 -*-
 
 ## Copyright 2009-2020 NTESS. Under the terms
@@ -13,7 +14,6 @@
 
 """ This module is the entry point for testing the SST Registered Elements
 """
-#! @Python_EXECUTABLE@
 import sys
 import os.path
 

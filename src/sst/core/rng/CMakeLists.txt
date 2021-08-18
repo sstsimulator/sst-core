@@ -12,6 +12,7 @@ set(SSTRNGHeaders
   discrete.h
   distrib.h
   expon.h
+  rng.h
   gaussian.h
   marsaglia.h
   mersenne.h

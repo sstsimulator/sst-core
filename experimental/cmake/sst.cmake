@@ -48,9 +48,9 @@ check_symbol_exists(opendir "dirent.h" HAVE_OPENDIR)
 check_symbol_exists(readdir "dirent.h" HAVE_READDIR)
 
 # TODO we really should fix how we do c++ std flags
-if(CMAKE_CXX_STANDARD EQUAL 14)
+if(CMAKE_CXX_STANDARD GREATER_EQUAL 14)
   set(HAVE_STDCXX_1Y ON)
-endif(CMAKE_CXX_STANDARD EQUAL 14)
+endif()
 
 check_include_file(stdint.h HAVE_STDINT_H)
 check_include_file(stdio.h HAVE_STDIO_H)
@@ -68,7 +68,7 @@ check_include_file(unistd.h HAVE_UNISTD_H)
 
 if(HAVE_ARGZ_H)
   set(HAVE_WORKING_ARGZ ON)
-endif(HAVE_ARGZ_H)
+endif()
 
 set(PACKAGE_BUGREPORT "https://github.com/sstsimulator/sst-core/issues")
 set(PACKAGE_NAME "SSTCore")
@@ -79,13 +79,13 @@ set(SST_CFLAGS ${CMAKE_C_FLAGS})
 
 if(APPLE)
   set(SST_COMPILE_MACOSX 1)
-endif(APPLE)
+endif()
 
 if(MPI_FOUND)
   set(SST_CONFIG_HAVE_MPI ON)
   set(SST_MPICC ${MPI_C_COMPILER})
   set(SST_MPICXX ${MPI_CXX_COMPILER})
-endif(MPI_FOUND)
+endif()
 
 if(Python_FOUND)
   set(HAVE_PYTHON_H 1)
@@ -112,7 +112,7 @@ if(Python_FOUND)
   # PYCONFIG_RESULT OUTPUT_VARIABLE SST_PYTHON_CPPFLAGS
   # OUTPUT_STRIP_TRAILING_WHITESPACE) else(PYCONFIG) message(FATAL_ERROR "Failed
   # to find python-config") endif(PYCONFIG)
-endif(Python_FOUND)
+endif()
 
 set(SST_CPP ${CMAKE_CXX_COMPILER})
 set(SST_CPPFLAGS ${CMAKE_CXX_FLAGS})
@@ -125,7 +125,7 @@ set(SST_LDFLAGS "${CMAKE_CXX_LINK_FLAGS} ${LINK_FLAGS}")
 
 if(NOT SST_DISABLE_MEM_POOLS)
   set(USE_MEMPOOL ON)
-endif(NOT SST_DISABLE_MEM_POOLS)
+endif()
 
 set(SST_BUILD_WITH_CMAKE ON)
 set(PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
@@ -133,21 +133,17 @@ set(PACKAGE_VERSION ${CMAKE_PROJECT_VERSION})
 if(Python_VERSION AND Python_VERSION_MAJOR GREATER_EQUAL 3)
   set(SST_CONFIG_HAVE_PYTHON3 ON)
   set(HAVE_PYTHON_H ON)
-endif(Python_VERSION AND Python_VERSION_MAJOR GREATER_EQUAL 3)
-
-if(APPLE)
-  set(SST_COMPILE_MACOSX ON)
-endif(APPLE)
+endif()
 
 find_package(Git REQUIRED)
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} --git-dir=${CMAKE_SOURCE_DIR}/.git rev-parse HEAD
+  COMMAND ${GIT_EXECUTABLE} --git-dir=${sst-core_SOURCE_DIR}/../.git rev-parse HEAD
   RESULT_VARIABLE HASH_RESULT
   OUTPUT_VARIABLE SSTCORE_GIT_HEADSHA
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} --git-dir=${CMAKE_SOURCE_DIR}/.git branch
+  COMMAND ${GIT_EXECUTABLE} --git-dir=${sst-core_SOURCE_DIR}/../.git branch
           --show-current
   RESULT_VARIABLE BRANCH_RESULT
   OUTPUT_VARIABLE SSTCORE_GIT_BRANCH
@@ -161,4 +157,6 @@ check_include_file(unistd.h HAVE_UNISTD_H)
 check_library_exists(m sin "" HAVE_LIBM)
 if(NOT HAVE_LIBM)
   message(FATAL_ERROR "Failed to detect libm")
-endif(NOT HAVE_LIBM)
+endif()
+
+check_library_exists(rt aio_cancel "" HAVE_LIBRT)
