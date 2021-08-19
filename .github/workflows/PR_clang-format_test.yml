@@ -12,7 +12,7 @@ on:
 
 # NOTE: This script is run using pull_request_target.  It is critical that
 #       that any changes to this script be looked at very carefully.
-#       !! DO NOT RUN ANY CODE FROM THE SOURCE REPO!!
+#       !! DO NOT COMPILE OR RUN ANY CODE FROM THE PR SOURCE REPO !!
 #       Any changes to this script will not be run until it is merged into
 #       the main repo.
 
