@@ -57,6 +57,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: ./sst-core_source
+        ref: ${{ github.event.pull_request.head.sha }}
 
 #   Running the github action for clang format
     - name: Run Action clang-format-lint
