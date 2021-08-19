@@ -10,6 +10,12 @@ on:
 #    branches-ignore:
 #      - master
 
+# NOTE: This script is run using pull_request_target.  It is critical that
+#       that any changes to this script be looked at very carefully.
+#       !! DO NOT COMPILE OR RUN ANY CODE FROM THE PR SOURCE REPO !!
+#       Any changes to this script will not be run until it is merged into
+#       the main repo.
+
 # This script is used to do a quick and dirty clang-format v12 check on the
 # PR source repo to ensure it is formatted correctly.  It will initially set
 # the AT: WIP label to try to stop the Autottester from processing the PR, and
@@ -57,6 +63,7 @@ jobs:
       uses: actions/checkout@v2
       with:
         path: ./sst-core_source
+        ref: ${{ github.event.pull_request.head.sha }}
 
 #   Running the github action for clang format
     - name: Run Action clang-format-lint
