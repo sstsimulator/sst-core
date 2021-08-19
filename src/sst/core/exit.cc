@@ -51,8 +51,7 @@ Exit::~Exit()
     m_idSet.clear();
 }
 
-bool
-Exit::refInc(ComponentId_t id, uint32_t thread)
+bool Exit::refInc(ComponentId_t id, uint32_t thread)
 {
     std::lock_guard<Spinlock> lock(slock);
     if ( m_idSet.find(id) != m_idSet.end() ) {
