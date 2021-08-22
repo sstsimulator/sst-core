@@ -608,8 +608,8 @@ BaseComponent::createStatistic(
     auto* engine = Statistics::StatisticProcessingEngine::getInstance();
 
     uint8_t my_load_level = getStatisticLoadLevel();
-    uint8_t stat_load_level
-        = my_load_level == STATISTICLOADLEVELUNINITIALIZED ? engine->statLoadLevel() : my_load_level;
+    uint8_t stat_load_level =
+        my_load_level == STATISTICLOADLEVELUNINITIALIZED ? engine->statLoadLevel() : my_load_level;
     if ( stat_load_level == 0 ) {
         Simulation_impl::getSimulationOutput().verbose(
             CALL_INFO, 1, 0,

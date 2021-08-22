@@ -150,13 +150,14 @@ sgSetFreq(PyObject* self, PyObject* args)
     return SST_ConvertToPythonLong(0);
 }
 
-static PyMethodDef sgMethods[]
-    = { { "addStatistic", sgAddStat, METH_VARARGS, "Add a new statistic to the group" },
-        { "addComponent", sgAddComp, METH_O, "Add a component to the group" },
-        { "setOutput", sgSetOutput, METH_O, "Configure how the stats should be written" },
-        { "setFrequency", sgSetFreq, METH_O,
-          "Set the frequency or rate (ie: \"10ms\", \"25khz\") to write out the statistics" },
-        { nullptr, nullptr, 0, nullptr } };
+static PyMethodDef sgMethods[] = {
+    { "addStatistic", sgAddStat, METH_VARARGS, "Add a new statistic to the group" },
+    { "addComponent", sgAddComp, METH_O, "Add a component to the group" },
+    { "setOutput", sgSetOutput, METH_O, "Configure how the stats should be written" },
+    { "setFrequency", sgSetFreq, METH_O,
+      "Set the frequency or rate (ie: \"10ms\", \"25khz\") to write out the statistics" },
+    { nullptr, nullptr, 0, nullptr }
+};
 
 #if PY_MAJOR_VERSION == 3
 #if PY_MINOR_VERSION == 8

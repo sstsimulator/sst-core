@@ -753,8 +753,8 @@ public:
         for ( int i = 0; i < fraction_words; ++i ) {
             uint64_t sum = carry_over;
             for ( int j = i + 1; j < whole_words + fraction_words; ++j ) {
-                sum += static_cast<uint64_t>(me.data[j])
-                       * static_cast<uint64_t>(v.data[whole_words + fraction_words + i - j]);
+                sum += static_cast<uint64_t>(me.data[j]) *
+                       static_cast<uint64_t>(v.data[whole_words + fraction_words + i - j]);
             }
             carry_over            = sum / storage_radix_long;
             data[i + whole_words] = static_cast<uint32_t>(sum % storage_radix_long);

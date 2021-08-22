@@ -119,14 +119,79 @@ public:
         return false;
     }
 
+    template <class Base, int index, class InfoType>
+    const InfoType& getSimpleInfo(const std::string& type)
+    {
+        static InfoType invalid_ret;
+        std::string     elemlib, elem;
+        std::tie(elemlib, elem) = parseLoadName(type);
+
+        std::stringstream err_os;
+        requireLibrary(elemlib, err_os);
+        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+        auto* lib = ELI::InfoDatabase::getLibrary<Base>(elemlib);
+        if ( lib ) {
+            auto* info = lib->getInfo(elem);
+            if ( info ) {
+                // Need to cast this to a ProvidesSimpleInfo to get
+                // the templated data
+                auto* cast_info = dynamic_cast<ELI::ProvidesSimpleInfo<index, InfoType>*>(info);
+                if ( cast_info ) { return cast_info->getSimpleInfo(); }
+            }
+        }
+        // notFound(Base::ELI_baseName(), type, err_os.str());
+        return invalid_ret;
+    }
+
     /**
-     * General function for a given base class
+     * General function to create a given base class.
+     *
      * @param type
      * @param params
      * @param args Constructor arguments
      */
     template <class Base, class... CtorArgs>
-    Base* Create(const std::string& type, SST::Params& params, CtorArgs&&... args)
+    Base* Create(const std::string& type, CtorArgs&&... args)
+    {
+        std::string elemlib, elem;
+        std::tie(elemlib, elem) = parseLoadName(type);
+
+        std::stringstream err_os;
+        requireLibrary(elemlib, err_os);
+        std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+
+        auto* lib = ELI::InfoDatabase::getLibrary<Base>(elemlib);
+        if ( lib ) {
+            auto* info = lib->getInfo(elem);
+            if ( info ) {
+                auto* builderLib = Base::getBuilderLibrary(elemlib);
+                if ( builderLib ) {
+                    auto* fact = builderLib->getBuilder(elem);
+                    if ( fact ) {
+                        Base* ret = fact->create(std::forward<CtorArgs>(args)...);
+                        return ret;
+                    }
+                }
+            }
+        }
+        notFound(Base::ELI_baseName(), type, err_os.str());
+        return nullptr;
+    }
+
+    /**
+     * General function to create a given base class.  This version
+     * should be used if a Params object is being passed in and you
+     * need the system to populate the allowed keys for the object.
+     * If you don't need the allowed keys to be populated, just use
+     * the Create() bunction.
+     *
+     * @param type
+     * @param params
+     * @param args Constructor arguments
+     */
+    template <class Base, class... CtorArgs>
+    Base* CreateWithParams(const std::string& type, SST::Params& params, CtorArgs&&... args)
     {
         std::string elemlib, elem;
         std::tie(elemlib, elem) = parseLoadName(type);

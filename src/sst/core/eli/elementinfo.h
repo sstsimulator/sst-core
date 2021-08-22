@@ -19,6 +19,7 @@
 #include "sst/core/eli/interfaceInfo.h"
 #include "sst/core/eli/paramsInfo.h"
 #include "sst/core/eli/portsInfo.h"
+#include "sst/core/eli/simpleInfo.h"
 #include "sst/core/eli/statsInfo.h"
 #include "sst/core/eli/subcompSlotInfo.h"
 #include "sst/core/params.h"
@@ -183,6 +184,21 @@ public:
     using BaseInfo = typename Library::BaseInfo;
     using Map      = std::map<std::string, Library*>;
 
+    static std::vector<std::string> getRegisteredElementNames()
+    {
+        // Need to pull out all the elements from the libraries that
+        // have an element of this type
+
+        std::vector<std::string> ret;
+        // First iterate over libraries
+        for ( auto x : (*libraries) ) {
+            for ( auto& y : x.second->getMap() ) {
+                ret.push_back(x.first + "." + y.first);
+            }
+        }
+        return ret;
+    }
+
     static Library* getLibrary(const std::string& name)
     {
         if ( !libraries ) { libraries = new Map; }
@@ -257,6 +273,12 @@ struct InfoDatabase
     static InfoLibrary<T>* getLibrary(const std::string& name)
     {
         return InfoLibraryDatabase<T>::getLibrary(name);
+    }
+
+    template <class T>
+    static std::vector<std::string> getRegisteredElementNames()
+    {
+        return InfoLibraryDatabase<T>::getRegisteredElementNames();
     }
 };
 
@@ -351,17 +373,17 @@ SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_extraction ver)
 // we do this by creating a static bool that produces an undefined ref
 // if the instantiate macro is missing in a source file
 #ifdef __INTEL_COMPILER
-#define SST_ELI_FORCE_INSTANTIATION(base, cls)                                   \
-    template <class T>                                                           \
-    struct ELI_ForceRegister                                                     \
-    {                                                                            \
-        ELI_ForceRegister()                                                      \
-        {                                                                        \
-            bool b = SST::ELI::InstantiateBuilder<base, cls>::isLoaded()         \
-                     && SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded(); \
-            SST::ELI::force_instantiate_bool(b, #cls);                           \
-        }                                                                        \
-    };                                                                           \
+#define SST_ELI_FORCE_INSTANTIATION(base, cls)                                \
+    template <class T>                                                        \
+    struct ELI_ForceRegister                                                  \
+    {                                                                         \
+        ELI_ForceRegister()                                                   \
+        {                                                                     \
+            bool b = SST::ELI::InstantiateBuilder<base, cls>::isLoaded() &&   \
+                     SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded(); \
+            SST::ELI::force_instantiate_bool(b, #cls);                        \
+        }                                                                     \
+    };                                                                        \
     ELI_ForceRegister<cls> force_instantiate;
 // if the implementation is entirely in a C++ file
 // the Intel compiler will not generate any code because
@@ -385,17 +407,17 @@ SST_ELI_getTertiaryNumberFromVersion(SST_ELI_element_version_extraction ver)
     static constexpr int __EliDerivedLevel = std::is_same<base, cls>::value ? __EliBaseLevel : __EliBaseLevel + 1; \
     static bool          ELI_isLoaded()                                                                            \
     {                                                                                                              \
-        return SST::ELI::InstantiateBuilder<base, cls>::isLoaded()                                                 \
-               && SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded();                                         \
+        return SST::ELI::InstantiateBuilder<base, cls>::isLoaded() &&                                              \
+               SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded();                                            \
     }                                                                                                              \
     SST_ELI_FORCE_INSTANTIATION(base, cls)                                                                         \
     SST_ELI_DEFAULT_INFO(lib, name, ELI_FORWARD_AS_ONE(version), desc)
 
-#define SST_ELI_REGISTER_EXTERN(base, cls)                                 \
-    bool cls::ELI_isLoaded()                                               \
-    {                                                                      \
-        return SST::ELI::InstantiateBuilder<base, cls>::isLoaded()         \
-               && SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded(); \
+#define SST_ELI_REGISTER_EXTERN(base, cls)                              \
+    bool cls::ELI_isLoaded()                                            \
+    {                                                                   \
+        return SST::ELI::InstantiateBuilder<base, cls>::isLoaded() &&   \
+               SST::ELI::InstantiateBuilderInfo<base, cls>::isLoaded(); \
     }
 
 } // namespace SST

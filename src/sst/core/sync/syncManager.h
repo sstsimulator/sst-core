@@ -37,8 +37,7 @@ public:
 
     /** Register a Link which this Sync Object is responsible for */
     virtual ActivityQueue*
-    registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link)
-        = 0;
+    registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link) = 0;
 
     virtual void execute(int thread)                                              = 0;
     virtual void exchangeLinkUntimedData(int thread, std::atomic<int>& msg_count) = 0;

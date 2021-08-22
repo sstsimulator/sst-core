@@ -181,17 +181,17 @@ private:
 // the child will overwrite items in the parent.  See comment for
 // combineEliInfo() for information about deleting items from the
 // parent API.
-#define SST_ELI_DECLARE_NEW_BASE(OldBase, NewBase)                                             \
-    using __LocalEliBase                = NewBase;                                             \
-    using __ParentEliBase               = OldBase;                                             \
-    static constexpr int __EliBaseLevel = OldBase::__EliBaseLevel + 2;                         \
-    SST_ELI_DECLARE_INFO_COMMON()                                                              \
-    static const char* ELI_baseName() { return #NewBase; }                                     \
-    template <class InfoImpl>                                                                  \
-    static bool addInfo(const std::string& elemlib, const std::string& elem, InfoImpl* info)   \
-    {                                                                                          \
-        return OldBase::addInfo(elemlib, elem, info)                                           \
-               && ::SST::ELI::InfoDatabase::getLibrary<NewBase>(elemlib)->addInfo(elem, info); \
+#define SST_ELI_DECLARE_NEW_BASE(OldBase, NewBase)                                           \
+    using __LocalEliBase                = NewBase;                                           \
+    using __ParentEliBase               = OldBase;                                           \
+    static constexpr int __EliBaseLevel = OldBase::__EliBaseLevel + 2;                       \
+    SST_ELI_DECLARE_INFO_COMMON()                                                            \
+    static const char* ELI_baseName() { return #NewBase; }                                   \
+    template <class InfoImpl>                                                                \
+    static bool addInfo(const std::string& elemlib, const std::string& elem, InfoImpl* info) \
+    {                                                                                        \
+        return OldBase::addInfo(elemlib, elem, info) &&                                      \
+               ::SST::ELI::InfoDatabase::getLibrary<NewBase>(elemlib)->addInfo(elem, info);  \
     }
 
 #endif // SST_CORE_ELI_ELIBASE_H

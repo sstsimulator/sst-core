@@ -627,8 +627,8 @@ Config::getLibPath(void) const
 
     // Get configuration options from the user config
     std::vector<std::string>                          overrideConfigPaths;
-    SST::Core::Environment::EnvironmentConfiguration* envConfig
-        = SST::Core::Environment::getSSTEnvironmentConfiguration(overrideConfigPaths);
+    SST::Core::Environment::EnvironmentConfiguration* envConfig =
+        SST::Core::Environment::getSSTEnvironmentConfiguration(overrideConfigPaths);
 
     std::string           fullLibPath  = libpath;
     std::set<std::string> configGroups = envConfig->getGroupNames();

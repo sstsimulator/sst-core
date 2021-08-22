@@ -121,8 +121,8 @@ public:
 
         id_t getID() { return id; }
 
-        virtual Request* makeResponse()
-            = 0; // Helper for properly formatting responses; returns nullptr if no response type exists
+        virtual Request*
+        makeResponse() = 0; // Helper for properly formatting responses; returns nullptr if no response type exists
         virtual bool needsResponse() = 0; // Indicates whether event requires a response
 
         /* Convert Request to an Event type - intended to be called by standardInterface */

@@ -135,15 +135,15 @@ StatisticBase::initializeProperties()
     m_savedStatEnabled         = true;
     m_savedOutputEnabled       = true;
     m_outputDelayedHandler     = new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayOutputExpiredHandler);
-    m_collectionDelayedHandler
-        = new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayCollectionExpiredHandler);
+    m_collectionDelayedHandler =
+        new OneShot::Handler<StatisticBase>(this, &StatisticBase::delayCollectionExpiredHandler);
 }
 
 void
 StatisticBase::checkEventForOutput()
 {
-    if ( (m_registeredCollectionMode == STAT_MODE_COUNT) && (m_currentCollectionCount >= m_collectionCountLimit)
-         && (1 <= m_collectionCountLimit) ) {
+    if ( (m_registeredCollectionMode == STAT_MODE_COUNT) && (m_currentCollectionCount >= m_collectionCountLimit) &&
+         (1 <= m_collectionCountLimit) ) {
         // Dont output if CountLimit is zero
         StatisticProcessingEngine::getInstance()->performStatisticOutput(this);
     }

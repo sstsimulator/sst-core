@@ -116,8 +116,7 @@ public:
        to access the shared region.
     */
     virtual SharedRegion* getGlobalSharedRegion(
-        const std::string& key, size_t size, SharedRegionMerger* merger = nullptr, uint8_t initByte = 0)
-        = 0;
+        const std::string& key, size_t size, SharedRegionMerger* merger = nullptr, uint8_t initByte = 0) = 0;
 
     // The following functions will become protected in SST 12.  Need
     // to look for instances of these used in the core, they will be

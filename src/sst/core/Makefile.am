@@ -13,8 +13,6 @@ AM_CPPFLAGS =  \
 	-I$(top_srcdir)/external \
 	$(LTDLINCL)
 
-DIST_SUBDIRS = libltdl .
-SUBDIRS = libltdl .
 EXTRA_DIST = mainpage.dox eli/README.md
 
 sstdir = $(includedir)/sst/core
@@ -82,6 +80,7 @@ nobase_dist_sst_HEADERS = \
 	eli/interfaceInfo.h \
 	eli/paramsInfo.h \
 	eli/portsInfo.h \
+	eli/simpleInfo.h \
 	eli/statsInfo.h \
 	eli/subcompSlotInfo.h \
 	serialization/ser_ptr_type.h \
@@ -267,7 +266,6 @@ sstinfo_x_SOURCES = \
 	$(sst_xml_sources)
 
 sstsim_x_LDADD = \
-	$(LIBLTDL) \
 	$(PYTHON_LIBS) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
@@ -284,7 +282,6 @@ sstsim_x_LDFLAGS = \
 	$(SST_LTLIBS_ELEMLIBS)
 
 sstinfo_x_LDADD = \
-	$(LIBLTDL) \
 	$(ZOLTAN_LIB) \
 	$(PARMETIS_LIB) \
 	$(MPILIBS) \
