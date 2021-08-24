@@ -24,11 +24,11 @@
 #include "sst/core/unitAlgebra.h"
 
 #include <atomic>
+#include <cstdio>
 #include <iostream>
 #include <signal.h>
 #include <thread>
 #include <unordered_map>
-#include <cstdio>
 
 /* Forward declare for Friendship */
 extern int main(int argc, char** argv);
@@ -368,51 +368,51 @@ public:
 
     /** Performance Tracking Information **/
 
-    #ifdef PERFORMANCE_INSTRUMENTING
-    FILE *fp;
+#ifdef PERFORMANCE_INSTRUMENTING
+    FILE*                        fp;
     std::map<uint64_t, uint64_t> handler_mapping;
-   #endif
+#endif
 
-    #ifdef PERIODIC_PRINT
+#ifdef PERIODIC_PRINT
     uint64_t periodicCounter = 0;
-    #endif
+#endif
 
-    #ifdef RUNTIME_PROFILING
-    uint64_t sumtime = 0;
-    uint64_t runtime = 0;
+#ifdef RUNTIME_PROFILING
+    uint64_t       sumtime = 0;
+    uint64_t       runtime = 0;
     struct timeval start, end, diff;
     struct timeval sumstart, sumend, sumdiff;
-    #endif
+#endif
 
-    #ifdef CLOCK_PROFILING
+#ifdef CLOCK_PROFILING
     std::map<uint64_t, uint64_t> clockHandlers;
     std::map<uint64_t, uint64_t> clockCounters;
-    #endif
+#endif
 
-    #ifdef EVENT_PROFILING
-    uint64_t rankLatency = 0;
-    uint64_t rankExchangeCounter = 0;
+#ifdef EVENT_PROFILING
+    uint64_t                        rankLatency         = 0;
+    uint64_t                        rankExchangeCounter = 0;
     std::map<std::string, uint64_t> eventHandlers;
     std::map<std::string, uint64_t> eventRecvCounters;
     std::map<std::string, uint64_t> eventSendCounters;
-    uint64_t messageSizeSent = 0;
-    uint64_t messageSizeRecv = 0;
-    #endif
+    uint64_t                        messageSizeSent = 0;
+    uint64_t                        messageSizeRecv = 0;
+#endif
 
-    #ifdef SYNC_PROFILING
-    uint64_t syncCounter = 0;
-    uint64_t rankSyncTime = 0;
-    uint64_t threadSyncTime = 0;
+#ifdef SYNC_PROFILING
+    uint64_t syncCounter     = 0;
+    uint64_t rankSyncTime    = 0;
+    uint64_t threadSyncTime  = 0;
     uint64_t rankSyncCounter = 0;
-    #endif
+#endif
 
-    #ifdef HIGH_RESOLUTION_CLOCK
-    uint64_t clockDivisor = 1e9;
+#ifdef HIGH_RESOLUTION_CLOCK
+    uint64_t    clockDivisor    = 1e9;
     std::string clockResolution = "ns";
-    #else
-    uint64_t clockDivisor = 1e6;
+#else
+    uint64_t    clockDivisor    = 1e6;
     std::string clockResolution = "us";
-    #endif
+#endif
 
     Mode_t    runMode;
     SimTime_t currentSimCycle;

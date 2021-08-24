@@ -176,16 +176,16 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Li
 void
 SyncManager::execute(void)
 {
-    #ifdef SYNC_PROFILING
-    Simulation_impl *sim = Simulation_impl::getSimulation();
-    bool perfRankSync = false;
-    #ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SYNC_PROFILING
+    Simulation_impl* sim          = Simulation_impl::getSimulation();
+    bool             perfRankSync = false;
+#ifdef HIGH_RESOLUTION_CLOCK
     auto start = std::chrono::high_resolution_clock::now();
-    #else
+#else
     struct timeval syncStart, syncEnd, syncDiff;
     gettimeofday(&syncStart, NULL);
-    #endif
-    #endif
+#endif
+#endif
 
     switch ( next_sync_type ) {
     case RANK:
@@ -221,9 +221,9 @@ SyncManager::execute(void)
 
         if ( exit->getGlobalCount() == 0 ) { endSimulation(exit->getEndTime()); }
 
-        #ifdef SYNC_PROFILING
+#ifdef SYNC_PROFILING
         perfRankSync = true;
-        #endif
+#endif
 
         break;
     case THREAD:
@@ -241,29 +241,29 @@ SyncManager::execute(void)
     computeNextInsert();
     RankExecBarrier[5].wait();
 
-    #ifdef SYNC_PROFILING
-    #ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SYNC_PROFILING
+#ifdef HIGH_RESOLUTION_CLOCK
     auto finish = std::chrono::high_resolution_clock::now();
 
     // Differentiate between rank and thread synchronization overhead
-    if(perfRankSync){
-        sim->rankSyncTime += std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count();
+    if ( perfRankSync ) {
+        sim->rankSyncTime += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
     }
-    else{
-        sim->threadSyncTime += std::chrono::duration_cast<std::chrono::nanoseconds>(finish-start).count();
+    else {
+        sim->threadSyncTime += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
     }
-    #else
+#else
     gettimeofday(&syncEnd, NULL);
     timersub(&syncEnd, &syncStart, &syncDiff);
 
     // Differentiate between rank and thread synchronization overhead
-    if(perfRankSync)
+    if ( perfRankSync )
         sim->rankSyncTime += syncDiff.tv_usec + syncDiff.tv_sec * 1e6;
     else
         sim->threadSyncTime += syncDiff.tv_usec + syncDiff.tv_sec * 1e6;
-    #endif
+#endif
     sim->syncCounter++;
-    #endif
+#endif
 }
 
 /** Cause an exchange of Untimed Data to occur */

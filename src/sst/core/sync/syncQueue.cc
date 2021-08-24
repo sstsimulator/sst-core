@@ -47,17 +47,17 @@ SyncQueue::insert(Activity* activity)
     activities.push_back(activity);
 
 #ifdef EVENT_PROFILING
-    Simulation_impl *sim = Simulation_impl::getSimulation();
+    Simulation_impl* sim = Simulation_impl::getSimulation();
 
     serializer ser;
 
     ser.start_sizing();
 
-    ser & activity;
+    ser& activity;
 
     size_t size = ser.size();
 
-    sim->messageSizeSent += (uint64_t) size;
+    sim->messageSizeSent += (uint64_t)size;
 #endif
 }
 
@@ -100,10 +100,10 @@ SyncQueue::getData()
 
     size_t size = ser.size();
 
-    #ifdef EVENT_PROFILING
-    Simulation_impl *sim = Simulation_impl::getSimulation();
-    sim->messageSizeRecv += (uint64_t) size;
-    #endif
+#ifdef EVENT_PROFILING
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+    sim->messageSizeRecv += (uint64_t)size;
+#endif
 
     if ( buf_size < (size + sizeof(SyncQueue::Header)) ) {
         if ( buffer != nullptr ) { delete[] buffer; }

@@ -84,42 +84,39 @@ Clock::execute(void)
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end(); ) {
         Clock::HandlerBase* handler = *sop_iter;
 
-        #ifdef CLOCK_PROFILING
-        #ifdef HIGH_RESOLUTION_CLOCK
+#ifdef CLOCK_PROFILING
+#ifdef HIGH_RESOLUTION_CLOCK
         auto start = std::chrono::high_resolution_clock::now();
-        #else
+#else
         struct timeval clockStart, clockEnd, clockDiff;
         gettimeofday(&clockStart, NULL);
-        #endif
-        #endif
+#endif
+#endif
 
         if ( (*handler)(currentCycle) )
             sop_iter = staticHandlerMap.erase(sop_iter);
         else
             ++sop_iter;
 
-        #ifdef CLOCK_PROFILING
-        #ifdef HIGH_RESOLUTION_CLOCK
+#ifdef CLOCK_PROFILING
+#ifdef HIGH_RESOLUTION_CLOCK
         auto finish = std::chrono::high_resolution_clock::now();
-        #else
+#else
         gettimeofday(&clockEnd, NULL);
         timersub(&clockEnd, &clockStart, &clockDiff);
-        #endif
+#endif
 
-        auto it = sim->clockHandlers.find((uint64_t) handler);
+        auto it = sim->clockHandlers.find((uint64_t)handler);
 
-        #ifdef HIGH_RESOLUTION_CLOCK
+#ifdef HIGH_RESOLUTION_CLOCK
         it->second += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-        #else
+#else
         it->second += clockDiff.tv_usec + clockDiff.tv_sec * 1e6;
-        #endif
+#endif
 
-        auto iter = sim->clockCounters.find((uint64_t) handler);
-        if(iter != sim->clockCounters.end())
-        {
-            iter->second ++;
-        }
-        #endif
+        auto iter = sim->clockCounters.find((uint64_t)handler);
+        if ( iter != sim->clockCounters.end() ) { iter->second++; }
+#endif
 
         // (*handler)(currentCycle);
         // ++sop_iter;
