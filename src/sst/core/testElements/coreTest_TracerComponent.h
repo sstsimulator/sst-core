@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTTRACERCOMPONENT_H
-#define _CORETESTTRACERCOMPONENT_H
+#ifndef SST_CORE_CORETEST_TRACERCOMPONENT_H
+#define SST_CORE_CORETEST_TRACERCOMPONENT_H
 
 #include <sst/elements/memHierarchy/memEvent.h>
 
@@ -22,12 +22,12 @@ using namespace std;
 using namespace SST;
 using namespace SST::MemHierarchy;
 
-namespace SST{
+namespace SST {
 namespace CoreTestTracerComponent {
 
-class coreTestTracerComponent : public SST::Component {
+class coreTestTracerComponent : public SST::Component
+{
 public:
-
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestRNGComponent,
@@ -66,12 +66,12 @@ private:
     void PrintAccessLatencyDistribution(FILE*, unsigned int);
 
     Output* out;
-    FILE* traceFile;
-    FILE* statsFile;
+    FILE*   traceFile;
+    FILE*   statsFile;
 
     // Links
-    SST::Link *northBus;
-    SST::Link *southBus;
+    SST::Link* northBus;
+    SST::Link* southBus;
 
     // Input Parameters
     unsigned int stats;
@@ -85,46 +85,44 @@ private:
 
     unsigned int nbCount;
     unsigned int sbCount;
-    uint64_t timestamp;
+    uint64_t     timestamp;
 
-    vector<SST::MemHierarchy::Addr>AddrHist;   // Address Histogram
-    vector<unsigned int> AccessLatencyDist;
+    vector<SST::MemHierarchy::Addr> AddrHist; // Address Histogram
+    vector<unsigned int>            AccessLatencyDist;
 
-    map<MemEvent::id_type,uint64_t>InFlightReqQueue;
+    map<MemEvent::id_type, uint64_t> InFlightReqQueue;
 
     TimeConverter* picoTimeConv;
     TimeConverter* nanoTimeConv;
 
     // Serialization
-    coreTestTracerComponent();                         // for serialization only
-    coreTestTracerComponent(const coreTestTracerComponent&);      // do not implement
-    void operator=(const coreTestTracerComponent&);    // do not implement
+    coreTestTracerComponent();                               // for serialization only
+    coreTestTracerComponent(const coreTestTracerComponent&); // do not implement
+    void operator=(const coreTestTracerComponent&);          // do not implement
 
+    // static const ElementInfoParam coreTestRNGComponent_params[] = {
+    //    { "seed_w", "The seed to use for the random number generator", "7" },
+    //    { "seed_z", "The seed to use for the random number generator", "5" },
+    //    { "seed", "The seed to use for the random number generator.", "11" },
+    //    { "rng", "The random number generator to use (Marsaglia or Mersenne), default is Mersenne", "Mersenne"},
+    //    { "count", "The number of random numbers to generate, default is 1000", "1000" },
+    //    { "verbose", "Sets the output verbosity of the component", "0" },
+    //    { NULL, NULL, NULL }
+    //};
 
-//static const ElementInfoParam coreTestRNGComponent_params[] = {
-//    { "seed_w", "The seed to use for the random number generator", "7" },
-//    { "seed_z", "The seed to use for the random number generator", "5" },
-//    { "seed", "The seed to use for the random number generator.", "11" },
-//    { "rng", "The random number generator to use (Marsaglia or Mersenne), default is Mersenne", "Mersenne"},
-//    { "count", "The number of random numbers to generate, default is 1000", "1000" },
-//    { "verbose", "Sets the output verbosity of the component", "0" },
-//    { NULL, NULL, NULL }
-//};
-
-//static const ElementInfoComponent coreTestElementComponents[] = {
-//    { "coreTestRNGComponent",                              // Name
-//      "Random number generation component",              // Description
-//      NULL,                                              // PrintHelp
-//      create_coreTestRNGComponent,                         // Allocator
-//      coreTestRNGComponent_params,                         // Parameters
-//      NULL,                                              // Ports
-//      COMPONENT_CATEGORY_UNCATEGORIZED,                  // Category
-//      NULL                                               // Statistics
-//    },
+    // static const ElementInfoComponent coreTestElementComponents[] = {
+    //    { "coreTestRNGComponent",                              // Name
+    //      "Random number generation component",              // Description
+    //      NULL,                                              // PrintHelp
+    //      create_coreTestRNGComponent,                         // Allocator
+    //      coreTestRNGComponent_params,                         // Parameters
+    //      NULL,                                              // Ports
+    //      COMPONENT_CATEGORY_UNCATEGORIZED,                  // Category
+    //      NULL                                               // Statistics
+    //    },
 }; // class coreTestTracerComponent
 
 } // namespace CoreTestTracerComponent
 } // namespace SST
 
-#endif /* _CORETESTTRACERCOMPONENT_H */
-
+#endif // SST_CORE_CORETEST_TRACERCOMPONENT_H

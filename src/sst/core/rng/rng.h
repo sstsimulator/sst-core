@@ -24,11 +24,12 @@ namespace RNG {
     implement an actual RNG itself only the base class which describes the methods each
     class will implement.
 */
-class Random {
+class Random
+{
 
 public:
     /**
-        Generates the next random number in the range 0 to 1.
+        Generates the next random number in the range [0,1).
     */
     virtual double nextUniform() = 0;
 

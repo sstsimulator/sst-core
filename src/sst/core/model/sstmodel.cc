@@ -9,12 +9,30 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #include "sst_config.h"
+
 #include "sst/core/model/sstmodel.h"
 
-using namespace SST;
+#include "sst/core/factory.h"
 
-SSTModelDescription::SSTModelDescription() {
+namespace SST {
 
+SST_ELI_DEFINE_INFO_EXTERN(SSTModelDescription)
+SST_ELI_DEFINE_CTOR_EXTERN(SSTModelDescription)
+
+SSTModelDescription::SSTModelDescription() {}
+
+bool
+SSTModelDescription::isElementParallelCapable(const std::string& type)
+{
+    return Factory::getFactory()->getSimpleInfo<SSTModelDescription, 0, bool>(type);
 }
+
+const std::vector<std::string>&
+SSTModelDescription::getElementSupportedExtensions(const std::string& type)
+{
+    return Factory::getFactory()->getSimpleInfo<SSTModelDescription, 1, std::vector<std::string>>(type);
+}
+
+
+} // namespace SST

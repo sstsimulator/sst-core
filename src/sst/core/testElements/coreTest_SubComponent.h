@@ -13,14 +13,13 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTSUBCOMPONENT_H
-#define _CORETESTSUBCOMPONENT_H
-
-#include <vector>
+#ifndef SST_CORE_CORETEST_SUBCOMPONENT_H
+#define SST_CORE_CORETEST_SUBCOMPONENT_H
 
 #include <sst/core/component.h>
-#include <sst/core/subcomponent.h>
 #include <sst/core/link.h>
+#include <sst/core/subcomponent.h>
+#include <vector>
 
 namespace SST {
 namespace CoreTestSubComponent {
@@ -36,45 +35,39 @@ namespace CoreTestSubComponent {
 
   Each BaseComponent will have a port(s) that may or may not be used
   depending on the configuration.
-
-  Configurations to be supported:
-
  */
-
 
 class SubCompInterface : public SST::SubComponent
 {
 public:
-    SubCompInterface(ComponentId_t id) :
-        SubComponent(id)
-    { }
-    SubCompInterface(ComponentId_t id, Params& UNUSED(params)) :
-        SubComponent(id)
-    { }
+    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTestSubComponent::SubCompInterface)
+
+    SubCompInterface(ComponentId_t id) : SubComponent(id) {}
+    SubCompInterface(ComponentId_t id, Params& UNUSED(params)) : SubComponent(id) {}
     virtual ~SubCompInterface() {}
     virtual void clock(SST::Cycle_t) {}
+};
 
+class SubCompSlotInterface : public SubCompInterface
+{
+public:
+    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API(SST::CoreTestSubComponent::SubCompSlotInterface,
+                                              SST::CoreTestSubComponent::SubCompInterface)
 
-    // typedef std::tuple<int,int> ELI_CONSTRUCTOR_PARAMS;
-
-    // template <class... ARGS>
-    // static ELI_CONSTRUCTOR_PARAMS convert(ARGS... args) {
-    //     return std::make_tuple<ARGS...>(std::forward<ARGS>(args)...);
-    // }
-
-    SST_ELI_REGISTER_SUBCOMPONENT_API(SST::CoreTestSubComponent::SubCompInterface)
-    // SST_ELI_DECLARE_NEW_BASE(SubComponent,SubCompInterface)
-    // SST_ELI_NEW_BASE_CTOR(ComponentId_t,Params&)
-
-    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
-        SubCompInterface,
-        "coreTestElement",
-        "SubCompInterface",
-        SST_ELI_ELEMENT_VERSION(1,0,0),
-        "Default implementation of SubCompInterface",
-        SST::CoreTestSubComponent::SubCompInterface
+    SST_ELI_DOCUMENT_PARAMS(
+        {"num_subcomps","Number of anonymous SubComponents to load.  Ignored if using name SubComponents.","1"}
     )
 
+    SST_ELI_DOCUMENT_PORTS(
+        {"test", "Just a test port", { "coreTestMessageGeneratorComponent.coreTestMessage", "" } },
+    )
+
+    SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
+    )
+
+    SubCompSlotInterface(ComponentId_t id) : SubCompInterface(id) {}
+    SubCompSlotInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
+    virtual ~SubCompSlotInterface() {}
 };
 
 /* Our trivial component */
@@ -82,12 +75,13 @@ class SubComponentLoader : public Component
 {
 public:
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
-    SST_ELI_REGISTER_COMPONENT(SubComponentLoader,
-                               "coreTestElement",
-                               "SubComponentLoader",
-                               SST_ELI_ELEMENT_VERSION(1,0,0),
-                               "Demonstrates subcomponents",
-                               COMPONENT_CATEGORY_UNCATEGORIZED
+    SST_ELI_REGISTER_COMPONENT(
+        SubComponentLoader,
+        "coreTestElement",
+        "SubComponentLoader",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Demonstrates subcomponents",
+        COMPONENT_CATEGORY_UNCATEGORIZED
     )
 
     SST_ELI_DOCUMENT_PARAMS(
@@ -112,36 +106,25 @@ public:
     SubComponentLoader(ComponentId_t id, SST::Params& params);
 
 private:
-
-    bool tick(SST::Cycle_t);
+    bool                           tick(SST::Cycle_t);
     std::vector<SubCompInterface*> subComps;
 };
 
-
 /* Our example subcomponents */
-
-
-class SubCompSlot : public SubCompInterface
+class SubCompSlot : public SubCompSlotInterface
 {
 public:
-
     SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
         SubCompSlot,
         "coreTestElement",
         "SubCompSlot",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Subcomponent which is just a wrapper for the actual SubComponent to be used",
-        SST::CoreTestSubComponent::SubCompInterface
+        SST::CoreTestSubComponent::SubCompSlotInterface
     )
-
 
     SST_ELI_DOCUMENT_PARAMS(
-        {"sendCount", "Number of Messages to Send", "10"},
-        {"unnamed_subcomponent", "Unnamed SubComponent to load.  If empty, then a named subcomponent is loaded", ""},
-        {"num_subcomps","Number of anonymous SubComponents to load.  Ignored if using name SubComponents.","1"},
-    )
-
-    SST_ELI_DOCUMENT_STATISTICS(
+        {"unnamed_subcomponent", "Unnamed SubComponent to load.  If empty, then a named subcomponent is loaded", ""}
     )
 
     // Only used when loading unnamed SubComponents
@@ -153,30 +136,59 @@ public:
         {"mySubCompSlot", "Test slot", "SST::CoreTestSubComponent::SubCompInterface" }
     )
 
-
 private:
     std::vector<SubCompInterface*> subComps;
 
 public:
-    // Legacy API
-    // New API
     SubCompSlot(ComponentId_t id, Params& params);
     // Direct load
     SubCompSlot(ComponentId_t id, std::string unnamed_sub);
 
-//SubCompSlot(ComponentId_t id) : SubCompInterface(id) {}
     ~SubCompSlot() {}
     void clock(Cycle_t);
-
 };
 
-
-
-
-class SubCompSender : public SubCompInterface
+// Add in some extra levels of ELI hierarchy for testing
+class SubCompSendRecvInterface : public SubCompInterface
 {
 public:
+    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED_API(SST::CoreTestSubComponent::SubCompSendRecvInterface,
+                                              SST::CoreTestSubComponent::SubCompInterface)
 
+    // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
+    SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
+        SubCompSendRecvInterface,
+        "coreTestElement",
+        "SubCompSendRecv",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Default Subcomponent for ELI testing only",
+        SST::CoreTestSubComponent::SubCompSendRecvInterface
+    )
+
+    SST_ELI_DOCUMENT_PARAMS(
+        {"port_name", "Name of port to connect to", ""},
+        {"sendCount", "Number of Messages to Send", "10"}
+    )
+
+    SST_ELI_DOCUMENT_PORTS(
+        {"sendPort", "Sending Port", { "coreTestMessageGeneratorComponent.coreTestMessage", "" } },
+    )
+
+    SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
+    )
+
+    SST_ELI_DOCUMENT_STATISTICS(
+        {"numRecv", "# of msgs recv", "", 1},
+    )
+
+    SubCompSendRecvInterface(ComponentId_t id) : SubCompInterface(id) {}
+    SubCompSendRecvInterface(ComponentId_t id, Params& UNUSED(params)) : SubCompInterface(id) {}
+    virtual ~SubCompSendRecvInterface() {}
+};
+
+class SubCompSender : public SubCompSendRecvInterface
+{
+public:
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
         SubCompSender,
@@ -184,15 +196,14 @@ public:
         "SubCompSender",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Sending Subcomponent",
-        SST::CoreTestSubComponent::SubCompInterface
+        SST::CoreTestSubComponent::SubCompSendRecvInterface
     )
 
     SST_ELI_DOCUMENT_PARAMS(
-        {"port_name", "Name of port to connect to", ""},
-        {"sendCount", "Number of Messages to Send", "10"},
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
+        SST_ELI_DELETE_STAT("numRecv"),
         {"numSent", "# of msgs sent", "", 1},
     )
 
@@ -200,32 +211,28 @@ public:
         {"sendPort", "Sending Port", { "coreTestMessageGeneratorComponent.coreTestMessage", "" } },
     )
 
-    // Optional since there is nothing to document
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
+        {"test_slot", "Test slot", "" }
     )
 
 private:
-    Statistic<uint32_t> *nMsgSent;
-    Statistic<uint32_t> *totalMsgSent;
-    uint32_t nToSend;
-    SST::Link *link;
+    Statistic<uint32_t>* nMsgSent;
+    Statistic<uint32_t>* totalMsgSent;
+    uint32_t             nToSend;
+    SST::Link*           link;
+
 public:
-    // Legacy API
-    // New API
-    SubCompSender(ComponentId_t id, Params &params);
+    SubCompSender(ComponentId_t id, Params& params);
     // Direct API
     SubCompSender(ComponentId_t id, uint32_t nToSend, const std::string& port_name);
     ~SubCompSender() {}
     void clock(Cycle_t);
-
 };
 
-
-class SubCompReceiver : public SubCompInterface
+class SubCompReceiver : public SubCompSendRecvInterface
 {
 
 public:
-
     // REGISTER THIS SUB-COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_SUBCOMPONENT_DERIVED(
         SubCompReceiver,
@@ -233,45 +240,40 @@ public:
         "SubCompReceiver",
         SST_ELI_ELEMENT_VERSION(1,0,0),
         "Receiving Subcomponent",
-        SST::CoreTestSubComponent::SubCompInterface
+        SST::CoreTestSubComponent::SubCompSendRecvInterface
     )
-
 
     // Optional since there is nothing to document
     SST_ELI_DOCUMENT_PARAMS(
+        SST_ELI_DELETE_PARAM("sendCount")
     )
 
     SST_ELI_DOCUMENT_STATISTICS(
-        {"numRecv", "# of msgs recv", "", 1},
     )
 
     SST_ELI_DOCUMENT_PORTS(
+        SST_ELI_DELETE_PORT("sendPort"),
         {"recvPort", "Receiving Port", { "coreTestMessageGeneratorComponent.coreTestMessage", "" } },
     )
 
-    // Optional since there is nothing to document
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
+        SST_ELI_DELETE_SUBCOMPONENT_SLOT("test_slot")
     )
 
 private:
+    Statistic<uint32_t>* nMsgReceived;
+    SST::Link*           link;
 
-    Statistic<uint32_t> *nMsgReceived;
-    SST::Link *link;
-
-    void handleEvent(SST::Event *ev);
+    void handleEvent(SST::Event* ev);
 
 public:
-    SubCompReceiver(ComponentId_t id, Params &params);
-    SubCompReceiver(ComponentId_t id, std::string port) ;
+    SubCompReceiver(ComponentId_t id, Params& params);
+    SubCompReceiver(ComponentId_t id, std::string port);
     ~SubCompReceiver() {}
     void clock(Cycle_t);
-
 };
 
 } // namespace CoreTestSubComponent
 } // namespace SST
 
-
-
-
-#endif /* _CORETESTSUBCOMPONENT_H */
+#endif // SST_CORE_CORETEST_SUBCOMPONENT_H

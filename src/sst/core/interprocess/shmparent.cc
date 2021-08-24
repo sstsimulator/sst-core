@@ -12,12 +12,13 @@
 /* This exists only to test shmparent and shmchild during sst-core compilation */
 
 #include "sst_config.h"
+
 #include "sst/core/interprocess/shmparent.h"
+
 #include "sst/core/interprocess/shmchild.h"
 #include "sst/core/interprocess/tunneldef.h"
 
-typedef SST::Core::Interprocess::TunnelDef<int,int> testtunnel;
+typedef SST::Core::Interprocess::TunnelDef<int, int> testtunnel;
 
 template class SST::Core::Interprocess::SHMParent<testtunnel>;
 template class SST::Core::Interprocess::SHMChild<testtunnel>;
-

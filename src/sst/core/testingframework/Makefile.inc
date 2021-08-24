@@ -6,8 +6,8 @@
 if !SST_TESTFRAMEWORK_DEV
 # Install test frameworks by copy of files
 bin_SCRIPTS = \
-	testingframework/sst-test-core \
-	testingframework/sst-test-elements \
+	sst-test-core \
+	sst-test-elements \
 	testingframework/sst_test_engine_loader.py
 
 libexec_SCRIPTS += \
@@ -23,26 +23,27 @@ libexec_SCRIPTS += \
 else
 # Install test frameworks using symbolic links to the source (we can do development)
 install-exec-hook:
-	ln -s $(abs_srcdir)/testingframework/sst-test-core             $(bindir)/sst-test-core
-	ln -s $(abs_srcdir)/testingframework/sst-test-elements         $(bindir)/sst-test-elements
-	ln -s $(abs_srcdir)/testingframework/sst_test_engine_loader.py $(bindir)/sst_test_engine_loader.py
+	chmod +x $(abs_builddir)/sst-test-core
+	chmod +x $(abs_builddir)/sst-test-elements
+	ln -sf $(abs_builddir)/sst-test-core                            $(bindir)/sst-test-core
+	ln -sf $(abs_builddir)/sst-test-elements                        $(bindir)/sst-test-elements
+	ln -sf $(abs_srcdir)/testingframework/sst_test_engine_loader.py $(abs_builddir)/sst_test_engine_loader.py
 
-	ln -s $(abs_srcdir)/testingframework/sst_unittest.py           $(libexecdir)/sst_unittest.py
-	ln -s $(abs_srcdir)/testingframework/sst_unittest_support.py   $(libexecdir)/sst_unittest_support.py
-	ln -s $(abs_srcdir)/testingframework/sst_unittest_support.py   $(libexecdir)/sst_unittest_parameterized.py
-	ln -s $(abs_srcdir)/testingframework/test_engine.py            $(libexecdir)/test_engine.py
-	ln -s $(abs_srcdir)/testingframework/test_engine_globals.py    $(libexecdir)/test_engine_globals.py
-	ln -s $(abs_srcdir)/testingframework/test_engine_support.py    $(libexecdir)/test_engine_support.py
-	ln -s $(abs_srcdir)/testingframework/test_engine_junit.py      $(libexecdir)/test_engine_junit.py
-	ln -s $(abs_srcdir)/testingframework/test_engine_unittest.py   $(libexecdir)/test_engine_unittest.py
+	ln -sf $(abs_srcdir)/testingframework/sst_unittest.py           $(libexecdir)/sst_unittest.py
+	ln -sf $(abs_srcdir)/testingframework/sst_unittest_support.py   $(libexecdir)/sst_unittest_support.py
+	ln -sf $(abs_srcdir)/testingframework/sst_unittest_support.py   $(libexecdir)/sst_unittest_parameterized.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine.py            $(libexecdir)/test_engine.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine_globals.py    $(libexecdir)/test_engine_globals.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine_support.py    $(libexecdir)/test_engine_support.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine_junit.py      $(libexecdir)/test_engine_junit.py
+	ln -sf $(abs_srcdir)/testingframework/test_engine_unittest.py   $(libexecdir)/test_engine_unittest.py
 endif
 
 EXTRA_DIST += \
 	testingframework/__init__.py \
 	testingframework/readme.md \
-	testingframework/sst-test-core \
-	testingframework/sst-test-core \
-	testingframework/sst-test-elements \
+	testingframework/sst-test-core.in \
+	testingframework/sst-test-elements.in \
 	testingframework/sst_test_engine_loader.py \
 	testingframework/sst_unittest.py \
 	testingframework/sst_unittest_support.py \
@@ -64,3 +65,20 @@ EXTRA_DIST += \
 	testingframework/pdoc_template/config.mako \
 	testingframework/pdoc_template/_lunr_search.inc.mako \
 	testingframework/pdoc_template/SSTLogo.png
+
+sst-test-core:
+	echo "#!$(PYTHON_EXE)" > $@; \
+	cat $(abs_srcdir)/testingframework/sst-test-core.in >> $@
+
+sst-test-elements:
+	echo "#!$(PYTHON_EXE)" > $@; \
+	cat $(abs_srcdir)/testingframework/sst-test-elements.in >> $@
+
+BUILT_SOURCES = \
+	sst-test-core \
+	sst-test-elements
+
+CLEANFILES = \
+	sst-test-core \
+	sst-test-elements \
+	sst_test_engine_loader.py

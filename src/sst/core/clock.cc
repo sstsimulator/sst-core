@@ -10,6 +10,7 @@
 // distribution.
 
 #include "sst_config.h"
+
 #include "sst/core/clock.h"
 
 #include "sst/core/simulation_impl.h"
@@ -17,15 +18,10 @@
 
 namespace SST {
 
-Clock::Clock( TimeConverter* period, int priority ) :
-    Action(),
-    currentCycle( 0 ),
-    period( period ),
-    scheduled( false )
+Clock::Clock(TimeConverter* period, int priority) : Action(), currentCycle(0), period(period), scheduled(false)
 {
     setPriority(priority);
 }
-
 
 Clock::~Clock()
 {
@@ -36,25 +32,23 @@ Clock::~Clock()
     staticHandlerMap.clear();
 }
 
-
-bool Clock::registerHandler( Clock::HandlerBase* handler )
+bool
+Clock::registerHandler(Clock::HandlerBase* handler)
 {
-    staticHandlerMap.push_back( handler );
-    if ( !scheduled ) {
-        schedule();
-    }
+    staticHandlerMap.push_back(handler);
+    if ( !scheduled ) { schedule(); }
     return 0;
 }
 
-
-bool Clock::unregisterHandler( Clock::HandlerBase* handler, bool& empty )
+bool
+Clock::unregisterHandler(Clock::HandlerBase* handler, bool& empty)
 {
 
     StaticHandlerMap_t::iterator iter = staticHandlerMap.begin();
 
     for ( ; iter != staticHandlerMap.end(); iter++ ) {
         if ( *iter == handler ) {
-            staticHandlerMap.erase( iter );
+            staticHandlerMap.erase(iter);
             break;
         }
     }
@@ -71,8 +65,10 @@ Clock::getNextCycle()
     // return period->convertFromCoreTime(next);
 }
 
-void Clock::execute( void ) {
-    Simulation_impl *sim = Simulation_impl::getSimulation();
+void
+Clock::execute(void)
+{
+    Simulation_impl* sim = Simulation_impl::getSimulation();
 
     if ( staticHandlerMap.empty() ) {
         // std::cout << "Not rescheduling clock" << std::endl;
@@ -85,7 +81,7 @@ void Clock::execute( void ) {
     currentCycle++;
 
     StaticHandlerMap_t::iterator sop_iter;
-    for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end();  ) {
+    for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end(); ) {
         Clock::HandlerBase* handler = *sop_iter;
 
         #ifdef CLOCK_PROFILING
@@ -97,8 +93,10 @@ void Clock::execute( void ) {
         #endif
         #endif
 
-        if ( (*handler)(currentCycle) ) sop_iter = staticHandlerMap.erase(sop_iter);
-        else ++sop_iter;
+        if ( (*handler)(currentCycle) )
+            sop_iter = staticHandlerMap.erase(sop_iter);
+        else
+            ++sop_iter;
 
         #ifdef CLOCK_PROFILING
         #ifdef HIGH_RESOLUTION_CLOCK
@@ -128,7 +126,7 @@ void Clock::execute( void ) {
     }
 
     next = sim->getCurrentSimCycle() + period->getFactor();
-    sim->insertActivity( next, this );
+    sim->insertActivity(next, this);
 
     return;
 }
@@ -137,8 +135,8 @@ void
 Clock::schedule()
 {
     Simulation_impl* sim = Simulation_impl::getSimulation();
-    currentCycle = sim->getCurrentSimCycle() / period->getFactor();
-    SimTime_t next = (currentCycle * period->getFactor()) + period->getFactor();
+    currentCycle         = sim->getCurrentSimCycle() / period->getFactor();
+    SimTime_t next       = (currentCycle * period->getFactor()) + period->getFactor();
 
     // Check to see if we need to insert clock into queue at current
     // simtime.  This happens if the clock would have fired at this
@@ -146,24 +144,22 @@ Clock::schedule()
     // However, if we are at time = 0, then we always go out to the
     // next cycle;
     if ( sim->getCurrentPriority() < getPriority() && sim->getCurrentSimCycle() != 0 ) {
-        if ( sim->getCurrentSimCycle() % period->getFactor() == 0 ) {
-            next = sim->getCurrentSimCycle();
-        }
+        if ( sim->getCurrentSimCycle() % period->getFactor() == 0 ) { next = sim->getCurrentSimCycle(); }
     }
 
-    // std::cout << "Scheduling clock " << period->getFactor() << " at cycle " << next << " current cycle is " << sim->getCurrentSimCycle() << std::endl;
+    // std::cout << "Scheduling clock " << period->getFactor() << " at cycle " << next << " current cycle is " <<
+    // sim->getCurrentSimCycle() << std::endl;
     sim->insertActivity(next, this);
     scheduled = true;
 }
 
 void
-Clock::print(const std::string& header, Output &out) const
+Clock::print(const std::string& header, Output& out) const
 {
-    out.output("%s Clock Activity with period %" PRIu64 " to be delivered at %" PRIu64
-               " with priority %d, with %d items on clock list\n",
-               header.c_str(), period->getFactor(), getDeliveryTime(), getPriority(),
-               (int)staticHandlerMap.size());
+    out.output(
+        "%s Clock Activity with period %" PRIu64 " to be delivered at %" PRIu64
+        " with priority %d, with %d items on clock list\n",
+        header.c_str(), period->getFactor(), getDeliveryTime(), getPriority(), (int)staticHandlerMap.size());
 }
 
 } // namespace SST
-

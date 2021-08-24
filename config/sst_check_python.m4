@@ -93,7 +93,10 @@ dnl Sometimes python-config doesn't give the library path correctly
 dnl Also, autoconf caches the result of AC_CHECK_LIB and won't recheck
 dnl even though LDFLAGS is updated
   PYLIB_US=${PYLIB/./_}
-  PYCACHEVAR="ac_cv_lib_${PYLIB_US}___Py_Initialize"
+
+m4_if(m4_defn([AC_AUTOCONF_VERSION]), 2.71, [PYCACHEVAR="ac_cv_lib_${PYLIB_US}_Py_Initialize"], 
+	m4_defn([AC_AUTOCONF_VERSION]), 2.70, [PYCACHEVAR="ac_cv_lib_${PYLIB_US}_Py_Initialize"], 
+		[PYCACHEVAR="ac_cv_lib_${PYLIB_US}___Py_Initialize"])
 
   AC_CHECK_LIB([$PYLIB], [Py_Initialize], [PYLIB_OK="yes"], [PYLIB_OK="no"])
   AS_UNSET([$PYCACHEVAR]) 

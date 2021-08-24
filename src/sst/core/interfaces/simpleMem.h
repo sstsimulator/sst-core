@@ -11,19 +11,19 @@
 // distribution.
 //
 
-#ifndef SST_CORE_INTERFACES_SIMPLEMEM_H_
-#define SST_CORE_INTERFACES_SIMPLEMEM_H_
+#ifndef SST_CORE_INTERFACES_SIMPLEMEM_H
+#define SST_CORE_INTERFACES_SIMPLEMEM_H
 
+#include "sst/core/link.h"
+#include "sst/core/params.h"
+#include "sst/core/sst_types.h"
+#include "sst/core/subcomponent.h"
+#include "sst/core/warnmacros.h"
+
+#include <atomic>
+#include <map>
 #include <string>
 #include <utility>
-#include <map>
-#include <atomic>
-
-#include "sst/core/sst_types.h"
-#include "sst/core/warnmacros.h"
-#include "sst/core/subcomponent.h"
-#include "sst/core/params.h"
-#include "sst/core/link.h"
 
 namespace SST {
 
@@ -32,12 +32,11 @@ class Event;
 
 namespace Interfaces {
 
-
 /**
  * Simplified, generic interface to Memory models
  */
-class SimpleMem : public SubComponent {
-
+class SimpleMem : public SubComponent
+{
 
 public:
     class HandlerBase;
@@ -49,62 +48,73 @@ public:
     /**
      * Represents both memory requests and responses.
      */
-    class Request {
+    class Request
+    {
     public:
-        typedef uint64_t id_t;      /*!< Request ID type */
-        typedef uint32_t flags_t;   /*!< Flag type */
+        typedef uint64_t id_t;    /*!< Request ID type */
+        typedef uint32_t flags_t; /*!< Flag type */
 
         /**
          * Commands and responses possible with a Request object
          */
         typedef enum {
-            Read,           /*!< Issue a Read from Memory */
-            Write,          /*!< Issue a Write to Memory */
-            ReadResp,       /*!< Response from Memory to a Read */
-            WriteResp,      /*!< Response from Memory to a Write */
-            FlushLine,      /*!< Cache flush request - writeback specified line throughout memory system */
-            FlushLineInv,   /*!< Cache flush request - writeback and invalidate specified line throughout memory system */
-            FlushLineResp,  /*!< Response to FlushLine; flag F_FLUSH_SUCCESS indicates success or failure */
-            Inv,            /*!< Notification of L1 cache invalidation to core */
-            TxBegin,        /*!< Start a new transaction */
-            TxEnd,          /*!< End the current lowest transaction */
+            Read,         /*!< Issue a Read from Memory */
+            Write,        /*!< Issue a Write to Memory */
+            ReadResp,     /*!< Response from Memory to a Read */
+            WriteResp,    /*!< Response from Memory to a Write */
+            FlushLine,    /*!< Cache flush request - writeback specified line throughout memory system */
+            FlushLineInv, /*!< Cache flush request - writeback and invalidate specified line throughout memory system */
+            FlushLineResp, /*!< Response to FlushLine; flag F_FLUSH_SUCCESS indicates success or failure */
+            Inv,           /*!< Notification of L1 cache invalidation to core */
+            TxBegin,       /*!< Start a new transaction */
+            TxEnd,         /*!< End the current lowest transaction */
             TxResp,
             TxAbort,
             TxCommit,
-            CustomCmd       /*!< Custom memory command: Must also set custCmd opcode */
+            CustomCmd /*!< Custom memory command: Must also set custCmd opcode */
         } Command;
 
         /**
          * Flags to specify conditions on a Request
          */
         typedef enum {
-            F_NONCACHEABLE  = 1<<1,     /*!< This request should not be cached */
-            F_LOCKED        = 1<<2,     /*!< This request should be locked.  A LOCKED read should be soon followed by a LOCKED write (to unlock) */
-            F_LLSC          = 1<<3,
-            F_LLSC_RESP     = 1<<4,
-            F_FLUSH_SUCCESS = 1<<5,     /*!< This flag is set if the flush was successful. Flush may fail due to LOCKED lines */
-            F_TRANSACTION   = 1<<6
+            F_NONCACHEABLE = 1 << 1, /*!< This request should not be cached */
+            F_LOCKED    = 1 << 2, /*!< This request should be locked.  A LOCKED read should be soon followed by a LOCKED
+                                     write (to unlock) */
+            F_LLSC      = 1 << 3,
+            F_LLSC_RESP = 1 << 4,
+            F_FLUSH_SUCCESS =
+                1 << 5, /*!< This flag is set if the flush was successful. Flush may fail due to LOCKED lines */
+            F_TRANSACTION = 1 << 6
         } Flags;
 
         /** Type of the payload or data */
         typedef std::vector<uint8_t> dataVec;
 
-        Command cmd;        /*!< Command to issue */
+        Command           cmd;   /*!< Command to issue */
         std::vector<Addr> addrs; /*!< Target address(es) */
-        Addr addr;          /*!< Target address - DEPRECATED but included for backward compatibility, defaults to addrs[0] */
-        size_t size;        /*!< Size of this request or response */
-        dataVec data;       /*!< Payload data (for Write, or ReadResp) */
-        flags_t flags;      /*!< Flags associated with this request or response */
-        flags_t memFlags;   /*!< Memory flags - ignored by caches except to be passed through with request to main memory */
-        id_t id;            /*!< Unique ID to identify responses with requests */
-        Addr instrPtr;      /*!< Instruction pointer associated with the operation */
-        Addr virtualAddr;   /*!< Virtual address associated with the operation */
-        uint32_t custOpc;   /*!< Custom command opcode for CustomdCmd type commands */
+        Addr    addr;  /*!< Target address - DEPRECATED but included for backward compatibility, defaults to addrs[0] */
+        size_t  size;  /*!< Size of this request or response */
+        dataVec data;  /*!< Payload data (for Write, or ReadResp) */
+        flags_t flags; /*!< Flags associated with this request or response */
+        flags_t
+             memFlags; /*!< Memory flags - ignored by caches except to be passed through with request to main memory */
+        id_t id;       /*!< Unique ID to identify responses with requests */
+        Addr instrPtr; /*!< Instruction pointer associated with the operation */
+        Addr virtualAddr; /*!< Virtual address associated with the operation */
+        uint32_t custOpc; /*!< Custom command opcode for CustomdCmd type commands */
 
         /** Constructor */
-        Request(Command cmd, Addr addr, size_t size, dataVec &data, flags_t flags = 0, flags_t memFlags = 0) :
-            cmd(cmd), addr(addr), size(size), data(data), flags(flags), memFlags(memFlags),
-            instrPtr(0), virtualAddr(0), custOpc(0xFFFF)
+        Request(Command cmd, Addr addr, size_t size, dataVec& data, flags_t flags = 0, flags_t memFlags = 0) :
+            cmd(cmd),
+            addr(addr),
+            size(size),
+            data(data),
+            flags(flags),
+            memFlags(memFlags),
+            instrPtr(0),
+            virtualAddr(0),
+            custOpc(0xFFFF)
         {
             addrs.push_back(addr);
             id = main_id++;
@@ -112,17 +122,31 @@ public:
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, flags_t flags = 0, flags_t memFlags = 0) :
-            cmd(cmd), addr(addr), size(size), flags(flags), memFlags(memFlags),
-            instrPtr(0), virtualAddr(0), custOpc(0xFFFF)
+            cmd(cmd),
+            addr(addr),
+            size(size),
+            flags(flags),
+            memFlags(memFlags),
+            instrPtr(0),
+            virtualAddr(0),
+            custOpc(0xFFFF)
         {
             addrs.push_back(addr);
             id = main_id++;
         }
 
         /** Constructor */
-        Request(Command cmd, Addr addr, size_t size, dataVec &data, uint32_t Opc, flags_t flags = 0, flags_t memFlags = 0) :
-            cmd(cmd), addr(addr), size(size), data(data), flags(flags), memFlags(memFlags),
-            instrPtr(0), virtualAddr(0), custOpc(Opc)
+        Request(
+            Command cmd, Addr addr, size_t size, dataVec& data, uint32_t Opc, flags_t flags = 0, flags_t memFlags = 0) :
+            cmd(cmd),
+            addr(addr),
+            size(size),
+            data(data),
+            flags(flags),
+            memFlags(memFlags),
+            instrPtr(0),
+            virtualAddr(0),
+            custOpc(Opc)
         {
             addrs.push_back(addr);
             id = main_id++;
@@ -130,143 +154,121 @@ public:
 
         /** Constructor */
         Request(Command cmd, Addr addr, size_t size, uint32_t Opc, flags_t flags = 0, flags_t memFlags = 0) :
-            cmd(cmd), addr(addr), size(size), flags(flags), memFlags(memFlags),
-            instrPtr(0), virtualAddr(0), custOpc(Opc)
+            cmd(cmd),
+            addr(addr),
+            size(size),
+            flags(flags),
+            memFlags(memFlags),
+            instrPtr(0),
+            virtualAddr(0),
+            custOpc(Opc)
         {
             addrs.push_back(addr);
             id = main_id++;
         }
 
-        void addAddress(Addr addr)
-        {
-            addrs.push_back(addr);
-        }
+        void addAddress(Addr addr) { addrs.push_back(addr); }
 
         /**
          * @param[in] data_in
          * @brief Set the contents of the payload / data field.
          */
-        void setPayload(const std::vector<uint8_t> & data_in )
-        {
-            data = data_in;
-        }
+        void setPayload(const std::vector<uint8_t>& data_in) { data = data_in; }
 
         /**
          * @param[in] data_in
          * @brief Set the contents of the payload / data field.
          */
-        void setPayload(uint8_t *data_in, size_t len) {
+        void setPayload(uint8_t* data_in, size_t len)
+        {
             data.resize(len);
-            for ( size_t i = 0 ; i < len ; i++ ) {
+            for ( size_t i = 0; i < len; i++ ) {
                 data[i] = data_in[i];
             }
         }
 
         /**
-        * @param[in] newVA
-        * @brief  Set the virtual address associated with the operation
-        */
-        void setVirtualAddress(const Addr newVA) {
-                virtualAddr = newVA;
-        }
+         * @param[in] newVA
+         * @brief  Set the virtual address associated with the operation
+         */
+        void setVirtualAddress(const Addr newVA) { virtualAddr = newVA; }
 
         /**
-        * @returns the virtual address associated with the operation
-        */
-        uint64_t getVirtualAddress() {
-                return (uint64_t) virtualAddr;
-        }
+         * @returns the virtual address associated with the operation
+         */
+        uint64_t getVirtualAddress() { return (uint64_t)virtualAddr; }
 
         /**
-        * @param[in] newIP
-        * @brief Sets the instruction pointer associated with the operation
-        */
-        void setInstructionPointer(const Addr newIP) {
-                instrPtr = newIP;
-        }
+         * @param[in] newIP
+         * @brief Sets the instruction pointer associated with the operation
+         */
+        void setInstructionPointer(const Addr newIP) { instrPtr = newIP; }
 
         /**
-        * @returns the instruction pointer associated with the operation
-        */
-        Addr getInstructionPointer() {
-                return instrPtr;
-        }
+         * @returns the instruction pointer associated with the operation
+         */
+        Addr getInstructionPointer() { return instrPtr; }
 
         /**
-        * @brief Clears the flags associated with the operation
-        */
-        void clearFlags(void) {
-                flags = 0;
-        }
+         * @brief Clears the flags associated with the operation
+         */
+        void clearFlags(void) { flags = 0; }
 
         /**
-        * @param[in] inValue  Should be one of the flags beginning with F_ in simpleMem
-        */
-        void setFlags(flags_t inValue) {
-                flags = flags | inValue;
-        }
+         * @param[in] inValue  Should be one of the flags beginning with F_ in simpleMem
+         */
+        void setFlags(flags_t inValue) { flags = flags | inValue; }
 
         /**
-        * @returns the flags associated with the operation
-        */
-        flags_t getFlags(void) {
-                return flags;
-        }
+         * @returns the flags associated with the operation
+         */
+        flags_t getFlags(void) { return flags; }
 
         /**
-        * @brief Clears the memory flags associated with the operation
-        */
-        void clearMemFlags(void) {
-                memFlags = 0;
-        }
+         * @brief Clears the memory flags associated with the operation
+         */
+        void clearMemFlags(void) { memFlags = 0; }
 
         /**
-        * @param[in] inValue  Should be one of the flags beginning with F_ in simpleMem
-        */
-        void setMemFlags(flags_t inValue) {
-                memFlags = memFlags | inValue;
-        }
+         * @param[in] inValue  Should be one of the flags beginning with F_ in simpleMem
+         */
+        void setMemFlags(flags_t inValue) { memFlags = memFlags | inValue; }
 
         /**
-        * @returns the memory flags associated with the operation
-        */
-        flags_t getMemFlags(void) {
-                return memFlags;
-        }
+         * @returns the memory flags associated with the operation
+         */
+        flags_t getMemFlags(void) { return memFlags; }
 
         /**
          * @returns the custom opcode for custom request types
          */
-        uint32_t getCustomOpc(void){
-                return custOpc;
-        }
-
+        uint32_t getCustomOpc(void) { return custOpc; }
 
     private:
         static std::atomic<id_t> main_id;
-
     };
 
     /** Functor classes for Clock handling */
-    class HandlerBase {
+    class HandlerBase
+    {
     public:
         /** Function called when Handler is invoked */
         virtual void operator()(Request*) = 0;
         virtual ~HandlerBase() {}
     };
 
-
     /** Event Handler class with user-data argument
      * @tparam classT Type of the Object
      * @tparam argT Type of the argument
      */
     template <typename classT, typename argT = void>
-    class Handler : public HandlerBase {
+    class Handler : public HandlerBase
+    {
     private:
         typedef void (classT::*PtrMember)(Request*, argT);
-        classT* object;
+        classT*         object;
         const PtrMember member;
-        argT data;
+        argT            data;
 
     public:
         /** Constructor
@@ -274,25 +276,20 @@ public:
          * @param member - Member function to call as the handler
          * @param data - Additional argument to pass to handler
          */
-        Handler( classT* const object, PtrMember member, argT data ) :
-            object(object),
-            member(member),
-            data(data)
-        {}
+        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
 
-        void operator()(Request* req) {
-            return (object->*member)(req,data);
-        }
+        void operator()(Request* req) { return (object->*member)(req, data); }
     };
 
     /** Event Handler class without user-data
      * @tparam classT Type of the Object
      */
     template <typename classT>
-    class Handler<classT, void> : public HandlerBase {
+    class Handler<classT, void> : public HandlerBase
+    {
     private:
         typedef void (classT::*PtrMember)(Request*);
-        classT* object;
+        classT*         object;
         const PtrMember member;
 
     public:
@@ -300,39 +297,31 @@ public:
          * @param object - Pointer to Object upon which to call the handler
          * @param member - Member function to call as the handler
          */
-        Handler( classT* const object, PtrMember member ) :
-            object(object),
-            member(member)
-        {}
+        Handler(classT* const object, PtrMember member) : object(object), member(member) {}
 
-        void operator()(Request* req) {
-            return (object->*member)(req);
-        }
+        void operator()(Request* req) { return (object->*member)(req); }
     };
 
-
     /** Constructor, designed to be used via 'loadUserSubComponent and loadAnonymousSubComponent'. */
-    SimpleMem(SST::ComponentId_t id, Params &UNUSED(params)) :
-        SubComponent(id)
-        { }
+    SimpleMem(SST::ComponentId_t id, Params& UNUSED(params)) : SubComponent(id) {}
 
     /** Second half of building the interface.
      * Initialize with link name name, and handler, if any
      * @return true if the link was able to be configured.
      */
-    virtual bool initialize(const std::string& linkName, HandlerBase *handler = nullptr) = 0;
+    virtual bool initialize(const std::string& linkName, HandlerBase* handler = nullptr) = 0;
 
     /**
      * Sends a memory-based request during the init() phase
      */
-    virtual void sendInitData(Request *req) = 0;
+    virtual void sendInitData(Request* req) = 0;
 
     /**
      * Sends a generic Event during the init() phase
      * (Mostly acts as a passthrough)
      * @see SST::Link::sendInitData()
      */
-    virtual void sendInitData(SST::Event *ev) { getLink()->sendInitData(ev); }
+    virtual void sendInitData(SST::Event* ev) { getLink()->sendInitData(ev); }
 
     /**
      * Receive any data during the init() phase.
@@ -348,7 +337,7 @@ public:
     /**
      * Send a Request to the other side of the link.
      */
-    virtual void sendRequest(Request *req) = 0;
+    virtual void sendRequest(Request* req) = 0;
 
     /**
      * Receive a Request response from the side of the link.
@@ -376,10 +365,9 @@ public:
      * @return line size of the memory system
      */
     virtual Addr getLineSize() { return 0; }
-
 };
 
-}
-}
+} // namespace Interfaces
+} // namespace SST
 
-#endif
+#endif // SST_CORE_INTERFACES_SIMPLEMEM_H

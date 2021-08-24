@@ -9,24 +9,23 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_STATISTICS_ENGINE
-#define _H_SST_CORE_STATISTICS_ENGINE
+#ifndef SST_CORE_STATAPI_STATENGINE_H
+#define SST_CORE_STATAPI_STATENGINE_H
 
+#include "sst/core/clock.h"
+#include "sst/core/factory.h"
+#include "sst/core/oneshot.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statfieldinfo.h"
 #include "sst/core/statapi/statgroup.h"
-#include "sst/core/statapi/statbase.h"
 #include "sst/core/statapi/statnull.h"
-#include "sst/core/unitAlgebra.h"
-#include "sst/core/clock.h"
-#include "sst/core/oneshot.h"
 #include "sst/core/threadsafe.h"
-#include "sst/core/factory.h"
+#include "sst/core/unitAlgebra.h"
 
 /* Forward declare for Friendship */
-extern int main(int argc, char **argv);
+extern int  main(int argc, char** argv);
 extern void finalize_statEngineConfig(void);
-
 
 namespace SST {
 class BaseComponent;
@@ -38,8 +37,8 @@ class Params;
 
 namespace Statistics {
 
-//template<typename T> class Statistic;
-//class StatisticBase;
+// template<typename T> class Statistic;
+// class StatisticBase;
 class StatisticOutput;
 
 /**
@@ -56,11 +55,10 @@ class StatisticProcessingEngine
 public:
     static StatisticProcessingEngine* getInstance() { return instance; }
 
-
     /** Called by the Components and Subcomponent to perform a statistic Output.
-      * @param stat - Pointer to the statistic.
-      * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
-      */
+     * @param stat - Pointer to the statistic.
+     * @param EndOfSimFlag - Indicates that the output is occurring at the end of simulation.
+     */
     void performStatisticOutput(StatisticBase* stat, bool endOfSimFlag = false);
 
     /** Called by the Components and Subcomponent to perform a global statistic Output.
@@ -71,12 +69,12 @@ public:
     void performGlobalStatisticOutput(bool endOfSimFlag = false);
 
     template <class T>
-    Statistic<T>* createStatistic(BaseComponent *comp, const std::string& type,
-                                  const std::string& statName, const std::string& statSubId,
-                                  Params &params)
+    Statistic<T>* createStatistic(
+        BaseComponent* comp, const std::string& type, const std::string& statName, const std::string& statSubId,
+        Params& params)
     {
 
-      return Factory::getFactory()->Create<Statistic<T>>(type, params, comp, statName, statSubId, params);
+        return Factory::getFactory()->CreateWithParams<Statistic<T>>(type, params, comp, statName, statSubId, params);
     }
 
     bool registerStatisticWithEngine(StatisticBase* stat) { return registerStatisticCore(stat); }
@@ -87,68 +85,66 @@ public:
 
 private:
     friend class SST::Simulation_impl;
-    friend int ::main(int argc, char **argv);
+    friend int ::main(int argc, char** argv);
     friend void ::finalize_statEngineConfig(void);
 
     StatisticProcessingEngine();
-    void setup(ConfigGraph *graph);
+    void setup(ConfigGraph* graph);
     ~StatisticProcessingEngine();
 
-    static void init(ConfigGraph *graph);
+    static void init(ConfigGraph* graph);
 
-    StatisticOutput* createStatisticOutput(const ConfigStatOutput &cfg);
+    StatisticOutput* createStatisticOutput(const ConfigStatOutput& cfg);
 
     bool registerStatisticCore(StatisticBase* stat);
 
-    StatisticOutput* getOutputForStatistic(const StatisticBase *stat) const;
-    StatisticGroup& getGroupForStatistic(const StatisticBase *stat) const;
-    bool addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
-    bool addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
-    bool addEndOfSimStatistic(StatisticBase* Stat);
-    UnitAlgebra getParamTime(StatisticBase *stat, const std::string& pName) const;
-    void setStatisticStartTime(StatisticBase* Stat);
-    void setStatisticStopTime(StatisticBase* Stat);
+    StatisticOutput* getOutputForStatistic(const StatisticBase* stat) const;
+    StatisticGroup&  getGroupForStatistic(const StatisticBase* stat) const;
+    bool             addPeriodicBasedStatistic(const UnitAlgebra& freq, StatisticBase* Stat);
+    bool             addEventBasedStatistic(const UnitAlgebra& count, StatisticBase* Stat);
+    bool             addEndOfSimStatistic(StatisticBase* Stat);
+    UnitAlgebra      getParamTime(StatisticBase* stat, const std::string& pName) const;
+    void             setStatisticStartTime(StatisticBase* Stat);
+    void             setStatisticStopTime(StatisticBase* Stat);
 
     void finalizeInitialization(); /* Called when performWireUp() finished */
     void startOfSimulation();
     void endOfSimulation();
 
-
     void performStatisticOutputImpl(StatisticBase* stat, bool endOfSimFlag);
     void performStatisticGroupOutputImpl(StatisticGroup& group, bool endOfSimFlag);
 
-    bool handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
-    bool handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group);
-    void handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
-    void handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
-    StatisticBase* isStatisticInCompStatMap(const std::string& compName, const ComponentId_t& compId,
-                                            const std::string& statName, const std::string& statSubId,
-                                            StatisticFieldInfo::fieldType_t fieldType);
+    bool           handleStatisticEngineClockEvent(Cycle_t CycleNum, SimTime_t timeFactor);
+    bool           handleGroupClockEvent(Cycle_t CycleNum, StatisticGroup* group);
+    void           handleStatisticEngineStartTimeEvent(SimTime_t timeFactor);
+    void           handleStatisticEngineStopTimeEvent(SimTime_t timeFactor);
+    StatisticBase* isStatisticInCompStatMap(
+        const std::string& compName, const ComponentId_t& compId, const std::string& statName,
+        const std::string& statSubId, StatisticFieldInfo::fieldType_t fieldType);
     void addStatisticToCompStatMap(StatisticBase* Stat, StatisticFieldInfo::fieldType_t fieldType);
     void castError(const std::string& type, const std::string& statName, const std::string& fieldName);
 
 private:
-    typedef std::vector<StatisticBase*>           StatArray_t;       /*!< Array of Statistics */
-    typedef std::map<SimTime_t, StatArray_t*>     StatMap_t;         /*!< Map of simtimes to Statistic Arrays */
-    typedef std::map<ComponentId_t, StatArray_t*> CompStatMap_t;     /*!< Map of ComponentId's to StatInfo Arrays */
+    typedef std::vector<StatisticBase*>           StatArray_t;   /*!< Array of Statistics */
+    typedef std::map<SimTime_t, StatArray_t*>     StatMap_t;     /*!< Map of simtimes to Statistic Arrays */
+    typedef std::map<ComponentId_t, StatArray_t*> CompStatMap_t; /*!< Map of ComponentId's to StatInfo Arrays */
 
-    StatArray_t                               m_EventStatisticArray;  /*!< Array of Event Based Statistics */
-    StatMap_t                                 m_PeriodicStatisticMap; /*!< Map of Array's of Periodic Based Statistics */
-    StatMap_t                                 m_StartTimeMap;         /*!< Map of Array's of Statistics that are started at a sim time */
-    StatMap_t                                 m_StopTimeMap;          /*!< Map of Array's of Statistics that are stopped at a sim time */
-    CompStatMap_t                             m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */
-    bool                                      m_SimulationStarted;    /*!< Flag showing if Simulation has started */
+    StatArray_t   m_EventStatisticArray;  /*!< Array of Event Based Statistics */
+    StatMap_t     m_PeriodicStatisticMap; /*!< Map of Array's of Periodic Based Statistics */
+    StatMap_t     m_StartTimeMap;         /*!< Map of Array's of Statistics that are started at a sim time */
+    StatMap_t     m_StopTimeMap;          /*!< Map of Array's of Statistics that are stopped at a sim time */
+    CompStatMap_t m_CompStatMap;          /*!< Map of Arrays of Statistics tied to Component Id's */
+    bool          m_SimulationStarted;    /*!< Flag showing if Simulation has started */
 
-    Output & m_output;
-    uint8_t                                   m_statLoadLevel;
-    std::vector<StatisticOutput*>             m_statOutputs;
-    StatisticGroup                            m_defaultGroup;
-    std::vector<StatisticGroup>               m_statGroups;
-    Core::ThreadSafe::Barrier                 m_barrier;
-
+    Output&                       m_output;
+    uint8_t                       m_statLoadLevel;
+    std::vector<StatisticOutput*> m_statOutputs;
+    StatisticGroup                m_defaultGroup;
+    std::vector<StatisticGroup>   m_statGroups;
+    Core::ThreadSafe::Barrier     m_barrier;
 };
 
-} //namespace Statistics
-} //namespace SST
+} // namespace Statistics
+} // namespace SST
 
-#endif
+#endif // SST_CORE_STATAPI_STATENGINE_H

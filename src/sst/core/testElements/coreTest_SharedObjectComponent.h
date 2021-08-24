@@ -13,8 +13,8 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETESTSHAREDOBJECT_H
-#define _CORETESTSHAREDOBJECT_H
+#ifndef SST_CORE_CORETEST_SHAREDOBJECT_H
+#define SST_CORE_CORETEST_SHAREDOBJECT_H
 
 #include <sst/core/component.h>
 #include <sst/core/output.h>
@@ -27,43 +27,36 @@ namespace CoreTestSharedObjectsComponent {
 
 // Class so that we can check to see if the equivalence check works
 // for sets
-struct setItem : public SST::Core::Serialization::serializable {
+struct setItem : public SST::Core::Serialization::serializable
+{
     int key;
     int value;
 
-    setItem() :
-        key(0),
-        value(0)
-    {}
+    setItem() : key(0), value(0) {}
 
-    setItem(int key, int value) :
-        key(key),
-        value(value)
-    {}
+    setItem(int key, int value) : key(key), value(value) {}
 
-    bool operator<(const setItem& lhs) const {
-        return key < lhs.key;
-    }
+    bool operator<(const setItem& lhs) const { return key < lhs.key; }
 
-    bool operator==(const setItem& lhs) const {
+    bool operator==(const setItem& lhs) const
+    {
         if ( key != lhs.key ) return false;
         if ( value != lhs.value ) return false;
         return true;
     }
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override {
-        ser & key;
-        ser & value;
+    void serialize_order(SST::Core::Serialization::serializer& ser) override
+    {
+        ser& key;
+        ser& value;
     }
 
     ImplementSerializable(SST::CoreTestSharedObjectsComponent::setItem);
-
 };
 
 class coreTestSharedObjectsComponent : public SST::Component
 {
 public:
-
     // REGISTER THIS COMPONENT INTO THE ELEMENT LIBRARY
     SST_ELI_REGISTER_COMPONENT(
         coreTestSharedObjectsComponent,
@@ -109,6 +102,7 @@ public:
     void complete(unsigned int phase) override;
 
     bool tick(SST::Cycle_t);
+
 private:
     Output out;
 
@@ -119,18 +113,18 @@ private:
     int myid;
     int num_entities;
 
-    int count;
+    int  count;
     bool check;
     bool late_write;
     bool pub;
     bool late_initialize;
 
-    Shared::SharedArray<int> array;
-    Shared::SharedMap<int,int> map;
-    Shared::SharedSet<setItem> set;
+    Shared::SharedArray<int>    array;
+    Shared::SharedMap<int, int> map;
+    Shared::SharedSet<setItem>  set;
 };
 
-}
-}
+} // namespace CoreTestSharedObjectsComponent
+} // namespace SST
 
-#endif
+#endif // SST_CORE_CORETEST_SHAREDOBJECT_H

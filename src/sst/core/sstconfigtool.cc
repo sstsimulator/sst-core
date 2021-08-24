@@ -11,17 +11,19 @@
 
 #include "sst_config.h"
 
+#include "sst/core/env/envconfig.h"
+#include "sst/core/env/envquery.h"
+
+#include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <climits>
-#include <string>
 #include <map>
+#include <string>
 
-#include "sst/core/env/envquery.h"
-#include "sst/core/env/envconfig.h"
-
-void print_usage(FILE* output) {
+void
+print_usage(FILE* output)
+{
     fprintf(output, "sst-config\n");
     fprintf(output, "sst-config --<KEY>\n");
     fprintf(output, "sst-config <GROUP> <KEY>\n");
@@ -52,69 +54,70 @@ void print_usage(FILE* output) {
     exit(1);
 }
 
-int main(int argc, char* argv[]) {
+int
+main(int argc, char* argv[])
+{
     bool found_help = false;
 
     std::string groupName("");
     std::string key("");
 
-    for(int i = 1; i < argc; i++) {
-        if(strcmp(argv[i], "--help") == 0 ||
-            strcmp(argv[i], "-help") == 0) {
+    for ( int i = 1; i < argc; i++ ) {
+        if ( strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-help") == 0 ) {
             found_help = true;
             break;
         }
     }
 
-    if(found_help) {
-        print_usage(stdout);
-    }
+    if ( found_help ) { print_usage(stdout); }
 
     bool dumpEnv = false;
 
-    if(argc == 1) {
-        dumpEnv = true;
-    } else if(argc == 2) {
+    if ( argc == 1 ) { dumpEnv = true; }
+    else if ( argc == 2 ) {
         groupName = static_cast<std::string>("SSTCore");
         std::string keyTemp(argv[1]);
 
-        if(keyTemp.size() < 2) {
-            fprintf(stderr, "Error: key (%s) is not specified with a group and doesn't start with --\n", keyTemp.c_str());
+        if ( keyTemp.size() < 2 ) {
+            fprintf(
+                stderr, "Error: key (%s) is not specified with a group and doesn't start with --\n", keyTemp.c_str());
             print_usage(stderr);
             exit(-1);
         }
 
-        if(keyTemp.substr(0, 2) == "--") {
-            key = keyTemp.substr(2);
-        } else {
-            fprintf(stderr, "Error: key (%s) is not specified with a group and doesn't start with --\n", keyTemp.c_str());
+        if ( keyTemp.substr(0, 2) == "--" ) { key = keyTemp.substr(2); }
+        else {
+            fprintf(
+                stderr, "Error: key (%s) is not specified with a group and doesn't start with --\n", keyTemp.c_str());
             print_usage(stderr);
             exit(-1);
         }
-    } else if (argc == 3) {
+    }
+    else if ( argc == 3 ) {
         groupName = static_cast<std::string>(argv[1]);
         key       = static_cast<std::string>(argv[2]);
-    } else {
+    }
+    else {
         fprintf(stderr, "Error: you specified an incorrect number of parameters\n");
         print_usage(stderr);
     }
 
-    std::vector<std::string> overrideConfigFiles;
+    std::vector<std::string>                          overrideConfigFiles;
     SST::Core::Environment::EnvironmentConfiguration* database =
         SST::Core::Environment::getSSTEnvironmentConfiguration(overrideConfigFiles);
     bool keyFound = false;
 
-    if(dumpEnv) {
+    if ( dumpEnv ) {
         database->print();
         exit(0);
-    } else {
-        SST::Core::Environment::EnvironmentConfigGroup* group =
-            database->getGroupByName(groupName);
+    }
+    else {
+        SST::Core::Environment::EnvironmentConfigGroup* group = database->getGroupByName(groupName);
 
         std::set<std::string> groupKeys = group->getKeys();
 
-        for(auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++) {
-            if( key == (*keyItr) ) {
+        for ( auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++ ) {
+            if ( key == (*keyItr) ) {
                 printf("%s\n", group->getValue(key).c_str());
                 keyFound = true;
                 break;

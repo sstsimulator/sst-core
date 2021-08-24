@@ -13,44 +13,42 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _CORETEST_MODULE_H
-#define _CORETEST_MODULE_H
-
-#include <vector>
+#ifndef SST_CORE_CORETEST_MODULE_H
+#define SST_CORE_CORETEST_MODULE_H
 
 #include <sst/core/component.h>
-#include <sst/core/module.h>
 #include <sst/core/link.h>
+#include <sst/core/module.h>
+#include <vector>
 
 namespace SST {
 namespace CoreTestModule {
 
-class CoreTestModuleExample : public SST::Module {
+class CoreTestModuleExample : public SST::Module
+{
 
 public:
-	CoreTestModuleExample(SST::Params& params);
+    CoreTestModuleExample(SST::Params& params);
 
-	SST_ELI_REGISTER_MODULE(
-		CoreTestModuleExample,
-		"coreTestElement",
-		"CoreTestModule",
-		SST_ELI_ELEMENT_VERSION(1,0,0),
-		"CoreTest module to demonstrate interface.",
-		"SST::CoreTestModule::CoreTestModuleInterface"
-	)
+    SST_ELI_REGISTER_MODULE(
+        CoreTestModuleExample,
+        "coreTestElement",
+        "CoreTestModule",
+        SST_ELI_ELEMENT_VERSION(1, 0, 0),
+        "CoreTest module to demonstrate interface.",
+        "SST::CoreTestModule::CoreTestModuleInterface")
 
-	SST_ELI_DOCUMENT_PARAMS(
-        	{"modulename", "Name to give this module", ""},
-    	)
+    SST_ELI_DOCUMENT_PARAMS(
+        {"modulename", "Name to give this module", ""},
+    )
 
-	void printName();
+    void printName();
 
 private:
-	std::string modName;
-
+    std::string modName;
 };
 
-}
+} // namespace CoreTestModule
 } // namespace SST
 
-#endif /* _CORETEST_MODULE_H */
+#endif // SST_CORE_CORETEST_MODULE_H

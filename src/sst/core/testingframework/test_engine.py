@@ -239,6 +239,8 @@ class TestEngine():
         run_group = parser.add_argument_group('SST Run Options')
         run_group.add_argument('-z', '--logfailmode', action='store_true',
                                help='Display failure data during test runs (test dependent)')
+        run_group.add_argument('-i', '--ignoreskips', action='store_true',
+                               help='Disable Display of Skipped Test Messages (for debug purposes)')
         run_group.add_argument('-s', '--scenarios', type=str, metavar="name",
                                nargs="+", default=[],
                                help=(('Names of test scenarios that filter') + \
@@ -332,6 +334,8 @@ class TestEngine():
             test_engine_globals.TESTENGINE_VERBOSITY = test_engine_globals.VERBOSE_DEBUG
         if args.logfailmode:
             test_engine_globals.TESTENGINE_LOGFAILMODE = True
+        if args.ignoreskips:
+            test_engine_globals.TESTENGINE_IGNORESKIPS = True
         test_engine_globals.TESTENGINE_CONCURRENTMODE = False
         test_engine_globals.TESTENGINE_THREADLIMIT = DEF_THREAD_LIMIT
         if args.concurrent is not None:
@@ -432,6 +436,12 @@ class TestEngine():
             log_info(("Test Scenarios to filter tests: ") +
                      ("{0}").format(" ".join(test_engine_globals.TESTENGINE_SCENARIOSLIST)),
                      forced=False)
+
+        if test_engine_globals.TESTENGINE_IGNORESKIPS:
+            msg = "DISPLAY OF SKIPPED TESTS RESULTS IS DISABLED"
+            log_info(msg)
+            log_testing_note(msg)
+
 
 ####
 

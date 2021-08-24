@@ -10,11 +10,12 @@
 // distribution.
 
 #include "sst_config.h"
+
 #include "sst/core/component.h"
 
 #include "sst/core/exit.h"
-#include "sst/core/simulation_impl.h"
 #include "sst/core/factory.h"
+#include "sst/core/simulation_impl.h"
 
 using namespace SST::Statistics;
 
@@ -29,10 +30,7 @@ Component::Component(ComponentId_t id) : BaseComponent(id)
     // currentlyLoadingSubComponent = my_info;
 }
 
-
-Component::~Component()
-{
-}
+Component::~Component() {}
 
 void
 Component::registerAsPrimaryComponent()
@@ -44,17 +42,14 @@ void
 Component::primaryComponentDoNotEndSim()
 {
     int thread = getSimulation()->getRank().thread;
-    Simulation_impl::getSimulation()->getExit()->refInc( getId(), thread );
+    Simulation_impl::getSimulation()->getExit()->refInc(getId(), thread);
 }
 
 void
 Component::primaryComponentOKToEndSim()
 {
     int thread = getSimulation()->getRank().thread;
-    Simulation_impl::getSimulation()->getExit()->refDec( getId(), thread );
+    Simulation_impl::getSimulation()->getExit()->refDec(getId(), thread);
 }
 
-
 } // namespace SST
-
-

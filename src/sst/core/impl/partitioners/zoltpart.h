@@ -9,24 +9,22 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #ifndef SST_CORE_IMPL_PARTITONERS_ZOLTPART_H
 #define SST_CORE_IMPL_PARTITONERS_ZOLTPART_H
 
-
 #ifdef HAVE_ZOLTAN
 
-#include "sst/core/sstpart.h"
-#include "sst/core/output.h"
 #include "sst/core/eli/elementinfo.h"
+#include "sst/core/output.h"
+#include "sst/core/sstpart.h"
 
-// SST and ZOLTAN�s configurations are conflicting on the SST_CONFIG_HAVE_MPI definition.
-// So temporarily shut down SST�s SST_CONFIG_HAVE_MPI, then allow ZOLTAN�s SST_CONFIG_HAVE_MPI to
-//be defined, then reset SST�s SST_CONFIG_HAVE_MPI.
+// SST and ZOLTAN's configurations are conflicting on the SST_CONFIG_HAVE_MPI definition.
+// So temporarily shut down SST's SST_CONFIG_HAVE_MPI, then allow ZOLTAN's SST_CONFIG_HAVE_MPI to
+// be defined, then reset SST�s SST_CONFIG_HAVE_MPI.
 #ifdef SST_CONFIG_HAVE_MPI
 #undef SST_CONFIG_HAVE_MPI
-#include <zoltan.h>
 #include <mpi.h>
+#include <zoltan.h>
 #define SST_CONFIG_HAVE_MPI
 #endif
 
@@ -40,10 +38,10 @@ namespace Partition {
     an option to partition simulations if the user has configured SST
     to find and compile with the Zoltan external dependency.
 */
-class SSTZoltanPartition : public SST::Partition::SSTPartitioner {
+class SSTZoltanPartition : public SST::Partition::SSTPartitioner
+{
 
 public:
-
     SST_ELI_REGISTER_PARTITIONER(
         SSTZoltanPartition,
         "sst",
@@ -52,10 +50,10 @@ public:
         "zoltan parallel partitioner")
 
 protected:
-    void initZoltan();
-    RankInfo rankcount;
-    struct Zoltan_Struct * zolt_config;
-    RankInfo rank;
+    void                  initZoltan();
+    RankInfo              rankcount;
+    struct Zoltan_Struct* zolt_config;
+    RankInfo              rank;
 
 public:
     /**
@@ -76,12 +74,11 @@ public:
     bool requiresConfigGraph() override { return false; }
 
     bool spawnOnAllRanks() override { return true; }
-
 };
 
-}
-}
-}
+} // namespace Partition
+} // namespace IMPL
+} // namespace SST
 #endif // End of HAVE_ZOLTAN
 
 #endif

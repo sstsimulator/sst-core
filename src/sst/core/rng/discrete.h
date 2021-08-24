@@ -9,16 +9,15 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef _H_SST_CORE_RNG_DISCRETE
-#define _H_SST_CORE_RNG_DISCRETE
+#ifndef SST_CORE_RNG_DISCRETE_H
+#define SST_CORE_RNG_DISCRETE_H
 
+#include "distrib.h"
 #include "math.h"
+#include "mersenne.h"
+#include "rng.h"
 
 #include <cstdlib> // for malloc/free
-
-#include "rng.h"
-#include "distrib.h"
-#include "mersenne.h"
 
 using namespace SST::RNG;
 
@@ -31,25 +30,28 @@ namespace RNG {
     Creates a discrete distribution for use within SST. This distribution is the same across
     platforms and compilers.
 */
-class DiscreteDistribution : public SST::RNG::RandomDistribution {
+class DiscreteDistribution : public SST::RNG::RandomDistribution
+{
 
 public:
     /**
         Creates an exponential distribution with a specific lambda
         \param lambda The lambda of the exponential distribution
     */
-    DiscreteDistribution(const double* probs, const uint32_t probsCount)
-        : SST::RNG::RandomDistribution(), probCount(probsCount) {
+    DiscreteDistribution(const double* probs, const uint32_t probsCount) :
+        SST::RNG::RandomDistribution(),
+        probCount(probsCount)
+    {
 
-        probabilities = (double*)malloc(sizeof(double) * probsCount);
+        probabilities   = (double*)malloc(sizeof(double) * probsCount);
         double prob_sum = 0;
 
-        for (uint32_t i = 0; i < probsCount; i++) {
+        for ( uint32_t i = 0; i < probsCount; i++ ) {
             probabilities[i] = prob_sum;
             prob_sum += probs[i];
         }
 
-        baseDistrib = new MersenneRNG();
+        baseDistrib   = new MersenneRNG();
         deleteDistrib = true;
     }
 
@@ -58,30 +60,30 @@ public:
         \param lambda The lambda of the exponential distribution
         \param baseDist The base random number generator to take the distribution from.
     */
-    DiscreteDistribution(const double* probs, const uint32_t probsCount, SST::RNG::Random* baseDist)
-        : probCount(probsCount) {
+    DiscreteDistribution(const double* probs, const uint32_t probsCount, SST::RNG::Random* baseDist) :
+        probCount(probsCount)
+    {
 
-        probabilities = (double*)malloc(sizeof(double) * probsCount);
+        probabilities   = (double*)malloc(sizeof(double) * probsCount);
         double prob_sum = 0;
 
-        for (uint32_t i = 0; i < probsCount; i++) {
+        for ( uint32_t i = 0; i < probsCount; i++ ) {
             probabilities[i] = prob_sum;
             prob_sum += probs[i];
         }
 
-        baseDistrib = baseDist;
+        baseDistrib   = baseDist;
         deleteDistrib = false;
     }
 
     /**
         Destroys the exponential distribution
     */
-    ~DiscreteDistribution() {
+    ~DiscreteDistribution()
+    {
         free(probabilities);
 
-        if (deleteDistrib) {
-            delete baseDistrib;
-        }
+        if ( deleteDistrib ) { delete baseDistrib; }
     }
 
     /**
@@ -89,15 +91,14 @@ public:
         \return The next random double from the discrete distribution, this is the double converted of the index where
        the probability is located
     */
-    double getNextDouble() {
+    double getNextDouble()
+    {
         const double nextD = baseDistrib->nextUniform();
 
         uint32_t index = 0;
 
-        for (; index < probCount; index++) {
-            if (probabilities[index] >= nextD) {
-                break;
-            }
+        for ( ; index < probCount; index++ ) {
+            if ( probabilities[index] >= nextD ) { break; }
         }
 
         return (double)index;
@@ -130,4 +131,4 @@ using SSTDiscreteDistribution = SST::RNG::DiscreteDistribution;
 } // namespace RNG
 } // namespace SST
 
-#endif
+#endif // SST_CORE_RNG_DISCRETE_H

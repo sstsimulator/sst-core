@@ -22,17 +22,16 @@ SST_ELI_DEFINE_CTOR_EXTERN(SSTPartitioner)
 void
 SSTPartitioner::performPartition(PartitionGraph* UNUSED(graph))
 {
-  Output &output = Output::getDefaultObject();
-  output.fatal(CALL_INFO, 1, "ERROR: chosen partitioner does not support PartitionGraph");
+    Output& output = Output::getDefaultObject();
+    output.fatal(CALL_INFO, 1, "ERROR: chosen partitioner does not support PartitionGraph");
 }
 
 void
 SSTPartitioner::performPartition(ConfigGraph* UNUSED(graph))
 {
-  Output &output = Output::getDefaultObject();
-  output.fatal(CALL_INFO, 1, "ERROR: chosen partitioner does not support ConfigGraph");
+    Output& output = Output::getDefaultObject();
+    output.fatal(CALL_INFO, 1, "ERROR: chosen partitioner does not support ConfigGraph");
 }
 
-}
-}
-
+} // namespace Partition
+} // namespace SST

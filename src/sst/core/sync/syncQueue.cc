@@ -9,28 +9,22 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-
 #include "sst_config.h"
+
 #include "sst/core/sync/syncQueue.h"
 
-#include "sst/core/serialization/serializer.h"
 #include "sst/core/event.h"
+#include "sst/core/serialization/serializer.h"
 #include "sst/core/simulation.h"
-#include "sst/core/simulation_impl.h"
 
 namespace SST {
 
 using namespace Core::ThreadSafe;
 using namespace Core::Serialization;
 
-SyncQueue::SyncQueue() :
-    ActivityQueue(), buffer(nullptr), buf_size(0)
-{
-}
+SyncQueue::SyncQueue() : ActivityQueue(), buffer(nullptr), buf_size(0) {}
 
-SyncQueue::~SyncQueue()
-{
-}
+SyncQueue::~SyncQueue() {}
 
 bool
 SyncQueue::empty()
@@ -102,7 +96,7 @@ SyncQueue::getData()
 
     ser.start_sizing();
 
-    ser & activities;
+    ser& activities;
 
     size_t size = ser.size();
 
@@ -111,18 +105,16 @@ SyncQueue::getData()
     sim->messageSizeRecv += (uint64_t) size;
     #endif
 
-    if ( buf_size < ( size + sizeof(SyncQueue::Header) ) ) {
-        if ( buffer != nullptr ) {
-            delete[] buffer;
-        }
+    if ( buf_size < (size + sizeof(SyncQueue::Header)) ) {
+        if ( buffer != nullptr ) { delete[] buffer; }
 
         buf_size = size + sizeof(SyncQueue::Header);
-        buffer = new char[buf_size];
+        buffer   = new char[buf_size];
     }
 
     ser.start_packing(buffer + sizeof(SyncQueue::Header), size);
 
-    ser & activities;
+    ser& activities;
 
     // Delete all the events
     for ( unsigned int i = 0; i < activities.size(); i++ ) {

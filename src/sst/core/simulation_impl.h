@@ -14,33 +14,29 @@
 #ifndef SST_CORE_SIMULATION_IMPL_H
 #define SST_CORE_SIMULATION_IMPL_H
 
-
-#include "sst/core/sst_types.h"
+#include "sst/core/clock.h"
+#include "sst/core/componentInfo.h"
+#include "sst/core/oneshot.h"
+#include "sst/core/output.h"
+#include "sst/core/rankInfo.h"
 #include "sst/core/simulation.h"
+#include "sst/core/sst_types.h"
+#include "sst/core/unitAlgebra.h"
 
-#include <signal.h>
 #include <atomic>
 #include <iostream>
+#include <signal.h>
 #include <thread>
-
 #include <unordered_map>
-
-#include "sst/core/output.h"
-#include "sst/core/clock.h"
-#include "sst/core/oneshot.h"
-#include "sst/core/unitAlgebra.h"
-#include "sst/core/rankInfo.h"
-
-#include "sst/core/componentInfo.h"
-
 #include <cstdio>
+
 /* Forward declare for Friendship */
-extern int main(int argc, char **argv);
+extern int main(int argc, char** argv);
 
 namespace SST {
 
-#define _SIM_DBG( fmt, args...) __DBG( DBG_SIM, Sim, fmt, ## args )
-#define STATALLFLAG "--ALLSTATS--"
+#define _SIM_DBG(fmt, args...) __DBG(DBG_SIM, Sim, fmt, ##args)
+#define STATALLFLAG            "--ALLSTATS--"
 
 class Activity;
 class Component;
@@ -48,9 +44,10 @@ class Config;
 class ConfigGraph;
 class Exit;
 class Factory;
-class SimulatorHeartbeat;
 class LinkMap;
 class Params;
+class SharedRegionManager;
+class SimulatorHeartbeat;
 class SyncBase;
 class SyncManager;
 class ThreadSync;
@@ -58,26 +55,23 @@ class TimeConverter;
 class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
-class SharedRegionManager;
+
 namespace Statistics {
-    class StatisticOutput;
-    class StatisticProcessingEngine;
-}
-
-
+class StatisticOutput;
+class StatisticProcessingEngine;
+} // namespace Statistics
 
 /**
  * Main control class for a SST Simulation.
  * Provides base features for managing the simulation
  */
-class Simulation_impl : public Simulation {
+class Simulation_impl : public Simulation
+{
 
 public:
-
-
     /********  Public API inherited from Simulation ********/
     /** Get the run mode of the simulation (e.g. init, run, both etc) */
-    Mode_t getSimulationMode() const override{ return runMode; };
+    Mode_t getSimulationMode() const override { return runMode; };
 
     /** Return the current simulation time as a cycle count*/
     SimTime_t getCurrentSimCycle() const override;
@@ -95,18 +89,16 @@ public:
     UnitAlgebra getFinalSimTime() const override;
 
     /** Get this instance's parallel rank */
-    RankInfo getRank() const override {return my_rank;}
+    RankInfo getRank() const override { return my_rank; }
 
     /** Get the number of parallel ranks in the simulation */
-    RankInfo getNumRanks() const override {return num_ranks;}
+    RankInfo getNumRanks() const override { return num_ranks; }
 
     /**
     Returns the output directory of the simulation
     @return Directory in which simulation outputs are placed
     */
-    std::string& getOutputDirectory() override {
-        return output_directory;
-    }
+    std::string& getOutputDirectory() override { return output_directory; }
 
     /** Signifies that an event type is required for this simulation
      *  Causes the Factory to verify that the required event type can be found.
@@ -114,25 +106,27 @@ public:
      */
     virtual void requireEvent(const std::string& name) override;
 
-
     /** Causes the current status of the simulation to be printed to stderr.
      * @param fullStatus - if true, call printStatus() on all components as well
      *        as print the base Simulation's status
      */
     virtual void printStatus(bool fullStatus) override;
 
+    virtual double getRunPhaseElapsedRealTime() const override;
+    virtual double getInitPhaseElapsedRealTime() const override;
+    virtual double getCompletePhaseElapsedRealTime() const override;
+
     /******** End Public API from Simulation ********/
 
-
-    typedef std::map<std::pair<SimTime_t, int>, Clock*>   clockMap_t;              /*!< Map of times to clocks */
-    typedef std::map<std::pair<SimTime_t, int>, OneShot*> oneShotMap_t;            /*!< Map of times to OneShots */
+    typedef std::map<std::pair<SimTime_t, int>, Clock*>   clockMap_t;   /*!< Map of times to clocks */
+    typedef std::map<std::pair<SimTime_t, int>, OneShot*> oneShotMap_t; /*!< Map of times to OneShots */
 
     ~Simulation_impl();
 
     /*********  Static Core-only Functions *********/
 
     /** Return a pointer to the singleton instance of the Simulation */
-    static Simulation_impl *getSimulation() { return instanceMap.at(std::this_thread::get_id()); }
+    static Simulation_impl* getSimulation() { return instanceMap.at(std::this_thread::get_id()); }
 
     /** Return the TimeLord associated with this Simulation */
     static TimeLord* getTimeLord(void) { return &timeLord; }
@@ -145,7 +139,7 @@ public:
      * @param my_rank - Parallel Rank of this simulation object
      * @param num_ranks - How many Ranks are in the simulation
      */
-    static Simulation_impl* createSimulation(Config *config, RankInfo my_rank, RankInfo num_ranks);
+    static Simulation_impl* createSimulation(Config* config, RankInfo my_rank, RankInfo num_ranks);
 
     /**
      * Used to signify the end of simulation.  Cleans up any existing Simulation Objects
@@ -155,26 +149,23 @@ public:
     /** Sets an internal flag for signaling the simulation.  Used internally */
     static void setSignal(int signal);
 
-
-
     /** Insert an activity to fire at a specified time */
     void insertActivity(SimTime_t time, Activity* ev);
 
     /** Return the exit event */
     Exit* getExit() const { return m_exit; }
 
-
     /******** Core only API *************/
 
     /** Processes the ConfigGraph to pull out any need information
      * about relationships among the threads
      */
-    void processGraphInfo( ConfigGraph& graph, const RankInfo &myRank, SimTime_t min_part );
+    void processGraphInfo(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
 
-    int performWireUp( ConfigGraph& graph, const RankInfo &myRank, SimTime_t min_part );
+    int performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
 
     /** Set cycle count, which, if reached, will cause the simulation to halt. */
-    void setStopAtCycle( Config* cfg );
+    void setStopAtCycle(Config* cfg);
 
     /** Perform the init() phase of simulation */
     void initialize();
@@ -189,7 +180,7 @@ public:
 
     void finish();
 
-    bool isIndependentThread() { return independent;}
+    bool isIndependentThread() { return independent; }
 
     void printPerformanceInfo();
 
@@ -207,11 +198,11 @@ public:
 
     static TimeConverter* getMinPartTC() { return minPartTC; }
 
-    LinkMap* getComponentLinkMap(ComponentId_t id) const {
+    LinkMap* getComponentLinkMap(ComponentId_t id) const
+    {
         ComponentInfo* info = compInfoMap.getByID(id);
-        if ( nullptr == info ) {
-            return nullptr;
-        } else {
+        if ( nullptr == info ) { return nullptr; }
+        else {
             return info->getLinkMap();
         }
     }
@@ -220,38 +211,34 @@ public:
     const ComponentInfoMap& getComponentInfoMap(void) { return compInfoMap; }
 
     /** returns the component with the given ID */
-    BaseComponent* getComponent(const ComponentId_t &id) const {
+    BaseComponent* getComponent(const ComponentId_t& id) const
+    {
         ComponentInfo* i = compInfoMap.getByID(id);
         // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-        if ( nullptr != i ) {
-            return i->getComponent();
-        } else {
+        if ( nullptr != i ) { return i->getComponent(); }
+        else {
             printf("Simulation::getComponent() couldn't find component with id = %" PRIu64 "\n", id);
             exit(1);
         }
     }
 
-
     /** returns the ComponentInfo object for the given ID */
-    ComponentInfo* getComponentInfo(const ComponentId_t &id) const {
+    ComponentInfo* getComponentInfo(const ComponentId_t& id) const
+    {
         ComponentInfo* i = compInfoMap.getByID(id);
         // CompInfoMap_t::const_iterator i = compInfoMap.find(id);
-        if ( nullptr != i ) {
-            return i;
-        } else {
+        if ( nullptr != i ) { return i; }
+        else {
             printf("Simulation::getComponentInfo() couldn't find component with id = %" PRIu64 "\n", id);
             exit(1);
         }
     }
 
-
     /**
     Set the output directory for this simulation
     @param outDir Path of directory to place simulation outputs in
     */
-    void setOutputDirectory(const std::string& outDir) {
-        output_directory = outDir;
-    }
+    void setOutputDirectory(const std::string& outDir) { output_directory = outDir; }
 
     /**
      * Returns the time of the next item to be executed
@@ -266,11 +253,9 @@ public:
     static SimTime_t getLocalMinimumNextActivityTime();
 
     /**
-    * Returns true when the Wireup is finished.
-    */
-    bool isWireUpFinished() {return wireUpFinished; }
-
-
+     * Returns true when the Wireup is finished.
+     */
+    bool isWireUpFinished() { return wireUpFinished; }
 
     uint64_t getTimeVortexMaxDepth() const;
 
@@ -278,26 +263,24 @@ public:
 
     uint64_t getSyncQueueDataSize() const;
 
-
     /******** API provided through BaseComponent only ***********/
-
 
     /** Register a handler to be called on a set frequency */
     TimeConverter* registerClock(const std::string& freq, Clock::HandlerBase* handler, int priority);
 
     TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority);
 
-    TimeConverter* registerClock(TimeConverter *tcFreq, Clock::HandlerBase* handler, int priority);
+    TimeConverter* registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority);
 
     void registerClockHandler(SST::ComponentId_t id, uint64_t handler);
 
     /** Remove a clock handler from the list of active clock handlers */
-    void unregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority);
+    void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
 
     /** Reactivate an existing clock and handler.
      * @return time when handler will next fire
      */
-    Cycle_t reregisterClock(TimeConverter *tc, Clock::HandlerBase* handler, int priority);
+    Cycle_t reregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
 
     /** Returns the next Cycle that the TImeConverter would fire. */
     Cycle_t getNextClockCycle(TimeConverter* tc, int priority = CLOCKPRIORITY);
@@ -305,24 +288,18 @@ public:
     /** Return the Statistic Processing Engine associated with this Simulation */
     Statistics::StatisticProcessingEngine* getStatisticsProcessingEngine(void) const;
 
-
-
-
-// private:
+    // private:
 
     friend class Link;
     friend class Action;
     friend class Output;
     // To enable main to set up globals
-    friend int ::main(int argc, char **argv);
+    friend int ::main(int argc, char** argv);
 
     // Simulation_impl() {}
     Simulation_impl(Config* config, RankInfo my_rank, RankInfo num_ranks);
-    Simulation_impl(Simulation_impl const&);     // Don't Implement
-    void operator=(Simulation_impl const&); // Don't implement
-
-
-
+    Simulation_impl(Simulation_impl const&); // Don't Implement
+    void operator=(Simulation_impl const&);  // Don't implement
 
     /** Get a handle to a TimeConverter
      * @param cycles Frequency which is the base of the TimeConverter
@@ -330,21 +307,18 @@ public:
     TimeConverter* minPartToTC(SimTime_t cycles) const;
 
     /** Factory used to generate the simulation components */
-    static Factory *factory;
+    static Factory* factory;
 
-    static void resizeBarriers(uint32_t nthr);
+    static void                      resizeBarriers(uint32_t nthr);
     static Core::ThreadSafe::Barrier initBarrier;
     static Core::ThreadSafe::Barrier completeBarrier;
     static Core::ThreadSafe::Barrier setupBarrier;
     static Core::ThreadSafe::Barrier runBarrier;
     static Core::ThreadSafe::Barrier exitBarrier;
     static Core::ThreadSafe::Barrier finishBarrier;
-    static std::mutex simulationMutex;
+    static std::mutex                simulationMutex;
 
-
-
-    Component* createComponent(ComponentId_t id, const std::string& name,
-                               Params &params);
+    Component* createComponent(ComponentId_t id, const std::string& name, Params& params);
 
     TimeVortex* getTimeVortex() const { return timeVortex; }
 
@@ -354,8 +328,8 @@ public:
     static void emergencyShutdown();
     /** Normal Shutdown
      */
-    void endSimulation(void);
-    void endSimulation(SimTime_t end);
+    void        endSimulation(void);
+    void        endSimulation(SimTime_t end);
 
     typedef enum {
         SHUTDOWN_CLEAN,     /* Normal shutdown */
@@ -365,32 +339,32 @@ public:
 
     friend class SyncManager;
 
-    TimeVortex*      timeVortex;
-    TimeConverter*   threadMinPartTC;
-    Activity*        current_activity;
-    static SimTime_t minPart;
+    TimeVortex*             timeVortex;
+    TimeConverter*          threadMinPartTC;
+    Activity*               current_activity;
+    static SimTime_t        minPart;
     static TimeConverter*   minPartTC;
-    std::vector<SimTime_t> interThreadLatencies;
-    SimTime_t        interThreadMinLatency;
-    SyncManager*     syncManager;
+    std::vector<SimTime_t>  interThreadLatencies;
+    SimTime_t               interThreadMinLatency;
+    SyncManager*            syncManager;
     // ThreadSync*      threadSync;
-    ComponentInfoMap compInfoMap;
-    clockMap_t       clockMap;
-    oneShotMap_t     oneShotMap;
-    static Exit*     m_exit;
-    SimulatorHeartbeat*    m_heartbeat;
-    bool             endSim;
-    bool             independent; // true if no links leave thread (i.e. no syncs required)
-    static std::atomic<int>       untimed_msg_count;
-    unsigned int     untimed_phase;
-    volatile sig_atomic_t lastRecvdSignal;
-    ShutdownMode_t   shutdown_mode;
-    bool             wireUpFinished;
+    ComponentInfoMap        compInfoMap;
+    clockMap_t              clockMap;
+    oneShotMap_t            oneShotMap;
+    static Exit*            m_exit;
+    SimulatorHeartbeat*     m_heartbeat;
+    bool                    endSim;
+    bool                    independent; // true if no links leave thread (i.e. no syncs required)
+    static std::atomic<int> untimed_msg_count;
+    unsigned int            untimed_phase;
+    volatile sig_atomic_t   lastRecvdSignal;
+    ShutdownMode_t          shutdown_mode;
+    bool                    wireUpFinished;
 
     /** TimeLord of the simulation */
     static TimeLord timeLord;
     /** Output */
-    static Output sim_output;
+    static Output   sim_output;
 
     /** Performance Tracking Information **/
 
@@ -440,23 +414,28 @@ public:
     std::string clockResolution = "us";
     #endif
 
-    Mode_t   runMode;
-    SimTime_t        currentSimCycle;
-    SimTime_t        endSimCycle;
-    int              currentPriority;
-    RankInfo         my_rank;
-    RankInfo         num_ranks;
+    Mode_t    runMode;
+    SimTime_t currentSimCycle;
+    SimTime_t endSimCycle;
+    int       currentPriority;
+    RankInfo  my_rank;
+    RankInfo  num_ranks;
 
-    std::string      output_directory;
+    std::string                 output_directory;
     static SharedRegionManager* sharedRegionManager;
 
+    double run_phase_start_time;
+    double run_phase_total_time;
+    double init_phase_start_time;
+    double init_phase_total_time;
+    double complete_phase_start_time;
+    double complete_phase_total_time;
 
     static std::unordered_map<std::thread::id, Simulation_impl*> instanceMap;
-    static std::vector<Simulation_impl*> instanceVec;
+    static std::vector<Simulation_impl*>                         instanceVec;
 
     friend void wait_my_turn_start();
     friend void wait_my_turn_end();
-
 };
 
 // Function to allow for easy serialization of threads while debugging
@@ -468,7 +447,6 @@ void wait_my_turn_start(Core::ThreadSafe::Barrier& barrier, int thread, int tota
 
 void wait_my_turn_end(Core::ThreadSafe::Barrier& barrier, int thread, int total_threads);
 
-
 } // namespace SST
 
-#endif //SST_CORE_SIMULATION_IMPL_H
+#endif // SST_CORE_SIMULATION_IMPL_H

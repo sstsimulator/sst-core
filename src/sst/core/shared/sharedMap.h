@@ -9,11 +9,11 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
-#ifndef SST_CORE_CORE_SHARED_SHAREDMAP_H
-#define SST_CORE_CORE_SHARED_SHAREDMAP_H
+#ifndef SST_CORE_SHARED_SHAREDMAP_H
+#define SST_CORE_SHARED_SHAREDMAP_H
 
-#include "sst/core/sst_types.h"
 #include "sst/core/shared/sharedObject.h"
+#include "sst/core/sst_types.h"
 
 #include <map>
 
@@ -25,23 +25,21 @@ namespace Shared {
    non-pointer type as value.  The type must be serializable.
  */
 template <typename keyT, typename valT>
-class SharedMap : public SharedObject {
+class SharedMap : public SharedObject
+{
     static_assert(!std::is_pointer<valT>::value, "Cannot use a pointer type as value with SharedMap");
 
     // Forward declaration.  Defined below
     class Data;
 
 public:
+    SharedMap() : SharedObject(), published(false), data(nullptr) {}
 
-    SharedMap() :
-        SharedObject(), published(false), data(nullptr)
-    {}
-
-    ~SharedMap() {
+    ~SharedMap()
+    {
         // data does not need to be deleted since the
         // SharedObjectManager owns the pointer
     }
-
 
     /**
        Initialize the SharedMap.
@@ -64,21 +62,22 @@ public:
        @return returns the number of instances that have intialized
        themselve before this instance on this MPI rank.
      */
-    int initialize(const std::string& obj_name, verify_type v_type = FE_VERIFY) {
+    int initialize(const std::string& obj_name, verify_type v_type = FE_VERIFY)
+    {
         if ( data ) {
             Simulation::getSimulationOutput().fatal(
-                CALL_INFO,1,"ERROR: called initialize() of SharedMap %s more than once\n",obj_name.c_str());
+                CALL_INFO, 1, "ERROR: called initialize() of SharedMap %s more than once\n", obj_name.c_str());
         }
 
-        data = manager.getSharedObjectData<Data>(obj_name);
+        data    = manager.getSharedObjectData<Data>(obj_name);
         int ret = incShareCount(data);
         data->setVerify(v_type);
         return ret;
     }
 
     /*** Typedefs and functions to mimic parts of the vector API ***/
-    typedef typename std::map<keyT,valT>::const_iterator const_iterator;
-    typedef typename std::map<keyT,valT>::const_reverse_iterator const_reverse_iterator;
+    typedef typename std::map<keyT, valT>::const_iterator         const_iterator;
+    typedef typename std::map<keyT, valT>::const_reverse_iterator const_reverse_iterator;
 
     /**
        Get the size of the map.
@@ -94,16 +93,13 @@ public:
      */
     inline bool empty() const { return data->map.empty(); }
 
-
     /**
        Counts elements with a specific key.  Becuase this is not a
        multimap, it will either return 1 or 0.
 
        @return Count of elements with specified key
      */
-    size_t count (const keyT& k) const {
-        return data->map.count(k);
-    }
+    size_t count(const keyT& k) const { return data->map.count(k); }
 
     /**
        Searches the container for an element with a key equivalent to
@@ -112,37 +108,27 @@ public:
 
        @param key key to search for
      */
-    const_iterator find (const keyT& key) const {
-        return data->map.find(key);
-    }
+    const_iterator find(const keyT& key) const { return data->map.find(key); }
 
     /**
        Get const_iterator to beginning of underlying map
      */
-    const_iterator begin() const {
-        return data->map.cbegin();
-    }
+    const_iterator begin() const { return data->map.cbegin(); }
 
     /**
        Get const_iterator to end of underlying map
      */
-    const_iterator end() const {
-        return data->map.cend();
-    }
+    const_iterator end() const { return data->map.cend(); }
 
     /**
        Get const_reverse_iterator to beginning of underlying map
      */
-    const_reverse_iterator rbegin() const {
-        return data->map.crbegin();
-    }
+    const_reverse_iterator rbegin() const { return data->map.crbegin(); }
 
     /**
        Get const_reverse_iterator to end of underlying map
      */
-    const_reverse_iterator rend() const {
-        return data->map.crend();
-    }
+    const_reverse_iterator rend() const { return data->map.crend(); }
 
     /**
        Returns an iterator pointing to the first element in the
@@ -151,9 +137,7 @@ public:
 
        @param key key to compare to
      */
-    inline const_iterator lower_bound(const keyT& key) const {
-        return data->map.lower_bound(key);
-    }
+    inline const_iterator lower_bound(const keyT& key) const { return data->map.lower_bound(key); }
 
     /**
        Returns an iterator pointing to the first element in the
@@ -161,16 +145,15 @@ public:
 
        @param key key to compare to
     */
-    inline const_iterator upper_bound(const keyT& key) const {
-        return data->map.lower_bound(key);
-    }
+    inline const_iterator upper_bound(const keyT& key) const { return data->map.lower_bound(key); }
 
     /**
        Indicate that the calling element has written all the data it
        plans to write.  Writing to the map through this instance
        after publish() is called will create an error.
      */
-    void publish() {
+    void publish()
+    {
         if ( published ) return;
         published = true;
         incPublishCount(data);
@@ -183,10 +166,7 @@ public:
        SharedMap was initialized but not published after the last
        call.
      */
-    bool isFullyPublished() {
-        return data->isFullyPublished();
-    }
-
+    bool isFullyPublished() { return data->isFullyPublished(); }
 
     /**
        Write data to the map.  This function is thread-safe, as a
@@ -196,11 +176,11 @@ public:
 
        @param value value to be written
      */
-    inline void write(const keyT& key, const valT& value) {
+    inline void write(const keyT& key, const valT& value)
+    {
         if ( published ) {
             Simulation::getSimulationOutput().fatal(
-                CALL_INFO,1,"ERROR: write to SharedMap %s after publish() was called\n",
-                data->getName().c_str());
+                CALL_INFO, 1, "ERROR: write to SharedMap %s after publish() was called\n", data->getName().c_str());
         }
         return data->write(key, value);
     }
@@ -224,9 +204,7 @@ public:
 
        @exception std::out_of_range key is not found in map
      */
-    inline const valT& operator[](const keyT& key) const {
-        return data->read(key);
-    }
+    inline const valT& operator[](const keyT& key) const { return data->read(key); }
 
     /**
        Read data from the map.  This returns a const reference, so
@@ -240,73 +218,63 @@ public:
 
        @exception std::out_of_range key is not found in map
     */
-    inline const valT& mutex_read(const keyT& key) const {
-        return data->mutex_read(key);
-    }
-
+    inline const valT& mutex_read(const keyT& key) const { return data->mutex_read(key); }
 
 private:
-    bool published;
+    bool  published;
     Data* data;
 
-
-    class Data : public SharedObjectData {
+    class Data : public SharedObjectData
+    {
 
         // Forward declaration.  Defined below
         class ChangeSet;
 
     public:
+        std::map<keyT, valT> map;
+        ChangeSet*           change_set;
+        verify_type          verify;
 
-        std::map<keyT,valT> map;
-        ChangeSet* change_set;
-        verify_type verify;
-
-        Data(const std::string& name) :
-            SharedObjectData(name),
-            change_set(nullptr),
-            verify(VERIFY_UNINITIALIZED)
+        Data(const std::string& name) : SharedObjectData(name), change_set(nullptr), verify(VERIFY_UNINITIALIZED)
         {
-            if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) {
-                change_set = new ChangeSet(name);
-            }
+            if ( Simulation::getSimulation()->getNumRanks().rank > 1 ) { change_set = new ChangeSet(name); }
         }
 
-        ~Data() {
-            delete change_set;
-        }
+        ~Data() { delete change_set; }
 
-        void setVerify(verify_type v_type) {
+        void setVerify(verify_type v_type)
+        {
             if ( v_type != verify && verify != VERIFY_UNINITIALIZED ) {
                 Simulation::getSimulationOutput().fatal(
-                    CALL_INFO,1,"ERROR: Two different verify_types specified for SharedMap %s\n",name.c_str());
+                    CALL_INFO, 1, "ERROR: Two different verify_types specified for SharedMap %s\n", name.c_str());
             }
             verify = v_type;
             if ( change_set ) change_set->setVerify(v_type);
         }
 
-        size_t getSize() const {
-            return map.size();
-        }
+        size_t getSize() const { return map.size(); }
 
-        void update_write(const keyT& key, const valT& value) {
+        void update_write(const keyT& key, const valT& value)
+        {
             // Don't need to mutex because this is only ever called
             // from one thread at a time, with barrier before and
             // after, or from write(), which does mutex.
-            auto success = map.insert(std::make_pair(key,value));
+            auto success = map.insert(std::make_pair(key, value));
             if ( !success.second ) {
                 // Wrote to a key that already existed
                 if ( verify != NO_VERIFY && value != success.first->second ) {
                     Simulation::getSimulationOutput().fatal(
-                        CALL_INFO, 1, "ERROR: wrote two different values to same key in SharedMap %s\n",name.c_str());
+                        CALL_INFO, 1, "ERROR: wrote two different values to same key in SharedMap %s\n", name.c_str());
                 }
             }
         }
 
-        void write(const keyT& key, const valT& value) {
+        void write(const keyT& key, const valT& value)
+        {
             std::lock_guard<std::mutex> lock(mtx);
             check_lock_for_write("SharedMap");
-            update_write(key,value);
-            if ( change_set ) change_set->addChange(key,value);
+            update_write(key, value);
+            if ( change_set ) change_set->addChange(key, value);
         }
 
         // Inline the read since it may be called often during run().
@@ -315,59 +283,47 @@ private:
         // thread.  If there is a danger of simultaneous access
         // during init, use the mutex_read function until after the
         // init phase.
-        inline const valT& read(const keyT& key) {
-            return map.at(key);
-        }
+        inline const valT& read(const keyT& key) { return map.at(key); }
 
         // Mutexed read for use if you are resizing the array as you go
-        inline const valT& mutex_read(const keyT& key) {
+        inline const valT& mutex_read(const keyT& key)
+        {
             std::lock_guard<std::mutex> lock(mtx);
-            auto ret = map.at(key);
+            auto                        ret = map.at(key);
             return ret;
         }
 
         // Functions inherited from SharedObjectData
-        virtual SharedObjectChangeSet* getChangeSet() override {
-            return change_set;
-        }
-        virtual void resetChangeSet() override {
-            change_set->clear();
-        }
+        virtual SharedObjectChangeSet* getChangeSet() override { return change_set; }
+        virtual void                   resetChangeSet() override { change_set->clear(); }
 
     private:
-        class ChangeSet : public SharedObjectChangeSet {
+        class ChangeSet : public SharedObjectChangeSet
+        {
 
-            std::map<keyT,valT> changes;
-            verify_type verify;
+            std::map<keyT, valT> changes;
+            verify_type          verify;
 
-            void serialize_order(SST::Core::Serialization::serializer& ser) override {
+            void serialize_order(SST::Core::Serialization::serializer& ser) override
+            {
                 SharedObjectChangeSet::serialize_order(ser);
-                ser & changes;
-                ser & verify;
+                ser& changes;
+                ser& verify;
             }
 
-            ImplementSerializable(SST::Shared::SharedMap<keyT,valT>::Data::ChangeSet);
+            ImplementSerializable(SST::Shared::SharedMap<keyT, valT>::Data::ChangeSet);
 
         public:
             // For serialization
-            ChangeSet() :
-                SharedObjectChangeSet(),
-                verify(VERIFY_UNINITIALIZED)
-                {}
-            ChangeSet(const std::string& name) :
-                SharedObjectChangeSet(name),
-                verify(VERIFY_UNINITIALIZED)
-                {}
+            ChangeSet() : SharedObjectChangeSet(), verify(VERIFY_UNINITIALIZED) {}
+            ChangeSet(const std::string& name) : SharedObjectChangeSet(name), verify(VERIFY_UNINITIALIZED) {}
 
-            void addChange(const keyT& key, const valT& value) {
-                changes[key] = value;
-            }
+            void addChange(const keyT& key, const valT& value) { changes[key] = value; }
 
-            void setVerify(verify_type v_type) {
-                verify = v_type;
-            }
+            void setVerify(verify_type v_type) { verify = v_type; }
 
-            void applyChanges(SharedObjectDataManager* manager) override {
+            void applyChanges(SharedObjectDataManager* manager) override
+            {
                 auto data = manager->getSharedObjectData<Data>(getName());
                 data->setVerify(verify);
                 for ( auto x : changes ) {
@@ -375,17 +331,12 @@ private:
                 }
             }
 
-            void clear() override {
-                changes.clear();
-            }
+            void clear() override { changes.clear(); }
         };
     };
-
-
-
 };
 
 } // namespace Shared
 } // namespace SST
 
-#endif
+#endif // SST_CORE_SHARED_SHAREDMAP_H

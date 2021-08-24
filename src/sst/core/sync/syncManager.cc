@@ -10,18 +10,17 @@
 // distribution.
 
 #include "sst_config.h"
-#include "sst/core/sync/syncManager.h"
 
-#include "sst/core/warnmacros.h"
+#include "sst/core/sync/syncManager.h"
 
 #include "sst/core/exit.h"
 #include "sst/core/simulation_impl.h"
-#include "sst/core/timeConverter.h"
-
-#include "sst/core/sync/threadSyncQueue.h"
-#include "sst/core/sync/rankSyncSerialSkip.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
+#include "sst/core/sync/rankSyncSerialSkip.h"
+#include "sst/core/sync/threadSyncQueue.h"
 #include "sst/core/sync/threadSyncSimpleSkip.h"
+#include "sst/core/timeConverter.h"
+#include "sst/core/warnmacros.h"
 
 #ifdef SST_CONFIG_HAVE_MPI
 DISABLE_WARN_MISSING_OVERRIDE
@@ -35,37 +34,40 @@ REENABLE_WARNING
 namespace SST {
 
 // Static data members
-RankSync* SyncManager::rankSync = nullptr;
+RankSync*                 SyncManager::rankSync = nullptr;
 Core::ThreadSafe::Barrier SyncManager::RankExecBarrier[6];
 Core::ThreadSafe::Barrier SyncManager::LinkUntimedBarrier[3];
-SimTime_t SyncManager::next_rankSync = MAX_SIMTIME_T;
+SimTime_t                 SyncManager::next_rankSync = MAX_SIMTIME_T;
 
-class EmptyRankSync : public RankSync {
+class EmptyRankSync : public RankSync
+{
 public:
-    EmptyRankSync() {
-        nextSyncTime = MAX_SIMTIME_T;
-    }
+    EmptyRankSync() { nextSyncTime = MAX_SIMTIME_T; }
     ~EmptyRankSync() {}
 
     /** Register a Link which this Sync Object is responsible for */
-    ActivityQueue* registerLink(const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), LinkId_t UNUSED(link_id), Link* UNUSED(link)) override { return nullptr; }
+    ActivityQueue* registerLink(
+        const RankInfo& UNUSED(to_rank), const RankInfo& UNUSED(from_rank), LinkId_t UNUSED(link_id),
+        Link* UNUSED(link)) override
+    {
+        return nullptr;
+    }
 
     void execute(int UNUSED(thread)) override {}
-    void exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count)) override {
+    void exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::atomic<int>& UNUSED_WO_MPI(msg_count)) override
+    {
         // Even though there are no links crossing ranks, we still
         // need to make sure every rank does the same number of init
         // cycles so the shared memory regions initialization works.
 
 #ifdef SST_CONFIG_HAVE_MPI
-        if ( thread != 0 ) {
-            return;
-        }
+        if ( thread != 0 ) { return; }
 
         // Do an allreduce to see if there were any messages sent
         int input = msg_count;
 
         int count;
-        MPI_Allreduce( &input, &count, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD );
+        MPI_Allreduce(&input, &count, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
         msg_count = count;
 #endif
     }
@@ -75,16 +77,15 @@ public:
 
     SimTime_t getNextSyncTime() override { return nextSyncTime; }
 
-    TimeConverter* getMaxPeriod() {return max_period;}
+    TimeConverter* getMaxPeriod() { return max_period; }
 
     uint64_t getDataSize() const override { return 0; }
 };
 
-class EmptyThreadSync : public ThreadSync {
+class EmptyThreadSync : public ThreadSync
+{
 public:
-    EmptyThreadSync () {
-        nextSyncTime = MAX_SIMTIME_T;
-    }
+    EmptyThreadSync() { nextSyncTime = MAX_SIMTIME_T; }
     ~EmptyThreadSync() {}
 
     void before() override {}
@@ -95,12 +96,13 @@ public:
     void prepareForComplete() override {}
 
     /** Register a Link which this Sync Object is responsible for */
-    void registerLink(LinkId_t UNUSED(link_id), Link* UNUSED(link)) override {}
+    void           registerLink(LinkId_t UNUSED(link_id), Link* UNUSED(link)) override {}
     ActivityQueue* getQueueForThread(int UNUSED(tid)) override { return nullptr; }
 };
 
-
-SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part, const std::vector<SimTime_t>& UNUSED(interThreadLatencies)) :
+SyncManager::SyncManager(
+    const RankInfo& rank, const RankInfo& num_ranks, TimeConverter* minPartTC, SimTime_t min_part,
+    const std::vector<SimTime_t>& UNUSED(interThreadLatencies)) :
     Action(),
     rank(rank),
     num_ranks(num_ranks),
@@ -109,14 +111,15 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeCo
 {
     sim = Simulation_impl::getSimulation();
 
-
-    if ( rank.thread == 0  ) {
-        for ( auto &b : RankExecBarrier ) { b.resize(num_ranks.thread); }
-        for ( auto &b : LinkUntimedBarrier ) { b.resize(num_ranks.thread); }
+    if ( rank.thread == 0 ) {
+        for ( auto& b : RankExecBarrier ) {
+            b.resize(num_ranks.thread);
+        }
+        for ( auto& b : LinkUntimedBarrier ) {
+            b.resize(num_ranks.thread);
+        }
         if ( min_part != MAX_SIMTIME_T ) {
-            if ( num_ranks.thread == 1 ) {
-                rankSync = new RankSyncSerialSkip(/*num_ranks,*/ minPartTC);
-            }
+            if ( num_ranks.thread == 1 ) { rankSync = new RankSyncSerialSkip(/*num_ranks,*/ minPartTC); }
             else {
                 rankSync = new RankSyncParallelSkip(num_ranks, minPartTC);
             }
@@ -142,7 +145,6 @@ SyncManager::SyncManager(const RankInfo& rank, const RankInfo& num_ranks, TimeCo
     setPriority(SYNCPRIORITY);
 }
 
-
 SyncManager::~SyncManager() {}
 
 /** Register a Link which this Sync Object is responsible for */
@@ -150,7 +152,7 @@ ActivityQueue*
 SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, LinkId_t link_id, Link* link)
 {
     if ( to_rank == from_rank ) {
-        return nullptr;  // This should never happen
+        return nullptr; // This should never happen
     }
 
     if ( to_rank.rank == from_rank.rank ) {
@@ -217,9 +219,7 @@ SyncManager::execute(void)
 
         RankExecBarrier[4].wait();
 
-        if ( exit->getGlobalCount() == 0 ) {
-            endSimulation(exit->getEndTime());
-        }
+        if ( exit->getGlobalCount() == 0 ) { endSimulation(exit->getEndTime()); }
 
         #ifdef SYNC_PROFILING
         perfRankSync = true;
@@ -231,9 +231,7 @@ SyncManager::execute(void)
         threadSync->execute();
 
         if ( /*num_ranks.rank == 1*/ min_part == MAX_SIMTIME_T ) {
-            if ( exit->getRefCount() == 0 ) {
-                endSimulation(exit->getEndTime());
-            }
+            if ( exit->getRefCount() == 0 ) { endSimulation(exit->getEndTime()); }
         }
 
         break;
@@ -316,19 +314,17 @@ SyncManager::computeNextInsert()
 }
 
 void
-SyncManager::print(const std::string& header, Output &out) const
+SyncManager::print(const std::string& header, Output& out) const
 {
-    out.output("%s SyncManager to be delivered at %" PRIu64
-               " with priority %d\n",
-               header.c_str(), getDeliveryTime(), getPriority());
+    out.output(
+        "%s SyncManager to be delivered at %" PRIu64 " with priority %d\n", header.c_str(), getDeliveryTime(),
+        getPriority());
 }
 
-uint64_t SyncManager::getDataSize() const
+uint64_t
+SyncManager::getDataSize() const
 {
     return rankSync->getDataSize();
 }
 
-
 } // namespace SST
-
-

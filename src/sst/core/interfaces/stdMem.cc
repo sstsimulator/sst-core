@@ -11,6 +11,8 @@
 // distribution.
 //
 #include "sst_config.h"
+
 #include "sst/core/interfaces/stdMem.h"
 
-std::atomic<SST::Experimental::Interfaces::StandardMem::Request::id_t> SST::Experimental::Interfaces::StandardMem::Request::main_id(0);
+std::atomic<SST::Experimental::Interfaces::StandardMem::Request::id_t>
+    SST::Experimental::Interfaces::StandardMem::Request::main_id(0);

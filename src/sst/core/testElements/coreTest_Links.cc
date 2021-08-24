@@ -15,17 +15,15 @@
 
 #include "sst_config.h"
 
-#include "sst/core/simulation.h"
 #include "sst/core/testElements/coreTest_Links.h"
 
 #include "sst/core/event.h"
+#include "sst/core/simulation.h"
 
 using namespace SST;
 using namespace SST::CoreTestComponent;
 
-coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) :
-    Component(id),
-    recv_count(0)
+coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) : Component(id), recv_count(0)
 {
     bool found_sendlat;
     bool found_recvlat;
@@ -34,64 +32,58 @@ coreTestLinks::coreTestLinks(ComponentId_t id, Params& params) :
     registerAsPrimaryComponent();
     primaryComponentDoNotEndSim();
 
-    my_id = params.find<int>("id",0);
-    
-    UnitAlgebra link_tb = params.find<UnitAlgebra>("link_time_base", "1ns");
+    my_id = params.find<int>("id", 0);
+
+    UnitAlgebra link_tb  = params.find<UnitAlgebra>("link_time_base", "1ns");
     UnitAlgebra send_lat = params.find<UnitAlgebra>("added_send_latency", found_sendlat);
     UnitAlgebra recv_lat = params.find<UnitAlgebra>("added_recv_latency", found_recvlat);
-    
+
     // configure out links
-    E = configureLink("Elink", link_tb.toString(), new Event::Handler<coreTestLinks,std::string>
-                      (this, &coreTestLinks::handleEvent, "East"));
-    W = configureLink("Wlink", link_tb.toString(), new Event::Handler<coreTestLinks,std::string>
-                      (this,&coreTestLinks::handleEvent, "West"));
+    E = configureLink(
+        "Elink", link_tb.toString(),
+        new Event::Handler<coreTestLinks, std::string>(this, &coreTestLinks::handleEvent, "East"));
+    W = configureLink(
+        "Wlink", link_tb.toString(),
+        new Event::Handler<coreTestLinks, std::string>(this, &coreTestLinks::handleEvent, "West"));
 
     if ( found_sendlat ) {
-        E->addSendLatency(1,send_lat.toString());
-        W->addSendLatency(1,send_lat.toString());
+        E->addSendLatency(1, send_lat.toString());
+        W->addSendLatency(1, send_lat.toString());
     }
-    
+
     if ( found_recvlat ) {
-        E->addRecvLatency(1,recv_lat.toString());
-        W->addRecvLatency(1,recv_lat.toString());
+        E->addRecvLatency(1, recv_lat.toString());
+        W->addRecvLatency(1, recv_lat.toString());
     }
-    
+
     // set our clock
-    registerClock("100 MHz", new Clock::Handler<coreTestLinks>(this,
-                  &coreTestLinks::clockTic));
+    registerClock("100 MHz", new Clock::Handler<coreTestLinks>(this, &coreTestLinks::clockTic));
 }
 
-coreTestLinks::~coreTestLinks()
-{
-}
+coreTestLinks::~coreTestLinks() {}
 
 // incoming events are scanned and deleted
-void coreTestLinks::handleEvent(Event *ev, std::string from)
+void
+coreTestLinks::handleEvent(Event* ev, std::string from)
 {
     Simulation::getSimulationOutput().output(
         "%d: received event at: %" PRIu64 " ns on link %s\n", my_id, getCurrentSimTimeNano(), from.c_str());
     delete ev;
     recv_count++;
-    if ( recv_count == 8 ) {
-        primaryComponentOKToEndSim();
-    }
+    if ( recv_count == 8 ) { primaryComponentOKToEndSim(); }
 }
 
-bool coreTestLinks::clockTic( Cycle_t cycle )
+bool
+coreTestLinks::clockTic(Cycle_t cycle)
 {
     // Each clock cycle, send with increasing addtional latency, for 4 cycles, end of 5th
-    if ( cycle == 5 ) {
-        return true;
-    }
+    if ( cycle == 5 ) { return true; }
 
     E->send(cycle, nullptr);
     W->send(cycle, nullptr);
-    
+
     // return false so we keep going
     return false;
 }
 
 // Element Libarary / Serialization stuff
-
-
-
