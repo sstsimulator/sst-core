@@ -27,6 +27,10 @@ target_link_libraries(coreTestElement PRIVATE sst-config-headers)
 install(TARGETS coreTestElement DESTINATION lib/sstcore)
 set_target_properties(coreTestElement PROPERTIES NO_SONAME 1)
 
+if(APPLE)
+  target_link_options(coreTestElement PRIVATE "LINKER:-undefined,dynamic_lookup")
+endif()
+
 # NEED To figure out how to deal with distributing the README
 
 # EOF

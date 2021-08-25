@@ -31,16 +31,16 @@ $> make install
 ### CMake Build Directives (-DOPTION=ON/OFF)
 
 * -DCMAKE\_INSTALL\_PREFIX=/path : Sets the CMake installation prefix
-* -DCMAKE\_CXX\_FLAGS="flags" : Sets the C++ build flags
+* -DCMAKE\_BUILD\_TYPE=TYPE : (Debug, Release, etc) Sets the optimization/debug flags
 * -DBUILD\_DOCUMENTATION=ON : Enables Doxygen documentation: use `make doc`
-* -DBUILD\_ALL\_TESTING=ON : Enables the SST test harness: use `make test`
+* -DBUILD\_ALL\_TESTING=ON : Enables the SST test harness: use `make test`; requires installation
 * -DSST\_DISABLE\_MEM\_POOLS=ON : Disables the SST memory pools
 * -DSST\_ENABLE\_EVENT\_TRACKING=ON : Enables the SST even tracking (mem pools must be enabled)
-* -DSST\_ENABLE\_DEBUG=ON : Enables the SST debug flags
+* -DSST\_ENABLE\_DEBUG\_OUTPUT=ON : Enables the SST debug flags
 * -DSST\_ENABLE\_PROFILE\_BUILD: Enables the internal SST profiling options
-* -DSST\_ENABLE\_LIBZ=ON : Enables LibZ support
+* -DSST\_DISABLE\_ZLIB=ON : Disables LibZ support
 * -DSST\_ENABLE\_HDF5=ON : Enables HDF5 support
-* -DSST\_ENABLE\_MPI=ON : Enables MPI
+* -DSST\_DISABLE\_MPI=ON : Disables MPI
 * -DSST\_BUILD\_RPM=ON : Enables RPM packaging. Must have RPMTools installed: use `make package`
 * -DSST\_BUILD\_DEB=ON : Enables DEB packaging. Must have Debian tools installed: use `make package`
 * -DSST\_BUILD\_TGZ=ON : Enables TGZ packaging. Must have TGZ installed: use `make package`

@@ -191,7 +191,7 @@ target_link_libraries(
           modelpython
           sync
           shared)
-target_link_options(sstsim.x PRIVATE "LINKER:-export-dynamic")
+set_target_properties(sstsim.x PROPERTIES ENABLE_EXPORTS ON)
 
 add_executable(sstinfo.x sstinfo.cc)
 target_link_libraries(
@@ -205,7 +205,7 @@ target_link_libraries(
           sync
           shared
           tinyxml)
-target_link_options(sstinfo.x PRIVATE "LINKER:-export-dynamic")
+set_target_properties(sstinfo.x PROPERTIES ENABLE_EXPORTS ON)
 
 if(UNIX
    AND (NOT APPLE)

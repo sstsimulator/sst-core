@@ -271,7 +271,7 @@
 #cmakedefine __SST_ENABLE_PROFILE__
 
 /* Defines that standard PRI macros should be enabled */
-#cmakedefine __STDC_FORMAT_MACROS 1
+#cmakedefine __STDC_FORMAT_MACROS
 
 /* Define so that glibc/gnulib argp.h does not typedef error_t. */
 #cmakedefine __error_t_defined
