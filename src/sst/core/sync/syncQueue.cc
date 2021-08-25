@@ -45,6 +45,20 @@ SyncQueue::insert(Activity* activity)
 {
     std::lock_guard<Spinlock> lock(slock);
     activities.push_back(activity);
+
+#ifdef EVENT_PROFILING
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+
+    serializer ser;
+
+    ser.start_sizing();
+
+    ser& activity;
+
+    size_t size = ser.size();
+
+    sim->messageSizeSent += (uint64_t)size;
+#endif
 }
 
 Activity*
@@ -85,6 +99,11 @@ SyncQueue::getData()
     ser& activities;
 
     size_t size = ser.size();
+
+#ifdef EVENT_PROFILING
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+    sim->messageSizeRecv += (uint64_t)size;
+#endif
 
     if ( buf_size < (size + sizeof(SyncQueue::Header)) ) {
         if ( buffer != nullptr ) { delete[] buffer; }

@@ -607,6 +607,14 @@ Simulation_impl::run()
         }
     }
 
+#ifdef EVENT_PROFILING
+    for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
+        eventHandlers.insert(std::pair<std::string, uint64_t>((*iter)->getName().c_str(), 0));
+        eventRecvCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName().c_str(), 0));
+        eventSendCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName().c_str(), 0));
+    }
+#endif
+
     // Tell the Statistics Engine that the simulation is beginning
     if ( my_rank.thread == 0 ) StatisticProcessingEngine::getInstance()->startOfSimulation();
 
@@ -615,6 +623,20 @@ Simulation_impl::run()
     header += SST::to_string(my_rank.thread);
     header += ":  ";
 
+#ifdef PERFORMANCE_INSTRUMENTING
+    std::string filename = "rank_" + SST::to_string(my_rank.rank);
+    filename += "_thread_" + SST::to_string(my_rank.thread);
+    fp = fopen(filename.c_str(), "w");
+#endif
+
+#ifdef RUNTIME_PROFILING
+#ifdef HIGH_RESOLUTION_CLOCK
+    auto start = std::chrono::high_resolution_clock::now();
+#else
+    gettimeofday(&start, NULL);
+#endif
+#endif
+
     run_phase_start_time = sst_get_cpu_time();
 
     while ( LIKELY(!endSim) ) {
@@ -622,6 +644,10 @@ Simulation_impl::run()
         currentSimCycle  = current_activity->getDeliveryTime();
         currentPriority  = current_activity->getPriority();
         current_activity->execute();
+
+#ifdef PERIODIC_PRINT
+        periodicCounter++;
+#endif
 
         // printf("%d: Activity at %" PRIu64 "\n",my_rank.rank,currentSimCycle);
 
@@ -647,6 +673,23 @@ Simulation_impl::run()
             }
             lastRecvdSignal = 0;
         }
+
+#ifdef PERIODIC_PRINT
+        if ( periodicCounter >= PERIODIC_PRINT_THRESHOLD ) {
+#ifdef RUNTIME_PROFILING
+#ifdef HIGH_RESOLUTION_CLOCK
+            auto finish = std::chrono::high_resolution_clock::now();
+            runtime     = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+#else
+            gettimeofday(&end, NULL);
+            timersub(&end, &start, &diff);
+            runtime = diff.tv_usec + diff.tv_sec * 1e6;
+#endif
+#endif
+            periodicCounter = 0;
+            printPerformanceInfo();
+        }
+#endif
     }
     /* We shouldn't need to do this, but to be safe... */
 
@@ -659,6 +702,22 @@ Simulation_impl::run()
     if ( minPart == MAX_SIMTIME_T && num_ranks.rank > 1 && my_rank.thread == 0 ) {
         endSimCycle = m_exit->computeEndTime();
     }
+
+#ifdef RUNTIME_PROFILING
+#ifdef HIGH_RESOLUTION_CLOCK
+    auto finish = std::chrono::high_resolution_clock::now();
+    runtime     = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+#else
+    gettimeofday(&end, NULL);
+    timersub(&end, &start, &diff);
+    runtime = diff.tv_usec + diff.tv_sec * 1e6;
+#endif
+#endif
+
+#ifdef PERFORMANCE_INSTRUMENTING
+    printPerformanceInfo();
+    fclose(fp);
+#endif
 
     if ( num_ranks.rank != 1 && num_ranks.thread == 0 ) delete m_exit;
 }
@@ -798,9 +857,21 @@ Simulation_impl::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* hand
     return registerClock(tcFreq, handler, priority);
 }
 
+void
+Simulation_impl::registerClockHandler(SST::ComponentId_t id, uint64_t handler)
+{
+#ifdef PERFORMANCE_INSTRUMENTING
+    handler_mapping.insert(std::pair<uint64_t, uint64_t>(handler, (uint64_t)id));
+#endif
+}
+
 TimeConverter*
 Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority)
 {
+#ifdef CLOCK_PROFILING
+    clockHandlers.insert(std::pair<uint64_t, uint64_t>((uint64_t)handler, 0));
+    clockCounters.insert(std::pair<uint64_t, uint64_t>((uint64_t)handler, 0));
+#endif
     clockMap_t::key_type mapKey = std::make_pair(tcFreq->getFactor(), priority);
     if ( clockMap.find(mapKey) == clockMap.end() ) {
         Clock* ce        = new Clock(tcFreq, priority);
@@ -938,6 +1009,108 @@ Simulation_impl::resizeBarriers(uint32_t nthr)
     exitBarrier.resize(nthr);
     finishBarrier.resize(nthr);
 }
+
+#ifdef PERFORMANCE_INSTRUMENTING
+void
+Simulation_impl::printPerformanceInfo()
+{
+#ifdef RUNTIME_PROFILING
+    fprintf(fp, "///Print at %.6fs\n", (double)runtime / clockDivisor);
+#endif
+
+// Iterate through components and find all handlers mapped to that component
+// If handler mapping is not populated, prints out raw clock handler times
+#ifdef CLOCK_PROFILING
+    fprintf(fp, "Clock Handlers\n");
+    if ( handler_mapping.empty() ) {
+        for ( auto it = clockHandlers.begin(); it != clockHandlers.end(); ++it ) {
+            fprintf(fp, "%llu runtime: %.6f\n", it->first, (double)it->second / 1e9);
+        }
+    }
+    else {
+        for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
+            uint64_t exec_time = 0;
+            uint64_t counters  = 0;
+
+            // Go through all the clock handler to component id mappings
+            // Each component may have multiple clock handlers
+            for ( auto it = handler_mapping.cbegin(); it != handler_mapping.cend(); ++it ) {
+                // If this clock handler is mapped to a component
+                if ( (*iter)->getID() == it->second ) {
+                    auto handlerIterator = clockHandlers.find(it->first);
+                    if ( handlerIterator != clockHandlers.end() ) { exec_time += handlerIterator->second; }
+
+                    auto counterIterator = clockCounters.find(it->first);
+                    if ( counterIterator != clockCounters.end() ) { counters += counterIterator->second; }
+                }
+            }
+
+            fprintf(fp, "Component %s\n", (*iter)->getName().c_str());
+            fprintf(fp, "Clock Handler Counter: %llu\n", counters);
+            fprintf(fp, "Clock Handler Runtime: %.6fs\n", (double)exec_time / clockDivisor);
+            if ( counters != 0 ) {
+                fprintf(fp, "Clock Handler Average: %llu%s\n", exec_time / counters, clockResolution.c_str());
+            }
+            else {
+                fprintf(fp, "Clock Handler Average: 0%s\n", clockResolution.c_str());
+            }
+        }
+    }
+    fprintf(fp, "\n");
+#endif
+
+#ifdef EVENT_PROFILING
+    fprintf(fp, "Communication Counters\n");
+    for ( auto it = eventHandlers.begin(); it != eventHandlers.end(); ++it ) {
+        fprintf(fp, "Component %s\n", it->first.c_str());
+
+        // Look up event send and receive counters
+        auto eventSend = eventSendCounters.find(it->first.c_str());
+        auto eventRecv = eventRecvCounters.find(it->first.c_str());
+        if ( eventSend != eventSendCounters.end() ) {
+            fprintf(fp, "Messages Sent within rank: %llu\n", eventSend->second);
+        }
+        if ( eventRecv != eventRecvCounters.end() ) { fprintf(fp, "Messages Recv: %llu\n", eventRecv->second); }
+
+        // Look up runtimes for event handler
+        auto eventTime = eventHandlers.find(it->first.c_str());
+        if ( eventTime != eventHandlers.end() ) {
+            fprintf(fp, "Time spent on message: %.6fs\n", (double)eventTime->second / clockDivisor);
+            if ( it->second != 0 ) {
+                fprintf(fp, "Average message time: %llu%s\n", eventTime->second / it->second, clockResolution.c_str());
+            }
+            else {
+                fprintf(fp, "Average message time: 0%s\n", clockResolution.c_str());
+            }
+        }
+    }
+
+    // Rank only information
+    fprintf(fp, "Rank Statistics\n");
+    fprintf(fp, "Message size sent: %llu\n", messageSizeSent);
+    fprintf(fp, "Message size recv: %llu\n", messageSizeRecv);
+    fprintf(fp, "Latency : %llu\n", rankLatency);
+    fprintf(fp, "Counter : %llu\n", rankExchangeCounter);
+    if ( rankExchangeCounter != 0 ) { fprintf(fp, "Avg : %lluns\n", rankLatency / rankExchangeCounter); }
+    else {
+        fprintf(fp, "Avg : 0\n");
+    }
+    fprintf(fp, "\n");
+#endif
+
+#ifdef SYNC_PROFILING
+    fprintf(fp, "Synchronization Information\n");
+    fprintf(fp, "Thread Sync time: %.6fs\n", (double)threadSyncTime / clockDivisor);
+    fprintf(fp, "Rank Sync time: %.6fs\n", (double)rankSyncTime / clockDivisor);
+    fprintf(fp, "Sync Counter: %llu\n", syncCounter);
+    if ( syncCounter != 0 ) {
+        fprintf(
+            fp, "Average Sync Time: %llu%s\n", (threadSyncTime + rankSyncTime) / syncCounter, clockResolution.c_str());
+    }
+    fprintf(fp, "\n");
+#endif
+}
+#endif
 
 /* Define statics */
 Factory*                  Simulation_impl::factory;

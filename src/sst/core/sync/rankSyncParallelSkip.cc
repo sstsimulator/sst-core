@@ -172,9 +172,25 @@ RankSyncParallelSkip::exchange_slave(int thread)
 
     // Check the serialize_queue for work.
     comm_send_pair* ser;
+
+#ifdef EVENT_PROFILING
+    Simulation_impl* simImpl = Simulation_impl::getSimulation();
+#endif
+
     while ( serialize_queue.try_remove(ser) ) {
         // Serialize the events
+        // Measures Latency
+
+#ifdef EVENT_PROFILING
+        auto start = std::chrono::high_resolution_clock::now();
+#endif
         ser->sbuf = ser->squeue->getData();
+#ifdef EVENT_PROFILING
+        auto finish = std::chrono::high_resolution_clock::now();
+        simImpl->rankLatency += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        simImpl->rankExchangeCounter++;
+#endif
+
         // Send back to master to do MPI send
         send_queue.try_insert(ser);
     }
@@ -253,6 +269,11 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     // with serialization
     int             my_send_count = send_count;
     comm_send_pair* send;
+
+#ifdef EVENT_PROFILING
+    Simulation_impl* simImpl = Simulation_impl::getSimulation();
+#endif
+
     while ( my_send_count != 0 ) {
         if ( send_queue.try_remove(send) ) {
             my_send_count--;
@@ -279,8 +300,17 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
                 &sreqs[sreq_count++]);
         }
         else if ( serialize_queue.try_remove(send) ) {
-            // Serialize the events
+// Serialize the events
+#ifdef EVENT_PROFILING
+            auto start = std::chrono::high_resolution_clock::now();
+#endif
             send->sbuf = send->squeue->getData();
+#ifdef EVENT_PROFILING
+            auto finish = std::chrono::high_resolution_clock::now();
+            simImpl->rankLatency += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+            simImpl->rankExchangeCounter++;
+#endif
+
             // Send back to master to do MPI send
             send_queue.try_insert(send);
         }
@@ -373,14 +403,28 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
             &rreqs[rreq_count++]);
     }
 
+#ifdef EVENT_PROFILING
+    Simulation_impl* simImpl = Simulation_impl::getSimulation();
+#endif
+
     for ( auto i = comm_send_map.begin(); i != comm_send_map.end(); ++i ) {
 
-        // Do all the sends
-        // Get the buffer from the syncQueue
-        char*              send_buffer = i->second.squeue->getData();
+// Do all the sends
+// Get the buffer from the syncQueue
+#ifdef EVENT_PROFILING
+        auto start = std::chrono::high_resolution_clock::now();
+#endif
+        char* send_buffer = i->second.squeue->getData();
+
+#ifdef EVENT_PROFILING
+        auto finish = std::chrono::high_resolution_clock::now();
+        simImpl->rankLatency += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        simImpl->rankExchangeCounter++;
+#endif
+
         // Cast to Header so we can get/fill in data
-        SyncQueue::Header* hdr         = reinterpret_cast<SyncQueue::Header*>(send_buffer);
-        int                tag         = 2 * i->second.to_rank.thread;
+        SyncQueue::Header* hdr = reinterpret_cast<SyncQueue::Header*>(send_buffer);
+        int                tag = 2 * i->second.to_rank.thread;
         // Check to see if remote queue is big enough for data
         if ( i->second.remote_size < hdr->buffer_size ) {
             // not big enough, send message that will tell remote side to get larger buffer

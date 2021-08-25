@@ -26,7 +26,57 @@ Event::~Event() {}
 void
 Event::execute(void)
 {
+
+#ifdef EVENT_PROFILING
+    Simulation_impl* sim = Simulation_impl::getSimulation();
+
+#ifdef HIGH_RESOLUTION_CLOCK
+    auto eventStart = std::chrono::high_resolution_clock::now();
+#else
+    struct timeval eventStart, eventEnd, eventDiff;
+    gettimeofday(&eventStart, NULL);
+#endif
+#endif
+
     delivery_link->deliverEvent(this);
+
+#ifdef EVENT_PROFILING
+#ifdef HIGH_RESOLUTION_CLOCK
+    auto eventFinish = std::chrono::high_resolution_clock::now();
+#else
+    gettimeofday(&eventEnd, NULL);
+    timersub(&eventEnd, &eventStart, &eventDiff);
+#endif
+
+    // Track receiver processing time
+    auto eventHandler = sim->eventHandlers.find(getLastComponentName());
+    if ( eventHandler != sim->eventHandlers.end() ) {
+#ifdef HIGH_RESOLUTION_CLOCK
+        eventHandler->second += std::chrono::duration_cast<std::chrono::nanoseconds>(eventFinish - eventStart).count();
+#else
+        eventHandler->second += eventDiff.tv_usec + eventDiff.tv_sec * 1e6;
+#endif
+    }
+
+    // Track sending and receiving counters
+    auto eventCount = sim->eventRecvCounters.find(getLastComponentName());
+    if ( eventCount != sim->eventRecvCounters.end() ) { eventCount->second++; }
+    else {
+        if ( getLastComponentName() != "" ) {
+            sim->eventRecvCounters.insert(std::pair<std::string, uint64_t>(getLastComponentName().c_str(), 1));
+            sim->eventHandlers.insert(std::pair<std::string, uint64_t>(getLastComponentName().c_str(), 0));
+        }
+    }
+    auto eventSend = sim->eventSendCounters.find(getFirstComponentName());
+    if ( eventSend != sim->eventSendCounters.end() ) { eventSend->second++; }
+    else {
+        // Insert handler and counter for the subcomponent so that all link traffic is monitored
+        if ( getFirstComponentName() != "" ) {
+            sim->eventSendCounters.insert(std::pair<std::string, uint64_t>(getFirstComponentName().c_str(), 1));
+            sim->eventHandlers.insert(std::pair<std::string, uint64_t>(getFirstComponentName().c_str(), 0));
+        }
+    }
+#endif
 }
 
 Event*
