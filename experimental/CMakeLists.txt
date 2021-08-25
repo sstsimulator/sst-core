@@ -33,8 +33,8 @@ list(APPEND CMAKE_MODULE_PATH ${sst-core_SOURCE_DIR}/cmake)
 find_package(Python 3.5 REQUIRED COMPONENTS Interpreter Development)
 find_package(Threads)
 
-option(SST_ENABLE_ZLIB "Use zlib compression library" ON)
-if(SST_ENABLE_ZLIB)
+option(SST_DISABLE_ZLIB "Use zlib compression library" OFF)
+if(NOT SST_DISABLE_ZLIB)
   find_package(ZLIB)
 endif()
 
@@ -82,41 +82,6 @@ endif()
 # ------------------------------------------------------------------------
 # -- FIND PACKAGES
 # ------------------------------------------------------------------------
-
-# -- LibZ
-if(SST_ENABLE_ZLIB)
-  if(ZLIB_FOUND)
-    message(STATUS "LibZ Headers found at ${ZLIB_INCLUDE_DIRS}")
-    message(STATUS "LibZ Libraries found at ${ZLIB_LIBRARIES}")
-  else()
-    message(FATAL_ERROR "LibZ not found")
-  endif()
-else()
-  message(STATUS "LibZ support disabled")
-endif()
-
-# -- HDF5
-if(SST_ENABLE_HDF5)
-  if(HDF5_FOUND)
-    message(STATUS "HDF5 Headers found at ${HDF5_INCLUDE_DIRS}")
-    message(STATUS "HDF5 Libraries found at ${HDF5_LIBRARIES}")
-    message(STATUS "HDF5 Compiler definitions set to ${HDF5_DEFINITIONS}")
-  else()
-    message(FATAL_ERROR "HDF5 not found")
-  endif()
-else()
-  message(STATUS "HDF5 support disabled")
-endif()
-
-# -- MPI
-if(NOT SST_DISABLE_MPI)
-  if(MPI_FOUND)
-    message(STATUS "MPI C Compiler found at ${MPI_C_COMPILER}")
-    message(STATUS "MPI CXX Compiler found at ${MPI_CXX_COMPILER}")
-  endif()
-else()
-  message(STATUS "MPI support disabled")
-endif()
 
 # -- Doxygen
 add_subdirectory(${sst-core_SOURCE_DIR}/../doc ${sst-core_BINARY_DIR}/doc)

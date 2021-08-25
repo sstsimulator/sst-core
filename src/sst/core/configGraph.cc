@@ -987,8 +987,8 @@ ConfigGraph::getCollapsedPartitionGraph()
             for ( LinkId_t id : comp->allLinks() ) {
                 const ConfigLink& link = links[id];
 
-                if ( group.find(COMPONENT_ID_MASK(link.component[0])) == group.end()
-                     || group.find(COMPONENT_ID_MASK(link.component[1])) == group.end() ) {
+                if ( group.find(COMPONENT_ID_MASK(link.component[0])) == group.end() ||
+                     group.find(COMPONENT_ID_MASK(link.component[1])) == group.end() ) {
                     pcomp->links.push_back(link.id);
                 }
                 else {
