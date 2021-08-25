@@ -24,6 +24,7 @@
 #include "sst/core/unitAlgebra.h"
 
 #include <atomic>
+#include <cstdio>
 #include <iostream>
 #include <signal.h>
 #include <thread>
@@ -181,6 +182,8 @@ public:
 
     bool isIndependentThread() { return independent; }
 
+    void printPerformanceInfo();
+
     /** Register a OneShot event to be called after a time delay
         Note: OneShot cannot be canceled, and will always callback after
               the timedelay.
@@ -268,6 +271,8 @@ public:
     TimeConverter* registerClock(const UnitAlgebra& freq, Clock::HandlerBase* handler, int priority);
 
     TimeConverter* registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority);
+
+    void registerClockHandler(SST::ComponentId_t id, uint64_t handler);
 
     /** Remove a clock handler from the list of active clock handlers */
     void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);
@@ -360,6 +365,54 @@ public:
     static TimeLord timeLord;
     /** Output */
     static Output   sim_output;
+
+    /** Performance Tracking Information **/
+
+#ifdef PERFORMANCE_INSTRUMENTING
+    FILE*                        fp;
+    std::map<uint64_t, uint64_t> handler_mapping;
+#endif
+
+#ifdef PERIODIC_PRINT
+    uint64_t periodicCounter = 0;
+#endif
+
+#ifdef RUNTIME_PROFILING
+    uint64_t       sumtime = 0;
+    uint64_t       runtime = 0;
+    struct timeval start, end, diff;
+    struct timeval sumstart, sumend, sumdiff;
+#endif
+
+#ifdef CLOCK_PROFILING
+    std::map<uint64_t, uint64_t> clockHandlers;
+    std::map<uint64_t, uint64_t> clockCounters;
+#endif
+
+#ifdef EVENT_PROFILING
+    uint64_t                        rankLatency         = 0;
+    uint64_t                        rankExchangeCounter = 0;
+    std::map<std::string, uint64_t> eventHandlers;
+    std::map<std::string, uint64_t> eventRecvCounters;
+    std::map<std::string, uint64_t> eventSendCounters;
+    uint64_t                        messageSizeSent = 0;
+    uint64_t                        messageSizeRecv = 0;
+#endif
+
+#ifdef SYNC_PROFILING
+    uint64_t syncCounter     = 0;
+    uint64_t rankSyncTime    = 0;
+    uint64_t threadSyncTime  = 0;
+    uint64_t rankSyncCounter = 0;
+#endif
+
+#ifdef HIGH_RESOLUTION_CLOCK
+    uint64_t    clockDivisor    = 1e9;
+    std::string clockResolution = "ns";
+#else
+    uint64_t    clockDivisor    = 1e6;
+    std::string clockResolution = "us";
+#endif
 
     Mode_t    runMode;
     SimTime_t currentSimCycle;
