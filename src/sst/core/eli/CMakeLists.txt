@@ -17,6 +17,7 @@ set(SSTELIHeaders
   paramsInfo.h
   portsInfo.h
   statsInfo.h
+  simpleInfo.h
   subcompSlotInfo.h)
 
 install(FILES ${SSTELIHeaders}
