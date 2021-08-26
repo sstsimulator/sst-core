@@ -36,7 +36,7 @@ endif(HAVE_INTTYPES_H)
 
 if(CMAKE_DL_LIBS)
   set(HAVE_LIBDL ON)
-endif(CMAKE_DL_LIBS)
+endif()
 
 if(ZLIB_FOUND)
   set(HAVE_LIBZ ON)
@@ -123,6 +123,12 @@ set(SST_INSTALL_PREFIX ${CMAKE_INSTALL_PREFIX})
 set(SST_LD ${CMAKE_LINKER})
 set(SST_LDFLAGS "${CMAKE_CXX_LINK_FLAGS} ${LINK_FLAGS}")
 
+# This is a workaround for sstsimulator.conf LD, the autotools expects LIBS to
+# be -l lib but if CMAKE_DL_LIBS is empty you just get a -l whic breaks linking
+if(CMAKE_DL_LIBS)
+  set(SST_DL_LIBS "-l${CMAKE_DL_LIBS}")
+endif()
+
 if(NOT SST_DISABLE_MEM_POOLS)
   set(USE_MEMPOOL ON)
 endif()
@@ -143,8 +149,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} --git-dir=${sst-core_SOURCE_DIR}/../.git branch
-          --show-current
+  COMMAND ${GIT_EXECUTABLE} --git-dir=${sst-core_SOURCE_DIR}/../.git rev-parse --abbrev-ref HEAD
   RESULT_VARIABLE BRANCH_RESULT
   OUTPUT_VARIABLE SSTCORE_GIT_BRANCH
   OUTPUT_STRIP_TRAILING_WHITESPACE)
