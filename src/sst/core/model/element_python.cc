@@ -18,8 +18,7 @@
 // Python header files
 #include "sst/core/output.h"
 #include "sst/core/simulation.h"
-
-#include "warnmacros.h"
+#include "sst/core/warnmacros.h"
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
