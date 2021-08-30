@@ -17,8 +17,9 @@
 
 #include "sst/core/testElements/coreTest_SharedObjectComponent.h"
 
+#include "sst/core/params.h"
+
 #include <errno.h>
-#include <sst/core/params.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>

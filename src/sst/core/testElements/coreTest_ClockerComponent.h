@@ -16,7 +16,7 @@
 #ifndef SST_CORE_CORETEST_CLOCKERCOMPONENT_H
 #define SST_CORE_CORETEST_CLOCKERCOMPONENT_H
 
-#include <sst/core/component.h>
+#include "sst/core/component.h"
 
 namespace SST {
 namespace CoreTestClockerComponent {

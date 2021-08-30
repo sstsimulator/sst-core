@@ -16,6 +16,10 @@
 
 #include "sst/core/warnmacros.h"
 
+DISABLE_WARN_DEPRECATED_REGISTER
+#include <Python.h>
+REENABLE_WARNING
+
 #if PY_MAJOR_VERSION >= 3
 #define SST_PY_OBJ_HEAD              PyVarObject_HEAD_INIT(nullptr, 0)
 #define SST_ConvertToPythonLong(x)   PyLong_FromLong(x)

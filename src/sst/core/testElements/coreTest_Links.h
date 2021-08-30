@@ -16,9 +16,9 @@
 #ifndef SST_CORE_CORETEST_LINKS_H
 #define SST_CORE_CORETEST_LINKS_H
 
-#include <sst/core/component.h>
-#include <sst/core/link.h>
-#include <sst/core/rng/marsaglia.h>
+#include "sst/core/component.h"
+#include "sst/core/link.h"
+#include "sst/core/rng/marsaglia.h"
 
 namespace SST {
 namespace CoreTestComponent {
