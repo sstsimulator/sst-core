@@ -82,17 +82,20 @@ IncludeBlocks: Regroup
 #finally include all system headers - characterized as headers wrapped with '< >'
 IncludeCategories:
   - Regex:           '(<.*>)'
+    Priority:        4
+    SortPriority:    4
+  - Regex:           '("[^\(sst\)].*")'
     Priority:        3
     SortPriority:    3
-  - Regex:           '("[^\(sst\)].*")'
-    Priority:        2
-    SortPriority:    2
-  - Regex:           '("sst/core/.*")'
+  - Regex:           '("sst/core/testElements/.*")'
     Priority:        1
     SortPriority:    1
+  - Regex:           '("sst/core/.*")'
+    Priority:        2
+    SortPriority:    2
   - Regex:            'sst_config.h'
     Priority:        -1
-IncludeIsMainRegex: '$'
+IncludeIsMainRegex: ''
 IncludeIsMainSourceRegex: ''
 IndentCaseLabels: false
 IndentCaseBlocks: false

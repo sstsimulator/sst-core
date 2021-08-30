@@ -17,9 +17,10 @@
 
 #include "sst/core/testElements/coreTest_LookupTableComponent.h"
 
+#include "sst/core/params.h"
+#include "sst/core/sharedRegion.h"
+
 #include <errno.h>
-#include <sst/core/params.h>
-#include <sst/core/sharedRegion.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>

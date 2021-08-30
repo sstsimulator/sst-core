@@ -16,8 +16,8 @@
 #ifndef SST_CORE_CORETEST_DISTRIBCOMPONENT_H
 #define SST_CORE_CORETEST_DISTRIBCOMPONENT_H
 
-#include <sst/core/component.h>
-#include <sst/core/rng/distrib.h>
+#include "sst/core/component.h"
+#include "sst/core/rng/distrib.h"
 
 using namespace SST;
 using namespace SST::RNG;
