@@ -18,7 +18,7 @@ The Structural Simulation Toolkit (SST) was developed to explore innovations in 
 ##### Centos/RHEL 7
 
 ```sh
-sudo yum install gcc gcc-c++ python3 python3-devel make automake git libtool libtool-ltdl-devel openmpi openmpi-devel
+sudo yum install gcc gcc-c++ python3 python3-devel make automake git libtool libtool-ltdl-devel openmpi openmpi-devel zlib-devel
 mkdir sst-core && cd sst-core
 git clone https://github.com/sstsimulator/sst-core.git sst-core-src
 (cd sst-core-src && ./autogen.sh)
