@@ -12,6 +12,10 @@ function(AssureOutOfSourceBuilds)
       This process created the file `CMakeCache.txt' and the directory `CMakeFiles'.
       Please delete them.")
   endif()
+
+  if(EXISTS ${SST_TOP_SRC_DIR}/src/sst/core/sst_config.h OR EXISTS ${SST_TOP_SRC_DIR}/src/sst/core/build_info.h)
+    message(FATAL_ERROR "Cannot run the cmake build if the autotools build was run in-source.")
+  endif()
 endfunction()
 
 assureoutofsourcebuilds()
