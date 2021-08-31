@@ -12,7 +12,8 @@
 #ifndef SST_CORE_CONFIGGRAPH_OUTPUT_H
 #define SST_CORE_CONFIGGRAPH_OUTPUT_H
 
-#include <configGraph.h>
+#include "sst/core/configGraph.h"
+
 #include <cstdio>
 #include <exception>
 

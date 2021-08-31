@@ -1,0 +1,34 @@
+#! @Python_EXECUTABLE@
+#
+# -*- coding: utf-8 -*-
+
+## Copyright 2009-2021 NTESS. Under the terms
+## of Contract DE-NA0003525 with NTESS, the U.S.
+## Government retains certain rights in this software.
+##
+## Copyright (c) 2009-2021, NTESS
+## All rights reserved.
+##
+## This file is part of the SST software package. For license
+## information, see the LICENSE file in the top level directory of the
+## distribution.
+
+""" This module is the entry point for testing the SST-Core
+"""
+import sys
+import os.path
+
+try:
+    import sst_test_engine_loader as te_load
+except ImportError as exc_e:
+    print("FATAL: Failed to load sst_test_engine_loader.py ({0})".format(exc_e))
+    sys.exit(1)
+
+################################################################################
+# Script Entry
+################################################################################
+if __name__ == "__main__":
+    # Get the path of where this file is launched
+    SSTCOREBINDIR = os.path.dirname(os.path.abspath(__file__))
+    # Run the test engine in Core Mode
+    te_load.startup_and_run(SSTCOREBINDIR, te_load.TEST_SST_CORE)

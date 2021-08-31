@@ -16,9 +16,9 @@
 #ifndef SST_CORE_CORETEST_LOOKUPTABLECOMPONENT_H
 #define SST_CORE_CORETEST_LOOKUPTABLECOMPONENT_H
 
-#include <sst/core/component.h>
-#include <sst/core/output.h>
-#include <sst/core/sharedRegion.h>
+#include "sst/core/component.h"
+#include "sst/core/output.h"
+#include "sst/core/sharedRegion.h"
 
 namespace SST {
 namespace CoreTestLookupTableComponent {

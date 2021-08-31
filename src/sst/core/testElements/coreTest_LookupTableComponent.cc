@@ -13,12 +13,14 @@
 // information, see the LICENSE file in the top level directory of the
 // distribution.
 
+#include "sst_config.h"
+
 #include "sst/core/testElements/coreTest_LookupTableComponent.h"
 
+#include "sst/core/params.h"
+#include "sst/core/sharedRegion.h"
+
 #include <errno.h>
-#include <sst/core/params.h>
-#include <sst/core/sharedRegion.h>
-#include <sst_config.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <sys/types.h>

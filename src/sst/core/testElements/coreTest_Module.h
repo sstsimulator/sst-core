@@ -16,9 +16,10 @@
 #ifndef SST_CORE_CORETEST_MODULE_H
 #define SST_CORE_CORETEST_MODULE_H
 
-#include <sst/core/component.h>
-#include <sst/core/link.h>
-#include <sst/core/module.h>
+#include "sst/core/component.h"
+#include "sst/core/link.h"
+#include "sst/core/module.h"
+
 #include <vector>
 
 namespace SST {
