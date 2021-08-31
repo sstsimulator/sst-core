@@ -13,7 +13,7 @@
 message(STATUS "SST: PREPROCESSING ${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in")
 configure_file(
 ${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in
-${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake
+${CMAKE_CURRENT_BINARY_DIR}/SSTConfig.cmake
 )
 
 install(DIRECTORY "."
