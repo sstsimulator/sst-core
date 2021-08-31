@@ -14,6 +14,9 @@ project(
   DESCRIPTION "SSTCore"
   LANGUAGES C CXX)
 
+set(SST_TOP_SRC_DIR "${sst-core_SOURCE_DIR}/..")
+include(cmake/PreventInSourceBuilds.cmake)
+
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 11)
   message(
