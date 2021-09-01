@@ -15,13 +15,8 @@ if(MPI_FOUND)
   target_link_libraries(shared PRIVATE MPI::MPI_CXX)
 endif()
 
-set(SSTSharedHeaders
-  sharedArray.h
-  sharedMap.h
-  sharedObject.h
-  sharedSet.h)
+set(SSTSharedHeaders sharedArray.h sharedMap.h sharedObject.h sharedSet.h)
 
-install(FILES ${SSTSharedHeaders}
-        DESTINATION "include/sst/core/shared")
+install(FILES ${SSTSharedHeaders} DESTINATION "include/sst/core/shared")
 
 # EOF

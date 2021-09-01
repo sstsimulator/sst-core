@@ -30,7 +30,7 @@ endif(HDF5_FOUND)
 check_include_file(intrinsics.h HAVE_INTRINSICS_H)
 check_include_file(inttypes.h HAVE_INTTYPES_H)
 if(HAVE_INTTYPES_H)
-  # TODO do we need to check that symbols like PRIu64 exist first? 
+  # TODO do we need to check that symbols like PRIu64 exist first?
   set(__STDC_FORMAT_MACROS ON)
 endif(HAVE_INTTYPES_H)
 
@@ -143,13 +143,15 @@ endif()
 
 find_package(Git REQUIRED)
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} --git-dir=${sst-core_SOURCE_DIR}/../.git rev-parse HEAD
+  COMMAND ${GIT_EXECUTABLE} --git-dir=${sst-core_SOURCE_DIR}/../.git rev-parse
+          HEAD
   RESULT_VARIABLE HASH_RESULT
   OUTPUT_VARIABLE SSTCORE_GIT_HEADSHA
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 execute_process(
-  COMMAND ${GIT_EXECUTABLE} --git-dir=${sst-core_SOURCE_DIR}/../.git rev-parse --abbrev-ref HEAD
+  COMMAND ${GIT_EXECUTABLE} --git-dir=${sst-core_SOURCE_DIR}/../.git rev-parse
+          --abbrev-ref HEAD
   RESULT_VARIABLE BRANCH_RESULT
   OUTPUT_VARIABLE SSTCORE_GIT_BRANCH
   OUTPUT_STRIP_TRAILING_WHITESPACE)

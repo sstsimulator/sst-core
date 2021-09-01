@@ -7,11 +7,8 @@
 # See LICENSE for full license details
 #
 
-set(SSTENVHeaders
-  envconfig.h
-  envquery.h)
+set(SSTENVHeaders envconfig.h envquery.h)
 
-install(FILES ${SSTENVHeaders}
-        DESTINATION "include/sst/core/env")
+install(FILES ${SSTENVHeaders} DESTINATION "include/sst/core/env")
 
 # EOF

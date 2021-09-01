@@ -7,10 +7,8 @@
 # See LICENSE for full license details
 #
 
-set(SSTPartHeaders
-  sstpart.h)
+set(SSTPartHeaders sstpart.h)
 
-install(FILES ${SSTPartHeaders}
-        DESTINATION "include/sst/core/part")
+install(FILES ${SSTPartHeaders} DESTINATION "include/sst/core/part")
 
 # EOF

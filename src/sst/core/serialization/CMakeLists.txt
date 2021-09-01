@@ -8,25 +8,25 @@
 #
 
 set(SSTSerializationHeaders
-  serializable_fwd.h
-  serializable.h
-  serialize_array.h
-  serialize_buffer_accessor.h
-  serialize_deque.h
-  serialize.h
-  serialize_list.h
-  serialize_map.h
-  serialize_packer.h
-  serializer_fwd.h
-  serializer.h
-  serialize_serializable.h
-  serialize_set.h
-  serialize_sizer.h
-  serialize_string.h
-  serialize_unpacker.h
-  serialize_vector.h
-  ser_ptr_type.h
-  statics.h)
+    serializable_fwd.h
+    serializable.h
+    serialize_array.h
+    serialize_buffer_accessor.h
+    serialize_deque.h
+    serialize.h
+    serialize_list.h
+    serialize_map.h
+    serialize_packer.h
+    serializer_fwd.h
+    serializer.h
+    serialize_serializable.h
+    serialize_set.h
+    serialize_sizer.h
+    serialize_string.h
+    serialize_unpacker.h
+    serialize_vector.h
+    ser_ptr_type.h
+    statics.h)
 
 install(FILES ${SSTSerializationHeaders}
         DESTINATION "include/sst/core/serialization")

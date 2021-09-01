@@ -7,10 +7,8 @@
 # See LICENSE for full license details
 #
 
-set(SSTMathHeaders
-  sqrt.h)
+set(SSTMathHeaders sqrt.h)
 
-install(FILES ${SSTMathHeaders}
-        DESTINATION "include/sst/core/math")
+install(FILES ${SSTMathHeaders} DESTINATION "include/sst/core/math")
 
 # EOF

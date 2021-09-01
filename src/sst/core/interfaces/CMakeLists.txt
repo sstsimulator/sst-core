@@ -7,14 +7,9 @@
 # See LICENSE for full license details
 #
 
-set(SSTInterfacesHeaders
-  simpleMem.h
-  simpleNetwork.h
-  stdMem.h
-  stringEvent.h
-  TestEvent.h)
+set(SSTInterfacesHeaders simpleMem.h simpleNetwork.h stdMem.h stringEvent.h
+                         TestEvent.h)
 
-install(FILES ${SSTInterfacesHeaders}
-        DESTINATION "include/sst/core/interfaces")
+install(FILES ${SSTInterfacesHeaders} DESTINATION "include/sst/core/interfaces")
 
 # EOF

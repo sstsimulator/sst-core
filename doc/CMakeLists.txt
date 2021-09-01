@@ -32,5 +32,6 @@ if(BUILD_DOCUMENTATION)
 
   doxygen_add_docs(doc ${sst-core_BINARY_DIR}/doc/Doxyfile.conf)
 
-  #install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/html DESTINATION share/doc)
+  # install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/doc/html DESTINATION
+  # share/doc)
 endif(BUILD_DOCUMENTATION)

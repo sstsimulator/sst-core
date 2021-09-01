@@ -89,7 +89,6 @@ endif()
 # -- Doxygen
 add_subdirectory(${sst-core_SOURCE_DIR}/../doc ${sst-core_BINARY_DIR}/doc)
 
-
 # ------------------------------------------------------------------------
 # -- TESTING
 # ------------------------------------------------------------------------
@@ -141,7 +140,8 @@ endif()
 # ------------------------------------------------------------------------
 # -- SUBDIRECTORIES
 # ------------------------------------------------------------------------
-add_subdirectory(${sst-core_SOURCE_DIR}/../external ${sst-core_BINARY_DIR}/external)
+add_subdirectory(${sst-core_SOURCE_DIR}/../external
+                 ${sst-core_BINARY_DIR}/external)
 add_subdirectory(${sst-core_SOURCE_DIR}/../src ${sst-core_BINARY_DIR}/src)
 add_subdirectory(${sst-core_SOURCE_DIR}/../tests ${sst-core_BINARY_DIR}/tests)
 add_subdirectory(${sst-core_SOURCE_DIR}/../share ${sst-core_BINARY_DIR}/share)
