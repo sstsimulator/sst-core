@@ -8,7 +8,7 @@
 #
 
 add_library(shared OBJECT sharedObject.cc)
-target_include_directories(shared PRIVATE ${sst-core_SOURCE_DIR}/../src)
+target_include_directories(shared PRIVATE ${SST_TOP_SRC_DIR}/src)
 target_link_libraries(shared PRIVATE sst-config-headers)
 
 if(MPI_FOUND)

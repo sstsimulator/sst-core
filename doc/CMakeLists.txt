@@ -20,7 +20,7 @@ if(BUILD_DOCUMENTATION)
   execute_process(
     COMMAND "${GIT_EXECUTABLE}" describe --match=NeVeRmAtCh --always --abbrev=40
             --dirty
-    WORKING_DIRECTORY "${sst-core_SOURCE_DIR}/.."
+    WORKING_DIRECTORY "${SST_TOP_SRC_DIR}"
     OUTPUT_VARIABLE SST_SVN_REVISION
     ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
 
