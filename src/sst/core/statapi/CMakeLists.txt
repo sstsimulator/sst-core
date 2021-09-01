@@ -8,22 +8,21 @@
 #
 
 set(SSTStatAPIHeaders
-  stataccumulator.h
-  statbase.h
-  statengine.h
-  statfieldinfo.h
-  statgroup.h
-  stathistogram.h
-  statnull.h
-  statoutputconsole.h
-  statoutputcsv.h
-  statoutput.h
-  statoutputhdf5.h
-  statoutputjson.h
-  statoutputtxt.h
-  statuniquecount.h)
+    stataccumulator.h
+    statbase.h
+    statengine.h
+    statfieldinfo.h
+    statgroup.h
+    stathistogram.h
+    statnull.h
+    statoutputconsole.h
+    statoutputcsv.h
+    statoutput.h
+    statoutputhdf5.h
+    statoutputjson.h
+    statoutputtxt.h
+    statuniquecount.h)
 
-install(FILES ${SSTStatAPIHeaders}
-        DESTINATION "include/sst/core/statapi")
+install(FILES ${SSTStatAPIHeaders} DESTINATION "include/sst/core/statapi")
 
 # EOF

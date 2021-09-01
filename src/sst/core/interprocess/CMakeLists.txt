@@ -8,14 +8,14 @@
 #
 
 set(SSTInterprocessHeaders
-  circularBuffer.h
-  ipctunnel.h
-  mmapchild_pin3.h
-  mmapparent.h
-  shmchild.h
-  shmparent.h
-  sstmutex.h
-  tunneldef.h)
+    circularBuffer.h
+    ipctunnel.h
+    mmapchild_pin3.h
+    mmapparent.h
+    shmchild.h
+    shmparent.h
+    sstmutex.h
+    tunneldef.h)
 
 install(FILES ${SSTInterprocessHeaders}
         DESTINATION "include/sst/core/interprocess")

@@ -8,19 +8,18 @@
 #
 
 set(SSTELIHeaders
-  categoryInfo.h
-  defaultInfo.h
-  elementbuilder.h
-  elementinfo.h
-  elibase.h
-  interfaceInfo.h
-  paramsInfo.h
-  portsInfo.h
-  statsInfo.h
-  simpleInfo.h
-  subcompSlotInfo.h)
+    categoryInfo.h
+    defaultInfo.h
+    elementbuilder.h
+    elementinfo.h
+    elibase.h
+    interfaceInfo.h
+    paramsInfo.h
+    portsInfo.h
+    statsInfo.h
+    simpleInfo.h
+    subcompSlotInfo.h)
 
-install(FILES ${SSTELIHeaders}
-        DESTINATION "include/sst/core/eli")
+install(FILES ${SSTELIHeaders} DESTINATION "include/sst/core/eli")
 
 # EOF

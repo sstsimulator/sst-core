@@ -31,6 +31,7 @@ endif()
 # ------------------------------------------------------------------------
 # -- EXTERNAL CMAKE SCRIPTS
 # ------------------------------------------------------------------------
+# Don't change this path to SST_TOP_SRC_DIR cmake lives in experimental for now.
 list(APPEND CMAKE_MODULE_PATH ${sst-core_SOURCE_DIR}/cmake)
 
 find_package(Python 3.5 REQUIRED COMPONENTS Interpreter Development)
@@ -53,6 +54,7 @@ endif()
 
 # sst sets all the variables needed for our *.in files
 include(sst REQUIRED)
+# Don't change this path to SST_TOP_SRC_DIR this lives in experimental for now.
 add_subdirectory(${sst-core_SOURCE_DIR}/cmake_configure_files)
 
 # ------------------------------------------------------------------------
@@ -87,8 +89,7 @@ endif()
 # ------------------------------------------------------------------------
 
 # -- Doxygen
-add_subdirectory(${sst-core_SOURCE_DIR}/../doc ${sst-core_BINARY_DIR}/doc)
-
+add_subdirectory(${SST_TOP_SRC_DIR}/doc ${sst-core_BINARY_DIR}/doc)
 
 # ------------------------------------------------------------------------
 # -- TESTING
@@ -141,9 +142,9 @@ endif()
 # ------------------------------------------------------------------------
 # -- SUBDIRECTORIES
 # ------------------------------------------------------------------------
-add_subdirectory(${sst-core_SOURCE_DIR}/../external ${sst-core_BINARY_DIR}/external)
-add_subdirectory(${sst-core_SOURCE_DIR}/../src ${sst-core_BINARY_DIR}/src)
-add_subdirectory(${sst-core_SOURCE_DIR}/../tests ${sst-core_BINARY_DIR}/tests)
-add_subdirectory(${sst-core_SOURCE_DIR}/../share ${sst-core_BINARY_DIR}/share)
+add_subdirectory(${SST_TOP_SRC_DIR}/external ${sst-core_BINARY_DIR}/external)
+add_subdirectory(${SST_TOP_SRC_DIR}/src ${sst-core_BINARY_DIR}/src)
+add_subdirectory(${SST_TOP_SRC_DIR}/tests ${sst-core_BINARY_DIR}/tests)
+add_subdirectory(${SST_TOP_SRC_DIR}/share ${sst-core_BINARY_DIR}/share)
 
 # EOF
