@@ -39,7 +39,7 @@ namespace SST {
 // using HandlerBase = SSTHandlerBaseNoArgs<return_type_of_callback>;
 
 // template <return_type_of_callback, typename classT, typename dataT = void>
-// using Handler = SSTHandlerNoArgs<classT, dataT>;
+// using Handler = SSTHandlerNoArgs<return_type_of_callback, classT, dataT>;
 
 // The handlers are then instanced as follows:
 
