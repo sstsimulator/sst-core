@@ -17,6 +17,7 @@
 #include "sst/core/link.h"
 #include "sst/core/params.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
