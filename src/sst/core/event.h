@@ -14,6 +14,7 @@
 
 #include "sst/core/activity.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/ssthandler.h"
 
 #include <atomic>
 #include <cinttypes>
@@ -108,58 +109,31 @@ public:
 #endif
     }
 
-    /// Functor classes for Event handling
-    class HandlerBase
-    {
-    public:
-        /** Handler function */
-        virtual void operator()(Event*) = 0;
-        virtual ~HandlerBase() {}
-    };
+    /**
+       Base handler for event delivery.
+     */
+    using HandlerBase = SSTHandlerBase<void, Event*>;
 
     /**
-     * Event Handler class with user-data argument
+       Used to create handlers for event delivery.  The callback
+       function is expected to be in the form of:
+
+         void func(Event* event)
+
+       In which case, the class is created with:
+
+         new Event::Handler<classname>(this, &classname::function_name)
+
+       Or, to add static data, the callback function is:
+
+         void func(Event* event, dataT data)
+
+       and the class is created with:
+
+         new Event::Handler<classname, dataT>(this, &classname::function_name, data)
      */
-    template <typename classT, typename argT = void>
-    class Handler : public HandlerBase
-    {
-    private:
-        typedef void (classT::*PtrMember)(Event*, argT);
-        classT*         object;
-        const PtrMember member;
-        argT            data;
-
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         * @param data - Additional argument to pass to handler
-         */
-        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
-
-        void operator()(Event* event) { (object->*member)(event, data); }
-    };
-
-    /**
-     * Event Handler class with no user-data.
-     */
-    template <typename classT>
-    class Handler<classT, void> : public HandlerBase
-    {
-    private:
-        typedef void (classT::*PtrMember)(Event*);
-        const PtrMember member;
-        classT*         object;
-
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         */
-        Handler(classT* const object, PtrMember member) : member(member), object(object) {}
-
-        void operator()(Event* event) { (object->*member)(event); }
-    };
+    template <typename classT, typename dataT = void>
+    using Handler = SSTHandler<void, Event*, classT, dataT>;
 
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__

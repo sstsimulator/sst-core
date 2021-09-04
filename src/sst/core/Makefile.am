@@ -60,6 +60,7 @@ nobase_dist_sst_HEADERS = \
 	sparseVectorMap.h \
 	sst_types.h \
 	sstpart.h \
+	ssthandler.h \
 	stopAction.h \
 	stringize.h \
 	subcomponent.h \
