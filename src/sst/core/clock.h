@@ -38,10 +38,15 @@ public:
     /** Functor classes for Clock handling */
     class HandlerBase
     {
+    private:
+        HandlerId_t        handler_id;
     public:
         /** Function called when Handler is invoked */
         virtual bool operator()(Cycle_t) = 0;
+        HandlerId_t GetId(){ return handler_id;};
+        HandlerBase();
         virtual ~HandlerBase() {}
+
     };
 
     /** Event Handler class with user-data argument
@@ -116,6 +121,8 @@ public:
     bool registerHandler(Clock::HandlerBase* handler);
     /** Remove a handler from the list of handlers to be called on the clock tick */
     bool unregisterHandler(Clock::HandlerBase* handler, bool& empty);
+
+
 
     void print(const std::string& header, Output& out) const override;
 

@@ -19,6 +19,7 @@ namespace SST {
 
 typedef uint64_t ComponentId_t;
 typedef uint64_t StatisticId_t;
+typedef uint64_t HandlerId_t;
 typedef int32_t  LinkId_t;
 typedef uint64_t Cycle_t;
 typedef uint64_t SimTime_t;

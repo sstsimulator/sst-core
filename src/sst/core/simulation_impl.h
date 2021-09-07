@@ -370,7 +370,7 @@ public:
 
 #ifdef PERFORMANCE_INSTRUMENTING
     FILE*                        fp;
-    std::map<uint64_t, uint64_t> handler_mapping;
+    std::map<SST::HandlerId_t, SST::ComponentId_t> handler_mapping;
 #endif
 
 #ifdef PERIODIC_PRINT
@@ -385,8 +385,8 @@ public:
 #endif
 
 #ifdef CLOCK_PROFILING
-    std::map<uint64_t, uint64_t> clockHandlers;
-    std::map<uint64_t, uint64_t> clockCounters;
+    std::map<SST::HandlerId_t, uint64_t> clockHandlers;
+    std::map<SST::HandlerId_t, uint64_t> clockCounters;
 #endif
 
 #ifdef EVENT_PROFILING

@@ -858,10 +858,10 @@ Simulation_impl::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* hand
 }
 
 void
-Simulation_impl::registerClockHandler(SST::ComponentId_t id, uint64_t handler)
+Simulation_impl::registerClockHandler(SST::ComponentId_t id, SST::HandlerId_t handler)
 {
 #ifdef PERFORMANCE_INSTRUMENTING
-    handler_mapping.insert(std::pair<uint64_t, uint64_t>(handler, (uint64_t)id));
+    handler_mapping.insert(std::pair<SST::HandlerId_t, SST::ComponentId_t>(handler, id));
 #endif
 }
 
@@ -869,8 +869,9 @@ TimeConverter*
 Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority)
 {
 #ifdef CLOCK_PROFILING
-    clockHandlers.insert(std::pair<uint64_t, uint64_t>((uint64_t)handler, 0));
-    clockCounters.insert(std::pair<uint64_t, uint64_t>((uint64_t)handler, 0));
+    SST::HandlerId_t handlerID = handler->GetId();
+    clockHandlers.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
+    clockCounters.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
 #endif
     clockMap_t::key_type mapKey = std::make_pair(tcFreq->getFactor(), priority);
     if ( clockMap.find(mapKey) == clockMap.end() ) {
