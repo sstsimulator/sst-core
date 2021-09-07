@@ -55,6 +55,7 @@ Factory::Factory(const std::string& searchPaths) : searchPaths(searchPaths), out
     instance = this;
     loader   = new ElemLoader(searchPaths);
     loaded_libraries.insert("sst");
+    nextHandlerID = 1;
 }
 
 Factory::~Factory()
@@ -184,6 +185,13 @@ Factory::getParamNames(const std::string& type)
     // with the given name
     out.fatal(CALL_INFO, 1, "can't find requested element %s.\n ", type.c_str());
     return empty_keyset;
+}
+
+HandlerId_t
+Factory::CreateClockHandlerId(){
+    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
+    nextHandlerID++;
+    return nextHandlerID;
 }
 
 Component*

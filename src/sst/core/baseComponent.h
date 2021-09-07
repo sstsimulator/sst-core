@@ -245,7 +245,7 @@ protected:
     /** Returns the next Cycle that the TimeConverter would fire */
     Cycle_t getNextClockCycle(TimeConverter* freq);
 
-    void registerClockHandler(SST::ComponentId_t id, uint64_t handler);
+    void registerClockHandler(Clock::HandlerBase* handler);
 
     /** Registers a default time base for the component and optionally
         sets the the component's links to that timebase. Useful for

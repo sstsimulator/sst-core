@@ -302,6 +302,10 @@ public:
      */
     std::string GetComponentInfoStatisticUnits(const std::string& type, const std::string& statisticName);
 
+    /** Create a unique clock handler ID - will be passed to the clock at constructor time
+     */
+    HandlerId_t CreateClockHandlerId();
+
 private:
     friend int ::main(int argc, char** argv);
 
@@ -331,6 +335,8 @@ private:
     std::pair<std::string, std::string> parseLoadName(const std::string& wholename);
 
     std::recursive_mutex factoryMutex;
+
+    HandlerId_t nextHandlerID;
 
 protected:
     Output& out;
