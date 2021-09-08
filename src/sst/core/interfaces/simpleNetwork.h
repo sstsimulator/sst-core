@@ -17,6 +17,7 @@
 #include "sst/core/params.h"
 #include "sst/core/serialization/serializable.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
@@ -182,58 +183,38 @@ public:
         virtual void inspectNetworkData(Request* req) = 0;
     };
 
-    /** Functor classes for handling of callbacks */
-    class HandlerBase
-    {
-    public:
-        virtual bool operator()(int) = 0;
-        virtual ~HandlerBase() {}
-    };
-
-    /** Event Handler class with user-data argument
-     * @tparam classT Type of the Object
-     * @tparam argT Type of the argument
+    /**
+       Base handler for event delivery.
      */
-    template <typename classT, typename argT = void>
-    class Handler : public HandlerBase
-    {
-    private:
-        typedef bool (classT::*PtrMember)(int, argT);
-        classT*         object;
-        const PtrMember member;
-        argT            data;
+    using HandlerBase = SSTHandlerBase<bool, int>;
 
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         * @param data - Additional argument to pass to handler
-         */
-        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
+    /**
+       Used to create handlers to notify the endpoint when the
+       SimpleNetwork sends or recieves a packet..  The callback
+       function is expected to be in the form of:
 
-        bool operator()(int vn) { return (object->*member)(vn, data); }
-    };
+         bool func(int vn)
 
-    /** Event Handler class without user-data
-     * @tparam classT Type of the Object
-     */
-    template <typename classT>
-    class Handler<classT, void> : public HandlerBase
-    {
-    private:
-        typedef bool (classT::*PtrMember)(int);
-        classT*         object;
-        const PtrMember member;
+       In which case, the class is created with:
 
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         */
-        Handler(classT* const object, PtrMember member) : object(object), member(member) {}
+         new SimpleNetwork::Handler<classname>(this, &classname::function_name)
 
-        bool operator()(int vn) { return (object->*member)(vn); }
-    };
+       Or, to add static data, the callback function is:
+
+         bool func(int vn, dataT data)
+
+       and the class is created with:
+
+         new SimpleNetwork::Handler<classname, dataT>(this, &classname::function_name, data)
+
+       In both cases, the boolean that's returned indicates whether
+       the handler should be kept in the list or not.  On return
+       of true, the handler will be kept.  On return of false, the
+       handler will be removed from the clock list.
+    */
+    template <typename classT, typename dataT = void>
+    using Handler = SSTHandler<bool, int, classT, dataT>;
+
 
 public:
     /** Constructor, designed to be used via 'loadUserSubComponent or loadAnonymousSubComponent'. */

@@ -8,20 +8,19 @@
 #
 
 set(SSTRNGHeaders
-  constant.h
-  discrete.h
-  distrib.h
-  expon.h
-  rng.h
-  gaussian.h
-  marsaglia.h
-  mersenne.h
-  poisson.h
-  sstrng.h
-  uniform.h
-  xorshift.h)
+    constant.h
+    discrete.h
+    distrib.h
+    expon.h
+    rng.h
+    gaussian.h
+    marsaglia.h
+    mersenne.h
+    poisson.h
+    sstrng.h
+    uniform.h
+    xorshift.h)
 
-install(FILES ${SSTRNGHeaders}
-        DESTINATION "include/sst/core/rng")
+install(FILES ${SSTRNGHeaders} DESTINATION "include/sst/core/rng")
 
 # EOF

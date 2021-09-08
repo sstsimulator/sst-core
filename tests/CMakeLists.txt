@@ -10,12 +10,12 @@
 # TODO probably don't want to run tests in the source dir
 option(SST_ENABLE_TESTS "add option to run make test" ON)
 if(SST_ENABLE_TESTS)
-  add_test(NAME sst-test-core
+  add_test(
+    NAME sst-test-core
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_INSTALL_PREFIX}/bin/sst-test-core )
-  set_tests_properties( sst-test-core
-                        PROPERTIES
-                        PASS_REGULAR_EXPRESSION "TESTING PASSED" )
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_INSTALL_PREFIX}/bin/sst-test-core)
+  set_tests_properties(sst-test-core PROPERTIES PASS_REGULAR_EXPRESSION
+                                                "TESTING PASSED")
 endif()
 
 # EOF

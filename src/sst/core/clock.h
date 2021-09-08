@@ -13,6 +13,7 @@
 #define SST_CORE_CLOCK_H
 
 #include "sst/core/action.h"
+#include "sst/core/ssthandler.h"
 
 #include <cinttypes>
 #include <vector>
@@ -35,73 +36,36 @@ public:
     Clock(TimeConverter* period, int priority = CLOCKPRIORITY);
     ~Clock();
 
-    /** Functor classes for Clock handling */
-    class HandlerBase
-    {
-    public:
-        /** Function called when Handler is invoked */
-        virtual bool operator()(Cycle_t) = 0;
-        virtual ~HandlerBase() {}
-    };
-
-    /** Event Handler class with user-data argument
-     * @tparam classT Type of the Object
-     * @tparam argT Type of the argument
+    /**
+       Base handler for clock functions.
      */
-    template <typename classT, typename argT = void>
-    class Handler : public HandlerBase
-    {
-    private:
-        typedef bool (classT::*PtrMember)(Cycle_t, argT);
-        classT*         object;
-        const PtrMember member;
-        argT            data;
+    using HandlerBase = SSTHandlerBase<bool, Cycle_t>;
 
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         * @param data - Additional argument to pass to handler
-         */
-        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
+    /**
+       Used to create handlers for clock.  The callback function is
+       expected to be in the form of:
 
-        /**
-           Calls underlying handler function, passing in the current
-           cycle count and additional metadata supplied by the user.
+         bool func(Cycle_t cycle)
 
-           If the hander function returns true, the handler will be
-           removed from the clock list.
-         */
-        bool operator()(Cycle_t cycle) override { return (object->*member)(cycle, data); }
-    };
+       In which case, the class is created with:
 
-    /** Event Handler class without user-data
-     * @tparam classT Type of the Object
+         new Clock::Handler<classname>(this, &classname::function_name)
+
+       Or, to add static data, the callback function is:
+
+         bool func(Cycle_t cycle, dataT data)
+
+       and the class is created with:
+
+         new Clock::Handler<classname, dataT>(this, &classname::function_name, data)
+
+       In both cases, the boolean that's returned indicates whether
+       the handler should be removed from the list or not.  On return
+       of true, the handler will be removed.  On return of false, the
+       handler will be left in the clock list.
      */
-    template <typename classT>
-    class Handler<classT, void> : public HandlerBase
-    {
-    private:
-        typedef bool (classT::*PtrMember)(Cycle_t);
-        classT*         object;
-        const PtrMember member;
-
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         */
-        Handler(classT* const object, PtrMember member) : object(object), member(member) {}
-
-        /**
-           Calls underlying handler function, passing in the current
-           cycle count.
-
-           If the hander function returns true, the handler will be
-           removed from the clock list.
-         */
-        bool operator()(Cycle_t cycle) override { return (object->*member)(cycle); }
-    };
+    template <typename classT, typename dataT = void>
+    using Handler = SSTHandler<bool, Cycle_t, classT, dataT>;
 
     /**
      * Activates this clock object, by inserting into the simulation's

@@ -13,7 +13,8 @@ configure_file(sstsimulator.conf.in
 install(FILES ${sst-core_BINARY_DIR}/src/sst/sstsimulator.conf
         DESTINATION "etc/sst")
 
-configure_file(SST_version.pc.in ${sst-core_BINARY_DIR}/src/sst/SST-${VERSION}.pc)
+configure_file(SST_version.pc.in
+               ${sst-core_BINARY_DIR}/src/sst/SST-${VERSION}.pc)
 install(FILES ${sst-core_BINARY_DIR}/src/sst/SST-${VERSION}.pc
         DESTINATION "lib/pkgconfg")
 

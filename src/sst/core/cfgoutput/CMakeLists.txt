@@ -7,13 +7,9 @@
 # See LICENSE for full license details
 #
 
-set(SSTCfgOutputHeaders
-  dotConfigOutput.h
-  jsonConfigOutput.h
-  pythonConfigOutput.h
-  xmlConfigOutput.h)
+set(SSTCfgOutputHeaders dotConfigOutput.h jsonConfigOutput.h
+                        pythonConfigOutput.h xmlConfigOutput.h)
 
-install(FILES ${SSTCfgOutputHeaders}
-        DESTINATION "include/sst/core/cfgoutput")
+install(FILES ${SSTCfgOutputHeaders} DESTINATION "include/sst/core/cfgoutput")
 
 # EOF

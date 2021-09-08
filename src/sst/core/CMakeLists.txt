@@ -131,6 +131,7 @@ set(SSTHeaders
     sharedRegionImpl.h
     simulation.h
     sparseVectorMap.h
+    ssthandler.h
     sstinfo.h
     sstpart.h
     sst_types.h
@@ -145,7 +146,7 @@ set(SSTHeaders
     unitAlgebra.h
     warnmacros.h)
 
-target_include_directories(sst-core-lib PUBLIC ${sst-core_SOURCE_DIR}/../src)
+target_include_directories(sst-core-lib PUBLIC ${SST_TOP_SRC_DIR}/src)
 target_include_directories(sst-core-lib PUBLIC ${sst-core_BINARY_DIR}/src)
 target_compile_definitions(sst-core-lib PUBLIC SST_BUILDING_CORE=1)
 
@@ -174,11 +175,11 @@ endif()
 
 add_library(sst-boot-lib OBJECT bootshared.cc)
 target_link_libraries(sst-boot-lib PUBLIC sst-config-headers)
-target_include_directories(sst-boot-lib PUBLIC ${sst-core_SOURCE_DIR}/../src)
+target_include_directories(sst-boot-lib PUBLIC ${SST_TOP_SRC_DIR}/src)
 
 add_library(sst-env-lib OBJECT env/envquery.cc env/envconfig.cc)
 target_link_libraries(sst-env-lib PUBLIC sst-config-headers)
-target_include_directories(sst-env-lib PUBLIC ${sst-core_SOURCE_DIR}/../src)
+target_include_directories(sst-env-lib PUBLIC ${SST_TOP_SRC_DIR}/src)
 
 add_executable(sstsim.x main.cc)
 target_link_libraries(

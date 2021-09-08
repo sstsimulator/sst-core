@@ -7,18 +7,17 @@
 # See LICENSE for full license details
 #
 
-# TODO Remove this set
-#set(prefix ${CMAKE_INSTALL_PREFIX})
+# TODO Remove this set set(prefix ${CMAKE_INSTALL_PREFIX})
 
-message(STATUS "SST: PREPROCESSING ${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in")
-configure_file(
-${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in
-${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake
-)
+message(
+  STATUS "SST: PREPROCESSING ${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in")
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/SSTConfig.cmake.in
+               ${CMAKE_CURRENT_BINARY_DIR}/SSTConfig.cmake)
 
-install(DIRECTORY "."
-        DESTINATION "lib/cmake/SST"
-        FILES_MATCHING
-        PATTERN "*.cmake")
+install(
+  DIRECTORY "."
+  DESTINATION "lib/cmake/SST"
+  FILES_MATCHING
+  PATTERN "*.cmake")
 
 # EOF
