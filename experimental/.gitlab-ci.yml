@@ -6,6 +6,6 @@ build:core:
   image: ${container_registry}/sst-centos8-base-env:0.1
   script:
     - cmake -B build experimental -DCMAKE_INSTALL_PREFIX=core-install -DMPI_ROOT=/usr/lib64/openmpi
-    - cmake --build core-build -j $(nproc)
-    - cmake --install core-build
+    - cmake --build build -j $(nproc)
+    - cmake --install build
     - core-install/bin/sst-test-core
