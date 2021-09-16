@@ -1,5 +1,4 @@
 
-
 AC_INIT([SSTCore], [-dev], [sst@sandia.gov])
 
 AC_PREREQ([2.59])
@@ -47,8 +46,7 @@ AS_IF([test "x$use_picky" = "xyes"],
 CFLAGS="$CFLAGS $WARNFLAGS"
 CXXFLAGS="$CXXFLAGS $WARNFLAGS"
 
-dnl Fix flags - seems to be only way to make libltdl play nice
-CPPFLAGS='-I$(top_builddir) -I$(top_srcdir)/src -I$(top_builddir)/src'" $CPPFLAGS"
+CPPFLAGS='-I$(top_srcdir)/src -I$(top_builddir)/src'" $CPPFLAGS"
 
 AC_CHECK_HEADERS([c_asm.h dlfcn.h intrinsics.h mach/mach_time.h sys/time.h sys/stat.h sys/types.h unistd.h])
 
