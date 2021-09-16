@@ -65,6 +65,7 @@ public:
     std::string        timeBase;                  /*!< Timebase of simulation */
     std::string        partitioner;               /*!< Partitioner to use */
     std::string        timeVortex;                /*!< TimeVortex implementation to use */
+    bool               inter_thread_links;        /*!< Use interthread links */
     std::string        output_config_graph;       /*!< File to dump configuration graph */
     std::string        output_dot;                /*!< File to dump dot output */
     uint32_t           dot_verbosity;             /*!< Amount of detail to include in the dot graph output */
@@ -129,6 +130,7 @@ public:
     bool setTimebase(const std::string& arg);
     bool setPartitioner(const std::string& arg);
     bool setTimeVortex(const std::string& arg);
+    bool setInterThreadLinks(const std::string& arg);
     bool setOutputDir(const std::string& arg);
     bool setWriteConfig(const std::string& arg);
     bool setWriteDot(const std::string& arg);

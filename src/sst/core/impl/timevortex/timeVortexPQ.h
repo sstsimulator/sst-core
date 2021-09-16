@@ -28,22 +28,14 @@ namespace IMPL {
 /**
  * Primary Event Queue
  */
-class TimeVortexPQ : public TimeVortex
+template <bool TS>
+class TimeVortexPQBase : public TimeVortex
 {
 
 public:
-    SST_ELI_REGISTER_DERIVED(
-        TimeVortex,
-        TimeVortexPQ,
-        "sst",
-        "timevortex.priority_queue",
-        SST_ELI_ELEMENT_VERSION(1,0,0),
-        "TimeVortex based on std::priority_queue.")
-
-public:
     // TimeVortexPQ();
-    TimeVortexPQ(Params& params);
-    ~TimeVortexPQ();
+    TimeVortexPQBase(Params& params);
+    ~TimeVortexPQBase();
 
     bool      empty() override;
     int       size() override;
@@ -66,9 +58,12 @@ private:
     dataType_t data;
     uint64_t   insertOrder;
 
-    uint64_t current_depth;
-    uint64_t max_depth;
+    typename std::conditional<TS, std::atomic<uint64_t>, uint64_t>::type current_depth;
+    uint64_t                                                             max_depth;
+
+    CACHE_ALIGNED(SST::Core::ThreadSafe::Spinlock, slock);
 };
+
 
 } // namespace IMPL
 } // namespace SST

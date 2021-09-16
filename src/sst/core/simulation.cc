@@ -196,11 +196,15 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
     complete_phase_start_time(0.0),
     complete_phase_total_time(0.0)
 {
+
     sim_output.init(cfg->output_core_prefix, cfg->getVerboseLevel(), 0, Output::STDOUT);
     output_directory = "";
     Params p;
     // params get passed twice - both the params and a ctor argument
-    timeVortex = factory->Create<TimeVortex>(cfg->timeVortex, p);
+    direct_interthread = cfg->inter_thread_links;
+    std::string timevortex_type(cfg->timeVortex);
+    if ( direct_interthread && num_ranks.thread > 1 ) timevortex_type = timevortex_type + ".ts";
+    timeVortex = factory->Create<TimeVortex>(timevortex_type, p);
     if ( my_rank.thread == 0 ) {
         m_exit = new Exit(num_ranks.thread, timeLord.getTimeConverter("100ns"), num_ranks.rank == 1);
     }
@@ -251,7 +255,6 @@ Simulation_impl::getLocalMinimumNextActivityTime()
         SimTime_t next = instance->getNextActivityTime();
         if ( next < ret ) { ret = next; }
     }
-
     return ret;
 }
 
@@ -326,14 +329,8 @@ Simulation_impl::processGraphInfo(ConfigGraph& graph, const RankInfo& UNUSED(myR
 }
 
 int
-Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
+Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
 {
-    // Create the Statistics Engine
-    if ( myRank.thread == 0 ) {}
-
-    // Params objects should now start verifying parameters
-    Params::enableVerify();
-
     // First, go through all the components that are in this rank and
     // create the ComponentInfo object for it
     // Now, build all the components
@@ -396,6 +393,42 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
                 cinfo->getLinkMap()->insertLink(clink.port[1], lp.getRight());
             }
         }
+        // If we are on same rank, different threads and we are doing
+        // direct_interthread links
+        else if ( (rank[0].rank == rank[1].rank) && direct_interthread ) {
+            int local;
+            int remote;
+            if ( rank[0] == myRank ) {
+                local  = 0;
+                remote = 1;
+            }
+            else {
+                local  = 1;
+                remote = 0;
+            }
+
+            Link* link = new Link(clink.id);
+            link->setLatency(clink.latency[local]);
+            if ( cross_thread_links.find(clink.id) != cross_thread_links.end() ) {
+                // The other side already initialized.  Hook them
+                // together as a pair.
+                Link* other_link      = cross_thread_links[clink.id];
+                link->pair_link       = other_link;
+                other_link->pair_link = link;
+                // Remove entry from map
+                cross_thread_links.erase(clink.id);
+            }
+            else {
+                // Nothing to do until the other side is created.
+                // Just add myself to the map so the other side can
+                // find me later.
+                cross_thread_links[clink.id] = link;
+            }
+
+            ComponentInfo* cinfo = compInfoMap.getByID(clink.component[local]);
+            if ( cinfo == nullptr ) { sim_output.fatal(CALL_INFO, 1, "Couldn't find ComponentInfo in map."); }
+            cinfo->getLinkMap()->insertLink(clink.port[local], link);
+        }
         // If the components are not in the same thread, then the
         // SyncManager will handle things
         else {
@@ -431,13 +464,20 @@ Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTi
             // it can map link_id to link*
             ActivityQueue* sync_q = syncManager->registerLink(rank[remote], rank[local], clink.id, lp.getRight());
 
-            lp.getRight()->configuredQueue = sync_q;
-            lp.getRight()->untimedQueue    = sync_q;
+            lp.getLeft()->send_queue = sync_q;
+            lp.getRight()->setAsSyncLink();
         }
     }
+    return 0;
+}
 
-    // Done with that edge, delete it.
-    //    graph.links.clear();
+
+int
+Simulation_impl::performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t UNUSED(min_part))
+{
+    // Params objects should now start verifying parameters
+    Params::enableVerify();
+
 
     // Now, build all the components
     for ( auto iter = graph.comps.begin(); iter != graph.comps.end(); ++iter ) {
@@ -623,7 +663,6 @@ Simulation_impl::run()
         currentPriority  = current_activity->getPriority();
         current_activity->execute();
 
-        // printf("%d: Activity at %" PRIu64 "\n",my_rank.rank,currentSimCycle);
 
         if ( UNLIKELY(0 != lastRecvdSignal) ) {
             switch ( lastRecvdSignal ) {
@@ -942,6 +981,7 @@ Simulation_impl::resizeBarriers(uint32_t nthr)
 /* Define statics */
 Factory*                  Simulation_impl::factory;
 TimeLord                  Simulation_impl::timeLord;
+std::map<LinkId_t, Link*> Simulation_impl::cross_thread_links;
 Output                    Simulation_impl::sim_output;
 Core::ThreadSafe::Barrier Simulation_impl::initBarrier;
 Core::ThreadSafe::Barrier Simulation_impl::completeBarrier;

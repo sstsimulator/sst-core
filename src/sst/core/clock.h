@@ -81,7 +81,7 @@ public:
     /** Remove a handler from the list of handlers to be called on the clock tick */
     bool unregisterHandler(Clock::HandlerBase* handler, bool& empty);
 
-    void print(const std::string& header, Output& out) const override;
+    std::string toString() const override;
 
 private:
     /*     typedef std::list<Clock::HandlerBase*> HandlerMap_t; */

@@ -483,16 +483,18 @@ Output::getThreadRank() const
     return m_threadMap[std::this_thread::get_id()];
 }
 
-std::vector<char> TraceFunction::indent_array(100, ' ');
-// std::vector<char> TraceFunction::indent_array;
-int               TraceFunction::trace_level = 0;
 
-TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info) :
+thread_local std::vector<char> TraceFunction::indent_array(100, ' ');
+thread_local int               TraceFunction::trace_level = 0;
+
+TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info, bool activate) :
     line(line),
     file(file),
     function(func),
-    indent_length(2)
+    indent_length(2),
+    active(activate)
 {
+    if ( !active ) return;
     if ( print_sim_info ) {
         RankInfo ri = Simulation_impl::getSimulation()->getNumRanks();
         if ( ri.rank > 1 || ri.thread > 1 ) { output_obj.init("@R, @I (@t): " /*prefix*/, 0, 0, Output::STDOUT); }
@@ -516,6 +518,7 @@ TraceFunction::TraceFunction(uint32_t line, const char* file, const char* func, 
 
 TraceFunction::~TraceFunction()
 {
+    if ( !active ) return;
     trace_level--;
     int indent           = trace_level * indent_length;
     indent_array[indent] = '\0';
@@ -527,7 +530,7 @@ TraceFunction::~TraceFunction()
 void
 TraceFunction::output(const char* format, ...) const
 {
-
+    if ( !active ) return;
     // Need to add the indent
     char buf[200];
 
