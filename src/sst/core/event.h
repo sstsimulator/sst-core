@@ -164,7 +164,7 @@ public:
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
 
-    virtual void printTrackingInfo(const std::string& header, Output& out) const
+    virtual void printTrackingInfo(const std::string& header, Output& out) const override
     {
         out.output(
             "%s Event first sent from: %s:%s (type: %s) and last received by %s:%s (type: %s)\n", header.c_str(),
