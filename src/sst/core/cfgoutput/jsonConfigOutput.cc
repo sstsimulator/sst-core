@@ -113,7 +113,7 @@ JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph)
 
     json::json outputJson;
     for ( auto compItr : compMap ) {
-        outputJson["compenents"].emplace_back(CompLinkPair { compItr, linkMap });
+        outputJson["components"].emplace_back(CompLinkPair { compItr, linkMap });
     }
 
     for ( auto linkItr : linkMap ) {
