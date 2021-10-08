@@ -112,7 +112,7 @@ Clock::execute(void)
         timersub(&clockEnd, &clockStart, &clockDiff);
 #endif
 
-        auto it = sim->clockHandlers.find((uint64_t)handler);
+        auto it = sim->clockHandlers.find(handler->GetId());
 
 #ifdef HIGH_RESOLUTION_CLOCK
         it->second += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
@@ -120,7 +120,7 @@ Clock::execute(void)
         it->second += clockDiff.tv_usec + clockDiff.tv_sec * 1e6;
 #endif
 
-        auto iter = sim->clockCounters.find((uint64_t)handler);
+        auto iter = sim->clockCounters.find(handler->GetId());
         if ( iter != sim->clockCounters.end() ) { iter->second++; }
 #endif
 
