@@ -1046,14 +1046,14 @@ Simulation_impl::printPerformanceInfo()
                 }
             }
 
-            fprintf(fp, "Component %s\n", (*iter)->getName().c_str());
+            fprintf(fp, "Component Name %s\n", (*iter)->getName().c_str());
             fprintf(fp, "Clock Handler Counter: %llu\n", counters);
             fprintf(fp, "Clock Handler Runtime: %.6fs\n", (double)exec_time / clockDivisor);
             if ( counters != 0 ) {
-                fprintf(fp, "Clock Handler Average: %llu%s\n", exec_time / counters, clockResolution.c_str());
+                fprintf(fp, "Clock Handler Average: %llu%s\n\n", exec_time / counters, clockResolution.c_str());
             }
             else {
-                fprintf(fp, "Clock Handler Average: 0%s\n", clockResolution.c_str());
+                fprintf(fp, "Clock Handler Average: 0%s\n\n", clockResolution.c_str());
             }
         }
     }

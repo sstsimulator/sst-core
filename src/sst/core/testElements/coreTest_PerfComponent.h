@@ -21,7 +21,7 @@
 #include <sst/core/rng/marsaglia.h>
 
 namespace SST {
-namespace CoreTestComponent {
+namespace CoreTestPerfComponent {
 
 // These first two classes are just base classes to test ELI
 // inheritance.  The definition of the ELI items are spread through 2
@@ -30,7 +30,7 @@ namespace CoreTestComponent {
 class coreTestPerfComponentBase : public SST::Component
 {
 public:
-    SST_ELI_REGISTER_COMPONENT_BASE(SST::CoreTestComponent::coreTestPerfComponentBase)
+    SST_ELI_REGISTER_COMPONENT_BASE(SST::CoreTestPerfComponent::coreTestPerfComponentBase)
 
     SST_ELI_DOCUMENT_PARAMS(
         { "workPerCycle", "Count of busy work to do during a clock tick.", NULL}
@@ -52,7 +52,7 @@ class coreTestPerfComponentBase2 : public coreTestPerfComponentBase
 {
 public:
     SST_ELI_REGISTER_COMPONENT_DERIVED_BASE(
-        SST::CoreTestComponent::coreTestPerfComponentBase2, SST::CoreTestComponent::coreTestPerfComponentBase)
+        SST::CoreTestPerfComponent::coreTestPerfComponentBase2, SST::CoreTestPerfComponent::coreTestPerfComponentBase)
 
     SST_ELI_DOCUMENT_PARAMS(
         { "commFreq",     "Approximate frequency of sending an event during a clock tick.", NULL},
