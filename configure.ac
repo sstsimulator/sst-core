@@ -142,8 +142,8 @@ AC_DEFINE_UNQUOTED([SST_INSTALL_PREFIX], ["$prefix"], [Defines the location SST 
 AC_CACHE_SAVE
 
 dnl Remove flags like -g, -O, and -W, that are not needed by other elements
-SST_EXPORT_CXXFLAGS=`echo "$CXXFLAGS" | sed -E -e 's/ *-(g|O@<:@^@<:@:space:@:>@@:>?|W@<:@^@<:@:space:@:>@@:>@+)//g'`
-SST_EXPORT_CFLAGS=`echo "$CFLAGS" | sed -E -e 's/ *-(g|O@<:@^@<:@:space:@:>@@:>@?|W@<:@^@<:@:space:@:>@@:>@+)//g'`
+SST_EXPORT_CXXFLAGS=`echo "$CXXFLAGS" | sed -E -e 's/ *-(g|O@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'`
+SST_EXPORT_CFLAGS=`echo "$CFLAGS" | sed -E -e 's/ *-(g|O@<:@^@<:@:space:@:>@@:>@*|W@<:@^@<:@:space:@:>@@:>@+)//g'`
 AC_SUBST(SST_EXPORT_CXXFLAGS)
 AC_SUBST(SST_EXPORT_CFLAGS)
 
@@ -197,23 +197,56 @@ fi
 
 printf "%38s : %s\n" "Linker Options" "$LDFLAGS"
 echo "-------------------------------------------------------"
+echo "Configuration Information (Options):"
+echo ""
+
+if test "x$sst_use_mpi" = "x1" ; then
+    printf "%38s : Yes\n" "MPI enabled"
+else
+    printf "%38s : No\n" "MPI enabled"
+fi
+if test "x$use_mempool" = "xyes" ; then
+    printf "%38s : Yes\n" "Mempool enabled"
+else
+    printf "%38s : No\n" "Mempool enabled"
+fi
+if test "x$enable_debug" = "xyes" ; then
+    printf "%38s : Yes\n" "Debug output enabled"
+else
+    printf "%38s : No\n" "Debug output enabled"
+fi
+if test "x$enable_debug_event_tracking" = "xyes" ; then
+    printf "%38s : Yes\n" "Event tracking enabled"
+else
+    printf "%38s : No\n" "Event tracking enabled"
+fi
+if test "x$enable_profile" = "xyes" ; then
+    printf "%38s : Yes\n" "Performance profiling enabled"
+else
+    printf "%38s : No\n" "Performance profiling enabled"
+fi
+echo "-------------------------------------------------------"
 echo "Configuration Information (Dependencies):"
 echo ""
 
 printf "%38s : %s (%s)\n" "Found Python" "$PYTHON_EXE" "$PYTHON_VERSION"
-printf "%38s : %s\n" "Python3" "$PYTHON_VERSION3"
+if test "x$PYTHON_VERSION3" = "xyes" ; then
+    printf "%38s : Yes\n" "Python3"
+else
+    printf "%38s : No\n" "Python3"
+fi
 if test "x$sst_check_zoltan_happy" = "xyes" ; then
-    printf "%38s : YES\n" "Zoltan Partitioner"
+    printf "%38s : Yes\n" "Zoltan Partitioner"
 else
     printf "%38s : No\n" "Zoltan Partitioner"
 fi
 if test "x$sst_check_hdf5_happy" = "xyes" ; then
-    printf "%38s : YES\n" "HDF5 Support"
+    printf "%38s : Yes\n" "HDF5 Support"
 else
     printf "%38s : No\n" "HDF5 Support"
 fi
 if test "x$sst_check_libz_happy" = "xyes" ; then
-    printf "%38s : YES\n" "libz compression library"
+    printf "%38s : Yes\n" "libz compression library"
 else
     printf "%38s : No\n" "libz compression library"
 fi
