@@ -8,10 +8,32 @@
       * **devel** - Contains the latest development codeset of SST-Core.
          * **While this branch is fairly stable, unexpected events can cause it to be broken at any time.**
       * **master** - Contains the latest fully tested stable version of SST-Core that is under development.
-
-* Backwards compatibility for changes to existing SST-Core features should be maintained for one major release cycle. During this time, deprecation notices should be provided via compile, runtime warning, and/or release notes.
 * Repository to SST-Core is located [here](https://github.com/sstsimulator/sst-core).
 * Questions can be sent to wg-sst@sandia.gov
+
+#### **Guiding Principle for Code Development**
+
+Code accepted into the SST core codebase is deemed supported unless otherwise denoted to be experimental (e.g., by putting code in a directory named “experimental”, using the Experimental namespace, etc.).  Supported code is regularly tested for proper functionality and stability.  Please follow these guidelines:
+ 
+* When a feature branch falls behind the sstsimulator/devel branch, it is preferred that the feature branch be rebased to the latest devel before being pushed to github and a PR is submitted (rebasing is preferred to merging).
+   * Please ensure that there is no remerging old commits
+* PRs will be subject to review by the SST team to ensure they adhere to the core design principles, to help reduce the invasiveness of the changes and/or to make stylistic adjustments to keep the code base as consistent as possible. Changes may be requested prior to PR acceptance.
+   * SST Core is limited to language features found in C++11
+   * Avoid use of static variables in core
+   * Minimize need for #ifdefs
+   * Prefer C++ to C APIs when otherwise equivalent
+   * Avoid third-party dependencies in Core
+   * Use of the SST output object is required where possible instead of printf/cout
+   * Macros and other names used in preprocessor directives should be prepended with SST_ in order to avoid name clashes with other libraries
+* Code formatting must adhere to the formatting specified in the .clang-format file found in the repository.  PRs will be tested using clang-format version 12 and must pass before other testing will proceed.  A script is provided in sst-core/scripts/clang-format-test.sh to help the developer do the checking.  Run without command line options, the script will check all .cc and .h files and report all instances where the format does not match.  When run with -i, the script will tell clang-format to modify failing files in-place.  It is good practice to run this script before committing any code.  Upon submitting a pull request, the code will be checked using clang-format and testing will not proceed if the formatting check fails.
+* PRs will be tested using the autotester framework (abbreviated test suites) and cannot be merged until they pass.  This will test the PRs against all core and element tests (using sst-test-core and sst-test-elements scripts that are installed with SST) across most supported platforms.  The tests will also run in both serial and parallel (MPI and/or threads) configurations.
+* PRs that include new features must add tests to the core test suites to test the features.  The tests will be automatically run as part of the autotester process.
+* PRs that pass the autotester and fail the nightlies may be reverted until the errors are resolved.  There is typically a 2-3 day window to resolve the errors before reverting the code is considered.
+* Any changes to the SST Core public API should be discussed with the core SST team ahead of time and are subject to approval by the core SST team.  Changes should be minimized and APIs should be concise. Any API that is part of an official release will be subject to the requirement of providing backward compatibility for one major release cycle after deprecation.
+* Any publicly visible APIs must be documented in the header file using doxygen formatting.  The description should be sufficient for an end user to understand the purpose and functionality of the code.
+* Code should endeavor to check and handle expected error conditions and provide a reasonable error/warning message to help the end user track down the error.
+ 
+
 
 ---
 
