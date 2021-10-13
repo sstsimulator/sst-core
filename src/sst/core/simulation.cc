@@ -1099,7 +1099,7 @@ Simulation_impl::printPerformanceInfo()
     fprintf(fp, "\n");
 #endif
 
-#ifdef SYNC_PROFILING
+#ifdef SST_SYNC_PROFILING
     fprintf(fp, "Synchronization Information\n");
     fprintf(fp, "Thread Sync time: %.6fs\n", (double)threadSyncTime / clockDivisor);
     fprintf(fp, "Rank Sync time: %.6fs\n", (double)rankSyncTime / clockDivisor);

@@ -399,7 +399,7 @@ public:
     uint64_t                        messageSizeRecv = 0;
 #endif
 
-#ifdef SYNC_PROFILING
+#ifdef SST_SYNC_PROFILING
     uint64_t syncCounter     = 0;
     uint64_t rankSyncTime    = 0;
     uint64_t threadSyncTime  = 0;
