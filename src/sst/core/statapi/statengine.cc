@@ -395,7 +395,7 @@ StatisticProcessingEngine::setStatisticStartTime(StatisticBase* stat)
 void
 StatisticProcessingEngine::setStatisticStopTime(StatisticBase* stat)
 {
-    UnitAlgebra      stopTime   = getParamTime(stat, "startat");
+    UnitAlgebra      stopTime   = getParamTime(stat, "stopat");
     Simulation_impl* sim        = Simulation_impl::getSimulation();
     TimeConverter*   tcStopTime = sim->getTimeLord()->getTimeConverter(stopTime);
     SimTime_t        tcFactor   = tcStopTime->getFactor();
