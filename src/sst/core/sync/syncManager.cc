@@ -176,9 +176,7 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Li
 void
 SyncManager::execute(void)
 {
-#ifdef SYNC_PROFILING
-    Simulation_impl* sim          = Simulation_impl::getSimulation();
-    bool             perfRankSync = false;
+#ifdef SST_SYNC_PROFILING
 #ifdef SST_HIGH_RESOLUTION_CLOCK
     auto start = std::chrono::high_resolution_clock::now();
 #else
@@ -221,10 +219,6 @@ SyncManager::execute(void)
 
         if ( exit->getGlobalCount() == 0 ) { endSimulation(exit->getEndTime()); }
 
-#ifdef SYNC_PROFILING
-        perfRankSync = true;
-#endif
-
         break;
     case THREAD:
 
@@ -238,15 +232,17 @@ SyncManager::execute(void)
     default:
         break;
     }
+    SyncManager::sync_type_t last_sync_type = next_sync_type;
     computeNextInsert();
     RankExecBarrier[5].wait();
 
-#ifdef SYNC_PROFILING
+#ifdef SST_SYNC_PROFILING
+Simulation_impl* sim          = Simulation_impl::getSimulation();
 #ifdef SST_HIGH_RESOLUTION_CLOCK
     auto finish = std::chrono::high_resolution_clock::now();
 
     // Differentiate between rank and thread synchronization overhead
-    if ( perfRankSync ) {
+    if ( last_sync_type == RANK ){
         sim->rankSyncTime += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
     }
     else {
@@ -257,7 +253,7 @@ SyncManager::execute(void)
     timersub(&syncEnd, &syncStart, &syncDiff);
 
     // Differentiate between rank and thread synchronization overhead
-    if ( perfRankSync )
+    if ( last_sync_type == RANK )
         sim->rankSyncTime += syncDiff.tv_usec + syncDiff.tv_sec * 1e6;
     else
         sim->threadSyncTime += syncDiff.tv_usec + syncDiff.tv_sec * 1e6;
