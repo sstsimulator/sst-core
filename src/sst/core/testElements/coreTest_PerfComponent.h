@@ -108,9 +108,9 @@ public:
     void finish() { printf("Perf Test Component Finished.\n"); }
 
 private:
-    coreTestPerfComponent();                         // for serialization only
+    coreTestPerfComponent();                             // for serialization only
     coreTestPerfComponent(const coreTestPerfComponent&); // do not implement
-    void operator=(const coreTestPerfComponent&);    // do not implement
+    void operator=(const coreTestPerfComponent&);        // do not implement
 
     void         handleEvent(SST::Event* ev);
     virtual bool clockTic(SST::Cycle_t);

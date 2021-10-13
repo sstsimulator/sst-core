@@ -26,7 +26,8 @@
 using namespace SST;
 using namespace SST::CoreTestPerfComponent;
 
-coreTestPerfComponent::coreTestPerfComponent(SST::ComponentId_t id, SST::Params& params) : coreTestPerfComponentBase2(id)
+coreTestPerfComponent::coreTestPerfComponent(SST::ComponentId_t id, SST::Params& params) :
+    coreTestPerfComponentBase2(id)
 {
     bool found;
 
@@ -74,7 +75,6 @@ coreTestPerfComponent::coreTestPerfComponent(SST::ComponentId_t id, SST::Params&
     auto clockHandler = new Clock::Handler<coreTestPerfComponent>(this, &coreTestPerfComponent::clockTic);
     registerClock("1GHz", clockHandler);
     registerClockHandler(clockHandler);
-
 }
 
 coreTestPerfComponent::~coreTestPerfComponent()
@@ -92,11 +92,13 @@ void
 coreTestPerfComponent::handleEvent(Event* ev)
 {
     // printf("recv\n");
-  SST::CoreTestComponent::coreTestComponentEvent* event = dynamic_cast<SST::CoreTestComponent::coreTestComponentEvent*>(ev);
+    SST::CoreTestComponent::coreTestComponentEvent* event =
+        dynamic_cast<SST::CoreTestComponent::coreTestComponentEvent*>(ev);
     if ( event ) {
         // scan through each element in the payload and do something to it
         volatile int sum = 0;
-        for ( SST::CoreTestComponent::coreTestComponentEvent::dataVec::iterator i = event->payload.begin(); i != event->payload.end(); ++i ) {
+        for ( SST::CoreTestComponent::coreTestComponentEvent::dataVec::iterator i = event->payload.begin();
+              i != event->payload.end(); ++i ) {
             sum += *i;
         }
         delete event;
@@ -123,10 +125,10 @@ bool coreTestPerfComponent::clockTic(Cycle_t)
         6 instructions.
     */
 
-   // As this is meant to test the performance counter infrastructure,
-   // we'll give this loop more to do - trig functions are typically 
-   // quite slow so this should eat up some CPU cycles 
-    volatile int v = 0;
+    // As this is meant to test the performance counter infrastructure,
+    // we'll give this loop more to do - trig functions are typically
+    // quite slow so this should eat up some CPU cycles
+    volatile int    v   = 0;
     volatile double sum = 0.0;
     for ( int i = 0; i < workPerCycle; ++i ) {
         sum = sum + sin(double(i));
@@ -137,7 +139,7 @@ bool coreTestPerfComponent::clockTic(Cycle_t)
     if ( (rng->generateNextInt32() % commFreq) == 0 ) {
         // yes, communicate
         // create event
-      SST::CoreTestComponent::coreTestComponentEvent* e = new SST::CoreTestComponent::coreTestComponentEvent();
+        SST::CoreTestComponent::coreTestComponentEvent* e = new SST::CoreTestComponent::coreTestComponentEvent();
         // fill payload with commSize bytes
         for ( int i = 0; i < (commSize); ++i ) {
             e->payload.push_back(1);

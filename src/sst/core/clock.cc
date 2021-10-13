@@ -13,19 +13,20 @@
 
 #include "sst/core/clock.h"
 
+#include "sst/core/factory.h"
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
-#include "sst/core/factory.h"
 
 namespace SST {
 
-Clock::HandlerBase::HandlerBase(){
+Clock::HandlerBase::HandlerBase()
+{
     handler_id = Factory::getFactory()->CreateClockHandlerId();
 }
 
 Clock::Clock(TimeConverter* period, int priority) : Action(), currentCycle(0), period(period), scheduled(false)
 {
-    //HandlerBase::handler_id = 
+    // HandlerBase::handler_id =
     setPriority(priority);
 }
 

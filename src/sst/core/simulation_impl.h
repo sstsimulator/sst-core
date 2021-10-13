@@ -369,7 +369,7 @@ public:
     /** Performance Tracking Information **/
 
 #ifdef PERFORMANCE_INSTRUMENTING
-    FILE*                        fp;
+    FILE*                                          fp;
     std::map<SST::HandlerId_t, SST::ComponentId_t> handler_mapping;
 #endif
 

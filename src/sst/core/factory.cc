@@ -188,7 +188,8 @@ Factory::getParamNames(const std::string& type)
 }
 
 HandlerId_t
-Factory::CreateClockHandlerId(){
+Factory::CreateClockHandlerId()
+{
     std::lock_guard<std::recursive_mutex> lock(factoryMutex);
     nextHandlerID++;
     return nextHandlerID;
