@@ -63,7 +63,7 @@ class testcase_PerfComponent(SSTTestCase):
         perfdata_sav = "{0}/PerfComponent_PerfData.out".format(outdir)
 
         #if SST was built with SST_PERFORMANCE_INSTRUMENTING enabled, then we will also check that the counters are sane
-        if(sst_core_config_include_file_get_value_int(define="PERFORMANCE_INSTRUMENTING", default=0, disable_warning=True) > 0):
+        if(sst_core_config_include_file_get_value_int(define="SST_PERFORMANCE_INSTRUMENTING", default=0, disable_warning=True) > 0):
             if os.path.isfile(perfdata_out):
                 os.system("mv {0} {1}".format(perfdata_out, perfdata_sav))
             else:

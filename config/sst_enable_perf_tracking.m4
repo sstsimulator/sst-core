@@ -5,7 +5,7 @@ AC_DEFUN([SST_ENABLE_PERF_TRACKING], [
    AS_IF([test "x$enable_perf_tracking" = "xyes" ], [enable_debug_perf_tracking="yes"]) 
    AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_PERFORMANCE_INSTRUMENTING], [1],
                [Required for all performance tracking. Enables file creation and final output])])
-   AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_HIGH_RESOLUTION_CLOCK], [1],
+   AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_HIGH_RESOLUTION_CLOCK], [],
                [Enables nanosecond resolution clock. Disable for gettimeofday microsecond resolution])])
    AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_RUNTIME_PROFILING], [1],
                [Tracks execution time for each rank.])])
@@ -13,7 +13,7 @@ AC_DEFUN([SST_ENABLE_PERF_TRACKING], [
                [Tracks clock handler execution time and counters])])
    AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_EVENT_PROFILING], [1],
                [Tracks event and communication time and counters])])
-   AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_PERIODIC_PRINT], [1],
+   AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_PERIODIC_PRINT], [],
                [Periodically prints performance information to files])])
    AS_IF([test "$enable_debug_perf_tracking" = "yes"], [AC_DEFINE([SST_PERIODIC_PRINT_THRESHOLD], [10000],
                [Tune to affect how often files are written.])])
