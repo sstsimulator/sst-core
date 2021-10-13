@@ -19,6 +19,23 @@
 
 namespace SST {
 
+#ifdef SST_HIGH_RESOLUTION_CLOCK
+#define SST_CLOCK_PROFILE_START auto start = std::chrono::high_resolution_clock::now();
+#define SST_CLOCK_PROFILE_STOP                               \
+    auto finish = std::chrono::high_resolution_clock::now(); \
+    auto it     = sim->clockHandlers.find(handler->GetId()); \
+    it->second += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+#else
+#define SST_CLOCK_PROFILE_START                     \
+    struct timeval clockStart, clockEnd, clockDiff; \
+    gettimeofday(&clockStart, NULL);
+#define SST_CLOCK_PROFILE_STOP                           \
+    gettimeofday(&clockEnd, NULL);                       \
+    timersub(&clockEnd, &clockStart, &clockDiff);        \
+    auto it = sim->clockHandlers.find(handler->GetId()); \
+    it->second += clockDiff.tv_usec + clockDiff.tv_sec * 1e6;
+#endif
+
 Clock::HandlerBase::HandlerBase()
 {
     handler_id = Factory::getFactory()->CreateClockHandlerId();
@@ -91,13 +108,9 @@ Clock::execute(void)
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end(); ) {
         Clock::HandlerBase* handler = *sop_iter;
 
+
 #ifdef SST_CLOCK_PROFILING
-#ifdef SST_HIGH_RESOLUTION_CLOCK
-        auto start = std::chrono::high_resolution_clock::now();
-#else
-        struct timeval clockStart, clockEnd, clockDiff;
-        gettimeofday(&clockStart, NULL);
-#endif
+        SST_CLOCK_PROFILE_START
 #endif
 
         if ( (*handler)(currentCycle) )
@@ -106,20 +119,7 @@ Clock::execute(void)
             ++sop_iter;
 
 #ifdef SST_CLOCK_PROFILING
-#ifdef SST_HIGH_RESOLUTION_CLOCK
-        auto finish = std::chrono::high_resolution_clock::now();
-#else
-        gettimeofday(&clockEnd, NULL);
-        timersub(&clockEnd, &clockStart, &clockDiff);
-#endif
-
-        auto it = sim->clockHandlers.find(handler->GetId());
-
-#ifdef SST_HIGH_RESOLUTION_CLOCK
-        it->second += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-#else
-        it->second += clockDiff.tv_usec + clockDiff.tv_sec * 1e6;
-#endif
+        SST_CLOCK_PROFILE_STOP
 
         auto iter = sim->clockCounters.find(handler->GetId());
         if ( iter != sim->clockCounters.end() ) { iter->second++; }

@@ -609,9 +609,9 @@ Simulation_impl::run()
 
 #ifdef SST_EVENT_PROFILING
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
-        eventHandlers.insert(std::pair<std::string, uint64_t>((*iter)->getName().c_str(), 0));
-        eventRecvCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName().c_str(), 0));
-        eventSendCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName().c_str(), 0));
+        eventHandlers.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
+        eventRecvCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
+        eventSendCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
     }
 #endif
 

@@ -232,17 +232,19 @@ SyncManager::execute(void)
     default:
         break;
     }
+#ifdef SST_SYNC_PROFILING
     SyncManager::sync_type_t last_sync_type = next_sync_type;
+#endif
     computeNextInsert();
     RankExecBarrier[5].wait();
 
 #ifdef SST_SYNC_PROFILING
-Simulation_impl* sim          = Simulation_impl::getSimulation();
+    Simulation_impl* sim = Simulation_impl::getSimulation();
 #ifdef SST_HIGH_RESOLUTION_CLOCK
     auto finish = std::chrono::high_resolution_clock::now();
 
     // Differentiate between rank and thread synchronization overhead
-    if ( last_sync_type == RANK ){
+    if ( last_sync_type == RANK ) {
         sim->rankSyncTime += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
     }
     else {

@@ -21,6 +21,29 @@ namespace SST {
 std::atomic<uint64_t>     SST::Event::id_counter(0);
 const SST::Event::id_type SST::Event::NO_ID = std::make_pair(0, -1);
 
+#ifdef SST_HIGH_RESOLUTION_CLOCK
+#define SST_EVENT_PROFILE_START auto eventStart = std::chrono::high_resolution_clock::now();
+#define SST_EVENT_PROFILE_STOP                                                                      \
+    auto eventFinish  = std::chrono::high_resolution_clock::now();                                  \
+    auto eventHandler = sim->eventHandlers.find(getLastComponentName());                            \
+    if ( eventHandler != sim->eventHandlers.end() ) {                                               \
+        eventHandler->second +=                                                                     \
+            std::chrono::duration_cast<std::chrono::nanoseconds>(eventFinish - eventStart).count(); \
+    }
+#else
+#define SST_EVENT_PROFILE_START                     \
+    struct timeval eventStart, eventEnd, eventDiff; \
+    gettimeofday(&eventStart, NULL);
+#define SST_EVENT_PROFILE_STOP gettimeofday(&eventEnd, NULL);
+timersub(&eventEnd, &eventStart, &eventDiff);
+auto eventHandler = sim -> eventHandlers.find(getLastComponentName());
+\ 
+    if ( eventHandler != sim->eventHandlers.end() )
+{
+    eventHandler->second += eventDiff.tv_usec + eventDiff.tv_sec * 1e6;
+}
+#endif
+
 Event::~Event() {}
 
 void
@@ -28,35 +51,15 @@ Event::execute(void)
 {
 
 #ifdef SST_EVENT_PROFILING
-    Simulation_impl* sim = Simulation_impl::getSimulation();
-
-#ifdef SST_HIGH_RESOLUTION_CLOCK
-    auto eventStart = std::chrono::high_resolution_clock::now();
-#else
-    struct timeval eventStart, eventEnd, eventDiff;
-    gettimeofday(&eventStart, NULL);
-#endif
+    SST_EVENT_PROFILE_START
 #endif
 
     delivery_link->deliverEvent(this);
 
 #ifdef SST_EVENT_PROFILING
-#ifdef SST_HIGH_RESOLUTION_CLOCK
-    auto eventFinish = std::chrono::high_resolution_clock::now();
-#else
-    gettimeofday(&eventEnd, NULL);
-    timersub(&eventEnd, &eventStart, &eventDiff);
-#endif
+    Simulation_impl* sim = Simulation_impl::getSimulation();
 
-    // Track receiver processing time
-    auto eventHandler = sim->eventHandlers.find(getLastComponentName());
-    if ( eventHandler != sim->eventHandlers.end() ) {
-#ifdef SST_HIGH_RESOLUTION_CLOCK
-        eventHandler->second += std::chrono::duration_cast<std::chrono::nanoseconds>(eventFinish - eventStart).count();
-#else
-        eventHandler->second += eventDiff.tv_usec + eventDiff.tv_sec * 1e6;
-#endif
-    }
+    SST_EVENT_PROFILE_STOP
 
     // Track sending and receiving counters
     auto eventCount = sim->eventRecvCounters.find(getLastComponentName());
