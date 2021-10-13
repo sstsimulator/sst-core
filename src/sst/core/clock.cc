@@ -91,8 +91,8 @@ Clock::execute(void)
     for ( sop_iter = staticHandlerMap.begin(); sop_iter != staticHandlerMap.end(); ) {
         Clock::HandlerBase* handler = *sop_iter;
 
-#ifdef CLOCK_PROFILING
-#ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SST_CLOCK_PROFILING
+#ifdef SST_HIGH_RESOLUTION_CLOCK
         auto start = std::chrono::high_resolution_clock::now();
 #else
         struct timeval clockStart, clockEnd, clockDiff;
@@ -105,8 +105,8 @@ Clock::execute(void)
         else
             ++sop_iter;
 
-#ifdef CLOCK_PROFILING
-#ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SST_CLOCK_PROFILING
+#ifdef SST_HIGH_RESOLUTION_CLOCK
         auto finish = std::chrono::high_resolution_clock::now();
 #else
         gettimeofday(&clockEnd, NULL);
@@ -115,7 +115,7 @@ Clock::execute(void)
 
         auto it = sim->clockHandlers.find(handler->GetId());
 
-#ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SST_HIGH_RESOLUTION_CLOCK
         it->second += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
 #else
         it->second += clockDiff.tv_usec + clockDiff.tv_sec * 1e6;

@@ -173,7 +173,7 @@ RankSyncParallelSkip::exchange_slave(int thread)
     // Check the serialize_queue for work.
     comm_send_pair* ser;
 
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
     Simulation_impl* simImpl = Simulation_impl::getSimulation();
 #endif
 
@@ -181,11 +181,11 @@ RankSyncParallelSkip::exchange_slave(int thread)
         // Serialize the events
         // Measures Latency
 
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
         auto start = std::chrono::high_resolution_clock::now();
 #endif
         ser->sbuf = ser->squeue->getData();
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
         auto finish = std::chrono::high_resolution_clock::now();
         simImpl->rankLatency += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
         simImpl->rankExchangeCounter++;
@@ -270,7 +270,7 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
     int             my_send_count = send_count;
     comm_send_pair* send;
 
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
     Simulation_impl* simImpl = Simulation_impl::getSimulation();
 #endif
 
@@ -301,11 +301,11 @@ RankSyncParallelSkip::exchange_master(int UNUSED(thread))
         }
         else if ( serialize_queue.try_remove(send) ) {
 // Serialize the events
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
             auto start = std::chrono::high_resolution_clock::now();
 #endif
             send->sbuf = send->squeue->getData();
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
             auto finish = std::chrono::high_resolution_clock::now();
             simImpl->rankLatency += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
             simImpl->rankExchangeCounter++;
@@ -403,7 +403,7 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
             &rreqs[rreq_count++]);
     }
 
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
     Simulation_impl* simImpl = Simulation_impl::getSimulation();
 #endif
 
@@ -411,12 +411,12 @@ RankSyncParallelSkip::exchangeLinkUntimedData(int UNUSED_WO_MPI(thread), std::at
 
 // Do all the sends
 // Get the buffer from the syncQueue
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
         auto start = std::chrono::high_resolution_clock::now();
 #endif
         char* send_buffer = i->second.squeue->getData();
 
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
         auto finish = std::chrono::high_resolution_clock::now();
         simImpl->rankLatency += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
         simImpl->rankExchangeCounter++;

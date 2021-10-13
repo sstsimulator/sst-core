@@ -368,28 +368,28 @@ public:
 
     /** Performance Tracking Information **/
 
-#ifdef PERFORMANCE_INSTRUMENTING
+#ifdef SST_PERFORMANCE_INSTRUMENTING
     FILE*                                          fp;
     std::map<SST::HandlerId_t, SST::ComponentId_t> handler_mapping;
 #endif
 
-#ifdef PERIODIC_PRINT
+#ifdef SST_PERIODIC_PRINT
     uint64_t periodicCounter = 0;
 #endif
 
-#ifdef RUNTIME_PROFILING
+#ifdef SST_RUNTIME_PROFILING
     uint64_t       sumtime = 0;
     uint64_t       runtime = 0;
     struct timeval start, end, diff;
     struct timeval sumstart, sumend, sumdiff;
 #endif
 
-#ifdef CLOCK_PROFILING
+#ifdef SST_CLOCK_PROFILING
     std::map<SST::HandlerId_t, uint64_t> clockHandlers;
     std::map<SST::HandlerId_t, uint64_t> clockCounters;
 #endif
 
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
     uint64_t                        rankLatency         = 0;
     uint64_t                        rankExchangeCounter = 0;
     std::map<std::string, uint64_t> eventHandlers;
@@ -406,7 +406,7 @@ public:
     uint64_t rankSyncCounter = 0;
 #endif
 
-#ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SST_HIGH_RESOLUTION_CLOCK
     uint64_t    clockDivisor    = 1e9;
     std::string clockResolution = "ns";
 #else

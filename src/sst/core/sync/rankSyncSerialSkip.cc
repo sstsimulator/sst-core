@@ -130,7 +130,7 @@ RankSyncSerialSkip::exchange(void)
     int         sreq_count = 0;
     int         rreq_count = 0;
 
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
     Simulation_impl* simImpl = Simulation_impl::getSimulation();
 #endif
 
@@ -138,12 +138,12 @@ RankSyncSerialSkip::exchange(void)
 
 // Do all the sends
 // Get the buffer from the syncQueue
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
         // Measures Latency
         auto start = std::chrono::high_resolution_clock::now();
 #endif
         char* send_buffer = i->second.squeue->getData();
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
         auto finish = std::chrono::high_resolution_clock::now();
         simImpl->rankLatency += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
         simImpl->rankExchangeCounter++;

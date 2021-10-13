@@ -27,10 +27,10 @@ void
 Event::execute(void)
 {
 
-#ifdef EVENT_PROFILING
+#ifdef SST_EVENT_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();
 
-#ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SST_HIGH_RESOLUTION_CLOCK
     auto eventStart = std::chrono::high_resolution_clock::now();
 #else
     struct timeval eventStart, eventEnd, eventDiff;
@@ -40,8 +40,8 @@ Event::execute(void)
 
     delivery_link->deliverEvent(this);
 
-#ifdef EVENT_PROFILING
-#ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SST_EVENT_PROFILING
+#ifdef SST_HIGH_RESOLUTION_CLOCK
     auto eventFinish = std::chrono::high_resolution_clock::now();
 #else
     gettimeofday(&eventEnd, NULL);
@@ -51,7 +51,7 @@ Event::execute(void)
     // Track receiver processing time
     auto eventHandler = sim->eventHandlers.find(getLastComponentName());
     if ( eventHandler != sim->eventHandlers.end() ) {
-#ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SST_HIGH_RESOLUTION_CLOCK
         eventHandler->second += std::chrono::duration_cast<std::chrono::nanoseconds>(eventFinish - eventStart).count();
 #else
         eventHandler->second += eventDiff.tv_usec + eventDiff.tv_sec * 1e6;
@@ -63,8 +63,8 @@ Event::execute(void)
     if ( eventCount != sim->eventRecvCounters.end() ) { eventCount->second++; }
     else {
         if ( getLastComponentName() != "" ) {
-            sim->eventRecvCounters.insert(std::pair<std::string, uint64_t>(getLastComponentName().c_str(), 1));
-            sim->eventHandlers.insert(std::pair<std::string, uint64_t>(getLastComponentName().c_str(), 0));
+            sim->eventRecvCounters.insert(std::pair<std::string, uint64_t>(getLastComponentName(), 1));
+            sim->eventHandlers.insert(std::pair<std::string, uint64_t>(getLastComponentName(), 0));
         }
     }
     auto eventSend = sim->eventSendCounters.find(getFirstComponentName());
@@ -72,8 +72,8 @@ Event::execute(void)
     else {
         // Insert handler and counter for the subcomponent so that all link traffic is monitored
         if ( getFirstComponentName() != "" ) {
-            sim->eventSendCounters.insert(std::pair<std::string, uint64_t>(getFirstComponentName().c_str(), 1));
-            sim->eventHandlers.insert(std::pair<std::string, uint64_t>(getFirstComponentName().c_str(), 0));
+            sim->eventSendCounters.insert(std::pair<std::string, uint64_t>(getFirstComponentName(), 1));
+            sim->eventHandlers.insert(std::pair<std::string, uint64_t>(getFirstComponentName(), 0));
         }
     }
 #endif

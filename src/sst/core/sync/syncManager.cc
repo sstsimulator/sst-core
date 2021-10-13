@@ -179,7 +179,7 @@ SyncManager::execute(void)
 #ifdef SYNC_PROFILING
     Simulation_impl* sim          = Simulation_impl::getSimulation();
     bool             perfRankSync = false;
-#ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SST_HIGH_RESOLUTION_CLOCK
     auto start = std::chrono::high_resolution_clock::now();
 #else
     struct timeval syncStart, syncEnd, syncDiff;
@@ -242,7 +242,7 @@ SyncManager::execute(void)
     RankExecBarrier[5].wait();
 
 #ifdef SYNC_PROFILING
-#ifdef HIGH_RESOLUTION_CLOCK
+#ifdef SST_HIGH_RESOLUTION_CLOCK
     auto finish = std::chrono::high_resolution_clock::now();
 
     // Differentiate between rank and thread synchronization overhead
