@@ -27,70 +27,74 @@
 
 namespace SST {
 
-// ActivityQueue* Link::uninitQueue = nullptr;
-ActivityQueue* Link::uninitQueue = new UninitializedQueue(
-    "ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before setup.");
-ActivityQueue* Link::afterInitQueue = new UninitializedQueue(
-    "ERROR: Trying to call sendUntimedData/sendInitData or recvUntimedData/recvInitData during the run phase.");
-ActivityQueue* Link::afterRunQueue =
-    new UninitializedQueue("ERROR: Trying to call send or recv during complete phase.");
-
 Link::Link(LinkId_t id) :
-    rFunctor(nullptr),
-    defaultTimeBase(nullptr),
+    send_queue(nullptr),
+    pair_rFunctor(nullptr),
+    // defaultTimeBase( nullptr ),
+    defaultTimeBase(0),
     latency(1),
-    type(HANDLER),
-    id(id),
-    configured(false)
-{
-    recvQueue       = uninitQueue;
-    untimedQueue    = nullptr;
-    configuredQueue = Simulation_impl::getSimulation()->getTimeVortex();
-}
+    current_time(Simulation_impl::getSimulation()->currentSimCycle),
+    type(UNINITIALIZED),
+    mode(INIT),
+    id(id)
+{}
 
-Link::Link() : rFunctor(nullptr), defaultTimeBase(nullptr), latency(1), type(HANDLER), id(-1), configured(false)
-{
-    recvQueue       = uninitQueue;
-    untimedQueue    = nullptr;
-    configuredQueue = Simulation_impl::getSimulation()->getTimeVortex();
-}
+Link::Link() :
+    pair_rFunctor(nullptr),
+    // defaultTimeBase( nullptr ),
+    defaultTimeBase(0),
+    latency(1),
+    current_time(Simulation_impl::getSimulation()->currentSimCycle),
+    type(UNINITIALIZED),
+    mode(INIT),
+    id(-1)
+{}
 
 Link::~Link()
 {
-    if ( type == POLL && recvQueue != uninitQueue && recvQueue != afterInitQueue && recvQueue != afterRunQueue ) {
-        delete recvQueue;
-    }
-    if ( rFunctor != nullptr ) delete rFunctor;
+    if ( pair_rFunctor != nullptr ) delete pair_rFunctor;
 }
 
 void
 Link::finalizeConfiguration()
 {
-    recvQueue       = configuredQueue;
-    configuredQueue = untimedQueue;
-    if ( untimedQueue != nullptr ) {
-        if ( dynamic_cast<InitQueue*>(untimedQueue) != nullptr ) {
-            delete untimedQueue;
-            configuredQueue = nullptr;
-        }
+    mode = RUN;
+    if ( SYNC == type ) {
+        // No configuraiton changes to be made
+        return;
     }
-    untimedQueue = afterInitQueue;
+
+    // If we have a queue, it means we ended up having init events
+    // sent.  No need to keep the initQueue around
+    if ( nullptr == pair_link->send_queue ) { delete pair_link->send_queue; }
+
+    if ( HANDLER == type ) { pair_link->send_queue = Simulation_impl::getSimulation()->getTimeVortex(); }
+    else if ( POLL == type ) {
+        pair_link->send_queue = new PollingLinkQueue();
+    }
 }
 
 void
 Link::prepareForComplete()
 {
-    if ( type == POLL && recvQueue != uninitQueue && recvQueue != afterInitQueue ) { delete recvQueue; }
-    recvQueue    = afterRunQueue;
-    untimedQueue = configuredQueue;
+    mode = COMPLETE;
+
+    if ( SYNC == type ) {
+        // No configuraiton changes to be made
+        return;
+    }
+
+    if ( POLL == type ) { delete pair_link->send_queue; }
+
+    pair_link->send_queue = nullptr;
 }
 
 void
 Link::setPolling()
 {
-    type            = POLL;
-    configuredQueue = new PollingLinkQueue();
+    type = POLL;
 }
+
 
 void
 Link::setLatency(Cycle_t lat)
@@ -127,48 +131,57 @@ Link::addRecvLatency(SimTime_t cycles, TimeConverter* timebase)
 void
 Link::setFunctor(Event::HandlerBase* functor)
 {
-    if ( UNLIKELY(type != HANDLER) ) {
+    if ( UNLIKELY(type == POLL) ) {
         Simulation::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1, "Cannot call setFunctor on a Polling Link\n");
     }
 
-    rFunctor = functor;
+    type                     = HANDLER;
+    pair_link->pair_rFunctor = functor;
 }
 
 void
 Link::replaceFunctor(Event::HandlerBase* functor)
 {
-    if ( UNLIKELY(type != HANDLER) ) {
+    if ( UNLIKELY(type == POLL) ) {
         Simulation::getSimulation()->getSimulationOutput().fatal(
             CALL_INFO, 1, "Cannot call replaceFunctor on a Polling Link\n");
     }
 
-    if ( rFunctor ) delete rFunctor;
-    rFunctor = functor;
+    type = HANDLER;
+    if ( pair_link->pair_rFunctor ) delete pair_link->pair_rFunctor;
+    pair_link->pair_rFunctor = functor;
 }
 
 void
-Link::send(SimTime_t delay, TimeConverter* tc, Event* event)
+Link::send_impl(SimTime_t delay, Event* event)
 {
-    if ( tc == nullptr ) {
-        Simulation::getSimulation()->getSimulationOutput().fatal(
-            CALL_INFO, 1, "Cannot send an event on Link with nullptr TimeConverter\n");
+    if ( RUN != mode ) {
+        if ( INIT == mode ) {
+            Simulation::getSimulation()->getSimulationOutput().fatal(
+                CALL_INFO, 1,
+                "ERROR: Trying to send or recv from link during initialization.  Send and Recv cannot be called before "
+                "setup.\n");
+        }
+        else if ( COMPLETE == mode ) {
+            Simulation::getSimulation()->getSimulationOutput().fatal(
+                CALL_INFO, 1, "ERROR: Trying to call send or recv during complete phase.");
+        }
     }
-
-    Cycle_t cycle = Simulation::getSimulation()->getCurrentSimCycle() + tc->convertToCoreTime(delay) + latency;
+    Cycle_t cycle = current_time + delay + latency;
 
     if ( event == nullptr ) { event = new NullEvent(); }
     event->setDeliveryTime(cycle);
-    event->setDeliveryLink(id, pair_link);
+    event->setDeliveryInfo(id, pair_rFunctor);
 
 #if __SST_DEBUG_EVENT_TRACKING__
     event->addSendComponent(comp, ctype, port);
     event->addRecvComponent(pair_link->comp, pair_link->ctype, pair_link->port);
 #endif
 
-    // trace.getOutput().output(CALL_INFO, "%p\n",pair_link->recvQueue);
-    pair_link->recvQueue->insert(event);
+    send_queue->insert(event);
 }
+
 
 Event*
 Link::recv()
@@ -182,11 +195,11 @@ Link::recv()
     Event*      event      = nullptr;
     Simulation* simulation = Simulation::getSimulation();
 
-    if ( !recvQueue->empty() ) {
-        Activity* activity = recvQueue->front();
+    if ( !pair_link->send_queue->empty() ) {
+        Activity* activity = pair_link->send_queue->front();
         if ( activity->getDeliveryTime() <= simulation->getCurrentSimCycle() ) {
             event = static_cast<Event*>(activity);
-            recvQueue->pop();
+            pair_link->send_queue->pop();
         }
     }
     return event;
@@ -195,38 +208,45 @@ Link::recv()
 void
 Link::sendUntimedData(Event* data)
 {
-    if ( pair_link->untimedQueue == nullptr ) { pair_link->untimedQueue = new InitQueue(); }
+    if ( RUN == mode ) {
+        Simulation::getSimulation()->getSimulationOutput().fatal(
+            CALL_INFO, 1,
+            "ERROR: Trying to call sendUntimedData/sendInitData or recvUntimedData/recvInitData during the run phase.");
+    }
+
+    if ( send_queue == nullptr ) { send_queue = new InitQueue(); }
     Simulation_impl::getSimulation()->untimed_msg_count++;
     data->setDeliveryTime(Simulation_impl::getSimulation()->untimed_phase + 1);
+    // Ignored if not hooked to sync queue
     data->setDeliveryLink(id, pair_link);
 
-    pair_link->untimedQueue->insert(data);
+    send_queue->insert(data);
 #if __SST_DEBUG_EVENT_TRACKING__
     data->addSendComponent(comp, ctype, port);
     data->addRecvComponent(pair_link->comp, pair_link->ctype, pair_link->port);
 #endif
 }
 
+// Called by SyncManager
 void
 Link::sendUntimedData_sync(Event* data)
 {
-    if ( pair_link->untimedQueue == nullptr ) { pair_link->untimedQueue = new InitQueue(); }
-    // data->setDeliveryLink(id,pair_link);
+    if ( send_queue == nullptr ) { send_queue = new InitQueue(); }
 
-    pair_link->untimedQueue->insert(data);
+    send_queue->insert(data);
 }
 
 Event*
 Link::recvUntimedData()
 {
-    if ( untimedQueue == nullptr ) return nullptr;
+    if ( pair_link->send_queue == nullptr ) return nullptr;
 
     Event* event = nullptr;
-    if ( !untimedQueue->empty() ) {
-        Activity* activity = untimedQueue->front();
+    if ( !pair_link->send_queue->empty() ) {
+        Activity* activity = pair_link->send_queue->front();
         if ( activity->getDeliveryTime() <= Simulation_impl::getSimulation()->untimed_phase ) {
             event = static_cast<Event*>(activity);
-            untimedQueue->pop();
+            pair_link->send_queue->pop();
         }
     }
     return event;
@@ -235,19 +255,24 @@ Link::recvUntimedData()
 void
 Link::setDefaultTimeBase(TimeConverter* tc)
 {
-    defaultTimeBase = tc;
+    if ( tc == nullptr )
+        defaultTimeBase = 0;
+    else
+        defaultTimeBase = tc->getFactor();
 }
 
 TimeConverter*
 Link::getDefaultTimeBase()
 {
-    return defaultTimeBase;
+    if ( defaultTimeBase == 0 ) return nullptr;
+    return Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(defaultTimeBase);
 }
 
 const TimeConverter*
 Link::getDefaultTimeBase() const
 {
-    return defaultTimeBase;
+    if ( defaultTimeBase == 0 ) return nullptr;
+    return Simulation_impl::getSimulation()->getTimeLord()->getTimeConverter(defaultTimeBase);
 }
 
 } // namespace SST

@@ -141,6 +141,8 @@ private:
     SimTime_t   min_part;
 
     void computeNextInsert();
+
+    NotSerializable(SST::SyncManager)
 };
 
 } // namespace SST

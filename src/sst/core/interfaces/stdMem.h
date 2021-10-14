@@ -83,7 +83,7 @@ public:
     /**
        Base handler for request handling.
      */
-    using HandlerBase = SSTHandlerBase<void, Request*>;
+    using HandlerBase = SSTHandlerBase<void, Request*, false>;
 
     /**
        Used to create handlers for request handling.  The callback
@@ -104,7 +104,7 @@ public:
          new stdMem::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<void, Request*, classT, dataT>;
+    using Handler = SSTHandler<void, Request*, false, classT, dataT>;
 
     class RequestConverter; // Convert request to SST::Event* according to type
     class RequestHandler;   // Handle a request according to type

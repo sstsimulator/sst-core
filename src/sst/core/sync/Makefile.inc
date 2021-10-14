@@ -11,6 +11,8 @@ sst_core_sources += \
 	sync/syncManager.cc \
 	sync/syncQueue.h \
 	sync/syncQueue.cc \
+	sync/threadSyncDirectSkip.h \
+	sync/threadSyncDirectSkip.cc \
 	sync/threadSyncSimpleSkip.h \
 	sync/threadSyncSimpleSkip.cc \
 	sync/threadSyncQueue.h

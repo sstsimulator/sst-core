@@ -43,6 +43,8 @@ class Config;
 class ConfigGraph;
 class Exit;
 class Factory;
+class SimulatorHeartbeat;
+class Link;
 class LinkMap;
 class Params;
 class SharedRegionManager;
@@ -54,6 +56,11 @@ class TimeConverter;
 class TimeLord;
 class TimeVortex;
 class UnitAlgebra;
+class SharedRegionManager;
+namespace Statistics {
+class StatisticOutput;
+class StatisticProcessingEngine;
+} // namespace Statistics
 
 namespace Statistics {
 class StatisticOutput;
@@ -161,6 +168,7 @@ public:
      */
     void processGraphInfo(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
 
+    int prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
     int performWireUp(ConfigGraph& graph, const RankInfo& myRank, SimTime_t min_part);
 
     /** Set cycle count, which, if reached, will cause the simulation to halt. */
@@ -238,12 +246,6 @@ public:
     void setOutputDirectory(const std::string& outDir) { output_directory = outDir; }
 
     /**
-     * Returns the time of the next item to be executed
-     * that is in the TImeVortex of the Simulation
-     */
-    SimTime_t getNextActivityTime() const;
-
-    /**
      *  Gets the minimum next activity time across all TimeVortices in
      *  the Rank
      */
@@ -312,6 +314,9 @@ public:
     static Core::ThreadSafe::Barrier exitBarrier;
     static Core::ThreadSafe::Barrier finishBarrier;
     static std::mutex                simulationMutex;
+
+    static std::map<LinkId_t, Link*> cross_thread_links;
+    bool                             direct_interthread;
 
     Component* createComponent(ComponentId_t id, const std::string& name, Params& params);
 
@@ -383,6 +388,13 @@ public:
 
     friend void wait_my_turn_start();
     friend void wait_my_turn_end();
+
+private:
+    /**
+     * Returns the time of the next item to be executed
+     * that is in the TImeVortex of the Simulation
+     */
+    SimTime_t getNextActivityTime() const;
 };
 
 // Function to allow for easy serialization of threads while debugging
