@@ -39,7 +39,7 @@ public:
     /**
        Base handler for clock functions.
      */
-    using HandlerBase = SSTHandlerBase<bool, Cycle_t>;
+    using HandlerBase = SSTHandlerBase<bool, Cycle_t, true>;
 
     /**
        Used to create handlers for clock.  The callback function is
@@ -65,7 +65,7 @@ public:
        handler will be left in the clock list.
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<bool, Cycle_t, classT, dataT>;
+    using Handler = SSTHandler<bool, Cycle_t, true, classT, dataT>;
 
     /**
      * Activates this clock object, by inserting into the simulation's

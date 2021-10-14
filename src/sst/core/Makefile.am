@@ -191,6 +191,7 @@ sst_core_sources = \
 	uninitializedQueue.cc \
 	unitAlgebra.cc \
 	module.cc \
+	ssthandler.cc \
 	sstpart.cc \
 	timeVortex.cc \
 	serialization/serializable.cc \

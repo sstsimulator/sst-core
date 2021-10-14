@@ -34,7 +34,7 @@ public:
     /**
        Base handler for event delivery.
      */
-    using HandlerBase = SSTHandlerBase<void, Event*>;
+    using HandlerBase = SSTHandlerBase<void, Event*, false>;
 
     /**
        Used to create handlers for event delivery.  The callback
@@ -55,7 +55,7 @@ public:
          new Event::Handler<classname, dataT>(this, &classname::function_name, data)
      */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<void, Event*, classT, dataT>;
+    using Handler = SSTHandler<void, Event*, false, classT, dataT>;
 
     /** Type definition of unique identifiers */
     typedef std::pair<uint64_t, int> id_type;
