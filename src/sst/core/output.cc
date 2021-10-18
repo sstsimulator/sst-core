@@ -300,7 +300,7 @@ Output::openSSTTargetFile() const
 
                 // Append the rank to file name if MPI_COMM_WORLD is GT 1
                 if ( getMPIWorldSize() > 1 ) {
-                    sprintf(tempBuf, "%d", getMPIWorldRank());
+                    snprintf(tempBuf, 256, "%d", getMPIWorldRank());
                     tempFileName += tempBuf;
                 }
 
@@ -360,7 +360,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
                 startindex = findindex + 2;
                 break;
             case 'l':
-                sprintf(tempBuf, "%d", line);
+                snprintf(tempBuf, 256, "%d", line);
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
@@ -371,7 +371,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
             case 'r':
                 if ( 1 == getMPIWorldSize() ) { rtnstring += ""; }
                 else {
-                    sprintf(tempBuf, "%d", getMPIWorldRank());
+                    snprintf(tempBuf, 256, "%d", getMPIWorldRank());
                     rtnstring += tempBuf;
                 }
                 startindex = findindex + 2;
@@ -379,7 +379,7 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
             case 'R':
                 if ( 1 == getMPIWorldSize() ) { rtnstring += "0"; }
                 else {
-                    sprintf(tempBuf, "%d", getMPIWorldRank());
+                    snprintf(tempBuf, 256, "%d", getMPIWorldRank());
                     rtnstring += tempBuf;
                 }
                 startindex = findindex + 2;
@@ -387,30 +387,30 @@ Output::buildPrefixString(uint32_t line, const std::string& file, const std::str
             case 'i':
                 if ( 1 == getNumThreads() ) { rtnstring += ""; }
                 else {
-                    sprintf(tempBuf, "%u", getThreadRank());
+                    snprintf(tempBuf, 256, "%u", getThreadRank());
                     rtnstring += tempBuf;
                 }
                 startindex = findindex + 2;
                 break;
             case 'I':
-                sprintf(tempBuf, "%u", getThreadRank());
+                snprintf(tempBuf, 256, "%u", getThreadRank());
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
             case 'x':
                 if ( getMPIWorldSize() != 1 || getNumThreads() != 1 ) {
-                    sprintf(tempBuf, "[%d:%u]", getMPIWorldRank(), getThreadRank());
+                    snprintf(tempBuf, 256, "[%d:%u]", getMPIWorldRank(), getThreadRank());
                     rtnstring += tempBuf;
                 }
                 startindex = findindex + 2;
                 break;
             case 'X':
-                sprintf(tempBuf, "[%d:%u]", getMPIWorldRank(), getThreadRank());
+                snprintf(tempBuf, 256, "[%d:%u]", getMPIWorldRank(), getThreadRank());
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
             case 't':
-                sprintf(tempBuf, "%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
+                snprintf(tempBuf, 256, "%" PRIu64, Simulation_impl::getSimulation()->getCurrentSimCycle());
                 rtnstring += tempBuf;
                 startindex = findindex + 2;
                 break;
@@ -536,7 +536,7 @@ TraceFunction::output(const char* format, ...) const
 
     int indent           = trace_level * indent_length;
     indent_array[indent] = '\0';
-    sprintf(buf, "%s%s", indent_array.data(), format);
+    snprintf(buf, 200, "%s%s", indent_array.data(), format);
     indent_array[indent] = ' ';
 
     va_list arg;

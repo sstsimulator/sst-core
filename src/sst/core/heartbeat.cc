@@ -94,16 +94,16 @@ SimulatorHeartbeat::execute(void)
     if ( rank == 0 ) {
         char ua_buffer[256];
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_max_sync_data_size);
+        snprintf(ua_buffer, 256, "%" PRIu64 "B", global_max_sync_data_size);
         UnitAlgebra global_max_sync_data_size_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_sync_data_size);
+        snprintf(ua_buffer, 256, "%" PRIu64 "B", global_sync_data_size);
         UnitAlgebra global_sync_data_size_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", max_mempool_size);
+        snprintf(ua_buffer, 256, "%" PRIu64 "B", max_mempool_size);
         UnitAlgebra max_mempool_size_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_mempool_size);
+        snprintf(ua_buffer, 256, "%" PRIu64 "B", global_mempool_size);
         UnitAlgebra global_mempool_size_ua(ua_buffer);
 
         sim_output.output("\tMax mempool usage:               %s\n", max_mempool_size_ua.toStringBestSI().c_str());

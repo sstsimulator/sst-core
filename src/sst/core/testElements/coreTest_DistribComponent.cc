@@ -86,7 +86,7 @@ coreTestDistribComponent::coreTestDistribComponent(ComponentId_t id, Params& par
             char* prob_name = (char*)malloc(sizeof(char) * 64);
 
             for ( uint32_t i = 0; i < prob_count; i++ ) {
-                sprintf(prob_name, "prob%" PRIu32, i);
+                snprintf(prob_name, 64, "prob%" PRIu32, i);
                 double prob_tmp = (double)params.find<double>(prob_name, 1.0 / (double)(prob_count));
 
                 // printf("Probability at %" PRIu32 " : %f\n", i, prob_tmp);

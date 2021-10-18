@@ -19,65 +19,7 @@
 
 namespace SST {
 
-inline std::string
-to_string(double val)
-{
-    char buffer[256];
-    sprintf(buffer, "%f", val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
-};
-
-inline std::string
-to_string(float val)
-{
-    char buffer[256];
-    sprintf(buffer, "%f", val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
-};
-
-inline std::string
-to_string(int32_t val)
-{
-    char buffer[256];
-    sprintf(buffer, "%" PRId32, val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
-};
-
-inline std::string
-to_string(int64_t val)
-{
-    char buffer[256];
-    sprintf(buffer, "%" PRId64, val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
-};
-
-inline std::string
-to_string(uint32_t val)
-{
-    char buffer[256];
-    sprintf(buffer, "%" PRIu32, val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
-};
-
-inline std::string
-to_string(uint64_t val)
-{
-    char buffer[256];
-    sprintf(buffer, "%" PRIu64, val);
-
-    std::string buffer_str(buffer);
-    return buffer_str;
-};
+using std::to_string;
 
 inline bool
 strcasecmp(const std::string& s1, const std::string& s2)

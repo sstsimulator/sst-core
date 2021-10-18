@@ -766,22 +766,22 @@ main(int argc, char* argv[])
 
     if ( myRank.rank == 0 && (cfg.verbose || cfg.printTimingInfo()) ) {
         char ua_buffer[256];
-        sprintf(ua_buffer, "%" PRIu64 "KB", local_max_rss);
+        snprintf(ua_buffer, 256, "%" PRIu64 "KB", local_max_rss);
         UnitAlgebra max_rss_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "KB", global_max_rss);
+        snprintf(ua_buffer, 256, "%" PRIu64 "KB", global_max_rss);
         UnitAlgebra global_rss_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_max_sync_data_size);
+        snprintf(ua_buffer, 256, "%" PRIu64 "B", global_max_sync_data_size);
         UnitAlgebra global_max_sync_data_size_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_sync_data_size);
+        snprintf(ua_buffer, 256, "%" PRIu64 "B", global_sync_data_size);
         UnitAlgebra global_sync_data_size_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", max_mempool_size);
+        snprintf(ua_buffer, 256, "%" PRIu64 "B", max_mempool_size);
         UnitAlgebra max_mempool_size_ua(ua_buffer);
 
-        sprintf(ua_buffer, "%" PRIu64 "B", global_mempool_size);
+        snprintf(ua_buffer, 256, "%" PRIu64 "B", global_mempool_size);
         UnitAlgebra global_mempool_size_ua(ua_buffer);
 
         g_output.output("\n");

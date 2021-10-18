@@ -71,6 +71,7 @@ StatisticOutputConsole::implStopOutputEntries()
     printf(" %s\n", m_OutputBuffer.c_str());
 }
 
+
 void
 StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, int32_t data)
 {
@@ -79,7 +80,7 @@ StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, int32_t data)
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
-        sprintf(buffer, "%s.%s = %" PRId32, FieldInfo->getFieldName().c_str(), typeName, data);
+        snprintf(buffer, 256, "%s.%s = %" PRId32, FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
         m_OutputBuffer += "; ";
     }
@@ -93,7 +94,7 @@ StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, uint32_t data)
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
-        sprintf(buffer, "%s.%s = %" PRIu32, FieldInfo->getFieldName().c_str(), typeName, data);
+        snprintf(buffer, 256, "%s.%s = %" PRIu32, FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
         m_OutputBuffer += "; ";
     }
@@ -107,7 +108,7 @@ StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, int64_t data)
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
-        sprintf(buffer, "%s.%s = %" PRId64, FieldInfo->getFieldName().c_str(), typeName, data);
+        snprintf(buffer, 256, "%s.%s = %" PRId64, FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
         m_OutputBuffer += "; ";
     }
@@ -121,7 +122,7 @@ StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, uint64_t data)
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
-        sprintf(buffer, "%s.%s = %" PRIu64, FieldInfo->getFieldName().c_str(), typeName, data);
+        snprintf(buffer, 256, "%s.%s = %" PRIu64, FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
         m_OutputBuffer += "; ";
     }
@@ -135,7 +136,7 @@ StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, float data)
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
-        sprintf(buffer, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
+        snprintf(buffer, 256, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
         m_OutputBuffer += "; ";
     }
@@ -149,7 +150,7 @@ StatisticOutputConsole::outputField(fieldHandle_t fieldHandle, double data)
 
     if ( nullptr != FieldInfo ) {
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
-        sprintf(buffer, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
+        snprintf(buffer, 256, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
         m_OutputBuffer += buffer;
         m_OutputBuffer += "; ";
     }

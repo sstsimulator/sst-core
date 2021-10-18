@@ -33,7 +33,7 @@ update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(argv[])
         new_ld_path_copy[i] = '\0';
     }
 
-    if ( nullptr != current_ld_path ) { sprintf(new_ld_path, "%s", current_ld_path); }
+    if ( nullptr != current_ld_path ) { snprintf(new_ld_path, 32768, "%s", current_ld_path); }
     std::vector<std::string>                          configFiles;
     SST::Core::Environment::EnvironmentConfiguration* envConfig =
         SST::Core::Environment::getSSTEnvironmentConfiguration(configFiles);
@@ -53,7 +53,7 @@ update_env_var(const char* name, const int UNUSED(verbose), char* UNUSED(argv[])
 
                 if ( strcmp(&paramNameEnding[paramName.size() - 6], "LIBDIR") == 0 ) {
                     strcpy(new_ld_path_copy, new_ld_path);
-                    sprintf(new_ld_path, "%s:%s", value.c_str(), new_ld_path_copy);
+                    snprintf(new_ld_path, 32768, "%s:%s", value.c_str(), new_ld_path_copy);
                 }
             }
         }
@@ -82,9 +82,9 @@ boot_sst_executable(const char* binary, const int verbose, char* argv[], const i
 {
     char* real_binary_path = (char*)malloc(sizeof(char) * PATH_MAX);
 
-    if ( strcmp(SST_INSTALL_PREFIX, "NONE") == 0 ) { sprintf(real_binary_path, "/usr/local/libexec/%s", binary); }
+    if ( strcmp(SST_INSTALL_PREFIX, "NONE") == 0 ) { snprintf(real_binary_path, PATH_MAX, "/usr/local/libexec/%s", binary); }
     else {
-        sprintf(real_binary_path, "%s/libexec/%s", SST_INSTALL_PREFIX, binary);
+        snprintf(real_binary_path, PATH_MAX, "%s/libexec/%s", SST_INSTALL_PREFIX, binary);
     }
 
     if ( verbose ) {

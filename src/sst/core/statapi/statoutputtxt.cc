@@ -164,10 +164,10 @@ StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic)
     if ( true == m_outputSimTime ) {
         // Add the Simulation Time to the front
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "SimTime = %" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
+            snprintf(buffer, 256, "SimTime = %" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
         }
         else {
-            sprintf(buffer, "%" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
+            snprintf(buffer, 256, "%" PRIu64, Simulation::getSimulation()->getCurrentSimCycle());
         }
 
         m_outputBuffer += buffer;
@@ -177,10 +177,10 @@ StatisticOutputTxt::implStartOutputEntries(StatisticBase* statistic)
     if ( true == m_outputRank ) {
         // Add the Rank to the front
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "Rank = %d", Simulation::getSimulation()->getRank().rank);
+            snprintf(buffer, 256, "Rank = %d", Simulation::getSimulation()->getRank().rank);
         }
         else {
-            sprintf(buffer, "%d", Simulation::getSimulation()->getRank().rank);
+            snprintf(buffer, 256, "%d", Simulation::getSimulation()->getRank().rank);
         }
 
         m_outputBuffer += buffer;
@@ -205,10 +205,10 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int32_t data)
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %" PRId32, FieldInfo->getFieldName().c_str(), typeName, data);
+            snprintf(buffer, 256, "%s.%s = %" PRId32, FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%" PRId32, data);
+            snprintf(buffer, 256, "%" PRId32, data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -225,10 +225,10 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint32_t data)
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %" PRIu32, FieldInfo->getFieldName().c_str(), typeName, data);
+            snprintf(buffer, 256, "%s.%s = %" PRIu32, FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%" PRIu32, data);
+            snprintf(buffer, 256, "%" PRIu32, data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -245,10 +245,10 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, int64_t data)
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %" PRId64, FieldInfo->getFieldName().c_str(), typeName, data);
+            snprintf(buffer, 256, "%s.%s = %" PRId64, FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%" PRId64, data);
+            snprintf(buffer, 256, "%" PRId64, data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -265,10 +265,10 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, uint64_t data)
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %" PRIu64, FieldInfo->getFieldName().c_str(), typeName, data);
+            snprintf(buffer, 256, "%s.%s = %" PRIu64, FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%" PRIu64, data);
+            snprintf(buffer, 256, "%" PRIu64, data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -285,10 +285,10 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, float data)
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
+            snprintf(buffer, 256, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%f", data);
+            snprintf(buffer, 256, "%f", data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";
@@ -305,10 +305,10 @@ StatisticOutputTxt::outputField(fieldHandle_t fieldHandle, double data)
         const char* typeName = getFieldTypeShortName(FieldInfo->getFieldType());
 
         if ( true == m_outputInlineHeader ) {
-            sprintf(buffer, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
+            snprintf(buffer, 256, "%s.%s = %f", FieldInfo->getFieldName().c_str(), typeName, data);
         }
         else {
-            sprintf(buffer, "%f", data);
+            snprintf(buffer, 256, "%f", data);
         }
         m_outputBuffer += buffer;
         m_outputBuffer += "; ";

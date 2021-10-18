@@ -94,7 +94,7 @@ bool coreTestLookupTableComponent::tick(SST::Cycle_t)
         size_t nitems                  = std::min(nPerRow, tableSize);
         for ( size_t i = 0; i < nitems; i++ ) {
             char tbuf[6] = { 0 };
-            sprintf(tbuf, "0x%02x ", *table++);
+            snprintf(tbuf, 6, "0x%02x ", *table++);
             tableSize--;
             strcat(buffer, tbuf);
         }
