@@ -58,6 +58,7 @@ add_library(
   params.cc
   pollingLinkQueue.cc
   simulation.cc
+  ssthandler.cc
   subcomponent.cc
   sharedRegion.cc
   timeLord.cc

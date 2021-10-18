@@ -8,7 +8,8 @@
 #
 
 add_library(sync OBJECT rankSyncParallelSkip.cc rankSyncSerialSkip.cc
-                        syncManager.cc syncQueue.cc threadSyncSimpleSkip.cc)
+                        syncManager.cc syncQueue.cc threadSyncSimpleSkip.cc
+                        threadSyncDirectSkip.cc)
 
 target_compile_definitions(sync PRIVATE SST_BUILDING_CORE=1)
 target_include_directories(sync PUBLIC ${SST_TOP_SRC_DIR}/src)
