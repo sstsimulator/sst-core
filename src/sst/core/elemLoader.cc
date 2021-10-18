@@ -84,7 +84,9 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
     for ( std::string const& next_path : paths ) {
         if ( verbose ) { printf("SST-DL: Searching: %s\n", next_path.c_str()); }
 
-        if ( next_path.back() == '/' ) { snprintf(full_path, PATH_MAX, "%slib%s.so", next_path.c_str(), elemlib.c_str()); }
+        if ( next_path.back() == '/' ) {
+            snprintf(full_path, PATH_MAX, "%slib%s.so", next_path.c_str(), elemlib.c_str());
+        }
         else {
             snprintf(full_path, PATH_MAX, "%s/lib%s.so", next_path.c_str(), elemlib.c_str());
         }
@@ -101,7 +103,9 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
         // this implies ordering of .so before .dylib in priority.
 
         if ( nullptr == handle ) {
-            if ( next_path.back() == '/' ) { snprintf(full_path, PATH_MAX, "%slib%s.dylib", next_path.c_str(), elemlib.c_str()); }
+            if ( next_path.back() == '/' ) {
+                snprintf(full_path, PATH_MAX, "%slib%s.dylib", next_path.c_str(), elemlib.c_str());
+            }
             else {
                 snprintf(full_path, PATH_MAX, "%s/lib%s.dylib", next_path.c_str(), elemlib.c_str());
             }

@@ -82,7 +82,9 @@ boot_sst_executable(const char* binary, const int verbose, char* argv[], const i
 {
     char* real_binary_path = (char*)malloc(sizeof(char) * PATH_MAX);
 
-    if ( strcmp(SST_INSTALL_PREFIX, "NONE") == 0 ) { snprintf(real_binary_path, PATH_MAX, "/usr/local/libexec/%s", binary); }
+    if ( strcmp(SST_INSTALL_PREFIX, "NONE") == 0 ) {
+        snprintf(real_binary_path, PATH_MAX, "/usr/local/libexec/%s", binary);
+    }
     else {
         snprintf(real_binary_path, PATH_MAX, "%s/libexec/%s", SST_INSTALL_PREFIX, binary);
     }
