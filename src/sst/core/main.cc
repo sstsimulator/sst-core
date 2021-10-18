@@ -11,32 +11,7 @@
 
 #include "sst_config.h"
 
-#include "sst/core/activity.h"
-#include "sst/core/config.h"
-#include "sst/core/configGraph.h"
-#include "sst/core/cputimer.h"
-#include "sst/core/factory.h"
-#include "sst/core/iouse.h"
-#include "sst/core/memuse.h"
-#include "sst/core/model/python/pymodel.h"
-#include "sst/core/model/sstmodel.h"
-#include "sst/core/objectComms.h"
-#include "sst/core/part/sstpart.h"
-#include "sst/core/rankInfo.h"
-#include "sst/core/simulation_impl.h"
-#include "sst/core/statapi/statengine.h"
-#include "sst/core/threadsafe.h"
-#include "sst/core/timeLord.h"
-#include "sst/core/timeVortex.h"
 #include "sst/core/warnmacros.h"
-
-// Configuration Graph Generation Options
-#include "sst/core/cfgoutput/dotConfigOutput.h"
-#include "sst/core/cfgoutput/jsonConfigOutput.h"
-#include "sst/core/cfgoutput/pythonConfigOutput.h"
-#include "sst/core/cfgoutput/xmlConfigOutput.h"
-#include "sst/core/configGraphOutput.h"
-#include "sst/core/eli/elementinfo.h"
 
 DISABLE_WARN_DEPRECATED_REGISTER
 #include <Python.h>
@@ -48,6 +23,25 @@ DISABLE_WARN_MISSING_OVERRIDE
 REENABLE_WARNING
 #endif
 
+#include "sst/core/activity.h"
+#include "sst/core/config.h"
+#include "sst/core/configGraph.h"
+#include "sst/core/cputimer.h"
+#include "sst/core/factory.h"
+#include "sst/core/iouse.h"
+#include "sst/core/link.h"
+#include "sst/core/memuse.h"
+#include "sst/core/model/python/pymodel.h"
+#include "sst/core/model/sstmodel.h"
+#include "sst/core/objectComms.h"
+#include "sst/core/part/sstpart.h"
+#include "sst/core/rankInfo.h"
+#include "sst/core/simulation_impl.h"
+#include "sst/core/statapi/statengine.h"
+#include "sst/core/threadsafe.h"
+#include "sst/core/timeLord.h"
+#include "sst/core/timeVortex.h"
+
 #include <cinttypes>
 #include <exception>
 #include <fstream>
@@ -56,6 +50,14 @@ REENABLE_WARNING
 #include <signal.h>
 #include <sys/resource.h>
 #include <time.h>
+
+// Configuration Graph Generation Options
+#include "sst/core/cfgoutput/dotConfigOutput.h"
+#include "sst/core/cfgoutput/jsonConfigOutput.h"
+#include "sst/core/cfgoutput/pythonConfigOutput.h"
+#include "sst/core/cfgoutput/xmlConfigOutput.h"
+#include "sst/core/configGraphOutput.h"
+#include "sst/core/eli/elementinfo.h"
 
 using namespace SST::Core;
 using namespace SST::Partition;
@@ -156,6 +158,14 @@ do_graph_wireup(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& m
 }
 
 static void
+do_link_preparation(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInfo& myRank, SimTime_t min_part)
+{
+
+    sim->prepareLinks(*graph, myRank, min_part);
+}
+
+
+static void
 doGraphOutput(SST::Config* cfg, ConfigGraph* graph)
 {
     std::vector<ConfigGraphOutput*> graphOutputs;
@@ -228,10 +238,12 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
     // this ever changes, then need to put in some serialization into
     // performWireUp.
     for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
-        if ( i == info.myRank.thread ) {
-            // g_output.output("wiring up this thread %u\n", info.myRank.thread);
-            do_graph_wireup(info.graph, sim, info.myRank, info.min_part);
-        }
+        if ( i == info.myRank.thread ) { do_link_preparation(info.graph, sim, info.myRank, info.min_part); }
+        barrier.wait();
+    }
+
+    for ( uint32_t i = 0; i < info.world_size.thread; ++i ) {
+        if ( i == info.myRank.thread ) { do_graph_wireup(info.graph, sim, info.myRank, info.min_part); }
         barrier.wait();
     }
 

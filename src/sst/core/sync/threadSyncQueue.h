@@ -13,6 +13,7 @@
 #define SST_CORE_SYNC_THREADSYNCQUEUE_H
 
 #include "sst/core/activityQueue.h"
+#include "sst/core/simulation.h"
 
 namespace SST {
 
@@ -38,7 +39,11 @@ public:
     }
 
     /** Insert a new activity into the queue */
-    void insert(Activity* activity) override { activities.push_back(activity); }
+    void insert(Activity* activity) override
+    {
+        // Remove #include of simulation.h when removing
+        activities.push_back(activity);
+    }
 
     /** Not supported */
     Activity* front() override

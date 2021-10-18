@@ -25,6 +25,7 @@ extern int main(int argc, char** argv);
 
 namespace SST {
 
+class Link;
 class Simulation;
 class Simulation_impl;
 class TimeConverter;
@@ -75,9 +76,12 @@ public:
      */
     SimTime_t getSimCycles(const std::string& timeString, const std::string& where);
 
+
 private:
     friend class SST::Simulation;
     friend class SST::Simulation_impl;
+    friend class SST::Link;
+
     friend int ::main(int argc, char** argv);
 
     void init(const std::string& timeBaseString);

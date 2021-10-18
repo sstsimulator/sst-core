@@ -26,7 +26,7 @@ Event::~Event() {}
 void
 Event::execute(void)
 {
-    delivery_link->deliverEvent(this);
+    (*functor)(this);
 }
 
 Event*
@@ -48,7 +48,7 @@ Event::generateUniqueId()
 void
 NullEvent::execute(void)
 {
-    delivery_link->deliverEvent(nullptr);
+    (*functor)(nullptr);
     delete this;
 }
 

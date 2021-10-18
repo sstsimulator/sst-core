@@ -297,7 +297,6 @@ BaseComponent::configureLink(const std::string& name, TimeConverter* time_base, 
             tmp->setDefaultTimeBase(time_base);
         else
             tmp->setDefaultTimeBase(my_info->defaultTimeBase);
-        tmp->setAsConfigured();
 #ifdef __SST_DEBUG_EVENT_TRACKING__
         tmp->setSendingComponentInfo(my_info->getName(), my_info->getType(), name);
 #endif
@@ -464,7 +463,6 @@ BaseComponent::vfatal(
     // Build up the full list of types all the way to parent component
     std::string    type_tree = my_info->getType();
     ComponentInfo* parent    = my_info->parent_info;
-
     while ( parent != nullptr ) {
         type_tree = parent->type + "/" + type_tree;
         parent    = parent->parent_info;

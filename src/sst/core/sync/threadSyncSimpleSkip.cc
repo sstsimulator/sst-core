@@ -31,7 +31,6 @@ ThreadSyncSimpleSkip::ThreadSyncSimpleSkip(int num_threads, int thread, Simulati
     sim(sim),
     totalWaitTime(0.0)
 {
-    // TraceFunction trace(CALL_INFO_LONG);
     for ( int i = 0; i < num_threads; i++ ) {
         queues.push_back(new ThreadSyncQueue());
     }

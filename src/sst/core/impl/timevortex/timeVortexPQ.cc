@@ -20,9 +20,16 @@
 namespace SST {
 namespace IMPL {
 
-TimeVortexPQ::TimeVortexPQ(Params& UNUSED(params)) : TimeVortex(), insertOrder(0), current_depth(0), max_depth(0) {}
+template <bool TS>
+TimeVortexPQBase<TS>::TimeVortexPQBase(Params& UNUSED(params)) :
+    TimeVortex(),
+    insertOrder(0),
+    current_depth(0),
+    max_depth(0)
+{}
 
-TimeVortexPQ::~TimeVortexPQ()
+template <bool TS>
+TimeVortexPQBase<TS>::~TimeVortexPQBase()
 {
     // Activities in TimeVortexPQ all need to be deleted
     while ( !data.empty() ) {
@@ -32,45 +39,64 @@ TimeVortexPQ::~TimeVortexPQ()
     }
 }
 
+template <bool TS>
 bool
-TimeVortexPQ::empty()
+TimeVortexPQBase<TS>::empty()
 {
-    return data.empty();
+    if ( TS ) slock.lock();
+    auto ret = data.empty();
+    if ( TS ) slock.unlock();
+    return ret;
 }
 
+template <bool TS>
 int
-TimeVortexPQ::size()
+TimeVortexPQBase<TS>::size()
 {
-    return data.size();
+    if ( TS ) slock.lock();
+    auto ret = data.size();
+    if ( TS ) slock.unlock();
+    return ret;
 }
 
+template <bool TS>
 void
-TimeVortexPQ::insert(Activity* activity)
+TimeVortexPQBase<TS>::insert(Activity* activity)
 {
+    if ( TS ) slock.lock();
     activity->setQueueOrder(insertOrder++);
     data.push(activity);
     current_depth++;
     if ( current_depth > max_depth ) { max_depth = current_depth; }
+    if ( TS ) slock.unlock();
 }
 
+template <bool TS>
 Activity*
-TimeVortexPQ::pop()
+TimeVortexPQBase<TS>::pop()
 {
+    if ( TS ) slock.lock();
     if ( data.empty() ) return nullptr;
     Activity* ret_val = data.top();
     data.pop();
     current_depth--;
+    if ( TS ) slock.unlock();
     return ret_val;
 }
 
+template <bool TS>
 Activity*
-TimeVortexPQ::front()
+TimeVortexPQBase<TS>::front()
 {
-    return data.top();
+    if ( TS ) slock.lock();
+    auto ret = data.top();
+    if ( TS ) slock.unlock();
+    return ret;
 }
 
+template <bool TS>
 void
-TimeVortexPQ::print(Output& out) const
+TimeVortexPQBase<TS>::print(Output& out) const
 {
     out.output("TimeVortex state:\n");
 
@@ -81,6 +107,40 @@ TimeVortexPQ::print(Output& out) const
     //        (*it)->print("  ", out);
     //    }
 }
+
+class TimeVortexPQ : public TimeVortexPQBase<false>
+{
+public:
+    SST_ELI_REGISTER_DERIVED(
+        TimeVortex,
+        TimeVortexPQ,
+        "sst",
+        "timevortex.priority_queue",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "TimeVortex based on std::priority_queue.")
+
+
+    TimeVortexPQ(Params& params) : TimeVortexPQBase<false>(params) {}
+    ~TimeVortexPQ() {}
+    SST_ELI_EXPORT(TimeVortexPQ)
+};
+
+class TimeVortexPQ_ts : public TimeVortexPQBase<true>
+{
+public:
+    SST_ELI_REGISTER_DERIVED(
+        TimeVortex,
+        TimeVortexPQ_ts,
+        "sst",
+        "timevortex.priority_queue.ts",
+        SST_ELI_ELEMENT_VERSION(1,0,0),
+        "Thread safe verion of TimeVortex based on std::priority_queue.  Do not reference this element directly, just specify sst.timevortex.priority_queue and this version will be selected when it is needed based on other parameters.")
+
+
+    TimeVortexPQ_ts(Params& params) : TimeVortexPQBase<true>(params) {}
+    ~TimeVortexPQ_ts() {}
+    SST_ELI_EXPORT(TimeVortexPQ_ts)
+};
 
 } // namespace IMPL
 } // namespace SST

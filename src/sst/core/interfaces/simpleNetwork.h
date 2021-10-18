@@ -186,7 +186,7 @@ public:
     /**
        Base handler for event delivery.
      */
-    using HandlerBase = SSTHandlerBase<bool, int>;
+    using HandlerBase = SSTHandlerBase<bool, int, false>;
 
     /**
        Used to create handlers to notify the endpoint when the
@@ -213,7 +213,7 @@ public:
        handler will be removed from the clock list.
     */
     template <typename classT, typename dataT = void>
-    using Handler = SSTHandler<bool, int, classT, dataT>;
+    using Handler = SSTHandler<bool, int, false, classT, dataT>;
 
 
 public:

@@ -57,6 +57,68 @@ public:
 #ifdef SST_ENFORCE_EVENT_ORDERING
 
     /** To use with STL container classes. */
+
+    /** For use when you have already binned by time */
+    class less_priority_order
+    {
+    public:
+        /** Compare based off pointers */
+        inline bool operator()(const Activity* lhs, const Activity* rhs) const
+        {
+            if ( lhs->priority == rhs->priority ) { return lhs->enforce_link_order < rhs->enforce_link_order; }
+            else {
+                return lhs->priority < rhs->priority;
+            }
+        }
+
+        /** Compare based off references */
+        inline bool operator()(const Activity& lhs, const Activity& rhs) const
+        {
+            if ( lhs.priority == rhs.priority ) { return lhs.enforce_link_order < rhs.enforce_link_order; }
+            else {
+                return lhs.priority < rhs.priority;
+            }
+        }
+    };
+
+    /** To use with STL priority queues, that order in reverse. */
+
+    /** For use when you have already binned by time */
+    class pq_less_priority_order
+    {
+    public:
+        /** Compare based off pointers */
+        inline bool operator()(const Activity* lhs, const Activity* rhs) const
+        {
+            if ( lhs->priority == rhs->priority ) {
+                if ( lhs->enforce_link_order == rhs->enforce_link_order ) {
+                    return lhs->queue_order > rhs->queue_order;
+                }
+                else {
+                    return lhs->enforce_link_order > rhs->enforce_link_order;
+                }
+            }
+            else {
+                return lhs->priority > rhs->priority;
+            }
+        }
+
+        /** Compare based off references */
+        inline bool operator()(const Activity& lhs, const Activity& rhs) const
+        {
+            if ( lhs.priority == rhs.priority ) {
+                if ( lhs.enforce_link_order == rhs.enforce_link_order ) { return lhs.queue_order > rhs.queue_order; }
+                else {
+                    return lhs.enforce_link_order > rhs.enforce_link_order;
+                }
+            }
+            else {
+                return lhs.priority > rhs.priority;
+            }
+        }
+    };
+
+    /** To use with STL container classes. */
     class less_time_priority_order
     {
     public:
@@ -83,7 +145,7 @@ public:
             if ( lhs.delivery_time == rhs.delivery_time ) {
                 if ( lhs.priority == rhs.priority ) {
                     /* TODO:  Handle 64-bit wrap-around */
-                    return lhs.enforce_link_order > rhs.enforce_link_order;
+                    return lhs.enforce_link_order < rhs.enforce_link_order;
                 }
                 else {
                     return lhs.priority < rhs.priority;
@@ -144,6 +206,42 @@ public:
     };
 
 #endif
+
+    /** Comparator class to use with STL container classes. */
+
+    /** For use when you have already binned by time */
+    class less_priority
+    {
+    public:
+        /** Compare based off pointers */
+        inline bool operator()(const Activity* lhs, const Activity* rhs) { return lhs->priority < rhs->priority; }
+
+        /** Compare based off references */
+        inline bool operator()(const Activity& lhs, const Activity& rhs) { return lhs.priority < rhs.priority; }
+    };
+
+    /** To use with STL priority queues, that order in reverse. */
+    class pq_less_priority
+    {
+    public:
+        /** Compare based off pointers */
+        inline bool operator()(const Activity* lhs, const Activity* rhs) const
+        {
+            if ( lhs->priority == rhs->priority ) { return lhs->queue_order > rhs->queue_order; }
+            else {
+                return lhs->priority > rhs->priority;
+            }
+        }
+
+        /** Compare based off references */
+        inline bool operator()(const Activity& lhs, const Activity& rhs) const
+        {
+            if ( lhs.priority == rhs.priority ) { return lhs.queue_order > rhs.queue_order; }
+            else {
+                return lhs.priority > rhs.priority;
+            }
+        }
+    };
 
     /** Comparator class to use with STL container classes. */
     class less_time_priority
@@ -225,7 +323,7 @@ public:
     };
 
     /** Set the time for which this Activity should be delivered */
-    void setDeliveryTime(SimTime_t time) { delivery_time = time; }
+    inline void setDeliveryTime(SimTime_t time) { delivery_time = time; }
 
     /** Return the time at which this Activity will be delivered */
     inline SimTime_t getDeliveryTime() const { return delivery_time; }
@@ -271,6 +369,8 @@ public:
 
     /** Set a new Queue order */
     void setQueueOrder(uint64_t order) { queue_order = order; }
+
+    uint64_t getQueueOrder() { return queue_order; }
 
 #ifdef USE_MEMPOOL
     /** Allocates memory from a memory pool for a new Activity */
@@ -374,6 +474,9 @@ public:
 
     // /* Serializable interface methods */
     // void serialize_order(serializer &ser);
+
+
+    int32_t getEnforceLinkOrder() { return enforce_link_order; }
 
 protected:
     /** Set the priority of the Activity */

@@ -56,6 +56,7 @@ Config::Config(RankInfo rankInfo)
     heartbeatPeriod           = "N";
     partitioner               = "sst.linear";
     timeVortex                = "sst.timevortex.priority_queue";
+    inter_thread_links        = false;
     dump_component_graph_file = "";
 
     char* wd_buf = (char*)malloc(sizeof(char) * PATH_MAX);
@@ -104,6 +105,7 @@ struct sstLongOpts_s
 
 #define DEF_FLAGOPT(longName, shortName, text, func) DEF_FLAGOPTVAL(longName, shortName, text, func, nullptr)
 
+
 #define DEF_ARGOPT_SHORT(longName, shortName, argName, text, func)                  \
     {                                                                               \
         { longName, required_argument, 0, shortName }, argName, text, nullptr, func \
@@ -144,6 +146,9 @@ static const struct sstLongOpts_s sstOptions[] = {
         "partitioner", "PARTITIONER", "select the partitioner to be used. <lib.partitionerName>",
         &Config::setPartitioner),
     DEF_ARGOPT("timeVortex ", "MODULE", "select TimeVortex implementation <lib.timevortex>", &Config::setTimeVortex),
+    DEF_ARGOPT(
+        "inter-thread-links ", "BOOL", "[EXPERIMENTAL] Set whether or not interthread links should be used <false>",
+        &Config::setInterThreadLinks),
     DEF_ARGOPT(
         "output-directory", "DIR", "directory into which all SST output files should reside", &Config::setOutputDir),
     DEF_ARGOPT("output-config", "FILE", "file to write SST configuration (in Python format)", &Config::setWriteConfig),
@@ -504,6 +509,20 @@ bool
 Config::setTimeVortex(const std::string& arg)
 {
     timeVortex = arg;
+    return true;
+}
+
+bool
+Config::setInterThreadLinks(const std::string& arg)
+{
+    if ( arg == "true" || arg == "yes" )
+        inter_thread_links = true;
+    else if ( arg == "false" || arg == "no" )
+        inter_thread_links = false;
+    else {
+        fprintf(stderr, "Failed to parse [%s] as a bool, please use true/false or yes/no\n", arg.c_str());
+        return false;
+    }
     return true;
 }
 

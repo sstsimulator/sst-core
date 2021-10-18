@@ -161,21 +161,17 @@ public:                                                                         
         throw_exc();                                                                                              \
         return "";                                                                                                \
     }                                                                                                             \
-    virtual const char* cls_name() const override                                                                 \
-    {                                                                                                             \
-        throw_exc();                                                                                              \
-        return "";                                                                                                \
-    }
+    virtual const char* cls_name() const override { return #obj; }
 
-#define ImplementSerializableDefaultConstructor(obj)                                      \
+#define ImplementSerializableDefaultConstructor(obj, obj_str)                             \
 public:                                                                                   \
-    virtual const char* cls_name() const override { return #obj; }                        \
+    virtual const char* cls_name() const override { return obj_str; }                     \
     virtual uint32_t    cls_id() const override                                           \
     {                                                                                     \
         return SST::Core::Serialization::serializable_builder_impl<obj>::static_cls_id(); \
     }                                                                                     \
     static obj*         construct_deserialize_stub() { return new obj; }                  \
-    virtual std::string serialization_name() const override { return #obj; }              \
+    virtual std::string serialization_name() const override { return obj_str; }           \
                                                                                           \
 private:                                                                                  \
     friend class SST::Core::Serialization::serializable_builder_impl<obj>;                \
@@ -185,7 +181,7 @@ private:                                                                        
 
 #define ImplementSerializable(...) \
 public:                            \
-    ImplementSerializableDefaultConstructor(SER_FORWARD_AS_ONE(__VA_ARGS__))
+    ImplementSerializableDefaultConstructor(SER_FORWARD_AS_ONE(__VA_ARGS__), #__VA_ARGS__)
 
 class serializable_builder
 {
