@@ -2,7 +2,7 @@ New Issue for sst-core
 ----------------------
 1 - Detailed description of problem or enhancement
 
-2 - Describe how to reproduce
+2 - Describe how to reproduce the issue
 
 3 - What Operating system(s) and versions 
 
@@ -12,7 +12,3 @@ New Issue for sst-core
 
 6 - Fill out Labels, Milestones, and Assignee fields as best possible
 
-<<<<<<< HEAD
-=======
-
->>>>>>> devel
