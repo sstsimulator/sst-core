@@ -54,7 +54,8 @@ Event::execute(void)
     SST_EVENT_PROFILE_START
 #endif
 
-    delivery_link->deliverEvent(this);
+    (*functor)(this);
+    //delivery_link->deliverEvent(this);
 
 #ifdef SST_EVENT_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();
@@ -101,7 +102,7 @@ Event::generateUniqueId()
 void
 NullEvent::execute(void)
 {
-    delivery_link->deliverEvent(nullptr);
+    (*functor)(nullptr);
     delete this;
 }
 

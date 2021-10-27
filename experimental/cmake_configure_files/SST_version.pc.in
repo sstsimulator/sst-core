@@ -1,0 +1,11 @@
+prefix=${CMAKE_INSTALL_PREFIX}
+exec_prefix=$\{prefix\}
+libdir=$\{exec_prefix\}/lib
+includedir=$\{prefix\}/include
+
+Name: SSTCore
+Description: Structural Simulation Toolkit (SST) Parallel Discrete Event Core
+Version: ${VERSION}
+URL: http://www.sst-simulator.org/
+Libs: -Wl,-undefined -Wl,dynamic_lookup
+Cflags: -DHAVE_CONFIG_H -I$\{includedir\} -I$\{includedir\}/sst

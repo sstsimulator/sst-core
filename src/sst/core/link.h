@@ -14,6 +14,7 @@
 
 #include "sst/core/event.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/timeConverter.h"
 
 namespace SST {
 
@@ -23,21 +24,20 @@ class TimeConverter;
 class LinkPair;
 class Simulation_impl;
 class ActivityQueue;
-// class SyncBase;
 
 class UnitAlgebra;
 
 /** Link between two components. Carries events */
-class Link
+class alignas(64) Link
 {
-    typedef enum { POLL, HANDLER, QUEUE } Type_t;
+    enum Type_t : uint16_t { POLL, HANDLER, SYNC, UNINITIALIZED };
+    enum Mode_t : uint16_t { INIT, RUN, COMPLETE };
 
 public:
     friend class LinkPair;
     friend class RankSync;
     friend class ThreadSync;
     friend class Simulation_impl;
-    // friend class SyncBase;
     friend class SyncManager;
     friend class ComponentInfo;
 
@@ -104,7 +104,10 @@ public:
      * @param tc - time converter to specify units for the additional delay
      * @param event - the Event to send
      */
-    void send(SimTime_t delay, TimeConverter* tc, Event* event);
+    inline void send(SimTime_t delay, TimeConverter* tc, Event* event)
+    {
+        send_impl(tc->convertToCoreTime(delay), event);
+    }
 
     /** Send an event with additional delay. Sends an event over a link
      * with additional delay specified by the Link's default
@@ -112,12 +115,13 @@ public:
      * @param delay The additional delay, in units of the default Link timebase
      * @param event The event to send
      */
-    inline void send(SimTime_t delay, Event* event) { send(delay, defaultTimeBase, event); }
+    inline void send(SimTime_t delay, Event* event) { send_impl(delay * defaultTimeBase, event); }
 
     /** Send an event with the Link's default delay
      * @param event The event to send
      */
-    inline void send(Event* event) { send(0, event); }
+    inline void send(Event* event) { send_impl(0, event); }
+
 
     /** Retrieve a pending event from the Link. For links which do not
      * have a set event handler, they can be polled with this function.
@@ -152,7 +156,7 @@ public:
     inline void deliverEvent(Event* event) const
     {
 #endif
-        (*rFunctor)(event);
+        (*pair_rFunctor)(event);
     }
 
     /** Return the ID of this link
@@ -184,21 +188,10 @@ public:
      */
     Event* recvInitData() { return recvUntimedData(); }
 
-#if !SST_BUILDING_CORE
-    void setAsConfigured() __attribute__((
-        deprecated("this function was not intended to be used outside of SST core and will be removed in SST 12.")))
-    {
-#else
-    void setAsConfigured()
-    {
-#endif
-        configured = true;
-    }
-
     /** Return whether link has been configured
      * @return whether link is configured
      */
-    bool isConfigured() { return configured; }
+    bool isConfigured() { return type != UNINITIALIZED; }
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     void setSendingComponentInfo(const std::string& comp_in, const std::string& type_in, const std::string& port_in)
@@ -217,30 +210,39 @@ public:
 protected:
     Link();
 
+    void setAsSyncLink() { type = SYNC; }
+
+    /** Send an event over the link with additional delay. Sends an event
+     * over a link with an additional delay specified with a
+     * TimeConverter. I.e. the total delay is the link's delay + the
+     * additional specified delay.
+     * @param delay - additional total delay to add
+     * @param event - the Event to send
+     */
+    void send_impl(SimTime_t delay, Event* event);
+
+    // Since Links are found in pairs, I will keep all the information
+    // needed for me to send and deliver an event to the other side of
+    // the link.  That means, that I mostly keep my pair's
+    // information.  The one consequence, is that polling links will
+    // have to pull the data from the pair, but since this is a less
+    // common case, that's okay (this decision makes the common case
+    // faster and the less common case slower).
+
     /** Queue of events to be received by the owning component */
-    ActivityQueue*        recvQueue;
-    /** Queue of events to be received during init by the owning component */
-    ActivityQueue*        untimedQueue;
-    /** Currently active Queue */
-    ActivityQueue*        configuredQueue;
-    /** Uninitialized queue.  Used for error detection */
-    static ActivityQueue* uninitQueue;
-    /** Uninitialized queue.  Used for error detection */
-    static ActivityQueue* afterInitQueue;
-    /** Uninitialized queue.  Used for error detection */
-    static ActivityQueue* afterRunQueue;
+    ActivityQueue* send_queue;
 
     /** Receive functor. This functor is set when the link is connected.
       Determines what the receiver wants to be called
     */
-    Event::HandlerBase* rFunctor;
+    Event::HandlerBase* pair_rFunctor;
 
     /** Timebase used if no other timebase is specified. Used to specify
       the units for added delays when sending, such as in
       Link::send(). Often set by the Component::registerClock()
       function if the regAll argument is true.
       */
-    TimeConverter* defaultTimeBase;
+    SimTime_t defaultTimeBase;
 
     /** Latency of the link. It is used by the partitioner as the
       weight. This latency is added to the delay put on the event by
@@ -252,6 +254,11 @@ protected:
     Link* pair_link;
 
 private:
+    SimTime_t& current_time;
+    Type_t     type;
+    Mode_t     mode;
+    LinkId_t   id;
+
     Link(const Link& l);
 
     /** Set minimum link latency */
@@ -261,9 +268,6 @@ private:
     void finalizeConfiguration();
     void prepareForComplete();
 
-    Type_t   type;
-    LinkId_t id;
-    bool     configured;
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     std::string comp;

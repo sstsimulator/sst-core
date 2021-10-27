@@ -17,6 +17,7 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/sync/rankSyncParallelSkip.h"
 #include "sst/core/sync/rankSyncSerialSkip.h"
+#include "sst/core/sync/threadSyncDirectSkip.h"
 #include "sst/core/sync/threadSyncQueue.h"
 #include "sst/core/sync/threadSyncSimpleSkip.h"
 #include "sst/core/timeConverter.h"
@@ -85,7 +86,10 @@ public:
 class EmptyThreadSync : public ThreadSync
 {
 public:
-    EmptyThreadSync() { nextSyncTime = MAX_SIMTIME_T; }
+    Simulation_impl* sim;
+
+public:
+    EmptyThreadSync(Simulation_impl* sim) : sim(sim) { nextSyncTime = MAX_SIMTIME_T; }
     ~EmptyThreadSync() {}
 
     void before() override {}
@@ -134,10 +138,15 @@ SyncManager::SyncManager(
     // of the active threadsyncs.
     SimTime_t interthread_minlat = sim->getInterThreadMinLatency();
     if ( num_ranks.thread > 1 && interthread_minlat != MAX_SIMTIME_T ) {
-        threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, rank.thread, Simulation_impl::getSimulation());
+        if ( Simulation_impl::getSimulation()->direct_interthread ) {
+            threadSync = new ThreadSyncDirectSkip(num_ranks.thread, rank.thread, Simulation_impl::getSimulation());
+        }
+        else {
+            threadSync = new ThreadSyncSimpleSkip(num_ranks.thread, rank.thread, Simulation_impl::getSimulation());
+        }
     }
     else {
-        threadSync = new EmptyThreadSync();
+        threadSync = new EmptyThreadSync(Simulation_impl::getSimulation());
     }
 
     exit = sim->getExit();

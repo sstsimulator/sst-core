@@ -17,9 +17,10 @@
 
 #include "sst/core/testElements/coreTest_Component.h"
 
+#include "sst/core/testElements/coreTest_ComponentEvent.h"
+
 #include "sst/core/event.h"
 #include "sst/core/simulation.h"
-#include "sst/core/testElements/coreTest_ComponentEvent.h"
 
 #include <assert.h>
 

@@ -60,6 +60,7 @@ nobase_dist_sst_HEADERS = \
 	sparseVectorMap.h \
 	sst_types.h \
 	sstpart.h \
+	ssthandler.h \
 	stopAction.h \
 	stringize.h \
 	subcomponent.h \
@@ -190,6 +191,7 @@ sst_core_sources = \
 	uninitializedQueue.cc \
 	unitAlgebra.cc \
 	module.cc \
+	ssthandler.cc \
 	sstpart.cc \
 	timeVortex.cc \
 	serialization/serializable.cc \

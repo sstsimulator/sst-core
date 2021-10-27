@@ -13,19 +13,7 @@
 
 #include "sst_config.h"
 
-#include "sst/core/warnmacros.h"
-
-DISABLE_WARN_DEPRECATED_REGISTER
-#include <Python.h>
-REENABLE_WARNING
-// must include after Python.h
-#include <sst/core/model/python/pymacros.h>
-
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#endif
+#include "sst/core/model/python/pymodel.h"
 
 #include "sst/core/component.h"
 #include "sst/core/configGraph.h"
@@ -33,7 +21,7 @@ REENABLE_WARNING
 #include "sst/core/factory.h"
 #include "sst/core/memuse.h"
 #include "sst/core/model/element_python.h"
-#include "sst/core/model/python/pymodel.h"
+#include "sst/core/model/python/pymacros.h"
 #include "sst/core/model/python/pymodel_comp.h"
 #include "sst/core/model/python/pymodel_link.h"
 #include "sst/core/model/python/pymodel_stat.h"
@@ -41,8 +29,20 @@ REENABLE_WARNING
 #include "sst/core/model/python/pymodel_unitalgebra.h"
 #include "sst/core/simulation.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/warnmacros.h"
 
-#include <string.h>
+DISABLE_WARN_DEPRECATED_REGISTER
+#include <Python.h>
+REENABLE_WARNING
+
+#ifdef SST_CONFIG_HAVE_MPI
+DISABLE_WARN_MISSING_OVERRIDE
+#include <mpi.h>
+REENABLE_WARNING
+#endif
+
+#include <string>
+
 DISABLE_WARN_STRICT_ALIASING
 
 using namespace SST;

@@ -17,6 +17,7 @@
 #include "sst/core/link.h"
 #include "sst/core/params.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/ssthandler.h"
 #include "sst/core/subcomponent.h"
 #include "sst/core/warnmacros.h"
 
@@ -78,7 +79,33 @@ namespace Interfaces {
 class StandardMem : public SubComponent
 {
 public:
-    class HandlerBase;      // Handler base class for callback
+    class Request; // Needed for HandlerBase definition
+    /**
+       Base handler for request handling.
+     */
+    using HandlerBase = SSTHandlerBase<void, Request*, false>;
+
+    /**
+       Used to create handlers for request handling.  The callback
+       function is expected to be in the form of:
+
+         void func(Request* event)
+
+       In which case, the class is created with:
+
+         new StdMem::Handler<classname>(this, &classname::function_name)
+
+       Or, to add static data, the callback function is:
+
+         void func(Request* event, dataT data)
+
+       and the class is created with:
+
+         new stdMem::Handler<classname, dataT>(this, &classname::function_name, data)
+     */
+    template <typename classT, typename dataT = void>
+    using Handler = SSTHandler<void, Request*, false, classT, dataT>;
+
     class RequestConverter; // Convert request to SST::Event* according to type
     class RequestHandler;   // Handle a request according to type
 
@@ -1025,60 +1052,6 @@ public:
         }
 
         SST::Output* out;
-    };
-
-    /** Functor classes for Request handling */
-    class HandlerBase
-    {
-    public:
-        /** Function called when Handler is invoked */
-        virtual void operator()(Request*) = 0;
-        virtual ~HandlerBase() {}
-    };
-
-    /** Event Handler class with user-data argument
-     * @tparam classT Type of the Object
-     * @tparam argT Type of the argument
-     */
-    template <typename classT, typename argT = void>
-    class Handler : public HandlerBase
-    {
-    private:
-        typedef void (classT::*PtrMember)(Request*, argT);
-        classT*         object;
-        const PtrMember member;
-        argT            data;
-
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         * @param data - Additional argument to pass to handler
-         */
-        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
-
-        void operator()(Request* req) { return (object->*member)(req, data); }
-    };
-
-    /** Event Handler class without user-data
-     * @tparam classT Type of the Object
-     */
-    template <typename classT>
-    class Handler<classT, void> : public HandlerBase
-    {
-    private:
-        typedef void (classT::*PtrMember)(Request*);
-        classT*         object;
-        const PtrMember member;
-
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         */
-        Handler(classT* const object, PtrMember member) : object(object), member(member) {}
-
-        void operator()(Request* req) { return (object->*member)(req); }
     };
 
     /** Constructor, designed to be used via 'loadUserSubComponent' and 'loadAnonymousSubComponent'.

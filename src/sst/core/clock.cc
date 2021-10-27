@@ -95,7 +95,6 @@ Clock::execute(void)
     Simulation_impl* sim = Simulation_impl::getSimulation();
 
     if ( staticHandlerMap.empty() ) {
-        // std::cout << "Not rescheduling clock" << std::endl;
         scheduled = false;
         return;
     }
@@ -157,13 +156,13 @@ Clock::schedule()
     scheduled = true;
 }
 
-void
-Clock::print(const std::string& header, Output& out) const
+std::string
+Clock::toString() const
 {
-    out.output(
-        "%s Clock Activity with period %" PRIu64 " to be delivered at %" PRIu64
-        " with priority %d, with %d items on clock list\n",
-        header.c_str(), period->getFactor(), getDeliveryTime(), getPriority(), (int)staticHandlerMap.size());
+    std::stringstream buf;
+    buf << "Clock Activity with period " << period->getFactor() << " to be delivered at " << getDeliveryTime()
+        << " with priority " << getPriority() << " with " << staticHandlerMap.size() << " items on clock list";
+    return buf.str();
 }
 
 } // namespace SST

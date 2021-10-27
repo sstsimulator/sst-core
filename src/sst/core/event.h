@@ -14,6 +14,7 @@
 
 #include "sst/core/activity.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/ssthandler.h"
 
 #include <atomic>
 #include <cinttypes>
@@ -30,6 +31,32 @@ class Link;
 class Event : public Activity
 {
 public:
+    /**
+       Base handler for event delivery.
+     */
+    using HandlerBase = SSTHandlerBase<void, Event*, false>;
+
+    /**
+       Used to create handlers for event delivery.  The callback
+       function is expected to be in the form of:
+
+         void func(Event* event)
+
+       In which case, the class is created with:
+
+         new Event::Handler<classname>(this, &classname::function_name)
+
+       Or, to add static data, the callback function is:
+
+         void func(Event* event, dataT data)
+
+       and the class is created with:
+
+         new Event::Handler<classname, dataT>(this, &classname::function_name, data)
+     */
+    template <typename classT, typename dataT = void>
+    using Handler = SSTHandler<void, Event*, false, classT, dataT>;
+
     /** Type definition of unique identifiers */
     typedef std::pair<uint64_t, int> id_type;
     /** Constant, default value for id_types */
@@ -50,6 +77,16 @@ public:
 
     /** Clones the event in for the case of a broadcast */
     virtual Event* clone();
+
+    inline void setDeliveryInfo(LinkId_t id, HandlerBase* f)
+    {
+#ifdef SST_ENFORCE_EVENT_ORDERING
+        enforce_link_order = id;
+#else
+        link_id = id;
+#endif
+        functor = f;
+    }
 
     /** Sets the link id used for delivery.  For use by SST Core only */
 #if !SST_BUILDING_CORE
@@ -108,59 +145,6 @@ public:
 #endif
     }
 
-    /// Functor classes for Event handling
-    class HandlerBase
-    {
-    public:
-        /** Handler function */
-        virtual void operator()(Event*) = 0;
-        virtual ~HandlerBase() {}
-    };
-
-    /**
-     * Event Handler class with user-data argument
-     */
-    template <typename classT, typename argT = void>
-    class Handler : public HandlerBase
-    {
-    private:
-        typedef void (classT::*PtrMember)(Event*, argT);
-        classT*         object;
-        const PtrMember member;
-        argT            data;
-
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         * @param data - Additional argument to pass to handler
-         */
-        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
-
-        void operator()(Event* event) { (object->*member)(event, data); }
-    };
-
-    /**
-     * Event Handler class with no user-data.
-     */
-    template <typename classT>
-    class Handler<classT, void> : public HandlerBase
-    {
-    private:
-        typedef void (classT::*PtrMember)(Event*);
-        const PtrMember member;
-        classT*         object;
-
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         */
-        Handler(classT* const object, PtrMember member) : member(member), object(object) {}
-
-        void operator()(Event* event) { (object->*member)(event); }
-    };
-
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
 
@@ -214,7 +198,8 @@ public:
 
 protected:
     /** Link used for delivery */
-    Link* delivery_link;
+    Link*        delivery_link;
+    HandlerBase* functor;
 
     /**
      * Generates an ID that is unique across ranks, components and events.

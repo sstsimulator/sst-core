@@ -19,9 +19,9 @@
 
 #include "sst/core/testElements/coreTest_Message.h"
 
-#include <sst/core/clock.h>
-#include <sst/core/output.h>
-#include <sst/core/timeConverter.h>
+#include "sst/core/clock.h"
+#include "sst/core/output.h"
+#include "sst/core/timeConverter.h"
 
 using namespace SST;
 using namespace SST::CoreTestSubComponent;

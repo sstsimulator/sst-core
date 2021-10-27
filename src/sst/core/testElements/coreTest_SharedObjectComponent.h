@@ -16,11 +16,11 @@
 #ifndef SST_CORE_CORETEST_SHAREDOBJECT_H
 #define SST_CORE_CORETEST_SHAREDOBJECT_H
 
-#include <sst/core/component.h>
-#include <sst/core/output.h>
-#include <sst/core/shared/sharedArray.h>
-#include <sst/core/shared/sharedMap.h>
-#include <sst/core/shared/sharedSet.h>
+#include "sst/core/component.h"
+#include "sst/core/output.h"
+#include "sst/core/shared/sharedArray.h"
+#include "sst/core/shared/sharedMap.h"
+#include "sst/core/shared/sharedSet.h"
 
 namespace SST {
 namespace CoreTestSharedObjectsComponent {

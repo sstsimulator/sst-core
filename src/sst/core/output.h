@@ -552,11 +552,11 @@ private:
 class TraceFunction
 {
 
-    static int               trace_level;
-    static std::vector<char> indent_array;
+    thread_local static int               trace_level;
+    thread_local static std::vector<char> indent_array;
 
 public:
-    TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info = true);
+    TraceFunction(uint32_t line, const char* file, const char* func, bool print_sim_info = true, bool activate = true);
     ~TraceFunction();
 
     Output& getOutput() { return output_obj; }
@@ -575,6 +575,7 @@ private:
     // uint32_t rank;
     // uint32_t thread;
     int         indent_length;
+    bool        active;
 };
 
 } // namespace SST

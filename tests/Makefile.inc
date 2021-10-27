@@ -31,8 +31,6 @@ EXTRA_DIST += \
     tests/test_SubComponent.py \
     tests/test_SubComponent_2.py \
     tests/test_UnitAlgebra.py \
-    tests/test_TracerComponent_1.py \
-    tests/test_TracerComponent_2.py \
     tests/refFiles/test_Component.out \
     tests/refFiles/test_DistribComponent_discrete.out \
     tests/refFiles/test_DistribComponent_expon.out \

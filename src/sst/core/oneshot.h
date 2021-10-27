@@ -14,6 +14,7 @@
 
 #include "sst/core/action.h"
 #include "sst/core/sst_types.h"
+#include "sst/core/ssthandler.h"
 
 #include <cinttypes>
 
@@ -31,72 +32,32 @@ class TimeConverter;
 class OneShot : public Action
 {
 public:
-    /////////////////////////////////////////////////
-
-    /** Functor classes for OneShot handling */
-    class HandlerBase
-    {
-    public:
-        /** Function called when Handler is invoked */
-        virtual void operator()() = 0;
-        virtual ~HandlerBase() {}
-    };
-
-    /////////////////////////////////////////////////
-
-    /** Event Handler class with user-data argument
-     * @tparam classT Type of the Object
-     * @tparam argT Type of the argument
+    /**
+       Base handler for OneShot callbacks.
      */
-    template <typename classT, typename argT = void>
-    class Handler : public HandlerBase
-    {
-    private:
-        typedef void (classT::*PtrMember)(argT);
-        classT*         object;
-        const PtrMember member;
-        argT            data;
+    using HandlerBase = SSTHandlerBaseNoArgs<void, false>;
 
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         * @param data - Additional argument to pass to handler
-         */
-        Handler(classT* const object, PtrMember member, argT data) : object(object), member(member), data(data) {}
+    /**
+       Used to create handlers for clock.  The callback function is
+       expected to be in the form of:
 
-        /** Operator to callback OneShot Handler; called
-         *  by the OneShot object to execute the users callback.
-         * @param data - The data passed in when the handler was created
-         */
-        void operator()() override { (object->*member)(data); }
-    };
+         void func()
 
-    /////////////////////////////////////////////////
+       In which case, the class is created with:
 
-    /** Event Handler class without user-data
-     * @tparam classT Type of the Object
+         new OneShot::Handler<classname>(this, &classname::function_name)
+
+       Or, to add static data, the callback function is:
+
+         void func(dataT data)
+
+       and the class is created with:
+
+         new OneShot::Handler<classname, dataT>(this, &classname::function_name, data)
      */
-    template <typename classT>
-    class Handler<classT, void> : public HandlerBase
-    {
-    private:
-        typedef void (classT::*PtrMember)();
-        classT*         object;
-        const PtrMember member;
+    template <typename classT, typename dataT = void>
+    using Handler = SSTHandlerNoArgs<void, classT, false, dataT>;
 
-    public:
-        /** Constructor
-         * @param object - Pointer to Object upon which to call the handler
-         * @param member - Member function to call as the handler
-         */
-        Handler(classT* const object, PtrMember member) : object(object), member(member) {}
-
-        /** Operator to callback OneShot Handler; called
-         *  by the OneShot object to execute the users callback.
-         */
-        void operator()() override { (object->*member)(); }
-    };
 
     /////////////////////////////////////////////////
 

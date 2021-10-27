@@ -16,9 +16,10 @@
 #ifndef SST_CORE_CORETEST_SUBCOMPONENT_H
 #define SST_CORE_CORETEST_SUBCOMPONENT_H
 
-#include <sst/core/component.h>
-#include <sst/core/link.h>
-#include <sst/core/subcomponent.h>
+#include "sst/core/component.h"
+#include "sst/core/link.h"
+#include "sst/core/subcomponent.h"
+
 #include <vector>
 
 namespace SST {
@@ -96,7 +97,7 @@ public:
 
     // This ports will be used only by unnamed SubComponents
     SST_ELI_DOCUMENT_PORTS(
-        {"port%(num_subcomps)d", "Sending or Receiving Port(s)", { "coreTestMessageGeneratorComponent.coreTestMessage", "" } },
+        {"port%d", "Sending or Receiving Port(s)", { "coreTestMessageGeneratorComponent.coreTestMessage", "" } },
     )
 
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
@@ -129,7 +130,7 @@ public:
 
     // Only used when loading unnamed SubComponents
     SST_ELI_DOCUMENT_PORTS(
-        {"slot_port%(num_subcomps)d", "Port(s) to send or receive on", { "coreTestMessageGeneratorComponent.coreTestMessage", "" } },
+        {"slot_port%d", "Port(s) to send or receive on", { "coreTestMessageGeneratorComponent.coreTestMessage", "" } },
     )
 
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
@@ -172,6 +173,10 @@ public:
 
     SST_ELI_DOCUMENT_PORTS(
         {"sendPort", "Sending Port", { "coreTestMessageGeneratorComponent.coreTestMessage", "" } },
+        // The following port is a test to make sure that when loaded
+        // anonymously, a port that's named the same as one of its
+        // parent's ports doesn't conflict.
+        {"slot_port%d", "This is just a test port that duplicates a port from the SubComponent that will instance it", { "", "" } },
     )
 
     SST_ELI_DOCUMENT_SUBCOMPONENT_SLOTS(
