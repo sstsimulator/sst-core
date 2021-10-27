@@ -17,14 +17,16 @@
 #include "sst/core/simulation_impl.h"
 #include "sst/core/timeConverter.h"
 
+#include <sys/time.h>
+
 namespace SST {
 
-#ifdef SST_HIGH_RESOLUTION_CLOCK
-#define SST_CLOCK_PROFILE_START auto start = std::chrono::high_resolution_clock::now();
+#if SST_HIGH_RESOLUTION_CLOCK
+#define SST_CLOCK_PROFILE_START auto sst_clock_profile_start = std::chrono::high_resolution_clock::now();
 #define SST_CLOCK_PROFILE_STOP                               \
-    auto finish = std::chrono::high_resolution_clock::now(); \
-    auto it     = sim->clockHandlers.find(handler->getId()); \
-    it->second += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+    auto sst_clock_profile_finish = std::chrono::high_resolution_clock::now(); \
+    auto sst_clock_profile_it     = sim->clockHandlers.find(handler->getId()); \
+    sst_clock_profile_it->second += std::chrono::duration_cast<std::chrono::nanoseconds>(sst_clock_profile_finish - sst_clock_profile_start).count();
 #else
 #define SST_CLOCK_PROFILE_START                     \
     struct timeval clockStart, clockEnd, clockDiff; \
@@ -32,8 +34,8 @@ namespace SST {
 #define SST_CLOCK_PROFILE_STOP                           \
     gettimeofday(&clockEnd, NULL);                       \
     timersub(&clockEnd, &clockStart, &clockDiff);        \
-    auto it = sim->clockHandlers.find(handler->getId()); \
-    it->second += clockDiff.tv_usec + clockDiff.tv_sec * 1e6;
+    auto sst_clock_profile_it = sim->clockHandlers.find(handler->getId()); \
+    sst_clock_profile_it->second += clockDiff.tv_usec + clockDiff.tv_sec * 1e6;
 #endif
 
 Clock::Clock(TimeConverter* period, int priority) : Action(), currentCycle(0), period(period), scheduled(false)
@@ -103,7 +105,7 @@ Clock::execute(void)
         Clock::HandlerBase* handler = *sop_iter;
 
 
-#ifdef SST_CLOCK_PROFILING
+#if SST_CLOCK_PROFILING
         SST_CLOCK_PROFILE_START
 #endif
 
@@ -112,7 +114,7 @@ Clock::execute(void)
         else
             ++sop_iter;
 
-#ifdef SST_CLOCK_PROFILING
+#if SST_CLOCK_PROFILING
         SST_CLOCK_PROFILE_STOP
 
         auto iter = sim->clockCounters.find(handler->getId());

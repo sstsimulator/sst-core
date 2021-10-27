@@ -647,7 +647,7 @@ Simulation_impl::run()
         }
     }
 
-#ifdef SST_EVENT_PROFILING
+#if SST_EVENT_PROFILING
     for ( auto iter = compInfoMap.begin(); iter != compInfoMap.end(); ++iter ) {
         eventHandlers.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
         eventRecvCounters.insert(std::pair<std::string, uint64_t>((*iter)->getName(), 0));
@@ -663,14 +663,14 @@ Simulation_impl::run()
     header += SST::to_string(my_rank.thread);
     header += ":  ";
 
-#ifdef SST_PERFORMANCE_INSTRUMENTING
+#if SST_PERFORMANCE_INSTRUMENTING
     std::string filename = "rank_" + SST::to_string(my_rank.rank);
     filename += "_thread_" + SST::to_string(my_rank.thread);
     fp = fopen(filename.c_str(), "w");
 #endif
 
-#ifdef SST_RUNTIME_PROFILING
-#ifdef SST_HIGH_RESOLUTION_CLOCK
+#if SST_RUNTIME_PROFILING
+#if SST_HIGH_RESOLUTION_CLOCK
     auto start = std::chrono::high_resolution_clock::now();
 #else
     gettimeofday(&start, NULL);
@@ -685,7 +685,7 @@ Simulation_impl::run()
         currentPriority  = current_activity->getPriority();
         current_activity->execute();
 
-#ifdef SST_PERIODIC_PRINT
+#if SST_PERIODIC_PRINT
         periodicCounter++;
 #endif
 
@@ -714,10 +714,10 @@ Simulation_impl::run()
             lastRecvdSignal = 0;
         }
 
-#ifdef SST_PERIODIC_PRINT
+#if SST_PERIODIC_PRINT
         if ( periodicCounter >= SST_PERIODIC_PRINT_THRESHOLD ) {
-#ifdef SST_RUNTIME_PROFILING
-#ifdef SST_HIGH_RESOLUTION_CLOCK
+#if SST_RUNTIME_PROFILING
+#if SST_HIGH_RESOLUTION_CLOCK
             auto finish = std::chrono::high_resolution_clock::now();
             runtime     = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
 #else
@@ -743,8 +743,8 @@ Simulation_impl::run()
         endSimCycle = m_exit->computeEndTime();
     }
 
-#ifdef SST_RUNTIME_PROFILING
-#ifdef SST_HIGH_RESOLUTION_CLOCK
+#if SST_RUNTIME_PROFILING
+#if SST_HIGH_RESOLUTION_CLOCK
     auto finish = std::chrono::high_resolution_clock::now();
     runtime     = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
 #else
@@ -754,7 +754,7 @@ Simulation_impl::run()
 #endif
 #endif
 
-#ifdef SST_PERFORMANCE_INSTRUMENTING
+#if SST_PERFORMANCE_INSTRUMENTING
     printPerformanceInfo();
     fclose(fp);
 #endif
@@ -900,7 +900,7 @@ Simulation_impl::registerClock(const UnitAlgebra& freq, Clock::HandlerBase* hand
 void
 Simulation_impl::registerClockHandler(SST::ComponentId_t id, SST::HandlerId_t handler)
 {
-#ifdef SST_PERFORMANCE_INSTRUMENTING
+#if SST_PERFORMANCE_INSTRUMENTING
     handler_mapping.insert(std::pair<SST::HandlerId_t, SST::ComponentId_t>(handler, id));
 #endif
 }
@@ -908,7 +908,7 @@ Simulation_impl::registerClockHandler(SST::ComponentId_t id, SST::HandlerId_t ha
 TimeConverter*
 Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority)
 {
-#ifdef SST_CLOCK_PROFILING
+#if SST_CLOCK_PROFILING
     SST::HandlerId_t handlerID = handler->getId();
     clockHandlers.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
     clockCounters.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
@@ -1051,17 +1051,17 @@ Simulation_impl::resizeBarriers(uint32_t nthr)
     finishBarrier.resize(nthr);
 }
 
-#ifdef SST_PERFORMANCE_INSTRUMENTING
+#if SST_PERFORMANCE_INSTRUMENTING
 void
 Simulation_impl::printPerformanceInfo()
 {
-#ifdef SST_RUNTIME_PROFILING
+#if SST_RUNTIME_PROFILING
     fprintf(fp, "///Print at %.6fs\n", (double)runtime / clockDivisor);
 #endif
 
 // Iterate through components and find all handlers mapped to that component
 // If handler mapping is not populated, prints out raw clock handler times
-#ifdef SST_CLOCK_PROFILING
+#if SST_CLOCK_PROFILING
     fprintf(fp, "Clock Handlers\n");
     if ( handler_mapping.empty() ) {
         for ( auto it = clockHandlers.begin(); it != clockHandlers.end(); ++it ) {
@@ -1100,7 +1100,7 @@ Simulation_impl::printPerformanceInfo()
     fprintf(fp, "\n");
 #endif
 
-#ifdef SST_EVENT_PROFILING
+#if SST_EVENT_PROFILING
     fprintf(fp, "Communication Counters\n");
     for ( auto it = eventHandlers.begin(); it != eventHandlers.end(); ++it ) {
         fprintf(fp, "Component %s\n", it->first.c_str());
@@ -1139,7 +1139,7 @@ Simulation_impl::printPerformanceInfo()
     fprintf(fp, "\n");
 #endif
 
-#ifdef SST_SYNC_PROFILING
+#if SST_SYNC_PROFILING
     fprintf(fp, "Synchronization Information\n");
     fprintf(fp, "Thread Sync time: %.6fs\n", (double)threadSyncTime / clockDivisor);
     fprintf(fp, "Rank Sync time: %.6fs\n", (double)rankSyncTime / clockDivisor);

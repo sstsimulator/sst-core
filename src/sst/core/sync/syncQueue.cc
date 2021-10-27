@@ -46,7 +46,7 @@ SyncQueue::insert(Activity* activity)
     std::lock_guard<Spinlock> lock(slock);
     activities.push_back(activity);
 
-#ifdef SST_EVENT_PROFILING
+#if SST_EVENT_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();
 
     serializer ser;
@@ -100,7 +100,7 @@ SyncQueue::getData()
 
     size_t size = ser.size();
 
-#ifdef SST_EVENT_PROFILING
+#if SST_EVENT_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();
     sim->messageSizeRecv += (uint64_t)size;
 #endif

@@ -185,8 +185,8 @@ SyncManager::registerLink(const RankInfo& to_rank, const RankInfo& from_rank, Li
 void
 SyncManager::execute(void)
 {
-#ifdef SST_SYNC_PROFILING
-#ifdef SST_HIGH_RESOLUTION_CLOCK
+#if SST_SYNC_PROFILING
+#if SST_HIGH_RESOLUTION_CLOCK
     auto start = std::chrono::high_resolution_clock::now();
 #else
     struct timeval syncStart, syncEnd, syncDiff;
@@ -241,15 +241,15 @@ SyncManager::execute(void)
     default:
         break;
     }
-#ifdef SST_SYNC_PROFILING
+#if SST_SYNC_PROFILING
     SyncManager::sync_type_t last_sync_type = next_sync_type;
 #endif
     computeNextInsert();
     RankExecBarrier[5].wait();
 
-#ifdef SST_SYNC_PROFILING
+#if SST_SYNC_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();
-#ifdef SST_HIGH_RESOLUTION_CLOCK
+#if SST_HIGH_RESOLUTION_CLOCK
     auto finish = std::chrono::high_resolution_clock::now();
 
     // Differentiate between rank and thread synchronization overhead
