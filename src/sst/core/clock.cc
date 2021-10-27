@@ -23,7 +23,7 @@ namespace SST {
 #define SST_CLOCK_PROFILE_START auto start = std::chrono::high_resolution_clock::now();
 #define SST_CLOCK_PROFILE_STOP                               \
     auto finish = std::chrono::high_resolution_clock::now(); \
-    auto it     = sim->clockHandlers.find(handler->GetId()); \
+    auto it     = sim->clockHandlers.find(handler->getId()); \
     it->second += std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
 #else
 #define SST_CLOCK_PROFILE_START                     \
@@ -32,14 +32,9 @@ namespace SST {
 #define SST_CLOCK_PROFILE_STOP                           \
     gettimeofday(&clockEnd, NULL);                       \
     timersub(&clockEnd, &clockStart, &clockDiff);        \
-    auto it = sim->clockHandlers.find(handler->GetId()); \
+    auto it = sim->clockHandlers.find(handler->getId()); \
     it->second += clockDiff.tv_usec + clockDiff.tv_sec * 1e6;
 #endif
-
-Clock::HandlerBase::HandlerBase()
-{
-    handler_id = Factory::getFactory()->CreateClockHandlerId();
-}
 
 Clock::Clock(TimeConverter* period, int priority) : Action(), currentCycle(0), period(period), scheduled(false)
 {
@@ -120,7 +115,7 @@ Clock::execute(void)
 #ifdef SST_CLOCK_PROFILING
         SST_CLOCK_PROFILE_STOP
 
-        auto iter = sim->clockCounters.find(handler->GetId());
+        auto iter = sim->clockCounters.find(handler->getId());
         if ( iter != sim->clockCounters.end() ) { iter->second++; }
 #endif
 

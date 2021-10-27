@@ -187,14 +187,6 @@ Factory::getParamNames(const std::string& type)
     return empty_keyset;
 }
 
-HandlerId_t
-Factory::CreateClockHandlerId()
-{
-    std::lock_guard<std::recursive_mutex> lock(factoryMutex);
-    nextHandlerID++;
-    return nextHandlerID;
-}
-
 Component*
 Factory::CreateComponent(ComponentId_t id, const std::string& type, Params& params)
 {

@@ -909,7 +909,7 @@ TimeConverter*
 Simulation_impl::registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority)
 {
 #ifdef SST_CLOCK_PROFILING
-    SST::HandlerId_t handlerID = handler->GetId();
+    SST::HandlerId_t handlerID = handler->getId();
     clockHandlers.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
     clockCounters.insert(std::pair<SST::HandlerId_t, uint64_t>(handlerID, 0));
 #endif

@@ -274,7 +274,7 @@ public:
 
     TimeConverter* registerClock(TimeConverter* tcFreq, Clock::HandlerBase* handler, int priority);
 
-    void registerClockHandler(SST::ComponentId_t id, uint64_t handler);
+    void registerClockHandler(SST::ComponentId_t id, HandlerId_t handler);
 
     /** Remove a clock handler from the list of active clock handlers */
     void unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler, int priority);

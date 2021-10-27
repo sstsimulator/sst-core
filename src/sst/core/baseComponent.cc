@@ -172,7 +172,7 @@ BaseComponent::unregisterClock(TimeConverter* tc, Clock::HandlerBase* handler)
 void
 BaseComponent::registerClockHandler(Clock::HandlerBase* handler)
 {
-    Simulation_impl::getSimulation()->registerClockHandler(my_info->id, handler->GetId());
+    Simulation_impl::getSimulation()->registerClockHandler(my_info->id, handler->getId());
 }
 
 TimeConverter*
