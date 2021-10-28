@@ -33,10 +33,11 @@ namespace SST {
 
 #if SST_EVENT_PROFILING
 #define SST_EVENT_PROFILE_START auto event_profile_start = std::chrono::high_resolution_clock::now();
-#define SST_EVENT_PROFILE_STOP                                                                            \
-    Simulation_impl* event_profile_simImpl = Simulation_impl::getSimulation();                                          \
-    auto             event_profile_finish  = std::chrono::high_resolution_clock::now();                                 \
-    event_profile_simImpl->rankLatency += std::chrono::duration_cast<std::chrono::nanoseconds>(event_profile_finish - event_profile_start).count(); \
+#define SST_EVENT_PROFILE_STOP                                                                                    \
+    Simulation_impl* event_profile_simImpl = Simulation_impl::getSimulation();                                    \
+    auto             event_profile_finish  = std::chrono::high_resolution_clock::now();                           \
+    event_profile_simImpl->rankLatency +=                                                                         \
+        std::chrono::duration_cast<std::chrono::nanoseconds>(event_profile_finish - event_profile_start).count(); \
     event_profile_simImpl->rankExchangeCounter++;
 #else
 #define SST_EVENT_PROFILE_START

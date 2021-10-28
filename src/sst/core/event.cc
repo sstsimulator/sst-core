@@ -25,25 +25,25 @@ const SST::Event::id_type SST::Event::NO_ID = std::make_pair(0, -1);
 
 #if SST_HIGH_RESOLUTION_CLOCK
 #define SST_EVENT_PROFILE_START auto event_profile_eventStart = std::chrono::high_resolution_clock::now();
-#define SST_EVENT_PROFILE_STOP                                                                      \
-    auto event_profile_eventFinish  = std::chrono::high_resolution_clock::now();                                  \
-    auto event_profile_eventHandler = sim->eventHandlers.find(getLastComponentName());                            \
-    if ( event_profile_eventHandler != sim->eventHandlers.end() ) {                                               \
-        event_profile_eventHandler->second +=                                                                     \
-            std::chrono::duration_cast<std::chrono::nanoseconds>(event_profile_eventFinish - event_profile_eventStart).count(); \
+#define SST_EVENT_PROFILE_STOP                                                                                         \
+    auto event_profile_eventFinish  = std::chrono::high_resolution_clock::now();                                       \
+    auto event_profile_eventHandler = sim->eventHandlers.find(getLastComponentName());                                 \
+    if ( event_profile_eventHandler != sim->eventHandlers.end() ) {                                                    \
+        event_profile_eventHandler->second +=                                                                          \
+            std::chrono::duration_cast<std::chrono::nanoseconds>(event_profile_eventFinish - event_profile_eventStart) \
+                .count();                                                                                              \
     }
 #else
 #define SST_EVENT_PROFILE_START                     \
     struct timeval eventStart, eventEnd, eventDiff; \
     gettimeofday(&eventStart, NULL);
-#define SST_EVENT_PROFILE_STOP                                                                  \
-    gettimeofday(&eventEnd, NULL);                                                              \
-    timersub(&eventEnd, &eventStart, &eventDiff);                                               \
-    auto event_profile_eventHandler = sim -> eventHandlers.find(getLastComponentName());       \
-        if ( event_profile_eventHandler != sim->eventHandlers.end() )                           \
-        {                                                                                       \
-            event_profile_eventHandler->second += eventDiff.tv_usec + eventDiff.tv_sec * 1e6;   \
-        }
+#define SST_EVENT_PROFILE_STOP                                                            \
+    gettimeofday(&eventEnd, NULL);                                                        \
+    timersub(&eventEnd, &eventStart, &eventDiff);                                         \
+    auto event_profile_eventHandler = sim->eventHandlers.find(getLastComponentName());    \
+    if ( event_profile_eventHandler != sim->eventHandlers.end() ) {                       \
+        event_profile_eventHandler->second += eventDiff.tv_usec + eventDiff.tv_sec * 1e6; \
+    }
 #endif
 
 Event::~Event() {}
@@ -56,8 +56,9 @@ Event::execute(void)
     SST_EVENT_PROFILE_START
 #endif
 
-    (*functor)(this);
-    //delivery_link->deliverEvent(this);
+        (*functor)
+    (this);
+    // delivery_link->deliverEvent(this);
 
 #if SST_EVENT_PROFILING
     Simulation_impl* sim = Simulation_impl::getSimulation();
