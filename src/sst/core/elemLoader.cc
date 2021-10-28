@@ -95,6 +95,10 @@ ElemLoader::loadLibrary(const std::string& elemlib, std::ostream& err_os)
         void* handle = dlopen(full_path, bindPolicy);
 
 #ifdef SST_COMPILE_MACOSX
+        if ( nullptr == handle ) {
+            if ( verbose ) { printf("SST-DL: Loading failed, error: %s\n", dlerror()); }
+        }
+
         // macOS will also allow files to use the dylib extension so this
         // must also be checked. But only check this is the .so attempt
         // failed first (because we may have had a successful load already)
