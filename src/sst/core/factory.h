@@ -332,8 +332,6 @@ private:
 
     std::recursive_mutex factoryMutex;
 
-    HandlerId_t nextHandlerID;
-
 protected:
     Output& out;
 };

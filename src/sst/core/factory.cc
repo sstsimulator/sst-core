@@ -55,7 +55,6 @@ Factory::Factory(const std::string& searchPaths) : searchPaths(searchPaths), out
     instance = this;
     loader   = new ElemLoader(searchPaths);
     loaded_libraries.insert("sst");
-    nextHandlerID = 1;
 }
 
 Factory::~Factory()
