@@ -168,6 +168,8 @@ public:
         std::cout << "output_directory = " << output_directory << std::endl;
         std::cout << "output_json = " << output_json << std::endl;
         std::cout << "model_options = " << model_options << std::endl;
+        std::cout << "dump_component_graph_file = " << dump_component_graph_file << std::endl;
+        std::cout << "output_partition = " << output_partition << std::endl;
         std::cout << "num_threads = " << world_size.thread << std::endl;
         std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
         std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
@@ -199,6 +201,7 @@ public:
         ser& timeBase;
         ser& partitioner;
         ser& dump_component_graph_file;
+        ser& output_partition;
         ser& output_config_graph;
         ser& output_dot;
         ser& dot_verbosity;
