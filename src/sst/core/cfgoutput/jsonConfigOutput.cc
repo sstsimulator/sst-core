@@ -30,10 +30,15 @@ namespace json = ::nlohmann;
 JSONConfigGraphOutput::JSONConfigGraphOutput(const char* path) : ConfigGraphOutput(path) {}
 
 namespace {
-struct CompLinkPair
+struct CompWrapper
 {
     SST::ConfigComponent const* comp;
-    SST::ConfigLinkMap_t const& linkMap;
+    bool                        output_parition_info;
+};
+
+struct SubCompWrapper
+{
+    SST::ConfigComponent const* comp;
 };
 
 struct LinkConfPair
@@ -48,12 +53,11 @@ struct StatPair
     SST::ConfigComponent const*                  comp;
 };
 
-
 void
-to_json(json::json& j, StatPair const& sp)
+to_json(json::ordered_json& j, StatPair const& sp)
 {
     auto const& name = sp.statkey.first;
-    j                = json::json { { "name", name } };
+    j                = json::ordered_json { { "name", name } };
 
     auto* si = sp.comp->findStatistic(sp.statkey.second);
     for ( auto const& parmItr : si->params.getKeys() ) {
@@ -62,58 +66,93 @@ to_json(json::json& j, StatPair const& sp)
 }
 
 void
-to_json(json::json& j, CompLinkPair const& pair)
+to_json(json::ordered_json& j, SubCompWrapper const& comp_wrapper)
 {
-    auto& comp    = pair.comp;
-    auto& linkMap = pair.linkMap;
-    j             = json::json { { "name", comp->name }, { "type", comp->type } };
+    auto& comp = comp_wrapper.comp;
+    j = json::ordered_json { { "slot_name", comp->name }, { "slot_number", comp->slot_num }, { "type", comp->type } };
 
-    for ( auto const& i : comp->links ) {
-        auto const& link = linkMap[i];
-        const auto  port = (link.component[0] == comp->id) ? 0 : 1;
-        j["ports"].push_back(link.port[port]);
+    for ( auto const& paramsItr : comp->params.getLocalKeys() ) {
+        j["params"][paramsItr] = comp->params.find<std::string>(paramsItr);
+    }
+
+    for ( auto const& paramsItr : comp->params.getSubscribedGlobalParamSets() ) {
+        j["params_global_sets"].push_back(paramsItr);
     }
 
     for ( auto const& scItr : comp->subComponents ) {
-        j["subcomponents"].push_back(CompLinkPair { scItr, linkMap });
+        j["subcomponents"].push_back(SubCompWrapper { scItr });
+    }
+
+    for ( auto const& pair : comp->enabledStatNames ) {
+        j["statistics"].push_back(StatPair { pair, comp });
+    }
+}
+
+void
+to_json(json::ordered_json& j, CompWrapper const& comp_wrapper)
+{
+    auto& comp = comp_wrapper.comp;
+    j          = json::ordered_json { { "name", comp->name }, { "type", comp->type } };
+
+    for ( auto const& paramsItr : comp->params.getLocalKeys() ) {
+        j["params"][paramsItr] = comp->params.find<std::string>(paramsItr);
+    }
+
+    for ( auto const& paramsItr : comp->params.getSubscribedGlobalParamSets() ) {
+        j["params_global_sets"].push_back(paramsItr);
+    }
+
+    for ( auto const& scItr : comp->subComponents ) {
+        j["subcomponents"].push_back(SubCompWrapper { scItr });
     }
 
     for ( auto const& pair : comp->enabledStatNames ) {
         j["statistics"].push_back(StatPair { pair, comp });
     }
 
-    for ( auto const& paramsItr : comp->params.getKeys() ) {
-        j["params"][paramsItr] = comp->params.find<std::string>(paramsItr);
+    if ( comp_wrapper.output_parition_info ) {
+        j["partition"]["rank"]   = comp->rank.rank;
+        j["partition"]["thread"] = comp->rank.thread;
     }
 }
 
 void
-to_json(json::json& j, LinkConfPair const& pair)
+to_json(json::ordered_json& j, LinkConfPair const& pair)
 {
     auto const& link  = pair.link;
     auto const* graph = pair.graph;
 
     // These accesses into compMap are not checked
-    j              = json::json { { "name", link.name } };
-    j["left"]      = graph->findComponent(link.component[0])->getFullName();
-    j["right"]     = graph->findComponent(link.component[1])->getFullName();
-    j["rightPort"] = link.port[1];
-    j["latency"]   = link.latency_str[(link.latency[0] <= link.latency[1]) ? 0 : 1];
+    j                       = json::ordered_json { { "name", link.name } };
+    j["left"]["component"]  = graph->findComponent(link.component[0])->getFullName();
+    j["left"]["port"]       = link.port[0];
+    j["left"]["latency"]    = link.latency_str[0];
+    j["right"]["component"] = graph->findComponent(link.component[1])->getFullName();
+    j["right"]["port"]      = link.port[1];
+    j["right"]["latency"]   = link.latency_str[1];
 }
 
 } // namespace
 
 void
-JSONConfigGraphOutput::generate(const Config* UNUSED(cfg), ConfigGraph* graph)
+JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 {
     if ( nullptr == outputFile ) { throw ConfigGraphOutputException("Output file is not open for writing"); }
 
     auto compMap = graph->getComponentMap();
     auto linkMap = graph->getLinkMap();
 
-    json::json outputJson;
+    json::ordered_json outputJson;
+
+    // Put in the global param sets
+    for ( const auto& set : Params::getGlobalParamSetNames() ) {
+        for ( auto kvp : Params::getGlobalParamSet(set) ) {
+            if ( kvp.first != "<set_name>" ) outputJson["global_params"][set][kvp.first] = kvp.second;
+        }
+    }
+
     for ( auto compItr : compMap ) {
-        outputJson["components"].emplace_back(CompLinkPair { compItr, linkMap });
+        outputJson["components"].emplace_back(CompWrapper { compItr, cfg->output_partition });
     }
 
     for ( auto linkItr : linkMap ) {

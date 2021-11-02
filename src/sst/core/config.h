@@ -74,7 +74,8 @@ public:
     std::string        output_directory;          /*!< Output directory to dump all files to */
     std::string        model_options;             /*!< Options to pass to Python Model generator */
     std::string        dump_component_graph_file; /*!< File to dump component graph */
-    std::string        output_core_prefix;        /*!< Set the SST::Output prefix for the core */
+    bool               output_partition;   /*!< If set to true, output paritition information in config outputs */
+    std::string        output_core_prefix; /*!< Set the SST::Output prefix for the core */
 
     RankInfo world_size;          /*!< Number of ranks, threads which should be invoked per rank */
     uint32_t verbose;             /*!< Verbosity */
@@ -137,7 +138,8 @@ public:
     bool setDotVerbosity(const std::string& arg);
     bool setWriteXML(const std::string& arg);
     bool setWriteJSON(const std::string& arg);
-    bool setWritePartition(const std::string& arg);
+    bool setWritePartitionFile(const std::string& arg);
+    bool setWritePartition();
     bool setOutputPrefix(const std::string& arg);
 #ifdef USE_MEMPOOL
     bool setWriteUndeleted(const std::string& arg);
