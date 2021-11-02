@@ -146,16 +146,16 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 
     // Put in the global param sets
     for ( const auto& set : Params::getGlobalParamSetNames() ) {
-        for ( auto kvp : Params::getGlobalParamSet(set) ) {
+        for ( const auto& kvp : Params::getGlobalParamSet(set) ) {
             if ( kvp.first != "<set_name>" ) outputJson["global_params"][set][kvp.first] = kvp.second;
         }
     }
 
-    for ( auto compItr : compMap ) {
+    for ( const auto& compItr : compMap ) {
         outputJson["components"].emplace_back(CompWrapper { compItr, cfg->output_partition });
     }
 
-    for ( auto linkItr : linkMap ) {
+    for ( const auto& linkItr : linkMap ) {
         outputJson["links"].push_back(LinkConfPair { linkItr, graph });
     }
 

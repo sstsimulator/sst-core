@@ -490,7 +490,7 @@ ConfigComponent::findSubComponentByName(const std::string& name)
                 return sc;
             }
             else {
-                return sc->findSubComponentByName(slot.substr(colon_index + 1, std::string::npos));
+                return sc->findSubComponentByName(name.substr(colon_index + 1, std::string::npos));
             }
         }
     }
