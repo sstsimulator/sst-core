@@ -497,7 +497,8 @@ Params::getGlobalParamSet(const std::string& name)
 std::vector<std::string>
 Params::getGlobalParamSetNames()
 {
-    std::vector<std::string> ret(global_params.size());
+    std::vector<std::string> ret;
+    ret.reserve(global_params.size());
     for ( auto x : global_params ) {
         ret.push_back(x.first);
     }
@@ -508,7 +509,8 @@ Params::getGlobalParamSetNames()
 std::vector<std::string>
 Params::getLocalKeys() const
 {
-    std::vector<std::string> ret(data[0]->size());
+    std::vector<std::string> ret;
+    ret.reserve(data[0]->size());
     for ( auto x : *data[0] ) {
         ret.push_back(getParamName(x.first));
     }
@@ -519,7 +521,8 @@ Params::getLocalKeys() const
 std::vector<std::string>
 Params::getSubscribedGlobalParamSets() const
 {
-    std::vector<std::string> ret(data.size() - 1);
+    std::vector<std::string> ret;
+    ret.reserve((data.size() - 1));
     // Skip the first item because those are local params
     for ( size_t i = 1; i < data.size(); ++i ) {
         // To get <set_name> key, need to use keyID 0
