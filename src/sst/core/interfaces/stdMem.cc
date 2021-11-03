@@ -16,3 +16,6 @@
 
 std::atomic<SST::Experimental::Interfaces::StandardMem::Request::id_t>
     SST::Experimental::Interfaces::StandardMem::Request::main_id(0);
+
+std::atomic<SST::Interfaces::StandardMem::Request::id_t>
+    SST::Interfaces::StandardMem::Request::main_id(0);
