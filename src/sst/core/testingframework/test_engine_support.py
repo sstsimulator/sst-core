@@ -105,7 +105,7 @@ class OSCommand():
         file_err = None
 
         try:
-            # Run in either the users choosen directory or the run dir
+            # Run in either the users chosen directory or the run dir
             if self._set_cwd is None:
                 subprocess_path = test_engine_globals.TESTOUTPUT_RUNDIRPATH
             else:
