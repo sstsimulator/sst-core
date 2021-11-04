@@ -256,7 +256,6 @@ public:
         visited(false)
     {}
 
-    ComponentId_t getNextSubComponentID();
     StatisticId_t getNextStatisticID();
 
     ConfigComponent* getParent() const;
@@ -266,7 +265,7 @@ public:
     void                   setWeight(double w);
     void                   setCoordinates(const std::vector<double>& c);
     void                   addParameter(const std::string& key, const std::string& value, bool overwrite);
-    ConfigComponent*       addSubComponent(ComponentId_t, const std::string& name, const std::string& type, int slot);
+    ConfigComponent*       addSubComponent(const std::string& name, const std::string& type, int slot);
     ConfigComponent*       findSubComponent(ComponentId_t);
     const ConfigComponent* findSubComponent(ComponentId_t) const;
     ConfigComponent*       findSubComponentByName(const std::string& name);
@@ -312,6 +311,8 @@ public:
 
 private:
     std::map<StatisticId_t, ConfigStatistic> statistics;
+
+    ComponentId_t getNextSubComponentID();
 
     friend class ConfigGraph;
     /** Checks to make sure port names are valid and that a port isn't used twice

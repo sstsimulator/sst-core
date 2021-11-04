@@ -480,6 +480,57 @@ Params::getArrayTokens(const std::string& value, std::vector<std::string>& token
     }
 }
 
+
+std::map<std::string, std::string>
+Params::getGlobalParamSet(const std::string& name)
+{
+    std::map<std::string, std::string> ret;
+    auto                               it = global_params.find(name);
+    if ( it == global_params.end() ) return ret;
+
+    for ( auto x : it->second ) {
+        ret[getParamName(x.first)] = x.second;
+    }
+    return ret;
+}
+
+std::vector<std::string>
+Params::getGlobalParamSetNames()
+{
+    std::vector<std::string> ret;
+    ret.reserve(global_params.size());
+    for ( auto x : global_params ) {
+        ret.push_back(x.first);
+    }
+    return ret;
+}
+
+
+std::vector<std::string>
+Params::getLocalKeys() const
+{
+    std::vector<std::string> ret;
+    ret.reserve(data[0]->size());
+    for ( auto x : *data[0] ) {
+        ret.push_back(getParamName(x.first));
+    }
+    return ret;
+}
+
+
+std::vector<std::string>
+Params::getSubscribedGlobalParamSets() const
+{
+    std::vector<std::string> ret;
+    ret.reserve((data.size() - 1));
+    // Skip the first item because those are local params
+    for ( size_t i = 1; i < data.size(); ++i ) {
+        // To get <set_name> key, need to use keyID 0
+        ret.push_back((*data[i])[0]);
+    }
+    return ret;
+}
+
 #if 0
  template<>
  uint32_t Params::find(const std::string& k) const

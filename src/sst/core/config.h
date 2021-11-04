@@ -74,7 +74,8 @@ public:
     std::string        output_directory;          /*!< Output directory to dump all files to */
     std::string        model_options;             /*!< Options to pass to Python Model generator */
     std::string        dump_component_graph_file; /*!< File to dump component graph */
-    std::string        output_core_prefix;        /*!< Set the SST::Output prefix for the core */
+    bool               output_partition;   /*!< If set to true, output paritition information in config outputs */
+    std::string        output_core_prefix; /*!< Set the SST::Output prefix for the core */
 
     RankInfo world_size;          /*!< Number of ranks, threads which should be invoked per rank */
     uint32_t verbose;             /*!< Verbosity */
@@ -137,7 +138,8 @@ public:
     bool setDotVerbosity(const std::string& arg);
     bool setWriteXML(const std::string& arg);
     bool setWriteJSON(const std::string& arg);
-    bool setWritePartition(const std::string& arg);
+    bool setWritePartitionFile(const std::string& arg);
+    bool setWritePartition();
     bool setOutputPrefix(const std::string& arg);
 #ifdef USE_MEMPOOL
     bool setWriteUndeleted(const std::string& arg);
@@ -166,6 +168,8 @@ public:
         std::cout << "output_directory = " << output_directory << std::endl;
         std::cout << "output_json = " << output_json << std::endl;
         std::cout << "model_options = " << model_options << std::endl;
+        std::cout << "dump_component_graph_file = " << dump_component_graph_file << std::endl;
+        std::cout << "output_partition = " << output_partition << std::endl;
         std::cout << "num_threads = " << world_size.thread << std::endl;
         std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
         std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
@@ -197,6 +201,7 @@ public:
         ser& timeBase;
         ser& partitioner;
         ser& dump_component_graph_file;
+        ser& output_partition;
         ser& output_config_graph;
         ser& output_dot;
         ser& dot_verbosity;

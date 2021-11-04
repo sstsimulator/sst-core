@@ -31,7 +31,8 @@ PythonConfigGraphOutput::generateParams(const Params& params)
     fprintf(outputFile, "{\n");
 
     bool firstItem = true;
-    for ( auto& key : params.getKeys() ) {
+    // for ( auto& key : params.getKeys() ) {
+    for ( auto& key : params.getLocalKeys() ) {
         char* esParamName = makeEscapeSafe(key.c_str());
         char* esValue     = makeEscapeSafe(params.find<std::string>(key).c_str());
 
@@ -67,9 +68,14 @@ void
 PythonConfigGraphOutput::generateCommonComponent(const char* objName, const ConfigComponent* comp)
 {
     if ( !comp->params.empty() ) {
+        // Add local params
         fprintf(outputFile, "%s.addParams(", objName);
         generateParams(comp->params);
         fprintf(outputFile, ")\n");
+        // Add global param sets
+        for ( auto x : comp->params.getSubscribedGlobalParamSets() ) {
+            fprintf(outputFile, "%s.addGlobalParamSet(\"%s\")\n", objName, x.c_str());
+        }
     }
 
     fprintf(outputFile, "%s.setCoordinates(", objName);
@@ -140,12 +146,16 @@ PythonConfigGraphOutput::generateSubComponent(const char* owner, const ConfigCom
 }
 
 void
-PythonConfigGraphOutput::generateComponent(const ConfigComponent* comp)
+PythonConfigGraphOutput::generateComponent(const ConfigComponent* comp, bool output_parition_info)
 {
     char* pyCompName = makePythonSafeWithPrefix(comp->name.c_str(), "comp_");
     char* esCompName = makeEscapeSafe(comp->name.c_str());
 
     fprintf(outputFile, "%s = sst.Component(\"%s\", \"%s\")\n", pyCompName, esCompName, comp->type.c_str());
+
+    if ( output_parition_info ) {
+        fprintf(outputFile, "%s.setRank(%d,%d)\n", pyCompName, comp->rank.rank, comp->rank.thread);
+    }
 
     generateCommonComponent(pyCompName, comp);
 
@@ -208,12 +218,27 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     fprintf(outputFile, "sst.setProgramOption(\"timebase\", \"%s\")\n", cfg->timeBase.c_str());
     fprintf(outputFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n\n", cfg->stopAtCycle.c_str());
 
+    // Output the global params
+    fprintf(outputFile, "# Define the global parameter sets:\n");
+    std::vector<std::string> global_param_sets = Params::getGlobalParamSetNames();
+    for ( auto& x : global_param_sets ) {
+        fprintf(outputFile, "sst.addGlobalParams(\"%s\", {\n", x.c_str());
+        for ( auto y : Params::getGlobalParamSet(x) ) {
+            // If the key is <set_name>, then we can skip since it's
+            // just metadata
+            if ( y.first != "<set_name>" )
+                fprintf(outputFile, "    \"%s\" : \"%s\",\n", y.first.c_str(), y.second.c_str());
+        }
+        fprintf(outputFile, "})\n");
+    }
+    fprintf(outputFile, "\n");
+
     // Output the graph
     fprintf(outputFile, "# Define the SST Components:\n");
 
     auto compMap = graph->getComponentMap();
     for ( auto& comp_itr : compMap ) {
-        generateComponent(comp_itr);
+        generateComponent(comp_itr, cfg->output_partition);
     }
 
     // Output general statistics options

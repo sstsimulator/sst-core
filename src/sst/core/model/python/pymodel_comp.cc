@@ -271,10 +271,9 @@ compSetSubComponent(PyObject* self, PyObject* args)
     ConfigComponent* c = getComp(self);
     if ( nullptr == c ) return nullptr;
 
-    ComponentId_t    subC_id = c->getNextSubComponentID();
-    ConfigComponent* sub     = c->addSubComponent(subC_id, name, type, slot);
+    ConfigComponent* sub = c->addSubComponent(name, type, slot);
     if ( nullptr != sub ) {
-        PyObject* argList = Py_BuildValue("Ok", self, subC_id);
+        PyObject* argList = Py_BuildValue("Ok", self, sub->id);
         PyObject* subObj  = PyObject_CallObject((PyObject*)&PyModel_SubComponentType, argList);
         Py_DECREF(argList);
         return subObj;

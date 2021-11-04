@@ -616,6 +616,65 @@ public:
     static void
     insert_global(const std::string& set, const key_type& key, const key_type& value, bool overwrite = true);
 
+
+    /**
+     * Get a named global parameter set.
+     *
+     * NOTE: this call is intended to only be used in SST Core and is
+     * not part of the public API with backward compatilibity
+     * guarantees
+     *
+     * @param name Name of the set to get
+     *
+     * @return returns a copy of the reqeusted global param set
+     *
+     */
+    static std::map<std::string, std::string> getGlobalParamSet(const std::string& name);
+
+
+    /**
+     * Get a vector of the names of available global parameter sets.
+     *
+     * NOTE: this call is intended to only be used in SST Core and is
+     * not part of the public API with backward compatilibity
+     * guarantees
+     *
+     * @return returns a vector of the names of available global param
+     * sets
+     *
+     */
+    static std::vector<std::string> getGlobalParamSetNames();
+
+
+    /**
+     * Get a vector of the local keys
+     *
+     * NOTE: this call is intended to only be used in SST Core and is
+     * not part of the public API with backward compatilibity
+     * guarantees
+     *
+     * @return returns a vector of the local keys in this Params
+     * object
+     *
+     */
+    std::vector<std::string> getLocalKeys() const;
+
+
+    /**
+     * Get a vector of the global param sets this Params object is
+     * subscribed to
+     *
+     * NOTE: this call is intended to only be used in SST Core and is
+     * not part of the public API with backward compatilibity
+     * guarantees
+     *
+     * @return returns a vector of the global param sets his Params
+     * object is subscribed to
+     *
+     */
+    std::vector<std::string> getSubscribedGlobalParamSets() const;
+
+
     void serialize_order(SST::Core::Serialization::serializer& ser) override;
     ImplementSerializable(SST::Params)
 
