@@ -58,6 +58,7 @@ Config::Config(RankInfo rankInfo)
     timeVortex                = "sst.timevortex.priority_queue";
     inter_thread_links        = false;
     dump_component_graph_file = "";
+    output_partition          = false;
 
     char* wd_buf = (char*)malloc(sizeof(char) * PATH_MAX);
     getcwd(wd_buf, PATH_MAX);
@@ -113,6 +114,11 @@ struct sstLongOpts_s
 
 #define DEF_ARGOPT(longName, argName, text, func) DEF_ARGOPT_SHORT(longName, 0, argName, text, func)
 
+#define DEF_ARGOPTVAL(longName, argName, text, func, valFunc)               \
+    {                                                                       \
+        { longName, optional_argument, 0, 0 }, argName, text, func, valFunc \
+    }
+
 static const struct sstLongOpts_s sstOptions[] = {
     /* visNoConfigDesc */
     DEF_FLAGOPT("help", 'h', "print help message", &Config::usage),
@@ -157,8 +163,11 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARGOPT("dot-verbosity", "INT", "amount of detail to include in the dot graph output", &Config::setDotVerbosity),
     DEF_ARGOPT("output-xml", "FILE", "file to write SST configuration graph (in XML format)", &Config::setWriteXML),
     DEF_ARGOPT("output-json", "FILE", "file to write SST configuration graph (in JSON format)", &Config::setWriteJSON),
-    DEF_ARGOPT(
-        "output-partition", "FILE", "file to write SST component partitioning information", &Config::setWritePartition),
+    DEF_ARGOPTVAL(
+        "output-partition", "[FILE]",
+        "file to write SST component partitioning information.  When used without an argument and in conjuction with "
+        "--output-json or --output-config options, will cause paritition information to be added to graph output.",
+        &Config::setWritePartition, &Config::setWritePartitionFile),
     DEF_ARGOPT("output-prefix-core", "STR", "set the SST::Output prefix for the core", &Config::setOutputPrefix),
 #ifdef USE_MEMPOOL
     DEF_ARGOPT(
@@ -569,7 +578,13 @@ Config::setWriteJSON(const std::string& arg)
     return true;
 }
 bool
-Config::setWritePartition(const std::string& arg)
+Config::setWritePartition()
+{
+    output_partition = true;
+    return true;
+}
+bool
+Config::setWritePartitionFile(const std::string& arg)
 {
     dump_component_graph_file = arg;
     return true;

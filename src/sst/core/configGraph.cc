@@ -426,8 +426,9 @@ ConfigComponent::setStatisticLoadLevel(uint8_t level, bool recursively)
 }
 
 ConfigComponent*
-ConfigComponent::addSubComponent(ComponentId_t sid, const std::string& name, const std::string& type, int slot_num)
+ConfigComponent::addSubComponent(const std::string& name, const std::string& type, int slot_num)
 {
+    ComponentId_t sid = getNextSubComponentID();
     /* Check for existing subComponent with this name */
     for ( auto i : subComponents ) {
         if ( i->name == name && i->slot_num == slot_num ) return nullptr;
@@ -489,7 +490,7 @@ ConfigComponent::findSubComponentByName(const std::string& name)
                 return sc;
             }
             else {
-                return sc->findSubComponentByName(slot.substr(colon_index + 1, std::string::npos));
+                return sc->findSubComponentByName(name.substr(colon_index + 1, std::string::npos));
             }
         }
     }
