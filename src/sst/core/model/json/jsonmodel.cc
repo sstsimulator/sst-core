@@ -13,12 +13,6 @@
 
 #include "sst/core/model/json/jsonmodel.h"
 
-#ifdef SST_CONFIG_HAVE_MPI
-DISABLE_WARN_MISSING_OVERRIDE
-#include <mpi.h>
-REENABLE_WARNING
-#endif
-
 #include <string>
 
 DISABLE_WARN_STRICT_ALIASING
