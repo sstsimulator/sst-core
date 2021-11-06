@@ -272,7 +272,7 @@ class SSTTestCase(unittest.TestCase):
         check_param_type("sdl_file", sdl_file, str)
         check_param_type("out_file", out_file, str)
         if err_file is not None:
-            check_param_type("err_file", out_file, str)
+            check_param_type("err_file", err_file, str)
         if set_cwd is not None:
             check_param_type("set_cwd", set_cwd, str)
         check_param_type("mpi_out_files", mpi_out_files, str)
