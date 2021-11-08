@@ -29,5 +29,9 @@ sst_core_python_sources = \
 	model/python/pymodel_statgroup.h \
 	model/python/pymodel_statgroup.cc
 
+sst_core_json_sources = \
+  model/json/jsonmodel.h \
+  model/json/jsonmodel.cc
+
 libexec_SCRIPTS = model/xmlToPython.py
 EXTRA_DIST += model/xmlToPython.py

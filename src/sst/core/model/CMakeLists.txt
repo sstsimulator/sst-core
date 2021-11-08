@@ -8,6 +8,7 @@
 #
 
 add_subdirectory(python)
+add_subdirectory(json)
 
 add_library(modelCore OBJECT sstmodel.cc element_python.cc)
 target_include_directories(modelCore PUBLIC ${SST_TOP_SRC_DIR}/src)

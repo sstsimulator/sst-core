@@ -316,6 +316,8 @@ endif
 sst_core_sources += $(sst_core_python_sources)
 nobase_dist_sst_HEADERS += $(sst_core_python_headers)
 
+sst_core_sources += $(sst_core_json_sources)
+
 if !SST_COMPILE_OSX
 sstsim_x_LDADD += -lrt
 sstinfo_x_LDADD += -lrt
