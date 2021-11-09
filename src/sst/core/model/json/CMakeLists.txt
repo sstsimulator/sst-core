@@ -12,7 +12,7 @@ add_library(
   jsonmodel.cc)
 
 target_include_directories(modeljson PUBLIC ${SST_TOP_SRC_DIR}/src/)
-target_link_libraries(modeljson PRIVATE sst-config-headers)
+target_link_libraries(modeljson PRIVATE sst-config-headers nlohjson)
 
 if(MPI_FOUND)
   target_link_libraries(modeljson PRIVATE MPI::MPI_CXX)
