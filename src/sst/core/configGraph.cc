@@ -155,7 +155,7 @@ ConfigComponent::print(std::ostream& os) const
 }
 
 ConfigComponent*
-ConfigComponent::cloneWithoutLinks() const
+ConfigComponent::cloneWithoutLinks(ConfigGraph* new_graph) const
 {
     ConfigComponent* ret  = new ConfigComponent();
     ret->id               = id;
@@ -170,14 +170,16 @@ ConfigComponent::cloneWithoutLinks() const
     ret->enabledStatNames = enabledStatNames;
     ret->enabledAllStats  = enabledAllStats;
     ret->coords           = coords;
+    ret->nextSubID        = nextSubID;
+    ret->graph            = new_graph;
     for ( auto i : subComponents ) {
-        ret->subComponents.emplace_back(i->cloneWithoutLinks());
+        ret->subComponents.emplace_back(i->cloneWithoutLinks(new_graph));
     }
     return ret;
 }
 
 ConfigComponent*
-ConfigComponent::cloneWithoutLinksOrParams() const
+ConfigComponent::cloneWithoutLinksOrParams(ConfigGraph* new_graph) const
 {
     ConfigComponent* ret = new ConfigComponent();
     ret->id              = id;
@@ -188,10 +190,21 @@ ConfigComponent::cloneWithoutLinksOrParams() const
     ret->rank            = rank;
     ret->statLoadLevel   = statLoadLevel;
     ret->coords          = coords;
+    ret->nextSubID       = nextSubID;
+    ret->graph           = new_graph;
     for ( auto i : subComponents ) {
-        ret->subComponents.emplace_back(i->cloneWithoutLinksOrParams());
+        ret->subComponents.emplace_back(i->cloneWithoutLinksOrParams(new_graph));
     }
     return ret;
+}
+
+void
+ConfigComponent::setConfigGraphPointer(ConfigGraph* graph_ptr)
+{
+    graph = graph_ptr;
+    for ( auto* x : subComponents ) {
+        x->setConfigGraphPointer(graph_ptr);
+    }
 }
 
 ComponentId_t
@@ -853,7 +866,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
     for ( ConfigComponentMap_t::iterator it = comps.begin(); it != comps.end(); ++it ) {
         const ConfigComponent* comp = *it;
 
-        if ( rank_set.find(comp->rank.rank) != rank_set.end() ) { graph->comps.insert(comp->cloneWithoutLinks()); }
+        if ( rank_set.find(comp->rank.rank) != rank_set.end() ) { graph->comps.insert(comp->cloneWithoutLinks(graph)); }
         else {
             // See if the other side of any of component's links is in
             // set, if so, add to graph
@@ -863,7 +876,7 @@ ConfigGraph::getSubGraph(const std::set<uint32_t>& rank_set)
                                                ? link.component[1]
                                                : link.component[0];
                 if ( rank_set.find(comps[COMPONENT_ID_MASK(remote)]->rank.rank) != rank_set.end() ) {
-                    graph->comps.insert(comp->cloneWithoutLinksOrParams());
+                    graph->comps.insert(comp->cloneWithoutLinksOrParams(graph));
                     break;
                 }
             }
@@ -1067,6 +1080,14 @@ ConfigGraph::getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>
             // smaller.
             if ( group.find(id) == group.end() ) { getConnectedNoCutComps(id, group); }
         }
+    }
+}
+
+void
+ConfigGraph::setComponentConfigGraphPointers()
+{
+    for ( auto* x : comps ) {
+        x->setConfigGraphPointer(this);
     }
 }
 

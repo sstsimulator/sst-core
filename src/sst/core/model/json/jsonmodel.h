@@ -76,47 +76,12 @@ private:
     typedef std::vector<std::tuple<std::string, ComponentId_t, ConfigComponent*>> CompTuple;
     CompTuple                                                                     configGraphTuple;
 
-    void          recursiveSubcomponent(ConfigComponent* Parent, nlohmann::basic_json<> compArray);
-    void          discoverProgramOptions(json jFile);
-    void          discoverComponents(json jFile);
-    void          discoverLinks(json jFile);
-    void          discoverGlobalParams(json jFile);
-    ComponentId_t findComponentIdByName(std::string Name);
-
-    /// Contains a vector of all the known global configuration options
-    /// This list is derived from ~/src/sst/core/config.cc
-    const std::vector<std::string> programOpts = { "help",
-                                                   "verbose",
-                                                   "version",
-                                                   "disable-signal-handlers",
-                                                   "no-env-config",
-                                                   "print-timing-info",
-                                                   "print-env",
-                                                   "sdl-file",
-                                                   "stopAtCycle",
-                                                   "stopAfter",
-                                                   "debug-file",
-                                                   "lib-path",
-                                                   "add-lib-path",
-                                                   "run-mode",
-                                                   "stop-at",
-                                                   "heartbeat-period",
-                                                   "timebase",
-                                                   "partitioner",
-                                                   "timeVortex",
-                                                   "output-directory",
-                                                   "output-config",
-                                                   "output-dot",
-                                                   "dot-verbosity",
-                                                   "output-xml",
-                                                   "output-json",
-                                                   "output-partition",
-                                                   "output-prefix-core",
-#ifdef USE_MEMPOOL
-                                                   "output-undeleted-core",
-#endif
-                                                   "model-options",
-                                                   "num-threads" };
+    void          recursiveSubcomponent(ConfigComponent* Parent, const nlohmann::basic_json<>& compArray);
+    void          discoverProgramOptions(const json& jFile);
+    void          discoverComponents(const json& jFile);
+    void          discoverLinks(const json& jFile);
+    void          discoverGlobalParams(const json& jFile);
+    ComponentId_t findComponentIdByName(const std::string& Name);
 };
 
 } // namespace Core

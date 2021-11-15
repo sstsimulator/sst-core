@@ -123,7 +123,11 @@ to_json(json::ordered_json& j, LinkConfPair const& pair)
     auto const* graph = pair.graph;
 
     // These accesses into compMap are not checked
-    j                       = json::ordered_json { { "name", link.name } };
+    if ( link.no_cut )
+        j = json::ordered_json { { "name", link.name }, { "noCut", true } };
+    else
+        j = json::ordered_json { { "name", link.name } };
+
     j["left"]["component"]  = graph->findComponent(link.component[0])->getFullName();
     j["left"]["port"]       = link.port[0];
     j["left"]["latency"]    = link.latency_str[0];
@@ -139,10 +143,24 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
 {
     if ( nullptr == outputFile ) { throw ConfigGraphOutputException("Output file is not open for writing"); }
 
-    auto compMap = graph->getComponentMap();
-    auto linkMap = graph->getLinkMap();
+    const auto& compMap = graph->getComponentMap();
+    const auto& linkMap = graph->getLinkMap();
 
     json::ordered_json outputJson;
+
+    // Put in the program options
+    outputJson["program_options"]["verbose"]     = std::to_string(cfg->verbose);
+    outputJson["program_options"]["stopAtCycle"] = cfg->stopAtCycle;
+    if ( cfg->print_timing ) outputJson["program_options"]["print-timing-info"] = "";
+    // Ignore stopAfter for now
+    // outputJson["program_options"]["stopAfter"] = cfg->stopAfterSec;
+    outputJson["program_options"]["heartbeat-period"] = cfg->heartbeatPeriod;
+    outputJson["program_options"]["timebase"]         = cfg->timeBase;
+    outputJson["program_options"]["partitioner"]      = cfg->partitioner;
+    outputJson["program_options"]["timeVortex"]       = cfg->timeVortex;
+    if ( cfg->inter_thread_links ) outputJson["program_options"]["inter-thread-links"] = "";
+    outputJson["program_options"]["output-prefix-core"] = cfg->output_core_prefix;
+    outputJson["program_options"]["model-options"]      = cfg->model_options;
 
     // Put in the global param sets
     for ( const auto& set : Params::getGlobalParamSetNames() ) {
