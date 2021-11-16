@@ -36,7 +36,7 @@ protected:
     void         generateComponent(const ConfigComponent* comp, bool output_parition_info);
     void         generateStatGroup(const ConfigGraph* graph, const ConfigStatGroup& grp);
 
-    const std::string& getLinkObject(LinkId_t id);
+    const std::string& getLinkObject(LinkId_t id, bool no_cut);
 
     char* makePythonSafeWithPrefix(const std::string& name, const std::string& prefix) const;
     void  makeBufferPythonSafe(char* buffer) const;
@@ -47,6 +47,7 @@ protected:
 
 private:
     ConfigGraph*                    graph;
+    RankInfo                        myRank;
     std::map<LinkId_t, std::string> linkMap;
 };
 

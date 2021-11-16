@@ -45,7 +45,7 @@ SSTJSONModelDefinition::~SSTJSONModelDefinition()
 }
 
 ComponentId_t
-SSTJSONModelDefinition::findComponentIdByName(std::string Name)
+SSTJSONModelDefinition::findComponentIdByName(const std::string& Name)
 {
     ComponentId_t    Id   = -1;
     ConfigComponent* Comp = nullptr;
@@ -74,7 +74,7 @@ SSTJSONModelDefinition::findComponentIdByName(std::string Name)
 }
 
 void
-SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, nlohmann::basic_json<> compArray)
+SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, const nlohmann::basic_json<>& compArray)
 {
     std::string      Name;
     std::string      Type;
@@ -82,31 +82,30 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, nlohmann:
     ConfigComponent* Comp = nullptr;
     int              Slot = 0;
 
+    auto subs = compArray.find("subcomponents");
+    if ( subs == compArray.end() ) return; // No subcomponents
     for ( auto& subArray : compArray["subcomponents"] ) {
         Slot = 0;
 
         // -- Slot Name
-        try {
-            Name = subArray["slot_name"];
-        }
-        catch ( std::out_of_range& e ) {
+        auto x = subArray.find("slot_name");
+        if ( x != subArray.end() ) { Name = x.value(); }
+        else {
             output->fatal(
                 CALL_INFO, 1, "Error discovering subcomponent slot name from script: %s\n", scriptName.c_str());
         }
 
         // -- Type
-        try {
-            Type = subArray["type"];
-        }
-        catch ( std::out_of_range& e ) {
+        x = subArray.find("type");
+        if ( x != subArray.end() ) { Type = x.value(); }
+        else {
             output->fatal(CALL_INFO, 1, "Error discovering subcomponent type from script: %s\n", scriptName.c_str());
         }
 
-        // -- Slot
-        try {
-            Slot = subArray["slot_number"];
-        }
-        catch ( std::out_of_range& e ) {
+        // -- Slot index
+        x = subArray.find("slot_number");
+        if ( x != subArray.end() ) { Slot = x.value(); }
+        else {
             output->fatal(
                 CALL_INFO, 1, "Error discovering subcomponent slot number from script: %s\n", scriptName.c_str());
         }
@@ -118,28 +117,29 @@ SSTJSONModelDefinition::recursiveSubcomponent(ConfigComponent* Parent, nlohmann:
         configGraphTuple.push_back(std::tuple<std::string, ComponentId_t, ConfigComponent*>(Name, Id, Comp));
 
         // read all the parameters
-        for ( auto& paramArray : subArray["params"].items() ) {
-            Comp->addParameter(paramArray.key(), paramArray.value(), false);
+        if ( subArray.contains("params") ) {
+            for ( auto& paramArray : subArray["params"].items() ) {
+                Comp->addParameter(paramArray.key(), paramArray.value(), false);
+            }
         }
 
         // read all the global parameters
-        for ( auto& globalArray : subArray["params_global_sets"].items() ) {
-            Comp->addGlobalParamSet(globalArray.value().get<std::string>());
+        if ( subArray.contains("params_global_sets") ) {
+            for ( auto& globalArray : subArray["params_global_sets"].items() ) {
+                Comp->addGlobalParamSet(globalArray.value().get<std::string>());
+            }
         }
 
         // recursively build up the subcomponents
-        try {
+        if ( subArray.contains("subcomponents") ) {
             auto& subsubArray = subArray["subcomponents"];
             if ( subsubArray.size() > 0 ) { recursiveSubcomponent(Comp, subArray); }
-        }
-        catch ( std::out_of_range& e ) {
-            // do nothing, its ok not to have subcomponents
         }
     }
 }
 
 void
-SSTJSONModelDefinition::discoverComponents(json jFile)
+SSTJSONModelDefinition::discoverComponents(const json& jFile)
 {
     std::string      Name;
     std::string      Type;
@@ -148,20 +148,22 @@ SSTJSONModelDefinition::discoverComponents(json jFile)
     uint32_t         rank   = 0;
     uint32_t         thread = 0;
 
+    if ( !jFile.contains("components") ) {
+        output->fatal(CALL_INFO, 1, "Error, no \"components\" section in json file: %s\n", scriptName.c_str());
+    }
+
     for ( auto& compArray : jFile["components"] ) {
         // -- Name
-        try {
-            Name = compArray["name"];
-        }
-        catch ( std::out_of_range& e ) {
+        auto x = compArray.find("name");
+        if ( x != compArray.end() ) { Name = x.value(); }
+        else {
             output->fatal(CALL_INFO, 1, "Error discovering component name from script: %s\n", scriptName.c_str());
         }
 
         // -- Type
-        try {
-            Type = compArray["type"];
-        }
-        catch ( std::out_of_range& e ) {
+        x = compArray.find("type");
+        if ( x != compArray.end() ) { Type = x.value(); }
+        else {
             output->fatal(CALL_INFO, 1, "Error discovering component type from script: %s\n", scriptName.c_str());
         }
 
@@ -172,20 +174,26 @@ SSTJSONModelDefinition::discoverComponents(json jFile)
         configGraphTuple.push_back(std::tuple<std::string, ComponentId_t, ConfigComponent*>(Name, Id, Comp));
 
         // read all the parameters
-        for ( auto& paramArray : compArray["params"].items() ) {
-            Comp->addParameter(paramArray.key(), paramArray.value(), false);
+        if ( compArray.contains("params") ) {
+            for ( auto& paramArray : compArray["params"].items() ) {
+                Comp->addParameter(paramArray.key(), paramArray.value(), false);
+            }
         }
 
         // read all the global parameters
-        for ( auto& globalArray : compArray["params_global_sets"].items() ) {
-            Comp->addGlobalParamSet(globalArray.value().get<std::string>());
+        if ( compArray.contains("params_global_sets") ) {
+            for ( auto& globalArray : compArray["params_global_sets"].items() ) {
+                Comp->addGlobalParamSet(globalArray.value().get<std::string>());
+            }
         }
 
         // read the partition info
-        for ( auto& partArray : compArray["partition"].items() ) {
-            if ( partArray.key() == "rank" ) { rank = partArray.value(); }
-            else if ( partArray.key() == "thread" ) {
-                thread = partArray.value();
+        if ( compArray.contains("partition") ) {
+            for ( auto& partArray : compArray["partition"].items() ) {
+                if ( partArray.key() == "rank" ) { rank = partArray.value(); }
+                else if ( partArray.key() == "thread" ) {
+                    thread = partArray.value();
+                }
             }
         }
 
@@ -203,149 +211,102 @@ SSTJSONModelDefinition::discoverComponents(json jFile)
 }
 
 void
-SSTJSONModelDefinition::discoverLinks(json jFile)
+SSTJSONModelDefinition::discoverLinks(const json& jFile)
 {
     std::string   Name;
-    std::string   LeftComp;
-    std::string   LeftPort;
-    std::string   LeftLatency;
-    std::string   RightComp;
-    std::string   RightPort;
-    std::string   RightLatency;
+    std::string   Comp[2];
+    std::string   Port[2];
+    std::string   Latency[2];
     bool          NoCut = false;
     ComponentId_t LinkID;
 
+    if ( !jFile.contains("links") ) {
+        output->fatal(CALL_INFO, 1, "Error, no \"links\" section in json file: %s\n", scriptName.c_str());
+    }
+
     for ( auto& linkArray : jFile["links"] ) {
         // -- Name
-        try {
-            Name = linkArray["name"];
-        }
-        catch ( std::out_of_range& e ) {
+        auto x = linkArray.find("name");
+        if ( x != linkArray.end() ) { Name = x.value(); }
+        else {
             output->fatal(CALL_INFO, 1, "Error discovering link name from script: %s\n", scriptName.c_str());
         }
 
-        // -- Left Component
-        try {
-            LeftComp = linkArray["left"].at("component");
-        }
-        catch ( std::out_of_range& e ) {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering left link component for Link=%s from script: %s\n", Name.c_str(),
-                scriptName.c_str());
-        }
-
-        // -- Left Port
-        try {
-            LeftPort = linkArray["left"].at("port");
-        }
-        catch ( std::out_of_range& e ) {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering left link port for Link=%s from script: %s\n", Name.c_str(),
-                scriptName.c_str());
-        }
-
-        // -- Left Latency
-        try {
-            LeftLatency = linkArray["left"].at("latency");
-        }
-        catch ( std::out_of_range& e ) {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering left link latency for Link=%s from script: %s\n", Name.c_str(),
-                scriptName.c_str());
-        }
-
         // -- NoCut
-        try {
-            if ( linkArray["left"].find("noCut") != linkArray["left"].end() ) { NoCut = linkArray["left"].at("noCut"); }
-            else {
-                NoCut = false;
-            }
-        }
-        catch ( std::out_of_range& e ) {
-            // ignore the catch, default to false;
+        x = linkArray.find("noCut");
+        if ( x != linkArray.end() ) { NoCut = x.value(); }
+        else {
             NoCut = false;
         }
 
-        // -- Add the Left Link
-        LinkID = findComponentIdByName(LeftComp);
-        graph->addLink(LinkID, Name, LeftPort, LeftLatency, NoCut);
-
-        // -- Right Component
-        try {
-            RightComp = linkArray["right"].at("component");
-        }
-        catch ( std::out_of_range& e ) {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering right link component for Link=%s from script: %s\n", Name.c_str(),
-                scriptName.c_str());
-        }
-
-        // -- Right Port
-        try {
-            RightPort = linkArray["right"].at("port");
-        }
-        catch ( std::out_of_range& e ) {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering right link port for Link=%s from script: %s\n", Name.c_str(),
-                scriptName.c_str());
-        }
-
-        // -- Left Latency
-        try {
-            RightLatency = linkArray["right"].at("latency");
-        }
-        catch ( std::out_of_range& e ) {
-            output->fatal(
-                CALL_INFO, 1, "Error discovering right link latency for Link=%s from script: %s\n", Name.c_str(),
-                scriptName.c_str());
-        }
-
-        // -- NoCut
-        try {
-            if ( linkArray["right"].find("noCut") != linkArray["right"].end() ) {
-                NoCut = linkArray["right"].at("noCut");
+        // -- Components
+        std::string sides[2] = { "left", "right" };
+        for ( int i = 0; i < 2; ++i ) {
+            auto side = linkArray.find(sides[i]);
+            if ( side == linkArray.end() ) {
+                output->fatal(
+                    CALL_INFO, 1, "Error discovering %s link component for Link=%s from script: %s\n", sides[i].c_str(),
+                    Name.c_str(), scriptName.c_str());
             }
+
+            auto item = side->find("component");
+            if ( item != side->end() ) { Comp[i] = item.value(); }
             else {
-                NoCut = false;
+                output->fatal(
+                    CALL_INFO, 1, "Error finding component field of %s link component for Link=%s from script: %s\n",
+                    sides[i].c_str(), Name.c_str(), scriptName.c_str());
             }
-        }
-        catch ( std::out_of_range& e ) {
-            // ignore the catch, default to false;
-            NoCut = false;
+
+            // -- Port
+            item = side->find("port");
+            if ( item != side->end() ) { Port[i] = item.value(); }
+            else {
+                output->fatal(
+                    CALL_INFO, 1, "Error finding port field of %s link component for Link=%s from script: %s\n",
+                    sides[i].c_str(), Name.c_str(), scriptName.c_str());
+            }
+
+            // -- Latency
+            item = side->find("latency");
+            if ( item != side->end() ) { Latency[i] = item.value(); }
+            else {
+                output->fatal(
+                    CALL_INFO, 1, "Error finding latency field of %s link component for Link=%s from script: %s\n",
+                    sides[i].c_str(), Name.c_str(), scriptName.c_str());
+            }
         }
 
         // -- Add the Left Link
-        LinkID = findComponentIdByName(RightComp);
-        graph->addLink(LinkID, Name, RightPort, RightLatency, NoCut);
+        LinkID = findComponentIdByName(Comp[0]);
+        graph->addLink(LinkID, Name, Port[0], Latency[0], NoCut);
+
+        // -- Add the Right Link
+        LinkID = findComponentIdByName(Comp[1]);
+        graph->addLink(LinkID, Name, Port[0], Latency[0], NoCut);
     }
 }
 
 void
-SSTJSONModelDefinition::discoverProgramOptions(json jFile)
+SSTJSONModelDefinition::discoverProgramOptions(const json& jFile)
 {
-    size_t idx = 0;
-
-    while ( !jFile["program_options"][idx].is_null() ) {
-        for ( auto& it : jFile["program_options"][idx].items() ) {
-            for ( auto global : programOpts ) {
-                if ( it.key() == global ) {
-                    config->setConfigEntryFromModel(global, jFile["program_options"][idx][global].get<std::string>());
-                }
-            }
+    if ( jFile.contains("program_options") ) {
+        for ( auto& option : jFile["program_options"].items() ) {
+            config->setConfigEntryFromModel(option.key(), option.value());
         }
-        idx++;
     }
 }
 
 void
-SSTJSONModelDefinition::discoverGlobalParams(json jFile)
+SSTJSONModelDefinition::discoverGlobalParams(const json& jFile)
 {
     std::string GlobalName;
 
-    for ( auto& gp : jFile["global_params"].items() ) {
-        GlobalName = gp.key();
-        for ( auto& param : jFile["global_params"].at(GlobalName).items() ) {
-            graph->addGlobalParam(GlobalName, param.key(), param.value().get<std::string>());
+    if ( jFile.contains("global_params") ) {
+        for ( auto& gp : jFile["global_params"].items() ) {
+            GlobalName = gp.key();
+            for ( auto& param : jFile["global_params"].at(GlobalName).items() ) {
+                graph->addGlobalParam(GlobalName, param.key(), param.value().get<std::string>());
+            }
         }
     }
 }

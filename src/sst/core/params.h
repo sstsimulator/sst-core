@@ -39,6 +39,11 @@ class ConfigGraph;
  * Stores key-value pairs as std::strings and provides
  * a templated find method for finding values and converting
  * them to arbitrary types (@see find()).
+ *
+ * NOTE: Params objects should only be used for simulation
+ * initialization, a Params object should not be used as part of an
+ * event, as serialization of Params objects only works correctly as
+ * part of ConfigGraph serialization.
  */
 class Params : public SST::Core::Serialization::serializable
 {
