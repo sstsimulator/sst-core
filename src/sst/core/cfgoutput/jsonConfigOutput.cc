@@ -151,7 +151,7 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     // Put in the program options
     outputJson["program_options"]["verbose"]     = std::to_string(cfg->verbose);
     outputJson["program_options"]["stopAtCycle"] = cfg->stopAtCycle;
-    if ( cfg->print_timing ) outputJson["program_options"]["print-timing-info"] = "";
+    if ( cfg->print_timing ) outputJson["program_options"]["print-timing-info"] = true;
     // Ignore stopAfter for now
     // outputJson["program_options"]["stopAfter"] = cfg->stopAfterSec;
     outputJson["program_options"]["heartbeat-period"] = cfg->heartbeatPeriod;

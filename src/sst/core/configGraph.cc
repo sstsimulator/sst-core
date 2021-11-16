@@ -103,7 +103,7 @@ ConfigStatGroup::setFrequency(const std::string& freq)
 std::pair<bool, std::string>
 ConfigStatGroup::verifyStatsAndComponents(const ConfigGraph* graph)
 {
-    for ( auto& id : components ) {
+    for ( auto id : components ) {
         const ConfigComponent* comp = graph->findComponent(id);
         if ( !comp ) {
             std::stringstream ss;
@@ -149,7 +149,7 @@ ConfigComponent::print(std::ostream& os) const
         iter->second.params.print_all_params(os, "      ");
     }
     os << "  SubComponents:\n";
-    for ( auto sc : subComponents ) {
+    for ( auto* sc : subComponents ) {
         sc->print(os);
     }
 }
@@ -172,7 +172,7 @@ ConfigComponent::cloneWithoutLinks(ConfigGraph* new_graph) const
     ret->coords           = coords;
     ret->nextSubID        = nextSubID;
     ret->graph            = new_graph;
-    for ( auto i : subComponents ) {
+    for ( auto* i : subComponents ) {
         ret->subComponents.emplace_back(i->cloneWithoutLinks(new_graph));
     }
     return ret;
@@ -192,7 +192,7 @@ ConfigComponent::cloneWithoutLinksOrParams(ConfigGraph* new_graph) const
     ret->coords          = coords;
     ret->nextSubID       = nextSubID;
     ret->graph           = new_graph;
-    for ( auto i : subComponents ) {
+    for ( auto* i : subComponents ) {
         ret->subComponents.emplace_back(i->cloneWithoutLinksOrParams(new_graph));
     }
     return ret;
@@ -257,7 +257,7 @@ void
 ConfigComponent::setRank(RankInfo r)
 {
     rank = r;
-    for ( auto i : subComponents ) {
+    for ( auto* i : subComponents ) {
         i->setRank(r);
     }
 }
@@ -266,7 +266,7 @@ void
 ConfigComponent::setWeight(double w)
 {
     weight = w;
-    for ( auto i : subComponents ) {
+    for ( auto* i : subComponents ) {
         i->setWeight(w);
     }
 }
@@ -292,7 +292,7 @@ ConfigStatistic*
 ConfigComponent::createStatistic()
 {
     StatisticId_t stat_id = getNextStatisticID();
-    ;
+
     auto*            parent = getParent();
     ConfigStatistic* cs     = nullptr;
     if ( parent ) { cs = parent->insertStatistic(stat_id); }
@@ -310,7 +310,7 @@ ConfigComponent::enableStatistic(const std::string& statisticName, const SST::Pa
     //       a corresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
     if ( recursively ) {
-        for ( auto& sc : subComponents ) {
+        for ( auto* sc : subComponents ) {
             sc->enableStatistic(statisticName, params, true);
         }
     }
@@ -391,7 +391,7 @@ ConfigComponent::addStatisticParameter(
     //       a corresponding params entry in enabledStatParams list.  The two
     //       lists will always be the same size.
     if ( recursively ) {
-        for ( auto sc : subComponents ) {
+        for ( auto* sc : subComponents ) {
             sc->addStatisticParameter(statisticName, param, value, true);
         }
     }
@@ -412,7 +412,7 @@ void
 ConfigComponent::setStatisticParameters(const std::string& statisticName, const Params& params, bool recursively)
 {
     if ( recursively ) {
-        for ( auto sc : subComponents ) {
+        for ( auto* sc : subComponents ) {
             sc->setStatisticParameters(statisticName, params, true);
         }
     }
@@ -432,7 +432,7 @@ ConfigComponent::setStatisticLoadLevel(uint8_t level, bool recursively)
     statLoadLevel = level;
 
     if ( recursively ) {
-        for ( auto sc : subComponents ) {
+        for ( auto* sc : subComponents ) {
             sc->setStatisticLoadLevel(level, true);
         }
     }
@@ -443,7 +443,7 @@ ConfigComponent::addSubComponent(const std::string& name, const std::string& typ
 {
     ComponentId_t sid = getNextSubComponentID();
     /* Check for existing subComponent with this name */
-    for ( auto i : subComponents ) {
+    for ( auto* i : subComponents ) {
         if ( i->name == name && i->slot_num == slot_num ) return nullptr;
     }
 
@@ -466,7 +466,7 @@ ConfigComponent::findSubComponent(ComponentId_t sid) const
 {
     if ( sid == this->id ) return this;
 
-    for ( auto s : subComponents ) {
+    for ( auto* s : subComponents ) {
         const ConfigComponent* res = s->findSubComponent(sid);
         if ( res != nullptr ) return res;
     }
@@ -495,7 +495,7 @@ ConfigComponent::findSubComponentByName(const std::string& name)
     }
 
     // Now, see if we have something in this slot and slot_num
-    for ( auto sc : subComponents ) {
+    for ( auto* sc : subComponents ) {
         if ( sc->name == slot && sc->slot_num == slot_num ) {
             // Found the subcomponent
             if ( colon_index == std::string::npos ) {
@@ -553,7 +553,7 @@ ConfigComponent::allLinks() const
 {
     std::vector<LinkId_t> res;
     res.insert(res.end(), links.begin(), links.end());
-    for ( auto sc : subComponents ) {
+    for ( auto* sc : subComponents ) {
         std::vector<LinkId_t> s = sc->allLinks();
         res.insert(res.end(), s.begin(), s.end());
     }
@@ -599,7 +599,7 @@ ConfigComponent::checkPorts() const
     }
 
     // Now loop over all subcomponents and call the check function
-    for ( auto subcomp : subComponents ) {
+    for ( auto* subcomp : subComponents ) {
         subcomp->checkPorts();
     }
 }

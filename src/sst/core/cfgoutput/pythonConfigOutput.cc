@@ -225,7 +225,7 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     fprintf(outputFile, "# (These reflect the settings from orininal run and are not necessary in all files)\n");
     fprintf(outputFile, "sst.setProgramOption(\"verbose\", \"%" PRIu32 "\")\n", cfg->verbose);
     fprintf(outputFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n", cfg->stopAtCycle.c_str());
-    if ( cfg->print_timing ) fprintf(outputFile, "sst.setProgramOption(\"print-timing-info\", \"\")\n");
+    if ( cfg->print_timing ) fprintf(outputFile, "sst.setProgramOption(\"print-timing-info\", \"true\")\n");
     // Ignore stopAfter for now
     // fprintf(outputFile, "sst.setProgramOption(\"stopAfter\", \"%" PRIu32 "\")\n", cfg->stopAfterSec);
     fprintf(outputFile, "sst.setProgramOption(\"heartbeat-period\", \"%s\")\n", cfg->heartbeatPeriod.c_str());

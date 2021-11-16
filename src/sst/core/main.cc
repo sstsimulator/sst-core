@@ -164,6 +164,14 @@ do_link_preparation(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInf
     sim->prepareLinks(*graph, myRank, min_part);
 }
 
+static std::string
+addRankToFileName(const std::string& file_name, int rank)
+{
+    int         index = file_name.find_last_of(".");
+    std::string base  = file_name.substr(0, index);
+    std::string ext   = file_name.substr(index);
+    return base + std::to_string(rank) + ext;
+}
 
 static void
 doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, const RankInfo& world_size)
@@ -176,10 +184,7 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
         std::string file_name(cfg->output_config_graph);
         if ( cfg->parallel_output && world_size.rank != 1 ) {
             // Append rank number to base filename
-            int         index = file_name.find_last_of(".");
-            std::string base  = file_name.substr(0, index);
-            std::string ext   = file_name.substr(index);
-            file_name         = base + std::to_string(myRank.rank) + ext;
+            file_name = addRankToFileName(file_name, myRank.rank);
         }
         graphOutputs.push_back(new PythonConfigGraphOutput(file_name.c_str()));
     }
@@ -195,10 +200,7 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
         std::string file_name(cfg->output_json);
         if ( cfg->parallel_output ) {
             // Append rank number to base filename
-            int         index = file_name.find_last_of(".");
-            std::string base  = file_name.substr(0, index);
-            std::string ext   = file_name.substr(index);
-            file_name         = base + std::to_string(myRank.rank) + ext;
+            file_name = addRankToFileName(file_name, myRank.rank);
         }
         graphOutputs.push_back(new JSONConfigGraphOutput(file_name.c_str()));
     }
@@ -406,12 +408,7 @@ main(int argc, char* argv[])
     }
     world_size.thread = cfg.getNumThreads();
 
-    if ( cfg.parallel_load && mysize != 1 ) {
-        int         index = cfg.configFile.find_last_of(".");
-        std::string base  = cfg.configFile.substr(0, index);
-        std::string ext   = cfg.configFile.substr(index);
-        cfg.configFile    = base + std::to_string(myRank.rank) + ext;
-    }
+    if ( cfg.parallel_load && mysize != 1 ) { cfg.configFile = addRankToFileName(cfg.configFile, myRank.rank); }
     cfg.checkConfigFile();
 
     // Create the factory.  This may be needed to load an external model definition
