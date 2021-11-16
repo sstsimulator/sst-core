@@ -166,7 +166,7 @@ do_link_preparation(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInf
 
 
 static void
-doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank)
+doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, const RankInfo& world_size)
 {
     std::vector<ConfigGraphOutput*> graphOutputs;
 
@@ -174,7 +174,7 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank)
     if ( cfg->output_config_graph != "" ) {
         // See if we are doing parallel output
         std::string file_name(cfg->output_config_graph);
-        if ( cfg->parallel_output ) {
+        if ( cfg->parallel_output && world_size.rank != 1 ) {
             // Append rank number to base filename
             int         index = file_name.find_last_of(".");
             std::string base  = file_name.substr(0, index);
@@ -729,7 +729,7 @@ main(int argc, char* argv[])
 #endif
     ////// End Broadcast Graph //////
 
-    if ( myRank.rank == 0 || cfg.parallel_output ) { doGraphOutput(&cfg, graph, myRank); }
+    if ( myRank.rank == 0 || cfg.parallel_output ) { doGraphOutput(&cfg, graph, myRank, world_size); }
 
 
     // // Print the graph

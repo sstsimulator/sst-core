@@ -80,6 +80,7 @@ Config::Config(RankInfo rankInfo)
     print_timing        = false;
     print_env           = false;
     parallel_load       = false;
+    parallel_output     = false;
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     event_dump_file = "";
