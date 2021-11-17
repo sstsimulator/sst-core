@@ -120,7 +120,7 @@ public:
          */
         enum class Flag {
             F_NONCACHEABLE = 1 << 1, /* Bypass caches for this event */
-            F_SUCCESS      = 1 << 2, /* For events that can fail, this indicates success. */
+            F_FAIL = 1 << 2, /* For events that can fail, this indicates failure. */
             F_TRACE = 1 << 3, /* This flag requests that debug/trace output be generated for this event if possible. */
             F_RESERVED = 1 << 16, /* Flags <= F_RESERVED are reserved for future expansion */
         };
@@ -155,9 +155,12 @@ public:
         void unsetNoncacheable() { flags &= ~(static_cast<int>(Flag::F_NONCACHEABLE)); }
         bool getNoncacheable() { return flags & static_cast<int>(Flag::F_NONCACHEABLE); }
 
-        void setSuccess() { flags |= static_cast<int>(Flag::F_SUCCESS); }
-        void unsetSuccess() { flags &= ~(static_cast<int>(Flag::F_SUCCESS)); }
-        bool getSuccess() { return flags & static_cast<int>(Flag::F_SUCCESS); }
+        void setSuccess() { unsetFail(); }
+        void unsetSuccess() { setFail(); }
+        bool getSuccess() { return ~(flags & static_cast<int>(Flag::F_FAIL)); }
+        bool getFail() { return flags & static_cast<int>(Flag::F_FAIL); }
+        void setFail() { flags |= static_cast<int>(Flag::F_FAIL); }
+        void unsetFail() { flags &= ~(static_cast<int>(Flag::F_FAIL)); }
 
         void setTrace() { flags |= static_cast<int>(Flag::F_TRACE); }
         void unsetTrace() { flags &= (~static_cast<int>(Flag::F_TRACE)); }
@@ -182,12 +185,12 @@ public:
                 str << "F_NONCACHEABLE";
                 comma = true;
             }
-            if ( getSuccess() ) {
+            if ( getFail() ) {
                 if ( comma ) { str << ","; }
                 else {
                     comma = true;
                 }
-                str << "F_SUCCESS";
+                str << "F_FAIL";
             }
             if ( getTrace() ) {
                 if ( comma ) { str << ","; }
@@ -511,7 +514,7 @@ public:
     {
     public:
         FlushResp(
-            id_t id, Addr physAddr, uint64_t size, flags_t flags = static_cast<int>(Request::Flag::F_SUCCESS),
+            id_t id, Addr physAddr, uint64_t size, flags_t flags = 0,
             Addr vAddr = 0, Addr instPtr = 0, uint32_t tid = 0) :
             Request(id, flags),
             pAddr(physAddr),
@@ -520,7 +523,7 @@ public:
             iPtr(instPtr),
             tid(tid)
         {}
-        FlushResp(FlushAddr* fl, flags_t newFlags = static_cast<int>(Request::Flag::F_SUCCESS)) :
+        FlushResp(FlushAddr* fl, flags_t newFlags = 0) :
             Request(fl->getID(), fl->getAllFlags() | newFlags),
             pAddr(fl->pAddr),
             vAddr(fl->vAddr),
@@ -737,7 +740,7 @@ public:
 
         virtual ~StoreConditional() {}
 
-        /* Model must also call setSuccess() on response if LLSC succeeded */
+        /* Model must also call setFail() on response if LLSC failed */
         virtual Request* makeResponse() override { return new WriteResp(id, pAddr, size, flags, vAddr, iPtr, tid); }
 
         virtual bool needsResponse() override { return true; }
@@ -1092,7 +1095,7 @@ public:
     virtual Request* poll(void) = 0;
 
     /**
-     * Get cache/memory line size from the memory system
+     * Get cache/memory line size (in bytes) from the memory system
      *
      * The memory system should provide this and it should be
      * valid after the init() phase is complete, so processors
