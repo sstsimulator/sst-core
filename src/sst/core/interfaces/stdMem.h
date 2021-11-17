@@ -120,7 +120,7 @@ public:
          */
         enum class Flag {
             F_NONCACHEABLE = 1 << 1, /* Bypass caches for this event */
-            F_FAIL = 1 << 2, /* For events that can fail, this indicates failure. */
+            F_FAIL         = 1 << 2, /* For events that can fail, this indicates failure. */
             F_TRACE = 1 << 3, /* This flag requests that debug/trace output be generated for this event if possible. */
             F_RESERVED = 1 << 16, /* Flags <= F_RESERVED are reserved for future expansion */
         };
@@ -514,8 +514,8 @@ public:
     {
     public:
         FlushResp(
-            id_t id, Addr physAddr, uint64_t size, flags_t flags = 0,
-            Addr vAddr = 0, Addr instPtr = 0, uint32_t tid = 0) :
+            id_t id, Addr physAddr, uint64_t size, flags_t flags = 0, Addr vAddr = 0, Addr instPtr = 0,
+            uint32_t tid = 0) :
             Request(id, flags),
             pAddr(physAddr),
             vAddr(vAddr),
