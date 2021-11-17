@@ -408,7 +408,9 @@ main(int argc, char* argv[])
     }
     world_size.thread = cfg.getNumThreads();
 
-    if ( cfg.parallel_load && mysize != 1 ) { cfg.configFile = addRankToFileName(cfg.configFile, myRank.rank); }
+    if ( cfg.parallel_load && world_size.rank != 1 ) {
+        cfg.configFile = addRankToFileName(cfg.configFile, myRank.rank);
+    }
     cfg.checkConfigFile();
 
     // Create the factory.  This may be needed to load an external model definition

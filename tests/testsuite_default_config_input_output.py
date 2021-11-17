@@ -42,16 +42,19 @@ class testcase_Config_input_output(SSTTestCase):
 
 ###
 
+    have_mpi = sst_core_config_include_file_get_value_int("SST_CONFIG_HAVE_MPI", default=0, disable_warning=True) == 1
 
     def test_python_io(self):
         self.configio_test_template("python_io", "6 6", "py", False)
 
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_python_io_parallel(self):
         self.configio_test_template("python_io_parallel", "6 6", "py", True)
 
     def test_json_io(self):
         self.configio_test_template("json_io", "6 6", "json", False)
 
+    @unittest.skipIf(not have_mpi, "MPI is not included as part of this build")
     def test_json_io_parallel(self):
         self.configio_test_template("json_io_parallel", "6 6", "json", True)
 
