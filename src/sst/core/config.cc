@@ -132,12 +132,14 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_FLAGOPT("no-env-config", 0, "disable SST environment configuration", &Config::disableEnvConfig),
     DEF_FLAGOPT("print-timing-info", 0, "print SST timing information", &Config::enablePrintTiming),
     DEF_FLAGOPT("print-env", 0, "print SST environment vairable", &Config::enablePrintEnv),
+#if SST_CONFIG_HAVE_MPI
     DEF_FLAGOPT("parallel-load", 0, "Enable parallel loading of configuration", &Config::enableParallelLoad),
     DEF_FLAGOPT(
         "parallel-output", 0,
         "Enable parallel output of configuration information.  Must also specify an output type (--output-config "
         "and/or --output-json).  Note: this will also cause partition info to be output.",
         &Config::enableParallelOutput),
+#endif
     /* HiddenNoConfigDesc */
     DEF_ARGOPT("sdl-file", "FILE", "SST Configuration file", &Config::setConfigFile),
     DEF_ARGOPT("stopAtCycle", "TIME", "set time at which simulation will end execution", &Config::setStopAt),

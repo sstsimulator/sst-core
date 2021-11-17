@@ -120,6 +120,8 @@ public:
         print_env = true;
         return true;
     }
+
+#ifdef SST_CONFIG_HAVE_MPI
     bool enableParallelLoad()
     {
         parallel_load = true;
@@ -136,6 +138,7 @@ public:
         output_partition = true;
         return true;
     }
+#endif
 
     bool setConfigFile(const std::string& arg);
     bool checkConfigFile();
