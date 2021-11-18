@@ -132,7 +132,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_FLAGOPT("no-env-config", 0, "disable SST environment configuration", &Config::disableEnvConfig),
     DEF_FLAGOPT("print-timing-info", 0, "print SST timing information", &Config::enablePrintTiming),
     DEF_FLAGOPT("print-env", 0, "print SST environment vairable", &Config::enablePrintEnv),
-#if SST_CONFIG_HAVE_MPI
+#ifdef SST_CONFIG_HAVE_MPI
     DEF_FLAGOPT("parallel-load", 0, "Enable parallel loading of configuration", &Config::enableParallelLoad),
     DEF_FLAGOPT(
         "parallel-output", 0,

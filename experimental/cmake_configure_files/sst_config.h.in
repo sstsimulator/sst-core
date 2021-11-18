@@ -203,7 +203,7 @@
 #cmakedefine SST_COMPILE_MACOSX 1
 
 /* Define if you have the MPI library. */
-#cmakedefine SST_CONFIG_HAVE_MPI
+#cmakedefine SST_CONFIG_HAVE_MPI 1
 
 /* Set to 1 if Python was found */
 #cmakedefine SST_CONFIG_HAVE_PYTHON 1
