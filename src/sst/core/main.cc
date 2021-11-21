@@ -164,30 +164,58 @@ do_link_preparation(ConfigGraph* graph, SST::Simulation_impl* sim, const RankInf
     sim->prepareLinks(*graph, myRank, min_part);
 }
 
+static std::string
+addRankToFileName(const std::string& file_name, int rank)
+{
+    int         index = file_name.find_last_of(".");
+    std::string base  = file_name.substr(0, index);
+    std::string ext   = file_name.substr(index);
+    return base + std::to_string(rank) + ext;
+}
 
 static void
-doGraphOutput(SST::Config* cfg, ConfigGraph* graph)
+doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, const RankInfo& world_size)
 {
     std::vector<ConfigGraphOutput*> graphOutputs;
 
     // User asked us to dump the config graph to a file in Python
     if ( cfg->output_config_graph != "" ) {
-        graphOutputs.push_back(new PythonConfigGraphOutput(cfg->output_config_graph.c_str()));
+        // See if we are doing parallel output
+        std::string file_name(cfg->output_config_graph);
+        if ( cfg->parallel_output && world_size.rank != 1 ) {
+            // Append rank number to base filename
+            file_name = addRankToFileName(file_name, myRank.rank);
+        }
+        graphOutputs.push_back(new PythonConfigGraphOutput(file_name.c_str()));
     }
 
     // user asked us to dump the config graph in dot graph format
     if ( cfg->output_dot != "" ) { graphOutputs.push_back(new DotConfigGraphOutput(cfg->output_dot.c_str())); }
 
-    // User asked us to dump the config graph in XML format (for energy experiments)
+    // User asked us to dump the config graph in XML format
     if ( cfg->output_xml != "" ) { graphOutputs.push_back(new XMLConfigGraphOutput(cfg->output_xml.c_str())); }
 
-    // User asked us to dump the config graph in JSON format (for OCCAM experiments)
-    if ( cfg->output_json != "" ) { graphOutputs.push_back(new JSONConfigGraphOutput(cfg->output_json.c_str())); }
+    // User asked us to dump the config graph in JSON format
+    if ( cfg->output_json != "" ) {
+        std::string file_name(cfg->output_json);
+        if ( cfg->parallel_output ) {
+            // Append rank number to base filename
+            file_name = addRankToFileName(file_name, myRank.rank);
+        }
+        graphOutputs.push_back(new JSONConfigGraphOutput(file_name.c_str()));
+    }
 
+    ConfigGraph* myGraph = graph;
+    // if ( cfg->parallel_output ) {
+    //     // Get a graph that only includes components important to this
+    //     // rank
+    //     myGraph = graph->getSubGraph(myRank.rank, myRank.rank);
+    // }
     for ( size_t i = 0; i < graphOutputs.size(); i++ ) {
-        graphOutputs[i]->generate(cfg, graph);
+        graphOutputs[i]->generate(cfg, myGraph);
         delete graphOutputs[i];
     }
+    // if ( cfg->parallel_output ) delete myGraph;
 }
 
 typedef struct
@@ -380,6 +408,11 @@ main(int argc, char* argv[])
     }
     world_size.thread = cfg.getNumThreads();
 
+    if ( cfg.parallel_load && world_size.rank != 1 ) {
+        cfg.configFile = addRankToFileName(cfg.configFile, myRank.rank);
+    }
+    cfg.checkConfigFile();
+
     // Create the factory.  This may be needed to load an external model definition
     Factory* factory = new Factory(cfg.getLibPath());
 
@@ -415,7 +448,7 @@ main(int argc, char* argv[])
         modelGen = factory->Create<SSTModelDescription>(model_name, cfg.configFile, cfg.verbose, &cfg, start);
     }
 
-    /* Build objected needed for startup */
+    /* Build objects needed for startup */
     Output::setWorldSize(world_size, myrank);
     g_output = Output::setDefaultObject(cfg.output_core_prefix, cfg.getVerboseLevel(), 0, Output::STDOUT);
 
@@ -432,8 +465,9 @@ main(int argc, char* argv[])
     double start_graph_gen = sst_get_cpu_time();
     graph                  = new ConfigGraph();
 
-    // Only rank 0 will populate the graph
-    if ( myRank.rank == 0 ) {
+    // Only rank 0 will populate the graph, unless we are using
+    // parallel load.  In this case, all ranks will load the graph
+    if ( myRank.rank == 0 || cfg.parallel_load ) {
         try {
             graph = modelGen->createConfigGraph();
         }
@@ -443,21 +477,23 @@ main(int argc, char* argv[])
     }
 
 #ifdef SST_CONFIG_HAVE_MPI
-    // Config is done - broadcast it
-    if ( world_size.rank > 1 ) {
+    // Config is done - broadcast it, unless we are parallel loading
+    if ( world_size.rank > 1 && !cfg.parallel_load ) {
         try {
             Comms::broadcast(cfg, 0);
         }
         catch ( std::exception& e ) {
-            g_output.fatal(CALL_INFO, -1, "Error encountered during config-graph broadcast step: %s\n", e.what());
+            g_output.fatal(CALL_INFO, -1, "Error encountered broadcasting configuration object: %s\n", e.what());
         }
     }
+
+
 #endif
 
     // Need to initialize TimeLord
     Simulation_impl::getTimeLord()->init(cfg.timeBase);
 
-    if ( myRank.rank == 0 ) {
+    if ( myRank.rank == 0 || cfg.parallel_load ) {
         graph->postCreationCleanup();
 
         // Check config graph to see if there are structural errors.
@@ -482,39 +518,90 @@ main(int argc, char* argv[])
     ////// Start Partitioning //////
     double start_part = sst_get_cpu_time();
 
-    // If this is a serial job, just use the single partitioner,
-    // but the same code path
-    if ( world_size.rank == 1 && world_size.thread == 1 ) cfg.partitioner = "sst.single";
+    if ( !cfg.parallel_load ) {
+        // Normal partitioning
 
-    // Get the partitioner.  Built in partitioners are in the "sst" library.
-    SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner, world_size, myRank, cfg.verbose);
+        // If this is a serial job, just use the single partitioner,
+        // but the same code path
+        if ( world_size.rank == 1 && world_size.thread == 1 ) cfg.partitioner = "sst.single";
 
-    try {
-        if ( partitioner->requiresConfigGraph() ) { partitioner->performPartition(graph); }
-        else {
-            PartitionGraph* pgraph;
-            if ( myRank.rank == 0 ) { pgraph = graph->getCollapsedPartitionGraph(); }
+        // Get the partitioner.  Built in partitioners are in the "sst" library.
+        SSTPartitioner* partitioner = factory->CreatePartitioner(cfg.partitioner, world_size, myRank, cfg.verbose);
+
+        try {
+            if ( partitioner->requiresConfigGraph() ) { partitioner->performPartition(graph); }
             else {
-                pgraph = new PartitionGraph();
+                PartitionGraph* pgraph;
+                if ( myRank.rank == 0 ) { pgraph = graph->getCollapsedPartitionGraph(); }
+                else {
+                    pgraph = new PartitionGraph();
+                }
+
+                if ( myRank.rank == 0 || partitioner->spawnOnAllRanks() ) {
+                    partitioner->performPartition(pgraph);
+
+                    if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
+                }
+
+                delete pgraph;
+            }
+        }
+        catch ( std::exception& e ) {
+            g_output.fatal(CALL_INFO, -1, "Error encountered during graph partitioning phase: %s\n", e.what());
+        }
+
+        delete partitioner;
+    }
+    else {
+        // Need to make sure all the cross rank links have matching
+        // IDs on both sides.
+
+        // We'll do this by hashing the link name and then checking
+        // for clashes.  For now, a clash will casue a fatal.  Later,
+        // we'll add a fallback.
+
+        std::set<uint32_t> clashes;
+
+        ConfigComponentMap_t& comps = graph->getComponentMap();
+        ConfigLinkMap_t&      links = graph->getLinkMap();
+        for ( ConfigLinkMap_t::iterator iter = links.begin(); iter != links.end(); ++iter ) {
+            ConfigLink& clink = *iter;
+            RankInfo    rank[2];
+            rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])]->rank;
+            rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])]->rank;
+            if ( rank[0].rank == rank[1].rank || (rank[0].rank != myRank.rank && rank[1].rank != myRank.rank) )
+                continue;
+
+            // Found link that goes from my rank to another one.  Get
+            // the name and generate the hash
+            const char* key  = clink.name.c_str();
+            int         len  = ::strlen(key);
+            uint32_t    hash = 0;
+            for ( int i = 0; i < len; ++i ) {
+                hash += key[i];
+                hash += (hash << 10);
+                hash ^= (hash >> 6);
+            }
+            hash += (hash << 3);
+            hash ^= (hash >> 11);
+            hash += (hash << 15);
+
+            // Hashed id's will always have a 1 in highest order bit
+            // to avoid a class with autogenerated links
+            hash = hash | (1 << 31);
+
+            auto ret = clashes.insert(hash);
+            if ( !ret.second ) {
+                g_output.fatal(
+                    CALL_INFO, 1, "ERROR: Found clash in hashes for two link names that cross rank partitions.\n");
             }
 
-            if ( myRank.rank == 0 || partitioner->spawnOnAllRanks() ) {
-                partitioner->performPartition(pgraph);
-
-                if ( myRank.rank == 0 ) graph->annotateRanks(pgraph);
-            }
-
-            delete pgraph;
+            clink.remote_tag = hash;
         }
     }
-    catch ( std::exception& e ) {
-        g_output.fatal(CALL_INFO, -1, "Error encountered during graph partitioning phase: %s\n", e.what());
-    }
-
-    delete partitioner;
 
     // Check the partitioning to make sure it is sane
-    if ( myRank.rank == 0 ) {
+    if ( myRank.rank == 0 || cfg.parallel_load ) {
         if ( !graph->checkRanks(world_size) ) {
             g_output.fatal(CALL_INFO, 1, "ERROR: Bad partitioning; partition included unknown ranks.\n");
         }
@@ -529,20 +616,20 @@ main(int argc, char* argv[])
             (post_graph_create_rss - pre_graph_create_rss));
         g_output.verbose(CALL_INFO, 1, 0, "# ------------------------------------------------------------\n");
 
-        // Output the partition information is user requests it
+        // Output the partition information if user requests it
         dump_partition(cfg, graph, world_size);
-        doGraphOutput(&cfg, graph);
     }
 
     ////// End Partitioning //////
 
     ////// Calculate Minimum Partitioning //////
-    SimTime_t min_part = 0xffffffffffffffffl;
+    SimTime_t local_min_part = 0xffffffffffffffffl;
+    SimTime_t min_part       = 0xffffffffffffffffl;
     if ( world_size.rank > 1 ) {
         // Check the graph for the minimum latency crossing a partition boundary
-        if ( myRank.rank == 0 ) {
-            ConfigComponentMap_t comps = graph->getComponentMap();
-            ConfigLinkMap_t      links = graph->getLinkMap();
+        if ( myRank.rank == 0 || cfg.parallel_load ) {
+            ConfigComponentMap_t& comps = graph->getComponentMap();
+            ConfigLinkMap_t&      links = graph->getLinkMap();
             // Find the minimum latency across a partition
             for ( ConfigLinkMap_t::iterator iter = links.begin(); iter != links.end(); ++iter ) {
                 ConfigLink& clink = *iter;
@@ -550,7 +637,7 @@ main(int argc, char* argv[])
                 rank[0] = comps[COMPONENT_ID_MASK(clink.component[0])]->rank;
                 rank[1] = comps[COMPONENT_ID_MASK(clink.component[1])]->rank;
                 if ( rank[0].rank == rank[1].rank ) continue;
-                if ( clink.getMinLatency() < min_part ) { min_part = clink.getMinLatency(); }
+                if ( clink.getMinLatency() < local_min_part ) { local_min_part = clink.getMinLatency(); }
             }
         }
 #ifdef SST_CONFIG_HAVE_MPI
@@ -565,7 +652,8 @@ main(int argc, char* argv[])
         //     min_part = Simulation_impl::getTimeLord()->getSimCycles("1us","");
         // }
 
-        Comms::broadcast(min_part, 0);
+        MPI_Allreduce(&local_min_part, &min_part, 1, MPI_UINT64_T, MPI_MIN, MPI_COMM_WORLD);
+        // Comms::broadcast(min_part, 0);
 #endif
     }
     ////// End Calculate Minimum Partitioning //////
@@ -581,7 +669,7 @@ main(int argc, char* argv[])
 
     ////// Broadcast Graph //////
 #ifdef SST_CONFIG_HAVE_MPI
-    if ( world_size.rank > 1 ) {
+    if ( world_size.rank > 1 && !cfg.parallel_load ) {
         try {
             Comms::broadcast(Params::keyMap, 0);
             Comms::broadcast(Params::keyMapReverse, 0);
@@ -639,6 +727,9 @@ main(int argc, char* argv[])
     }
 #endif
     ////// End Broadcast Graph //////
+
+    if ( myRank.rank == 0 || cfg.parallel_output ) { doGraphOutput(&cfg, graph, myRank, world_size); }
+
 
     // // Print the graph
     // if ( myRank.rank == 0 ) {

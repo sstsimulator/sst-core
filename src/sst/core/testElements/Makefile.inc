@@ -32,7 +32,10 @@ libcoreTestElement_la_SOURCES = \
 	testElements/coreTest_Module.h \
 	testElements/coreTest_Module.cc \
 	testElements/coreTest_ParamComponent.h \
-	testElements/coreTest_ParamComponent.cc
+	testElements/coreTest_ParamComponent.cc \
+	testElements/message_mesh/messageEvent.h \
+	testElements/message_mesh/enclosingComponent.h \
+	testElements/message_mesh/enclosingComponent.cc
 
 deprecated_libcoreTestElement_sources =
 

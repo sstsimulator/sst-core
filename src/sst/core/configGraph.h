@@ -46,6 +46,7 @@ class ConfigLink : public SST::Core::Serialization::serializable
 {
 public:
     LinkId_t      id;             /*!< ID of this link */
+    LinkId_t      remote_tag;     /*!< Tag used to ensure remote events are delivered correctly ID of this link */
     std::string   name;           /*!< Name of this link */
     ComponentId_t component[2];   /*!< IDs of the connected components */
     std::string   port[2];        /*!< Names of the connected ports */
@@ -68,6 +69,7 @@ public:
     void print(std::ostream& os) const
     {
         os << "Link " << name << " (id = " << id << ")" << std::endl;
+        os << "  remote_tag = " << remote_tag << std::endl;
         os << "  component[0] = " << component[0] << std::endl;
         os << "  port[0] = " << port[0] << std::endl;
         os << "  latency[0] = " << latency[0] << std::endl;
@@ -82,6 +84,7 @@ public:
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         ser& id;
+        ser& remote_tag;
         ser& name;
         ser& component[0];
         ser& component[1];
@@ -89,6 +92,8 @@ public:
         ser& port[1];
         ser& latency[0];
         ser& latency[1];
+        ser& latency_str[0];
+        ser& latency_str[1];
         ser& current_ref;
     }
 
@@ -96,7 +101,7 @@ public:
 
 private:
     friend class ConfigGraph;
-    ConfigLink(LinkId_t id) : id(id), no_cut(false)
+    ConfigLink(LinkId_t id) : id(id), remote_tag(id), no_cut(false)
     {
         current_ref = 0;
 
@@ -105,7 +110,7 @@ private:
         component[1] = ULONG_MAX;
     }
 
-    ConfigLink(LinkId_t id, const std::string& n) : id(id), no_cut(false)
+    ConfigLink(LinkId_t id, const std::string& n) : id(id), remote_tag(id), no_cut(false)
     {
         current_ref = 0;
         name        = n;
@@ -244,8 +249,9 @@ public:
     /** Print Component information */
     void print(std::ostream& os) const;
 
-    ConfigComponent* cloneWithoutLinks() const;
-    ConfigComponent* cloneWithoutLinksOrParams() const;
+    ConfigComponent* cloneWithoutLinks(ConfigGraph* new_graph) const;
+    ConfigComponent* cloneWithoutLinksOrParams(ConfigGraph* new_graph) const;
+    void             setConfigGraphPointer(ConfigGraph* graph_ptr);
 
     ~ConfigComponent() {}
     ConfigComponent() :
@@ -478,6 +484,7 @@ public:
     void            annotateRanks(PartitionGraph* graph);
     void            getConnectedNoCutComps(ComponentId_t start, std::set<ComponentId_t>& group);
 
+    void setComponentConfigGraphPointers();
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
         ser& links;
@@ -485,6 +492,11 @@ public:
         ser& statOutputs;
         ser& statLoadLevel;
         ser& statGroups;
+        if ( ser.mode() == SST::Core::Serialization::serializer::UNPACK ) {
+            // Need to reintialize the ConfigGraph ptrs in the
+            // ConfigComponents
+            setComponentConfigGraphPointers();
+        }
     }
 
 private:

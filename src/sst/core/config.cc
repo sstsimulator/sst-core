@@ -79,6 +79,8 @@ Config::Config(RankInfo rankInfo)
     output_core_prefix  = "@x SST Core: ";
     print_timing        = false;
     print_env           = false;
+    parallel_load       = false;
+    parallel_output     = false;
 
 #ifdef __SST_DEBUG_EVENT_TRACKING__
     event_dump_file = "";
@@ -130,6 +132,14 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_FLAGOPT("no-env-config", 0, "disable SST environment configuration", &Config::disableEnvConfig),
     DEF_FLAGOPT("print-timing-info", 0, "print SST timing information", &Config::enablePrintTiming),
     DEF_FLAGOPT("print-env", 0, "print SST environment vairable", &Config::enablePrintEnv),
+#ifdef SST_CONFIG_HAVE_MPI
+    DEF_FLAGOPT("parallel-load", 0, "Enable parallel loading of configuration", &Config::enableParallelLoad),
+    DEF_FLAGOPT(
+        "parallel-output", 0,
+        "Enable parallel output of configuration information.  Must also specify an output type (--output-config "
+        "and/or --output-json).  Note: this will also cause partition info to be output.",
+        &Config::enableParallelOutput),
+#endif
     /* HiddenNoConfigDesc */
     DEF_ARGOPT("sdl-file", "FILE", "SST Configuration file", &Config::setConfigFile),
     DEF_ARGOPT("stopAtCycle", "TIME", "set time at which simulation will end execution", &Config::setStopAt),
@@ -151,7 +161,7 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_ARGOPT(
         "partitioner", "PARTITIONER", "select the partitioner to be used. <lib.partitionerName>",
         &Config::setPartitioner),
-    DEF_ARGOPT("timeVortex ", "MODULE", "select TimeVortex implementation <lib.timevortex>", &Config::setTimeVortex),
+    DEF_ARGOPT("timeVortex", "MODULE", "select TimeVortex implementation <lib.timevortex>", &Config::setTimeVortex),
     DEF_ARGOPT(
         "inter-thread-links ", "BOOL", "[EXPERIMENTAL] Set whether or not interthread links should be used <false>",
         &Config::setInterThreadLinks),
@@ -382,10 +392,17 @@ Config::printVersion()
 bool
 Config::setConfigFile(const std::string& arg)
 {
+    configFile = arg;
+    return true;
+}
+
+bool
+Config::checkConfigFile()
+{
     struct stat sb;
-    char*       fqpath = realpath(arg.c_str(), nullptr);
+    char*       fqpath = realpath(configFile.c_str(), nullptr);
     if ( nullptr == fqpath ) {
-        fprintf(stderr, "Failed to canonicalize path [%s]:  %s\n", arg.c_str(), strerror(errno));
+        fprintf(stderr, "Failed to canonicalize path [%s]:  %s\n", configFile.c_str(), strerror(errno));
         return false;
     }
     configFile = fqpath;

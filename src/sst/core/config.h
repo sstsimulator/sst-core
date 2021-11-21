@@ -30,7 +30,6 @@ class Config : public SST::Core::Serialization::serializable
 {
 public:
     /** Create a new Config object.
-     * @param my_rank - parallel rank of this instance
      * @param world_size - number of parallel ranks in the simulation
      */
     Config(RankInfo world_size);
@@ -79,6 +78,8 @@ public:
 
     RankInfo world_size;          /*!< Number of ranks, threads which should be invoked per rank */
     uint32_t verbose;             /*!< Verbosity */
+    bool     parallel_load;       /*!< Load simulation graph in parallel */
+    bool     parallel_output;     /*!< Output simulation graph in parallel */
     bool     no_env_config;       /*!< Bypass compile-time environmental configuration */
     bool     enable_sig_handling; /*!< Enable signal handling */
     bool     print_timing;        /*!< Print SST timing information */
@@ -120,7 +121,27 @@ public:
         return true;
     }
 
+#ifdef SST_CONFIG_HAVE_MPI
+    bool enableParallelLoad()
+    {
+        parallel_load = true;
+        return true;
+    }
+
+    bool enableParallelOutput()
+    {
+        // If this is only a one rank job, then we can ignore, except
+        // that we will turn on output_partition
+        if ( world_size.rank != 1 ) parallel_output = true;
+        // For parallel output, we always need to output the partition
+        // info as well
+        output_partition = true;
+        return true;
+    }
+#endif
+
     bool setConfigFile(const std::string& arg);
+    bool checkConfigFile();
     bool setDebugFile(const std::string& arg);
     bool setLibPath(const std::string& arg);
     bool addLibPath(const std::string& arg);
@@ -173,6 +194,8 @@ public:
         std::cout << "num_threads = " << world_size.thread << std::endl;
         std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
         std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
+        std::cout << "parallel_load=" << parallel_load << std::endl;
+        std::cout << "parallel_output=" << parallel_output << std::endl;
         std::cout << "print_timing=" << print_timing << std::endl;
         std::cout << "print_env" << print_env << std::endl;
     }
@@ -212,6 +235,8 @@ public:
         ser& world_size;
         ser& enable_sig_handling;
         ser& output_core_prefix;
+        ser& parallel_load;
+        ser& parallel_output;
         ser& print_timing;
     }
 

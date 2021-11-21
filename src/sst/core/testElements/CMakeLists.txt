@@ -21,6 +21,8 @@ add_library(
   coreTest_Module.cc
   coreTest_ParamComponent.cc)
 
+add_subdirectory(message_mesh)
+
 # NEED To double check this
 target_include_directories(coreTestElement PRIVATE ${SST_TOP_SRC_DIR}/src)
 target_link_libraries(coreTestElement PRIVATE sst-config-headers)
@@ -31,6 +33,7 @@ if(APPLE)
   target_link_options(coreTestElement PRIVATE
                       "LINKER:-undefined,dynamic_lookup")
 endif()
+
 
 # NEED To figure out how to deal with distributing the README
 

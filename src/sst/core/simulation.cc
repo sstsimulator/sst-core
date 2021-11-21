@@ -372,7 +372,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             }
             else {
                 // Create a LinkPair to represent this link
-                LinkPair lp(clink.id);
+                LinkPair lp(clink.remote_tag); // in this case remote_tag == id
 
                 lp.getLeft()->setLatency(clink.latency[0]);
                 lp.getRight()->setLatency(clink.latency[1]);
@@ -443,7 +443,7 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
             }
 
             // Create a LinkPair to represent this link
-            LinkPair lp(clink.id);
+            LinkPair lp(clink.remote_tag);
 
             lp.getLeft()->setLatency(clink.latency[local]);
             lp.getRight()->setLatency(0);
@@ -462,7 +462,8 @@ Simulation_impl::prepareLinks(ConfigGraph& graph, const RankInfo& myRank, SimTim
 
             // For local, just register link with threadSync object so
             // it can map link_id to link*
-            ActivityQueue* sync_q = syncManager->registerLink(rank[remote], rank[local], clink.id, lp.getRight());
+            ActivityQueue* sync_q =
+                syncManager->registerLink(rank[remote], rank[local], clink.remote_tag, lp.getRight());
 
             lp.getLeft()->send_queue = sync_q;
             lp.getRight()->setAsSyncLink();

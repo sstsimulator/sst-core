@@ -191,6 +191,7 @@ target_link_libraries(
           timeVortex
           modelCore
           modelpython
+          modeljson
           sync
           shared)
 set_target_properties(sstsim.x PROPERTIES ENABLE_EXPORTS ON)
@@ -204,6 +205,7 @@ target_link_libraries(
           timeVortex
           modelCore
           modelpython
+          modeljson
           sync
           shared
           tinyxml)
