@@ -63,7 +63,12 @@ protected:
 
 public:
     BaseComponent(ComponentId_t id);
-    BaseComponent() {}
+    BaseComponent()
+        __attribute__((deprecated("The BaseComponent default constructor is deprecated and will be removed in SST 13.  "
+                                  "Default constructors for Components are no longer supported.")))
+    {
+        my_info = nullptr;
+    }
     virtual ~BaseComponent();
 
     const std::string& getType() const { return my_info->getType(); }
@@ -86,17 +91,20 @@ public:
      * Component, the name of that Component. */
     inline const std::string& getParentComponentName() const { return my_info->getParentComponentName(); }
 
-    /** Used during the init phase.  The method will be called each phase of initialization.
-     Initialization ends when no components have sent any data. */
+    /** Used during the init phase.  The method will be called each
+     phase of initialization.  Initialization ends when no components
+     have sent any data. */
     virtual void init(unsigned int UNUSED(phase)) {}
-    /** Used during the init phase.  The method will be called each phase of initialization.
-     Initialization ends when no components have sent any data. */
+    /** Used during the complete phase after the end of simulation.
+     The method will be called each phase of complete. Complete phase
+     ends when no components have sent any data. */
     virtual void complete(unsigned int UNUSED(phase)) {}
-    /** Called after all components have been constructed and initialization has
-    completed, but before simulation time has begun. */
+    /** Called after all components have been constructed and
+    initialization has completed, but before simulation time has
+    begun. */
     virtual void setup() {}
-    /** Called after simulation completes, but before objects are
-        destroyed. A good place to print out statistics. */
+    /** Called after complete phase, but before objects are
+     destroyed. A good place to print out statistics. */
     virtual void finish() {}
 
     /** Currently unused function */
