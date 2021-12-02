@@ -13,6 +13,7 @@
 #define SST_CORE_CONFIGGRAPH_OUTPUT_H
 
 #include "sst/core/configGraph.h"
+#include "sst/core/params.h"
 
 #include <cstdio>
 #include <exception>
@@ -48,6 +49,53 @@ public:
 
 protected:
     FILE* outputFile;
+
+    /**
+     * Get a named global parameter set.
+     *
+     * @param name Name of the set to get
+     *
+     * @return returns a copy of the reqeusted global param set
+     *
+     */
+    static std::map<std::string, std::string> getGlobalParamSet(const std::string& name)
+    {
+        return Params::getGlobalParamSet(name);
+    }
+
+
+    /**
+     * Get a vector of the names of available global parameter sets.
+     *
+     * @return returns a vector of the names of available global param
+     * sets
+     *
+     */
+    static std::vector<std::string> getGlobalParamSetNames() { return Params::getGlobalParamSetNames(); }
+
+
+    /**
+     * Get a vector of the local keys
+     *
+     * @return returns a vector of the local keys in this Params
+     * object
+     *
+     */
+    std::vector<std::string> getParamsLocalKeys(const Params& params) const { return params.getLocalKeys(); }
+
+
+    /**
+     * Get a vector of the global param sets this Params object is
+     * subscribed to
+     *
+     * @return returns a vector of the global param sets his Params
+     * object is subscribed to
+     *
+     */
+    std::vector<std::string> getSubscribedGlobalParamSets(const Params& params) const
+    {
+        return params.getSubscribedGlobalParamSets();
+    }
 };
 
 } // namespace Core

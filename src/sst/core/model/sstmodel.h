@@ -33,8 +33,13 @@ public:
         ELI::ProvidesSimpleInfo<0,bool>,
         ELI::ProvidesSimpleInfo<1,std::vector<std::string>>)
 
-    SSTModelDescription();
+    // Helper functions to pull out ELI data for an element
+    static bool                            isElementParallelCapable(const std::string& type);
+    static const std::vector<std::string>& getElementSupportedExtensions(const std::string& type);
+
+    SSTModelDescription(Config* cfg);
     virtual ~SSTModelDescription() {};
+
     /** Create the ConfigGraph
      *
      * This function should be overridden by subclasses.
@@ -44,9 +49,39 @@ public:
      */
     virtual ConfigGraph* createConfigGraph() = 0;
 
-    // Helper functions to pull out ELI data for an element
-    static bool                            isElementParallelCapable(const std::string& type);
-    static const std::vector<std::string>& getElementSupportedExtensions(const std::string& type);
+
+protected:
+    /** Set a configuration string to update configuration values */
+    bool setOptionFromModel(const std::string& entryName, const std::string& value);
+
+    /**
+     * Sets the model options field of the Config object.  This has a
+     * very narrow use case, which is to set the model_options when
+     * the model is just a wrapper to another model type and they need
+     * to pass some extra options.
+     *
+     * @param options String that will be used for model_options.  It
+     * will overwrite what is alread there
+     */
+    void setModelOptions(const std::string& options);
+
+    /**
+     * Allows ModelDefinition to set global parameters.
+     *
+     * @param set Name of the global param set to add key/value pair to
+     *
+     * @param key Key of key/value pair to be added
+     *
+     * @param key Value of key/value pair to be added
+     *
+     * @param overwrite Overwrite existing value if set to true (which is default)
+     */
+    void insertGlobalParameter(
+        const std::string& set, const Params::key_type& key, const Params::key_type& value, bool overwrite = true);
+
+
+private:
+    Config* config;
 };
 
 } // namespace SST

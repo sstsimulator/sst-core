@@ -12,29 +12,39 @@
 #ifndef SST_CORE_CONFIG_H
 #define SST_CORE_CONFIG_H
 
-#include "sst/core/env/envconfig.h"
-#include "sst/core/env/envquery.h"
-#include "sst/core/rankInfo.h"
-#include "sst/core/serialization/serializable.h"
 #include "sst/core/simulation.h"
-#include "sst/core/sst_types.h"
 
 #include <string>
 
+/* Forward declare for Friendship */
+extern int main(int argc, char** argv);
+
 namespace SST {
 
+class ConfigHelper;
+class SSTModelDescription;
 /**
  * Class to contain SST Simulation Configuration variables
  */
 class Config : public SST::Core::Serialization::serializable
 {
-public:
-    /** Create a new Config object.
-     * @param world_size - number of parallel ranks in the simulation
+private:
+    // Main creates the config object
+    friend int ::main(int argc, char** argv);
+    friend class ConfigHelper;
+    friend class SSTModelDescription;
+
+    /**
+       Config constructor.  Meant to only be created by main function
      */
-    Config(RankInfo world_size);
-    Config() {} // For serialization
-    ~Config();
+    Config(RankInfo rank_info);
+
+    /**
+       Default constructor used for serialization
+     */
+    Config() {}
+
+    //// Functions for use in main
 
     /**
        Parse command-line arguments to update configuration values.
@@ -43,210 +53,283 @@ public:
        if there was an error.  Returns 1 if run command line only
        asked for information to be print (e.g. --help or -V).
      */
-    int      parseCmdLine(int argc, char* argv[]);
-    /** Set a configuration string to update configuration values */
-    bool     setConfigEntryFromModel(const std::string& entryName, const std::string& value);
-    /** Return the current Verbosity level */
-    uint32_t getVerboseLevel();
+    int parseCmdLine(int argc, char* argv[]);
 
-    /** Print the SST core timing information */
-    bool printTimingInfo();
-
-    /** Print the current configuration to stdout */
-    void Print();
-
-    std::string        debugFile;                 /*!< File to which debug information should be written */
-    Simulation::Mode_t runMode;                   /*!< Run Mode (Init, Both, Run-only) */
-    std::string        configFile;                /*!< Graph generation file */
-    std::string        stopAtCycle;               /*!< When to stop the simulation */
-    uint32_t           stopAfterSec;              /*!< When (wall-time) to stop the simulation */
-    std::string        heartbeatPeriod;           /*!< Sets the heartbeat period for the simulation */
-    std::string        timeBase;                  /*!< Timebase of simulation */
-    std::string        partitioner;               /*!< Partitioner to use */
-    std::string        timeVortex;                /*!< TimeVortex implementation to use */
-    bool               inter_thread_links;        /*!< Use interthread links */
-    std::string        output_config_graph;       /*!< File to dump configuration graph */
-    std::string        output_dot;                /*!< File to dump dot output */
-    uint32_t           dot_verbosity;             /*!< Amount of detail to include in the dot graph output */
-    std::string        output_xml;                /*!< File to dump XML output */
-    std::string        output_json;               /*!< File to dump JSON output */
-    std::string        output_directory;          /*!< Output directory to dump all files to */
-    std::string        model_options;             /*!< Options to pass to Python Model generator */
-    std::string        dump_component_graph_file; /*!< File to dump component graph */
-    bool               output_partition;   /*!< If set to true, output paritition information in config outputs */
-    std::string        output_core_prefix; /*!< Set the SST::Output prefix for the core */
-
-    RankInfo world_size;          /*!< Number of ranks, threads which should be invoked per rank */
-    uint32_t verbose;             /*!< Verbosity */
-    bool     parallel_load;       /*!< Load simulation graph in parallel */
-    bool     parallel_output;     /*!< Output simulation graph in parallel */
-    bool     no_env_config;       /*!< Bypass compile-time environmental configuration */
-    bool     enable_sig_handling; /*!< Enable signal handling */
-    bool     print_timing;        /*!< Print SST timing information */
-    bool     print_env;           /*!< Print SST environment */
-
-#ifdef USE_MEMPOOL
-    std::string event_dump_file; /*!< File to dump undeleted events to */
-#endif
-
-    typedef bool (Config::*flagFunction)(void);
-    typedef bool (Config::*argFunction)(const std::string& arg);
-
-    bool usage();
-    bool printVersion();
-    bool incrVerbose()
-    {
-        verbose++;
-        return true;
-    }
-    bool setVerbosity(const std::string& arg);
-    bool disableSigHandlers()
-    {
-        enable_sig_handling = false;
-        return true;
-    }
-    bool disableEnvConfig()
-    {
-        no_env_config = true;
-        return true;
-    }
-    bool enablePrintTiming()
-    {
-        print_timing = true;
-        return true;
-    }
-    bool enablePrintEnv()
-    {
-        print_env = true;
-        return true;
-    }
-
-#ifdef SST_CONFIG_HAVE_MPI
-    bool enableParallelLoad()
-    {
-        parallel_load = true;
-        return true;
-    }
-
-    bool enableParallelOutput()
-    {
-        // If this is only a one rank job, then we can ignore, except
-        // that we will turn on output_partition
-        if ( world_size.rank != 1 ) parallel_output = true;
-        // For parallel output, we always need to output the partition
-        // info as well
-        output_partition = true;
-        return true;
-    }
-#endif
-
-    bool setConfigFile(const std::string& arg);
+    /**
+       Checks for the existance of the config file.  This needs to be
+       called after adding any rank numbers to the file in the case of
+       parallel loading.
+    */
     bool checkConfigFile();
-    bool setDebugFile(const std::string& arg);
-    bool setLibPath(const std::string& arg);
-    bool addLibPath(const std::string& arg);
-    bool setRunMode(const std::string& arg);
-    bool setStopAt(const std::string& arg);
-    bool setStopAfter(const std::string& arg);
-    bool setHeartbeat(const std::string& arg);
-    bool setTimebase(const std::string& arg);
-    bool setPartitioner(const std::string& arg);
-    bool setTimeVortex(const std::string& arg);
-    bool setInterThreadLinks(const std::string& arg);
-    bool setOutputDir(const std::string& arg);
-    bool setWriteConfig(const std::string& arg);
-    bool setWriteDot(const std::string& arg);
-    bool setDotVerbosity(const std::string& arg);
-    bool setWriteXML(const std::string& arg);
-    bool setWriteJSON(const std::string& arg);
-    bool setWritePartitionFile(const std::string& arg);
-    bool setWritePartition();
-    bool setOutputPrefix(const std::string& arg);
-#ifdef USE_MEMPOOL
-    bool setWriteUndeleted(const std::string& arg);
-#endif
-    bool setModelOptions(const std::string& arg);
-    bool setNumThreads(const std::string& arg);
 
-    Simulation::Mode_t getRunMode() { return runMode; }
-
-    /** Print to stdout the current configuration */
-    void print()
-    {
-        std::cout << "debugFile = " << debugFile << std::endl;
-        std::cout << "runMode = " << runMode << std::endl;
-        std::cout << "libpath = " << getLibPath() << std::endl;
-        std::cout << "configFile = " << configFile << std::endl;
-        std::cout << "stopAtCycle = " << stopAtCycle << std::endl;
-        std::cout << "stopAfterSec = " << stopAfterSec << std::endl;
-        std::cout << "timeBase = " << timeBase << std::endl;
-        std::cout << "partitioner = " << partitioner << std::endl;
-        std::cout << "output_config_graph = " << output_config_graph << std::endl;
-        std::cout << "output_dot = " << output_dot << std::endl;
-        std::cout << "dot_verbosity = " << dot_verbosity << std::endl;
-        std::cout << "output_xml = " << output_xml << std::endl;
-        std::cout << "no_env_config = " << no_env_config << std::endl;
-        std::cout << "output_directory = " << output_directory << std::endl;
-        std::cout << "output_json = " << output_json << std::endl;
-        std::cout << "model_options = " << model_options << std::endl;
-        std::cout << "dump_component_graph_file = " << dump_component_graph_file << std::endl;
-        std::cout << "output_partition = " << output_partition << std::endl;
-        std::cout << "num_threads = " << world_size.thread << std::endl;
-        std::cout << "enable_sig_handling = " << enable_sig_handling << std::endl;
-        std::cout << "output_core_prefix = " << output_core_prefix << std::endl;
-        std::cout << "parallel_load=" << parallel_load << std::endl;
-        std::cout << "parallel_output=" << parallel_output << std::endl;
-        std::cout << "print_timing=" << print_timing << std::endl;
-        std::cout << "print_env" << print_env << std::endl;
-    }
-
-    /** Return the library search path */
+    /**
+       Get the final library path for loading element libraries
+    */
     std::string getLibPath(void) const;
 
-    uint32_t getNumRanks() { return world_size.rank; }
-    uint32_t getNumThreads() { return world_size.thread; }
-    uint32_t setNumThreads(uint32_t nthr)
-    {
-        uint32_t old      = world_size.thread;
-        world_size.thread = nthr;
-        return old;
-    }
+    // Functions to be called from ModelDescriptions
+
+    /** Set a configuration string to update configuration values */
+    bool setOptionFromModel(const std::string& entryName, const std::string& value);
+
+
+public:
+    /** Create a new Config object.
+     * @param world_size - number of parallel ranks in the simulation
+     */
+    ~Config() {}
+
+    // Functions to access config options. Declared in order they show
+    // up in the options array
+
+    // Information options
+    // No variable associated with help
+    // No variable associated with version
+
+    // Basic options
+
+    /**
+       Level of verbosity to use in the core prints using
+       Output.verbose or Output.debug.
+    */
+    uint32_t verbose() const { return verbose_; }
+
+
+    /**
+       Number of threads requested
+    */
+    uint32_t num_threads() const { return world_size_.thread; }
+
+    /**
+       Number of ranks in the simulation
+     */
+    uint32_t num_ranks() const { return world_size_.rank; }
+
+    /**
+       Name of the SDL file to use to genearte the simulation
+    */
+    const std::string& configFile() const { return configFile_; }
+
+    /**
+       Model options to pass to the SDL file
+    */
+    const std::string& model_options() const { return model_options_; }
+
+    /**
+       Print SST timing information after the run
+    */
+    bool print_timing() const { return print_timing_; }
+
+    /**
+       Simulated cycle to stop the simulation at
+    */
+    const std::string& stopAtCycle() const { return stopAtCycle_; }
+
+    /**
+       Wall clock time (approximiate) in seconds to stop the simulation at
+    */
+    uint32_t stopAfterSec() const { return stopAfterSec_; }
+
+    /**
+       Core timebase to use as the atomic time unit for the
+       simulation.  It is usually best to just leave this at the
+       default (1ps)
+    */
+    const std::string& timeBase() const { return timeBase_; }
+
+    /**
+       Partitioner to use for parallel simualations
+    */
+    const std::string& partitioner() const { return partitioner_; }
+
+    /**
+       Simulation period at which to print out a "heartbeat" message
+    */
+    const std::string& heartbeatPeriod() const { return heartbeatPeriod_; }
+
+    /**
+       The directory to be used for writting output files
+    */
+    const std::string& output_directory() const { return output_directory_; }
+
+    /**
+       Prefix to use for the default SST::Output object in core
+    */
+    const std::string output_core_prefix() const { return output_core_prefix_; }
+
+    // Configuration output
+
+    /**
+       File to output python formatted  config graph to (empty string means no
+       output)
+    */
+    const std::string& output_config_graph() const { return output_config_graph_; }
+
+    /**
+       File to output json formatted config graph to (empty string means no
+       output)
+    */
+    const std::string& output_json() const { return output_json_; }
+
+    /**
+       If true, and a config graph output option is specified, write
+       each ranks graph separately
+    */
+    bool parallel_output() const { return parallel_output_; }
+
+    /**
+       File to output xml formatted config graph to (empty string means no
+       output)
+
+       @deprecated Does not support all of the current SST
+       configuration features
+    */
+    const std::string& output_xml() const { return output_xml_; }
+
+    // Graph output
+
+    /**
+       File to output dot formatted config graph to (empty string means no
+       output).  Note, this is not a format that can be used as input for simulation
+
+    */
+    const std::string& output_dot() const { return output_dot_; }
+
+    /**
+       Level of verbosity to use for the dot output.
+    */
+    uint32_t dot_verbosity() const { return dot_verbosity_; }
+
+    /**
+       File to output component partition info to (empty string means no output)
+    */
+    const std::string& component_partition_file() const { return component_partition_file_; }
+
+    /**
+       Controls whether partition info is output as part of configuration output
+     */
+    bool output_partition() const { return output_partition_; }
+
+    // Advanced options
+
+    /**
+       Controls whether graph constuction will be done in parallel.
+       If it is, then the SDL file name is modified to add the rank
+       number to the file name right before the file extension.
+    */
+    bool parallel_load() const { return parallel_load_; }
+
+    /**
+       TimeVortex implementation to use
+    */
+    const std::string& timeVortex() const { return timeVortex_; }
+
+    /**
+       Use links that connect directly to ActivityQueue in receiving thread
+    */
+    bool interthread_links() const { return interthread_links_; }
+
+    /**
+       File to which core debug information should be written
+    */
+    const std::string& debugFile() const { return debugFile_; }
+
+    /**
+       Library path to use for finding element libraries (will replace
+       the libpath in the sstsimulator.conf file)
+    */
+    const std::string& libpath() const { return libpath_; }
+
+    /**
+       Paths to add to library search (adds to libpath found in
+       sstsimulator.conf file)
+    */
+    const std::string& addLibPath() const { return addLibPath_; }
+
+    /**
+       Run mode to use (Init, Both, Run-only).  Note that Run-only is
+       not currently supported because there is not component level
+       checkpointing.
+    */
+    Simulation::Mode_t runMode() const { return runMode_; }
+
+
+#ifdef USE_MEMPOOL
+    /**
+       File to output list of events that remain undeleted at the end
+       of the simulation.
+    */
+    const std::string& event_dump_file() const { return event_dump_file_; }
+#endif
+
+    // Advanced options - envrionment
+
+    /**
+       Controls whether the environment variables that SST sees are
+       printed out
+    */
+    bool print_env() const { return print_env_; }
+
+    /**
+       Controls whether signal handlers are enable or not.  NOTE: the
+       sense of this variable is opposite of the command line option
+       (--disable-signal-handlers)
+    */
+    bool enable_sig_handling() const { return enable_sig_handling_; }
+
+    // This option is used by the SST wrapper found in
+    // bootshare.{h,cc} and is never actually accessed once sst.x
+    // executes.
+    bool no_env_config() const { return no_env_config_; }
+
+
+    /** Print to stdout the current configuration */
+    void print();
 
     void serialize_order(SST::Core::Serialization::serializer& ser) override
     {
-        ser& debugFile;
-        ser& runMode;
-        ser& libpath;
-        ser& addlLibPath;
-        ser& configFile;
-        ser& stopAtCycle;
-        ser& stopAfterSec;
-        ser& timeBase;
-        ser& partitioner;
-        ser& dump_component_graph_file;
-        ser& output_partition;
-        ser& output_config_graph;
-        ser& output_dot;
-        ser& dot_verbosity;
-        ser& output_xml;
-        ser& output_json;
-        ser& no_env_config;
-        ser& model_options;
-        ser& world_size;
-        ser& enable_sig_handling;
-        ser& output_core_prefix;
-        ser& parallel_load;
-        ser& parallel_output;
-        ser& print_timing;
+        ser& verbose_;
+        ser& world_size_;
+        ser& configFile_;
+        ser& model_options_;
+        ser& print_timing_;
+        ser& stopAtCycle_;
+        ser& stopAfterSec_;
+        ser& timeBase_;
+        ser& partitioner_;
+        ser& heartbeatPeriod_;
+        ser& output_directory_;
+        ser& output_core_prefix_;
+
+        ser& output_config_graph_;
+        ser& output_json_;
+        ser& parallel_output_;
+        ser& output_xml_;
+
+        ser& output_dot_;
+        ser& dot_verbosity_;
+        ser& component_partition_file_;
+        ser& output_partition_;
+
+        ser& parallel_load_;
+        ser& timeVortex_;
+        ser& interthread_links_;
+        ser& debugFile_;
+        ser& libpath_;
+        ser& addLibPath_;
+        ser& runMode_;
+
+        ser& print_env_;
+        ser& enable_sig_handling_;
+        ser& no_env_config_;
     }
+    ImplementSerializable(SST::Config)
+
 
 private:
-    std::string run_name;
-    std::string libpath;
-    std::string addlLibPath;
+    //// Items private to Config
 
-    int rank;
-    int numRanks;
+    std::string run_name;
 
     bool isFileNameOnly(const std::string& name)
     {
@@ -262,7 +345,56 @@ private:
         return nameOnly;
     }
 
-    ImplementSerializable(SST::Config)
+    // Variables to hold the options.  Declared in order they show up
+    // in the options array
+
+    // Information options
+    // No variable associated with help
+    // No variable associated with version
+
+    // Basic options
+    uint32_t    verbose_; /*!< Verbosity */
+    // Num threads held in RankInfo.thread
+    RankInfo    world_size_;         /*!< Number of ranks, threads which should be invoked per rank */
+    std::string configFile_;         /*!< Graph generation file */
+    std::string model_options_;      /*!< Options to pass to Python Model generator */
+    bool        print_timing_;       /*!< Print SST timing information */
+    std::string stopAtCycle_;        /*!< When to stop the simulation */
+    uint32_t    stopAfterSec_;       /*!< When (wall-time) to stop the simulation */
+    std::string timeBase_;           /*!< Timebase of simulation */
+    std::string partitioner_;        /*!< Partitioner to use */
+    std::string heartbeatPeriod_;    /*!< Sets the heartbeat period for the simulation */
+    std::string output_directory_;   /*!< Output directory to dump all files to */
+    std::string output_core_prefix_; /*!< Set the SST::Output prefix for the core */
+
+    // Configuration output
+    std::string output_config_graph_; /*!< File to dump configuration graph */
+    std::string output_json_;         /*!< File to dump JSON output */
+    bool        parallel_output_;     /*!< Output simulation graph in parallel */
+    std::string output_xml_;          /*!< File to dump XML output */
+
+    // Graph output
+    std::string output_dot_;               /*!< File to dump dot output */
+    uint32_t    dot_verbosity_;            /*!< Amount of detail to include in the dot graph output */
+    std::string component_partition_file_; /*!< File to dump component graph */
+    bool        output_partition_;         /*!< Output paritition info when writing config output */
+
+    // Advanced options
+    bool               parallel_load_;     /*!< Load simulation graph in parallel */
+    std::string        timeVortex_;        /*!< TimeVortex implementation to use */
+    bool               interthread_links_; /*!< Use interthread links */
+    std::string        debugFile_;         /*!< File to which debug information should be written */
+    std::string        libpath_;
+    std::string        addLibPath_;
+    Simulation::Mode_t runMode_; /*!< Run Mode (Init, Both, Run-only) */
+#ifdef USE_MEMPOOL
+    std::string event_dump_file_; /*!< File to dump undeleted events to */
+#endif
+
+    // Advanced options - envrionment
+    bool print_env_;           /*!< Print SST environment */
+    bool enable_sig_handling_; /*!< Enable signal handling */
+    bool no_env_config_;       /*!< Bypass compile-time environmental configuration */
 };
 
 } // namespace SST

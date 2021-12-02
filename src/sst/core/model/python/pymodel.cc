@@ -269,7 +269,7 @@ setProgramOption(PyObject* UNUSED(self), PyObject* args)
     int argOK = PyArg_ParseTuple(args, "ss", &param, &value);
 
     if ( argOK ) {
-        if ( gModel->getConfig()->setConfigEntryFromModel(param, value) )
+        if ( gModel->setConfigEntryFromModel(param, value) )
             Py_RETURN_TRUE;
         else
             Py_RETURN_FALSE;
@@ -287,8 +287,7 @@ setProgramOptions(PyObject* UNUSED(self), PyObject* args)
     PyObject * key, *val;
     long       count = 0;
     while ( PyDict_Next(args, &pos, &key, &val) ) {
-        if ( gModel->getConfig()->setConfigEntryFromModel(SST_ConvertToCppString(key), SST_ConvertToCppString(val)) )
-            count++;
+        if ( gModel->setConfigEntryFromModel(SST_ConvertToCppString(key), SST_ConvertToCppString(val)) ) count++;
     }
     return SST_ConvertToPythonLong(count);
 }
@@ -300,24 +299,26 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
     Config* cfg = gModel->getConfig();
 
     PyObject* dict = PyDict_New();
-    PyDict_SetItem(dict, SST_ConvertToPythonString("debug-file"), SST_ConvertToPythonString(cfg->debugFile.c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("stop-at"), SST_ConvertToPythonString(cfg->stopAtCycle.c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("debug-file"), SST_ConvertToPythonString(cfg->debugFile().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("stop-at"), SST_ConvertToPythonString(cfg->stopAtCycle().c_str()));
     PyDict_SetItem(
-        dict, SST_ConvertToPythonString("heartbeat-period"), SST_ConvertToPythonString(cfg->heartbeatPeriod.c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("timebase"), SST_ConvertToPythonString(cfg->timeBase.c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("partitioner"), SST_ConvertToPythonString(cfg->partitioner.c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("verbose"), SST_ConvertToPythonLong(cfg->verbose));
+        dict, SST_ConvertToPythonString("heartbeat-period"), SST_ConvertToPythonString(cfg->heartbeatPeriod().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("timebase"), SST_ConvertToPythonString(cfg->timeBase().c_str()));
+    PyDict_SetItem(
+        dict, SST_ConvertToPythonString("partitioner"), SST_ConvertToPythonString(cfg->partitioner().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("verbose"), SST_ConvertToPythonLong(cfg->verbose()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("output-partition"),
-        SST_ConvertToPythonString(cfg->dump_component_graph_file.c_str()));
+        SST_ConvertToPythonString(cfg->component_partition_file().c_str()));
     PyDict_SetItem(
-        dict, SST_ConvertToPythonString("output-config"), SST_ConvertToPythonString(cfg->output_config_graph.c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("output-dot"), SST_ConvertToPythonString(cfg->output_dot.c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("numRanks"), SST_ConvertToPythonLong(cfg->getNumRanks()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("numThreads"), SST_ConvertToPythonLong(cfg->getNumThreads()));
+        dict, SST_ConvertToPythonString("output-config"),
+        SST_ConvertToPythonString(cfg->output_config_graph().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("output-dot"), SST_ConvertToPythonString(cfg->output_dot().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("numRanks"), SST_ConvertToPythonLong(cfg->num_ranks()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("numThreads"), SST_ConvertToPythonLong(cfg->num_threads()));
 
     const char* runModeStr = "UNKNOWN";
-    switch ( cfg->runMode ) {
+    switch ( cfg->runMode() ) {
     case Simulation::INIT:
         runModeStr = "init";
         break;
@@ -376,16 +377,16 @@ static PyObject*
 getSSTThreadCount(PyObject* UNUSED(self), PyObject* UNUSED(args))
 {
     Config* cfg = gModel->getConfig();
-    return SST_ConvertToPythonLong(cfg->getNumThreads());
+    return SST_ConvertToPythonLong(cfg->num_threads());
 }
 
 static PyObject*
 setSSTThreadCount(PyObject* UNUSED(self), PyObject* args)
 {
     Config* cfg     = gModel->getConfig();
-    long    oldNThr = cfg->getNumThreads();
+    long    oldNThr = cfg->num_threads();
     long    nThr    = SST_ConvertToCppLong(args);
-    if ( nThr > 0 && nThr <= oldNThr ) cfg->setNumThreads(nThr);
+    if ( nThr > 0 && nThr <= oldNThr ) gModel->setConfigEntryFromModel("num_threads", std::to_string(nThr));
     return SST_ConvertToPythonLong(oldNThr);
 }
 
@@ -1010,7 +1011,7 @@ SSTPythonModelDefinition::initModel(
 
 SSTPythonModelDefinition::SSTPythonModelDefinition(
     const std::string& script_file, int verbosity, Config* configObj, double start_time) :
-    SSTModelDescription(),
+    SSTModelDescription(configObj),
     scriptName(script_file),
     config(configObj),
     namePrefix(nullptr),
@@ -1020,12 +1021,12 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
     std::vector<std::string> argv_vector;
     argv_vector.push_back("sstsim.x");
 
-    const int   input_len = configObj->model_options.length();
+    const int   input_len = configObj->model_options().length();
     std::string temp      = "";
     bool        in_string = false;
 
     for ( int i = 0; i < input_len; ++i ) {
-        if ( configObj->model_options.substr(i, 1) == "\"" ) {
+        if ( configObj->model_options().substr(i, 1) == "\"" ) {
             if ( in_string ) {
                 // We are ending a string
                 if ( !(temp == "") ) {
@@ -1040,7 +1041,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
                 in_string = true;
             }
         }
-        else if ( configObj->model_options.substr(i, 1) == " " ) {
+        else if ( configObj->model_options().substr(i, 1) == " " ) {
             if ( in_string ) { temp += " "; }
             else {
                 if ( !(temp == "") ) { argv_vector.push_back(temp); }
@@ -1049,7 +1050,7 @@ SSTPythonModelDefinition::SSTPythonModelDefinition(
             }
         }
         else {
-            temp += configObj->model_options.substr(i, 1);
+            temp += configObj->model_options().substr(i, 1);
         }
     }
 

@@ -71,11 +71,11 @@ to_json(json::ordered_json& j, SubCompWrapper const& comp_wrapper)
     auto& comp = comp_wrapper.comp;
     j = json::ordered_json { { "slot_name", comp->name }, { "slot_number", comp->slot_num }, { "type", comp->type } };
 
-    for ( auto const& paramsItr : comp->params.getLocalKeys() ) {
+    for ( auto const& paramsItr : comp->getParamsLocalKeys() ) {
         j["params"][paramsItr] = comp->params.find<std::string>(paramsItr);
     }
 
-    for ( auto const& paramsItr : comp->params.getSubscribedGlobalParamSets() ) {
+    for ( auto const& paramsItr : comp->getSubscribedGlobalParamSets() ) {
         j["params_global_sets"].push_back(paramsItr);
     }
 
@@ -94,11 +94,11 @@ to_json(json::ordered_json& j, CompWrapper const& comp_wrapper)
     auto& comp = comp_wrapper.comp;
     j          = json::ordered_json { { "name", comp->name }, { "type", comp->type } };
 
-    for ( auto const& paramsItr : comp->params.getLocalKeys() ) {
+    for ( auto const& paramsItr : comp->getParamsLocalKeys() ) {
         j["params"][paramsItr] = comp->params.find<std::string>(paramsItr);
     }
 
-    for ( auto const& paramsItr : comp->params.getSubscribedGlobalParamSets() ) {
+    for ( auto const& paramsItr : comp->getSubscribedGlobalParamSets() ) {
         j["params_global_sets"].push_back(paramsItr);
     }
 
@@ -149,28 +149,27 @@ JSONConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     json::ordered_json outputJson;
 
     // Put in the program options
-    outputJson["program_options"]["verbose"]     = std::to_string(cfg->verbose);
-    outputJson["program_options"]["stopAtCycle"] = cfg->stopAtCycle;
-    if ( cfg->print_timing ) outputJson["program_options"]["print-timing-info"] = true;
+    outputJson["program_options"]["verbose"]            = std::to_string(cfg->verbose());
+    outputJson["program_options"]["stopAtCycle"]        = cfg->stopAtCycle();
+    outputJson["program_options"]["print-timing-info"]  = cfg->print_timing() ? "true" : "false";
     // Ignore stopAfter for now
-    // outputJson["program_options"]["stopAfter"] = cfg->stopAfterSec;
-    outputJson["program_options"]["heartbeat-period"] = cfg->heartbeatPeriod;
-    outputJson["program_options"]["timebase"]         = cfg->timeBase;
-    outputJson["program_options"]["partitioner"]      = cfg->partitioner;
-    outputJson["program_options"]["timeVortex"]       = cfg->timeVortex;
-    if ( cfg->inter_thread_links ) outputJson["program_options"]["inter-thread-links"] = "";
-    outputJson["program_options"]["output-prefix-core"] = cfg->output_core_prefix;
-    outputJson["program_options"]["model-options"]      = cfg->model_options;
+    // outputJson["program_options"]["stopAfter"] = cfg->stopAfterSec();
+    outputJson["program_options"]["heartbeat-period"]   = cfg->heartbeatPeriod();
+    outputJson["program_options"]["timebase"]           = cfg->timeBase();
+    outputJson["program_options"]["partitioner"]        = cfg->partitioner();
+    outputJson["program_options"]["timeVortex"]         = cfg->timeVortex();
+    outputJson["program_options"]["interthread-links"]  = cfg->interthread_links() ? "true" : "false";
+    outputJson["program_options"]["output-prefix-core"] = cfg->output_core_prefix();
 
     // Put in the global param sets
-    for ( const auto& set : Params::getGlobalParamSetNames() ) {
-        for ( const auto& kvp : Params::getGlobalParamSet(set) ) {
+    for ( const auto& set : getGlobalParamSetNames() ) {
+        for ( const auto& kvp : getGlobalParamSet(set) ) {
             if ( kvp.first != "<set_name>" ) outputJson["global_params"][set][kvp.first] = kvp.second;
         }
     }
 
     for ( const auto& compItr : compMap ) {
-        outputJson["components"].emplace_back(CompWrapper { compItr, cfg->output_partition });
+        outputJson["components"].emplace_back(CompWrapper { compItr, cfg->output_partition() });
     }
 
     for ( const auto& linkItr : linkMap ) {

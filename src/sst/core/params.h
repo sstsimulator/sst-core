@@ -32,6 +32,12 @@ int main(int argc, char* argv[]);
 namespace SST {
 
 class ConfigGraph;
+class ConfigComponent;
+class SSTModelDescription;
+
+namespace Core {
+class ConfigGraphOutput;
+} // namespace Core
 
 /**
  * Parameter store.
@@ -137,7 +143,7 @@ NO_VARIABLE:
     template <class T>
     inline T find_impl(const std::string& k, T default_value, bool& found) const
     {
-        verifyParam(k);
+        verifyKey(k);
         // const_iterator i = data.find(getKey(k));
         const std::string& value = getString(k, found);
         if ( !found ) { return default_value; }
@@ -159,7 +165,7 @@ NO_VARIABLE:
     template <class T>
     inline T find_impl(const std::string& k, const std::string& default_value, bool& found) const
     {
-        verifyParam(k);
+        verifyKey(k);
         const std::string& value = getString(k, found);
         if ( !found ) {
             try {
@@ -467,7 +473,7 @@ public:
     template <class T>
     void find_array(const key_type& k, std::vector<T>& vec) const
     {
-        verifyParam(k);
+        verifyKey(k);
 
         bool        found = false;
         std::string value = getString(k, found);
@@ -594,7 +600,19 @@ public:
      * @param k   Key to check for validity
      * @return    True if the key is considered allowed
      */
-    void verifyParam(const key_type& k) const;
+    void verifyParam(const key_type& k) const __attribute__((
+        deprecated("this function was not intended to be used outside of SST core and will be removed in SST 13.")));
+
+    void serialize_order(SST::Core::Serialization::serializer& ser) override;
+    ImplementSerializable(SST::Params)
+
+private:
+    //// Functions used by model descriptions and config graph
+    //// outputters (classes that use it are friended below)
+    friend class SST::ConfigGraph;
+    friend class SST::ConfigComponent;
+    friend class SST::Core::ConfigGraphOutput;
+    friend class SST::SSTModelDescription;
 
     /**
      * Adds a global param set to be looked at in this Params object
@@ -621,13 +639,8 @@ public:
     static void
     insert_global(const std::string& set, const key_type& key, const key_type& value, bool overwrite = true);
 
-
     /**
      * Get a named global parameter set.
-     *
-     * NOTE: this call is intended to only be used in SST Core and is
-     * not part of the public API with backward compatilibity
-     * guarantees
      *
      * @param name Name of the set to get
      *
@@ -636,13 +649,8 @@ public:
      */
     static std::map<std::string, std::string> getGlobalParamSet(const std::string& name);
 
-
     /**
      * Get a vector of the names of available global parameter sets.
-     *
-     * NOTE: this call is intended to only be used in SST Core and is
-     * not part of the public API with backward compatilibity
-     * guarantees
      *
      * @return returns a vector of the names of available global param
      * sets
@@ -650,13 +658,8 @@ public:
      */
     static std::vector<std::string> getGlobalParamSetNames();
 
-
     /**
      * Get a vector of the local keys
-     *
-     * NOTE: this call is intended to only be used in SST Core and is
-     * not part of the public API with backward compatilibity
-     * guarantees
      *
      * @return returns a vector of the local keys in this Params
      * object
@@ -664,14 +667,9 @@ public:
      */
     std::vector<std::string> getLocalKeys() const;
 
-
     /**
      * Get a vector of the global param sets this Params object is
      * subscribed to
-     *
-     * NOTE: this call is intended to only be used in SST Core and is
-     * not part of the public API with backward compatilibity
-     * guarantees
      *
      * @return returns a vector of the global param sets his Params
      * object is subscribed to
@@ -680,10 +678,15 @@ public:
     std::vector<std::string> getSubscribedGlobalParamSets() const;
 
 
-    void serialize_order(SST::Core::Serialization::serializer& ser) override;
-    ImplementSerializable(SST::Params)
+    // Private functions used by Params
+    /**
+     * @param k   Key to check for validity
+     * @return    True if the key is considered allowed
+     */
+    void verifyKey(const key_type& k) const;
 
-private:
+
+    // Private data
     std::map<uint32_t, std::string>               my_data;
     std::vector<std::map<uint32_t, std::string>*> data;
     std::vector<KeySet_t>                         allowedKeys;
@@ -691,7 +694,6 @@ private:
     static bool                                   g_verify_enabled;
 
     static uint32_t getKey(const std::string& str);
-    // static uint32_t getKey(const std::string& str);
 
     /**
      * Given a Parameter Key ID, return the Name of the matching parameter
