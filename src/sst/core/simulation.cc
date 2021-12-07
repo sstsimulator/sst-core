@@ -222,7 +222,7 @@ Simulation_impl::Simulation_impl(Config* cfg, RankInfo my_rank, RankInfo num_ran
 void
 Simulation_impl::setStopAtCycle(Config* cfg)
 {
-    SimTime_t stopAt = timeLord.getSimCycles(cfg->stopAtCycle(), "StopAction configure");
+    SimTime_t stopAt = timeLord.getSimCycles(cfg->stop_at(), "StopAction configure");
     if ( stopAt != 0 ) {
         StopAction* sa = new StopAction();
         sa->setDeliveryTime(stopAt);

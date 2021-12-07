@@ -224,7 +224,7 @@ PythonConfigGraphOutput::generate(const Config* cfg, ConfigGraph* graph)
     fprintf(outputFile, "# Define SST Program Options:\n");
     fprintf(outputFile, "# (These reflect the settings from original run and are not necessary in all files)\n");
     fprintf(outputFile, "sst.setProgramOption(\"verbose\", \"%" PRIu32 "\")\n", cfg->verbose());
-    fprintf(outputFile, "sst.setProgramOption(\"stopAtCycle\", \"%s\")\n", cfg->stopAtCycle().c_str());
+    fprintf(outputFile, "sst.setProgramOption(\"stop-at\", \"%s\")\n", cfg->stop_at().c_str());
     fprintf(
         outputFile, "sst.setProgramOption(\"print-timing-info\", \"%s\")\n", cfg->print_timing() ? "true" : "false");
     // Ignore stopAfter for now

@@ -205,16 +205,16 @@ doGraphOutput(SST::Config* cfg, ConfigGraph* graph, const RankInfo& myRank, cons
     }
 
     ConfigGraph* myGraph = graph;
-    // if ( cfg->parallel_output() ) {
-    //     // Get a graph that only includes components important to this
-    //     // rank
-    //     myGraph = graph->getSubGraph(myRank.rank, myRank.rank);
-    // }
+    if ( cfg->parallel_output() ) {
+        // Get a graph that only includes components important to this
+        // rank
+        myGraph = graph->getSubGraph(myRank.rank, myRank.rank);
+    }
     for ( size_t i = 0; i < graphOutputs.size(); i++ ) {
         graphOutputs[i]->generate(cfg, myGraph);
         delete graphOutputs[i];
     }
-    // if ( cfg->parallel_output() ) delete myGraph;
+    if ( cfg->parallel_output() ) delete myGraph;
 }
 
 typedef struct
@@ -298,15 +298,15 @@ start_simulation(uint32_t tid, SimThreadInfo_t& info, Core::ThreadSafe::Barrier&
                 CALL_INFO, 1, 0, "# Start time: %04u/%02u/%02u at: %02u:%02u:%02u\n", (now->tm_year + 1900),
                 (now->tm_mon + 1), now->tm_mday, now->tm_hour, now->tm_min, now->tm_sec);
 
-            if ( info.config->stopAfterSec() > 0 ) {
-                time_t     stop_time = the_time + info.config->stopAfterSec();
+            if ( info.config->exit_after() > 0 ) {
+                time_t     stop_time = the_time + info.config->exit_after();
                 struct tm* end       = localtime(&stop_time);
                 g_output.verbose(
                     CALL_INFO, 1, 0, "# Will end by: %04u/%02u/%02u at: %02u:%02u:%02u\n", (end->tm_year + 1900),
                     (end->tm_mon + 1), end->tm_mday, end->tm_hour, end->tm_min, end->tm_sec);
 
                 /* Set the alarm */
-                alarm(info.config->stopAfterSec());
+                alarm(info.config->exit_after());
             }
         }
         // g_output.output("info.config.stopAtCycle = %s\n",info.config->stopAtCycle.c_str());
@@ -447,7 +447,7 @@ main(int argc, char* argv[])
 
         // If doing parallel load, make sure this model is parallel capable
         if ( cfg.parallel_load() && !SSTModelDescription::isElementParallelCapable(model_name) ) {
-            std::cerr << "Model tyoe for extension: \"" << extension << "\" does not support parallel loading."
+            std::cerr << "Model type for extension: \"" << extension << "\" does not support parallel loading."
                       << std::endl;
             return -1;
         }

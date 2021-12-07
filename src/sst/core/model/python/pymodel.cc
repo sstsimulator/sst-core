@@ -300,7 +300,7 @@ getProgramOptions(PyObject* UNUSED(self), PyObject* UNUSED(args))
 
     PyObject* dict = PyDict_New();
     PyDict_SetItem(dict, SST_ConvertToPythonString("debug-file"), SST_ConvertToPythonString(cfg->debugFile().c_str()));
-    PyDict_SetItem(dict, SST_ConvertToPythonString("stop-at"), SST_ConvertToPythonString(cfg->stopAtCycle().c_str()));
+    PyDict_SetItem(dict, SST_ConvertToPythonString("stop-at"), SST_ConvertToPythonString(cfg->stop_at().c_str()));
     PyDict_SetItem(
         dict, SST_ConvertToPythonString("heartbeat-period"), SST_ConvertToPythonString(cfg->heartbeatPeriod().c_str()));
     PyDict_SetItem(dict, SST_ConvertToPythonString("timebase"), SST_ConvertToPythonString(cfg->timeBase().c_str()));

@@ -768,7 +768,7 @@ protected:
     // std::string getComponentInfoStatisticUnits(const std::string& statisticName) const;
 
 private:
-    ComponentInfo* my_info;
+    ComponentInfo* my_info = nullptr;
     bool           isExtension;
 
     void  addSelfLink(const std::string& name);

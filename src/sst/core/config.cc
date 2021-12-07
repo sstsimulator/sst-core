@@ -30,6 +30,7 @@ REENABLE_WARNING
 #include <getopt.h>
 #include <iostream>
 #include <locale>
+#include <string>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -57,7 +58,31 @@ public:
     typedef bool (ConfigHelper::*flagFunction)(void);
     typedef bool (ConfigHelper::*argFunction)(const std::string& arg);
 
+    // Used to determine what return code to use
+    bool clean_exit = false;
+
     ConfigHelper(Config& cfg) : cfg(cfg) {}
+
+    // Print usage
+    bool printHelp()
+    {
+        clean_exit = true;
+        return usage();
+    }
+
+    // Prints the SST version
+    bool printVersion()
+    {
+        printf("SST-Core Version (" PACKAGE_VERSION);
+        if ( strcmp(SSTCORE_GIT_HEADSHA, PACKAGE_VERSION) ) {
+            printf(", git branch : " SSTCORE_GIT_BRANCH);
+            printf(", SHA: " SSTCORE_GIT_HEADSHA);
+        }
+        printf(")\n");
+
+        clean_exit = true;
+        return false; /* Should not continue */
+    }
 
     // Verbosity
     bool incrVerbose()
@@ -68,27 +93,29 @@ public:
 
     bool setVerbosity(const std::string& arg)
     {
-        errno             = E_OK;
-        unsigned long val = strtoul(arg.c_str(), nullptr, 0);
-        if ( errno == E_OK ) {
-            cfg.verbose_ = val;
+        try {
+            unsigned long val = stoul(arg);
+            cfg.verbose_      = val;
             return true;
         }
-        fprintf(stderr, "Failed to parse [%s] as number\n", arg.c_str());
-        return false;
+        catch ( std::invalid_argument& e ) {
+            fprintf(stderr, "Failed to parse '%s' as number for option --verbose\n", arg.c_str());
+            return false;
+        }
     }
 
     // num_threads
     bool setNumThreads(const std::string& arg)
     {
-        errno              = E_OK;
-        unsigned long nthr = strtoul(arg.c_str(), nullptr, 0);
-        if ( errno == E_OK ) {
-            cfg.world_size_.thread = nthr;
+        try {
+            unsigned long val      = stoul(arg);
+            cfg.world_size_.thread = val;
             return true;
         }
-        fprintf(stderr, "Failed to parse [%s] as number of threads\n", arg.c_str());
-        return false;
+        catch ( std::invalid_argument& e ) {
+            fprintf(stderr, "Failed to parse '%s' as number for option --num-threads\n", arg.c_str());
+            return false;
+        }
     }
 
     // SDL file
@@ -122,24 +149,23 @@ public:
         return success;
     }
 
-    // stopAtCycle
+    // stop-at
     bool setStopAt(const std::string& arg)
     {
-        fprintf(stderr, "Program option 'stop-at' has been deprecated.  Please use 'stopAtCycle' instead");
-        cfg.stopAtCycle_ = arg;
+        cfg.stop_at_ = arg;
         return true;
     }
 
-    // stopAtCycle
+    // stopAtCycle (deprecated)
     bool setStopAtCycle(const std::string& arg)
     {
-        /* TODO: Error checking */
-        cfg.stopAtCycle_ = arg;
-        return true;
+        // Uncomment this once all test files have been updated
+        // fprintf(stderr, "Program option 'stopAtCycle' has been deprecated.  Please use 'stop-at' instead");
+        return setStopAt(arg);
     }
 
-    // stop after
-    bool setStopAfter(const std::string& arg)
+    // exit after
+    bool setExitAfter(const std::string& arg)
     {
         /* TODO: Error checking */
         errno = 0;
@@ -159,9 +185,9 @@ public:
                 stderr, "**** [%s]  p = %p ; *p = '%c', %u:%u:%u\n", templates[i], p, (p) ? *p : '\0', res.tm_hour,
                 res.tm_min, res.tm_sec);
             if ( p != nullptr && *p == '\0' ) {
-                cfg.stopAfterSec_ = res.tm_sec;
-                cfg.stopAfterSec_ += res.tm_min * 60;
-                cfg.stopAfterSec_ += res.tm_hour * 60 * 60;
+                cfg.exit_after_ = res.tm_sec;
+                cfg.exit_after_ += res.tm_min * 60;
+                cfg.exit_after_ += res.tm_hour * 60 * 60;
                 return true;
             }
         }
@@ -178,10 +204,20 @@ public:
         return false;
     }
 
+    // stop after (deprecated)
+    bool setStopAfter(const std::string& arg)
+    {
+        // Uncomment this once all test files have been updated
+        // fprintf(stderr, "Program option 'stopAfter' has been deprecated.  Please use 'exit-after' instead");
+        return setExitAfter(arg);
+    }
+
+
     // timebase
     bool setTimebase(const std::string& arg)
     {
-        /* TODO: Error checking */
+        // TODO: Error checking.  Need to wait until UnitAlgebra
+        // switches to exceptions on errors instead of calling abort
         cfg.timeBase_ = arg;
         return true;
     }
@@ -284,14 +320,15 @@ public:
     // dot verbosity
     bool setDotVerbosity(const std::string& arg)
     {
-        errno             = E_OK;
-        unsigned long val = strtoul(arg.c_str(), nullptr, 0);
-        if ( errno == E_OK ) {
+        try {
+            unsigned long val  = stoul(arg);
             cfg.dot_verbosity_ = val;
             return true;
         }
-        fprintf(stderr, "Failed to parse [%s] as number\n", arg.c_str());
-        return false;
+        catch ( std::invalid_argument& e ) {
+            fprintf(stderr, "Failed to parse '%s' as number for option --dot-verbosity\n", arg.c_str());
+            return false;
+        }
     }
 
     // output partition
@@ -374,8 +411,10 @@ public:
             cfg.runMode_ = Simulation::RUN;
         else if ( !arg.compare("both") )
             cfg.runMode_ = Simulation::BOTH;
-        else
+        else {
+            fprintf(stderr, "Unknown option for --run-mode: %s\n", arg.c_str());
             cfg.runMode_ = Simulation::UNKNOWN;
+        }
 
         return cfg.runMode_ != Simulation::UNKNOWN;
     }
@@ -446,9 +485,6 @@ public:
     }
 
 
-    // Prints the SST version
-    bool printVersion();
-
     // Prints the usage information
     bool usage();
 
@@ -469,8 +505,8 @@ Config::print()
     std::cout << "configFile = " << configFile_ << std::endl;
     std::cout << "model_options = " << model_options_ << std::endl;
     std::cout << "print_timing = " << print_timing_ << std::endl;
-    std::cout << "stopAtCycle = " << stopAtCycle_ << std::endl;
-    std::cout << "stopAfterSec = " << stopAfterSec_ << std::endl;
+    std::cout << "stop_at = " << stop_at_ << std::endl;
+    std::cout << "exit_after = " << exit_after_ << std::endl;
     std::cout << "timeBase = " << timeBase_ << std::endl;
     std::cout << "partitioner = " << partitioner_ << std::endl;
     std::cout << "heartbeatPeriod = " << heartbeatPeriod_ << std::endl;
@@ -507,8 +543,8 @@ Config::Config(RankInfo rank_info) : Config()
     configFile_        = "NONE";
     model_options_     = "";
     print_timing_      = false;
-    stopAtCycle_       = "0 ns";
-    stopAfterSec_      = 0;
+    stop_at_           = "0 ns";
+    exit_after_        = 0;
     timeBase_          = "1 ps";
     partitioner_       = "sst.linear";
     heartbeatPeriod_   = "";
@@ -606,8 +642,8 @@ Config::getLibPath(void) const
         // find which keys have a LIBDIR at the END of the key
         // we recognize these may house elements
         for ( auto keyItr = groupKeys.begin(); keyItr != groupKeys.end(); keyItr++ ) {
-            const std::string key   = *keyItr;
-            const std::string value = currentGroup->getValue(key);
+            const std::string& key   = *keyItr;
+            const std::string& value = currentGroup->getValue(key);
 
             if ( key.size() > 6 ) {
                 if ( "LIBDIR" == key.substr(key.size() - 6) ) {
@@ -701,7 +737,7 @@ struct sstLongOpts_s
 static const struct sstLongOpts_s sstOptions[] = {
     /* Informational options */
     DEF_SECTION_HEADING("Informational Options"),
-    DEF_FLAG("help", 'h', "Print help message", &ConfigHelper::usage),
+    DEF_FLAG("help", 'h', "Print help message", &ConfigHelper::printHelp),
     DEF_FLAG("version", 'V', "Print SST Release Version", &ConfigHelper::printVersion),
 
     /* Basic Options */
@@ -724,15 +760,22 @@ static const struct sstLongOpts_s sstOptions[] = {
     DEF_FLAG_OPTVAL(
         "print-timing-info", 0, "Print SST timing information", &ConfigHelper::enablePrintTiming,
         &ConfigHelper::setPrintTiming, true),
+    DEF_ARG("stop-at", 0, "TIME", "Set time at which simulation will end execution", &ConfigHelper::setStopAt, true),
     DEF_ARG(
-        "stop-at", 0, "TIME",
-        "[DEPRECATED] Set time at which simulation will end execution (deprecated, please use --stopAtCycle instead).",
-        &ConfigHelper::setStopAt, true),
+        "stopAtCycle", 0, "TIME",
+        "[DEPRECATED] Set time at which simulation will end execution (deprecated, please use --stop-at instead)",
+        &ConfigHelper::setStopAtCycle, true),
     DEF_ARG(
-        "stopAtCycle", 0, "TIME", "Set time at which simulation will end execution", &ConfigHelper::setStopAtCycle,
-        true),
+        "exit-after", 0, "TIME",
+        "Set the maximum wall time after which simulation will end execution.  Time is specified in hours, minutes and "
+        "seconds, with the following formats supported: H:M:S, M:S, S, Hh, Mm, Ss (captital letters are the "
+        "appropriate numbers for that value, lower case letters represent the units and are required in for those "
+        "formats).",
+        &ConfigHelper::setExitAfter, true),
     DEF_ARG(
-        "stopAfter", 0, "TIME", "Set the maximum wall time after which simulation will end execution",
+        "stopAfter", 0, "TIME",
+        "[DEPRECATED] Set the maximum wall time after which simulation will exit (deprecatd, please use --exit-after "
+        "instead",
         &ConfigHelper::setStopAfter, true),
     DEF_ARG(
         "timebase", 0, "TIMEBASE", "Set the base time step of the simulation (default: 1ps)",
@@ -848,18 +891,6 @@ ConfigHelper::parseBoolean(const std::string& arg, bool& success, const std::str
     }
 }
 
-bool
-ConfigHelper::printVersion()
-{
-    printf("SST-Core Version (" PACKAGE_VERSION);
-    if ( strcmp(SSTCORE_GIT_HEADSHA, PACKAGE_VERSION) ) {
-        printf(", git branch : " SSTCORE_GIT_BRANCH);
-        printf(", SHA: " SSTCORE_GIT_HEADSHA);
-    }
-    printf(")\n");
-
-    return false; /* Should not continue */
-}
 
 bool
 ConfigHelper::usage()
@@ -867,7 +898,7 @@ ConfigHelper::usage()
 #ifdef SST_CONFIG_HAVE_MPI
     int this_rank = 0;
     MPI_Comm_rank(MPI_COMM_WORLD, &this_rank);
-    if ( this_rank != 0 ) return true;
+    if ( this_rank != 0 ) return false;
 #endif
 
     /* Determine screen / description widths */
@@ -960,7 +991,7 @@ int
 Config::parseCmdLine(int argc, char* argv[])
 {
     ConfigHelper       helper(*this);
-    static const char* sst_short_options = "hvVn:";
+    static const char* sst_short_options = "hv::Vn:";
     struct option      sst_long_options[nLongOpts + 1];
     for ( size_t i = 0; i < nLongOpts; i++ ) {
         sst_long_options[i] = sstOptions[i].opt;
@@ -969,20 +1000,51 @@ Config::parseCmdLine(int argc, char* argv[])
 
     run_name = argv[0];
 
-    bool ok         = true;
-    bool clean_exit = false;
+    // Need to see if there are model-options specified after '--'.
+    // If there is, we will deal with it later and just tell getopt
+    // about everything before it.  getopt does not handle -- and
+    // positional arguments in a sane way.
+    int end_arg_index = 0;
+    for ( int i = 0; i < argc; ++i ) {
+        if ( !strcmp(argv[i], "--") ) {
+            end_arg_index = i;
+            break;
+        }
+    }
+    int my_argc = end_arg_index == 0 ? argc : end_arg_index;
+
+    bool ok           = true;
+    helper.clean_exit = false;
     while ( ok ) {
         int       option_index = 0;
-        const int intC         = getopt_long(argc, argv, sst_short_options, sst_long_options, &option_index);
+        const int intC         = getopt_long(my_argc, argv, sst_short_options, sst_long_options, &option_index);
 
         if ( intC == -1 ) /* We're done */
             break;
 
         const char c = static_cast<char>(intC);
 
-        switch ( c ) {
-        case 0:
-            /* Long option, no short option */
+        // Getopt is a bit strange it how it returns information.
+        // There are three cases:
+
+        // 1 - Uknown value:  c = '?' & option_index = 0
+        // 2 - long options:  c = first letter of option & option_index = index of option in sst_long_options
+        // 3 - short options: c = short option letter & option_index = 0
+
+        // This is a dumb combination of things.  They really should
+        // have return c = 0 in the long option case.  As it is,
+        // there's no way to differentiate a short value from the long
+        // value in index 0.  Thankfully, we have a "Section Header"
+        // in index 0 so we don't have to worry about that.
+
+        // If the character returned from getopt_long is '?', then it
+        // is an unknown command
+        if ( c == '?' ) {
+            // Unknown option
+            ok = helper.usage();
+        }
+        else if ( option_index != 0 ) {
+            // Long options
             if ( optarg == nullptr ) {
                 ok = (helper.*sstOptions[option_index].flagFunc)();
                 if ( ok ) sstOptions[option_index].set_cmdline = true;
@@ -991,44 +1053,76 @@ Config::parseCmdLine(int argc, char* argv[])
                 ok = (helper.*sstOptions[option_index].argFunc)(optarg);
                 if ( ok ) sstOptions[option_index].set_cmdline = true;
             }
-            break;
-
-        case 'v':
-            ok = helper.incrVerbose();
-            if ( ok ) sstOptions[option_index].set_cmdline = true;
-            break;
-
-        case 'n':
-        {
-            ok = helper.setNumThreads(optarg);
-            if ( ok ) sstOptions[option_index].set_cmdline = true;
-            break;
         }
+        else {
+            switch ( c ) {
+            case 0:
+                // This shouldn't happen, so we'll error if it does
+                fprintf(stderr, "INTERNAL ERROR: error parsing command line options\n");
+                exit(1);
+                break;
 
-        case 'V':
-            ok         = helper.printVersion();
-            clean_exit = true;
-            break;
-        case 'h':
-            clean_exit = true;
-        case '?':
-        default:
+            case 'v':
+                if ( optarg == nullptr ) { ok = helper.incrVerbose(); }
+                else {
+                    ok = helper.setVerbosity(optarg);
+                }
+                if ( ok ) sstOptions[option_index].set_cmdline = true;
+                break;
 
-            ok = helper.usage();
+            case 'n':
+            {
+                ok = helper.setNumThreads(optarg);
+                if ( ok ) sstOptions[option_index].set_cmdline = true;
+                break;
+            }
+
+            case 'V':
+                ok                = helper.printVersion();
+                helper.clean_exit = true;
+                break;
+
+            case 'h':
+                helper.clean_exit = true;
+
+            default:
+                ok = helper.usage();
+            }
         }
     }
 
     if ( !ok ) {
-        if ( clean_exit ) return 1;
+        if ( helper.clean_exit ) return 1;
         return -1;
     }
 
-    /* Handle non-positional arguments */
+    /* Handle positional arguments */
     if ( optind < argc ) {
+        // First positional argument is the sdl-file
         ok = helper.setConfigFile(argv[optind++]);
-        /* Support further additional arguments to be args to the model */
-        while ( ok && optind < argc ) {
-            ok = helper.setModelOptions(argv[optind++]);
+
+        // If there are additional position arguments, this is an
+        // error
+        if ( optind == (my_argc - 1) ) {
+            fprintf(
+                stderr, "Error: sdl-file name is the only positional argument allowed.  See help for --model-options "
+                        "for more info on passing parameters to the input script.\n");
+            ok = false;
+        }
+    }
+
+    // Check to make sure we had an sdl-file specified
+    if ( configFile_ == "NONE" ) {
+        fprintf(stderr, "ERROR: no sdl-file specified\n");
+        fprintf(stderr, "Usage: %s sdl-file [options]\n", run_name.c_str());
+        return -1;
+    }
+
+    // Support further additional arguments specified after -- to be
+    // args to the model.
+    if ( end_arg_index != 0 ) {
+        for ( int i = end_arg_index + 1; i < argc; ++i ) {
+            helper.setModelOptions(argv[i]);
         }
     }
 
@@ -1037,11 +1131,6 @@ Config::parseCmdLine(int argc, char* argv[])
     /* Sanity check, and other duties */
     Output::setFileName(debugFile_ != "/dev/null" ? debugFile_ : "sst_output");
 
-    if ( configFile_ == "NONE" ) {
-        cout << "ERROR: no sdl-file specified" << endl;
-        cout << "  Usage: " << run_name << " sdl-file [options]" << endl;
-        return -1;
-    }
 
     // Ensure output directory ends with a directory separator
     if ( output_directory_.size() > 0 ) {

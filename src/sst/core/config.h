@@ -123,12 +123,12 @@ public:
     /**
        Simulated cycle to stop the simulation at
     */
-    const std::string& stopAtCycle() const { return stopAtCycle_; }
+    const std::string& stop_at() const { return stop_at_; }
 
     /**
        Wall clock time (approximiate) in seconds to stop the simulation at
     */
-    uint32_t stopAfterSec() const { return stopAfterSec_; }
+    uint32_t exit_after() const { return exit_after_; }
 
     /**
        Core timebase to use as the atomic time unit for the
@@ -293,8 +293,8 @@ public:
         ser& configFile_;
         ser& model_options_;
         ser& print_timing_;
-        ser& stopAtCycle_;
-        ser& stopAfterSec_;
+        ser& stop_at_;
+        ser& exit_after_;
         ser& timeBase_;
         ser& partitioner_;
         ser& heartbeatPeriod_;
@@ -359,8 +359,8 @@ private:
     std::string configFile_;         /*!< Graph generation file */
     std::string model_options_;      /*!< Options to pass to Python Model generator */
     bool        print_timing_;       /*!< Print SST timing information */
-    std::string stopAtCycle_;        /*!< When to stop the simulation */
-    uint32_t    stopAfterSec_;       /*!< When (wall-time) to stop the simulation */
+    std::string stop_at_;            /*!< When to stop the simulation */
+    uint32_t    exit_after_;         /*!< When (wall-time) to stop the simulation */
     std::string timeBase_;           /*!< Timebase of simulation */
     std::string partitioner_;        /*!< Partitioner to use */
     std::string heartbeatPeriod_;    /*!< Sets the heartbeat period for the simulation */
